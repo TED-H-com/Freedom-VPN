@@ -159,3 +159,36 @@ func TestAPI01_Revision4ExistingExamples(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI01_DomainRulePositiveRevision(t *testing.T) {
+	var request struct {
+		Payload struct {
+			Rules []map[string]any `json:"rules"`
+		} `json:"payload"`
+	}
+	readJSON(t, "examples/valid/PolicyRevisionCreate.domain-rule-set.json", &request)
+	rule := request.Payload.Rules[0]
+	for _, revision := range []string{"1", "9007199254740993", "18446744073709551615", "0", "01", "-1", "1.0", "100000000000000000000"} {
+		t.Run(revision, func(t *testing.T) {
+			rule["revision"] = revision
+			raw, err := json.Marshal(rule)
+			if err != nil {
+				t.Fatal(err)
+			}
+			valid := revision == "1" || revision == "9007199254740993" || revision == "18446744073709551615"
+			if err := validateComponent(t, "DomainRule", raw); (err == nil) != valid {
+				t.Fatalf("revision %s: %v", revision, err)
+			}
+			if valid {
+				var model api.DomainRule
+				if err := json.Unmarshal(raw, &model); err != nil || model.Revision.String() != revision {
+					t.Fatalf("revision changed on decode: %v", err)
+				}
+			}
+		})
+	}
+	var model api.DomainRule
+	if err := json.Unmarshal([]byte(`{"revision":"18446744073709551616"}`), &model); !errors.Is(err, decstr.ErrRange) {
+		t.Fatalf("uint64 upper bound must fail typed decoding: %v", err)
+	}
+}

@@ -4591,11 +4591,11 @@ components:
           description: Reason code, for example `admin_rule` or `false_positive`.
         revision:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: '^[1-9][0-9]*$'
           maxLength: 20
           x-go-type: decstr.U64
           x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
-          description: 'Revision of this rule.'
+          description: 'Positive uint64 decimal-string revision of this rule, starting at 1 (§12.4, §14.2). Zero is invalid; the upper bound 18446744073709551615 is enforced by decstr.'
     ThreatFeedPayload:
       type: object
       description: |

@@ -2028,7 +2028,7 @@ export interface components {
             action: "block" | "allow";
             /** @description Reason code, for example `admin_rule` or `false_positive`. */
             reason: string;
-            /** @description Revision of this rule. */
+            /** @description Positive uint64 decimal-string revision of this rule, starting at 1 (§12.4, §14.2). Zero is invalid; the upper bound 18446744073709551615 is enforced by decstr. */
             revision: string;
         };
         /**

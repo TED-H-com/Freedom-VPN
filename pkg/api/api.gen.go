@@ -2579,7 +2579,7 @@ type DomainRule struct {
 	// Reason Reason code, for example `admin_rule` or `false_positive`.
 	Reason string `json:"reason"`
 
-	// Revision Revision of this rule.
+	// Revision Positive uint64 decimal-string revision of this rule, starting at 1 (§12.4, §14.2). Zero is invalid; the upper bound 18446744073709551615 is enforced by decstr.
 	Revision decstr.U64         `json:"revision"`
 	RuleId   openapi_types.UUID `json:"rule_id"`
 }

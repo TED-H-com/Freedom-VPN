@@ -123,7 +123,7 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Large integers.** Bytes, sequence numbers, generations, revisions and
   resource versions are decimal strings: `type: string`,
   `pattern: '^(0|[1-9][0-9]*)$'` (`'^[1-9][0-9]*$'` where zero is invalid,
-  such as `event_seq`), `maxLength: 20`, `x-go-type: decstr.U64`,
+  such as `event_seq` and `DomainRule.revision`), `maxLength: 20`, `x-go-type: decstr.U64`,
   `x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}`.
   Any field named `*_bytes`, `*_seq`, `*generation`, `*revision` or
   `resource_version` must follow it. TypeScript code holds them as strings and
@@ -262,6 +262,7 @@ them. `reasons.json` names the owner and rule for each fixture.
 | Fair-use thresholds strictly increase, rates are non-increasing, priority is non-decreasing, every tier is at or above `minimum_rate` in both directions | policy service | §11.1 |
 | Approved releases are a subset of serving releases; revoked releases are disjoint from both | policy service | §13.2 |
 | Artifacts cover amd64 and arm64 for the supported OS/version, with unique OS/version/architecture tuples; `minItems: 2` only checks array length | release service | §13.3, §13.4 |
+| Domain rule revisions start at 1; HTTP rejects `"0"` via `^[1-9][0-9]*$` and retains `maxLength: 20`. The uint64 upper bound `18446744073709551615` is enforced by `decstr`; the HTTP pattern alone does not enforce that numeric limit. The owner payload schema also caps positive uint64 revisions. | policy service / `decstr` | §12.4, §14.2 |
 | Domain rules are normalized with IDNA, then checked for duplicates and conflicting action/profile/subdomain semantics | policy service / DNS compiler | §12.4 |
 | Checkout and billing portal `return_url` must match the configured allowlist before redirect or provider use; HTTPS alone is insufficient, including loopback, link-local and other internal destinations | billing service | §14.3, §16.2 |
 
