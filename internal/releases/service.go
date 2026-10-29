@@ -9,8 +9,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -54,20 +56,30 @@ func Begin(ctx context.Context, tx pgx.Tx, c Command, route string, body []byte)
 // Register takes raw JSON so signatures and request hashes are never reconstructed
 // from a lossy decode. Rejected registrations retain only IDs/hashes/error codes.
 func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registration, error) {
-	var req api.ReleaseRegisterRequest
-	if e := json.Unmarshal(raw, &req); e != nil {
-		return Registration{}, apierr.New(apierr.ValidationFailed, "Invalid registration")
+	// §13.3 / §16.2: bound and validate before decoding the typed request.
+	// Only the raw envelope is extracted until its signature has been verified.
+	e := s.Validator.ValidateBody("ReleaseRegisterRequest", raw)
+	if len(raw) > canonjson.MaxBytes {
+		return Registration{}, e
 	}
 	var body struct {
 		Manifest json.RawMessage `json:"manifest"`
 	}
-	_ = json.Unmarshal(raw, &body)
-	m, hash, e := s.Validator.ValidateManifest(body.Manifest, time.Now().UTC())
-	if e == nil {
-		e = s.Validator.ValidateBody("ReleaseRegisterRequest", raw)
+	if err := json.Unmarshal(raw, &body); err != nil {
+		return Registration{}, apierr.New(apierr.ValidationFailed, "Invalid registration")
 	}
-	if e == nil && !s.Validator.AllowURL(req.ManifestUrl) {
-		e = apierr.New(apierr.ValidationFailed, "Manifest storage origin is not allowed")
+	var m api.ReleaseManifestEnvelope
+	var hash string
+	if e == nil {
+		m, hash, e = s.Validator.ValidateManifest(body.Manifest, time.Now().UTC())
+	}
+	var req api.ReleaseRegisterRequest
+	if e == nil {
+		if err := json.Unmarshal(raw, &req); err != nil {
+			e = apierr.New(apierr.ValidationFailed, "Invalid registration")
+		} else if !s.Validator.AllowURL(req.ManifestUrl) {
+			e = apierr.New(apierr.ValidationFailed, "Manifest storage origin is not allowed")
+		}
 	}
 	if e != nil {
 		if h, he := canonjson.Hash(body.Manifest); he == nil {
@@ -76,7 +88,7 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 			if errors.As(e, &ae) {
 				code = ae.Code
 			}
-			_, save := s.Pool.Exec(ctx, `INSERT INTO release_registration_rejections(release_id,manifest_hash,error_code) VALUES($1,$2,$3)`, nullableID(req.Manifest.Signed.ReleaseId), h[:], string(code))
+			_, save := s.Pool.Exec(ctx, `INSERT INTO release_registration_rejections(release_id,manifest_hash,error_code) VALUES($1,$2,$3)`, nullableID(m.Signed.ReleaseId), h[:], string(code))
 			if save != nil {
 				return Registration{}, save
 			}
@@ -109,8 +121,11 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 			if e = tx.QueryRow(ctx, `SELECT state,operation_id FROM release_verifications WHERE release_id=$1`, id).Scan(&state, &out.OperationID); e != nil {
 				return e
 			}
-			if state == "pending" {
+			switch state {
+			case "pending":
 				out.Status = 202
+			case "failed":
+				return apierr.New(apierr.StateConflict, "Release verification failed").WithDetail("verification_state", state)
 			}
 		} else if errors.Is(e, pgx.ErrNoRows) {
 			canonical, e := canonjson.Canonicalize(body.Manifest)
@@ -136,11 +151,15 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 			out = Registration{ReleaseID: id, Status: 201}
 			state := "verified"
 			if s.VerifyArtifacts {
-				op := uuid.Must(uuid.NewV7())
+				op, err := operations.Create(ctx, tx, operations.CreateRequest{
+					Kind: api.OperationKindReleaseRegister, Principal: auth.Principal{Role: auth.Admin, ID: c.ActorID},
+					Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, RequestID: commandtx.RequestID(ctx),
+					Steps: map[string]operations.Step{"verify": {Required: true}},
+				})
+				e = err
 				out.OperationID = &op
 				out.Status = 202
 				state = "pending"
-				_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id) VALUES($1,'release.register',$2,'release',$3,$4)`, op, c.ActorID.String(), id, commandtx.RequestID(ctx))
 				if e != nil {
 					return e
 				}
@@ -152,7 +171,7 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 			if e != nil {
 				return e
 			}
-			if e = Audit(ctx, tx, c.ActorID.String(), "admin", "release.register", id.String(), out.OperationID, map[string]any{"verification_state": state}); e != nil {
+			if e = Audit(ctx, tx, c.ActorID, api.AuditEventActorTypeAdmin, "release.register", api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, out.OperationID, api.AuditEventResultSucceeded, map[string]any{"verification_state": state}); e != nil {
 				return e
 			}
 		} else {
@@ -172,14 +191,6 @@ func nullableID(id uuid.UUID) any {
 		return nil
 	}
 	return id
-}
-
-func Audit(ctx context.Context, tx pgx.Tx, actor, actorType, action, resource string, op *uuid.UUID, after any) error {
-	raw, e := json.Marshal(after)
-	if e != nil {
-		return e
-	}
-	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: actorType, Action: action, Resource: resource, OperationID: op, SchemaVersion: 1, Before: json.RawMessage(`{}`), After: raw, Result: "accepted"})
 }
 
 // Eligible is called inside the fleet transaction; signatures are rechecked so
