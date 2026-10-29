@@ -168,17 +168,11 @@ describe('src/lib/dns.ts (§12.4 DNS Domain Rules & Priority Preview)', () => {
     expect(blockPreview.outcome).toBe('blocked_admin');
     expect(blockPreview.priorityLevel).toBe(1);
 
-    const notMatchedPreview = previewDnsMatch(
-      'nottracker.example.com',
-      INITIAL_DNS_POLICY.rules,
-    );
+    const notMatchedPreview = previewDnsMatch('notexample.com', INITIAL_DNS_POLICY.rules);
     expect(notMatchedPreview.outcome).toBe('resolved_normal');
     expect(notMatchedPreview.priorityLevel).toBe(4);
 
-    const allowPreview = previewDnsMatch(
-      'cdn-safe.example.com',
-      INITIAL_DNS_POLICY.rules,
-    );
+    const allowPreview = previewDnsMatch('xn--fiqs8s.example', INITIAL_DNS_POLICY.rules);
     expect(allowPreview.outcome).toBe('allowed_admin');
     expect(allowPreview.priorityLevel).toBe(2);
 

@@ -13,6 +13,8 @@ export const zhTW = {
   'app.role.admin': '管理員 (Admin)',
   'app.role.member': '會員 (Member)',
   'app.mockSwitcher.label': '模擬身分切換 (TEST ONLY)：',
+  'app.mockSwitcher.anonymous': '未登入訪客 (Anonymous)',
+  'app.mockSwitcher.adminNoMfa': '管理員：未完成 MFA (Admin without MFA)',
   'app.mockSwitcher.admin': '管理員 (Admin)',
   'app.mockSwitcher.memberActive': '會員：有效 (Active / 正常速度)',
   'app.mockSwitcher.memberThrottled': '會員：有效 (FUP 調速中 / 含缺口)',
@@ -22,6 +24,7 @@ export const zhTW = {
   'app.mockSwitcher.memberExpired': '會員：已到期 (expired)',
   'app.mockSwitcher.memberSuspended': '會員：人工停權 (suspended)',
   'app.mockSwitcher.trigger401': '模擬登入階段過期 (401)',
+  'app.logout': '登出',
   'app.footer.securityNote':
     '本前端不保存任何 NetBird 管理 Token、發行簽章私鑰或支付卡號資料（§18.4, AGENTS.md §2）。',
 
@@ -45,6 +48,14 @@ export const zhTW = {
   'nav.member.dnsProtection': '網站防護說明',
 
   // Auth & Guards
+  'auth.anonymous.title': '尚未登入 (Unauthenticated)',
+  'auth.anonymous.description':
+    '請透過單一登入 (OIDC) 驗證身分後再進入控制台或會員中心。',
+  'auth.anonymous.loginBtn': '前往 OIDC 單一登入',
+  'auth.mfaRequired.title': '需要完成管理員多因素驗證 (MFA Required)',
+  'auth.mfaRequired.description':
+    '您的帳號具備管理員角色，但尚未完成本階段的多因素驗證 (mfa_verified: false)。依安全契約（§16.1），所有管理後台操作均強制要求 MFA。',
+  'auth.mfaRequired.verifyBtn': '前往完成 MFA 驗證',
   'auth.sessionExpired.title': '登入階段已過期 (401)',
   'auth.sessionExpired.description':
     '您的 OIDC 登入階段已失效或過期，請重新驗證身分後再繼續操作。',

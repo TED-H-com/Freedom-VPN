@@ -1,73 +1,94 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { portalApi, type EnrollmentDetail } from '../../api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../../api';
 import { useI18n } from '../../i18n';
+import { PRIMARY_ENROLLMENT_ID } from '../../mocks/data';
 
 export function AdminEnrollmentDetailPage(): React.ReactElement {
-  const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
+  const { enrollmentId = PRIMARY_ENROLLMENT_ID } = useParams<{ enrollmentId: string }>();
   const { t } = useI18n();
-  const [detail, setDetail] = useState<EnrollmentDetail | null>(null);
+  const queryClient = useQueryClient();
 
-  const loadDetail = useCallback(async () => {
-    if (!enrollmentId) return;
-    const res = await portalApi.getEnrollment(enrollmentId);
-    setDetail(res.data);
-  }, [enrollmentId]);
+  const enrollmentQuery = useQuery({
+    queryKey: ['admin', 'enrollment', enrollmentId],
+    queryFn: () => apiClient.getEnrollment(enrollmentId),
+  });
 
-  useEffect(() => {
-    void loadDetail();
-  }, [loadDetail]);
-
-  if (!detail) {
-    return <div className="card">Loading enrollment status...</div>;
+  if (enrollmentQuery.isLoading || !enrollmentQuery.data) {
+    return (
+      <div className="card" role="status">
+        Loading enrollment status...
+      </div>
+    );
   }
 
+  const record = enrollmentQuery.data;
+
   const handleRevoke = async () => {
-    const res = await portalApi.revokeEnrollment(detail.enrollment_id);
-    setDetail(res.data);
+    await apiClient.revokeEnrollment(record.enrollment_id);
+    await queryClient.invalidateQueries({
+      queryKey: ['admin', 'enrollment', enrollmentId],
+    });
   };
 
   return (
-    <div>
-      <header className="page-header">
-        <h1>{t('admin.enrollment.detail.title')}</h1>
-      </header>
+    <div data-testid="admin-enrollment-detail-page">
+      <div style={{ marginBottom: '0.75rem' }}>
+        <Link to="/admin/nodes">{t('admin.nodeDetail.back')}</Link>
+      </div>
 
-      <section className="card" data-testid="enrollment-status-card">
-        <div className="alert alert-info" data-testid="enrollment-secret-gone-notice">
-          {t('admin.enrollment.detail.secretGone')}
+      <div className="page-header">
+        <div>
+          <h1>{t('admin.enrollment.detail.title')}</h1>
+          <p className="page-subtitle mono">ID: {record.enrollment_id}</p>
         </div>
+        <span className="badge badge-info" data-testid="enrollment-state-badge">
+          {t('admin.enrollment.detail.stateLabel', { state: record.state })}
+        </span>
+      </div>
 
-        <p data-testid="enrollment-state-display">
-          <strong>
-            {t('admin.enrollment.detail.stateLabel', { state: detail.state })}
-          </strong>
-        </p>
-        <p>
-          Enrollment ID: <code>{detail.enrollment_id}</code> ｜ Reserved Node ID:{' '}
-          <code>{detail.node_id}</code>
-        </p>
-        <p>
-          Name: <strong>{detail.name}</strong> ｜ Region: <strong>{detail.region}</strong>{' '}
-          ｜ Expires: <code>{detail.expires_at}</code>
-        </p>
+      <div
+        className="alert alert-warning"
+        role="status"
+        data-testid="enrollment-secret-gone-notice"
+      >
+        {t('admin.enrollment.detail.secretGone')}
+      </div>
 
-        <div className="btn-row" style={{ marginTop: 14 }}>
-          {detail.state === 'unused' && (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={() => void handleRevoke()}
-              data-testid="revoke-enrollment-btn"
-            >
-              {t('admin.enrollment.detail.revokeBtn')}
-            </button>
-          )}
-          <Link to="/admin/nodes/new" className="btn">
-            {t('nav.admin.addNode')}
-          </Link>
-        </div>
-      </section>
+      <div className="card">
+        <dl className="form-grid">
+          <div>
+            <dt style={{ fontWeight: 600 }}>Pre-classified Name</dt>
+            <dd>{record.name ?? '-'}</dd>
+          </div>
+          <div>
+            <dt style={{ fontWeight: 600 }}>Pre-classified Region</dt>
+            <dd>{record.region ?? '-'}</dd>
+          </div>
+          <div>
+            <dt style={{ fontWeight: 600 }}>Expires At (UTC)</dt>
+            <dd className="mono">{record.expires_at}</dd>
+          </div>
+          <div>
+            <dt style={{ fontWeight: 600 }}>Secret Available</dt>
+            <dd className="mono" data-testid="secret-available-flag">
+              false
+            </dd>
+          </div>
+        </dl>
+
+        {record.state === 'pending' && (
+          <button
+            type="button"
+            className="btn btn-danger"
+            data-testid="revoke-enrollment-btn"
+            onClick={() => void handleRevoke()}
+          >
+            {t('admin.enrollment.detail.revokeBtn')}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

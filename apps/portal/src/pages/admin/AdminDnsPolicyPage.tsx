@@ -1,309 +1,334 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { portalApi, useOperationPoller, type DnsPolicyState } from '../../api';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  apiClient,
+  ApiError,
+  buildDnsPolicyViewModel,
+  type OperationResource,
+} from '../../api';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n, type TranslationKey } from '../../i18n';
-import { normalizeAndValidateDomain, previewDnsMatch } from '../../lib/dns';
+import { normalizeAndValidateDomainInput, previewDnsDomainMatch } from '../../lib/dns';
 
 export function AdminDnsPolicyPage(): React.ReactElement {
-  const { t } = useI18n();
-  const [dnsState, setDnsState] = useState<DnsPolicyState | null>(null);
+  const { t, locale } = useI18n();
+  const queryClient = useQueryClient();
+
   const [domainInput, setDomainInput] = useState('');
-  const [actionInput, setActionInput] = useState<'block' | 'allow'>('block');
+  const [action, setAction] = useState<'block' | 'allow'>('block');
   const [includeSubdomains, setIncludeSubdomains] = useState(true);
-  const [reasonInput, setReasonInput] = useState('admin_rule');
-  const [ruleErrorKey, setRuleErrorKey] = useState<TranslationKey | null>(null);
+  const [reason, setReason] = useState('Reported phishing domain');
+  const [domainErrorKey, setDomainErrorKey] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<ApiError | null>(null);
+  const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
 
-  const [previewQuery, setPreviewQuery] = useState('sub.tracker.example.com');
+  const [previewQuery, setPreviewQuery] = useState('sub.example.com');
 
-  const loadDns = useCallback(async () => {
-    const res = await portalApi.getDnsPolicy();
-    setDnsState(res.data);
-  }, []);
-
-  const poller = useOperationPoller({
-    scope: 'admin',
-    onTerminal: () => {
-      void loadDns();
-    },
+  const dnsQuery = useQuery({
+    queryKey: ['admin', 'policy', 'dns'],
+    queryFn: () => apiClient.listPolicies(),
   });
 
-  useEffect(() => {
-    void loadDns();
-  }, [loadDns]);
+  const dns = dnsQuery.data ? buildDnsPolicyViewModel(dnsQuery.data) : null;
 
-  const previewResult = useMemo(() => {
-    if (!dnsState) return null;
-    return previewDnsMatch(previewQuery, dnsState.rules, true);
-  }, [dnsState, previewQuery]);
-
-  if (!dnsState) {
-    return <div className="card">Loading DNS policy...</div>;
+  if (dnsQuery.isLoading || !dns) {
+    return (
+      <div className="card" role="status">
+        Loading DNS policy...
+      </div>
+    );
   }
 
   const handleAddRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    const norm = normalizeAndValidateDomain(domainInput);
-    if (!norm.valid) {
-      setRuleErrorKey(`dns.error.${norm.errorCode ?? 'INVALID_LABEL'}` as TranslationKey);
+    setDomainErrorKey(null);
+    setApiError(null);
+
+    const validation = normalizeAndValidateDomainInput(domainInput);
+    if (!validation.valid) {
+      setDomainErrorKey(`dns.error.${validation.errorCode}`);
       return;
     }
-    setRuleErrorKey(null);
-    const res = await portalApi.addDnsRule(
-      {
-        profile_id: dnsState.profile_id,
-        domain: norm.canonicalDomain,
-        include_subdomains: includeSubdomains,
-        action: actionInput,
-        reason: reasonInput.trim() || 'admin_rule',
-      },
-      { ifMatch: dnsState.etag },
-    );
-    setDnsState(res.data);
-    setDomainInput('');
+
+    try {
+      const nextRules = [
+        {
+          rule_id: `ca60a69d-4247-4f93-9de4-${String(dns.rules.length + 20).padStart(12, '0')}`,
+          profile_id: 'standard',
+          domain: validation.canonicalDomain,
+          include_subdomains: includeSubdomains,
+          action,
+          reason:
+            action === 'allow' ? ('false_positive' as const) : ('admin_rule' as const),
+          revision: String(BigInt(dns.desired_revision) + 1n),
+        },
+        ...dns.rules,
+      ];
+
+      await apiClient.createPolicyRevision({
+        definition_id: dns.rule_set_definition_id,
+        type: 'domain_rule_set',
+        schema_version: 1,
+        reason,
+        payload: {
+          rules: nextRules,
+        },
+      });
+      setDomainInput('');
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policy', 'dns'] });
+    } catch (err) {
+      if (err instanceof ApiError) setApiError(err);
+    }
   };
 
-  const handlePublish = async () => {
-    const opRes = await portalApi.publishDnsPolicy();
-    poller.startTracking(opRes);
+  const handlePublishBundle = async () => {
+    setApiError(null);
+    try {
+      const ruleSetDef = dnsQuery.data?.items.find(
+        (d) => d.definition_id === dns.rule_set_definition_id,
+      );
+      const targetRevId =
+        ruleSetDef?.latest_revision?.revision_id ??
+        dns.active_revision_id ??
+        dns.rule_set_definition_id;
+      const op = await apiClient.activatePolicyRevision(
+        dns.rule_set_definition_id,
+        {
+          revision_id: targetRevId,
+          reason: 'Activate compiled DNS rule bundle',
+        },
+        `"${dns.rule_set_resource_version}"`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policy', 'dns'] });
+    } catch (err) {
+      if (err instanceof ApiError) setApiError(err);
+    }
   };
 
   const handleRollback = async () => {
-    const opRes = await portalApi.rollbackDnsPolicy();
-    poller.startTracking(opRes);
+    setApiError(null);
+    try {
+      const rollbackRevId =
+        dns.previous_revision_id ?? dns.active_revision_id ?? dns.rule_set_definition_id;
+      const op = await apiClient.activatePolicyRevision(
+        dns.rule_set_definition_id,
+        {
+          revision_id: rollbackRevId,
+          reason: 'Rollback to last_good DNS revision',
+        },
+        `"${dns.rule_set_resource_version}"`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policy', 'dns'] });
+    } catch (err) {
+      if (err instanceof ApiError) setApiError(err);
+    }
   };
 
+  const previewResult = previewDnsDomainMatch(
+    previewQuery,
+    dns.rules,
+    dns.threat_feeds.some((f) => f.enabled),
+  );
+
   return (
-    <div>
-      <header className="page-header">
-        <h1>{t('admin.dns.title')}</h1>
-        <p className="page-subtitle">{t('admin.dns.subtitle')}</p>
-      </header>
-
-      <OperationBanner
-        operation={poller.operation}
-        requestId={poller.requestId}
-        isPolling={poller.isPolling}
-        onDismiss={poller.reset}
-      />
-
-      <section className="card" aria-labelledby="dns-resolvers-heading">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 12,
-          }}
-        >
-          <h2 id="dns-resolvers-heading" style={{ margin: 0 }}>
-            {t('admin.dns.resolversTitle')} (Active rev #{dnsState.active_revision} /
-            Desired rev #{dnsState.desired_revision})
-          </h2>
-          <div className="btn-row">
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => void handlePublish()}
-              data-testid="publish-dns-btn"
-            >
-              {t('admin.dns.publishBtn')}
-            </button>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => void handleRollback()}
-              data-testid="rollback-dns-btn"
-            >
-              {t('admin.dns.rollbackBtn')}
-            </button>
-          </div>
+    <div data-testid="admin-dns-policy-page">
+      <div className="page-header">
+        <div>
+          <h1>{t('admin.dns.title')}</h1>
+          <p className="page-subtitle">{t('admin.dns.subtitle')}</p>
         </div>
-        <div className="table-wrapper" style={{ marginTop: 12 }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th scope="col">Resolver</th>
-                <th scope="col">Overlay IPv4</th>
-                <th scope="col">Applied Revision</th>
-                <th scope="col">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dnsState.resolvers.map((res) => (
-                <tr key={res.resolver_id}>
-                  <td>
-                    <code>{res.name}</code>
-                  </td>
-                  <td>
-                    <code>{res.ipv4}</code>
-                  </td>
-                  <td>rev #{res.applied_revision}</td>
-                  <td>
-                    <span className="badge badge-success">{res.status}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            data-testid="dns-publish-bundle-btn"
+            onClick={() => void handlePublishBundle()}
+          >
+            {t('admin.dns.publishBtn')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-testid="dns-rollback-btn"
+            onClick={() => void handleRollback()}
+          >
+            {t('admin.dns.rollbackBtn')} ({dns.last_good_revision})
+          </button>
+        </div>
+      </div>
+
+      <OperationBanner operation={activeOp} onDismiss={() => setActiveOp(null)} />
+
+      {apiError && (
+        <div className="alert alert-danger" role="alert">
+          <strong>{apiError.code}</strong>: {apiError.messageForLocale(locale)}
+        </div>
+      )}
+
+      {/* Resolver status */}
+      <section className="card">
+        <h2>{t('admin.dns.resolversTitle')}</h2>
+        <div className="stat-grid" style={{ marginTop: '0.75rem' }}>
+          {dns.resolvers.map((res) => (
+            <div key={res.resolver_id} className="stat-card">
+              <div style={{ fontWeight: 600 }}>{res.name}</div>
+              <div className="mono" style={{ fontSize: '0.8rem' }}>
+                Applied: {res.applied_revision} / Last Good: {res.last_good_revision}
+              </div>
+              <div>
+                <span className="badge badge-success">{res.status}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="card" aria-labelledby="dns-preview-heading">
-        <h2 id="dns-preview-heading">{t('admin.dns.previewTitle')}</h2>
-        <div className="form-field" style={{ marginBottom: 12 }}>
+      {/* Add Domain Rule Form */}
+      <section className="card">
+        <h2>{t('admin.dns.addRuleTitle')}</h2>
+        {domainErrorKey && (
+          <div
+            className="alert alert-danger"
+            role="alert"
+            data-testid="dns-domain-validation-error"
+            style={{ marginTop: '0.5rem' }}
+          >
+            {t(domainErrorKey as TranslationKey)}
+          </div>
+        )}
+
+        <form onSubmit={(e) => void handleAddRule(e)} style={{ marginTop: '0.75rem' }}>
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="dns-domain-input">{t('admin.dns.domainInput')}</label>
+              <input
+                id="dns-domain-input"
+                data-testid="dns-domain-input"
+                className="mono"
+                value={domainInput}
+                onChange={(e) => setDomainInput(e.target.value)}
+                placeholder="bad-tracker.example.com"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="dns-action-select">{t('admin.dns.actionInput')}</label>
+              <select
+                id="dns-action-select"
+                value={action}
+                onChange={(e) => setAction(e.target.value as 'block' | 'allow')}
+              >
+                <option value="block">{t('admin.dns.action.block')}</option>
+                <option value="allow">{t('admin.dns.action.allow')}</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="dns-reason-input">{t('admin.dns.reasonInput')}</label>
+              <input
+                id="dns-reason-input"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                checked={includeSubdomains}
+                onChange={(e) => setIncludeSubdomains(e.target.checked)}
+                style={{ width: 'auto' }}
+              />
+              {t('admin.dns.includeSubdomains')}
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary"
+            data-testid="dns-add-rule-btn"
+          >
+            {t('admin.dns.addRuleSubmit')}
+          </button>
+        </form>
+      </section>
+
+      {/* Match Preview Tool (§12.4) */}
+      <section className="card" data-testid="dns-preview-section">
+        <h2>{t('admin.dns.previewTitle')}</h2>
+        <div className="form-group" style={{ marginTop: '0.75rem' }}>
           <label htmlFor="dns-preview-input">{t('admin.dns.previewInput')}</label>
           <input
             id="dns-preview-input"
-            type="text"
+            data-testid="dns-preview-input"
+            className="mono"
             value={previewQuery}
             onChange={(e) => setPreviewQuery(e.target.value)}
-            data-testid="dns-preview-input"
           />
         </div>
+
         {previewResult && (
           <div
-            className={
-              !previewResult.validQuery
-                ? 'alert alert-danger'
-                : previewResult.outcome.startsWith('blocked')
-                  ? 'alert alert-warning'
-                  : 'alert alert-success'
-            }
+            className={`alert ${
+              previewResult.outcome.startsWith('blocked')
+                ? 'alert-danger'
+                : 'alert-success'
+            }`}
             data-testid="dns-preview-result"
           >
-            {!previewResult.validQuery ? (
-              <strong>
-                {t(
-                  `dns.error.${previewResult.errorCode ?? 'INVALID_LABEL'}` as TranslationKey,
-                )}
-              </strong>
-            ) : (
-              <>
-                <div>
-                  <strong>
-                    {t(
-                      `admin.dns.previewOutcome.${previewResult.outcome}` as TranslationKey,
-                    )}
-                  </strong>{' '}
-                  (Canonical: <code>{previewResult.canonicalQuery}</code>)
-                </div>
-                {previewResult.matchedRule && (
-                  <div style={{ fontSize: '0.86rem', marginTop: 4 }}>
-                    Matched Rule: <code>{previewResult.matchedRule.domain}</code> (
-                    include_subdomains:{' '}
-                    {String(previewResult.matchedRule.include_subdomains)}, reason:{' '}
-                    {previewResult.matchedRule.reason})
-                  </div>
-                )}
-                <div style={{ fontSize: '0.84rem', marginTop: 6 }}>
-                  {t('admin.dns.previewIsolationWarning')}
-                </div>
-              </>
-            )}
+            <div style={{ fontWeight: 700 }}>
+              {t(`admin.dns.previewOutcome.${previewResult.outcome}` as TranslationKey)}
+            </div>
+            <div className="mono" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
+              Normalized query: {previewResult.canonicalQuery} · Source:{' '}
+              {previewResult.matchedRule?.domain ?? previewResult.outcome}
+            </div>
           </div>
         )}
+
+        <div className="alert alert-warning" style={{ marginBottom: 0 }}>
+          {t('admin.dns.previewIsolationWarning')}
+        </div>
       </section>
 
-      <form
-        className="card"
-        aria-labelledby="add-dns-rule-heading"
-        onSubmit={(e) => void handleAddRule(e)}
-      >
-        <h2 id="add-dns-rule-heading">{t('admin.dns.addRuleTitle')}</h2>
-        {ruleErrorKey && (
-          <div className="alert alert-danger" role="alert" data-testid="dns-rule-error">
-            {t(ruleErrorKey)}
-          </div>
-        )}
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="dns-domain-input">{t('admin.dns.domainInput')}</label>
-            <input
-              id="dns-domain-input"
-              type="text"
-              value={domainInput}
-              onChange={(e) => setDomainInput(e.target.value)}
-              placeholder="example.com"
-              data-testid="dns-domain-input"
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="dns-action-select">{t('admin.dns.actionInput')}</label>
-            <select
-              id="dns-action-select"
-              value={actionInput}
-              onChange={(e) => setActionInput(e.target.value as 'block' | 'allow')}
-            >
-              <option value="block">{t('admin.dns.action.block')}</option>
-              <option value="allow">{t('admin.dns.action.allow')}</option>
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="dns-reason-input">{t('admin.dns.reasonInput')}</label>
-            <input
-              id="dns-reason-input"
-              type="text"
-              value={reasonInput}
-              onChange={(e) => setReasonInput(e.target.value)}
-            />
-          </div>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label
-            htmlFor="dns-subdomains-checkbox"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-          >
-            <input
-              id="dns-subdomains-checkbox"
-              type="checkbox"
-              checked={includeSubdomains}
-              onChange={(e) => setIncludeSubdomains(e.target.checked)}
-            />
-            <span>{t('admin.dns.includeSubdomains')}</span>
-          </label>
-        </div>
-        <button type="submit" className="btn btn-primary" data-testid="add-dns-rule-btn">
-          {t('admin.dns.addRuleSubmit')}
-        </button>
-
-        <div className="table-wrapper" style={{ marginTop: 18 }}>
+      {/* Current Rules List */}
+      <section className="card">
+        <h2>Active & Draft Rules ({dns.rules.length})</h2>
+        <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
           <table className="data-table" data-testid="dns-rules-table">
             <thead>
               <tr>
-                <th scope="col">Domain</th>
-                <th scope="col">Action</th>
-                <th scope="col">include_subdomains</th>
-                <th scope="col">Reason</th>
-                <th scope="col">Revision</th>
+                <th>Domain (Normalized)</th>
+                <th>Action</th>
+                <th>include_subdomains</th>
+                <th>Reason</th>
               </tr>
             </thead>
             <tbody>
-              {dnsState.rules.map((r) => (
+              {dns.rules.map((r) => (
                 <tr key={r.rule_id}>
-                  <td>
-                    <code>{r.domain}</code>
-                  </td>
+                  <td className="mono">{r.domain}</td>
                   <td>
                     <span
-                      className={
-                        r.action === 'block'
-                          ? 'badge badge-danger'
-                          : 'badge badge-success'
-                      }
+                      className={`badge ${
+                        r.action === 'block' ? 'badge-danger' : 'badge-success'
+                      }`}
                     >
                       {r.action}
                     </span>
                   </td>
-                  <td>{r.include_subdomains ? 'true' : 'false'}</td>
+                  <td className="mono">{String(r.include_subdomains)}</td>
                   <td>{r.reason}</td>
-                  <td>#{r.revision}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </form>
+      </section>
     </div>
   );
 }
