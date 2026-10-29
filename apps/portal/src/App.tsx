@@ -48,6 +48,14 @@ export function AppRoutes(): React.ReactElement {
             }
           />
           <Route
+            path="admin/overview"
+            element={
+              <RoleGuard requiredRole="admin">
+                <AdminOverviewPage />
+              </RoleGuard>
+            }
+          />
+          <Route
             path="admin/nodes"
             element={
               <RoleGuard requiredRole="admin">
@@ -131,6 +139,14 @@ export function AppRoutes(): React.ReactElement {
           {/* Member routes */}
           <Route
             path="member"
+            element={
+              <RoleGuard requiredRole="member">
+                <MemberServicePage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="member/service"
             element={
               <RoleGuard requiredRole="member">
                 <MemberServicePage />

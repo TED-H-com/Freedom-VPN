@@ -2,23 +2,28 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, type EntitlementState } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n } from '../../i18n';
 import { formatBytesDual } from '../../lib/decimal';
 
 export function AdminMembersListPage(): React.ReactElement {
   const { t } = useI18n();
   const [stateFilter, setStateFilter] = useState('all');
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([]);
 
   const membersQuery = useQuery({
-    queryKey: ['admin', 'members', stateFilter],
+    queryKey: ['admin', 'members', stateFilter, cursor],
     queryFn: () =>
       apiClient.listMembers({
         entitlement_state:
           stateFilter !== 'all' ? (stateFilter as EntitlementState) : undefined,
+        cursor,
       }),
   });
 
   const items = membersQuery.data?.items ?? [];
+  const nextCursor = membersQuery.data?.next_cursor ?? null;
 
   return (
     <div data-testid="admin-members-list-page">
@@ -29,13 +34,19 @@ export function AdminMembersListPage(): React.ReactElement {
         </div>
       </div>
 
+      <ApiErrorAlert error={membersQuery.error} testId="admin-members-error" />
+
       <div className="card">
         <div className="form-group" style={{ maxWidth: '300px', marginBottom: '1rem' }}>
           <label htmlFor="member-state-filter">{t('admin.members.filter.state')}</label>
           <select
             id="member-state-filter"
             value={stateFilter}
-            onChange={(e) => setStateFilter(e.target.value)}
+            onChange={(e) => {
+              setStateFilter(e.target.value);
+              setCursor(undefined);
+              setCursorHistory([]);
+            }}
           >
             <option value="all">{t('admin.nodes.filter.all')}</option>
             <option value="active">active</option>
@@ -44,6 +55,7 @@ export function AdminMembersListPage(): React.ReactElement {
             <option value="past_due">past_due</option>
             <option value="expired">expired</option>
             <option value="suspended">suspended</option>
+            <option value="closed">closed</option>
           </select>
         </div>
 
@@ -124,6 +136,49 @@ export function AdminMembersListPage(): React.ReactElement {
             </tbody>
           </table>
         </div>
+
+        {(cursorHistory.length > 0 || nextCursor) && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginTop: '1rem',
+            }}
+            data-testid="members-pagination"
+          >
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid="members-prev-page-btn"
+              disabled={cursorHistory.length === 0}
+              onClick={() => {
+                const prev = cursorHistory[cursorHistory.length - 1];
+                setCursorHistory((h) => h.slice(0, -1));
+                setCursor(prev);
+              }}
+            >
+              {t('common.pagination.prev')}
+            </button>
+            <span className="mono" style={{ fontSize: '0.8rem' }}>
+              cursor: {cursor ?? 'first'}
+            </span>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid="members-next-page-btn"
+              disabled={!nextCursor}
+              onClick={() => {
+                if (nextCursor) {
+                  setCursorHistory((h) => [...h, cursor]);
+                  setCursor(nextCursor);
+                }
+              }}
+            >
+              {t('common.pagination.next')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

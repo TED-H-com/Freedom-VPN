@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   apiClient,
-  ApiError,
   buildDnsPolicyViewModel,
   type OperationResource,
+  type PolicyRevisionCreate,
 } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { OperationBanner } from '../../components/common/OperationBanner';
+import { PolicyActivationCard } from '../../components/common/PolicyActivationCard';
 import { useI18n, type TranslationKey } from '../../i18n';
 import { normalizeAndValidateDomainInput, previewDnsDomainMatch } from '../../lib/dns';
 
 export function AdminDnsPolicyPage(): React.ReactElement {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
 
   const [domainInput, setDomainInput] = useState('');
@@ -19,19 +21,34 @@ export function AdminDnsPolicyPage(): React.ReactElement {
   const [includeSubdomains, setIncludeSubdomains] = useState(true);
   const [reason, setReason] = useState('Reported phishing domain');
   const [domainErrorKey, setDomainErrorKey] = useState<string | null>(null);
-  const [apiError, setApiError] = useState<ApiError | null>(null);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
 
   const [previewQuery, setPreviewQuery] = useState('sub.example.com');
 
+  const [extraSchemaType, setExtraSchemaType] = useState<
+    'dns_profile' | 'threat_feed' | 'release_support'
+  >('dns_profile');
+  const [extraReason, setExtraReason] = useState(
+    'Operator created policy revision from portal',
+  );
+
   const dnsQuery = useQuery({
-    queryKey: ['admin', 'policy', 'dns'],
+    queryKey: ['admin', 'policies'],
     queryFn: () => apiClient.listPolicies(),
   });
 
+  if (dnsQuery.error) {
+    return (
+      <div data-testid="admin-dns-policy-page">
+        <ApiErrorAlert error={dnsQuery.error} testId="admin-dns-error" />
+      </div>
+    );
+  }
+
   const dns = dnsQuery.data ? buildDnsPolicyViewModel(dnsQuery.data) : null;
 
-  if (dnsQuery.isLoading || !dns) {
+  if (dnsQuery.isLoading || !dns || !dnsQuery.data) {
     return (
       <div className="card" role="status">
         Loading DNS policy...
@@ -51,6 +68,7 @@ export function AdminDnsPolicyPage(): React.ReactElement {
     }
 
     try {
+      const ruleSetDef = dnsQuery.data.items.find((d) => d.type === 'domain_rule_set');
       const nextRules = [
         {
           rule_id: `ca60a69d-4247-4f93-9de4-${String(dns.rules.length + 20).padStart(12, '0')}`,
@@ -66,7 +84,9 @@ export function AdminDnsPolicyPage(): React.ReactElement {
       ];
 
       await apiClient.createPolicyRevision({
-        definition_id: dns.rule_set_definition_id,
+        ...(ruleSetDef
+          ? { definition_id: ruleSetDef.definition_id }
+          : { code: 'standard-domain-rules' }),
         type: 'domain_rule_set',
         schema_version: 1,
         reason,
@@ -75,9 +95,9 @@ export function AdminDnsPolicyPage(): React.ReactElement {
         },
       });
       setDomainInput('');
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'policy', 'dns'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policies'] });
     } catch (err) {
-      if (err instanceof ApiError) setApiError(err);
+      setApiError(err);
     }
   };
 
@@ -100,9 +120,9 @@ export function AdminDnsPolicyPage(): React.ReactElement {
         `"${dns.rule_set_resource_version}"`,
       );
       setActiveOp(op);
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'policy', 'dns'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policies'] });
     } catch (err) {
-      if (err instanceof ApiError) setApiError(err);
+      setApiError(err);
     }
   };
 
@@ -120,9 +140,95 @@ export function AdminDnsPolicyPage(): React.ReactElement {
         `"${dns.rule_set_resource_version}"`,
       );
       setActiveOp(op);
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'policy', 'dns'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policies'] });
     } catch (err) {
-      if (err instanceof ApiError) setApiError(err);
+      setApiError(err);
+    }
+  };
+
+  const handleCreateExtraPolicyRevision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setApiError(null);
+    try {
+      const existingDef = dnsQuery.data?.items.find((d) => d.type === extraSchemaType);
+      let req: PolicyRevisionCreate;
+      if (extraSchemaType === 'dns_profile') {
+        const ruleSetDef = dnsQuery.data?.items.find((d) => d.type === 'domain_rule_set');
+        const feedDef = dnsQuery.data?.items.find((d) => d.type === 'threat_feed');
+        req = {
+          ...(existingDef
+            ? { definition_id: existingDef.definition_id }
+            : { code: 'standard' }),
+          type: 'dns_profile',
+          schema_version: 1,
+          reason: extraReason,
+          payload: {
+            profile_code: 'standard',
+            display_name: {
+              'zh-TW': '標準 DNS 防護設定檔',
+              en: 'Standard DNS Protection Profile',
+            },
+            domain_rule_set_revision_ids: ruleSetDef?.active_revision_id
+              ? [ruleSetDef.active_revision_id]
+              : [],
+            threat_feed_revision_ids: feedDef?.active_revision_id
+              ? [feedDef.active_revision_id]
+              : [],
+            block_response: 'nxdomain',
+            blocked_ttl_seconds: 60,
+          },
+        };
+      } else if (extraSchemaType === 'threat_feed') {
+        req = {
+          ...(existingDef
+            ? { definition_id: existingDef.definition_id }
+            : { code: 'urlhaus-malware' }),
+          type: 'threat_feed',
+          schema_version: 1,
+          reason: extraReason,
+          payload: {
+            provider: 'abuse-ch-mirror',
+            feed_code: 'urlhaus-malware',
+            license_name: 'CC0-1.0',
+            license_url: 'https://creativecommons.org/publicdomain/zero/1.0/',
+            commercial_use_basis: 'Public domain dedication (CC0 1.0)',
+            attribution: 'URLhaus / abuse.ch',
+            source_url: 'https://feeds.example.com/threat/urlhaus-domains.txt',
+            format: 'domain_list',
+            categories: ['malware', 'phishing'],
+            content_sha256:
+              'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            max_size_bytes: '10485760',
+            valid_from: '2026-10-01T00:00:00Z',
+            valid_until: '2026-12-31T23:59:59Z',
+            update_interval_seconds: 86400,
+          },
+        };
+      } else {
+        const currentPayload =
+          existingDef?.active_revision?.type === 'release_support'
+            ? existingDef.active_revision.payload
+            : {
+                approved_release_ids: ['0195f100-0000-7000-8000-000000000010'],
+                revoked_release_ids: [],
+                minimum_serving_version: {
+                  serving_release_ids: ['0195f100-0000-7000-8000-000000000010'],
+                },
+              };
+        req = {
+          ...(existingDef
+            ? { definition_id: existingDef.definition_id }
+            : { code: 'fleet-release-support' }),
+          type: 'release_support',
+          schema_version: 1,
+          reason: extraReason,
+          payload: currentPayload,
+        };
+      }
+      await apiClient.createPolicyRevision(req);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'policies'] });
+    } catch (err) {
+      setApiError(err);
     }
   };
 
@@ -159,13 +265,15 @@ export function AdminDnsPolicyPage(): React.ReactElement {
         </div>
       </div>
 
-      <OperationBanner operation={activeOp} onDismiss={() => setActiveOp(null)} />
+      <OperationBanner
+        operation={activeOp}
+        onDismiss={() => setActiveOp(null)}
+        onTerminal={() => {
+          void queryClient.invalidateQueries({ queryKey: ['admin', 'policies'] });
+        }}
+      />
 
-      {apiError && (
-        <div className="alert alert-danger" role="alert">
-          <strong>{apiError.code}</strong>: {apiError.messageForLocale(locale)}
-        </div>
-      )}
+      <ApiErrorAlert error={apiError} testId="dns-api-error" />
 
       {/* Resolver status */}
       <section className="card">
@@ -329,6 +437,62 @@ export function AdminDnsPolicyPage(): React.ReactElement {
           </table>
         </div>
       </section>
+
+      {/* Create Revision for dns_profile / threat_feed / release_support */}
+      <section className="card" data-testid="extra-policy-creator-card">
+        <h2>Create DNS Profile / Threat Feed / Release Support Revision</h2>
+        <form
+          onSubmit={(e) => void handleCreateExtraPolicyRevision(e)}
+          style={{ marginTop: '0.75rem' }}
+        >
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="extra-policy-schema-select">
+                {t('admin.policies.schemaSelectLabel')}
+              </label>
+              <select
+                id="extra-policy-schema-select"
+                data-testid="extra-policy-schema-select"
+                value={extraSchemaType}
+                onChange={(e) =>
+                  setExtraSchemaType(
+                    e.target.value as 'dns_profile' | 'threat_feed' | 'release_support',
+                  )
+                }
+              >
+                <option value="dns_profile">dns_profile</option>
+                <option value="threat_feed">threat_feed</option>
+                <option value="release_support">release_support</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="extra-policy-reason-input">Reason</label>
+              <input
+                id="extra-policy-reason-input"
+                value={extraReason}
+                onChange={(e) => setExtraReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="btn btn-secondary"
+            data-testid="create-extra-policy-revision-btn"
+          >
+            {t('admin.policies.createRevisionTitle')}
+          </button>
+        </form>
+      </section>
+
+      <PolicyActivationCard
+        definitions={dnsQuery.data.items}
+        allowedTypes={[
+          'domain_rule_set',
+          'dns_profile',
+          'threat_feed',
+          'release_support',
+        ]}
+      />
     </div>
   );
 }

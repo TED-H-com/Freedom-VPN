@@ -9,6 +9,7 @@ import {
   type NodeSummaryItem,
   type PublicationIntent,
 } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n, type TranslationKey } from '../../i18n';
 
 export function AdminNodesListPage(): React.ReactElement {
@@ -16,19 +17,23 @@ export function AdminNodesListPage(): React.ReactElement {
   const [search, setSearch] = useState('');
   const [pubFilter, setPubFilter] = useState<string>('all');
   const [controlFilter, setControlFilter] = useState<string>('all');
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([]);
 
   const nodesQuery = useQuery({
-    queryKey: ['admin', 'nodes', pubFilter, controlFilter],
+    queryKey: ['admin', 'nodes', pubFilter, controlFilter, cursor],
     queryFn: () =>
       apiClient.listNodes({
         publication_intent:
           pubFilter !== 'all' ? (pubFilter as PublicationIntent) : undefined,
         control_status:
           controlFilter !== 'all' ? (controlFilter as ControlPlaneStatus) : undefined,
+        cursor,
       }),
   });
 
   const allItems = nodesQuery.data?.items ?? [];
+  const nextCursor = nodesQuery.data?.next_cursor ?? null;
   const filteredItems = allItems.filter((node) => {
     if (!search.trim()) return true;
     const q = search.trim().toLowerCase();
@@ -80,6 +85,8 @@ export function AdminNodesListPage(): React.ReactElement {
         </div>
       </div>
 
+      <ApiErrorAlert error={nodesQuery.error} testId="admin-nodes-error" />
+
       <div className="card">
         <div className="form-grid" style={{ marginBottom: '1rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
@@ -98,7 +105,11 @@ export function AdminNodesListPage(): React.ReactElement {
             <select
               id="node-pub-filter"
               value={pubFilter}
-              onChange={(e) => setPubFilter(e.target.value)}
+              onChange={(e) => {
+                setPubFilter(e.target.value);
+                setCursor(undefined);
+                setCursorHistory([]);
+              }}
             >
               <option value="all">{t('admin.nodes.filter.all')}</option>
               <option value="published">published</option>
@@ -112,7 +123,11 @@ export function AdminNodesListPage(): React.ReactElement {
             <select
               id="node-ctrl-filter"
               value={controlFilter}
-              onChange={(e) => setControlFilter(e.target.value)}
+              onChange={(e) => {
+                setControlFilter(e.target.value);
+                setCursor(undefined);
+                setCursorHistory([]);
+              }}
             >
               <option value="all">{t('admin.nodes.filter.all')}</option>
               <option value="online">online</option>
@@ -224,6 +239,49 @@ export function AdminNodesListPage(): React.ReactElement {
             </tbody>
           </table>
         </div>
+
+        {(cursorHistory.length > 0 || nextCursor) && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginTop: '1rem',
+            }}
+            data-testid="nodes-pagination"
+          >
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid="nodes-prev-page-btn"
+              disabled={cursorHistory.length === 0}
+              onClick={() => {
+                const prev = cursorHistory[cursorHistory.length - 1];
+                setCursorHistory((h) => h.slice(0, -1));
+                setCursor(prev);
+              }}
+            >
+              {t('common.pagination.prev')}
+            </button>
+            <span className="mono" style={{ fontSize: '0.8rem' }}>
+              cursor: {cursor ?? 'first'}
+            </span>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid="nodes-next-page-btn"
+              disabled={!nextCursor}
+              onClick={() => {
+                if (nextCursor) {
+                  setCursorHistory((h) => [...h, cursor]);
+                  setCursor(nextCursor);
+                }
+              }}
+            >
+              {t('common.pagination.next')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

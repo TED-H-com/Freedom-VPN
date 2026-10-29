@@ -78,8 +78,16 @@ export const en: Record<TranslationKey, string> = {
   'op.partiallySucceeded':
     'Partially Succeeded (see step details and lease constraints below)',
   'op.failed': 'Apply Failed',
+  'op.superseded': 'Superseded by a newer operation',
   'op.routeWithdrawnDeviceUnconfirmed':
     'Central routes withdrawn; device revocation unconfirmed / bounded by lease',
+  'api.error.title': 'API Request Error',
+  'api.error.codeLabel': 'Error Code (code): {code}',
+  'api.error.requestIdLabel': 'Request ID (request_id): {requestId}',
+  'api.error.retryAfterNotice':
+    'Rate limited or dependency unavailable; please retry after {seconds} seconds (Retry-After: {seconds}s)',
+  'common.nextPage': 'Load Next Page (Next Cursor)',
+  'common.resetPage': 'First Page',
   'op.idLabel': 'Operation ID (operation_id)',
   'op.requestIdLabel': 'Request ID (request_id)',
   'op.generationsLabel':
@@ -481,4 +489,67 @@ export const en: Record<TranslationKey, string> = {
   'member.dns.falsePositiveTitle': 'Reporting False Positives',
   'member.dns.falsePositiveBody':
     'If a legitimate domain is mistakenly blocked, please send the domain name (never send full URLs with private paths) to our operator team at support@example.com for allowlist review.',
+
+  // Wave 3 Live Control Plane Additions
+  'member.service.closedBanner':
+    'Your account and service entitlement are closed (account_status: closed). All device authorizations are revoked; billing and audit records are retained per policy.',
+  'member.service.usageUnavailableNotice':
+    'Latest usage rollup is currently unavailable (does not affect your service status view).',
+  'member.billing.planSelectLabel': 'Select Subscription Plan (Plan ID)',
+  'member.billing.retryCheckoutBtn': 'Retry Checkout with Same Idempotency-Key',
+  'member.devices.addGuideTitle': 'How to Add & Authorize a Device (§7.3, §9.4)',
+  'member.devices.addGuideBody':
+    'Install the official NetBird client on your new device and sign in with SSO using this account. Control plane creates an authorization operation (202 Accepted) and completes peer group synchronization in the background.',
+  'admin.nodeDetail.pubActions.unpublishBtn': 'Set Unpublished (Unpublish)',
+  'admin.nodeDetail.retireSectionTitle': 'Retire Node from Service (DELETE)',
+  'admin.nodeDetail.retireNote':
+    'Retiring revokes certificates, withdraws routes, and marks the node retired; any in-flight update batch target transitions to cancelled (§13.12).',
+  'admin.nodeDetail.retireReasonLabel': 'Retirement Reason',
+  'admin.nodeDetail.retireBtn': 'Retire Node',
+  'admin.nodeDetail.editForm.clearCapacity': 'Clear Node Capacity Cap (clear_capacity)',
+  'admin.enrollment.form.delivery': 'Delivery Mode (delivery)',
+  'admin.enrollment.form.deliveryInstaller':
+    'Installer Script (installer — default 15m TTL)',
+  'admin.enrollment.form.deliveryPreinstalled':
+    'Pre-installed Appliance (preinstalled — default 7d TTL)',
+  'admin.enrollment.form.reinstallNodeId':
+    'Reinstall Existing Node ID (optional node_id, issues new incarnation, AT07)',
+  'admin.updates.registerReleaseTitle': 'Register Signed Release (§14.2)',
+  'admin.updates.registerReleaseBtn': 'Register Release',
+  'admin.updates.needsAttentionBadge': 'Needs Attention (needs_attention)',
+  'admin.updates.unconfirmedBadge': 'Unconfirmed (unconfirmed)',
+  'admin.updates.noBatchSelected':
+    'No update batch is currently active or selected. Select a target release above and click "Update All Nodes" to start a batch.',
+  'admin.memberDetail.patchSection':
+    'Edit Member Device Limit Override & Notes (PATCH /admin/members/{id}, If-Match)',
+  'admin.memberDetail.deviceLimitOverrideLabel':
+    'Member Device Limit Override (device_limit_override, 1–20)',
+  'admin.memberDetail.clearDeviceLimitOverride':
+    'Clear Device Limit Override (Revert to Plan Default)',
+  'admin.memberDetail.notesLabel': 'Operator Internal Notes (notes)',
+  'admin.memberDetail.savePatchBtn': 'Save Member Settings (If-Match)',
+  'admin.fup.overridesTitle': 'Per-Member Temporary Fair-Use Overrides (§11.1)',
+  'admin.fup.addOverrideBtn': '+ Add Temporary Override',
+  'admin.fup.planSectionTitle': 'Create Plan Policy Revision (schema: plan)',
+  'admin.fup.createPlanBtn': 'Create Plan Revision',
+  'admin.policies.listTitle': 'Registered Policy Revisions & Activation',
+  'admin.policies.activateBtn': 'Preview Diff & Activate',
+  'admin.policies.confirmDialogTitle': 'Confirm Policy Revision Activation & Diff',
+  'admin.policies.confirmActivateBtn': 'Confirm & Activate (Send If-Match)',
+  'admin.policies.cancelActivateBtn': 'Cancel',
+  'admin.dns.otherSchemasTitle':
+    'DNS Profile, Threat Feed & Release Support Revisions (dns_profile / threat_feed / release_support)',
+  'common.pagination.prev': '← Previous Page',
+  'common.pagination.next': 'Next Page →',
+  'member.devices.addGuide':
+    'How to Add & Authorize a Device (§7.3, §9.4): Install the official NetBird client on your new device and sign in with SSO using this account. Control plane creates an authorization operation (202 Accepted) and completes peer group synchronization in the background.',
+  'admin.nodeDetail.pubActions.retireBtn': 'Retire Node',
+  'admin.memberDetail.deviceLimitLabel': 'Display Name (display_name)',
+  'admin.memberDetail.clearDeviceLimit': 'Member Group IDs (comma-separated)',
+  'admin.fup.overrideMemberId': 'Member ID (member_id)',
+  'admin.fup.overrideValidUntil': 'Valid Until (valid_until, UTC)',
+  'admin.policies.schemaSelectLabel': 'Select Policy Schema Type',
+  'admin.policies.createRevisionTitle': 'Create Policy Revision',
+  'admin.updates.manifestUrlLabel': 'Manifest URL (Trusted Release Store)',
+  'admin.updates.manifestJsonLabel': 'Signed Manifest Envelope JSON',
 };

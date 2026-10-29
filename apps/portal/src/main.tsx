@@ -17,15 +17,14 @@ const queryClient = new QueryClient({
 });
 
 async function enableMocking(): Promise<void> {
-  const mockEnv = import.meta.env.VITE_API_MOCK;
-  const shouldMock = mockEnv === '1' || (import.meta.env.DEV && mockEnv !== '0');
-  if (!shouldMock) {
-    return;
+  if (!import.meta.env.PROD) {
+    if (import.meta.env.VITE_API_MOCK === '1') {
+      const { worker } = await import('./mocks/browser');
+      await worker.start({
+        onUnhandledRequest: 'bypass',
+      });
+    }
   }
-  const { worker } = await import('./mocks/browser');
-  await worker.start({
-    onUnhandledRequest: 'bypass',
-  });
 }
 
 void enableMocking().then(() => {
