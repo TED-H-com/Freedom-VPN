@@ -2422,6 +2422,12 @@ type DesiredState struct {
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
 	PublicationIntent PublicationIntent `json:"publication_intent"`
 
+	// RevokedReleaseIds Releases barred from installation and serving (§13.4, D-034).
+	// A node must refuse to install and must stop serving any listed release.
+	// Absent and empty both mean no additional revocations; neither widens
+	// the serving/allowed release intersections enforced by the updater.
+	RevokedReleaseIds *[]openapi_types.UUID `json:"revoked_release_ids,omitempty"`
+
 	// SafetyProfile Fixed isolation baseline profile, for example `internet-only-v1`. No policy can relax it.
 	SafetyProfile string                    `json:"safety_profile"`
 	SchemaVersion DesiredStateSchemaVersion `json:"schema_version"`
@@ -4526,8 +4532,14 @@ type UpdateResult struct {
 	MemberForwardingEnabled bool                                  `json:"member_forwarding_enabled"`
 	NodeId                  openapi_types.UUID                    `json:"node_id"`
 	PayloadHash             string                                `json:"payload_hash"`
-	PolicyGeneration        decstr.U64                            `json:"policy_generation"`
-	PreviousReleaseId       nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
+
+	// PolicyGeneration The desired-state config_generation actually applied when this result
+	// was produced (§13.10.3, §14.7), not the update job generation or the
+	// newest received desired state. Component policy_refs belong to desired
+	// state; they do not replace this applied configuration generation.
+	// This member was already required in the v1 contract and remains so.
+	PolicyGeneration  decstr.U64                            `json:"policy_generation"`
+	PreviousReleaseId nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
 
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
 	PublicationIntent  PublicationIntent              `json:"publication_intent"`

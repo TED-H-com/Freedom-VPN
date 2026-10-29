@@ -201,6 +201,19 @@ fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
   `node_capacity`, `dns` resolvers (ISO04) and the current `update` intent
   (§13.10.2), so the node gets the policy content it enforces, not only
   replaceable references (§14.7).
+  Optional `revoked_release_ids` is a unique UUID array signed with the rest of
+  the object (D-034). Absent and empty mean no additional revocations. A node
+  must refuse installation and stop serving any listed release. This never
+  widens the existing serving/allowed release intersections. Central services
+  must keep revoked releases disjoint from approved and serving releases.
+- **Update result (§13.10.3).** `policy_generation` identifies the desired-state
+  `config_generation` actually applied when the result was produced. It must
+  not be filled from the job's `generation` or merely the newest received
+  desired state. This resolves the updater's previous config-generation alias
+  ambiguity. The field already exists as required on main; this revision
+  preserves that contract and Go value type. `policy_refs` exists on desired
+  state, not on UpdateResult. Making this field optional or adding policy_refs
+  would require a separate explicit contract decision.
 - **Serving lease (§16.3).** `lease_id`, node and incarnation,
   `authorization_generation`, `config_generation`, `issued_at` (signed server
   time), `expires_at` (node lease end), `max_offline_seconds` (recommended

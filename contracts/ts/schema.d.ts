@@ -2636,6 +2636,13 @@ export interface components {
             supported_release_policy_id: string;
             /** @description Releases allowed to keep serving (minimum serving set, §13.2). */
             serving_release_ids: string[];
+            /**
+             * @description Releases barred from installation and serving (§13.4, D-034).
+             *     A node must refuse to install and must stop serving any listed release.
+             *     Absent and empty both mean no additional revocations; neither widens
+             *     the serving/allowed release intersections enforced by the updater.
+             */
+            revoked_release_ids?: string[];
             /** @enum {string} */
             lease_renewal_endpoint: "/api/v1/agent/lease-renewals";
             accounting_period: components["schemas"]["AccountingPeriod"];
@@ -3079,6 +3086,13 @@ export interface components {
             /** Format: uuid */
             previous_release_id: string | null;
             manifest_sha256: string;
+            /**
+             * @description The desired-state config_generation actually applied when this result
+             *     was produced (§13.10.3, §14.7), not the update job generation or the
+             *     newest received desired state. Component policy_refs belong to desired
+             *     state; they do not replace this applied configuration generation.
+             *     This member was already required in the v1 contract and remains so.
+             */
             policy_generation: string;
             state_schema_version: number;
             usage_checkpoint: components["schemas"]["UpdateUsageCheckpoint"] | null;

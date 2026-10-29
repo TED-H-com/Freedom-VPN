@@ -174,10 +174,11 @@ func TestUPD05_UpdateResultPayloadHashVector(t *testing.T) {
 
 func TestSigningVectors(t *testing.T) {
 	files := map[string]envelope.Purpose{
-		"vectors/release-manifest-signing.json": envelope.PurposeRelease,
-		"vectors/desired-state-signing.json":    envelope.PurposeDesiredState,
-		"vectors/serving-lease-signing.json":    envelope.PurposeLease,
-		"vectors/usage-checkpoint-signing.json": envelope.PurposeRecovery,
+		"vectors/release-manifest-signing.json":          envelope.PurposeRelease,
+		"vectors/desired-state-revocations-signing.json": envelope.PurposeDesiredState,
+		"vectors/desired-state-signing.json":             envelope.PurposeDesiredState,
+		"vectors/serving-lease-signing.json":             envelope.PurposeLease,
+		"vectors/usage-checkpoint-signing.json":          envelope.PurposeRecovery,
 	}
 	components := map[envelope.Purpose]string{
 		envelope.PurposeRelease: "ReleaseManifestEnvelope", envelope.PurposeDesiredState: "DesiredStateEnvelope",

@@ -22,6 +22,8 @@ by hand.
 | `desired-state-signing.json` | desired-state signing vector (`desired-state` key); its update intent binds the manifest envelope hash | §14.7, §13.10.2 |
 | `serving-lease-signing.json` | serving lease signing vector (`lease` key) | §16.3 |
 | `usage-checkpoint-signing.json` | usage checkpoint signing vector (`recovery` key) | §17.3 |
+| `desired-state-revocations-signing.json` | signed explicit revoked releases, using the existing desired-state test key | §13.4, D-034 |
+| `update-result-policy-generation-hash.json` | applied generation above 2^53 and node-reported ARTIFACT_INVALID | §13.10.3 |
 | `test-keys.json` | key labels, key IDs, purposes, seeds, public keys, validity window and `verify_at` | §16.2 |
 
 ## Signing vector fields

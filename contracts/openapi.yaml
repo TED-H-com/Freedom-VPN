@@ -5952,6 +5952,17 @@ components:
           items:
             type: string
             format: uuid
+        revoked_release_ids:
+          type: array
+          uniqueItems: true
+          description: |
+            Releases barred from installation and serving (§13.4, D-034).
+            A node must refuse to install and must stop serving any listed release.
+            Absent and empty both mean no additional revocations; neither widens
+            the serving/allowed release intersections enforced by the updater.
+          items:
+            type: string
+            format: uuid
         lease_renewal_endpoint:
           type: string
           enum: [/api/v1/agent/lease-renewals]
@@ -6869,6 +6880,12 @@ components:
           type: string
           pattern: '^[0-9a-f]{64}$'
         policy_generation:
+          description: |
+            The desired-state config_generation actually applied when this result
+            was produced (§13.10.3, §14.7), not the update job generation or the
+            newest received desired state. Component policy_refs belong to desired
+            state; they do not replace this applied configuration generation.
+            This member was already required in the v1 contract and remains so.
           type: string
           pattern: '^(0|[1-9][0-9]*)$'
           maxLength: 20

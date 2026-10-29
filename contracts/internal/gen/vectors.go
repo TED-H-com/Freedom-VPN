@@ -209,6 +209,28 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	reasons["DesiredStateEnvelope.no-signatures.json"] = Reason{Kind: "schema", Pointer: "/signatures", Keyword: "minItems",
 		Note: "An unsigned envelope is a downgrade and is rejected (§16.2)."}
 
+	// D-034 adds a signed revocation set without rewriting the original vector.
+	revoked := `["00000000-0000-4000-8000-000000000042"]`
+	dsRevoked := setMember(ds, []string{"revoked_release_ids"}, revoked)
+	dsRevokedEnv := sign(dsRevoked, keys["desired-state"])
+	out["vectors/desired-state-revocations-signing.json"] = signingVector(
+		"Signed desired state with explicit revoked releases (§13.4, D-034).",
+		"desired-state", keys["desired-state"], dsRevoked, dsRevokedEnv)
+	out["examples/valid/DesiredStateEnvelope.revocations.json"] = prettyDoc(envJSON(dsRevokedEnv))
+	out["examples/valid/DesiredStateEnvelope.empty-revocations.json"] = prettyDoc(envJSON(sign(setMember(ds, []string{"revoked_release_ids"}, `[]`), keys["desired-state"])))
+	for _, tc := range []struct{ name, value, pointer, keyword string }{
+		{"duplicate-revocations", `["00000000-0000-4000-8000-000000000042","00000000-0000-4000-8000-000000000042"]`, "/signed/revoked_release_ids", "uniqueItems"},
+		{"invalid-revocation-id", `["release-demo"]`, "/signed/revoked_release_ids/0", "format"},
+		{"null-revocations", `null`, "/signed/revoked_release_ids", "type"},
+	} {
+		name := "DesiredStateEnvelope." + tc.name + ".json"
+		out["examples/invalid/"+name] = prettyDoc(envJSON(sign(setMember(ds, []string{"revoked_release_ids"}, tc.value), keys["desired-state"])))
+		reasons[name] = Reason{Kind: "schema", Pointer: tc.pointer, Keyword: tc.keyword, Note: "Revocations must be a unique UUID array when present."}
+	}
+	revocationTamper := envelope.Envelope{Signed: setMember(dsRevoked, []string{"revoked_release_ids"}, `[]`), Signatures: dsRevokedEnv.Signatures}
+	out["examples/invalid/DesiredStateEnvelope.revocations-tampered.json"] = prettyDoc(envJSON(revocationTamper))
+	reasons["DesiredStateEnvelope.revocations-tampered.json"] = Reason{Kind: "signature", Code: envelope.CodeSignatureInvalid, Note: "Removing a signed revocation invalidates the signature."}
+
 	// ---- serving lease
 	lease := mustCanon(servingLease)
 	leaseEnv := sign(lease, keys["lease"])
@@ -275,6 +297,22 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["examples/invalid/UpdateResult.hash-mismatch.json"] = prettyDoc(setMember(ur, []string{"state"}, `"failed"`))
 	reasons["UpdateResult.hash-mismatch.json"] = Reason{Kind: "payload_hash", Field: "payload_hash",
 		Note: "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."}
+
+	// The existing required policy_generation is hashed and remains a decimal string.
+	urPolicy := setMember(ur, []string{"policy_generation"}, `"9007199254740993"`)
+	urPolicy = setMember(urPolicy, []string{"state"}, `"failed"`)
+	urPolicy = withHash(setMember(urPolicy, []string{"error_code"}, `"ARTIFACT_INVALID"`), "payload_hash")
+	urPolicyNoHash, _ := canonjson.CanonicalizeWithout(urPolicy, "payload_hash")
+	urPolicyHash, _ := canonjson.HashHex(urPolicy, "payload_hash")
+	out["vectors/update-result-policy-generation-hash.json"] = pretty(map[string]any{
+		"description":            "Applied configuration generation above 2^53, distinct from job generation; ARTIFACT_INVALID is a node-reported code (§13.10.3).",
+		"canonical_without_hash": string(urPolicyNoHash), "payload_hash": urPolicyHash, "result": rawJSON(urPolicy),
+	})
+	out["examples/valid/UpdateResult.applied-policy-generation.json"] = prettyDoc(urPolicy)
+	out["examples/invalid/UpdateResult.numeric-policy-generation.json"] = prettyDoc(setMember(ur, []string{"policy_generation"}, `18`))
+	reasons["UpdateResult.numeric-policy-generation.json"] = Reason{Kind: "schema", Pointer: "/policy_generation", Keyword: "type", Note: "Applied policy generation must never pass through a JSON number."}
+	out["examples/invalid/UpdateResult.policy-generation-tampered.json"] = prettyDoc(setMember(urPolicy, []string{"policy_generation"}, `"9007199254740994"`))
+	reasons["UpdateResult.policy-generation-tampered.json"] = Reason{Kind: "payload_hash", Field: "payload_hash", Note: "Changing the applied policy generation changes the payload hash."}
 
 	// ---- canonical JSON and decimal string vectors
 	cj, err := canonicalJSONVectors()

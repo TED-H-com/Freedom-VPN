@@ -1,6 +1,8 @@
 package contracts
 
 import (
+	"encoding/json"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -41,5 +43,25 @@ func TestAT01_BrowserRoleSelectorOutsideAPI(t *testing.T) {
 		if (err == nil) != (role == "admin" || role == "member") {
 			t.Fatalf("role=%q: %v", role, err)
 		}
+	}
+}
+
+func TestUPD05_AppliedPolicyGenerationHash(t *testing.T) {
+	raw := readFile(t, "examples/valid/UpdateResult.applied-policy-generation.json")
+	var result api.UpdateResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.PolicyGeneration.String() != "9007199254740993" || result.PolicyGeneration == result.Generation {
+		t.Fatal("applied generation lost precision or confused with job generation")
+	}
+	var v struct {
+		Result json.RawMessage `json:"result"`
+		Hash   string          `json:"payload_hash"`
+	}
+	readJSON(t, "vectors/update-result-policy-generation-hash.json", &v)
+	got, err := canonjson.HashHex(v.Result, "payload_hash")
+	if err != nil || got != v.Hash {
+		t.Fatalf("hash=%s err=%v", got, err)
 	}
 }
