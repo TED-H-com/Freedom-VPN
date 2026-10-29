@@ -30,10 +30,10 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 |---|---|---|
 | w0-bootstrap: repositories, contract, spec | WP01 | done |
 | w1-contracts: OpenAPI, schemas, vectors, shared leaf packages | WP03 | in progress |
-| w1-db: PostgreSQL schema, DB foundation, CI | WP03 | in progress |
+| w1-db: PostgreSQL schema, DB foundation, CI | WP03 | done (#1) |
 | w1-netlab: G2 isolation, metering and shaping lab | WP02, WP05, WP07 | in progress |
 | w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | in progress |
-| w1-portal: Admin and Member portal on a mock API | WP10 | in progress |
+| w1-portal: Admin and Member portal on a mock API | WP10 | done (#2) |
 | w1-dnspolicy: domain rules, bundle compiler, AdGuard Home backend | WP08 | in progress |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.

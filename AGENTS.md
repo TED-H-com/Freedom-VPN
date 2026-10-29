@@ -47,6 +47,7 @@ This file binds every contributor, human or AI agent. Read it completely before 
 - **Node identity:** ECDSA P-256 key and PKCS#10 CSR for mTLS. The private key is generated on the node and never leaves it.
 - **IDs:** UUIDs from `github.com/google/uuid` (prefer v7 for new rows). External IDs (NetBird, OIDC, payment provider) are opaque strings.
 - **HTTP and logs:** standard library `net/http` routing and `log/slog` with redaction. No global mutable state.
+- **Dependency freshness:** when you add or upgrade a module, pin the latest stable release (`go list -m -versions <module>` or `go get <module>@latest`, then `go mod tidy`), never whatever the local module cache happens to hold. Known-vulnerable versions are not acceptable on `main`; check `govulncheck ./...` (`go run golang.org/x/vuln/cmd/govulncheck@latest`) before you finish if you touched `go.mod`.
 - **Pre-approved dependencies:** pgx/v5, goose/v3, google/uuid, modernc.org/sqlite, golang.org/x/{net,sync,crypto,sys,time}, coreos/go-oidc/v3, golang.org/x/oauth2, oapi-codegen (runtime and generator), getkin/kin-openapi (tests), santhosh-tekuri/jsonschema/v6, google/go-cmp, gopkg.in/yaml.v3, prometheus/client_golang. Any other dependency needs a justification in your report: license, maintenance, why the standard library is not enough.
 
 ## 4. Cross-cutting contracts

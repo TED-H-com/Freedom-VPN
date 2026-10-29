@@ -1,0 +1,413 @@
+# PostgreSQL contract
+
+PostgreSQL 17 is authoritative for entitlements, intent, usage receipts and
+operations ([Spec §15](../spec/PROJECT_SPEC.zh-TW.md#15-資料模型索引與一致性)).
+This package implements storage and transaction primitives, not HTTP handlers,
+policy compilers, payment adapters, projection workers or external read-back.
+The schema is forward-only and has no production seed members, subscriptions,
+keys, prices or releases. The fleet initially denies service until a supported
+release policy is explicitly configured.
+
+## Running
+
+Use Go 1.27.1, `GOTOOLCHAIN=local`, `CGO_ENABLED=0`. Supply connection strings
+through the environment/secret manager; never commit them or pass them as CLI
+arguments. `FVPN_DATABASE_URL` is the migration/development database;
+`FVPN_TEST_DATABASE_URL` is an admin connection used only to create isolated
+`fvpn_<random>` databases. Neither tool prints a DSN.
+
+```sh
+make go-verify
+make db-test
+make -f mk/go.mk go-test
+make -f mk/db.mk db-test
+go run ./internal/db/cmd/fvpn-migrate up
+go run ./internal/db/cmd/fvpn-migrate status
+```
+
+`dbtest.New(t)` creates, migrates and cleans up a database in `t.Cleanup`, even
+when a test fails. `dbtest.NewUnmigrated(t)` provides the same lifecycle for
+concurrent bootstrap tests. With the test variable unset, tagged tests skip with
+a clear prerequisite message; ordinary `go test ./...` never opens a database.
+Tests never create roles, modify the shared admin database, or start containers.
+Make targets put TMPDIR/GOTMPDIR in a unique disk directory under `.agent/tmp/`
+and remove it on exit; they do not depend on the host `/tmp` mount type.
+For direct Go test commands, set these variables to a unique disk directory and
+remove it when finished. No pytest or tmpfs fixtures are used.
+One privilege test uses `SET LOCAL ROLE pg_read_all_data` and grants permissions
+only on its own disposable database; it skips if the test admin is not superuser.
+
+Optional local development:
+
+```sh
+docker compose -f deploy/dev/postgres/compose.yaml config --quiet
+make db-up
+# Set FVPN_DATABASE_URL to the local development database using its TEST ONLY credentials.
+make db-migrate
+make db-down
+```
+
+Compose binds only `127.0.0.1:${FVPN_POSTGRES_PORT:-55433}`. Its password is
+explicitly TEST ONLY. `db-down` preserves the named development volume; deleting
+that volume is an explicit local reset, not part of normal shutdown. The shared
+integration server does not need this Compose stack.
+
+Root aggregates include every `mk/*.mk` before consuming the target lists. Both
+make fragments work alone. `go-build` discovers all main packages separately for
+linux/amd64 and linux/arm64; an empty set succeeds. `go-tidy-check` uses
+`go mod tidy -diff` and does not mutate files. Staticcheck is pinned to
+[v0.8.2](https://github.com/dominikh/go-tools/releases/tag/v0.8.2).
+
+## Common invariants
+
+These rules apply to every application table unless a narrower rule follows.
+Spec references include line numbers in the v1.0 source for review convenience;
+section numbers remain authoritative if that document is reformatted.
+
+| Contract | Database implementation | Spec |
+|---|---|---|
+| Stable internal identity | UUID primary keys, UUID foreign keys; identity triggers prevent rebinding members, devices, incarnations and external identities. Central helpers generate v7; SQL fallback uses PostgreSQL's random UUID. | §2 L104–106; §15.1 L1596 |
+| External identity scope | Provider, deployment and OIDC client scope are explicit text columns; email is neither unique nor a join key. | §15.1 L1596; §15.2 L1615–1616 |
+| Central and device time | All stored timestamps, including goose's `tstamp`, are TIMESTAMPTZ. Pools use UTC. `received_at` defaults to database time and is separate from `observed_at`. `updated_at` triggers use database time. | §15.1 L1598 |
+| Exact integers | Every unsigned byte/count/sequence/generation/revision/resource-version field uses NUMERIC(20,0), explicit 0..18446744073709551615 checks. Event sequences additionally start at 1. Go helpers use decimal strings. | §10.5; §15.1 L1600 |
+| Aggregates and corrections | Rollup directions are nonnegative NUMERIC(40,0), total is generated NUMERIC(41,0). Adjustments are signed NUMERIC(40,0), never negative original samples. | §10.7; §15.1 L1600; §15.4 L1657 |
+| Money | Nonnegative amount_minor BIGINT (0..9223372036854775807), uppercase three-letter currency. Type identifies refunds/corrections; amounts are not floating-point or signed deltas. | §15.1 L1600 |
+| Versions | Conditional UPDATE increments resource_version, conflicting/missing row returns ErrVersionConflict; triggers reject regressions in resource versions, node generations, fleet generation and entitlement revision. | §14.5; §15.1 L1602 |
+| Typed JSON | JSONB has an explicit positive schema_version (manifest_schema_version for releases); object shape is checked. Identity, status, expiry and uniqueness fields are relational. Callers validate the actual versioned schema before insertion. | §15.1 L1604 |
+| Time intervals | Service, grace, grants, entitlement, binding, assignment, sample and rollup intervals check start < end. Finite expiries reject infinity/-infinity and are NOT NULL where required. No invented maximum grant/certificate business lifetime. | §15.1 L1606 |
+| Historical references | No FK uses ON DELETE CASCADE. Members, nodes and devices reject DELETE/TRUNCATE even without dependents. Close/revoke/retire and later anonymize identifying fields. | §5.2; §15.1 L1608; §16.4 |
+| Hashes | SHA-256 references have 32-byte checks; Ed25519 release signatures have 64-byte checks. Caller performs canonicalization/signature verification, not PostgreSQL. | §10.5; §13.3 |
+| Append-only | audit_events, billing_records, usage_adjustments, usage_events, usage_samples, projection_receipts and raw usage payloads reject UPDATE, DELETE and TRUNCATE. Purge exceptions are restricted below. | §15.2; §15.4 |
+
+Goose's own `goose_db_version` is infrastructure metadata, not a domain entity:
+it retains goose's numeric primary key and version numbering. Its timestamp is
+normalized to TIMESTAMPTZ in migration 00001. All domain primary keys are UUID.
+Database checks cannot determine that a JSON object was actually redacted or
+that a network observation is authentic. Those remain mandatory caller checks;
+never forward raw database errors to an HTTP response.
+
+## Table-to-spec and constraint mapping
+
+`U(...)` denotes a named business unique constraint/index. FKs are restrictive
+and preserve the associated stable entity. Composite FKs prevent cross-member,
+cross-node, cross-definition and cross-job mismatches. Their supporting unique
+keys (`*_member_key`, `*_node_key`, `*_plan_key`, `*_type_key`,
+`*_definition_key`, `*_execution_key`) are structural keys on the same UUID and
+scope, not additional identities. See the common rules above for all repeated
+numeric/hash/JSON checks.
+
+| Table | Constraints, indexes and recovery semantics | Spec source |
+|---|---|---|
+| members | Status allowlist; status index; canonical identity FK includes member ID; version monotonic; stable ID; no deletion. Email can change and is not unique. | §15.2 L1614 |
+| identity_bindings | `identity_bindings_subject_key`: U(issuer,client_scope,subject); stable identity fields; verified claim, method and time required. Composite (id,member_id) supports canonical/user mapping FKs. | §2; §15.2 L1615 |
+| netbird_user_bindings | `netbird_user_bindings_external_key`: U(deployment_id,external_user_id); composite identity-binding/member FK; required mapping proof, revision and verified_at; identity fields cannot be reassigned. | §15.2 L1616 |
+| plans | U(code); active_revision_id must belong to this plan; version cannot regress. | §15.2 L1617 |
+| plan_revisions | `plan_revisions_revision_key`: U(plan_id,revision); device_limit >= 0; provider/price are both present or absent; FUP policy FK; immutable complete row, including exit_group_ids. Referenced exit groups must be checked by the compiler. | §15.2 L1617 |
+| subscriptions | `subscriptions_external_key`: U(provider,external_subscription_id); partial `subscriptions_primary_active_key`: U(member_id) WHERE is_primary AND is_active; plan FK/index; provider status is opaque, active flag is controller-computed; paid/grace endpoints occur in pairs and are finite; grace reason required. paid_through, cancellation and grace are separate facts. | §9.2–3; §15.2 L1618 |
+| billing_records | `billing_records_external_key`: U(provider,record_type,external_reference); member/subscription/inbox FKs; money checks; finite service interval; append-only. External reference represents an invoice, refund or correction according to type. | §15.2 L1619 |
+| entitlement_grants | Member FK; finite interval; nonempty reason and creator; revocation requires a reason. Trial/grace/manual source remains explicit. | §9.2; §15.2 L1620 |
+| entitlements | U(member_id); plan FK/index; nonnegative device limit; finite valid_from..effective_service_end; revision cannot regress. Source UUIDs are polymorphic references validated by the calculator; no lease expiry here. | §15.2 L1621, L1626 |
+| member_devices | `member_devices_peer_key`: U(deployment_id,peer_id); (member_id,status) index; allowed statuses; device/member relationship and peer identity immutable; versioned; no deletion. | §9.4; §15.2 L1622 |
+| device_bindings | `device_bindings_revision_key`: U(device_id,binding_revision); device/member composite FK; host-address masks only; valid interval; `device_bindings_no_overlap` GiST exclusion on scope, inet IP and `[valid_from,valid_until)`; historical identity immutable, valid_until may close an open mapping. | §2; §15.2 L1623 |
+| member_groups | U(code), U(name). | §15.2 L1624 |
+| assignments | Exactly one of member_id/plan_revision_id; group FK; valid interval; separate partial exclusion constraints prevent overlapping member/group and plan-revision/group assignments. Adjacent intervals are allowed. | §15.2 L1624 |
+| nodes | Lifecycle/provisioning allowlists; current incarnation composite FK ensures same node; separate desired/applied config and current/desired/last_good release references; monotonic generations/version; immutable ID; no deletion. | §5; §15.3 L1634 |
+| node_incarnations | `node_incarnations_active_key`: partial U(node_id) WHERE revoked_at IS NULL; U(public_key_fingerprint), `node_incarnations_peer_key`: U(deployment_id,peer_id); peer fields both absent/present; architecture allowlist; immutable node/key/peer identity. | §15.3 L1635 |
+| node_enrollments | U(token_hash); finite created_at..expiry; state allowlist; consumed requires key and timestamp. Token/node/expiry identity cannot change; non-null public key, consumption and revocation timestamps cannot be rewritten. Request ID is a tracing reference. | §15.3 L1636; §15.5.1 |
+| node_certificates | `node_certificates_serial_key`: U(issuer,serial); incarnation FK; finite not_before..not_after; only public certificate bytes and metadata, never a private key. Controlled overlapping renewals are allowed. | §15.3 L1637 |
+| exits | U(node_id); intent and observed allowlists; sole authoritative publication_intent; independent resource version. | §5.2; §15.3 L1638 |
+| exit_groups | `exit_groups_membership_key`: U(exit_id,group_id); exit/member-group FKs. | §15.3 L1638 |
+| policy_definitions | `policy_definitions_code_key`: U(type,code); active revision must belong to this definition; versioned. | §15.3 L1639 |
+| policy_revisions | `policy_revisions_revision_key`: U(definition_id,revision); type matches definition via composite FK; immutable entire row, including payload/hash/signing key. Compiler validates type-specific schema and never relaxes isolation baseline. | §15.3 L1640 |
+| desired_states | `desired_states_generation_key`: U(node_id,incarnation_id,generation); incarnation belongs to node; immutable history; node desired generation cannot regress. Generation is the spec's config_generation (the uniqueness column is named generation). | §15.3 L1641 |
+| node_observations | `node_observations_report_key`: U(node_id,incarnation_id,report_id); node/received_at index; separate received/observed clocks; control/data/safety allowlists; positive schema; required checks/hash. | §15.3 L1642 |
+| serving_leases | Node/incarnation composite FK; finite interval; immutable signed deadlines/hash/key; configured maximum duration enforced at issuance, default 86400 seconds. | §15.3 L1643; §16.3 |
+| serving_lease_members | `serving_lease_members_member_key`: U(lease_id,member_id); finite interval; immutable; issuance locks entitlement and lease, matches revision, rejects suspended entitlement and deadlines outside node/entitlement boundaries. | §15.3 L1643; §16.3 |
+| external_bindings | `external_bindings_internal_key`: U(resource_type,resource_id,provider,deployment_id); `external_bindings_external_key`: U(provider,deployment_id,external_id). Resource reference is polymorphic; callers verify its type. | §14.5; §15.3 L1644 |
+| usage_events | `usage_events_stream_key`: U(node_id,incarnation_id,event_seq); event_seq > 0; node/incarnation FK; record_count >= 0; durable payload hash/received time/quality; append-only. Neither meter epoch nor ledger epoch belongs to the dedupe key. | §10.6; §15.4 L1652 |
+| usage_event_payloads | U(event_id), receipt FK; optional bytea raw body and central created_at; append-only except authorized retention deletion; unpartitioned in v1. | §15.4 L1673; §16.4 |
+| usage_samples | `usage_samples_record_key`: U(event_id,record_index); member/device and device/binding composite FKs; sample must fit historical binding validity; index in envelope record_count; finite observation interval; unsigned directions/elapsed time; immutable meter epoch and quality; append-only. | §10.5–9; §15.4 L1653 |
+| projection_receipts | `projection_receipts_projection_key`: U(sample_id,projection_name,generation,period); sample FK; append-only; insert and aggregate increment must share transaction. One receipt per split period. | §15.4 L1654, L1671 |
+| usage_checkpoints | `usage_checkpoints_stream_key`: U(node_id,incarnation_id); node/incarnation FK; highest_contiguous_seq <= max_seen_seq; advancing ACK requires every intervening receipt; max_seen cannot exceed durable max; same ledger_epoch cannot regress either watermark. New verified recovery epoch may lower ACK after checking receipts. | §10.6, §10.8; §15.4 L1655; §17.3 |
+| usage_rollups | `usage_rollups_period_key`: U(member_id,period,granularity,projection_generation); optional event-checkpoint FK; exact directions/generated total; finite period; metering_version, observation/projector times, estimated/gap/reconciliation flags. | §10.9; §15.4 L1656 |
+| usage_adjustments | Member/event FK or finite source interval required; signed exact directions; nonempty reason and actor; append-only corrections preserve original receipt. | §15.4 L1657 |
+| releases | U(version); immutable complete manifest/hash/signature/component versions/sequence/key reference. | §13.3; §15.4 L1658 |
+| artifacts | `artifacts_platform_key`: U(release_id,platform,arch); architecture allowlist; immutable digest, size, installed size and storage reference; caller validates storage allowlist/manifest. | §13.3; §15.4 L1658 |
+| fleet_config | Fixed UUID ending 0001 and no deletion; desired release FK separate from supported policy/allowlist/minimum component version; default deny_all; minimum policy requires component and version; monotonic generation/version; positive configurable max_offline_lease_seconds. | §13.2; §15.4 L1659 |
+| update_batches | U(operation_id); release FK; scope = all_nodes; nonnegative target_count; immutable complete snapshot metadata. Deferred count check verifies target_count; snapshot_xid seals membership to the creation transaction. | §13.8; §15.4 L1660 |
+| update_targets | `update_targets_node_key`: U(batch_id,node_id); both incarnation FKs scoped to node; snapshot fields immutable; execution incarnation can bind once. If snapshot incarnation exists, execution must match it. No later additions to a sealed batch. | §15.4 L1661 |
+| update_jobs | `update_jobs_attempt_key`: U(target_id,attempt); U(result_id); positive attempt; target/incarnation/generation composite FK; state allowlist including superseded_incarnation; chronology checks; result ID/hash appear together and cannot be replaced; successful actual release must equal batch target with nonempty evidence and completion time. | §13.8; §15.4 L1662 |
+| operations | Status allowlist and transition trigger; completion cannot precede creation; success requires completion time and evidence for every required step; optional steps explicitly not_required with reason. JSON schema described below. | §14.5; §15.4 L1663 |
+| inbox_events | `inbox_events_external_key`: U(source,external_event_id); bytea encrypted_payload; processing-status allowlist; nonnegative attempt; caller verifies signature/encrypts before committing durable inbox. | §9.3; §15.4 L1664 |
+| outbox_events | Aggregate/version/event type; positive schema/object payload; nonnegative attempt; partial pending available_at/id index; owner/token/expiry all absent or all present; finite lease; claims fenced by token and expiry. | §14.5; §15.4 L1665 |
+| idempotency_requests | `idempotency_requests_scope_key`: U(principal,method,route,key_hash); hash sizes; state allowlist; HTTP status range; finite expiry after creation; completed state requires reference and status; expiry index. No response-body or plaintext-key column. | §14.5; §15.4 L1666 |
+| audit_events | Object diffs with positive schema; optional operation FK; resource/time and actor/time indexes; append-only and database occurred_at default. | §15.4 L1667 |
+| retention_config | Fixed UUID ending 0002; positive configurable raw_usage_days=35, rollup_months=13, service_log_days=7, audit_days=180. Financial retention has no invented default or enabled purge path. | §16.4 |
+
+The corresponding business uniqueness tests check SQLSTATE 23505 and the actual
+constraint name. Interval exclusions report 23P01. Guard/immutability violations
+report 23514, and FK mismatches 23503. Schema tests include catalog-wide checks
+for primary keys, spec comments, integer checks, timestamp types, floating-point
+absence and absence of cascading FKs.
+
+## Transaction boundaries and helpers
+
+`Open(ctx, dsn, OpenOptions{})` defaults to ten connections, 5s connect/lock
+limits, 30s statement/idle-transaction limits, UTC sessions, a one-hour connection
+lifetime with jitter, and a five-minute idle lifetime. All limits are configurable.
+Long migrations should use the CLI's longer limits or an explicitly configured
+pool. Never log connection strings or raw connection diagnostics.
+
+`InTx` defaults to read committed, at most four attempts, full jitter starting at
+10ms and capped at 250ms. Only SQLSTATE 40001 and 40P01 retry, including failures
+at commit. Unique violations, timeouts, cancellation and ambiguous connection
+failures do not retry. Panic is propagated after rollback with an independent
+cleanup context. Allocate business IDs outside the closure when retry identity
+must be stable. Do not capture irreversible local/network effects in the closure.
+
+| Spec boundary | Transaction recipe |
+|---|---|
+| §15.5.1 Enrollment | `InTx`: SELECT enrollment FOR UPDATE; check expiry, revocation and key; create/read incarnation; store consumption binding, operation, audit and outbox. On replay, read existing public identity; never reconstruct the enrollment secret. |
+| §15.5.2 Device quota | `InTx`: SELECT member FOR UPDATE; validate current entitlement and count authorized devices under this lock; authorize device, increment version, append audit and policy outbox. Every writer follows the same member lock protocol. |
+| §15.5.3 Entitlement | `InTx`: write trusted billing/manual evidence; lock/update subscription/grant and entitlement revision; `EnqueueOutbox` and `AppendAudit`. Payment facts never clear admin suspension or overwrite grant/grace deadlines. |
+| §15.5.4 Usage | Authenticate node, validate schema/hash/binding; `InTx`: insert receipt/event/samples (or durable event for later projection), enqueue projection work and advance checkpoint under stream row lock. Commit before ACK. Same unique key requires comparing stored hash, never overwriting it. |
+| §15.5.5 Publication | `BeginIdempotent` + `UpdateWithVersion` on exits + operation + `EnqueueOutbox` + `AppendAudit` + `CompleteIdempotent` inside one `InTx`. Worker claims after commit, performs external calls and read-back, then records evidence in a later transaction. |
+| §15.5.6 Fleet update | `InTx`: lock fixed fleet row/check expected generation; increment generation/version and change desired_release_id; create operation, batch, all target rows and applicable jobs; append audit/outbox; complete idempotency. Batch and targets must share transaction, including nodes without an incarnation. Later results update their own matching job. |
+
+`UpdateWithVersion` binds values and quotes trusted table/column identifiers. It
+increments resource_version and returns decimal text, or ErrVersionConflict if
+the row/version does not match. It does not implement HTTP 428/412, authorization
+or allowed fields; the HTTP/domain layer must enforce those before calling it.
+`MapError` maps missing rows and exposes unique constraint names through
+`ConstraintError` and `errors.Is(err, ErrUniqueViolation)`. API handlers must use
+their own safe error envelope; `errors.As` can still find the internal pgconn error.
+
+`AppendAudit` accepts already-redacted object diffs with SchemaVersion >= 1.
+`EnqueueOutbox` accepts already-validated object payloads. The audit table and
+outbox transaction test proves that aborting the domain change aborts both rows.
+`ClaimOutbox` atomically uses FOR UPDATE SKIP LOCKED and returns worker, token,
+expiry and attempt. `CompleteOutbox` and `RetryOutbox` require the same unexpired
+token; retry stores caller-selected backoff (0..24h) in available_at. A worker can
+still execute an external effect and crash before completion: delivery is at
+least once. Use external domain IDs and read-back to avoid duplicate effects.
+
+`BeginIdempotent` uses principal/method/normalized route/key hash and the caller's
+canonical validated request hash. Zero TTL means seven days; supply an explicit
+TTL for a different configured policy. The winner returns New=true, losers
+return the stored reference/status, and a different hash returns
+ErrIdempotencyConflict. Reserve, create the local resource/operation and
+`CompleteIdempotent` before committing. A committed in-progress record with an
+operation reference is also replayable; a retry must never run the action again.
+Expired rows are atomically reused with a new UUID so old completions are fenced.
+No stored plaintext response is available: enrollment replay must return
+secret_available=false. Domain uniqueness continues after idempotency expiry.
+
+Operation transitions are pending → running/failed/superseded; running →
+succeeded/partially_succeeded/failed/superseded; failed/partially_succeeded →
+running for an explicit retry. Succeeded and superseded cannot transition back.
+Required evidence is shaped as follows (values are TEST ONLY examples):
+
+```json
+{
+  "schema_version": 1,
+  "steps": {
+    "route": {"required": true, "status": "succeeded", "observed_ref": "route_readback"},
+    "optional": {"required": false, "status": "not_required", "reason": "not applicable"}
+  },
+  "observed_refs": {"route_readback": {"external_id": "test-route", "verified": true}}
+}
+```
+
+Database shape checks cannot authenticate this observation. Only the worker with
+real read-back evidence may store it. An update job's late result is historical
+and must not overwrite a newer node generation or current-release observation.
+
+## Migrations and compatibility
+
+SQL files are five-digit, increasing, goose `Up`-only migrations embedded by
+`db/migrations`. Do not add Down migrations. After a migration is released, append
+a new migration; do not edit history. The goose Provider has instance-local
+configuration, so no mutable global dialect/filesystem settings race. Its
+[session locker](https://pressly.github.io/goose/documentation/provider/) uses a
+fixed database advisory lock shared by Migrate and MigrationStatus. Empty,
+repeat and concurrent first-use migration tests exercise this path.
+
+Follow §15.5 expand/contract: add compatible fields and indexes, deploy code that
+can coexist with old agents, backfill, validate, then separately contract. Never
+couple destructive schema changes to a fleet update. Back up schema version with
+DB/WAL. Migration 00004 uses transaction IDs only to seal snapshot insertion;
+restore schema/data with normal PostgreSQL dump/restore ordering, then validate
+snapshot counts before enabling workers.
+
+## Roles, grants and retention
+
+Provision roles outside these migrations: cluster-wide roles are deliberately
+not created by migration or integration code. Suggested separation:
+
+| Role | Intended privileges |
+|---|---|
+| fvpn_migrator | Own schema/tables/functions; extensions, DDL and migrations. Not a runtime application identity. Keep credentials separate. |
+| fvpn_control | CONNECT/USAGE; SELECT required domain data; INSERT/UPDATE mutable membership/intent/operation/idempotency rows; INSERT audit/outbox. No DDL, DELETE/TRUNCATE on historical data, or ownership. |
+| fvpn_worker | SELECT work/domain data; INSERT receipts/billing/audit/outbox/observations; UPDATE only mutable projection, job, outbox and operation fields needed by each worker. No UPDATE/DELETE on immutable/append-only rows. |
+| fvpn_retention | CONNECT/USAGE and EXECUTE on purge_retained only; no direct table mutation, no schema ownership, no membership in the owner role. |
+| fvpn_recovery | Separately controlled recovery identity; may change ledger_epoch after signed recovery authorization. Not available to normal workers. |
+| fvpn_backup | Read/replication privileges needed by the selected encrypted base-backup/WAL tooling; no application mutation. |
+
+These are intended roles, not migration-created roles. Apply grants per table and
+column when deploying domain services. Illustrative snippets (after separately
+provisioning identities):
+
+```sql
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO fvpn_control, fvpn_worker, fvpn_retention;
+GRANT INSERT ON audit_events, outbox_events TO fvpn_control;
+GRANT SELECT, UPDATE ON outbox_events TO fvpn_worker;
+GRANT SELECT, INSERT ON usage_events, usage_samples, projection_receipts TO fvpn_worker;
+GRANT UPDATE (highest_contiguous_seq, max_seen_seq, prefix_proof, updated_at)
+  ON usage_checkpoints TO fvpn_worker;
+GRANT UPDATE (ledger_epoch) ON usage_checkpoints TO fvpn_recovery;
+GRANT EXECUTE ON FUNCTION purge_retained(TEXT,TIMESTAMPTZ,TEXT) TO fvpn_retention;
+```
+
+Do not grant broad UPDATE on usage_checkpoints to normal workers: a new epoch is
+an authorized recovery action. INSERT of a new checkpoint also requires the
+current authorized epoch from the recovery/control service. Do not run runtime
+services as the table/function owner: PostgreSQL owners/superusers can alter
+triggers and are outside this privilege boundary.
+
+`purge_retained(target, cutoff, reason)` is SECURITY DEFINER with a fixed trusted
+search_path. EXECUTE is revoked from PUBLIC. It allows only audit_events,
+usage_event_payloads and usage_rollups, checks a finite cutoff against the
+configured minimum age, deletes eligible rows and appends an audit event with
+session actor, target, cutoff, count and reason **in the same transaction**.
+A rollback undoes both. The local `fvpn.retention_purge` setting is a trigger
+signal, not authorization: the trigger also checks the executing role against
+the function owner. An ordinary role cannot bypass append-only protection by
+setting this GUC. The integration test verifies that and the PUBLIC denial.
+
+The retention job must use a redacted reason, keep its own execution identity,
+and preflight projection completion. Raw payload purge additionally requires the
+envelope's full record count and projection receipts whose matching rollup
+periods cover each sample's entire interval within one projection name,
+generation and granularity, with the same metering_version. A receipt for only
+one side of a month boundary, or partial receipts mixed across generations,
+cannot authorize deletion. The worker still verifies allocation correctness and
+the active projection before invoking the purge. Receipts,
+samples, checkpoints and adjustments remain. Billing purges are disabled until
+legal retention is approved; they never inherit the 35-day raw-usage value.
+Audit rows themselves can expire at 180 days, with a new retained purge audit.
+Rollups may expire after 13 months while source receipts/watermarks remain.
+Service-log retention (seven days) is consumed by deployment log tooling, not a
+PostgreSQL log collector. No DNS query history, destination list or packet body
+belongs in these tables.
+
+Raw retention defaults to 35 days; audit to 180; rollups to 13 months. These are
+configurable positive values in retention_config. No automated scheduler runs
+as a side effect of migration. Close accounts and revoke devices first; clear
+email/display_name and other personal metadata according to the approved policy,
+retaining anonymous stable links. Reapply deletion/anonymization policies after
+restoring backups (§16.4).
+
+## Usage projection, partitioning and recovery
+
+Keep usage_events as an unpartitioned minimal uniqueness/receipt table. Raw
+payloads already live separately; a future migration can partition only
+usage_event_payloads by receipt time with a pointer to the durable event UUID.
+There must still be exactly one authoritative receipt/hash per
+(node_id,incarnation_id,event_seq) across all raw partitions. Never replace this
+with monthly unique indexes. Moving an event to a different month cannot admit
+it as a new event. Partition migrations must preserve the receipt before moving
+or deleting raw rows, and the initial v1 has no partitions.
+
+The projector inserts (sample,projection_name,generation,period) with ON CONFLICT
+DO NOTHING and increments that generation's rollup only if the insertion won,
+in the same InTx. The integration test proves rollback and duplicate attempts
+do not double-add and totals above uint64 remain exact. Period splitting belongs
+to one authoritative projector; late events retain observation periods, and
+cross-month integer allocations must preserve the original total (§10.9).
+
+Allocate a new projection_generation for a changed metering contract or rebuild;
+never mix metering_version values within one generation. Write fresh rollups,
+validate against the ledger, then switch the caller's active-generation pointer.
+Do not insert new-generation receipts and add to old-generation rollups. The
+spec's rollup key omits metering_version; this generation-scoping rule resolves
+that ambiguity without silently changing its mandated key.
+
+Within one ledger_epoch, checkpoints cannot regress. A checkpoint advance checks
+only the newly acknowledged interval against the receipt index; an authorized
+new epoch recomputes from the beginning. No compacted receipt prefixes are
+accepted by this v1 trigger. prefix_proof is reserved metadata, not a bypass.
+Before deleting/compacting receipts in a future release, add a verified-prefix
+protocol, atomic proof installation and explicit replay-too-old handling; keep
+receipts indefinitely until that exists. Raw purge cannot delete them.
+
+Recovery follows §17.2–4: pause ledger/entitlement workers, restore DB/WAL and
+schema, validate revoked identities/keys, create a signed recovery record and
+new ledger_epoch with the protected recovery identity, derive contiguous ACK and
+missing ranges from actual receipts, request original events from node replay
+archives, and reconcile projection generations. Mark affected rollups
+reconciliation_in_progress. Missing evidence beyond the replay window becomes an
+explicit gap, never fabricated bytes or a replacement monthly total.
+
+Then reconcile trusted payment periods, manual suspensions/grants, publication
+intent, external IDs, node incarnation/current release and update journals.
+Never downgrade solely because the backup was older, and never restore a revoked
+node's service identity just to retrieve historical usage. Resume workers after
+verification. Nightly base backups plus continuous WAL, target RPO 15 minutes and
+RTO four hours are planning defaults from §17.2; this database test suite does
+**not** establish measured recovery objectives, real-device behavior or the
+72-hour node replay guarantee. Keep separate encrypted backups for signing/CA
+material, immutable artifacts, configuration and deletion policies.
+
+## Entity relationships
+
+```mermaid
+erDiagram
+    members ||--o{ identity_bindings : authenticates
+    identity_bindings ||--o{ netbird_user_bindings : verifies
+    members ||--o{ subscriptions : pays
+    plans ||--o{ plan_revisions : versions
+    plan_revisions ||--o{ subscriptions : fixes_plan
+    subscriptions ||--o{ billing_records : accounts
+    inbox_events ||--o{ billing_records : sources
+    members ||--o{ entitlement_grants : receives
+    members ||--o| entitlements : projects
+    members ||--o{ member_devices : authorizes
+    member_devices ||--o{ device_bindings : maps_over_time
+    members ||--o{ assignments : joins
+    plan_revisions ||--o{ assignments : assigns
+    member_groups ||--o{ assignments : includes
+    nodes ||--o{ node_incarnations : installs
+    nodes ||--o{ node_enrollments : enrolls
+    node_incarnations ||--o{ node_certificates : certifies
+    nodes ||--o| exits : publishes
+    exits ||--o{ exit_groups : permits
+    member_groups ||--o{ exit_groups : accesses
+    policy_definitions ||--o{ policy_revisions : versions
+    node_incarnations ||--o{ desired_states : receives
+    node_incarnations ||--o{ node_observations : reports
+    node_incarnations ||--o{ serving_leases : leases
+    serving_leases ||--o{ serving_lease_members : bounds
+    members ||--o{ serving_lease_members : authorizes
+    node_incarnations ||--o{ usage_events : emits
+    usage_events ||--o| usage_event_payloads : retains_raw
+    usage_events ||--o{ usage_samples : contains
+    device_bindings ||--o{ usage_samples : attributes
+    usage_samples ||--o{ projection_receipts : projects_once
+    node_incarnations ||--o| usage_checkpoints : acknowledges
+    members ||--o{ usage_rollups : aggregates
+    members ||--o{ usage_adjustments : corrects
+    releases ||--o{ artifacts : packages
+    releases ||--o| fleet_config : targets
+    releases ||--o{ update_batches : deploys
+    operations ||--o| update_batches : requests
+    update_batches ||--o{ update_targets : snapshots
+    nodes ||--o{ update_targets : participates
+    update_targets ||--o{ update_jobs : attempts
+    operations ||--o{ audit_events : records
+    operations ||--o{ idempotency_requests : replays
+```
+
+external_bindings and outbox_events have typed polymorphic resource references;
+retention_config is a singleton policy. They deliberately do not pretend to have
+FKs to every possible domain type.
