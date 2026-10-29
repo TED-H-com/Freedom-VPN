@@ -104,6 +104,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-contracts-r4: UpdateTarget applied-policy evidence members (D-048), positive DomainRule.revision (D-049), writer survey re-run | WP02 | done (#58) |
 | w3-wire-nodes follow-up 5: worker execution of node.publication_changed via exits.ExecuteOperation, applied-policy evidence on update targets (D-048) | WP04, WP05, WP09 | done (#60; worker executes node.publication_changed through the exits executor with a real NetBird adapter; UpdateTarget policy evidence populated) |
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
+| w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | in progress |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | in progress |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | in progress |
