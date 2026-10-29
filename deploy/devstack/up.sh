@@ -81,37 +81,40 @@ wait_exec() {
     name=$1
     shift
     i=0
+    last=""
     while [ "$i" -lt 40 ]; do
-        if docker exec "$name" "$@" >/dev/null 2>&1; then
+        if last=$(docker exec "$name" "$@" 2>&1); then
             return 0
         fi
         i=$((i + 1))
         sleep 2
     done
-    echo "timed out: $name" >&2
+    echo "timed out: $name: $last" >&2
     return 1
 }
 wait_http() {
     url=$1
-    limit=${2:-40}
+    limit=${2:-60}
     i=0
+    last=""
     while [ "$i" -lt "$limit" ]; do
-        if curl -fsS -k --max-time 3 "$url" >/dev/null 2>&1; then
+        if last=$(curl -fsS -k --max-time 3 -o /dev/null "$url" 2>&1); then
             return 0
         fi
         i=$((i + 1))
         sleep 2
     done
-    echo "timed out: $url" >&2
+    echo "timed out: $url: $last" >&2
     return 1
 }
 wait_exec "$PREFIX-postgres" pg_isready -U fvpn -d fvpn
-wait_http https://127.0.0.1:18444/healthz
+# Internal networks do not publish host ports on this daemon. Dial the lab addresses.
+wait_http https://172.28.30.11/healthz 60
 wait_exec "$PREFIX-payment" wget -q -O /dev/null --no-check-certificate https://127.0.0.1/healthz
-wait_http https://127.0.0.1:18445/healthz
+wait_http https://192.0.3.10/healthz 60
 
 i=0
-until "$ROOT/.agent/e2e-build/fvpn-e2e-nbbootstrap" -dial 127.0.0.1:18480 -ca "$STATE/ca.pem" -state "$STATE"; do
+until "$ROOT/.agent/e2e-build/fvpn-e2e-nbbootstrap" -dial 172.28.30.21:443 -ca "$STATE/ca.pem" -state "$STATE"; do
     i=$((i + 1))
     if [ "$i" -ge 30 ]; then
         echo "netbird bootstrap failed" >&2
@@ -121,6 +124,6 @@ until "$ROOT/.agent/e2e-build/fvpn-e2e-nbbootstrap" -dial 127.0.0.1:18480 -ca "$
 done
 
 $COMPOSE up -d control worker
-wait_http https://127.0.0.1:18443/readyz 60
+wait_http https://172.28.30.30:8443/readyz 90
 $COMPOSE up -d node member
 echo "e2e stack is up"

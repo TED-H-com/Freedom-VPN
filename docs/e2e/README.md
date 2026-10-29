@@ -28,9 +28,11 @@ that variable the scenario test skips, so `go test ./...` stays offline.
 Pull requests run `e2e-lint` and `docker compose config`. The stack itself
 runs on `workflow_dispatch` and the nightly schedule.
 
-Published ports listen on 127.0.0.1 only: control 18443, agent mTLS 19443,
-IdP 18444, NetBird 18480, release origin 18445, PostgreSQL 15432. Names inside
-the lab are `*.example.invalid`.
+The lab bridges are internal, so this Docker daemon does not publish host
+ports. The harness dials the fixed container addresses: control
+`172.28.30.30:8443` and `:9443`, IdP `172.28.30.11:443`, NetBird
+`172.28.30.21:443`, release origin `192.0.3.10:443`, PostgreSQL
+`172.28.30.10:5432`. Names inside the lab are `*.example.invalid`.
 
 ## Scenario catalogue
 
@@ -74,7 +76,7 @@ not `pass`.
 - There is one agent `control_url`. Enrollment uses the public listener and
   the running agent uses the mTLS listener, via two config files.
 - The release fetcher rejects RFC1918, loopback, CGNAT, and documentation
-  ranges. The origin is `192.0.3.10` on an internal bridge, which is a
+  ranges. The origin is `192.0.3.10` on an isolated bridge (no default route), which is a
   routable unicast that the fetcher accepts. There is no central test
   allowance for the origin URL.
 - Activation of `release_support` does not by itself fill

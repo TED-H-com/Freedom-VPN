@@ -66,11 +66,12 @@ func openLab() (*lab, error) {
 		return nil, errors.New("lab ca")
 	}
 	dial := map[string]string{
-		"portal.example.invalid:8443":  "127.0.0.1:18443",
-		"agent.example.invalid:9443":   "127.0.0.1:19443",
-		"idp.example.invalid:443":      "127.0.0.1:18444",
-		"netbird.example.invalid:443":  "127.0.0.1:18480",
-		"releases.example.invalid:443": "127.0.0.1:18445",
+		// Internal networks do not publish ports here. These are the compose addresses.
+		"portal.example.invalid:8443":  "172.28.30.30:8443",
+		"agent.example.invalid:9443":   "172.28.30.30:9443",
+		"idp.example.invalid:443":      "172.28.30.11:443",
+		"netbird.example.invalid:443":  "172.28.30.21:443",
+		"releases.example.invalid:443": "192.0.3.10:443",
 	}
 	tr := &http.Transport{
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -250,7 +251,7 @@ func (l *lab) db(ctx context.Context) (*pgx.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn, err := pgx.Connect(ctx, "postgres://fvpn:"+password+"@127.0.0.1:15432/fvpn?sslmode=disable")
+	conn, err := pgx.Connect(ctx, "postgres://fvpn:"+password+"@172.28.30.10:5432/fvpn?sslmode=disable")
 	if err != nil {
 		return nil, errors.New("postgres connection failed")
 	}

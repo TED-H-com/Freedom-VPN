@@ -281,7 +281,7 @@ func run(state string, reset bool) error {
 		"return_url":     "https://portal.example.invalid:8443/billing/return",
 		"prefix":         "fvpn-w3-devstack-e2e",
 		"ports": map[string]int{
-			"control": 18443, "agent": 19443, "idp": 18444, "netbird": 18480, "origin": 18445, "postgres": 15432,
+			"control": 8443, "agent": 9443, "idp": 443, "netbird": 443, "origin": 443, "postgres": 5432,
 		},
 	}
 	if err := writeJSON(filepath.Join(state, "stack.json"), stack); err != nil {
@@ -397,7 +397,7 @@ user_rules: []
 dhcp:
   enabled: false
 `, string(hash))
-	dir := filepath.Join(state, "adguard")
+	dir := filepath.Join(state, "adguard", "conf")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
