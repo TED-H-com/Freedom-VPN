@@ -282,9 +282,6 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 	if snap.AuthorizationGeneration == 0 {
 		snap.AuthorizationGeneration = 1
 	}
-	if snap.DNSGeneration == 0 {
-		snap.DNSGeneration = 1
-	}
 	if snap.FairUseGeneration == 0 {
 		snap.FairUseGeneration = 1
 	}
@@ -548,6 +545,25 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		SET desired_config_generation = $2::numeric,
 		    resource_version = resource_version + 1
 		WHERE id = $1`, nodeID, strconv.FormatUint(nextGen, 10)); err != nil {
+		return CompiledDesiredState{}, err
+	}
+
+	afterAudit, _ := json.Marshal(map[string]any{
+		"desired_state_id":          desiredStateRowID.String(),
+		"desired_config_generation": strconv.FormatUint(nextGen, 10),
+		"binding_revision":          strconv.FormatUint(maxBindingRev, 10),
+		"dns_generation":            strconv.FormatUint(snap.DNSGeneration, 10),
+	})
+	if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+		Actor:         nodes.SystemActorUUID.String(),
+		ActorType:     "system",
+		Action:        "node.desired_state_compiled",
+		Resource:      "node:" + nodeID.String(),
+		Result:        "succeeded",
+		SchemaVersion: 1,
+		Before:        []byte(`{}`),
+		After:         afterAudit,
+	}); err != nil {
 		return CompiledDesiredState{}, err
 	}
 
@@ -857,9 +873,10 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 			}
 		case EventMemberEntitlementChanged, EventDeviceAuthorized, EventDeviceRevoked, EventMemberSuspended:
 			var payload struct {
-				MemberID string   `json:"member_id"`
-				GroupIDs []string `json:"group_ids"`
-				NodeIDs  []string `json:"node_ids"`
+				MemberID     string   `json:"member_id"`
+				GroupIDs     []string `json:"group_ids"`
+				ExitGroupIDs []string `json:"exit_group_ids"`
+				NodeIDs      []string `json:"node_ids"`
 			}
 			_ = json.Unmarshal(ev.Payload, &payload)
 			for _, raw := range payload.NodeIDs {
@@ -867,9 +884,11 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 					affectedNodes[nid] = true
 				}
 			}
-			if len(payload.GroupIDs) > 0 {
+			rawGroups := append([]string(nil), payload.GroupIDs...)
+			rawGroups = append(rawGroups, payload.ExitGroupIDs...)
+			if len(rawGroups) > 0 {
 				var gids []uuid.UUID
-				for _, raw := range payload.GroupIDs {
+				for _, raw := range rawGroups {
 					if gid, err := uuid.Parse(raw); err == nil {
 						gids = append(gids, gid)
 					}

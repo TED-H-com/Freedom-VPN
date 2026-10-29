@@ -11,11 +11,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -238,7 +242,7 @@ func TestNodeAggregate_ListGetFiltersCursorAndExitsJoin(t *testing.T) {
 		t.Fatalf("expected invalid cursor to return error")
 	}
 
-	// 4. Member exit list returns only published exits in the member's groups.
+	// 4. Member exit list returns only published exits in the member's D-030 serving exit groups (no assignments row).
 	memberID := uuid.New()
 	if _, err := pool.Exec(ctx, `
 		INSERT INTO members (id, email, display_name, status)
@@ -246,9 +250,13 @@ func TestNodeAggregate_ListGetFiltersCursorAndExitsJoin(t *testing.T) {
 		t.Fatalf("insert member: %v", err)
 	}
 	if _, err := pool.Exec(ctx, `
-		INSERT INTO assignments (member_id, group_id, valid_from, valid_until)
-		VALUES ($1, $2, now() - interval '1 day', now() + interval '30 days')`, memberID, grpID); err != nil {
-		t.Fatalf("insert assignment: %v", err)
+		INSERT INTO entitlements (
+			member_id, revision, state, device_limit, valid_from, effective_service_end, admin_suspended, projection
+		) VALUES (
+			$1, 1, 'active', 3, now() - interval '1 day', now() + interval '30 days', false,
+			jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$2::text]))
+		)`, memberID, grpID.String()); err != nil {
+		t.Fatalf("insert entitlement: %v", err)
 	}
 
 	exitsList, err := svc.ListMemberExits(ctx, memberID)
@@ -647,7 +655,7 @@ func TestRevokeAndRetire_TombstonePreservesLedgerAndPendingWithdrawal(t *testing
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM usage_events WHERE node_id = $1`, nRetire.NodeID).Scan(&usageCount); err != nil || usageCount != 1 {
 		t.Fatalf("usage_events count after retire = %d (err=%v), want 1", usageCount, err)
 	}
-	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE resource = $1`, nRetire.NodeID.String()).Scan(&auditCount); err != nil || auditCount < 1 {
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE resource = $1`, "node:"+nRetire.NodeID.String()).Scan(&auditCount); err != nil || auditCount < 1 {
 		t.Fatalf("audit_events count after retire = %d (err=%v), want >= 1", auditCount, err)
 	}
 }
@@ -817,6 +825,141 @@ func assertExplicitNulls(t *testing.T, value any, fields ...string) {
 	for _, field := range fields {
 		if string(object[field]) != "null" {
 			t.Errorf("%T.%s = %s, want explicit null", value, field, object[field])
+		}
+	}
+}
+
+func TestMemberGrantOperation_NodeEnforcementACKAndLookup(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 29, 15, 0, 0, 0, time.UTC)
+	svc := NewService(pool, WithClock(func() time.Time { return now }))
+
+	relID, grpID := seedTestReleaseAndGroup(t, ctx, pool, "grant-ack")
+	n := seedTestNode(t, ctx, pool, "tw-taipei-grant", "tw-tpe", api.PublicationIntentPublished, "active", api.ControlStatusOnline, relID, grpID)
+
+	memberID := uuid.New()
+	grantID := uuid.New()
+	opID := uuid.New()
+	adminID := uuid.New()
+	reqID := uuid.New()
+	validFrom := now.Add(-1 * time.Hour)
+	validUntil := now.Add(24 * time.Hour)
+
+	if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, 'grant@example.com', 'Grant Member', 'active')`, memberID); err != nil {
+		t.Fatalf("insert member: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO entitlement_grants (
+			id, member_id, source, valid_from, valid_until, reason, created_by
+		) VALUES ($1, $2, 'admin_grant', $3, $4, 'TEST ONLY grant', $5)`,
+		grantID, memberID, validFrom, validUntil, adminID.String()); err != nil {
+		t.Fatalf("insert entitlement_grant: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO entitlements (
+			member_id, revision, state, device_limit, valid_from, effective_service_end, admin_suspended, projection
+		) VALUES (
+			$1, 2, 'active', 3, $2, $3, false, jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$4::text]))
+		)`, memberID, validFrom, validUntil, grpID.String()); err != nil {
+		t.Fatalf("insert entitlement: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO operations (
+			id, kind, principal, resource_type, resource_id, desired_generation, request_id, steps
+		) VALUES (
+			$1, 'member.grant', $2, 'entitlement_grant', $3, 2, $4,
+			'{"netbird":{"required":true,"status":"pending"},"nodes":{"required":true,"status":"pending"}}'::jsonb
+		)`, opID, "admin:"+adminID.String(), grantID, reqID); err != nil {
+		t.Fatalf("insert member.grant operation: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE entitlement_grants SET operation_id = $2 WHERE id = $1`, grantID, opID); err != nil {
+		t.Fatalf("link grant operation_id: %v", err)
+	}
+
+	// 1. Lookup by memberID follows resource_type = 'entitlement_grant' through entitlement_grants.member_id.
+	ops, err := svc.ListMemberOperations(ctx, memberID)
+	if err != nil {
+		t.Fatalf("ListMemberOperations: %v", err)
+	}
+	if len(ops) != 1 || ops[0].OperationId != opID || ops[0].Resource.Type != api.ResourceTypeEntitlementGrant || ops[0].Resource.Id != grantID {
+		t.Fatalf("ListMemberOperations = %+v, want [op %s on entitlement_grant %s]", ops, opID, grantID)
+	}
+	gotOp, err := svc.GetMemberOperation(ctx, memberID, opID)
+	if err != nil || gotOp.OperationId != opID {
+		t.Fatalf("GetMemberOperation = (%+v, %v), want %s", gotOp, err, opID)
+	}
+	if _, err := svc.GetMemberOperation(ctx, uuid.New(), opID); err == nil {
+		t.Fatalf("expected GetMemberOperation for unrelated member to return not found")
+	}
+
+	// 2. Simulate NetBird step succeeding first; operation remains running while "nodes" step is pending.
+	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		evID := uuid.Must(uuid.NewV7())
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			ID:            evID,
+			Actor:         SystemActorUUID.String(),
+			ActorType:     "system",
+			Action:        "netbird.observed",
+			Resource:      "member:" + memberID.String(),
+			Result:        "succeeded",
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         []byte(`{"observed":true}`),
+		}); err != nil {
+			return err
+		}
+		return entitlement.TransitionOperation(ctx, tx, opID, "netbird", api.OperationStepStatusSucceeded, &operations.Evidence{
+			Reference:  "audit_event:" + evID.String(),
+			ObservedAt: now,
+		})
+	}); err != nil {
+		t.Fatalf("TransitionOperation(netbird): %v", err)
+	}
+
+	midOp, err := svc.GetMemberOperation(ctx, memberID, opID)
+	if err != nil {
+		t.Fatalf("GetMemberOperation after netbird: %v", err)
+	}
+	if midOp.Status != api.OperationStatusRunning {
+		t.Fatalf("op status after netbird only = %s, want running", midOp.Status)
+	}
+
+	// 3. Submit node observation with applied_config_generation >= desired_config_generation and safety=passed.
+	report := emptyObservationReport()
+	report.AgentVersion = "1.0.0"
+	report.BootId = uuid.New()
+	report.ReportId = uuid.New()
+	report.NodeId = n.NodeID
+	report.NodeIncarnationId = n.IncarnationID
+	report.ObservedAt = now
+	report.ProvisioningState = api.ProvisioningStateReady
+	report.SafetyStatus = api.SafetyStatusPassed
+	report.DataHealth = api.DataHealthHealthy
+	report.MemberForwardingEnabled = true
+	report.AppliedConfigGeneration = presence.NewNullableWithValue(ParseU64(2))
+	report.CurrentReleaseId = presence.NewNullableWithValue(relID)
+	report.LastGoodReleaseId = presence.NewNullableWithValue(relID)
+	report.Netbird.Backend = api.ObservationReportNetbirdBackendKernel
+	report.Checks = []api.NodeCheck{
+		{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+		{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+		{Name: api.NodeCheckNameTunnelProbe, Status: api.HealthCheckStatusPassed, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+	}
+	if _, err := svc.SubmitObservation(ctx, n.NodeID, n.IncarnationID, report); err != nil {
+		t.Fatalf("SubmitObservation: %v", err)
+	}
+
+	finalOp, err := svc.GetMemberOperation(ctx, memberID, opID)
+	if err != nil {
+		t.Fatalf("GetMemberOperation after node observation: %v", err)
+	}
+	if finalOp.Status != api.OperationStatusSucceeded {
+		t.Fatalf("finalOp.Status = %s, want succeeded (steps=%+v)", finalOp.Status, finalOp.Steps)
+	}
+	for _, st := range finalOp.Steps {
+		if st.Status != api.OperationStepStatusSucceeded || st.ObservedAt.IsNull() {
+			t.Fatalf("step %s = %+v, want succeeded with non-null ObservedAt", st.Name, st)
 		}
 	}
 }

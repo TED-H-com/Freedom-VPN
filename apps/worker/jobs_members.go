@@ -189,6 +189,10 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		return "", e
 	}
 	// One immutable receipt audit per outbox ID, including empty affected sets.
+	resource, e := entitlement.ResourceType(event.AggregateType)
+	if e != nil {
+		return "", e
+	}
 	e = db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var exists bool
 		if _, e := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,121))`, event.ID.String()); e != nil {
@@ -200,7 +204,7 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if exists {
 			return nil
 		}
-		return db.AppendAudit(ctx, tx, db.AuditEvent{ID: event.ID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: "system", Action: "member.policy_compiled", Resource: entitlement.ResourceType(event.AggregateType) + ":" + event.AggregateID.String(), SchemaVersion: 1, Before: []byte(`{}`), After: raw, Result: "succeeded"})
+		return db.AppendAudit(ctx, tx, db.AuditEvent{ID: event.ID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: "system", Action: "member.policy_compiled", Resource: string(resource) + ":" + event.AggregateID.String(), SchemaVersion: 1, Before: []byte(`{}`), After: raw, Result: "succeeded"})
 	})
 	if e != nil {
 		return "", e

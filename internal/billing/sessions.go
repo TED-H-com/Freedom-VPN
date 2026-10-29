@@ -101,12 +101,16 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 
 		var op *uuid.UUID
 		if kind == "checkout" {
+			operationKind, resourceType := api.OperationKindCheckoutCreate, api.ResourceTypeCheckoutSession
+			if !operationKind.Valid() || !resourceType.Valid() {
+				return entitlement.ErrInvalid
+			}
 			operationID, e := uuid.NewV7()
 			if e != nil {
 				return e
 			}
 			op = &operationID
-			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,$5,$2,$6,$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID, api.OperationKindCheckoutCreate, api.ResourceTypeCheckoutSession)
+			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,$5,$2,$6,$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID, operationKind, resourceType)
 			if err != nil {
 				return err
 			}
@@ -231,6 +235,12 @@ func (s *Service) FulfillSession(ctx context.Context, id uuid.UUID) (retErr erro
 		}
 		if tag.RowsAffected() != 1 {
 			return db.ErrLeaseLost
+		}
+		// Record completion only after the provider result is durably stored.
+		// Cached replays return above, so each session has one completion audit.
+		actor := entitlement.Actor{ID: uuid.MustParse("00000000-0000-0000-0000-000000000003"), Role: string(api.AuditEventActorTypeSystem)}
+		if err = entitlement.Audit(ctx, tx, actor, "billing."+kind+"_completed", api.ResourceTypeCheckoutSession, id, nil, map[string]any{"session_id": id, "state": "succeeded", "expires_at": hosted.ExpiresAt}); err != nil {
+			return err
 		}
 		if operation == nil {
 			return nil

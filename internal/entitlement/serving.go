@@ -45,6 +45,17 @@ const servingQuery = `SELECT m.id,e.revision::text,e.projection->'exit_group_ids
  ORDER BY m.id`
 
 func ListServingMembersForGroups(ctx context.Context, q ServingQuerier, groupIDs []uuid.UUID, asOf time.Time) ([]ServingMember, error) {
+	return listServingMembersForGroups(ctx, q, groupIDs, asOf, false)
+}
+
+// ListServingMembersForGroupsForShare returns the serving members for groupIDs
+// using the identical D-030 servingQuery predicate while acquiring FOR SHARE
+// row locks on members and entitlements in the caller's transaction (§16.3, D-030).
+func ListServingMembersForGroupsForShare(ctx context.Context, q ServingQuerier, groupIDs []uuid.UUID, asOf time.Time) ([]ServingMember, error) {
+	return listServingMembersForGroups(ctx, q, groupIDs, asOf, true)
+}
+
+func listServingMembersForGroups(ctx context.Context, q ServingQuerier, groupIDs []uuid.UUID, asOf time.Time, lockForShare bool) ([]ServingMember, error) {
 	if len(groupIDs) == 0 {
 		return []ServingMember{}, nil
 	}
@@ -55,7 +66,7 @@ func ListServingMembersForGroups(ctx context.Context, q ServingQuerier, groupIDs
 		}
 		groups[i] = id.String()
 	}
-	return servingMembers(ctx, q, nil, groups, asOf)
+	return servingMembers(ctx, q, nil, groups, asOf, lockForShare)
 }
 
 // ServingExitGroups returns an empty set for unknown/non-serving members.
@@ -63,7 +74,7 @@ func ServingExitGroups(ctx context.Context, q ServingQuerier, memberID uuid.UUID
 	if memberID == uuid.Nil {
 		return nil, ErrInvalid
 	}
-	members, err := servingMembers(ctx, q, &memberID, nil, asOf)
+	members, err := servingMembers(ctx, q, &memberID, nil, asOf, false)
 	if err != nil {
 		return nil, err
 	}
@@ -72,11 +83,15 @@ func ServingExitGroups(ctx context.Context, q ServingQuerier, memberID uuid.UUID
 	}
 	return members[0].ExitGroupIDs, nil
 }
-func servingMembers(ctx context.Context, q ServingQuerier, member *uuid.UUID, groups []string, asOf time.Time) ([]ServingMember, error) {
+func servingMembers(ctx context.Context, q ServingQuerier, member *uuid.UUID, groups []string, asOf time.Time, lockForShare bool) ([]ServingMember, error) {
 	if !instant(asOf) {
 		return nil, ErrInvalid
 	}
-	rows, err := q.Query(ctx, servingQuery, member, groups, asOf.UTC())
+	query := servingQuery
+	if lockForShare {
+		query += " FOR SHARE OF m, e"
+	}
+	rows, err := q.Query(ctx, query, member, groups, asOf.UTC())
 	if err != nil {
 		return nil, err
 	}

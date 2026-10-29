@@ -98,8 +98,14 @@ can read operations initiated by administrators. Audit retains the actual actor.
 A device already at its target state returns its original operation with 202.
 Legacy rows without an operation enqueue a fresh observation/withdrawal
 operation; 202 never has an empty operation or fabricated completion.
-The current OperationKind enum lacks device authorization and grant revocation:
-these use `member.update` and `member.grant` respectively pending contract revision.
+Contracts revision 3 gives device authorization its own
+`member.device_authorize` kind, including reconciliation of an existing device.
+Grant creation uses `member.grant`; grant revocation uses `member.grant_revoke`.
+Operation kinds and resource types are generated enums, validated before writes.
+Checkout and portal reservation and successful completion have separate audit
+events on `checkout_session:<uuid>`. Completion is recorded in the transaction
+that stores the encrypted provider result; retries do not duplicate that event.
+Hosted URLs and provider payloads never appear in those audit rows.
 
 ## Devices and observed evidence
 
