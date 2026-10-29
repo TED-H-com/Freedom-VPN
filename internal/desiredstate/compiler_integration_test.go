@@ -422,13 +422,353 @@ func TestCompiler_ReSignETag304AndIdentityMismatch(t *testing.T) {
 		t.Fatalf("wrong incarnation err = %v, want 403 INCARNATION_MISMATCH", err)
 	}
 
-	// 5. Revoked node -> 403 IDENTITY_REVOKED.
+	// 5. Revoked node -> 403 IDENTITY_REVOKED for both GetDesiredState and ReSign.
 	if _, err := pool.Exec(ctx, `UPDATE nodes SET lifecycle_state = 'revoked', resource_version = resource_version + 1 WHERE id = $1`, nodeID); err != nil {
 		t.Fatalf("revoke node: %v", err)
 	}
 	_, err = compiler.GetDesiredState(ctx, nodeID, incID, "")
 	if !errors.As(err, &ae) || ae.Code != apierr.IdentityRevoked || ae.HTTPStatus() != 403 {
-		t.Fatalf("revoked node err = %v, want 403 IDENTITY_REVOKED", err)
+		t.Fatalf("revoked node GetDesiredState err = %v, want 403 IDENTITY_REVOKED", err)
+	}
+	_, err = compiler.ReSign(ctx, nodeID)
+	if !errors.As(err, &ae) || ae.Code != apierr.IdentityRevoked || ae.HTTPStatus() != 403 {
+		t.Fatalf("revoked node ReSign err = %v, want 403 IDENTITY_REVOKED", err)
+	}
+}
+
+func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPlanRate(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 28, 15, 0, 0, 0, time.UTC)
+
+	grpID := uuid.New()
+	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-db', 'grp-db')`, grpID); err != nil {
+		t.Fatalf("insert group: %v", err)
+	}
+
+	capDown := int64(60_000_000)
+	capUp := int64(30_000_000)
+	nodeCap := &api.NodeCapacity{
+		DownBps:          1_000_000_000,
+		UpBps:            1_000_000_000,
+		MemberDownBpsCap: presence.NewNullableWithValue(capDown),
+		MemberUpBpsCap:   presence.NewNullableWithValue(capUp),
+	}
+	capBytes, _ := json.Marshal(nodeCap)
+
+	nodeID := uuid.New()
+	incID := uuid.New()
+	exitID := uuid.New()
+	fp := sha256.Sum256([]byte("pubkey-" + nodeID.String()))
+
+	// 1. Insert node with NO desired_release_id (and fleet_config has no desired_release_id).
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO nodes (
+			id, lifecycle_state, provisioning_state,
+			desired_config_generation, applied_config_generation,
+			control_status, data_health, safety_status, capacity
+		) VALUES (
+			$1, 'registered', 'ready',
+			0, 0,
+			'online', 'healthy', 'passed', $2
+		)`, nodeID, capBytes); err != nil {
+		t.Fatalf("insert node: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO node_incarnations (
+			id, node_id, public_key_fingerprint, deployment_id, peer_id, os, os_version, arch
+		) VALUES (
+			$1, $2, $3, 'nb-main', $4, 'ubuntu', '24.04', 'amd64'
+		)`, incID, nodeID, fp[:], "peer-"+nodeID.String()[:8]); err != nil {
+		t.Fatalf("insert incarnation: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1, resource_version = resource_version + 1 WHERE id = $2`, incID, nodeID); err != nil {
+		t.Fatalf("update current_incarnation_id: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO exits (
+			id, node_id, display_name, region, publication_intent, publication_observed
+		) VALUES (
+			$1, $2, 'tw-taipei-db', 'tw-tpe', 'published', 'active'
+		)`, exitID, nodeID); err != nil {
+		t.Fatalf("insert exit: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO exit_groups (exit_id, group_id) VALUES ($1, $2)`, exitID, grpID); err != nil {
+		t.Fatalf("insert exit_group: %v", err)
+	}
+
+	signer, ts := testDesiredStateSignerAndTrustStore(t, now)
+	// Use default DBEntitlementReader and DBPolicyReader (no fakes) with configured deployment DNS resolvers.
+	compiler := NewCompiler(
+		pool,
+		signer,
+		WithClock(func() time.Time { return now }),
+		WithDNSResolvers([]string{"192.0.2.53"}, []string{"2001:db8::53"}),
+	)
+
+	// Compile #1: no release target -> must succeed with DesiredReleaseId = null.
+	resNoRel, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile without release target: %v", err)
+	}
+	if !resNoRel.Envelope.Signed.DesiredReleaseId.IsNull() {
+		t.Fatalf("expected DesiredReleaseId to be null when no release target exists, got %v", resNoRel.Envelope.Signed.DesiredReleaseId)
+	}
+
+	// 2. Seed release, dns_profile, fair_use policy revisions, plans, members, devices, and fup_member_states.
+	relID := uuid.New()
+	manifestHash := sha256.Sum256([]byte("manifest-" + relID.String()))
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO releases (
+			id, version, release_sequence, manifest_schema_version,
+			manifest, manifest_hash, signature, signing_key_ref, component_versions
+		) VALUES (
+			$1, $2, 1, 1,
+			'{"schema_version":1}'::jsonb, $3, $4, 'rel-key-1', '{"fvpn_agent":"1.0.0"}'::jsonb
+		)`, relID, "2026.10.28-"+relID.String()[:8], manifestHash[:], make([]byte, 64)); err != nil {
+		t.Fatalf("insert release: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET desired_release_id = $2, resource_version = resource_version + 1 WHERE id = $1`, nodeID, relID); err != nil {
+		t.Fatalf("set node desired_release_id: %v", err)
+	}
+
+	insertActivePolicy := func(typ string, rev int, payload string) uuid.UUID {
+		defID := uuid.New()
+		revID := uuid.New()
+		sum := sha256.Sum256([]byte(payload))
+		if _, err := pool.Exec(ctx, `INSERT INTO policy_definitions (id, type, code, generation) VALUES ($1, $2, $3, $4)`, defID, typ, typ+"-"+defID.String()[:8], rev); err != nil {
+			t.Fatalf("insert policy_definition %s: %v", typ, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO policy_revisions (id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by)
+			VALUES ($1, $2, $3, $4, 1, $5::jsonb, $6, 'key-1', 'admin')`,
+			revID, defID, typ, rev, payload, sum[:]); err != nil {
+			t.Fatalf("insert policy_revision %s: %v", typ, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			UPDATE policy_definitions
+			SET active_revision_id = $2, resource_version = resource_version + 1
+			WHERE id = $1`, defID, revID); err != nil {
+			t.Fatalf("activate policy_definition %s: %v", typ, err)
+		}
+		return revID
+	}
+
+	// Payload includes a decoy resolver_ipv4 to verify resolver addresses come only from compiler config.
+	_ = insertActivePolicy(string(api.PolicyTypeDnsProfile), 9, `{"resolver_ipv4":["198.51.100.53"],"resolver_ipv6":[]}`)
+	fupEnforceRev := insertActivePolicy(string(api.PolicyTypeFairUse), 6, `{"mode":"enforce","effective_at":"2026-10-01T00:00:00Z"}`)
+
+	// Also insert a future fair_use revision (effective_at > now) on a second definition for before-effective_at testing.
+	futureDefID := uuid.New()
+	futureRevID := uuid.New()
+	futurePayload := `{"mode":"enforce","effective_at":"2026-11-01T00:00:00Z"}`
+	futureSum := sha256.Sum256([]byte(futurePayload))
+	if _, err := pool.Exec(ctx, `INSERT INTO policy_definitions (id, type, code, generation) VALUES ($1, 'fair_use', $2, 5)`, futureDefID, "fup-future-"+futureDefID.String()[:8]); err != nil {
+		t.Fatalf("insert future fup def: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO policy_revisions (id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by)
+		VALUES ($1, $2, 'fair_use', 5, 1, $3::jsonb, $4, 'key-1', 'admin')`,
+		futureRevID, futureDefID, futurePayload, futureSum[:]); err != nil {
+		t.Fatalf("insert future fup rev: %v", err)
+	}
+
+	seedPlanRevision := func(code string, payload string) uuid.UUID {
+		planID := uuid.New()
+		planRevID := uuid.New()
+		if _, err := pool.Exec(ctx, `INSERT INTO plans (id, code) VALUES ($1, $2)`, planID, code+"-"+planID.String()[:8]); err != nil {
+			t.Fatalf("insert plan %s: %v", code, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO plan_revisions (id, plan_id, revision, device_limit, exit_group_ids, schema_version, payload)
+			VALUES ($1, $2, 1, 3, $3, 1, $4::jsonb)`,
+			planRevID, planID, []uuid.UUID{grpID}, payload); err != nil {
+			t.Fatalf("insert plan_revision %s: %v", code, err)
+		}
+		return planRevID
+	}
+
+	planWithRate := seedPlanRevision("plan-100m", `{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}`)
+	planWithoutRate := seedPlanRevision("plan-norate", `{}`)
+
+	seedMemberWithBinding := func(email string, planRevID uuid.UUID, ip string) uuid.UUID {
+		mid := uuid.New()
+		devID := uuid.New()
+		validFrom := now.Add(-24 * time.Hour)
+		validUntil := now.Add(14 * 24 * time.Hour)
+		if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, $2, $2, 'active')`, mid, email); err != nil {
+			t.Fatalf("insert member %s: %v", email, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO entitlements (member_id, revision, plan_revision_id, device_limit, valid_from, effective_service_end, admin_suspended)
+			VALUES ($1, 2, $2, 3, $3, $4, false)`, mid, planRevID, validFrom, validUntil); err != nil {
+			t.Fatalf("insert entitlement %s: %v", email, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO assignments (member_id, group_id, valid_from, valid_until)
+			VALUES ($1, $2, $3, $4)`, mid, grpID, validFrom, validUntil); err != nil {
+			t.Fatalf("insert assignment %s: %v", email, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO member_devices (id, member_id, deployment_id, peer_id, status, authorized_at)
+			VALUES ($1, $2, 'nb-main', $3, 'authorized', $4)`, devID, mid, "peer-"+devID.String()[:8], validFrom); err != nil {
+			t.Fatalf("insert device %s: %v", email, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO device_bindings (device_id, member_id, overlay_scope, overlay_ip, binding_revision, valid_from, valid_until, peer_ref)
+			VALUES ($1, $2, 'overlay-main', $3, 1, $4, $5, $6)`,
+			devID, mid, ip, validFrom, validUntil, "peer-"+devID.String()[:8]); err != nil {
+			t.Fatalf("insert binding %s: %v", email, err)
+		}
+		return mid
+	}
+
+	memberShadow := seedMemberWithBinding("shadow@example.com", planWithRate, "100.64.0.41")
+	memberBeforeEffective := seedMemberWithBinding("before-eff@example.com", planWithRate, "100.64.0.42")
+	memberEnforce := seedMemberWithBinding("enforce@example.com", planWithRate, "100.64.0.43")
+	memberMissingRate := seedMemberWithBinding("norate@example.com", planWithoutRate, "100.64.0.44")
+
+	// Seed fup_member_states for period 2026-10:
+	// - memberShadow: mode=shadow, would_apply_down_bps=1000, generation=4 -> must compile mode=shadow with null tier rate (min(100M, 60M) = 60M).
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO fup_member_states (
+			member_id, period_id, period_start, period_end, policy_revision_id,
+			mode, would_apply_tier_index, would_apply_down_bps, would_apply_up_bps,
+			would_apply_priority, would_apply_reason, generation, aggregate_as_of
+		) VALUES (
+			$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+			'shadow', 2, 1000, 1000,
+			3, 'fair_use_tier', 4, $3
+		)`, memberShadow, fupEnforceRev, now); err != nil {
+		t.Fatalf("insert fup shadow state: %v", err)
+	}
+
+	// - memberBeforeEffective: mode=enforce on futureRevID (effective_at = 2026-11-01 > now) -> must compile mode=shadow with null tier rate.
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO fup_member_states (
+			member_id, period_id, period_start, period_end, policy_revision_id,
+			mode, would_apply_tier_index, would_apply_down_bps, would_apply_up_bps,
+			would_apply_priority, would_apply_reason,
+			enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps,
+			enforced_priority, enforced_reason, generation, aggregate_as_of
+		) VALUES (
+			$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+			'enforce', 1, 5000000, 2000000,
+			2, 'fair_use_tier',
+			'adjusted', 1, 5000000, 2000000,
+			2, 'fair_use_tier', 5, $3
+		)`, memberBeforeEffective, futureRevID, now); err != nil {
+		t.Fatalf("insert fup before-effective state: %v", err)
+	}
+
+	// - memberEnforce: mode=enforce on fupEnforceRev (effective_at <= now), enforced_down_bps=15M, enforced_up_bps=8M, generation=7.
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO fup_member_states (
+			member_id, period_id, period_start, period_end, policy_revision_id,
+			mode, would_apply_tier_index, would_apply_down_bps, would_apply_up_bps,
+			would_apply_priority, would_apply_reason,
+			enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps,
+			enforced_priority, enforced_reason, generation, aggregate_as_of
+		) VALUES (
+			$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+			'enforce', 2, 15000000, 8000000,
+			4, 'fair_use_tier',
+			'adjusted', 2, 15000000, 8000000,
+			4, 'fair_use_tier', 7, $3
+		)`, memberEnforce, fupEnforceRev, now); err != nil {
+		t.Fatalf("insert fup enforce state: %v", err)
+	}
+
+	compiled, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile with DB readers: %v", err)
+	}
+
+	rawEnv, err := json.Marshal(compiled.Envelope)
+	if err != nil {
+		t.Fatalf("marshal envelope: %v", err)
+	}
+	if _, _, err := envelope.Verify(rawEnv, ts, envelope.PurposeDesiredState, now); err != nil {
+		t.Fatalf("envelope.Verify: %v", err)
+	}
+
+	signed := compiled.Envelope.Signed
+	if gotRel, err := signed.DesiredReleaseId.Get(); err != nil || gotRel != relID {
+		t.Fatalf("DesiredReleaseId = (%v, %v), want %s", gotRel, err, relID)
+	}
+	if signed.PolicyRefs.DnsGeneration != 9 {
+		t.Errorf("DnsGeneration = %s, want 9 (active dns_profile revision)", signed.PolicyRefs.DnsGeneration)
+	}
+	if signed.PolicyRefs.FupGeneration != 6 {
+		t.Errorf("FupGeneration = %s, want 6 (active fair_use revision)", signed.PolicyRefs.FupGeneration)
+	}
+	if len(signed.Dns.ResolverIpv4) != 1 || signed.Dns.ResolverIpv4[0] != "192.0.2.53" {
+		t.Errorf("ResolverIpv4 = %v, want [192.0.2.53] from compiler config (never from dns_profile payload)", signed.Dns.ResolverIpv4)
+	}
+	if len(signed.Dns.ResolverIpv6) != 1 || signed.Dns.ResolverIpv6[0] != "2001:db8::53" {
+		t.Errorf("ResolverIpv6 = %v, want [2001:db8::53] from compiler config", signed.Dns.ResolverIpv6)
+	}
+
+	// Verify memberMissingRate was omitted and recorded in compiled.OmittedMembers.
+	if len(compiled.OmittedMembers) != 1 || compiled.OmittedMembers[0].MemberID != memberMissingRate || compiled.OmittedMembers[0].Reason != "plan_missing_rate" {
+		t.Fatalf("OmittedMembers = %+v, want [{MemberID:%s Reason:plan_missing_rate}]", compiled.OmittedMembers, memberMissingRate)
+	}
+	for _, b := range signed.DeviceBindings {
+		if b.MemberId == memberMissingRate {
+			t.Fatalf("memberMissingRate (%s) must be omitted from DeviceBindings", memberMissingRate)
+		}
+	}
+
+	if len(signed.MemberRatePolicies) != 3 {
+		t.Fatalf("len(MemberRatePolicies) = %d, want 3 (memberMissingRate omitted)", len(signed.MemberRatePolicies))
+	}
+
+	byMember := map[uuid.UUID]api.MemberRatePolicy{}
+	for _, mp := range signed.MemberRatePolicies {
+		byMember[mp.MemberId] = mp
+	}
+
+	// 1. memberShadow: mode=shadow, generation=4, tier_index=0, down=60M (min(plan 100M, cap 60M)), up=30M (min(plan 50M, cap 30M)).
+	if mp, ok := byMember[memberShadow]; !ok {
+		t.Fatalf("memberShadow missing from MemberRatePolicies")
+	} else {
+		down := nullableValue(t, mp.DownBps)
+		up := nullableValue(t, mp.UpBps)
+		if mp.Mode != api.MemberRatePolicyModeShadow || mp.Generation != 4 || mp.TierIndex != 0 || down != 60_000_000 || up != 30_000_000 {
+			t.Errorf("memberShadow rate policy = %+v (down=%d up=%d), want mode=shadow gen=4 tier=0 down=60000000 up=30000000", mp, down, up)
+		}
+	}
+
+	// 2. memberBeforeEffective: before effective_at -> mode=shadow, generation=5, tier_index=0, down=60M, up=30M.
+	if mp, ok := byMember[memberBeforeEffective]; !ok {
+		t.Fatalf("memberBeforeEffective missing from MemberRatePolicies")
+	} else {
+		down := nullableValue(t, mp.DownBps)
+		up := nullableValue(t, mp.UpBps)
+		if mp.Mode != api.MemberRatePolicyModeShadow || mp.Generation != 5 || mp.TierIndex != 0 || down != 60_000_000 || up != 30_000_000 {
+			t.Errorf("memberBeforeEffective rate policy = %+v (down=%d up=%d), want mode=shadow gen=5 tier=0 down=60000000 up=30000000", mp, down, up)
+		}
+	}
+
+	// 3. memberEnforce: mode=enforce, generation=7, tier_index=2, priority=4, reason=fair_use_tier, down=15M, up=8M.
+	if mp, ok := byMember[memberEnforce]; !ok {
+		t.Fatalf("memberEnforce missing from MemberRatePolicies")
+	} else {
+		down := nullableValue(t, mp.DownBps)
+		up := nullableValue(t, mp.UpBps)
+		if mp.Mode != api.MemberRatePolicyModeEnforce || mp.Generation != 7 || mp.TierIndex != 2 || mp.Priority != 4 || mp.Reason != api.MemberRatePolicyReasonFairUseTier || down != 15_000_000 || up != 8_000_000 {
+			t.Errorf("memberEnforce rate policy = %+v (down=%d up=%d), want mode=enforce gen=7 tier=2 prio=4 reason=fair_use_tier down=15000000 up=8000000", mp, down, up)
+		}
+	}
+
+	// 4. Verify ReSign refuses a node whose incarnation is revoked or whose lifecycle_state is retired.
+	if _, err := pool.Exec(ctx, `UPDATE node_incarnations SET revoked_at = $2 WHERE id = $1`, incID, now); err != nil {
+		t.Fatalf("revoke incarnation: %v", err)
+	}
+	_, err = compiler.ReSign(ctx, nodeID)
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.Code != apierr.IdentityRevoked || ae.HTTPStatus() != 403 {
+		t.Fatalf("ReSign with revoked incarnation err = %v, want 403 IDENTITY_REVOKED", err)
 	}
 }
 
