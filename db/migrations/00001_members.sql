@@ -1,5 +1,7 @@
 -- +goose Up
 
+-- Goose's default metadata timestamp is timezone-less; normalize it too (§15.1).
+ALTER TABLE goose_db_version ALTER COLUMN tstamp TYPE TIMESTAMPTZ USING tstamp AT TIME ZONE 'UTC';
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- §15.2: stable identity, independent of email.
