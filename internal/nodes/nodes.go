@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -610,9 +611,20 @@ func (s *Service) ListNodes(ctx context.Context, p ListNodesParams) (api.NodeLis
 }
 
 // ListMemberExits returns the member-visible exit list (`GET /member/exits`, §14.3)
-// for a member entitled to the exits' member groups.
+// for a member entitled to the exits' member groups via D-030 serving eligibility.
 func (s *Service) ListMemberExits(ctx context.Context, memberID uuid.UUID) (api.MemberExitList, error) {
-	now := s.now()
+	now := s.now().UTC()
+	groupIDs, err := entitlement.ServingExitGroups(ctx, s.pool, memberID, now)
+	if err != nil {
+		return api.MemberExitList{}, err
+	}
+	if len(groupIDs) == 0 {
+		return api.MemberExitList{
+			Items:      []api.MemberExit{},
+			NextCursor: presence.NewNullNullable[string](),
+		}, nil
+	}
+
 	const q = `
 		SELECT DISTINCT
 			e.id,
@@ -625,16 +637,12 @@ func (s *Service) ListMemberExits(ctx context.Context, memberID uuid.UUID) (api.
 		FROM exits e
 		JOIN nodes n ON n.id = e.node_id
 		JOIN exit_groups eg ON eg.exit_id = e.id
-		LEFT JOIN subscriptions sub ON sub.member_id = $1 AND sub.is_active = true
-		JOIN assignments a ON a.group_id = eg.group_id
-			AND a.valid_from <= $2
-			AND (a.valid_until IS NULL OR a.valid_until > $2)
-			AND (a.member_id = $1 OR (sub.plan_revision_id IS NOT NULL AND a.plan_revision_id = sub.plan_revision_id))
-		WHERE e.publication_intent = 'published'
+		WHERE eg.group_id = ANY($1)
+		  AND e.publication_intent = 'published'
 		  AND n.lifecycle_state = 'registered'
 		ORDER BY e.region ASC, e.display_name ASC, e.id ASC`
 
-	rows, err := s.pool.Query(ctx, q, memberID, now)
+	rows, err := s.pool.Query(ctx, q, groupIDs)
 	if err != nil {
 		return api.MemberExitList{}, err
 	}
@@ -722,10 +730,7 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 		)
 	}
 
-	principal := p.Principal
-	if principal == "" {
-		principal = "admin"
-	}
+	actorUUID, actorType, principal := ResolveAdminActor(ctx, p.Principal)
 	reqHash, err := hashIdempotentRequest(p.NodeID.String(), p.Patch)
 	if err != nil {
 		return nil, err
@@ -913,11 +918,11 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 				return err
 			}
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         principal,
-				ActorType:     "admin",
+				Actor:         actorUUID.String(),
+				ActorType:     actorType,
 				Action:        "node.update",
-				Resource:      p.NodeID.String(),
-				Result:        "accepted",
+				Resource:      "node:" + p.NodeID.String(),
+				Result:        "succeeded",
 				RequestID:     p.RequestID,
 				OperationID:   &op.OperationId,
 				SchemaVersion: 1,
@@ -944,10 +949,10 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 		}
 
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-			Actor:         principal,
-			ActorType:     "admin",
+			Actor:         actorUUID.String(),
+			ActorType:     actorType,
 			Action:        "node.update",
-			Resource:      p.NodeID.String(),
+			Resource:      "node:" + p.NodeID.String(),
 			Result:        "succeeded",
 			RequestID:     p.RequestID,
 			SchemaVersion: 1,
@@ -1037,9 +1042,7 @@ func (s *Service) revokeOrRetireNode(
 			apierr.FieldError{Field: "/reason", Reason: "required"},
 		)
 	}
-	if principal == "" {
-		principal = "admin"
-	}
+	actorUUID, actorType, principal := ResolveAdminActor(ctx, principal)
 
 	targetState := api.LifecycleStateRevoked
 	method := "POST"
@@ -1199,11 +1202,11 @@ func (s *Service) revokeOrRetireNode(
 			"resource_version":   newVer,
 		})
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-			Actor:         principal,
-			ActorType:     "admin",
+			Actor:         actorUUID.String(),
+			ActorType:     actorType,
 			Action:        opKind,
-			Resource:      nodeID.String(),
-			Result:        "accepted",
+			Resource:      "node:" + nodeID.String(),
+			Result:        "succeeded",
 			RequestID:     requestID,
 			OperationID:   &op.OperationId,
 			SchemaVersion: 1,
