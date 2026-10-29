@@ -7,18 +7,18 @@
     "ISO03"
   ],
   "status": "blocked",
-  "at": "2026-10-29T23:41:36Z",
-  "build": "c1ac4393f6c206783f06034d73f2915d675bd917",
+  "at": "2026-10-29T23:49:51Z",
+  "build": "fa5bdcc936b9291c1e583174a72a56db18a5a233",
   "image_digests": [
-    "fvpn-w4-isolation-node:local sha256:9488a1ad13f7fe053b78c0e797c3943fd7124a1aff3d1a6ad443d57135b3f6e7",
-    "fvpn-w4-isolation-control:local sha256:99506184d9312156f2dfe5143806e103e668598cb2852ffa9aa0b235e680b44d",
-    "fvpn-w4-isolation-worker:local sha256:daf907d1298b50e7442b648d0da2498de1f1257f1a46d44a9b5a47bf650eb2d8",
+    "fvpn-w4-isolation-node:local sha256:9cc6ddc7ec2faf0a73b8190234716ea2c1a5f82c2824dd5500eb0d48a5ed5aa3",
+    "fvpn-w4-isolation-control:local sha256:d10dd8a7d73bf9af31211e979e4c6da22cd96a1d91aee54b5a789b2f3126d5a1",
+    "fvpn-w4-isolation-worker:local sha256:ca2de9ddc95352a83391609fac4e82abcbbc5e942d40a8f8956f056eed4e40af",
     "fvpn-w4-at-isolation:lab absent"
   ],
   "policy_revision": "1",
-  "node_incarnation": "01a18a0a-2e35-7bae-8a02-7e9a3a44d8aa",
+  "node_incarnation": "01a18a11-b7b6-7f02-ad95-3d99d6ae8d45",
   "expected": "The selected IPv6 mode either routes or blocks. ULA, link-local, loopback, metadata and IPv4-mapped addresses are unreachable. There is no unverified bypass (§19 AT11, ISO01, ISO03).",
-  "actual": "PUT publication 422 NODE_NOT_SERVICEABLE ipv6=member has no global ipv6 address; the dev stack lab network is ipv4",
+  "actual": "PUT publication 422 NODE_NOT_SERVICEABLE failed_checks=[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"] ipv6=member has no global ipv6 address; the dev stack lab network is ipv4",
   "commands": [
     "FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 make -f mk/e2e.mk e2e-up",
     "FVPN_E2E=1 FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 go test -tags e2e -count=1 -timeout 25m -p 1 -parallel 1 ./tests/e2e/at/isolation",
@@ -27,7 +27,7 @@
   "observations": [
     {
       "name": "node_id",
-      "detail": "01a18a0a-2a5e-72ed-a531-3892fa367ad2"
+      "detail": "01a18a11-b671-7cd3-8087-377f58e10c89"
     },
     {
       "name": "publication_observed",
@@ -103,7 +103,7 @@
     },
     {
       "name": "stack_targets",
-      "detail": "containers=fvpn-w4-isolation-node,fvpn-w4-isolation-member,fvpn-w4-isolation-worker,fvpn-w4-isolation-control,fvpn-w4-isolation-gateway,fvpn-w4-isolation-adguard,fvpn-w4-isolation-origin,fvpn-w4-isolation-postgres,fvpn-w4-isolation-coredns,fvpn-w4-isolation-netbird,fvpn-w4-isolation-idp,fvpn-w4-isolation-payment lab_prefix=172.28.33 origin_ip=192.0.6.10 node_dummy=192.0.2.20"
+      "detail": "containers=fvpn-w4-isolation-member,fvpn-w4-isolation-node,fvpn-w4-isolation-worker,fvpn-w4-isolation-control,fvpn-w4-isolation-adguard,fvpn-w4-isolation-gateway,fvpn-w4-isolation-origin,fvpn-w4-isolation-postgres,fvpn-w4-isolation-coredns,fvpn-w4-isolation-netbird,fvpn-w4-isolation-payment,fvpn-w4-isolation-idp lab_prefix=172.28.33 origin_ip=192.0.6.10 node_dummy=192.0.2.20"
     },
     {
       "name": "exit_probes",
@@ -180,6 +180,14 @@
     {
       "name": "publication_put",
       "detail": "422 NODE_NOT_SERVICEABLE"
+    },
+    {
+      "name": "failed_checks",
+      "detail": "[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]"
+    },
+    {
+      "name": "publication_error_body",
+      "detail": "{\"error\":{\"code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"node does not satisfy serving baseline requirements\",\"request_id\":\"01a18a11-e6e4-7a43-b7d1-4d8c38843c8a\",\"retryable\":false,\"details\":{\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}}}"
     }
   ]
 }
