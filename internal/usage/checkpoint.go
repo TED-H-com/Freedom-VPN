@@ -29,6 +29,20 @@ type checkpointRow struct {
 	updatedAt         time.Time
 }
 
+// CheckpointInitTrace allows deterministic white-box/integration tests to
+// synchronize concurrent transactions around stream checkpoint initialization.
+type CheckpointInitTrace struct {
+	AfterInitialMiss func()
+	BeforeInsert     func()
+}
+
+type checkpointInitTraceKey struct{}
+
+// WithCheckpointInitTrace attaches a CheckpointInitTrace to ctx for testing.
+func WithCheckpointInitTrace(ctx context.Context, trace *CheckpointInitTrace) context.Context {
+	return context.WithValue(ctx, checkpointInitTraceKey{}, trace)
+}
+
 // ensureAndLockCheckpointInTx returns the stream's usage_checkpoints row locked with FOR UPDATE,
 // creating an initial row matching committed usage_events receipts if none exists yet (F-04).
 func ensureAndLockCheckpointInTx(
@@ -47,6 +61,11 @@ func ensureAndLockCheckpointInTx(
 		return checkpointRow{}, fmt.Errorf("usage: lock checkpoint row: %w", err)
 	}
 
+	trace, _ := ctx.Value(checkpointInitTraceKey{}).(*CheckpointInitTrace)
+	if trace != nil && trace.AfterInitialMiss != nil {
+		trace.AfterInitialMiss()
+	}
+
 	// Serialize stream checkpoint creation on the parent node_incarnations row (F-13 lock order).
 	var incExists int
 	if err := tx.QueryRow(ctx, `
@@ -57,8 +76,11 @@ func ensureAndLockCheckpointInTx(
 		return checkpointRow{}, fmt.Errorf("usage: lock node incarnation for checkpoint init: %w", err)
 	}
 
-	// Re-check after acquiring the node_incarnations lock: if a concurrent transaction
-	// already created usage_checkpoints, lock and return it without running BEFORE INSERT triggers.
+	// Re-check under the node_incarnations lock: if a concurrent transaction created
+	// and committed the checkpoint row while we were waiting, lock and return it now.
+	// Otherwise a fast-path transaction (which locks usage_checkpoints without locking
+	// node_incarnations) could commit new usage_events between computeWatermarkFromEventsInTx
+	// and INSERT, causing the BEFORE INSERT trigger check_usage_checkpoint to fail (F-04).
 	cp, err = selectCheckpointForUpdateInTx(ctx, tx, nodeID, incarnationID)
 	if err == nil {
 		return cp, nil
@@ -70,6 +92,10 @@ func ensureAndLockCheckpointInTx(
 	newHCS, newMax, missing, proof, err := computeWatermarkFromEventsInTx(ctx, tx, nodeID, incarnationID, 0, 0, nil)
 	if err != nil {
 		return checkpointRow{}, err
+	}
+
+	if trace != nil && trace.BeforeInsert != nil {
+		trace.BeforeInsert()
 	}
 
 	_, err = tx.Exec(ctx, `
@@ -263,6 +289,18 @@ func resetStreamCheckpointForNewEpochInTx(
 	newEpoch uuid.UUID,
 	now time.Time,
 ) (checkpointRow, error) {
+	var incExists int
+	if err := tx.QueryRow(ctx, `
+		SELECT 1 FROM node_incarnations
+		WHERE node_id = $1 AND id = $2
+		FOR NO KEY UPDATE
+	`, nodeID, incarnationID).Scan(&incExists); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return checkpointRow{}, fmt.Errorf("usage: lock node incarnation for epoch reset: %w", err)
+	}
+	if _, err := selectCheckpointForUpdateInTx(ctx, tx, nodeID, incarnationID); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return checkpointRow{}, fmt.Errorf("usage: lock checkpoint for epoch reset: %w", err)
+	}
+
 	newHCS, newMax, missing, proof, err := computeWatermarkFromEventsInTx(ctx, tx, nodeID, incarnationID, 0, 0, nil)
 	if err != nil {
 		return checkpointRow{}, err

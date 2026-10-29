@@ -10,6 +10,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -148,14 +149,27 @@ func (s *Service) insertInbox(ctx context.Context, event Event, raw, digestSourc
 	if err != nil {
 		return out, err
 	}
-	err = s.Pool.QueryRow(ctx, `INSERT INTO inbox_events(id,source,external_event_id,payload_hash,encrypted_payload,subscription_ref,event_type) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(source,external_event_id) DO NOTHING RETURNING id`, id, s.Provider.Name(), event.ID, hash, encrypted, event.SubscriptionID, event.Type).Scan(&out.ID)
-	if errors.Is(err, pgx.ErrNoRows) {
-		out.Duplicate = true
-		err = s.Pool.QueryRow(ctx, `SELECT id FROM inbox_events WHERE source=$1 AND external_event_id=$2 AND payload_hash=$3`, s.Provider.Name(), event.ID, hash).Scan(&out.ID)
+	err = db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		err = tx.QueryRow(ctx, `INSERT INTO inbox_events(id,source,external_event_id,payload_hash,encrypted_payload,subscription_ref,event_type) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(source,external_event_id) DO NOTHING RETURNING id`, id, s.Provider.Name(), event.ID, hash, encrypted, event.SubscriptionID, event.Type).Scan(&out.ID)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return out, db.ErrIdempotencyConflict
+			out.Duplicate = true
+			err = tx.QueryRow(ctx, `SELECT id FROM inbox_events WHERE source=$1 AND external_event_id=$2 AND payload_hash=$3`, s.Provider.Name(), event.ID, hash).Scan(&out.ID)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return db.ErrIdempotencyConflict
+			}
 		}
-	}
+		if err != nil {
+			return err
+		}
+		if out.Duplicate {
+			return nil
+		}
+		payload, err := canonjson.Marshal(map[string]any{"inbox_id": out.ID})
+		if err != nil {
+			return err
+		}
+		return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: out.ID, AggregateType: "billing_inbox", AggregateVersion: "1", EventType: "billing.inbox_received", SchemaVersion: 1, Payload: payload})
+	})
 	return out, err
 }
 

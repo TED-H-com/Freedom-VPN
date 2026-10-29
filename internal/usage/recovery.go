@@ -17,14 +17,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
 
-func auditActor(actor string) (string, string) {
-	trimmed := strings.TrimSpace(actor)
-	if id, err := uuid.Parse(trimmed); err == nil && id != uuid.Nil {
-		return id.String(), "admin"
-	}
-	return trimmed, "system"
-}
-
 // RecoveryRequest contains parameters to enter ledger recovery mode (§17.3).
 type RecoveryRequest struct {
 	NewLedgerEpoch uuid.UUID
@@ -71,12 +63,10 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 		return apierr.Validation("reason is required", apierr.FieldError{Field: "/reason", Reason: "required"})
 	}
 	now := s.now()
-	actID, actType := auditActor(actor)
-	afterBytes, _ := json.Marshal(map[string]any{
-		"mode":   string(LedgerModeFrozen),
-		"reason": reason,
-	})
 	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if _, err := s.lockLedgerStateForUpdateInTx(ctx, tx); err != nil {
+			return fmt.Errorf("usage: lock ledger state for freeze: %w", err)
+		}
 		tag, err := tx.Exec(ctx, `
 			UPDATE usage_ledger_state
 			SET mode = $2, mode_reason = $3, changed_by = $4, updated_at = $5
@@ -88,12 +78,18 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 		if tag.RowsAffected() == 0 {
 			return fmt.Errorf("usage: usage_ledger_state singleton missing")
 		}
+		actID, actType := auditActor(actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"mode":   string(LedgerModeFrozen),
+			"reason": reason,
+			"actor":  actor,
+		})
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         actID,
 			ActorType:     actType,
 			Action:        "usage_ledger.freeze",
-			Resource:      "fleet_config:" + ledgerStateSingletonID,
-			Result:        "succeeded",
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
 			After:         afterBytes,
@@ -109,8 +105,12 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 // marks affected rollups reconciliation_in_progress, and switches the ledger
 // into reconciling mode so nodes can pull checkpoints and replay (§17.3 steps 2-6).
 func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (RecoveryState, error) {
-	if s.signer == nil {
-		return RecoveryState{}, fmt.Errorf("usage: recovery signer is not configured")
+	epochSigner := s.ledgerEpochSigner
+	if epochSigner == nil {
+		epochSigner = s.signer
+	}
+	if epochSigner == nil {
+		return RecoveryState{}, fmt.Errorf("usage: ledger-epoch signer is not configured")
 	}
 	if strings.TrimSpace(req.Reason) == "" {
 		return RecoveryState{}, apierr.Validation("reason is required", apierr.FieldError{Field: "/reason", Reason: "required"})
@@ -146,23 +146,13 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 
 	var result RecoveryState
 	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		var prevEpoch uuid.UUID
-		err := tx.QueryRow(ctx, `
-			SELECT current_epoch
-			FROM usage_ledger_state
-			WHERE id = $1
-			FOR UPDATE
-		`, ledgerStateSingletonID).Scan(&prevEpoch)
+		state, err := s.lockLedgerStateForUpdateInTx(ctx, tx)
 		if err != nil {
 			return fmt.Errorf("usage: lock ledger state: %w", err)
 		}
+		prevEpoch := state.LedgerEpoch
 		if newEpoch == prevEpoch {
 			return apierr.Validation("new_ledger_epoch must differ from current ledger_epoch", apierr.FieldError{Field: "/new_ledger_epoch", Reason: "conflict"})
-		}
-
-		state, err := s.getLedgerStateInTx(ctx, tx)
-		if err != nil {
-			return err
 		}
 
 		// Discover all node incarnation streams from checkpoints, events, and node_incarnations.
@@ -204,7 +194,7 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 			StreamCount:         len(streams),
 			CreatedAt:           now,
 		}
-		rawEnv, err := s.signer.Sign(envelope.PurposeLedgerEpoch, payload)
+		rawEnv, err := epochSigner.Sign(envelope.PurposeLedgerEpoch, payload)
 		if err != nil {
 			return fmt.Errorf("usage: sign recovery record: %w", err)
 		}
@@ -290,14 +280,15 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 			"new_ledger_epoch":      newEpoch.String(),
 			"mode":                  string(LedgerModeReconciling),
 			"reason":                req.Reason,
+			"actor":                 req.Actor,
 			"recomputed_streams":    len(streams),
 		})
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         actID,
 			ActorType:     actType,
 			Action:        "usage_ledger.begin_recovery",
-			Resource:      "fleet_config:" + ledgerStateSingletonID,
-			Result:        "succeeded",
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
 			After:         afterBytes,
@@ -330,9 +321,8 @@ func (s *Service) CompleteRecovery(ctx context.Context, actor string) error {
 		return apierr.Validation("actor is required", apierr.FieldError{Field: "/actor", Reason: "required"})
 	}
 	now := s.now()
-	actID, actType := auditActor(actor)
 	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		state, err := s.getLedgerStateInTx(ctx, tx)
+		state, err := s.lockLedgerStateForUpdateInTx(ctx, tx)
 		if err != nil {
 			return err
 		}
@@ -363,17 +353,18 @@ func (s *Service) CompleteRecovery(ctx context.Context, actor string) error {
 		`, ledgerStateSingletonID, string(LedgerModeNormal), actor, now); err != nil {
 			return fmt.Errorf("usage: set ledger mode normal: %w", err)
 		}
-
+		actID, actType := auditActor(actor)
 		afterBytes, _ := json.Marshal(map[string]any{
-			"ledger_epoch": state.LedgerEpoch.String(),
 			"mode":         string(LedgerModeNormal),
+			"ledger_epoch": state.LedgerEpoch.String(),
+			"actor":        actor,
 		})
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         actID,
 			ActorType:     actType,
 			Action:        "usage_ledger.complete_recovery",
-			Resource:      "fleet_config:" + ledgerStateSingletonID,
-			Result:        "succeeded",
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
 			After:         afterBytes,
@@ -405,6 +396,10 @@ func (s *Service) RecordReplayUnavailable(
 	}
 	if state.Mode == LedgerModeFrozen {
 		return apierr.New(apierr.DependencyUnavailable, "usage ledger is frozen for recovery")
+	}
+	if state.Mode != LedgerModeReconciling {
+		return apierr.New(apierr.StateConflict, "replay_unavailable is only accepted while ledger mode is reconciling").
+			WithDetail("ledger_mode", string(state.Mode))
 	}
 	if ledgerEpoch != state.LedgerEpoch {
 		return apierr.New(apierr.LedgerEpochMismatch, "batch ledger_epoch does not match current central ledger_epoch").
@@ -467,20 +462,40 @@ func (s *Service) recordReplayUnavailable(
 	}
 
 	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		state, err := s.getLedgerStateInTx(ctx, tx)
+		preState, err := s.getLedgerStateInTx(ctx, tx)
+		if err != nil {
+			return err
+		}
+		if preState.Mode == LedgerModeFrozen {
+			return apierr.New(apierr.DependencyUnavailable, "usage ledger is frozen for recovery")
+		}
+		if preState.Mode != LedgerModeReconciling {
+			return apierr.New(apierr.StateConflict, "replay_unavailable is only accepted while ledger mode is reconciling").
+				WithDetail("ledger_mode", string(preState.Mode))
+		}
+		if preState.LedgerEpoch != ledgerEpoch {
+			return apierr.New(apierr.LedgerEpochMismatch, "ledger_epoch changed during request").
+				WithDetail("current_ledger_epoch", preState.LedgerEpoch.String())
+		}
+
+		if _, err := ensureAndLockCheckpointInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, ledgerEpoch, receivedAt); err != nil {
+			return err
+		}
+
+		state, err := s.lockLedgerStateForShareInTx(ctx, tx)
 		if err != nil {
 			return err
 		}
 		if state.Mode == LedgerModeFrozen {
 			return apierr.New(apierr.DependencyUnavailable, "usage ledger is frozen for recovery")
 		}
+		if state.Mode != LedgerModeReconciling {
+			return apierr.New(apierr.StateConflict, "replay_unavailable is only accepted while ledger mode is reconciling").
+				WithDetail("ledger_mode", string(state.Mode))
+		}
 		if state.LedgerEpoch != ledgerEpoch {
 			return apierr.New(apierr.LedgerEpochMismatch, "ledger_epoch changed during request").
 				WithDetail("current_ledger_epoch", state.LedgerEpoch.String())
-		}
-
-		if _, err := ensureAndLockCheckpointInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, ledgerEpoch, receivedAt); err != nil {
-			return err
 		}
 
 		for _, r := range parsed {
@@ -693,18 +708,11 @@ func markReplayUnavailableOnRollupsInTx(
 			SET gap = TRUE
 			WHERE r.projection_generation = $1::numeric
 			  AND (r.period = $2 OR r.period LIKE $2 || '-%')
-			  AND (
-			      EXISTS (
-			          SELECT 1 FROM usage_rollup_details d
-			          WHERE d.projection_generation = r.projection_generation
-			            AND d.member_id = r.member_id
-			            AND d.node_id = $3
-			      )
-			      OR NOT EXISTS (
-			          SELECT 1 FROM usage_rollup_details d
-			          WHERE d.projection_generation = r.projection_generation
-			            AND d.node_id = $3
-			      )
+			  AND EXISTS (
+			      SELECT 1 FROM usage_rollup_details d
+			      WHERE d.projection_generation = r.projection_generation
+			        AND d.member_id = r.member_id
+			        AND d.node_id = $3
 			  )
 		`, genStr, m, nodeID)
 		if err != nil {
@@ -712,4 +720,17 @@ func markReplayUnavailableOnRollupsInTx(
 		}
 	}
 	return nil
+}
+
+const systemActorUUID = "00000000-0000-0000-0000-000000000003"
+
+func auditActor(actor string) (string, string) {
+	trimmed := strings.TrimSpace(actor)
+	if id, err := uuid.Parse(trimmed); err == nil {
+		if id.String() == systemActorUUID || id == uuid.Nil {
+			return systemActorUUID, string(api.AuditEventActorTypeSystem)
+		}
+		return id.String(), string(api.AuditEventActorTypeAdmin)
+	}
+	return systemActorUUID, string(api.AuditEventActorTypeSystem)
 }

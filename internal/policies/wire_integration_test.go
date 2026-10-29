@@ -16,7 +16,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/TED-H-com/Freedom-VPN/apps/control"
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
@@ -37,20 +36,34 @@ type httpStack struct {
 	adminP auth.Principal
 	memP   auth.Principal
 	agentP auth.Principal
-	disp   *worker.Dispatcher
+	disp   *worker.Application
 }
 
 func newHTTPStack(t *testing.T, pool *pgxpool.Pool, adminID, memberID, nodeID, incID uuid.UUID) *httpStack {
 	t.Helper()
-	handlers, err := control.Handlers(pool, nil)
-	if err != nil {
-		t.Fatalf("control.Handlers: %v", err)
-	}
 	c := config.Defaults()
 	c.PublicOrigin = "https://portal.example.invalid"
 	c.BrowserRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.AgentRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	c.WorkerAttempts = 3
+
+	deps := control.Dependencies{Config: c, Pool: pool}
+	var handlerSets []any
+	for _, dom := range control.Domains() {
+		if dom.Name == "members" {
+			continue
+		}
+		built, err := dom.Build(t.Context(), deps)
+		if err != nil {
+			t.Fatalf("build control domain %s: %v", dom.Name, err)
+		}
+		handlerSets = append(handlerSets, built.Handlers...)
+	}
+	handlers, err := httpapi.Compose(handlerSets...)
+	if err != nil {
+		t.Fatalf("httpapi.Compose: %v", err)
+	}
 
 	adminP := auth.Principal{
 		Role:            auth.Admin,
@@ -97,23 +110,14 @@ func newHTTPStack(t *testing.T, pool *pgxpool.Pool, adminID, memberID, nodeID, i
 		t.Fatalf("httpapi.New agent: %v", err)
 	}
 
-	disp, err := worker.New(
-		pool,
-		worker.Jobs(),
-		worker.Config{
-			Concurrency: 1,
-			Attempts:    3,
-			Lease:       time.Minute,
-			JobTimeout:  5 * time.Second,
-			Poll:        time.Millisecond,
-			Backoff:     time.Millisecond,
-			MaxBackoff:  time.Second,
-		},
-		prometheus.NewRegistry(),
-		nil,
+	disp, err := worker.Open(
+		t.Context(),
+		worker.Dependencies{Config: c, Pool: pool},
+		worker.NewPoliciesDomain(nil, nil),
+		worker.NewUsageDomain(nil),
 	)
 	if err != nil {
-		t.Fatalf("worker.New: %v", err)
+		t.Fatalf("worker.Open: %v", err)
 	}
 
 	return &httpStack{
@@ -436,9 +440,8 @@ func TestPoliciesHTTP_AllSixPolicyTypesActivateIdempotencyWorkerAndAudit(t *test
 
 	// Run worker dispatcher to process all outbox events (6 policy.activated + 1 fleet.release_support_changed)
 	// and transition operations to succeeded.
-	wCtx := worker.WithPool(ctx, pool)
 	for i := 0; i < 10; i++ {
-		worked, err := st.disp.Once(wCtx)
+		worked, err := st.disp.Once(ctx)
 		if err != nil {
 			t.Fatalf("worker Once[%d]: err=%v", i, err)
 		}
@@ -548,8 +551,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	}
 
 	// Drain policy.activated outbox event.
-	wCtx := worker.WithPool(ctx, pool)
-	_, _ = st.disp.Once(wCtx)
+	_, _ = st.disp.Once(ctx)
 
 	// 2. Submit a usage batch over POST /api/v1/agent/usage-batches with 600 GB (crosses Tier 1 threshold 500 GB).
 	ev1, err := usage.WithComputedHash(api.UsageEvent{
@@ -588,7 +590,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	}
 
 	// Drain fup.evaluate outbox event.
-	_, _ = st.disp.Once(wCtx)
+	_, _ = st.disp.Once(ctx)
 
 	// Verify in shadow mode:
 	// - GET /api/v1/member/usage shows FairUse.State == normal, TierIndex == 0
@@ -605,7 +607,11 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 		t.Fatalf("unexpected shadow MemberUsage: state=%s total=%s", muShadow.FairUse.State, muShadow.Totals.TotalBytes)
 	}
 
-	_, fupEngine := worker.NewFUPWorker(pool)
+	polServices, err := worker.NewPoliciesServices(pool, config.PoliciesDefaults(), nil)
+	if err != nil {
+		t.Fatalf("worker.NewPoliciesServices: %v", err)
+	}
+	fupEngine := polServices.FUPEngine
 	evalShadow, err := fupEngine.Compute(ctx, fup.ComputeInput{
 		MemberID: memberID,
 		PeriodID: "2026-10",

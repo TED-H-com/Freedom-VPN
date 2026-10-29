@@ -4,10 +4,9 @@ package config
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
+	"log/slog"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -32,69 +31,71 @@ func PoliciesDefaults() PoliciesConfig {
 	}
 }
 
-// LoadPolicies loads a JSON configuration file (when path is non-empty) and
-// applies FVPN_<UPPERCASE_JSON_FIELD> environment variable overrides.
+// LoadPolicies loads a strict JSON configuration file and validates all fields.
+// No environment variables are read here; missing or invalid files/fields return
+// a SettingError naming the offending setting.
 func LoadPolicies(path string) (PoliciesConfig, error) {
 	c := PoliciesDefaults()
-	if path != "" {
-		f, err := os.Open(path)
-		if err != nil {
-			return c, errors.New("cannot open policies configuration")
-		}
-		defer f.Close()
-		d := json.NewDecoder(f)
-		d.DisallowUnknownFields()
-		if err := d.Decode(&c); err != nil {
-			return c, errors.New("invalid policies configuration file")
-		}
-		var extra any
-		if d.Decode(&extra) != io.EOF {
-			return c, errors.New("trailing policies configuration data")
-		}
+	if strings.TrimSpace(path) == "" {
+		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: errors.New("policies configuration file required")}
 	}
-	if v, ok := os.LookupEnv("FVPN_FUP_MODE"); ok {
-		c.FUPMode = strings.TrimSpace(v)
+	f, err := os.Open(path)
+	if err != nil {
+		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: errors.New("cannot open policies configuration")}
 	}
-	if v, ok := os.LookupEnv("FVPN_FUP_SWEEP_SECONDS"); ok {
-		n, err := strconv.Atoi(strings.TrimSpace(v))
-		if err != nil {
-			return c, fmt.Errorf("invalid setting fup_sweep_seconds")
-		}
-		c.FUPSweepSeconds = n
+	defer f.Close()
+	d := json.NewDecoder(io.LimitReader(f, 1<<20))
+	d.DisallowUnknownFields()
+	if err := d.Decode(&c); err != nil {
+		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: errors.New("invalid policies configuration file")}
 	}
-	if v, ok := os.LookupEnv("FVPN_FUP_BATCH_SIZE"); ok {
-		n, err := strconv.Atoi(strings.TrimSpace(v))
-		if err != nil {
-			return c, fmt.Errorf("invalid setting fup_batch_size")
-		}
-		c.FUPBatchSize = n
-	}
-	if v, ok := os.LookupEnv("FVPN_DNS_UPSTREAM_PROFILE"); ok {
-		c.DNSUpstreamProfile = strings.TrimSpace(v)
+	var extra any
+	if d.Decode(&extra) != io.EOF {
+		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: errors.New("trailing policies configuration data")}
 	}
 	return c, c.Validate()
 }
 
-// LoadPoliciesFromEnv loads PoliciesDefaults with environment overrides.
-func LoadPoliciesFromEnv() (PoliciesConfig, error) {
-	return LoadPolicies("")
+// PoliciesFromConfig validates the central Config fields required by the policies
+// domain and returns the validated PoliciesConfig.
+func PoliciesFromConfig(c Config) (PoliciesConfig, error) {
+	if c.IdempotencySeconds <= 0 || c.IdempotencySeconds > 1<<30 {
+		return PoliciesConfig{}, &SettingError{Name: "idempotency_seconds", Err: errors.New("invalid positive bound: idempotency_seconds")}
+	}
+	if c.BrowserBodyBytes <= 0 || c.BrowserBodyBytes > 1<<30 {
+		return PoliciesConfig{}, &SettingError{Name: "browser_body_bytes", Err: errors.New("invalid positive bound: browser_body_bytes")}
+	}
+	if c.WorkerLeaseSeconds <= 0 || c.WorkerLeaseSeconds > 86400 {
+		return PoliciesConfig{}, &SettingError{Name: "worker_lease_seconds", Err: errors.New("invalid positive bound: worker_lease_seconds")}
+	}
+	if c.WorkerJobSeconds <= 0 || c.WorkerJobSeconds >= c.WorkerLeaseSeconds {
+		return PoliciesConfig{}, &SettingError{Name: "worker_job_seconds", Err: errors.New("invalid bound: worker_job_seconds")}
+	}
+	if c.WorkerPollSeconds <= 0 || c.WorkerPollSeconds > 1<<30 {
+		return PoliciesConfig{}, &SettingError{Name: "worker_poll_seconds", Err: errors.New("invalid positive bound: worker_poll_seconds")}
+	}
+	if c.WorkerAttempts <= 0 || c.WorkerAttempts > 1<<30 {
+		return PoliciesConfig{}, &SettingError{Name: "worker_attempts", Err: errors.New("invalid positive bound: worker_attempts")}
+	}
+	p := PoliciesDefaults()
+	return p, p.Validate()
 }
 
-// Validate checks bounds and allowed enum values.
+// Validate checks bounds and allowed enum values, returning a SettingError on failure.
 func (c PoliciesConfig) Validate() error {
 	switch c.FUPMode {
 	case "", "shadow", "enforce":
 	default:
-		return errors.New("invalid fup_mode: must be empty, shadow, or enforce")
+		return &SettingError{Name: "fup_mode", Err: errors.New("invalid fup_mode: must be empty, shadow, or enforce")}
 	}
 	if c.FUPSweepSeconds <= 0 || c.FUPSweepSeconds > 86400 {
-		return errors.New("invalid positive bound: fup_sweep_seconds")
+		return &SettingError{Name: "fup_sweep_seconds", Err: errors.New("invalid positive bound: fup_sweep_seconds")}
 	}
 	if c.FUPBatchSize <= 0 || c.FUPBatchSize > 10000 {
-		return errors.New("invalid positive bound: fup_batch_size")
+		return &SettingError{Name: "fup_batch_size", Err: errors.New("invalid positive bound: fup_batch_size")}
 	}
 	if strings.TrimSpace(c.DNSUpstreamProfile) == "" {
-		return errors.New("dns_upstream_profile required")
+		return &SettingError{Name: "dns_upstream_profile", Err: errors.New("dns_upstream_profile required")}
 	}
 	return nil
 }
@@ -106,3 +107,6 @@ func (c PoliciesConfig) Effective() map[string]any {
 	_ = json.Unmarshal(b, &m)
 	return m
 }
+
+func (c PoliciesConfig) String() string       { return "[REDACTED policies configuration]" }
+func (c PoliciesConfig) LogValue() slog.Value { return slog.StringValue(c.String()) }

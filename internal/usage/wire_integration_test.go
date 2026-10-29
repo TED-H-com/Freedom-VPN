@@ -17,7 +17,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/TED-H-com/Freedom-VPN/apps/control"
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
@@ -42,7 +41,7 @@ type usageHTTPStack struct {
 	adminP  auth.Principal
 	memP    auth.Principal
 	agentP  auth.Principal
-	disp    *worker.Dispatcher
+	disp    *worker.Application
 	memberA uuid.UUID
 	deviceA uuid.UUID
 	node1   uuid.UUID
@@ -67,11 +66,12 @@ func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 			t.Fatalf("Rotate %s: %v", p, err)
 		}
 	}
-	t.Setenv("FVPN_SIGNING_CONFIG_FILE", vaultDir)
 
+	ps := usage.NewProviderSigner(prov)
 	svc, err := usage.NewService(usage.Config{
-		Pool:   pool,
-		Signer: usage.NewProviderSigner(prov),
+		Pool:              pool,
+		Signer:            ps,
+		LedgerEpochSigner: ps,
 	})
 	if err != nil {
 		t.Fatalf("usage.NewService: %v", err)
@@ -113,15 +113,35 @@ func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 	mustExec(t, pool, `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`, node1, inc1)
 	mustExec(t, pool, `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`, node2, inc2)
 
-	handlers, err := control.Handlers(pool, nil)
-	if err != nil {
-		t.Fatalf("control.Handlers: %v", err)
-	}
 	c := config.Defaults()
 	c.PublicOrigin = "https://portal.example.invalid"
 	c.BrowserRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.AgentRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	c.WorkerAttempts = 3
+
+	uCfg := config.UsageDefaults()
+	uCfg.SigningConfigFile = vaultDir
+
+	deps := control.Dependencies{Config: c, Pool: pool}
+	var handlerSets []any
+	for _, dom := range control.Domains() {
+		if dom.Name == "members" {
+			continue
+		}
+		if dom.Name == "usage" {
+			dom = control.NewUsageDomain(&uCfg, nil, ps)
+		}
+		built, err := dom.Build(t.Context(), deps)
+		if err != nil {
+			t.Fatalf("build control domain %s: %v", dom.Name, err)
+		}
+		handlerSets = append(handlerSets, built.Handlers...)
+	}
+	handlers, err := httpapi.Compose(handlerSets...)
+	if err != nil {
+		t.Fatalf("httpapi.Compose: %v", err)
+	}
 
 	adminP := auth.Principal{
 		Role:            auth.Admin,
@@ -185,23 +205,14 @@ func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 	}
 	st.agent = httpapi.Transport(nil, agentAPI)
 
-	disp, err := worker.New(
-		pool,
-		worker.Jobs(),
-		worker.Config{
-			Concurrency: 1,
-			Attempts:    3,
-			Lease:       time.Minute,
-			JobTimeout:  5 * time.Second,
-			Poll:        time.Millisecond,
-			Backoff:     time.Millisecond,
-			MaxBackoff:  time.Second,
-		},
-		prometheus.NewRegistry(),
-		nil,
+	disp, err := worker.Open(
+		t.Context(),
+		worker.Dependencies{Config: c, Pool: pool},
+		worker.NewPoliciesDomain(nil, nil),
+		worker.NewUsageDomain(&uCfg),
 	)
 	if err != nil {
-		t.Fatalf("worker.New: %v", err)
+		t.Fatalf("worker.Open: %v", err)
 	}
 	st.disp = disp
 	return st
@@ -249,7 +260,7 @@ func (s *usageHTTPStack) doAgent(t *testing.T, method, path, body, idemKey strin
 func TestAT14_AT15_AT16_AT17_AT19_HTTPUsageIngestBoundarySplitAndDrillDown(t *testing.T) {
 	st := newUsageHTTPStack(t)
 	ctx := context.Background()
-	wCtx := worker.WithPool(ctx, st.pool)
+	wCtx := ctx
 	meterEpoch := uuid.New()
 	id1 := usage.NodeIdentity{NodeID: st.node1, NodeIncarnationID: st.inc1}
 	id2 := usage.NodeIdentity{NodeID: st.node2, NodeIncarnationID: st.inc2}

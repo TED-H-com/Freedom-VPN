@@ -36,9 +36,11 @@ func TestCLI_FreezeRecoveryCompleteAdjustAndAudit(t *testing.T) {
 		t.Fatalf("Rotate LedgerEpoch: %v", err)
 	}
 
+	ps := usage.NewProviderSigner(prov)
 	svc, err := usage.NewService(usage.Config{
-		Pool:   pool,
-		Signer: usage.NewProviderSigner(prov),
+		Pool:              pool,
+		Signer:            ps,
+		LedgerEpochSigner: ps,
 	})
 	if err != nil {
 		t.Fatalf("NewService: %v", err)

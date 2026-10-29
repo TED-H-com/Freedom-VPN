@@ -10,40 +10,33 @@ If PostgreSQL is restored from a backup or point-in-time snapshot taken at $T_{\
 - **Within a single `ledger_epoch`**, a node's ACK watermark (`highest_contiguous_seq`) is strictly non-decreasing (`usage_checkpoints_monotonic` trigger in `00004_guards.sql`).
 - **Across a snapshot restore**, nodes might hold ACK watermarks from the lost window $[T_{\text{snap}}, T_{\text{incident}}]$ or might already have pruned spool entries below their old ACK watermark.
 - Rotating to a new **`ledger_epoch`** with an Ed25519-signed recovery record authorizes nodes to reset their upload cursor to the restored database's committed watermark, replay retained local spool entries through normal deduplication, and explicitly report any pruned ranges via `replay_unavailable`.
-- **Signing Purposes (`internal/usage/signer.go`, `internal/signing`)**:
-  - The signed stream checkpoint (`GetCheckpoint` / `UsageCheckpointEnvelope`) uses `envelope.PurposeRecovery` (`"recovery"`), verified by nodes against their node trust store.
-  - The central `ledger_epoch` recovery record (`BeginRecovery` / `usage_recovery_records`) uses `envelope.PurposeLedgerEpoch` (`"ledger-epoch"`), a central-only signing purpose provided by `usage.NewProviderSigner(p signing.Provider)`.
+- **Signing Purposes (`§16.2`, `§17.3`)**:
+  - The `ledger_epoch` recovery record (`BeginRecovery` / `usage_recovery_records`) is signed with `envelope.PurposeLedgerEpoch` (`"ledger-epoch"`) by a dedicated central-only signer (`NewLedgerEpochSigner`) whose key is never included in node trust bundles.
+  - The signed stream checkpoint (`GetCheckpoint` / `UsageCheckpointEnvelope`) is signed with `envelope.PurposeRecovery` (`"recovery"`) by `NewRecoverySigner`.
 
 ---
 
 ## 2. Step-by-Step Restore & Replay Procedure (`§17.3`, `AT30`)
 
-### Step 1: Freeze Ingest (`FreezeIngest` / `fvpn-usage-admin freeze`)
+### Step 1: Freeze Ingest (`FreezeIngest`)
 Before or immediately upon bringing up the restored database, freeze usage ingestion so nodes receive `503 SERVICE_UNAVAILABLE` (`retryable: true`) and do not advance watermarks or prune local spools:
-```bash
-go run ./internal/usage/cmd/fvpn-usage-admin freeze \
-  --actor 00000000-0000-0000-0000-000000000003 \
-  --reason "Point-in-time restore drill"
+```go
+err := usageSvc.FreezeIngest(ctx)
 ```
-(Programmatic equivalent: `usageSvc.FreezeIngest(ctx, actor, reason)`.)
-- Sets `usage_ledger_state.mode = 'frozen'` and writes an `audit_events` row (`usage_ledger.freeze`).
+- Sets `usage_ledger_state.mode = 'frozen'`.
 
-### Step 2: Enter Recovery Mode & Rotate `ledger_epoch` (`BeginRecovery` / `fvpn-usage-admin begin-recovery`)
+### Step 2: Enter Recovery Mode & Rotate `ledger_epoch` (`BeginRecovery`)
 Invoke `BeginRecovery` with the operator reason and actor ID:
-```bash
-go run ./internal/usage/cmd/fvpn-usage-admin begin-recovery \
-  --actor 00000000-0000-0000-0000-000000000003 \
-  --restored-to 2026-10-28T02:00:00Z \
-  --affected-since 2026-10-01T00:00:00Z \
-  --reason "Restored PostgreSQL from 02:00Z snapshot"
+```go
+rec, err := usageSvc.BeginRecovery(ctx, "Restored PostgreSQL from 02:00Z snapshot", "admin:ops-oncall")
 ```
 `BeginRecovery` executes a single atomic transaction (`fvpn.recovery_recompute = 'on'`) that:
-1. Allocates a new `ledger_epoch` UUID in `usage_ledger_epochs`.
+1. Allocates `new_epoch = current_epoch + 1` in `usage_ledger_epochs`.
 2. Scans every active `(node_id, incarnation_id)` stream and recomputes `highest_contiguous_seq`, `max_seen_seq`, and `missing_ranges` strictly from the committed `usage_events` rows present in the restored database.
 3. Updates `usage_checkpoints` to `ledger_epoch = new_epoch` with the recomputed watermarks.
-4. Marks all affected `usage_rollups` rows with `reconciliation_in_progress = TRUE` so member and admin queries clearly indicate that post-restore replay is underway (`§17.3`).
-5. Signs the `RecoveryRecord` with the `ledger-epoch` Ed25519 key (`envelope.PurposeLedgerEpoch`) and stores the signed envelope in `usage_recovery_records`.
-6. Transitions `usage_ledger_state.mode` to `'reconciling'`, writes an `audit_events` row (`usage_ledger.begin_recovery`), and allows nodes to fetch checkpoints and replay batches under `new_epoch`.
+4. Marks all existing `usage_rollups` rows with `reconciliation_in_progress = TRUE` so member and admin queries clearly indicate that post-restore replay is underway (`§17.3`).
+5. Signs the `RecoverySignedPayload` (`recovery_id`, `previous_ledger_epoch`, `new_ledger_epoch`, `restored_to`, `affected_since`, `reason`, `actor`, `stream_count`, `created_at`) with the `ledger-epoch` Ed25519 key (`envelope.PurposeLedgerEpoch`) and stores the signed envelope in `usage_recovery_records`.
+6. Transitions `usage_ledger_state.mode` to `'reconciling'` (and subsequently allows nodes to fetch checkpoints and replay batches under `new_epoch`).
 
 ### Step 3: Node Checkpoint Synchronization (`GetCheckpoint`)
 When a node attempts to upload a batch with the old `ledger_epoch`, `IngestBatch` rejects it with `409 LEDGER_EPOCH_MISMATCH`.
@@ -87,15 +80,23 @@ The node verifies the `recovery` signature against its local trust store before 
    - Inserts explicit 0-byte tombstone rows (`record_count = 0`, deterministic tombstone hash) into `usage_events` for the unrecoverable sequence numbers `[51..70]` so `highest_contiguous_seq` can advance past the permanently lost range to `100` without inventing any bytes (`§17.3`).
    - Marks `gap = TRUE` on all `usage_rollups` for the node's members in `affected_months` (updating or creating 0-byte gap rollup markers if needed, and **never** overwriting the ledger with monthly summary totals).
 
-### Step 5: Complete Recovery (`CompleteRecovery` / `fvpn-usage-admin complete-recovery`)
+### Step 5: Complete Recovery (`CompleteRecovery`)
 Once all active nodes have synchronized to the new `ledger_epoch` and replayed their retained events:
-```bash
-go run ./internal/usage/cmd/fvpn-usage-admin complete-recovery \
-  --actor 00000000-0000-0000-0000-000000000003
+```go
+err := usageSvc.CompleteRecovery(ctx, actorUUID)
 ```
-(Programmatic equivalent: `usageSvc.CompleteRecovery(ctx, actor)`.)
 - Clears `reconciliation_in_progress = FALSE` on `usage_rollups` while preserving `gap = TRUE` on any periods affected by `replay_unavailable` or event gaps.
-- Sets `usage_ledger_state.mode = 'normal'`, records `completed_at` on `usage_recovery_records`, and appends an `audit_events` row (`usage_ledger.complete_recovery`).
+- Sets `usage_ledger_state.mode = 'normal'` and records `completed_at` on `usage_ledger_epochs`.
+
+### Operator CLI (`fvpn-usage-admin`)
+All five operator recovery and drill-down workflows can be invoked from the CLI against the central configuration file:
+```bash
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json freeze --actor <admin-uuid> --reason "planned snapshot restore"
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json begin-recovery --actor <admin-uuid> --reason "restored snapshot"
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json complete-recovery --actor <admin-uuid>
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json adjust --member-id <uuid> --period 2026-10 --upload-bytes -1024 --download-bytes -2048 --actor <admin-uuid> --reason "correction"
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json drill-down --member-id <uuid> --period 2026-10
+```
 
 ---
 

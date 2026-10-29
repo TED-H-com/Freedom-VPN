@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -21,14 +22,18 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
-	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	usagepkg "github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 )
 
 // DefaultRecoveryKeyID is the key identifier used by the fallback TEST ONLY
-// recovery signer when FVPN_SIGNING_CONFIG_FILE is not set in unit tests.
+// recovery signer when no signing config file is configured in tests.
 const DefaultRecoveryKeyID = "test-only-central-recovery-key"
+
+// DefaultLedgerEpochKeyID is the key identifier used by the fallback TEST ONLY
+// ledger-epoch signer when no signing config file is configured in tests.
+const DefaultLedgerEpochKeyID = "test-only-central-recovery-key-ledger-epoch"
 
 // DefaultTestRecoveryPublicKey returns the Ed25519 public key for DefaultRecoveryKeyID
 // (TEST ONLY - NOT A SECRET).
@@ -36,17 +41,73 @@ func DefaultTestRecoveryPublicKey() ed25519.PublicKey {
 	return defaultTestRecoverySigner().PrivateKey.Public().(ed25519.PublicKey)
 }
 
-// DefaultTestLedgerEpochPublicKey returns the Ed25519 public key for DefaultRecoveryKeyID+"-ledger-epoch"
+// DefaultTestLedgerEpochPublicKey returns the Ed25519 public key for DefaultLedgerEpochKeyID
 // (TEST ONLY - NOT A SECRET).
 func DefaultTestLedgerEpochPublicKey() ed25519.PublicKey {
-	return defaultTestRecoverySigner().LedgerEpochPublicKey()
+	return defaultTestLedgerEpochSigner().PrivateKey.Public().(ed25519.PublicKey)
 }
 
-func defaultTestRecoverySigner() *usage.Ed25519Signer {
-	// TEST ONLY - NOT A SECRET: deterministic seed used only when FVPN_SIGNING_CONFIG_FILE is unset.
+func defaultTestRecoverySigner() *usagepkg.Ed25519Signer {
+	// TEST ONLY - NOT A SECRET: deterministic seed used only when SigningConfigFile is unset.
 	seed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET: fvpn-control-default-recovery-signer-v1"))
 	priv := ed25519.NewKeyFromSeed(seed[:])
-	return usage.NewRecoverySigner(DefaultRecoveryKeyID, priv)
+	return usagepkg.NewRecoverySigner(DefaultRecoveryKeyID, priv)
+}
+
+func defaultTestLedgerEpochSigner() *usagepkg.Ed25519Signer {
+	// TEST ONLY - NOT A SECRET: deterministic seed used only when SigningConfigFile is unset.
+	seed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET: fvpn-control-default-ledger-epoch-signer-v1"))
+	priv := ed25519.NewKeyFromSeed(seed[:])
+	return usagepkg.NewLedgerEpochSigner(DefaultLedgerEpochKeyID, priv)
+}
+
+func usage() Domain {
+	return NewUsageDomain(nil, nil, nil)
+}
+
+// NewUsageDomain constructs the control-plane Domain for usage ingestion,
+// checkpoints, and member usage queries (§10.9, §14.2, §14.3, §15.4).
+// When uCfg or pCfg is nil, settings are validated from Dependencies.Config.
+func NewUsageDomain(uCfg *config.UsageConfig, pCfg *config.PoliciesConfig, signer usagepkg.Signer) Domain {
+	return Domain{
+		Name: "usage",
+		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			var uc config.UsageConfig
+			if uCfg != nil {
+				if err := uCfg.Validate(); err != nil {
+					return Built{}, err
+				}
+				uc = *uCfg
+			} else {
+				var err error
+				uc, err = config.UsageFromConfig(d.Config)
+				if err != nil {
+					return Built{}, err
+				}
+			}
+			var pc config.PoliciesConfig
+			if pCfg != nil {
+				if err := pCfg.Validate(); err != nil {
+					return Built{}, err
+				}
+				pc = *pCfg
+			} else {
+				var err error
+				pc, err = config.PoliciesFromConfig(d.Config)
+				if err != nil {
+					return Built{}, err
+				}
+			}
+			if d.Pool == nil {
+				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("usage database required")}
+			}
+			h, err := NewUsageHandler(d.Pool, d.Logger, uc, pc, signer)
+			if err != nil {
+				return Built{}, err
+			}
+			return Built{Handlers: []any{h}}, nil
+		},
+	}
 }
 
 // UsageHandler serves node usage batch ingestion (POST /agent/usage-batches),
@@ -56,7 +117,7 @@ func defaultTestRecoverySigner() *usage.Ed25519Signer {
 type UsageHandler struct {
 	pool      *pgxpool.Pool
 	logger    *slog.Logger
-	service   *usage.Service
+	service   *usagepkg.Service
 	fupEngine *fup.Engine
 	fupWorker *fup.Worker
 
@@ -64,24 +125,39 @@ type UsageHandler struct {
 	replayResults map[string][]api.UsageEventResult
 }
 
-func wireUsage(pool *pgxpool.Pool, logger *slog.Logger) *UsageHandler {
-	uCfg, _ := config.LoadUsageFromEnv()
-	pCfg, _ := config.LoadPoliciesFromEnv()
-
-	var signer usage.Signer
-	if uCfg.SigningConfigFile != "" {
-		if prov, err := signing.OpenFileProvider(uCfg.SigningConfigFile); err == nil {
-			signer = usage.NewProviderSigner(prov)
+// NewUsageHandler constructs a UsageHandler from explicit configuration.
+func NewUsageHandler(
+	pool *pgxpool.Pool,
+	logger *slog.Logger,
+	uCfg config.UsageConfig,
+	pCfg config.PoliciesConfig,
+	signer usagepkg.Signer,
+) (*UsageHandler, error) {
+	var epochSigner usagepkg.Signer
+	if signer == nil && uCfg.SigningConfigFile != "" {
+		prov, err := signing.OpenFileProvider(uCfg.SigningConfigFile)
+		if err != nil {
+			return nil, &config.SettingError{Name: "signing_config_file", Err: err}
 		}
+		ps := usagepkg.NewProviderSigner(prov)
+		signer = ps
+		epochSigner = ps
 	}
 	if signer == nil {
 		signer = defaultTestRecoverySigner()
+		epochSigner = defaultTestLedgerEpochSigner()
+	} else if epochSigner == nil {
+		epochSigner = signer
 	}
 
-	svc, _ := usage.NewService(usage.Config{
-		Pool:   pool,
-		Signer: signer,
+	svc, err := usagepkg.NewService(usagepkg.Config{
+		Pool:              pool,
+		Signer:            signer,
+		LedgerEpochSigner: epochSigner,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	var usageReader fup.UsageReader
 	if pool != nil && svc != nil {
@@ -100,11 +176,11 @@ func wireUsage(pool *pgxpool.Pool, logger *slog.Logger) *UsageHandler {
 		fupEngine:     engine,
 		fupWorker:     fupWorker,
 		replayResults: make(map[string][]api.UsageEventResult),
-	}
+	}, nil
 }
 
 // Service returns the underlying usage.Service.
-func (h *UsageHandler) Service() *usage.Service { return h.service }
+func (h *UsageHandler) Service() *usagepkg.Service { return h.service }
 
 // SubmitUsageBatch handles POST /api/v1/agent/usage-batches (§10.6, §14.3).
 // Node identity comes strictly from the verified mTLS principal in context.
@@ -118,7 +194,7 @@ func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBa
 		return nil, apierr.New(apierr.MalformedRequest, "Request body is required.")
 	}
 
-	res, err := h.service.IngestBatch(ctx, usage.NodeIdentity{
+	res, err := h.service.IngestBatch(ctx, usagepkg.NodeIdentity{
 		NodeID:            p.NodeID,
 		NodeIncarnationID: p.IncarnationID,
 	}, *r.Body)
@@ -157,7 +233,7 @@ func (h *UsageHandler) GetUsageCheckpoint(ctx context.Context, _ gen.GetUsageChe
 	if p.Role != auth.Agent || p.NodeID == uuid.Nil || p.IncarnationID == uuid.Nil {
 		return nil, apierr.New(apierr.Unauthenticated, "Authenticated node mTLS identity required.")
 	}
-	env, err := h.service.GetCheckpoint(ctx, usage.NodeIdentity{
+	env, err := h.service.GetCheckpoint(ctx, usagepkg.NodeIdentity{
 		NodeID:            p.NodeID,
 		NodeIncarnationID: p.IncarnationID,
 	})
@@ -180,23 +256,23 @@ func (h *UsageHandler) GetMemberUsage(ctx context.Context, r gen.GetMemberUsageR
 	if r.Params.PeriodId != nil {
 		period = *r.Params.PeriodId
 	}
-	gran := usage.GranularityMonth
+	gran := usagepkg.GranularityMonth
 	if r.Params.Granularity != nil {
-		gran = usage.Granularity(*r.Params.Granularity)
+		gran = usagepkg.Granularity(*r.Params.Granularity)
 	}
 
 	var fairUsePtr *api.FairUseStatus
 	if h.fupEngine != nil {
 		targetPeriod := period
 		if targetPeriod == "" {
-			targetPeriod = usage.MonthOf(time.Now().UTC()).ID
+			targetPeriod = usagepkg.MonthOf(time.Now().UTC()).ID
 		}
 		if st, err := h.fupEngine.GetMemberStatus(ctx, p.ID, targetPeriod); err == nil {
 			fairUsePtr = &st
 		}
 	}
 
-	mu, err := h.service.GetMemberUsage(ctx, usage.MemberUsageQuery{
+	mu, err := h.service.GetMemberUsage(ctx, usagepkg.MemberUsageQuery{
 		MemberID:    p.ID,
 		Period:      period,
 		Granularity: gran,
@@ -220,7 +296,7 @@ func (h *UsageHandler) Replay(ctx context.Context, operationID string, _ db.Idem
 		return nil, apierr.New(apierr.Unauthenticated, "Authenticated node mTLS identity required.")
 	}
 
-	wm, err := h.service.GetStreamWatermark(ctx, usage.NodeIdentity{
+	wm, err := h.service.GetStreamWatermark(ctx, usagepkg.NodeIdentity{
 		NodeID:            p.NodeID,
 		NodeIncarnationID: p.IncarnationID,
 	})
@@ -238,7 +314,7 @@ func (h *UsageHandler) GetMemberUsageSummary(ctx context.Context, memberID uuid.
 	if h.fupEngine != nil {
 		targetPeriod := period
 		if targetPeriod == "" {
-			targetPeriod = usage.MonthOf(time.Now().UTC()).ID
+			targetPeriod = usagepkg.MonthOf(time.Now().UTC()).ID
 		}
 		if st, err := h.fupEngine.GetMemberStatus(ctx, memberID, targetPeriod); err == nil {
 			if idx, err := st.TierIndex.Get(); err == nil {
@@ -250,15 +326,15 @@ func (h *UsageHandler) GetMemberUsageSummary(ctx context.Context, memberID uuid.
 }
 
 // GetMemberDrillDown returns the admin usage drill-down by node and device for a member and UTC month.
-func (h *UsageHandler) GetMemberDrillDown(ctx context.Context, memberID uuid.UUID, period string) (usage.MemberDrillDown, error) {
+func (h *UsageHandler) GetMemberDrillDown(ctx context.Context, memberID uuid.UUID, period string) (usagepkg.MemberDrillDown, error) {
 	return h.service.GetMemberDrillDown(ctx, memberID, period)
 }
 
 // CreateAdjustment records an audited append-only usage adjustment and triggers FUP evaluation.
-func (h *UsageHandler) CreateAdjustment(ctx context.Context, req usage.AdjustmentCreate) (usage.Adjustment, error) {
+func (h *UsageHandler) CreateAdjustment(ctx context.Context, req usagepkg.AdjustmentCreate) (usagepkg.Adjustment, error) {
 	adj, err := h.service.CreateAdjustment(ctx, req)
 	if err != nil {
-		return usage.Adjustment{}, err
+		return usagepkg.Adjustment{}, err
 	}
 	if h.fupWorker != nil {
 		if adj.UploadBytes+adj.DownloadBytes < 0 {
@@ -277,7 +353,7 @@ func (h *UsageHandler) FreezeIngest(ctx context.Context, actor, reason string) e
 }
 
 // BeginRecovery rotates ledger_epoch with a signed ledger-epoch recovery record and writes an audit row (§17.3).
-func (h *UsageHandler) BeginRecovery(ctx context.Context, req usage.RecoveryRequest) (usage.RecoveryState, error) {
+func (h *UsageHandler) BeginRecovery(ctx context.Context, req usagepkg.RecoveryRequest) (usagepkg.RecoveryState, error) {
 	return h.service.BeginRecovery(ctx, req)
 }
 
@@ -311,7 +387,7 @@ func (h *UsageHandler) notifyFairUseOnAcceptedEvents(ctx context.Context, events
 		}
 		for _, rec := range ev.Records {
 			mid := uuid.UUID(rec.MemberId)
-			segs, err := usage.Split(ev.IntervalStart, ev.IntervalEnd, uint64(rec.UploadBytes), uint64(rec.DownloadBytes), usage.GranularityMonth)
+			segs, err := usagepkg.Split(ev.IntervalStart, ev.IntervalEnd, uint64(rec.UploadBytes), uint64(rec.DownloadBytes), usagepkg.GranularityMonth)
 			if err != nil || len(segs) == 0 {
 				mp := memberPeriod{memberID: mid, periodID: rec.PeriodId}
 				seen[mp] = struct{}{}

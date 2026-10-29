@@ -328,18 +328,11 @@ func (s *Service) GetMemberPeriodTotal(ctx context.Context, memberID uuid.UUID, 
 			SELECT 1
 			FROM usage_ledger_gaps g
 			WHERE $1 = ANY(g.affected_periods)
-			  AND (
-			      EXISTS (
-			          SELECT 1 FROM usage_rollup_details d
-			          WHERE d.projection_generation = $2::numeric
-			            AND d.member_id = $3
-			            AND d.node_id = g.node_id
-			      )
-			      OR NOT EXISTS (
-			          SELECT 1 FROM usage_rollup_details d
-			          WHERE d.projection_generation = $2::numeric
-			            AND d.node_id = g.node_id
-			      )
+			  AND EXISTS (
+			      SELECT 1 FROM usage_rollup_details d
+			      WHERE d.projection_generation = $2::numeric
+			        AND d.member_id = $3
+			        AND d.node_id = g.node_id
 			  )
 		)
 	`, monthPeriod.ID, genStr, memberID).Scan(&hasLedgerGap)
@@ -367,17 +360,30 @@ func (s *Service) GetMemberPeriodTotal(ctx context.Context, memberID uuid.UUID, 
 	adjDown := new(big.Int)
 	adjDown.SetString(adjDownText, 10)
 
-	rawUpU64 := clampBigUint64(rawUp)
-	rawDownU64 := clampBigUint64(rawDown)
-	rawTotalU64 := clampBigUint64(rawTotal)
+	rawUpU64, err := bigIntToUint64(rawUp, "raw_upload_bytes")
+	if err != nil {
+		return MemberPeriodTotal{}, err
+	}
+	rawDownU64, err := bigIntToUint64(rawDown, "raw_download_bytes")
+	if err != nil {
+		return MemberPeriodTotal{}, err
+	}
+	rawTotalU64, err := bigIntToUint64(rawTotal, "raw_total_bytes")
+	if err != nil {
+		return MemberPeriodTotal{}, err
+	}
 
-	effUpU64 := applyNumericDelta(rawUpU64, adjUp)
-	effDownU64 := applyNumericDelta(rawDownU64, adjDown)
-	var effTotalU64 uint64
-	if effUpU64 > ^uint64(0)-effDownU64 {
-		effTotalU64 = ^uint64(0)
-	} else {
-		effTotalU64 = effUpU64 + effDownU64
+	effUpU64, err := applyNumericDelta(rawUp, adjUp, "upload_bytes")
+	if err != nil {
+		return MemberPeriodTotal{}, err
+	}
+	effDownU64, err := applyNumericDelta(rawDown, adjDown, "download_bytes")
+	if err != nil {
+		return MemberPeriodTotal{}, err
+	}
+	effTotalU64, err := addUint64Checked(effUpU64, effDownU64, "total_bytes")
+	if err != nil {
+		return MemberPeriodTotal{}, err
 	}
 
 	watermarks, err := s.queryWatermarksForMember(ctx, genStr, memberID, monthPeriod.ID)
@@ -469,15 +475,15 @@ func (s *Service) GetMemberDrillDown(ctx context.Context, memberID uuid.UUID, pe
 		); err != nil {
 			return MemberDrillDown{}, fmt.Errorf("usage: scan drill-down detail: %w", err)
 		}
-		u, err := parseNumericUint64(uText)
+		u, err := parseByteTotalUint64(uText, "drilldown.upload_bytes")
 		if err != nil {
 			return MemberDrillDown{}, err
 		}
-		d, err := parseNumericUint64(dText)
+		d, err := parseByteTotalUint64(dText, "drilldown.download_bytes")
 		if err != nil {
 			return MemberDrillDown{}, err
 		}
-		t, err := parseNumericUint64(tText)
+		t, err := parseByteTotalUint64(tText, "drilldown.total_bytes")
 		if err != nil {
 			return MemberDrillDown{}, err
 		}
@@ -504,9 +510,21 @@ func (s *Service) GetMemberDrillDown(ctx context.Context, memberID uuid.UUID, pe
 			nodeMap[nodeID] = nb
 			nodeOrder = append(nodeOrder, nodeID)
 		}
-		nb.UploadBytes += decstr.U64(u)
-		nb.DownloadBytes += decstr.U64(d)
-		nb.TotalBytes += decstr.U64(t)
+		nbUp, err := addUint64Checked(uint64(nb.UploadBytes), u, "by_node.upload_bytes")
+		if err != nil {
+			return MemberDrillDown{}, err
+		}
+		nbDown, err := addUint64Checked(uint64(nb.DownloadBytes), d, "by_node.download_bytes")
+		if err != nil {
+			return MemberDrillDown{}, err
+		}
+		nbTot, err := addUint64Checked(uint64(nb.TotalBytes), t, "by_node.total_bytes")
+		if err != nil {
+			return MemberDrillDown{}, err
+		}
+		nb.UploadBytes = decstr.U64(nbUp)
+		nb.DownloadBytes = decstr.U64(nbDown)
+		nb.TotalBytes = decstr.U64(nbTot)
 		nb.Estimated = nb.Estimated || est
 		nb.Gap = nb.Gap || g
 		if lo.After(nb.LastObservedAt) {
@@ -519,9 +537,21 @@ func (s *Service) GetMemberDrillDown(ctx context.Context, memberID uuid.UUID, pe
 			deviceMap[deviceID] = dbEntry
 			deviceOrder = append(deviceOrder, deviceID)
 		}
-		dbEntry.UploadBytes += decstr.U64(u)
-		dbEntry.DownloadBytes += decstr.U64(d)
-		dbEntry.TotalBytes += decstr.U64(t)
+		dbUp, err := addUint64Checked(uint64(dbEntry.UploadBytes), u, "by_device.upload_bytes")
+		if err != nil {
+			return MemberDrillDown{}, err
+		}
+		dbDown, err := addUint64Checked(uint64(dbEntry.DownloadBytes), d, "by_device.download_bytes")
+		if err != nil {
+			return MemberDrillDown{}, err
+		}
+		dbTot, err := addUint64Checked(uint64(dbEntry.TotalBytes), t, "by_device.total_bytes")
+		if err != nil {
+			return MemberDrillDown{}, err
+		}
+		dbEntry.UploadBytes = decstr.U64(dbUp)
+		dbEntry.DownloadBytes = decstr.U64(dbDown)
+		dbEntry.TotalBytes = decstr.U64(dbTot)
 		dbEntry.Estimated = dbEntry.Estimated || est
 		dbEntry.Gap = dbEntry.Gap || g
 		if lo.After(dbEntry.LastObservedAt) {
@@ -598,15 +628,15 @@ func (s *Service) queryUsageDays(
 		if err := rows.Scan(&pStart, &uText, &dText, &tText, &est, &g, &rec); err != nil {
 			return nil, fmt.Errorf("usage: scan daily usage row: %w", err)
 		}
-		u, err := parseNumericUint64(uText)
+		u, err := parseByteTotalUint64(uText, "day.upload_bytes")
 		if err != nil {
 			return nil, err
 		}
-		d, err := parseNumericUint64(dText)
+		d, err := parseByteTotalUint64(dText, "day.download_bytes")
 		if err != nil {
 			return nil, err
 		}
-		t, err := parseNumericUint64(tText)
+		t, err := parseByteTotalUint64(tText, "day.total_bytes")
 		if err != nil {
 			return nil, err
 		}

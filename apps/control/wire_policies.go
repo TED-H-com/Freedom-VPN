@@ -17,11 +17,45 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
-	"github.com/TED-H-com/Freedom-VPN/internal/policies"
-	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	policystore "github.com/TED-H-com/Freedom-VPN/internal/policies"
+	usagepkg "github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 )
+
+func policies() Domain {
+	return NewPoliciesDomain(nil)
+}
+
+// NewPoliciesDomain constructs the control-plane Domain for the policy catalog
+// and Fair-Use evaluation (§11, §12.4, §14.5). When cfg is nil, settings are
+// validated from Dependencies.Config.
+func NewPoliciesDomain(cfg *config.PoliciesConfig) Domain {
+	return Domain{
+		Name: "policies",
+		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			var pCfg config.PoliciesConfig
+			if cfg != nil {
+				if err := cfg.Validate(); err != nil {
+					return Built{}, err
+				}
+				pCfg = *cfg
+			} else {
+				var err error
+				pCfg, err = config.PoliciesFromConfig(d.Config)
+				if err != nil {
+					return Built{}, err
+				}
+			}
+			if d.Pool == nil {
+				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("policies database required")}
+			}
+			return Built{
+				Handlers: []any{NewPoliciesHandler(d.Pool, d.Logger, pCfg)},
+			}, nil
+		},
+	}
+}
 
 // PoliciesHandler serves the central policy catalog (GET /admin/policies,
 // POST /admin/policies, POST /admin/policies/{definition_id}/activate) for all
@@ -31,19 +65,19 @@ import (
 type PoliciesHandler struct {
 	pool       *pgxpool.Pool
 	logger     *slog.Logger
-	store      *policies.Store
+	store      *policystore.Store
 	fupEngine  *fup.Engine
 	fupWorker  *fup.Worker
 	operations operations.Store
 }
 
-func wirePolicies(pool *pgxpool.Pool, logger *slog.Logger) *PoliciesHandler {
-	pCfg, _ := config.LoadPoliciesFromEnv()
-	store := policies.NewStore(pool)
+// NewPoliciesHandler constructs a PoliciesHandler from explicit configuration.
+func NewPoliciesHandler(pool *pgxpool.Pool, logger *slog.Logger, pCfg config.PoliciesConfig) *PoliciesHandler {
+	store := policystore.NewStore(pool)
 
 	var usageReader fup.UsageReader
 	if pool != nil {
-		if uSvc, err := usage.NewService(usage.Config{Pool: pool}); err == nil {
+		if uSvc, err := usagepkg.NewService(usagepkg.Config{Pool: pool}); err == nil {
 			usageReader = fup.NewUsageServiceReader(uSvc, pool)
 		}
 	}
@@ -64,7 +98,7 @@ func wirePolicies(pool *pgxpool.Pool, logger *slog.Logger) *PoliciesHandler {
 }
 
 // Store returns the underlying policies.Store.
-func (h *PoliciesHandler) Store() *policies.Store { return h.store }
+func (h *PoliciesHandler) Store() *policystore.Store { return h.store }
 
 // FUPEngine returns the Fair-Use policy evaluation engine.
 func (h *PoliciesHandler) FUPEngine() *fup.Engine { return h.fupEngine }
@@ -86,7 +120,7 @@ func (h *PoliciesHandler) ListPolicies(ctx context.Context, r gen.ListPoliciesRe
 	if r.Params.Cursor != nil {
 		cursor = *r.Params.Cursor
 	}
-	list, err := h.store.ListDefinitions(ctx, policies.ListDefinitionsFilter{
+	list, err := h.store.ListDefinitions(ctx, policystore.ListDefinitionsFilter{
 		Type:   r.Params.Type,
 		Cursor: cursor,
 		Limit:  limit,
@@ -128,7 +162,7 @@ func (h *PoliciesHandler) CreatePolicyRevision(ctx context.Context, r gen.Create
 		return nil, apierr.New(apierr.MalformedRequest, "Invalid policy revision JSON.")
 	}
 
-	rec, err := h.store.CreateRevision(ctx, policies.CreateRevisionInput{
+	rec, err := h.store.CreateRevision(ctx, policystore.CreateRevisionInput{
 		DefinitionID:  env.DefinitionID,
 		Code:          env.Code,
 		Type:          env.Type,
@@ -178,7 +212,7 @@ func (h *PoliciesHandler) ActivatePolicyRevision(ctx context.Context, r gen.Acti
 	defID := uuid.UUID(r.DefinitionId)
 	revID := uuid.UUID(r.Body.RevisionId)
 
-	res, err := h.store.ActivateRevision(ctx, policies.ActivateRevisionInput{
+	res, err := h.store.ActivateRevision(ctx, policystore.ActivateRevisionInput{
 		DefinitionID:    defID,
 		RevisionID:      revID,
 		ExpectedVersion: r.Params.IfMatch,

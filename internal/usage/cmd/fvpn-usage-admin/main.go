@@ -30,15 +30,33 @@ func main() {
 }
 
 func runMain(ctx context.Context, args []string, stdout io.Writer) error {
-	dsn := os.Getenv("FVPN_DATABASE_URL")
-	if dsn == "" {
-		return errors.New("FVPN_DATABASE_URL is required")
-	}
-	uCfg, err := config.LoadUsageFromEnv()
-	if err != nil {
+	fs := flag.NewFlagSet("fvpn-usage-admin", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	configFile := fs.String("config", "", "central JSON configuration file")
+	usageConfigFile := fs.String("usage-config", "", "optional usage JSON configuration file")
+	if err := fs.Parse(args); err != nil {
 		return err
 	}
 
+	c, err := config.Load(*configFile)
+	if err != nil {
+		return err
+	}
+	uCfg, err := config.UsageFromConfig(c)
+	if err != nil {
+		return err
+	}
+	if *usageConfigFile != "" {
+		uCfg, err = config.LoadUsage(*usageConfigFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	dsn, err := config.ReadSecret(c.DatabaseURLFile)
+	if err != nil {
+		return err
+	}
 	pool, err := db.Open(ctx, dsn, db.OpenOptions{})
 	if err != nil {
 		return fmt.Errorf("connect database: %w", err)
@@ -55,13 +73,14 @@ func runMain(ctx context.Context, args []string, stdout io.Writer) error {
 	}
 
 	svc, err := usage.NewService(usage.Config{
-		Pool:   pool,
-		Signer: signer,
+		Pool:              pool,
+		Signer:            signer,
+		LedgerEpochSigner: signer,
 	})
 	if err != nil {
 		return err
 	}
-	return Run(ctx, svc, args, stdout)
+	return Run(ctx, svc, fs.Args(), stdout)
 }
 
 // Run executes an operator subcommand against the given usage.Service and writes JSON to stdout.

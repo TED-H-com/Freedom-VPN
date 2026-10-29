@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,111 +13,206 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/fup"
+	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
-	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	usagepkg "github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
-type workerPoolContextKey struct{}
-
-// WithPool attaches a *pgxpool.Pool to ctx for worker job handlers.
-func WithPool(ctx context.Context, pool *pgxpool.Pool) context.Context {
-	if pool == nil {
-		return ctx
-	}
-	return context.WithValue(ctx, workerPoolContextKey{}, pool)
+// FUPCompiler exposes Fair-Use evaluation and node rate-policy compilation to
+// the desired-state domain via the worker composition context (§11.2, §11.3, D-026).
+type FUPCompiler interface {
+	EvaluateAndBuildMemberRatePolicy(ctx context.Context, memberID uuid.UUID, periodID string, planRate, nodeCap *api.RatePair) (api.MemberRatePolicy, *fup.EvaluationResult, error)
+	Compute(ctx context.Context, in fup.ComputeInput) (*fup.EvaluationResult, error)
+	Flush(ctx context.Context, now time.Time) ([]*fup.EvaluationResult, error)
 }
 
-func resolveWorkerPool(ctx context.Context, explicit *pgxpool.Pool) (*pgxpool.Pool, func(), error) {
-	if explicit != nil {
-		return explicit, func() {}, nil
-	}
-	if p, ok := ctx.Value(workerPoolContextKey{}).(*pgxpool.Pool); ok && p != nil {
-		return p, func() {}, nil
-	}
-	dsn := os.Getenv("FVPN_DATABASE_URL")
-	if dsn == "" {
-		if dsnFile := os.Getenv("FVPN_DATABASE_URL_FILE"); dsnFile != "" {
-			if s, err := config.ReadSecret(dsnFile); err == nil {
-				dsn = s
-			}
-		}
-	}
-	if dsn == "" {
-		return nil, nil, errors.New("worker database pool unavailable")
-	}
-	pool, err := db.Open(ctx, dsn, db.OpenOptions{})
+// PoliciesServices holds explicitly configured worker dependencies for the
+// policies and Fair-Use domain.
+type PoliciesServices struct {
+	Pool      *pgxpool.Pool
+	Config    config.PoliciesConfig
+	FUPEngine *fup.Engine
+	FUPWorker *fup.Worker
+	Compiler  membersruntime.Compiler
+}
+
+// EvaluateAndBuildMemberRatePolicy implements FUPCompiler.
+func (s *PoliciesServices) EvaluateAndBuildMemberRatePolicy(
+	ctx context.Context,
+	memberID uuid.UUID,
+	periodID string,
+	planRate, nodeCap *api.RatePair,
+) (api.MemberRatePolicy, *fup.EvaluationResult, error) {
+	eval, err := s.FUPEngine.Compute(ctx, fup.ComputeInput{
+		MemberID: memberID,
+		PeriodID: periodID,
+	})
 	if err != nil {
-		return nil, nil, err
+		return api.MemberRatePolicy{}, nil, err
 	}
-	return pool, pool.Close, nil
+	return fup.BuildNodeMemberRatePolicy(eval, planRate, nodeCap), eval, nil
 }
 
-// NewFUPWorker constructs a coalesced Fair-Use evaluation worker wired to
-// usage.Service.GetMemberPeriodTotal and configured from FVPN_FUP_MODE (§11.1, §11.2).
-func NewFUPWorker(pool *pgxpool.Pool) (*fup.Worker, *fup.Engine) {
-	pCfg, _ := config.LoadPoliciesFromEnv()
-	var usageReader fup.UsageReader
-	if pool != nil {
-		if uSvc, err := usage.NewService(usage.Config{Pool: pool}); err == nil {
-			usageReader = fup.NewUsageServiceReader(uSvc, pool)
-		}
+// Compute implements FUPCompiler.
+func (s *PoliciesServices) Compute(ctx context.Context, in fup.ComputeInput) (*fup.EvaluationResult, error) {
+	return s.FUPEngine.Compute(ctx, in)
+}
+
+// Flush implements FUPCompiler.
+func (s *PoliciesServices) Flush(ctx context.Context, now time.Time) ([]*fup.EvaluationResult, error) {
+	return s.FUPWorker.Flush(ctx, now)
+}
+
+type policiesContextKey struct{}
+type fupCompilerContextKey struct{}
+
+// WithPolicies supplies immutable policies worker dependencies via Built.Context.
+func WithPolicies(ctx context.Context, s *PoliciesServices) context.Context {
+	return context.WithValue(ctx, policiesContextKey{}, s)
+}
+
+// PoliciesFromContext retrieves the PoliciesServices attached to the worker context.
+func PoliciesFromContext(ctx context.Context) *PoliciesServices {
+	s, _ := ctx.Value(policiesContextKey{}).( *PoliciesServices)
+	return s
+}
+
+// WithFUPCompiler attaches a FUPCompiler to the worker composition context so
+// the desired-state domain can evaluate member Fair-Use policies without
+// ordering domain builds.
+func WithFUPCompiler(ctx context.Context, c FUPCompiler) context.Context {
+	return context.WithValue(ctx, fupCompilerContextKey{}, c)
+}
+
+// FUPCompilerFromContext returns the FUPCompiler from the worker context.
+func FUPCompilerFromContext(ctx context.Context) FUPCompiler {
+	c, _ := ctx.Value(fupCompilerContextKey{}).(FUPCompiler)
+	return c
+}
+
+// NewPoliciesServices constructs the policies and Fair-Use worker services from
+// explicit configuration and database pool.
+func NewPoliciesServices(pool *pgxpool.Pool, pCfg config.PoliciesConfig, compiler membersruntime.Compiler) (*PoliciesServices, error) {
+	if err := pCfg.Validate(); err != nil {
+		return nil, err
 	}
+	if pool == nil {
+		return nil, errors.New("policies worker database required")
+	}
+	uSvc, err := usagepkg.NewService(usagepkg.Config{Pool: pool})
+	if err != nil {
+		return nil, err
+	}
+	usageReader := fup.NewUsageServiceReader(uSvc, pool)
 	engine := fup.NewEngine(pool, usageReader, nil, nil)
 	if pCfg.FUPMode != "" {
 		engine.SetModeOverride(pCfg.FUPMode)
 	}
-	return fup.NewWorker(engine), engine
+	fupW := fup.NewWorker(engine)
+	if compiler == nil {
+		compiler = desiredstate.NewCompiler(pool, nil)
+	}
+	return &PoliciesServices{
+		Pool:      pool,
+		Config:    pCfg,
+		FUPEngine: engine,
+		FUPWorker: fupW,
+		Compiler:  compiler,
+	}, nil
 }
 
-func registerPoliciesJobs(r Registry) {
-	RegisterPoliciesJobsWithPool(r, nil)
+func policies() Domain {
+	return NewPoliciesDomain(nil, nil)
 }
 
-// RegisterPoliciesJobsWithPool registers policy activation and Fair-Use outbox handlers
-// bound to an optional explicit database pool.
-func RegisterPoliciesJobsWithPool(r Registry, pool *pgxpool.Pool) {
-	r.Register("policy.activated", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-		p, cleanup, err := resolveWorkerPool(ctx, pool)
-		if err != nil {
-			return "", err
-		}
-		defer cleanup()
-		return handlePolicyActivated(ctx, p, event)
-	})
-	r.Register("fup.evaluate", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-		p, cleanup, err := resolveWorkerPool(ctx, pool)
-		if err != nil {
-			return "", err
-		}
-		defer cleanup()
-		return handleFUPEvaluate(ctx, p, event)
-	})
-	r.Register("fup.member_generation_changed", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-		p, cleanup, err := resolveWorkerPool(ctx, pool)
-		if err != nil {
-			return "", err
-		}
-		defer cleanup()
-		return handleFUPMemberGenerationChanged(ctx, p, event)
-	})
-	r.Register("fleet.release_support_changed", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-		p, cleanup, err := resolveWorkerPool(ctx, pool)
-		if err != nil {
-			return "", err
-		}
-		defer cleanup()
+// NewPoliciesDomain constructs the worker Domain for policy activation and
+// Fair-Use evaluation (§11, §14.5). When cfg is nil, settings are validated
+// from Dependencies.Config.
+func NewPoliciesDomain(cfg *config.PoliciesConfig, compiler membersruntime.Compiler) Domain {
+	return Domain{
+		Name: "policies",
+		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			var pCfg config.PoliciesConfig
+			if cfg != nil {
+				if err := cfg.Validate(); err != nil {
+					return Built{}, err
+				}
+				pCfg = *cfg
+			} else {
+				var err error
+				pCfg, err = config.PoliciesFromConfig(d.Config)
+				if err != nil {
+					return Built{}, err
+				}
+			}
+			if d.Pool == nil {
+				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("policies worker database required")}
+			}
+			s, err := NewPoliciesServices(d.Pool, pCfg, compiler)
+			if err != nil {
+				return Built{}, err
+			}
+			return Built{
+				Jobs: PolicyJobs(),
+				Context: func(ctx context.Context) context.Context {
+					ctx = WithPolicies(ctx, s)
+					ctx = WithFUPCompiler(ctx, s)
+					if s.Compiler != nil && membersruntime.CompilerFromContext(ctx) == nil {
+						ctx = membersruntime.WithCompiler(ctx, s.Compiler)
+					}
+					return ctx
+				},
+			}, nil
+		},
+	}
+}
+
+// PolicyJobs returns a fresh registry of policy and Fair-Use outbox handlers.
+func PolicyJobs() Registry {
+	r := Registry{}
+	for _, name := range []string{
+		"policy.activated",
+		"fup.evaluate",
+		"fup.member_generation_changed",
+		"fleet.release_support_changed",
+	} {
+		r.Register(name, policyJob)
+	}
+	return r
+}
+
+func policyJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	s := PoliciesFromContext(ctx)
+	if s == nil || s.Pool == nil || s.FUPWorker == nil {
+		return "", errors.New("policies worker dependencies required")
+	}
+	if event.SchemaVersion != 1 {
+		return "", errors.New("unsupported policies event schema")
+	}
+	switch event.EventType {
+	case "policy.activated":
+		return handlePolicyActivated(ctx, s, event)
+	case "fup.evaluate":
+		return handleFUPEvaluate(ctx, s, event)
+	case "fup.member_generation_changed":
+		return handleFUPMemberGenerationChanged(ctx, s, event)
+	case "fleet.release_support_changed":
 		var fleetID uuid.UUID
-		if err := p.QueryRow(ctx, `SELECT id FROM fleet_config WHERE id = $1`, event.AggregateID).Scan(&fleetID); err != nil {
+		if err := s.Pool.QueryRow(ctx, `SELECT id FROM fleet_config WHERE id = $1`, event.AggregateID).Scan(&fleetID); err != nil {
 			return "", fmt.Errorf("policies worker: read back fleet_config %s: %w", event.AggregateID, err)
 		}
 		return "fleet_config:" + fleetID.String(), nil
-	})
+	default:
+		return "", errors.New("unowned policy event")
+	}
 }
 
-func handlePolicyActivated(ctx context.Context, pool *pgxpool.Pool, event db.ClaimedEvent) (string, error) {
+func handlePolicyActivated(ctx context.Context, s *PoliciesServices, event db.ClaimedEvent) (string, error) {
+	pool := s.Pool
 	var payload struct {
 		DefinitionID string `json:"definition_id"`
 		Type         string `json:"type"`
@@ -133,8 +227,7 @@ func handlePolicyActivated(ctx context.Context, pool *pgxpool.Pool, event db.Cla
 	if err != nil {
 		return "", fmt.Errorf("policies worker: invalid definition_id: %w", err)
 	}
-	revID, err := uuid.Parse(payload.RevisionID)
-	if err != nil {
+	if _, err := uuid.Parse(payload.RevisionID); err != nil {
 		return "", fmt.Errorf("policies worker: invalid revision_id: %w", err)
 	}
 
@@ -151,12 +244,14 @@ func handlePolicyActivated(ctx context.Context, pool *pgxpool.Pool, event db.Cla
 	if activeRevID == nil {
 		return "", errors.New("policies worker: policy definition has no active revision")
 	}
-	_ = revID
 
 	// When a fair_use or plan policy is activated, run a coalesced FUP sweep across active members.
 	if payload.Type == string(api.PolicyTypeFairUse) || payload.Type == string(api.PolicyTypePlan) {
-		fupW, _ := NewFUPWorker(pool)
-		rows, err := pool.Query(ctx, `SELECT id FROM members WHERE status = 'active' ORDER BY id LIMIT 500`)
+		batchLimit := s.Config.FUPBatchSize
+		if batchLimit <= 0 {
+			batchLimit = 64
+		}
+		rows, err := pool.Query(ctx, `SELECT id FROM members WHERE status = 'active' ORDER BY id LIMIT $1`, batchLimit)
 		if err != nil {
 			return "", fmt.Errorf("policies worker: query active members for FUP sweep: %w", err)
 		}
@@ -175,8 +270,8 @@ func handlePolicyActivated(ctx context.Context, pool *pgxpool.Pool, event db.Cla
 		}
 		if len(memberIDs) > 0 {
 			periodID := fup.CurrentUTCMonthPeriodID(time.Now().UTC())
-			fupW.ScheduleMemberSweep(memberIDs, periodID)
-			if _, err := fupW.Flush(ctx, time.Now().UTC()); err != nil {
+			s.FUPWorker.ScheduleMemberSweep(memberIDs, periodID)
+			if _, err := s.FUPWorker.Flush(ctx, time.Now().UTC()); err != nil {
 				return "", fmt.Errorf("policies worker: FUP flush on policy activation: %w", err)
 			}
 		}
@@ -226,7 +321,7 @@ func handlePolicyActivated(ctx context.Context, pool *pgxpool.Pool, event db.Cla
 	return evidenceRef, nil
 }
 
-func handleFUPEvaluate(ctx context.Context, pool *pgxpool.Pool, event db.ClaimedEvent) (string, error) {
+func handleFUPEvaluate(ctx context.Context, s *PoliciesServices, event db.ClaimedEvent) (string, error) {
 	var payload struct {
 		MemberID         string `json:"member_id"`
 		PeriodID         string `json:"period_id"`
@@ -245,13 +340,12 @@ func handleFUPEvaluate(ctx context.Context, pool *pgxpool.Pool, event db.Claimed
 		periodID = fup.CurrentUTCMonthPeriodID(time.Now().UTC())
 	}
 
-	fupW, _ := NewFUPWorker(pool)
 	if payload.AllowRelaxation {
-		fupW.NotifyLedgerCorrection(memberID, periodID, payload.RelaxationReason)
+		s.FUPWorker.NotifyLedgerCorrection(memberID, periodID, payload.RelaxationReason)
 	} else {
-		fupW.NotifyLedgerChange(memberID, periodID)
+		s.FUPWorker.NotifyLedgerChange(memberID, periodID)
 	}
-	results, err := fupW.Flush(ctx, time.Now().UTC())
+	results, err := s.FUPWorker.Flush(ctx, time.Now().UTC())
 	if err != nil {
 		return "", fmt.Errorf("fup worker: flush evaluation: %w", err)
 	}
@@ -261,9 +355,9 @@ func handleFUPEvaluate(ctx context.Context, pool *pgxpool.Pool, event db.Claimed
 	return "fup_evaluation:" + results[0].EvaluationID.String(), nil
 }
 
-func handleFUPMemberGenerationChanged(ctx context.Context, pool *pgxpool.Pool, event db.ClaimedEvent) (string, error) {
+func handleFUPMemberGenerationChanged(ctx context.Context, s *PoliciesServices, event db.ClaimedEvent) (string, error) {
 	var stateID uuid.UUID
-	err := pool.QueryRow(ctx, `
+	err := s.Pool.QueryRow(ctx, `
 		SELECT id FROM fup_member_states WHERE id = $1
 	`, event.AggregateID).Scan(&stateID)
 	if err != nil {
