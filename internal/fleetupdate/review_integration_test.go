@@ -3,6 +3,10 @@
 package fleetupdate
 
 import (
+	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
+	"github.com/google/uuid"
 	"testing"
 	"time"
 
@@ -76,4 +80,46 @@ func TestAT24_IntentRefreshAndTargetNames(t *testing.T) {
 	if named != 1 || unnamed != 1 {
 		t.Fatal(named, unnamed)
 	}
+}
+
+func TestAT26_AppliedPolicyEvidenceIsImmutable(t *testing.T) {
+	l := newLab(t)
+	i := l.node("amd64", "published", "registered", true)
+	l.batch(l.new)
+	w := l.intent(i)
+	generation := decstr.MustParse("9007199254740993")
+	oldPolicy, newPolicy := uuid.New(), uuid.New()
+	for offset, ref := range []uuid.UUID{oldPolicy, newPolicy} {
+		if _, err := l.s.pool.Exec(l.ctx, `INSERT INTO desired_states(node_id,incarnation_id,generation,policy_refs,binding_revision,release_id,config_hash,schema_version,signed_at) VALUES($1,$2,$3::numeric,$4,0,$5,$6,1,clock_timestamp())`, i.NodeID, i.IncarnationID, (generation + decstr.U64(offset)).String(), []uuid.UUID{ref}, l.new, make([]byte, 32)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r := result(w, "succeeded")
+	r.PolicyGeneration = generation
+	if _, err := l.s.SubmitResult(l.ctx, i, payload(t, r)); err != nil {
+		t.Fatal(err)
+	}
+	var stored string
+	var refs []uuid.UUID
+	if err := l.s.pool.QueryRow(l.ctx, `SELECT policy_generation::text,policy_refs FROM update_results WHERE result_id=$1`, r.ResultId).Scan(&stored, &refs); err != nil || stored != generation.String() || len(refs) != 1 || refs[0] != oldPolicy {
+		t.Fatal(stored, refs, err)
+	}
+	r.PolicyGeneration++
+	if _, err := l.s.SubmitResult(l.ctx, i, payload(t, r)); !errors.Is(err, apierr.New(apierr.AckConflict, "")) {
+		t.Fatal(err)
+	}
+	r.ResultId = uuid.New()
+	if ack, err := l.s.SubmitResult(l.ctx, i, payload(t, r)); err != nil || !ack.AcceptedAsHistory {
+		t.Fatal(ack, err)
+	}
+	target := nullableValue(w.Intent.TargetId)
+	evidence, err := l.s.Evidence(l.ctx, target)
+	if err != nil || evidence.PolicyGeneration == nil || *evidence.PolicyGeneration != generation || len(evidence.PolicyRefs) != 1 || evidence.PolicyRefs[0] != oldPolicy {
+		t.Fatal(evidence, err)
+	}
+	// Late history keeps its own applied config without rewriting terminal evidence.
+	if err := l.s.pool.QueryRow(l.ctx, `SELECT policy_generation::text,policy_refs FROM update_results WHERE result_id=$1`, r.ResultId).Scan(&stored, &refs); err != nil || stored != r.PolicyGeneration.String() || len(refs) != 1 || refs[0] != newPolicy {
+		t.Fatal(stored, refs, err)
+	}
+	releasetest.AssertLedger(t, l.s.pool, l.f.Validator)
 }
