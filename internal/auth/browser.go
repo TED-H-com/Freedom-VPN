@@ -11,6 +11,7 @@ import (
 	"errors"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -20,7 +21,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const SessionCookie = "__Host-fvpn-session"
+const AdminSessionCookie = "__Host-fvpn-admin"
+const MemberSessionCookie = "__Host-fvpn-member"
 const flowCookie = "__Host-fvpn-login"
 
 type BrowserConfig struct {
@@ -79,7 +81,11 @@ func CheckCSRF(r *http.Request, p Principal, origin string) error {
 	return nil
 }
 func (b *Browser) AuthenticateSession(r *http.Request) (Principal, error) {
-	token := cookieValue(r, SessionCookie)
+	role, e := sessionRole(r)
+	if e != nil {
+		return Principal{}, e
+	}
+	token := cookieValue(r, cookieNameForRole(role))
 	if token == "" {
 		return Principal{}, apierr.New(apierr.Unauthenticated, "Sign in required.")
 	}
@@ -89,6 +95,9 @@ func (b *Browser) AuthenticateSession(r *http.Request) (Principal, error) {
 			return p, apierr.New(apierr.Unauthenticated, "Session expired.")
 		}
 		return p, apierr.New(apierr.DependencyUnavailable, "Session service unavailable.")
+	}
+	if p.Role != role {
+		return Principal{}, apierr.New(apierr.Unauthenticated, "Session role mismatch.")
 	}
 	p.CSRFToken = csrf(token)
 	return p, nil
@@ -194,12 +203,12 @@ func (b *Browser) callback(w http.ResponseWriter, r *http.Request) {
 	if requestID == uuid.Nil {
 		requestID = uuid.Must(uuid.NewV7())
 	}
-	_, e = b.store.Login(r.Context(), Identity{Issuer: id.Issuer, ClientScope: b.config.ClientID, Subject: id.Subject, Label: label, Role: role, MFA: mfa, AuthTime: at, Expires: id.Expiry}, newToken, cookieValue(r, SessionCookie), b.config.Absolute, requestID)
+	_, e = b.store.Login(r.Context(), Identity{Issuer: id.Issuer, ClientScope: b.config.ClientID, Subject: id.Subject, Label: label, Role: role, MFA: mfa, AuthTime: at, Expires: id.Expiry}, newToken, cookieValue(r, cookieNameForRole(role)), b.config.Absolute, requestID)
 	if e != nil {
 		apierr.Write(w, r, e)
 		return
 	}
-	cookie(w, SessionCookie, newToken, int(b.config.Absolute.Seconds()))
+	cookie(w, cookieNameForRole(role), newToken, int(b.config.Absolute.Seconds()))
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 func (b *Browser) logout(w http.ResponseWriter, r *http.Request) {
@@ -212,11 +221,11 @@ func (b *Browser) logout(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, r, e)
 		return
 	}
-	if e = b.store.Logout(r.Context(), cookieValue(r, SessionCookie)); e != nil {
+	if e = b.store.Logout(r.Context(), cookieValue(r, cookieNameForRole(p.Role))); e != nil {
 		apierr.Write(w, r, e)
 		return
 	}
-	cookie(w, SessionCookie, "", -1)
+	cookie(w, cookieNameForRole(p.Role), "", -1)
 	w.WriteHeader(http.StatusNoContent)
 }
 func (b *Browser) session(w http.ResponseWriter, r *http.Request) {
@@ -237,4 +246,37 @@ func (b *Browser) session(w http.ResponseWriter, r *http.Request) {
 		data["member_id"] = p.ID
 	}
 	_ = json.NewEncoder(w).Encode(data)
+}
+
+// API paths select their own role cookie. Browser bootstrap/logout require a role
+// when both cookies are present, so an admin session can never shadow a member.
+func sessionRole(r *http.Request) (Role, error) {
+	if strings.HasPrefix(r.URL.Path, "/api/v1/admin/") {
+		return Admin, nil
+	}
+	if strings.HasPrefix(r.URL.Path, "/api/v1/member/") {
+		return Member, nil
+	}
+	values, explicit := r.URL.Query()["role"]
+	if explicit {
+		if len(values) != 1 || (values[0] != string(Admin) && values[0] != string(Member)) {
+			return "", apierr.New(apierr.MalformedRequest, "Role must be admin or member.")
+		}
+		return Role(values[0]), nil
+	}
+	admin := cookieValue(r, AdminSessionCookie) != ""
+	member := cookieValue(r, MemberSessionCookie) != ""
+	if admin && member {
+		return "", apierr.New(apierr.MalformedRequest, "Select a session role.")
+	}
+	if admin {
+		return Admin, nil
+	}
+	return Member, nil
+}
+func cookieNameForRole(role Role) string {
+	if role == Admin {
+		return AdminSessionCookie
+	}
+	return MemberSessionCookie
 }

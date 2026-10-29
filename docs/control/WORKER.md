@@ -55,3 +55,14 @@ SIGTERM/SIGINT cancel handlers and drain work under the shutdown timeout. A job
 that did not establish completion remains leased for recovery; shutdown never
 manufactures delivery. `worker.Open` merges all registered domains before any claims; duplicate events
 fail startup. The application supervises both dispatcher and domain runners.
+
+Dead-letter audit references use contract resource types (D-029). Existing contract
+names are kept; aliases map explicitly: `node-incarnation → node`,
+`device → member_device`, `billing_session → checkout_session`,
+`fleet → fleet_config`, `fleet_update → update_batch`. The aggregate UUID is
+preserved. The actor is `system` with the dispatcher's process UUID. Unknown
+aggregate types fail before any dead-letter or audit write, emit a structured
+`AUDIT_RESOURCE_TYPE_UNKNOWN` error with the event UUID and increment
+`fvpn_worker_events_total{result="dead_letter_mapping_error"}`. The invalid value
+is not logged. The lease then expires for recovery after the producer/mapping is
+fixed; the worker never acknowledges unaudited completion.

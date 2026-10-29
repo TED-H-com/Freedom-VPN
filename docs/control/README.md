@@ -108,3 +108,10 @@ library advisories; Go 1.27.3 fixes the reported issues. See the official
 [Go release history](https://go.dev/doc/devel/release#go1.27.3). Deployment and the
 repository-wide Go workflow should use at least this patched release; the shared
 minimum directive remains unchanged for the orchestrator to coordinate.
+
+Ingress and authenticated traffic use separate bounded limiter instances (§14.6).
+`max_rate_principals` bounds each instance independently; unauthenticated IP
+rotation cannot consume or evict authenticated principal buckets. Existing
+heartbeat/lease/usage classes retain independent per-principal keys. Every
+framework 429 includes `Retry-After`, including `/auth/*` rate and concurrency
+rejections. These remain process-local limits.

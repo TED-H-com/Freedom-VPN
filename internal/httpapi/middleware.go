@@ -199,6 +199,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		return nil, e
 	}
 	lim := &limiter{entries: map[string]bucketState{}, max: o.Config.MaxRatePrincipals}
+	ingress := &limiter{entries: map[string]bucketState{}, max: o.Config.MaxRatePrincipals}
 	if lim.max < 1 {
 		return nil, errors.New("rate capacity required")
 	}
@@ -263,7 +264,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		m.route = r.Method + " /api/v1" + route.Path
 		ingressClass, _, _ := classify(op, o.Config)
 		peer, _, _ := net.SplitHostPort(r.RemoteAddr)
-		if delay := lim.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
+		if delay := ingress.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
@@ -301,7 +302,11 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			host, _, _ := net.SplitHostPort(r.RemoteAddr)
 			key = "anonymous:" + host
 		}
-		if delay := lim.allow(class+":"+key, bounds); delay > 0 {
+		bucket := lim
+		if p.Role == "" {
+			bucket = ingress
+		}
+		if delay := bucket.allow(class+":"+key, bounds); delay > 0 {
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
@@ -487,7 +492,7 @@ func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 		case gate <- struct{}{}:
 			defer func() { <-gate }()
 		default:
-			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login concurrency exceeded."))
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login concurrency exceeded.").WithRetryAfter(time.Second))
 			return
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, c.BrowserBodyBytes)
