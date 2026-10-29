@@ -34,7 +34,7 @@ The forwarding latch is `forwarding.blocked` in the journal directory. The agent
 
 Work comes from a desired-state envelope (§14.7). `FileSource` verifies it on every read with a `desired-state` purpose key. The window is half-open `[issued_at, expires_at)`. The node id and incarnation must match. An unverifiable or expired envelope blocks forwarding. A valid envelope with `update: null` is not a job (`ErrNoWork`) and does not by itself change the latch.
 
-The desired-state document has `serving_release_ids` and no revoked-release list. `revoked_release_ids` in the updater config is the release-support revoked set, copied by the agent. The result's `policy_generation` is the desired-state `config_generation`. `boot_id` on a result is the boot that claimed the job.
+The desired-state document has `serving_release_ids`. A verified envelope may also carry signed `revoked_release_ids` (revision 3, D-034). An absent member means no additional revocations and does not change the persisted signed set. An empty array adds nothing and does not clear that set. `revoked_release_ids` in the updater config stays the unsigned release-support list copied by the agent. The effective set is the union of that list and the persisted signed set. The result's `policy_generation` is the desired-state `config_generation` actually applied when the result was produced (D-043, §13.10.3). It is not the update job generation and not a generation that was only downloaded. A result is not posted before that generation is known. `boot_id` on a result is the boot that claimed the job.
 
 A job is refused when the attempt is below 1, the node is revoked, the incarnation does not match, the release is revoked, the generation is older than the accepted one, or the authorization window has ended. Authorization is half-open: `now < authorization_valid_until`. Those refusals are recorded. A stale or revoked job is not claimed.
 
@@ -68,9 +68,11 @@ A newer generation while the job is queued, downloading or verifying supersedes 
 
 ### Rollback decision (§13.9)
 
-`last_good` is restored only when all of these hold, in this order: a tree is present and its hash matches, the manifest signature verifies, the release is not revoked, the release is in the serving set, and the state schema is readable by that release. When the candidate manifest's `rollback.allowed_release_ids` is non-empty, `last_good` must also be in that list. The serving set and the allow list fail closed: missing either one is `MINIMUM_VERSION_VIOLATION` and `recovery_required`. An empty allow list adds no extra restriction. `StateReadableByPrevious` does not mark a schema readable when the journal schema is not the last-good schema. Otherwise the outcome is `recovery_required` and members stay blocked. A health check past the 8-attempt cap starts a rollback. It does not jump straight to recovery.
+Rollback chooses the newest retained release that passes the checks below. Newest is `release_sequence`, then `installed_at`, then release id. Retained means a release the journal still records and whose tree retention has not removed. A revoked release is never selected and is never installed. The checks, in this order, are: a tree is present and its hash matches, the manifest signature verifies, the release is not revoked, the release is in the serving set, and the state schema is readable by that release. When the failed candidate's `rollback.allowed_release_ids` is non-empty, the target must also be in that list. The serving set and the allow list fail closed: missing either one is `MINIMUM_VERSION_VIOLATION`. An empty allow list adds no extra restriction. `StateReadableByPrevious` does not mark a schema readable when the journal schema is not that release's schema. A health check past the 8-attempt cap starts a rollback. It does not jump straight to recovery.
 
-When `last_good` is unsafe, the `current` symlink is left on the failed candidate. Forwarding stays off. The symlink is not moved to an unverified tree.
+A currently installed release named by the persisted signed set is unhealthy. The updater rolls it back to that newest non-revoked release. When no such release exists, the outcome is `recovery_required`, member forwarding stays blocked, and the revoked release does not pass the gate. The unsigned agent list still refuses installation. It does not, by itself, roll the current release back, so a legacy envelope keeps today's behaviour. The persisted signed set is a monotonic union: an id is never removed, an older `config_generation` cannot shrink it, and an absent member does not update it.
+
+When no safe retained release can be restored, the `current` symlink stays where it is (the failed candidate, or the revoked release). Forwarding stays off. The symlink is not moved to an unverified tree.
 
 A failure before services are stopped (for example the metering barrier) is not destructive. The journal ends `rolled_back`, the result state is `failed`, and forwarding follows the publication rule because the old process is still the one that is running. A stop failure is reported as `START_FAILED` with stage `stop_services` (there is no `STOP_FAILED` code) and the rollback is destructive, so `last_good` is started again.
 
@@ -122,7 +124,7 @@ The hook used by tests fires after the stage is durable and before that stage's 
 | `switched` | `locally_succeeded` | blocked until checks pass |
 | `checking` | `locally_succeeded` | blocked until checks pass |
 | `locally_succeeded` (before the result is enqueued) | result `succeeded` in the outbox | not blocked by the journal |
-| `rolling_back` | `rolled_back` when `last_good` is safe | blocked until the restored release checks pass |
+| `rolling_back` | `rolled_back` when a retained release is safe | blocked until the restored release checks pass |
 | `rolled_back` (before the result is enqueued) | result `rolled_back` | not blocked when the restored release may serve |
 | `recovery_required` (before the result is enqueued) | result with `recovery_required` | stay blocked, exit 2 |
 
@@ -131,12 +133,12 @@ Identity and the usage outbox are not rewritten by the update or the rollback (�
 ## Decisions
 
 - `boot_id` is the boot that claimed the job. Keep.
-- Hostile archive paths, devices and symlink escapes stay `VALIDATION_FAILED`. A dedicated code is deferred to the next contract revision.
+- Hostile archive paths, devices and symlink escapes stay `VALIDATION_FAILED` on the local operation. The UpdateResult reports those failures, and artifact hash, signature and size failures, as `ARTIFACT_INVALID`. That code is report-only: its catalog HTTP status is zero and it is not an HTTP status. Hash and size stay permanent after the bounded re-download. Signature and archive validation stay permanent. The local `OpError` and its retry bit are unchanged.
 - Refusing loopback, link-local and metadata names was the original bar, and pinning one resolved address was not required. D-034f supersedes the address check: private and CGNAT ranges are refused, and `DialContext` applies that check to every resolved address. Pinning one specific address is still not required. Artifact fetches move behind the agent's mTLS client in Wave 3.
 - Update results are accepted on HTTP 202 only. The contract wins over the handover text.
-- `revoked_release_ids` stay an unsigned agent-supplied list for now. The signed serving set is the only thing that gates forwarding. Adding the list to the signed desired state is a candidate for contract revision 3.
-- `policy_generation` is the desired-state `config_generation` for now (revision 3 candidate).
-- When `last_good` cannot be restored, `current` stays on the failed candidate, the symlink is never moved to an unverified tree, and members stay blocked. Confirmed.
+- Signed `revoked_release_ids` on a verified desired-state envelope (revision 3) are persisted as a monotonic union in the journal. An id is never removed (§17.2). The member is accepted only when `config_generation` is not older than the last applied generation; an older generation is `STALE_GENERATION` and does not shrink the set or return a revoked release to service (§13.4, §15.3). An absent member does not update the signed set. An empty member adds nothing and does not clear it. The updater never installs a revoked release, never selects one as a rollback target, and does not let one pass the forwarding gate. A signed-revoked current release rolls back to the newest retained release that is not revoked, or blocks forwarding with `recovery_required`.
+- `policy_generation` is the desired-state `config_generation` actually applied when the result was produced (D-043, §13.10.3). It is not the update job generation and not a desired state that was only received. A result is not posted before that generation is known. A superseded job keeps the generation it applied, not a newer generation accepted for a later job.
+- When no safe retained release can be restored, `current` stays on the failed candidate or the revoked release, the symlink is never moved to an unverified tree, and members stay blocked. Confirmed.
 - A checkpoint failure before `stop_services` ends as `rolled_back`/`failed` without blocking members, because nothing destructive happened. Confirmed: §13.9 step 4 applies only after the destructive stage.
 - Toolchain 1.27.3 arrives in a separate orchestrator task (decision D-014). Keep `GOTOOLCHAIN=local` and `go.mod` at 1.27.1.
 - D-034a. Release archives contain regular files and directories only. `ExtractArchive` rejects symlinks, hard links and every other member type. `fsutil.TreeHash` returns an error on a symlink. The `current` pointer stays a symlink outside the tree.

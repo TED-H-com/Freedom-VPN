@@ -160,7 +160,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 				return entitlement.ErrConflict
 			}
 
-			op, err := s.targetOperation(ctx, tx, c.Actor, existing, member, api.OperationKindMemberUpdate, "device.authorized", projection.Revision)
+			op, err := s.targetOperation(ctx, tx, c.Actor, existing, member, api.OperationKindMemberDeviceAuthorize, "device.authorized", projection.Revision)
 			if err != nil {
 				return err
 			}
@@ -195,7 +195,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 			return err
 		}
 		opActor := entitlement.Actor{ID: member, Role: string(api.AuditEventActorTypeMember), RequestID: c.Actor.RequestID}
-		op, err := entitlement.Operation(ctx, tx, opActor, api.OperationKindMemberUpdate, api.ResourceTypeMemberDevice, device, 1)
+		op, err := entitlement.Operation(ctx, tx, opActor, api.OperationKindMemberDeviceAuthorize, api.ResourceTypeMemberDevice, device, 1)
 		if err != nil {
 			return err
 		}
@@ -353,6 +353,9 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 // A new key for an achieved state returns its original operation. Legacy rows
 // without one enqueue a fresh read-back reconciliation, never an empty 202.
 func (s *Service) targetOperation(ctx context.Context, tx pgx.Tx, actor entitlement.Actor, device, member uuid.UUID, kind api.OperationKind, event string, revision decstr.U64) (uuid.UUID, error) {
+	if !kind.Valid() {
+		return uuid.Nil, entitlement.ErrInvalid
+	}
 	var op uuid.UUID
 	err := tx.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type=$1 AND resource_id=$2 AND kind=$3 AND principal=$4 AND desired_generation=(SELECT resource_version FROM member_devices WHERE id=$2) ORDER BY created_at DESC,id DESC LIMIT 1`, api.ResourceTypeMemberDevice, device, kind, string(api.AuditEventActorTypeMember)+":"+member.String()).Scan(&op)
 	if err == nil {

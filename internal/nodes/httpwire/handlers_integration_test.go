@@ -25,7 +25,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
-	"github.com/TED-H-com/Freedom-VPN/internal/pki/migrations"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
@@ -176,11 +175,6 @@ func TestAT06_AT07_AT28_HTTPEnrollmentReinstallRevocation(t *testing.T) {
 	}
 	if _, e := f.r.PKI.AuthenticateAgent(ctx, cert); e == nil {
 		t.Fatal("revoked certificate authenticated")
-	}
-	// The base migration still prohibits reinstalls. Exercise the proposed domain
-	// migration explicitly; embedding it belongs to the database owner.
-	if _, e := f.r.Pool.Exec(ctx, migrations.Reinstall); e != nil {
-		t.Fatal(e)
 	}
 	replacement := f.create(&out.NodeId)
 	_, newOut, newCert := f.enroll(replacement)

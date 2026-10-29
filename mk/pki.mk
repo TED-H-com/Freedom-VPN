@@ -15,7 +15,7 @@ pki-build:
 pki-test:
 	@$(pki-with-disk-tmp) go test $(pki-packages)
 pki-test-integration:
-	@$(pki-with-disk-tmp) go test -count=1 -tags integration $(pki-packages)
+	@$(pki-with-disk-tmp) go test -count=1 -tags integration -p 1 -parallel 2 $(pki-packages)
 pki-lint:
 	@test -z "$$(gofmt -l internal/pki internal/enrollment internal/signing internal/nodes internal/config apps/control apps/worker)"
 	@$(pki-with-disk-tmp) go vet $(pki-packages)

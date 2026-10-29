@@ -8,11 +8,13 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 func TestF15_InvalidIdentifiersCannotRevokeOrPersist(t *testing.T) {
@@ -76,10 +78,17 @@ func TestF06F10F13_ServiceWritesPreserveCommittedEvidence(t *testing.T) {
 	}
 	// Simulate worker read-back using explicitly TEST ONLY evidence. Replays
 	// and later node revocation must leave the succeeded provision row frozen.
-	exec(t, f, `UPDATE operations SET status='running' WHERE id=$1`, enrolled.OperationID)
-	exec(t, f, `UPDATE operations SET status='succeeded',completed_at=clock_timestamp(),
- steps=(SELECT jsonb_object_agg(key,value || '{"status":"succeeded","observed_ref":"test_readback"}'::jsonb) FROM jsonb_each(steps)),
- observed_refs='{"test_readback":{"label":"TEST ONLY worker evidence"}}' WHERE id=$1`, enrolled.OperationID)
+	err = (operations.Store{Pool: f.pool}).InTx(ctx, func(tx pgx.Tx) error {
+		for _, step := range []string{"netbird_setup", "peer_readback", "node_policy"} {
+			if err := operations.Transition(ctx, tx, enrolled.OperationID, step, api.OperationStepStatusSucceeded, &operations.Evidence{Reference: "enrollment:" + created.Enrollment.EnrollmentId.String(), ObservedAt: time.Now()}, nil, nil); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	var frozenOperation string
 	if err = f.pool.QueryRow(ctx, `SELECT to_jsonb(o)::text FROM operations o WHERE id=$1`, enrolled.OperationID).Scan(&frozenOperation); err != nil {
 		t.Fatal(err)

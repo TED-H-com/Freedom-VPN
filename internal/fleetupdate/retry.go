@@ -6,8 +6,11 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -126,12 +129,16 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 		if len(candidates) == 0 {
 			return apierr.New(apierr.StateConflict, "No retryable current failed targets")
 		}
-		op := uuid.Must(uuid.NewV7())
-		out = RetryAccepted{OperationID: op, TargetCount: len(candidates)}
-		_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id) VALUES($1,'update_batch.retry',$2,'update_batch',$3,$4)`, op, c.ActorID.String(), batch, commandtx.RequestID(ctx))
+		requestID := commandtx.RequestID(ctx)
+		op, e := operations.Create(ctx, tx, operations.CreateRequest{
+			Kind: api.OperationKindUpdateBatchRetry, Principal: auth.Principal{Role: auth.Admin, ID: c.ActorID},
+			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, RequestID: requestID,
+			Steps: map[string]operations.Step{"attempts": {Required: true}},
+		})
 		if e != nil {
 			return e
 		}
+		out = RetryAccepted{OperationID: op, TargetCount: len(candidates)}
 		for _, x := range candidates {
 			if e = s.newJob(ctx, tx, x.node, x.job.target, release, x.job.generation, x.job.attempt+1); e != nil {
 				return e
@@ -144,7 +151,16 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 		if e = notify(ctx, tx, batch, "fleet.update_retry"); e != nil {
 			return e
 		}
-		if e = releases.Audit(ctx, tx, c.ActorID.String(), "admin", "fleet.update_retry", batch.String(), &op, map[string]any{"reason": r.Reason, "target_count": len(candidates)}); e != nil {
+		event, e := audit.NewEvent(audit.Entry{
+			Actor: audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: c.ActorID}, Action: "update_batch.retry",
+			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, Result: api.AuditEventResultSucceeded,
+			OperationID: &op, RequestID: &requestID,
+			After: map[string]any{"target_count": len(candidates)}, Fields: []string{"target_count"},
+		})
+		if e != nil {
+			return e
+		}
+		if e = audit.AppendEvent(ctx, tx, event); e != nil {
 			return e
 		}
 		if e = recomputeAll(ctx, tx); e != nil {

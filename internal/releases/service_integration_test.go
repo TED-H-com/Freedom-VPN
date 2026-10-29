@@ -62,6 +62,10 @@ func TestUPD02_RegisterImmutableAndVerify(t *testing.T) {
 	if e = s.VerifyRelease(ctx, got.ReleaseID, memoryFetcher{[]byte("bad")}); e != nil {
 		t.Fatal(e)
 	}
+	verified, e := s.Register(ctx, releasetest.Command(), req)
+	if e != nil || verified.Status != 201 {
+		t.Fatal(verified, e)
+	}
 	list, e := s.List(ctx, "", 1)
 	if e != nil || len(list.Items) != 1 || list.Items[0].VerificationState != "verified" {
 		t.Fatal(list, e)
@@ -91,6 +95,7 @@ func TestUPD02_RegisterImmutableAndVerify(t *testing.T) {
 	if !errors.Is(e, apierr.New(apierr.ReleaseNotApproved, "")) {
 		t.Fatal(e)
 	}
+	releasetest.AssertLedger(t, pool, f.Validator, "release.register", "release.verify")
 }
 func TestUPD02_RejectedRegistrationsPersistIneligible(t *testing.T) {
 	ctx := context.Background()
@@ -145,4 +150,5 @@ func TestUPD02_ListContractAndVerificationErrors(t *testing.T) {
 	if e != nil || list.Items[0].VerificationState != "rejected" || (!list.Items[0].VerificationError.IsSpecified() || list.Items[0].VerificationError.IsNull()) {
 		t.Fatal(list, e)
 	}
+	releasetest.AssertLedger(t, pool, f.Validator, "release.register", "release.verify")
 }

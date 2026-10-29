@@ -10,11 +10,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
+	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -479,4 +482,159 @@ func emptyObservationReport() api.ObservationReport {
 	r.Usage.MeterEpochId.SetNull()
 	r.Usage.OldestUnackedAt.SetNull()
 	return r
+}
+
+func TestAudit_D029Conformance_NodesDesiredStateLeasesExits(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 29, 18, 0, 0, 0, time.UTC)
+
+	nodesSvc := nodes.NewService(pool, nodes.WithClock(func() time.Time { return now }))
+	compiler := testExitsCompiler(t, pool, func() time.Time { return now })
+	nb := NewFakeNetBirdAdapter()
+	exitsSvc := NewService(pool, compiler, nb, WithClock(func() time.Time { return now }))
+
+	leaseSeed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET - exits-lease-key"))
+	leaseSigner := desiredstate.NewKeySigner(desiredstate.SigningKey{
+		KeyID:      "lease-key-exits-1",
+		Purpose:    envelope.PurposeLease,
+		PrivateKey: ed25519.NewKeyFromSeed(leaseSeed[:]),
+	})
+	leaseSvc := leases.NewService(pool, leaseSigner, leases.WithClock(func() time.Time { return now }))
+
+	nodeID, incID, exitID, relID, _ := seedExitTestNode(t, ctx, pool, api.PublicationIntentUnpublished, "absent")
+	adminUUID := uuid.New()
+
+	// 1. exits.SetPublication (writes exit:<uuid> audit row).
+	_, etag1, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode: %v", err)
+	}
+	pubOp, _, err := exitsSvc.SetPublication(ctx, SetPublicationParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        etag1,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentPublished,
+			Reason:            "publish for D-029 audit test",
+		},
+	})
+	if err != nil {
+		t.Fatalf("SetPublication: %v", err)
+	}
+
+	// 2. desiredstate.Compile (writes node:<uuid> audit row).
+	compiled, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile: %v", err)
+	}
+
+	// 3. nodes.SubmitObservation (writes node:<uuid> audit row).
+	now = now.Add(5 * time.Second)
+	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, compiled.Generation, true)
+	if _, err := exitsSvc.ExecuteOperation(ctx, pubOp.OperationId); err != nil {
+		t.Fatalf("ExecuteOperation: %v", err)
+	}
+
+	// 4. leases.Renew (delegates to RenewTx, writes node:<uuid> audit row).
+	if _, err := leaseSvc.Renew(ctx, nodeID, incID, api.LeaseRenewalRequest{
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  nodeID,
+		NodeIncarnationId:       incID,
+		AppliedConfigGeneration: presence.NewNullableWithValue(decstr.U64(compiled.Generation)),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+	}); err != nil {
+		t.Fatalf("Renew: %v", err)
+	}
+
+	// 5. nodes.UpdateNode, RevokeNode, RetireNode (write node:<uuid> audit rows).
+	_, etag2, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode(2): %v", err)
+	}
+	notes := "updated notes for D-029"
+	updRes, err := nodesSvc.UpdateNode(ctx, nodes.UpdateNodeParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        etag2,
+		Patch:          api.NodePatch{Notes: &notes},
+	})
+	if err != nil {
+		t.Fatalf("UpdateNode: %v", err)
+	}
+	_, etag3, err := nodesSvc.RevokeNode(ctx, nodes.RevokeNodeParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        updRes.ETag,
+		Request:        api.ReasonRequest{Reason: "revoke for D-029 audit test"},
+	})
+	if err != nil {
+		t.Fatalf("RevokeNode: %v", err)
+	}
+	if _, _, err := nodesSvc.RetireNode(ctx, nodes.RetireNodeParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        etag3,
+		Reason:         "retire for D-029 audit test",
+	}); err != nil {
+		t.Fatalf("RetireNode: %v", err)
+	}
+
+	// 6. Prove with audit.Store.List that all rows are returned with zero anomalies.
+	var rawAuditCount int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events`).Scan(&rawAuditCount); err != nil {
+		t.Fatalf("count audit_events: %v", err)
+	}
+	if rawAuditCount < 7 {
+		t.Fatalf("raw audit_events count = %d, want >= 7", rawAuditCount)
+	}
+
+	limit := 100
+	auditStore := &audit.Store{Pool: pool}
+	listed, err := auditStore.List(ctx, api.ListAuditEventsParams{Limit: &limit})
+	if err != nil {
+		t.Fatalf("audit.Store.List: %v", err)
+	}
+	if auditStore.AnomalyCount() != 0 {
+		t.Fatalf("audit.Store.AnomalyCount() = %d, want 0", auditStore.AnomalyCount())
+	}
+	if len(listed.Items) != rawAuditCount {
+		t.Fatalf("len(listed.Items) = %d, want %d (all audit rows must pass D-029 validation)", len(listed.Items), rawAuditCount)
+	}
+
+	seenActions := map[string]bool{}
+	for _, ev := range listed.Items {
+		seenActions[ev.Action] = true
+		validNode := ev.Resource.Type == api.ResourceTypeNode && ev.Resource.Id == nodeID
+		validExit := ev.Resource.Type == api.ResourceTypeExit && ev.Resource.Id == exitID
+		if !validNode && !validExit {
+			t.Errorf("unexpected audit resource %+v, want node:%s or exit:%s", ev.Resource, nodeID, exitID)
+		}
+		if ev.Actor.Type != api.AuditEventActorTypeSystem {
+			actorID, err := ev.Actor.Id.Get()
+			if err != nil || actorID == uuid.Nil {
+				t.Errorf("audit event %s missing valid UUID actor: %+v (err=%v)", ev.Action, ev.Actor, err)
+			}
+		}
+		if ev.Result != api.AuditEventResultSucceeded && ev.Result != api.AuditEventResultFailed && ev.Result != api.AuditEventResultDenied {
+			t.Errorf("audit event %s has invalid result %q", ev.Action, ev.Result)
+		}
+	}
+	for _, wantAct := range []string{
+		"node.publish",
+		"node.desired_state_compiled",
+		"node.observation_applied",
+		"node.lease_renewed",
+		"node.update",
+		"node.revoke",
+		"node.retire",
+	} {
+		if !seenActions[wantAct] {
+			t.Errorf("missing expected audit action %q in audit.Store.List results", wantAct)
+		}
+	}
 }

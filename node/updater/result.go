@@ -12,6 +12,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 )
 
@@ -105,6 +106,18 @@ func buildResult(in resultInput) (payload []byte, hash string, id uuid.UUID, err
 }
 
 func (e *Engine) enqueueResult(ctx context.Context, in resultInput) error {
+	if e.Journal == nil {
+		return errors.New("updater: policy generation is not applied")
+	}
+	gen, err := e.policyForResult(ctx, in.Claimed)
+	if err != nil {
+		return err
+	}
+	// The reported generation is the applied desired-state config_generation.
+	// It is not the job generation and not a desired state that was only
+	// downloaded (D-043).
+	in.Claimed.PolicyGeneration = gen
+	in.Code = postedResultCode(in.Code)
 	payload, hash, id, err := buildResult(in)
 	if err != nil {
 		return err
@@ -126,6 +139,34 @@ func (e *Engine) enqueueResult(ctx context.Context, in resultInput) error {
 		return err
 	}
 	return nil
+}
+
+// policyForResult is the desired-state config_generation already applied.
+// A result is not posted until that generation is known. The job's
+// generation is never substituted, and a desired state that was only
+// received is not applied here.
+func (e *Engine) policyForResult(ctx context.Context, c claimed) (decstr.U64, error) {
+	applied, ok, err := e.Journal.AppliedConfig(ctx)
+	if err != nil {
+		return 0, err
+	}
+	// A non-zero generation, or an explicit zero from a verified envelope,
+	// is the generation this job applied. It is never Intent.Generation.
+	claimKnown := c.PolicyKnown || c.PolicyGeneration != 0
+	if !ok {
+		if !claimKnown {
+			return 0, errors.New("updater: policy generation is not applied")
+		}
+		applied, _, err = e.Journal.AcceptDesired(ctx, c.PolicyGeneration, false, nil)
+		return applied, err
+	}
+	// A claim generation above the applied one was only received. Keep the
+	// applied generation. A claim generation at or below it is the one this
+	// result applied, not a newer desired state accepted for a later job.
+	if claimKnown && c.PolicyGeneration <= applied {
+		return c.PolicyGeneration, nil
+	}
+	return applied, nil
 }
 
 // NoteAck records central acceptance. A late duplicate ACK is a no-op.

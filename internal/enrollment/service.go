@@ -18,8 +18,11 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -67,7 +70,8 @@ func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signi
 }
 
 // Command identifies the already-authorized administrator and UUID idempotency
-// key. The controller supplies Principal from the session, never the body.
+// key. The controller supplies Principal as admin:<uuid> from the session,
+// never the body. Standalone callers may also supply the bare administrator UUID.
 type Command struct {
 	Principal string
 	Key       uuid.UUID
@@ -75,7 +79,8 @@ type Command struct {
 
 func begin(ctx context.Context, tx pgx.Tx, cmd Command, route string, body any) (db.IdempotencyRecord, error) {
 	// F-15: reject invalid audit actors before any irreversible journal write.
-	if !validIdentifier(cmd.Principal) || cmd.Key == uuid.Nil {
+	principal, err := adminPrincipal(cmd.Principal)
+	if err != nil || cmd.Key == uuid.Nil {
 		return db.IdempotencyRecord{}, apierr.New(apierr.ValidationFailed, "Principal and Idempotency-Key required.")
 	}
 	raw, err := canonjson.Marshal(body)
@@ -84,14 +89,30 @@ func begin(ctx context.Context, tx pgx.Tx, cmd Command, route string, body any) 
 	}
 	hash := sha256.Sum256(raw)
 	key := sha256.Sum256([]byte(cmd.Key.String()))
-	return commandtx.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: cmd.Principal, Method: "POST", Route: route, KeyHash: key[:], RequestHash: hash[:]}, 0)
+	return commandtx.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: principal.Scope(), Method: "POST", Route: route, KeyHash: key[:], RequestHash: hash[:]}, 0)
+}
+
+func adminPrincipal(scope string) (auth.Principal, error) {
+	raw := strings.TrimPrefix(scope, "admin:")
+	id, err := uuid.Parse(raw)
+	if err != nil || id == uuid.Nil || id.String() != raw {
+		return auth.Principal{}, apierr.New(apierr.ValidationFailed, "Administrator UUID required.")
+	}
+	return auth.Principal{Role: auth.Admin, ID: id}, nil
 }
 
 func validIdentifier(value string) bool {
 	return utf8.ValidString(value) && strings.TrimSpace(value) != "" && !strings.ContainsRune(value, 0)
 }
-func complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, kind string, id uuid.UUID, status int, operation *uuid.UUID) error {
-	return commandtx.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: kind, ResourceID: &id, ResponseStatus: status, OperationID: operation})
+
+// Standalone service calls need the same correlation ID for their operation and
+// audit rows. HTTP callers retain the framework's trusted UUID (D-029).
+func requestContext(ctx context.Context) context.Context {
+	return apierr.ContextWithRequestID(ctx, commandtx.RequestID(ctx).String())
+}
+
+func complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, kind api.ResourceType, id uuid.UUID, status int, operation *uuid.UUID) error {
+	return commandtx.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: string(kind), ResourceID: &id, ResponseStatus: status, OperationID: operation})
 }
 func safe(err error) error {
 	if err == nil {
@@ -112,30 +133,22 @@ func safe(err error) error {
 	}
 	return apierr.New(apierr.DependencyUnavailable, "Enrollment operation unavailable.")
 }
-func audit(ctx context.Context, tx pgx.Tx, actor, action string, id uuid.UUID, op *uuid.UUID) error {
-	return auditReason(ctx, tx, actor, action, id, op, "")
-}
-func auditReason(ctx context.Context, tx pgx.Tx, actor, action string, id uuid.UUID, op *uuid.UUID, reason string) error {
-	after, err := canonjson.Marshal(map[string]string{"reason": reason})
+func appendDomainAudit(ctx context.Context, tx pgx.Tx, actor auth.Principal, action string, resource api.ResourceRef, op *uuid.UUID, reason string) error {
+	actorID, actorType := actor.ID, api.AuditEventActorTypeAdmin
+	if actor.Role == auth.Agent {
+		actorID, actorType = actor.NodeID, api.AuditEventActorTypeNode
+	}
+	request := commandtx.RequestID(ctx)
+	event, err := audit.NewEvent(audit.Entry{
+		Actor: audit.Actor{Type: actorType, ID: actorID}, Action: action,
+		Resource: resource, Result: api.AuditEventResultSucceeded,
+		OperationID: op, RequestID: &request,
+		After: map[string]any{"reason": reason}, Fields: []string{"reason"},
+	})
 	if err != nil {
 		return err
 	}
-	kind := "enrollment"
-	if strings.HasPrefix(action, "node.") {
-		kind = "node"
-	}
-	if strings.HasPrefix(action, "bootstrap.") {
-		kind = "node_incarnation"
-	}
-	actorType := "admin"
-	if strings.HasPrefix(actor, "node:") {
-		actorType = "agent"
-		actor = strings.TrimPrefix(actor, "node:")
-	} else {
-		actor = strings.TrimPrefix(actor, "admin:")
-	}
-	request := commandtx.RequestID(ctx)
-	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: actorType, Action: action, Resource: kind + ":" + id.String(), OperationID: op, RequestID: &request, SchemaVersion: 1, Before: []byte(`{}`), After: after, Result: "accepted"})
+	return audit.AppendEvent(ctx, tx, event)
 }
 func (s *Service) log(ctx context.Context, event string, id uuid.UUID) {
 	if s.cfg.Logger != nil {
@@ -170,6 +183,7 @@ func validateCreate(r api.EnrollmentCreateRequest) error {
 }
 
 func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.EnrollmentCreateRequest) (out api.EnrollmentCreated, err error) {
+	ctx = requestContext(ctx)
 	if err = validateCreate(r); err != nil {
 		return out, err
 	}
@@ -226,7 +240,11 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 			node = *r.NodeId
 			var lifecycle string
 			var active bool
-			if e = tx.QueryRow(ctx, `SELECT lifecycle_state,EXISTS(SELECT 1 FROM node_incarnations i WHERE i.node_id=n.id AND i.revoked_at IS NULL) FROM nodes n WHERE n.id=$1 FOR UPDATE`, node).Scan(&lifecycle, &active); e != nil {
+			// §6.1–2 / AT07: reserve an authorized reinstall without resetting
+			// lifecycle or clearing any old identity's revocation evidence.
+			if e = tx.QueryRow(ctx, `SELECT lifecycle_state,EXISTS(SELECT 1 FROM node_incarnations i WHERE i.node_id=n.id AND i.revoked_at IS NULL) FROM nodes n WHERE n.id=$1 FOR UPDATE`, node).Scan(&lifecycle, &active); errors.Is(e, pgx.ErrNoRows) {
+				return apierr.New(apierr.ResourceNotFound, "Node not found.")
+			} else if e != nil {
 				return e
 			}
 			if lifecycle == "retired" {
@@ -255,10 +273,14 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 		if _, e = tx.Exec(ctx, `INSERT INTO node_enrollments(id,node_id,token_hash,expiry,delivery,name,region,notes,member_group_ids) VALUES($1,$2,$3,clock_timestamp()+$4::bigint*interval '1 millisecond',$5,$6,$7,$8,$9)`, id, node, hash[:], ttl.Milliseconds(), r.Delivery, r.Name, r.Region, r.Notes, groups); e != nil {
 			return e
 		}
-		if e = complete(ctx, tx, record, "enrollment", id, 201, nil); e != nil {
+		if e = complete(ctx, tx, record, api.ResourceTypeEnrollment, id, 201, nil); e != nil {
 			return e
 		}
-		if e = audit(ctx, tx, cmd.Principal, "enrollment.created", id, nil); e != nil {
+		actor, e := adminPrincipal(cmd.Principal)
+		if e != nil {
+			return e
+		}
+		if e = appendDomainAudit(ctx, tx, actor, "enrollment.created", api.ResourceRef{Type: api.ResourceTypeEnrollment, Id: id}, nil, ""); e != nil {
 			return e
 		}
 		out.Enrollment, e = get(ctx, tx, id)
@@ -310,6 +332,7 @@ func (s *Service) GetEnrollment(ctx context.Context, id uuid.UUID) (api.Enrollme
 	return out, safe(err)
 }
 func (s *Service) RevokeEnrollment(ctx context.Context, cmd Command, id uuid.UUID, reason string) (out api.Enrollment, err error) {
+	ctx = requestContext(ctx)
 	if !validReason(reason) {
 		return out, apierr.New(apierr.ValidationFailed, "Revocation reason required.")
 	}
@@ -332,10 +355,14 @@ func (s *Service) RevokeEnrollment(ctx context.Context, cmd Command, id uuid.UUI
 		if _, e = tx.Exec(ctx, `UPDATE node_enrollments SET state='revoked',revoked_at=clock_timestamp() WHERE id=$1`, id); e != nil {
 			return e
 		}
-		if e = complete(ctx, tx, record, "enrollment", id, 200, nil); e != nil {
+		if e = complete(ctx, tx, record, api.ResourceTypeEnrollment, id, 200, nil); e != nil {
 			return e
 		}
-		if e = auditReason(ctx, tx, cmd.Principal, "enrollment.revoked", id, nil, reason); e != nil {
+		actor, e := adminPrincipal(cmd.Principal)
+		if e != nil {
+			return e
+		}
+		if e = appendDomainAudit(ctx, tx, actor, "enrollment.revoked", api.ResourceRef{Type: api.ResourceTypeEnrollment, Id: id}, nil, reason); e != nil {
 			return e
 		}
 		out, e = get(ctx, tx, id)
@@ -369,6 +396,7 @@ func tokenHash(token string) ([]byte, error) {
 }
 
 func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest) (out EnrollResult, err error) {
+	ctx = requestContext(ctx)
 	hash, err := tokenHash(token)
 	if err != nil {
 		return out, err
@@ -464,8 +492,14 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 			out.Replay = true
 			out.OperationID = *opID
 		} else if state == "pending" {
-			if lifecycle != "enrolling" && lifecycle != "revoked" {
-				return apierr.New(apierr.StateConflict, "Node already has an identity.")
+			// Recheck under the node lock: another authorized token may have
+			// enrolled an incarnation since this token was issued (§6.2, AT07).
+			var active bool
+			if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM node_incarnations WHERE node_id=$1 AND revoked_at IS NULL)`, nodeID).Scan(&active); e != nil {
+				return e
+			}
+			if active {
+				return apierr.New(apierr.NodeIncarnationActive, "Revoke the current incarnation before reinstalling.")
 			}
 			if _, e = tx.Exec(ctx, `INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,os,arch) VALUES($1,$2,$3,$4,$5)`, r.NodeIncarnationId, nodeID, fp, r.Platform.Os, r.Platform.Arch); e != nil {
 				return e
@@ -476,16 +510,18 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 				return e
 			}
 			cert = issued.Certificate
-			out.OperationID, e = uuid.NewV7()
+			actor := auth.Principal{Role: auth.Agent, NodeID: nodeID, IncarnationID: r.NodeIncarnationId}
+			out.OperationID, e = operations.Create(ctx, tx, operations.CreateRequest{Kind: api.OperationKindNodeEnroll, Principal: actor, Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: nodeID}, RequestID: commandtx.RequestID(ctx), Steps: map[string]operations.Step{
+				"netbird_setup": {Required: true}, "peer_readback": {Required: true}, "node_policy": {Required: true},
+			}})
 			if e != nil {
-				return e
-			}
-			if _, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,'node.provision',$2,'node',$3,$4,'{"netbird_setup":{"required":true,"status":"pending"},"peer_readback":{"required":true,"status":"pending"},"node_policy":{"required":true,"status":"pending"}}')`, out.OperationID, "node:"+nodeID.String(), nodeID, commandtx.RequestID(ctx)); e != nil {
 				return e
 			}
 			if _, e = tx.Exec(ctx, `UPDATE node_enrollments SET state='consumed',request_id=$2,public_key_fingerprint=$3,consumed_at=clock_timestamp(),incarnation_id=$4,request_hash=$5,certificate_id=$6,operation_id=$7 WHERE id=$1`, enrollmentID, r.EnrollmentRequestId, fp, r.NodeIncarnationId, requestHash, storedCert, out.OperationID); e != nil {
 				return e
 			}
+			// 00111's pki_guard_terminal requires the consumed enrollment and
+			// fresh certificate/incarnation above before allowing AT07 reentry.
 			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_incarnation_id=$2,lifecycle_state='registered',provisioning_state='applying',resource_version=resource_version+1 WHERE id=$1`, nodeID, r.NodeIncarnationId); e != nil {
 				return e
 			}
@@ -496,7 +532,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 			if e = db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: r.NodeIncarnationId, AggregateType: "node-incarnation", AggregateVersion: "1", EventType: "node.provision.requested", SchemaVersion: 1, Payload: payload}); e != nil {
 				return e
 			}
-			if e = audit(ctx, tx, "node:"+nodeID.String(), "enrollment.consumed", enrollmentID, &out.OperationID); e != nil {
+			if e = appendDomainAudit(ctx, tx, actor, "enrollment.consumed", api.ResourceRef{Type: api.ResourceTypeEnrollment, Id: enrollmentID}, &out.OperationID, ""); e != nil {
 				return e
 			}
 		} else {

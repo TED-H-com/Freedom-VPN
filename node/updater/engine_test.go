@@ -68,6 +68,7 @@ type world struct {
 	onGet         func(r *http.Request)
 	now           time.Time
 	rollbackAllow []uuid.UUID
+	releaseSeq    string
 }
 
 type httpServer struct {
@@ -179,8 +180,12 @@ func (w *world) makeRelease(marker string, schemaTo int, from []int) builtRel {
 	if from == nil {
 		from = []int{1}
 	}
+	seq := w.releaseSeq
+	if seq == "" {
+		seq = "4"
+	}
 	in := release.BuildInput{
-		ReleaseID: id.String(), ProductVersion: "1.2.0", ReleaseSequence: "4",
+		ReleaseID: id.String(), ProductVersion: "1.2.0", ReleaseSequence: seq,
 		CreatedAt:    "2026-10-28T14:00:00Z",
 		SourceCommit: "1111111111111111111111111111111111111111", BuildID: "build-test",
 		Components: api.ManifestComponents{NodeAgent: "1.2.0", NodeUpdater: "1.2.0", Netbird: "0.76.2", Enforcement: "1.2.0"},
@@ -237,6 +242,21 @@ func hexEncode(b []byte) string {
 		out[i*2+1] = hexdigits[c&0x0f]
 	}
 	return string(out)
+}
+
+// keep records an installed release without moving current or last_good,
+// so rollback can still choose it. Retention has not run yet.
+func (w *world) keep(rel builtRel) {
+	w.t.Helper()
+	dir := w.layout.releaseDir(rel.id.String())
+	copyTree(w.t, rel.tree, dir)
+	sum := treeOrDie(w.t, dir)
+	if err := w.eng.Journal.PutRelease(context.Background(), updatejournal.Release{
+		ReleaseID: rel.id.String(), ManifestSHA256: rel.sum, ManifestEnvelope: rel.env,
+		ArtifactSHA256: rel.amdSHA, TreeHash: sum, StateSchemaTo: rel.manifest.Compatibility.StateSchemaTo,
+	}); err != nil {
+		w.t.Fatal(err)
+	}
 }
 
 func (w *world) seed(rel builtRel) {

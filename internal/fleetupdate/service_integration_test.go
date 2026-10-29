@@ -32,7 +32,7 @@ type lab struct {
 	ctx      context.Context
 }
 
-func newLab(t *testing.T) *lab {
+func newLab(t *testing.T, auditActions ...string) *lab {
 	t.Helper()
 	pool := dbtest.New(t)
 	f := releasetest.New(t)
@@ -54,6 +54,9 @@ func newLab(t *testing.T) *lab {
 		t.Fatal(e)
 	}
 	l.support([]uuid.UUID{l.old, l.new}, []uuid.UUID{l.old, l.new}, []uuid.UUID{})
+	t.Cleanup(func() {
+		releasetest.AssertLedger(t, pool, f.Validator, append(auditActions, "release.register", "release_support.activate")...)
+	})
 	return l
 }
 func (l *lab) support(approved, serving, revoked []uuid.UUID) {
@@ -233,7 +236,7 @@ func TestAT23_AllStatesArchitecturesAndEvidence(t *testing.T) {
 	}
 }
 func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
-	l := newLab(t)
+	l := newLab(t, "update_batch.create", "update_batch.first_sync", "update_result.accept")
 	offline := l.node("amd64", "published", "registered", false)
 	enrolling := l.node("arm64", "unpublished", "enrolling", false)
 	b := l.batch(l.new)
@@ -302,7 +305,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	}
 }
 func TestAT26_IdempotencyConcurrencyAndLateResults(t *testing.T) {
-	l := newLab(t)
+	l := newLab(t, "update_result.conflict")
 	queued := l.node("amd64", "published", "registered", true)
 	applying := l.node("arm64", "disabled", "registered", true)
 	request := l.request(l.old)
@@ -392,7 +395,7 @@ func TestAT26_IdempotencyConcurrencyAndLateResults(t *testing.T) {
 	}
 }
 func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
-	l := newLab(t)
+	l := newLab(t, "update_result.rollback_refused")
 	i := l.node("amd64", "published", "registered", true)
 	l.batch(l.new)
 	w := l.intent(i)
@@ -581,7 +584,7 @@ func TestUPD02_ResultBindingExpiryAndRestore(t *testing.T) {
 	}
 }
 func TestUPD05_PaginationRevokedTargetsAndRetryCompletion(t *testing.T) {
-	l := newLab(t)
+	l := newLab(t, "update_batch.retry")
 	i := l.node("amd64", "disabled", "registered", true)
 	l.node("arm64", "unpublished", "registered", true)
 	b := l.batch(l.new)

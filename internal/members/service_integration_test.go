@@ -156,6 +156,14 @@ func TestAT04_FiniteFutureGrantActivationRevokeAndAudit(t *testing.T) {
 	if err = s.RevokeGrant(ctx, c, member, change.ResourceID, "TEST ONLY revocation"); err != nil {
 		t.Fatal(err)
 	}
+	var revokeID uuid.UUID
+	if err = pool.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type=$1 AND resource_id=$2 AND kind=$3`, api.ResourceTypeEntitlementGrant, change.ResourceID, api.OperationKindMemberGrantRevoke).Scan(&revokeID); err != nil {
+		t.Fatal(err)
+	}
+	op, err = (operations.Store{Pool: pool}).Get(ctx, revokeID, auth.Principal{Role: auth.Admin, ID: actor.ID})
+	if err != nil || !op.Kind.Valid() || op.Kind != api.OperationKindMemberGrantRevoke || !op.Resource.Type.Valid() || op.Resource.Type != api.ResourceTypeEntitlementGrant || op.Resource.Id != change.ResourceID {
+		t.Fatal(op, err)
+	}
 	revoked, err := s.Get(ctx, actor, member)
 	if err != nil || revoked.Entitlement.Allows(now) {
 		t.Fatal(revoked, err)

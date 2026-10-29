@@ -581,13 +581,13 @@ func TestAT27_ReleaseSupportActivationUpdatesFleetConfig(t *testing.T) {
 	}
 
 	var policyMode string
-	var supportedIDs []uuid.UUID
-	var fleetGen, fleetVer string
-	if err := pool.QueryRow(ctx, `SELECT supported_release_policy, supported_release_ids, generation::text, resource_version::text FROM fleet_config WHERE id = '00000000-0000-0000-0000-000000000001'`).Scan(&policyMode, &supportedIDs, &fleetGen, &fleetVer); err != nil {
+	var supportedIDs, approvedIDs []uuid.UUID
+	var supportGen, fleetGen, fleetVer string
+	if err := pool.QueryRow(ctx, `SELECT supported_release_policy, supported_release_ids, approved_release_ids, support_generation::text, generation::text, resource_version::text FROM fleet_config WHERE id = '00000000-0000-0000-0000-000000000001'`).Scan(&policyMode, &supportedIDs, &approvedIDs, &supportGen, &fleetGen, &fleetVer); err != nil {
 		t.Fatal(err)
 	}
-	if policyMode != "allowlist" || len(supportedIDs) != 2 || fleetGen != "1" || fleetVer != "2" {
-		t.Fatalf("fleet_config policy=%s supportedIDs=%v gen=%s ver=%s", policyMode, supportedIDs, fleetGen, fleetVer)
+	if policyMode != "allowlist" || len(supportedIDs) != 2 || len(approvedIDs) != 1 || approvedIDs[0] != relApprovedNew || supportGen != "1" || fleetGen != "1" || fleetVer != "2" {
+		t.Fatalf("fleet_config policy=%s supportedIDs=%v approvedIDs=%v supportGen=%s gen=%s ver=%s", policyMode, supportedIDs, approvedIDs, supportGen, fleetGen, fleetVer)
 	}
 
 	// Prove F-14 on CreateRevision by Code: creating a second revision using Code

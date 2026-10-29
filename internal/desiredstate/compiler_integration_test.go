@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -555,8 +556,39 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 	}
 
 	// Payload includes a decoy resolver_ipv4 to verify resolver addresses come only from compiler config.
-	_ = insertActivePolicy(string(api.PolicyTypeDnsProfile), 9, `{"resolver_ipv4":["198.51.100.53"],"resolver_ipv6":[]}`)
+	dnsRevID := insertActivePolicy(string(api.PolicyTypeDnsProfile), 9, `{"resolver_ipv4":["198.51.100.53"],"resolver_ipv6":[]}`)
 	fupEnforceRev := insertActivePolicy(string(api.PolicyTypeFairUse), 6, `{"mode":"enforce","effective_at":"2026-10-01T00:00:00Z"}`)
+
+	// Before any published head exists in dns_publication_heads, DnsGeneration must be 0 even with an active dns_profile revision.
+	compiledBeforeDNSHead, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile before dns_publication_heads: %v", err)
+	}
+	if compiledBeforeDNSHead.Envelope.Signed.PolicyRefs.DnsGeneration != 0 {
+		t.Fatalf("DnsGeneration without dns_publication_heads = %s, want 0", compiledBeforeDNSHead.Envelope.Signed.PolicyRefs.DnsGeneration)
+	}
+
+	// Publish an active head in dns_publication_heads at policy_generation = 9.
+	var dnsDefID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT definition_id FROM policy_revisions WHERE id = $1`, dnsRevID).Scan(&dnsDefID); err != nil {
+		t.Fatalf("select dns definition_id: %v", err)
+	}
+	dnsDocBytes := []byte(`{"schema_version":1}`)
+	dnsDocSum := fmt.Sprintf("%x", sha256.Sum256(dnsDocBytes))
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO dns_resolver_documents (
+			profile_revision_id, definition_id, profile_code, policy_generation, document_sha256, document, canonical_bytes
+		) VALUES ($1, $2, 'dns-main', 9, $3, $4::jsonb, $5)`,
+		dnsRevID, dnsDefID, dnsDocSum, string(dnsDocBytes), dnsDocBytes); err != nil {
+		t.Fatalf("insert dns_resolver_documents: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO dns_publication_heads (
+			definition_id, profile_revision_id, policy_generation, document_sha256, status
+		) VALUES ($1, $2, 9, $3, 'active')`,
+		dnsDefID, dnsRevID, dnsDocSum); err != nil {
+		t.Fatalf("insert dns_publication_heads: %v", err)
+	}
 
 	// Also insert a future fair_use revision (effective_at > now) on a second definition for before-effective_at testing.
 	futureDefID := uuid.New()
@@ -600,14 +632,14 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 			t.Fatalf("insert member %s: %v", email, err)
 		}
 		if _, err := pool.Exec(ctx, `
-			INSERT INTO entitlements (member_id, revision, plan_revision_id, device_limit, valid_from, effective_service_end, admin_suspended)
-			VALUES ($1, 2, $2, 3, $3, $4, false)`, mid, planRevID, validFrom, validUntil); err != nil {
+			INSERT INTO entitlements (
+				member_id, revision, state, plan_revision_id, device_limit,
+				valid_from, effective_service_end, admin_suspended, projection
+			) VALUES (
+				$1, 2, 'active', $2, 3,
+				$3, $4, false, jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$5::text]))
+			)`, mid, planRevID, validFrom, validUntil, grpID.String()); err != nil {
 			t.Fatalf("insert entitlement %s: %v", email, err)
-		}
-		if _, err := pool.Exec(ctx, `
-			INSERT INTO assignments (member_id, group_id, valid_from, valid_until)
-			VALUES ($1, $2, $3, $4)`, mid, grpID, validFrom, validUntil); err != nil {
-			t.Fatalf("insert assignment %s: %v", email, err)
 		}
 		if _, err := pool.Exec(ctx, `
 			INSERT INTO member_devices (id, member_id, deployment_id, peer_id, status, authorized_at)

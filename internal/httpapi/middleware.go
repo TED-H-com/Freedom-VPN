@@ -34,6 +34,7 @@ type requestMeta struct {
 	route, trace string
 	raw          []byte
 	scope        string
+	logger       *slog.Logger
 }
 type metaKey struct{}
 
@@ -52,17 +53,27 @@ func ClientTrace(ctx context.Context) string {
 	return ""
 }
 
-type statusWriter struct {
-	http.ResponseWriter
-	status int
-}
-
-func (w statusWriter) WriteHeader(int)             { w.ResponseWriter.WriteHeader(w.status) }
-func (w statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func WriteError(w http.ResponseWriter, r *http.Request, e error) {
 	if errors.Is(e, errNotImplemented) {
-		apierr.Write(statusWriter{w, 501}, r, apierr.New(apierr.InternalError, "Operation is not implemented."))
+		apierr.Write(w, r, apierr.New(apierr.NotImplemented, "Operation is not implemented."))
 		return
+	}
+	var typed *apierr.Error
+	if errors.As(e, &typed) && typed != nil {
+		if spec, ok := apierr.Lookup(typed.Code); ok && spec.HTTPStatus == 0 {
+			// Revision 3: report-only codes are payload evidence, never HTTP errors.
+			// Log only the known enum and central ID, never the error text/details.
+			ctx := context.Background()
+			logger := slog.Default()
+			if r != nil {
+				ctx = r.Context()
+				if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok && m.logger != nil {
+					logger = m.logger
+				}
+			}
+			requestID, _ := apierr.RequestIDFromContext(ctx)
+			logger.ErrorContext(ctx, "report-only error rendered as INTERNAL_ERROR", "request_id", requestID, "reported_code", typed.Code)
+		}
 	}
 	apierr.Write(w, r, e)
 }
@@ -100,7 +111,7 @@ func Transport(log *slog.Logger, next http.Handler) http.Handler {
 		if len(trace) > 256 {
 			trace = ""
 		}
-		meta := &requestMeta{route: "unmatched", trace: trace}
+		meta := &requestMeta{route: "unmatched", trace: trace, logger: log}
 		ctx := context.WithValue(apierr.ContextWithRequestID(r.Context(), id), metaKey{}, meta)
 		r = r.WithContext(ctx)
 		b := &bufferWriter{header: make(http.Header)}
@@ -199,6 +210,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		return nil, e
 	}
 	lim := &limiter{entries: map[string]bucketState{}, max: o.Config.MaxRatePrincipals}
+	ingress := &limiter{entries: map[string]bucketState{}, max: o.Config.MaxRatePrincipals}
 	if lim.max < 1 {
 		return nil, errors.New("rate capacity required")
 	}
@@ -263,7 +275,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		m.route = r.Method + " /api/v1" + route.Path
 		ingressClass, _, _ := classify(op, o.Config)
 		peer, _, _ := net.SplitHostPort(r.RemoteAddr)
-		if delay := lim.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
+		if delay := ingress.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
@@ -301,7 +313,11 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			host, _, _ := net.SplitHostPort(r.RemoteAddr)
 			key = "anonymous:" + host
 		}
-		if delay := lim.allow(class+":"+key, bounds); delay > 0 {
+		bucket := lim
+		if p.Role == "" {
+			bucket = ingress
+		}
+		if delay := bucket.allow(class+":"+key, bounds); delay > 0 {
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
@@ -487,7 +503,7 @@ func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 		case gate <- struct{}{}:
 			defer func() { <-gate }()
 		default:
-			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login concurrency exceeded."))
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login concurrency exceeded.").WithRetryAfter(time.Second))
 			return
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, c.BrowserBodyBytes)
