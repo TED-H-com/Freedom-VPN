@@ -168,15 +168,12 @@ func (DBEntitlementReader) ListLeaseEntitlementsForGroups(ctx context.Context, q
 	}
 
 	dRows, err := q.Query(ctx, `
-		SELECT DISTINCT db.member_id, db.device_id
-		FROM device_bindings db
-		JOIN member_devices md ON md.id = db.device_id
-		WHERE db.member_id = ANY($1)
-		  AND md.state = 'authorized'
+		SELECT md.member_id, md.id
+		FROM member_devices md
+		WHERE md.member_id = ANY($1)
+		  AND md.status = 'authorized'
 		  AND md.revoked_at IS NULL
-		  AND db.valid_from <= $2
-		  AND db.valid_until > $2
-		ORDER BY db.member_id ASC, db.device_id ASC`, memberIDs, asOf)
+		ORDER BY md.member_id ASC, md.id ASC`, memberIDs)
 	if err != nil {
 		return nil, err
 	}

@@ -404,7 +404,9 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 		}
 
 		// Optimistic concurrency check on nodes.resource_version (§14.5).
-		newVer, err := db.UpdateWithVersion(ctx, tx, "nodes", p.NodeID, expectedVer, map[string]any{})
+		newVer, err := db.UpdateWithVersion(ctx, tx, "nodes", p.NodeID, expectedVer, map[string]any{
+			"updated_at": s.now().UTC(),
+		})
 		if err != nil {
 			if errors.Is(err, db.ErrVersionConflict) {
 				var currentVer string
@@ -813,7 +815,7 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, err := tx.Exec(ctx, `
 			UPDATE exits
-			SET publication_observed = 'inactive',
+			SET publication_observed = 'withdrawn',
 			    resource_version = resource_version + 1
 			WHERE id = $1`, exitID); err != nil {
 			return err
@@ -1062,11 +1064,10 @@ func (s *Service) markStepSucceeded(ctx context.Context, opID uuid.UUID, stepNam
 			_, err := tx.Exec(ctx, `
 				UPDATE operations
 				SET status = 'running',
-				    started_at = coalesce(started_at, $2),
-				    steps = $3::jsonb,
-				    observed_refs = $4::jsonb,
+				    steps = $2::jsonb,
+				    observed_refs = $3::jsonb,
 				    resource_version = resource_version + 1
-				WHERE id = $1`, opID, now, stepsJSON, refsJSON)
+				WHERE id = $1`, opID, stepsJSON, refsJSON)
 			return err
 		}
 		_, err := tx.Exec(ctx, `
@@ -1117,9 +1118,8 @@ func (s *Service) failPublishStep(
 		if status != string(api.OperationStatusRunning) && status != string(api.OperationStatusFailed) {
 			if _, err := tx.Exec(ctx, `
 				UPDATE operations
-				SET status = 'running',
-				    started_at = coalesce(started_at, $2)
-				WHERE id = $1`, opID, now); err != nil {
+				SET status = 'running'
+				WHERE id = $1`, opID); err != nil {
 				return err
 			}
 		}
@@ -1194,17 +1194,18 @@ func (s *Service) upsertExternalBinding(
 		INSERT INTO external_bindings (
 			resource_type, resource_id, provider, deployment_id,
 			external_id, desired_hash, observed_hash, sync_state,
-			last_verified_at, last_error
+			last_observed_at, last_verified_at, last_error
 		) VALUES (
 			'exit', $1, $2, $3,
 			$4, $5, $6, $7,
-			$8, NULL
+			$8, $8, NULL
 		)
 		ON CONFLICT (resource_type, resource_id, provider, deployment_id) DO UPDATE SET
 			external_id = EXCLUDED.external_id,
 			desired_hash = EXCLUDED.desired_hash,
 			observed_hash = EXCLUDED.observed_hash,
 			sync_state = EXCLUDED.sync_state,
+			last_observed_at = EXCLUDED.last_observed_at,
 			last_verified_at = EXCLUDED.last_verified_at,
 			last_error = NULL`
 	_, err := s.pool.Exec(ctx, q,

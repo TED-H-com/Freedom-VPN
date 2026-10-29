@@ -301,32 +301,14 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				}
 			}
 
-			planDown := m.PlanDownBps
-			if planDown <= 0 {
-				planDown = DefaultPlanRateBps
-			}
-			planUp := m.PlanUpBps
-			if planUp <= 0 {
-				planUp = DefaultPlanRateBps
-			}
-			tierDown := m.FairUseTierDownBps
-			if tierDown <= 0 {
-				tierDown = planDown
-			}
-			tierUp := m.FairUseTierUpBps
-			if tierUp <= 0 {
-				tierUp = planUp
-			}
-
 			// §11.2 step 3: effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap)
-			effDown := minI64(planDown, tierDown)
-			effUp := minI64(planUp, tierUp)
-			if nodeCap != nil && nodeCap.MemberDownBpsCap != nil && *nodeCap.MemberDownBpsCap > 0 {
-				effDown = minI64(effDown, *nodeCap.MemberDownBpsCap)
+			var downCap, upCap *int64
+			if nodeCap != nil {
+				downCap = nodeCap.MemberDownBpsCap
+				upCap = nodeCap.MemberUpBpsCap
 			}
-			if nodeCap != nil && nodeCap.MemberUpBpsCap != nil && *nodeCap.MemberUpBpsCap > 0 {
-				effUp = minI64(effUp, *nodeCap.MemberUpBpsCap)
-			}
+			effDown := ComputeEffectiveRateBps(m.PlanDownBps, m.FairUseTierDownBps, downCap)
+			effUp := ComputeEffectiveRateBps(m.PlanUpBps, m.FairUseTierUpBps, upCap)
 
 			prio := m.Priority
 			if prio < 0 {
@@ -361,10 +343,6 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				ValidUntil: validUntil,
 			})
 
-			if m.Suspended {
-				continue
-			}
-
 			bindings := append([]MemberDeviceBinding(nil), m.Bindings...)
 			sort.Slice(bindings, func(i, j int) bool {
 				return bindings[i].DeviceID.String() < bindings[j].DeviceID.String()
@@ -374,7 +352,15 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				if b.Revoked {
 					continue
 				}
-				if !b.ValidUntil.After(issuedAt) {
+				bValidFrom := b.ValidFrom.UTC()
+				bValidUntil := b.ValidUntil.UTC()
+				if m.Suspended && bValidUntil.After(validUntil) {
+					bValidUntil = validUntil
+				}
+				if !bValidUntil.After(bValidFrom) {
+					continue
+				}
+				if !m.Suspended && !bValidUntil.After(issuedAt) {
 					continue
 				}
 				if b.BindingRevision > maxBindingRev {
@@ -395,8 +381,8 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 					AllowedIpv4:     v4,
 					AllowedIpv6:     v6,
 					BindingRevision: nodes.ParseU64(b.BindingRevision),
-					ValidFrom:       b.ValidFrom.UTC(),
-					ValidUntil:      b.ValidUntil.UTC(),
+					ValidFrom:       bValidFrom,
+					ValidUntil:      bValidUntil,
 				})
 			}
 		}
@@ -884,9 +870,17 @@ func (c *Compiler) findNodesForGroups(ctx context.Context, groupIDs []uuid.UUID)
 	return nids, rows.Err()
 }
 
-func minI64(a, b int64) int64 {
-	if a < b {
-		return a
+// ComputeEffectiveRateBps computes effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap) (§11.2 step 3).
+func ComputeEffectiveRateBps(planRate, fupTierRate int64, nodeMemberCap *int64) int64 {
+	eff := planRate
+	if eff <= 0 {
+		eff = DefaultPlanRateBps
 	}
-	return b
+	if fupTierRate > 0 && fupTierRate < eff {
+		eff = fupTierRate
+	}
+	if nodeMemberCap != nil && *nodeMemberCap > 0 && *nodeMemberCap < eff {
+		eff = *nodeMemberCap
+	}
+	return eff
 }

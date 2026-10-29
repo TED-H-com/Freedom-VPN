@@ -172,22 +172,22 @@ func (s *Service) SubmitObservation(
 			INSERT INTO node_observations (
 				node_id, incarnation_id, report_id, payload_hash,
 				observed_at, received_at, applied_generation,
-				current_release_id, last_good_release_id, schema_version,
+				actual_release_id, schema_version,
 				checks, control_status, data_health, safety_status,
-				errors, member_forwarding_enabled, provisioning_state, report_payload
+				member_forwarding_enabled, provisioning_state, report_payload
 			) VALUES (
 				$1, $2, $3, $4,
 				$5, $6, $7::numeric,
-				$8, $9, 1,
-				$10::jsonb, 'online', $11, $12,
-				$13::jsonb, $14, $15, $16::jsonb
+				$8, 1,
+				$9::jsonb, 'online', $10, $11,
+				$12, $13, $14::jsonb
 			)`
 		if _, err := tx.Exec(ctx, insertObs,
 			authNodeID, authIncarnationID, report.ReportId, payloadHash,
 			observedAt, receivedAt, appliedGenStr,
-			report.CurrentReleaseId, report.LastGoodReleaseId,
+			report.CurrentReleaseId,
 			checksObjJSON, string(effectiveHealth), string(effectiveSafety),
-			errorsArrayJSON, effectiveForwarding, string(report.ProvisioningState), reportPayloadJSON,
+			effectiveForwarding, string(report.ProvisioningState), reportPayloadJSON,
 		); err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func (s *Service) SubmitObservation(
 					control_status = 'online',
 					last_seen_at = greatest(coalesce(last_seen_at, $2), $2),
 					last_observed_at = $3,
-					applied_config_generation = $4::numeric,
+					applied_config_generation = greatest(applied_config_generation, $4::numeric),
 					provisioning_state = $5,
 					data_health = $6,
 					safety_status = $7,
@@ -462,12 +462,11 @@ func advanceNodeOperationsOnObservation(
 			if _, err := tx.Exec(ctx, `
 				UPDATE operations
 				SET status = 'running',
-				    started_at = coalesce(started_at, $2),
-				    observed_generation = $3::numeric,
-				    steps = $4::jsonb,
-				    observed_refs = $5::jsonb,
+				    observed_generation = $2::numeric,
+				    steps = $3::jsonb,
+				    observed_refs = $4::jsonb,
 				    resource_version = resource_version + 1
-				WHERE id = $1`, op.id, now, obsGenStr, stepsJSON, refsJSON); err != nil {
+				WHERE id = $1`, op.id, obsGenStr, stepsJSON, refsJSON); err != nil {
 				return err
 			}
 			op.status = string(api.OperationStatusRunning)
@@ -507,7 +506,7 @@ func advanceNodeOperationsOnObservation(
 			case OpKindUnpublish, OpKindDisable, OpKindRevoke, OpKindRetire:
 				if _, err := tx.Exec(ctx, `
 					UPDATE exits
-					SET publication_observed = 'inactive', resource_version = resource_version + 1
+					SET publication_observed = 'withdrawn', resource_version = resource_version + 1
 					WHERE node_id = $1`, nodeID); err != nil {
 					return err
 				}

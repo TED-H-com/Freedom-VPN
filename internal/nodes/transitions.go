@@ -114,6 +114,25 @@ type ServingReadiness struct {
 	RequireOnlineAndACKForRun bool
 }
 
+// IsServing reports whether a node satisfies the composite serving condition (§5.1):
+//   - lifecycle_state == registered
+//   - provisioning_state == ready
+//   - publication_intent == published
+//   - control_status == online
+//   - safety_status == passed
+//   - data_health in (healthy, degraded)
+//   - applied_config_generation >= desired_config_generation (> 0)
+func (r ServingReadiness) IsServing() bool {
+	if r.PublicationIntent != api.PublicationIntentPublished {
+		return false
+	}
+	if r.AppliedConfigGeneration == 0 || r.AppliedConfigGeneration < r.DesiredConfigGeneration {
+		return false
+	}
+	r.RequireOnlineAndACKForRun = true
+	return CheckPublishable(r) == nil
+}
+
 // CheckPublishable verifies whether a node meets the baseline requirements to
 // accept publication_intent=published (§5.1, §14.2 PUT /admin/nodes/{id}/publication).
 // Returns a 422 NODE_NOT_SERVICEABLE error with failed_checks details if not serviceable.

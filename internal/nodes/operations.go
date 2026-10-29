@@ -176,6 +176,11 @@ func CreateOperation(ctx context.Context, tx pgx.Tx, p CreateOperationParams) (a
 	return GetOperationTx(ctx, tx, p.ID)
 }
 
+// GetOperation reads an operation by ID through the Service pool.
+func (s *Service) GetOperation(ctx context.Context, opID uuid.UUID) (api.Operation, error) {
+	return GetOperation(ctx, s.pool, opID)
+}
+
 // GetOperation reads an operation by ID using a pool or connection.
 func GetOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operation, error) {
 	return scanOperation(ctx, q, opID)
@@ -275,7 +280,7 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		if ordered[i].step.Order != ordered[j].step.Order {
 			return ordered[i].step.Order < ordered[j].step.Order
 		}
-		return ordered[i].name < ordered[i].name
+		return ordered[i].name < ordered[j].name
 	})
 
 	apiSteps := make([]api.OperationStep, 0, len(ordered))

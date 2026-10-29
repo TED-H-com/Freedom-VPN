@@ -81,7 +81,7 @@ func ParseIfMatch(ifMatch string) (string, error) {
 	}
 	unquoted := strings.TrimPrefix(trimmed, "W/")
 	unquoted = strings.Trim(unquoted, `"`)
-	if _, err := decstr.Parse(unquoted); err != nil {
+	if u, err := decstr.Parse(unquoted); err != nil || uint64(u) == 0 {
 		return "", apierr.New(apierr.ResourceVersionConflict, "If-Match header does not match a valid resource_version")
 	}
 	return unquoted, nil
@@ -125,7 +125,7 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 			n.lifecycle_state,
 			n.provisioning_state,
 			coalesce(e.publication_intent, 'unpublished'),
-			coalesce(e.publication_observed, 'inactive'),
+			coalesce(e.publication_observed, 'absent'),
 			n.control_status,
 			n.data_health,
 			n.safety_status,
@@ -415,7 +415,7 @@ func (s *Service) ListNodes(ctx context.Context, p ListNodesParams) (api.NodeLis
 			n.lifecycle_state,
 			n.provisioning_state,
 			coalesce(e.publication_intent, 'unpublished'),
-			coalesce(e.publication_observed, 'inactive'),
+			coalesce(e.publication_observed, 'absent'),
 			n.control_status,
 			n.data_health,
 			n.safety_status,
@@ -754,7 +754,9 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 			return apierr.New(apierr.StateConflict, "retired node cannot be modified")
 		}
 
-		nodeUpdates := map[string]any{}
+		nodeUpdates := map[string]any{
+			"updated_at": s.now(),
+		}
 		if p.Patch.Notes != nil {
 			nodeUpdates["notes"] = *p.Patch.Notes
 		}
@@ -1096,21 +1098,21 @@ func (s *Service) revokeOrRetireNode(
 		// Revoke active incarnations, certificates, and unconsumed enrollment tokens.
 		if _, err := tx.Exec(ctx, `
 			UPDATE node_certificates
-			SET revoked_at = $1, revoke_reason = $2
-			WHERE incarnation_id IN (SELECT id FROM node_incarnations WHERE node_id = $3)
-			  AND revoked_at IS NULL`, now, reason, nodeID); err != nil {
+			SET revoked_at = $1
+			WHERE incarnation_id IN (SELECT id FROM node_incarnations WHERE node_id = $2)
+			  AND revoked_at IS NULL`, now, nodeID); err != nil {
 			return err
 		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE node_incarnations
-			SET revoked_at = $1, revoke_reason = $2
-			WHERE node_id = $3 AND revoked_at IS NULL`, now, reason, nodeID); err != nil {
+			SET revoked_at = $1
+			WHERE node_id = $2 AND revoked_at IS NULL`, now, nodeID); err != nil {
 			return err
 		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE node_enrollments
 			SET state = 'revoked', revoked_at = $1
-			WHERE node_id = $2 AND state = 'issued'`, now, nodeID); err != nil {
+			WHERE node_id = $2 AND state = 'pending'`, now, nodeID); err != nil {
 			return err
 		}
 

@@ -71,4 +71,10 @@ CREATE TRIGGER operations_touch_updated_at
     BEFORE UPDATE ON operations
     FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
+ALTER TABLE external_bindings
+    ADD COLUMN observed_hash BYTEA CHECK (observed_hash IS NULL OR octet_length(observed_hash) = 32),
+    ADD COLUMN sync_state TEXT NOT NULL DEFAULT 'pending' CHECK (sync_state IN ('pending', 'synced', 'in_sync', 'drifted', 'error')),
+    ADD COLUMN last_verified_at TIMESTAMPTZ,
+    ADD COLUMN last_error TEXT;
+
 -- +goose StatementEnd
