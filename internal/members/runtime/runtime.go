@@ -69,11 +69,30 @@ func New(pool *pgxpool.Pool, c config.Members, compiler Compiler) (*Services, er
 	if e != nil {
 		return nil, e
 	}
+	// Validate the configured file at startup while retaining TokenFile's
+	// per-request reload for rotation. Never retain or log the returned token.
+	token := netbird.TokenFile(c.NetBirdTokenFile)
+	if _, e := token.Token(context.Background()); e != nil {
+		return nil, errors.New("cannot read NetBird token")
+	}
 	bindings := devices.NetBirdBindings{Pool: pool}
-	nb, e := netbird.New(netbird.Config{BaseURL: c.NetBirdURL, DeploymentID: c.NetBirdDeployment, Token: netbird.TokenFile(c.NetBirdTokenFile), Bindings: bindings})
+	nb, e := netbird.New(netbird.Config{BaseURL: c.NetBirdURL, DeploymentID: c.NetBirdDeployment, Token: token, Bindings: bindings})
 	if e != nil {
 		return nil, e
 	}
 	adapter := &devices.NetBirdAdapter{Pool: pool, Client: nb, Bindings: bindings, DeploymentID: c.NetBirdDeployment, OverlayScope: c.OverlayScope}
 	return &Services{HTTP: httpadapter.Services{Members: &members.Service{Pool: pool, Entitlements: engine}, Devices: &devices.Service{Pool: pool, Entitlements: engine, Adapter: adapter}, Billing: bs}, Adapter: adapter, Compiler: compiler, ReconcileInterval: time.Duration(c.ReconcileSeconds) * time.Second, DeviceInterval: time.Duration(c.DeviceSyncSeconds) * time.Second}, nil
+}
+
+// WithCompiler lets the policy/node domain supply its configured production
+// compiler via the worker composition context, without ordering domain builds or
+// inserting per-domain startup calls. No default rates or signer are invented.
+type compilerContextKey struct{}
+
+func WithCompiler(ctx context.Context, compiler Compiler) context.Context {
+	return context.WithValue(ctx, compilerContextKey{}, compiler)
+}
+func CompilerFromContext(ctx context.Context) Compiler {
+	compiler, _ := ctx.Value(compilerContextKey{}).(Compiler)
+	return compiler
 }

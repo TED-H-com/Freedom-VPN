@@ -35,7 +35,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
-	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/members"
 	"github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
@@ -65,7 +64,9 @@ type fixture struct {
 	plan, revision, group uuid.UUID
 	idp                   *testIDP
 	netbird               *netbirdFake
-	dispatcher            *worker.Dispatcher
+	dispatcher            *worker.Application
+	config                config.Config
+	app                   *control.Application
 	logs                  bytes.Buffer
 }
 type probePayment struct {
@@ -144,19 +145,13 @@ func newFixture(t *testing.T) *fixture {
 	c.BrowserRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = c.BrowserRate
 	c.AnonymousRate = c.BrowserRate
-	handlers, err := control.Handlers(pool, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	h, err := httpapi.New(handlers, httpapi.Options{Config: c, Sessions: browser, Commands: &httpapi.Commands{Pool: pool}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	f.h = httpapi.Transport(slog.New(slog.NewTextHandler(&f.logs, nil)), httpadapter.Transport(h, &f.services.HTTP))
-	mux := http.NewServeMux()
-	browser.Register(mux)
-	f.auth = httpapi.Transport(nil, httpapi.BrowserRoutes(c, mux))
-	f.dispatcher, err = worker.New(pool, worker.Jobs(), worker.Config{Concurrency: 1, Attempts: 3, Lease: time.Minute, JobTimeout: 30 * time.Second, Poll: time.Millisecond, Backoff: time.Millisecond, MaxBackoff: time.Millisecond}, nil, nil)
+	c.WorkerAttempts = 3
+	c = testTLSConfig(t, c)
+	f.config = c
+	f.compose(c)
+	f.dispatcher, err = worker.Open(t.Context(), worker.Dependencies{Config: c, Pool: pool}, worker.Domain{Name: "members", Build: func(context.Context, worker.Dependencies) (worker.Built, error) {
+		return worker.Built{Jobs: worker.MemberJobs(), Context: func(ctx context.Context) context.Context { return worker.WithMembers(ctx, f.services) }}, nil
+	}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +223,7 @@ func decode[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 }
 func (f *fixture) drain() {
 	f.t.Helper()
-	ctx := worker.WithMembers(f.t.Context(), f.services)
+	ctx := f.t.Context()
 	for range 100 {
 		worked, e := f.dispatcher.Once(ctx)
 		if e != nil {
@@ -260,13 +255,13 @@ type testIDP struct {
 	subject, nonce, challenge, role string
 }
 
-func newIDP(t *testing.T) *testIDP {
+func newIDP(t *testing.T, tlsMode ...bool) *testIDP {
 	key, e := rsa.GenerateKey(rand.Reader, 2048)
 	if e != nil {
 		t.Fatal(e)
 	}
 	p := &testIDP{key: key}
-	p.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	p.server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
@@ -297,6 +292,11 @@ func newIDP(t *testing.T) *testIDP {
 			w.WriteHeader(404)
 		}
 	}))
+	if len(tlsMode) > 0 && tlsMode[0] {
+		p.server.StartTLS()
+	} else {
+		p.server.Start()
+	}
 	t.Cleanup(p.server.Close)
 	return p
 }
@@ -452,4 +452,24 @@ func (f *netbirdFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(obj)
+}
+
+// Test dependencies enter through the generic build seam; listeners, middleware
+// and strict composition are identical to the binary's Servers path.
+func (f *fixture) compose(c config.Config) {
+	f.t.Helper()
+	domains := control.Domains()
+	for i := range domains {
+		if domains[i].Name == "members" {
+			domains[i].Build = func(_ context.Context, d control.Dependencies) (control.Built, error) {
+				return control.Built{Handlers: []any{httpadapter.Handlers{Pool: d.Pool, Services: &f.services.HTTP}}, Middleware: httpadapter.RequestContext}, nil
+			}
+		}
+	}
+	app, e := control.Servers(f.t.Context(), control.Dependencies{Config: c, Pool: f.pool, Browser: f.browser, Logger: slog.New(slog.NewTextHandler(&f.logs, nil))}, domains...)
+	if e != nil {
+		f.t.Fatal(e)
+	}
+	f.app = app
+	f.h, f.auth = app.Public.Handler, app.Public.Handler
 }

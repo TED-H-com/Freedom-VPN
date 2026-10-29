@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
@@ -23,7 +24,23 @@ type membersContextKey struct{}
 func WithMembers(ctx context.Context, s *membersruntime.Services) context.Context {
 	return context.WithValue(ctx, membersContextKey{}, s)
 }
-func registerMemberJobs(r Registry) Registry {
+func members() Domain {
+	return Domain{Name: "members", Build: func(_ context.Context, d Dependencies) (Built, error) {
+		cfg, e := config.LoadMembers(d.Config.MembersConfigFile)
+		if e != nil {
+			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
+		}
+		services, e := membersruntime.New(d.Pool, cfg, nil)
+		if e != nil {
+			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
+		}
+		return Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }, Runners: []func(context.Context) error{func(ctx context.Context) error { return RunMemberSchedule(ctx, services) }}}, nil
+	}}
+}
+
+// MemberJobs returns a fresh registry; Open merges it and rejects overlap.
+func MemberJobs() Registry {
+	r := Registry{}
 	for _, name := range []string{"member.entitlement_changed", "member.suspended", "device.authorized", "device.revoked", "netbird.device_sync", "billing.session_requested", "billing.inbox_received", "billing.reconcile", "members.reconcile", "devices.discover"} {
 		r.Register(name, memberJob)
 	}
@@ -173,10 +190,14 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 	}
 	// Fan out policy work before acknowledging member/device intent. Compilation
 	// is persisted desired state; only node ACKs may complete the nodes step.
-	if s.Compiler == nil {
+	compiler := s.Compiler
+	if compiler == nil {
+		compiler = membersruntime.CompilerFromContext(ctx)
+	}
+	if compiler == nil {
 		return "", errors.New("member desired-state compiler required")
 	}
-	compiled, e := s.Compiler.RecompileBatch(ctx, []db.ClaimedEvent{event})
+	compiled, e := compiler.RecompileBatch(ctx, []db.ClaimedEvent{event})
 	if e != nil {
 		return "", e
 	}
@@ -241,8 +262,8 @@ func enqueueMemberWork(ctx context.Context, s *membersruntime.Services, name str
 }
 
 // RunMemberSchedule only enqueues owned work; it never claims another area's
-// outbox rows. Run alongside Dispatcher.Run(WithMembers(ctx,s)); cancel both on
-// shutdown. Failed enqueue returns to the process supervisor, not a silent loop.
+// outbox rows. The members domain registers this runner with Open. Failed
+// enqueue returns to the process supervisor, not a silent loop.
 func RunMemberSchedule(ctx context.Context, s *membersruntime.Services) error {
 	if s == nil || s.HTTP.Members == nil || s.ReconcileInterval < time.Second || s.DeviceInterval < time.Second {
 		return errors.New("member schedule configuration required")

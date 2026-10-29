@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/apps/worker"
 	"github.com/TED-H-com/Freedom-VPN/internal/billing"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
@@ -322,7 +321,7 @@ func TestAT04_SuspensionGrantGraceAndHTTPPreconditions(t *testing.T) {
 }
 func TestAPI01_MemberJobsPreserveUnrelatedOutboxAndDeadLetter(t *testing.T) {
 	f := newFixture(t)
-	ctx := worker.WithMembers(t.Context(), f.services)
+	ctx := t.Context()
 	if e := db.InTx(ctx, f.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		raw, _ := canonjson.Marshal(map[string]any{"inbox_id": uuid.New()})
 		if e := db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: uuid.New(), AggregateType: "node", AggregateVersion: "1", EventType: "TEST.other_area", SchemaVersion: 1, Payload: []byte(`{}`)}); e != nil {

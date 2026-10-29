@@ -6,43 +6,30 @@ PostgreSQL transactions, payment inbox and NetBird adapter (§9, §14.3–§14.5
 §15.2, §15.4, §16.1). Integration tests run signed OIDC login through the actual
 browser/session stack and validate successful responses against OpenAPI.
 
-## Composition and remaining startup integration
+## Composition and binary activation
 
-`apps/control/handlers.go` registers `memberHandlers(pool)`; the implementation is
-`internal/members/httpadapter`. `apps/worker/jobs.go` registers the area through
-`registerMemberJobs`. Dependencies are immutable and passed explicitly, without
-process-global service registries or implicit business defaults.
+Both binaries use the shared [composition seam](../control/COMPOSITION.md).
+`members(),` in each `Domains()` list is the only registration line; domain files
+build immutable services from the supplied configuration and shared pool.
+Control returns strict handlers plus `httpadapter.RequestContext`, applied inside
+the common transport on both API listeners. It retains the original bounded
+`Stripe-Signature`; `httpapi.RawBody(ctx)` supplies the original request bytes.
+There is no post-construction server wrapper or per-domain call in `main`.
 
-**The current binaries still need these startup hooks from the orchestrator.**
-The task's allowed composition points do not carry configuration, request headers
-or worker dependencies. The supplied constructors/wrappers are complete and are
-exercised together by integration tests, but the existing command entrypoints do
-not call them:
+The worker domain returns the ten job handlers, a `WithMembers` context decorator
+and a supervised `RunMemberSchedule` runner. Both binaries require valid
+`members_config_file` settings and readable dependencies at startup; missing
+configuration no longer leaves a serving process with 503 member routes.
+Startup logs list domain names and the operations/events they serve.
 
-1. Control: after `control.Servers(...)` and before `control.Run(...)`, call
-   `control.ConfigureMembers(c, pool, public)`. It loads `members_config_file`,
-   constructs the services and wraps the public handler to retain the original
-   `Stripe-Signature` header. `httpapi.RawBody(ctx)` still supplies the bounded,
-   original body. The wrapper does not replace authentication or validation.
-2. Worker: load `config.LoadMembers(c.MembersConfigFile)`, construct
-   `membersruntime.New(pool, settings, compiler)` with the node team's configured
-   desired-state compiler, and run the existing dispatcher with
-   `worker.WithMembers(ctx, services)`. Run
-   `worker.RunMemberSchedule(ctx, services)` alongside it; cancel and join both on
-   shutdown. Treat a scheduler error as a process error. Use the existing bounded
-   shutdown context.
-3. The node integration must supply its production entitlement/FUP reader and
-   correlate required `nodes` steps with persisted node observations. The
-   baseline desired-state DB reader uses `assignments`, whereas member rights
-   here use the entitlement's pinned plan and exit groups. Coordinate this
-   boundary; do not substitute the compiler's TEST ONLY fallback rates or mark
-   node enforcement complete from compilation alone.
-
-Without the control wrapper, the ten registered methods fail with safe 503
-responses; they do not retain the transitional 501. Without worker dependencies,
-registered jobs fail and the dispatcher retries/dead-letters them. Configure the
-hooks before starting workers against production outbox work. A missing compiler
-also prevents acknowledgement of member/device policy work after NetBird sync.
+The node/policy domain must still provide its configured production compiler
+through `membersruntime.WithCompiler` in its worker context decorator, and
+correlate required `nodes` steps with persisted node observations. Without that
+compiler, policy-dependent jobs fail/retry/dead-letter after NetBird sync; billing
+and reconciliation work still runs. Never substitute the compiler's TEST ONLY
+fallback rates or mark node enforcement complete from compilation alone. The
+baseline desired-state reader uses `assignments`, whereas member rights use the
+entitlement's pinned plan and exit groups; that reader remains node/policy work.
 
 ## HTTP operations
 
@@ -97,6 +84,8 @@ Unmanaged groups and their memberships are preserved. Device revocation removes
 all owned access memberships and retains the native peer and durable tombstone;
 suspension also withdraws access without deleting identity. A changed user/IP
 mapping is denied and observed withdrawal is recorded, never treated as a grant.
+
+### NetBird binding and lock-namespace convention
 
 `devices.NetBirdBindings` persists the adapter's opaque keys in
 `external_bindings`. All adapter writers for a deployment must use its shared
@@ -195,7 +184,8 @@ make -f mk/control.mk control-verify
 make go-lint
 go test -count=1 ./...
 go test -count=1 -tags integration ./...
-GOARCH=arm64 go build ./...
+GOOS=linux GOARCH=arm64 go build ./...
+make verify
 ```
 
 Use disk-backed TMPDIR/GOTMPDIR under `.agent/tmp` (the Make targets do this and

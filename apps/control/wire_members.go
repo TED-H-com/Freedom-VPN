@@ -1,28 +1,23 @@
 package control
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func memberHandlers(pool *pgxpool.Pool) httpadapter.Handlers { return httpadapter.Handlers{Pool: pool} }
-
-// ConfigureMembers supplies central configuration and the original signature
-// header to the strict handlers. Call after Servers and before Run. Construction
-// never makes an external request; secrets remain central and errors are safe.
-func ConfigureMembers(c config.Config, pool *pgxpool.Pool, public *http.Server) error {
-	cfg, e := config.LoadMembers(c.MembersConfigFile)
-	if e != nil {
-		return e
-	}
-	services, e := membersruntime.New(pool, cfg, nil)
-	if e != nil {
-		return e
-	}
-	public.Handler = httpadapter.Transport(public.Handler, &services.HTTP)
-	return nil
+func members() Domain {
+	return Domain{Name: "members", Build: func(_ context.Context, d Dependencies) (Built, error) {
+		cfg, e := config.LoadMembers(d.Config.MembersConfigFile)
+		if e != nil {
+			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
+		}
+		services, e := membersruntime.New(d.Pool, cfg, nil)
+		if e != nil {
+			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
+		}
+		return Built{Handlers: []any{httpadapter.Handlers{Pool: d.Pool, Services: &services.HTTP}}, Middleware: httpadapter.RequestContext}, nil
+	}}
 }

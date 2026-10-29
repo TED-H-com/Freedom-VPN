@@ -7,12 +7,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/TED-H-com/Freedom-VPN/apps/control"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
-	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
-	"github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -50,18 +47,9 @@ func TestAPI01_ConcurrentHTTPReplayAndRealSessionRateLimit(t *testing.T) {
 	if f.count(`SELECT count(*) FROM billing_sessions`) != 1 || f.count(`SELECT count(*) FROM operations`) != 1 || f.count(`SELECT count(*) FROM idempotency_requests`) != 1 {
 		t.Fatal("nested idempotency or duplicate commands")
 	}
-	handlers, e := control.Handlers(f.pool, nil)
-	if e != nil {
-		t.Fatal(e)
-	}
-	c := config.Defaults()
-	c.PublicOrigin = testOrigin
+	c := f.config
 	c.BrowserRate = config.Bucket{PerSecond: 0.001, Burst: 1}
-	h, e := httpapi.New(handlers, httpapi.Options{Config: c, Sessions: f.browser, Commands: &httpapi.Commands{Pool: f.pool}})
-	if e != nil {
-		t.Fatal(e)
-	}
-	f.h = httpapi.Transport(nil, httpadapter.Transport(h, &f.services.HTTP))
+	f.compose(c)
 	requireStatus(t, f.call(s, "GET", "/api/v1/member/me", "", nil), 200)
 	w := f.call(s, "GET", "/api/v1/member/me", "", nil)
 	requireStatus(t, w, 429)

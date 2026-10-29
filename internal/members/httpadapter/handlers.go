@@ -21,7 +21,7 @@ import (
 )
 
 // Services is immutable after construction. Missing dependencies fail closed.
-// The transport wrapper supplies it without process-global configuration.
+// Domain construction supplies services directly to the handler set.
 type Services struct {
 	Members *members.Service
 	Devices *devices.Service
@@ -29,19 +29,18 @@ type Services struct {
 }
 type contextKey struct{}
 type requestContext struct {
-	services  *Services
 	signature string
 }
 
-// Transport retains only the provider signature, never the Authorization header.
+// RequestContext retains only the provider signature, never the Authorization header.
 // The strict framework still captures/validates RawBody and enforces every route.
-func Transport(next http.Handler, s *Services) http.Handler {
+func RequestContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		signature := ""
 		if len(r.Header.Values("Stripe-Signature")) == 1 && len(r.Header.Get("Stripe-Signature")) <= 8192 {
 			signature = r.Header.Get("Stripe-Signature")
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKey{}, requestContext{s, signature})))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextKey{}, requestContext{signature: signature})))
 	})
 }
 
@@ -50,13 +49,8 @@ type Handlers struct {
 	Services *Services
 }
 
-func (h Handlers) services(ctx context.Context) (*Services, error) {
+func (h Handlers) services(_ context.Context) (*Services, error) {
 	s := h.Services
-	if s == nil {
-		if r, ok := ctx.Value(contextKey{}).(requestContext); ok {
-			s = r.services
-		}
-	}
 	if s == nil || s.Members == nil || s.Devices == nil || s.Billing == nil {
 		return nil, apierr.New(apierr.DependencyUnavailable, "Member services are not configured.")
 	}
