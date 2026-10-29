@@ -554,8 +554,8 @@ func TestUPD04_EnumsMatchSpec(t *testing.T) {
 }
 
 // TestAPI01_NoOptionalNullableFields forbids properties that are both
-// optional and nullable: generated Go types cannot tell JSON null from an
-// absent member, so null is only allowed on required members.
+// optional and nullable: the contract permits null only on required members.
+// Generated presence types distinguish missing from explicit null in Go.
 func TestAPI01_NoOptionalNullableFields(t *testing.T) {
 	walkSchemas(t, func(v schemaVisit) {
 		req := map[string]bool{}

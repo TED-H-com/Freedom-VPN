@@ -3128,10 +3128,8 @@ export interface components {
              */
             lease_end: string;
         };
-        /** @description Provider-defined JSON body. Verified and stored byte for byte; not constrained by this contract. */
-        ProviderWebhookPayload: {
-            [key: string]: unknown;
-        };
+        /** @description Provider-defined JSON body. Handlers must verify r.Body before any parse; preserve the original bytes for signature verification and the inbox. Never verify a remarshal of this type. */
+        ProviderWebhookPayload: unknown;
         WebhookAck: {
             /** @enum {boolean} */
             received: true;
@@ -3205,7 +3203,8 @@ export interface components {
         };
         /**
          * @description IDEMPOTENCY_CONFLICT, STATE_CONFLICT, USAGE_EVENT_CONFLICT, ACK_CONFLICT,
-         *     LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH or DEVICE_LIMIT_REACHED.
+         *     LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH, DEVICE_LIMIT_REACHED,
+         *     UPDATE_BUSY, AUTHORIZATION_EXPIRED, STALE_GENERATION or LEASE_EXPIRED.
          *     Read the current state first; do not change the key to bypass a state
          *     conflict.
          */
@@ -4710,7 +4709,14 @@ export interface operations {
     submitUsageBatch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /**
+                 * @description Optional for agent requests: the body carries a natural idempotency ID
+                 *     (enrollment_request_id, renewal_request_id, report_id, result_id,
+                 *     event_seq). When present it must be a UUID and follows §14.5.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
             path?: never;
             cookie?: never;
         };

@@ -20,7 +20,8 @@
 // numbers with a fraction or exponent, "-0", integers outside ±(2^53-1),
 // duplicate object member names (after unescaping), invalid UTF-8, lone
 // UTF-16 surrogates in \u escapes, raw control characters inside strings, a
-// byte order mark, trailing data and nesting deeper than MaxDepth.
+// byte order mark, trailing data, nesting deeper than MaxDepth, and input
+// larger than MaxBytes.
 package canonjson
 
 import (
@@ -42,6 +43,10 @@ const MaxSafeInteger = 1<<53 - 1
 // MaxDepth is the maximum nesting depth of arrays and objects.
 const MaxDepth = 256
 
+// MaxBytes is the maximum encoded input size: 1 MiB, matching the control
+// HTTP body limit (§14.6, §16.2). Checked before parsing, sorting or hashing.
+const MaxBytes = 1 << 20
+
 // Sentinel errors. Every error returned by Canonicalize, Marshal and HashHex
 // wraps exactly one of these, so callers can classify with errors.Is.
 var (
@@ -52,6 +57,7 @@ var (
 	ErrDuplicateKey    = errors.New("canonjson: duplicate object member name")
 	ErrInvalidUTF8     = errors.New("canonjson: invalid UTF-8")
 	ErrLoneSurrogate   = errors.New("canonjson: lone UTF-16 surrogate in string escape")
+	ErrTooLarge        = errors.New("canonjson: input exceeds MaxBytes")
 	ErrTooDeep         = errors.New("canonjson: nesting too deep")
 	ErrNotObject       = errors.New("canonjson: top-level value is not an object")
 	ErrUnsupportedType = errors.New("canonjson: value cannot be encoded as JSON")
@@ -184,6 +190,9 @@ type parser struct {
 }
 
 func parse(raw []byte) (*node, error) {
+	if len(raw) > MaxBytes {
+		return nil, &Error{Offset: 0, err: ErrTooLarge}
+	}
 	p := &parser{data: raw}
 	if bytes.HasPrefix(raw, []byte("\xef\xbb\xbf")) {
 		return nil, p.errf(ErrSyntax, "byte order mark")
@@ -283,7 +292,7 @@ func (p *parser) object() (*node, error) {
 			return nil, err
 		}
 		if seen[name] {
-			return nil, &Error{Offset: keyPos, Detail: fmt.Sprintf("name %q", short(name)), err: ErrDuplicateKey}
+			return nil, &Error{Offset: keyPos, err: ErrDuplicateKey}
 		}
 		seen[name] = true
 		p.skipWS()
@@ -492,13 +501,6 @@ func (p *parser) string() (string, error) {
 			p.pos += size
 		}
 	}
-}
-
-func short(s string) string {
-	if len(s) > 32 {
-		return s[:32] + "..."
-	}
-	return s
 }
 
 // ---- serializer ----

@@ -60,9 +60,19 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Other integers** (schema versions, attempts, counts, bps rates) are JSON
   integers with explicit bounds within ±(2^53−1). No floating-point numbers.
 - **Money.** `amount_minor` (int64 minor units) plus ISO 4217 `currency`.
-- **Nullability.** `nullable: true` is allowed only on required members, so
-  generated Go types never confuse JSON `null` with an absent member. PATCH
-  bodies never use `null`. [`TestAPI01_NoOptionalNullableFields`]
+- **Nullability and presence.** `nullable: true` is allowed only on required
+  members. Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+  `nullable`); its zero value is unspecified and **fails marshaling**. Use
+  `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
+  for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
+  Both `UpdateResult.recovery_required` and `UpdateJobSummary.recovery_required`
+  use `presence.Required[bool]`: `NewRequired(false)` preserves explicit false,
+  while omission and null cannot become false. Validate original request bytes
+  before decoding into a fresh model; these types do not replace schema checks.
+  Plain Go pointers cannot distinguish absence from null. PATCH bodies never
+  use null. The codegen config enables nullable types and supplies an import
+  template for the local implementation. [`TestAPI01_NoOptionalNullableFields`,
+  `TestReviewC04_PlanRateLimitPresence`, `TestReviewC06_RecoveryRequiredPresence`]
 - **Request bodies are closed** (`additionalProperties: false`); responses are
   open for forward compatibility. [`TestAPI01_RequestBodiesAreClosed`]
 - **Errors.** Every 4xx/5xx uses `ErrorEnvelope`; `ErrorCode` lists exactly the
@@ -91,9 +101,54 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   the SHA-256 of the canonical JSON of the whole manifest envelope.
 - **Signatures.** `{"signed": {...}, "signatures": [{"key_id", "algorithm":
   "ed25519", "signature_b64"}]}` over the canonical JSON of `signed`
-  (`pkg/envelope`). Purposes and keys: `release`, `desired-state`, `lease`,
+  (`pkg/envelope`). Trust entries must have exactly one purpose; key IDs and
+  public-key bytes must both be unique. Trust JSON rejects duplicate members
+  and trailing data; envelope signatures reject repeated key IDs, including
+  unknown keys. Purposes and keys: `release`, `desired-state`, `lease`,
   `recovery`. The §14.7 and §17.3 examples show a single `signature` object;
   this contract uses the uniform envelope instead (AGENTS.md §3).
+
+Canonical JSON input is capped at `canonjson.MaxBytes = 1 << 20` (1 MiB),
+matching the control HTTP body limit; oversized input fails before parsing,
+sorting or hashing. Maximum container nesting is 256. HTTP handlers must also
+bound reads before allocating an entire body (§14.6, §16.2).
+
+Payment handlers must verify **`r.Body` before any parse** (§9.3, §14.4, §16.2).
+`ProviderWebhookPayload` is `json.RawMessage` in Go and `unknown` in TypeScript;
+it is not a parsed provider model. Preserve the original bytes for verification
+and the durable inbox. Even remarshal of RawMessage can compact whitespace or
+escape text; JSON.parse also loses large-integer precision. Do not verify a
+reconstructed body or authorize membership from a return page.
+
+Install `apierr.TrackResponse(w)` at the outer HTTP handler boundary and pass
+that writer through middleware and handlers. `apierr.Write` refuses to append
+an error once its `Written()` state is true, including an implicit 200 or flush.
+An arbitrary unwrapped `net/http.ResponseWriter` does not expose prior writes;
+wrapping it after the response starts cannot recover that information. Use
+`http.ResponseController` for optional writer operations. Invalid pre-set
+response/context request IDs are replaced with central UUIDs (§14.1).
+
+## Service-enforced rules
+
+Schema acceptance is only structural validation. The following owners must
+check these rules before committing state or starting external effects; their
+service tests are outside this contract revision. The examples under
+`contracts/examples/semantic-invalid/` intentionally pass schema validation
+(and have valid hashes/signatures where applicable), but services must reject
+them. `reasons.json` names the owner and rule for each fixture.
+
+| Rule | Owning service | Spec |
+|---|---|---|
+| `gap` is present iff `quality=gap`; `interval_end > interval_start` | usage ledger service | §10.5 |
+| `clear_capacity=true` excludes `capacity` | node service | §14.2 |
+| Fair-use thresholds strictly increase, rates are non-increasing, priority is non-decreasing, every tier is at or above `minimum_rate` in both directions | policy service | §11.1 |
+| Approved releases are a subset of serving releases; revoked releases are disjoint from both | policy service | §13.2 |
+| Artifacts cover amd64 and arm64 for the supported OS/version, with unique OS/version/architecture tuples; `minItems: 2` only checks array length | release service | §13.3, §13.4 |
+| Domain rules are normalized with IDNA, then checked for duplicates and conflicting action/profile/subdomain semantics | policy service / DNS compiler | §12.4 |
+| Checkout and billing portal `return_url` must match the configured allowlist before redirect or provider use; HTTPS alone is insufficient, including loopback, link-local and other internal destinations | billing service | §14.3, §16.2 |
+
+No production allowlist or commercial fair-use values are supplied here. URL
+fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
 
 ## Signed documents designed here
 
@@ -108,7 +163,8 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   time), `expires_at` (node lease end), `max_offline_seconds` (recommended
   default 86400) and per-member `lease_end` with `effective_service_end`.
   `ServingLease` describes the server and node rules: bounds, replay, monotonic
-  deadlines and fail-closed behavior.
+  deadlines and fail-closed behavior. The canonical concrete §16.3 example is
+  [`serving-lease-signing.json`](../../contracts/vectors/serving-lease-signing.json).
 - **Usage checkpoint (§17.3).** The §17.3 fields, signed with a `recovery`
   key; `recovery_record_id` is null when no restore happened in the epoch.
 
@@ -240,3 +296,18 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
   lexical version comparison (§13.2).
 - Release manifests add `rollback.required_free_bytes`, which the §13.3 table
   requires but the example omits.
+
+- D-007 keeps the additional required members absent from the spec figures:
+  `UpdateResult.stage` and `recovery_required` (§13.10.3); `Operation.resource`,
+  `error`, `request_id`, `updated_at`, `completed_at`, and each `OperationStep`'s
+  `required`, `observed_at`, `error_code`, `message` (§14.8); and
+  `UpdateBatch.operation_id`, `requires_service_restart`, `reason`, `created_by`,
+  `created_at` (§13.10.4). Nullability does not make a member optional.
+  Schema-valid figures are [UpdateResult](../../contracts/examples/valid/UpdateResult.json),
+  [Operation](../../contracts/examples/valid/Operation.json), and
+  [UpdateBatch](../../contracts/examples/valid/UpdateBatch.json); their extra
+  variants demonstrate explicit null, an explicitly non-required step, and an
+  empty target page. Do not copy the shorter prose figures as request bodies.
+- D-016: `device_limit` has no schema default. Tests explicitly send 3;
+  the production limit remains a business decision. Prices, fair-use rates
+  and thresholds in examples are TEST ONLY, not production settings.

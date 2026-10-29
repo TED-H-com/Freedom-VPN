@@ -183,7 +183,7 @@
     "kind": "schema",
     "pointer": "/manifest/signed/artifacts",
     "keyword": "minItems",
-    "note": "Both architectures are required (§13.4)."
+    "note": "The artifacts array needs at least two items. This length check does not prove architecture coverage; the release service enforces both amd64 and arm64 (§13.4)."
   },
   "UpdateBatch.missing-count.json": {
     "kind": "schema",

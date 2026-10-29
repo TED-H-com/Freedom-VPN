@@ -1807,6 +1807,8 @@ paths:
       x-fvpn-requirements: [MTR01, MTR02, MTR03, MTR04, DATA01]
       security: []
       x-fvpn-auth: agent-mtls
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKeyOptional'
       requestBody:
         required: true
         content:
@@ -2296,7 +2298,8 @@ components:
     Conflict:
       description: |
         IDEMPOTENCY_CONFLICT, STATE_CONFLICT, USAGE_EVENT_CONFLICT, ACK_CONFLICT,
-        LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH or DEVICE_LIMIT_REACHED.
+        LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH, DEVICE_LIMIT_REACHED,
+        UPDATE_BUSY, AUTHORIZATION_EXPIRED, STALE_GENERATION or LEASE_EXPIRED.
         Read the current state first; do not change the key to bypass a state
         conflict.
       headers:
@@ -5147,6 +5150,10 @@ components:
           nullable: true
         recovery_required:
           type: boolean
+          x-go-type: nullable.Required[bool]
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/api/presence
+            name: nullable
         started_at:
           type: string
           format: date-time
@@ -6741,6 +6748,10 @@ components:
           nullable: true
         recovery_required:
           type: boolean
+          x-go-type: nullable.Required[bool]
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/api/presence
+            name: nullable
         started_at:
           type: string
           format: date-time
@@ -6921,9 +6932,8 @@ components:
 
     # ============================================================ webhook §9.3
     ProviderWebhookPayload:
-      type: object
-      description: Provider-defined JSON body. Verified and stored byte for byte; not constrained by this contract.
-      additionalProperties: true
+      description: Provider-defined JSON body. Handlers must verify r.Body before any parse; preserve the original bytes for signature verification and the inbox. Never verify a remarshal of this type.
+      x-go-type: json.RawMessage
     WebhookAck:
       type: object
       required: [received, duplicate]

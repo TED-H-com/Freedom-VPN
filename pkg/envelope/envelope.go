@@ -9,7 +9,7 @@
 // signature_b64 is standard base64 with padding of the 64-byte signature.
 //
 // Verification is fail closed (§16.2): unknown algorithms, an empty signature
-// list, malformed base64, and any signature by a known key that is revoked,
+// list, duplicate signature key_ids, malformed base64, and any signature by a known key that is revoked,
 // outside its validity window, not allowed for the requested purpose or that
 // does not verify, all reject the whole envelope. Signatures by unknown
 // key_ids are ignored, but at least one valid signature by a trusted key is
@@ -143,6 +143,11 @@ func (e *Envelope) AddSignature(priv ed25519.PrivateKey, keyID string) error {
 	if keyID == "" {
 		return errors.New("envelope: empty key_id")
 	}
+	for _, s := range e.Signatures {
+		if s.KeyID == keyID {
+			return invalid(keyID, "duplicate signature key_id")
+		}
+	}
 	c, err := canonicalObject([]byte(e.Signed))
 	if err != nil {
 		return err
@@ -220,10 +225,15 @@ func Verify(raw []byte, ts *TrustStore, purpose Purpose, now time.Time) (signedJ
 
 	// Structural checks apply to every signature, known key or not.
 	sigs := make([][]byte, len(env.Signatures))
+	seen := make(map[string]bool, len(env.Signatures))
 	for i, s := range env.Signatures {
 		if s.KeyID == "" {
 			return nil, "", invalid("", fmt.Sprintf("signature %d has empty key_id", i))
 		}
+		if seen[s.KeyID] {
+			return nil, "", invalid(s.KeyID, "duplicate signature key_id")
+		}
+		seen[s.KeyID] = true
 		if s.Algorithm != AlgorithmEd25519 {
 			return nil, "", invalid(s.KeyID, fmt.Sprintf("unsupported algorithm %q", short(s.Algorithm)))
 		}

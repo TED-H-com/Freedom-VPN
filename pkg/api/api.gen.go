@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	nullable "github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -2238,21 +2239,21 @@ type AuditEvent struct {
 	// Action Dotted action name, for example `node.publish`.
 	Action string `json:"action"`
 	Actor  struct {
-		Id   *openapi_types.UUID `json:"id"`
-		Type AuditEventActorType `json:"type"`
+		Id   nullable.Nullable[openapi_types.UUID] `json:"id"`
+		Type AuditEventActorType                   `json:"type"`
 	} `json:"actor"`
 	AuditEventId openapi_types.UUID `json:"audit_event_id"`
 
 	// Changes Redacted before/after differences. Never secrets, tokens or full payment payloads.
 	Changes struct {
-		After  *map[string]interface{} `json:"after"`
-		Before *map[string]interface{} `json:"before"`
+		After  nullable.Nullable[map[string]interface{}] `json:"after"`
+		Before nullable.Nullable[map[string]interface{}] `json:"before"`
 	} `json:"changes"`
-	OccurredAt  time.Time           `json:"occurred_at"`
-	OperationId *openapi_types.UUID `json:"operation_id"`
-	RequestId   *openapi_types.UUID `json:"request_id"`
-	Resource    ResourceRef         `json:"resource"`
-	Result      AuditEventResult    `json:"result"`
+	OccurredAt  time.Time                             `json:"occurred_at"`
+	OperationId nullable.Nullable[openapi_types.UUID] `json:"operation_id"`
+	RequestId   nullable.Nullable[openapi_types.UUID] `json:"request_id"`
+	Resource    ResourceRef                           `json:"resource"`
+	Result      AuditEventResult                      `json:"result"`
 }
 
 // AuditEventActorType defines model for AuditEvent.Actor.Type.
@@ -2263,8 +2264,8 @@ type AuditEventResult string
 
 // AuditEventList defines model for AuditEventList.
 type AuditEventList struct {
-	Items      []AuditEvent `json:"items"`
-	NextCursor *string      `json:"next_cursor"`
+	Items      []AuditEvent              `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // BillingPortalSession defines model for BillingPortalSession.
@@ -2323,8 +2324,8 @@ type ComponentVersion = string
 // ConfigGeneration Configuration generation requested by the center and the generation the node confirmed applying (§5).
 type ConfigGeneration struct {
 	// Applied Null until the node reports a successfully applied generation.
-	Applied *decstr.U64 `json:"applied"`
-	Desired decstr.U64  `json:"desired"`
+	Applied nullable.Nullable[decstr.U64] `json:"applied"`
+	Desired decstr.U64                    `json:"desired"`
 }
 
 // ControlStatus Agent to control-plane connectivity as observed by the center (§5).
@@ -2349,8 +2350,8 @@ type DesiredState struct {
 	ConfigGeneration decstr.U64 `json:"config_generation"`
 
 	// DesiredReleaseId Fleet target release; null before any release is targeted.
-	DesiredReleaseId *openapi_types.UUID `json:"desired_release_id"`
-	DeviceBindings   []DeviceBinding     `json:"device_bindings"`
+	DesiredReleaseId nullable.Nullable[openapi_types.UUID] `json:"desired_release_id"`
+	DeviceBindings   []DeviceBinding                       `json:"device_bindings"`
 
 	// Dns Designated resolvers (ISO04, §8.1, §12.2). Members may reach only these
 	// addresses on TCP/UDP 53; this never opens other ports or internal ranges.
@@ -2362,7 +2363,7 @@ type DesiredState struct {
 	IssuedAt             time.Time                        `json:"issued_at"`
 	LeaseRenewalEndpoint DesiredStateLeaseRenewalEndpoint `json:"lease_renewal_endpoint"`
 	MemberRatePolicies   []MemberRatePolicy               `json:"member_rate_policies"`
-	NodeCapacity         *NodeCapacity                    `json:"node_capacity"`
+	NodeCapacity         nullable.Nullable[NodeCapacity]  `json:"node_capacity"`
 	NodeId               openapi_types.UUID               `json:"node_id"`
 	NodeIncarnationId    openapi_types.UUID               `json:"node_incarnation_id"`
 	PolicyRefs           PolicyRefs                       `json:"policy_refs"`
@@ -2381,7 +2382,7 @@ type DesiredState struct {
 	SupportedReleasePolicyId openapi_types.UUID `json:"supported_release_policy_id"`
 
 	// Update The node's current authorized update job (§13.10.2), or null.
-	Update *UpdateIntent `json:"update"`
+	Update nullable.Nullable[UpdateIntent] `json:"update"`
 }
 
 // DesiredStateLeaseRenewalEndpoint defines model for DesiredState.LeaseRenewalEndpoint.
@@ -2515,7 +2516,7 @@ type DomainRule struct {
 	IncludeSubdomains bool             `json:"include_subdomains"`
 
 	// ProfileId profile_code the rule applies to; null applies the rule to every profile (service-wide).
-	ProfileId *string `json:"profile_id"`
+	ProfileId nullable.Nullable[string] `json:"profile_id"`
 
 	// Reason Reason code, for example `admin_rule` or `false_positive`.
 	Reason string `json:"reason"`
@@ -2643,9 +2644,9 @@ type EnrollResponseNext string
 // Enrollment Enrollment without the token (§6.1, §15.3).
 type Enrollment struct {
 	// BoundPublicKeySha256 SHA-256 of the DER SubjectPublicKeyInfo bound at first use.
-	BoundPublicKeySha256 *string    `json:"bound_public_key_sha256"`
-	ConsumedAt           *time.Time `json:"consumed_at"`
-	CreatedAt            time.Time  `json:"created_at"`
+	BoundPublicKeySha256 nullable.Nullable[string]    `json:"bound_public_key_sha256"`
+	ConsumedAt           nullable.Nullable[time.Time] `json:"consumed_at"`
+	CreatedAt            time.Time                    `json:"created_at"`
 
 	// Delivery How the token reaches the device (§6.4). `preinstalled`: written into one
 	// pre-installed box, longer shipping expiry (recommended default 7 days).
@@ -2655,20 +2656,20 @@ type Enrollment struct {
 	EnrollmentId openapi_types.UUID `json:"enrollment_id"`
 
 	// EnrollmentRequestId Bound at first successful use.
-	EnrollmentRequestId *openapi_types.UUID  `json:"enrollment_request_id"`
-	ExpiresAt           time.Time            `json:"expires_at"`
-	MemberGroupIds      []openapi_types.UUID `json:"member_group_ids"`
-	Name                *string              `json:"name"`
+	EnrollmentRequestId nullable.Nullable[openapi_types.UUID] `json:"enrollment_request_id"`
+	ExpiresAt           time.Time                             `json:"expires_at"`
+	MemberGroupIds      []openapi_types.UUID                  `json:"member_group_ids"`
+	Name                nullable.Nullable[string]             `json:"name"`
 
 	// NodeId Node reserved for this enrollment.
 	NodeId openapi_types.UUID `json:"node_id"`
 
 	// NodeIncarnationId Incarnation created by the enrollment.
-	NodeIncarnationId *openapi_types.UUID `json:"node_incarnation_id"`
-	Notes             *string             `json:"notes"`
-	Region            *string             `json:"region"`
-	RevokedAt         *time.Time          `json:"revoked_at"`
-	State             EnrollmentState     `json:"state"`
+	NodeIncarnationId nullable.Nullable[openapi_types.UUID] `json:"node_incarnation_id"`
+	Notes             nullable.Nullable[string]             `json:"notes"`
+	Region            nullable.Nullable[string]             `json:"region"`
+	RevokedAt         nullable.Nullable[time.Time]          `json:"revoked_at"`
+	State             EnrollmentState                       `json:"state"`
 }
 
 // EnrollmentCreateRequest defines model for EnrollmentCreateRequest.
@@ -2696,7 +2697,7 @@ type EnrollmentCreated struct {
 	SecretAvailable bool       `json:"secret_available"`
 
 	// Token One-time, high-entropy (at least 256 bits, base64url) enrollment token. Secret; never logged.
-	Token *string `json:"token"`
+	Token nullable.Nullable[string] `json:"token"`
 }
 
 // EnrollmentDelivery How the token reaches the device (§6.4). `preinstalled`: written into one
@@ -2710,13 +2711,13 @@ type EnrollmentState string
 
 // EntitlementGrant defines model for EntitlementGrant.
 type EntitlementGrant struct {
-	CreatedAt      time.Time           `json:"created_at"`
-	CreatedBy      openapi_types.UUID  `json:"created_by"`
-	GrantId        openapi_types.UUID  `json:"grant_id"`
-	MemberId       openapi_types.UUID  `json:"member_id"`
-	PlanRevisionId *openapi_types.UUID `json:"plan_revision_id"`
-	Reason         string              `json:"reason"`
-	RevokedAt      *time.Time          `json:"revoked_at"`
+	CreatedAt      time.Time                             `json:"created_at"`
+	CreatedBy      openapi_types.UUID                    `json:"created_by"`
+	GrantId        openapi_types.UUID                    `json:"grant_id"`
+	MemberId       openapi_types.UUID                    `json:"member_id"`
+	PlanRevisionId nullable.Nullable[openapi_types.UUID] `json:"plan_revision_id"`
+	Reason         string                                `json:"reason"`
+	RevokedAt      nullable.Nullable[time.Time]          `json:"revoked_at"`
 
 	// Source Origin of a manual grant (§9.2, §20.3). Every source requires an end time and reason.
 	Source     GrantSource `json:"source"`
@@ -2736,23 +2737,23 @@ type EntitlementState string
 // period, approved finite grants and the finite grace rule. Node forwarding
 // deadlines (leases) are separate and never extend these values.
 type EntitlementSummary struct {
-	AdminSuspended      bool       `json:"admin_suspended"`
-	CancelAtPeriodEnd   bool       `json:"cancel_at_period_end"`
-	ComputedAt          time.Time  `json:"computed_at"`
-	DeviceLimit         *int       `json:"device_limit"`
-	EffectiveServiceEnd *time.Time `json:"effective_service_end"`
-	GraceUntil          *time.Time `json:"grace_until"`
-	PaidThrough         *time.Time `json:"paid_through"`
-	Plan                *PlanRef   `json:"plan"`
-	Revision            decstr.U64 `json:"revision"`
+	AdminSuspended      bool                         `json:"admin_suspended"`
+	CancelAtPeriodEnd   bool                         `json:"cancel_at_period_end"`
+	ComputedAt          time.Time                    `json:"computed_at"`
+	DeviceLimit         nullable.Nullable[int]       `json:"device_limit"`
+	EffectiveServiceEnd nullable.Nullable[time.Time] `json:"effective_service_end"`
+	GraceUntil          nullable.Nullable[time.Time] `json:"grace_until"`
+	PaidThrough         nullable.Nullable[time.Time] `json:"paid_through"`
+	Plan                nullable.Nullable[PlanRef]   `json:"plan"`
+	Revision            decstr.U64                   `json:"revision"`
 
 	// State Entitlement state (§9.2). Refunds are events, not states: a full or partial
 	// refund is recorded as a billing record and recomputes the state.
 	// `cancel_at_period_end` stays effective until the paid period ends;
 	// `past_due` and `grace` follow the defined, finite grace policy; `suspended`
 	// is an admin suspension that payments never lift.
-	State     EntitlementState `json:"state"`
-	ValidFrom *time.Time       `json:"valid_from"`
+	State     EntitlementState             `json:"state"`
+	ValidFrom nullable.Nullable[time.Time] `json:"valid_from"`
 }
 
 // ErrorBody defines model for ErrorBody.
@@ -2945,17 +2946,17 @@ type FairUseStatus struct {
 	Applying bool `json:"applying"`
 
 	// AsOf Ledger watermark time the tier was computed from.
-	AsOf *time.Time `json:"as_of"`
+	AsOf nullable.Nullable[time.Time] `json:"as_of"`
 
 	// Rate Upper rate per exit (rate scope is member and exit, §11.3); not a guaranteed speed.
-	Rate   *RatePair            `json:"rate"`
-	Reason *FairUseStatusReason `json:"reason"`
+	Rate   nullable.Nullable[RatePair]            `json:"rate"`
+	Reason nullable.Nullable[FairUseStatusReason] `json:"reason"`
 
 	// ResetsAt Next recovery time (start of the next period or override end).
-	ResetsAt  *time.Time         `json:"resets_at"`
-	State     FairUseStatusState `json:"state"`
-	TierIndex *int               `json:"tier_index"`
-	TierName  *LocalizedText     `json:"tier_name"`
+	ResetsAt  nullable.Nullable[time.Time]     `json:"resets_at"`
+	State     FairUseStatusState               `json:"state"`
+	TierIndex nullable.Nullable[int]           `json:"tier_index"`
+	TierName  nullable.Nullable[LocalizedText] `json:"tier_name"`
 }
 
 // FairUseStatusReason defines model for FairUseStatus.Reason.
@@ -2989,13 +2990,13 @@ type FieldError struct {
 
 // FleetReleaseState Fleet target and serving policy (§13.2, §15.4 fleet_config). Target version and minimum serving set are separate (UPD04).
 type FleetReleaseState struct {
-	FleetDefaultReleaseId *openapi_types.UUID `json:"fleet_default_release_id"`
+	FleetDefaultReleaseId nullable.Nullable[openapi_types.UUID] `json:"fleet_default_release_id"`
 
 	// Generation Fleet generation; pass it as expected_generation when creating a batch.
-	Generation               decstr.U64           `json:"generation"`
-	ReleaseSupportRevisionId *openapi_types.UUID  `json:"release_support_revision_id"`
-	ResourceVersion          decstr.U64           `json:"resource_version"`
-	ServingReleaseIds        []openapi_types.UUID `json:"serving_release_ids"`
+	Generation               decstr.U64                            `json:"generation"`
+	ReleaseSupportRevisionId nullable.Nullable[openapi_types.UUID] `json:"release_support_revision_id"`
+	ResourceVersion          decstr.U64                            `json:"resource_version"`
+	ServingReleaseIds        []openapi_types.UUID                  `json:"serving_release_ids"`
 }
 
 // ForwardingBlockReason Why member forwarding is off on the node (fail-closed reasons).
@@ -3025,13 +3026,13 @@ type HealthCheckStatus string
 
 // LeaseRenewalRequest defines model for LeaseRenewalRequest.
 type LeaseRenewalRequest struct {
-	AppliedConfigGeneration *decstr.U64 `json:"applied_config_generation"`
+	AppliedConfigGeneration nullable.Nullable[decstr.U64] `json:"applied_config_generation"`
 
 	// CurrentLeaseId Lease the node currently enforces, if any.
-	CurrentLeaseId    *openapi_types.UUID `json:"current_lease_id"`
-	NodeId            openapi_types.UUID  `json:"node_id"`
-	NodeIncarnationId openapi_types.UUID  `json:"node_incarnation_id"`
-	RenewalRequestId  openapi_types.UUID  `json:"renewal_request_id"`
+	CurrentLeaseId    nullable.Nullable[openapi_types.UUID] `json:"current_lease_id"`
+	NodeId            openapi_types.UUID                    `json:"node_id"`
+	NodeIncarnationId openapi_types.UUID                    `json:"node_incarnation_id"`
+	RenewalRequestId  openapi_types.UUID                    `json:"renewal_request_id"`
 }
 
 // LifecycleState Whether the node identity is valid (§5).
@@ -3066,8 +3067,8 @@ type ManifestArtifactOsId string
 
 // ManifestCompatibility defines model for ManifestCompatibility.
 type ManifestCompatibility struct {
-	ControlApiMajor int     `json:"control_api_major"`
-	MigrationId     *string `json:"migration_id"`
+	ControlApiMajor int                       `json:"control_api_major"`
+	MigrationId     nullable.Nullable[string] `json:"migration_id"`
 
 	// MinimumUpdaterVersion Exact pinned component version (never `latest`).
 	MinimumUpdaterVersion  ComponentVersion `json:"minimum_updater_version"`
@@ -3117,31 +3118,31 @@ type ManifestRollback struct {
 
 // MemberDetail Member detail (§14.2). Payment, admin suspension and effective period are separate.
 type MemberDetail struct {
-	AccountStatus         MemberDetailAccountStatus `json:"account_status"`
-	AuthorizedDeviceCount int                       `json:"authorized_device_count"`
-	ClosedAt              *time.Time                `json:"closed_at"`
-	CreatedAt             time.Time                 `json:"created_at"`
-	DisplayName           *string                   `json:"display_name"`
+	AccountStatus         MemberDetailAccountStatus    `json:"account_status"`
+	AuthorizedDeviceCount int                          `json:"authorized_device_count"`
+	ClosedAt              nullable.Nullable[time.Time] `json:"closed_at"`
+	CreatedAt             time.Time                    `json:"created_at"`
+	DisplayName           nullable.Nullable[string]    `json:"display_name"`
 
 	// Email Contact only; never an identity key (§2).
-	Email *openapi_types.Email `json:"email"`
+	Email nullable.Nullable[openapi_types.Email] `json:"email"`
 
 	// Entitlement Computed entitlement (§9.2, §15.2). paid_through is the billing fact and is
 	// never rewritten by grace; effective_service_end is computed from the paid
 	// period, approved finite grants and the finite grace rule. Node forwarding
 	// deadlines (leases) are separate and never extend these values.
-	Entitlement     EntitlementSummary   `json:"entitlement"`
-	Grants          []EntitlementGrant   `json:"grants"`
-	MemberGroupIds  []openapi_types.UUID `json:"member_group_ids"`
-	MemberId        openapi_types.UUID   `json:"member_id"`
-	Notes           *string              `json:"notes"`
-	ResourceVersion decstr.U64           `json:"resource_version"`
-	Subscription    *SubscriptionSummary `json:"subscription"`
+	Entitlement     EntitlementSummary                     `json:"entitlement"`
+	Grants          []EntitlementGrant                     `json:"grants"`
+	MemberGroupIds  []openapi_types.UUID                   `json:"member_group_ids"`
+	MemberId        openapi_types.UUID                     `json:"member_id"`
+	Notes           nullable.Nullable[string]              `json:"notes"`
+	ResourceVersion decstr.U64                             `json:"resource_version"`
+	Subscription    nullable.Nullable[SubscriptionSummary] `json:"subscription"`
 	Suspension      struct {
-		Reason      *string             `json:"reason"`
-		Suspended   bool                `json:"suspended"`
-		SuspendedAt *time.Time          `json:"suspended_at"`
-		SuspendedBy *openapi_types.UUID `json:"suspended_by"`
+		Reason      nullable.Nullable[string]             `json:"reason"`
+		Suspended   bool                                  `json:"suspended"`
+		SuspendedAt nullable.Nullable[time.Time]          `json:"suspended_at"`
+		SuspendedBy nullable.Nullable[openapi_types.UUID] `json:"suspended_by"`
 	} `json:"suspension"`
 	Usage MemberUsageSummary `json:"usage"`
 }
@@ -3151,13 +3152,13 @@ type MemberDetailAccountStatus string
 
 // MemberDevice defines model for MemberDevice.
 type MemberDevice struct {
-	AuthorizedAt *time.Time           `json:"authorized_at"`
-	CreatedAt    time.Time            `json:"created_at"`
-	DeviceId     openapi_types.UUID   `json:"device_id"`
-	LastSeenAt   *time.Time           `json:"last_seen_at"`
-	Name         string               `json:"name"`
-	Platform     MemberDevicePlatform `json:"platform"`
-	RevokedAt    *time.Time           `json:"revoked_at"`
+	AuthorizedAt nullable.Nullable[time.Time] `json:"authorized_at"`
+	CreatedAt    time.Time                    `json:"created_at"`
+	DeviceId     openapi_types.UUID           `json:"device_id"`
+	LastSeenAt   nullable.Nullable[time.Time] `json:"last_seen_at"`
+	Name         string                       `json:"name"`
+	Platform     MemberDevicePlatform         `json:"platform"`
+	RevokedAt    nullable.Nullable[time.Time] `json:"revoked_at"`
 
 	// Status Member device authorization state (§9.4). New peers start without exit rights.
 	Status DeviceStatus `json:"status"`
@@ -3168,19 +3169,19 @@ type MemberDevicePlatform string
 
 // MemberDeviceList defines model for MemberDeviceList.
 type MemberDeviceList struct {
-	AuthorizedCount int            `json:"authorized_count"`
-	DeviceLimit     *int           `json:"device_limit"`
-	Items           []MemberDevice `json:"items"`
-	NextCursor      *string        `json:"next_cursor"`
+	AuthorizedCount int                       `json:"authorized_count"`
+	DeviceLimit     nullable.Nullable[int]    `json:"device_limit"`
+	Items           []MemberDevice            `json:"items"`
+	NextCursor      nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // MemberExit Exit the member may select in the app (§18.4). The portal never switches the app's exit.
 type MemberExit struct {
-	Availability MemberExitAvailability `json:"availability"`
-	DisplayName  string                 `json:"display_name"`
-	ExitId       openapi_types.UUID     `json:"exit_id"`
-	Note         *LocalizedText         `json:"note"`
-	Region       string                 `json:"region"`
+	Availability MemberExitAvailability           `json:"availability"`
+	DisplayName  string                           `json:"display_name"`
+	ExitId       openapi_types.UUID               `json:"exit_id"`
+	Note         nullable.Nullable[LocalizedText] `json:"note"`
+	Region       string                           `json:"region"`
 }
 
 // MemberExitAvailability defines model for MemberExit.Availability.
@@ -3188,8 +3189,8 @@ type MemberExitAvailability string
 
 // MemberExitList defines model for MemberExitList.
 type MemberExitList struct {
-	Items      []MemberExit `json:"items"`
-	NextCursor *string      `json:"next_cursor"`
+	Items      []MemberExit              `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // MemberLease defines model for MemberLease.
@@ -3204,8 +3205,8 @@ type MemberLease struct {
 
 // MemberList defines model for MemberList.
 type MemberList struct {
-	Items      []MemberSummary `json:"items"`
-	NextCursor *string         `json:"next_cursor"`
+	Items      []MemberSummary           `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // MemberPatch Allowlisted member fields; JSON null is never used. Setting
@@ -3228,7 +3229,7 @@ type MemberPatch struct {
 // min(plan_rate, fair_use_tier_rate, node_member_rate_cap) computed
 // centrally; null means no member-level limit (node capacity still applies).
 type MemberRatePolicy struct {
-	DownBps *int64 `json:"down_bps"`
+	DownBps nullable.Nullable[int64] `json:"down_bps"`
 
 	// Generation Member policy generation; nodes report it as applied.
 	Generation decstr.U64           `json:"generation"`
@@ -3236,13 +3237,13 @@ type MemberRatePolicy struct {
 	Mode       MemberRatePolicyMode `json:"mode"`
 
 	// PeriodId Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type).
-	PeriodId   PeriodId               `json:"period_id"`
-	Priority   int                    `json:"priority"`
-	Reason     MemberRatePolicyReason `json:"reason"`
-	TierIndex  int                    `json:"tier_index"`
-	UpBps      *int64                 `json:"up_bps"`
-	ValidFrom  time.Time              `json:"valid_from"`
-	ValidUntil time.Time              `json:"valid_until"`
+	PeriodId   PeriodId                 `json:"period_id"`
+	Priority   int                      `json:"priority"`
+	Reason     MemberRatePolicyReason   `json:"reason"`
+	TierIndex  int                      `json:"tier_index"`
+	UpBps      nullable.Nullable[int64] `json:"up_bps"`
+	ValidFrom  time.Time                `json:"valid_from"`
+	ValidUntil time.Time                `json:"valid_until"`
 }
 
 // MemberRatePolicyMode defines model for MemberRatePolicy.Mode.
@@ -3253,8 +3254,8 @@ type MemberRatePolicyReason string
 
 // MemberSelf defines model for MemberSelf.
 type MemberSelf struct {
-	DisplayName *string              `json:"display_name"`
-	Email       *openapi_types.Email `json:"email"`
+	DisplayName nullable.Nullable[string]              `json:"display_name"`
+	Email       nullable.Nullable[openapi_types.Email] `json:"email"`
 
 	// Entitlement Computed entitlement (§9.2, §15.2). paid_through is the billing fact and is
 	// never rewritten by grace; effective_service_end is computed from the paid
@@ -3263,15 +3264,15 @@ type MemberSelf struct {
 	Entitlement EntitlementSummary `json:"entitlement"`
 
 	// FairUseResetAt Start of the next accounting period (UTC), shown in the member's time zone by the UI.
-	FairUseResetAt *time.Time `json:"fair_use_reset_at"`
+	FairUseResetAt nullable.Nullable[time.Time] `json:"fair_use_reset_at"`
 	Limits         struct {
-		AuthorizedDeviceCount int  `json:"authorized_device_count"`
-		DeviceLimit           *int `json:"device_limit"`
-		ExitCount             int  `json:"exit_count"`
+		AuthorizedDeviceCount int                    `json:"authorized_device_count"`
+		DeviceLimit           nullable.Nullable[int] `json:"device_limit"`
+		ExitCount             int                    `json:"exit_count"`
 	} `json:"limits"`
-	MemberId     openapi_types.UUID   `json:"member_id"`
-	NextActions  []NextAction         `json:"next_actions"`
-	Subscription *SubscriptionSummary `json:"subscription"`
+	MemberId     openapi_types.UUID                     `json:"member_id"`
+	NextActions  []NextAction                           `json:"next_actions"`
+	Subscription nullable.Nullable[SubscriptionSummary] `json:"subscription"`
 }
 
 // MemberSummary defines model for MemberSummary.
@@ -3279,10 +3280,10 @@ type MemberSummary struct {
 	AccountStatus         MemberSummaryAccountStatus `json:"account_status"`
 	AuthorizedDeviceCount int                        `json:"authorized_device_count"`
 	CreatedAt             time.Time                  `json:"created_at"`
-	DisplayName           *string                    `json:"display_name"`
+	DisplayName           nullable.Nullable[string]  `json:"display_name"`
 
 	// Email Contact only; never an identity key (§2).
-	Email *openapi_types.Email `json:"email"`
+	Email nullable.Nullable[openapi_types.Email] `json:"email"`
 
 	// Entitlement Computed entitlement (§9.2, §15.2). paid_through is the billing fact and is
 	// never rewritten by grace; effective_service_end is computed from the paid
@@ -3300,7 +3301,7 @@ type MemberSummaryAccountStatus string
 // MemberUsage Recorded VPN usage (forward_admission_v1) for one accounting period (§10.9, §11.6).
 type MemberUsage struct {
 	// AggregateAsOf Aggregation watermark; never presented as real time (§10.6).
-	AggregateAsOf *time.Time `json:"aggregate_as_of"`
+	AggregateAsOf nullable.Nullable[time.Time] `json:"aggregate_as_of"`
 
 	// Days Per-day rows for granularity=day; empty for month.
 	Days []UsageDay `json:"days"`
@@ -3308,9 +3309,9 @@ type MemberUsage struct {
 	// FairUse Member-visible speed state (FUP03, §11.6). Shadow-mode results are never
 	// shown as throttling. `applying` is true while some nodes have not yet
 	// acknowledged the member's current policy generation.
-	FairUse        FairUseStatus          `json:"fair_use"`
-	Granularity    MemberUsageGranularity `json:"granularity"`
-	LastObservedAt *time.Time             `json:"last_observed_at"`
+	FairUse        FairUseStatus                `json:"fair_use"`
+	Granularity    MemberUsageGranularity       `json:"granularity"`
+	LastObservedAt nullable.Nullable[time.Time] `json:"last_observed_at"`
 
 	// MeteringVersion Metering definition (§10.1). Never silently change the meaning of a version.
 	MeteringVersion MeteringVersion `json:"metering_version"`
@@ -3332,8 +3333,8 @@ type MemberUsageGranularity string
 
 // MemberUsageSummary defines model for MemberUsageSummary.
 type MemberUsageSummary struct {
-	AggregateAsOf    *time.Time `json:"aggregate_as_of"`
-	FairUseTierIndex *int       `json:"fair_use_tier_index"`
+	AggregateAsOf    nullable.Nullable[time.Time] `json:"aggregate_as_of"`
+	FairUseTierIndex nullable.Nullable[int]       `json:"fair_use_tier_index"`
 
 	// PeriodId Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type).
 	PeriodId   PeriodId          `json:"period_id"`
@@ -3354,19 +3355,19 @@ type NodeCapacity struct {
 	DownBps int64 `json:"down_bps"`
 
 	// MemberDownBpsCap node_member_rate_cap for the download direction; null means no node-specific member cap.
-	MemberDownBpsCap *int64 `json:"member_down_bps_cap"`
+	MemberDownBpsCap nullable.Nullable[int64] `json:"member_down_bps_cap"`
 
 	// MemberUpBpsCap node_member_rate_cap for the upload direction; null means no node-specific member cap.
-	MemberUpBpsCap *int64 `json:"member_up_bps_cap"`
-	UpBps          int64  `json:"up_bps"`
+	MemberUpBpsCap nullable.Nullable[int64] `json:"member_up_bps_cap"`
+	UpBps          int64                    `json:"up_bps"`
 }
 
 // NodeCheck defines model for NodeCheck.
 type NodeCheck struct {
-	ErrorCode  *ErrorCode        `json:"error_code"`
-	Name       NodeCheckName     `json:"name"`
-	ObservedAt time.Time         `json:"observed_at"`
-	Status     HealthCheckStatus `json:"status"`
+	ErrorCode  nullable.Nullable[ErrorCode] `json:"error_code"`
+	Name       NodeCheckName                `json:"name"`
+	ObservedAt time.Time                    `json:"observed_at"`
+	Status     HealthCheckStatus            `json:"status"`
 }
 
 // NodeCheckName defines model for NodeCheck.Name.
@@ -3374,16 +3375,16 @@ type NodeCheckName string
 
 // NodeDetail Node detail (§14.2, §18.1) with desired versus observed differences.
 type NodeDetail struct {
-	Capacity *NodeCapacity `json:"capacity"`
-	Checks   []NodeCheck   `json:"checks"`
+	Capacity nullable.Nullable[NodeCapacity] `json:"capacity"`
+	Checks   []NodeCheck                     `json:"checks"`
 
 	// ConfigGeneration Configuration generation requested by the center and the generation the node confirmed applying (§5).
 	ConfigGeneration ConfigGeneration `json:"config_generation"`
 
 	// ControlStatus Agent to control-plane connectivity as observed by the center (§5).
-	ControlStatus        ControlStatus       `json:"control_status"`
-	CreatedAt            time.Time           `json:"created_at"`
-	CurrentIncarnationId *openapi_types.UUID `json:"current_incarnation_id"`
+	ControlStatus        ControlStatus                         `json:"control_status"`
+	CreatedAt            time.Time                             `json:"created_at"`
+	CurrentIncarnationId nullable.Nullable[openapi_types.UUID] `json:"current_incarnation_id"`
 
 	// DataHealth Result of real data-path probes (§5).
 	DataHealth DataHealth `json:"data_health"`
@@ -3392,28 +3393,28 @@ type NodeDetail struct {
 	Drift []StateDrift `json:"drift"`
 
 	// ExitId V1 maps one exit to one node (§2).
-	ExitId *openapi_types.UUID `json:"exit_id"`
+	ExitId nullable.Nullable[openapi_types.UUID] `json:"exit_id"`
 
 	// LastSeenAt Central received_at of the last authenticated agent report.
-	LastSeenAt *time.Time `json:"last_seen_at"`
+	LastSeenAt nullable.Nullable[time.Time] `json:"last_seen_at"`
 
 	// LifecycleState Whether the node identity is valid (§5).
 	LifecycleState LifecycleState `json:"lifecycle_state"`
 
 	// MemberForwardingObserved Whether the node last reported member forwarding enabled. Null when never reported. An observation, not the intent.
-	MemberForwardingObserved *bool                `json:"member_forwarding_observed"`
-	MemberGroupIds           []openapi_types.UUID `json:"member_group_ids"`
-	Name                     *string              `json:"name"`
+	MemberForwardingObserved nullable.Nullable[bool]   `json:"member_forwarding_observed"`
+	MemberGroupIds           []openapi_types.UUID      `json:"member_group_ids"`
+	Name                     nullable.Nullable[string] `json:"name"`
 
 	// NetbirdPeerId Opaque NetBird peer ID.
-	NetbirdPeerId *string            `json:"netbird_peer_id"`
-	NodeId        openapi_types.UUID `json:"node_id"`
+	NetbirdPeerId nullable.Nullable[string] `json:"netbird_peer_id"`
+	NodeId        openapi_types.UUID        `json:"node_id"`
 
 	// Notes Free-text notes, including source or owner remarks. Never used for permissions (NODE04).
-	Notes            *string       `json:"notes"`
-	ObservedExitIpv4 *string       `json:"observed_exit_ipv4"`
-	ObservedExitIpv6 *string       `json:"observed_exit_ipv6"`
-	Platform         *NodePlatform `json:"platform"`
+	Notes            nullable.Nullable[string]       `json:"notes"`
+	ObservedExitIpv4 nullable.Nullable[string]       `json:"observed_exit_ipv4"`
+	ObservedExitIpv6 nullable.Nullable[string]       `json:"observed_exit_ipv6"`
+	Platform         nullable.Nullable[NodePlatform] `json:"platform"`
 
 	// ProvisioningState Whether local configuration is complete (§5).
 	ProvisioningState ProvisioningState `json:"provisioning_state"`
@@ -3422,18 +3423,18 @@ type NodeDetail struct {
 	PublicationIntent PublicationIntent `json:"publication_intent"`
 
 	// PublicationObserved Observed NetBird and node application state (§5).
-	PublicationObserved PublicationObserved `json:"publication_observed"`
-	RecentErrors        []NodeError         `json:"recent_errors"`
-	Region              *string             `json:"region"`
+	PublicationObserved PublicationObserved       `json:"publication_observed"`
+	RecentErrors        []NodeError               `json:"recent_errors"`
+	Region              nullable.Nullable[string] `json:"region"`
 
 	// Releases Actual, target and recoverable releases (§5, §13.2). current and last_good come only from reliable node reports.
-	Releases        NodeReleases `json:"releases"`
-	ResourceVersion decstr.U64   `json:"resource_version"`
-	RetiredAt       *time.Time   `json:"retired_at"`
+	Releases        NodeReleases                 `json:"releases"`
+	ResourceVersion decstr.U64                   `json:"resource_version"`
+	RetiredAt       nullable.Nullable[time.Time] `json:"retired_at"`
 
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
-	SafetyStatus SafetyStatus       `json:"safety_status"`
-	Update       *NodeUpdateSummary `json:"update"`
+	SafetyStatus SafetyStatus                         `json:"safety_status"`
+	Update       nullable.Nullable[NodeUpdateSummary] `json:"update"`
 }
 
 // NodeError defines model for NodeError.
@@ -3453,8 +3454,8 @@ type NodeError struct {
 
 // NodeList defines model for NodeList.
 type NodeList struct {
-	Items      []NodeSummary `json:"items"`
-	NextCursor *string       `json:"next_cursor"`
+	Items      []NodeSummary             `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // NodePatch Allowlisted node fields (§14.1). Only provided fields change; JSON null is
@@ -3488,9 +3489,9 @@ type NodePlatformOs string
 
 // NodeReleases Actual, target and recoverable releases (§5, §13.2). current and last_good come only from reliable node reports.
 type NodeReleases struct {
-	CurrentReleaseId  *openapi_types.UUID `json:"current_release_id"`
-	DesiredReleaseId  *openapi_types.UUID `json:"desired_release_id"`
-	LastGoodReleaseId *openapi_types.UUID `json:"last_good_release_id"`
+	CurrentReleaseId  nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
+	DesiredReleaseId  nullable.Nullable[openapi_types.UUID] `json:"desired_release_id"`
+	LastGoodReleaseId nullable.Nullable[openapi_types.UUID] `json:"last_good_release_id"`
 }
 
 // NodeSummary Node list row (§5, §18.1). Control, data path, policy validity and update completion are separate fields.
@@ -3506,19 +3507,19 @@ type NodeSummary struct {
 	DataHealth DataHealth `json:"data_health"`
 
 	// ExitId V1 maps one exit to one node (§2).
-	ExitId *openapi_types.UUID `json:"exit_id"`
+	ExitId nullable.Nullable[openapi_types.UUID] `json:"exit_id"`
 
 	// LastSeenAt Central received_at of the last authenticated agent report.
-	LastSeenAt *time.Time `json:"last_seen_at"`
+	LastSeenAt nullable.Nullable[time.Time] `json:"last_seen_at"`
 
 	// LifecycleState Whether the node identity is valid (§5).
 	LifecycleState LifecycleState `json:"lifecycle_state"`
 
 	// MemberForwardingObserved Whether the node last reported member forwarding enabled. Null when never reported. An observation, not the intent.
-	MemberForwardingObserved *bool                `json:"member_forwarding_observed"`
-	MemberGroupIds           []openapi_types.UUID `json:"member_group_ids"`
-	Name                     *string              `json:"name"`
-	NodeId                   openapi_types.UUID   `json:"node_id"`
+	MemberForwardingObserved nullable.Nullable[bool]   `json:"member_forwarding_observed"`
+	MemberGroupIds           []openapi_types.UUID      `json:"member_group_ids"`
+	Name                     nullable.Nullable[string] `json:"name"`
+	NodeId                   openapi_types.UUID        `json:"node_id"`
 
 	// ProvisioningState Whether local configuration is complete (§5).
 	ProvisioningState ProvisioningState `json:"provisioning_state"`
@@ -3527,27 +3528,27 @@ type NodeSummary struct {
 	PublicationIntent PublicationIntent `json:"publication_intent"`
 
 	// PublicationObserved Observed NetBird and node application state (§5).
-	PublicationObserved PublicationObserved `json:"publication_observed"`
-	Region              *string             `json:"region"`
+	PublicationObserved PublicationObserved       `json:"publication_observed"`
+	Region              nullable.Nullable[string] `json:"region"`
 
 	// Releases Actual, target and recoverable releases (§5, §13.2). current and last_good come only from reliable node reports.
 	Releases        NodeReleases `json:"releases"`
 	ResourceVersion decstr.U64   `json:"resource_version"`
 
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
-	SafetyStatus SafetyStatus       `json:"safety_status"`
-	Update       *NodeUpdateSummary `json:"update"`
+	SafetyStatus SafetyStatus                         `json:"safety_status"`
+	Update       nullable.Nullable[NodeUpdateSummary] `json:"update"`
 }
 
 // NodeUpdateSummary The node's current update job, if any (§13.12).
 type NodeUpdateSummary struct {
 	// BatchId Null for a fleet-default sync job that is not part of a batch (§13.1 step 5).
-	BatchId        *openapi_types.UUID `json:"batch_id"`
-	Generation     decstr.U64          `json:"generation"`
-	JobId          openapi_types.UUID  `json:"job_id"`
-	LastErrorCode  *ErrorCode          `json:"last_error_code"`
-	LastObservedAt *time.Time          `json:"last_observed_at"`
-	LastResultAt   *time.Time          `json:"last_result_at"`
+	BatchId        nullable.Nullable[openapi_types.UUID] `json:"batch_id"`
+	Generation     decstr.U64                            `json:"generation"`
+	JobId          openapi_types.UUID                    `json:"job_id"`
+	LastErrorCode  nullable.Nullable[ErrorCode]          `json:"last_error_code"`
+	LastObservedAt nullable.Nullable[time.Time]          `json:"last_observed_at"`
+	LastResultAt   nullable.Nullable[time.Time]          `json:"last_result_at"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
@@ -3570,31 +3571,31 @@ type ObservationAcceptedAccepted bool
 // ObservationReport Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at.
 type ObservationReport struct {
 	// AgentVersion Exact pinned component version (never `latest`).
-	AgentVersion            ComponentVersion `json:"agent_version"`
-	AppliedBindingRevision  *decstr.U64      `json:"applied_binding_revision"`
-	AppliedConfigGeneration *decstr.U64      `json:"applied_config_generation"`
-	AppliedPolicyRefs       *PolicyRefs      `json:"applied_policy_refs"`
+	AgentVersion            ComponentVersion              `json:"agent_version"`
+	AppliedBindingRevision  nullable.Nullable[decstr.U64] `json:"applied_binding_revision"`
+	AppliedConfigGeneration nullable.Nullable[decstr.U64] `json:"applied_config_generation"`
+	AppliedPolicyRefs       nullable.Nullable[PolicyRefs] `json:"applied_policy_refs"`
 
 	// BootId Kernel boot ID.
-	BootId           openapi_types.UUID  `json:"boot_id"`
-	Checks           []NodeCheck         `json:"checks"`
-	CurrentReleaseId *openapi_types.UUID `json:"current_release_id"`
+	BootId           openapi_types.UUID                    `json:"boot_id"`
+	Checks           []NodeCheck                           `json:"checks"`
+	CurrentReleaseId nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
 
 	// DataHealth Result of real data-path probes (§5).
-	DataHealth             DataHealth              `json:"data_health"`
-	Errors                 []NodeError             `json:"errors"`
-	ForwardingBlockReasons []ForwardingBlockReason `json:"forwarding_block_reasons"`
-	LastGoodReleaseId      *openapi_types.UUID     `json:"last_good_release_id"`
+	DataHealth             DataHealth                            `json:"data_health"`
+	Errors                 []NodeError                           `json:"errors"`
+	ForwardingBlockReasons []ForwardingBlockReason               `json:"forwarding_block_reasons"`
+	LastGoodReleaseId      nullable.Nullable[openapi_types.UUID] `json:"last_good_release_id"`
 	Lease                  struct {
-		ExpiresAt *time.Time          `json:"expires_at"`
-		LeaseId   *openapi_types.UUID `json:"lease_id"`
+		ExpiresAt nullable.Nullable[time.Time]          `json:"expires_at"`
+		LeaseId   nullable.Nullable[openapi_types.UUID] `json:"lease_id"`
 	} `json:"lease"`
 	MemberForwardingEnabled bool `json:"member_forwarding_enabled"`
 	Netbird                 struct {
 		// Backend Actual forwarding backend; unverified userspace paths never claim valid metering (§10.3).
 		Backend ObservationReportNetbirdBackend `json:"backend"`
-		PeerId  *string                         `json:"peer_id"`
-		Version *string                         `json:"version"`
+		PeerId  nullable.Nullable[string]       `json:"peer_id"`
+		Version nullable.Nullable[string]       `json:"version"`
 	} `json:"netbird"`
 	NodeId            openapi_types.UUID `json:"node_id"`
 	NodeIncarnationId openapi_types.UUID `json:"node_incarnation_id"`
@@ -3609,10 +3610,10 @@ type ObservationReport struct {
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
 	SafetyStatus SafetyStatus `json:"safety_status"`
 	Update       struct {
-		Generation *decstr.U64         `json:"generation"`
-		JobId      *openapi_types.UUID `json:"job_id"`
-		Stage      *UpdateStage        `json:"stage"`
-		State      *UpdateJobState     `json:"state"`
+		Generation nullable.Nullable[decstr.U64]         `json:"generation"`
+		JobId      nullable.Nullable[openapi_types.UUID] `json:"job_id"`
+		Stage      nullable.Nullable[UpdateStage]        `json:"stage"`
+		State      nullable.Nullable[UpdateJobState]     `json:"state"`
 	} `json:"update"`
 
 	// Usage Local usage stream status (§10.5, §10.6, §10.8). blocked_seq is the lowest sequence the node cannot get acknowledged.
@@ -3626,14 +3627,14 @@ type ObservationReportNetbirdBackend string
 // evidence for every required step. Desired and observed generations are
 // separate fields.
 type Operation struct {
-	CompletedAt *time.Time `json:"completed_at"`
-	CreatedAt   time.Time  `json:"created_at"`
+	CompletedAt nullable.Nullable[time.Time] `json:"completed_at"`
+	CreatedAt   time.Time                    `json:"created_at"`
 
 	// DesiredGeneration Generation the operation must reach, when applicable.
-	DesiredGeneration *decstr.U64 `json:"desired_generation"`
+	DesiredGeneration nullable.Nullable[decstr.U64] `json:"desired_generation"`
 
 	// Error Final error of a failed or partially succeeded operation.
-	Error *struct {
+	Error nullable.Nullable[struct {
 		// Code Stable error codes (§13.11, §14.6 and domain codes). The HTTP status and
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
@@ -3641,19 +3642,19 @@ type Operation struct {
 		// (update results, observations).
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
-	} `json:"error"`
+	}] `json:"error"`
 	Kind OperationKind `json:"kind"`
 
 	// ObservedGeneration Highest generation confirmed by observation so far.
-	ObservedGeneration *decstr.U64        `json:"observed_generation"`
-	OperationId        openapi_types.UUID `json:"operation_id"`
+	ObservedGeneration nullable.Nullable[decstr.U64] `json:"observed_generation"`
+	OperationId        openapi_types.UUID            `json:"operation_id"`
 
 	// RequestId Request that created the operation.
 	RequestId openapi_types.UUID `json:"request_id"`
 	Resource  ResourceRef        `json:"resource"`
 
 	// ResourceVersion Resource version written with the intent, when the target is a versioned resource.
-	ResourceVersion *decstr.U64 `json:"resource_version"`
+	ResourceVersion nullable.Nullable[decstr.U64] `json:"resource_version"`
 
 	// Status Generic operation status (§14.5). Update jobs use UpdateJobState.
 	Status    OperationStatus `json:"status"`
@@ -3669,14 +3670,14 @@ type OperationStatus string
 
 // OperationStep defines model for OperationStep.
 type OperationStep struct {
-	ErrorCode *ErrorCode `json:"error_code"`
-	Message   *string    `json:"message"`
+	ErrorCode nullable.Nullable[ErrorCode] `json:"error_code"`
+	Message   nullable.Nullable[string]    `json:"message"`
 
 	// Name Step name, for example `agent_policy`, `netbird_route_readback`, `data_path_probe`.
 	Name string `json:"name"`
 
 	// ObservedAt When the step's current status was observed (read-back evidence).
-	ObservedAt *time.Time `json:"observed_at"`
+	ObservedAt nullable.Nullable[time.Time] `json:"observed_at"`
 
 	// Required Whether success of the operation requires this step.
 	Required bool `json:"required"`
@@ -3712,7 +3713,7 @@ type PlanPayload struct {
 	Price             PlanPrice          `json:"price"`
 
 	// RateLimit plan_rate of §11.3 per member and exit; null means the plan adds no rate limit beyond fair use and node caps.
-	RateLimit *RatePair `json:"rate_limit"`
+	RateLimit nullable.Nullable[RatePair] `json:"rate_limit"`
 }
 
 // PlanPolicyRevision defines model for PlanPolicyRevision.
@@ -3807,11 +3808,11 @@ type PolicyActivateRequest struct {
 // The ETag for activation is `"<resource_version>"`.
 type PolicyDefinition struct {
 	// ActiveRevision One immutable policy revision; `type` selects the payload schema.
-	ActiveRevision   *PolicyRevision     `json:"active_revision,omitempty"`
-	ActiveRevisionId *openapi_types.UUID `json:"active_revision_id"`
-	Code             string              `json:"code"`
-	CreatedAt        time.Time           `json:"created_at"`
-	DefinitionId     openapi_types.UUID  `json:"definition_id"`
+	ActiveRevision   *PolicyRevision                       `json:"active_revision,omitempty"`
+	ActiveRevisionId nullable.Nullable[openapi_types.UUID] `json:"active_revision_id"`
+	Code             string                                `json:"code"`
+	CreatedAt        time.Time                             `json:"created_at"`
+	DefinitionId     openapi_types.UUID                    `json:"definition_id"`
 
 	// Generation Incremented on every activation (§2 policy generation).
 	Generation decstr.U64 `json:"generation"`
@@ -3830,8 +3831,8 @@ type PolicyDefinition struct {
 
 // PolicyDefinitionList defines model for PolicyDefinitionList.
 type PolicyDefinitionList struct {
-	Items      []PolicyDefinition `json:"items"`
-	NextCursor *string            `json:"next_cursor"`
+	Items      []PolicyDefinition        `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // PolicyRefs defines model for PolicyRefs.
@@ -3867,8 +3868,8 @@ type PolicyRevisionSummary struct {
 // PolicyType Versioned policy types of the generic policies API (§14.2).
 type PolicyType string
 
-// ProviderWebhookPayload Provider-defined JSON body. Verified and stored byte for byte; not constrained by this contract.
-type ProviderWebhookPayload map[string]interface{}
+// ProviderWebhookPayload Provider-defined JSON body. Handlers must verify r.Body before any parse; preserve the original bytes for signature verification and the inbox. Never verify a remarshal of this type.
+type ProviderWebhookPayload = json.RawMessage
 
 // ProvisioningState Whether local configuration is complete (§5).
 type ProvisioningState string
@@ -3918,9 +3919,9 @@ type Release struct {
 	SigningKeyIds  []string `json:"signing_key_ids"`
 
 	// SupportState From the active release_support policy.
-	SupportState      ReleaseSupportState      `json:"support_state"`
-	VerificationError *ErrorCode               `json:"verification_error"`
-	VerificationState ReleaseVerificationState `json:"verification_state"`
+	SupportState      ReleaseSupportState          `json:"support_state"`
+	VerificationError nullable.Nullable[ErrorCode] `json:"verification_error"`
+	VerificationState ReleaseVerificationState     `json:"verification_state"`
 }
 
 // ReleaseSupportState From the active release_support policy.
@@ -3932,9 +3933,9 @@ type ReleaseVerificationState string
 // ReleaseList defines model for ReleaseList.
 type ReleaseList struct {
 	// Fleet Fleet target and serving policy (§13.2, §15.4 fleet_config). Target version and minimum serving set are separate (UPD04).
-	Fleet      FleetReleaseState `json:"fleet"`
-	Items      []Release         `json:"items"`
-	NextCursor *string           `json:"next_cursor"`
+	Fleet      FleetReleaseState         `json:"fleet"`
+	Items      []Release                 `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
 // ReleaseManifest Immutable manifest of one release (§13.3). The manifest, packages and
@@ -4177,16 +4178,16 @@ type SignatureAlgorithm string
 
 // StateDrift defines model for StateDrift.
 type StateDrift struct {
-	Desired  *string `json:"desired"`
-	Field    string  `json:"field"`
-	Observed *string `json:"observed"`
+	Desired  nullable.Nullable[string] `json:"desired"`
+	Field    string                    `json:"field"`
+	Observed nullable.Nullable[string] `json:"observed"`
 }
 
 // SubscriptionSummary Provider subscription snapshot (§9.3). provider_status is the provider's opaque value.
 type SubscriptionSummary struct {
 	CancelAtPeriodEnd    bool                                    `json:"cancel_at_period_end"`
-	LastReconciledAt     *time.Time                              `json:"last_reconciled_at"`
-	PaidThrough          *time.Time                              `json:"paid_through"`
+	LastReconciledAt     nullable.Nullable[time.Time]            `json:"last_reconciled_at"`
+	PaidThrough          nullable.Nullable[time.Time]            `json:"paid_through"`
 	Provider             string                                  `json:"provider"`
 	ProviderStatus       string                                  `json:"provider_status"`
 	ReconciliationStatus SubscriptionSummaryReconciliationStatus `json:"reconciliation_status"`
@@ -4199,7 +4200,7 @@ type SubscriptionSummaryReconciliationStatus string
 // whose commercial use is not confirmed must not be placed in a production
 // profile. Fetch times and results are observations stored separately.
 type ThreatFeedPayload struct {
-	Attribution *string                       `json:"attribution"`
+	Attribution nullable.Nullable[string]     `json:"attribution"`
 	Categories  []ThreatFeedPayloadCategories `json:"categories"`
 
 	// CommercialUseBasis Why commercial use and redistribution are allowed.
@@ -4283,13 +4284,13 @@ type UpdateBatch struct {
 	BatchId openapi_types.UUID `json:"batch_id"`
 
 	// Counts Mutually exclusive counts; their sum equals target_count (§13.12). Success is succeeded plus already_current.
-	Counts      UpdateBatchCounts  `json:"counts"`
-	CreatedAt   time.Time          `json:"created_at"`
-	CreatedBy   openapi_types.UUID `json:"created_by"`
-	NextCursor  *string            `json:"next_cursor"`
-	OperationId openapi_types.UUID `json:"operation_id"`
-	Reason      string             `json:"reason"`
-	ReleaseId   openapi_types.UUID `json:"release_id"`
+	Counts      UpdateBatchCounts         `json:"counts"`
+	CreatedAt   time.Time                 `json:"created_at"`
+	CreatedBy   openapi_types.UUID        `json:"created_by"`
+	NextCursor  nullable.Nullable[string] `json:"next_cursor"`
+	OperationId openapi_types.UUID        `json:"operation_id"`
+	Reason      string                    `json:"reason"`
+	ReleaseId   openapi_types.UUID        `json:"release_id"`
 
 	// RequiresServiceRestart Shown at submission so admins know nodes may restart together (§13.12).
 	RequiresServiceRestart bool `json:"requires_service_restart"`
@@ -4392,7 +4393,7 @@ type UpdateIntent struct {
 	AuthorizationValidUntil time.Time `json:"authorization_valid_until"`
 
 	// BatchId Null for a fleet-default sync job outside any batch (§13.1 step 5).
-	BatchId *openapi_types.UUID `json:"batch_id"`
+	BatchId nullable.Nullable[openapi_types.UUID] `json:"batch_id"`
 
 	// Generation update_generation; the agent rejects jobs older than the last accepted generation.
 	Generation    decstr.U64         `json:"generation"`
@@ -4406,9 +4407,9 @@ type UpdateIntent struct {
 	NodeId         openapi_types.UUID `json:"node_id"`
 
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
-	PublicationIntent PublicationIntent   `json:"publication_intent"`
-	ReleaseId         openapi_types.UUID  `json:"release_id"`
-	TargetId          *openapi_types.UUID `json:"target_id"`
+	PublicationIntent PublicationIntent                     `json:"publication_intent"`
+	ReleaseId         openapi_types.UUID                    `json:"release_id"`
+	TargetId          nullable.Nullable[openapi_types.UUID] `json:"target_id"`
 }
 
 // UpdateJobState State of one update job (§5, §13.2, §13.8). The §5 states plus
@@ -4420,13 +4421,13 @@ type UpdateJobState string
 
 // UpdateJobSummary defines model for UpdateJobSummary.
 type UpdateJobSummary struct {
-	Attempt          int                `json:"attempt"`
-	ErrorCode        *ErrorCode         `json:"error_code"`
-	FinishedAt       *time.Time         `json:"finished_at"`
-	JobId            openapi_types.UUID `json:"job_id"`
-	RecoveryRequired bool               `json:"recovery_required"`
-	Stage            *UpdateStage       `json:"stage"`
-	StartedAt        *time.Time         `json:"started_at"`
+	Attempt          int                            `json:"attempt"`
+	ErrorCode        nullable.Nullable[ErrorCode]   `json:"error_code"`
+	FinishedAt       nullable.Nullable[time.Time]   `json:"finished_at"`
+	JobId            openapi_types.UUID             `json:"job_id"`
+	RecoveryRequired nullable.Required[bool]        `json:"recovery_required"`
+	Stage            nullable.Nullable[UpdateStage] `json:"stage"`
+	StartedAt        nullable.Nullable[time.Time]   `json:"started_at"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
@@ -4443,40 +4444,40 @@ type UpdateJobSummary struct {
 // target as not achieved together with the actual current release.
 // recovery_required=true means member forwarding stays off until recovery.
 type UpdateResult struct {
-	Attempt int                 `json:"attempt"`
-	BatchId *openapi_types.UUID `json:"batch_id"`
-	BootId  openapi_types.UUID  `json:"boot_id"`
+	Attempt int                                   `json:"attempt"`
+	BatchId nullable.Nullable[openapi_types.UUID] `json:"batch_id"`
+	BootId  openapi_types.UUID                    `json:"boot_id"`
 
 	// CurrentReleaseId Release actually active after this step, from local verification.
-	CurrentReleaseId        *openapi_types.UUID `json:"current_release_id"`
-	ErrorCode               *ErrorCode          `json:"error_code"`
-	FinishedAt              *time.Time          `json:"finished_at"`
-	Generation              decstr.U64          `json:"generation"`
-	Health                  *UpdateHealth       `json:"health"`
-	IncarnationId           openapi_types.UUID  `json:"incarnation_id"`
-	JobId                   openapi_types.UUID  `json:"job_id"`
-	ManifestSha256          string              `json:"manifest_sha256"`
-	MemberForwardingEnabled bool                `json:"member_forwarding_enabled"`
-	NodeId                  openapi_types.UUID  `json:"node_id"`
-	PayloadHash             string              `json:"payload_hash"`
-	PolicyGeneration        decstr.U64          `json:"policy_generation"`
-	PreviousReleaseId       *openapi_types.UUID `json:"previous_release_id"`
+	CurrentReleaseId        nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
+	ErrorCode               nullable.Nullable[ErrorCode]          `json:"error_code"`
+	FinishedAt              nullable.Nullable[time.Time]          `json:"finished_at"`
+	Generation              decstr.U64                            `json:"generation"`
+	Health                  nullable.Nullable[UpdateHealth]       `json:"health"`
+	IncarnationId           openapi_types.UUID                    `json:"incarnation_id"`
+	JobId                   openapi_types.UUID                    `json:"job_id"`
+	ManifestSha256          string                                `json:"manifest_sha256"`
+	MemberForwardingEnabled bool                                  `json:"member_forwarding_enabled"`
+	NodeId                  openapi_types.UUID                    `json:"node_id"`
+	PayloadHash             string                                `json:"payload_hash"`
+	PolicyGeneration        decstr.U64                            `json:"policy_generation"`
+	PreviousReleaseId       nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
 
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
-	PublicationIntent  PublicationIntent  `json:"publication_intent"`
-	RecoveryRequired   bool               `json:"recovery_required"`
-	RequestedReleaseId openapi_types.UUID `json:"requested_release_id"`
-	ResultId           openapi_types.UUID `json:"result_id"`
-	Stage              *UpdateStage       `json:"stage"`
-	StartedAt          time.Time          `json:"started_at"`
+	PublicationIntent  PublicationIntent              `json:"publication_intent"`
+	RecoveryRequired   nullable.Required[bool]        `json:"recovery_required"`
+	RequestedReleaseId openapi_types.UUID             `json:"requested_release_id"`
+	ResultId           openapi_types.UUID             `json:"result_id"`
+	Stage              nullable.Nullable[UpdateStage] `json:"stage"`
+	StartedAt          time.Time                      `json:"started_at"`
 
 	// State States an agent may report in an update result (§13.10.3). Terminal:
 	// succeeded, already_current, failed, rolled_back, superseded. `rolled_back`
 	// never counts as success of the target (§13.2).
-	State              UpdateResultState      `json:"state"`
-	StateSchemaVersion int                    `json:"state_schema_version"`
-	TargetId           *openapi_types.UUID    `json:"target_id"`
-	UsageCheckpoint    *UpdateUsageCheckpoint `json:"usage_checkpoint"`
+	State              UpdateResultState                        `json:"state"`
+	StateSchemaVersion int                                      `json:"state_schema_version"`
+	TargetId           nullable.Nullable[openapi_types.UUID]    `json:"target_id"`
+	UsageCheckpoint    nullable.Nullable[UpdateUsageCheckpoint] `json:"usage_checkpoint"`
 }
 
 // UpdateResultAck Acknowledgement after the inbox, history, generation-conditional observed
@@ -4502,22 +4503,22 @@ type UpdateStage string
 
 // UpdateTarget One node of the batch snapshot (§15.4 update_targets). incarnation_at_snapshot is immutable; execution_incarnation_id binds once.
 type UpdateTarget struct {
-	Attempts   int               `json:"attempts"`
-	CurrentJob *UpdateJobSummary `json:"current_job"`
+	Attempts   int                                 `json:"attempts"`
+	CurrentJob nullable.Nullable[UpdateJobSummary] `json:"current_job"`
 
 	// CurrentReleaseId Last observed actual release (not the requested one).
-	CurrentReleaseId       *openapi_types.UUID `json:"current_release_id"`
-	ExecutionIncarnationId *openapi_types.UUID `json:"execution_incarnation_id"`
-	Generation             decstr.U64          `json:"generation"`
+	CurrentReleaseId       nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
+	ExecutionIncarnationId nullable.Nullable[openapi_types.UUID] `json:"execution_incarnation_id"`
+	Generation             decstr.U64                            `json:"generation"`
 
 	// IncarnationAtSnapshot Null for nodes that had not finished enrollment at snapshot time.
-	IncarnationAtSnapshot *openapi_types.UUID `json:"incarnation_at_snapshot"`
-	LastObservedAt        *time.Time          `json:"last_observed_at"`
-	LastResultAt          *time.Time          `json:"last_result_at"`
-	NodeId                openapi_types.UUID  `json:"node_id"`
-	NodeName              *string             `json:"node_name"`
-	OnlineAtSnapshot      bool                `json:"online_at_snapshot"`
-	Retryable             bool                `json:"retryable"`
+	IncarnationAtSnapshot nullable.Nullable[openapi_types.UUID] `json:"incarnation_at_snapshot"`
+	LastObservedAt        nullable.Nullable[time.Time]          `json:"last_observed_at"`
+	LastResultAt          nullable.Nullable[time.Time]          `json:"last_result_at"`
+	NodeId                openapi_types.UUID                    `json:"node_id"`
+	NodeName              nullable.Nullable[string]             `json:"node_name"`
+	OnlineAtSnapshot      bool                                  `json:"online_at_snapshot"`
+	Retryable             bool                                  `json:"retryable"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
@@ -4530,10 +4531,10 @@ type UpdateTarget struct {
 
 // UpdateUsageCheckpoint Usage stream state around the switch (§13.6 steps 8 and 11). event_seq continues across meter epochs.
 type UpdateUsageCheckpoint struct {
-	CentralAckedThrough decstr.U64          `json:"central_acked_through"`
-	ClosedMeterEpochId  *openapi_types.UUID `json:"closed_meter_epoch_id"`
-	LastDurableEventSeq decstr.U64          `json:"last_durable_event_seq"`
-	NewMeterEpochId     *openapi_types.UUID `json:"new_meter_epoch_id"`
+	CentralAckedThrough decstr.U64                            `json:"central_acked_through"`
+	ClosedMeterEpochId  nullable.Nullable[openapi_types.UUID] `json:"closed_meter_epoch_id"`
+	LastDurableEventSeq decstr.U64                            `json:"last_durable_event_seq"`
+	NewMeterEpochId     nullable.Nullable[openapi_types.UUID] `json:"new_meter_epoch_id"`
 }
 
 // UsageBatchRequest A batch of usage events of one incarnation stream (§10.5). Batch limits are central parameters; the contract maximum is 1000 events.
@@ -4541,7 +4542,7 @@ type UsageBatchRequest struct {
 	Events []UsageEvent `json:"events"`
 
 	// LedgerEpoch Ledger epoch the node is synchronized with; null before the first checkpoint.
-	LedgerEpoch *openapi_types.UUID `json:"ledger_epoch"`
+	LedgerEpoch nullable.Nullable[openapi_types.UUID] `json:"ledger_epoch"`
 
 	// NodeId Must equal the certificate identity; never overrides it.
 	NodeId            openapi_types.UUID        `json:"node_id"`
@@ -4556,13 +4557,13 @@ type UsageBatchRequest struct {
 // highest_contiguous_seq that is in conflict or rejected and therefore stops
 // ACK progress, or null.
 type UsageBatchResult struct {
-	BlockedSeq           *decstr.U64        `json:"blocked_seq"`
-	HighestContiguousSeq decstr.U64         `json:"highest_contiguous_seq"`
-	LedgerEpoch          openapi_types.UUID `json:"ledger_epoch"`
-	NodeId               openapi_types.UUID `json:"node_id"`
-	NodeIncarnationId    openapi_types.UUID `json:"node_incarnation_id"`
-	ReceivedAt           time.Time          `json:"received_at"`
-	Results              []UsageEventResult `json:"results"`
+	BlockedSeq           nullable.Nullable[decstr.U64] `json:"blocked_seq"`
+	HighestContiguousSeq decstr.U64                    `json:"highest_contiguous_seq"`
+	LedgerEpoch          openapi_types.UUID            `json:"ledger_epoch"`
+	NodeId               openapi_types.UUID            `json:"node_id"`
+	NodeIncarnationId    openapi_types.UUID            `json:"node_incarnation_id"`
+	ReceivedAt           time.Time                     `json:"received_at"`
+	Results              []UsageEventResult            `json:"results"`
 }
 
 // UsageCheckpoint Central ledger watermark for one node incarnation stream (§17.3). Computed
@@ -4575,12 +4576,12 @@ type UsageCheckpoint struct {
 	IssuedAt             time.Time  `json:"issued_at"`
 
 	// LedgerEpoch Central data generation; not a node incarnation or meter epoch.
-	LedgerEpoch       openapi_types.UUID  `json:"ledger_epoch"`
-	MaxSeenSeq        decstr.U64          `json:"max_seen_seq"`
-	MissingRanges     []SeqRange          `json:"missing_ranges"`
-	NodeId            openapi_types.UUID  `json:"node_id"`
-	NodeIncarnationId openapi_types.UUID  `json:"node_incarnation_id"`
-	RecoveryRecordId  *openapi_types.UUID `json:"recovery_record_id"`
+	LedgerEpoch       openapi_types.UUID                    `json:"ledger_epoch"`
+	MaxSeenSeq        decstr.U64                            `json:"max_seen_seq"`
+	MissingRanges     []SeqRange                            `json:"missing_ranges"`
+	NodeId            openapi_types.UUID                    `json:"node_id"`
+	NodeIncarnationId openapi_types.UUID                    `json:"node_incarnation_id"`
+	RecoveryRecordId  nullable.Nullable[openapi_types.UUID] `json:"recovery_record_id"`
 }
 
 // UsageCheckpointEnvelope Signed usage checkpoint (§17.3), signed with a `recovery` purpose key. The
@@ -4648,7 +4649,7 @@ type UsageEventSchemaVersion int
 // UsageEventResult defines model for UsageEventResult.
 type UsageEventResult struct {
 	// Error Present for conflict (USAGE_EVENT_CONFLICT) and rejected (VALIDATION_FAILED, METER_PATH_INVALID, ...).
-	Error *struct {
+	Error nullable.Nullable[struct {
 		// Code Stable error codes (§13.11, §14.6 and domain codes). The HTTP status and
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
@@ -4657,7 +4658,7 @@ type UsageEventResult struct {
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
 		Message string       `json:"message"`
-	} `json:"error"`
+	}] `json:"error"`
 	EventSeq decstr.U64 `json:"event_seq"`
 
 	// Status Per-event outcome (§10.6). accepted and duplicate are persisted; conflict and rejected are not counted.
@@ -4669,8 +4670,8 @@ type UsageEventResultStatus string
 
 // UsageGap Gap record (§10.7). Unknown bytes are never reported as zero-complete or estimated into official usage.
 type UsageGap struct {
-	LastCheckpointAt *time.Time     `json:"last_checkpoint_at"`
-	Reason           UsageGapReason `json:"reason"`
+	LastCheckpointAt nullable.Nullable[time.Time] `json:"last_checkpoint_at"`
+	Reason           UsageGapReason               `json:"reason"`
 }
 
 // UsageGapReason defines model for UsageGap.Reason.
@@ -4679,8 +4680,8 @@ type UsageGapReason string
 // UsageOutboxStatus Local usage stream status (§10.5, §10.6, §10.8). blocked_seq is the lowest sequence the node cannot get acknowledged.
 type UsageOutboxStatus struct {
 	// AckedArchiveBytes Replay archive size, budgeted separately from the unacked backlog (§10.8).
-	AckedArchiveBytes decstr.U64  `json:"acked_archive_bytes"`
-	BlockedSeq        *decstr.U64 `json:"blocked_seq"`
+	AckedArchiveBytes decstr.U64                    `json:"acked_archive_bytes"`
+	BlockedSeq        nullable.Nullable[decstr.U64] `json:"blocked_seq"`
 
 	// CentralAckedThrough Highest contiguous ACK received in ledger_epoch; "0" when none.
 	CentralAckedThrough decstr.U64 `json:"central_acked_through"`
@@ -4689,10 +4690,10 @@ type UsageOutboxStatus struct {
 	LastDurableEventSeq decstr.U64 `json:"last_durable_event_seq"`
 
 	// LedgerEpoch Central ledger epoch the node is synchronized with.
-	LedgerEpoch       *openapi_types.UUID `json:"ledger_epoch"`
-	MeterEpochId      *openapi_types.UUID `json:"meter_epoch_id"`
-	OldestUnackedAt   *time.Time          `json:"oldest_unacked_at"`
-	UnackedEventCount int                 `json:"unacked_event_count"`
+	LedgerEpoch       nullable.Nullable[openapi_types.UUID] `json:"ledger_epoch"`
+	MeterEpochId      nullable.Nullable[openapi_types.UUID] `json:"meter_epoch_id"`
+	OldestUnackedAt   nullable.Nullable[time.Time]          `json:"oldest_unacked_at"`
+	UnackedEventCount int                                   `json:"unacked_event_count"`
 
 	// UnackedPayloadBytes Sum of canonical payload bytes of unacknowledged events (§10.8).
 	UnackedPayloadBytes decstr.U64 `json:"unacked_payload_bytes"`
@@ -5102,6 +5103,14 @@ type SubmitObservationParams struct {
 
 // SubmitUpdateResultParams defines parameters for SubmitUpdateResult.
 type SubmitUpdateResultParams struct {
+	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// (enrollment_request_id, renewal_request_id, report_id, result_id,
+	// event_seq). When present it must be a UUID and follows §14.5.
+	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
+}
+
+// SubmitUsageBatchParams defines parameters for SubmitUsageBatch.
+type SubmitUsageBatchParams struct {
 	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
 	// event_seq). When present it must be a UUID and follows §14.5.

@@ -123,7 +123,7 @@ var specs = []Spec{
 	{DownloadTimeout, http.StatusGatewayTimeout, true, "§13.11", true, "Artifact download timed out; bounded backoff retry."},
 	{StoreUnavailable, http.StatusServiceUnavailable, true, "§13.11", true, "Release store unavailable; bounded backoff retry."},
 	{UpdateBusy, http.StatusConflict, true, "§13.11", true, "Local update lock is held by another process."},
-	{AuthorizationExpired, http.StatusConflict, true, "§13.11", true, "Update authorization expired before switching; fetch a fresh authorized job."},
+	{AuthorizationExpired, http.StatusConflict, false, "§13.11", true, "Update authorization expired before switching; fetch a fresh authorized job."},
 	{StaleGeneration, http.StatusConflict, false, "§13.11", false, "Job generation is older than the current desired generation; the job is superseded."},
 	{IdentityRevoked, http.StatusForbidden, false, "§13.11", false, "Node identity (certificate or incarnation) is revoked; retrying cannot restore it."},
 	{IncarnationMismatch, http.StatusForbidden, false, "§13.11", false, "Body node_id/incarnation does not match the authenticated certificate binding (§14.4)."},
