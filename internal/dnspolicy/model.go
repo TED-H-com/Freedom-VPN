@@ -91,23 +91,23 @@ type DomainRuleSetPayload struct {
 
 // ThreatFeedPayload models the §14.2 threat_feed typed policy payload.
 type ThreatFeedPayload struct {
-	SchemaVersion     int           `json:"schema_version"`
-	SourceID          string        `json:"source_id"`
-	Provider          string        `json:"provider"`
-	Version           string        `json:"version"`
-	License           string        `json:"license"`
-	LicenseURL        string        `json:"license_url"`
-	LicenseStatus     LicenseStatus `json:"license_status"`
-	PermittedUse      string        `json:"permitted_use"`
-	DistributionNotes string        `json:"distribution_notes"`
-	AttributionNotes  string        `json:"attribution_notes"`
-	URL               string        `json:"url"`
-	Format            SourceFormat  `json:"format"`
+	SchemaVersion     int            `json:"schema_version"`
+	SourceID          string         `json:"source_id"`
+	Provider          string         `json:"provider"`
+	Version           string         `json:"version"`
+	License           string         `json:"license"`
+	LicenseURL        string         `json:"license_url"`
+	LicenseStatus     LicenseStatus  `json:"license_status"`
+	PermittedUse      string         `json:"permitted_use"`
+	DistributionNotes string         `json:"distribution_notes"`
+	AttributionNotes  string         `json:"attribution_notes"`
+	URL               string         `json:"url"`
+	Format            SourceFormat   `json:"format"`
 	Category          SourceCategory `json:"category"`
-	ContentSHA256     string        `json:"content_sha256"`
-	ValidFrom         time.Time     `json:"valid_from"`
-	ValidUntil        time.Time     `json:"valid_until"`
-	Entries           []SourceEntry `json:"entries"`
+	ContentSHA256     string         `json:"content_sha256"`
+	ValidFrom         time.Time      `json:"valid_from"`
+	ValidUntil        time.Time      `json:"valid_until"`
+	Entries           []SourceEntry  `json:"entries"`
 }
 
 // Profile is the in-memory representation of a DNS policy profile, its admin

@@ -309,15 +309,15 @@ func TestDNS01_AT22_SourceParsers(t *testing.T) {
 			"||Malware-One.Example.com^",
 			"||phishing-two.test.^",
 			"||аpple.example.com^",
-			"@@||allowed-exception.example.com^",     // skipped unsupported (feeds cannot inject allows)
+			"@@||allowed-exception.example.com^",         // skipped unsupported (feeds cannot inject allows)
 			"||forced-escalation.example.com^$important", // skipped unsupported (feeds cannot inject $important)
-			"||path-rule.example.com/login^",         // skipped unsupported
-			"||wild*.example.com^",                   // skipped unsupported
-			"example.com##.banner-ad",                // skipped unsupported cosmetic
-			"/regex-rule/",                           // skipped unsupported
-			"||^",                                    // parse error (empty domain)
-			"||bad..domain.example.com^",             // parse error (empty label)
-			"random garbage line",                    // parse error
+			"||path-rule.example.com/login^",             // skipped unsupported
+			"||wild*.example.com^",                       // skipped unsupported
+			"example.com##.banner-ad",                    // skipped unsupported cosmetic
+			"/regex-rule/",                               // skipped unsupported
+			"||^",                                        // parse error (empty domain)
+			"||bad..domain.example.com^",                 // parse error (empty label)
+			"random garbage line",                        // parse error
 		}, "\n")
 
 		res, err := ParseAdBlockDomainSubset(strings.NewReader(input), DefaultParseOptions())

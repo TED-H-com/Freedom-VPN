@@ -74,6 +74,7 @@ type AppliedResolverState struct {
 	BlockingMode      string   `json:"blocking_mode"`
 	BlockedTTL        uint32   `json:"blocked_response_ttl"`
 	UpstreamDNS       []string `json:"upstream_dns"`
+	BootstrapDNS      []string `json:"bootstrap_dns"`
 	FallbackDNS       []string `json:"fallback_dns"`
 	AllowedClients    []string `json:"allowed_clients"`
 }
@@ -81,9 +82,9 @@ type AppliedResolverState struct {
 // CheckHostResponse models the JSON response from AdGuard Home's
 // GET /control/filtering/check_host endpoint.
 type CheckHostResponse struct {
-	Reason  string `json:"reason"`
-	Rule    string `json:"rule"`
-	Rules   []struct {
+	Reason string `json:"reason"`
+	Rule   string `json:"rule"`
+	Rules  []struct {
 		Text         string `json:"text"`
 		FilterListID int    `json:"filter_list_id"`
 	} `json:"rules"`
@@ -127,10 +128,10 @@ type MultiPublishReport struct {
 }
 
 type resolverSnapshot struct {
-	revision   string
-	sha256     string
-	userRules  []string
-	settings   AdGuardSettings
+	revision  string
+	sha256    string
+	userRules []string
+	settings  AdGuardSettings
 }
 
 // AdGuardAdapter manages policy staging, syntax checking, atomic application,
@@ -217,6 +218,7 @@ func (a *AdGuardAdapter) GetAppliedState(ctx context.Context) (*AppliedResolverS
 
 	var dnsInfo struct {
 		UpstreamDNS        []string `json:"upstream_dns"`
+		BootstrapDNS       []string `json:"bootstrap_dns"`
 		FallbackDNS        []string `json:"fallback_dns"`
 		BlockingMode       string   `json:"blocking_mode"`
 		BlockedResponseTTL uint32   `json:"blocked_response_ttl"`
@@ -227,8 +229,8 @@ func (a *AdGuardAdapter) GetAppliedState(ctx context.Context) (*AppliedResolverS
 	}
 
 	var filterStatus struct {
-		Enabled  bool     `json:"enabled"`
-		Filters  []struct {
+		Enabled bool `json:"enabled"`
+		Filters []struct {
 			ID      int    `json:"id"`
 			URL     string `json:"url"`
 			Enabled bool   `json:"enabled"`
@@ -280,6 +282,7 @@ func (a *AdGuardAdapter) GetAppliedState(ctx context.Context) (*AppliedResolverS
 		BlockingMode:      dnsInfo.BlockingMode,
 		BlockedTTL:        dnsInfo.BlockedResponseTTL,
 		UpstreamDNS:       dnsInfo.UpstreamDNS,
+		BootstrapDNS:      dnsInfo.BootstrapDNS,
 		FallbackDNS:       dnsInfo.FallbackDNS,
 		AllowedClients:    accessList.AllowedClients,
 	}
@@ -407,6 +410,7 @@ func (a *AdGuardAdapter) Publish(ctx context.Context, bundle *CompiledBundle) (*
 				BlockingMode:        currentState.BlockingMode,
 				BlockedResponseTTL:  currentState.BlockedTTL,
 				UpstreamDNS:         currentState.UpstreamDNS,
+				BootstrapDNS:        currentState.BootstrapDNS,
 				FallbackDNS:         []string{},
 				AllowedClients:      currentState.AllowedClients,
 				FilteringEnabled:    true,
@@ -433,6 +437,15 @@ func (a *AdGuardAdapter) Publish(ctx context.Context, bundle *CompiledBundle) (*
 		currentState.ProtectionEnabled &&
 		currentState.ExternalFilters == 0 &&
 		currentState.BlockingMode == bundle.Settings.BlockingMode {
+		a.mu.Lock()
+		rulesSaved := bundle.AdGuardUserRulesWithHash()
+		a.lastGood = &resolverSnapshot{
+			revision:  bundle.Revision,
+			sha256:    bundle.SHA256,
+			userRules: rulesSaved,
+			settings:  bundle.Settings,
+		}
+		a.mu.Unlock()
 		return &ResolverPublishResult{
 			ResolverID:       a.cfg.ID,
 			Success:          true,

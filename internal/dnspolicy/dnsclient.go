@@ -30,13 +30,13 @@ type DNSAnswerRecord struct {
 
 // DNSResponse represents a decoded DNS response message.
 type DNSResponse struct {
-	ID          uint16            `json:"id"`
-	RCode       dnsmessage.RCode  `json:"rcode"`
-	Truncated   bool              `json:"truncated"`
-	Answers     []DNSAnswerRecord `json:"answers"`
-	AuthorityTTL uint32           `json:"authority_ttl,omitempty"`
-	HasSOA      bool              `json:"has_soa"`
-	Resolver    string            `json:"resolver"`
+	ID           uint16            `json:"id"`
+	RCode        dnsmessage.RCode  `json:"rcode"`
+	Truncated    bool              `json:"truncated"`
+	Answers      []DNSAnswerRecord `json:"answers"`
+	AuthorityTTL uint32            `json:"authority_ttl,omitempty"`
+	HasSOA       bool              `json:"has_soa"`
+	Resolver     string            `json:"resolver"`
 }
 
 // IsNXDOMAIN reports whether the DNS response RCode is NXDOMAIN (RCodeNameError).
