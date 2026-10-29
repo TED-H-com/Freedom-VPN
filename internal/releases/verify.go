@@ -159,7 +159,7 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 			requestID = &id
 		}
 		event, e := audit.NewEvent(audit.Entry{
-			Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(SystemActorID)}, Action: "release.verify",
+			Actor: audit.SystemActor, Action: "release.verify",
 			Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, Result: result,
 			OperationID: op, RequestID: requestID,
 			After: map[string]any{"verification_state": state, "error_code": code}, Fields: []string{"verification_state", "error_code"},

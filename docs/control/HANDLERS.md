@@ -19,6 +19,13 @@ or a returned error rolls back all local effects. Command handlers without Repla
 fail closed. Replay runs after the reservation transaction commits and must read
 current persisted state under the original caller's authorization.
 
+`httpapi.CommandRecord(ctx) (db.IdempotencyRecord, bool)` returns the framework's
+exact reservation, including `ID` and `Expiry`, inside that command transaction.
+It returns false outside a new keyed command, including unkeyed Agent handlers
+and replay callbacks; `Replay` receives the completed record as its argument.
+Do not query for the reservation by principal/method/key: that omits the route
+from the scope and can select another command's record (§14.5).
+
 This worked adapter is suitable for a domain service that performs a node command
 in the caller's transaction. The service checks If-Match under a row lock, writes
 intent, creates an operation, and writes audit/outbox rows atomically:
@@ -105,7 +112,13 @@ installer secret. The framework additionally strips the token and forces the fla
 false on enrollment replays. The original token must never enter the idempotency record.
 Other replay handlers likewise re-read resources and recheck ownership. These are
 domain hooks because the framework cannot know resource semantics or reproduce a
-one-time secret safely. Do not cache serialized response bodies.
+one-time secret safely. When a domain requires a durable nonsecret first-response
+receipt (for example usage batch results), use `record, ok := httpapi.CommandRecord(ctx)`
+and require `ok`. Persist it in the command transaction, keyed by `record.ID`,
+with exactly `record.Expiry`. Replays read
+it by the passed record ID and recheck authorization; the body expires with the
+record. Never persist secret-bearing responses or extend a receipt's replay
+lifetime beyond its reservation.
 
 `httpapi.ETag(resourceVersion)` creates a strong decimal-string ETag.
 `CheckIfMatch(header, current)` returns 428 when absent and 412 with

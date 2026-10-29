@@ -1,0 +1,44 @@
+name: e2e
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 4 * * *"
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+
+jobs:
+  lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: lint and compose config
+        run: |
+          make -f mk/e2e.mk e2e-lint
+          make -f mk/e2e.mk e2e-config
+
+  stack:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: acceptance run
+        run: make -f mk/e2e.mk e2e-test
+      - name: tear down
+        if: always()
+        run: make -f mk/e2e.mk e2e-down
