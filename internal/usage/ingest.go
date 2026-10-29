@@ -859,3 +859,48 @@ func makeErrorResult(
 		}),
 	}
 }
+
+// GetStreamWatermark reads the current committed stream watermark and blocked_seq
+// for an authenticated node incarnation (used when replaying idempotent batch requests).
+func (s *Service) GetStreamWatermark(ctx context.Context, nodeIdentity NodeIdentity) (api.UsageBatchResult, error) {
+	if s.pool == nil {
+		return api.UsageBatchResult{}, apierr.New(apierr.DependencyUnavailable, "usage ledger database unavailable")
+	}
+	if err := s.checkNodeIncarnation(ctx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID); err != nil {
+		return api.UsageBatchResult{}, err
+	}
+	state, err := s.GetLedgerState(ctx)
+	if err != nil {
+		return api.UsageBatchResult{}, err
+	}
+	now := s.now()
+	var (
+		finalCP    checkpointRow
+		blockedSeq *decstr.U64
+	)
+	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		cp, err := ensureAndLockCheckpointInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, state.LedgerEpoch, now)
+		if err != nil {
+			return err
+		}
+		finalCP = cp
+		bSeq, err := computeBlockedSeqInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, cp.highestContiguous)
+		if err != nil {
+			return err
+		}
+		blockedSeq = bSeq
+		return nil
+	})
+	if err != nil {
+		return api.UsageBatchResult{}, apierr.Wrap(err, apierr.DependencyUnavailable, "usage ledger database unavailable")
+	}
+	return api.UsageBatchResult{
+		NodeId:               nodeIdentity.NodeID,
+		NodeIncarnationId:    nodeIdentity.NodeIncarnationID,
+		LedgerEpoch:          state.LedgerEpoch,
+		HighestContiguousSeq: decstr.U64(finalCP.highestContiguous),
+		BlockedSeq:           presence.FromPointer(blockedSeq),
+		Results:              []api.UsageEventResult{},
+		ReceivedAt:           finalCP.updatedAt.UTC(),
+	}, nil
+}

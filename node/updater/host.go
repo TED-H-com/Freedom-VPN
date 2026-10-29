@@ -329,9 +329,14 @@ func (s GuardSource) Current(ctx context.Context) (Work, error) {
 }
 
 // WorkFromEnvelope verifies a desired-state envelope and builds the work
-// item. Revoked releases are not in the desired-state document; the agent
-// passes the release-support revoked set separately. policy_generation in
-// the result is the desired-state config_generation.
+// item. revoked is the unsigned release-support list from the agent. A
+// present signed revoked_release_ids member, including an empty array, is
+// returned in SignedRevoked and does not replace that list. An absent
+// member leaves SignedRevoked nil so the caller keeps today's unsigned
+// behaviour. PolicyGeneration is the envelope's config_generation (D-043),
+// not the update job generation. ErrNoWork still carries that policy and
+// any signed revocations so a revoked current release can be stopped
+// without an install job.
 func WorkFromEnvelope(raw []byte, trust *envelope.TrustStore, node Node, now time.Time, revoked []uuid.UUID) (Work, error) {
 	signed, _, err := envelope.Verify(raw, trust, envelope.PurposeDesiredState, now)
 	if err != nil {
@@ -351,24 +356,33 @@ func WorkFromEnvelope(raw []byte, trust *envelope.TrustStore, node Node, now tim
 	if now.Before(ds.IssuedAt) || !now.Before(ds.ExpiresAt) {
 		return Work{}, permanent(apierr.AuthorizationExpired, "desired state")
 	}
+	if len(ds.ServingReleaseIds) == 0 {
+		return Work{}, permanent(apierr.MinimumVersionViolation, "empty serving set")
+	}
+	work := Work{
+		Serving:          append([]uuid.UUID(nil), ds.ServingReleaseIds...),
+		Revoked:          append([]uuid.UUID(nil), revoked...),
+		PolicyGeneration: ds.ConfigGeneration,
+		PolicyKnown:      true,
+	}
+	if ds.RevokedReleaseIds != nil {
+		ids := append([]uuid.UUID(nil), (*ds.RevokedReleaseIds)...)
+		work.SignedRevoked = &ids
+	}
 	// The disk reader previously treated both omitted and null update as no
 	// work. Keep that behavior; central producers must emit the required member.
 	if !ds.Update.IsSpecified() || ds.Update.IsNull() {
-		return Work{}, ErrNoWork
+		work.Intent.PublicationIntent = ds.PublicationIntent
+		work.Intent.NodeId = ds.NodeId
+		work.Intent.IncarnationId = ds.NodeIncarnationId
+		return work, ErrNoWork
 	}
 	update, _ := ds.Update.Get()
 	if update.NodeId != node.ID || update.IncarnationId != node.Incarnation {
 		return Work{}, permanent(apierr.IncarnationMismatch, "update intent")
 	}
-	if len(ds.ServingReleaseIds) == 0 {
-		return Work{}, permanent(apierr.MinimumVersionViolation, "empty serving set")
-	}
-	return Work{
-		Intent:           update,
-		Serving:          append([]uuid.UUID(nil), ds.ServingReleaseIds...),
-		Revoked:          append([]uuid.UUID(nil), revoked...),
-		PolicyGeneration: ds.ConfigGeneration,
-	}, nil
+	work.Intent = update
+	return work, nil
 }
 
 // HTTPSink posts an update result. The contract answers 202. 409 is

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -345,6 +346,14 @@ const (
 	metaPublicationIntent  = "publication_intent"
 	metaForwardingBlocked  = "forwarding_blocked"
 	metaTerminalOutcome    = "terminal_outcome"
+	// Applied desired-state config_generation (§15.3, D-043). An older
+	// generation never overwrites a newer one. This is not the update job
+	// generation.
+	metaAppliedConfigGeneration = "applied_config_generation"
+	// Signed revoked_release_ids already accepted. The set only grows.
+	metaRevokedReleaseIDs = "revoked_release_ids"
+	// config_generation at which the signed set was last allowed to grow.
+	metaRevocationGeneration = "revocation_config_generation"
 )
 
 // Terminal outcomes stored with the forwarding gate. There is no journal
@@ -849,6 +858,130 @@ func (j *Journal) StateSchema(ctx context.Context) (int, error) {
 // SetStateSchema records the local state schema version.
 func (j *Journal) SetStateSchema(ctx context.Context, v int) error {
 	return setMeta(ctx, j.db, metaStateSchema, fmt.Sprint(v))
+}
+
+// AppliedConfig returns the desired-state config_generation the node has
+// applied (ok is false when none has been applied).
+func (j *Journal) AppliedConfig(ctx context.Context) (decstr.U64, bool, error) {
+	raw, ok, err := getMeta(ctx, j.db, metaAppliedConfigGeneration)
+	if err != nil || !ok {
+		return 0, false, err
+	}
+	gen, err := decstr.Parse(raw)
+	if err != nil {
+		return 0, false, fmt.Errorf("updatejournal: corrupt applied config generation: %w", err)
+	}
+	return gen, true, nil
+}
+
+// AcceptDesired records a verified desired-state config_generation and, when
+// includeRevocations is true, unions signed release ids into the persisted
+// revocation set. An older generation does not overwrite the applied
+// generation and does not change the set (§13.4, §15.3, §17.2). accepted is
+// false when gen is older than the applied generation. An empty id list
+// still counts as a present signed member: it adds nothing and does not
+// clear the set. New meta keys do not change PRAGMA user_version.
+func (j *Journal) AcceptDesired(ctx context.Context, gen decstr.U64, includeRevocations bool, ids []string) (applied decstr.U64, accepted bool, err error) {
+	tx, err := j.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, false, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	raw, ok, err := getMeta(ctx, tx, metaAppliedConfigGeneration)
+	if err != nil {
+		return 0, false, err
+	}
+	var stored decstr.U64
+	if ok {
+		stored, err = decstr.Parse(raw)
+		if err != nil {
+			return 0, false, fmt.Errorf("updatejournal: corrupt applied config generation: %w", err)
+		}
+		if gen < stored {
+			return stored, false, nil
+		}
+	}
+	if !ok || gen > stored {
+		if err := setMeta(ctx, tx, metaAppliedConfigGeneration, gen.String()); err != nil {
+			return 0, false, err
+		}
+	}
+	if includeRevocations {
+		if err := unionRevoked(ctx, tx, gen, ids); err != nil {
+			return 0, false, err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return 0, false, err
+	}
+	return gen, true, nil
+}
+
+// RevokedReleases returns the persisted signed revocation set. The slice is
+// empty when no signed member has been accepted.
+func (j *Journal) RevokedReleases(ctx context.Context) ([]string, error) {
+	raw, ok, err := getMeta(ctx, j.db, metaRevokedReleaseIDs)
+	if err != nil || !ok || raw == "" {
+		return nil, err
+	}
+	var ids []string
+	if err := json.Unmarshal([]byte(raw), &ids); err != nil {
+		return nil, fmt.Errorf("updatejournal: corrupt revoked releases: %w", err)
+	}
+	return ids, nil
+}
+
+// unionRevoked adds ids to the signed set. A generation older than the one
+// recorded for the set does not add or remove ids (§17.2, §17.4).
+func unionRevoked(ctx context.Context, tx *sql.Tx, gen decstr.U64, ids []string) error {
+	rawGen, ok, err := getMeta(ctx, tx, metaRevocationGeneration)
+	if err != nil {
+		return err
+	}
+	if ok {
+		cur, err := decstr.Parse(rawGen)
+		if err != nil {
+			return fmt.Errorf("updatejournal: corrupt revocation generation: %w", err)
+		}
+		if gen < cur {
+			return nil
+		}
+	}
+	have := map[string]struct{}{}
+	raw, ok, err := getMeta(ctx, tx, metaRevokedReleaseIDs)
+	if err != nil {
+		return err
+	}
+	if ok && raw != "" {
+		var prev []string
+		if err := json.Unmarshal([]byte(raw), &prev); err != nil {
+			return fmt.Errorf("updatejournal: corrupt revoked releases: %w", err)
+		}
+		for _, id := range prev {
+			if id != "" {
+				have[id] = struct{}{}
+			}
+		}
+	}
+	for _, id := range ids {
+		if id != "" {
+			have[id] = struct{}{}
+		}
+	}
+	out := make([]string, 0, len(have))
+	for id := range have {
+		out = append(out, id)
+	}
+	sort.Strings(out)
+	body, err := json.Marshal(out)
+	if err != nil {
+		return err
+	}
+	if err := setMeta(ctx, tx, metaRevokedReleaseIDs, string(body)); err != nil {
+		return err
+	}
+	return setMeta(ctx, tx, metaRevocationGeneration, gen.String())
 }
 
 // ---------------------------------------------------------------- helpers

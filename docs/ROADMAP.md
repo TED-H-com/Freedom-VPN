@@ -74,14 +74,14 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-agent-core follow-up 1: usage ledger integration, required host reserve, fake control usage endpoints | WP05, WP07 | done (#36) |
 | w2-control-core follow-up 2: members fixture on role cookies, module-wide integration suite | WP02 | in progress |
 | w3-wire-members follow-up 1: retire legacy session job, composition guide refresh | WP02 | done (#31) |
-| w3-contracts-r3: additive enums (node.enroll, device_authorize, grant_revoke, admin_identity), node-reported codes, revoked_release_ids, policy_generation, checkout 201-only, role selector, policy schema promotion | WP02 | done (#34) | WP01 | in progress |
-| w2-nodes-desiredstate follow-up 3: entitlement serving readers (D-030), dns_generation from publication heads, RenewTx, audit conformance | WP04, WP05 | in progress |
+| w3-contracts-r3: additive enums (node.enroll, device_authorize, grant_revoke, admin_identity), node-reported codes, revoked_release_ids, policy_generation, checkout 201-only, role selector, policy schema promotion | WP02 | done (#34) |
+| w2-nodes-desiredstate follow-up 3: entitlement serving readers (D-030), dns_generation from publication heads, RenewTx, audit conformance | WP04, WP05 | done (#39) |
 | w3-wire-nodes follow-up 2: D-039 fixture isolation (nodestest), dual-stack resolver configuration | WP04, WP05 | done (#32) |
-| w2-control-core follow-up 3: terminal dead-lettering with fleet singleton fallback (D-040); follow-up 4: members dead-letter test on D-029 | WP04 | in progress |
+| w2-control-core follow-up 3: terminal dead-lettering with fleet singleton fallback (D-040); follow-up 4: members dead-letter test on D-029 | WP04 | in progress (follow-up 5 adds revision 3 adoption; lands with fleet-update follow-up 2 because the stricter audit writer rejects the legacy fleet actor) |
 | w1-netlab follow-up 2: idle counters are not meter-epoch changes (D-041), exported DetectMeterResets | WP02, WP05 | done (#35) |
 | w2-fleet-update follow-up 1: review fixes (SubmitResult generation compare, signed intent issued_at, node_name, Register validation order, applied policy_generation) | WP09 | done (#37) |
 | w2-pki-enroll follow-up 1: review fixes (bootstrap take, node_id binding, trust bundle filter), migration 00111, node.enroll adoption | WP04 | in progress |
-| w3-wire-members follow-up 2: adopt revision 3 kinds (member.device_authorize, member.grant_revoke), D-029 audit conformance | WP06 | in progress |
+| w3-wire-members follow-up 2: adopt revision 3 kinds (member.device_authorize, member.grant_revoke), D-029 audit conformance | WP06 | done (#38) |
 | w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | in progress |
 | w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | in progress |
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | in progress |
