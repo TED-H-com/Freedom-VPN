@@ -15,9 +15,9 @@ physical requirements remain needs operator run; see OPERATORS.md.
 Fresh `e2e-up` exited 0:
 
 ```text
- Container fvpn-w4-members-control Healthy 
- Container fvpn-w4-members-node Starting 
- Container fvpn-w4-members-node Started 
+ Container fvpn-w4-members-control Healthy
+ Container fvpn-w4-members-node Starting
+ Container fvpn-w4-members-node Started
 e2e stack is up
 ```
 
@@ -61,12 +61,12 @@ ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls	0.002s
 Assigned `e2e-down` exited 0:
 
 ```text
- Network fvpn-w4-members Removing 
- Network fvpn-w4-members-origin Removing 
- Volume fvpn-w4-members-nb Removed 
- Volume fvpn-w4-members-pg Removed 
- Network fvpn-w4-members Removed 
- Network fvpn-w4-members-origin Removed 
+ Network fvpn-w4-members Removing
+ Network fvpn-w4-members-origin Removing
+ Volume fvpn-w4-members-nb Removed
+ Volume fvpn-w4-members-pg Removed
+ Network fvpn-w4-members Removed
+ Network fvpn-w4-members-origin Removed
 e2e stack is down
 ```
 
