@@ -1,0 +1,29 @@
+$ORIGIN test.
+$TTL 60
+
+@ IN SOA ns1.test. hostmaster.test. (
+    2026102901 ; serial
+    3600       ; refresh
+    1800       ; retry
+    604800     ; expire
+    60         ; minimum TTL
+)
+
+@                       IN NS    ns1.test.
+ns1                     IN A     192.0.2.4
+ns1                     IN AAAA  2001:db8::4
+
+@                       IN A     192.0.2.30
+@                       IN AAAA  2001:db8::30
+@                       IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.30" ipv6hint="2001:db8::30"
+@                       IN SVCB  1 svc.test. alpn="h2" port=8443
+
+svc                     IN A     192.0.2.31
+svc                     IN AAAA  2001:db8::31
+svc                     IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.31" ipv6hint="2001:db8::31"
+svc                     IN SVCB  1 svc.test. alpn="h2" port=8443
+
+*                       IN A     192.0.2.30
+*                       IN AAAA  2001:db8::30
+*                       IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.30" ipv6hint="2001:db8::30"
+*                       IN SVCB  1 svc.test. alpn="h2" port=8443
