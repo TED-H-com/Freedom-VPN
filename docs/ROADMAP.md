@@ -80,7 +80,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 3: terminal dead-lettering with fleet singleton fallback (D-040); follow-up 4: members dead-letter test on D-029; follow-up 5: revision 3 adoption (admin_identity, report-only codes, strict audit.Append, nil-tx guard) | WP04 | done (#42, together with fleet-update follow-up 2) |
 | w1-netlab follow-up 2: idle counters are not meter-epoch changes (D-041), exported DetectMeterResets | WP02, WP05 | done (#35) |
 | w2-fleet-update follow-up 1: review fixes (SubmitResult generation compare, signed intent issued_at, node_name, Register validation order, applied policy_generation) | WP09 | done (#37) |
-| w2-pki-enroll follow-up 1: review fixes (bootstrap take, node_id binding, trust bundle filter), migration 00111, node.enroll adoption | WP04 | in progress |
+| w2-pki-enroll follow-ups 1–2: review fixes (bootstrap verdict, node_id binding, trust bundle filter), migration 00111 guarded reinstall, node.enroll operations, core audit builders | WP04 | done (#43) |
 | w3-wire-members follow-up 2: adopt revision 3 kinds (member.device_authorize, member.grant_revoke), D-029 audit conformance | WP06 | done (#38) |
 | w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | done (#41) |
 | w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | done (#40) |
@@ -92,6 +92,8 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-policies-fup follow-up: reconcile embedded policy schemas with contracts/schemas/policies (D-044), fup uint64 overflow instead of clamp, D-029 audit conformance for policies and fup writers | WP07 | in progress |
 | r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | in progress |
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
+| r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | in progress |
+| w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | in progress |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
