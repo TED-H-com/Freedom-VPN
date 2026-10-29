@@ -337,7 +337,8 @@ func TestBILL01_FencingAndTransactionalRollback(t *testing.T) {
 	if !errors.Is(err, sentinel) {
 		t.Fatal(err)
 	}
-	if f.count(t, "entitlement_history") != 0 || f.count(t, "outbox_events") != 0 {
+	// The committed inbox has its own dispatch intent; rollback must not add policy work.
+	if f.count(t, "entitlement_history") != 0 || f.count(t, "outbox_events") != 1 {
 		t.Fatal("partial commit")
 	}
 }

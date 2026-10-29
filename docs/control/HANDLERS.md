@@ -2,8 +2,10 @@
 
 Implement only the methods your domain owns from
 `internal/httpapi/gen.StrictServerInterface`. All request/response models alias
-`pkg/api`, so no model conversion is needed. Add one constructor line to
-`apps/control/handlers.go`'s `httpapi.Compose` call. Overlapping methods cause a
+`pkg/api`, so no model conversion is needed. Add one domain constructor line to
+`apps/control/handlers.go`'s `Domains()` list, following the
+[composition seam](COMPOSITION.md). The domain returns handler sets and any
+request middleware; only the shared server calls `httpapi.Compose`/`httpapi.New`. Overlapping methods cause a
 startup error. Unimplemented methods keep the transitional INTERNAL_ERROR/501
 fallback. Wave 3 domain wiring must remove every fallback; no contract change is
 needed for this transition.
@@ -69,8 +71,8 @@ func (h Handlers) Replay(ctx context.Context, operationID string, ref db.Idempot
 }
 ```
 
-Register `nodes.Handlers{Service: service, Operations: operations.Store{Pool: pool}},`
-in that one composition list. A multi-command handler switches on the generated
+Return `nodes.Handlers{Service: service, Operations: operations.Store{Pool: pool}}`
+in the domain build's `Built.Handlers`, and register the domain once in `Domains()`. A multi-command handler switches on the generated
 method name passed to Replay (for example `UpdateNode`) and returns that method's
 response type. The service must use the session Member ID or verified machine
 identity from `auth.FromContext`, never trust IDs supplied by a member. Resource

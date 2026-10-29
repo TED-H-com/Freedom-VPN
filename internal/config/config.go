@@ -63,6 +63,7 @@ type Config struct {
 	WorkerBackoffSeconds    int      `json:"worker_backoff_seconds"`
 	WorkerBackoffMaxSeconds int      `json:"worker_backoff_max_seconds"`
 	MigrateOnStart          bool     `json:"migrate_on_start"`
+	MembersConfigFile       string   `json:"members_config_file"`
 }
 
 func Defaults() Config {

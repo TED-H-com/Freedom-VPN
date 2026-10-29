@@ -17,7 +17,28 @@ import (
 
 // ProcessOne claims an inbox row durably, fetches current provider state outside
 // all transactions, and fences completion. Expired claims recover after crashes.
-func (s *Service) ProcessOne(ctx context.Context) (bool, error) {
+func (s *Service) ProcessOne(ctx context.Context) (bool, error) { return s.processInbox(ctx, nil) }
+
+// ProcessInbox handles exactly the durable outbox reference. Retry/backoff and
+// dead lettering belong to the central dispatcher, not a competing queue drain.
+func (s *Service) ProcessInbox(ctx context.Context, id uuid.UUID) error {
+	worked, err := s.processInbox(ctx, &id)
+	if err != nil {
+		return err
+	}
+	if worked {
+		return nil
+	}
+	var succeeded bool
+	if err = s.Pool.QueryRow(ctx, `SELECT processing_status='succeeded' FROM inbox_events WHERE id=$1 AND source=$2`, id, s.Provider.Name()).Scan(&succeeded); err != nil {
+		return db.MapError(err)
+	}
+	if !succeeded {
+		return ErrBusy
+	}
+	return nil
+}
+func (s *Service) processInbox(ctx context.Context, target *uuid.UUID) (bool, error) {
 	token, err := uuid.NewV7()
 	if err != nil {
 		return false, err
@@ -25,7 +46,7 @@ func (s *Service) ProcessOne(ctx context.Context) (bool, error) {
 	var id uuid.UUID
 	var external, kind string
 	var encrypted []byte
-	err = s.Pool.QueryRow(ctx, `WITH candidate AS (SELECT id FROM inbox_events WHERE source=$1 AND processing_status<>'succeeded' AND (lease_until IS NULL OR lease_until<=clock_timestamp()) ORDER BY received_at,id FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE inbox_events e SET processing_status='processing',attempt=attempt+1,lease_token=$2,lease_until=clock_timestamp()+$3::bigint*interval '1 millisecond' FROM candidate c WHERE e.id=c.id RETURNING e.id,e.external_event_id,e.event_type,e.encrypted_payload`, s.Provider.Name(), token, s.Config.LeaseDuration.Milliseconds()).Scan(&id, &external, &kind, &encrypted)
+	err = s.Pool.QueryRow(ctx, `WITH candidate AS (SELECT id FROM inbox_events WHERE source=$1 AND ($4::uuid IS NULL OR id=$4) AND processing_status<>'succeeded' AND (lease_until IS NULL OR lease_until<=clock_timestamp()) ORDER BY received_at,id FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE inbox_events e SET processing_status='processing',attempt=attempt+1,lease_token=$2,lease_until=clock_timestamp()+$3::bigint*interval '1 millisecond' FROM candidate c WHERE e.id=c.id RETURNING e.id,e.external_event_id,e.event_type,e.encrypted_payload`, s.Provider.Name(), token, s.Config.LeaseDuration.Milliseconds(), target).Scan(&id, &external, &kind, &encrypted)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	}
@@ -49,7 +70,11 @@ func (s *Service) ProcessOne(ctx context.Context) (bool, error) {
 		defer cancel()
 		// Keep a bounded backoff so a poison event cannot starve the inbox. Do not
 		// persist provider error bodies, URLs, secrets or SQL in failure diagnostics.
-		_, _ = s.Pool.Exec(cleanup, `UPDATE inbox_events SET processing_status='failed',last_error_code='BILLING_SYNC_FAILED',lease_token=NULL,lease_until=clock_timestamp()+interval '30 seconds' WHERE id=$1 AND lease_token=$2`, id, token)
+		delay := 30
+		if target != nil {
+			delay = 0
+		}
+		_, _ = s.Pool.Exec(cleanup, `UPDATE inbox_events SET processing_status='failed',last_error_code='BILLING_SYNC_FAILED',lease_token=NULL,lease_until=clock_timestamp()+$3*interval '1 second' WHERE id=$1 AND lease_token=$2`, id, token, delay)
 		return true, err
 	}
 	tag, err := s.Pool.Exec(ctx, `UPDATE inbox_events SET processing_status='succeeded',processed_at=clock_timestamp(),last_error_code=NULL,lease_token=NULL,lease_until=NULL WHERE id=$1 AND lease_token=$2 AND lease_until>clock_timestamp()`, id, token)
