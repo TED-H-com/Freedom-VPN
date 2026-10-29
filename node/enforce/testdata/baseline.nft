@@ -1,0 +1,17 @@
+# inet fvpn boot baseline. Member forwarding is off (§8.2).
+add table inet fvpn
+add counter inet fvpn ctbase
+add counter inet fvpn ctv6
+add counter inet fvpn ctin
+add set inet fvpn allowed_v4 { type ipv4_addr; flags timeout; }
+add chain inet fvpn forward { type filter hook forward priority -150; policy drop; }
+add chain inet fvpn input { type filter hook input priority -150; policy accept; }
+add chain inet fvpn output { type filter hook output priority -150; policy accept; }
+add chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }
+add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1"
+add rule inet fvpn forward iifname "fv-fh" counter name "ctbase" drop
+add rule inet fvpn forward oifname "fv-fh" counter name "ctbase" drop
+add rule inet fvpn forward iifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+add rule inet fvpn forward oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+add rule inet fvpn input iifname "fv-fh" counter name "ctin" drop
+add rule inet fvpn input ip saddr 100.64.0.0/10 counter name "ctin" drop

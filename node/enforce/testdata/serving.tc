@@ -1,0 +1,16 @@
+# HTB parent per direction, one leaf class per member, fq_codel under each (§11.4).
+# Classification is skb->priority set to the leaf classid. No fwmark, no filter.
+qdisc add dev fv-ih root handle 1: htb default fffe
+class replace dev fv-ih parent 1: classid 1:1 htb rate 40mbit ceil 40mbit burst 50000 cburst 50000 prio 0 quantum 1514
+class replace dev fv-ih parent 1:1 classid 1:fffe htb rate 1mbit ceil 40mbit burst 50000 cburst 50000 prio 0 quantum 1514
+class replace dev fv-ih parent 1:1 classid 1:2dc5 htb rate 20mbit ceil 20mbit burst 25000 cburst 25000 prio 1 quantum 1514
+qdisc add dev fv-ih parent 1:2dc5 handle 2dc5: fq_codel limit 10240 flows 1024 quantum 1514 target 5ms interval 100ms
+class replace dev fv-ih parent 1:1 classid 1:2dc6 htb rate 10mbit ceil 20mbit burst 25000 cburst 25000 prio 1 quantum 1514
+qdisc add dev fv-ih parent 1:2dc6 handle 2dc6: fq_codel limit 10240 flows 1024 quantum 1514 target 5ms interval 100ms
+qdisc add dev fv-fh root handle 1: htb default fffe
+class replace dev fv-fh parent 1: classid 1:1 htb rate 40mbit ceil 40mbit burst 50000 cburst 50000 prio 0 quantum 1514
+class replace dev fv-fh parent 1:1 classid 1:fffe htb rate 1mbit ceil 40mbit burst 50000 cburst 50000 prio 0 quantum 1514
+class replace dev fv-fh parent 1:1 classid 1:2dc5 htb rate 20mbit ceil 20mbit burst 25000 cburst 25000 prio 1 quantum 1514
+qdisc add dev fv-fh parent 1:2dc5 handle 2dc5: fq_codel limit 10240 flows 1024 quantum 1514 target 5ms interval 100ms
+class replace dev fv-fh parent 1:1 classid 1:2dc6 htb rate 10mbit ceil 20mbit burst 25000 cburst 25000 prio 1 quantum 1514
+qdisc add dev fv-fh parent 1:2dc6 handle 2dc6: fq_codel limit 10240 flows 1024 quantum 1514 target 5ms interval 100ms
