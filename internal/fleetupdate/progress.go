@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -144,7 +145,7 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 	if e != nil {
 		return b, e
 	}
-	e = db.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
 		b = api.UpdateBatch{Targets: []api.UpdateTarget{},
 			NextCursor: presence.NewNullNullable[string]()}
 		e := tx.QueryRow(ctx, `SELECT b.id,b.operation_id,b.target_release_id,b.target_count,b.created_at,b.created_by::uuid,b.reason,(r.manifest->'signed'->'compatibility'->>'requires_service_restart')::boolean,coalesce(p.updated_at,b.created_at) FROM update_batches b JOIN releases r ON r.id=b.target_release_id LEFT JOIN update_batch_progress p ON p.batch_id=b.id WHERE b.id=$1`, id).Scan(&b.BatchId, &b.OperationId, &b.ReleaseId, &b.TargetCount, &b.CreatedAt, &b.CreatedBy, &b.Reason, &b.RequiresServiceRestart, &b.UpdatedAt)
@@ -162,10 +163,7 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
 		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
- `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),coalesce(j.needs_attention,false),
- s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false)
- OR (j.issued_at IS NOT NULL AND (s.observation_incarnation_id IS DISTINCT FROM j.execution_incarnation_id
- OR coalesce(s.observed_update_generation<j.generation,true) OR coalesce(s.received_at<j.issued_at,true)))
+ `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`
  FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
@@ -208,10 +206,7 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			j.StartedAt = presence.FromPointer(startedAt)
 			j.FinishedAt = presence.FromPointer(finishedAt)
 			j.RecoveryRequired = presence.NewRequired(recoveryRequired)
-			// §13.8: preserve watchdog attention and expose terminal operator exceptions.
-			// Confirmation also requires an observation of this incarnation/generation
-			// received after issuance and after the latest result (query above).
-			t.NeedsAttention = t.NeedsAttention || j.State == "failed" || j.State == "rolled_back" || j.State == "blocked" || j.State == "already_current" && (currentRelease == nil || *currentRelease != b.ReleaseId)
+
 			t.Attempts = j.Attempt
 			if jobID != nil {
 				j.JobId = *jobID
@@ -225,6 +220,15 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 	return b, e
 }
 
+// Shared by response mapping, evidence queries and node summaries. Receipt time
+// must be strictly after authorization; another incarnation never confirms work.
+const needsAttentionSQL = `coalesce(j.needs_attention,false) OR coalesce(j.state IN ('failed','rolled_back','blocked'),false) OR coalesce(j.state='already_current' AND n.current_release_id IS DISTINCT FROM j.release_id,false)`
+const unconfirmedSQL = `j.id IS NULL OR j.issued_at IS NULL OR s.last_observed_at IS NULL
+ OR s.observation_incarnation_id IS DISTINCT FROM j.execution_incarnation_id
+ OR coalesce(s.observed_update_generation<j.generation,true)
+ OR coalesce(s.received_at<=j.issued_at,true)
+ OR coalesce(j.last_result_at>s.received_at,false)`
+
 // TargetEvidence exposes the stored watchdog and observation evidence.
 type TargetEvidence struct {
 	NeedsAttention, Unconfirmed  bool
@@ -233,14 +237,14 @@ type TargetEvidence struct {
 
 func (s *Service) Evidence(ctx context.Context, target uuid.UUID) (TargetEvidence, error) {
 	var e TargetEvidence
-	err := s.pool.QueryRow(ctx, `SELECT coalesce(j.needs_attention,false),s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false),j.last_result_at,s.last_observed_at FROM update_targets t LEFT JOIN fleet_node_state s ON s.node_id=t.node_id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.id=$1`, target).Scan(&e.NeedsAttention, &e.Unconfirmed, &e.LastResultAt, &e.LastObservedAt)
+	err := s.pool.QueryRow(ctx, `SELECT `+needsAttentionSQL+`,`+unconfirmedSQL+`,j.last_result_at,s.last_observed_at FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=t.node_id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.id=$1`, target).Scan(&e.NeedsAttention, &e.Unconfirmed, &e.LastResultAt, &e.LastObservedAt)
 	return e, err
 }
 
 // Reconcile is a worker step; watchdog attention never fabricates failure or
 // success. Heartbeats/results remain the only actual-version evidence (§13.8).
 func (s *Service) Reconcile(ctx context.Context) error {
-	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	return commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if e := s.lock(ctx, tx); e != nil {
 			return e
 		}

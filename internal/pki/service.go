@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -135,7 +136,7 @@ func (s *Service) Renew(ctx context.Context, cert *x509.Certificate, r api.Certi
 	if err != nil {
 		return out, err
 	}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, e := s.LockAuthenticated(ctx, tx, cert); e != nil {
 			return e
 		}

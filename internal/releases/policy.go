@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -100,6 +101,19 @@ func PageLimit(n int) (int, error) {
 }
 
 func (s *Service) List(ctx context.Context, cursor string, limit int) (api.ReleaseList, error) {
+	return s.list(ctx, cursor, limit, nil)
+}
+func (s *Service) Get(ctx context.Context, id uuid.UUID) (api.Release, error) {
+	out, e := s.list(ctx, "", 1, &id)
+	if e != nil {
+		return api.Release{}, e
+	}
+	if len(out.Items) != 1 {
+		return api.Release{}, apierr.New(apierr.ResourceNotFound, "Release not found")
+	}
+	return out.Items[0], nil
+}
+func (s *Service) list(ctx context.Context, cursor string, limit int, only *uuid.UUID) (api.ReleaseList, error) {
 	out := api.ReleaseList{Items: []api.Release{},
 		NextCursor: presence.NewNullNullable[string]()}
 	after, e := ParseCursor(cursor)
@@ -110,7 +124,7 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 	if e != nil {
 		return out, e
 	}
-	e = db.InTx(ctx, s.Pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.Pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
 		out.Items = []api.Release{}
 		out.NextCursor.SetNull()
 		var gen, rv string
@@ -131,7 +145,7 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 		out.Fleet.ServingReleaseIds = serving
 		out.Fleet.FleetDefaultReleaseId = presence.FromPointer(defaultReleaseID)
 		out.Fleet.ReleaseSupportRevisionId.SetNull()
-		rows, e := tx.Query(ctx, `SELECT r.id,r.manifest,encode(r.manifest_hash,'hex'),r.created_at,v.state,v.error_code FROM releases r JOIN release_verifications v ON v.release_id=r.id WHERE r.id>$1 ORDER BY r.id LIMIT $2`, after, limit+1)
+		rows, e := tx.Query(ctx, `SELECT r.id,r.manifest,encode(r.manifest_hash,'hex'),r.created_at,v.state,v.error_code FROM releases r JOIN release_verifications v ON v.release_id=r.id WHERE r.id>$1 AND ($3::uuid IS NULL OR r.id=$3) ORDER BY r.id LIMIT $2`, after, limit+1, only)
 		if e != nil {
 			return e
 		}
