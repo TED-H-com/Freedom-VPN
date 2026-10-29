@@ -29,7 +29,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		return ApplyResult{}, err
 	}
-	resets := meterResets(previous, state)
+	resets := DetectMeterResets(previous, state)
 	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
 		// The kernel comment is the memory of class minors. Recomputing from
 		// scratch could move a member when another member is added or removed
@@ -168,10 +168,11 @@ func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, error) 
 	return st, nil
 }
 
-// meterResets is DetectResets, except when the table, the forward chain, or
+// DetectMeterResets is DetectResets, except when the table, the forward chain, or
 // the generation marker was cleared. Flush keeps named counter values, so the
-// whole previous set is one meter epoch (§10.7).
-func meterResets(previous map[string]CounterValue, state State) []Reset {
+// whole previous set is one meter epoch (§10.7). Call it when the caller holds
+// a State. DetectResets is the value comparison alone.
+func DetectMeterResets(previous map[string]CounterValue, state State) []Reset {
 	if len(previous) == 0 {
 		return nil
 	}

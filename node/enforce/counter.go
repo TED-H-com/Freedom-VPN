@@ -72,10 +72,10 @@ func diagnosticNamespace(name string) bool {
 	}
 }
 
-// DetectResets compares absolute readings. A drop, a missing counter, or a
-// counter that is zero in both snapshots is a meter-epoch change. A zero
-// reading cannot be told apart from a counter that was deleted and recreated
-// at zero (§10.5, §10.7).
+// DetectResets compares absolute readings. A drop or a missing counter is a
+// meter-epoch change. A counter that is zero in both snapshots is idle: a
+// delete and recreate between two zero readings lost no bytes a value
+// comparison can see (§10.5, §10.7, D-041).
 func DetectResets(previous, current map[string]CounterValue) []Reset {
 	if len(previous) == 0 {
 		return nil
@@ -96,14 +96,6 @@ func DetectResets(previous, current map[string]CounterValue) []Reset {
 				Name: name, Previous: prev.Bytes, Current: cur.Bytes,
 				Reason: ReasonMeterEpoch,
 				Detail: fmt.Sprintf("counter went backwards (packets %d -> %d, bytes %d -> %d)", prev.Packets, cur.Packets, prev.Bytes, cur.Bytes),
-			})
-			continue
-		}
-		if cur.Packets == 0 && cur.Bytes == 0 {
-			out = append(out, Reset{
-				Name: name, Previous: prev.Bytes, Current: 0,
-				Reason: ReasonMeterEpoch,
-				Detail: "counter reappeared at zero",
 			})
 		}
 	}

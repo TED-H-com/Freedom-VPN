@@ -271,12 +271,12 @@ func TestDetectResets_AndLargeCounter(t *testing.T) {
 	if len(same) != 0 {
 		t.Fatalf("unchanged counter looked like a reset: %+v", same)
 	}
-	reappeared := DetectResets(
+	idle := DetectResets(
 		map[string]CounterValue{"d_x": {Packets: 0, Bytes: 0}, "u_x": {Packets: 100, Bytes: 50000}},
 		map[string]CounterValue{"d_x": {Packets: 0, Bytes: 0}, "u_x": {Packets: 100, Bytes: 50000}},
 	)
-	if len(reappeared) != 1 || reappeared[0].Name != "d_x" || reappeared[0].Reason != ReasonMeterEpoch {
-		t.Fatalf("zero counter was not flagged: %+v", reappeared)
+	if len(idle) != 0 {
+		t.Fatalf("idle zero counter looked like a reset: %+v", idle)
 	}
 }
 
@@ -603,6 +603,11 @@ func TestApply_ExternalReset(t *testing.T) {
 	prev := map[string]CounterValue{
 		"u_kept": {Packets: 100, Bytes: 50000},
 		"d_zero": {Packets: 0, Bytes: 0},
+	}
+	// D-041: 0 -> 0 is idle. The cases below still report d_zero because the
+	// ruleset itself was cleared, which is DetectMeterResets, not the values.
+	if got := DetectResets(prev, prev); len(got) != 0 {
+		t.Fatalf("0 -> 0 is not a reset: %+v", got)
 	}
 	cases := []struct {
 		name    string
