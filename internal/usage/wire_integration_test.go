@@ -34,21 +34,21 @@ import (
 )
 
 type usageHTTPStack struct {
-	pool     *pgxpool.Pool
-	prov     *signing.FileProvider
-	svc      *usage.Service
-	public   http.Handler
-	agent    http.Handler
-	adminP   auth.Principal
-	memP     auth.Principal
-	agentP   auth.Principal
-	disp     *worker.Dispatcher
-	memberA  uuid.UUID
-	deviceA  uuid.UUID
-	node1    uuid.UUID
-	inc1     uuid.UUID
-	node2    uuid.UUID
-	inc2     uuid.UUID
+	pool    *pgxpool.Pool
+	prov    *signing.FileProvider
+	svc     *usage.Service
+	public  http.Handler
+	agent   http.Handler
+	adminP  auth.Principal
+	memP    auth.Principal
+	agentP  auth.Principal
+	disp    *worker.Dispatcher
+	memberA uuid.UUID
+	deviceA uuid.UUID
+	node1   uuid.UUID
+	inc1    uuid.UUID
+	node2   uuid.UUID
+	inc2    uuid.UUID
 }
 
 func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
