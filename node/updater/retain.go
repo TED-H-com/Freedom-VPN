@@ -46,11 +46,11 @@ func (e *Engine) Retain(ctx context.Context) error {
 		if json.Unmarshal(ent.Payload, &res) != nil {
 			continue
 		}
-		if res.CurrentReleaseId != nil {
-			keep[res.CurrentReleaseId.String()] = true
+		if id, err := res.CurrentReleaseId.Get(); err == nil {
+			keep[id.String()] = true
 		}
-		if res.PreviousReleaseId != nil {
-			keep[res.PreviousReleaseId.String()] = true
+		if id, err := res.PreviousReleaseId.Get(); err == nil {
+			keep[id.String()] = true
 		}
 		if res.RequestedReleaseId != uuid.Nil {
 			keep[res.RequestedReleaseId.String()] = true

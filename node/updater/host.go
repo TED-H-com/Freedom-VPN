@@ -151,7 +151,7 @@ func readTrust(path string) (*envelope.TrustStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	ts, err := envelope.ParseTrustStoreJSON(b)
+	ts, err := envelope.ParseNodeTrustStoreJSON(b)
 	if err != nil {
 		return nil, fmt.Errorf("updater: trust %s: %w", filepath.Base(path), err)
 	}
@@ -346,17 +346,20 @@ func WorkFromEnvelope(raw []byte, trust *envelope.TrustStore, node Node, now tim
 	if now.Before(ds.IssuedAt) || !now.Before(ds.ExpiresAt) {
 		return Work{}, permanent(apierr.AuthorizationExpired, "desired state")
 	}
-	if ds.Update == nil {
+	// The disk reader previously treated both omitted and null update as no
+	// work. Keep that behavior; central producers must emit the required member.
+	if !ds.Update.IsSpecified() || ds.Update.IsNull() {
 		return Work{}, ErrNoWork
 	}
-	if ds.Update.NodeId != node.ID || ds.Update.IncarnationId != node.Incarnation {
+	update, _ := ds.Update.Get()
+	if update.NodeId != node.ID || update.IncarnationId != node.Incarnation {
 		return Work{}, permanent(apierr.IncarnationMismatch, "update intent")
 	}
 	if len(ds.ServingReleaseIds) == 0 {
 		return Work{}, permanent(apierr.MinimumVersionViolation, "empty serving set")
 	}
 	return Work{
-		Intent:           *ds.Update,
+		Intent:           update,
 		Serving:          append([]uuid.UUID(nil), ds.ServingReleaseIds...),
 		Revoked:          append([]uuid.UUID(nil), revoked...),
 		PolicyGeneration: ds.ConfigGeneration,
