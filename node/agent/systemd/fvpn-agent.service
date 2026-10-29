@@ -1,0 +1,16 @@
+[Unit]
+Description=Freedom VPN node agent
+# The agent starts only after update recovery. It installs the fail-closed
+# baseline itself before it enables member forwarding (§8.2, §13.5, §16.3).
+After=fvpn-updater-recover.service
+Requires=fvpn-updater-recover.service
+Before=fvpn-netbird.service
+
+[Service]
+Type=simple
+ExecStart=/opt/vpn-node/current/fvpn-agent run -config /etc/vpn-node/agent.json
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target

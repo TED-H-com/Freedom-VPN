@@ -5,14 +5,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 type vectorFile struct {
@@ -835,4 +839,262 @@ func TestDNS01_AT21_PublishIdempotencyAndRollbackUnit(t *testing.T) {
 	if st2.AppliedRevision != "12" {
 		t.Errorf("resolver-2 live AppliedRevision = %q, want 12", st2.AppliedRevision)
 	}
+}
+
+func TestDNS01_AT19_CompiledBundleJSONRoundTripAndPublish(t *testing.T) {
+	vf := loadVectors(t)
+	now := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+	opts := CompileOptions{
+		ValidFrom:   now.Add(-time.Hour),
+		ValidUntil:  now.Add(24 * time.Hour),
+		UpstreamDNS: []string{"127.0.0.1:15353"},
+	}
+
+	compiled, err := CompileBundle(vf.EvaluationProfile, opts)
+	if err != nil {
+		t.Fatalf("CompileBundle: %v", err)
+	}
+
+	// Verify CompiledBytes is valid RFC 8785 canonical JSON.
+	canonicalized, err := canonjson.Canonicalize(compiled.CompiledBytes)
+	if err != nil {
+		t.Fatalf("canonjson.Canonicalize(CompiledBytes): %v", err)
+	}
+	if !bytes.Equal(compiled.CompiledBytes, canonicalized) {
+		t.Fatalf("CompiledBytes is not in RFC 8785 canonical form")
+	}
+
+	// 1. Round-trip via encoding/json.Marshal -> json.Unmarshal
+	rawStd, err := json.Marshal(compiled)
+	if err != nil {
+		t.Fatalf("json.Marshal: %v", err)
+	}
+	var loadedStd CompiledBundle
+	if err := json.Unmarshal(rawStd, &loadedStd); err != nil {
+		t.Fatalf("json.Unmarshal(rawStd): %v", err)
+	}
+	if !bytes.Equal(loadedStd.CompiledBytes, compiled.CompiledBytes) {
+		t.Fatalf("loadedStd.CompiledBytes mismatch after json.Marshal round-trip")
+	}
+	if err := VerifyBundle(&loadedStd, now); err != nil {
+		t.Fatalf("VerifyBundle(&loadedStd) failed after json.Marshal round-trip: %v", err)
+	}
+
+	// 2. Round-trip via canonjson.Marshal -> json.Unmarshal (as dns_compiled_bundles stores it)
+	rawCanon, err := canonjson.Marshal(compiled)
+	if err != nil {
+		t.Fatalf("canonjson.Marshal: %v", err)
+	}
+	var loadedDB CompiledBundle
+	if err := json.Unmarshal(rawCanon, &loadedDB); err != nil {
+		t.Fatalf("json.Unmarshal(rawCanon): %v", err)
+	}
+	if !bytes.Equal(loadedDB.CompiledBytes, compiled.CompiledBytes) {
+		t.Fatalf("loadedDB.CompiledBytes mismatch after canonjson.Marshal round-trip")
+	}
+	if err := VerifyBundle(&loadedDB, now); err != nil {
+		t.Fatalf("VerifyBundle(&loadedDB) failed after canonjson.Marshal round-trip: %v", err)
+	}
+
+	// 3. AdGuardAdapter.Publish accepts the unmarshaled bundle.
+	_, srv := newMockAdGuardServer(t)
+	adapter := NewAdGuardAdapter(ResolverConfig{
+		ID:       "resolver-roundtrip",
+		AdminURL: srv.URL,
+		Username: "admin",
+		Password: "pw",
+	})
+	adapter.SetNowFunc(func() time.Time { return now })
+
+	pubRes, err := adapter.Publish(context.Background(), &loadedDB)
+	if err != nil {
+		t.Fatalf("adapter.Publish(&loadedDB) failed: %v", err)
+	}
+	if !pubRes.Success || pubRes.AppliedRevision != compiled.Revision || pubRes.AppliedSHA256 != compiled.SHA256 {
+		t.Fatalf("unexpected publish result for unmarshaled bundle: %+v", pubRes)
+	}
+
+	// 4. Tampering with a field in the stored JSON before Unmarshal causes VerifyBundle to fail with BUNDLE_HASH_MISMATCH.
+	tamperedJSON := bytes.Replace(rawCanon, []byte(`"revision":"12"`), []byte(`"revision":"99"`), 1)
+	var tamperedLoaded CompiledBundle
+	if err := json.Unmarshal(tamperedJSON, &tamperedLoaded); err != nil {
+		t.Fatalf("json.Unmarshal(tamperedJSON): %v", err)
+	}
+	if err := VerifyBundle(&tamperedLoaded, now); ErrorCode(err) != ErrCodeBundleHashMismatch {
+		t.Fatalf("VerifyBundle(&tamperedLoaded) = %v, want %s", err, ErrCodeBundleHashMismatch)
+	}
+}
+
+func TestDNS01_AT22_SourceFetchSSRF_RedirectAndResolvedIPBlocked(t *testing.T) {
+	ctx := context.Background()
+	t0 := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+
+	newSeededRegistry := func(t *testing.T, urlStr string) *SourceStore {
+		t.Helper()
+		reg := NewDefaultSourceStore()
+		if err := reg.Register(ListSource{
+			SourceID:          "src-ssrf-test",
+			Version:           "1",
+			License:           "CC0-1.0",
+			LicenseStatus:     LicenseCommercialApproved,
+			PermittedUse:      "TEST ONLY commercial simulation",
+			DistributionNotes: "Server-side resolver compilation",
+			AttributionNotes:  "Test Feed",
+			URL:               urlStr,
+			Format:            SourceFormatPlain,
+			Category:          CategoryMalware,
+		}); err != nil {
+			t.Fatalf("Register(%q) failed: %v", urlStr, err)
+		}
+		if err := reg.UpdateFromReader("src-ssrf-test", "1", strings.NewReader("initial-good.example.com\n"), DefaultParseOptions(), t0, nil); err != nil {
+			t.Fatalf("seed UpdateFromReader: %v", err)
+		}
+		return reg
+	}
+
+	// 1. Hostname that resolves to any blocked IP range is refused BEFORE connect (dialCalls == 0).
+	blockedCases := []struct {
+		name string
+		ips  []netip.Addr
+	}{
+		{"loopback_v4", []netip.Addr{netip.MustParseAddr("127.0.0.1")}},
+		{"loopback_v6", []netip.Addr{netip.MustParseAddr("::1")}},
+		{"loopback_v4_mapped_v6", []netip.Addr{netip.MustParseAddr("::ffff:127.0.0.1")}},
+		{"rfc1918_10", []netip.Addr{netip.MustParseAddr("10.0.0.42")}},
+		{"rfc1918_172_16", []netip.Addr{netip.MustParseAddr("172.16.5.4")}},
+		{"rfc1918_192_168", []netip.Addr{netip.MustParseAddr("192.168.1.10")}},
+		{"cgnat_100_64", []netip.Addr{netip.MustParseAddr("100.64.0.1")}},
+		{"link_local_metadata_v4", []netip.Addr{netip.MustParseAddr("169.254.169.254")}},
+		{"link_local_v6", []netip.Addr{netip.MustParseAddr("fe80::1")}},
+		{"multicast_v4", []netip.Addr{netip.MustParseAddr("224.0.0.1")}},
+		{"multicast_v6", []netip.Addr{netip.MustParseAddr("ff02::1")}},
+		{"unspecified_v4", []netip.Addr{netip.MustParseAddr("0.0.0.0")}},
+		{"unspecified_v6", []netip.Addr{netip.MustParseAddr("::")}},
+		{"ula_v6", []netip.Addr{netip.MustParseAddr("fd12:3456:789a::1")}},
+		{"doc_test_net_1", []netip.Addr{netip.MustParseAddr("192.0.2.10")}},
+		{"doc_test_net_2", []netip.Addr{netip.MustParseAddr("198.51.100.10")}},
+		{"doc_test_net_3", []netip.Addr{netip.MustParseAddr("203.0.113.10")}},
+		{"doc_ipv6", []netip.Addr{netip.MustParseAddr("2001:db8::10")}},
+		{"mixed_public_and_blocked", []netip.Addr{netip.MustParseAddr("93.184.216.34"), netip.MustParseAddr("10.0.0.1")}},
+	}
+
+	for _, tc := range blockedCases {
+		t.Run("resolved_blocked_"+tc.name, func(t *testing.T) {
+			reg := newSeededRegistry(t, "https://rebind.example.com/feed.txt")
+			dialCalls := 0
+			reg.SetLookupNetIP(func(_ context.Context, _, _ string) ([]netip.Addr, error) {
+				return tc.ips, nil
+			})
+			reg.SetDialContext(func(_ context.Context, _, addr string) (net.Conn, error) {
+				dialCalls++
+				return nil, errors.New("unexpected dial to " + addr)
+			})
+
+			err := reg.FetchAndUpdate(ctx, nil, "src-ssrf-test", "2", DefaultParseOptions(), t0.Add(time.Minute), nil)
+			if err == nil {
+				t.Fatalf("expected error when hostname resolves to blocked IP %v, got nil", tc.ips)
+			}
+			if ErrorCode(err) != ErrCodeSourceInvalidURL {
+				t.Errorf("ErrorCode(err) = %q, want %q (err=%v)", ErrorCode(err), ErrCodeSourceInvalidURL, err)
+			}
+			if dialCalls != 0 {
+				t.Errorf("expected 0 dial calls (must refuse before connect), got %d", dialCalls)
+			}
+			src, _ := reg.Get("src-ssrf-test")
+			if src.Version != "1" || len(src.Entries) != 1 || src.Entries[0].Domain != "initial-good.example.com" {
+				t.Errorf("last_good was not preserved after blocked DNS resolution: %+v", src)
+			}
+		})
+	}
+
+	// 2. HTTP redirect to a blocked target (or any redirect) is refused.
+	t.Run("redirect_to_blocked_target_refused", func(t *testing.T) {
+		redirectHits := 0
+		tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			redirectHits++
+			http.Redirect(w, r, "http://169.254.169.254/latest/meta-data/", http.StatusFound)
+		}))
+		t.Cleanup(tlsSrv.Close)
+
+		srvListenerAddr := tlsSrv.Listener.Addr().String()
+		reg := newSeededRegistry(t, "https://feeds.example.com/list.txt")
+
+		var dialedAddresses []string
+		reg.SetLookupNetIP(func(_ context.Context, _, host string) ([]netip.Addr, error) {
+			if host == "feeds.example.com" {
+				// Public routable IP (non-reserved, non-documentation)
+				return []netip.Addr{netip.MustParseAddr("93.184.216.34")}, nil
+			}
+			return []netip.Addr{netip.MustParseAddr("169.254.169.254")}, nil
+		})
+		reg.SetDialContext(func(ctx context.Context, network, address string) (net.Conn, error) {
+			dialedAddresses = append(dialedAddresses, address)
+			return (&net.Dialer{}).DialContext(ctx, network, srvListenerAddr)
+		})
+
+		err := reg.FetchAndUpdate(ctx, tlsSrv.Client(), "src-ssrf-test", "2", DefaultParseOptions(), t0.Add(2*time.Minute), nil)
+		if err == nil {
+			t.Fatal("expected redirect to blocked target to be refused, got nil")
+		}
+		if ErrorCode(err) != ErrCodeSourceInvalidURL {
+			t.Errorf("ErrorCode(err) = %q, want %q (err=%v)", ErrorCode(err), ErrCodeSourceInvalidURL, err)
+		}
+		if redirectHits != 1 {
+			t.Errorf("redirectHits = %d, want 1", redirectHits)
+		}
+		if len(dialedAddresses) != 1 || dialedAddresses[0] != "93.184.216.34:443" {
+			t.Errorf("dialedAddresses = %v, want [\"93.184.216.34:443\"]", dialedAddresses)
+		}
+		src, _ := reg.Get("src-ssrf-test")
+		if src.Version != "1" || len(src.Entries) != 1 || src.Entries[0].Domain != "initial-good.example.com" {
+			t.Errorf("last_good was not preserved after refused redirect: %+v", src)
+		}
+	})
+
+	// 3. Valid public resolution dials the verified IP and enforces the body size limit.
+	t.Run("verified_public_ip_dials_and_caps_body", func(t *testing.T) {
+		tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/oversized.txt" {
+				_, _ = w.Write([]byte(strings.Repeat("a.example.com\n", 100)))
+				return
+			}
+			_, _ = w.Write([]byte("new-bad1.example.com\nnew-bad2.example.com\n"))
+		}))
+		t.Cleanup(tlsSrv.Close)
+
+		srvListenerAddr := tlsSrv.Listener.Addr().String()
+		reg := newSeededRegistry(t, "https://feeds.example.com/oversized.txt")
+
+		var dialedAddr string
+		reg.SetLookupNetIP(func(_ context.Context, _, _ string) ([]netip.Addr, error) {
+			return []netip.Addr{netip.MustParseAddr("93.184.216.34")}, nil
+		})
+		reg.SetDialContext(func(ctx context.Context, network, address string) (net.Conn, error) {
+			dialedAddr = address
+			return (&net.Dialer{}).DialContext(ctx, network, srvListenerAddr)
+		})
+
+		// Oversized response body is rejected and retains LastGood.
+		err := reg.FetchAndUpdate(ctx, tlsSrv.Client(), "src-ssrf-test", "2", ParseOptions{MaxBytes: 32, RequireNonEmpty: true}, t0.Add(3*time.Minute), nil)
+		if ErrorCode(err) != ErrCodeSourceTooLarge {
+			t.Fatalf("expected %s on oversized fetch, got %v", ErrCodeSourceTooLarge, err)
+		}
+		if dialedAddr != "93.184.216.34:443" {
+			t.Errorf("dialedAddr = %q, want 93.184.216.34:443", dialedAddr)
+		}
+
+		// Valid response body updates the source.
+		src, _ := reg.Get("src-ssrf-test")
+		src.URL = "https://feeds.example.com/valid.txt"
+		if err := reg.Register(src); err != nil {
+			t.Fatalf("re-register valid URL: %v", err)
+		}
+		if err := reg.FetchAndUpdate(ctx, tlsSrv.Client(), "src-ssrf-test", "2", DefaultParseOptions(), t0.Add(4*time.Minute), nil); err != nil {
+			t.Fatalf("valid FetchAndUpdate failed: %v", err)
+		}
+		updated, _ := reg.Get("src-ssrf-test")
+		if updated.Version != "2" || len(updated.Entries) != 2 {
+			t.Fatalf("unexpected updated source state: %+v", updated)
+		}
+	})
 }

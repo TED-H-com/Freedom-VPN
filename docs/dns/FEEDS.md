@@ -13,7 +13,7 @@ Each feed in `internal/dnspolicy` (`ListSource`) records:
 - `version` & `content_sha256`: Upstream version/ETag and exact SHA-256 of raw feed bytes.
 - `license` & `license_status`: License identifier and approval state (`pending_decision`, `approved`, `rejected`).
 - `commercial_use_allowed`, `redistribution_notes`, `attribution_notes`: Governance metadata required by §12.3.
-- `https_url`: Fixed `https://` endpoint passed through `ValidateSourceURL` (rejects `http://`, embedded credentials, IP literals, `localhost`, `.local`, `.internal`, `.test`, `.invalid`, and `.example` to prevent SSRF).
+- `https_url`: Fixed `https://` endpoint passed through `ValidateSourceURL` (rejects `http://`, embedded credentials, IP literals, `localhost`, `.local`, `.internal`, `.test`, `.invalid`, and `.example` to prevent SSRF) and fetched via `NewSourceHTTPClient` (which disables environment proxies, refuses all HTTP redirects in `CheckRedirect`, resolves DNS via `net.DefaultResolver.LookupNetIP` in `Transport.DialContext`, rejects any resolved address in loopback, RFC1918, CGNAT `100.64.0.0/10`, link-local, multicast, unspecified, ULA, or documentation prefixes before connecting, and dials the verified IP directly).
 - `format`: Supported parser format:
   - `plain_domains`: One domain per line (`#` or `!` comments ignored).
   - `hosts`: Standard hosts syntax (`0.0.0.0 domain` or `127.0.0.1 domain`; skips `localhost` and broadcast entries; sets `include_subdomains=false`).
