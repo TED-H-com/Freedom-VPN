@@ -47,7 +47,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-usage-central: usage ledger ingest, checkpoints, projection, rollups | WP07 | done (#15) |
 | w2-policies-fup: plan, fair-use, DNS and release-support policies, FUP tiers | WP07, WP08 | done (#12) |
 | w2-fleet-update: releases, manifests, update batches, serving-version policy | WP09 | done (#10) |
-| w2-updater: node updater, update journal, release packaging | WP09 | delivered; follow-up 1 (decisions, nodelock move, root make wiring) |
+| w2-updater: node updater, update journal, release packaging | WP09 | done (#18) |
 | w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after contracts-r2 consumer adaptation) |
 | w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after contracts-r2 consumer adaptation) |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
