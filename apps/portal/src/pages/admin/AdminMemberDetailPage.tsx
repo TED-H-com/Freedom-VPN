@@ -15,7 +15,9 @@ export function AdminMemberDetailPage(): React.ReactElement {
   const [suspendReason, setSuspendReason] = useState(
     'Abuse ticket #991: terms violation review',
   );
-  const [grantValidUntil, setGrantValidUntil] = useState('2026-12-31T00:00:00Z');
+  const [grantValidUntil, setGrantValidUntil] = useState(() =>
+    new Date(Date.now() + 14 * 86400_000).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+  );
   const [grantReason, setGrantReason] = useState('Migration parallel transition grant');
 
   const [displayName, setDisplayName] = useState<string>('');

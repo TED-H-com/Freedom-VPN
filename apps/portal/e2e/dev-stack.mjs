@@ -849,7 +849,7 @@ function createFakeStripeAndProxy(tlsOptions, webhookSecret) {
       invoiceId: invId,
       paymentIntentId: piId,
       periodStart: nowSec - 60,
-      periodEnd: nowSec + 30 * 86400,
+      periodEnd: nowSec + 28 * 86400,
     });
 
     const eventPayload = JSON.stringify({
@@ -1198,72 +1198,250 @@ async function enrollLiveNode(
   };
 }
 
-async function seedDatabase(pool, adminId, defaultMemberId, enrolledNodeId) {
-  const now = new Date();
-  const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-  const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+function lastLines(text, count = 50) {
+  const lines = String(text || '')
+    .trim()
+    .split('\n')
+    .filter(Boolean);
+  return lines.slice(-count).join('\n') || '(empty)';
+}
 
-  await pool.query(
-    `INSERT INTO member_groups(id, code, name)
-     VALUES ($1, 'standard-exits', 'Standard Exit Group'),
-            ('63575bae-2d23-45c0-ae11-ba6bb9ace34a', 'default-members', 'Default Member Group')
-     ON CONFLICT (id) DO NOTHING`,
-    [EXIT_GROUP_ID],
-  );
+async function runSeedStep(stepName, fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`[seed step "${stepName}"] ${msg}`, { cause: err });
+  }
+}
 
-  const manifestEnvelope = JSON.stringify(RELEASE_VECTOR.envelope);
-  const manifestHash = Buffer.from(RELEASE_VECTOR.envelope_sha256, 'hex');
-  const signatureBytes = Buffer.from(RELEASE_VECTOR.signature_b64, 'base64');
-
-  await pool.query(
-    `INSERT INTO releases(id, version, release_sequence, manifest_schema_version, manifest, manifest_hash, signature, signing_key_ref, component_versions)
-     VALUES ($1, '1.1.0', 42, 1, $2::jsonb, $3, $4, $5, $6::jsonb)
-     ON CONFLICT (id) DO NOTHING`,
-    [
-      RELEASE_110_ID,
-      manifestEnvelope,
-      manifestHash,
-      signatureBytes,
-      RELEASE_VECTOR.key_id,
-      JSON.stringify(RELEASE_VECTOR.envelope.signed.components),
-    ],
-  );
-
-  for (const art of RELEASE_VECTOR.envelope.signed.artifacts) {
-    await pool.query(
-      `INSERT INTO artifacts(release_id, platform, arch, digest, size_bytes, installed_size_bytes, storage_ref)
-       VALUES ($1, 'ubuntu/24.04', $2, $3, $4::numeric, $5::numeric, $6)
-       ON CONFLICT (release_id, platform, arch) DO NOTHING`,
-      [
-        RELEASE_110_ID,
-        art.architecture,
-        Buffer.from(art.sha256, 'hex'),
-        art.size_bytes,
-        art.installed_size_bytes,
-        art.url,
-      ],
+async function patchMemberViaApi(controlBaseUrl, adminAuth, caPem, memberId, patchBody) {
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const getRes = await httpsRequest(
+      `${controlBaseUrl}/api/v1/admin/members/${memberId}`,
+      {
+        method: 'GET',
+        headers: {
+          Cookie: adminAuth.sessionCookie,
+          Accept: 'application/json',
+        },
+        ca: caPem,
+      },
+    );
+    if (getRes.status !== 200) {
+      throw new Error(
+        `GET /api/v1/admin/members/${memberId} failed (${getRes.status}): ${getRes.text}`,
+      );
+    }
+    const memberObj = JSON.parse(getRes.text);
+    const etag = getRes.headers.etag || `"${memberObj.resource_version}"`;
+    const patchRes = await httpsRequest(
+      `${controlBaseUrl}/api/v1/admin/members/${memberId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Cookie: adminAuth.sessionCookie,
+          'X-CSRF-Token': adminAuth.csrfToken,
+          Origin: 'https://portal.example.invalid',
+          'Idempotency-Key': crypto.randomUUID(),
+          'If-Match': etag,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(patchBody),
+        ca: caPem,
+      },
+    );
+    if (patchRes.status === 200 || patchRes.status === 202) {
+      return JSON.parse(patchRes.text);
+    }
+    if (patchRes.status === 412 && attempt < 4) {
+      continue;
+    }
+    throw new Error(
+      `PATCH /api/v1/admin/members/${memberId} failed (${patchRes.status}): ${patchRes.text}`,
     );
   }
+  throw new Error(`PATCH /api/v1/admin/members/${memberId} exhausted ETag retries`);
+}
 
-  await pool.query(
-    `INSERT INTO release_verifications(release_id, manifest_url, state, verified_at)
-     VALUES ($1, 'https://releases.example.invalid/r42/manifest.json', 'verified', clock_timestamp())
-     ON CONFLICT (release_id) DO NOTHING`,
-    [RELEASE_110_ID],
+async function grantMemberEntitlementViaApi(
+  controlBaseUrl,
+  adminAuth,
+  caPem,
+  memberId,
+  validFrom,
+  validUntil,
+  reason,
+) {
+  const grantRes = await httpsRequest(
+    `${controlBaseUrl}/api/v1/admin/members/${memberId}/grants`,
+    {
+      method: 'POST',
+      headers: {
+        Cookie: adminAuth.sessionCookie,
+        'X-CSRF-Token': adminAuth.csrfToken,
+        Origin: 'https://portal.example.invalid',
+        'Idempotency-Key': crypto.randomUUID(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        source: 'admin_grant',
+        plan_revision_id: PLAN_REVISION_ID,
+        valid_from: validFrom.toISOString(),
+        valid_until: validUntil.toISOString(),
+        reason,
+      }),
+      ca: caPem,
+    },
   );
+  if (grantRes.status !== 202) {
+    throw new Error(
+      `POST /api/v1/admin/members/${memberId}/grants failed (${grantRes.status}): ${grantRes.text}`,
+    );
+  }
+  return JSON.parse(grantRes.text);
+}
 
-  await pool.query(
-    `UPDATE fleet_config
-     SET desired_release_id = $1,
-         supported_release_policy = 'allowlist',
-         approved_release_ids = ARRAY[$1::uuid],
-         supported_release_ids = ARRAY[$1::uuid],
-         support_generation = 1,
-         resource_version = resource_version + 1
-     WHERE id = '00000000-0000-0000-0000-000000000001'`,
-    [RELEASE_110_ID],
+async function pollMemberEntitlementActive(pool, memberId, label) {
+  let lastRow = null;
+  for (let i = 0; i < 60; i += 1) {
+    const res = await pool.query(
+      `SELECT m.status AS member_status, e.state AS entitlement_state, e.device_limit::int AS device_limit
+       FROM members m
+       LEFT JOIN entitlements e ON e.member_id = m.id
+       WHERE m.id = $1`,
+      [memberId],
+    );
+    lastRow = res.rows[0] || null;
+    if (
+      lastRow &&
+      lastRow.member_status === 'active' &&
+      lastRow.entitlement_state === 'active' &&
+      lastRow.device_limit === 3
+    ) {
+      return lastRow;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error(
+    `Timed out waiting for ${label} (${memberId}) active entitlement projection; last=${JSON.stringify(lastRow)}`,
   );
+}
+
+async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label) {
+  let lastIds = [];
+  for (let i = 0; i < 75; i += 1) {
+    const res = await pool.query(
+      `SELECT d.id
+       FROM member_devices d
+       JOIN device_authorization_observations o ON o.device_id = d.id
+       WHERE d.member_id = $1
+         AND d.status = 'authorized'
+         AND o.observed_authorized = true
+       ORDER BY d.id`,
+      [memberId],
+    );
+    lastIds = res.rows.map((r) => r.id);
+    if (lastIds.length >= expectedCount) {
+      return lastIds.slice(0, expectedCount);
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  const diagRes = await pool.query(
+    `SELECT d.id, d.peer_id, d.status, o.observed_authorized
+     FROM member_devices d
+     LEFT JOIN device_authorization_observations o ON o.device_id = d.id
+     WHERE d.member_id = $1
+     ORDER BY d.id`,
+    [memberId],
+  );
+  throw new Error(
+    `Timed out waiting for ${expectedCount} authorized+observed devices on ${label} (${memberId}); current=${JSON.stringify(diagRes.rows)}`,
+  );
+}
+
+async function seedDatabase(
+  pool,
+  adminId,
+  adminAuth,
+  controlBaseUrl,
+  caPem,
+  defaultMemberId,
+  enrolledNodeId,
+) {
+  const now = new Date();
+  // Valid < 30d grant window (14d + 1h < MaxGrantDuration 2592000s, D-050)
+  const periodStart = new Date(now.getTime() - 3600_000);
+  const periodEnd = new Date(now.getTime() + 14 * 86400_000);
+  // UTC calendar month window for usage_rollups (§10.2)
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+
+  await runSeedStep('seed-member-groups', async () => {
+    await pool.query(
+      `INSERT INTO member_groups(id, code, name)
+       VALUES ($1, 'standard-exits', 'Standard Exit Group'),
+              ('63575bae-2d23-45c0-ae11-ba6bb9ace34a', 'default-members', 'Default Member Group')
+       ON CONFLICT (id) DO NOTHING`,
+      [EXIT_GROUP_ID],
+    );
+  });
+
+  await runSeedStep('seed-releases-and-fleet-config', async () => {
+    const manifestEnvelope = JSON.stringify(RELEASE_VECTOR.envelope);
+    const manifestHash = Buffer.from(RELEASE_VECTOR.envelope_sha256, 'hex');
+    const signatureBytes = Buffer.from(RELEASE_VECTOR.signature_b64, 'base64');
+
+    await pool.query(
+      `INSERT INTO releases(id, version, release_sequence, manifest_schema_version, manifest, manifest_hash, signature, signing_key_ref, component_versions)
+       VALUES ($1, '1.1.0', 42, 1, $2::jsonb, $3, $4, $5, $6::jsonb)
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        RELEASE_110_ID,
+        manifestEnvelope,
+        manifestHash,
+        signatureBytes,
+        RELEASE_VECTOR.key_id,
+        JSON.stringify(RELEASE_VECTOR.envelope.signed.components),
+      ],
+    );
+
+    for (const art of RELEASE_VECTOR.envelope.signed.artifacts) {
+      await pool.query(
+        `INSERT INTO artifacts(release_id, platform, arch, digest, size_bytes, installed_size_bytes, storage_ref)
+         VALUES ($1, 'ubuntu/24.04', $2, $3, $4::numeric, $5::numeric, $6)
+         ON CONFLICT (release_id, platform, arch) DO NOTHING`,
+        [
+          RELEASE_110_ID,
+          art.architecture,
+          Buffer.from(art.sha256, 'hex'),
+          art.size_bytes,
+          art.installed_size_bytes,
+          art.url,
+        ],
+      );
+    }
+
+    await pool.query(
+      `INSERT INTO release_verifications(release_id, manifest_url, state, verified_at)
+       VALUES ($1, 'https://releases.example.invalid/r42/manifest.json', 'verified', clock_timestamp())
+       ON CONFLICT (release_id) DO NOTHING`,
+      [RELEASE_110_ID],
+    );
+
+    await pool.query(
+      `UPDATE fleet_config
+       SET desired_release_id = $1,
+           supported_release_policy = 'allowlist',
+           approved_release_ids = ARRAY[$1::uuid],
+           supported_release_ids = ARRAY[$1::uuid],
+           support_generation = 1,
+           resource_version = resource_version + 1
+       WHERE id = '00000000-0000-0000-0000-000000000001'`,
+      [RELEASE_110_ID],
+    );
+  });
 
   const policiesToSeed = [
     {
@@ -1407,833 +1585,240 @@ async function seedDatabase(pool, adminId, defaultMemberId, enrolledNodeId) {
     },
   ];
 
-  for (const pol of policiesToSeed) {
-    const payloadStr = JSON.stringify(pol.payload);
-    const payloadHash = crypto.createHash('sha256').update(payloadStr).digest();
-    await pool.query(
-      `INSERT INTO policy_definitions(id, type, code, generation, resource_version)
-       VALUES ($1, $2, $3, 1, 1)
-       ON CONFLICT (id) DO NOTHING`,
-      [pol.defId, pol.type, pol.code],
-    );
-    await pool.query(
-      `INSERT INTO policy_revisions(id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by, reason)
-       VALUES ($1, $2, $3, 1, 1, $4::jsonb, $5, 'desired-state-active', $6, $7)
-       ON CONFLICT (id) DO NOTHING`,
-      [pol.revId, pol.defId, pol.type, payloadStr, payloadHash, adminId, pol.reason],
-    );
-    await pool.query(
-      `UPDATE policy_definitions SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-      [pol.defId, pol.revId],
-    );
-  }
-
-  await pool.query(
-    `INSERT INTO plans(id, code, resource_version)
-     VALUES ($1, 'standard-monthly', 1)
-     ON CONFLICT (id) DO NOTHING`,
-    [PLAN_ID],
-  );
-  await pool.query(
-    `INSERT INTO plan_revisions(id, plan_id, revision, device_limit, exit_group_ids, fup_policy_revision_id, provider, provider_price_ref, schema_version, payload)
-     VALUES ($1, $2, 1, 3, ARRAY[$3::uuid], '0195f100-0000-7000-8000-000000000401', 'stripe', 'price_monthly_test', 1, $4::jsonb)
-     ON CONFLICT (id) DO NOTHING`,
-    [
-      PLAN_REVISION_ID,
-      PLAN_ID,
-      EXIT_GROUP_ID,
-      JSON.stringify({
-        display_name: { 'zh-TW': '標準月費方案', en: 'Standard Monthly Plan' },
-      }),
-    ],
-  );
-  await pool.query(
-    `UPDATE plans SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-    [PLAN_ID, PLAN_REVISION_ID],
-  );
-
-  await pool.query(
-    `UPDATE members
-     SET display_name = '陳小華 (Active Member)',
-         email = 'member@example.com',
-         status = 'active',
-         member_group_ids = ARRAY[$2::uuid],
-         resource_version = resource_version + 1
-     WHERE id = $1`,
-    [defaultMemberId, EXIT_GROUP_ID],
-  );
-
-  const identityRes = await pool.query(
-    `SELECT id FROM identity_bindings WHERE member_id = $1 LIMIT 1`,
-    [defaultMemberId],
-  );
-  const identityBindingId = identityRes.rows[0].id;
-
-  await pool.query(
-    `INSERT INTO netbird_user_bindings(id, member_id, deployment_id, external_user_id, identity_binding_id, mapping_proof, revision, verified_at)
-     VALUES ($1, $2, 'nb-dev', 'nb-user-member-1', $3, 'oidc-sub-verified', 1, clock_timestamp())
-     ON CONFLICT (deployment_id, external_user_id) DO NOTHING`,
-    [crypto.randomUUID(), defaultMemberId, identityBindingId],
-  );
-
-  await pool.query(
-    `INSERT INTO billing_customers(id, member_id, provider, external_customer_id)
-     VALUES ($1, $2, 'stripe', 'cus_test_default_member')
-     ON CONFLICT (member_id, provider) DO NOTHING`,
-    [crypto.randomUUID(), defaultMemberId],
-  );
-
-  const subUuid = crypto.randomUUID();
-  await pool.query(
-    `INSERT INTO subscriptions(id, member_id, provider, external_subscription_id, external_customer_id, plan_revision_id, provider_status, is_primary, is_active, paid_from, paid_through, last_reconciled_at)
-     VALUES ($1, $2, 'stripe', 'sub_test_default_member', 'cus_test_default_member', $3, 'active', true, true, $4, $5, clock_timestamp())
-     ON CONFLICT (provider, external_subscription_id) DO NOTHING`,
-    [subUuid, defaultMemberId, PLAN_REVISION_ID, periodStart, periodEnd],
-  );
-
-  const entitlementProjection = {
-    state: 'active',
-    revision: '1',
-    computed_at: now.toISOString(),
-    admin_suspended: false,
-    cancel_at_period_end: false,
-    device_limit: 3,
-    valid_from: periodStart.toISOString(),
-    effective_service_end: periodEnd.toISOString(),
-    paid_through: periodEnd.toISOString(),
-    plan: {
-      plan_revision_id: PLAN_REVISION_ID,
-      device_limit: 3,
-      exit_group_ids: [EXIT_GROUP_ID],
-    },
-    exit_group_ids: [EXIT_GROUP_ID],
-    member_group_ids: [EXIT_GROUP_ID],
-  };
-
-  await pool.query(
-    `INSERT INTO entitlements(id, member_id, revision, plan_revision_id, device_limit, valid_from, effective_service_end, admin_suspended, state, projection)
-     VALUES ($1, $2, 1, $3, 3, $4, $5, false, 'active', $6::jsonb)
-     ON CONFLICT (member_id) DO UPDATE
-     SET revision = 1,
-         plan_revision_id = EXCLUDED.plan_revision_id,
-         device_limit = 3,
-         valid_from = EXCLUDED.valid_from,
-         effective_service_end = EXCLUDED.effective_service_end,
-         admin_suspended = false,
-         state = 'active',
-         projection = EXCLUDED.projection`,
-    [
-      crypto.randomUUID(),
-      defaultMemberId,
-      PLAN_REVISION_ID,
-      periodStart,
-      periodEnd,
-      JSON.stringify(entitlementProjection),
-    ],
-  );
-
-  await pool.query(
-    `UPDATE nodes SET current_release_id = $2, last_good_release_id = $2, desired_release_id = $2, desired_config_generation = 1, applied_config_generation = 1, provisioning_state = 'ready', control_status = 'online', data_health = 'healthy', safety_status = 'passed', resource_version = resource_version + 1 WHERE id = $1`,
-    [enrolledNodeId, RELEASE_110_ID],
-  );
-  await pool.query(
-    `UPDATE exits SET publication_intent = 'published', publication_observed = 'active', resource_version = resource_version + 1 WHERE node_id = $1`,
-    [enrolledNodeId],
-  );
-
-  const devicesToSeed = [
-    {
-      id: '0195f100-0000-7000-8000-000000000501',
-      peerId: 'nb-peer-dev-1',
-      name: 'Member MacBook Pro',
-      platform: 'macos',
-      ip: '100.64.0.21',
-    },
-    {
-      id: '0195f100-0000-7000-8000-000000000502',
-      peerId: 'nb-peer-dev-2',
-      name: 'Member iPhone 16',
-      platform: 'ios',
-      ip: '100.64.0.22',
-    },
-    {
-      id: '0195f100-0000-7000-8000-000000000503',
-      peerId: 'nb-peer-dev-3',
-      name: 'Member Linux Workstation',
-      platform: 'linux',
-      ip: '100.64.0.23',
-    },
-  ];
-
-  for (const dev of devicesToSeed) {
-    await pool.query(
-      `INSERT INTO member_devices(id, member_id, deployment_id, peer_id, name, status, authorized_at, platform, last_seen_at)
-       VALUES ($1, $2, 'nb-dev', $3, $4, 'authorized', clock_timestamp(), $5, clock_timestamp())
-       ON CONFLICT (id) DO NOTHING`,
-      [dev.id, defaultMemberId, dev.peerId, dev.name, dev.platform],
-    );
-    await pool.query(
-      `INSERT INTO device_bindings(id, device_id, member_id, overlay_scope, overlay_ip, binding_revision, valid_from, valid_until, peer_ref)
-       VALUES ($1, $2, $3, 'nb-overlay', $4::inet, 1, $5, $6, $7)
-       ON CONFLICT (device_id, binding_revision) DO NOTHING`,
-      [
-        crypto.randomUUID(),
-        dev.id,
-        defaultMemberId,
-        dev.ip,
-        periodStart,
-        periodEnd,
-        dev.peerId,
-      ],
-    );
-    await pool.query(
-      `INSERT INTO device_authorization_observations(device_id, observed_authorized, observed_at, observed_version, observed_entitlement_revision)
-       VALUES ($1, true, clock_timestamp(), 1, 1)
-       ON CONFLICT (device_id) DO NOTHING`,
-      [dev.id],
-    );
-  }
-
-  await pool.query(
-    `INSERT INTO usage_rollups(id, member_id, period, granularity, projection_generation, metering_version, upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end, estimated, gap, reconciliation_in_progress)
-     VALUES ($1, $2, $3, 'month', 1, 'forward_admission_v1', 9007199254740993, 9007199254740995, clock_timestamp(), clock_timestamp(), $4, $5, true, true, false)
-     ON CONFLICT (member_id, period, granularity, projection_generation) DO NOTHING`,
-    [crypto.randomUUID(), defaultMemberId, currentMonth, periodStart, periodEnd],
-  );
-
-  await pool.query(
-    `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, desired_config_generation, applied_config_generation, update_generation, desired_release_id, current_release_id, last_good_release_id, control_status, data_health, safety_status, last_seen_at, last_observed_at)
-     VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', 1, 1, 1, $2, $2, $2, 'online', 'healthy', 'passed', clock_timestamp(), clock_timestamp())
-     ON CONFLICT (id) DO NOTHING`,
-    [SEEDED_NODE_2_ID, RELEASE_110_ID],
-  );
-  await pool.query(
-    `INSERT INTO node_incarnations(id, node_id, public_key_fingerprint, deployment_id, peer_id, os, arch, os_version)
-     VALUES ($1, $2, $3, 'nb-dev', 'nb-peer-node-2', 'ubuntu', 'arm64', '24.04')
-     ON CONFLICT (id) DO NOTHING`,
-    [SEEDED_NODE_2_INC_ID, SEEDED_NODE_2_ID, crypto.randomBytes(32)],
-  );
-  await pool.query(
-    `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-    [SEEDED_NODE_2_ID, SEEDED_NODE_2_INC_ID],
-  );
-  await pool.query(
-    `INSERT INTO exits(id, node_id, display_name, region, publication_intent, publication_observed)
-     VALUES ($1, $2, 'jp-tyo-01', 'jp-tyo', 'published', 'active')
-     ON CONFLICT (node_id) DO NOTHING`,
-    [crypto.randomUUID(), SEEDED_NODE_2_ID],
-  );
-
-  const enrolledIncRes = await pool.query(
-    `SELECT current_incarnation_id FROM nodes WHERE id = $1`,
-    [enrolledNodeId],
-  );
-  const enrolledIncId = enrolledIncRes.rows[0].current_incarnation_id;
-
-  const batchOpId = '0195f100-0000-7000-8000-000000000601';
-  await pool.query(
-    `INSERT INTO operations(id, kind, principal, resource_type, resource_id, desired_generation, status, steps, observed_refs)
-     VALUES ($1, 'update.batch_create', $2, 'update_batch', $3, 1, 'running',
-             '{"snapshot":{"required":true,"status":"succeeded"},"targets":{"required":true,"status":"running"}}'::jsonb,
-             '{"snapshot":"update_batch:85ef720a-31a0-4250-90d2-4b92c58695bc"}'::jsonb)
-     ON CONFLICT (id) DO NOTHING`,
-    [batchOpId, `admin:${adminId}`, SEEDED_BATCH_ID],
-  );
-
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    await client.query(
-      `INSERT INTO update_batches(id, operation_id, target_release_id, scope, created_by, target_count, generation, reason, online_at_snapshot)
-       VALUES ($1, $2, $3, 'all_nodes', $4, 2, 1, 'Scheduled fleet rollout to 1.1.0', 2)`,
-      [SEEDED_BATCH_ID, batchOpId, RELEASE_110_ID, adminId],
-    );
-    const target1Id = '0195f100-0000-7000-8000-000000000611';
-    const target2Id = '0195f100-0000-7000-8000-000000000612';
-    await client.query(
-      `INSERT INTO update_targets(id, batch_id, node_id, incarnation_at_snapshot, execution_incarnation_id, target_state, target_generation, online_at_snapshot)
-       VALUES ($1, $2, $3, $4, $4, 'active', 1, true),
-              ($5, $2, $6, $7, $7, 'active', 1, true)`,
-      [
-        target1Id,
-        SEEDED_BATCH_ID,
-        enrolledNodeId,
-        enrolledIncId,
-        target2Id,
-        SEEDED_NODE_2_ID,
-        SEEDED_NODE_2_INC_ID,
-      ],
-    );
-
-    const job1Id = '0195f100-0000-7000-8000-000000000621';
-    const job2Id = '0195f100-0000-7000-8000-000000000622';
-    const res1Id = '0195f100-0000-7000-8000-000000000631';
-    const res2Id = '0195f100-0000-7000-8000-000000000632';
-
-    await client.query(
-      `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, actual_release_id, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, last_observed_at, result_id, result_hash, stage, needs_attention, recovery_required, observed_evidence)
-       VALUES ($1, $2, $3, $4, 1, $5, 1, 'succeeded', $4, $4, clock_timestamp() - interval '6 minutes', clock_timestamp() - interval '5 minutes', clock_timestamp() - interval '4 minutes', clock_timestamp() - interval '1 minute', clock_timestamp() - interval '1 minute', clock_timestamp(), $6, $7, 'checking', false, false, '{"result_id":"0195f100-0000-7000-8000-000000000631"}'::jsonb)`,
-      [
-        job1Id,
-        target1Id,
-        enrolledNodeId,
-        RELEASE_110_ID,
-        enrolledIncId,
-        res1Id,
-        crypto.randomBytes(32),
-      ],
-    );
-
-    await client.query(
-      `INSERT INTO fleet_node_state(node_id, current_job_id, current_target_id, observation_incarnation_id, observation_seq, observed_update_generation, last_observed_at, received_at, recovery_required)
-       VALUES ($1, $2, $3, $4, 10, 1, clock_timestamp(), clock_timestamp(), false)
-       ON CONFLICT (node_id) DO UPDATE
-       SET current_job_id = EXCLUDED.current_job_id,
-           current_target_id = EXCLUDED.current_target_id,
-           observation_incarnation_id = EXCLUDED.observation_incarnation_id,
-           observed_update_generation = 1,
-           last_observed_at = clock_timestamp(),
-           received_at = clock_timestamp()`,
-      [enrolledNodeId, job1Id, target1Id, enrolledIncId],
-    );
-
-    await client.query(
-      `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, result_id, result_hash, error_code, stage, needs_attention, recovery_required, observed_evidence)
-       VALUES ($1, $2, $3, $4, 1, $5, 1, 'failed', $4, clock_timestamp() - interval '6 minutes', clock_timestamp() - interval '5 minutes', clock_timestamp() - interval '4 minutes', clock_timestamp() - interval '2 minutes', clock_timestamp() - interval '2 minutes', $6, $7, 'HEALTHCHECK_FAILED', 'checking', true, false, '{"result_id":"0195f100-0000-7000-8000-000000000632"}'::jsonb)`,
-      [
-        job2Id,
-        target2Id,
-        SEEDED_NODE_2_ID,
-        RELEASE_110_ID,
-        SEEDED_NODE_2_INC_ID,
-        res2Id,
-        crypto.randomBytes(32),
-      ],
-    );
-
-    await client.query('COMMIT');
-  } catch (err) {
-    await client.query('ROLLBACK');
-    throw err;
-  } finally {
-    client.release();
-  }
-}
-
-async function handleTransitional501(req, reqBody, res, pool, activeSession) {
-  const reqUrl = new URL(req.url || '/', 'http://127.0.0.1');
-  const sendJson = (obj, status = 200, extraHeaders = {}) => {
-    res.writeHead(status, {
-      'Content-Type': 'application/json',
-      ...extraHeaders,
-    });
-    res.end(JSON.stringify(obj));
-  };
-
-  if (req.method === 'GET' && reqUrl.pathname === '/api/v1/member/usage') {
-    const memberId = activeSession?.session?.member_id;
-    const now = new Date();
-    const currentMonth =
-      reqUrl.searchParams.get('month') ||
-      `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
-    const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-
-    const rollupRes = await pool.query(
-      `SELECT upload_bytes::text, download_bytes::text, total_bytes::text,
-              last_observed_at, aggregate_as_of, period_start, period_end,
-              estimated, gap, reconciliation_in_progress
-       FROM usage_rollups
-       WHERE member_id = $1 AND period = $2 AND granularity = 'month'
-       ORDER BY projection_generation DESC LIMIT 1`,
-      [memberId, currentMonth],
-    );
-
-    const row = rollupRes.rows[0];
-    const uploadBytes = row ? row.upload_bytes : '0';
-    const downloadBytes = row ? row.download_bytes : '0';
-    const totalBytes = row ? row.total_bytes : '0';
-    const aggregateAsOf = row
-      ? new Date(row.aggregate_as_of).toISOString()
-      : now.toISOString();
-
-    const fupRes = await pool.query(
-      `SELECT enforced_state, enforced_reason, enforced_down_bps, enforced_up_bps, enforced_priority
-       FROM fup_member_states
-       WHERE member_id = $1 AND period_id = $2
-       LIMIT 1`,
-      [memberId, currentMonth],
-    );
-    const fupRow = fupRes.rows[0];
-
-    sendJson({
-      period_id: currentMonth,
-      period_start: (row ? new Date(row.period_start) : periodStart).toISOString(),
-      period_end: (row ? new Date(row.period_end) : periodEnd).toISOString(),
-      granularity: reqUrl.searchParams.get('granularity') || 'month',
-      metering_version: 'forward_admission_v1',
-      totals: {
-        upload_bytes: uploadBytes,
-        download_bytes: downloadBytes,
-        total_bytes: totalBytes,
-      },
-      quality: {
-        estimated: row ? Boolean(row.estimated) : false,
-        gap: row ? Boolean(row.gap) : false,
-        reconciliation_in_progress: row ? Boolean(row.reconciliation_in_progress) : false,
-      },
-      last_observed_at: row ? new Date(row.last_observed_at).toISOString() : null,
-      aggregate_as_of: aggregateAsOf,
-      days: [
-        {
-          date: `${currentMonth}-01`,
-          upload_bytes: uploadBytes,
-          download_bytes: downloadBytes,
-          total_bytes: totalBytes,
-          quality: {
-            estimated: row ? Boolean(row.estimated) : false,
-            gap: row ? Boolean(row.gap) : false,
-            reconciliation_in_progress: row
-              ? Boolean(row.reconciliation_in_progress)
-              : false,
-          },
-        },
-      ],
-      fair_use: {
-        state: fupRow?.enforced_state || 'normal',
-        tier_index: fupRow?.enforced_state === 'adjusted' ? 1 : 0,
-        tier_name:
-          fupRow?.enforced_state === 'adjusted'
-            ? { 'zh-TW': '尖峰保護降速', en: 'Fair-Use Adjusted' }
-            : { 'zh-TW': '標準速率', en: 'Standard Speed' },
-        rate: {
-          down_bps: Number(fupRow?.enforced_down_bps || 100000000),
-          up_bps: Number(fupRow?.enforced_up_bps || 50000000),
-        },
-        reason: fupRow?.enforced_state === 'adjusted' ? 'fair_use_tier' : null,
-        applying: false,
-        resets_at: periodEnd.toISOString(),
-        as_of: aggregateAsOf,
-      },
-    });
-    return true;
-  }
-
-  if (req.method === 'GET' && reqUrl.pathname === '/api/v1/admin/policies') {
-    const filterType = reqUrl.searchParams.get('type');
-    const defsRes = await pool.query(
-      `SELECT d.id, d.type, d.code, d.active_revision_id, d.generation::text, d.resource_version::text, d.created_at, d.updated_at,
-              r.revision::text AS active_rev_num, r.schema_version, r.payload, encode(r.payload_hash, 'hex') AS payload_sha256,
-              r.signing_key_ref, r.created_by, r.created_at AS rev_created_at, r.reason
-       FROM policy_definitions d
-       LEFT JOIN policy_revisions r ON r.id = d.active_revision_id
-       WHERE ($1::text IS NULL OR d.type = $1)
-       ORDER BY d.code ASC`,
-      [filterType],
-    );
-    const items = defsRes.rows.map((r) => {
-      const revObj = r.active_revision_id
-        ? {
-            revision_id: r.active_revision_id,
-            definition_id: r.id,
-            type: r.type,
-            code: r.code,
-            revision: r.active_rev_num,
-            schema_version: r.schema_version,
-            payload: r.payload,
-            payload_sha256: r.payload_sha256,
-            signature_key_id: r.signing_key_ref,
-            created_at: new Date(r.rev_created_at).toISOString(),
-            created_by: r.created_by,
-            reason: r.reason || 'Initial revision',
-          }
-        : undefined;
-      return {
-        definition_id: r.id,
-        type: r.type,
-        code: r.code,
-        active_revision_id: r.active_revision_id || null,
-        generation: r.generation,
-        resource_version: r.resource_version,
-        created_at: new Date(r.created_at).toISOString(),
-        updated_at: new Date(r.updated_at).toISOString(),
-        active_revision: revObj,
-        latest_revision: revObj,
-        revisions: revObj
-          ? [
-              {
-                revision_id: revObj.revision_id,
-                revision: revObj.revision,
-                schema_version: revObj.schema_version,
-                payload_sha256: revObj.payload_sha256,
-                reason: revObj.reason,
-                created_by: revObj.created_by,
-                created_at: revObj.created_at,
-              },
-            ]
-          : [],
-      };
-    });
-    sendJson({ items, next_cursor: null });
-    return true;
-  }
-
-  if (req.method === 'POST' && reqUrl.pathname === '/api/v1/admin/policies') {
-    const body = JSON.parse(reqBody || '{}');
-    const actorId =
-      activeSession?.session?.member_id || '00000000-0000-0000-0000-000000000003';
-    let defRes;
-    if (body.definition_id) {
-      defRes = await pool.query(`SELECT id, code FROM policy_definitions WHERE id = $1`, [
-        body.definition_id,
-      ]);
-    } else {
-      defRes = await pool.query(
-        `SELECT id, code FROM policy_definitions WHERE type = $1 AND code = $2`,
-        [body.type, body.code],
-      );
-    }
-    let defId;
-    let defCode;
-    if (defRes.rows.length === 0) {
-      defId = body.definition_id || crypto.randomUUID();
-      defCode = body.code || `policy-${defId.slice(0, 8)}`;
+  await runSeedStep('seed-policies', async () => {
+    for (const pol of policiesToSeed) {
+      const payloadStr = JSON.stringify(pol.payload);
+      const payloadHash = crypto.createHash('sha256').update(payloadStr).digest();
       await pool.query(
         `INSERT INTO policy_definitions(id, type, code, generation, resource_version)
-         VALUES ($1, $2, $3, 0, 1)`,
-        [defId, body.type, defCode],
+         VALUES ($1, $2, $3, 1, 1)
+         ON CONFLICT (id) DO NOTHING`,
+        [pol.defId, pol.type, pol.code],
       );
-    } else {
-      defId = defRes.rows[0].id;
-      defCode = defRes.rows[0].code;
-    }
-
-    const revNumRes = await pool.query(
-      `SELECT coalesce(max(revision), 0) + 1 AS next_rev FROM policy_revisions WHERE definition_id = $1`,
-      [defId],
-    );
-    const nextRev = String(revNumRes.rows[0].next_rev);
-    const revId = crypto.randomUUID();
-    const payloadStr = JSON.stringify(body.payload || {});
-    const payloadHash = crypto.createHash('sha256').update(payloadStr).digest();
-
-    await pool.query(
-      `INSERT INTO policy_revisions(id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by, reason)
-       VALUES ($1, $2, $3, $4::numeric, $5, $6::jsonb, $7, 'desired-state-active', $8, $9)`,
-      [
-        revId,
-        defId,
-        body.type,
-        nextRev,
-        body.schema_version || 1,
-        payloadStr,
-        payloadHash,
-        actorId,
-        body.reason || 'Operator created policy revision',
-      ],
-    );
-
-    sendJson(
-      {
-        revision_id: revId,
-        definition_id: defId,
-        type: body.type,
-        code: defCode,
-        revision: nextRev,
-        schema_version: body.schema_version || 1,
-        payload: body.payload,
-        payload_sha256: payloadHash.toString('hex'),
-        signature_key_id: 'desired-state-active',
-        created_at: new Date().toISOString(),
-        created_by: actorId,
-        reason: body.reason || 'Operator created policy revision',
-      },
-      201,
-    );
-    return true;
-  }
-
-  const activateMatch = reqUrl.pathname.match(
-    /^\/api\/v1\/admin\/policies\/([^/]+)\/activate$/,
-  );
-  if (req.method === 'POST' && activateMatch) {
-    const defId = activateMatch[1];
-    const body = JSON.parse(reqBody || '{}');
-    const actorId =
-      activeSession?.session?.member_id || '00000000-0000-0000-0000-000000000003';
-    await pool.query(
-      `UPDATE policy_definitions
-       SET active_revision_id = $2,
-           generation = generation + 1,
-           resource_version = resource_version + 1
-       WHERE id = $1`,
-      [defId, body.revision_id],
-    );
-    const opId = crypto.randomUUID();
-    const nowIso = new Date().toISOString();
-    await pool.query(
-      `INSERT INTO operations(id, kind, principal, resource_type, resource_id, desired_generation, status, steps, observed_refs)
-       VALUES ($1, 'policy.activate', $2, 'policy_definition', $3, 1, 'pending',
-               '{"compile":{"required":true,"status":"pending"}}'::jsonb, '{}'::jsonb)`,
-      [opId, `admin:${actorId}`, defId],
-    );
-    await pool.query(
-      `UPDATE operations
-       SET status = 'running',
-           steps = '{"compile":{"required":true,"status":"succeeded","observed_ref":"compile"}}'::jsonb,
-           observed_refs = $2::jsonb
-       WHERE id = $1`,
-      [opId, JSON.stringify({ compile: `policy_definition:${defId}` })],
-    );
-    await pool.query(
-      `UPDATE operations
-       SET status = 'succeeded',
-           completed_at = clock_timestamp()
-       WHERE id = $1`,
-      [opId],
-    );
-    await pool.query(
-      `INSERT INTO audit_events(id, actor, actor_type, action, resource, request_id, operation_id, before_diff, after_diff, result)
-       VALUES ($1, $2, 'admin', 'policy.activate', $3, $4, $5, '{}'::jsonb, $6::jsonb, 'succeeded')`,
-      [
-        crypto.randomUUID(),
-        actorId,
-        `policy_definition:${defId}`,
-        crypto.randomUUID(),
-        opId,
-        JSON.stringify({ active_revision_id: body.revision_id }),
-      ],
-    );
-    sendJson(
-      {
-        operation_id: opId,
-        kind: 'policy.activate',
-        status: 'succeeded',
-        resource: { type: 'policy_definition', id: defId },
-        resource_version: '2',
-        desired_generation: '1',
-        observed_generation: '1',
-        steps: [
-          {
-            name: 'compile',
-            required: true,
-            status: 'succeeded',
-            observed_at: nowIso,
-            error_code: null,
-            message: null,
-          },
-        ],
-        error: null,
-        request_id: crypto.randomUUID(),
-        created_at: nowIso,
-        updated_at: nowIso,
-        completed_at: nowIso,
-      },
-      202,
-    );
-    return true;
-  }
-
-  const fupOverrideMatch = reqUrl.pathname.match(
-    /^\/api\/v1\/admin\/members\/([^/]+)\/fair-use-override$/,
-  );
-  if (req.method === 'PUT' && fupOverrideMatch) {
-    const memberId = fupOverrideMatch[1];
-    const body = JSON.parse(reqBody || '{}');
-    const actorId =
-      activeSession?.session?.member_id || '00000000-0000-0000-0000-000000000003';
-    const overrideId = crypto.randomUUID();
-    await pool.query(
-      `INSERT INTO fup_member_overrides(id, member_id, down_bps, up_bps, priority, valid_until, reason, actor_id)
-       VALUES ($1, $2, $3::bigint, $4::bigint, $5, $6::timestamptz, $7, $8)`,
-      [
-        overrideId,
-        memberId,
-        body.rate.down_bps,
-        body.rate.up_bps,
-        body.priority,
-        body.valid_until,
-        body.reason,
-        actorId,
-      ],
-    );
-    const opId = crypto.randomUUID();
-    const nowIso = new Date().toISOString();
-    await pool.query(
-      `INSERT INTO operations(id, kind, principal, resource_type, resource_id, desired_generation, status, steps, observed_refs)
-       VALUES ($1, 'fair_use.override', $2, 'member', $3, 1, 'pending',
-               '{"override":{"required":true,"status":"pending"}}'::jsonb, '{}'::jsonb)`,
-      [opId, `admin:${actorId}`, memberId],
-    );
-    await pool.query(
-      `UPDATE operations
-       SET status = 'running',
-           steps = '{"override":{"required":true,"status":"succeeded","observed_ref":"override"}}'::jsonb,
-           observed_refs = $2::jsonb
-       WHERE id = $1`,
-      [opId, JSON.stringify({ override: `member:${memberId}` })],
-    );
-    await pool.query(
-      `UPDATE operations
-       SET status = 'succeeded',
-           completed_at = clock_timestamp()
-       WHERE id = $1`,
-      [opId],
-    );
-    sendJson(
-      {
-        operation_id: opId,
-        kind: 'member.update',
-        status: 'succeeded',
-        resource: { type: 'member', id: memberId },
-        resource_version: '1',
-        desired_generation: '1',
-        observed_generation: '1',
-        steps: [
-          {
-            name: 'override',
-            required: true,
-            status: 'succeeded',
-            observed_at: nowIso,
-            error_code: null,
-            message: null,
-          },
-        ],
-        error: null,
-        request_id: crypto.randomUUID(),
-        created_at: nowIso,
-        updated_at: nowIso,
-        completed_at: nowIso,
-      },
-      202,
-    );
-    return true;
-  }
-
-  if (req.method === 'POST' && reqUrl.pathname === '/api/v1/member/devices') {
-    const memberId = activeSession?.session?.member_id;
-    const body = JSON.parse(reqBody || '{}');
-    const entRes = await pool.query(
-      `SELECT device_limit, valid_from, effective_service_end, revision FROM entitlements WHERE member_id = $1`,
-      [memberId],
-    );
-    const ent = entRes.rows[0];
-    const limit = ent?.device_limit ?? 3;
-    const countRes = await pool.query(
-      `SELECT count(*)::int AS cnt FROM member_devices WHERE member_id = $1 AND status IN ('authorized', 'pending')`,
-      [memberId],
-    );
-    const cnt = countRes.rows[0]?.cnt ?? 0;
-    if (cnt >= limit) {
-      sendJson(
-        {
-          error: {
-            code: 'DEVICE_LIMIT_REACHED',
-            message: `Device limit reached (${cnt}/${limit}). Revoke an existing device first.`,
-            request_id: crypto.randomUUID(),
-            retryable: false,
-            details: null,
-          },
-        },
-        409,
+      await pool.query(
+        `INSERT INTO policy_revisions(id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by, reason)
+         VALUES ($1, $2, $3, 1, 1, $4::jsonb, $5, 'desired-state-active', $6, $7)
+         ON CONFLICT (id) DO NOTHING`,
+        [pol.revId, pol.defId, pol.type, payloadStr, payloadHash, adminId, pol.reason],
       );
-      return true;
+      await pool.query(
+        `UPDATE policy_definitions SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
+        [pol.defId, pol.revId],
+      );
     }
+  });
 
-    const devId = crypto.randomUUID();
-    const peerId = `nb-peer-${devId.slice(0, 8)}`;
-    const ip = `100.64.2.${(cnt + 10) % 250}`;
-    const now = new Date();
-    const validFrom = ent?.valid_from ? new Date(ent.valid_from) : now;
-    const validUntil = ent?.effective_service_end
-      ? new Date(ent.effective_service_end)
-      : new Date(now.getTime() + 30 * 86400_000);
-
+  await runSeedStep('seed-plans', async () => {
     await pool.query(
-      `INSERT INTO member_devices(id, member_id, deployment_id, peer_id, name, status, authorized_at, platform, last_seen_at)
-       VALUES ($1, $2, 'nb-dev', $3, $4, 'authorized', clock_timestamp(), $5, clock_timestamp())`,
-      [devId, memberId, peerId, body.name || 'New Device', body.platform || 'macos'],
+      `INSERT INTO plans(id, code, resource_version)
+       VALUES ($1, 'standard-monthly', 1)
+       ON CONFLICT (id) DO NOTHING`,
+      [PLAN_ID],
     );
     await pool.query(
-      `INSERT INTO device_bindings(id, device_id, member_id, overlay_scope, overlay_ip, binding_revision, valid_from, valid_until, peer_ref)
-       VALUES ($1, $2, $3, 'nb-overlay', $4::inet, 1, $5, $6, $7)`,
-      [crypto.randomUUID(), devId, memberId, ip, validFrom, validUntil, peerId],
-    );
-    await pool.query(
-      `INSERT INTO device_authorization_observations(device_id, observed_authorized, observed_at, observed_version, observed_entitlement_revision)
-       VALUES ($1, true, clock_timestamp(), 1, $2)`,
-      [devId, ent?.revision ?? 1],
-    );
-
-    const opId = crypto.randomUUID();
-    const nowIso = now.toISOString();
-    await pool.query(
-      `INSERT INTO operations(id, kind, principal, resource_type, resource_id, desired_generation, status, steps, observed_refs)
-       VALUES ($1, 'member.device_authorize', $2, 'member_device', $3, 1, 'pending',
-               '{"netbird":{"required":true,"status":"pending"},"nodes":{"required":true,"status":"pending"}}'::jsonb, '{}'::jsonb)`,
-      [opId, `member:${memberId}`, devId],
-    );
-    await pool.query(
-      `UPDATE operations
-       SET status = 'running',
-           steps = '{"netbird":{"required":true,"status":"succeeded","observed_ref":"netbird"},"nodes":{"required":true,"status":"succeeded","observed_ref":"nodes"}}'::jsonb,
-           observed_refs = $2::jsonb
-       WHERE id = $1`,
+      `INSERT INTO plan_revisions(id, plan_id, revision, device_limit, exit_group_ids, fup_policy_revision_id, provider, provider_price_ref, schema_version, payload)
+       VALUES ($1, $2, 1, 3, ARRAY[$3::uuid], '0195f100-0000-7000-8000-000000000401', 'stripe', 'price_monthly_test', 1, $4::jsonb)
+       ON CONFLICT (id) DO NOTHING`,
       [
-        opId,
+        PLAN_REVISION_ID,
+        PLAN_ID,
+        EXIT_GROUP_ID,
         JSON.stringify({
-          netbird: `device_observation:${devId}`,
-          nodes: `member_device:${devId}`,
+          display_name: { 'zh-TW': '標準月費方案', en: 'Standard Monthly Plan' },
         }),
       ],
     );
     await pool.query(
-      `UPDATE operations
-       SET status = 'succeeded',
-           completed_at = clock_timestamp()
-       WHERE id = $1`,
-      [opId],
+      `UPDATE plans SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
+      [PLAN_ID, PLAN_REVISION_ID],
+    );
+  });
+
+  await runSeedStep('seed-member-bindings-and-customer', async () => {
+    const identityRes = await pool.query(
+      `SELECT id FROM identity_bindings WHERE member_id = $1 LIMIT 1`,
+      [defaultMemberId],
+    );
+    const identityBindingId = identityRes.rows[0].id;
+
+    await pool.query(
+      `INSERT INTO netbird_user_bindings(id, member_id, deployment_id, external_user_id, identity_binding_id, mapping_proof, revision, verified_at)
+       VALUES ($1, $2, 'nb-dev', 'nb-user-member-1', $3, 'oidc-sub-verified', 1, clock_timestamp())
+       ON CONFLICT (deployment_id, external_user_id) DO NOTHING`,
+      [crypto.randomUUID(), defaultMemberId, identityBindingId],
     );
 
-    sendJson(
-      {
-        operation_id: opId,
-        kind: 'member.device_authorize',
-        status: 'succeeded',
-        resource: { type: 'member_device', id: devId },
-        resource_version: '1',
-        desired_generation: '1',
-        observed_generation: '1',
-        steps: [
-          {
-            name: 'netbird',
-            required: true,
-            status: 'succeeded',
-            observed_at: nowIso,
-            error_code: null,
-            message: null,
-          },
-          {
-            name: 'nodes',
-            required: true,
-            status: 'succeeded',
-            observed_at: nowIso,
-            error_code: null,
-            message: null,
-          },
+    await pool.query(
+      `INSERT INTO billing_customers(id, member_id, provider, external_customer_id)
+       VALUES ($1, $2, 'stripe', 'cus_test_default_member')
+       ON CONFLICT (member_id, provider) DO NOTHING`,
+      [crypto.randomUUID(), defaultMemberId],
+    );
+  });
+
+  await runSeedStep('patch-default-member-via-api', async () => {
+    await patchMemberViaApi(controlBaseUrl, adminAuth, caPem, defaultMemberId, {
+      display_name: '陳小華 (Active Member)',
+      member_group_ids: [EXIT_GROUP_ID],
+      notes: 'Default seeded active member',
+    });
+  });
+
+  await runSeedStep('grant-default-member-entitlement-via-api', async () => {
+    await grantMemberEntitlementViaApi(
+      controlBaseUrl,
+      adminAuth,
+      caPem,
+      defaultMemberId,
+      periodStart,
+      periodEnd,
+      'TEST ONLY initial active entitlement grant',
+    );
+  });
+
+  await runSeedStep('await-default-member-entitlement-projection', async () => {
+    await pollMemberEntitlementActive(pool, defaultMemberId, 'defaultMemberId');
+  });
+
+  await runSeedStep('await-default-member-device-discovery', async () => {
+    await pollMemberAuthorizedDevices(pool, defaultMemberId, 3, 'defaultMemberId');
+  });
+
+  await runSeedStep('seed-node-and-exit-fixtures', async () => {
+    await pool.query(
+      `UPDATE nodes SET current_release_id = $2, last_good_release_id = $2, desired_release_id = $2, desired_config_generation = 1, applied_config_generation = 1, provisioning_state = 'ready', control_status = 'online', data_health = 'healthy', safety_status = 'passed', resource_version = resource_version + 1 WHERE id = $1`,
+      [enrolledNodeId, RELEASE_110_ID],
+    );
+    await pool.query(
+      `UPDATE exits SET publication_intent = 'published', publication_observed = 'active', resource_version = resource_version + 1 WHERE node_id = $1`,
+      [enrolledNodeId],
+    );
+
+    await pool.query(
+      `INSERT INTO usage_rollups(id, member_id, period, granularity, projection_generation, metering_version, upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end, estimated, gap, reconciliation_in_progress)
+       VALUES ($1, $2, $3, 'month', 1, 'forward_admission_v1', 9007199254740993, 9007199254740995, clock_timestamp(), clock_timestamp(), $4, $5, true, true, false)
+       ON CONFLICT (member_id, period, granularity, projection_generation) DO NOTHING`,
+      [crypto.randomUUID(), defaultMemberId, currentMonth, monthStart, monthEnd],
+    );
+
+    await pool.query(
+      `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, desired_config_generation, applied_config_generation, update_generation, desired_release_id, current_release_id, last_good_release_id, control_status, data_health, safety_status, last_seen_at, last_observed_at)
+       VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', 1, 1, 1, $2, $2, $2, 'online', 'healthy', 'passed', clock_timestamp(), clock_timestamp())
+       ON CONFLICT (id) DO NOTHING`,
+      [SEEDED_NODE_2_ID, RELEASE_110_ID],
+    );
+    await pool.query(
+      `INSERT INTO node_incarnations(id, node_id, public_key_fingerprint, deployment_id, peer_id, os, arch, os_version)
+       VALUES ($1, $2, $3, 'nb-dev', 'nb-peer-node-2', 'ubuntu', 'arm64', '24.04')
+       ON CONFLICT (id) DO NOTHING`,
+      [SEEDED_NODE_2_INC_ID, SEEDED_NODE_2_ID, crypto.randomBytes(32)],
+    );
+    await pool.query(
+      `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
+      [SEEDED_NODE_2_ID, SEEDED_NODE_2_INC_ID],
+    );
+    await pool.query(
+      `INSERT INTO exits(id, node_id, display_name, region, publication_intent, publication_observed)
+       VALUES ($1, $2, 'jp-tyo-01', 'jp-tyo', 'published', 'active')
+       ON CONFLICT (node_id) DO NOTHING`,
+      [crypto.randomUUID(), SEEDED_NODE_2_ID],
+    );
+
+    const enrolledIncRes = await pool.query(
+      `SELECT current_incarnation_id FROM nodes WHERE id = $1`,
+      [enrolledNodeId],
+    );
+    const enrolledIncId = enrolledIncRes.rows[0].current_incarnation_id;
+
+    const batchOpId = '0195f100-0000-7000-8000-000000000601';
+    await pool.query(
+      `INSERT INTO operations(id, kind, principal, resource_type, resource_id, desired_generation, status, steps, observed_refs)
+       VALUES ($1, 'update.batch_create', $2, 'update_batch', $3, 1, 'running',
+               '{"snapshot":{"required":true,"status":"succeeded"},"targets":{"required":true,"status":"running"}}'::jsonb,
+               '{"snapshot":"update_batch:85ef720a-31a0-4250-90d2-4b92c58695bc"}'::jsonb)
+       ON CONFLICT (id) DO NOTHING`,
+      [batchOpId, `admin:${adminId}`, SEEDED_BATCH_ID],
+    );
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(
+        `INSERT INTO update_batches(id, operation_id, target_release_id, scope, created_by, target_count, generation, reason, online_at_snapshot)
+         VALUES ($1, $2, $3, 'all_nodes', $4, 2, 1, 'Scheduled fleet rollout to 1.1.0', 2)`,
+        [SEEDED_BATCH_ID, batchOpId, RELEASE_110_ID, adminId],
+      );
+      const target1Id = '0195f100-0000-7000-8000-000000000611';
+      const target2Id = '0195f100-0000-7000-8000-000000000612';
+      await client.query(
+        `INSERT INTO update_targets(id, batch_id, node_id, incarnation_at_snapshot, execution_incarnation_id, target_state, target_generation, online_at_snapshot)
+         VALUES ($1, $2, $3, $4, $4, 'active', 1, true),
+                ($5, $2, $6, $7, $7, 'active', 1, true)`,
+        [
+          target1Id,
+          SEEDED_BATCH_ID,
+          enrolledNodeId,
+          enrolledIncId,
+          target2Id,
+          SEEDED_NODE_2_ID,
+          SEEDED_NODE_2_INC_ID,
         ],
-        error: null,
-        request_id: crypto.randomUUID(),
-        created_at: nowIso,
-        updated_at: nowIso,
-        completed_at: nowIso,
-      },
-      202,
-    );
-    return true;
-  }
+      );
 
-  return false;
+      const job1Id = '0195f100-0000-7000-8000-000000000621';
+      const job2Id = '0195f100-0000-7000-8000-000000000622';
+      const res1Id = '0195f100-0000-7000-8000-000000000631';
+      const res2Id = '0195f100-0000-7000-8000-000000000632';
+
+      await client.query(
+        `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, actual_release_id, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, last_observed_at, result_id, result_hash, stage, needs_attention, recovery_required, observed_evidence)
+         VALUES ($1, $2, $3, $4, 1, $5, 1, 'succeeded', $4, $4, clock_timestamp() - interval '6 minutes', clock_timestamp() - interval '5 minutes', clock_timestamp() - interval '4 minutes', clock_timestamp() - interval '1 minute', clock_timestamp() - interval '1 minute', clock_timestamp(), $6, $7, 'checking', false, false, '{"result_id":"0195f100-0000-7000-8000-000000000631"}'::jsonb)`,
+        [
+          job1Id,
+          target1Id,
+          enrolledNodeId,
+          RELEASE_110_ID,
+          enrolledIncId,
+          res1Id,
+          crypto.randomBytes(32),
+        ],
+      );
+
+      await client.query(
+        `INSERT INTO fleet_node_state(node_id, current_job_id, current_target_id, observation_incarnation_id, observation_seq, observed_update_generation, last_observed_at, received_at, recovery_required)
+         VALUES ($1, $2, $3, $4, 10, 1, clock_timestamp(), clock_timestamp(), false)
+         ON CONFLICT (node_id) DO UPDATE
+         SET current_job_id = EXCLUDED.current_job_id,
+             current_target_id = EXCLUDED.current_target_id,
+             observation_incarnation_id = EXCLUDED.observation_incarnation_id,
+             observed_update_generation = 1,
+             last_observed_at = clock_timestamp(),
+             received_at = clock_timestamp()`,
+        [enrolledNodeId, job1Id, target1Id, enrolledIncId],
+      );
+
+      await client.query(
+        `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, result_id, result_hash, error_code, stage, needs_attention, recovery_required, observed_evidence)
+         VALUES ($1, $2, $3, $4, 1, $5, 1, 'failed', $4, clock_timestamp() - interval '6 minutes', clock_timestamp() - interval '5 minutes', clock_timestamp() - interval '4 minutes', clock_timestamp() - interval '2 minutes', clock_timestamp() - interval '2 minutes', $6, $7, 'HEALTHCHECK_FAILED', 'checking', true, false, '{"result_id":"0195f100-0000-7000-8000-000000000632"}'::jsonb)`,
+        [
+          job2Id,
+          target2Id,
+          SEEDED_NODE_2_ID,
+          RELEASE_110_ID,
+          SEEDED_NODE_2_INC_ID,
+          res2Id,
+          crypto.randomBytes(32),
+        ],
+      );
+
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  });
 }
 
 const MIME_TYPES = {
@@ -2253,6 +1838,8 @@ async function main() {
 
   let controlProc = null;
   let workerProc = null;
+  let controlLogs = '';
+  let workerLogs = '';
   let heartbeatTimer = null;
   let cleanedUp = false;
 
@@ -2413,8 +2000,8 @@ async function main() {
           portal_ttl_seconds: 60,
           billing_lease_seconds: 60,
           max_webhook_bytes: 65536,
-          reconcile_seconds: 60,
-          device_sync_seconds: 60,
+          reconcile_seconds: 2,
+          device_sync_seconds: 2,
           netbird_url: `https://127.0.0.1:${nbPort}/api`,
           netbird_deployment: 'nb-dev',
           netbird_token_file: nbTokenFile,
@@ -2551,7 +2138,6 @@ async function main() {
 
     console.log('[portal-dev-stack] Starting fvpn-control (with migrations)...');
     let controlExitCode = null;
-    let controlLogs = '';
     controlProc = spawn(controlBin, ['-config', centralConfigPath, '-migrate-on-start'], {
       cwd: REPO_ROOT,
       env: childEnv,
@@ -2598,52 +2184,63 @@ async function main() {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     workerProc.stdout.on('data', (d) => {
+      workerLogs += d.toString();
       if (process.env.DEBUG_STACK) process.stdout.write(`[fvpn-worker] ${d}`);
     });
     workerProc.stderr.on('data', (d) => {
+      workerLogs += d.toString();
       if (process.env.DEBUG_STACK) process.stderr.write(`[fvpn-worker] ${d}`);
     });
 
     pool = new pg.Pool({ connectionString: testDbDsn });
 
-    const adminAuth = await performOidcLogin(
-      controlBaseUrl,
-      oidcController,
-      {
-        role: 'admin',
-        sub: 'oidc-sub-admin-1',
-        name: 'Operator Admin (tw-ops)',
-      },
-      caPem,
+    const adminAuth = await runSeedStep('oidc-login-admin', async () =>
+      performOidcLogin(
+        controlBaseUrl,
+        oidcController,
+        {
+          role: 'admin',
+          sub: 'oidc-sub-admin-1',
+          name: 'Operator Admin (tw-ops)',
+        },
+        caPem,
+      ),
     );
     const adminRowRes = await pool.query(
       `SELECT id FROM admin_identities WHERE subject = 'oidc-sub-admin-1' LIMIT 1`,
     );
     const adminId = adminRowRes.rows[0]?.id || '00000000-0000-0000-0000-000000000003';
 
-    const memberAuth = await performOidcLogin(
-      controlBaseUrl,
-      oidcController,
-      {
-        role: 'member',
-        sub: 'oidc-sub-member-1',
-        name: '陳小華 (Active Member)',
-      },
-      caPem,
+    const memberAuth = await runSeedStep('oidc-login-default-member', async () =>
+      performOidcLogin(
+        controlBaseUrl,
+        oidcController,
+        {
+          role: 'member',
+          sub: 'oidc-sub-member-1',
+          name: '陳小華 (Active Member)',
+        },
+        caPem,
+      ),
     );
     const defaultMemberId = memberAuth.session.member_id;
 
-    const liveNode = await enrollLiveNode(
-      controlBaseUrl,
-      agentBaseUrl,
-      adminAuth,
-      caPem,
-      tmpDir,
-      pool,
+    const liveNode = await runSeedStep('enroll-live-node', async () =>
+      enrollLiveNode(controlBaseUrl, agentBaseUrl, adminAuth, caPem, tmpDir, pool),
     );
 
-    await seedDatabase(pool, adminId, defaultMemberId, liveNode.nodeId);
-    await liveNode.submitObservation('1');
+    await seedDatabase(
+      pool,
+      adminId,
+      adminAuth,
+      controlBaseUrl,
+      caPem,
+      defaultMemberId,
+      liveNode.nodeId,
+    );
+    await runSeedStep('submit-initial-node-observation', async () => {
+      await liveNode.submitObservation('1');
+    });
 
     heartbeatTimer = setInterval(async () => {
       try {
@@ -2700,9 +2297,15 @@ async function main() {
                   caPem,
                 );
                 const journeyMemberId = journeyAuth.session.member_id;
-                await pool.query(
-                  `UPDATE members SET email = 'journey@example.com', member_group_ids = ARRAY[$2::uuid], resource_version = resource_version + 1 WHERE id = $1`,
-                  [journeyMemberId, EXIT_GROUP_ID],
+                await patchMemberViaApi(
+                  controlBaseUrl,
+                  adminAuth,
+                  caPem,
+                  journeyMemberId,
+                  {
+                    display_name: '林測試 (Journey Member)',
+                    member_group_ids: [EXIT_GROUP_ID],
+                  },
                 );
                 const idBindRes = await pool.query(
                   `SELECT id FROM identity_bindings WHERE member_id = $1 LIMIT 1`,
@@ -2766,16 +2369,7 @@ async function main() {
                   },
                 );
                 const targetMemberId = roleSessions.member.session.member_id;
-                for (let i = 0; i < 40; i += 1) {
-                  const entRes = await pool.query(
-                    `SELECT state FROM entitlements WHERE member_id = $1`,
-                    [targetMemberId],
-                  );
-                  if (entRes.rows[0]?.state === 'active') {
-                    break;
-                  }
-                  await new Promise((r) => setTimeout(r, 150));
-                }
+                await pollMemberEntitlementActive(pool, targetMemberId, 'stripe-webhook');
                 res.writeHead(whRes.status, { 'Content-Type': 'application/json' });
                 res.end(whRes.text);
                 return;
@@ -2786,100 +2380,74 @@ async function main() {
                 reqUrl.pathname === '/__e2e/seed-member-devices'
               ) {
                 const targetMemberId = roleSessions.member.session.member_id;
-                let entRes = await pool.query(
-                  `SELECT state, valid_from, effective_service_end, revision FROM entitlements WHERE member_id = $1`,
+                const entRes = await pool.query(
+                  `SELECT m.status AS member_status, e.state AS entitlement_state
+                   FROM members m
+                   LEFT JOIN entitlements e ON e.member_id = m.id
+                   WHERE m.id = $1`,
                   [targetMemberId],
                 );
-                if (!entRes.rows[0] || entRes.rows[0].state !== 'active') {
+                if (
+                  !entRes.rows[0] ||
+                  entRes.rows[0].member_status !== 'active' ||
+                  entRes.rows[0].entitlement_state !== 'active'
+                ) {
                   const now = new Date();
                   const vFrom = new Date(now.getTime() - 3600_000);
-                  const vUntil = new Date(now.getTime() + 30 * 86400_000);
-                  const entProjection = {
-                    schema_version: 1,
-                    plan: {
-                      plan_id: PLAN_ID,
-                      plan_revision_id: PLAN_REVISION_ID,
-                      code: 'standard-monthly',
-                      display_name: {
-                        'zh-TW': '標準月費方案',
-                        en: 'Standard Monthly Plan',
-                      },
-                    },
-                    exit_group_ids: [EXIT_GROUP_ID],
-                    fair_use_reset_at: vUntil.toISOString(),
-                  };
-                  await pool.query(
-                    `INSERT INTO entitlements(id, member_id, plan_id, plan_revision_id, state, valid_from, effective_service_end, paid_through, device_limit, admin_suspended, revision, projection)
-                     VALUES ($1, $2, $3, $4, 'active', $5, $6, $6, 3, false, 1, $7::jsonb)
-                     ON CONFLICT (member_id) DO UPDATE
-                     SET state = 'active',
-                         plan_id = EXCLUDED.plan_id,
-                         plan_revision_id = EXCLUDED.plan_revision_id,
-                         valid_from = EXCLUDED.valid_from,
-                         effective_service_end = EXCLUDED.effective_service_end,
-                         paid_through = EXCLUDED.paid_through,
-                         device_limit = 3,
-                         admin_suspended = false,
-                         revision = entitlements.revision + 1,
-                         projection = EXCLUDED.projection`,
-                    [
-                      crypto.randomUUID(),
-                      targetMemberId,
-                      PLAN_ID,
-                      PLAN_REVISION_ID,
-                      vFrom,
-                      vUntil,
-                      JSON.stringify(entProjection),
-                    ],
+                  const vUntil = new Date(now.getTime() + 14 * 86400_000);
+                  await grantMemberEntitlementViaApi(
+                    controlBaseUrl,
+                    adminAuth,
+                    caPem,
+                    targetMemberId,
+                    vFrom,
+                    vUntil,
+                    'TEST ONLY E2E device test grant',
                   );
-                  entRes = await pool.query(
-                    `SELECT state, valid_from, effective_service_end, revision FROM entitlements WHERE member_id = $1`,
-                    [targetMemberId],
+                  await pollMemberEntitlementActive(
+                    pool,
+                    targetMemberId,
+                    'seed-member-devices',
                   );
                 }
-                const entRow = entRes.rows[0];
-                const validFrom = new Date(entRow.valid_from);
-                const validUntil = new Date(entRow.effective_service_end);
-                const subnetOctet = Math.floor(Math.random() * 200) + 10;
-                const createdIds = [];
-                for (let idx = 1; idx <= 3; idx += 1) {
-                  const devId = crypto.randomUUID();
-                  const peerId = `nb-peer-journey-${idx}-${devId.slice(0, 6)}`;
-                  const ip = `100.64.${subnetOctet}.${20 + idx}`;
-                  nbController.objects.peers.set(peerId, {
-                    id: peerId,
-                    name: `Journey Device ${idx}`,
-                    user_id: `nb-user-${targetMemberId.slice(0, 8)}`,
-                    ephemeral: false,
-                    ip,
-                  });
-                  await pool.query(
-                    `INSERT INTO member_devices(id, member_id, deployment_id, peer_id, name, status, authorized_at, platform, last_seen_at)
-                     VALUES ($1, $2, 'nb-dev', $3, $4, 'authorized', clock_timestamp(), 'macos', clock_timestamp())`,
-                    [devId, targetMemberId, peerId, `Journey Device ${idx}`],
-                  );
-                  await pool.query(
-                    `INSERT INTO device_bindings(id, device_id, member_id, overlay_scope, overlay_ip, binding_revision, valid_from, valid_until, peer_ref)
-                     VALUES ($1, $2, $3, 'nb-overlay', $4::inet, 1, $5, $6, $7)`,
-                    [
-                      crypto.randomUUID(),
-                      devId,
-                      targetMemberId,
+
+                const existingRes = await pool.query(
+                  `SELECT d.id
+                   FROM member_devices d
+                   JOIN device_authorization_observations o ON o.device_id = d.id
+                   WHERE d.member_id = $1
+                     AND d.status = 'authorized'
+                     AND o.observed_authorized = true
+                   ORDER BY d.id`,
+                  [targetMemberId],
+                );
+                if (existingRes.rows.length < 3) {
+                  const netbirdUserId =
+                    targetMemberId === defaultMemberId
+                      ? 'nb-user-member-1'
+                      : `nb-user-${targetMemberId.slice(0, 8)}`;
+                  const subnetOctet = Math.floor(Math.random() * 200) + 10;
+                  for (let idx = 1; idx <= 3; idx += 1) {
+                    const suffix = crypto.randomUUID().slice(0, 6);
+                    const peerId = `nb-peer-journey-${idx}-${suffix}`;
+                    const ip = `100.64.${subnetOctet}.${20 + idx}`;
+                    nbController.objects.peers.set(peerId, {
+                      id: peerId,
+                      name: `Journey Device ${idx}`,
+                      user_id: netbirdUserId,
+                      ephemeral: false,
                       ip,
-                      validFrom,
-                      validUntil,
-                      peerId,
-                    ],
-                  );
-                  await pool.query(
-                    `INSERT INTO device_authorization_observations(device_id, observed_authorized, observed_at, observed_version, observed_entitlement_revision)
-                     VALUES ($1, true, clock_timestamp(), 1, $2)`,
-                    [devId, entRow.revision],
-                  );
-                  createdIds.push(devId);
+                    });
+                  }
                 }
+                const deviceIds = await pollMemberAuthorizedDevices(
+                  pool,
+                  targetMemberId,
+                  3,
+                  'seed-member-devices',
+                );
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ device_ids: createdIds }));
+                res.end(JSON.stringify({ device_ids: deviceIds }));
                 return;
               }
 
@@ -3037,17 +2605,6 @@ async function main() {
                 },
               );
 
-              if (upstreamRes.status === 501 || upstreamRes.status === 405) {
-                const handled = await handleTransitional501(
-                  req,
-                  reqBody,
-                  res,
-                  pool,
-                  activeAuth,
-                );
-                if (handled) return;
-              }
-
               const respHeaders = {};
               for (const [k, v] of Object.entries(upstreamRes.headers)) {
                 if (
@@ -3100,6 +2657,10 @@ async function main() {
       `[portal-dev-stack] Ready at ${portalBaseUrl} (control=${controlBaseUrl}, db=${dbName})`,
     );
   } catch (err) {
+    console.error(
+      `[portal-dev-stack] Diagnostic tail — last 50 lines of fvpn-control:\n${lastLines(controlLogs, 50)}\n` +
+        `[portal-dev-stack] Diagnostic tail — last 50 lines of fvpn-worker:\n${lastLines(workerLogs, 50)}`,
+    );
     await cleanup();
     throw err;
   }
