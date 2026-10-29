@@ -24,7 +24,7 @@ The following transitional 501 handlers are removed:
 | `renewAgentCertificate` | New CSR and serial with bounded older-serial overlap; same renewal ID replays. |
 | `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. |
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
-| `setNodePublication` | Disabled/unpublished intents and withdrawal operations. Publishing remains blocked pending the exit service transaction adapter described below. |
+| `setNodePublication` | All three intents use `exits.Service.SetPublicationTx` inside the HTTP command transaction; 202 returns the pending publication operation. |
 | `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
 | `renewServingLease` | Signed 24-hour default maximum, bounded member grants, natural renewal-ID replay without restarting deadlines. |
 | `submitObservation` | Immutable deduplicated receipt, then `ObserveReportTx` in the same transaction, fleet lock before node lock. |
@@ -56,26 +56,39 @@ certificate history, effective validity, and independent revocation journal.
 principal ID selects the authenticated public certificate serial for renewal and
 bootstrap; no private key is retrieved or transmitted.
 
-## Boundaries still requiring another owner
+## Publication transaction and remaining boundaries
 
-This branch is **not a complete production node control plane**:
+`SetNodePublication` passes the authenticated principal scope, central request ID,
+raw `If-Match` and decoded request to `exits.Service.SetPublicationTx` for
+`published`, `unpublished` and `disabled` (§5.2, §14.5). The existing command wrapper
+acquires the fleet lock before the service locks nodes and exits. It advances node
+and exit resource versions and desired configuration generation once per accepted
+command, creates the operation, enqueues `node.publication_changed`, and writes
+the `exit:<uuid>` audit event through the core builders. `httpapi.SetResult`
+completes the HTTP idempotency record in that same transaction. Replay reads the
+stored operation without changing publication or advancing versions again.
 
-1. `exits.Service.SetPublication` still owns a separate `db.InTx`, nested service
-   idempotency, and computes but does not store `desired_config_generation + 1`.
-   Its transaction must join the HTTP command before publishing can be enabled.
-   Publishing therefore retains its 503 gate; do not call that standalone method
-   from the HTTP transaction and claim atomic acceptance. The current HTTP
-   unpublish/disable path remains unchanged.
-2. Desired-state compilation now uses the merged DB readers. The compiler still
-   constructs member rates inline instead of delegating to
-   `fup.BuildNodeMemberRatePolicy`; replacing that implementation requires its
-   owner's production-code change. No alternate rate calculation was added to
-   the HTTP adapter. This is separate from the now-working published desired-state
-   read path and its cache invalidation.
-3. The contract contains no batch cancel operation or enrollment collection GET.
-   None is invented. Existing batch cancellation on revocation/retirement remains.
-   `UpdateTarget` includes both required booleans; `NodeUpdateSummary` has no such
-   fields in the current contract.
+Publishing creates `node.publish` with required pending steps `agent_policy`,
+`netbird_route_readback` and `data_path_probe`. Unpublishing and disabling create
+`node.unpublish` and `node.disable`; their data-path probe is explicitly not
+required. These are pending operations, not proof of applied forwarding or routes.
+The Tx method uses only the caller's transaction and its clock, so its service
+receives the runtime pool and no compiler or NetBird adapter. The request performs
+no external calls. Compilation on the following agent desired-state request uses
+the merged DB readers and `fup.BuildNodeMemberRatePolicy`; unpublished and disabled
+states have no member policies.
+
+Only the explicit DNS configuration and release-support policy fail-closed 503s
+remain in `internal/nodes/httpwire`. Publication acceptance is covered by
+`TestAT08_HTTPPublicationIntentsReplayAndPreconditions` and command atomicity by
+`TestAT08_HTTPPublicationRollsBackWithCommand`.
+
+The contract contains no batch cancel operation or enrollment collection GET.
+None is invented. Existing batch cancellation on revocation/retirement remains.
+`UpdateTarget` includes both required booleans; `NodeUpdateSummary` has no such
+fields in the current contract. The production worker still needs registration
+and read-back completion of `node.publication_changed`; this change establishes
+HTTP acceptance and does not claim that asynchronous publication is complete.
 
 The spec has no §8.4; the applicable §8.1–3 were read. Its AT10 concerns network
 isolation; lease-window evidence here corresponds to §16.3/AT29, not an AT10
