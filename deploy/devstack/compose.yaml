@@ -148,6 +148,9 @@ services:
     environment:
       # Skip the GeoLite download. disableGeoliteUpdate still fetches a missing DB.
       NB_DISABLE_GEOLOCATION: "true"
+      # POST /api/setup returns personal_access_token only when this is set.
+      # The lab IdP is not the management owner issuer; the embedded setup API is.
+      NB_SETUP_PAT_ENABLED: "true"
     volumes:
       - ${FVPN_E2E_STATE}/netbird/config.yaml:/etc/netbird/config.yaml:ro
       - nb:/var/lib/netbird

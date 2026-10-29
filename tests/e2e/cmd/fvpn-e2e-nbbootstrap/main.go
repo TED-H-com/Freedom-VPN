@@ -10,6 +10,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -66,10 +67,6 @@ func httpClient(api, dialAddr, caFile string) (*http.Client, error) {
 	return &http.Client{Transport: tr, Timeout: 20 * time.Second}, nil
 }
 
-type apiError struct{ code int }
-
-func (e apiError) Error() string { return fmt.Sprintf("netbird HTTP %d", e.code) }
-
 func call(client *http.Client, method, url, token string, body any) (json.RawMessage, error) {
 	var reader io.Reader
 	if body != nil {
@@ -89,20 +86,72 @@ func call(client *http.Client, method, url, token string, body any) (json.RawMes
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("netbird unavailable")
+		return nil, fmt.Errorf("netbird unavailable: %s", err.Error())
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
-		return nil, fmt.Errorf("netbird unavailable")
+		return nil, fmt.Errorf("netbird unavailable: %s", err.Error())
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, apiError{code: resp.StatusCode}
+		return nil, errors.New(httpFailure(resp.StatusCode, raw, ""))
 	}
 	if len(bytes.TrimSpace(raw)) == 0 {
 		return nil, nil
 	}
 	return raw, nil
+}
+
+// httpFailure is the status and redacted body of a call that did not yield a token.
+// Secret fields are replaced so a 2xx setup response cannot print a PAT.
+func httpFailure(status int, raw []byte, note string) string {
+	text := redactBody(raw)
+	if text == "" {
+		text = "empty body"
+	}
+	msg := fmt.Sprintf("netbird HTTP %d: %s", status, text)
+	if note != "" {
+		msg += " (" + note + ")"
+	}
+	return msg
+}
+
+func redactBody(raw []byte) string {
+	text := strings.TrimSpace(string(raw))
+	if text == "" {
+		return ""
+	}
+	var doc any
+	if json.Unmarshal(raw, &doc) == nil {
+		redactJSON(doc)
+		if out, err := json.Marshal(doc); err == nil {
+			text = string(out)
+		}
+	}
+	if len(text) > 500 {
+		text = text[:500]
+	}
+	return text
+}
+
+func redactJSON(v any) {
+	switch t := v.(type) {
+	case map[string]any:
+		for k, val := range t {
+			switch strings.ToLower(k) {
+			case "password", "personal_access_token", "plain_token", "token", "secret", "setup_key":
+				if _, ok := val.(string); ok && val != "" {
+					t[k] = "[redacted]"
+				}
+			default:
+				redactJSON(val)
+			}
+		}
+	case []any:
+		for _, item := range t {
+			redactJSON(item)
+		}
+	}
 }
 
 func bootstrap(client *http.Client, api, state string) error {
@@ -149,7 +198,9 @@ func bootstrap(client *http.Client, api, state string) error {
 			PersonalAccessToken string `json:"personal_access_token"`
 		}
 		if json.Unmarshal(raw, &setup) != nil || setup.PersonalAccessToken == "" {
-			return fmt.Errorf("netbird setup")
+			// Embedded setup, not the lab IdP. personal_access_token is omitted
+			// unless the server was started with NB_SETUP_PAT_ENABLED=true.
+			return errors.New(httpFailure(http.StatusOK, raw, "personal_access_token missing"))
 		}
 		if err := writeSecret(ownerPath, setup.PersonalAccessToken); err != nil {
 			return err
@@ -157,7 +208,7 @@ func bootstrap(client *http.Client, api, state string) error {
 	}
 	owner, err := os.ReadFile(ownerPath)
 	if err != nil || strings.TrimSpace(string(owner)) == "" {
-		return fmt.Errorf("owner token unavailable")
+		return fmt.Errorf("owner token unavailable: setup_required=%t; netbird/owner-token missing", instance.SetupRequired)
 	}
 	ownerToken := strings.TrimSpace(string(owner))
 	raw, err := call(client, http.MethodGet, api+"/accounts", ownerToken, nil)
@@ -315,7 +366,7 @@ func bootstrap(client *http.Client, api, state string) error {
 			PlainToken string `json:"plain_token"`
 		}
 		if json.Unmarshal(raw, &pat) != nil || pat.PlainToken == "" {
-			return fmt.Errorf("adapter token")
+			return errors.New(httpFailure(http.StatusOK, raw, "plain_token missing"))
 		}
 		if err := writeSecret(tokenPath, pat.PlainToken); err != nil {
 			return err

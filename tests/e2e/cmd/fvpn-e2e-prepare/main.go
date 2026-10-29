@@ -353,49 +353,93 @@ func writeAdGuard(state string) error {
 	if err := writeSecret(filepath.Join(state, "secrets", "adguard.password"), []byte(password+"\n")); err != nil {
 		return err
 	}
-	body := fmt.Sprintf(`# Generated per run. Query log is off (SEC02).
-http:
-  address: 127.0.0.1:8080
-  session_ttl: 720h
-users:
-  - name: e2e
-    password: %s
+	// schema_version 29 is what v0.107.59 writes. A lower version runs the
+	// upgrader, which nested bootstrap_dns into a sequence of sequences and
+	// then refused to parse it. Query log stays off (SEC02).
+	body := fmt.Sprintf(`# Generated per run. schema_version 29; query log is off (SEC02).
 auth_attempts: 5
 block_auth_min: 15
+clients:
+  persistent: []
+  runtime_sources:
+    arp: true
+    dhcp: true
+    hosts: true
+    rdns: false
+    whois: true
+dhcp:
+  dhcpv4: {}
+  enabled: false
 dns:
-  bind_hosts:
-    - 0.0.0.0
-  port: 53
-  anonymize_client_ip: true
-  ratelimit: 0
-  refuse_any: true
-  upstream_dns:
-    - 172.28.30.54:53
-  bootstrap_dns:
-    - 127.0.0.11:53
+  aaaa_disabled: true
   allowed_clients:
     - 127.0.0.0/8
     - 172.16.0.0/12
     - 10.0.0.0/8
     - 192.168.0.0/16
     - 100.64.0.0/10
+  anonymize_client_ip: true
+  bind_hosts:
+    - 0.0.0.0
+  bootstrap_dns:
+    - 127.0.0.11:53
   cache_size: 4096
-  cache_ttl_min: 0
   cache_ttl_max: 0
-  aaaa_disabled: true
+  cache_ttl_min: 0
+  edns_client_subnet:
+    custom_ip: ""
+    enabled: false
+    use_custom: false
   enable_dnssec: false
-  serve_plain_dns: true
   hostsfile_enabled: false
+  port: 53
+  ratelimit: 0
+  refuse_any: true
+  serve_plain_dns: true
+  upstream_dns:
+    - 172.28.30.54:53
+  upstream_mode: load_balance
+filtering:
+  blocked_services:
+    schedule:
+      time_zone: Local
+  safe_fs_patterns:
+    - /opt/adguardhome/work/data/userfilters/*
+  safe_search:
+    bing: false
+    duckduckgo: false
+    enabled: false
+    google: false
+    pixabay: false
+    yandex: false
+    youtube: false
+filters: []
+http:
+  address: 127.0.0.1:8080
+  pprof:
+    enabled: false
+    port: 6060
+  session_ttl: 720h
+os:
+  group: ""
+  rlimit_nofile: 0
+  user: ""
 querylog:
   enabled: false
   file_enabled: false
+  ignored: []
+  interval: 2160h
+  size_memory: 1000
+schema_version: 29
 statistics:
   enabled: false
-filters: []
-whitelist_filters: []
+  ignored: []
+  interval: 24h
 user_rules: []
-dhcp:
-  enabled: false
+users:
+  - name: e2e
+    password: %q
+whitelist_filters: []
 `, string(hash))
 	dir := filepath.Join(state, "adguard", "conf")
 	if err := os.MkdirAll(dir, 0o700); err != nil {

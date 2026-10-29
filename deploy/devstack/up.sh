@@ -14,6 +14,15 @@ mkdir -p "$ROOT/.agent/tmp" "$ROOT/.agent/e2e-build"
 export TMPDIR=$ROOT/.agent/tmp GOTMPDIR=$ROOT/.agent/tmp GOTOOLCHAIN=local CGO_ENABLED=0
 
 if [ "$RESET" = "1" ] || [ ! -f "$STATE/ready" ]; then
+    # AdGuard rewrites its config as root. prepare cannot unlink that file.
+    if [ -d "$STATE" ] && ! rm -rf "$STATE" 2>/dev/null; then
+        docker rm -f "$PREFIX-state-reset" >/dev/null 2>&1 || true
+        docker run --rm --name "$PREFIX-state-reset" \
+            -v "$STATE:/state" --entrypoint /bin/sh \
+            "ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852" \
+            -c 'find /state -mindepth 1 -delete'
+        rm -rf "$STATE"
+    fi
     go build -o "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" ./tests/e2e/cmd/fvpn-e2e-prepare
     "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset
 fi
