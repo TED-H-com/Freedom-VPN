@@ -182,8 +182,8 @@ func projectSamplesInTx(
 }
 
 // markGapOnRollupsInTx marks rollups overlapping [intervalStart, intervalEnd) for
-// members who had active bindings on the node (or existing rollups in the period)
-// with gap = TRUE when a node reports a gap event (§10.7).
+// members who have usage_rollup_details or usage_samples on this node in the interval,
+// plus the member_ids listed on the gap event itself (§10.7).
 func markGapOnRollupsInTx(
 	ctx context.Context,
 	tx pgx.Tx,
@@ -199,18 +199,27 @@ func markGapOnRollupsInTx(
 ) error {
 	genStr := formatUint64(generation)
 
-	// Find members who have usage on this node or had an active device binding overlapping the gap window.
 	rows, err := tx.Query(ctx, `
 		SELECT DISTINCT member_id FROM (
-			SELECT member_id
-			FROM usage_rollup_details
-			WHERE projection_generation = $1::numeric AND node_id = $2
+			SELECT d.member_id
+			FROM usage_rollup_details d
+			WHERE d.projection_generation = $1::numeric
+			  AND d.node_id = $2
+			  AND d.period_start < $4
+			  AND d.period_end > $3
 			UNION
-			SELECT member_id
-			FROM device_bindings
-			WHERE valid_from < $4 AND valid_until > $3
+			SELECT s.member_id
+			FROM usage_samples s
+			JOIN usage_events e ON e.id = s.event_id
+			WHERE e.node_id = $2
+			  AND s.interval_start < $4
+			  AND s.interval_end > $3
+			UNION
+			SELECT s.member_id
+			FROM usage_samples s
+			WHERE s.event_id = $5
 		) m
-	`, genStr, nodeID, intervalStart.UTC(), intervalEnd.UTC())
+	`, genStr, nodeID, intervalStart.UTC(), intervalEnd.UTC(), eventID)
 	if err != nil {
 		return fmt.Errorf("usage: query members for gap event: %w", err)
 	}
