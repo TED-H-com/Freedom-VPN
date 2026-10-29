@@ -32,7 +32,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w1-contracts: OpenAPI, schemas, vectors, shared leaf packages | WP03 | done (#4) |
 | w1-db: PostgreSQL schema, DB foundation, CI | WP03 | done (#1) |
 | w1-netlab: G2 isolation, metering and shaping lab | WP02, WP05, WP07 | in progress |
-| w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | in progress |
+| w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | done (#6), G1 open |
 | w1-portal: Admin and Member portal on a mock API | WP10 | done (#2) |
 | w1-deps-bump: current pgx, goose and transitive module pins | WP03 | done (#3) |
 | w1-dnspolicy: domain rules, bundle compiler, AdGuard Home backend | WP08 | done (#5) |
