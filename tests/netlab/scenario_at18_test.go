@@ -103,6 +103,41 @@ func TestAT18_FUP02_QoS(t *testing.T) {
 		t.Fatalf("new rate is not installed:\n%s", text)
 	}
 	fmt.Fprintf(&report, "rate_change minor_a=%s minor_b=%s bytes_kept=%d\n", classHandle(minorA), classHandle(minorB), afterBytes)
+
+	removed := changed
+	removed.Generation = 21
+	removed.Now = time.Now().UTC()
+	removed.Bindings = nil
+	removed.Leases = nil
+	for _, b := range changed.Bindings {
+		if b.MemberID == memberA {
+			removed.Bindings = append(removed.Bindings, b)
+		}
+	}
+	for _, l := range changed.Leases {
+		if l.MemberID != memberA {
+			continue
+		}
+		l.SignedServerTime = removed.Now
+		l.EffectiveServiceEnd = removed.Now.Add(48 * time.Hour)
+		l.NodeLeaseEnd = removed.Now.Add(48 * time.Hour)
+		removed.Leases = append(removed.Leases, l)
+	}
+	var kept []enforce.MemberQoS
+	for _, mem := range changed.QoS.Members {
+		if mem.MemberID == memberA {
+			kept = append(kept, mem)
+		}
+	}
+	removed.QoS.Members = kept
+	removed.QoS.Assignments = nil
+	removedDoc := applyAt(t, removed)
+	if minorOf(t, removedDoc, memberA) != minorA {
+		t.Fatal("removing member B moved member A's class")
+	}
+	assertClassGone(t, "fv-ih", minorB)
+	assertClassGone(t, "fv-fh", minorB)
+	fmt.Fprintf(&report, "member_removed orphan_minor=%s absent=1\n", classHandle(minorB))
 	save(t, "qos.txt", report.String())
 	save(t, "tc-ih.txt", mustExec(t, "tc", "-s", "class", "show", "dev", "fv-ih"))
 	save(t, "tc-fh.txt", mustExec(t, "tc", "-s", "class", "show", "dev", "fv-fh"))
@@ -229,6 +264,30 @@ func bandFrom(before, after map[string]classStat, minor uint16, elapsed, cpu flo
 		drops = b1.Dropped - b0.Dropped
 	}
 	return bandResult{mbps: mbps, ratio: mbps / (float64(testCapBPS) / 1e6), drops: drops, cpu: cpu, elapsed: elapsed}
+}
+
+func assertClassGone(t *testing.T, dev string, minor uint16) {
+	t.Helper()
+	handle := classHandle(minor)
+	text := mustExec(t, "tc", "-j", "class", "show", "dev", dev)
+	for _, line := range strings.Split(text, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 3 && fields[0] == "class" && fields[2] == handle {
+			t.Fatalf("orphaned class %s on %s:\n%s", handle, dev, text)
+		}
+	}
+	q := mustExec(t, "tc", "-j", "qdisc", "show", "dev", dev)
+	for _, line := range strings.Split(q, "\n") {
+		fields := strings.Fields(line)
+		for i, f := range fields {
+			if f == "parent" && i+1 < len(fields) && fields[i+1] == handle {
+				t.Fatalf("orphaned qdisc for %s on %s:\n%s", handle, dev, q)
+			}
+		}
+		if strings.Contains(line, `"parent":"`+handle+`"`) || strings.Contains(line, `"parent": "`+handle+`"`) {
+			t.Fatalf("orphaned qdisc for %s on %s:\n%s", handle, dev, q)
+		}
+	}
 }
 
 func assertRatio(t *testing.T, name string, ratio, low, high float64) {

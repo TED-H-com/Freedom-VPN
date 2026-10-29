@@ -15,6 +15,9 @@ type TCDev struct {
 	RootHTB bool
 	// Leaves records fq_codel qdiscs keyed by the parent class minor.
 	Leaves map[uint16]bool
+	// Classes records every child HTB class minor except the parent 1:1 and
+	// the host default 1:fffe. A minor stays occupied until render deletes it.
+	Classes map[uint16]bool
 }
 
 // TCState is keyed by interface name.
@@ -42,16 +45,31 @@ func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (string,
 	b.WriteString("# Classification is skb->priority set to the leaf classid. No fwmark, no filter.\n")
 	for _, s := range sides {
 		dev := state.Devices[s.iface]
-		if !dev.RootHTB {
-			fmt.Fprintf(&b, "qdisc add dev %s root handle %x: htb default %x\n", s.iface, HTBMajor, HTBDefaultMinor)
-		}
-		writeClass(&b, s.iface, fmt.Sprintf("%x:", HTBMajor), classHandle(1), s.parent, 0)
-		writeClass(&b, s.iface, classHandle(1), classHandle(HTBDefaultMinor), s.host, 0)
+		assigned := map[uint16]bool{}
 		for _, mem := range members {
 			minor, ok := assignments[mem.MemberID]
 			if !ok {
 				return "", fmt.Errorf("no class assignment for %s", mem.MemberID)
 			}
+			assigned[minor] = true
+		}
+		if !dev.RootHTB {
+			fmt.Fprintf(&b, "qdisc add dev %s root handle %x: htb default %x\n", s.iface, HTBMajor, HTBDefaultMinor)
+		} else {
+			// Drop leaves and classes the new generation no longer uses before
+			// replacing the classes that stay. A removed member must not keep
+			// a guaranteed rate on the parent (§11.4).
+			for _, minor := range orphanMinors(dev, assigned) {
+				if dev.Leaves[minor] {
+					fmt.Fprintf(&b, "qdisc del dev %s parent %s\n", s.iface, classHandle(minor))
+				}
+				fmt.Fprintf(&b, "class del dev %s classid %s\n", s.iface, classHandle(minor))
+			}
+		}
+		writeClass(&b, s.iface, fmt.Sprintf("%x:", HTBMajor), classHandle(1), s.parent, 0)
+		writeClass(&b, s.iface, classHandle(1), classHandle(HTBDefaultMinor), s.host, 0)
+		for _, mem := range members {
+			minor := assignments[mem.MemberID]
 			writeClass(&b, s.iface, classHandle(1), classHandle(minor), s.pick(mem), 1)
 			if !dev.Leaves[minor] {
 				fmt.Fprintf(&b, "qdisc add dev %s parent %s handle %x: fq_codel limit 10240 flows 1024 quantum 1514 target 5ms interval 100ms\n",
@@ -60,6 +78,94 @@ func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (string,
 		}
 	}
 	return b.String(), nil
+}
+
+// reserveUnmappedClasses keeps a kernel class minor out of the free set when
+// the nft class map no longer names its member. AssignClasses then cannot
+// hand that minor to someone else while the class still exists.
+func reserveUnmappedClasses(m Model, tc TCState) Model {
+	occupied := map[uint16]struct{}{}
+	for _, dev := range tc.Devices {
+		for minor := range dev.Classes {
+			if classMinorRecorded(minor) {
+				occupied[minor] = struct{}{}
+			}
+		}
+	}
+	if len(occupied) == 0 {
+		return m
+	}
+	owned := map[uint16]struct{}{}
+	for _, minor := range m.QoS.Assignments {
+		owned[minor] = struct{}{}
+	}
+	assigned := make(map[uuid.UUID]uint16, len(m.QoS.Assignments)+len(occupied))
+	for id, minor := range m.QoS.Assignments {
+		assigned[id] = minor
+	}
+	added := false
+	for minor := range occupied {
+		if _, ok := owned[minor]; ok {
+			continue
+		}
+		assigned[kernelClassPlaceholder(minor)] = minor
+		added = true
+	}
+	if !added {
+		return m
+	}
+	m.QoS.Assignments = assigned
+	return m
+}
+
+func classMinorRecorded(minor uint16) bool {
+	return minor != 0 && minor != 1 && minor != HTBDefaultMinor
+}
+
+func kernelClassPlaceholder(minor uint16) uuid.UUID {
+	var id uuid.UUID
+	id[0], id[1], id[2], id[3] = 0xff, 0xff, 0xff, 0xff
+	id[4], id[5] = 0xff, 0xff
+	id[6], id[7] = 0x4f, 0xff
+	id[8], id[9] = 0x8f, 0xff
+	id[14] = byte(minor >> 8)
+	id[15] = byte(minor)
+	return id
+}
+
+func orphanMinors(dev TCDev, assigned map[uint16]bool) []uint16 {
+	seen := map[uint16]bool{}
+	var out []uint16
+	add := func(minor uint16) {
+		if !classMinorRecorded(minor) || assigned[minor] || seen[minor] {
+			return
+		}
+		seen[minor] = true
+		out = append(out, minor)
+	}
+	for minor := range dev.Classes {
+		add(minor)
+	}
+	for minor := range dev.Leaves {
+		add(minor)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
+	return out
+}
+
+func childClassMinors(view QdiscView) map[uint16]bool {
+	out := map[uint16]bool{}
+	for handle := range view.Classes {
+		major, minor, ok := splitHandle(handle)
+		if !ok || uint32(major) != HTBMajor || !classMinorRecorded(minor) {
+			continue
+		}
+		out[minor] = true
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }
 
 func writeClass(b *strings.Builder, dev, parent, classid string, rate Rate, prio int) {
