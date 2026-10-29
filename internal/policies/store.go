@@ -202,7 +202,7 @@ func (s *Store) CreateRevision(ctx context.Context, in CreateRevisionInput) (*Re
 				return err
 			}
 			if !idemRecord.New {
-				if idemRecord.State != "completed" || idemRecord.ResourceID == nil {
+				if idemRecord.ResourceID == nil || idemRecord.ResponseStatus == nil {
 					return apierr.New(apierr.StateConflict, "an identical policy creation request is still in progress")
 				}
 				rec, err := getRevisionTx(ctx, tx, *idemRecord.ResourceID)
@@ -361,23 +361,26 @@ func resolveOrCreateDefinitionTx(ctx context.Context, tx pgx.Tx, defID *uuid.UUI
 	if err != nil {
 		newID = uuid.New()
 	}
-	var id uuid.UUID
-	var dbCode string
-	err = tx.QueryRow(ctx,
+	if _, err := tx.Exec(ctx,
 		`INSERT INTO policy_definitions (id, type, code)
 		 VALUES ($1, $2, $3)
-		 ON CONFLICT (type, code) DO UPDATE SET code = EXCLUDED.code
-		 RETURNING id, code`,
+		 ON CONFLICT (type, code) DO NOTHING`,
 		newID,
 		string(policyType),
 		*code,
-	).Scan(&id, &dbCode)
-	if err != nil {
-		return uuid.Nil, "", fmt.Errorf("upsert policy_definition: %w", err)
+	); err != nil {
+		return uuid.Nil, "", fmt.Errorf("insert policy_definition: %w", err)
 	}
-	// Ensure row lock on definition to serialize revision numbering.
-	if _, err := tx.Exec(ctx, `SELECT 1 FROM policy_definitions WHERE id = $1 FOR UPDATE`, id); err != nil {
-		return uuid.Nil, "", err
+	var id uuid.UUID
+	var dbCode string
+	// Lock definition row to serialize revision numbering without executing a
+	// no-op UPDATE that would violate F-14 (strictly increasing resource_version).
+	if err := tx.QueryRow(ctx,
+		`SELECT id, code FROM policy_definitions WHERE type = $1 AND code = $2 FOR UPDATE`,
+		string(policyType),
+		*code,
+	).Scan(&id, &dbCode); err != nil {
+		return uuid.Nil, "", fmt.Errorf("lock policy_definition: %w", err)
 	}
 	return id, dbCode, nil
 }
@@ -392,13 +395,21 @@ func syncPlanRevisionTx(ctx context.Context, tx pgx.Tx, defID uuid.UUID, code st
 		return fmt.Errorf("sync plans row: %w", err)
 	}
 	var planID uuid.UUID
-	if err := tx.QueryRow(ctx, `SELECT id FROM plans WHERE code = $1`, code).Scan(&planID); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT id FROM plans WHERE code = $1 FOR UPDATE`, code).Scan(&planID); err != nil {
 		return fmt.Errorf("lookup plan by code %q: %w", code, err)
 	}
+	exitGroupIDs := make([]uuid.UUID, 0, len(plan.ExitGroupIds))
+	for _, gid := range plan.ExitGroupIds {
+		exitGroupIDs = append(exitGroupIDs, uuid.UUID(gid))
+	}
+	fupRevID := uuid.UUID(plan.FairUseRevisionId)
 	_, err = tx.Exec(ctx,
-		`INSERT INTO plan_revisions (id, plan_id, revision, device_limit, schema_version, payload)
-		 VALUES ($1, $2, $3::numeric, $4, $5, $6::jsonb)`,
-		revID, planID, rev.String(), plan.DeviceLimit, schemaVersion, canonicalJSON,
+		`INSERT INTO plan_revisions (
+			id, plan_id, revision, device_limit, exit_group_ids,
+			fup_policy_revision_id, provider, provider_price_ref, schema_version, payload
+		) VALUES ($1, $2, $3::numeric, $4, $5, $6, $7, $8, $9, $10::jsonb)`,
+		revID, planID, rev.String(), plan.DeviceLimit, exitGroupIDs,
+		fupRevID, plan.Price.Provider, plan.Price.ProviderPriceRef, schemaVersion, canonicalJSON,
 	)
 	if err != nil {
 		return fmt.Errorf("sync plan_revisions row: %w", err)
@@ -783,7 +794,7 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 				return err
 			}
 			if !idemRecord.New {
-				if idemRecord.OperationID == nil {
+				if idemRecord.OperationID == nil || idemRecord.ResponseStatus == nil {
 					return apierr.New(apierr.StateConflict, "activation request is still in progress")
 				}
 				op, err := getOperationTx(ctx, tx, *idemRecord.OperationID)
@@ -924,6 +935,10 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			compiledBundle = bundle
 
 		case api.PolicyTypeReleaseSupport:
+			// Wave 3 will route release_support activation through the fleet-update
+			// owner's releases.ApplySupportTx; keep this singleton fleet_config update
+			// minimal (strictly incrementing generation and resource_version per F-14)
+			// so Wave 3 can replace it directly.
 			servingIDs := make([]uuid.UUID, 0, len(validated.ReleaseSupport.MinimumServingVersion.ServingReleaseIds))
 			for _, id := range validated.ReleaseSupport.MinimumServingVersion.ServingReleaseIds {
 				servingIDs = append(servingIDs, uuid.UUID(id))
@@ -933,14 +948,15 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 				 SET supported_release_policy = 'allowlist',
 				     supported_release_ids = $1,
 				     generation = generation + 1,
-				     resource_version = resource_version + 1`,
+				     resource_version = resource_version + 1
+				 WHERE id = '00000000-0000-0000-0000-000000000001'`,
 				servingIDs,
 			); err != nil {
 				return fmt.Errorf("update fleet_config from release_support activation: %w", err)
 			}
 		}
 
-		// Create the asynchronous operation row (§14.5).
+		// Create the asynchronous operation row (§14.5, F-10: starts pending with a required step).
 		opID, err := uuid.NewV7()
 		if err != nil {
 			opID = uuid.New()
@@ -948,10 +964,10 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		stepsJSON := []byte(`{"desired_state_compile":{"required":true,"status":"pending"}}`)
 		var opCreatedAt time.Time
 		if err := tx.QueryRow(ctx,
-			`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, steps)
-			 VALUES ($1, 'policy.activate', 'pending', $2, 'policy_definition', $3, $4::jsonb)
+			`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, desired_generation, steps)
+			 VALUES ($1, 'policy.activate', 'pending', $2, 'policy_definition', $3, $4::numeric, $5::jsonb)
 			 RETURNING created_at`,
-			opID, in.ActorID.String(), in.DefinitionID, stepsJSON,
+			opID, in.ActorID.String(), in.DefinitionID, newGen.String(), stepsJSON,
 		).Scan(&opCreatedAt); err != nil {
 			return fmt.Errorf("insert policy.activate operation: %w", err)
 		}
@@ -983,6 +999,7 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			ActorType:     "admin",
 			Action:        "policy.activate",
 			Resource:      in.DefinitionID.String(),
+			OperationID:   &opID,
 			Result:        "accepted",
 			SchemaVersion: 1,
 			Before:        beforeJSON,
@@ -1380,19 +1397,26 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 	var op api.Operation
 	var kind, status, resType string
 	var resID *uuid.UUID
+	var desiredGenStr *string
 	var createdAt time.Time
 	var completedAt *time.Time
 	err := tx.QueryRow(ctx,
-		`SELECT kind, status, resource_type, resource_id, created_at, completed_at
+		`SELECT kind, status, resource_type, resource_id, desired_generation::text, created_at, completed_at
 		 FROM operations WHERE id = $1`,
 		opID,
-	).Scan(&kind, &status, &resType, &resID, &createdAt, &completedAt)
+	).Scan(&kind, &status, &resType, &resID, &desiredGenStr, &createdAt, &completedAt)
 	if err != nil {
 		return op, err
 	}
 	var refID openapi_types.UUID
 	if resID != nil {
 		refID = openapi_types.UUID(*resID)
+	}
+	var desiredGen *decstr.U64
+	if desiredGenStr != nil {
+		if g, err := decstr.Parse(*desiredGenStr); err == nil {
+			desiredGen = &g
+		}
 	}
 	updatedAt := createdAt
 	if completedAt != nil {
@@ -1406,9 +1430,10 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 			Type: api.ResourceType(resType),
 			Id:   refID,
 		},
-		CreatedAt:   createdAt.UTC(),
-		UpdatedAt:   updatedAt.UTC(),
-		CompletedAt: completedAt,
+		DesiredGeneration: desiredGen,
+		CreatedAt:         createdAt.UTC(),
+		UpdatedAt:         updatedAt.UTC(),
+		CompletedAt:       completedAt,
 	}, nil
 }
 

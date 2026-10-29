@@ -360,6 +360,30 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 			evalRevoked.Generation, evalRevoked.EnforcedState, evalRevoked.EnforcedTierIndex)
 	}
 
+	// Prove F-13 and F-15 on fup_member_overrides:
+	// - whitespace-only reason is rejected
+	// - DELETE on fup_member_overrides is rejected by forbid_delete
+	// - rewriting revoked_at or revocation_reason after revocation is rejected by irreversible_timestamps
+	if _, _, err := engine.SetOverride(ctx, SetOverrideInput{
+		MemberID:   memberID,
+		DownBps:    100_000_000,
+		UpBps:      50_000_000,
+		Priority:   0,
+		ValidFrom:  now.Add(6 * time.Minute),
+		ValidUntil: now.Add(30 * time.Minute),
+		Reason:     "   ",
+		ActorID:    adminID,
+		Now:        now.Add(6 * time.Minute),
+	}); err == nil {
+		t.Fatalf("expected whitespace-only override reason to be rejected")
+	}
+	if _, err := pool.Exec(ctx, `DELETE FROM fup_member_overrides WHERE id = $1`, ov.ID); err == nil {
+		t.Fatalf("expected forbid_delete to reject DELETE on fup_member_overrides")
+	}
+	if _, err := pool.Exec(ctx, `UPDATE fup_member_overrides SET revoked_at = NULL, revoked_by = NULL, revocation_reason = NULL WHERE id = $1`, ov.ID); err == nil {
+		t.Fatalf("expected irreversible_timestamps to reject clearing revoked_at on fup_member_overrides")
+	}
+
 	// Insert a negative usage_adjustment and new rollup projection (10 GB -> Tier 0) -> audited relaxation to Tier 0 (Gen 4).
 	_, err = pool.Exec(ctx, `
 		INSERT INTO usage_adjustments (

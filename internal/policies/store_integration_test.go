@@ -580,10 +580,28 @@ func TestAT27_ReleaseSupportActivationUpdatesFleetConfig(t *testing.T) {
 
 	var policyMode string
 	var supportedIDs []uuid.UUID
-	if err := pool.QueryRow(ctx, `SELECT supported_release_policy, supported_release_ids FROM fleet_config`).Scan(&policyMode, &supportedIDs); err != nil {
+	var fleetGen, fleetVer string
+	if err := pool.QueryRow(ctx, `SELECT supported_release_policy, supported_release_ids, generation::text, resource_version::text FROM fleet_config WHERE id = '00000000-0000-0000-0000-000000000001'`).Scan(&policyMode, &supportedIDs, &fleetGen, &fleetVer); err != nil {
 		t.Fatal(err)
 	}
-	if policyMode != "allowlist" || len(supportedIDs) != 2 {
-		t.Fatalf("fleet_config policy=%s supportedIDs=%v", policyMode, supportedIDs)
+	if policyMode != "allowlist" || len(supportedIDs) != 2 || fleetGen != "1" || fleetVer != "2" {
+		t.Fatalf("fleet_config policy=%s supportedIDs=%v gen=%s ver=%s", policyMode, supportedIDs, fleetGen, fleetVer)
+	}
+
+	// Prove F-14 on CreateRevision by Code: creating a second revision using Code
+	// (instead of DefinitionID) does not execute a no-op UPDATE on policy_definitions.
+	rev2, err := store.CreateRevision(ctx, policies.CreateRevisionInput{
+		Code:          &code,
+		Type:          api.PolicyTypeReleaseSupport,
+		SchemaVersion: 1,
+		Reason:        "Second revision created by code without DefinitionID",
+		Payload:       goodRaw,
+		ActorID:       actorID,
+	})
+	if err != nil {
+		t.Fatalf("create second release_support revision by code failed: %v", err)
+	}
+	if rev2.Revision != 2 || rev2.DefinitionID != rev.DefinitionID {
+		t.Fatalf("unexpected rev2: %+v", rev2)
 	}
 }

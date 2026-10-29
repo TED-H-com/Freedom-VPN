@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
@@ -239,19 +241,22 @@ func stateKey(memberID uuid.UUID, periodID string) string {
 // Identical tier-selection, stricter-only clamping, and override resolution code runs in
 // both `shadow` and `enforce` modes; only the output state and generation publication differ.
 func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResult, error) {
+	if in.MemberID == uuid.Nil {
+		return nil, errors.New("fup: member_id is required")
+	}
 	now := in.Now.UTC()
 	if in.Now.IsZero() {
 		now = time.Now().UTC()
 	}
-	currentPeriodID := in.CurrentPeriodID
+	currentPeriodID := strings.TrimSpace(in.CurrentPeriodID)
 	if currentPeriodID == "" {
 		currentPeriodID = CurrentUTCMonthPeriodID(now)
 	}
-	periodID := in.PeriodID
+	periodID := strings.TrimSpace(in.PeriodID)
 	if periodID == "" {
 		periodID = currentPeriodID
 	}
-	actor := in.Actor
+	actor := strings.TrimSpace(in.Actor)
 	if actor == "" {
 		actor = "system/fup-engine"
 	}
@@ -507,6 +512,9 @@ func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResul
 // SetOverride records a time-limited, audited admin override for a member and immediately
 // recomputes the member's fair-use state (§11.1, FUP04).
 func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberOverride, *EvaluationResult, error) {
+	if in.MemberID == uuid.Nil {
+		return nil, nil, fmt.Errorf("%w: member_id is required", ErrInvalidOverride)
+	}
 	now := in.Now.UTC()
 	if in.Now.IsZero() {
 		now = time.Now().UTC()
@@ -525,15 +533,19 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 	if in.Priority < 0 || in.Priority > 7 {
 		return nil, nil, fmt.Errorf("%w: priority must be between 0 and 7", ErrInvalidOverride)
 	}
-	if len(in.Reason) == 0 || len(in.Reason) > 500 {
-		return nil, nil, fmt.Errorf("%w: reason is required and must be <= 500 characters", ErrInvalidOverride)
+	if strings.TrimSpace(in.Reason) == "" || len(in.Reason) > 500 {
+		return nil, nil, fmt.Errorf("%w: reason is required, nonblank, and must be <= 500 characters", ErrInvalidOverride)
 	}
 	if in.ActorID == uuid.Nil {
 		return nil, nil, fmt.Errorf("%w: actor_id is required", ErrInvalidOverride)
 	}
 
+	ovID, err := uuid.NewV7()
+	if err != nil {
+		ovID = uuid.New()
+	}
 	ov := &MemberOverride{
-		ID:         uuid.New(),
+		ID:         ovID,
 		MemberID:   in.MemberID,
 		DownBps:    in.DownBps,
 		UpBps:      in.UpBps,
@@ -546,24 +558,7 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 	}
 
 	if e.db != nil {
-		tx, err := e.db.Begin(ctx)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fup: begin override tx: %w", err)
-		}
-		defer func() { _ = tx.Rollback(ctx) }()
-
-		_, err = tx.Exec(ctx, `
-			INSERT INTO fup_member_overrides (
-				id, member_id, down_bps, up_bps, priority,
-				valid_from, valid_until, reason, actor_id, created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		`, ov.ID, ov.MemberID, ov.DownBps, ov.UpBps, ov.Priority,
-			ov.ValidFrom, ov.ValidUntil, ov.Reason, ov.ActorID, ov.CreatedAt)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fup: insert override: %w", err)
-		}
-
-		afterDiff, _ := json.Marshal(map[string]any{
+		afterDiff, err := json.Marshal(map[string]any{
 			"override_id": ov.ID.String(),
 			"member_id":   ov.MemberID.String(),
 			"down_bps":    ov.DownBps,
@@ -573,17 +568,36 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 			"valid_until": ov.ValidUntil.Format(time.RFC3339Nano),
 			"reason":      ov.Reason,
 		})
-		_, err = tx.Exec(ctx, `
-			INSERT INTO audit_events (
-				actor, actor_type, action, resource, schema_version, before_diff, after_diff, result, occurred_at
-			) VALUES ($1, 'admin', 'fup.override.set', $2, 1, '{}'::jsonb, $3::jsonb, 'succeeded', $4)
-		`, in.ActorID.String(), "member/"+in.MemberID.String(), string(afterDiff), now)
 		if err != nil {
-			return nil, nil, fmt.Errorf("fup: insert override audit event: %w", err)
+			return nil, nil, err
 		}
 
-		if err := tx.Commit(ctx); err != nil {
-			return nil, nil, fmt.Errorf("fup: commit override tx: %w", err)
+		err = db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO fup_member_overrides (
+					id, member_id, down_bps, up_bps, priority,
+					valid_from, valid_until, reason, actor_id, created_at
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			`, ov.ID, ov.MemberID, ov.DownBps, ov.UpBps, ov.Priority,
+				ov.ValidFrom, ov.ValidUntil, ov.Reason, ov.ActorID, ov.CreatedAt); err != nil {
+				return fmt.Errorf("fup: insert override: %w", err)
+			}
+			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+				Actor:         in.ActorID.String(),
+				ActorType:     "admin",
+				Action:        "fup.override.set",
+				Resource:      "member/" + in.MemberID.String(),
+				Result:        "succeeded",
+				SchemaVersion: 1,
+				Before:        []byte(`{}`),
+				After:         afterDiff,
+			}); err != nil {
+				return fmt.Errorf("fup: append override audit event: %w", err)
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, nil, err
 		}
 	} else {
 		e.mu.Lock()
@@ -608,47 +622,50 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 	if in.Now.IsZero() {
 		now = time.Now().UTC()
 	}
-	if in.ActorID == uuid.Nil || len(in.Reason) == 0 {
-		return nil, fmt.Errorf("%w: actor_id and reason are required to revoke an override", ErrInvalidOverride)
+	if in.OverrideID == uuid.Nil || in.MemberID == uuid.Nil || in.ActorID == uuid.Nil || strings.TrimSpace(in.Reason) == "" || len(in.Reason) > 500 {
+		return nil, fmt.Errorf("%w: override_id, member_id, actor_id and nonblank reason are required to revoke an override", ErrInvalidOverride)
 	}
 
 	if e.db != nil {
-		tx, err := e.db.Begin(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("fup: begin revoke override tx: %w", err)
-		}
-		defer func() { _ = tx.Rollback(ctx) }()
-
-		tag, err := tx.Exec(ctx, `
-			UPDATE fup_member_overrides
-			SET revoked_at = $1, revoked_by = $2, revocation_reason = $3
-			WHERE id = $4 AND member_id = $5 AND revoked_at IS NULL
-		`, now, in.ActorID, in.Reason, in.OverrideID, in.MemberID)
-		if err != nil {
-			return nil, fmt.Errorf("fup: update override revocation: %w", err)
-		}
-		if tag.RowsAffected() == 0 {
-			return nil, ErrMemberStateNotFound
-		}
-
-		afterDiff, _ := json.Marshal(map[string]any{
+		afterDiff, err := json.Marshal(map[string]any{
 			"override_id":       in.OverrideID.String(),
 			"member_id":         in.MemberID.String(),
 			"revoked_at":        now.Format(time.RFC3339Nano),
 			"revoked_by":        in.ActorID.String(),
 			"revocation_reason": in.Reason,
 		})
-		_, err = tx.Exec(ctx, `
-			INSERT INTO audit_events (
-				actor, actor_type, action, resource, schema_version, before_diff, after_diff, result, occurred_at
-			) VALUES ($1, 'admin', 'fup.override.revoked', $2, 1, '{}'::jsonb, $3::jsonb, 'succeeded', $4)
-		`, in.ActorID.String(), "member/"+in.MemberID.String(), string(afterDiff), now)
 		if err != nil {
-			return nil, fmt.Errorf("fup: insert revoke override audit: %w", err)
+			return nil, err
 		}
 
-		if err := tx.Commit(ctx); err != nil {
-			return nil, fmt.Errorf("fup: commit revoke override tx: %w", err)
+		err = db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
+			tag, err := tx.Exec(ctx, `
+				UPDATE fup_member_overrides
+				SET revoked_at = $1, revoked_by = $2, revocation_reason = $3
+				WHERE id = $4 AND member_id = $5 AND revoked_at IS NULL
+			`, now, in.ActorID, in.Reason, in.OverrideID, in.MemberID)
+			if err != nil {
+				return fmt.Errorf("fup: update override revocation: %w", err)
+			}
+			if tag.RowsAffected() == 0 {
+				return ErrMemberStateNotFound
+			}
+			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+				Actor:         in.ActorID.String(),
+				ActorType:     "admin",
+				Action:        "fup.override.revoked",
+				Resource:      "member/" + in.MemberID.String(),
+				Result:        "succeeded",
+				SchemaVersion: 1,
+				Before:        []byte(`{}`),
+				After:         afterDiff,
+			}); err != nil {
+				return fmt.Errorf("fup: append revoke override audit: %w", err)
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		e.mu.Lock()
@@ -1036,151 +1053,159 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 		relaxReasonPtr = &s
 	}
 
-	tx, err := e.db.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("fup: begin evaluation tx: %w", err)
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	return db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
+		err := tx.QueryRow(ctx, `
+			INSERT INTO fup_member_states (
+				id, member_id, period_id, period_start, period_end,
+				policy_revision_id, mode,
+				would_apply_tier_index, would_apply_tier_name,
+				would_apply_down_bps, would_apply_up_bps, would_apply_priority, would_apply_reason,
+				enforced_state, enforced_tier_index, enforced_tier_name,
+				enforced_down_bps, enforced_up_bps, enforced_priority, enforced_reason,
+				generation, total_bytes, aggregate_as_of,
+				override_id, override_valid_until, impact_summary, last_computed_at
+			) VALUES (
+				$1, $2, $3, $4, $5,
+				$6, $7,
+				$8, $9::jsonb,
+				$10, $11, $12, $13,
+				$14, $15, $16::jsonb,
+				$17, $18, $19, $20,
+				$21::numeric, $22::numeric, $23,
+				$24, $25, $26::jsonb, $27
+			)
+			ON CONFLICT (member_id, period_id) DO UPDATE SET
+				policy_revision_id = EXCLUDED.policy_revision_id,
+				mode = EXCLUDED.mode,
+				would_apply_tier_index = EXCLUDED.would_apply_tier_index,
+				would_apply_tier_name = EXCLUDED.would_apply_tier_name,
+				would_apply_down_bps = EXCLUDED.would_apply_down_bps,
+				would_apply_up_bps = EXCLUDED.would_apply_up_bps,
+				would_apply_priority = EXCLUDED.would_apply_priority,
+				would_apply_reason = EXCLUDED.would_apply_reason,
+				enforced_state = EXCLUDED.enforced_state,
+				enforced_tier_index = EXCLUDED.enforced_tier_index,
+				enforced_tier_name = EXCLUDED.enforced_tier_name,
+				enforced_down_bps = EXCLUDED.enforced_down_bps,
+				enforced_up_bps = EXCLUDED.enforced_up_bps,
+				enforced_priority = EXCLUDED.enforced_priority,
+				enforced_reason = EXCLUDED.enforced_reason,
+				generation = EXCLUDED.generation,
+				total_bytes = EXCLUDED.total_bytes,
+				aggregate_as_of = EXCLUDED.aggregate_as_of,
+				override_id = EXCLUDED.override_id,
+				override_valid_until = EXCLUDED.override_valid_until,
+				impact_summary = EXCLUDED.impact_summary,
+				last_computed_at = EXCLUDED.last_computed_at
+			RETURNING id
+		`,
+			res.StateID, res.MemberID, res.PeriodID, res.ValidFrom, res.ValidUntil,
+			res.PolicyRevisionID, string(res.Mode),
+			res.WouldApplyTierIndex, string(wouldNameBytes),
+			res.WouldApplyDownBps, res.WouldApplyUpBps, res.WouldApplyPriority, string(res.WouldApplyReason),
+			string(res.EnforcedState), res.EnforcedTierIndex, string(enforcedNameBytes),
+			res.EnforcedDownBps, res.EnforcedUpBps, res.EnforcedPriority, enforcedReasonStr,
+			res.Generation.String(), res.TotalBytes.String(), res.AggregateAsOf,
+			res.OverrideID, res.OverrideValidUntil, string(impactBytes), res.ComputedAt,
+		).Scan(&res.StateID)
+		if err != nil {
+			return fmt.Errorf("fup: upsert fup_member_states: %w", err)
+		}
 
-	err = tx.QueryRow(ctx, `
-		INSERT INTO fup_member_states (
-			id, member_id, period_id, period_start, period_end,
-			policy_revision_id, mode,
-			would_apply_tier_index, would_apply_tier_name,
-			would_apply_down_bps, would_apply_up_bps, would_apply_priority, would_apply_reason,
-			enforced_state, enforced_tier_index, enforced_tier_name,
-			enforced_down_bps, enforced_up_bps, enforced_priority, enforced_reason,
-			generation, total_bytes, aggregate_as_of,
-			override_id, override_valid_until, impact_summary, last_computed_at
-		) VALUES (
-			$1, $2, $3, $4, $5,
-			$6, $7,
-			$8, $9::jsonb,
-			$10, $11, $12, $13,
-			$14, $15, $16::jsonb,
-			$17, $18, $19, $20,
-			$21::numeric, $22::numeric, $23,
-			$24, $25, $26::jsonb, $27
+		_, err = tx.Exec(ctx, `
+			INSERT INTO fup_evaluations (
+				id, member_id, period_id, policy_revision_id, mode,
+				would_apply_tier_index, would_apply_down_bps, would_apply_up_bps, would_apply_priority, would_apply_reason,
+				enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps, enforced_priority, enforced_reason,
+				generation, generation_incremented, relaxed, relaxation_reason,
+				total_bytes, aggregate_as_of, impact_summary, computed_at
+			) VALUES (
+				$1, $2, $3, $4, $5,
+				$6, $7, $8, $9, $10,
+				$11, $12, $13, $14, $15, $16,
+				$17::numeric, $18, $19, $20,
+				$21::numeric, $22, $23::jsonb, $24
+			)
+		`,
+			res.EvaluationID, res.MemberID, res.PeriodID, res.PolicyRevisionID, string(res.Mode),
+			res.WouldApplyTierIndex, res.WouldApplyDownBps, res.WouldApplyUpBps, res.WouldApplyPriority, string(res.WouldApplyReason),
+			string(res.EnforcedState), res.EnforcedTierIndex, res.EnforcedDownBps, res.EnforcedUpBps, res.EnforcedPriority, enforcedReasonStr,
+			res.Generation.String(), res.GenerationIncremented, res.Relaxed, relaxReasonPtr,
+			res.TotalBytes.String(), res.AggregateAsOf, string(impactBytes), res.ComputedAt,
 		)
-		ON CONFLICT (member_id, period_id) DO UPDATE SET
-			policy_revision_id = EXCLUDED.policy_revision_id,
-			mode = EXCLUDED.mode,
-			would_apply_tier_index = EXCLUDED.would_apply_tier_index,
-			would_apply_tier_name = EXCLUDED.would_apply_tier_name,
-			would_apply_down_bps = EXCLUDED.would_apply_down_bps,
-			would_apply_up_bps = EXCLUDED.would_apply_up_bps,
-			would_apply_priority = EXCLUDED.would_apply_priority,
-			would_apply_reason = EXCLUDED.would_apply_reason,
-			enforced_state = EXCLUDED.enforced_state,
-			enforced_tier_index = EXCLUDED.enforced_tier_index,
-			enforced_tier_name = EXCLUDED.enforced_tier_name,
-			enforced_down_bps = EXCLUDED.enforced_down_bps,
-			enforced_up_bps = EXCLUDED.enforced_up_bps,
-			enforced_priority = EXCLUDED.enforced_priority,
-			enforced_reason = EXCLUDED.enforced_reason,
-			generation = EXCLUDED.generation,
-			total_bytes = EXCLUDED.total_bytes,
-			aggregate_as_of = EXCLUDED.aggregate_as_of,
-			override_id = EXCLUDED.override_id,
-			override_valid_until = EXCLUDED.override_valid_until,
-			impact_summary = EXCLUDED.impact_summary,
-			last_computed_at = EXCLUDED.last_computed_at
-		RETURNING id
-	`,
-		res.StateID, res.MemberID, res.PeriodID, res.ValidFrom, res.ValidUntil,
-		res.PolicyRevisionID, string(res.Mode),
-		res.WouldApplyTierIndex, string(wouldNameBytes),
-		res.WouldApplyDownBps, res.WouldApplyUpBps, res.WouldApplyPriority, string(res.WouldApplyReason),
-		string(res.EnforcedState), res.EnforcedTierIndex, string(enforcedNameBytes),
-		res.EnforcedDownBps, res.EnforcedUpBps, res.EnforcedPriority, enforcedReasonStr,
-		res.Generation.String(), res.TotalBytes.String(), res.AggregateAsOf,
-		res.OverrideID, res.OverrideValidUntil, string(impactBytes), res.ComputedAt,
-	).Scan(&res.StateID)
-	if err != nil {
-		return fmt.Errorf("fup: upsert fup_member_states: %w", err)
-	}
-
-	_, err = tx.Exec(ctx, `
-		INSERT INTO fup_evaluations (
-			id, member_id, period_id, policy_revision_id, mode,
-			would_apply_tier_index, would_apply_down_bps, would_apply_up_bps, would_apply_priority, would_apply_reason,
-			enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps, enforced_priority, enforced_reason,
-			generation, generation_incremented, relaxed, relaxation_reason,
-			total_bytes, aggregate_as_of, impact_summary, computed_at
-		) VALUES (
-			$1, $2, $3, $4, $5,
-			$6, $7, $8, $9, $10,
-			$11, $12, $13, $14, $15, $16,
-			$17::numeric, $18, $19, $20,
-			$21::numeric, $22, $23::jsonb, $24
-		)
-	`,
-		res.EvaluationID, res.MemberID, res.PeriodID, res.PolicyRevisionID, string(res.Mode),
-		res.WouldApplyTierIndex, res.WouldApplyDownBps, res.WouldApplyUpBps, res.WouldApplyPriority, string(res.WouldApplyReason),
-		string(res.EnforcedState), res.EnforcedTierIndex, res.EnforcedDownBps, res.EnforcedUpBps, res.EnforcedPriority, enforcedReasonStr,
-		res.Generation.String(), res.GenerationIncremented, res.Relaxed, relaxReasonPtr,
-		res.TotalBytes.String(), res.AggregateAsOf, string(impactBytes), res.ComputedAt,
-	)
-	if err != nil {
-		return fmt.Errorf("fup: insert fup_evaluations: %w", err)
-	}
-
-	if res.Relaxed {
-		relaxAudit, _ := json.Marshal(map[string]any{
-			"member_id":         res.MemberID.String(),
-			"period_id":         res.PeriodID,
-			"tier_index":        res.WouldApplyTierIndex,
-			"total_bytes":       res.TotalBytes.String(),
-			"relaxation_reason": res.RelaxationReason,
-		})
-		_, err = tx.Exec(ctx, `
-			INSERT INTO audit_events (
-				actor, actor_type, action, resource, schema_version, before_diff, after_diff, result, occurred_at
-			) VALUES ($1, 'system', 'fup.tier.relaxed', $2, 1, '{}'::jsonb, $3::jsonb, 'succeeded', $4)
-		`, actor, "member/"+res.MemberID.String(), string(relaxAudit), res.ComputedAt)
 		if err != nil {
-			return fmt.Errorf("fup: insert relaxation audit event: %w", err)
-		}
-	}
-
-	if res.GenerationIncremented {
-		outboxPayload, _ := json.Marshal(map[string]any{
-			"member_id":          res.MemberID.String(),
-			"period_id":          res.PeriodID,
-			"policy_revision_id": res.PolicyRevisionID.String(),
-			"generation":         res.Generation.String(),
-			"enforced_state":     string(res.EnforcedState),
-			"tier_index":         res.EnforcedTierIndex,
-			"down_bps":           res.EnforcedDownBps,
-			"up_bps":             res.EnforcedUpBps,
-			"priority":           res.EnforcedPriority,
-			"reason":             enforcedReasonStr,
-			"valid_from":         res.ValidFrom.Format(time.RFC3339Nano),
-			"valid_until":        res.ValidUntil.Format(time.RFC3339Nano),
-		})
-		_, err = tx.Exec(ctx, `
-			INSERT INTO outbox_events (
-				aggregate_id, aggregate_type, aggregate_version, event_type, schema_version, payload, created_at, available_at
-			) VALUES ($1, 'fup_member_state', $2::numeric, 'fup.member_generation_changed', 1, $3::jsonb, $4, $4)
-		`, res.StateID, res.Generation.String(), string(outboxPayload), res.ComputedAt)
-		if err != nil {
-			return fmt.Errorf("fup: insert outbox event: %w", err)
+			return fmt.Errorf("fup: insert fup_evaluations: %w", err)
 		}
 
-		_, err = tx.Exec(ctx, `
-			INSERT INTO audit_events (
-				actor, actor_type, action, resource, schema_version, before_diff, after_diff, result, occurred_at
-			) VALUES ($1, 'system', 'fup.generation.issued', $2, 1, '{}'::jsonb, $3::jsonb, 'succeeded', $4)
-		`, actor, "member/"+res.MemberID.String(), string(outboxPayload), res.ComputedAt)
-		if err != nil {
-			return fmt.Errorf("fup: insert generation audit event: %w", err)
+		if res.Relaxed {
+			relaxAudit, err := json.Marshal(map[string]any{
+				"member_id":         res.MemberID.String(),
+				"period_id":         res.PeriodID,
+				"tier_index":        res.WouldApplyTierIndex,
+				"total_bytes":       res.TotalBytes.String(),
+				"relaxation_reason": res.RelaxationReason,
+			})
+			if err != nil {
+				return err
+			}
+			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+				Actor:         actor,
+				ActorType:     "system",
+				Action:        "fup.tier.relaxed",
+				Resource:      "member/" + res.MemberID.String(),
+				Result:        "succeeded",
+				SchemaVersion: 1,
+				Before:        []byte(`{}`),
+				After:         relaxAudit,
+			}); err != nil {
+				return fmt.Errorf("fup: append relaxation audit event: %w", err)
+			}
 		}
-	}
 
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("fup: commit evaluation tx: %w", err)
-	}
-	return nil
+		if res.GenerationIncremented {
+			outboxPayload, err := json.Marshal(map[string]any{
+				"member_id":          res.MemberID.String(),
+				"period_id":          res.PeriodID,
+				"policy_revision_id": res.PolicyRevisionID.String(),
+				"generation":         res.Generation.String(),
+				"enforced_state":     string(res.EnforcedState),
+				"tier_index":         res.EnforcedTierIndex,
+				"down_bps":           res.EnforcedDownBps,
+				"up_bps":             res.EnforcedUpBps,
+				"priority":           res.EnforcedPriority,
+				"reason":             enforcedReasonStr,
+				"valid_from":         res.ValidFrom.Format(time.RFC3339Nano),
+				"valid_until":        res.ValidUntil.Format(time.RFC3339Nano),
+			})
+			if err != nil {
+				return err
+			}
+			if err := db.EnqueueOutbox(ctx, tx, db.OutboxEvent{
+				AggregateID:      res.StateID,
+				AggregateType:    "fup_member_state",
+				AggregateVersion: res.Generation.String(),
+				EventType:        "fup.member_generation_changed",
+				SchemaVersion:    1,
+				Payload:          outboxPayload,
+				AvailableAt:      res.ComputedAt,
+			}); err != nil {
+				return fmt.Errorf("fup: enqueue outbox event: %w", err)
+			}
+			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+				Actor:         actor,
+				ActorType:     "system",
+				Action:        "fup.generation.issued",
+				Resource:      "member/" + res.MemberID.String(),
+				Result:        "succeeded",
+				SchemaVersion: 1,
+				Before:        []byte(`{}`),
+				After:         outboxPayload,
+			}); err != nil {
+				return fmt.Errorf("fup: append generation audit event: %w", err)
+			}
+		}
+		return nil
+	})
 }
 
 // Default PostgreSQL implementations of UsageReader, MemberPolicyReader, and NodeAckReader.
