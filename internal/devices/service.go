@@ -114,7 +114,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	default:
 		p.Platform = "unknown"
 	}
-	err := db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "POST", "device.authorize", map[string]any{"deployment_id": p.DeploymentID, "peer_id": p.ID, "external_user_id": p.ExternalUserID, "overlay_scope": p.OverlayScope, "overlay_ip": p.OverlayIP.String()})
 		if err != nil {
 			return err
@@ -189,7 +189,8 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.update", "device", device, 1)
+		opActor := entitlement.Actor{ID: member, Role: "member", RequestID: c.Actor.RequestID}
+		op, err := entitlement.Operation(ctx, tx, opActor, "member.update", "device", device, 1)
 		if err != nil {
 			return err
 		}
@@ -206,7 +207,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	return result, err
 }
 
-const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,coalesce((SELECT observed_authorized FROM device_authorization_observations WHERE device_id=member_devices.id),false)`
+const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,coalesce((SELECT o.observed_authorized AND o.observed_version=member_devices.resource_version AND o.observed_entitlement_revision=e.revision AND e.valid_from<=clock_timestamp() AND e.effective_service_end>clock_timestamp() AND NOT e.admin_suspended FROM device_authorization_observations o JOIN entitlements e ON e.member_id=member_devices.member_id WHERE o.device_id=member_devices.id),false)`
 
 func scan(row pgx.Row) (Device, error) {
 	var d Device
@@ -279,7 +280,7 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 	if err != nil {
 		return result, err
 	}
-	err = db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "DELETE", "/member/devices/"+id.String(), map[string]any{})
 		if err != nil {
 			return err
@@ -301,7 +302,12 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		}
 		if status == "revoked" || status == "closed" {
 			result.Replayed = true
-			return entitlement.Complete(ctx, tx, record, "device", id, nil, 202)
+			var op uuid.UUID
+			if err = tx.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type='member_device' AND resource_id=$1 AND kind='member.device_revoke' ORDER BY created_at DESC LIMIT 1`, id).Scan(&op); err != nil {
+				return db.MapError(err)
+			}
+			result.OperationID = &op
+			return entitlement.Complete(ctx, tx, record, "device", id, &op, 202)
 		}
 		now := s.Entitlements.Time()
 		_, err = tx.Exec(ctx, `UPDATE member_devices SET status='revoked',revoked_at=$2,resource_version=resource_version+1 WHERE id=$1`, id, now)

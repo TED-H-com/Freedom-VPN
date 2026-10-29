@@ -1,7 +1,8 @@
 # Durable worker jobs
 
-Add a handler with one `registry.Register("domain.event", handler)` call in
-`apps/worker/jobs.go`. The registry is copied at dispatcher construction and is
+Add one domain constructor line to `Domains()` in `apps/worker/jobs.go`.
+The domain build returns its job registry, immutable context values and any
+background runners through the [composition seam](COMPOSITION.md). The registry is copied at dispatcher construction and is
 immutable during execution. Unknown event types retry and eventually dead-letter;
 they are never silently acknowledged.
 
@@ -52,4 +53,5 @@ ORDER BY dead_lettered_at, id;
 
 SIGTERM/SIGINT cancel handlers and drain work under the shutdown timeout. A job
 that did not establish completion remains leased for recovery; shutdown never
-manufactures delivery. No domain jobs are registered by this framework task.
+manufactures delivery. `worker.Open` merges all registered domains before any claims; duplicate events
+fail startup. The application supervises both dispatcher and domain runners.

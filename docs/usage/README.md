@@ -28,7 +28,7 @@ The central usage ledger (`internal/usage.Service`) is the single source of trut
 5. **Database Guard Invariants (`F-02`..`F-15` in `docs/db/README.md`)**:
    - Every accepted event with `record_count > 0` commits its `usage_event_payloads` row and all `record_count` rows in `usage_samples` in the same transaction (`check_usage_event_contents`, `F-04`). Zero-byte `replay_unavailable` tombstones commit with `record_count = 0` and zero `usage_samples` rows, satisfying `check_usage_event_contents` without inventing bytes.
    - Every `usage_checkpoints` write (`ensureAndLockCheckpointInTx`, `recomputeStreamWatermarkWithConflictsInTx`, and single-statement epoch rotation `resetStreamCheckpointForNewEpochInTx`) matches the exact contiguous receipt count and `coalesce(max(event_seq), 0)` in `usage_events` (`check_usage_checkpoint`, `F-04`).
-   - Signing purposes (`§17.3`): In Wave 2, both `BeginRecovery` (`usage_recovery_records`) and `GetCheckpoint` (`UsageCheckpointEnvelope`) sign with `envelope.PurposeRecovery` (`"recovery"`). In Wave 3, when the PKI signing provider is wired with the contract revision, the `ledger_epoch` recovery record will use the new `ledger-epoch` purpose while checkpoint envelopes keep `recovery`.
+   - Signing purposes (`§16.2`, `§17.3`): `BeginRecovery` signs `usage_recovery_records` (`ledger_epoch` rotation records) with `envelope.PurposeLedgerEpoch` (`"ledger-epoch"`) using a dedicated central-only `LedgerEpochSigner` (`NewLedgerEpochSigner`) whose key is never included in node trust bundles; `GetCheckpoint` signs `UsageCheckpointEnvelope` with `envelope.PurposeRecovery` (`"recovery"`) using `NewRecoverySigner`.
 
 ---
 
@@ -37,9 +37,10 @@ The central usage ledger (`internal/usage.Service`) is the single source of trut
 `Service.IngestBatch(ctx, identity, batch)` processes an `api.UsageBatchRequest` in three phases:
 
 ### Phase 1: Whole-Batch Gatechecks
-1. **Ledger State & Epoch Check**:
-   - Reads `usage_ledger_state`. If `mode != 'normal'`, returns `503 SERVICE_UNAVAILABLE` so nodes retain their local SQLite spool and retry after recovery starts or completes.
-   - If `batch.LedgerEpoch` is non-zero and does not match the active `current_epoch`, returns `409 LEDGER_EPOCH_MISMATCH`. Nodes must call `GET /api/v1/agent/usage-checkpoint` to synchronize to the new epoch before resuming uploads (`§17.3`).
+1. **Ledger State, Mode & Epoch Check**:
+   - Reads `usage_ledger_state`. Only `mode == 'frozen'` returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`) so nodes retain their local SQLite spool and never advance ACKs while frozen; both `'normal'` and `'reconciling'` accept event ingestion (with `'reconciling'` accepting post-restore replay under the new epoch).
+   - If `batch.ReplayUnavailable` is non-empty, central accepts it **only** while `mode == 'reconciling'` (`§17.3`, Decision `D-027`). In `'normal'` mode, any batch carrying `replay_unavailable` is rejected with `409 STATE_CONFLICT` (`apierr.StateConflict`), no tombstone is stored, and the watermark does not advance; a node that loses local data during normal operation reports a `quality == "gap"` event for the missing interval (`§10.7`).
+   - If `batch.LedgerEpoch` is non-zero and does not match the active `current_epoch` (or is omitted while a recovery is active), returns `409 LEDGER_EPOCH_MISMATCH`. Nodes must call `GET /api/v1/agent/usage-checkpoint` to synchronize to the new epoch before resuming uploads (`§17.3`).
 2. **mTLS Identity & Active Incarnation Check**:
    - Verifies `batch.NodeId == identity.NodeID` and `batch.NodeIncarnationId == identity.NodeIncarnationID`.
    - Verifies that every event in `batch.Events` has `event.NodeId == identity.NodeID` and `event.NodeIncarnationId == identity.NodeIncarnationID`.
@@ -47,10 +48,10 @@ The central usage ledger (`internal/usage.Service`) is the single source of trut
    - If any check fails, the entire batch fails with `403 FORBIDDEN` and zero database writes.
 
 ### Phase 2: Per-Event Atomic Transactions (`§10.6`)
-Events are processed individually, each inside its own `db.InTx` transaction serialized per stream by locking the stream's `usage_checkpoints` row (`SELECT ... FOR UPDATE`):
+Events are processed individually, each inside its own `db.InTx` transaction serialized per stream by locking the stream's `usage_checkpoints` row (`SELECT ... FOR UPDATE`) and acquiring a share-level row lock (`FOR SHARE`) on `usage_ledger_state` immediately before writing `usage_events` (so `FreezeIngest` and `BeginRecovery`, which acquire `FOR UPDATE` on `usage_ledger_state`, fence in-flight ingests without serializing concurrent ingests on each other):
 
 1. **Structural, Hash & Historical Binding Validation**:
-   - Validates `schema_version == 1`, `event_id != nil`, `event_seq >= 1`, `interval_end > interval_start`, `len(records) > 0` (unless `quality == "gap"`), and `gap != nil` iff `quality == "gap"`.
+   - Validates `schema_version == 1`, `event_id != nil`, `event_seq >= 1`, `interval_end > interval_start`, and `gap != nil` iff `quality == "gap"`. (Idle intervals with `quality == "complete"` and `len(records) == 0` are valid and accepted as the contract allows.)
    - Parses all decimal strings (`event_seq`, `binding_revision`, `upload_bytes`, `download_bytes`, `monotonic_elapsed_ns`, `missing_seq_start`, `missing_seq_end`) via `pkg/decstr.Parse`.
    - Recomputes `payload_sha256` via `ComputeEventHash(ev)` and compares it with `ev.PayloadSha256`.
    - Validates each record's `(member_id, device_id, binding_revision, interval_start, interval_end)` against `device_bindings` and verifies `meter_epoch_id` is non-nil and `metering_version` is non-empty.
@@ -58,7 +59,7 @@ Events are processed individually, each inside its own `db.InTx` transaction ser
 2. **Idempotency & Conflict Detection**:
    - Queries `usage_events` by `(node_id, incarnation_id, event_seq)` or `id = event.EventId`:
      - **Same key + same `payload_hash`**: Idempotent duplicate resend (`status: "duplicate"`). Ensure projection is complete and recompute stream watermarks cleanly.
-     - **Same key + different `payload_hash`** (or same `event_id` attached to a different stream key): Stores a conflict record in `usage_event_conflicts` preserving both the existing payload hash and the conflicting payload + hash (`§10.6`, `AT15`), flags the affected member rollup periods with `gap = TRUE`, and returns `status: "conflict"` with `error_code: "USAGE_EVENT_CONFLICT"`. A conflict on event $k$ **never** deletes or rolls back already-committed or subsequent valid events, and blocks `highest_contiguous_seq` at $k - 1$.
+     - **Same key + different `payload_hash`** (or same `event_id` attached to a different stream key): Stores a conflict record in `usage_event_conflicts` preserving both the existing payload hash and the conflicting payload + hash (`§10.6`, `AT15`), flags the affected member rollup periods with `gap = TRUE`, and returns `status: "conflict"` with `error_code: "USAGE_EVENT_CONFLICT"`. Because a row for `event_seq` already exists in `usage_events` and the `check_usage_checkpoint` / `usage_checkpoints_monotonic` triggers enforce that `highest_contiguous_seq` equals the exact contiguous receipt count in `usage_events` and never regresses within a `ledger_epoch`, conflicts are tracked in `usage_event_conflicts` without regressing `highest_contiguous_seq` or deleting already-committed or subsequent valid events.
 3. **Accept, Sample Insertion, Synchronous Projection & Watermark Update**:
    - Inserts the immutable row into `usage_events` and the canonical JCS payload bytes into `usage_event_payloads`.
    - Inserts each record into `usage_samples`.
@@ -105,11 +106,10 @@ Suppose a node stream has committed events `1..99` (`highest_contiguous_seq = 99
 ### Worked Example 2: Conflicting Resend on Sequence `103` — `AT15`
 Continuing from `highest_contiguous_seq = 102`:
 1. Node sends `[103 (hash A), 104 (hash B)]` $\rightarrow$ both `accepted`; `highest_contiguous_seq = 104`.
-2. Suppose instead `103` had not yet arrived, `104` arrived first (`highest_contiguous_seq = 102`, `max_seen_seq = 104`, `blocked_seq = 103`), or suppose `103` is resent with a **different** `payload_sha256` (`hash A' != hash A`):
+2. Suppose `103` is later resent with a **different** `payload_sha256` (`hash A' != hash A`):
    - Central records a row in `usage_event_conflicts` with both `existing_payload_hash` (`hash A`) and `conflicting_payload_hash` (`hash A'`) plus the raw conflicting JSON.
    - Central returns `status: "conflict"`, `error_code: "USAGE_EVENT_CONFLICT"` for `103`.
-   - `highest_contiguous_seq` is capped at `102` (`blocked_seq = "103"`) so the conflict is never silently ACKed past (`§10.6`).
-   - Crucially, event `104` remains committed and projected; the conflict on `103` never deletes later valid events.
+   - Within the current `ledger_epoch`, `highest_contiguous_seq` never regresses (`104`), and event `104` remains committed and projected; the conflict on `103` is preserved in `usage_event_conflicts` and flags the affected member rollup period with `gap = TRUE`.
 
 ### Worked Example 3: Invalid Event in a Mixed Batch (`[201 valid, 202 invalid, 203 valid]`)
 Continuing from `highest_contiguous_seq = 200`:
