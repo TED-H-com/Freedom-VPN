@@ -46,30 +46,41 @@ func BeginIdempotent(ctx context.Context, tx pgx.Tx, scope IdempotencyScope, ttl
 		return record, err
 	}
 	var storedHash []byte
-	err = tx.QueryRow(ctx, `INSERT INTO idempotency_requests(id,principal,method,route,key_hash,request_hash,expiry)
+	for {
+		err = tx.QueryRow(ctx, `INSERT INTO idempotency_requests(id,principal,method,route,key_hash,request_hash,expiry)
  VALUES($1,$2,$3,$4,$5,$6,clock_timestamp()+$7::bigint*interval '1 millisecond')
  ON CONFLICT(principal,method,route,key_hash) DO UPDATE SET
  id=excluded.id,request_hash=excluded.request_hash,state='in_progress',resource_type=NULL,resource_id=NULL,operation_id=NULL,response_status=NULL,created_at=clock_timestamp(),expiry=clock_timestamp()+$7::bigint*interval '1 millisecond'
  WHERE idempotency_requests.expiry<=clock_timestamp()
  RETURNING id,state,resource_type,resource_id,operation_id,response_status,created_at,expiry,request_hash`, id, scope.Principal, scope.Method, scope.Route, scope.KeyHash, scope.RequestHash, ttl.Milliseconds()).Scan(
-		&record.ID, &record.State, &record.ResourceType, &record.ResourceID, &record.OperationID, &record.ResponseStatus, &record.CreatedAt, &record.Expiry, &storedHash)
-	if err == nil {
-		record.New = true
+			&record.ID, &record.State, &record.ResourceType, &record.ResourceID, &record.OperationID, &record.ResponseStatus, &record.CreatedAt, &record.Expiry, &storedHash)
+		if err == nil {
+			record.New = true
+			return record, nil
+		}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return record, MapError(err)
+		}
+		var unexpired bool
+		err = tx.QueryRow(ctx, `SELECT id,state,resource_type,resource_id,operation_id,response_status,created_at,expiry,request_hash,expiry>clock_timestamp()
+ FROM idempotency_requests WHERE principal=$1 AND method=$2 AND route=$3 AND key_hash=$4 FOR UPDATE`, scope.Principal, scope.Method, scope.Route, scope.KeyHash).Scan(
+			&record.ID, &record.State, &record.ResourceType, &record.ResourceID, &record.OperationID, &record.ResponseStatus, &record.CreatedAt, &record.Expiry, &storedHash, &unexpired)
+		if errors.Is(err, pgx.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return record, MapError(err)
+		}
+		// Recheck expiry under the row lock using the database clock, not the
+		// application clock. An expired conflict must go through the upsert again.
+		if !unexpired {
+			continue
+		}
+		if !bytes.Equal(storedHash, scope.RequestHash) {
+			return record, ErrIdempotencyConflict
+		}
 		return record, nil
 	}
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return record, MapError(err)
-	}
-	err = tx.QueryRow(ctx, `SELECT id,state,resource_type,resource_id,operation_id,response_status,created_at,expiry,request_hash
- FROM idempotency_requests WHERE principal=$1 AND method=$2 AND route=$3 AND key_hash=$4 FOR UPDATE`, scope.Principal, scope.Method, scope.Route, scope.KeyHash).Scan(
-		&record.ID, &record.State, &record.ResourceType, &record.ResourceID, &record.OperationID, &record.ResponseStatus, &record.CreatedAt, &record.Expiry, &storedHash)
-	if err != nil {
-		return record, MapError(err)
-	}
-	if !bytes.Equal(storedHash, scope.RequestHash) {
-		return record, ErrIdempotencyConflict
-	}
-	return record, nil
 }
 
 // IdempotencyResult contains only references and an HTTP status. Secret-bearing
@@ -86,7 +97,11 @@ func CompleteIdempotent(ctx context.Context, tx pgx.Tx, id uuid.UUID, result Ide
 		return errors.New("invalid idempotency result")
 	}
 	tag, err := tx.Exec(ctx, `UPDATE idempotency_requests SET state='completed',resource_type=$2,resource_id=$3,operation_id=$4,response_status=$5
- WHERE id=$1 AND expiry>clock_timestamp() AND (state='in_progress' OR
+ WHERE id=$1 AND expiry>clock_timestamp() AND ((state='in_progress'
+ AND (resource_type IS NULL OR resource_type IS NOT DISTINCT FROM $2)
+ AND (resource_id IS NULL OR resource_id IS NOT DISTINCT FROM $3)
+ AND (operation_id IS NULL OR operation_id IS NOT DISTINCT FROM $4)
+ AND (response_status IS NULL OR response_status=$5)) OR
  (resource_type IS NOT DISTINCT FROM $2 AND resource_id IS NOT DISTINCT FROM $3 AND operation_id IS NOT DISTINCT FROM $4 AND response_status=$5))`, id, result.ResourceType, result.ResourceID, result.OperationID, result.ResponseStatus)
 	if err != nil {
 		return MapError(err)

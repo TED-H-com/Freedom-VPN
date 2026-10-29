@@ -1,0 +1,836 @@
+{
+  "schema_version": 1,
+  "description": "Shared DNS domain normalization, conflict validation, and policy evaluation vectors (§12.4, DNS01, DNS02, AT20).",
+  "normalization_vectors": [
+    {
+      "name": "valid_lowercase_apex",
+      "input": "example.com",
+      "valid": true,
+      "canonical": "example.com"
+    },
+    {
+      "name": "valid_subdomain",
+      "input": "sub.api.example.com",
+      "valid": true,
+      "canonical": "sub.api.example.com"
+    },
+    {
+      "name": "valid_mixed_case_ascii",
+      "input": "ExAmPlE.CoM",
+      "valid": true,
+      "canonical": "example.com"
+    },
+    {
+      "name": "valid_trailing_root_dot",
+      "input": "example.com.",
+      "valid": true,
+      "canonical": "example.com"
+    },
+    {
+      "name": "valid_uppercase_with_trailing_dot",
+      "input": "SuB.ExAmPlE.NeT.",
+      "valid": true,
+      "canonical": "sub.example.net"
+    },
+    {
+      "name": "valid_test_tld",
+      "input": "resolver-check.test",
+      "valid": true,
+      "canonical": "resolver-check.test"
+    },
+    {
+      "name": "valid_idna_umlaut_unicode",
+      "input": "münchen.example.com",
+      "valid": true,
+      "canonical": "xn--mnchen-3ya.example.com"
+    },
+    {
+      "name": "valid_idna_umlaut_uppercase_trailing_dot",
+      "input": "MÜNCHEN.EXAMPLE.COM.",
+      "valid": true,
+      "canonical": "xn--mnchen-3ya.example.com"
+    },
+    {
+      "name": "valid_idna_punycode_alabel",
+      "input": "xn--mnchen-3ya.example.com",
+      "valid": true,
+      "canonical": "xn--mnchen-3ya.example.com"
+    },
+    {
+      "name": "valid_idna_punycode_uppercase",
+      "input": "XN--MNCHEN-3YA.EXAMPLE.COM",
+      "valid": true,
+      "canonical": "xn--mnchen-3ya.example.com"
+    },
+    {
+      "name": "valid_idna2008_nontransitional_eszett",
+      "input": "faß.example.com",
+      "valid": true,
+      "canonical": "xn--fa-hia.example.com"
+    },
+    {
+      "name": "valid_idna_traditional_chinese",
+      "input": "台灣.example.com",
+      "valid": true,
+      "canonical": "xn--kpry57d.example.com"
+    },
+    {
+      "name": "valid_idna_mixed_script_cyrillic_homograph",
+      "input": "аpple.example.com",
+      "valid": true,
+      "canonical": "xn--pple-43d.example.com"
+    },
+    {
+      "name": "valid_idna_mixed_script_punycode",
+      "input": "xn--pple-43d.example.com",
+      "valid": true,
+      "canonical": "xn--pple-43d.example.com"
+    },
+    {
+      "name": "valid_max_63_byte_label",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com",
+      "valid": true,
+      "canonical": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com"
+    },
+    {
+      "name": "invalid_empty_string",
+      "input": "",
+      "valid": false,
+      "error_code": "DOMAIN_EMPTY"
+    },
+    {
+      "name": "invalid_bare_root_dot",
+      "input": ".",
+      "valid": false,
+      "error_code": "DOMAIN_EMPTY"
+    },
+    {
+      "name": "invalid_control_char_nul",
+      "input": "bad\u0000.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_CONTROL_CHAR"
+    },
+    {
+      "name": "invalid_control_char_newline",
+      "input": "bad\n.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_CONTROL_CHAR"
+    },
+    {
+      "name": "invalid_control_char_tab",
+      "input": "bad\t.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_CONTROL_CHAR"
+    },
+    {
+      "name": "invalid_control_char_del",
+      "input": "bad\u007f.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_CONTROL_CHAR"
+    },
+    {
+      "name": "invalid_control_char_soft_hyphen",
+      "input": "ex\u00adample.com",
+      "valid": false,
+      "error_code": "DOMAIN_CONTROL_CHAR"
+    },
+    {
+      "name": "invalid_control_char_zero_width_space",
+      "input": "ex\u200bample.com",
+      "valid": false,
+      "error_code": "DOMAIN_CONTROL_CHAR"
+    },
+    {
+      "name": "invalid_scheme_http",
+      "input": "http://example.com",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_SCHEME"
+    },
+    {
+      "name": "invalid_scheme_https_full_url",
+      "input": "https://example.com:8443/path?query=1#frag",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_SCHEME"
+    },
+    {
+      "name": "invalid_scheme_mailto",
+      "input": "mailto:user@example.com",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_SCHEME"
+    },
+    {
+      "name": "invalid_userinfo_simple",
+      "input": "admin@example.com",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_USERINFO"
+    },
+    {
+      "name": "invalid_userinfo_with_password",
+      "input": "admin:secret@example.com",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_USERINFO"
+    },
+    {
+      "name": "invalid_port",
+      "input": "example.com:443",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_PORT"
+    },
+    {
+      "name": "invalid_ipv6_literal_colon",
+      "input": "[2001:db8::1]",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_PORT"
+    },
+    {
+      "name": "invalid_path",
+      "input": "example.com/phishing/login",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_PATH"
+    },
+    {
+      "name": "invalid_trailing_slash",
+      "input": "example.com/",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_PATH"
+    },
+    {
+      "name": "invalid_backslash_path",
+      "input": "example.com\\path",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_PATH"
+    },
+    {
+      "name": "invalid_query",
+      "input": "example.com?redirect=1",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_QUERY"
+    },
+    {
+      "name": "invalid_fragment",
+      "input": "example.com#top",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_FRAGMENT"
+    },
+    {
+      "name": "invalid_wildcard_prefix",
+      "input": "*.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_WILDCARD"
+    },
+    {
+      "name": "invalid_wildcard_middle",
+      "input": "sub.*.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_HAS_WILDCARD"
+    },
+    {
+      "name": "invalid_empty_label_leading_dot",
+      "input": ".example.com",
+      "valid": false,
+      "error_code": "DOMAIN_EMPTY_LABEL"
+    },
+    {
+      "name": "invalid_empty_label_double_dot",
+      "input": "sub..example.com",
+      "valid": false,
+      "error_code": "DOMAIN_EMPTY_LABEL"
+    },
+    {
+      "name": "invalid_empty_label_double_trailing_dot",
+      "input": "example.com..",
+      "valid": false,
+      "error_code": "DOMAIN_EMPTY_LABEL"
+    },
+    {
+      "name": "invalid_label_too_long_64_bytes",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_LABEL_TOO_LONG"
+    },
+    {
+      "name": "invalid_domain_too_long_254_bytes",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_TOO_LONG"
+    },
+    {
+      "name": "invalid_leading_hyphen",
+      "input": "-bad.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_trailing_hyphen",
+      "input": "bad-.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_reserved_double_hyphen_pos_3_4",
+      "input": "ab--cd.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_empty_punycode",
+      "input": "xn--.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_malformed_punycode",
+      "input": "xn--99999999999999999999999999999.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_underscore_in_label",
+      "input": "bad_label.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_space_in_label",
+      "input": "bad label.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_emoji_label",
+      "input": "💩.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_fullwidth_dot",
+      "input": "example\u3002com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_mixed_bidi_rtl_ltr",
+      "input": "אa.example.com",
+      "valid": false,
+      "error_code": "DOMAIN_INVALID_IDNA"
+    },
+    {
+      "name": "invalid_single_label",
+      "input": "localhost",
+      "valid": false,
+      "error_code": "DOMAIN_SINGLE_LABEL"
+    },
+    {
+      "name": "invalid_numeric_tld_ipv4",
+      "input": "192.0.2.1",
+      "valid": false,
+      "error_code": "DOMAIN_NUMERIC_TLD"
+    }
+  ],
+  "conflict_vectors": [
+    {
+      "name": "same_layer_exact_duplicate_admin_block",
+      "expected_error_code": "SAME_LAYER_CONFLICT",
+      "profile": {
+        "profile_id": "standard",
+        "revision": "1",
+        "rules": [
+          {
+            "rule_id": "r1",
+            "profile_id": "standard",
+            "domain": "conflict.example.com",
+            "include_subdomains": true,
+            "action": "block",
+            "reason": "admin_rule",
+            "revision": "1"
+          },
+          {
+            "rule_id": "r2",
+            "profile_id": "standard",
+            "domain": "conflict.example.com",
+            "include_subdomains": false,
+            "action": "block",
+            "reason": "admin_rule",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "same_layer_case_and_trailing_dot_conflict",
+      "expected_error_code": "SAME_LAYER_CONFLICT",
+      "profile": {
+        "profile_id": "standard",
+        "revision": "2",
+        "rules": [
+          {
+            "rule_id": "r1",
+            "profile_id": "standard",
+            "domain": "dup.example.com",
+            "include_subdomains": true,
+            "action": "allow",
+            "reason": "admin_rule",
+            "revision": "1"
+          },
+          {
+            "rule_id": "r2",
+            "profile_id": "standard",
+            "domain": "DUP.EXAMPLE.COM.",
+            "include_subdomains": false,
+            "action": "allow",
+            "reason": "admin_rule",
+            "revision": "2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "same_layer_idna_unicode_vs_punycode_conflict",
+      "expected_error_code": "SAME_LAYER_CONFLICT",
+      "profile": {
+        "profile_id": "standard",
+        "revision": "3",
+        "rules": [
+          {
+            "rule_id": "r1",
+            "profile_id": "standard",
+            "domain": "münchen.example.com",
+            "include_subdomains": true,
+            "action": "block",
+            "reason": "admin_rule",
+            "revision": "1"
+          },
+          {
+            "rule_id": "r2",
+            "profile_id": "standard",
+            "domain": "xn--mnchen-3ya.example.com",
+            "include_subdomains": true,
+            "action": "block",
+            "reason": "admin_rule",
+            "revision": "2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "same_layer_explicit_layer_block_vs_allow",
+      "expected_error_code": "SAME_LAYER_CONFLICT",
+      "profile": {
+        "profile_id": "standard",
+        "revision": "4",
+        "rules": [
+          {
+            "rule_id": "r1",
+            "profile_id": "standard",
+            "domain": "layer-conflict.example.com",
+            "include_subdomains": true,
+            "action": "block",
+            "layer": "admin_block",
+            "reason": "admin_rule",
+            "revision": "1"
+          },
+          {
+            "rule_id": "r2",
+            "profile_id": "standard",
+            "domain": "layer-conflict.example.com",
+            "include_subdomains": true,
+            "action": "allow",
+            "layer": "admin_block",
+            "reason": "admin_rule",
+            "revision": "2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "profile_ref_mismatch",
+      "expected_error_code": "PROFILE_REF_MISMATCH",
+      "profile": {
+        "profile_id": "standard",
+        "revision": "5",
+        "rules": [
+          {
+            "rule_id": "r1",
+            "profile_id": "other-profile",
+            "domain": "example.com",
+            "include_subdomains": true,
+            "action": "block",
+            "reason": "admin_rule",
+            "revision": "1"
+          }
+        ]
+      }
+    }
+  ],
+  "evaluation_profile": {
+    "profile_id": "standard",
+    "name": "Standard Protection Profile",
+    "revision": "12",
+    "block_mode": "nxdomain",
+    "blocked_ttl_seconds": 60,
+    "enabled_sources": [
+      "src-malware-test",
+      "src-phishing-test"
+    ],
+    "rules": [
+      {
+        "rule_id": "rule-block-exact",
+        "profile_id": "standard",
+        "domain": "exact-block.example.com",
+        "include_subdomains": false,
+        "action": "block",
+        "reason": "admin_exact_deny",
+        "revision": "1"
+      },
+      {
+        "rule_id": "rule-block-sub",
+        "profile_id": "standard",
+        "domain": "corp-block.example.com",
+        "include_subdomains": true,
+        "action": "block",
+        "reason": "admin_subdomain_deny",
+        "revision": "2"
+      },
+      {
+        "rule_id": "rule-block-idna-homograph",
+        "profile_id": "standard",
+        "domain": "аpple.example.com",
+        "include_subdomains": true,
+        "action": "block",
+        "reason": "admin_homograph_deny",
+        "revision": "3"
+      },
+      {
+        "rule_id": "rule-block-idna-eszett",
+        "profile_id": "standard",
+        "domain": "faß.example.com",
+        "include_subdomains": false,
+        "action": "block",
+        "reason": "admin_idna_deny",
+        "revision": "4"
+      },
+      {
+        "rule_id": "rule-block-beats-allow",
+        "profile_id": "standard",
+        "domain": "override-conflict.example.com",
+        "include_subdomains": true,
+        "action": "block",
+        "reason": "admin_forced_deny",
+        "revision": "5"
+      },
+      {
+        "rule_id": "rule-allow-conflict-apex",
+        "profile_id": "standard",
+        "domain": "override-conflict.example.com",
+        "include_subdomains": true,
+        "action": "allow",
+        "reason": "admin_allow_attempt",
+        "revision": "6"
+      },
+      {
+        "rule_id": "rule-allow-conflict-sub",
+        "profile_id": "standard",
+        "domain": "allowed-sub.corp-block.example.com",
+        "include_subdomains": false,
+        "action": "allow",
+        "reason": "admin_allow_under_forced_block",
+        "revision": "7"
+      },
+      {
+        "rule_id": "rule-allow-exact-on-feed",
+        "profile_id": "standard",
+        "domain": "fp-exact.malware.test",
+        "include_subdomains": false,
+        "action": "allow",
+        "reason": "false_positive_exact_override",
+        "revision": "8"
+      },
+      {
+        "rule_id": "rule-allow-sub-on-feed",
+        "profile_id": "standard",
+        "domain": "fp-zone.phishing.example.net",
+        "include_subdomains": true,
+        "action": "allow",
+        "reason": "false_positive_zone_override",
+        "revision": "9"
+      }
+    ],
+    "sources": [
+      {
+        "source_id": "src-malware-test",
+        "name": "Test Malware Domain Feed (TEST ONLY)",
+        "version": "1",
+        "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "license_status": "commercial_approved",
+        "permitted_use": "TEST ONLY fixture approved for commercial simulation",
+        "distribution_notes": "Server-side resolver compilation only",
+        "attribution_notes": "Freedom VPN internal test fixture",
+        "url": "https://feeds.example.invalid/malware-test.txt",
+        "format": "plain_domains",
+        "category": "malware",
+        "update_cadence": "待決策",
+        "enabled_by_default": false,
+        "quality": {
+          "rule_count": 3,
+          "delta": 3,
+          "parse_errors": 0,
+          "skipped_unsupported": 0,
+          "smoke_test_result": "passed"
+        },
+        "entries": [
+          {
+            "domain": "malware.test",
+            "include_subdomains": true
+          },
+          {
+            "domain": "cname-blocked-target.example.net",
+            "include_subdomains": true
+          },
+          {
+            "domain": "xn--mnchen-3ya.example.com",
+            "include_subdomains": true
+          }
+        ]
+      },
+      {
+        "source_id": "src-phishing-test",
+        "name": "Test Phishing Domain Feed (TEST ONLY)",
+        "version": "1",
+        "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "license_status": "commercial_approved",
+        "permitted_use": "TEST ONLY fixture approved for commercial simulation",
+        "distribution_notes": "Server-side resolver compilation only",
+        "attribution_notes": "Freedom VPN internal test fixture",
+        "url": "https://feeds.example.invalid/phishing-test.txt",
+        "format": "adblock",
+        "category": "phishing",
+        "update_cadence": "待決策",
+        "enabled_by_default": false,
+        "quality": {
+          "rule_count": 2,
+          "delta": 2,
+          "parse_errors": 0,
+          "skipped_unsupported": 0,
+          "smoke_test_result": "passed"
+        },
+        "entries": [
+          {
+            "domain": "phishing.example.net",
+            "include_subdomains": true
+          },
+          {
+            "domain": "bad-login.example.com",
+            "include_subdomains": true
+          }
+        ]
+      }
+    ]
+  },
+  "evaluation_vectors": [
+    {
+      "name": "exact_block_matches_apex",
+      "input": "exact-block.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-exact"
+    },
+    {
+      "name": "exact_block_does_not_match_subdomain",
+      "input": "sub.exact-block.example.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "exact_block_does_not_match_lookalike_prefix",
+      "input": "notexact-block.example.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "subdomain_block_matches_apex",
+      "input": "corp-block.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-sub"
+    },
+    {
+      "name": "subdomain_block_matches_direct_subdomain",
+      "input": "hr.corp-block.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-sub"
+    },
+    {
+      "name": "subdomain_block_matches_deep_subdomain",
+      "input": "a.b.c.corp-block.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-sub"
+    },
+    {
+      "name": "subdomain_block_does_not_match_lookalike_boundary",
+      "input": "notcorp-block.example.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "case_and_trailing_dot_on_forced_block",
+      "input": "HR.CORP-BLOCK.EXAMPLE.COM.",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-sub"
+    },
+    {
+      "name": "precedence_forced_block_beats_allow_on_same_domain",
+      "input": "override-conflict.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-beats-allow"
+    },
+    {
+      "name": "precedence_forced_block_beats_allow_on_subdomain",
+      "input": "allowed-sub.corp-block.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-sub"
+    },
+    {
+      "name": "precedence_exact_allow_beats_threat_feed_on_exact_name",
+      "input": "fp-exact.malware.test",
+      "expected_action": "allow",
+      "expected_layer": "admin_allow",
+      "expected_rule_id": "rule-allow-exact-on-feed"
+    },
+    {
+      "name": "precedence_exact_allow_does_not_allow_child_under_threat_feed",
+      "input": "child.fp-exact.malware.test",
+      "expected_action": "block",
+      "expected_layer": "source_list",
+      "expected_source_id": "src-malware-test"
+    },
+    {
+      "name": "precedence_subdomain_allow_beats_threat_feed_on_apex",
+      "input": "fp-zone.phishing.example.net",
+      "expected_action": "allow",
+      "expected_layer": "admin_allow",
+      "expected_rule_id": "rule-allow-sub-on-feed"
+    },
+    {
+      "name": "precedence_subdomain_allow_beats_threat_feed_on_deep_child",
+      "input": "deep.fp-zone.phishing.example.net",
+      "expected_action": "allow",
+      "expected_layer": "admin_allow",
+      "expected_rule_id": "rule-allow-sub-on-feed"
+    },
+    {
+      "name": "threat_feed_blocks_malware_apex",
+      "input": "malware.test",
+      "expected_action": "block",
+      "expected_layer": "source_list",
+      "expected_source_id": "src-malware-test"
+    },
+    {
+      "name": "threat_feed_blocks_malware_subdomain",
+      "input": "dropper.malware.test",
+      "expected_action": "block",
+      "expected_layer": "source_list",
+      "expected_source_id": "src-malware-test"
+    },
+    {
+      "name": "threat_feed_does_not_block_lookalike_notmalware",
+      "input": "notmalware.test",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "threat_feed_blocks_phishing_subdomain",
+      "input": "login.phishing.example.net",
+      "expected_action": "block",
+      "expected_layer": "source_list",
+      "expected_source_id": "src-phishing-test"
+    },
+    {
+      "name": "idna_mixed_script_homograph_unicode_blocked",
+      "input": "аpple.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-idna-homograph"
+    },
+    {
+      "name": "idna_mixed_script_homograph_punycode_blocked",
+      "input": "xn--pple-43d.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-idna-homograph"
+    },
+    {
+      "name": "idna_mixed_script_homograph_subdomain_blocked",
+      "input": "login.аpple.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-idna-homograph"
+    },
+    {
+      "name": "idna_ascii_apple_lookalike_allowed",
+      "input": "apple.example.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "idna2008_eszett_blocked",
+      "input": "faß.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-idna-eszett"
+    },
+    {
+      "name": "idna2008_eszett_punycode_blocked",
+      "input": "xn--fa-hia.example.com",
+      "expected_action": "block",
+      "expected_layer": "admin_block",
+      "expected_rule_id": "rule-block-idna-eszett"
+    },
+    {
+      "name": "idna2008_ascii_fass_distinct_and_allowed",
+      "input": "fass.example.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "idna_feed_unicode_query_blocked",
+      "input": "münchen.example.com",
+      "expected_action": "block",
+      "expected_layer": "source_list",
+      "expected_source_id": "src-malware-test"
+    },
+    {
+      "name": "idna_feed_punycode_query_blocked",
+      "input": "xn--mnchen-3ya.example.com.",
+      "expected_action": "block",
+      "expected_layer": "source_list",
+      "expected_source_id": "src-malware-test"
+    },
+    {
+      "name": "normal_resolution_example_com",
+      "input": "www.example.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "normal_resolution_notexample_com",
+      "input": "notexample.com",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    },
+    {
+      "name": "normal_resolution_example_net",
+      "input": "safe.example.net",
+      "expected_action": "allow",
+      "expected_layer": "default_resolve"
+    }
+  ]
+}
