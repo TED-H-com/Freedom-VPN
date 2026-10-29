@@ -15,8 +15,11 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/agentstore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/usageupload"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -29,30 +32,47 @@ const certRenewLead = 5 * time.Minute
 
 // Options builds an Engine. Nil dependencies take the production defaults.
 type Options struct {
-	Config  Config
-	Store   *agentstore.Store
-	Client  *controlclient.Client
-	Plane   Plane
-	Clock   timeanchor.Clock
-	Hooks   Hooks
-	Log     *slog.Logger
-	Barrier Barrier
-	Trust   *envelope.TrustStore
+	Config Config
+	Store  *agentstore.Store
+	Client *controlclient.Client
+	Plane  Plane
+	Clock  timeanchor.Clock
+	Hooks  Hooks
+	Log    *slog.Logger
+	// MeterSource reads admission counters. Nil reads table inet fvpn.
+	// Tests pass a fake so they do not need nft.
+	MeterSource meter.Source
+	Trust       *envelope.TrustStore
 }
 
 // Engine is one agent process (§5, §16.3). It is not safe for concurrent Step.
 type Engine struct {
-	cfg      Config
-	store    *agentstore.Store
-	client   *controlclient.Client
-	plane    Plane
-	clock    timeanchor.Clock
-	bootID   uuid.UUID
-	trust    *envelope.TrustStore
-	hooks    Hooks
-	log      *slog.Logger
-	barrier  Barrier
-	ownStore bool
+	cfg         Config
+	store       *agentstore.Store
+	client      *controlclient.Client
+	plane       Plane
+	clock       timeanchor.Clock
+	bootID      uuid.UUID
+	trust       *envelope.TrustStore
+	hooks       Hooks
+	log         *slog.Logger
+	meterSource meter.Source
+	ownStore    bool
+
+	usage        *usagestore.Store
+	meter        *meter.Meter
+	uploader     *usageupload.Uploader
+	usageOnce    bool
+	sampleOn     bool
+	finalDone    bool
+	shutUsage    bool
+	meterSnap    []enforce.Binding
+	usageOutbox  bool
+	usageDisk    bool
+	usagePersist bool
+	loopCtx      context.Context
+	loopCancel   context.CancelFunc
+	loops        sync.WaitGroup
 
 	mu      sync.Mutex
 	tlsCert *tls.Certificate
@@ -99,9 +119,6 @@ func Start(opt Options) (*Engine, error) {
 	if opt.Plane == nil {
 		opt.Plane = SystemPlane{}
 	}
-	if opt.Barrier == nil {
-		opt.Barrier = NopBarrier{}
-	}
 	if opt.Log == nil {
 		opt.Log = slog.New(RedactHandler{Next: slog.DiscardHandler})
 	} else {
@@ -134,7 +151,7 @@ func Start(opt Options) (*Engine, error) {
 	e := &Engine{
 		cfg: opt.Config, store: store, client: opt.Client, plane: opt.Plane,
 		clock: opt.Clock, bootID: boot, trust: trust, hooks: opt.Hooks,
-		log: opt.Log, barrier: opt.Barrier, ownStore: ownStore, storageOK: true,
+		log: opt.Log, meterSource: opt.MeterSource, ownStore: ownStore, storageOK: true,
 	}
 	if e.client == nil {
 		pool := x509.NewCertPool()
@@ -165,11 +182,13 @@ func Start(opt Options) (*Engine, error) {
 	return e, nil
 }
 
-// Close closes the client and, when Start opened it, the store.
+// Close finishes the usage hand-off, then closes the client and, when
+// Start opened it, the agent store.
 func (e *Engine) Close() error {
 	if e == nil {
 		return nil
 	}
+	e.shutdownUsage()
 	if e.client != nil {
 		e.client.Close()
 		e.client = nil
@@ -268,6 +287,7 @@ func (e *Engine) Boot(ctx context.Context) error {
 	e.serving = false
 	e.recoverOnce(ctx)
 	e.latch()
+	e.ensureUsage(ctx)
 	e.beat()
 	return nil
 }
@@ -308,8 +328,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	}
 	e.latch()
 	if e.revoked {
-		_ = e.baseline(ctx)
-		e.serving = false
+		e.withdraw(ctx)
 		e.decision = Decide(e.input())
 		_ = e.observe(ctx)
 		_ = e.flush(ctx)
@@ -326,26 +345,24 @@ func (e *Engine) Step(ctx context.Context) error {
 		return err
 	}
 	if e.revoked {
-		_ = e.baseline(ctx)
-		e.serving = false
+		e.withdraw(ctx)
 		return nil
 	}
 	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	if e.revoked {
-		_ = e.baseline(ctx)
-		e.serving = false
+		e.withdraw(ctx)
 		return nil
 	}
 	_ = e.syncCert(ctx)
 	_ = e.syncBootstrap(ctx)
 	e.refreshDesired()
-	if ok, err := e.barrier.Health(ctx); err != nil || !ok {
-		e.meterFailed = true
-	} else {
-		e.meterFailed = false
+	e.ensureUsage(ctx)
+	if e.uploader != nil && e.uploader.NeedsRestore() {
+		e.restoreUsage(ctx)
 	}
+	e.readMeter(ctx)
 	if pending, err := e.store.Pending(ctx); err == nil {
 		e.outboxFull = len(pending) >= 32
 	}
@@ -427,6 +444,7 @@ func (e *Engine) input() Input {
 		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
 		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
 		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
+		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
 	}
 }
 
@@ -508,6 +526,7 @@ func (e *Engine) baseline(ctx context.Context) error {
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	if !d.Serve {
+		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
 		return e.baseline(ctx)
@@ -536,6 +555,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	res, err := e.plane.Apply(ctx, model, prev)
 	if err != nil {
+		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
 		e.noteApply(err)
@@ -569,6 +589,8 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	if err := e.store.SaveAddresses(ctx, e.addresses); err != nil {
 		e.storageOK = false
 	}
+	e.setMeterBindings(model.Bindings)
+	e.resumeSampling()
 	for _, reset := range res.Resets {
 		e.decision.Errors = append(e.decision.Errors, api.NodeError{
 			Code: api.ErrorCodeHEALTHCHECKFAILED, Message: string(reset.Reason),
@@ -596,13 +618,22 @@ func (e *Engine) noteApply(err error) {
 
 func (e *Engine) markRevoked(ctx context.Context) {
 	e.revoked = true
-	e.serving = false
 	e.policyExpires = 0
 	if err := e.store.SetMeta(ctx, "revoked", "1"); err != nil {
 		e.storageOK = false
 	}
-	_ = e.baseline(ctx)
+	e.withdraw(ctx)
 	e.log.Warn("identity revoked")
+}
+
+// withdraw is the forwarding stop: the usage hand-off (barrier, baseline,
+// final sample) and a baseline again for the case where sampling never
+// started. A later successful apply resumes sampling.
+func (e *Engine) withdraw(ctx context.Context) {
+	e.handoff(ctx)
+	_ = e.baseline(ctx)
+	e.serving = false
+	e.policyExpires = 0
 }
 
 func (e *Engine) beat() {

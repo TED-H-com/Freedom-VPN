@@ -64,8 +64,10 @@ type Server struct {
 	trust     []byte
 	desPriv   ed25519.PrivateKey
 	leasePriv ed25519.PrivateKey
+	recPriv   ed25519.PrivateKey
 	desID     string
 	leaseID   string
+	recID     string
 
 	tokens    map[string]*enrolled
 	revoked   map[uuid.UUID]bool
@@ -99,6 +101,16 @@ type Server struct {
 	sticky       bool
 	stickyRaw    []byte
 	stickyETag   string
+
+	// Usage ledger. TEST ONLY knobs let the lab drive ACK, 503, 429 and a
+	// signed checkpoint. usageEpoch is the live central generation.
+	usageEpoch    uuid.UUID
+	usageNodes    map[string]*usageLedger
+	usageUnavail  int
+	usageRetryN   int
+	usageRetryFor time.Duration
+	usageConflict int
+	usageForce    *usageForce
 }
 
 // Start listens on 127.0.0.1 and returns a server with TEST ONLY keys.
@@ -157,11 +169,16 @@ func Start() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	recPub, recPriv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return nil, err
+	}
 	nb := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	na := time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC)
 	ts, err := envelope.NewNodeTrustStore(
 		envelope.TrustedKey{KeyID: "test-desired", PublicKey: desPub, Purposes: []envelope.Purpose{envelope.PurposeDesiredState}, NotBefore: nb, NotAfter: na},
 		envelope.TrustedKey{KeyID: "test-lease", PublicKey: leasePub, Purposes: []envelope.Purpose{envelope.PurposeLease}, NotBefore: nb, NotAfter: na},
+		envelope.TrustedKey{KeyID: "test-recovery", PublicKey: recPub, Purposes: []envelope.Purpose{envelope.PurposeRecovery}, NotBefore: nb, NotAfter: na},
 	)
 	if err != nil {
 		return nil, err
@@ -175,7 +192,9 @@ func Start() (*Server, error) {
 	pool.AddCert(caCert)
 	s := &Server{
 		caCert: caCert, caKey: caKey, caPEM: caPEM, trust: trust,
-		desPriv: desPriv, leasePriv: leasePriv, desID: "test-desired", leaseID: "test-lease",
+		desPriv: desPriv, leasePriv: leasePriv, recPriv: recPriv,
+		desID: "test-desired", leaseID: "test-lease", recID: "test-recovery",
+		usageEpoch: uuid.Must(uuid.NewV7()), usageNodes: map[string]*usageLedger{},
 		tokens: map[string]*enrolled{}, revoked: map[uuid.UUID]bool{},
 		obs: map[string]api.ObservationAccepted{}, renewed: map[string]api.CertificateRenewResponse{},
 		bootMode: "ready", bootKey: "test-only-setup-key", bootExt: "test-ext",
@@ -228,7 +247,7 @@ func (s *Server) CAPool() *x509.CertPool {
 // CACertPEM is the PEM CA certificate.
 func (s *Server) CACertPEM() []byte { return append([]byte(nil), s.caPEM...) }
 
-// TrustJSON is the node trust bundle (desired-state and lease purposes).
+// TrustJSON is the node trust bundle (desired-state, lease and recovery).
 func (s *Server) TrustJSON() []byte { return append([]byte(nil), s.trust...) }
 
 // AddToken registers an enrollment token. Only its hash is kept.
@@ -423,6 +442,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.bootstrap(w, r)
 	case "/api/v1/agent/usage-batches":
 		s.usage(w, r)
+	case "/api/v1/agent/usage-checkpoint":
+		s.usageCheckpoint(w, r)
 	default:
 		apierr.Write(w, r, apierr.New(apierr.ResourceNotFound, "Unknown agent path."))
 	}
