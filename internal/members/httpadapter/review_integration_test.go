@@ -90,6 +90,9 @@ func TestBILL03_D031SynchronousCheckoutFailureAndRetry(t *testing.T) {
 	if e != nil || observed.Status != api.OperationStatusFailed || observed.Error.IsNull() {
 		t.Fatal(observed, e)
 	}
+	if !observed.Kind.Valid() || observed.Kind != api.OperationKindCheckoutCreate || !observed.Resource.Type.Valid() || observed.Resource.Type != api.ResourceTypeCheckoutSession || observed.Resource.Id != session {
+		t.Fatal(observed)
+	}
 	w = f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
 	requireStatus(t, w, 201)
 	result := decode[api.CheckoutSession](t, w)

@@ -101,12 +101,16 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 
 		var op *uuid.UUID
 		if kind == "checkout" {
+			operationKind, resourceType := api.OperationKindCheckoutCreate, api.ResourceTypeCheckoutSession
+			if !operationKind.Valid() || !resourceType.Valid() {
+				return entitlement.ErrInvalid
+			}
 			operationID, e := uuid.NewV7()
 			if e != nil {
 				return e
 			}
 			op = &operationID
-			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,$5,$2,$6,$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID, api.OperationKindCheckoutCreate, api.ResourceTypeCheckoutSession)
+			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,$5,$2,$6,$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID, operationKind, resourceType)
 			if err != nil {
 				return err
 			}
