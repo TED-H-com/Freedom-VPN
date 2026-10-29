@@ -1,0 +1,109 @@
+{
+  "accept": [
+    "0",
+    "1",
+    "9",
+    "10",
+    "42",
+    "9007199254740991",
+    "9007199254740992",
+    "9007199254740993",
+    "9223372036854775807",
+    "9223372036854775808",
+    "18446744073709551614",
+    "18446744073709551615"
+  ],
+  "description": "JSON decimal strings for unsigned 64-bit integers (§10.4, §14.1). accept: string values that must parse to exactly the same digits. reject: raw JSON value texts that must be rejected. Pattern ^(0|[1-9][0-9]*)$, at most 20 digits, at most 18446744073709551615.",
+  "max": "18446744073709551615",
+  "pattern": "^(0|[1-9][0-9]*)$",
+  "reject": [
+    {
+      "json": "\"\"",
+      "reason": "empty"
+    },
+    {
+      "json": "\"-0\"",
+      "reason": "sign"
+    },
+    {
+      "json": "\"-1\"",
+      "reason": "sign"
+    },
+    {
+      "json": "\"+1\"",
+      "reason": "sign"
+    },
+    {
+      "json": "\"01\"",
+      "reason": "leading_zero"
+    },
+    {
+      "json": "\"00\"",
+      "reason": "leading_zero"
+    },
+    {
+      "json": "\" 1\"",
+      "reason": "whitespace"
+    },
+    {
+      "json": "\"1 \"",
+      "reason": "whitespace"
+    },
+    {
+      "json": "\"1e3\"",
+      "reason": "exponent"
+    },
+    {
+      "json": "\"1E3\"",
+      "reason": "exponent"
+    },
+    {
+      "json": "\"1.0\"",
+      "reason": "fraction"
+    },
+    {
+      "json": "\"0x10\"",
+      "reason": "non_digit"
+    },
+    {
+      "json": "\"NaN\"",
+      "reason": "non_digit"
+    },
+    {
+      "json": "\"1_000\"",
+      "reason": "non_digit"
+    },
+    {
+      "json": "\"\\uff11\"",
+      "reason": "non_digit"
+    },
+    {
+      "json": "\"18446744073709551616\"",
+      "reason": "out_of_range"
+    },
+    {
+      "json": "\"99999999999999999999\"",
+      "reason": "out_of_range"
+    },
+    {
+      "json": "\"100000000000000000000\"",
+      "reason": "out_of_range"
+    },
+    {
+      "json": "123",
+      "reason": "not_a_string"
+    },
+    {
+      "json": "9007199254740993",
+      "reason": "not_a_string"
+    },
+    {
+      "json": "null",
+      "reason": "not_a_string"
+    },
+    {
+      "json": "true",
+      "reason": "not_a_string"
+    }
+  ]
+}

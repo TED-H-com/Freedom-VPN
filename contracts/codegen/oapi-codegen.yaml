@@ -1,0 +1,13 @@
+# oapi-codegen v2 configuration: Go types only (no server or client code).
+# Run through `make -f mk/contracts.mk contracts-generate`.
+package: api
+output: pkg/api/api.gen.go
+generate:
+  models: true
+output-options:
+  # Keep every component, including ones only referenced by JSON Schemas.
+  skip-prune: true
+compatibility:
+  # Always prefix enum constants with their type name, so adding an enum
+  # value elsewhere never renames existing constants.
+  always-prefix-enum-values: true

@@ -1,0 +1,28 @@
+{
+  "type": "domain_rule_set",
+  "schema_version": 1,
+  "code": "standard",
+  "reason": "x",
+  "payload": {
+    "rules": [
+      {
+        "rule_id": "ca60a69d-4247-4f93-9de4-bbf754a2b52e",
+        "profile_id": "standard",
+        "domain": "https://example.com/path",
+        "include_subdomains": true,
+        "action": "block",
+        "reason": "admin_rule",
+        "revision": "12"
+      },
+      {
+        "rule_id": "723ffb37-6084-4601-b322-3b4e4f0d4565",
+        "profile_id": null,
+        "domain": "xn--fiqs8s.example",
+        "include_subdomains": false,
+        "action": "allow",
+        "reason": "false_positive",
+        "revision": "3"
+      }
+    ]
+  }
+}

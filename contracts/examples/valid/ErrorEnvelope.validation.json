@@ -1,0 +1,16 @@
+{
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request validation failed.",
+    "request_id": "a12d4141-4f3e-487b-b638-e1488be3d4ee",
+    "retryable": false,
+    "details": {
+      "fields": [
+        {
+          "field": "/events/0/records/0/upload_bytes",
+          "reason": "decimal_string"
+        }
+      ]
+    }
+  }
+}

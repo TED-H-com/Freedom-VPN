@@ -1,0 +1,21 @@
+{
+  "type": "dns_profile",
+  "schema_version": 1,
+  "reason": "Initial dns_profile revision.",
+  "payload": {
+    "profile_code": "standard",
+    "display_name": {
+      "zh-TW": "標準防護",
+      "en": "Standard protection"
+    },
+    "domain_rule_set_revision_ids": [
+      "2398841d-bd48-4a11-97a4-87c59517157b"
+    ],
+    "threat_feed_revision_ids": [
+      "a5e85d12-74ef-4b99-a88b-b6842fe8945f"
+    ],
+    "block_response": "nxdomain",
+    "blocked_ttl_seconds": 60
+  },
+  "code": "standard"
+}

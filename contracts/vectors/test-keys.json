@@ -1,0 +1,48 @@
+{
+  "_comment": "TEST ONLY - NOT A SECRET. seed_hex = SHA-256 of the UTF-8 string 'TEST ONLY - NOT A SECRET: fvpn contracts <label> test key'. Keys with trusted=true form the test trust store; never trust them outside tests.",
+  "keys": [
+    {
+      "label": "desired-state",
+      "key_id": "policy-signing-test-2026",
+      "purpose": "desired-state",
+      "trusted": true,
+      "seed_hex": "3bc2b62bec49f8735c778ee21727e1c3a803180c59d2d99bce177715d02965a0",
+      "public_key_b64": "kGLrTOC4LQVDl6CaNIOyDX19AS8btY0yga7BR9Z93jg="
+    },
+    {
+      "label": "lease",
+      "key_id": "lease-signing-test-2026",
+      "purpose": "lease",
+      "trusted": true,
+      "seed_hex": "ca5e9e4b75c10cd2e37281ad847519f737ac785f0c25b88c18dd7d2f6558f749",
+      "public_key_b64": "sThrd0fZrXktC7rlca2S6XbRJbW28LCEcqfgkkFgLlQ="
+    },
+    {
+      "label": "recovery",
+      "key_id": "recovery-signing-test-2026",
+      "purpose": "recovery",
+      "trusted": true,
+      "seed_hex": "c0a35b0d91bc704145640d5d22564aa775578552450b31c6fa1759c7a1105b0d",
+      "public_key_b64": "/MwFPLNkrJNhT0mY/JVY1QXbFFAmuzwjrYiQ9dKGEOw="
+    },
+    {
+      "label": "release",
+      "key_id": "release-signing-test-2026",
+      "purpose": "release",
+      "trusted": true,
+      "seed_hex": "458d9371e32a494b1d76f8b3e2fcc892628c3ca49d344069e7d043e574deedd3",
+      "public_key_b64": "g6a/FB1UPLeaO8/pt6KAwedKVPQUBMmtnuic5KUDYik="
+    },
+    {
+      "label": "untrusted",
+      "key_id": "untrusted-test-key",
+      "purpose": "release",
+      "trusted": false,
+      "seed_hex": "870759eb901bec6516991a085015ddf4035def1801c9b58fa24c4ab50e67fdad",
+      "public_key_b64": "oR2UYuCeXprbA0th9Izub3VDszljXKJOa6PtcIpcyaI="
+    }
+  ],
+  "not_after": "2028-01-01T00:00:00Z",
+  "not_before": "2026-01-01T00:00:00Z",
+  "verify_at": "2026-10-28T15:00:00Z"
+}

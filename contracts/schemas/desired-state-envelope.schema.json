@@ -1,0 +1,597 @@
+{
+  "$comment": "Generated from contracts/openapi.yaml component DesiredStateEnvelope (§14.7) by contracts/internal/cmd/contractsgen. DO NOT EDIT.",
+  "$defs": {
+    "AccountingPeriod": {
+      "additionalProperties": false,
+      "description": "Accounting period issued by the center (§10.4). Nodes never redefine periods in local time.",
+      "properties": {
+        "period_end": {
+          "description": "Exclusive. The agent samples at period_end so intervals do not cross periods (§10.9).",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "period_id": {
+          "$ref": "#/$defs/PeriodId"
+        },
+        "period_start": {
+          "description": "Inclusive.",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "period_id",
+        "period_start",
+        "period_end"
+      ],
+      "title": "AccountingPeriod",
+      "type": "object"
+    },
+    "DesiredState": {
+      "additionalProperties": false,
+      "description": "Node desired state (§14.7). Contains the node, incarnation, generation,\nvalidity window and the policy content the node enforces, not only\nreplaceable references. The target release and the serving release set\nare separate: a new target never stops a still-supported release (§13.2).\nThe serving lease is renewed separately (POST /agent/lease-renewals).\n",
+      "properties": {
+        "accounting_period": {
+          "$ref": "#/$defs/AccountingPeriod"
+        },
+        "binding_revision": {
+          "description": "Revision of the device binding set below.",
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "config_generation": {
+          "description": "Monotonic; an older generation never overwrites a newer one (§15.3).",
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "desired_release_id": {
+          "description": "Fleet target release; null before any release is targeted.",
+          "format": "uuid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "device_bindings": {
+          "items": {
+            "$ref": "#/$defs/DeviceBinding"
+          },
+          "maxItems": 10000,
+          "type": "array"
+        },
+        "dns": {
+          "$ref": "#/$defs/DnsServiceConfig"
+        },
+        "expires_at": {
+          "description": "End of validity of this desired state; must be after issued_at.",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "lease_renewal_endpoint": {
+          "enum": [
+            "/api/v1/agent/lease-renewals"
+          ],
+          "type": "string"
+        },
+        "member_rate_policies": {
+          "items": {
+            "$ref": "#/$defs/MemberRatePolicy"
+          },
+          "maxItems": 10000,
+          "type": "array"
+        },
+        "node_capacity": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/NodeCapacity"
+                }
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "node_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "node_incarnation_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "policy_refs": {
+          "$ref": "#/$defs/PolicyRefs"
+        },
+        "publication_intent": {
+          "$ref": "#/$defs/PublicationIntent"
+        },
+        "safety_profile": {
+          "description": "Fixed isolation baseline profile, for example `internet-only-v1`. No policy can relax it.",
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "type": "string"
+        },
+        "schema_version": {
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        },
+        "serving_release_ids": {
+          "description": "Releases allowed to keep serving (minimum serving set, §13.2).",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "supported_release_policy_id": {
+          "description": "release_support policy revision that defines serving_release_ids.",
+          "format": "uuid",
+          "type": "string"
+        },
+        "update": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/UpdateIntent"
+                }
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The node's current authorized update job (§13.10.2), or null."
+        }
+      },
+      "required": [
+        "schema_version",
+        "node_id",
+        "node_incarnation_id",
+        "config_generation",
+        "publication_intent",
+        "safety_profile",
+        "policy_refs",
+        "binding_revision",
+        "desired_release_id",
+        "supported_release_policy_id",
+        "serving_release_ids",
+        "lease_renewal_endpoint",
+        "accounting_period",
+        "device_bindings",
+        "member_rate_policies",
+        "node_capacity",
+        "dns",
+        "update",
+        "issued_at",
+        "expires_at"
+      ],
+      "title": "DesiredState",
+      "type": "object"
+    },
+    "DeviceBinding": {
+      "additionalProperties": false,
+      "description": "Member device to overlay address binding (§10.2). Traffic from unknown\nsources, duplicate addresses or sources that do not match a valid binding\nis dropped. Usage reports carry the binding_revision in force at\nobservation time.\n",
+      "properties": {
+        "allowed_ipv4": {
+          "items": {
+            "format": "ipv4",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "type": "array"
+        },
+        "allowed_ipv6": {
+          "items": {
+            "format": "ipv6",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "type": "array"
+        },
+        "binding_revision": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "device_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "peer_id": {
+          "description": "Opaque NetBird peer ID.",
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "valid_until": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "member_id",
+        "device_id",
+        "peer_id",
+        "allowed_ipv4",
+        "allowed_ipv6",
+        "binding_revision",
+        "valid_from",
+        "valid_until"
+      ],
+      "title": "DeviceBinding",
+      "type": "object"
+    },
+    "DnsServiceConfig": {
+      "additionalProperties": false,
+      "description": "Designated resolvers (ISO04, §8.1, §12.2). Members may reach only these\naddresses on TCP/UDP 53; this never opens other ports or internal ranges.\nDomain filtering happens on the resolvers, not on the node.\n",
+      "properties": {
+        "resolver_ipv4": {
+          "items": {
+            "format": "ipv4",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "type": "array"
+        },
+        "resolver_ipv6": {
+          "items": {
+            "format": "ipv6",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "type": "array"
+        }
+      },
+      "required": [
+        "resolver_ipv4",
+        "resolver_ipv6"
+      ],
+      "title": "DnsServiceConfig",
+      "type": "object"
+    },
+    "MemberRatePolicy": {
+      "additionalProperties": false,
+      "description": "Member rate policy for this node (§11.2, §11.3). Rate scope is (member_id,\nnode_id, direction): all of the member's authorized devices share one class\nper direction. down_bps/up_bps are the effective rates\nmin(plan_rate, fair_use_tier_rate, node_member_rate_cap) computed\ncentrally; null means no member-level limit (node capacity still applies).\n",
+      "properties": {
+        "down_bps": {
+          "format": "int64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "generation": {
+          "description": "Member policy generation; nodes report it as applied.",
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "member_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "shadow",
+            "enforce"
+          ],
+          "type": "string"
+        },
+        "period_id": {
+          "$ref": "#/$defs/PeriodId"
+        },
+        "priority": {
+          "maximum": 7,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reason": {
+          "enum": [
+            "normal",
+            "fair_use_tier",
+            "admin_override"
+          ],
+          "type": "string"
+        },
+        "tier_index": {
+          "maximum": 15,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "up_bps": {
+          "format": "int64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "valid_from": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "valid_until": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "member_id",
+        "generation",
+        "mode",
+        "tier_index",
+        "down_bps",
+        "up_bps",
+        "priority",
+        "reason",
+        "period_id",
+        "valid_from",
+        "valid_until"
+      ],
+      "title": "MemberRatePolicy",
+      "type": "object"
+    },
+    "NodeCapacity": {
+      "additionalProperties": false,
+      "description": "Total VPN capacity of the node and the optional per-member cap\n(FUP04, §11.3). node capacity is the HTB parent; member caps are class\nceilings, not guarantees.\n",
+      "properties": {
+        "down_bps": {
+          "format": "int64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "member_down_bps_cap": {
+          "description": "node_member_rate_cap for the download direction; null means no node-specific member cap.",
+          "format": "int64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "member_up_bps_cap": {
+          "description": "node_member_rate_cap for the upload direction; null means no node-specific member cap.",
+          "format": "int64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "up_bps": {
+          "format": "int64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "down_bps",
+        "up_bps"
+      ],
+      "title": "NodeCapacity",
+      "type": "object"
+    },
+    "PeriodId": {
+      "description": "Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type).",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+      "title": "PeriodId",
+      "type": "string"
+    },
+    "PolicyRefs": {
+      "additionalProperties": false,
+      "properties": {
+        "authorization_generation": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "dns_generation": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "fup_generation": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authorization_generation",
+        "fup_generation",
+        "dns_generation"
+      ],
+      "title": "PolicyRefs",
+      "type": "object"
+    },
+    "PublicationIntent": {
+      "description": "The administrator's desired publication state (§5). Health, updates and reconnects never change it.",
+      "enum": [
+        "unpublished",
+        "published",
+        "disabled"
+      ],
+      "title": "PublicationIntent",
+      "type": "string"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "description": "One Ed25519 signature over the RFC 8785 canonical JSON of the envelope's\n`signed` object (§13.3, §16.2, `pkg/envelope`). Verifiers reject unknown\nalgorithms, ignore unknown key_ids, and require at least one valid\nsignature by a key trusted for the document's purpose.\n",
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "ed25519"
+          ],
+          "type": "string"
+        },
+        "key_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+          "type": "string"
+        },
+        "signature_b64": {
+          "description": "Standard padded base64 of the 64-byte signature.",
+          "pattern": "^[A-Za-z0-9+/]{86}==$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id",
+        "algorithm",
+        "signature_b64"
+      ],
+      "title": "Signature",
+      "type": "object"
+    },
+    "UpdateIntent": {
+      "additionalProperties": false,
+      "description": "Authorized update job delivered through desired state (§13.10.2). The URL is\ntransport only; manifest_sha256 and release_id bind the job, and the\nmanifest is verified after download. The job must still be valid before a\ntransaction starts; after it starts the journal governs safe completion.\n",
+      "properties": {
+        "attempt": {
+          "maximum": 1000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "authorization_valid_until": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "batch_id": {
+          "description": "Null for a fleet-default sync job outside any batch (§13.1 step 5).",
+          "format": "uuid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "generation": {
+          "description": "update_generation; the agent rejects jobs older than the last accepted generation.",
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "incarnation_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "job_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "description": "SHA-256 of the canonical JSON of the manifest envelope.",
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "manifest_url": {
+          "format": "uri",
+          "maxLength": 2048,
+          "pattern": "^https://",
+          "type": "string"
+        },
+        "node_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "publication_intent": {
+          "$ref": "#/$defs/PublicationIntent"
+        },
+        "release_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "target_id": {
+          "format": "uuid",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "node_id",
+        "incarnation_id",
+        "batch_id",
+        "target_id",
+        "job_id",
+        "attempt",
+        "generation",
+        "release_id",
+        "manifest_url",
+        "manifest_sha256",
+        "issued_at",
+        "authorization_valid_until",
+        "publication_intent"
+      ],
+      "title": "UpdateIntent",
+      "type": "object"
+    }
+  },
+  "$id": "urn:fvpn:contracts:schema:desired-state-envelope:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Signed desired state (§14.7, §16.2). Signed with a `desired-state` purpose\nkey. The agent verifies the envelope, then that node_id and\nnode_incarnation_id equal its own identity, that config_generation is not\nolder than the last accepted one, and that `issued_at <= now <\nexpires_at`. An expired or unverifiable desired state turns member\nforwarding off and keeps the control channel (fail closed).\n",
+  "properties": {
+    "signatures": {
+      "items": {
+        "$ref": "#/$defs/Signature"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "type": "array"
+    },
+    "signed": {
+      "$ref": "#/$defs/DesiredState"
+    }
+  },
+  "required": [
+    "signed",
+    "signatures"
+  ],
+  "title": "DesiredStateEnvelope",
+  "type": "object"
+}

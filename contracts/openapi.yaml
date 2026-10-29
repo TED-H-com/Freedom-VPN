@@ -205,6 +205,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Enrollment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -295,6 +297,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -582,6 +586,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MemberDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -1115,6 +1121,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Operation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -1173,6 +1181,7 @@ paths:
           schema:
             type: string
             format: date-time
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         - name: occurred_to
           in: query
           required: false
@@ -1180,6 +1189,7 @@ paths:
           schema:
             type: string
             format: date-time
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
       responses:
         '200':
           description: A page of audit events.
@@ -1533,6 +1543,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Operation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -1701,6 +1713,8 @@ paths:
                 $ref: '#/components/schemas/DesiredStateEnvelope'
         '304':
           $ref: '#/components/responses/NotModified'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -2717,12 +2731,15 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         updated_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         completed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
     OperationStep:
       type: object
@@ -2740,6 +2757,7 @@ components:
         observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
           description: 'When the step''s current status was observed (read-back evidence).'
         error_code:
@@ -2813,10 +2831,12 @@ components:
         last_result_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         last_observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         last_error_code:
           type: string
@@ -2925,6 +2945,7 @@ components:
         last_seen_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
           description: 'Central received_at of the last authenticated agent report.'
         resource_version:
@@ -2936,6 +2957,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     NodeDetail:
       description: Node detail (§14.2, §18.1) with desired versus observed differences.
       allOf:
@@ -2994,6 +3016,7 @@ components:
             retired_at:
               type: string
               format: date-time
+              pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
               nullable: true
     NodeCheck:
       type: object
@@ -3007,6 +3030,7 @@ components:
         observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         error_code:
           type: string
           allOf:
@@ -3028,6 +3052,7 @@ components:
         observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     StateDrift:
       type: object
       required: [field, desired, observed]
@@ -3159,6 +3184,7 @@ components:
         expires_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         name:
           type: string
           nullable: true
@@ -3195,13 +3221,16 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         consumed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         revoked_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
     EnrollmentCreated:
       type: object
@@ -3270,18 +3299,22 @@ components:
         valid_from:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         effective_service_end:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         paid_through:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         grace_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         cancel_at_period_end:
           type: boolean
@@ -3290,6 +3323,7 @@ components:
         computed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     SubscriptionSummary:
       type: object
       description: Provider subscription snapshot (§9.3). provider_status is the provider's opaque value.
@@ -3304,12 +3338,14 @@ components:
         paid_through:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         cancel_at_period_end:
           type: boolean
         last_reconciled_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         reconciliation_status:
           type: string
@@ -3342,6 +3378,7 @@ components:
         aggregate_as_of:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         fair_use_tier_index:
           type: integer
@@ -3387,6 +3424,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     MemberDetail:
       description: Member detail (§14.2). Payment, admin suspension and effective period are separate.
       allOf:
@@ -3423,6 +3461,7 @@ components:
                 suspended_at:
                   type: string
                   format: date-time
+                  pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
                   nullable: true
                 suspended_by:
                   type: string
@@ -3435,6 +3474,7 @@ components:
             closed_at:
               type: string
               format: date-time
+              pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
               nullable: true
     MemberList:
       type: object
@@ -3493,10 +3533,12 @@ components:
         valid_from:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Defaults to the server time of acceptance.'
         valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Mandatory finite end; must be after valid_from. Far-future dates meaning "forever" are rejected (§15.1).'
         reason:
           type: string
@@ -3521,9 +3563,11 @@ components:
         valid_from:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         reason:
           type: string
           maxLength: 500
@@ -3537,9 +3581,11 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         revoked_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
 
     # ============================================================ policies §14.2 §11.1 §12.4
@@ -3573,6 +3619,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     PolicyDefinition:
       type: object
       description: |
@@ -3619,9 +3666,11 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         updated_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     PolicyDefinitionList:
       type: object
       required: [items, next_cursor]
@@ -3651,6 +3700,7 @@ components:
         effective_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'When the activation takes effect; defaults to now. Fair-use threshold changes recommend the next full period (§11.1).'
 
     PolicyRevisionCreate:
@@ -3870,6 +3920,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     FairUsePolicyRevision:
       type: object
       required: [type, revision_id, definition_id, revision, schema_version, payload, payload_sha256, reason, created_by, created_at]
@@ -3906,6 +3957,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     DnsProfilePolicyRevision:
       type: object
       required: [type, revision_id, definition_id, revision, schema_version, payload, payload_sha256, reason, created_by, created_at]
@@ -3942,6 +3994,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     DomainRuleSetPolicyRevision:
       type: object
       required: [type, revision_id, definition_id, revision, schema_version, payload, payload_sha256, reason, created_by, created_at]
@@ -3978,6 +4031,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     ThreatFeedPolicyRevision:
       type: object
       required: [type, revision_id, definition_id, revision, schema_version, payload, payload_sha256, reason, created_by, created_at]
@@ -4014,6 +4068,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     ReleaseSupportPolicyRevision:
       type: object
       required: [type, revision_id, definition_id, revision, schema_version, payload, payload_sha256, reason, created_by, created_at]
@@ -4050,6 +4105,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     PlanPayload:
       type: object
@@ -4150,6 +4206,7 @@ components:
         effective_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'When this revision''s mode takes effect. Shadow results are never reported as throttling.'
         effective_period:
           type: string
@@ -4241,6 +4298,7 @@ components:
         valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         reason:
           type: string
           minLength: 1
@@ -4410,9 +4468,11 @@ components:
         valid_from:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         update_interval_seconds:
           type: integer
           minimum: 300
@@ -4513,6 +4573,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         source_commit:
           type: string
           pattern: '^[0-9a-f]{40}([0-9a-f]{24})?$'
@@ -4727,9 +4788,11 @@ components:
         manifest_created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         registered_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         verification_state:
           type: string
           enum: [verifying, verified, rejected]
@@ -4886,6 +4949,7 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         status_url:
           type: string
           pattern: '^/api/v1/admin/update-batches/[0-9a-f-]{36}$'
@@ -4897,39 +4961,51 @@ components:
         queued:
           type: integer
           minimum: 0
+          maximum: 1000000
         waiting_online:
           type: integer
           minimum: 0
+          maximum: 1000000
         downloading:
           type: integer
           minimum: 0
+          maximum: 1000000
         verifying:
           type: integer
           minimum: 0
+          maximum: 1000000
         applying:
           type: integer
           minimum: 0
+          maximum: 1000000
         checking:
           type: integer
           minimum: 0
+          maximum: 1000000
         succeeded:
           type: integer
           minimum: 0
+          maximum: 1000000
         already_current:
           type: integer
           minimum: 0
+          maximum: 1000000
         failed:
           type: integer
           minimum: 0
+          maximum: 1000000
         rolled_back:
           type: integer
           minimum: 0
+          maximum: 1000000
         superseded:
           type: integer
           minimum: 0
+          maximum: 1000000
         cancelled:
           type: integer
           minimum: 0
+          maximum: 1000000
     UpdateBatch:
       type: object
       description: |
@@ -4966,9 +5042,11 @@ components:
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         updated_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         targets_url:
           type: string
           pattern: '^/api/v1/admin/update-batches/[0-9a-f-]{36}$'
@@ -5032,10 +5110,12 @@ components:
         last_result_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         last_observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         retryable:
           type: boolean
@@ -5067,10 +5147,12 @@ components:
         started_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         finished_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
     UpdateStage:
       type: string
@@ -5107,6 +5189,7 @@ components:
         occurred_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         actor:
           type: object
           required: [type, id]
@@ -5211,6 +5294,7 @@ components:
         fair_use_reset_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
           description: 'Start of the next accounting period (UTC), shown in the member''s time zone by the UI.'
         next_actions:
@@ -5240,18 +5324,22 @@ components:
         authorized_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         revoked_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         last_seen_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         created_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     MemberDeviceList:
       type: object
       required: [items, next_cursor, device_limit, authorized_count]
@@ -5396,11 +5484,13 @@ components:
         resets_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
           description: 'Next recovery time (start of the next period or override end).'
         as_of:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
           description: 'Ledger watermark time the tier was computed from.'
     MemberUsage:
@@ -5413,10 +5503,12 @@ components:
         period_start:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Inclusive.'
         period_end:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Exclusive.'
         granularity:
           type: string
@@ -5430,10 +5522,12 @@ components:
         last_observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         aggregate_as_of:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
           description: 'Aggregation watermark; never presented as real time (§10.6).'
         days:
@@ -5476,6 +5570,7 @@ components:
         expires_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     BillingPortalSessionRequest:
       type: object
       required: [return_url]
@@ -5498,6 +5593,7 @@ components:
         expires_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     # ============================================================ agent: enrollment §6 §14.7
     EnrollRequest:
@@ -5568,6 +5664,7 @@ components:
         certificate_not_after:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         next:
           type: string
           enum: [/api/v1/agent/desired-state]
@@ -5607,9 +5704,11 @@ components:
         not_before:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         not_after:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     # ============================================================ agent: desired state §14.7
     DesiredStateEnvelope:
@@ -5723,9 +5822,11 @@ components:
         issued_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         expires_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'End of validity of this desired state; must be after issued_at.'
     PolicyRefs:
       type: object
@@ -5761,10 +5862,12 @@ components:
         period_start:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Inclusive.'
         period_end:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Exclusive. The agent samples at period_end so intervals do not cross periods (§10.9).'
     DeviceBinding:
       type: object
@@ -5808,9 +5911,11 @@ components:
         valid_from:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     MemberRatePolicy:
       type: object
       description: |
@@ -5863,9 +5968,11 @@ components:
         valid_from:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     DnsServiceConfig:
       type: object
       description: |
@@ -5941,9 +6048,11 @@ components:
         issued_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         authorization_valid_until:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         publication_intent:
           $ref: '#/components/schemas/PublicationIntent'
 
@@ -5975,6 +6084,7 @@ components:
         observed_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         agent_version:
           $ref: '#/components/schemas/ComponentVersion'
         current_release_id:
@@ -6030,6 +6140,7 @@ components:
             expires_at:
               type: string
               format: date-time
+              pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
               nullable: true
         netbird:
           type: object
@@ -6136,6 +6247,7 @@ components:
         oldest_unacked_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         acked_archive_bytes:
           type: string
@@ -6158,6 +6270,7 @@ components:
         received_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     # ============================================================ agent: usage §10.5 §10.6
     MeteringVersion:
@@ -6208,9 +6321,11 @@ components:
         interval_start:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         interval_end:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         quality:
           $ref: '#/components/schemas/UsageQuality'
         records:
@@ -6270,6 +6385,7 @@ components:
         last_checkpoint_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
     SeqRange:
       type: object
@@ -6412,6 +6528,7 @@ components:
         received_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     # ============================================================ agent: usage checkpoint §17.3
     UsageCheckpointEnvelope:
@@ -6478,6 +6595,7 @@ components:
         issued_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     # ============================================================ agent: update results §13.10.3
     UpdateUsageCheckpoint:
@@ -6623,9 +6741,11 @@ components:
         started_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         finished_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           nullable: true
         payload_hash:
           type: string
@@ -6657,6 +6777,7 @@ components:
         received_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
 
     # ============================================================ agent: leases §16.3
     LeaseRenewalRequest:
@@ -6753,10 +6874,12 @@ components:
         issued_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'Signed server time.'
         expires_at:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'node_lease_end.'
         max_offline_seconds:
           type: integer
@@ -6786,9 +6909,11 @@ components:
         effective_service_end:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
         lease_end:
           type: string
           format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
           description: 'member_lease_end.'
 
     # ============================================================ webhook §9.3
