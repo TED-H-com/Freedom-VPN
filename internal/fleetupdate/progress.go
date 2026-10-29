@@ -150,8 +150,8 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
 		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,x.display_name,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
- `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`
- FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
+ `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`,r.policy_generation::text,r.policy_refs
+ FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true LEFT JOIN update_results r ON r.result_id=(j.observed_evidence->>'result_id')::uuid WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
 		}
@@ -164,15 +164,31 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			var errorCode *api.ErrorCode
 			var stage *api.UpdateStage
 			var recoveryRequired bool
+			var policyGeneration *string
+			var policyRefs []uuid.UUID
 			var gen string
 			var nodeName *string
-			if e = rows.Scan(&t.TargetId, &t.NodeId, &nodeName, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed); e != nil {
+			if e = rows.Scan(&t.TargetId, &t.NodeId, &nodeName, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed, &policyGeneration, &policyRefs); e != nil {
 				return e
 			}
 			if len(b.Targets) == limit {
 				c := releases.Cursor(b.Targets[len(b.Targets)-1].TargetId)
 				b.NextCursor.Set(c)
 				break
+			}
+			// D-048: use the accepted result's immutable evidence, never current
+			// desired state. The page join batches the same lookup as Evidence.
+			t.PolicyGeneration.SetNull()
+			t.PolicyRefs.SetNull()
+			if policyGeneration != nil {
+				generation, err := decstr.Parse(*policyGeneration)
+				if err != nil {
+					return err
+				}
+				t.PolicyGeneration.Set(generation)
+			}
+			if policyRefs != nil {
+				t.PolicyRefs.Set(policyRefs)
 			}
 			t.Generation, e = decstr.Parse(gen)
 			if e != nil {
@@ -222,7 +238,7 @@ type TargetEvidence struct {
 	NeedsAttention, Unconfirmed  bool
 	LastResultAt, LastObservedAt *time.Time
 	// Applied configuration evidence is independent of the update generation.
-	// The generated UpdateTarget currently has no fields for this projection.
+	// UpdateTarget exposes the same accepted-result evidence (D-048).
 	PolicyGeneration *decstr.U64
 	PolicyRefs       []uuid.UUID
 }
