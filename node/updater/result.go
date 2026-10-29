@@ -146,8 +146,11 @@ func (e *Engine) NoteAck(ctx context.Context, resultID, payloadHash string, acce
 // Flush sends pending results. A send error leaves the entry pending.
 // Local success is not changed into acceptance here (§13.6 step 13).
 func (e *Engine) Flush(ctx context.Context) error {
-	if e.Sender == nil || e.Journal == nil {
+	if e.Sender == nil {
 		return nil
+	}
+	if err := e.open(ctx); err != nil {
+		return err
 	}
 	pending, err := e.Journal.Pending(ctx, 50)
 	if err != nil {

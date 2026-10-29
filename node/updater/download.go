@@ -49,13 +49,6 @@ func (m hashMode) String() string {
 	return "raw"
 }
 
-func parseHashMode(s string) hashMode {
-	if s == "canonical" {
-		return hashCanonical
-	}
-	return hashRaw
-}
-
 // download fetches dest with resume. A partial file is valid only for the
 // same URL, content hash and mode. A 200 after a range request, a mismatched
 // Content-Range, or a hash mismatch discards the partial and downloads the

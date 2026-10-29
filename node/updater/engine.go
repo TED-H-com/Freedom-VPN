@@ -301,10 +301,7 @@ func (e *Engine) rejectStale(ctx context.Context, work Work) (bool, error) {
 		return true, ferr
 	}
 	c := e.claimFrom(work)
-	if err := e.reportUnclaimed(ctx, c, api.UpdateResultStateSuperseded, api.UpdateStagePreflight, apierr.StaleGeneration); err != nil {
-		return true, err
-	}
-	return true, nil
+	return true, e.reportUnclaimed(ctx, c, api.UpdateResultStateSuperseded, api.UpdateStagePreflight, apierr.StaleGeneration)
 }
 
 func (e *Engine) supersedeOlder(ctx context.Context, work Work) error {

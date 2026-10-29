@@ -3,7 +3,6 @@ package updater
 import (
 	"archive/tar"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -89,7 +88,7 @@ func extractOne(tr *tar.Reader, dest string, hdr *tar.Header, opt ExtractOptions
 	switch hdr.Typeflag {
 	case tar.TypeDir:
 		return mkdirSafe(dest, full, 0o755)
-	case tar.TypeReg, tar.TypeRegA:
+	case tar.TypeReg:
 		if hdr.Size < 0 {
 			return permanent(apierr.SizeMismatch, "archive member size")
 		}
@@ -257,12 +256,4 @@ func pathsOverlap(path, root string) bool {
 	path = filepath.Clean(path)
 	root = filepath.Clean(root)
 	return path == root || strings.HasPrefix(path, root+string(filepath.Separator))
-}
-
-// removeTree deletes a release directory that is not a retained pointer.
-func removeTree(path string) error {
-	if path == "" {
-		return fmt.Errorf("updater: empty tree path")
-	}
-	return os.RemoveAll(path)
 }
