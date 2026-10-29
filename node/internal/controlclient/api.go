@@ -150,9 +150,10 @@ func (c *Client) Bootstrap(ctx context.Context, idem uuid.UUID) (api.AgentBootst
 	return out, nil
 }
 
-// Usage posts a usage batch on the usage budget and returns the response.
-// The caller closes the body. This method exists so the meter task can upload
-// without sharing the lease pool (§14.6). The agent does not build batches.
+// Usage posts a prepared usage batch on the usage budget and returns the
+// response. The caller closes the body. The usage uploader normally calls
+// Exchange on ClassUsage instead, so a 409 or 429 body is kept and the lease
+// pool stays separate (§14.6).
 func (c *Client) Usage(ctx context.Context, idem uuid.UUID, body []byte) (*http.Response, error) {
 	httpReq, err := c.jsonReq(ctx, http.MethodPost, pathUsage, body, idem)
 	if err != nil {

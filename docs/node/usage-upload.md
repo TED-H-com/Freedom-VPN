@@ -8,7 +8,7 @@
 
 Each event in the batch is the stored canonical payload, embedded unchanged. The client does not rebuild an event. `ledger_epoch` is JSON null until a verified checkpoint has been applied. A batch response never changes the ledger epoch.
 
-`Idempotency-Key` is a new UUIDv7 for a new body. A retry of the same bytes reuses the key and the stored body. `HTTPTransport` sets `Content-Type: application/json` and that header. The agent supplies an `*http.Client` with the node mTLS certificate.
+`Idempotency-Key` is a new UUIDv7 for a new body. A retry of the same bytes reuses the key and the stored body. `HTTPTransport` sets `Content-Type: application/json` and that header. `fvpn-agent` does not build a second TLS stack: it posts through the control client's usage class (`Exchange`), which already uses the node certificate and TLS 1.2 minimum. That class has its own concurrency budget, separate from the lease budget. `HTTPTransport` remains for a caller that already holds an `*http.Client`.
 
 ## Results
 
@@ -20,7 +20,9 @@ Failures back off from 1 second, doubling, capped at 5 minutes, with ±20% jitte
 
 ## Restore
 
-The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it. A new signed ledger epoch may lower the watermark and puts the original events back on the outbox. The same epoch never accepts a lower ACK. Ranges this node cannot replay are sent as `replay_unavailable` on the next batch.
+The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it with the node trust store (`recovery` purpose). A new signed ledger epoch may lower the watermark and puts the original events back on the outbox. The same epoch never accepts a lower ACK. Ranges this node cannot replay are sent as `replay_unavailable` on the next batch.
+
+`Restore` is that fetch plus `ApplyCheckpoint`. The agent calls it at startup and again whenever `NeedsRestore` is true. `NeedsRestore` is set when the fetch fails or the body is not applied, and it is cleared after a successful apply or HTTP 404. A 404 means the center has not published a checkpoint; the ledger epoch stays null and forwarding is not failed for that reason. `Once` still fetches the checkpoint itself when a batch returns `LEDGER_EPOCH_MISMATCH` or the store reports that the batch epoch is not the verified one. The agent does not reimplement the signature check.
 
 ## Fault injection
 

@@ -1,6 +1,7 @@
 package controlclient
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -236,6 +237,79 @@ func (c *Client) release(class Class) {
 	case <-sem:
 	default:
 	}
+}
+
+// exchangeLimit matches the usage uploader's response cap.
+const exchangeLimit = 8 << 20
+
+// Exchange performs one request on the class budget and returns every HTTP
+// status with its body. It uses the client and TLS config New already built
+// (TLS 1.2 minimum, pinned CA, no redirects, HTTP/2 off). It does not
+// construct a transport. 409, 429 and 503 are not errors; the caller reads
+// the status. A transport failure is an error and status is 0.
+func (c *Client) Exchange(ctx context.Context, class Class, method, path string, header http.Header, body []byte) (status int, resp []byte, retryAfter time.Duration, err error) {
+	if c == nil {
+		return 0, nil, 0, errors.New("controlclient: closed")
+	}
+	var r io.Reader
+	if body != nil {
+		r = bytes.NewReader(body)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, c.base+path, r)
+	if err != nil {
+		return 0, nil, 0, err
+	}
+	for k, vs := range header {
+		for _, v := range vs {
+			req.Header.Add(k, v)
+		}
+	}
+	if body != nil && req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	req.Header.Set("Accept", "application/json")
+	if err := c.acquire(ctx, class); err != nil {
+		return 0, nil, 0, err
+	}
+	defer c.release(class)
+	h := c.http[class]
+	if h == nil {
+		return 0, nil, 0, errors.New("controlclient: unknown class")
+	}
+	res, err := h.Do(req)
+	if err != nil {
+		return 0, nil, 0, err
+	}
+	defer res.Body.Close()
+	buf, err := io.ReadAll(io.LimitReader(res.Body, exchangeLimit+1))
+	if err != nil {
+		return res.StatusCode, nil, 0, err
+	}
+	if len(buf) > exchangeLimit {
+		return res.StatusCode, nil, 0, errors.New("controlclient: response exceeds 8 MiB")
+	}
+	return res.StatusCode, buf, retryAfterOf(res.Header.Get("Retry-After"), time.Now()), nil
+}
+
+func retryAfterOf(v string, now time.Time) time.Duration {
+	if v == "" {
+		return 0
+	}
+	if n, err := strconv.Atoi(v); err == nil {
+		if n < 0 {
+			return 0
+		}
+		return time.Duration(n) * time.Second
+	}
+	when, err := http.ParseTime(v)
+	if err != nil {
+		return 0
+	}
+	d := when.Sub(now)
+	if d < 0 {
+		return 0
+	}
+	return d
 }
 
 // Do performs one request on the class budget. On success the caller must

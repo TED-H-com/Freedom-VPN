@@ -59,6 +59,10 @@ func enroll(args []string) int {
 	}
 	eng, err := open(*config)
 	if err != nil {
+		if agent.ExitStatus(err) == agent.ExitUsage {
+			fmt.Fprintln(os.Stderr, "fvpn-agent: configuration error: host_reserve_bps is required and must be greater than zero")
+			return agent.ExitUsage
+		}
 		fmt.Fprintln(os.Stderr, "fvpn-agent:", err.Error())
 		return 1
 	}
@@ -87,6 +91,10 @@ func run(args []string, loop bool) int {
 	}
 	eng, err := open(*config)
 	if err != nil {
+		if agent.ExitStatus(err) == agent.ExitUsage {
+			fmt.Fprintln(os.Stderr, "fvpn-agent: configuration error: host_reserve_bps is required and must be greater than zero")
+			return agent.ExitUsage
+		}
 		fmt.Fprintln(os.Stderr, "fvpn-agent:", err.Error())
 		return 1
 	}

@@ -3,7 +3,9 @@
 // Boot order is fail-closed: the baseline is installed before identity,
 // a lease or a policy can enable member forwarding. Desired state is verified
 // before it is stored or written for the updater. A 304 does not move a lease.
-// Wall-clock jumps never extend a deadline. The usage meter and the updater
-// are separate programs; this package only leaves them a lock, a verified
+// Wall-clock jumps never extend a deadline. The usage ledger is opened from
+// this process: sampling starts only after forwarding is admitted, and a
+// stop or hand-off takes a final sample before the next epoch. The updater
+// stays a separate program. This package leaves it the node lock, a verified
 // desired-state file and the forwarding latch.
 package agent
