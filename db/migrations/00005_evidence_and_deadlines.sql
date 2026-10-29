@@ -1,13 +1,17 @@
 -- +goose Up
--- §15.2: plan revision captures allowed exit group references with its payload.
-ALTER TABLE plan_revisions ADD COLUMN exit_group_ids UUID[] NOT NULL DEFAULT '{}';
-
 -- §16.3 recommended default is configurable, not a new entitlement source.
 ALTER TABLE fleet_config ADD COLUMN max_offline_lease_seconds INTEGER NOT NULL DEFAULT 86400 CHECK(max_offline_lease_seconds > 0);
 -- +goose StatementBegin
 CREATE FUNCTION check_node_lease() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE maximum INTEGER;
+DECLARE maximum INTEGER; n nodes; i node_incarnations;
 BEGIN
+ IF public.owner_setting('fvpn.restore') THEN RETURN NEW; END IF;
+ SELECT * INTO STRICT n FROM nodes WHERE id=NEW.node_id FOR SHARE;
+ SELECT * INTO STRICT i FROM node_incarnations WHERE id=NEW.incarnation_id FOR SHARE;
+ IF n.lifecycle_state<>'registered' OR i.revoked_at IS NOT NULL
+    OR n.current_incarnation_id IS DISTINCT FROM NEW.incarnation_id OR i.node_id<>NEW.node_id THEN
+  RAISE EXCEPTION 'lease requires current registered incarnation' USING ERRCODE='23514';
+ END IF;
  SELECT max_offline_lease_seconds INTO STRICT maximum FROM fleet_config WHERE id='00000000-0000-0000-0000-000000000001' FOR SHARE;
  IF NEW.expires_at > NEW.issued_at + make_interval(secs=>maximum) THEN
   RAISE EXCEPTION 'lease exceeds configured offline maximum' USING ERRCODE='23514';
@@ -37,8 +41,16 @@ CREATE TRIGGER node_enrollments_binding BEFORE UPDATE ON node_enrollments FOR EA
 -- status. Required successful steps identify an observed_refs entry by name.
 -- +goose StatementBegin
 CREATE FUNCTION guard_operation() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE step JSONB; reference TEXT;
+DECLARE step JSONB; reference TEXT; required_count INTEGER := 0;
 BEGIN
+ -- Restores replay historical terminal operations, not new commands (§17.2).
+ IF TG_OP='INSERT' AND public.owner_setting('fvpn.restore') THEN RETURN NEW; END IF;
+ IF TG_OP='INSERT' AND NEW.status NOT IN ('pending','running') THEN
+  RAISE EXCEPTION 'operation must start pending or running' USING ERRCODE='23514';
+ END IF;
+ IF TG_OP='UPDATE' AND OLD.status IN ('succeeded','superseded') AND NEW IS DISTINCT FROM OLD THEN
+  RAISE EXCEPTION 'terminal operation is frozen' USING ERRCODE='23514';
+ END IF;
  IF TG_OP='UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
   IF NOT ((OLD.status='pending' AND NEW.status IN ('running','failed','superseded'))
    OR (OLD.status='running' AND NEW.status IN ('succeeded','partially_succeeded','failed','superseded'))
@@ -52,16 +64,18 @@ BEGIN
    IF jsonb_typeof(step) IS DISTINCT FROM 'object' OR jsonb_typeof(step->'required') IS DISTINCT FROM 'boolean' THEN
     RAISE EXCEPTION 'invalid operation step' USING ERRCODE='23514';
    END IF;
-   IF (step->>'required')::boolean THEN
+   IF (step->>'required')::boolean THEN required_count:=required_count+1; END IF;
+   IF (step->>'required')::boolean OR step->>'status'='succeeded' THEN
     reference:=step->>'observed_ref';
     IF step->>'status' IS DISTINCT FROM 'succeeded' OR reference IS NULL
        OR NOT (NEW.observed_refs ? reference) OR NEW.observed_refs->reference IN ('null'::jsonb,'{}'::jsonb,'[]'::jsonb,'""'::jsonb) THEN
      RAISE EXCEPTION 'required-step evidence missing' USING ERRCODE='23514';
     END IF;
-   ELSIF step->>'status' IS DISTINCT FROM 'not_required' OR coalesce(length(step->>'reason'),0)=0 THEN
+   ELSIF step->>'status' IS DISTINCT FROM 'not_required' OR NOT coalesce(step->>'reason' ~ '[^[:space:]]',false) THEN
     RAISE EXCEPTION 'optional step needs explicit disposition' USING ERRCODE='23514';
    END IF;
   END LOOP;
+  IF required_count=0 THEN RAISE EXCEPTION 'at least one required step must succeed' USING ERRCODE='23514'; END IF;
  END IF;
  RETURN NEW;
 END $$;
@@ -85,6 +99,7 @@ CREATE TRIGGER update_jobs_success BEFORE INSERT OR UPDATE ON update_jobs FOR EA
 CREATE FUNCTION immutable_fields() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE field TEXT;
 BEGIN
+ IF public.owner_setting('fvpn.migration') THEN RETURN NEW; END IF;
  FOREACH field IN ARRAY TG_ARGV LOOP
   IF (to_jsonb(NEW)->field) IS DISTINCT FROM (to_jsonb(OLD)->field) THEN
    RAISE EXCEPTION 'immutable identity field: %',field USING ERRCODE='23514';
@@ -120,3 +135,57 @@ BEGIN
 END $$;
 -- +goose StatementEnd
 CREATE TRIGGER usage_samples_binding BEFORE INSERT ON usage_samples FOR EACH ROW EXECUTE FUNCTION check_sample_binding();
+
+-- §9.2, §9.4, §15.5.2–3: serialize authorization and eligibility decisions.
+-- The caller locks member, then entitlement; the trigger also enforces this
+-- protocol when a device writer omitted it. Existing authorizations do not
+-- automatically reappear after revocation.
+-- +goose StatementBegin
+CREATE FUNCTION check_device_authorization() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE member_status TEXT; e entitlements;
+BEGIN
+ IF NEW.status<>'authorized' THEN RETURN NEW; END IF;
+ SELECT status INTO STRICT member_status FROM members WHERE id=NEW.member_id FOR UPDATE;
+ SELECT * INTO e FROM entitlements WHERE member_id=NEW.member_id FOR SHARE;
+ IF NOT FOUND OR member_status<>'active' OR e.admin_suspended
+    OR NEW.revoked_at IS NOT NULL OR NEW.closed_at IS NOT NULL
+    OR clock_timestamp()<e.valid_from OR clock_timestamp()>=e.effective_service_end
+    OR (SELECT count(*) FROM member_devices WHERE member_id=NEW.member_id AND status='authorized' AND id<>NEW.id)>=e.device_limit THEN
+  RAISE EXCEPTION 'device authorization exceeds current entitlement' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE FUNCTION guard_binding_end() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ -- check_sample_binding takes FOR SHARE on this row, serializing both orders.
+ IF NEW.valid_until < OLD.valid_until AND EXISTS(
+    SELECT 1 FROM usage_samples WHERE device_id=NEW.device_id AND binding_revision=NEW.binding_revision AND interval_end>NEW.valid_until) THEN
+  RAISE EXCEPTION 'binding end would invalidate historical usage' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE FUNCTION irreversible_timestamps() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE field TEXT;
+BEGIN
+ FOREACH field IN ARRAY TG_ARGV LOOP
+  IF to_jsonb(OLD)->field <> 'null'::jsonb AND to_jsonb(NEW)->field IS DISTINCT FROM to_jsonb(OLD)->field THEN
+   RAISE EXCEPTION 'irreversible lifecycle timestamp: %',field USING ERRCODE='23514';
+  END IF;
+ END LOOP;
+ RETURN NEW;
+END $$;
+-- +goose StatementEnd
+CREATE TRIGGER member_devices_authorization BEFORE INSERT OR UPDATE ON member_devices FOR EACH ROW EXECUTE FUNCTION check_device_authorization();
+CREATE TRIGGER device_bindings_end BEFORE UPDATE ON device_bindings FOR EACH ROW EXECUTE FUNCTION guard_binding_end();
+CREATE INDEX usage_samples_binding_end_idx ON usage_samples(device_id,binding_revision,interval_end);
+CREATE TRIGGER subscriptions_identity BEFORE UPDATE ON subscriptions FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','provider','external_subscription_id','external_customer_id','created_at');
+CREATE TRIGGER node_certificates_identity BEFORE UPDATE ON node_certificates FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','incarnation_id','issuer','serial','fingerprint','public_certificate','not_before','not_after');
+CREATE TRIGGER entitlement_grants_identity BEFORE UPDATE ON entitlement_grants FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','source','valid_from','valid_until','reason','created_by','created_at');
+CREATE TRIGGER inbox_events_identity BEFORE UPDATE ON inbox_events FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','source','external_event_id','payload_hash','encrypted_payload','received_at');
+CREATE TRIGGER node_observations_identity BEFORE UPDATE ON node_observations FOR EACH ROW EXECUTE FUNCTION immutable_row();
+CREATE TRIGGER members_closed BEFORE UPDATE ON members FOR EACH ROW EXECUTE FUNCTION irreversible_timestamps('closed_at');
+CREATE TRIGGER nodes_retired BEFORE UPDATE ON nodes FOR EACH ROW EXECUTE FUNCTION irreversible_timestamps('retired_at');
+CREATE TRIGGER member_devices_revoked BEFORE UPDATE ON member_devices FOR EACH ROW EXECUTE FUNCTION irreversible_timestamps('revoked_at','closed_at');
+CREATE TRIGGER node_incarnations_revoked BEFORE UPDATE ON node_incarnations FOR EACH ROW EXECUTE FUNCTION irreversible_timestamps('revoked_at');
+CREATE TRIGGER node_certificates_revoked BEFORE UPDATE ON node_certificates FOR EACH ROW EXECUTE FUNCTION irreversible_timestamps('revoked_at');
+CREATE TRIGGER entitlement_grants_revoked BEFORE UPDATE ON entitlement_grants FOR EACH ROW EXECUTE FUNCTION irreversible_timestamps('revoked_at','revocation_reason');

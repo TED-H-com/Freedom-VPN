@@ -1,0 +1,90 @@
+name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}
+services:
+  server:
+    image: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-server:0.82.0
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    environment:
+      NB_SETUP_PAT_ENABLED: 'true'
+      NB_DISABLE_GEOLOCATION: 'true'
+    volumes:
+      - ./.state/config.yaml:/etc/netbird/config.yaml:ro
+      - server:/var/lib/netbird
+  dashboard:
+    image: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-dashboard:2.96.0
+    build:
+      context: .
+      dockerfile: dashboard.Dockerfile
+    environment:
+      NETBIRD_MGMT_API_ENDPOINT: http://netbird.example.invalid:${FVPN_NB_API_PORT:-18080}
+      NETBIRD_MGMT_GRPC_API_ENDPOINT: http://netbird.example.invalid:${FVPN_NB_API_PORT:-18080}
+      AUTH_AUDIENCE: netbird-dashboard
+      AUTH_CLIENT_ID: netbird-dashboard
+      AUTH_AUTHORITY: http://netbird.example.invalid:${FVPN_NB_API_PORT:-18080}/oauth2
+      AUTH_SUPPORTED_SCOPES: openid profile email groups
+      AUTH_REDIRECT_URI: /nb-auth
+      AUTH_SILENT_REDIRECT_URI: /nb-silent-auth
+      USE_AUTH0: 'false'
+      NGINX_SSL_PORT: '443'
+      LETSENCRYPT_DOMAIN: none
+  gateway:
+    image: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-gateway:1.30.0
+    build:
+      context: .
+      dockerfile: gateway.Dockerfile
+    environment:
+      FVPN_NB_API_PORT: ${FVPN_NB_API_PORT:-18080}
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on: [server, dashboard]
+    ports:
+      - '127.0.0.1:${FVPN_NB_API_PORT:-18080}:${FVPN_NB_API_PORT:-18080}'
+      - '127.0.0.1:${FVPN_NB_STUN_PORT:-13478}:3478/udp'
+    networks:
+      default:
+        aliases: [netbird.example.invalid]
+      frontend:
+
+  exit:
+    &client
+    image: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-client:0.82.0
+    build:
+      context: .
+      dockerfile: client.Dockerfile
+    profiles: [clients]
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices: [/dev/net/tun:/dev/net/tun]
+    entrypoint: [/bin/sh, /client-entrypoint.sh]
+    environment:
+      NB_LOG_LEVEL: warn
+      NB_LOG_FILE: console
+      FVPN_NB_API_PORT: ${FVPN_NB_API_PORT:-18080}
+    volumes: [exit:/var/lib/netbird, ./client-entrypoint.sh:/client-entrypoint.sh:ro]
+  member-a:
+    <<: *client
+    volumes: [member-a:/var/lib/netbird, ./client-entrypoint.sh:/client-entrypoint.sh:ro]
+  member-b:
+    <<: *client
+    volumes: [member-b:/var/lib/netbird, ./client-entrypoint.sh:/client-entrypoint.sh:ro]
+  replay:
+    <<: *client
+    volumes: [replay:/var/lib/netbird, ./client-entrypoint.sh:/client-entrypoint.sh:ro]
+networks:
+  frontend:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-frontend
+  default:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-network
+    internal: true
+volumes:
+  server:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-server
+  exit:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-exit
+  member-a:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-member-a
+  member-b:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-member-b
+  replay:
+    name: ${FVPN_NB_PREFIX:-fvpn-dev-netbird}-replay
