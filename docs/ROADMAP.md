@@ -101,6 +101,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-nodes-desiredstate follow-up 4: SetPublicationTx seam for all publication intents, one member rate algorithm (fup builder) | WP05, WP07 | done (#53) |
 | w3-wire-nodes follow-up 4: route SetNodePublication through the exits seam, remove the last placeholder 503 | WP04, WP05 | in progress |
 | w3-contracts-r4: UpdateTarget applied-policy evidence members (D-048), positive DomainRule.revision (D-049), writer survey re-run | WP02 | in progress |
+| w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
