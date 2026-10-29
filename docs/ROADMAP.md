@@ -60,7 +60,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | r2-ledger-review: adversarial review of ledger, desired state, policies and DNS (read-only) | WP05, WP07, WP08 | done (1 blocker, 9 majors → owner follow-ups) |
 | w3-wire-members: members, devices, entitlements, billing behind control and worker; NetBird devices adapter; composition seam (D-026) | WP06 | done (#22) |
 | w3-wire-nodes: PKI authenticator, enrollment and bootstrap, desired state, leases, observations, exits, releases, update batches | WP04, WP05, WP09 | done (#32) |
-| w3-wire-policies-usage: policies and Fair-Use operations, fup worker, usage mount with PKI signer, audit reader | WP07, WP08 | in progress |
+| w3-wire-policies-usage: policies and Fair-Use operations, fup worker, usage mount with PKI signer, audit reader | WP07, WP08 | done (#40) |
 | w3-dns-publish: DNS policy compiler, node applier with evidence, lab scenario | WP08 | done (#30) |
 | w3-wire-nodes follow-up 1: adopt the composition seam | WP04, WP05, WP09 | done (#32) |
 | w3-dns-publish follow-up 1: adopt the worker seam, split document types from the store | WP08 | done (#30) |
@@ -69,7 +69,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater follow-up 1: review fixes (symlink escape, forwarding gate, persistent-data check, nodelock, downloads) | WP09 | done (#33) |
 | w1-netlab follow-up 1: review fixes (HTB class cleanup, deadline fail-closed, reset detection, IPv4 validation, evidence dir) | WP02, WP05 | done (#35) |
 | w1-dnspolicy follow-up 1: compiled bundle round-trip, source fetch SSRF | WP08 | done (#26) |
-| w3-wire-policies-usage follow-up 1: adopt the composition seam over the ledger fixes, single-format audit reader, FUP cap removal | WP07, WP08 | in progress |
+| w3-wire-policies-usage follow-up 1: adopt the composition seam over the ledger fixes, single-format audit reader, FUP cap removal | WP07, WP08 | done (#40) |
 | w2-db-fixes-2 follow-up 1: canonical purge_retained audit row (D-035), accepted domain relaxations documented (D-033) | WP03 | done (#28) |
 | w2-agent-core follow-up 1: usage ledger integration, required host reserve, fake control usage endpoints | WP05, WP07 | done (#36) |
 | w2-control-core follow-up 2: members fixture on role cookies, module-wide integration suite | WP02 | in progress |
@@ -82,13 +82,15 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-fleet-update follow-up 1: review fixes (SubmitResult generation compare, signed intent issued_at, node_name, Register validation order, applied policy_generation) | WP09 | done (#37) |
 | w2-pki-enroll follow-up 1: review fixes (bootstrap take, node_id binding, trust bundle filter), migration 00111, node.enroll adoption | WP04 | in progress |
 | w3-wire-members follow-up 2: adopt revision 3 kinds (member.device_authorize, member.grant_revoke), D-029 audit conformance | WP06 | done (#38) |
-| w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | in progress |
-| w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | in progress |
+| w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | done (#41) |
+| w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | done (#40) |
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | in progress |
 | w1-deps-bump follow-up 1: golang.org/x/crypto GO-2026-5932 | WP01 | done (no change: GO-2026-5932 is the unused x/crypto/openpgp packages, no fixed release exists, govulncheck symbol scan clean) |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | in progress |
 | r2-ledger-review confirmation pass on main 3224345: probes re-run read-only, 11 of 12 findings closed; finding 9 (uint64 clamp) still open in internal/fup → policies follow-up | WP05, WP07, WP08 | done (read-only) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | in progress |
+| w2-policies-fup follow-up: reconcile embedded policy schemas with contracts/schemas/policies (D-044), fup uint64 overflow instead of clamp, D-029 audit conformance for policies and fup writers | WP07 | in progress |
+| r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | in progress |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
