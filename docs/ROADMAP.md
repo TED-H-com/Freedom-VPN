@@ -35,7 +35,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | in progress |
 | w1-portal: Admin and Member portal on a mock API | WP10 | done (#2) |
 | w1-deps-bump: current pgx, goose and transitive module pins | WP03 | done (#3) |
-| w1-dnspolicy: domain rules, bundle compiler, AdGuard Home backend | WP08 | in progress |
+| w1-dnspolicy: domain rules, bundle compiler, AdGuard Home backend | WP08 | done (#5) |
 | w2-control-core: HTTP framework, auth, idempotency, ETag, operations, audit, worker | WP04, WP09 | in progress |
 | w2-pki-enroll: node CA, enrollment, CSR issuance, revocation, signing service | WP04 | in progress |
 | w2-members-billing: members, entitlement, devices, billing adapter and webhooks | WP06 | in progress |
