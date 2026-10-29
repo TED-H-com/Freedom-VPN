@@ -13,6 +13,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -169,15 +170,17 @@ func TestNodeAggregate_ListGetFiltersCursorAndExitsJoin(t *testing.T) {
 	if detail.PublicationObserved != api.PublicationObservedActive {
 		t.Errorf("PublicationObserved = %s, want active", detail.PublicationObserved)
 	}
-	if uint64(detail.ConfigGeneration.Desired) != 2 || detail.ConfigGeneration.Applied == nil || uint64(*detail.ConfigGeneration.Applied) != 1 {
+	if uint64(detail.ConfigGeneration.Desired) != 2 || (!detail.ConfigGeneration.Applied.IsSpecified() || detail.ConfigGeneration.Applied.IsNull()) || uint64(nullableValue(t, detail.ConfigGeneration.Applied)) != 1 {
 		t.Errorf("ConfigGeneration = %+v, want desired=2 applied=1", detail.ConfigGeneration)
 	}
-	if detail.Releases.DesiredReleaseId == nil || *detail.Releases.DesiredReleaseId != relID {
+	if (!detail.Releases.DesiredReleaseId.IsSpecified() || detail.Releases.DesiredReleaseId.IsNull()) || nullableValue(t, detail.Releases.DesiredReleaseId) != relID {
 		t.Errorf("DesiredReleaseId = %v, want %s", detail.Releases.DesiredReleaseId, relID)
 	}
 	if len(detail.MemberGroupIds) != 1 || detail.MemberGroupIds[0] != grpID {
 		t.Errorf("MemberGroupIds = %v, want [%s]", detail.MemberGroupIds, grpID)
 	}
+
+	assertExplicitNulls(t, detail, "capacity", "notes", "retired_at", "update", "last_seen_at", "observed_exit_ipv4", "observed_exit_ipv6")
 
 	// 2. ListNodes with filters.
 	pubIntent := api.PublicationIntentPublished
@@ -188,6 +191,9 @@ func TestNodeAggregate_ListGetFiltersCursorAndExitsJoin(t *testing.T) {
 	if len(pubList.Items) != 1 || pubList.Items[0].NodeId != n1.NodeID {
 		t.Fatalf("ListNodes(published) returned %d items, want [n1]", len(pubList.Items))
 	}
+
+	assertExplicitNulls(t, pubList, "next_cursor")
+	assertExplicitNulls(t, pubList.Items[0], "last_seen_at", "update")
 
 	regFilter := "jp-tyo"
 	regList, err := svc.ListNodes(ctx, ListNodesParams{Region: &regFilter})
@@ -218,10 +224,10 @@ func TestNodeAggregate_ListGetFiltersCursorAndExitsJoin(t *testing.T) {
 		for _, item := range res.Items {
 			seen = append(seen, item.NodeId)
 		}
-		if res.NextCursor == nil {
+		if !res.NextCursor.IsSpecified() || res.NextCursor.IsNull() {
 			break
 		}
-		cursor = *res.NextCursor
+		cursor = nullableValue(t, res.NextCursor)
 	}
 	if len(seen) != 3 {
 		t.Fatalf("cursor pagination visited %d nodes, want 3", len(seen))
@@ -249,9 +255,11 @@ func TestNodeAggregate_ListGetFiltersCursorAndExitsJoin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListMemberExits: %v", err)
 	}
+	assertExplicitNulls(t, exitsList, "next_cursor")
 	if len(exitsList.Items) != 1 || exitsList.Items[0].ExitId != n1.ExitID || exitsList.Items[0].Availability != api.MemberExitAvailabilityAvailable {
 		t.Fatalf("ListMemberExits = %+v, want [n1 available]", exitsList.Items)
 	}
+	assertExplicitNulls(t, exitsList.Items[0], "note")
 }
 
 func TestNodePatch_IfMatchAnd200Vs202(t *testing.T) {
@@ -307,7 +315,9 @@ func TestNodePatch_IfMatchAnd200Vs202(t *testing.T) {
 		IfMatch:        etag1,
 		Patch: api.NodePatch{
 			ClearCapacity: &clearCap,
-			Capacity:      &api.NodeCapacity{DownBps: bw, UpBps: bw},
+			Capacity: &api.NodeCapacity{DownBps: bw, UpBps: bw,
+				MemberDownBpsCap: presence.NewNullNullable[int64](),
+				MemberUpBpsCap:   presence.NewNullNullable[int64]()},
 		},
 	})
 	if !errors.As(err, &ae) || ae.Code != apierr.ValidationFailed || ae.HTTPStatus() != 422 {
@@ -332,7 +342,7 @@ func TestNodePatch_IfMatchAnd200Vs202(t *testing.T) {
 	if res200.Status != 200 || res200.Node == nil || res200.Operation != nil {
 		t.Fatalf("metadata UpdateNode result = %+v, want Status=200 with Node", res200)
 	}
-	if res200.Node.Name == nil || *res200.Node.Name != newName || res200.Node.Notes == nil || *res200.Node.Notes != newNotes {
+	if (!res200.Node.Name.IsSpecified() || res200.Node.Name.IsNull()) || nullableValue(t, res200.Node.Name) != newName || (!res200.Node.Notes.IsSpecified() || res200.Node.Notes.IsNull()) || nullableValue(t, res200.Node.Notes) != newNotes {
 		t.Errorf("updated node = %+v, want name=%q notes=%q", res200.Node, newName, newNotes)
 	}
 	if res200.ETag == etag1 {
@@ -353,8 +363,8 @@ func TestNodePatch_IfMatchAnd200Vs202(t *testing.T) {
 			Capacity: &api.NodeCapacity{
 				DownBps:          bw,
 				UpBps:            bw,
-				MemberDownBpsCap: &memberCap,
-				MemberUpBpsCap:   &memberCap,
+				MemberDownBpsCap: presence.NewNullableWithValue(memberCap),
+				MemberUpBpsCap:   presence.NewNullableWithValue(memberCap),
 			},
 		},
 	})
@@ -368,6 +378,11 @@ func TestNodePatch_IfMatchAnd200Vs202(t *testing.T) {
 		t.Errorf("Operation = %+v, want kind=node.update status=pending", res202.Operation)
 	}
 
+	assertExplicitNulls(t, res202.Operation, "completed_at", "error", "observed_generation")
+	for _, step := range res202.Operation.Steps {
+		assertExplicitNulls(t, step, "error_code", "message")
+	}
+
 	// Idempotent replay with same Idempotency-Key returns same 202 operation.
 	replay202, err := svc.UpdateNode(ctx, UpdateNodeParams{
 		NodeID:         n.NodeID,
@@ -379,8 +394,8 @@ func TestNodePatch_IfMatchAnd200Vs202(t *testing.T) {
 			Capacity: &api.NodeCapacity{
 				DownBps:          bw,
 				UpBps:            bw,
-				MemberDownBpsCap: &memberCap,
-				MemberUpBpsCap:   &memberCap,
+				MemberDownBpsCap: presence.NewNullableWithValue(memberCap),
+				MemberUpBpsCap:   presence.NewNullableWithValue(memberCap),
 			},
 		},
 	})
@@ -431,25 +446,28 @@ func TestObservations_DedupeMonotonicSafetyAndOperationEvidence(t *testing.T) {
 	makeReport := func(reportID uuid.UUID, obsTime time.Time, appliedGen uint64, backend api.ObservationReportNetbirdBackend, internetOnlyStatus api.HealthCheckStatus) api.ObservationReport {
 		gen := ParseU64(appliedGen)
 		relCopy := relID
-		var r api.ObservationReport
+		r := emptyObservationReport()
 		r.AgentVersion = "1.0.0"
 		r.BootId = uuid.New()
 		r.ReportId = reportID
 		r.NodeId = n.NodeID
 		r.NodeIncarnationId = n.IncarnationID
 		r.ObservedAt = obsTime
-		r.CurrentReleaseId = &relCopy
-		r.LastGoodReleaseId = &relCopy
-		r.AppliedConfigGeneration = &gen
+		r.CurrentReleaseId.Set(relCopy)
+		r.LastGoodReleaseId.Set(relCopy)
+		r.AppliedConfigGeneration.Set(gen)
 		r.ProvisioningState = api.ProvisioningStateReady
 		r.SafetyStatus = api.SafetyStatusPassed
 		r.DataHealth = api.DataHealthHealthy
 		r.MemberForwardingEnabled = false
 		r.Netbird.Backend = backend
 		r.Checks = []api.NodeCheck{
-			{Name: api.NodeCheckNameInternetOnly, Status: internetOnlyStatus, ObservedAt: obsTime},
-			{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: obsTime},
-			{Name: api.NodeCheckNameDnsPolicy, Status: api.HealthCheckStatusPassed, ObservedAt: obsTime},
+			{Name: api.NodeCheckNameInternetOnly, Status: internetOnlyStatus, ObservedAt: obsTime,
+				ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+			{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: obsTime,
+				ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+			{Name: api.NodeCheckNameDnsPolicy, Status: api.HealthCheckStatusPassed, ObservedAt: obsTime,
+				ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
 		}
 		return r
 	}
@@ -488,7 +506,7 @@ func TestObservations_DedupeMonotonicSafetyAndOperationEvidence(t *testing.T) {
 	// 3. Duplicate report_id with modified payload -> 409 ACK_CONFLICT.
 	rep1Conflict := rep1
 	gen99 := ParseU64(99)
-	rep1Conflict.AppliedConfigGeneration = &gen99
+	rep1Conflict.AppliedConfigGeneration.Set(gen99)
 	_, err = svc.SubmitObservation(ctx, n.NodeID, n.IncarnationID, rep1Conflict)
 	var ae *apierr.Error
 	if !errors.As(err, &ae) || ae.Code != apierr.AckConflict || ae.HTTPStatus() != 409 {
@@ -518,7 +536,7 @@ func TestObservations_DedupeMonotonicSafetyAndOperationEvidence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetNode after repOld: %v", err)
 	}
-	if detailAfterOld.ConfigGeneration.Applied == nil || uint64(*detailAfterOld.ConfigGeneration.Applied) != 3 {
+	if (!detailAfterOld.ConfigGeneration.Applied.IsSpecified() || detailAfterOld.ConfigGeneration.Applied.IsNull()) || uint64(nullableValue(t, detailAfterOld.ConfigGeneration.Applied)) != 3 {
 		t.Fatalf("AppliedConfigGeneration regressed to %v, want 3", detailAfterOld.ConfigGeneration.Applied)
 	}
 
@@ -617,7 +635,7 @@ func TestRevokeAndRetire_TombstonePreservesLedgerAndPendingWithdrawal(t *testing
 	if err != nil {
 		t.Fatalf("GetNode(nRetire) after retire: %v", err)
 	}
-	if retDetail.LifecycleState != api.LifecycleStateRetired || retDetail.RetiredAt == nil {
+	if retDetail.LifecycleState != api.LifecycleStateRetired || (!retDetail.RetiredAt.IsSpecified() || retDetail.RetiredAt.IsNull()) {
 		t.Errorf("retDetail = (%s, retired_at=%v), want (retired, non-nil)", retDetail.LifecycleState, retDetail.RetiredAt)
 	}
 	if retDetail.PublicationIntent != api.PublicationIntentDisabled {
@@ -685,7 +703,9 @@ func TestAT32_CentralEnrollConfigureObserveLifecycle(t *testing.T) {
 		IfMatch:        etag1,
 		Patch: api.NodePatch{
 			MemberGroupIds: &groups,
-			Capacity:       &api.NodeCapacity{DownBps: bw, UpBps: bw},
+			Capacity: &api.NodeCapacity{DownBps: bw, UpBps: bw,
+				MemberDownBpsCap: presence.NewNullNullable[int64](),
+				MemberUpBpsCap:   presence.NewNullNullable[int64]()},
 		},
 	})
 	if err != nil || patchRes.Status != 202 {
@@ -697,10 +717,10 @@ func TestAT32_CentralEnrollConfigureObserveLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetNode before observation: %v", err)
 	}
-	if beforeObs.Releases.DesiredReleaseId == nil || *beforeObs.Releases.DesiredReleaseId != relID {
+	if (!beforeObs.Releases.DesiredReleaseId.IsSpecified() || beforeObs.Releases.DesiredReleaseId.IsNull()) || nullableValue(t, beforeObs.Releases.DesiredReleaseId) != relID {
 		t.Errorf("DesiredReleaseId = %v, want %s", beforeObs.Releases.DesiredReleaseId, relID)
 	}
-	if beforeObs.Releases.CurrentReleaseId != nil {
+	if !beforeObs.Releases.CurrentReleaseId.IsNull() {
 		t.Errorf("CurrentReleaseId = %v, want nil before first observation", beforeObs.Releases.CurrentReleaseId)
 	}
 	if beforeObs.ControlStatus != api.ControlStatusOffline {
@@ -710,24 +730,26 @@ func TestAT32_CentralEnrollConfigureObserveLifecycle(t *testing.T) {
 	// Step 3: Agent sends observation reporting ready state at generation 2.
 	gen2 := ParseU64(2)
 	relCopy := relID
-	var rep api.ObservationReport
+	rep := emptyObservationReport()
 	rep.AgentVersion = "1.0.0"
 	rep.BootId = uuid.New()
 	rep.ReportId = uuid.New()
 	rep.NodeId = nodeID
 	rep.NodeIncarnationId = incID
 	rep.ObservedAt = now
-	rep.CurrentReleaseId = &relCopy
-	rep.LastGoodReleaseId = &relCopy
-	rep.AppliedConfigGeneration = &gen2
+	rep.CurrentReleaseId.Set(relCopy)
+	rep.LastGoodReleaseId.Set(relCopy)
+	rep.AppliedConfigGeneration.Set(gen2)
 	rep.ProvisioningState = api.ProvisioningStateReady
 	rep.SafetyStatus = api.SafetyStatusPassed
 	rep.DataHealth = api.DataHealthHealthy
 	rep.MemberForwardingEnabled = false
 	rep.Netbird.Backend = api.ObservationReportNetbirdBackendKernel
 	rep.Checks = []api.NodeCheck{
-		{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now},
-		{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now},
+		{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now,
+			ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+		{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now,
+			ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
 	}
 
 	if _, err := svc.SubmitObservation(ctx, nodeID, incID, rep); err != nil {
@@ -742,10 +764,59 @@ func TestAT32_CentralEnrollConfigureObserveLifecycle(t *testing.T) {
 		b, _ := json.MarshalIndent(afterObs, "", "  ")
 		t.Fatalf("unexpected node state after observation: %s", fmt.Sprintf("%s", b))
 	}
-	if afterObs.Releases.CurrentReleaseId == nil || *afterObs.Releases.CurrentReleaseId != relID {
+	if (!afterObs.Releases.CurrentReleaseId.IsSpecified() || afterObs.Releases.CurrentReleaseId.IsNull()) || nullableValue(t, afterObs.Releases.CurrentReleaseId) != relID {
 		t.Errorf("CurrentReleaseId = %v, want %s", afterObs.Releases.CurrentReleaseId, relID)
 	}
 	if afterObs.PublicationIntent != api.PublicationIntentUnpublished || afterObs.PublicationObserved != api.PublicationObservedAbsent {
 		t.Errorf("Publication = (%s, %s), want (unpublished, absent)", afterObs.PublicationIntent, afterObs.PublicationObserved)
+	}
+}
+
+func nullableValue[T any](t *testing.T, n interface{ Get() (T, error) }) T {
+	t.Helper()
+	v, err := n.Get()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
+}
+
+// emptyObservationReport supplies explicit nulls for required nullable wire fields.
+func emptyObservationReport() api.ObservationReport {
+	var r api.ObservationReport
+	r.AppliedBindingRevision.SetNull()
+	r.AppliedConfigGeneration.SetNull()
+	r.AppliedPolicyRefs.SetNull()
+	r.CurrentReleaseId.SetNull()
+	r.LastGoodReleaseId.SetNull()
+	r.Lease.ExpiresAt.SetNull()
+	r.Lease.LeaseId.SetNull()
+	r.Netbird.PeerId.SetNull()
+	r.Netbird.Version.SetNull()
+	r.Update.Generation.SetNull()
+	r.Update.JobId.SetNull()
+	r.Update.Stage.SetNull()
+	r.Update.State.SetNull()
+	r.Usage.BlockedSeq.SetNull()
+	r.Usage.LedgerEpoch.SetNull()
+	r.Usage.MeterEpochId.SetNull()
+	r.Usage.OldestUnackedAt.SetNull()
+	return r
+}
+
+func assertExplicitNulls(t *testing.T, value any, fields ...string) {
+	t.Helper()
+	raw, err := json.Marshal(value)
+	if err != nil {
+		t.Fatalf("marshal %T: %v", value, err)
+	}
+	var object map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &object); err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if string(object[field]) != "null" {
+			t.Errorf("%T.%s = %s, want explicit null", value, field, object[field])
+		}
 	}
 }

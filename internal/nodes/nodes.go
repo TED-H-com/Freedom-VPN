@@ -13,6 +13,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -234,12 +235,17 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		return api.NodeDetail{}, "", err
 	}
 
-	detail.ExitId = exitID
+	detail.Name.SetNull()
+	detail.Region.SetNull()
+	detail.Notes.SetNull()
+	detail.Capacity.SetNull()
+	detail.Update.SetNull()
+	detail.ExitId = presence.FromPointer(exitID)
 	if displayName != nil && *displayName != "" {
-		detail.Name = displayName
+		detail.Name = presence.FromPointer(displayName)
 	}
 	if region != nil && *region != "" {
-		detail.Region = region
+		detail.Region = presence.FromPointer(region)
 	}
 	detail.LifecycleState = api.LifecycleState(lifecycleState)
 	detail.ProvisioningState = api.ProvisioningState(provisioningState)
@@ -248,45 +254,45 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 	detail.ControlStatus = api.ControlStatus(controlStatus)
 	detail.DataHealth = api.DataHealth(dataHealth)
 	detail.SafetyStatus = api.SafetyStatus(safetyStatus)
-	detail.MemberForwardingObserved = memberForwardingObserved
-	detail.CurrentIncarnationId = currentIncarnationID
-	detail.NetbirdPeerId = netbirdPeerID
-	detail.Platform = &api.NodePlatform{
+	detail.MemberForwardingObserved = presence.FromPointer(memberForwardingObserved)
+	detail.CurrentIncarnationId = presence.FromPointer(currentIncarnationID)
+	detail.NetbirdPeerId = presence.FromPointer(netbirdPeerID)
+	detail.Platform.Set(api.NodePlatform{
 		Arch:      api.Architecture(arch),
 		Os:        api.NodePlatformOs(osName),
 		OsVersion: osVersion,
-	}
+	})
 
-	var cfgGen api.ConfigGeneration
+	cfgGen := api.ConfigGeneration{Applied: presence.NewNullNullable[decstr.U64]()}
 	if v, err := decstr.Parse(desiredConfigGen); err == nil {
 		cfgGen.Desired = v
 	}
 	if v, err := decstr.Parse(appliedConfigGen); err == nil {
-		cfgGen.Applied = &v
+		cfgGen.Applied.Set(v)
 	}
 	detail.ConfigGeneration = cfgGen
 
 	detail.Releases = api.NodeReleases{
-		DesiredReleaseId:  desiredRelease,
-		CurrentReleaseId:  currentRelease,
-		LastGoodReleaseId: lastGoodRelease,
+		DesiredReleaseId:  presence.FromPointer(desiredRelease),
+		CurrentReleaseId:  presence.FromPointer(currentRelease),
+		LastGoodReleaseId: presence.FromPointer(lastGoodRelease),
 	}
-	detail.LastSeenAt = lastSeenAt
+	detail.LastSeenAt = presence.FromPointer(lastSeenAt)
 	if notes != "" {
-		detail.Notes = &notes
+		detail.Notes = presence.FromPointer(&notes)
 	}
-	detail.ObservedExitIpv4 = observedExitIPv4
-	detail.ObservedExitIpv6 = observedExitIPv6
+	detail.ObservedExitIpv4 = presence.FromPointer(observedExitIPv4)
+	detail.ObservedExitIpv6 = presence.FromPointer(observedExitIPv6)
 	if v, err := decstr.Parse(resourceVer); err == nil {
 		detail.ResourceVersion = v
 	}
 	detail.CreatedAt = createdAt
-	detail.RetiredAt = retiredAt
+	detail.RetiredAt = presence.FromPointer(retiredAt)
 
 	if len(capacityBytes) > 0 {
 		var capObj api.NodeCapacity
 		if err := json.Unmarshal(capacityBytes, &capObj); err == nil {
-			detail.Capacity = &capObj
+			detail.Capacity = presence.FromPointer(&capObj)
 		}
 	}
 
@@ -492,12 +498,15 @@ func (s *Service) ListNodes(ctx context.Context, p ListNodesParams) (api.NodeLis
 			return api.NodeList{}, err
 		}
 
-		item.ExitId = exitID
+		item.Name.SetNull()
+		item.Region.SetNull()
+		item.Update.SetNull()
+		item.ExitId = presence.FromPointer(exitID)
 		if displayName != nil && *displayName != "" {
-			item.Name = displayName
+			item.Name = presence.FromPointer(displayName)
 		}
 		if region != nil && *region != "" {
-			item.Region = region
+			item.Region = presence.FromPointer(region)
 		}
 		item.LifecycleState = api.LifecycleState(lifecycleState)
 		item.ProvisioningState = api.ProvisioningState(provisioningState)
@@ -506,23 +515,23 @@ func (s *Service) ListNodes(ctx context.Context, p ListNodesParams) (api.NodeLis
 		item.ControlStatus = api.ControlStatus(controlStatus)
 		item.DataHealth = api.DataHealth(dataHealth)
 		item.SafetyStatus = api.SafetyStatus(safetyStatus)
-		item.MemberForwardingObserved = memberForwardingObserved
+		item.MemberForwardingObserved = presence.FromPointer(memberForwardingObserved)
 
-		var cfgGen api.ConfigGeneration
+		cfgGen := api.ConfigGeneration{Applied: presence.NewNullNullable[decstr.U64]()}
 		if v, err := decstr.Parse(desiredConfigGen); err == nil {
 			cfgGen.Desired = v
 		}
 		if v, err := decstr.Parse(appliedConfigGen); err == nil {
-			cfgGen.Applied = &v
+			cfgGen.Applied.Set(v)
 		}
 		item.ConfigGeneration = cfgGen
 
 		item.Releases = api.NodeReleases{
-			DesiredReleaseId:  desiredRelease,
-			CurrentReleaseId:  currentRelease,
-			LastGoodReleaseId: lastGoodRelease,
+			DesiredReleaseId:  presence.FromPointer(desiredRelease),
+			CurrentReleaseId:  presence.FromPointer(currentRelease),
+			LastGoodReleaseId: presence.FromPointer(lastGoodRelease),
 		}
-		item.LastSeenAt = lastSeenAt
+		item.LastSeenAt = presence.FromPointer(lastSeenAt)
 		if v, err := decstr.Parse(resourceVer); err == nil {
 			item.ResourceVersion = v
 		}
@@ -577,7 +586,7 @@ func (s *Service) ListNodes(ctx context.Context, p ListNodesParams) (api.NodeLis
 
 	return api.NodeList{
 		Items:      items,
-		NextCursor: nextCursor,
+		NextCursor: presence.FromPointer(nextCursor),
 	}, nil
 }
 
@@ -638,12 +647,14 @@ func (s *Service) ListMemberExits(ctx context.Context, memberID uuid.UUID) (api.
 			DisplayName:  name,
 			Region:       region,
 			Availability: availability,
+			Note:         presence.NewNullNullable[api.LocalizedText](),
 		})
 	}
 	if err := rows.Err(); err != nil {
 		return api.MemberExitList{}, err
 	}
-	return api.MemberExitList{Items: items}, nil
+	return api.MemberExitList{Items: items,
+		NextCursor: presence.NewNullNullable[string]()}, nil
 }
 
 // UpdateNodeParams holds inputs for PATCH /admin/nodes/{id} (§14.2, §14.5).
@@ -778,19 +789,18 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 			return err
 		}
 
-		if beforeDetail.ExitId != nil {
-			exitID := *beforeDetail.ExitId
+		if exitID, err := beforeDetail.ExitId.Get(); err == nil {
 			if p.Patch.Name != nil || p.Patch.Region != nil {
 				name := ""
-				if beforeDetail.Name != nil {
-					name = *beforeDetail.Name
+				if v, err := beforeDetail.Name.Get(); err == nil {
+					name = v
 				}
 				if p.Patch.Name != nil {
 					name = strings.TrimSpace(*p.Patch.Name)
 				}
 				region := ""
-				if beforeDetail.Region != nil {
-					region = *beforeDetail.Region
+				if v, err := beforeDetail.Region.Get(); err == nil {
+					region = v
 				}
 				if p.Patch.Region != nil {
 					region = strings.TrimSpace(*p.Patch.Region)

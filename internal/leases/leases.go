@@ -461,8 +461,8 @@ func (s *Service) Renew(
 		}
 
 		cfgGen, _ := strconv.ParseUint(desiredGenStr, 10, 64)
-		if req.AppliedConfigGeneration != nil {
-			cfgGen = uint64(*req.AppliedConfigGeneration)
+		if gen, err := req.AppliedConfigGeneration.Get(); err == nil {
+			cfgGen = uint64(gen)
 		}
 
 		leaseID := uuid.New()

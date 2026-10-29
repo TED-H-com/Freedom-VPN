@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -123,24 +124,26 @@ func submitAckObservation(
 	t.Helper()
 	gen := nodes.ParseU64(appliedGen)
 	relCopy := relID
-	var rep api.ObservationReport
+	rep := emptyObservationReport()
 	rep.AgentVersion = "1.0.0"
 	rep.BootId = uuid.New()
 	rep.ReportId = uuid.New()
 	rep.NodeId = nodeID
 	rep.NodeIncarnationId = incID
 	rep.ObservedAt = now
-	rep.CurrentReleaseId = &relCopy
-	rep.LastGoodReleaseId = &relCopy
-	rep.AppliedConfigGeneration = &gen
+	rep.CurrentReleaseId.Set(relCopy)
+	rep.LastGoodReleaseId.Set(relCopy)
+	rep.AppliedConfigGeneration.Set(gen)
 	rep.ProvisioningState = api.ProvisioningStateReady
 	rep.SafetyStatus = api.SafetyStatusPassed
 	rep.DataHealth = api.DataHealthHealthy
 	rep.MemberForwardingEnabled = forwardingEnabled
 	rep.Netbird.Backend = api.ObservationReportNetbirdBackendKernel
 	rep.Checks = []api.NodeCheck{
-		{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now},
-		{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now},
+		{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now,
+			ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+		{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now,
+			ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
 	}
 	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, rep); err != nil {
 		t.Fatalf("SubmitObservation(gen=%d, fwd=%v): %v", appliedGen, forwardingEnabled, err)
@@ -453,4 +456,27 @@ func TestReconcileNetBird_DetectsDrift(t *testing.T) {
 	if len(afterDrift.Drift) == 0 {
 		t.Errorf("expected non-empty Drift array on NodeDetail after NetBird drift")
 	}
+}
+
+// emptyObservationReport supplies explicit nulls for required nullable wire fields.
+func emptyObservationReport() api.ObservationReport {
+	var r api.ObservationReport
+	r.AppliedBindingRevision.SetNull()
+	r.AppliedConfigGeneration.SetNull()
+	r.AppliedPolicyRefs.SetNull()
+	r.CurrentReleaseId.SetNull()
+	r.LastGoodReleaseId.SetNull()
+	r.Lease.ExpiresAt.SetNull()
+	r.Lease.LeaseId.SetNull()
+	r.Netbird.PeerId.SetNull()
+	r.Netbird.Version.SetNull()
+	r.Update.Generation.SetNull()
+	r.Update.JobId.SetNull()
+	r.Update.Stage.SetNull()
+	r.Update.State.SetNull()
+	r.Usage.BlockedSeq.SetNull()
+	r.Usage.LedgerEpoch.SetNull()
+	r.Usage.MeterEpochId.SetNull()
+	r.Usage.OldestUnackedAt.SetNull()
+	return r
 }

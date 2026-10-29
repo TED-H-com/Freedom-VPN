@@ -139,8 +139,8 @@ func (s *Service) SubmitObservation(
 				"status":      string(ch.Status),
 				"observed_at": ch.ObservedAt.UTC().Format(time.RFC3339Nano),
 			}
-			if ch.ErrorCode != nil {
-				entry["error_code"] = string(*ch.ErrorCode)
+			if code, err := ch.ErrorCode.Get(); err == nil {
+				entry["error_code"] = string(code)
 			}
 			checksMap[string(ch.Name)] = entry
 		}
@@ -164,10 +164,18 @@ func (s *Service) SubmitObservation(
 		receivedAt := s.now().UTC()
 		observedAt := report.ObservedAt.UTC()
 		appliedGenStr := "0"
-		if report.AppliedConfigGeneration != nil {
-			appliedGenStr = report.AppliedConfigGeneration.String()
+		if gen, err := report.AppliedConfigGeneration.Get(); err == nil {
+			appliedGenStr = gen.String()
 		}
 
+		// pgx receives native nullable UUIDs, not the JSON presence wrappers.
+		var currentReleaseID, lastGoodReleaseID *uuid.UUID
+		if id, err := report.CurrentReleaseId.Get(); err == nil {
+			currentReleaseID = &id
+		}
+		if id, err := report.LastGoodReleaseId.Get(); err == nil {
+			lastGoodReleaseID = &id
+		}
 		const insertObs = `
 			INSERT INTO node_observations (
 				node_id, incarnation_id, report_id, payload_hash,
@@ -185,7 +193,7 @@ func (s *Service) SubmitObservation(
 		if _, err := tx.Exec(ctx, insertObs,
 			authNodeID, authIncarnationID, report.ReportId, payloadHash,
 			observedAt, receivedAt, appliedGenStr,
-			report.CurrentReleaseId,
+			currentReleaseID,
 			checksObjJSON, string(effectiveHealth), string(effectiveSafety),
 			effectiveForwarding, string(report.ProvisioningState), reportPayloadJSON,
 		); err != nil {
@@ -219,8 +227,8 @@ func (s *Service) SubmitObservation(
 				string(effectiveHealth),
 				string(effectiveSafety),
 				effectiveForwarding,
-				report.CurrentReleaseId,
-				report.LastGoodReleaseId,
+				currentReleaseID,
+				lastGoodReleaseID,
 				checksArrayJSON,
 				errorsArrayJSON,
 			); err != nil {
@@ -357,8 +365,8 @@ func advanceNodeOperationsOnObservation(
 	rows.Close()
 
 	var appliedGen uint64
-	if report.AppliedConfigGeneration != nil {
-		appliedGen = uint64(*report.AppliedConfigGeneration)
+	if gen, err := report.AppliedConfigGeneration.Get(); err == nil {
+		appliedGen = uint64(gen)
 	}
 	checkStatus := make(map[api.NodeCheckName]api.HealthCheckStatus, len(report.Checks))
 	for _, ch := range report.Checks {
@@ -371,7 +379,7 @@ func advanceNodeOperationsOnObservation(
 			desiredGen, _ = strconv.ParseUint(*op.desiredGen, 10, 64)
 		}
 		// Never advance an operation step if the node has not yet applied the desired config generation!
-		if desiredGen > 0 && (report.AppliedConfigGeneration == nil || appliedGen < desiredGen) {
+		if desiredGen > 0 && (!report.AppliedConfigGeneration.IsSpecified() || report.AppliedConfigGeneration.IsNull() || appliedGen < desiredGen) {
 			continue
 		}
 
