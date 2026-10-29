@@ -24,7 +24,11 @@ The central usage ledger (`internal/usage.Service`) is the single source of trut
    - All byte counters, sequence numbers, revisions, and generations use decimal strings (`pkg/decstr.U64`) and `NUMERIC(20,0)` / `BIGINT` in PostgreSQL, preserving exact precision up to `2^64 - 1` (`18446744073709551615`) without ever passing through `float64` or JavaScript `Number`.
    - Each event's `payload_sha256` is recomputed over the RFC 8785 (JCS) canonical JSON representation of the event with `payload_sha256` set to `""` (`pkg/canonjson`).
 4. **Fail-Closed Availability (`§10.6`)**:
-   - When the database is unreachable or the ledger is in `frozen` / `reconciling` mode (`§17.3`), `IngestBatch` returns `503 SERVICE_UNAVAILABLE` (`retryable: true`) and never advances or returns an ACK.
+   - When the database is unreachable or the ledger is in `frozen` mode (`§17.3`), `IngestBatch` returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`) and never advances or returns an ACK.
+5. **Database Guard Invariants (`F-02`..`F-15` in `docs/db/README.md`)**:
+   - Every accepted event with `record_count > 0` commits its `usage_event_payloads` row and all `record_count` rows in `usage_samples` in the same transaction (`check_usage_event_contents`, `F-04`). Zero-byte `replay_unavailable` tombstones commit with `record_count = 0` and zero `usage_samples` rows, satisfying `check_usage_event_contents` without inventing bytes.
+   - Every `usage_checkpoints` write (`ensureAndLockCheckpointInTx`, `recomputeStreamWatermarkWithConflictsInTx`, and single-statement epoch rotation `resetStreamCheckpointForNewEpochInTx`) matches the exact contiguous receipt count and `coalesce(max(event_seq), 0)` in `usage_events` (`check_usage_checkpoint`, `F-04`).
+   - Signing purposes (`§17.3`): In Wave 2, both `BeginRecovery` (`usage_recovery_records`) and `GetCheckpoint` (`UsageCheckpointEnvelope`) sign with `envelope.PurposeRecovery` (`"recovery"`). In Wave 3, when the PKI signing provider is wired with the contract revision, the `ledger_epoch` recovery record will use the new `ledger-epoch` purpose while checkpoint envelopes keep `recovery`.
 
 ---
 

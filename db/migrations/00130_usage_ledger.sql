@@ -22,17 +22,17 @@ CREATE TABLE usage_recovery_records (
  previous_epoch UUID NOT NULL REFERENCES usage_ledger_epochs,
  restored_to TIMESTAMPTZ NOT NULL CHECK(isfinite(restored_to)),
  affected_since TIMESTAMPTZ NOT NULL CHECK(isfinite(affected_since)),
- reason TEXT NOT NULL CHECK(length(reason) > 0),
- actor TEXT NOT NULL CHECK(length(actor) > 0),
+ reason TEXT NOT NULL CHECK(reason ~ '[^[:space:]]'),
+ actor TEXT NOT NULL CHECK(actor ~ '[^[:space:]]'),
  -- Canonical JSON of the recovery-purpose envelope (pkg/envelope).
  signed_envelope BYTEA NOT NULL,
- signing_key_id TEXT NOT NULL CHECK(length(signing_key_id) > 0),
+ signing_key_id TEXT NOT NULL CHECK(signing_key_id ~ '[^[:space:]]'),
  record_sha256 BYTEA NOT NULL CHECK(octet_length(record_sha256) = 32),
  stream_count INTEGER NOT NULL CHECK(stream_count >= 0),
  status TEXT NOT NULL DEFAULT 'reconciling' CHECK(status IN ('reconciling','completed')),
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
  completed_at TIMESTAMPTZ, completed_by TEXT,
- CHECK((status = 'completed') = (completed_at IS NOT NULL AND completed_by IS NOT NULL)),
+ CHECK((status = 'completed') = (completed_at IS NOT NULL AND completed_by IS NOT NULL AND completed_by ~ '[^[:space:]]')),
  CHECK(affected_since <= restored_to)
 );
 ALTER TABLE usage_ledger_epochs ADD CONSTRAINT usage_ledger_epochs_recovery_fk
@@ -46,7 +46,7 @@ CREATE TABLE usage_ledger_state (
  current_epoch UUID NOT NULL UNIQUE REFERENCES usage_ledger_epochs,
  mode TEXT NOT NULL DEFAULT 'normal' CHECK(mode IN ('normal','frozen','reconciling')),
  mode_reason TEXT NOT NULL DEFAULT '',
- changed_by TEXT NOT NULL DEFAULT 'migration',
+ changed_by TEXT NOT NULL DEFAULT 'migration' CHECK(changed_by ~ '[^[:space:]]'),
  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- +goose StatementBegin
@@ -119,7 +119,7 @@ CREATE TABLE usage_event_rejections (
  node_id UUID NOT NULL REFERENCES nodes, incarnation_id UUID NOT NULL,
  event_seq NUMERIC(20,0) NOT NULL CHECK(event_seq >= 0 AND event_seq <= 18446744073709551615),
  content_sha256 BYTEA NOT NULL CHECK(octet_length(content_sha256) = 32),
- error_code TEXT NOT NULL,
+ error_code TEXT NOT NULL CHECK(error_code ~ '[^[:space:]]'),
  fields JSONB NOT NULL CHECK(jsonb_typeof(fields) = 'array'),
  payload BYTEA NOT NULL,
  ledger_epoch UUID NOT NULL REFERENCES usage_ledger_epochs,
@@ -140,7 +140,7 @@ CREATE TABLE usage_ledger_gaps (
  kind TEXT NOT NULL CHECK(kind IN ('replay_unavailable','node_reported')),
  start_seq NUMERIC(20,0) NOT NULL CHECK(start_seq >= 0 AND start_seq <= 18446744073709551615) CHECK(start_seq > 0),
  end_seq NUMERIC(20,0) NOT NULL CHECK(end_seq >= 0 AND end_seq <= 18446744073709551615) CHECK(end_seq > 0),
- reason TEXT NOT NULL CHECK(length(reason) > 0),
+ reason TEXT NOT NULL CHECK(reason ~ '[^[:space:]]'),
  ledger_epoch UUID NOT NULL REFERENCES usage_ledger_epochs,
  affected_from TIMESTAMPTZ NOT NULL, affected_until TIMESTAMPTZ NOT NULL,
  affected_periods TEXT[] NOT NULL CHECK(cardinality(affected_periods) > 0),
@@ -159,7 +159,7 @@ CREATE TRIGGER usage_ledger_gaps_no_truncate BEFORE TRUNCATE ON usage_ledger_gap
 -- generation is the read pointer; at most one generation is being rebuilt.
 CREATE TABLE usage_projection_generations (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
- projection_name TEXT NOT NULL CHECK(length(projection_name) > 0),
+ projection_name TEXT NOT NULL CHECK(projection_name ~ '[^[:space:]]'),
  generation NUMERIC(20,0) NOT NULL CHECK(generation >= 0 AND generation <= 18446744073709551615) CHECK(generation > 0),
  state TEXT NOT NULL CHECK(state IN ('building','active','superseded')),
  started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -182,11 +182,11 @@ CREATE TABLE usage_rollup_details (
  id UUID PRIMARY KEY,
  projection_generation NUMERIC(20,0) NOT NULL CHECK(projection_generation >= 0 AND projection_generation <= 18446744073709551615) CHECK(projection_generation > 0),
  granularity TEXT NOT NULL CHECK(granularity IN ('month','day')),
- period TEXT NOT NULL,
+ period TEXT NOT NULL CHECK(period ~ '[^[:space:]]'),
  member_id UUID NOT NULL REFERENCES members,
  node_id UUID NOT NULL REFERENCES nodes, incarnation_id UUID NOT NULL,
  device_id UUID NOT NULL,
- metering_version TEXT NOT NULL,
+ metering_version TEXT NOT NULL CHECK(metering_version ~ '[^[:space:]]'),
  upload_bytes NUMERIC(40,0) NOT NULL CHECK(upload_bytes >= 0),
  download_bytes NUMERIC(40,0) NOT NULL CHECK(download_bytes >= 0),
  total_bytes NUMERIC(41,0) GENERATED ALWAYS AS (upload_bytes + download_bytes) STORED,

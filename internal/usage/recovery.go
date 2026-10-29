@@ -225,25 +225,9 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 		}
 
 		// Reset each stream checkpoint into newEpoch and recompute watermarks & gaps
-		// directly from committed usage_events rows (§17.3 step 3).
+		// directly from committed usage_events rows in one statement per stream (§17.3 step 3, F-04).
 		for _, sk := range streams {
-			_, err := tx.Exec(ctx, `
-				INSERT INTO usage_checkpoints (
-					node_id, incarnation_id, highest_contiguous_seq, max_seen_seq,
-					ledger_epoch, prefix_proof, updated_at
-				) VALUES ($1, $2, 0, 0, $3, ''::bytea, $4)
-				ON CONFLICT (node_id, incarnation_id) DO UPDATE SET
-					ledger_epoch = EXCLUDED.ledger_epoch,
-					highest_contiguous_seq = 0,
-					max_seen_seq = 0,
-					prefix_proof = ''::bytea,
-					updated_at = EXCLUDED.updated_at
-			`, sk.nodeID, sk.incarnationID, newEpoch, now)
-			if err != nil {
-				return fmt.Errorf("usage: reset stream checkpoint for new epoch: %w", err)
-			}
-
-			if _, err := recomputeStreamWatermarkWithConflictsInTx(ctx, tx, sk.nodeID, sk.incarnationID, true, now); err != nil {
+			if _, err := resetStreamCheckpointForNewEpochInTx(ctx, tx, sk.nodeID, sk.incarnationID, newEpoch, now); err != nil {
 				return fmt.Errorf("usage: recompute stream %s/%s: %w", sk.nodeID, sk.incarnationID, err)
 			}
 		}

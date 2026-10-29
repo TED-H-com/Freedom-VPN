@@ -9,7 +9,10 @@ This runbook documents the database snapshot restore and node replay protocol (`
 If PostgreSQL is restored from a backup or point-in-time snapshot taken at $T_{\text{snap}}$, the restored database may have a lower `highest_contiguous_seq` for a node stream than what the central service had ACKed to the node between $T_{\text{snap}}$ and the incident.
 - **Within a single `ledger_epoch`**, a node's ACK watermark (`highest_contiguous_seq`) is strictly non-decreasing (`usage_checkpoints_monotonic` trigger in `00004_guards.sql`).
 - **Across a snapshot restore**, nodes might hold ACK watermarks from the lost window $[T_{\text{snap}}, T_{\text{incident}}]$ or might already have pruned spool entries below their old ACK watermark.
-- Rotating to a new **`ledger_epoch`** with an Ed25519-signed recovery record (`purpose = "recovery"`) authorizes nodes to reset their upload cursor to the restored database's committed watermark, replay retained local spool entries through normal deduplication, and explicitly report any pruned ranges via `replay_unavailable`.
+- Rotating to a new **`ledger_epoch`** with an Ed25519-signed recovery record authorizes nodes to reset their upload cursor to the restored database's committed watermark, replay retained local spool entries through normal deduplication, and explicitly report any pruned ranges via `replay_unavailable`.
+- **Signing Purposes (Wave 2 vs. Wave 3 PKI Wiring)**:
+  - In Wave 2, both the `ledger_epoch` recovery record (`BeginRecovery` / `usage_recovery_records`) and the signed stream checkpoint (`GetCheckpoint` / `UsageCheckpointEnvelope`) use `envelope.PurposeRecovery` (`"recovery"`).
+  - In Wave 3, when the PKI signing provider is wired with the contract revision, the `ledger_epoch` recovery record will use the new `ledger-epoch` purpose that the contract revision adds, while checkpoint envelopes keep `recovery`.
 
 ---
 

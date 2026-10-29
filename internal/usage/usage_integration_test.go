@@ -94,8 +94,14 @@ func setupTestEnv(t *testing.T) *testEnv {
 	}
 	env.svc = svc
 
-	// Seed members, devices, historical device_bindings, nodes, and node_incarnations.
+	// Seed members, entitlements (required by F-05 before authorizing devices),
+	// devices, historical device_bindings, nodes, and node_incarnations.
 	mustExec(t, pool, `INSERT INTO members(id, status) VALUES ($1, 'active'), ($2, 'active')`, env.memberA, env.memberB)
+	mustExec(t, pool, `
+		INSERT INTO entitlements(member_id, revision, device_limit, valid_from, effective_service_end)
+		VALUES ($1, 1, 5, now() - interval '1 year', now() + interval '1 year'),
+		       ($2, 1, 5, now() - interval '1 year', now() + interval '1 year')
+	`, env.memberA, env.memberB)
 	mustExec(t, pool, `
 		INSERT INTO member_devices(id, member_id, deployment_id, peer_id, status)
 		VALUES ($1, $2, 'dep-1', 'peer-a', 'authorized'),
@@ -124,8 +130,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 		VALUES ($1, $2, decode(repeat('11', 32), 'hex'), 'dep-1', 'node-peer-1', 'ubuntu', 'amd64'),
 		       ($3, $4, decode(repeat('22', 32), 'hex'), 'dep-1', 'node-peer-2', 'ubuntu', 'arm64')
 	`, env.inc1, env.node1, env.inc2, env.node2)
-	mustExec(t, pool, `UPDATE nodes SET current_incarnation_id = $2 WHERE id = $1`, env.node1, env.inc1)
-	mustExec(t, pool, `UPDATE nodes SET current_incarnation_id = $2 WHERE id = $1`, env.node2, env.inc2)
+	mustExec(t, pool, `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`, env.node1, env.inc1)
+	mustExec(t, pool, `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`, env.node2, env.inc2)
 
 	return env
 }
@@ -361,7 +367,9 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 		t.Fatalf("unexpected totals after conflict/rejection batch: up=%d down=%d total=%d", tot.UploadBytes, tot.DownloadBytes, tot.TotalBytes)
 	}
 
-	// 4. Now send valid event 4: hcs advances to 4, and stops at 5 because 5 is in conflict (blocked_seq = 5)!
+	// 4. Now send valid event 4: all receipts 1..6 are now durable and contiguous in usage_events
+	// (since ev5Orig was already accepted before ev5Conflict arrived), so F-04 requires
+	// highest_contiguous_seq to advance to 6.
 	ev4Valid := makeSignedEvent(t, env.identity1, 4, meterEpoch2, base.Add(3*time.Minute), base.Add(4*time.Minute), api.UsageQualityComplete, nil, nil)
 	res, err = env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 		NodeId:            env.node1,
@@ -372,11 +380,11 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	if err != nil {
 		t.Fatalf("IngestBatch(4 valid): %v", err)
 	}
-	if res.HighestContiguousSeq != 4 {
-		t.Fatalf("expected hcs=4 (stopped before conflicted seq 5), got %d", res.HighestContiguousSeq)
+	if res.HighestContiguousSeq != 6 || res.MaxSeenSeq != 6 {
+		t.Fatalf("expected hcs=6 max=6 (all durable receipts 1..6 contiguous per F-04), got hcs=%d max=%d", res.HighestContiguousSeq, res.MaxSeenSeq)
 	}
-	if res.BlockedSeq == nil || *res.BlockedSeq != 5 {
-		t.Fatalf("expected blocked_seq=5, got %v", res.BlockedSeq)
+	if res.BlockedSeq != nil {
+		t.Fatalf("expected blocked_seq=nil once 1..6 are contiguous, got %v", res.BlockedSeq)
 	}
 
 	// 5. mTLS mismatch must reject the whole batch with 403 INCARNATION_MISMATCH and no ledger change.
@@ -731,6 +739,10 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	envRestored.inc1 = envLive.inc1
 	envRestored.identity1 = envLive.identity1
 	mustExec(t, envRestored.pool, `INSERT INTO members(id, status) VALUES ($1, 'active')`, envRestored.memberA)
+	mustExec(t, envRestored.pool, `
+		INSERT INTO entitlements(member_id, revision, device_limit, valid_from, effective_service_end)
+		VALUES ($1, 1, 5, now() - interval '1 year', now() + interval '1 year')
+	`, envRestored.memberA)
 	mustExec(t, envRestored.pool, `INSERT INTO member_devices(id, member_id, deployment_id, peer_id, status) VALUES ($1, $2, 'dep-live', 'peer-live-a', 'authorized')`, envRestored.deviceA, envRestored.memberA)
 	mustExec(t, envRestored.pool, `
 		INSERT INTO device_bindings(
@@ -740,7 +752,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	`, envRestored.deviceA, envRestored.memberA)
 	mustExec(t, envRestored.pool, `INSERT INTO nodes(id, lifecycle_state, provisioning_state) VALUES ($1, 'registered', 'ready')`, envRestored.node1)
 	mustExec(t, envRestored.pool, `INSERT INTO node_incarnations(id, node_id, public_key_fingerprint, deployment_id, peer_id, os, arch) VALUES ($1, $2, decode(repeat('33', 32), 'hex'), 'dep-live', 'node-peer-live', 'ubuntu', 'amd64')`, envRestored.inc1, envRestored.node1)
-	mustExec(t, envRestored.pool, `UPDATE nodes SET current_incarnation_id = $2 WHERE id = $1`, envRestored.node1, envRestored.inc1)
+	mustExec(t, envRestored.pool, `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`, envRestored.node1, envRestored.inc1)
 
 	meterEpoch := uuid.New()
 	base := time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)
@@ -1091,4 +1103,150 @@ func TestMTR03_ConcurrentSameStreamIngest(t *testing.T) {
 
 	// Verify fmt is used if needed.
 	_ = fmt.Sprintf
+}
+
+func TestF04_ReplayUnavailableTombstonesAndRetentionPurge(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 28, 10, 0, 0, 0, time.UTC)
+
+	ev1 := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     500,
+			DownloadBytes:   1500,
+		},
+	})
+	ev4 := makeSignedEvent(t, env.identity1, 4, meterEpoch, base.Add(3*time.Minute), base.Add(4*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     700,
+			DownloadBytes:   1300,
+		},
+	})
+
+	// 1. Ingest events 1 and 4 with gap at [2, 3].
+	res, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{ev1, ev4},
+	})
+	if err != nil {
+		t.Fatalf("IngestBatch(1, 4): %v", err)
+	}
+	if res.HighestContiguousSeq != 1 || res.MaxSeenSeq != 4 {
+		t.Fatalf("expected hcs=1 max=4, got hcs=%d max=%d", res.HighestContiguousSeq, res.MaxSeenSeq)
+	}
+
+	// 2. Record replay_unavailable for [2, 3]: inserts 0-byte tombstones (record_count = 0,
+	// 0 usage_samples rows, 0 usage_event_payloads rows) and advances checkpoint to hcs=4, max=4.
+	// This proves 0-byte tombstones satisfy F-04's check_usage_event_contents and check_usage_checkpoint triggers.
+	state, err := env.svc.GetLedgerState(ctx)
+	if err != nil {
+		t.Fatalf("GetLedgerState: %v", err)
+	}
+	if err := env.svc.RecordReplayUnavailable(ctx, env.identity1, state.LedgerEpoch, []api.ReplayUnavailableRange{
+		{
+			StartSeq: 2,
+			EndSeq:   3,
+			Reason:   api.ReplayUnavailableRangeReasonRetentionExpired,
+		},
+	}); err != nil {
+		t.Fatalf("RecordReplayUnavailable([2, 3]): %v", err)
+	}
+
+	var tombstoneCount, tombstoneSamples, tombstonePayloads int
+	if err := env.pool.QueryRow(ctx, `
+		SELECT count(*),
+		       (SELECT count(*) FROM usage_samples s JOIN usage_events e ON e.id = s.event_id WHERE e.node_id = $1 AND e.kind = 'replay_unavailable'),
+		       (SELECT count(*) FROM usage_event_payloads p JOIN usage_events e ON e.id = p.event_id WHERE e.node_id = $1 AND e.kind = 'replay_unavailable')
+		FROM usage_events
+		WHERE node_id = $1 AND kind = 'replay_unavailable' AND record_count = 0
+	`, env.node1).Scan(&tombstoneCount, &tombstoneSamples, &tombstonePayloads); err != nil {
+		t.Fatalf("query tombstones: %v", err)
+	}
+	if tombstoneCount != 2 || tombstoneSamples != 0 || tombstonePayloads != 0 {
+		t.Fatalf("expected 2 zero-byte tombstones with 0 samples and 0 payloads, got count=%d samples=%d payloads=%d",
+			tombstoneCount, tombstoneSamples, tombstonePayloads)
+	}
+
+	cpEnv, err := env.svc.GetCheckpoint(ctx, env.identity1)
+	if err != nil {
+		t.Fatalf("GetCheckpoint: %v", err)
+	}
+	if cpEnv.Signed.HighestContiguousSeq != 4 || cpEnv.Signed.MaxSeenSeq != 4 || len(cpEnv.Signed.MissingRanges) != 0 {
+		t.Fatalf("expected checkpoint hcs=4 max=4 missing=[], got %+v", cpEnv.Signed)
+	}
+
+	// 3. Rotate ledger_epoch via BeginRecovery while tombstones are present;
+	// proves resetStreamCheckpointForNewEpochInTx satisfies F-04 on epoch rotation.
+	recState, err := env.svc.BeginRecovery(ctx, usage.RecoveryRequest{
+		RestoredTo:    env.now,
+		AffectedSince: base,
+		Reason:        "F-04 epoch rotation with tombstones",
+		Actor:         "ops-admin",
+	})
+	if err != nil {
+		t.Fatalf("BeginRecovery with tombstones: %v", err)
+	}
+	if recState.RecomputedStreams != 1 {
+		t.Fatalf("expected 1 recomputed stream, got %d", recState.RecomputedStreams)
+	}
+	if err := env.svc.CompleteRecovery(ctx, "ops-admin"); err != nil {
+		t.Fatalf("CompleteRecovery: %v", err)
+	}
+
+	// 4. Ingest a clean historical event on node2 in 2026-01 (more than 90 days ago)
+	// and verify F-03 retention purge behavior via PurgeRetainedPayloads.
+	oldTime := time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC)
+	env.now = oldTime
+	evOld := makeSignedEvent(t, env.identity2, 1, uuid.New(), oldTime, oldTime.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberB,
+			DeviceId:        env.deviceB,
+			BindingRevision: 1,
+			PeriodId:        "2026-01",
+			UploadBytes:     1000,
+			DownloadBytes:   2000,
+		},
+	})
+	if _, err := env.svc.IngestBatch(ctx, env.identity2, api.UsageBatchRequest{
+		NodeId:            env.node2,
+		NodeIncarnationId: env.inc2,
+		LedgerEpoch:       &recState.NewLedgerEpoch,
+		Events:            []api.UsageEvent{evOld},
+	}); err != nil {
+		t.Fatalf("IngestBatch(evOld on node2): %v", err)
+	}
+	env.now = time.Date(2026, 10, 28, 15, 0, 0, 0, time.UTC)
+
+	// Cutoff within 90 days of clock_timestamp() is rejected by F-03 retention policy.
+	if _, err := env.svc.PurgeRetainedPayloads(ctx, time.Now().UTC(), "too recent cutoff"); err == nil {
+		t.Fatalf("expected PurgeRetainedPayloads to reject cutoff inside 90-day retention window")
+	}
+
+	// Cutoff at 2026-02-01Z (>90 days ago) purges the clean 2026-01 payload while leaving
+	// the 2026-10 gap-period payloads intact.
+	purged, err := env.svc.PurgeRetainedPayloads(ctx, time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC), "scheduled 90-day raw usage payload retention")
+	if err != nil {
+		t.Fatalf("PurgeRetainedPayloads(2026-02-01Z): %v", err)
+	}
+	if purged != 1 {
+		t.Fatalf("expected 1 clean historical payload purged, got %d", purged)
+	}
+
+	// 5. Verify direct DELETE on usage_checkpoints and usage_rollups is rejected (F-02, F-04).
+	if _, err := env.pool.Exec(ctx, `DELETE FROM usage_checkpoints WHERE node_id = $1`, env.node1); err == nil {
+		t.Fatalf("expected DELETE FROM usage_checkpoints to be rejected by F-04 trigger")
+	}
+	if _, err := env.pool.Exec(ctx, `DELETE FROM usage_rollups WHERE member_id = $1`, env.memberA); err == nil {
+		t.Fatalf("expected DELETE FROM usage_rollups to be rejected by F-02 trigger")
+	}
 }

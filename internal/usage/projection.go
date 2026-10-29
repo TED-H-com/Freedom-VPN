@@ -563,3 +563,21 @@ func (s *Service) RebuildProjection(ctx context.Context) (RebuildProjectionResul
 	}
 	return out, nil
 }
+
+// PurgeRetainedPayloads purges raw usage_event_payloads rows created before cutoff
+// using the base schema's authorized purge_retained('usage_event_payloads', cutoff, reason)
+// function (F-02, F-03). It deletes only payloads older than the configured retention
+// window whose samples are completely covered by clean (non-reconciling, non-gap) rollups.
+func (s *Service) PurgeRetainedPayloads(ctx context.Context, cutoff time.Time, reason string) (int64, error) {
+	var deleted int64
+	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := tx.QueryRow(ctx, `SELECT purge_retained('usage_event_payloads'::text, $1::timestamptz, $2::text)`, cutoff.UTC(), reason).Scan(&deleted); err != nil {
+			return fmt.Errorf("usage: purge retained usage_event_payloads: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	return deleted, nil
+}
