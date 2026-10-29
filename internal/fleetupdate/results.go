@@ -18,6 +18,11 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// SubmitResultTx joins update-result ingestion to the caller's command transaction (§14.5).
+func (s *Service) SubmitResultTx(ctx context.Context, tx pgx.Tx, i Identity, raw []byte) (api.UpdateResultAck, error) {
+	return s.SubmitResult(commandtx.WithTransaction(ctx, tx), i, raw)
+}
+
 func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api.UpdateResultAck, error) {
 	var ack api.UpdateResultAck
 	if e := s.releases.Validator.ValidateBody("UpdateResult", raw); e != nil {

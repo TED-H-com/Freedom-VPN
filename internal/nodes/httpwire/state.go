@@ -45,9 +45,8 @@ func (s policySnapshot) ReadPolicySnapshot(context.Context, uuid.UUID, time.Time
 	return s.value, nil
 }
 
-// CompileControlState supports the control-only staging/disabled path. Published
-// member forwarding requires the policy owner's BuildNodeMemberRatePolicy hook;
-// this checkout lacks that export. Never substitute the legacy rate calculation.
+// CompileControlState compiles current DB policy, entitlement and update inputs
+// in one transaction. A valid unchanged envelope retains its generation and ETag.
 func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uuid.UUID) (out desiredstate.CompiledDesiredState, err error) {
 	err = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		ctx = commandtx.WithTransaction(ctx, tx)
@@ -55,8 +54,7 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		var current uuid.UUID
 		var lifecycle string
 		var generationText string
-		var capacity []byte
-		e := tx.QueryRow(ctx, `SELECT n.lifecycle_state,n.current_incarnation_id,n.desired_config_generation::text,e.publication_intent,n.capacity FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n`, node).Scan(&lifecycle, &current, &generationText, &publication, &capacity)
+		e := tx.QueryRow(ctx, `SELECT n.lifecycle_state,n.current_incarnation_id,n.desired_config_generation::text,e.publication_intent FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n`, node).Scan(&lifecycle, &current, &generationText, &publication)
 		if e != nil {
 			return e
 		}
@@ -66,9 +64,6 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		if lifecycle != "registered" {
 			return apierr.New(apierr.IdentityRevoked, "Node identity inactive.")
 		}
-		if publication == api.PublicationIntentPublished {
-			return apierr.New(apierr.DependencyUnavailable, "Member policy compiler is unavailable.")
-		}
 		work, e := r.Fleet.NodeUpdateIntent(ctx, fleetupdate.Identity{NodeID: node, IncarnationID: incarnation})
 		if e != nil {
 			return e
@@ -76,14 +71,19 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		if len(r.Config.DNSResolverIPv4)+len(r.Config.DNSResolverIPv6) == 0 {
 			return apierr.New(apierr.DependencyUnavailable, "Node DNS configuration required.")
 		}
-		snap := desiredstate.PolicySnapshot{AuthorizationGeneration: 1, FairUseGeneration: 1, DNSGeneration: 1, ServingReleaseIDs: []uuid.UUID{}, AccountingPeriod: desiredstate.DefaultAccountingPeriod(time.Now().UTC())}
-		if e = tx.QueryRow(ctx, `SELECT active_revision_id FROM policy_definitions WHERE type='release_support' AND active_revision_id IS NOT NULL ORDER BY id LIMIT 1`).Scan(&snap.SupportedReleasePolicyID); e != nil {
-			return apierr.New(apierr.DependencyUnavailable, "Release support policy required.")
-		}
-		snap.PolicyRefs = []uuid.UUID{snap.SupportedReleasePolicyID}
-		if e = tx.QueryRow(ctx, `SELECT desired_release_id FROM nodes WHERE id=$1`, node).Scan(&snap.DesiredReleaseID); e != nil {
+		now := time.Now().UTC()
+		snap, e := desiredstate.NewDBPolicyReader(tx).ReadPolicySnapshot(ctx, node, now)
+		if e != nil {
 			return e
 		}
+		var hasReleasePolicy bool
+		if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM policy_definitions WHERE type='release_support' AND active_revision_id IS NOT NULL)`).Scan(&hasReleasePolicy); e != nil {
+			return e
+		}
+		if !hasReleasePolicy {
+			return apierr.New(apierr.DependencyUnavailable, "Release support policy required.")
+		}
+
 		// Only an explicit serving allowlist authorizes a release (§13.2).
 		if e = tx.QueryRow(ctx, `SELECT coalesce(array_agg(id),'{}'::uuid[]) FROM unnest((SELECT supported_release_ids FROM fleet_config WHERE supported_release_policy='allowlist')) id WHERE NOT id=ANY((SELECT revoked_release_ids FROM fleet_config)::uuid[])`).Scan(&snap.ServingReleaseIDs); e != nil {
 			return e
@@ -94,34 +94,36 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		}
 		var raw []byte
 		var tag string
-		e = tx.QueryRow(ctx, `SELECT envelope,etag FROM desired_state_envelopes WHERE node_id=$1 AND incarnation_id=$2`, node, incarnation).Scan(&raw, &tag)
+		var refs []uuid.UUID
+		e = tx.QueryRow(ctx, `SELECT e.envelope,e.etag,s.policy_refs FROM desired_state_envelopes e JOIN desired_states s ON s.id=e.desired_state_id WHERE e.node_id=$1 AND e.incarnation_id=$2`, node, incarnation).Scan(&raw, &tag, &refs)
 		if e != nil && !errors.Is(e, pgx.ErrNoRows) {
 			return e
 		}
-		if e == nil && work == nil {
-			var cached api.DesiredStateEnvelope
-			if json.Unmarshal(raw, &cached) == nil && cached.Signed.ExpiresAt.After(time.Now().Add(time.Duration(r.Config.DesiredStateSeconds)*time.Second/2)) && cached.Signed.ConfigGeneration.String() == generationText && cached.Signed.PublicationIntent == publication && cached.Signed.Update.IsNull() {
-				a, _ := canonjson.Marshal(cached.Signed.ServingReleaseIds)
-				b, _ := canonjson.Marshal(snap.ServingReleaseIDs)
-				cachedCap, _ := canonjson.Marshal(cached.Signed.NodeCapacity)
-				var wantedCap any
-				if len(capacity) > 0 {
-					_ = json.Unmarshal(capacity, &wantedCap)
-				}
-				currentCap, _ := canonjson.Marshal(wantedCap)
-				trust, trustErr := r.Provider.TrustBundle(ctx)
-				verifyErr := trustErr
-				if trustErr == nil {
-					_, _, verifyErr = envelope.Verify(raw, trust, envelope.PurposeDesiredState, time.Now())
-				}
-				if string(a) == string(b) && slices.Equal(cached.Signed.Dns.ResolverIpv4, r.Config.DNSResolverIPv4) && slices.Equal(cached.Signed.Dns.ResolverIpv6, r.Config.DNSResolverIPv6) && string(cachedCap) == string(currentCap) && cached.Signed.SupportedReleasePolicyId == snap.SupportedReleasePolicyID && trustErr == nil && verifyErr == nil {
-					out = desiredstate.CompiledDesiredState{Envelope: cached, ETag: tag, Generation: uint64(cached.Signed.ConfigGeneration)}
-					return nil
-				}
+		var cached api.DesiredStateEnvelope
+		var cachedResult *desiredstate.CompiledDesiredState
+		// Concrete revision IDs matter even if their maximum generation did not
+		// change. Member/FUP/binding inputs are compared after DB compilation below.
+		if e == nil && json.Unmarshal(raw, &cached) == nil && cached.Signed.ConfigGeneration.String() == generationText && cached.Signed.ExpiresAt.After(now.Add(time.Duration(r.Config.DesiredStateSeconds)*time.Second/2)) && slices.Equal(refs, snap.PolicyRefs) {
+			trust, e := r.Provider.TrustBundle(ctx)
+			if e != nil {
+				return e
+			}
+			if _, _, e = envelope.Verify(raw, trust, envelope.PurposeDesiredState, now); e == nil {
+				cachedResult = &desiredstate.CompiledDesiredState{Envelope: cached, ETag: tag, Generation: uint64(cached.Signed.ConfigGeneration)}
 			}
 		}
-		compiler := desiredstate.NewCompiler(r.Pool, purposeSigner{r.Provider, envelope.PurposeDesiredState}, desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds)*time.Second), desiredstate.WithPolicyReader(policySnapshot{snap}), desiredstate.WithDNSResolvers(r.Config.DNSResolverIPv4, r.Config.DNSResolverIPv6))
+		signer := cachedStateSigner{signer: purposeSigner{r.Provider, envelope.PurposeDesiredState}, cached: cachedResult}
+		compiler := desiredstate.NewCompiler(r.Pool, signer,
+			desiredstate.WithClock(func() time.Time { return now }),
+			desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds)*time.Second),
+			desiredstate.WithEntitlementReader(desiredstate.NewDBEntitlementReader(tx)),
+			desiredstate.WithPolicyReader(policySnapshot{snap}),
+			desiredstate.WithDNSResolvers(r.Config.DNSResolverIPv4, r.Config.DNSResolverIPv6))
 		out, e = compiler.CompileTx(ctx, tx, node)
+		if errors.Is(e, errStateUnchanged) {
+			out = *cachedResult
+			return nil
+		}
 		return e
 	})
 	return
@@ -154,12 +156,19 @@ func (h *Handlers) RenewServingLease(ctx context.Context, r gen.RenewServingLeas
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
-	if _, ok := commandtx.Transaction(ctx); ok {
-		return nil, apierr.New(apierr.DependencyUnavailable, "Transactional lease adapter is unavailable.")
-	}
 	p := principal(ctx)
 	svc := leases.NewService(h.Runtime.Pool, purposeSigner{h.Runtime.Provider, envelope.PurposeLease})
-	out, e := svc.Renew(ctx, p.NodeID, p.IncarnationID, *r.Body)
+	var out api.ServingLeaseEnvelope
+	var e error
+	if tx, err := httpapi.Transaction(ctx); err == nil {
+		out, e = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
+	} else {
+		out, e = svc.Renew(ctx, p.NodeID, p.IncarnationID, *r.Body)
+	}
+	if e != nil {
+		return nil, e
+	}
+	e = result(ctx, "node", p.NodeID, 200, nil)
 	return gen.RenewServingLease200JSONResponse{Body: out}, e
 }
 
@@ -168,7 +177,9 @@ func (h *Handlers) SetNodePublication(ctx context.Context, r gen.SetNodePublicat
 		return nil, e
 	}
 	if r.Body.PublicationIntent == api.PublicationIntentPublished {
-		return nil, apierr.New(apierr.DependencyUnavailable, "Member policy compiler is unavailable.")
+		// SetPublication still opens its own transaction. Its owner must add a
+		// caller-transaction seam before publication can commit atomically (§14.5).
+		return nil, apierr.New(apierr.DependencyUnavailable, "Publication transaction support is unavailable.")
 	}
 	tx, e := httpapi.Transaction(ctx)
 	if e != nil {
