@@ -3,8 +3,8 @@
 This document describes the central node management subsystem implemented in:
 
 - `internal/nodes` — Node aggregate views (`ListNodes`, `GetNode`, `ListMemberExits`), state transition tables (`CanTransitionLifecycle`, `CanTransitionProvisioning`, `CheckPublishable`), versioned updates (`UpdateNode`), revocation (`RevokeNode`), tombstoned retirement (`RetireNode`), observation ingestion (`SubmitObservation`), and staleness sweeps (`SweepStaleNodes`).
-- `internal/desiredstate` — Per-node desired-state compiler (`Compile`, `ReSign`, `GetDesiredState`, `RecompileBatch`), effective rate computation (`ComputeEffectiveRateBps`), and outbox burst coalescing.
-- `internal/exits` — Exit publication commands (`SetPublication`), multi-step operation execution (`ExecuteOperation`), NetBird adapter integration with `external_bindings` idempotency, and NetBird read-back reconciliation (`ReconcileNetBird`).
+- `internal/desiredstate` — Per-node desired-state compiler (`Compile`, `CompileTx`, `ReSign`, `GetDesiredState`, `RecompileBatch`), member rate policy delegation (`fup.BuildNodeMemberRatePolicy`), and outbox burst coalescing.
+- `internal/exits` — Exit publication commands (`SetPublication`, `SetPublicationTx`), multi-step operation execution (`ExecuteOperation`), NetBird adapter integration with `external_bindings` idempotency, and NetBird read-back reconciliation (`ReconcileNetBird`).
 - `internal/leases` — Serving lease calculation (`ComputeMemberLeaseEnd`, `Renew`), Ed25519 envelope signing (`lease` purpose), and replay-safe persistence (`serving_leases`, `serving_lease_members`).
 
 ---
@@ -51,20 +51,32 @@ Health recovery, heartbeat recovery, or software updates **never** automatically
 
 ## 2. Publish and Unpublish Sequence Diagrams (§5.2, AT08, AT13)
 
+### 2.0 Publication Transaction Seam (`exits.Service.SetPublicationTx`)
+
+All three publication intents (`published`, `unpublished`, `disabled`) share a single transactional implementation:
+
+```go
+func (s *Service) SetPublicationTx(ctx context.Context, tx pgx.Tx, p SetPublicationParams) (api.Operation, string, error)
+```
+
+- **Wrapper vs. Caller Transaction**: `exits.Service.SetPublication` opens a transaction (`db.InTx`), handles idempotency lookup/save when `IdempotencyKey` is non-empty, and delegates to `SetPublicationTx`. HTTP command handlers (`PUT /api/v1/admin/nodes/{node_id}/publication`) that manage their own transaction and idempotency record call `SetPublicationTx` directly so the idempotency row, `nodes`/`exits` state mutation, `operations` row, `outbox_events` row, and `audit_events` row commit atomically.
+- **Lock Order and Concurrency**: Inside `SetPublicationTx`, rows are locked in strict `nodes -> exits` order (`SELECT true FROM nodes n WHERE n.id = $1 FOR UPDATE OF n` followed by `SELECT ... FROM nodes n JOIN exits e ON e.node_id = n.id WHERE n.id = $1 FOR UPDATE OF n, e`). `If-Match` is verified against `nodes.resource_version` under the lock (`428 PRECONDITION_REQUIRED` when missing, `412 RESOURCE_VERSION_CONFLICT` on mismatch).
+- **Single-Pass Mutation**: For `published`, `nodes.CheckPublishable` validates lifecycle (`registered`), provisioning (`ready`), control (`online`), safety (`passed`), and data health (`healthy` or `degraded`). On an accepted intent change, `SetPublicationTx` writes `exits.publication_intent` (setting `exits.publication_observed = 'applying'` when publishing from non-`active`), bumps `nodes.resource_version` and `exits.resource_version` by `+1`, advances `nodes.desired_config_generation` by `+1` exactly once, inserts the pending `api.Operation` (`node.publish`, `node.unpublish`, or `node.disable` with steps `agent_policy`, `netbird_route_readback`, `data_path_probe`), enqueues `node.publication_changed` (`desiredstate.EventNodePublicationChanged`) in `outbox_events`, and appends an `exit:<uuid>` audit event via `audit.NewEvent` + `audit.AppendEvent`.
+
 ### 2.1 Publish (`PUT /admin/nodes/{id}/publication` with `publication_intent=published`)
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant Admin
-    participant Control as fvpn-control (exits.SetPublication)
+    participant Control as fvpn-control (exits.SetPublication / SetPublicationTx)
     participant DB as PostgreSQL
     participant Worker as fvpn-worker (exits.ExecuteOperation)
     participant Agent as fvpn-agent
     participant NB as NetBird Adapter
 
     Admin->>Control: PUT /admin/nodes/{id}/publication (If-Match, Idempotency-Key, intent=published)
-    Control->>DB: Tx: CheckPublishable, bump nodes.resource_version, set exits.publication_intent='published', create Operation(pending: agent_policy, netbird_route_readback, data_path_probe), enqueue outbox, append audit
+    Control->>DB: Tx (SetPublicationTx): FOR UPDATE OF n then n, e; verify If-Match & CheckPublishable; bump nodes/exits resource_version & desired_config_generation (+1); set exits.publication_intent='published'; create Operation(pending: agent_policy, netbird_route_readback, data_path_probe); enqueue outbox; append audit
     Control-->>Admin: 202 Accepted + Operation(pending) + ETag
 
     Worker->>DB: Claim outbox & Compile new DesiredState (config_generation = G)
@@ -318,4 +330,20 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
    - All audit rows written by `nodes`, `desiredstate`, `leases`, and `exits` use `resource = node:<uuid>` or `exit:<uuid>`, UUID actors (`actor_type` in `admin|member|node|system`), and results `succeeded|failed|denied`.
    - Operation kinds are validated against the generated `api.OperationKind` enum.
    - Verified via `audit.Store.List` returning all rows with `store.AnomalyCount() == 0`.
+
+---
+
+## 8. Publication transaction seam and member rate algorithm, follow-up 4
+
+1. **Caller-Transaction Publication Seam (`exits.Service.SetPublicationTx`)**:
+   - `exits.Service.SetPublicationTx(ctx, tx, p)` provides the single implementation for `published`, `unpublished`, and `disabled` publication changes inside a caller-managed transaction (`pgx.Tx`), returning `(api.Operation, newETag, error)`.
+   - `exits.Service.SetPublication` opens a transaction (`db.InTx`), checks/records idempotency when `p.IdempotencyKey != ""`, and calls `SetPublicationTx`.
+   - Row locks follow the canonical `nodes -> exits` order (`FOR UPDATE OF n`, then `FOR UPDATE OF n, e`). `If-Match` is verified under the lock, `nodes.resource_version` and `exits.resource_version` each increment by `+1`, `nodes.desired_config_generation` increments by `+1` once per accepted change, the pending operation (`node.publish` with `agent_policy`, `netbird_route_readback`, `data_path_probe`; `node.unpublish`; `node.disable`) is inserted, `node.publication_changed` is enqueued to `outbox_events`, and the `exit:<uuid>` audit event is recorded via `audit.NewEvent` + `audit.AppendEvent`.
+2. **Single Member Rate Algorithm (`fup.BuildNodeMemberRatePolicy` in `desiredstate.Compiler`)**:
+   - `desiredstate.Compiler.CompileTx` delegates `api.MemberRatePolicy` construction to `fup.BuildNodeMemberRatePolicy(eval, planRate, nodeCapacityRatePair(nodeCap))` and removes the duplicate `ComputeEffectiveRateBps` function.
+   - `DBEntitlementReader.ListEntitledMembersForGroups` loads persisted `fup_member_states` (and referenced `policy_revisions`) for the current accounting period into `EntitledMember`:
+     - In `enforce` mode (`as_of >= effective_at` and tier `> 0`), `eval` carries `EnforcedTierIndex`, `EnforcedDownBps`, `EnforcedUpBps`, `EnforcedPriority`, `EnforcedReason`, and `Reason = "fair_use_tier"`, so `fup.BuildNodeMemberRatePolicy` computes $\min(\text{plan\_rate}, \text{fair\_use\_tier\_rate}, \text{node\_member\_rate\_cap})$ and emits `WouldApplyTierIndex`, `WouldApplyDownBps`, `WouldApplyUpBps`, and `WouldApplyPriority`.
+     - In `shadow` mode (or normal tier `0`), `eval` carries `EnforcedTierIndex = 0`, `Reason = "normal"`, and any shadow `WouldApply*` fields while effective `DownBps`/`UpBps` remain $\min(\text{plan\_rate}, \text{node\_member\_rate\_cap})$.
+   - `nodeCapacityRatePair(nodeCap)` combines `nodeCap.DownBps`/`UpBps` with optional `nodeCap.MemberDownBpsCap`/`MemberUpBpsCap` so both total node bandwidth and per-member node caps bound the member rate policy.
+
 
