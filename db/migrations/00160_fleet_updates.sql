@@ -119,3 +119,5 @@ COMMENT ON TABLE update_results IS 'Project Spec §13.10.3: append-only result i
 COMMENT ON TABLE update_result_conflicts IS 'Project Spec §13.11: conflicting result hashes retained without replacing accepted evidence.';
 COMMENT ON TABLE update_batch_progress IS 'Project Spec §13.12: rebuildable mutually exclusive progress counts.';
 COMMENT ON TABLE update_retry_jobs IS 'Project Spec §13.12: retry operation evidence references its exact attempts.';
+-- §13.8: a node's generation/attempt identifies one work item, including first-sync.
+CREATE UNIQUE INDEX update_jobs_node_attempt_key ON update_jobs(node_id,generation,attempt);

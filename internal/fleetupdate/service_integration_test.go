@@ -584,3 +584,42 @@ func TestUPD05_PaginationRevokedTargetsAndRetryCompletion(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
+	l := newLab(t)
+	i := l.node("amd64", "published", "registered", true)
+	l.batch(l.new)
+	w := l.intent(i)
+	r := api.ObservationReport{ReportId: uuid.New(), NodeId: i.NodeID, NodeIncarnationId: i.IncarnationID, ObservedAt: time.Now().UTC(), CurrentReleaseId: &l.new, LastGoodReleaseId: &l.new}
+	r.Update.JobId = &w.Intent.JobId
+	r.Update.Generation = &w.Intent.Generation
+	insertAndObserve := func(r api.ObservationReport) error {
+		return db.InTx(l.ctx, l.s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			// The node owner holds the fleet lock before inserting its validated receipt.
+			if e := l.s.lock(l.ctx, tx); e != nil {
+				return e
+			}
+			_, e := tx.Exec(l.ctx, `INSERT INTO node_observations(node_id,incarnation_id,report_id,payload_hash,observed_at,applied_generation,actual_release_id,schema_version,checks,control_status,data_health,safety_status) VALUES($1,$2,$3,$4,$5,0,$6,1,'{}','online','healthy','passed') ON CONFLICT(node_id,incarnation_id,report_id) DO NOTHING`, i.NodeID, i.IncarnationID, r.ReportId, make([]byte, 32), r.ObservedAt, r.CurrentReleaseId)
+			if e != nil {
+				return e
+			}
+			return l.s.ObserveReportTx(l.ctx, tx, i, r)
+		})
+	}
+	if e := insertAndObserve(r); e != nil {
+		t.Fatal(e)
+	}
+	if e := insertAndObserve(r); e != nil {
+		t.Fatal(e)
+	}
+	r.ReportId = uuid.New()
+	r.ObservedAt = r.ObservedAt.Add(-time.Second)
+	r.CurrentReleaseId = &l.old
+	if e := insertAndObserve(r); e != nil {
+		t.Fatal(e)
+	}
+	view, e := l.s.NodeVersionView(l.ctx, i.NodeID)
+	if e != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.new {
+		t.Fatal(view, e)
+	}
+}

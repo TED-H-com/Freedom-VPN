@@ -184,7 +184,7 @@ func (s *Service) Eligible(ctx context.Context, tx pgx.Tx, id uuid.UUID) (api.Re
 	var hash, url string
 	var eligible bool
 	e := tx.QueryRow(ctx, `SELECT r.manifest,encode(r.manifest_hash,'hex'),v.manifest_url,
- v.state='verified' AND r.id=ANY(f.approved_release_ids) AND r.id=ANY(f.supported_release_ids) AND NOT r.id=ANY(f.revoked_release_ids)
+ v.state='verified' AND f.supported_release_policy='allowlist' AND r.id=ANY(f.approved_release_ids) AND r.id=ANY(f.supported_release_ids) AND NOT r.id=ANY(f.revoked_release_ids)
  FROM releases r JOIN release_verifications v ON v.release_id=r.id CROSS JOIN fleet_config f WHERE r.id=$1`, id).Scan(&raw, &hash, &url, &eligible)
 	if errors.Is(e, pgx.ErrNoRows) || e == nil && !eligible {
 		return api.ReleaseManifestEnvelope{}, "", "", apierr.New(apierr.ReleaseNotApproved, "Release is not eligible for targeting")
