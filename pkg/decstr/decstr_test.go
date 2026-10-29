@@ -74,8 +74,8 @@ func TestParseReject(t *testing.T) {
 		{"NaN", ErrSyntax},
 		{"Infinity", ErrSyntax},
 		{"null", ErrSyntax},
-		{"１", ErrSyntax}, // fullwidth digit one
-		{"٣", ErrSyntax}, // Arabic-Indic digit three
+		{"１", ErrSyntax},                    // fullwidth digit one
+		{"٣", ErrSyntax},                    // Arabic-Indic digit three
 		{"18446744073709551616", ErrRange},  // max+1
 		{"99999999999999999999", ErrRange},  // 20 digits, above max
 		{"100000000000000000000", ErrRange}, // 21 digits
