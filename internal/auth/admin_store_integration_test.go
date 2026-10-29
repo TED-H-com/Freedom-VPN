@@ -54,7 +54,7 @@ func TestAT01_AdminIdentityAndEverySessionAudited(t *testing.T) {
 		t.Fatal("audit conformance", len(page.Items), reader.AnomalyCount(), err)
 	}
 	for _, event := range page.Items {
-		if event.Actor.Type == api.AuditEventActorTypeAdmin && (event.Resource.Type != api.ResourceTypeFleetConfig || event.Resource.Id != p.ID) {
+		if event.Actor.Type == api.AuditEventActorTypeAdmin && (event.Resource.Type != api.ResourceTypeAdminIdentity || event.Resource.Id != p.ID) {
 			t.Fatal("admin audit reference", event.Resource)
 		}
 	}

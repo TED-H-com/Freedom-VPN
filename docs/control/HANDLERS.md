@@ -6,7 +6,7 @@ Implement only the methods your domain owns from
 `apps/control/handlers.go`'s `Domains()` list, following the
 [composition seam](COMPOSITION.md). The domain returns handler sets and any
 request middleware; only the shared server calls `httpapi.Compose`/`httpapi.New`. Overlapping methods cause a
-startup error. Unimplemented methods keep the transitional INTERNAL_ERROR/501
+startup error. Unimplemented methods keep the transitional NOT_IMPLEMENTED/501
 fallback. Wave 3 domain wiring must remove every fallback; no contract change is
 needed for this transition.
 

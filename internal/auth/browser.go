@@ -257,6 +257,16 @@ func sessionRole(r *http.Request) (Role, error) {
 	if strings.HasPrefix(r.URL.Path, "/api/v1/member/") {
 		return Member, nil
 	}
+	admin := cookieValue(r, AdminSessionCookie) != ""
+	member := cookieValue(r, MemberSessionCookie) != ""
+	// Revision 3's x-fvpn-browser-auth contract ignores the selector unless
+	// both role cookies are present; query parameters never create identities.
+	if !admin {
+		return Member, nil
+	}
+	if !member {
+		return Admin, nil
+	}
 	values, explicit := r.URL.Query()["role"]
 	if explicit {
 		if len(values) != 1 || (values[0] != string(Admin) && values[0] != string(Member)) {
@@ -264,15 +274,7 @@ func sessionRole(r *http.Request) (Role, error) {
 		}
 		return Role(values[0]), nil
 	}
-	admin := cookieValue(r, AdminSessionCookie) != ""
-	member := cookieValue(r, MemberSessionCookie) != ""
-	if admin && member {
-		return "", apierr.New(apierr.MalformedRequest, "Select a session role.")
-	}
-	if admin {
-		return Admin, nil
-	}
-	return Member, nil
+	return "", apierr.New(apierr.MalformedRequest, "Select a session role.")
 }
 func cookieNameForRole(role Role) string {
 	if role == Admin {

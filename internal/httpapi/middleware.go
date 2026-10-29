@@ -34,6 +34,7 @@ type requestMeta struct {
 	route, trace string
 	raw          []byte
 	scope        string
+	logger       *slog.Logger
 }
 type metaKey struct{}
 
@@ -52,17 +53,27 @@ func ClientTrace(ctx context.Context) string {
 	return ""
 }
 
-type statusWriter struct {
-	http.ResponseWriter
-	status int
-}
-
-func (w statusWriter) WriteHeader(int)             { w.ResponseWriter.WriteHeader(w.status) }
-func (w statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func WriteError(w http.ResponseWriter, r *http.Request, e error) {
 	if errors.Is(e, errNotImplemented) {
-		apierr.Write(statusWriter{w, 501}, r, apierr.New(apierr.InternalError, "Operation is not implemented."))
+		apierr.Write(w, r, apierr.New(apierr.NotImplemented, "Operation is not implemented."))
 		return
+	}
+	var typed *apierr.Error
+	if errors.As(e, &typed) && typed != nil {
+		if spec, ok := apierr.Lookup(typed.Code); ok && spec.HTTPStatus == 0 {
+			// Revision 3: report-only codes are payload evidence, never HTTP errors.
+			// Log only the known enum and central ID, never the error text/details.
+			ctx := context.Background()
+			logger := slog.Default()
+			if r != nil {
+				ctx = r.Context()
+				if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok && m.logger != nil {
+					logger = m.logger
+				}
+			}
+			requestID, _ := apierr.RequestIDFromContext(ctx)
+			logger.ErrorContext(ctx, "report-only error rendered as INTERNAL_ERROR", "request_id", requestID, "reported_code", typed.Code)
+		}
 	}
 	apierr.Write(w, r, e)
 }
@@ -100,7 +111,7 @@ func Transport(log *slog.Logger, next http.Handler) http.Handler {
 		if len(trace) > 256 {
 			trace = ""
 		}
-		meta := &requestMeta{route: "unmatched", trace: trace}
+		meta := &requestMeta{route: "unmatched", trace: trace, logger: log}
 		ctx := context.WithValue(apierr.ContextWithRequestID(r.Context(), id), metaKey{}, meta)
 		r = r.WithContext(ctx)
 		b := &bufferWriter{header: make(http.Header)}

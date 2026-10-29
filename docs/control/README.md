@@ -7,7 +7,7 @@ checks the current database identity and revocation state (§16.1). The binary
 fails closed until the PKI task supplies this verifier; it never trusts
 `X-Node-ID`, `X-Client-Cert` or forwarding headers.
 
-`contracts/openapi.yaml` remains the source of all 40 API operations. oapi-codegen
+`contracts/openapi.yaml` remains the source of all API operations. oapi-codegen
 v2.8.1 generates the standard-library strict server and embedded specification.
 Generated aliases reuse `pkg/api`, and a small local generator creates partial
 handler composition. `make -f mk/control.mk control-drift` checks all three outputs.
@@ -16,13 +16,16 @@ for its strict-server model. Runtime validation also uses the existing
 kin-openapi dependency because generated binding alone does not enforce all
 required fields, enums, limits or `additionalProperties: false`.
 
-The currently implemented domain reads are Admin/Member operations and Admin
-audit events. Other operations return HTTP 501 after security and input checks.
-The contract has no NOT_IMPLEMENTED code or 501 response: this fallback uses
-`apierr.Write` with the existing INTERNAL_ERROR envelope and a fixed safe message,
-while the HTTP status is 501. No contract or shared error-code changes are made.
+The core implements Admin/Member operations and Admin audit reads. Domains add
+their handlers through composition. Unregistered operations return HTTP 501
+NOT_IMPLEMENTED with retryable=false after security and input checks (revision 3).
+This transitional response must be gone from documented endpoints in a release.
 Domain handlers must not construct error response objects: return `*apierr.Error`
 for safe errors, or an ordinary error for a generic 500.
+Report-only codes (ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING and
+METER_EPOCH_CHANGE) returned as handler errors become 500 INTERNAL_ERROR. The
+framework logs the known code and central request ID; it never logs the error
+message or details.
 
 ## Request boundary
 

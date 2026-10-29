@@ -23,8 +23,9 @@ with absolute expiry additionally capped by the verified ID-token expiry.
 Admin and member session cookies coexist. API paths under `/api/v1/admin/` and
 `/api/v1/member/` select only their matching cookie; a role query never overrides
 that selection. `/auth/session?role=admin|member` and `/auth/logout?role=admin|member`
-select the browser role explicitly. A sole cookie is selected automatically for
-compatibility; two cookies without a role selector return 400. The selected
+select the browser role explicitly when both cookies are present. With zero or
+one cookie the selector is ignored (revision 3); a sole cookie is selected
+automatically. Two cookies without a valid selector return 400. The selected
 session supplies the CSRF token. Logout deletes and expires only that session.
 OIDC callback chooses the role from verified IdP claims and rotates only its role's
 cookie. The old `__Host-fvpn-session` cookie is no longer accepted; sign in again.
@@ -45,9 +46,10 @@ member sessions. Further account linking is out of scope.
 Every successful `PostgresStore.Login` (session creation or rotation) appends
 `session.login` in the same transaction. Logout appends `session.logout` with its
 session deletion. Members use `member:<member UUID>`. Administrators use
-`fleet_config:<admin principal UUID>`: this audit-only reference denotes the
-administrator's control identity, not the singleton fleet configuration row. This
-uses an existing ResourceType as required by D-032 and invents no member row.
+`admin_identity:<admin principal UUID>` (revision 3, D-037), referencing the
+administrator's auth-store identity. This rule also applies to administrator
+identity subjects in session-revocation or role-denial audits; never infer the
+subject's identity or role from a cookie name supplied by the browser.
 The actor is the role plus its UUID; no subject, token or display label enters the
 audit diff. The auth package emits only these closed-set, enum-conformant session
 actions through `db.AppendAudit` because the audit HTTP reader imports auth.

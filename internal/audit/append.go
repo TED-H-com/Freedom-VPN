@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -32,6 +33,26 @@ type Entry struct {
 
 // Event can only be populated by NewEvent, before starting any database write.
 type Event struct{ row db.AuditEvent }
+
+// Append retains the legacy call shape while enforcing the same metadata
+// contract as NewEvent. Invalid prefixes/actors/results are producer errors.
+func Append(ctx context.Context, tx pgx.Tx, row db.AuditEvent, before, after map[string]any, allow ...string) error {
+	actor, err := uuid.Parse(row.Actor)
+	if err != nil {
+		return errors.New("invalid audit actor")
+	}
+	kind, rawID, ok := strings.Cut(row.Resource, ":")
+	id, err := uuid.Parse(rawID)
+	if !ok || err != nil {
+		return errors.New("invalid audit resource")
+	}
+	event, err := NewEvent(Entry{Actor: Actor{Type: api.AuditEventActorType(row.ActorType), ID: actor}, Action: row.Action, Resource: api.ResourceRef{Type: api.ResourceType(kind), Id: id}, Result: api.AuditEventResult(row.Result), OperationID: row.OperationID, RequestID: row.RequestID, Before: before, After: after, Fields: allow})
+	if err != nil {
+		return err
+	}
+	event.row.ID = row.ID
+	return AppendEvent(ctx, tx, event)
+}
 
 func NewEvent(e Entry) (Event, error) {
 	if !e.Actor.Type.Valid() || e.Actor.ID == uuid.Nil || !e.Resource.Type.Valid() || e.Resource.Id == uuid.Nil || !e.Result.Valid() || len(e.Action) > 128 || !regexp.MustCompile(`^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`).MatchString(e.Action) {

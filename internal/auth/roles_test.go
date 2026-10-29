@@ -69,3 +69,42 @@ func TestAT28_RoleCookiesCoexistAndLogoutIndependently(t *testing.T) {
 		})
 	}
 }
+
+func TestAT28_BrowserSelectorRequiresBothCookies(t *testing.T) {
+	for _, tc := range []struct {
+		name, selector string
+		cookies        []Role
+		status         int
+		role           Role
+	}{
+		{"no cookie", "role=invalid", nil, 200, ""},
+		{"sole member ignores admin selector", "role=admin", []Role{Member}, 200, Member},
+		{"sole admin ignores member selector", "role=member", []Role{Admin}, 200, Admin},
+		{"sole admin ignores repeated invalid selector", "role=invalid&role=other", []Role{Admin}, 200, Admin},
+		{"both need selector", "", []Role{Admin, Member}, 400, ""},
+		{"both reject invalid selector", "role=invalid", []Role{Admin, Member}, 400, ""},
+		{"both reject repeated selector", "role=admin&role=member", []Role{Admin, Member}, 400, ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			store := &memoryStore{sessions: map[string]Principal{"admin-token": {ID: uuid.New(), Role: Admin, MFAVerified: true}, "member-token": {ID: uuid.New(), Role: Member}}}
+			browser := &Browser{store: store, config: BrowserConfig{Idle: time.Hour}}
+			mux := http.NewServeMux()
+			browser.Register(mux)
+			r := httptest.NewRequest("GET", "/auth/session?"+tc.selector, nil)
+			for _, role := range tc.cookies {
+				r.AddCookie(&http.Cookie{Name: cookieNameForRole(role), Value: string(role) + "-token"})
+			}
+			w := httptest.NewRecorder()
+			mux.ServeHTTP(w, r)
+			if w.Code != tc.status {
+				t.Fatal(w.Code, w.Body.String())
+			}
+			if tc.role != "" && !strings.Contains(w.Body.String(), `"role":"`+string(tc.role)+`"`) {
+				t.Fatal("selector changed the sole session identity", w.Body.String())
+			}
+			if len(tc.cookies) == 0 && !strings.Contains(w.Body.String(), `"authenticated":false`) {
+				t.Fatal("selector created an identity", w.Body.String())
+			}
+		})
+	}
+}

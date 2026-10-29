@@ -20,6 +20,9 @@ const failureMessage = "Required operation step failed; quote the operation ID."
 
 // Create must share the domain transaction with desired state, audit and outbox.
 func Create(ctx context.Context, tx pgx.Tx, r CreateRequest) (uuid.UUID, error) {
+	if tx == nil {
+		return uuid.Nil, errors.New("operation creation requires a transaction")
+	}
 	id := uuid.Must(uuid.NewV7())
 	validPrincipal := ((r.Principal.Role == auth.Admin || r.Principal.Role == auth.Member) && r.Principal.ID != uuid.Nil) || (r.Principal.Role == auth.Agent && r.Principal.NodeID != uuid.Nil && r.Principal.IncarnationID != uuid.Nil)
 	if len(r.Steps) < 1 || len(r.Steps) > 64 || r.Resource.Id == uuid.Nil || r.RequestID == uuid.Nil || !validPrincipal {

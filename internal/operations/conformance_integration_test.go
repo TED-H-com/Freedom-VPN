@@ -28,15 +28,18 @@ func TestAPI01_OperationGeneratedEnumsAndErrorFallback(t *testing.T) {
 			t.Fatalf("contract kind %s: %v", kind, err)
 		}
 	}
-	for _, kind := range []api.OperationKind{"node.enroll", "member.device_authorize", "future.kind"} {
+	for _, kind := range []api.OperationKind{"future.kind", "", "NODE.ENROLL"} {
+		if kind.Valid() {
+			t.Fatal("negative fixture is a contract kind", kind)
+		}
 		request.Kind = kind
-		if _, err = Create(t.Context(), nil, request); err == nil {
+		if err = store.InTx(t.Context(), func(tx pgx.Tx) error { _, e := Create(t.Context(), tx, request); return e }); err == nil {
 			t.Fatal("non-contract kind accepted", kind)
 		}
 	}
 	request.Kind = api.OperationKindMemberUpdate
 	request.Resource.Type = "device"
-	if _, err = Create(t.Context(), nil, request); err == nil {
+	if err = store.InTx(t.Context(), func(tx pgx.Tx) error { _, e := Create(t.Context(), tx, request); return e }); err == nil {
 		t.Fatal("invalid resource accepted")
 	}
 	code := api.ErrorCodeDEPENDENCYUNAVAILABLE

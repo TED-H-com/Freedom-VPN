@@ -58,7 +58,7 @@ func appendSessionAudit(ctx context.Context, tx pgx.Tx, p Principal, action stri
 	}
 	resource := api.ResourceTypeMember
 	if p.Role == Admin {
-		resource = api.ResourceTypeFleetConfig
+		resource = api.ResourceTypeAdminIdentity
 	}
 	if request == uuid.Nil {
 		request = uuid.Must(uuid.NewV7())
