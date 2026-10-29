@@ -1,8 +1,8 @@
 metering=forward_admission_v1 dns=dns_service_v1 diagnostic=diagnostic_v1
 reference=tcpdump -v on member fv-wg0, sum of IP total length (inner). ip -s link on fv-wg0 counts ciphertext on this kernel and is not the inner layer. underlay fv-a1u is not usage.
 udp payload_sent=480000 payload_got=480000 nft_up=491200 inner_up=491200 pkts_up=400 dev_up=0.0000 nft_down=491200 inner_down=491200 pkts_down=400 dev_down=0.0000 wg_up=505600 wg_down=505600 underlay_tx=522400
-tcp payload_sent=80000 payload_got=80000 nft_up=83700 inner_up=83700 pkts_up=71 dev_up=0.0000 nft_down=84168 inner_down=84168 pkts_down=80 dev_down=0.0000 wg_up=86124 wg_down=87000 underlay_tx=89106
+tcp payload_sent=80000 payload_got=80000 nft_up=85528 inner_up=85528 pkts_up=104 dev_up=0.0000 nft_down=88584 inner_down=88584 pkts_down=86 dev_down=0.0000 wg_up=89324 wg_down=91656 underlay_tx=93692
 dns_upload_delta=381 usage_upload_delta=0
-deny_ctdeny_delta=3
+deny_ctdeny_delta=0
 host_control_usage_delta=0
 reset_reported=u_019a00000000700080000000000000a1 reason=METER_EPOCH_CHANGE

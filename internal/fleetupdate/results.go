@@ -99,7 +99,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 				return e
 			}
 			rejection = apierr.New(apierr.AckConflict, "Result ID already has different content")
-			return releases.Audit(ctx, tx, i.NodeID.String(), "agent", "update_result.conflict", r.ResultId.String(), nil, map[string]any{"result_id": r.ResultId, "conflicting_hash": hash})
+			return releases.Audit(ctx, tx, i.NodeID, api.AuditEventActorTypeNode, "update_result.conflict", api.ResourceRef{Type: api.ResourceTypeNode, Id: i.NodeID}, nil, api.AuditEventResultDenied, map[string]any{"result_id": r.ResultId, "conflicting_hash": hash})
 		}
 		if !errors.Is(e, pgx.ErrNoRows) {
 			return e
@@ -157,7 +157,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 					return e
 				}
 				rejection = apierr.New(apierr.MinimumVersionViolation, "Rollback release may not serve")
-				return releases.Audit(ctx, tx, i.NodeID.String(), "agent", "update_result.rollback_refused", j.id.String(), nil, map[string]any{"recovery_required": true})
+				return releases.Audit(ctx, tx, i.NodeID, api.AuditEventActorTypeNode, "update_result.rollback_refused", api.ResourceRef{Type: api.ResourceTypeUpdateTarget, Id: *j.target}, nil, api.AuditEventResultDenied, map[string]any{"recovery_required": true})
 			}
 			rollbackManifest, _, _, e := s.releases.Eligible(ctx, tx, *currentReleaseID)
 			if e != nil {
@@ -190,9 +190,10 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		}
 		applied := false
 		if !history && isTerminal && currentReleaseID != nil {
-			// Result time is not an observation sequence. Once a heartbeat arrived
-			// after authorization, wait for another heartbeat rather than replacing it.
-			tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND (s.received_at IS NULL OR s.received_at<=$4) AND s.observed_update_generation<=$5::numeric`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", j.issued, r.Generation.String())
+			// §13.8: a pre-switch heartbeat may arrive after intent issuance.
+			// Only a strictly newer update generation advances actual version;
+			// same/newer-generation heartbeat evidence remains authoritative.
+			tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND s.observed_update_generation<$4::numeric`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", r.Generation.String())
 			if e != nil {
 				return e
 			}
@@ -217,11 +218,12 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if e != nil {
 			return e
 		}
-		_, e = tx.Exec(ctx, `INSERT INTO update_results(result_id,job_id,node_id,incarnation_id,payload_hash,payload,ack) VALUES($1,$2,$3,$4,$5,$6,$7)`, r.ResultId, j.id, i.NodeID, i.IncarnationID, digest, raw, ackRaw)
+		_, e = tx.Exec(ctx, `INSERT INTO update_results(result_id,job_id,node_id,incarnation_id,payload_hash,payload,ack,policy_refs)
+ VALUES($1,$2,$3,$4,$5,$6,$7,(SELECT policy_refs FROM desired_states WHERE node_id=$3 AND incarnation_id=$4 AND generation=$8::numeric))`, r.ResultId, j.id, i.NodeID, i.IncarnationID, digest, raw, ackRaw, r.PolicyGeneration.String())
 		if e != nil {
 			return e
 		}
-		if e = releases.Audit(ctx, tx, i.NodeID.String(), "agent", "update_result.accept", j.id.String(), nil, map[string]any{"state": r.State, "accepted_as_history": history, "result_id": r.ResultId}); e != nil {
+		if e = releases.Audit(ctx, tx, i.NodeID, api.AuditEventActorTypeNode, "update_result.accept", api.ResourceRef{Type: api.ResourceTypeUpdateTarget, Id: *j.target}, nil, api.AuditEventResultSucceeded, map[string]any{"state": r.State, "accepted_as_history": history, "result_id": r.ResultId}); e != nil {
 			return e
 		}
 		return recomputeAll(ctx, tx)

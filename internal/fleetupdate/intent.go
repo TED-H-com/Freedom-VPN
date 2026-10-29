@@ -163,11 +163,12 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 		}
 		now := time.Now().UTC()
 		until := now.Add(s.config.AuthorizationTTL)
-		_, e = tx.Exec(ctx, `UPDATE update_jobs SET issued_at=coalesce(issued_at,$2),authorization_valid_until=$3,state=CASE WHEN state='waiting_online' THEN 'queued' ELSE state END WHERE id=$1`, current.id, now, until)
+		var issued time.Time
+		e = tx.QueryRow(ctx, `UPDATE update_jobs SET issued_at=coalesce(issued_at,$2),authorization_valid_until=$3,state=CASE WHEN state='waiting_online' THEN 'queued' ELSE state END WHERE id=$1 RETURNING issued_at,authorization_valid_until`, current.id, now, until).Scan(&issued, &until)
 		if e != nil {
 			return e
 		}
-		out = &Work{Intent: api.UpdateIntent{NodeId: i.NodeID, IncarnationId: i.IncarnationID, BatchId: presence.FromPointer(current.batch), TargetId: presence.FromPointer(current.target), JobId: current.id, Attempt: current.attempt, Generation: current.generation, ReleaseId: current.releaseID, ManifestSha256: hash, ManifestUrl: url, IssuedAt: now, AuthorizationValidUntil: until, PublicationIntent: api.PublicationIntent(n.publication)}, Artifact: *artifact}
+		out = &Work{Intent: api.UpdateIntent{NodeId: i.NodeID, IncarnationId: i.IncarnationID, BatchId: presence.FromPointer(current.batch), TargetId: presence.FromPointer(current.target), JobId: current.id, Attempt: current.attempt, Generation: current.generation, ReleaseId: current.releaseID, ManifestSha256: hash, ManifestUrl: url, IssuedAt: issued.UTC(), AuthorizationValidUntil: until.UTC(), PublicationIntent: api.PublicationIntent(n.publication)}, Artifact: *artifact}
 		return recomputeAll(ctx, tx)
 	})
 	return out, e

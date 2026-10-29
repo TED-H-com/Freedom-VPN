@@ -40,9 +40,16 @@ type Input struct {
 	StorageOK      bool
 	BootstrapLost  bool
 	OutboxFull     bool
-	// MeterFailed is a meter Health failure. The zero value means the meter
-	// did not report a problem (§10.3).
+	// MeterFailed is a meter-path failure. Only reason meter_path_invalid
+	// sets it. Usage caps and persist failures use the fields below so
+	// METER_PATH_INVALID keeps that meaning (§10.3, §10.8).
 	MeterFailed bool
+	// UsageOutbox is a full usage outbox (age, bytes, or archive budget).
+	UsageOutbox bool
+	// UsageDisk is the usage store disk floor.
+	UsageDisk bool
+	// UsagePersist is a usage sample that could not be stored.
+	UsagePersist bool
 }
 
 // Decision is the forwarding choice for one step (§14.7, §16.3).
@@ -84,11 +91,14 @@ func Decide(in Input) Decision {
 	if !in.AnchorOK {
 		add(api.ForwardingBlockReasonClockUntrusted)
 	}
-	if !in.StorageOK {
+	if !in.StorageOK || in.UsagePersist {
 		add(api.ForwardingBlockReasonMeterStorageFailed)
 	}
-	if in.OutboxFull {
+	if in.OutboxFull || in.UsageOutbox {
 		add(api.ForwardingBlockReasonOutboxFull)
+	}
+	if in.UsageDisk {
+		add(api.ForwardingBlockReasonDiskLow)
 	}
 	if in.LatchBlocked || in.RecoverBlocked {
 		add(api.ForwardingBlockReasonRecoveryRequired)
@@ -167,6 +177,18 @@ func Decide(in Input) Decision {
 			ObservedAt: at, Stage: "meter",
 		})
 	}
+	if in.UsagePersist {
+		d.Errors = append(d.Errors, api.NodeError{
+			Code: api.ErrorCodeSTOREUNAVAILABLE, Message: "persist_failed",
+			ObservedAt: at, Stage: "usage",
+		})
+	}
+	if in.UsageDisk {
+		d.Errors = append(d.Errors, api.NodeError{
+			Code: api.ErrorCodeDISKSPACELOW, Message: "disk_space",
+			ObservedAt: at, Stage: "usage",
+		})
+	}
 	return d
 }
 
@@ -180,7 +202,7 @@ func checks(in Input, at time.Time, releaseOK, bindingOK, qosOK, leaseOK bool) [
 		chk(api.NodeCheckNameQos, qosOK && in.DesiredOK, api.ErrorCodeVALIDATIONFAILED, at),
 		chk(api.NodeCheckNameReleaseSupported, releaseOK, api.ErrorCodeMINIMUMVERSIONVIOLATION, at),
 		chk(api.NodeCheckNameSourceBinding, bindingOK, api.ErrorCodeVALIDATIONFAILED, at),
-		chk(api.NodeCheckNameStorage, in.StorageOK, api.ErrorCodeSTOREUNAVAILABLE, at),
+		chk(api.NodeCheckNameStorage, in.StorageOK && !in.UsagePersist && !in.UsageDisk, api.ErrorCodeSTOREUNAVAILABLE, at),
 		{
 			Name: api.NodeCheckNameTunnelProbe, Status: api.HealthCheckStatusNotRun,
 			ObservedAt: at, ErrorCode: presence.NewNullNullable[api.ErrorCode](),
@@ -247,7 +269,9 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 	}
 	host := in.HostReserveBPS
 	if host == 0 {
-		host = 1_000_000
+		// The configuration rejects zero before startup. A zero that still
+		// reaches Decide fails closed and is not replaced with a stand-in.
+		return enforce.Model{}, 0, errCapacity
 	}
 	upParent := uint64(cap.UpBps)
 	downParent := uint64(cap.DownBps)
