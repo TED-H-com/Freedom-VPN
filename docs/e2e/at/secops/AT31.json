@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "run_started_at": "2026-10-29T23:34:22Z",
-  "run_finished_at": "2026-10-29T23:37:13Z",
-  "source_revision": "58e60202753105c5c716853ce4dfa6d262f458ad",
+  "run_started_at": "2026-10-29T23:38:33Z",
+  "run_finished_at": "2026-10-29T23:41:28Z",
+  "source_revision": "bf10a2c719b95def9753a1d3c5512b15be3b14a0",
   "probe_source_sha256": "35e2a03e5039bb9ee315638d8463d9a3da9ce679fccb62a1fd4c28ff20c4f849",
   "build_digests": [
     {
@@ -19,9 +19,9 @@
         "<disk-scratch>/secops-amd64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:36:49Z",
-      "finished_at": "2026-10-29T23:36:49Z",
-      "elapsed_seconds": 0.465,
+      "started_at": "2026-10-29T23:41:00Z",
+      "finished_at": "2026-10-29T23:41:01Z",
+      "elapsed_seconds": 0.515,
       "exit_code": 0,
       "scan": {
         "stream": "build-amd64",
@@ -43,8 +43,8 @@
         "<disk-scratch>/secops-arm64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:36:49Z",
-      "finished_at": "2026-10-29T23:36:50Z",
+      "started_at": "2026-10-29T23:41:01Z",
+      "finished_at": "2026-10-29T23:41:01Z",
       "elapsed_seconds": 0.465,
       "exit_code": 0,
       "scan": {
@@ -56,61 +56,61 @@
     {
       "name": "fvpn-agent",
       "arch": "amd64",
-      "sha256": "fed39e7c667e6b9850ec0d16c60e3196dc32fec4c865fb974ac65b494aa57cde",
+      "sha256": "81c2b50976a406a4a0c9a19826136d9eb808ffb5e167435d3eb284bb7c70d451",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-control",
       "arch": "amd64",
-      "sha256": "bb09c98039f836d5aa05eb57f5c7f89f9e2adb34a20a8212fea87d6ab81ef505",
+      "sha256": "ee8f32bb0d969141a9e6c688400bb8597eda56f1ff5ee1542ff68e04de9cd963",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-idp",
       "arch": "amd64",
-      "sha256": "fa833f577990b66911661c790f6c51be53cce37324447a6332c5f65d112ea24f",
+      "sha256": "4d6789c51813a52f05b69e9ca02637885c76c20fc72234dcfad59a7aeb1aca6f",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-nbbootstrap",
       "arch": "amd64",
-      "sha256": "2c40ab51a4667bb17c8a57084a646feeddafd61adff5c97b40860d377df38c1e",
+      "sha256": "01343e0456dfdb3c2c05ce4eb1aa562eeb74b1e4a113ee46591ca0277f2ecd45",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-origin",
       "arch": "amd64",
-      "sha256": "7ae2d28e59ac0367eed175da624266fc2bc50d8328496a4e3a65186dc3741f03",
+      "sha256": "18e7d52e810a49f2684ec4720b4cd1dff57b4c17959c5f345fc56d47d1ecbedc",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-payment",
       "arch": "amd64",
-      "sha256": "f9bcd4d65ea95318b34fecedf69ce5ae475cd98a116a725ecfd6784451752042",
+      "sha256": "0905b3e4b33dfb493384d114796f9a07a723b6bc6a9a63c7a89912079e163c1b",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-prepare",
       "arch": "amd64",
-      "sha256": "e13fe529c6ac0e01ea36ef9c4e2cc6b7c1b372c2377b980a91c42393ae76e8b0",
+      "sha256": "ee27ae1c56e0e6352aca152e47aff532d14c488feca195e4e5b7b112d68b3741",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-updater",
       "arch": "amd64",
-      "sha256": "7635b7b75250eadddf9205e23cfb2759059b5f982eb463089451b2173e5e5807",
+      "sha256": "3d16e452c75f44d3c28bc419a816a12317001bbb4e7a13345b367ee6b28f8906",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-watchdog",
       "arch": "amd64",
-      "sha256": "8753eac3791a0afc7ec64e25113613ca18d9ea119d5744c8985faaa29c41d2d6",
+      "sha256": "78e266b854297a302a550ac20b327aa088834da1ce1305862969eafeb52104e3",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-worker",
       "arch": "amd64",
-      "sha256": "4a6c54b3678827915a3867378d70fadfb60019d48020778add00813f35cbd348",
+      "sha256": "565d9520e621bf61834a64bfd12c35d8993f7618da5a956242c68641a7d75874",
       "kind": "lab_build_binary"
     }
   ],
@@ -120,15 +120,15 @@
       "service": "postgres"
     },
     {
-      "image_id": "sha256:dd26038882beb5203f797f95073dc8d65b72e8fa40cd14bff65b014fae8acb4a",
+      "image_id": "sha256:b22046837b9be5fdb8ef83c37038563e2c53c454169994e87b757dac3331d416",
       "service": "idp"
     },
     {
-      "image_id": "sha256:7ae910cff1f345992ca094414f56d80c55883e3accbdf47b2baa4784194af5b1",
+      "image_id": "sha256:2a97f3992ad8b49f3bae7030ad5d9dd09e35bcbf6c787d4f623946f71bc86a9f",
       "service": "payment"
     },
     {
-      "image_id": "sha256:c659ea362de44d4ef96c6f781e5d6aa672e1c9a603de1a5b565363ddab677e33",
+      "image_id": "sha256:8bf73794511f75365afcd8b09b2566f7817c71d4246057ac52943bd7387eca02",
       "service": "origin"
     },
     {
@@ -148,24 +148,24 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:24e87b6e94f09793c3c51c2dc6f9950c3215fd34bb88cc1b3e5eaa13db31eed0",
+      "image_id": "sha256:fab64095a843c1f0adadc98a4166cea077fbaae6978860aa2e15067f5fcad662",
       "service": "control"
     },
     {
-      "image_id": "sha256:36ba045d3ab299605741a5dd2908528346ae51bfe4222a8ccaf3ff1a6204472c",
+      "image_id": "sha256:fb52a786d05c602dd44f0b1a49d083a0a2dc0813adee213cabde2cf38a710420",
       "service": "worker"
     },
     {
-      "image_id": "sha256:c8d1c407af772ab75642771bdc389e90d451066d1807c2ff7d32f42905f567d9",
+      "image_id": "sha256:2e1c318a53c7865e4300f1536a515730ef13a77c6088e2dd8faaf97708f284a2",
       "service": "node"
     },
     {
-      "image_id": "sha256:c8d1c407af772ab75642771bdc389e90d451066d1807c2ff7d32f42905f567d9",
+      "image_id": "sha256:2e1c318a53c7865e4300f1536a515730ef13a77c6088e2dd8faaf97708f284a2",
       "service": "member"
     }
   ],
   "policy_revision": "1",
-  "node_incarnation": "a6e69712-df58-46ec-9686-e24e195af9d7",
+  "node_incarnation": "13a81ca4-f5d2-4f9d-97fa-123e7eca2238",
   "stack": {
     "status": "running-stack-observed",
     "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
@@ -194,13 +194,13 @@
         "mk/e2e.mk",
         "e2e-up"
       ],
-      "started_at": "2026-10-29T23:34:22Z",
-      "finished_at": "2026-10-29T23:34:45Z",
-      "elapsed_seconds": 23.061,
+      "started_at": "2026-10-29T23:38:33Z",
+      "finished_at": "2026-10-29T23:38:57Z",
+      "elapsed_seconds": 23.679,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-up",
-        "bytes": 15388,
+        "bytes": 15055,
         "findings": []
       }
     },
@@ -222,13 +222,13 @@
         "^TestAT28_AT31_LiveStack$",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:34:45Z",
-      "finished_at": "2026-10-29T23:36:23Z",
-      "elapsed_seconds": 98.137,
+      "started_at": "2026-10-29T23:38:57Z",
+      "finished_at": "2026-10-29T23:40:35Z",
+      "elapsed_seconds": 97.627,
       "exit_code": 0,
       "scan": {
         "stream": "live-probe",
-        "bytes": 1460,
+        "bytes": 1461,
         "findings": []
       },
       "status": "passed",
@@ -241,7 +241,7 @@
         {
           "name": "TestAT28_AT31_LiveStack",
           "result": "pass",
-          "elapsed_seconds": 97.77
+          "elapsed_seconds": 97.29
         }
       ],
       "package_results": {
@@ -253,9 +253,9 @@
         "python3",
         "tests/e2e/at/secops/restore.py"
       ],
-      "started_at": "2026-10-29T23:36:23Z",
-      "finished_at": "2026-10-29T23:36:27Z",
-      "elapsed_seconds": 3.474,
+      "started_at": "2026-10-29T23:40:35Z",
+      "finished_at": "2026-10-29T23:40:38Z",
+      "elapsed_seconds": 3.521,
       "exit_code": 0,
       "scan": {
         "stream": "isolated-restore",
@@ -270,9 +270,9 @@
         "mk/e2e.mk",
         "e2e-down"
       ],
-      "started_at": "2026-10-29T23:36:27Z",
-      "finished_at": "2026-10-29T23:36:49Z",
-      "elapsed_seconds": 21.877,
+      "started_at": "2026-10-29T23:40:38Z",
+      "finished_at": "2026-10-29T23:41:00Z",
+      "elapsed_seconds": 22.063,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-down",
@@ -338,53 +338,53 @@
     "full_profile_executed": false,
     "candidate_hardware": false,
     "measured_subset": {
-      "duration_seconds": 12.505825865,
+      "duration_seconds": 12.098381422,
       "http_status_counts": {
         "200": 200
       },
       "policy_latency_seconds": null,
       "profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; 60 SQL authorized device rows",
-      "read_p50_ms": 11.13,
-      "read_p95_ms": 379.531,
-      "read_p99_ms": 380.032,
+      "read_p50_ms": 5.868,
+      "read_p95_ms": 14.093,
+      "read_p99_ms": 14.357,
       "relay_load": false,
       "requests": 200,
       "resource_snapshot_after_load": [
         {
           "BlockIO": "0B / 0B",
-          "CPUPerc": "0.21%",
+          "CPUPerc": "0.49%",
           "MemPerc": "0.02%",
-          "MemUsage": "30.8MiB / 183.7GiB",
+          "MemUsage": "33.11MiB / 183.7GiB",
           "Name": "fvpn-w4-secops-control",
-          "NetIO": "2.14MB / 1.63MB",
-          "PIDs": "28"
+          "NetIO": "2.1MB / 1.59MB",
+          "PIDs": "26"
         },
         {
           "BlockIO": "0B / 0B",
-          "CPUPerc": "0.21%",
+          "CPUPerc": "0.18%",
           "MemPerc": "0.01%",
-          "MemUsage": "16.87MiB / 183.7GiB",
+          "MemUsage": "16.93MiB / 183.7GiB",
           "Name": "fvpn-w4-secops-worker",
-          "NetIO": "688kB / 964kB",
+          "NetIO": "697kB / 969kB",
           "PIDs": "21"
         },
         {
-          "BlockIO": "500kB / 148MB",
-          "CPUPerc": "0.72%",
+          "BlockIO": "319kB / 149MB",
+          "CPUPerc": "1.23%",
           "MemPerc": "0.05%",
-          "MemUsage": "101MiB / 183.7GiB",
+          "MemUsage": "100.4MiB / 183.7GiB",
           "Name": "fvpn-w4-secops-postgres",
-          "NetIO": "1.79MB / 1.09MB",
+          "NetIO": "1.78MB / 1.08MB",
           "PIDs": "23"
         },
         {
-          "BlockIO": "8.19kB / 1.52MB",
-          "CPUPerc": "1.43%",
+          "BlockIO": "0B / 1.29MB",
+          "CPUPerc": "0.45%",
           "MemPerc": "0.02%",
-          "MemUsage": "38.98MiB / 183.7GiB",
+          "MemUsage": "38.17MiB / 183.7GiB",
           "Name": "fvpn-w4-secops-node",
-          "NetIO": "86.1kB / 127kB",
-          "PIDs": "44"
+          "NetIO": "83.9kB / 125kB",
+          "PIDs": "49"
         }
       ],
       "simultaneous_oidc": false,

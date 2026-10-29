@@ -44,3 +44,9 @@ credential, private path or matched secret is published. Private backups and
 logs stay in `.agent/secops`. [Operator procedures](operator-runs.md) and
 [requests](requests.md) specify the remaining work. Full-service RPO/RTO and
 unmeasured policy/usage/relay timings remain null.
+
+[Capacity history](capacity-history.json) retains both fixed-workload samples
+(p95 379.531 ms and 14.093 ms); shared-host variability is visible.
+[Identity supplement](identity-observation.json) records a live read-only SQL
+observation linking AT29 to the real agent incarnation. The security/usage
+uploader uses the separate node B incarnation in the common run metadata.
