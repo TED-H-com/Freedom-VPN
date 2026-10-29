@@ -30,16 +30,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-const (
-	nodeContainer   = "fvpn-w3-devstack-e2e-node"
-	memberContainer = "fvpn-w3-devstack-e2e-member"
-	prefix          = "fvpn-w3-devstack-e2e"
-)
-
 // lab is the host side of one running dev stack.
 type lab struct {
 	root      string
 	state     string
+	prefix    string
+	node      string
+	member    string
+	control   string
+	ports     map[string]int
 	public    string
 	agent     string
 	idp       string
@@ -55,7 +54,22 @@ func openLab() (*lab, error) {
 	}
 	state := os.Getenv("FVPN_E2E_STATE")
 	if state == "" {
-		state = filepath.Join(root, ".agent", "e2e-state")
+		short := os.Getenv("FVPN_E2E_PREFIX")
+		if short == "" {
+			short = "e2e"
+		}
+		state = filepath.Join(root, ".agent", "e2e-state-"+short)
+	}
+	var stack struct {
+		Prefix    string         `json:"prefix"`
+		HostPorts map[string]int `json:"host_ports"`
+	}
+	rawStack, err := os.ReadFile(filepath.Join(state, "stack.json"))
+	if err != nil {
+		return nil, err
+	}
+	if json.Unmarshal(rawStack, &stack) != nil || stack.Prefix == "" || stack.HostPorts["control"] == 0 {
+		return nil, errors.New("stack identity")
 	}
 	pemBytes, err := os.ReadFile(filepath.Join(state, "ca.pem"))
 	if err != nil {
@@ -66,12 +80,11 @@ func openLab() (*lab, error) {
 		return nil, errors.New("lab ca")
 	}
 	dial := map[string]string{
-		// Internal networks do not publish ports here. These are the compose addresses.
-		"portal.example.invalid:8443":  "172.28.30.30:8443",
-		"agent.example.invalid:9443":   "172.28.30.30:9443",
-		"idp.example.invalid:443":      "172.28.30.11:443",
-		"netbird.example.invalid:443":  "172.28.30.21:443",
-		"releases.example.invalid:443": "192.0.3.10:443",
+		"portal.example.invalid:8443":  fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["control"]),
+		"agent.example.invalid:9443":   fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["agent"]),
+		"idp.example.invalid:443":      fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["idp"]),
+		"netbird.example.invalid:443":  fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["gateway"]),
+		"releases.example.invalid:443": fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["origin"]),
 	}
 	tr := &http.Transport{
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -83,7 +96,8 @@ func openLab() (*lab, error) {
 		TLSClientConfig: &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12},
 	}
 	return &lab{
-		root: root, state: state,
+		root: root, state: state, prefix: stack.Prefix, ports: stack.HostPorts,
+		node: stack.Prefix + "-node", member: stack.Prefix + "-member", control: stack.Prefix + "-control",
 		public: "https://portal.example.invalid:8443", agent: "https://agent.example.invalid:9443",
 		idp: "https://idp.example.invalid", netbird: "https://netbird.example.invalid",
 		releases: "https://releases.example.invalid", transport: tr,
@@ -251,7 +265,7 @@ func (l *lab) db(ctx context.Context) (*pgx.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn, err := pgx.Connect(ctx, "postgres://fvpn:"+password+"@172.28.30.10:5432/fvpn?sslmode=disable")
+	conn, err := pgx.Connect(ctx, fmt.Sprintf("postgres://fvpn:%s@127.0.0.1:%d/fvpn?sslmode=disable", password, l.ports["postgres"]))
 	if err != nil {
 		return nil, errors.New("postgres connection failed")
 	}
@@ -462,13 +476,75 @@ func (l *lab) verifyDesired(raw []byte) error {
 	return err
 }
 
-func (l *lab) nftBaseline() (present bool, accept bool) {
-	out, err := l.docker(nodeContainer, "nft", "list", "table", "inet", "fvpn")
+// forwardView is the inet fvpn forward chain, not the input or output policy.
+type forwardView struct {
+	Present      bool
+	Policy       string
+	Baseline     bool
+	MemberAccept int
+	Excerpt      string
+}
+
+func (l *lab) forwardChain() forwardView {
+	out, err := l.docker(l.node, "nft", "list", "chain", "inet", "fvpn", "forward")
 	if err != nil {
-		return false, false
+		return forwardView{}
 	}
-	text := string(out)
-	return true, strings.Contains(text, "accept")
+	return parseForwardChain(string(out))
+}
+
+func parseForwardChain(text string) forwardView {
+	start := strings.Index(text, "chain forward")
+	if start < 0 {
+		return forwardView{}
+	}
+	body := text[start:]
+	if end := strings.Index(body, "\n\t}"); end > 0 {
+		body = body[:end]
+	}
+	view := forwardView{Present: true}
+	var kept []string
+	for _, line := range strings.Split(body, "\n") {
+		trim := strings.TrimSpace(line)
+		if trim == "" || trim == "chain forward {" {
+			continue
+		}
+		if strings.Contains(trim, "hook forward") {
+			switch {
+			case strings.Contains(trim, "policy drop"):
+				view.Policy = "drop"
+			case strings.Contains(trim, "policy accept"):
+				view.Policy = "accept"
+			}
+		}
+		if strings.Contains(trim, "fvpn_baseline=1") {
+			view.Baseline = true
+		}
+		if memberAcceptRule(trim) {
+			view.MemberAccept++
+		}
+		if len(kept) < 6 {
+			kept = append(kept, trim)
+		}
+	}
+	view.Excerpt = strings.Join(kept, " | ")
+	if len(view.Excerpt) > 400 {
+		view.Excerpt = view.Excerpt[:400]
+	}
+	return view
+}
+
+// memberAcceptRule counts a member-path accept on fvmb0. NetBird inserts
+// fvnb0 accepts into the same chain while the baseline marker is still set,
+// and the input and output chains are policy accept even when forward drops.
+func memberAcceptRule(line string) bool {
+	if strings.Contains(line, "policy ") || strings.Contains(line, "drop") || !strings.Contains(line, "accept") {
+		return false
+	}
+	if !strings.Contains(line, `"fvmb0"`) {
+		return false
+	}
+	return strings.Contains(line, "iifname") || strings.Contains(line, "oifname") || strings.Contains(line, "ip saddr") || strings.Contains(line, "ip daddr")
 }
 
 func scanWords(blob string) map[string]bool {
