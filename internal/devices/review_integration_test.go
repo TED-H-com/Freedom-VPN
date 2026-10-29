@@ -35,14 +35,16 @@ func TestMEM02_D029DeviceReplayOperationsAndAudit(t *testing.T) {
 		}
 		return op
 	}
-	read(*c.OperationID)
+	if op := read(*c.OperationID); op.Kind != api.OperationKindMemberDeviceAuthorize {
+		t.Fatal(op)
+	}
 	adapter := s.Adapter.(*fakeAdapter)
 	adapter.ignoreWrites = true
 	if err = s.SyncDevice(ctx, c.DeviceID); err == nil {
 		t.Fatal("unobserved sync succeeded")
 	}
 	op := read(*c.OperationID)
-	if op.Error.IsNull() || op.Status != api.OperationStatusFailed {
+	if op.Kind != api.OperationKindMemberDeviceAuthorize || op.Error.IsNull() || op.Status != api.OperationStatusFailed {
 		t.Fatal("failed step invisible", op)
 	}
 	var code, message string
@@ -54,7 +56,7 @@ func TestMEM02_D029DeviceReplayOperationsAndAudit(t *testing.T) {
 		t.Fatal(err)
 	}
 	op = read(*c.OperationID)
-	if op.Status != api.OperationStatusRunning || !op.Error.IsNull() {
+	if op.Kind != api.OperationKindMemberDeviceAuthorize || op.Status != api.OperationStatusRunning || !op.Error.IsNull() {
 		t.Fatal(op)
 	}
 	revoked, err := s.RevokeDevice(ctx, deviceCommand("admin", uuid.New()), c.DeviceID)

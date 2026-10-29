@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
@@ -20,6 +21,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -129,14 +131,14 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 			t.Fatalf("insert member %s: %v", email, err)
 		}
 		if _, err := pool.Exec(ctx, `
-			INSERT INTO entitlements (member_id, revision, device_limit, valid_from, effective_service_end, admin_suspended, computed_at)
-			VALUES ($1, $2, 3, $3, $4, false, $5)`, mid, rev, validFrom, end, now.Add(-1*time.Hour)); err != nil {
+			INSERT INTO entitlements (
+				member_id, revision, state, device_limit, valid_from, effective_service_end,
+				admin_suspended, computed_at, projection
+			) VALUES (
+				$1, $2, 'active', 3, $3, $4,
+				false, $5, jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$6::text]))
+			)`, mid, rev, validFrom, end, now.Add(-1*time.Hour), grpID.String()); err != nil {
 			t.Fatalf("insert entitlement %s: %v", email, err)
-		}
-		if _, err := pool.Exec(ctx, `
-			INSERT INTO assignments (member_id, group_id, valid_from, valid_until)
-			VALUES ($1, $2, $3, $4)`, mid, grpID, validFrom, end); err != nil {
-			t.Fatalf("insert assignment %s: %v", email, err)
 		}
 		devID := uuid.New()
 		if _, err := pool.Exec(ctx, `
@@ -296,11 +298,13 @@ func TestLeases_SuspendDuringSignRebuildsAndExcludesSuspendedMember(t *testing.T
 		if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, $2, 'member', 'active')`, mid, email); err != nil {
 			t.Fatalf("insert member: %v", err)
 		}
-		if _, err := pool.Exec(ctx, `INSERT INTO entitlements (member_id, revision, device_limit, valid_from, effective_service_end, admin_suspended) VALUES ($1, $2, 3, $3, $4, false)`, mid, i+2, validFrom, validUntil); err != nil {
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO entitlements (
+				member_id, revision, state, device_limit, valid_from, effective_service_end, admin_suspended, projection
+			) VALUES (
+				$1, $2, 'active', 3, $3, $4, false, jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$5::text]))
+			)`, mid, i+2, validFrom, validUntil, grpID.String()); err != nil {
 			t.Fatalf("insert entitlement: %v", err)
-		}
-		if _, err := pool.Exec(ctx, `INSERT INTO assignments (member_id, group_id, valid_from, valid_until) VALUES ($1, $2, $3, $4)`, mid, grpID, validFrom, validUntil); err != nil {
-			t.Fatalf("insert assignment: %v", err)
 		}
 	}
 
@@ -443,5 +447,78 @@ func TestLeases_UnpublishedDisabledAndRevokedNode(t *testing.T) {
 	})
 	if !errors.As(err, &ae) || ae.Code != apierr.IdentityRevoked || ae.HTTPStatus() != 403 {
 		t.Fatalf("revoked node err = %v, want 403 IDENTITY_REVOKED", err)
+	}
+}
+
+func TestLeases_RenewTx_CallerTransactionAndD030Eligibility(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 29, 14, 0, 0, 0, time.UTC)
+
+	grpID := uuid.New()
+	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-renewtx', 'grp-renewtx')`, grpID); err != nil {
+		t.Fatalf("insert group: %v", err)
+	}
+	nodeID, incID := seedLeaseTestNode(t, ctx, pool, grpID, api.PublicationIntentPublished)
+
+	memberID := uuid.New()
+	validFrom := now.Add(-1 * time.Hour)
+	validUntil := now.Add(12 * time.Hour)
+	if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, 'tx@example.com', 'tx', 'active')`, memberID); err != nil {
+		t.Fatalf("insert member: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO entitlements (
+			member_id, revision, state, device_limit, valid_from, effective_service_end, admin_suspended, projection
+		) VALUES (
+			$1, 3, 'active', 3, $2, $3, false, jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$4::text]))
+		)`, memberID, validFrom, validUntil, grpID.String()); err != nil {
+		t.Fatalf("insert entitlement: %v", err)
+	}
+
+	signer, _ := testLeaseSignerAndTrustStore(t, now)
+	svc := NewService(pool, signer, WithClock(func() time.Time { return now }))
+
+	// 1. If caller's transaction rolls back, RenewTx leaves zero serving_leases or serving_lease_members rows.
+	txRollback, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Begin: %v", err)
+	}
+	_, err = svc.RenewTx(ctx, txRollback, nodeID, incID, api.LeaseRenewalRequest{
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  nodeID,
+		NodeIncarnationId:       incID,
+		AppliedConfigGeneration: presence.NewNullableWithValue(decstr.U64(3)),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+	})
+	if err != nil {
+		_ = txRollback.Rollback(ctx)
+		t.Fatalf("RenewTx inside txRollback: %v", err)
+	}
+	if err := txRollback.Rollback(ctx); err != nil {
+		t.Fatalf("Rollback: %v", err)
+	}
+	var countAfterRollback int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM serving_leases WHERE node_id = $1`, nodeID).Scan(&countAfterRollback); err != nil || countAfterRollback != 0 {
+		t.Fatalf("serving_leases after rollback = %d (err=%v), want 0", countAfterRollback, err)
+	}
+
+	// 2. Committed RenewTx persists the lease, member grants, and audit row in the caller's transaction.
+	var committedEnv api.ServingLeaseEnvelope
+	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var rErr error
+		committedEnv, rErr = svc.RenewTx(ctx, tx, nodeID, incID, api.LeaseRenewalRequest{
+			RenewalRequestId:        uuid.New(),
+			NodeId:                  nodeID,
+			NodeIncarnationId:       incID,
+			AppliedConfigGeneration: presence.NewNullableWithValue(decstr.U64(3)),
+			CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+		})
+		return rErr
+	}); err != nil {
+		t.Fatalf("RenewTx commit: %v", err)
+	}
+	if len(committedEnv.Signed.Members) != 1 || committedEnv.Signed.Members[0].MemberId != memberID {
+		t.Fatalf("RenewTx Members = %+v, want [%s]", committedEnv.Signed.Members, memberID)
 	}
 }

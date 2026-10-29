@@ -296,3 +296,26 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
    - `Compiler.ReSign` reads `nodes.lifecycle_state`, `nodes.current_incarnation_id`, and `node_incarnations.revoked_at` under `FOR UPDATE OF n` in the same transaction and refuses `revoked` or `retired` nodes (or revoked incarnations) with `403 IDENTITY_REVOKED`.
 7. **QoS class IDs (§11.4)**:
    - Traffic-control class IDs remain node-local per §11.4 and are not embedded in central desired-state envelopes.
+
+---
+
+## 7. Desired state and lease decisions, follow-up 3
+
+1. **D-030 Serving Readers (`internal/entitlement`, `internal/nodes`, `internal/desiredstate`, `internal/leases`)**:
+   - Member exit visibility (`nodes.Service.ListMemberExits`), desired-state member compilation (`desiredstate.DBEntitlementReader.ListEntitledMembersForGroups`), and serving lease renewal (`leases.Service.Renew` / `RenewTx`) derive member eligibility exclusively from `entitlement.ServingExitGroups` and `entitlement.ListServingMembersForGroups` (and its lock variant `entitlement.ListServingMembersForGroupsForShare`) instead of `assignments`.
+   - Exit groups are the active plan revision's `exit_group_ids` $\cup$ `members.member_group_ids` projected onto `entitlements.projection->'exit_group_ids'`; a member is serving iff `members.status = 'active'`, `NOT members.admin_suspended`, `NOT entitlements.admin_suspended`, `entitlements.state NOT IN ('pending_payment','suspended','expired','closed')`, and `entitlements.valid_from <= asOf < entitlements.effective_service_end`.
+   - `entitlement.ListServingMembersForGroupsForShare` reuses the single `servingQuery` predicate constant with `FOR SHARE OF m, e` appended, preventing any predicate drift between initial read and post-sign verification.
+2. **DNS Generation from `dns_publication_heads` (§12.4, §12.5)**:
+   - `DBPolicyReader.ReadPolicySnapshot` reads `PolicySnapshot.DNSGeneration` and `dns_profile` `PolicyRefs` from the active published head in `dns_publication_heads` (`status = 'active'`), not from `policy_definitions` or `policy_revisions`.
+   - When no active published head exists in `dns_publication_heads`, `DNSGeneration` is `0` (`"dns_generation": "0"` in the compiled desired state).
+3. **Caller-Transaction Lease Renewal (`leases.Service.RenewTx`)**:
+   - `leases.Service.RenewTx(ctx, tx, authNodeID, authIncarnationID, req)` executes the full lease renewal workflow (node `FOR UPDATE` lock, replay check, initial D-030 read, signing, `FOR SHARE OF m, e` re-read with signature rebuild if eligibility changed, `serving_leases` + `serving_lease_members` + `audit_events` persistence) inside the caller's `pgx.Tx`.
+   - `leases.Service.Renew` delegates directly to `RenewTx` wrapped in `db.InTx`.
+4. **Entitlement Grant Operation Node Enforcement ACK and Lookup (Members request 3)**:
+   - `nodes.ListMemberOperations` and `nodes.GetMemberOperation` resolve member operations across `resource_type = 'member'`, `resource_type = 'entitlement_grant'` (through `entitlement_grants.member_id`), and `resource_type = 'member_device'` (through `member_devices.member_id`).
+   - When `nodes.Service.SubmitObservation` receives a ready, safety-passing observation (`applied_config_generation >= desired_config_generation` and `safety_status == passed`), `advanceNodeOperationsOnObservation` transitions the `"nodes"` step on matching `member`, `entitlement_grant` (excluding future grants where `valid_from > now`), and `member_device` operations via `entitlement.TransitionOperation` with persisted `audit_event:<uuid>` evidence.
+5. **D-029 Audit and Operation Conformance**:
+   - All audit rows written by `nodes`, `desiredstate`, `leases`, and `exits` use `resource = node:<uuid>` or `exit:<uuid>`, UUID actors (`actor_type` in `admin|member|node|system`), and results `succeeded|failed|denied`.
+   - Operation kinds are validated against the generated `api.OperationKind` enum.
+   - Verified via `audit.Store.List` returning all rows with `store.AnomalyCount() == 0`.
+

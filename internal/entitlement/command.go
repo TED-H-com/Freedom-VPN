@@ -123,15 +123,18 @@ func Reason(s string, max int) bool { return strings.TrimSpace(s) != "" && len([
 
 // ResourceType translates internal aggregate names to the binding HTTP contract.
 // Outbox aggregate names remain the documented domain event vocabulary.
-func ResourceType(kind string) string {
-	switch kind {
+func ResourceType(aggregate string) (api.ResourceType, error) {
+	resource := api.ResourceType(aggregate)
+	switch aggregate {
 	case "device":
-		return string(api.ResourceTypeMemberDevice)
+		resource = api.ResourceTypeMemberDevice
 	case "grant":
-		return string(api.ResourceTypeEntitlementGrant)
+		resource = api.ResourceTypeEntitlementGrant
 	case "billing_session":
-		return string(api.ResourceTypeCheckoutSession)
-	default:
-		return kind
+		resource = api.ResourceTypeCheckoutSession
 	}
+	if !resource.Valid() {
+		return "", ErrInvalid
+	}
+	return resource, nil
 }
