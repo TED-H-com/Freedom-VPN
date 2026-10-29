@@ -190,9 +190,10 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		}
 		applied := false
 		if !history && isTerminal && currentReleaseID != nil {
-			// Result time is not an observation sequence. Once a heartbeat arrived
-			// after authorization, wait for another heartbeat rather than replacing it.
-			tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND (s.received_at IS NULL OR s.received_at<=$4) AND s.observed_update_generation<=$5::numeric`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", j.issued, r.Generation.String())
+			// §13.8: a pre-switch heartbeat may arrive after intent issuance.
+			// Only a strictly newer update generation advances actual version;
+			// same/newer-generation heartbeat evidence remains authoritative.
+			tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND s.observed_update_generation<$4::numeric`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", r.Generation.String())
 			if e != nil {
 				return e
 			}

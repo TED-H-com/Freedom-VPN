@@ -162,9 +162,9 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.CreatedAt = b.CreatedAt.UTC()
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
-		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
+		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,x.display_name,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
  `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`
- FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
+ FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
 		}
@@ -178,7 +178,8 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			var stage *api.UpdateStage
 			var recoveryRequired bool
 			var gen string
-			if e = rows.Scan(&t.TargetId, &t.NodeId, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed); e != nil {
+			var nodeName *string
+			if e = rows.Scan(&t.TargetId, &t.NodeId, &nodeName, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed); e != nil {
 				return e
 			}
 			if len(b.Targets) == limit {
@@ -199,7 +200,7 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			t.CurrentReleaseId = presence.FromPointer(currentRelease)
 			t.LastObservedAt = presence.FromPointer(lastObserved)
 			t.LastResultAt = presence.FromPointer(lastResult)
-			t.NodeName.SetNull()
+			t.NodeName = presence.FromPointer(nodeName)
 			t.CurrentJob.SetNull()
 			j.ErrorCode = presence.FromPointer(errorCode)
 			j.Stage = presence.FromPointer(stage)
