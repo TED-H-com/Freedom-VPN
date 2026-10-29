@@ -107,7 +107,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | harness merged (#63): AT28 passed live; AT29–AT32 blocked on the serving node, WAL archiving, the IdP identity fixture and operator runs |
-| w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | in progress |
+| w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
 | w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | in progress |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
