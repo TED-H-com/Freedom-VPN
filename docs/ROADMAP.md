@@ -93,7 +93,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | in progress |
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
 | r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | in progress |
-| w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | in progress |
+| w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
