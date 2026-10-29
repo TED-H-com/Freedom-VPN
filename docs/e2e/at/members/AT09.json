@@ -1,0 +1,69 @@
+{
+  "id": "AT09",
+  "title": "Exit selection, NAT, relay and MTU",
+  "spec": [
+    "§19.1",
+    "§19 AT09",
+    "EXIT02 APP01 NFR01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "scope",
+      "detail": "startup prerequisite only; no live scenario executed"
+    },
+    {
+      "name": "expected",
+      "detail": "Two exits select correctly with skip_auto_apply, failure behaviour is measured, direct/relay TCP UDP QUIC and PMTU baselines are recorded."
+    },
+    {
+      "name": "actual",
+      "detail": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2."
+    },
+    {
+      "name": "remaining_preconditions",
+      "detail": "Second exit, working relay, controlled flow/PMTU fixtures and second NAT; native platform tests."
+    },
+    {
+      "name": "source_commit",
+      "detail": "73de9a1a698a006c2532b742ae9a09788b5b8c11"
+    },
+    {
+      "name": "prepare_binary_sha256",
+      "detail": "fc4020d0e4379274bf34635fe4da6b64456d6bc41c1ded6a7aafe12cf5159655"
+    },
+    {
+      "name": "runtime_provenance",
+      "detail": "image digests, policy revision and node incarnation unavailable: no stack observed"
+    },
+    {
+      "name": "commands",
+      "detail": "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare ; \u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+    },
+    {
+      "name": "procedure",
+      "detail": "See PROCEDURES.md and BLOCKERS.md in this directory"
+    },
+    {
+      "name": "operator_status",
+      "detail": "needs operator run"
+    }
+  ],
+  "at": "2026-10-29T23:04:52Z",
+  "scope": "startup prerequisite only",
+  "build": {
+    "source_commit": "73de9a1a698a006c2532b742ae9a09788b5b8c11",
+    "prepare_binary_sha256": "fc4020d0e4379274bf34635fe4da6b64456d6bc41c1ded6a7aafe12cf5159655",
+    "image_digests": [],
+    "policy_revision": null,
+    "node_incarnation": null,
+    "unavailable_reason": "No running stack observed; image, policy and incarnation provenance unavailable"
+  },
+  "expected": "Two exits select correctly with skip_auto_apply, failure behaviour is measured, direct/relay TCP UDP QUIC and PMTU baselines are recorded.",
+  "actual": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2.",
+  "commands": [
+    "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare",
+    "\u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+  ],
+  "operator_status": "needs operator run"
+}

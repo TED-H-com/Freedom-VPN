@@ -1,0 +1,69 @@
+{
+  "id": "AT05",
+  "title": "Three node join sources",
+  "spec": [
+    "§19.1",
+    "§19 AT05",
+    "NODE01 NODE04 ENR01 ENR04 PKG01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "scope",
+      "detail": "startup prerequisite only; no live scenario executed"
+    },
+    {
+      "name": "expected",
+      "detail": "Preinstalled, cloud-init and installer nodes use the same protocol, become unpublished, then classify and publish through the same API."
+    },
+    {
+      "name": "actual",
+      "detail": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2."
+    },
+    {
+      "name": "remaining_preconditions",
+      "detail": "Three node source flavours; package digests; publication readback; physical arm64 execution."
+    },
+    {
+      "name": "source_commit",
+      "detail": "73de9a1a698a006c2532b742ae9a09788b5b8c11"
+    },
+    {
+      "name": "prepare_binary_sha256",
+      "detail": "fc4020d0e4379274bf34635fe4da6b64456d6bc41c1ded6a7aafe12cf5159655"
+    },
+    {
+      "name": "runtime_provenance",
+      "detail": "image digests, policy revision and node incarnation unavailable: no stack observed"
+    },
+    {
+      "name": "commands",
+      "detail": "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare ; \u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+    },
+    {
+      "name": "procedure",
+      "detail": "See PROCEDURES.md and BLOCKERS.md in this directory"
+    },
+    {
+      "name": "operator_status",
+      "detail": "needs operator run"
+    }
+  ],
+  "at": "2026-10-29T23:04:52Z",
+  "scope": "startup prerequisite only",
+  "build": {
+    "source_commit": "73de9a1a698a006c2532b742ae9a09788b5b8c11",
+    "prepare_binary_sha256": "fc4020d0e4379274bf34635fe4da6b64456d6bc41c1ded6a7aafe12cf5159655",
+    "image_digests": [],
+    "policy_revision": null,
+    "node_incarnation": null,
+    "unavailable_reason": "No running stack observed; image, policy and incarnation provenance unavailable"
+  },
+  "expected": "Preinstalled, cloud-init and installer nodes use the same protocol, become unpublished, then classify and publish through the same API.",
+  "actual": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2.",
+  "commands": [
+    "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare",
+    "\u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+  ],
+  "operator_status": "needs operator run"
+}
