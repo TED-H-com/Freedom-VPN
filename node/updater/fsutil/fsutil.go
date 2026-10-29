@@ -9,12 +9,14 @@ package fsutil
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"syscall"
 )
 
@@ -151,6 +153,110 @@ func randHex(n int) string {
 		panic(err) // crypto/rand never fails on supported platforms
 	}
 	return hex.EncodeToString(b)
+}
+
+// TreeHash is the SHA-256 of a sorted inventory of root. The digest covers
+// relative paths, permission bits and file bytes, so a rollback can prove
+// the tree still matches the release that was installed (§13.5, §13.9).
+// Symlinks contribute their target string and are not followed.
+func TreeHash(root string) (string, error) {
+	var lines []string
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == root {
+			return nil
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		perm := info.Mode().Perm()
+		switch {
+		case info.Mode()&os.ModeSymlink != 0:
+			tgt, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			lines = append(lines, fmt.Sprintf("l %04o %s %s", perm, rel, tgt))
+		case info.IsDir():
+			lines = append(lines, fmt.Sprintf("d %04o %s", perm, rel))
+		case info.Mode().IsRegular():
+			sum, err := hashFile(path)
+			if err != nil {
+				return err
+			}
+			lines = append(lines, fmt.Sprintf("f %04o %s %s", perm, rel, sum))
+		default:
+			return fmt.Errorf("fsutil: %s has unsupported file type", rel)
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	sort.Strings(lines)
+	h := sha256.New()
+	for _, ln := range lines {
+		_, _ = io.WriteString(h, ln)
+		_, _ = h.Write([]byte{'\n'})
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func hashFile(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// SyncTree fsyncs every regular file and every directory under root, files
+// first and directories after their children, so a tree is durable before
+// the current pointer moves (§13.5, §13.6 step 10).
+func SyncTree(root string) error {
+	var dirs []string
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+		if info.IsDir() {
+			dirs = append(dirs, path)
+			return nil
+		}
+		if info.Mode().IsRegular() {
+			return SyncFile(path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	for i := len(dirs) - 1; i >= 0; i-- {
+		if err := SyncDir(dirs[i]); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RandHex returns n random bytes in hex, for unique temp names.
