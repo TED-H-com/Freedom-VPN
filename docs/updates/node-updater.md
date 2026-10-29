@@ -83,7 +83,7 @@ The result outbox stores the canonical JSON and `payload_hash` (`canonjson.HashH
 
 Sidecar files next to the database (not inside it): `identity.snap` and `state.snap` (tree hashes taken before the transaction), `epoch-<txn>` (the new meter epoch, so `OpenEpoch` is idempotent), the check and rollback counters, and `forwarding.blocked`.
 
-The single-updater lock is `/var/lib/vpn-node/update.lock`, a `flock` held by `node/updater/lock`. `node/internal/nodelock` does not exist yet. This package is the local equivalent and should move there when the agent adopts it.
+The single-updater lock is `/var/lib/vpn-node/update.lock`, a `flock` held by `node/internal/nodelock`. The agent, the installer and the updater take that same lock.
 
 ## Download and verify (§13.4)
 
@@ -91,7 +91,7 @@ The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. Th
 
 Verification checks the release trust store, both Ubuntu 24.04 architectures (`amd64` and `arm64`, `tar.zst`), this node's artifact, size, SHA-256, control API major, policy schema, usage schema, state schema, minimum updater version and the disk reserve (`artifact + installed size + required_free_bytes`). `product_version` is display only. `minimum_updater_version` is compared as three dotted numeric components, so `1.10.0` is newer than `1.9.0`.
 
-URLs must be `https`. Loopback, link-local and the metadata host names are refused. `allow_loopback` is the test exception. The resolved address is not pinned (see the report's spec questions).
+URLs must be `https`. Loopback, link-local and the metadata host names are refused. `allow_loopback` is the test exception. The resolved address is not pinned.
 
 Extraction rejects absolute paths, `..`, NUL, backslash, device files, fifos, sockets, hard links, setuid/setgid/sticky modes, symlinks that point outside the release, and any path that overlaps identity, state or the journal. A relative symlink inside the tree is allowed. Nothing in the archive is executed.
 
@@ -118,3 +118,15 @@ The hook used by tests fires after the stage is durable and before that stage's 
 | `recovery_required` (before the result is enqueued) | result with `recovery_required` | stay blocked, exit 2 |
 
 Identity and the usage outbox are not rewritten by the update or the rollback (§13.7). The meter `FinalSample` and `OpenEpoch` calls are idempotent. The updater also stores the epoch id in `epoch-<txn>` so a second process does not open a second epoch.
+
+## Decisions
+
+- `boot_id` is the boot that claimed the job. Keep.
+- Hostile archive paths, devices and symlink escapes stay `VALIDATION_FAILED`. A dedicated code is deferred to the next contract revision.
+- Refusing loopback, link-local and metadata names is sufficient for this phase. Pinning the resolved address is not required. Artifact fetches move behind the agent's mTLS client in Wave 3.
+- Update results are accepted on HTTP 202 only. The contract wins over the handover text.
+- `revoked_release_ids` stay an unsigned agent-supplied list for now. The signed serving set is the only thing that gates forwarding. Adding the list to the signed desired state is a candidate for contract revision 3.
+- `policy_generation` is the desired-state `config_generation` for now (revision 3 candidate).
+- When `last_good` cannot be restored, `current` stays on the failed candidate, the symlink is never moved to an unverified tree, and members stay blocked. Confirmed.
+- A checkpoint failure before `stop_services` ends as `rolled_back`/`failed` without blocking members, because nothing destructive happened. Confirmed: §13.9 step 4 applies only after the destructive stage.
+- Toolchain 1.27.3 arrives in a separate orchestrator task (decision D-014). Keep `GOTOOLCHAIN=local` and `go.mod` at 1.27.1.

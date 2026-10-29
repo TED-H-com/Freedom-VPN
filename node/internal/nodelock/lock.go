@@ -1,12 +1,8 @@
-// Package lock is the node-wide exclusive update lock of §13.5: the agent,
+// Package nodelock is the node-wide exclusive update lock of §13.5: the agent,
 // the manual installer and the updater take the same flock before they change
 // the version pointer, the state schema or product services. Contention is
 // reported as busy (UPDATE_BUSY), never waited on forever.
-//
-// node/internal/nodelock does not exist on main yet; this is the equivalent
-// flock wrapper owned by the updater. It should move to node/internal/nodelock
-// once the agent adopts it (see the w2-updater report).
-package lock
+package nodelock
 
 import (
 	"context"

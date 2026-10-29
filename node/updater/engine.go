@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
-	"github.com/TED-H-com/Freedom-VPN/node/updater/lock"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -237,9 +237,9 @@ func (e *Engine) runOnce(ctx context.Context) (bool, error) {
 	if err := e.catchNewer(ctx, c); err != nil {
 		return e.afterPrepareErr(ctx, stored, c, err, api.UpdateStagePrepare)
 	}
-	lk, err := lock.Acquire(ctx, e.Layout.Lock, 5, 20*time.Millisecond)
+	lk, err := nodelock.Acquire(ctx, e.Layout.Lock, 5, 20*time.Millisecond)
 	if err != nil {
-		if errors.Is(err, lock.ErrBusy) {
+		if errors.Is(err, nodelock.ErrBusy) {
 			return false, transient(apierr.UpdateBusy, "lock")
 		}
 		return false, err

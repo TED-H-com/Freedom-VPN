@@ -10,7 +10,7 @@
 
 UPDATER_GO   ?= go
 UPDATER_ENV  := CGO_ENABLED=0 GOTOOLCHAIN=local
-UPDATER_PKGS := ./node/updater/... ./node/internal/updatejournal/... ./packaging/release/...
+UPDATER_PKGS := ./node/updater/... ./node/internal/nodelock/... ./node/internal/updatejournal/... ./packaging/release/...
 UPDATER_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 
 BUILD_TARGETS  += updater-build
@@ -30,7 +30,7 @@ updater-test:
 	$(UPDATER_ENV) $(UPDATER_GO) test $(UPDATER_PKGS)
 
 updater-lint:
-	@test -z "$$(gofmt -l node/updater node/internal/updatejournal packaging/release)" || { echo 'gofmt required'; exit 1; }
+	@test -z "$$(gofmt -l node/updater node/internal/nodelock node/internal/updatejournal packaging/release)" || { echo 'gofmt required'; exit 1; }
 	$(UPDATER_ENV) $(UPDATER_GO) vet $(UPDATER_PKGS)
 	$(UPDATER_ENV) $(UPDATER_GO) run $(UPDATER_STATICCHECK) $(UPDATER_PKGS)
 
