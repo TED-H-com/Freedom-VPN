@@ -2849,7 +2849,7 @@ components:
         Total VPN capacity of the node and the optional per-member cap
         (FUP04, §11.3). node capacity is the HTB parent; member caps are class
         ceilings, not guarantees.
-      required: [down_bps, up_bps]
+      required: [down_bps, up_bps, member_down_bps_cap, member_up_bps_cap]
       additionalProperties: false
       properties:
         down_bps:
@@ -3083,7 +3083,10 @@ components:
           maxLength: 512
     NodePatch:
       type: object
-      description: Allowlisted node fields (§14.1). Only provided fields change; capacity or notes null clears them.
+      description: |
+        Allowlisted node fields (§14.1). Only provided fields change; JSON null is
+        never used. An empty `notes` string clears the notes; `clear_capacity:
+        true` removes the capacity and cannot be combined with `capacity`.
       minProperties: 1
       additionalProperties: false
       properties:
@@ -3103,13 +3106,12 @@ components:
             type: string
             format: uuid
         capacity:
-          type: object
-          allOf:
-            - $ref: '#/components/schemas/NodeCapacity'
-          nullable: true
+          $ref: '#/components/schemas/NodeCapacity'
+        clear_capacity:
+          type: boolean
+          enum: [true]
         notes:
           type: string
-          nullable: true
           maxLength: 2000
     PublicationRequest:
       type: object
@@ -3492,7 +3494,8 @@ components:
     MemberPatch:
       type: object
       description: |
-        Allowlisted member fields. Setting `admin_suspended: true` requires
+        Allowlisted member fields; JSON null is never used. Setting
+        `admin_suspended: true` requires
         `suspension_reason`. Suspension and unsuspension change the entitlement and
         return 202 with an operation.
       minProperties: 1
@@ -3504,8 +3507,8 @@ components:
           maxLength: 100
         notes:
           type: string
-          nullable: true
           maxLength: 2000
+          description: An empty string clears the notes.
         member_group_ids:
           type: array
           maxItems: 100

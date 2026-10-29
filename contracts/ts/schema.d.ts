@@ -1120,12 +1120,12 @@ export interface components {
              * Format: int64
              * @description node_member_rate_cap for the download direction; null means no node-specific member cap.
              */
-            member_down_bps_cap?: number | null;
+            member_down_bps_cap: number | null;
             /**
              * Format: int64
              * @description node_member_rate_cap for the upload direction; null means no node-specific member cap.
              */
-            member_up_bps_cap?: number | null;
+            member_up_bps_cap: number | null;
         };
         NodePlatform: {
             /** @enum {string} */
@@ -1212,13 +1212,19 @@ export interface components {
             items: components["schemas"]["NodeSummary"][];
             next_cursor: string | null;
         };
-        /** @description Allowlisted node fields (§14.1). Only provided fields change; capacity or notes null clears them. */
+        /**
+         * @description Allowlisted node fields (§14.1). Only provided fields change; JSON null is
+         *     never used. An empty `notes` string clears the notes; `clear_capacity:
+         *     true` removes the capacity and cannot be combined with `capacity`.
+         */
         NodePatch: {
             name?: string;
             region?: string;
             member_group_ids?: string[];
-            capacity?: components["schemas"]["NodeCapacity"] | null;
-            notes?: string | null;
+            capacity?: components["schemas"]["NodeCapacity"];
+            /** @enum {boolean} */
+            clear_capacity?: true;
+            notes?: string;
         };
         PublicationRequest: {
             publication_intent: components["schemas"]["PublicationIntent"];
@@ -1396,13 +1402,15 @@ export interface components {
             next_cursor: string | null;
         };
         /**
-         * @description Allowlisted member fields. Setting `admin_suspended: true` requires
+         * @description Allowlisted member fields; JSON null is never used. Setting
+         *     `admin_suspended: true` requires
          *     `suspension_reason`. Suspension and unsuspension change the entitlement and
          *     return 202 with an operation.
          */
         MemberPatch: {
             display_name?: string;
-            notes?: string | null;
+            /** @description An empty string clears the notes. */
+            notes?: string;
             member_group_ids?: string[];
             admin_suspended?: boolean;
             suspension_reason?: string;

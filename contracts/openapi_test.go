@@ -552,3 +552,20 @@ func TestUPD04_EnumsMatchSpec(t *testing.T) {
 		t.Errorf("UpdateBatchCounts keys:\n%s", diff)
 	}
 }
+
+// TestAPI01_NoOptionalNullableFields forbids properties that are both
+// optional and nullable: generated Go types cannot tell JSON null from an
+// absent member, so null is only allowed on required members.
+func TestAPI01_NoOptionalNullableFields(t *testing.T) {
+	walkSchemas(t, func(v schemaVisit) {
+		req := map[string]bool{}
+		for _, r := range v.s.Required {
+			req[r] = true
+		}
+		for name, p := range v.s.Properties {
+			if p.Value != nil && p.Value.Nullable && !req[name] {
+				t.Errorf("%s/%s: nullable members must be required", v.path, name)
+			}
+		}
+	})
+}

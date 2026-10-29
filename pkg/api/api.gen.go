@@ -1141,6 +1141,21 @@ func (e NodeCheckName) Valid() bool {
 	}
 }
 
+// Defines values for NodePatchClearCapacity.
+const (
+	NodePatchClearCapacityTrue NodePatchClearCapacity = true
+)
+
+// Valid indicates whether the value is a known member of the NodePatchClearCapacity enum.
+func (e NodePatchClearCapacity) Valid() bool {
+	switch e {
+	case NodePatchClearCapacityTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for NodePlatformOs.
 const (
 	NodePlatformOsUbuntu NodePlatformOs = "ubuntu"
@@ -3193,15 +3208,18 @@ type MemberList struct {
 	NextCursor *string         `json:"next_cursor"`
 }
 
-// MemberPatch Allowlisted member fields. Setting `admin_suspended: true` requires
+// MemberPatch Allowlisted member fields; JSON null is never used. Setting
+// `admin_suspended: true` requires
 // `suspension_reason`. Suspension and unsuspension change the entitlement and
 // return 202 with an operation.
 type MemberPatch struct {
-	AdminSuspended   *bool                 `json:"admin_suspended,omitempty"`
-	DisplayName      *string               `json:"display_name,omitempty"`
-	MemberGroupIds   *[]openapi_types.UUID `json:"member_group_ids,omitempty"`
-	Notes            *string               `json:"notes,omitempty"`
-	SuspensionReason *string               `json:"suspension_reason,omitempty"`
+	AdminSuspended *bool                 `json:"admin_suspended,omitempty"`
+	DisplayName    *string               `json:"display_name,omitempty"`
+	MemberGroupIds *[]openapi_types.UUID `json:"member_group_ids,omitempty"`
+
+	// Notes An empty string clears the notes.
+	Notes            *string `json:"notes,omitempty"`
+	SuspensionReason *string `json:"suspension_reason,omitempty"`
 }
 
 // MemberRatePolicy Member rate policy for this node (§11.2, §11.3). Rate scope is (member_id,
@@ -3336,10 +3354,10 @@ type NodeCapacity struct {
 	DownBps int64 `json:"down_bps"`
 
 	// MemberDownBpsCap node_member_rate_cap for the download direction; null means no node-specific member cap.
-	MemberDownBpsCap *int64 `json:"member_down_bps_cap,omitempty"`
+	MemberDownBpsCap *int64 `json:"member_down_bps_cap"`
 
 	// MemberUpBpsCap node_member_rate_cap for the upload direction; null means no node-specific member cap.
-	MemberUpBpsCap *int64 `json:"member_up_bps_cap,omitempty"`
+	MemberUpBpsCap *int64 `json:"member_up_bps_cap"`
 	UpBps          int64  `json:"up_bps"`
 }
 
@@ -3439,14 +3457,23 @@ type NodeList struct {
 	NextCursor *string       `json:"next_cursor"`
 }
 
-// NodePatch Allowlisted node fields (§14.1). Only provided fields change; capacity or notes null clears them.
+// NodePatch Allowlisted node fields (§14.1). Only provided fields change; JSON null is
+// never used. An empty `notes` string clears the notes; `clear_capacity:
+// true` removes the capacity and cannot be combined with `capacity`.
 type NodePatch struct {
-	Capacity       *NodeCapacity         `json:"capacity,omitempty"`
-	MemberGroupIds *[]openapi_types.UUID `json:"member_group_ids,omitempty"`
-	Name           *string               `json:"name,omitempty"`
-	Notes          *string               `json:"notes,omitempty"`
-	Region         *string               `json:"region,omitempty"`
+	// Capacity Total VPN capacity of the node and the optional per-member cap
+	// (FUP04, §11.3). node capacity is the HTB parent; member caps are class
+	// ceilings, not guarantees.
+	Capacity       *NodeCapacity           `json:"capacity,omitempty"`
+	ClearCapacity  *NodePatchClearCapacity `json:"clear_capacity,omitempty"`
+	MemberGroupIds *[]openapi_types.UUID   `json:"member_group_ids,omitempty"`
+	Name           *string                 `json:"name,omitempty"`
+	Notes          *string                 `json:"notes,omitempty"`
+	Region         *string                 `json:"region,omitempty"`
 }
+
+// NodePatchClearCapacity defines model for NodePatch.ClearCapacity.
+type NodePatchClearCapacity bool
 
 // NodePlatform defines model for NodePlatform.
 type NodePlatform struct {
