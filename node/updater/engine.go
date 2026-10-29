@@ -146,6 +146,9 @@ func (e *Engine) recoverLocked(ctx context.Context) error {
 	if err := e.ensureReported(ctx); err != nil {
 		return err
 	}
+	if err := e.holdIfRevoked(ctx); err != nil {
+		return err
+	}
 	on, _ := e.Journal.BlocksForwarding(ctx)
 	if on {
 		if e.Gate != nil {
@@ -176,11 +179,23 @@ func (e *Engine) runOnce(ctx context.Context) (bool, error) {
 		return false, errors.New("updater: no desired-state source")
 	}
 	work, err := e.Source.Current(ctx)
-	if errors.Is(err, ErrNoWork) {
+	noWork := errors.Is(err, ErrNoWork)
+	if err != nil && !noWork {
+		return false, err
+	}
+	// A legacy envelope with no job carries no policy and no signed set.
+	// Leave the latch alone, as before.
+	if noWork && work.PolicyGeneration == 0 && !work.PolicyKnown && work.SignedRevoked == nil {
 		return false, nil
 	}
-	if err != nil {
+	if err := e.acceptDesired(ctx, &work); err != nil {
 		return false, err
+	}
+	if err := e.rollbackIfRevoked(ctx, e.claimFrom(work)); err != nil {
+		return false, err
+	}
+	if noWork {
+		return false, nil
 	}
 	if err := e.preflight(ctx, work); err != nil {
 		return false, err
@@ -527,6 +542,13 @@ func (e *Engine) fetchArtifact(ctx context.Context, c claimed, art api.ManifestA
 func (e *Engine) installTree(ctx context.Context, c claimed, m api.ReleaseManifest, env []byte, art api.ManifestArtifact, artifactPath string) error {
 	id := c.Intent.ReleaseId.String()
 	dir := e.Layout.releaseDir(id)
+	signed, err := e.signedRevokedIDs(ctx)
+	if err != nil {
+		return err
+	}
+	if containsID(c.Revoked, c.Intent.ReleaseId) || containsID(signed, c.Intent.ReleaseId) {
+		return permanent(apierr.ReleaseNotApproved, "revoked release")
+	}
 	if rel, err := e.Journal.GetRelease(ctx, id); err == nil {
 		sum, herr := fsutil.TreeHash(dir)
 		if herr == nil && sum == rel.TreeHash && strings.EqualFold(rel.ManifestSHA256, c.Intent.ManifestSha256) {
@@ -794,9 +816,15 @@ func (e *Engine) enforce(ctx context.Context, releaseID string, c claimed, outco
 		}
 		return false, nil
 	}
+	signed, err := e.signedRevokedIDs(ctx)
+	if err != nil {
+		return false, err
+	}
 	id, _ := uuid.Parse(releaseID)
+	// A signed revocation is persisted in the journal. The claim's unsigned
+	// list alone must not let that release pass the gate (§13.4).
 	allow := c.Intent.PublicationIntent == api.PublicationIntentPublished &&
-		releaseID != "" && containsID(c.Serving, id) && !containsID(c.Revoked, id)
+		releaseID != "" && containsID(c.Serving, id) && !containsID(c.Revoked, id) && !containsID(signed, id)
 	if err := e.Journal.SetGate(ctx, updatejournal.GateRecord{
 		PublicationIntent: string(c.Intent.PublicationIntent),
 		ForwardingBlocked: !allow,

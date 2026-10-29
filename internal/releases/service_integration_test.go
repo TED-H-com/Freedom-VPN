@@ -95,7 +95,7 @@ func TestUPD02_RegisterImmutableAndVerify(t *testing.T) {
 	if !errors.Is(e, apierr.New(apierr.ReleaseNotApproved, "")) {
 		t.Fatal(e)
 	}
-	releasetest.AssertLedger(t, pool, f.Validator)
+	releasetest.AssertLedger(t, pool, f.Validator, "release.register", "release.verify")
 }
 func TestUPD02_RejectedRegistrationsPersistIneligible(t *testing.T) {
 	ctx := context.Background()
@@ -150,4 +150,5 @@ func TestUPD02_ListContractAndVerificationErrors(t *testing.T) {
 	if e != nil || list.Items[0].VerificationState != "rejected" || (!list.Items[0].VerificationError.IsSpecified() || list.Items[0].VerificationError.IsNull()) {
 		t.Fatal(list, e)
 	}
+	releasetest.AssertLedger(t, pool, f.Validator, "release.register", "release.verify")
 }

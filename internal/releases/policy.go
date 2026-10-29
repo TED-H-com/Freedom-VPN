@@ -7,6 +7,7 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -72,6 +73,7 @@ func (s *Service) ApplySupportTx(ctx context.Context, tx pgx.Tx, actor uuid.UUID
 		return e
 	}
 	// Audit real release resources, including removals from the serving set.
+	requestID := commandtx.RequestID(ctx)
 	seen := map[uuid.UUID]bool{}
 	for _, ids := range [][]uuid.UUID{previous, previousServing, previousApproved, serving, p.ApprovedReleaseIds, p.RevokedReleaseIds} {
 		for _, id := range ids {
@@ -79,9 +81,16 @@ func (s *Service) ApplySupportTx(ctx context.Context, tx pgx.Tx, actor uuid.UUID
 				continue
 			}
 			seen[id] = true
-			if err := Audit(ctx, tx, actor, api.AuditEventActorTypeAdmin, "release_support.activate", api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, nil, api.AuditEventResultSucceeded, map[string]any{
-				"approved": slices.Contains(p.ApprovedReleaseIds, id), "serving": slices.Contains(serving, id), "revoked": slices.Contains(p.RevokedReleaseIds, id),
-			}); err != nil {
+			event, err := audit.NewEvent(audit.Entry{
+				Actor: audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: actor}, Action: "release_support.activate",
+				Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, Result: api.AuditEventResultSucceeded, RequestID: &requestID,
+				After:  map[string]any{"approved": slices.Contains(p.ApprovedReleaseIds, id), "serving": slices.Contains(serving, id), "revoked": slices.Contains(p.RevokedReleaseIds, id)},
+				Fields: []string{"approved", "serving", "revoked"},
+			})
+			if err != nil {
+				return err
+			}
+			if err = audit.AppendEvent(ctx, tx, event); err != nil {
 				return err
 			}
 		}

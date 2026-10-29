@@ -7,5 +7,7 @@ func Domains() []Domain {
 		members(),
 		dns(),
 		nodes(),
+		policies(),
+		usage(),
 	}
 }

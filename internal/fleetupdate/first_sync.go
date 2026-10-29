@@ -3,6 +3,7 @@ package fleetupdate
 import (
 	"context"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
@@ -14,16 +15,17 @@ import (
 )
 
 // Reserved system actor for internal snapshots, never taken from request JSON.
-const firstSyncActor = "00000000-0000-0000-0000-000000000003"
+const firstSyncActor = releases.SystemActorID
 
 // firstSync preserves §13.1's original all_nodes denominator. A separate system
 // batch supplies the same sealed target and composite identity FK as admin work.
 func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid.UUID, generation decstr.U64) error {
 	batch, target := uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
+	requestID := commandtx.RequestID(ctx)
 	op, e := operations.Create(ctx, tx, operations.CreateRequest{
 		Kind:      api.OperationKindUpdateBatchCreate,
 		Principal: auth.Principal{Role: auth.Agent, NodeID: n.id, IncarnationID: *n.incarnation},
-		Resource:  api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, RequestID: commandtx.RequestID(ctx),
+		Resource:  api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, RequestID: requestID,
 		DesiredGeneration: &generation,
 		Steps:             map[string]operations.Step{"snapshot": {Required: true}, "targets": {Required: true}},
 	})
@@ -40,5 +42,14 @@ func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid
 	if e := s.newJob(ctx, tx, n, &target, release, generation, 1); e != nil {
 		return e
 	}
-	return releases.Audit(ctx, tx, uuid.MustParse(firstSyncActor), api.AuditEventActorTypeSystem, "update_batch.first_sync", api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, &op, api.AuditEventResultSucceeded, map[string]any{"node_id": n.id, "release_id": release})
+	event, e := audit.NewEvent(audit.Entry{
+		Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(firstSyncActor)}, Action: "update_batch.first_sync",
+		Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, Result: api.AuditEventResultSucceeded,
+		OperationID: &op, RequestID: &requestID,
+		After: map[string]any{"node_id": n.id, "release_id": release}, Fields: []string{"node_id", "release_id"},
+	})
+	if e != nil {
+		return e
+	}
+	return audit.AppendEvent(ctx, tx, event)
 }

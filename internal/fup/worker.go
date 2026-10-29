@@ -10,12 +10,13 @@ import (
 )
 
 // WatermarkRecord tracks the latest FUP computation timestamp and ledger watermark
-// (`AggregateAsOf`) for a `(member_id, period_id)` key (§11.1, §15.3).
+// (`AggregateAsOf` and `WatermarkDetail`) for a `(member_id, period_id)` key (§11.1, §15.3).
 type WatermarkRecord struct {
 	MemberID        uuid.UUID
 	PeriodID        string
 	LastComputedAt  time.Time
 	LedgerWatermark time.Time
+	WatermarkDetail *LedgerWatermark
 	EvaluationCount int
 }
 
@@ -158,7 +159,7 @@ func (w *Worker) Flush(ctx context.Context, now time.Time) ([]*EvaluationResult,
 			CurrentPeriodID:  curPeriod,
 			AllowRelaxation:  job.AllowRelaxation,
 			RelaxationReason: job.RelaxationReason,
-			Actor:            "system/fup-worker",
+			Actor:            fupSystemActorUUID,
 			Now:              now,
 		})
 		if err != nil {
@@ -174,6 +175,7 @@ func (w *Worker) Flush(ctx context.Context, now time.Time) ([]*EvaluationResult,
 			PeriodID:        res.PeriodID,
 			LastComputedAt:  res.ComputedAt,
 			LedgerWatermark: res.AggregateAsOf,
+			WatermarkDetail: res.Watermark,
 			EvaluationCount: prev.EvaluationCount + 1,
 		}
 		w.mu.Unlock()

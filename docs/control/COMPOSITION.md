@@ -100,6 +100,14 @@ event names, never secrets or configuration values. A failed setting can return
 `config.SettingError`; the binary logs only its setting name, not the wrapped
 error or file contents. Members uses this for `members_config_file`.
 
+| Central `Config` Setting | Domain | Required Inner Settings | Purpose |
+|---|---|---|---|
+| `members_config_file` | `members` | Provider/entitlement/device settings (`internal/config/members.go`) | Billing, entitlements, and member device provisioning. |
+| `nodes_config_file` | `nodes` | PKI, signing, enrollment, release, and NetBird settings (`internal/config/nodes.go`) | Node enrollment, desired state, leases, and update rollouts. |
+| `dns_config_file` | `dns` | `upstreams` (`internal/config/dns.go`) | Central DNS policy bundle publishing. |
+| `policies_config_file` | `policies`, `usage` | `fup_sweep_seconds`, `fup_batch_size`, `dns_upstream_profile` (`internal/config/policies.go`) | Central policy catalog and Fair-Use evaluation/coalescing (D-045). |
+| `usage_config_file` | `usage` | `signing_config_file`, `raw_usage_retention_days`, `rollup_retention_months`, `audit_retention_days`, `projection_batch_size` (`internal/config/usage.go`) | Usage ledger ingestion, checkpoint/epoch signing (`signing.OpenFileProvider`), and retention (D-045). |
+
 Builds may validate explicit settings, read configured secret files and construct
 clients/stores. They must not read flags or environment variables, open their own
 pool, call `httpapi.New`, wrap `http.Server.Handler`, launch background goroutines,

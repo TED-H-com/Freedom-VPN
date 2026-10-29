@@ -235,47 +235,71 @@ func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c clai
 	if n > maxRollbackAttempts {
 		return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
 	}
-	in := e.evalLastGood(ctx, txn.LastGoodReleaseID, c, e.manifestOf(ctx, txn.ReleaseID))
-	plan := DecideRollback(in)
-	if !plan.Restore {
-		return e.toRecovery(ctx, txn, plan.Code, api.UpdateStageRollback, nil)
+	target, code := e.pickRollback(ctx, c, txn.ReleaseID, e.manifestOf(ctx, txn.ReleaseID))
+	if target == "" {
+		if code == "" {
+			code = apierr.RollbackFailed
+		}
+		return e.toRecovery(ctx, txn, code, api.UpdateStageRollback, nil)
 	}
+	running := txn.PreviousReleaseID
 	if txn.Destructive {
-		rel, err := e.Layout.relativeRelease(txn.LastGoodReleaseID)
+		running = txn.ReleaseID
+	}
+	runID, _ := uuid.Parse(running)
+	signed, serr := e.signedRevokedIDs(ctx)
+	if serr != nil {
+		return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
+	}
+	// A non-destructive rollback leaves the old process running. If that
+	// process is revoked, including by the persisted signed set, move
+	// anyway: a revoked release must not stay current to pass the gate.
+	revokedNow := unionUUIDs(c.Revoked, signed)
+	if txn.Destructive || (runID != uuid.Nil && containsID(revokedNow, runID)) {
+		rel, err := e.Layout.relativeRelease(target)
 		if err != nil {
 			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
 		}
-		if err := fsutil.SyncTree(e.Layout.releaseDir(txn.LastGoodReleaseID)); err != nil {
+		if err := fsutil.SyncTree(e.Layout.releaseDir(target)); err != nil {
 			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
 		}
 		if err := fsutil.SwitchSymlink(e.Layout.Current, rel); err != nil {
 			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
 		}
-		if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{CurrentRelease: txn.LastGoodReleaseID}); err != nil {
+		if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{CurrentRelease: target}); err != nil {
 			return txn, err
 		}
 		if e.Services != nil {
 			_ = e.Services.Stop(ctx)
-			if err := e.Services.Start(ctx, e.Layout.releaseDir(txn.LastGoodReleaseID)); err != nil {
+			if err := e.Services.Start(ctx, e.Layout.releaseDir(target)); err != nil {
 				return e.toRecovery(ctx, txn, apierr.StartFailed, api.UpdateStageRollback, nil)
 			}
 		}
-		// Pointers now name last_good. Refresh that half of the snapshot
-		// and keep the identity snapshot taken before the failed start.
+		// Pointers now name the restored release. Refresh that half of the
+		// snapshot and keep the identity snapshot taken before the failed start.
 		if err := e.snapshotPointers(ctx); err != nil {
 			return e.toRecovery(ctx, txn, apierr.CheckpointFailed, api.UpdateStageRollback, nil)
 		}
-		view := e.viewFor(ctx, txn.LastGoodReleaseID, e.manifestOf(ctx, txn.LastGoodReleaseID))
+		view := e.viewFor(ctx, target, e.manifestOf(ctx, target))
 		h, ok := e.runHealth(ctx, view)
 		if !ok {
 			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, &h)
 		}
+		// The restored release passed checks. Do not leave a revoked
+		// release recorded as last_good. Refresh the pointer snapshot so
+		// it names that release.
+		if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{LastGood: target}); err != nil {
+			return txn, err
+		}
+		if err := e.snapshotPointers(ctx); err != nil {
+			return e.toRecovery(ctx, txn, apierr.CheckpointFailed, api.UpdateStageRollback, nil)
+		}
 		return e.advance(ctx, txn, updatejournal.StageRolledBack, updatejournal.StageUpdate{
-			Health: h, RollbackReleaseID: txn.LastGoodReleaseID,
+			Health: h, RollbackReleaseID: target,
 		})
 	}
 	return e.advance(ctx, txn, updatejournal.StageRolledBack, updatejournal.StageUpdate{
-		RollbackReleaseID: txn.LastGoodReleaseID,
+		RollbackReleaseID: target,
 	})
 }
 
