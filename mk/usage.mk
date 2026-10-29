@@ -1,0 +1,27 @@
+# Standalone, private disk scratch; never use a tmpfs test basetemp.
+usage-with-disk-tmp = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/usage.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";
+
+BUILD_TARGETS += usage-build
+TEST_TARGETS += usage-test
+LINT_TARGETS += usage-lint
+VERIFY_TARGETS += usage-verify
+
+.PHONY: usage-build usage-test usage-test-integration usage-lint usage-verify
+
+usage-build:
+	@$(usage-with-disk-tmp) for arch in amd64 arm64; do \
+		GOOS=linux GOARCH=$$arch GOTOOLCHAIN=local CGO_ENABLED=0 go build ./internal/usage/...; \
+	done
+
+usage-test:
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test ./internal/usage/...
+
+usage-test-integration:
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration ./internal/usage/...
+
+usage-lint:
+	@test -z "$$(gofmt -l internal/usage)" || { echo 'gofmt required in internal/usage'; exit 1; }
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet ./internal/usage/...
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./internal/usage/...
+
+usage-verify: usage-lint usage-build usage-test usage-test-integration

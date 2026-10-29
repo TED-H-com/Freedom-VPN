@@ -33,6 +33,12 @@ func run() int {
 		return 1
 	}
 	defer pool.Close()
+	var database string
+	if err = pool.QueryRow(ctx, "SELECT current_database()").Scan(&database); err != nil {
+		fmt.Fprintln(os.Stderr, "database identity query failed")
+		return 1
+	}
+	fmt.Printf("current_database=%q\n", database)
 	if os.Args[1] == "up" {
 		if err = db.Migrate(ctx, pool); err != nil {
 			fmt.Fprintln(os.Stderr, "migration failed; inspect database diagnostics using authorized tooling")
