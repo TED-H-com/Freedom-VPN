@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"io"
 	"math"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
@@ -134,30 +134,24 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 		if e != nil {
 			return e
 		}
+		result := api.AuditEventResultSucceeded
 		if op != nil {
-			if _, e = tx.Exec(ctx, `UPDATE operations SET status='running' WHERE id=$1 AND status='pending'`, op); e != nil {
-				return e
-			}
-			status := "succeeded"
+			status := api.OperationStepStatusSucceeded
+			var safeCode *api.ErrorCode
+			var evidence *operations.Evidence
 			if verifyErr != nil {
-				status = "failed"
-			}
-			evidence, _ := json.Marshal(map[string]any{"manifest": id.String(), "artifact_count": len(m.Signed.Artifacts)})
-			steps := map[string]any{"verify": map[string]any{"required": true, "status": status}}
-			refs := []byte(`{}`)
-			if verifyErr == nil {
-				steps["verify"].(map[string]any)["observed_ref"] = "digests"
-				refs, _ = json.Marshal(map[string]json.RawMessage{"digests": evidence})
+				status = api.OperationStepStatusFailed
+				c := api.ErrorCode(*code)
+				safeCode = &c
+				result = api.AuditEventResultFailed
 			} else {
-				steps["verify"].(map[string]any)["error_code"] = code
+				evidence = &operations.Evidence{Reference: "release:" + id.String(), ObservedAt: time.Now().UTC()}
 			}
-			stepJSON, _ := json.Marshal(steps)
-			_, e = tx.Exec(ctx, `UPDATE operations SET status=$2,completed_at=clock_timestamp(),steps=$3,observed_refs=$4 WHERE id=$1`, op, status, stepJSON, refs)
-			if e != nil {
+			if e = operations.Transition(ctx, tx, *op, "verify", status, evidence, safeCode, nil); e != nil {
 				return e
 			}
 		}
-		return Audit(ctx, tx, "release-worker", "worker", "release.verify", id.String(), op, map[string]any{"verification_state": state, "error_code": code})
+		return Audit(ctx, tx, uuid.Nil, api.AuditEventActorTypeSystem, "release.verify", api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, op, result, map[string]any{"verification_state": state, "error_code": code})
 	})
 }
 func (s *Service) verifyArtifact(ctx context.Context, f Fetcher, a api.ManifestArtifact) error {

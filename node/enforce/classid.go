@@ -8,9 +8,11 @@ import (
 )
 
 const (
-	minorMin  uint16 = 0x0010
-	minorMax  uint16 = 0xEFF0
-	minorSpan uint32 = uint32(minorMax - minorMin)
+	minorMin uint16 = 0x0010
+	minorMax uint16 = 0xEFF0
+	// Inclusive count of [minorMin, minorMax]. The old difference excluded
+	// one minor, so a full table could not reach a free class (§11.4).
+	minorSpan uint32 = uint32(minorMax-minorMin) + 1
 )
 
 // PreferredMinor is the stable first choice for a member. It is a pure

@@ -2,7 +2,7 @@
 
 `fvpn-agent` (`node/agent/cmd/fvpn-agent`) is the program on every exit node. It enrolls once, proves its identity with mTLS, fetches signed desired state, applies isolation and QoS through `node/enforce`, renews leases, and reports observations. `fvpn-watchdog` (`node/watchdog/cmd/fvpn-watchdog`) is a separate process. The lab driver is `fvpn-labcontrol` (`node/internal/fakecontrol/cmd/fvpn-labcontrol`), which has to live under `node/` so it can import the fake control server. If the agent stops refreshing its heartbeat, the watchdog installs the fail-closed baseline and does not open a control connection (§16.3).
 
-The usage meter and the updater are separate programs. This tree leaves them the interfaces below. It does not sample counters, upload usage, or apply a release.
+The updater is a separate program. This process opens the usage ledger, samples forward-admission counters after forwarding is admitted, and uploads them. It does not apply a release.
 
 ## Commands
 
@@ -36,13 +36,14 @@ The enrollment token is read from the file, or from stdin when the path is `-`. 
 |---|---|---|
 | `/var/lib/vpn-node/identity/` | 0700 | agent: key, CSR, certificate, CA, `node.json`, `setup.key` |
 | `/var/lib/vpn-node/state/agent.db` | 0600 | agent SQLite store (WAL, `synchronous=FULL`) |
+| `/var/lib/vpn-node/state/usage.db` | 0600 | usage ledger (WAL, `synchronous=FULL`); path is `state_dir/usage.db` |
 | `/var/lib/vpn-node/state/desired-state.json` | 0644 | agent, only after the envelope verifies |
 | `/var/lib/vpn-node/update-journal/forwarding.blocked` | — | updater latch; the agent only reads it |
 | `/var/lib/vpn-node/update.lock` | — | flock shared by the agent, the installer and the updater (`node/internal/nodelock`) |
 | `/run/vpn-node/heartbeat` | 0644 | agent; the watchdog only reads it |
 | `/etc/vpn-node/agent.json` | — | installer; no secrets |
 
-`usage.db` and the updater journal database are not created here. Every path above is configurable in `agent.json`. Tests use a temp directory.
+The updater journal database is not created here. `usage.db` is created by the agent the first time an enrolled process boots. Every path above is configurable in `agent.json` except the usage file name, which is always `usage.db` inside `state_dir`. Tests use a temp directory.
 
 The desired-state file is replaced by a temp file and `rename` in the same directory, after `AcceptDesired` has stored the verified envelope. An unverified document is never written there. The store is the anti-rollback authority: a generation older than the accepted one is rejected and the file is left as it was. On boot the agent rewrites the file from the stored envelope.
 
@@ -81,14 +82,15 @@ Member forwarding stays off unless all of these hold:
 - the time anchor checks out
 - the store is usable and the observation outbox is under 32 pending rows
 - `forwarding.blocked` is absent and `fvpn-updater recover` did not exit 2
-- `netbird_backend` is `kernel` and `Barrier.Health` succeeded
+- `netbird_backend` is `kernel` and the meter path is readable (`Barrier.Health`; only reason `meter_path_invalid` is `METER_PATH_INVALID`)
+- the usage store can persist a sample, the usage outbox is inside its age and byte budgets, and the disk floor is clear
 - the isolation baseline is present
 - desired state is verified, in force, `published`, and names this `release_id`
 - this process holds a fresh lease whose monotonic send time is set
 - capacity is non-null and QoS renders
 - if any device binding is present, at least one is admitted for at least one second
 
-Data-plane health is reported as `unknown` and is not a gate. The tunnel probe check is `not_run`. IPv6 is always blocked. A null capacity blocks forwarding. An unknown local release blocks forwarding. `test_exempt_v4` is applied only when `test_mode` is true; a non-empty exempt list with `test_mode` false is a startup error. Host reserve `0` becomes the TEST ONLY stand-in of 1_000_000 bit/s until a measured reserve exists (待實測).
+Data-plane health is reported as `unknown` and is not a gate. The tunnel probe check is `not_run`. IPv6 is always blocked. A null capacity blocks forwarding. An unknown local release blocks forwarding. `test_exempt_v4` is applied only when `test_mode` is true; a non-empty exempt list with `test_mode` false is a startup error. `host_reserve_bps` is required. Missing or zero is a configuration error: the process prints the setting name and exits 64 before it opens a store, touches nftables, or dials the control plane (D-034). The production value is 待實測 and must be set by the operator. There is no built-in stand-in.
 
 ## Observations
 
@@ -114,15 +116,19 @@ reason <token or ->
 
 The watchdog reads the heartbeat, the monotonic clock, and whether table `inet fvpn` exists. It applies `enforce.ApplyBaseline` when the heartbeat is missing, older than `watchdog_stale_seconds` (default 30), from another boot, or when the baseline is gone or the policy deadline has passed. A healthy reading does not render serving rules and does not restart a kernel timeout. Its own restart therefore does not restart a deadline. If both processes die, nft element timeouts still expire members. The watchdog does not take the node lock; fail-closed outranks a busy flock.
 
-## Interfaces for the other node tasks
+## Usage ledger
 
-Meter (`node/agent.Barrier`). The usage task implements this. A nil barrier is `NopBarrier`, whose `Health` returns true. `Health` false or an error sets `MeterFailed` and keeps forwarding off (`METER_PATH_INVALID`). The agent does not read the forward-hook counters for billing. Usage is defined as those counters (D-019); the meter task owns sampling. `FinalSample` and `OpenEpoch` stay on the meter side and must be idempotent while forwarding is blocked.
+The agent opens `node/internal/usagestore`, `node/internal/meter` and `node/internal/usageupload` after it knows the node id. The database is `state_dir/usage.db`. The uploader uses the control client's usage class, so it has the same client certificate and the same TLS settings (TLS 1.2 minimum). Its concurrency budget stays separate from the lease budget (§14.6, §14.7). No second TLS stack is constructed.
 
-```go
-type Barrier interface {
-    Health(ctx context.Context) (ok bool, err error)
-}
-```
+Sampling starts only after a successful apply that admits forwarding. `meter.New` may reconcile an open epoch when the ledger is opened; the 10 second sample loop does not run before that apply. Counters are `u_<device>` and `d_<device>` on table `inet fvpn`. DNS counters are not usage.
+
+`Barrier.Health` is the meter's health. Reason `meter_path_invalid` (and a `netbird_backend` other than `kernel`) is `METER_PATH_INVALID`. A full usage outbox (`outbox_age`, `outbox_bytes`, `archive_bytes`) blocks forwarding as `outbox_full`, the same reason as the observation outbox cap of 32, which remains its own gate. `persist_failed` stops forwarding as `meter_storage_failed` and is reported as `STORE_UNAVAILABLE` with message `persist_failed`. `disk_space` stops forwarding as `disk_low` and is reported as `DISK_SPACE_LOW` with message `disk_space`. The disk floor (`MinFreeBytes`) is still 待實測 and stays 0 until an operator sets it inside the store options; this configuration file does not carry it.
+
+Stop and hand-off (§13.6 step 8) are `Barrier`, then the fail-closed baseline, then `FinalSample`. That sequence runs when forwarding is withdrawn (a failed gate, a failed apply, or a revoked identity) and when the process stops. A successful apply after that calls `ResumeSampling` (step 11). A clean close reason `final_sample` makes the next epoch `after_final_sample`, which checkpoints the counters as they are and does not recount them. `ErrNoEpoch` and a short wall-clock hold are not warnings.
+
+Ledger-epoch restore is `usageupload.Restore`: `GET /api/v1/agent/usage-checkpoint`, then `ApplyCheckpoint`, which verifies the `recovery` signature with the node trust store. The agent calls it at startup and whenever `NeedsRestore` is set. A lower watermark is accepted only for a verified new epoch. The agent does not check the signature itself. A failed restore does not by itself block forwarding. Upload continues while member forwarding is stopped.
+
+## Interfaces for the updater
 
 Updater:
 
@@ -131,6 +137,20 @@ Updater:
 - Recover: the agent runs `updater_recover recover -config updater_config` once at boot (empty command skips it). Exit 0 clears the block. Exit 2, or any other failure, keeps members blocked. The agent does not import the updater package.
 - Desired state: read the verified envelope at `desired_state_path` (default `/var/lib/vpn-node/state/desired-state.json`). The agent is the only writer, and only after verification.
 - Health: stock updater checks do not know isolation or the tunnel. The agent reports those on the observation, not through the updater.
+
+## Configuration
+
+| Field | Required | Meaning |
+|---|---|---|
+| `control_url`, `server_ca_file`, `trust_bundle` | yes | Control origin, pinned CA, node trust bundle |
+| `agent_release` | yes | Pinned version. `latest` is rejected |
+| `datapath` | yes | `member_ingress` and `uplink` match `^fv[a-z0-9_-]{1,13}$` and differ. `snat` is IPv4 |
+| `host_reserve_bps` | yes | Host rate reserve in bit/s. Missing or zero exits 64. Production value is 待實測 and is set by the operator |
+| `netbird_backend` | yes for forwarding | `kernel`, `userspace` or `unknown`. Only `kernel` may forward |
+| `state_dir`, `identity_dir`, `journal_dir`, `lock_path`, `heartbeat_path` | no | Defaults under `/var/lib/vpn-node` and `/run/vpn-node`. Usage ledger is `state_dir/usage.db` |
+| `release_id` | no | Local release UUID. Empty blocks forwarding as an unknown release |
+| `test_mode`, `test_exempt_v4` | no | Exempt prefixes apply only when `test_mode` is true |
+| `renew_lead_seconds`, `heartbeat_seconds`, `poll_seconds`, `observation_seconds`, `watchdog_stale_seconds` | no | Zero selects the defaults in §16.3 and §16.5 |
 
 ## Config example
 
@@ -148,12 +168,13 @@ Updater:
   "agent_release": "0.0.0-test",
   "release_id": "019a0000-0000-7000-8000-0000000000c1",
   "netbird_backend": "kernel",
+  "host_reserve_bps": 1000000,
   "updater_recover": "/opt/vpn-node/current/fvpn-updater",
   "updater_config": "/etc/vpn-node/updater.json"
 }
 ```
 
-`agent_release` must be a pinned version. `latest` is rejected. Prices, fair-use thresholds and the host reserve above are not in this file. The host reserve field, when set, is an operator override; leaving it at 0 selects the TEST ONLY stand-in.
+`agent_release` must be a pinned version. `latest` is rejected. Prices and fair-use thresholds are not in this file. `host_reserve_bps` is required and must be greater than zero. The number in the example is not a measured reserve. The production value is 待實測 and must be set by the operator. The only TEST ONLY value lives in the lab configuration.
 
 ## Decisions
 
@@ -165,6 +186,8 @@ Updater:
 - Lab exempt prefixes require `test_mode`.
 - A bootstrap secret lost after HTTP 200 and before the 0600 write is unrecoverable.
 - `ISOLATION_BASELINE_MISSING` is carried in `NodeError.Message` with code `HEALTH_CHECK_FAILED`.
+- `host_reserve_bps` missing or zero exits 64 before the kernel or the network. A zero that still reaches `Decide` fails closed and is not replaced.
+- Usage caps do not reuse `METER_PATH_INVALID`. A clean hand-off does not recount admission bytes.
 
 ## 待實測
 
@@ -172,4 +195,4 @@ Updater:
 - Filesystem flush order beyond `synchronous=FULL` and a directory fsync.
 - Real arm64 hardware. CI cross-compiles `GOARCH=arm64` only.
 - The tunnel probe. The check is `not_run`.
-- The production host rate reserve. The 1_000_000 bit/s stand-in is TEST ONLY.
+- The production host rate reserve (`host_reserve_bps`). It is 待實測 and must be set by the operator. The agent no longer substitutes a stand-in.
