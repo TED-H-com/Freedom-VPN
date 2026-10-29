@@ -50,6 +50,23 @@ x-fvpn-mutual-tls:
     state on every request, and treats node_id / node_incarnation_id in bodies
     only as consistency checks (mismatch: 403 INCARNATION_MISMATCH). Headers
     such as X-Node-ID or X-Client-Cert supplied by a client are never trusted.
+x-fvpn-browser-auth:
+  description: |
+    Existing browser routes outside /api/v1 (D-032), excluded from the 41 API
+    endpoints. There are no /api/v1/auth/session or /api/v1/auth/logout aliases.
+  routes: ['GET /auth/session', 'POST /auth/logout']
+  parameters:
+    - name: role
+      in: query
+      required: false
+      description: |
+        Selects __Host-fvpn-admin or __Host-fvpn-member. Required only when both
+        role cookies are present; ignored otherwise. Missing or invalid role
+        with both cookies is MALFORMED_REQUEST. The selected session supplies
+        the principal and logout CSRF context; a query never grants a role.
+      schema:
+        type: string
+        enum: [admin, member]
 servers:
   - url: https://control.example.invalid/api/v1
     description: Example deployment (placeholder host)
@@ -1431,8 +1448,9 @@ paths:
         Creates a provider checkout for an allowed plan with a return URL from the
         server allowlist (§9.3, §16.2). The return page is never evidence of
         payment (BILL03); entitlement changes only after a verified webhook or
-        reconciliation. 201 when the session was created synchronously, 202 with
-        an operation when the provider call is pending.
+        reconciliation. Success is 201 only and includes checkout_url (D-031).
+        Provider failure is 503 DEPENDENCY_UNAVAILABLE, retryable true; retry
+        with the same Idempotency-Key. There is no asynchronous success response.
       x-fvpn-spec: '§14.3, §9.3, §16.2'
       x-fvpn-requirements: [BILL01, BILL03, MEM01]
       security:
@@ -1458,8 +1476,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CheckoutSession'
-        '202':
-          $ref: '#/components/responses/OperationAccepted'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2523,7 +2539,10 @@ components:
         default retryable flag of each code are defined in `pkg/apierr`; the
         contracts tests keep this enum identical to that table. Codes marked
         node-local in `pkg/apierr` are reported mainly inside agent payloads
-        (update results, observations).
+        (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+        and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+        NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+        endpoints must not ship with it in a release.
       enum:
         - MALFORMED_REQUEST
         - UNAUTHENTICATED
@@ -2541,6 +2560,7 @@ components:
         - PRECONDITION_REQUIRED
         - RATE_LIMITED
         - INTERNAL_ERROR
+        - NOT_IMPLEMENTED
         - DEPENDENCY_UNAVAILABLE
         - RELEASE_NOT_APPROVED
         - UNSUPPORTED_PLATFORM
@@ -2550,6 +2570,7 @@ components:
         - KEY_UNTRUSTED
         - HASH_MISMATCH
         - SIZE_MISMATCH
+        - ARTIFACT_INVALID
         - DISK_SPACE_LOW
         - DOWNLOAD_TIMEOUT
         - STORE_UNAVAILABLE
@@ -2569,6 +2590,8 @@ components:
         - LEDGER_EPOCH_MISMATCH
         - REPLAY_UNAVAILABLE
         - METER_PATH_INVALID
+        - ISOLATION_BASELINE_MISSING
+        - METER_EPOCH_CHANGE
         - DEVICE_LIMIT_REACHED
         - ENROLLMENT_TOKEN_INVALID
         - ENROLLMENT_TOKEN_EXPIRED
@@ -2604,7 +2627,7 @@ components:
     ResourceType:
       type: string
       description: Kinds of resources referenced by operations and audit events.
-      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config]
+      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config, admin_identity]
     ResourceRef:
       type: object
       required: [type, id]
@@ -2745,6 +2768,7 @@ components:
     OperationKind:
       type: string
       enum:
+        - node.enroll
         - node.update
         - node.publish
         - node.unpublish
@@ -2755,6 +2779,8 @@ components:
         - member.suspend
         - member.unsuspend
         - member.grant
+        - member.grant_revoke
+        - member.device_authorize
         - member.device_revoke
         - policy.activate
         - release.register
@@ -3970,7 +3996,13 @@ components:
           $ref: '#/components/schemas/ReleaseSupportPayload'
 
     PolicyRevision:
-      description: One immutable policy revision; `type` selects the payload schema.
+      description: |
+        One immutable policy revision; `type` selects the payload schema.
+        The owner's JSON Schema 2020-12 payload snapshots are published under
+        contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+        threat-feed and release-support, each named <type>-payload.schema.json).
+        See docs/contracts/README.md for provenance and known schema limitations;
+        the OpenAPI payload component remains authoritative for HTTP bodies.
       oneOf:
         - $ref: '#/components/schemas/PlanPolicyRevision'
         - $ref: '#/components/schemas/FairUsePolicyRevision'
@@ -4010,7 +4042,13 @@ components:
           type: integer
           enum: [1]
         payload:
-          $ref: '#/components/schemas/PlanPayload'
+          description: |
+            Plan revision payload (§14.2, §15.2 plans/plan_revisions). Prices, device
+            limits and rates are pending business decisions (§21); the schema only
+            carries them.
+            Owner JSON Schema snapshot at contracts/schemas/policies/plan-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+          allOf:
+            - $ref: '#/components/schemas/PlanPayload'
         payload_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -4047,7 +4085,28 @@ components:
           type: integer
           enum: [1]
         payload:
-          $ref: '#/components/schemas/FairUsePayload'
+          description: |
+            Fair-use policy revision (§11.1). Thresholds and rates are pending
+            business decisions; start in shadow mode.
+
+            Validation rules enforced on create (§11.1):
+            1. `tiers` is non-empty and `tiers[0].threshold_bytes` is "0", so tiers
+               cover usage completely from zero with no gap.
+            2. `threshold_bytes` is strictly increasing. Usage U is in tier i when
+               tiers[i].threshold_bytes <= U < tiers[i+1].threshold_bytes; the last
+               tier is unbounded above. U equal to a threshold enters that tier.
+            3. Every tier has both `down_bps` and `up_bps`; all rates are
+               non-negative integers.
+            4. Rates are non-increasing and `priority` is non-decreasing from one
+               tier to the next (a higher tier is never faster or more favored), so
+               within one period the tier only stays or moves to a stricter one.
+            5. Every tier rate is at least `minimum_rate` in each direction.
+            6. Overrides have a finite `valid_until` in the future, a reason and an
+               actor; at most one override per member.
+            A missing tier is never treated as unlimited.
+            Owner JSON Schema snapshot at contracts/schemas/policies/fair-use-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+          allOf:
+            - $ref: '#/components/schemas/FairUsePayload'
         payload_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -4084,7 +4143,13 @@ components:
           type: integer
           enum: [1]
         payload:
-          $ref: '#/components/schemas/DnsProfilePayload'
+          description: |
+            DNS profile (§12.4, §12.5). References immutable domain_rule_set and
+            threat_feed revisions. A profile can never relax the fixed IP-layer
+            isolation baseline.
+            Owner JSON Schema snapshot at contracts/schemas/policies/dns-profile-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+          allOf:
+            - $ref: '#/components/schemas/DnsProfilePayload'
         payload_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -4121,7 +4186,16 @@ components:
           type: integer
           enum: [1]
         payload:
-          $ref: '#/components/schemas/DomainRuleSetPayload'
+          description: |
+            Admin domain rules (§12.4). Precedence: fixed isolation and member
+            authorization, then `block` (forced deny), then `allow` (overrides threat
+            and category lists only), then enabled lists, then normal resolution.
+            Validation rejects duplicate rule_ids and two rules with the same
+            (profile_id, domain, include_subdomains) — conflicting actions in the same
+            layer are never resolved by last-write-wins.
+            Owner JSON Schema snapshot at contracts/schemas/policies/domain-rule-set-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+          allOf:
+            - $ref: '#/components/schemas/DomainRuleSetPayload'
         payload_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -4158,7 +4232,13 @@ components:
           type: integer
           enum: [1]
         payload:
-          $ref: '#/components/schemas/ThreatFeedPayload'
+          description: |
+            Threat or category feed source with license basis (§12.3, §14.2). A feed
+            whose commercial use is not confirmed must not be placed in a production
+            profile. Fetch times and results are observations stored separately.
+            Owner JSON Schema snapshot at contracts/schemas/policies/threat-feed-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+          allOf:
+            - $ref: '#/components/schemas/ThreatFeedPayload'
         payload_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -4195,7 +4275,16 @@ components:
           type: integer
           enum: [1]
         payload:
-          $ref: '#/components/schemas/ReleaseSupportPayload'
+          description: |
+            Approved, revoked and minimum-serving releases (§13.2, §14.2).
+            Validation: approved_release_ids is a subset of
+            minimum_serving_version.serving_release_ids; revoked_release_ids is
+            disjoint from both. A normal update never raises the minimum serving set
+            implicitly; changing it is an explicit, audited policy change whose effect
+            (nodes may stop serving) the UI must show.
+            Owner JSON Schema snapshot at contracts/schemas/policies/release-support-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+          allOf:
+            - $ref: '#/components/schemas/ReleaseSupportPayload'
         payload_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -5925,6 +6014,17 @@ components:
           items:
             type: string
             format: uuid
+        revoked_release_ids:
+          type: array
+          uniqueItems: true
+          description: |
+            Releases barred from installation and serving (§13.4, D-034).
+            A node must refuse to install and must stop serving any listed release.
+            Absent and empty both mean no additional revocations; neither widens
+            the serving/allowed release intersections enforced by the updater.
+          items:
+            type: string
+            format: uuid
         lease_renewal_endpoint:
           type: string
           enum: [/api/v1/agent/lease-renewals]
@@ -6842,6 +6942,12 @@ components:
           type: string
           pattern: '^[0-9a-f]{64}$'
         policy_generation:
+          description: |
+            The desired-state config_generation actually applied when this result
+            was produced (§13.10.3, §14.7), not the update job generation or the
+            newest received desired state. Component policy_refs belong to desired
+            state; they do not replace this applied configuration generation.
+            This member was already required in the v1 contract and remains so.
           type: string
           pattern: '^(0|[1-9][0-9]*)$'
           maxLength: 20

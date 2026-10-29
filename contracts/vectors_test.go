@@ -174,10 +174,12 @@ func TestUPD05_UpdateResultPayloadHashVector(t *testing.T) {
 
 func TestSigningVectors(t *testing.T) {
 	files := map[string]envelope.Purpose{
-		"vectors/release-manifest-signing.json": envelope.PurposeRelease,
-		"vectors/desired-state-signing.json":    envelope.PurposeDesiredState,
-		"vectors/serving-lease-signing.json":    envelope.PurposeLease,
-		"vectors/usage-checkpoint-signing.json": envelope.PurposeRecovery,
+		"vectors/release-trust-update-signing.json":      envelope.PurposeRelease,
+		"vectors/release-manifest-signing.json":          envelope.PurposeRelease,
+		"vectors/desired-state-revocations-signing.json": envelope.PurposeDesiredState,
+		"vectors/desired-state-signing.json":             envelope.PurposeDesiredState,
+		"vectors/serving-lease-signing.json":             envelope.PurposeLease,
+		"vectors/usage-checkpoint-signing.json":          envelope.PurposeRecovery,
 	}
 	components := map[envelope.Purpose]string{
 		envelope.PurposeRelease: "ReleaseManifestEnvelope", envelope.PurposeDesiredState: "DesiredStateEnvelope",
@@ -247,7 +249,11 @@ func TestSigningVectors(t *testing.T) {
 			if err != nil || kid != v.KeyID || string(signed) != v.CanonicalSigned {
 				t.Fatalf("Verify: %v", err)
 			}
-			if err := validateComponent(t, components[purpose], v.Envelope); err != nil {
+			if file == "vectors/release-trust-update-signing.json" {
+				if err := validateJSONSchema(t, "trust/release-update-envelope.schema.json", v.Envelope); err != nil {
+					t.Fatal(err)
+				}
+			} else if err := validateComponent(t, components[purpose], v.Envelope); err != nil {
 				t.Fatalf("envelope does not match %s: %v", components[purpose], err)
 			}
 		})

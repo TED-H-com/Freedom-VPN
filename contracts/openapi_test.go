@@ -74,7 +74,7 @@ var specStatuses = map[string][]string{
 	"POST /admin/update-batches/{batch_id}/retry": {"202"}, "GET /admin/operations/{operation_id}": {"200"},
 	"GET /admin/audit-events": {"200"}, "GET /member/me": {"200"}, "GET /member/devices": {"200"},
 	"DELETE /member/devices/{device_id}": {"202"}, "GET /member/exits": {"200"}, "GET /member/usage": {"200"},
-	"POST /member/checkout-sessions": {"201", "202"}, "POST /member/billing-portal-sessions": {"201"},
+	"POST /member/checkout-sessions": {"201"}, "POST /member/billing-portal-sessions": {"201"},
 	"GET /member/operations/{operation_id}": {"200"}, "POST /agent/enroll": {"200", "201"},
 	"POST /agent/bootstrap": {"200"}, "POST /agent/certificates/renew": {"201"}, "GET /agent/desired-state": {"200", "304"}, "POST /agent/observations": {"202"},
 	"POST /agent/usage-batches": {"200"}, "GET /agent/usage-checkpoint": {"200"}, "POST /agent/update-results": {"202"},

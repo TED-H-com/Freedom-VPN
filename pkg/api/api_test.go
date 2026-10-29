@@ -17,6 +17,7 @@ import (
 )
 
 var registry = map[string]func() any{
+	"NodeError":                   func() any { return new(NodeError) },
 	"AgentBootstrap":              func() any { return new(AgentBootstrap) },
 	"UpdateTarget":                func() any { return new(UpdateTarget) },
 	"AuditEventList":              func() any { return new(AuditEventList) },

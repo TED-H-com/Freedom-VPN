@@ -1,0 +1,67 @@
+{
+  "mode": "shadow",
+  "effective_at": "2026-11-01T00:00:00Z",
+  "effective_period": "next_full_period",
+  "accounting_basis": {
+    "period_type": "utc_calendar_month",
+    "metering_version": "forward_admission_v1",
+    "measure": "total_bytes"
+  },
+  "tiers": [
+    {
+      "threshold_bytes": "0",
+      "down_bps": 200000000,
+      "up_bps": 100000000,
+      "priority": 0,
+      "display_name": {
+        "zh-TW": "正常速度",
+        "en": "Normal speed"
+      }
+    },
+    {
+      "threshold_bytes": "500000000000",
+      "down_bps": 50000000,
+      "up_bps": 25000000,
+      "priority": 1,
+      "display_name": {
+        "zh-TW": "公平使用調整中",
+        "en": "Fair-use adjusted"
+      }
+    },
+    {
+      "threshold_bytes": "1000000000000",
+      "down_bps": 20000000,
+      "up_bps": 10000000,
+      "priority": 2,
+      "display_name": {
+        "zh-TW": "公平使用調整中",
+        "en": "Fair-use adjusted"
+      }
+    },
+    {
+      "threshold_bytes": "2000000000000",
+      "down_bps": 5000000,
+      "up_bps": 5000000,
+      "priority": 3,
+      "display_name": {
+        "zh-TW": "基本速度",
+        "en": "Basic speed"
+      }
+    }
+  ],
+  "minimum_rate": {
+    "down_bps": 5000000,
+    "up_bps": 5000000
+  },
+  "overrides": [
+    {
+      "member_id": "4e8ca24f-b523-45ef-a782-068cc1c9f809",
+      "down_bps": 50000000,
+      "up_bps": 25000000,
+      "priority": 1,
+      "valid_until": "2026-11-01T00:00:00Z",
+      "reason": "Support case: temporary relief.",
+      "actor_id": "6a7d5389-5347-41a4-9cd7-768e07072254"
+    }
+  ]
+}

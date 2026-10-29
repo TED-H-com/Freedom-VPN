@@ -1,9 +1,32 @@
 {
+  "DesiredStateEnvelope.duplicate-revocations.json": {
+    "kind": "schema",
+    "pointer": "/signed/revoked_release_ids",
+    "keyword": "uniqueItems",
+    "note": "Revocations must be a unique UUID array when present."
+  },
+  "DesiredStateEnvelope.invalid-revocation-id.json": {
+    "kind": "schema",
+    "pointer": "/signed/revoked_release_ids/0",
+    "keyword": "format",
+    "note": "Revocations must be a unique UUID array when present."
+  },
   "DesiredStateEnvelope.no-signatures.json": {
     "kind": "schema",
     "pointer": "/signatures",
     "keyword": "minItems",
     "note": "An unsigned envelope is a downgrade and is rejected (§16.2)."
+  },
+  "DesiredStateEnvelope.null-revocations.json": {
+    "kind": "schema",
+    "pointer": "/signed/revoked_release_ids",
+    "keyword": "type",
+    "note": "Revocations must be a unique UUID array when present."
+  },
+  "DesiredStateEnvelope.revocations-tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "Removing a signed revocation invalidates the signature."
   },
   "DesiredStateEnvelope.untrusted-key.json": {
     "kind": "signature",
@@ -24,6 +47,17 @@
     "kind": "payload_hash",
     "field": "payload_hash",
     "note": "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."
+  },
+  "UpdateResult.numeric-policy-generation.json": {
+    "kind": "schema",
+    "pointer": "/policy_generation",
+    "keyword": "type",
+    "note": "Applied policy generation must never pass through a JSON number."
+  },
+  "UpdateResult.policy-generation-tampered.json": {
+    "kind": "payload_hash",
+    "field": "payload_hash",
+    "note": "Changing the applied policy generation changes the payload hash."
   },
   "UsageCheckpointEnvelope.bad-algorithm.json": {
     "kind": "schema",
