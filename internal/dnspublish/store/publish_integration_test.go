@@ -9,10 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
+	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/google/uuid"
@@ -277,6 +279,106 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 		WHERE definition_id = $1`, rev1.DefinitionID)
 	if err == nil {
 		t.Fatal("publication generation regression was accepted")
+	}
+	assertDNSAudit(t, ctx, pool, rev1.DefinitionID, []uuid.UUID{rev1.RevisionID, rev2.RevisionID})
+}
+
+func assertDNSAudit(t *testing.T, ctx context.Context, pool *pgxpool.Pool, defID uuid.UUID, revisions []uuid.UUID) {
+	t.Helper()
+	var stored, all int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action IN ('dns.publish', 'dns.withdraw')`).Scan(&stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored == 0 {
+		t.Fatal("dns publication wrote no audit events")
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events`).Scan(&all); err != nil {
+		t.Fatal(err)
+	}
+	limit := 100
+	reader := audit.Store{Pool: pool}
+	page, err := reader.List(ctx, api.ListAuditEventsParams{Limit: &limit})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reader.AnomalyCount() != 0 || len(page.Items) != all {
+		t.Fatalf("audit read-back listed %d of %d rows with %d anomalies", len(page.Items), all, reader.AnomalyCount())
+	}
+	revisionsSeen := map[uuid.UUID]bool{}
+	for _, id := range revisions {
+		revisionsSeen[id] = true
+	}
+	systemID := uuid.MustParse(releases.SystemActorID)
+	seen := map[string]map[api.ResourceType]int{}
+	dnsRows := 0
+	for _, ev := range page.Items {
+		if ev.Action != "dns.publish" && ev.Action != "dns.withdraw" {
+			continue
+		}
+		dnsRows++
+		actorID, err := ev.Actor.Id.Get()
+		if err != nil || ev.Actor.Type != api.AuditEventActorTypeSystem || uuid.UUID(actorID) != systemID {
+			t.Fatalf("%s actor %+v err %v", ev.Action, ev.Actor, err)
+		}
+		if ev.Result != api.AuditEventResultSucceeded {
+			t.Fatalf("%s result %s", ev.Action, ev.Result)
+		}
+		switch ev.Resource.Type {
+		case api.ResourceTypePolicyDefinition:
+			if ev.Resource.Id != defID {
+				t.Fatalf("definition resource %s", ev.Resource.Id)
+			}
+		case api.ResourceTypePolicyRevision:
+			if !revisionsSeen[ev.Resource.Id] {
+				t.Fatalf("revision resource %s", ev.Resource.Id)
+			}
+		default:
+			t.Fatalf("resource %s", ev.Resource.Type)
+		}
+		opID, err := ev.OperationId.Get()
+		if err != nil {
+			t.Fatalf("%s missing operation id", ev.Action)
+		}
+		reqID, err := ev.RequestId.Get()
+		if err != nil {
+			t.Fatalf("%s missing request id", ev.Action)
+		}
+		var storedReq uuid.UUID
+		if err := pool.QueryRow(ctx, `SELECT request_id FROM operations WHERE id = $1`, uuid.UUID(opID)).Scan(&storedReq); err != nil || storedReq != uuid.UUID(reqID) {
+			t.Fatalf("request correlation op %s audit %s stored %s err %v", opID, reqID, storedReq, err)
+		}
+		after, err := ev.Changes.After.Get()
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, key := range []string{"policy_generation", "document_sha256", "status", "head", "definition_id", "profile_revision_id"} {
+			value, _ := after[key].(string)
+			if value == "" {
+				t.Fatalf("%s missing %s in %#v", ev.Action, key, after)
+			}
+		}
+		if after["definition_id"] != defID.String() {
+			t.Fatalf("definition_id %v", after["definition_id"])
+		}
+		raw, err := json.Marshal(after)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(raw), "example.com") || strings.Contains(string(raw), "tracker") {
+			t.Fatalf("audit leaked a name: %s", raw)
+		}
+		if seen[ev.Action] == nil {
+			seen[ev.Action] = map[api.ResourceType]int{}
+		}
+		seen[ev.Action][ev.Resource.Type]++
+	}
+	if dnsRows != stored {
+		t.Fatalf("listed %d dns audit rows, stored %d", dnsRows, stored)
+	}
+	for _, action := range []string{"dns.publish", "dns.withdraw"} {
+		if seen[action][api.ResourceTypePolicyDefinition] == 0 || seen[action][api.ResourceTypePolicyDefinition] != seen[action][api.ResourceTypePolicyRevision] {
+			t.Fatalf("%s resources %#v", action, seen[action])
+		}
 	}
 }
 
