@@ -39,24 +39,29 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | r1-db-review: adversarial review of the merged schema (read-only) | WP03 | done (3 blockers, 8 majors → w2-db-fixes) |
 | w2-db-fixes: review fixes F-01..F-15 in migrations 00001–00005, regressions, service invariants doc | WP03 | done (#7) |
 | r1-contracts-review: adversarial review of OpenAPI, schemas, canonjson, envelope (read-only) | WP02 | done (5 majors, 7 minors → w2-contracts-r2) |
-| w2-contracts-r2: review fixes, agent bootstrap endpoint, reinstall target, UpdateTarget flags, ledger-epoch purpose | WP02 | follow-up 2 (adapting nodes and updater packages; 41 endpoints, presence types) |
+| w2-contracts-r2: review fixes, agent bootstrap endpoint, reinstall target, UpdateTarget flags, ledger-epoch purpose, consumer adaptation (41 endpoints, presence types) | WP02 | done (#20) |
 | w2-control-core: HTTP framework, auth, idempotency, ETag, operations, audit, worker | WP04, WP09 | done (#13) |
 | w2-pki-enroll: node CA, enrollment, CSR issuance, revocation, signing service | WP04 | done (#11) |
 | w2-members-billing: members, entitlement, devices, billing adapter and webhooks | WP06 | done (#9) |
 | w2-nodes-desiredstate: node registry, desired state compiler, serving leases, exits | WP04, WP05 | done (#17) |
+| w2-nodes-desiredstate follow-up 2: review fixes (compile without release target, fair-use state, dns_profile, lease locking, signed generation) | WP05 | in progress |
 | w2-usage-central: usage ledger ingest, checkpoints, projection, rollups | WP07 | done (#15) |
-| w2-usage-central follow-up: checkpoint initialisation race under concurrent first events (MTR03 flake) | WP07 | in progress |
+| w2-usage-central follow-up: checkpoint initialisation race under concurrent first events (MTR03 flake) | WP07 | done (#21) |
+| w2-usage-central follow-up 3: review fixes (freeze fence, gap and replay scoping, overflow, ledger-epoch purpose) | WP07 | in progress |
 | w2-policies-fup: plan, fair-use, DNS and release-support policies, FUP tiers | WP07, WP08 | done (#12) |
 | w2-fleet-update: releases, manifests, update batches, serving-version policy | WP09 | done (#10) |
 | w2-updater: node updater, update journal, release packaging | WP09 | done (#18) |
-| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after contracts-r2 consumer adaptation) |
-| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after contracts-r2 consumer adaptation) |
+| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | in progress |
+| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | in progress |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
 | w3-toolchain: Go 1.27.3 in go.mod and every CI pin | WP01 | done (#19) |
-| w3-wire-members: members, devices, entitlements, billing behind control and worker; NetBird devices adapter | WP06 | queued (after contracts-r2) |
-| w3-wire-nodes: PKI authenticator, enrollment and bootstrap, desired state, leases, observations, exits, releases, update batches | WP04, WP05, WP09 | queued (after contracts-r2) |
-| w3-wire-policies-usage: policies and Fair-Use operations, fup worker, usage mount with PKI signer, audit reader | WP07, WP08 | queued (after contracts-r2) |
-| w3-dns-publish: DNS policy compiler, node applier with evidence, lab scenario | WP08 | queued (after contracts-r2) |
+| r2-control-review: adversarial review of the merged control plane (read-only) | WP04, WP06 | in progress |
+| r2-updater-review: adversarial review of updater, enforcement and packaging (read-only) | WP05, WP09 | in progress |
+| r2-ledger-review: adversarial review of ledger, desired state, policies and DNS (read-only) | WP05, WP07, WP08 | done (1 blocker, 9 majors → owner follow-ups) |
+| w3-wire-members: members, devices, entitlements, billing behind control and worker; NetBird devices adapter | WP06 | in progress |
+| w3-wire-nodes: PKI authenticator, enrollment and bootstrap, desired state, leases, observations, exits, releases, update batches | WP04, WP05, WP09 | in progress |
+| w3-wire-policies-usage: policies and Fair-Use operations, fup worker, usage mount with PKI signer, audit reader | WP07, WP08 | in progress |
+| w3-dns-publish: DNS policy compiler, node applier with evidence, lab scenario | WP08 | in progress |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | queued (after the wire tasks) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | queued (after agent-core and the wire tasks) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |

@@ -1,4 +1,4 @@
-package dnspublish
+package store
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -32,7 +33,7 @@ type Config struct {
 
 // DefaultConfig uses the documentation upstream. The compiler never dials it.
 func DefaultConfig() Config {
-	return Config{Upstreams: append([]string(nil), DefaultUpstreams...)}
+	return Config{Upstreams: append([]string(nil), dnspublish.DefaultUpstreams...)}
 }
 
 // Publication is the stored document plus the generation desired state references.
@@ -43,7 +44,7 @@ type Publication struct {
 	PolicyGeneration  decstr.U64
 	DocumentHash      string
 	Canonical         []byte
-	Document          Document
+	Document          dnspublish.Document
 	Status            string
 }
 
@@ -69,7 +70,7 @@ func NewHandler(pool *pgxpool.Pool, cfg Config) func(context.Context, db.Claimed
 
 // Handle compiles or withdraws the publication described by event.
 func (p *Publisher) Handle(ctx context.Context, event db.ClaimedEvent) (string, error) {
-	if event.EventType != EventDNSPublish && event.EventType != "policy.activated" {
+	if event.EventType != dnspublish.EventDNSPublish && event.EventType != "policy.activated" {
 		return "", fmt.Errorf("unexpected event %q", event.EventType)
 	}
 	var body activation
@@ -125,7 +126,7 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 		}
 		in.Upstreams = p.cfg.Upstreams
 		in.BootstrapDNS = p.cfg.BootstrapDNS
-		compiled, err := Compile(in)
+		compiled, err := dnspublish.Compile(in)
 		if err != nil {
 			return err
 		}
@@ -219,7 +220,7 @@ func (p *Publisher) getByRevision(ctx context.Context, revID uuid.UUID) (Publica
 	if err := json.Unmarshal(pub.Canonical, &pub.Document); err != nil {
 		return Publication{}, err
 	}
-	sum, raw, err := Hash(pub.Document)
+	sum, raw, err := dnspublish.Hash(pub.Document)
 	if err != nil {
 		return Publication{}, err
 	}
@@ -242,7 +243,7 @@ func (p *Publisher) Head(ctx context.Context, defID uuid.UUID) (Publication, err
 	return p.getByRevision(ctx, revID)
 }
 
-func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (Input, string, error) {
+func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (dnspublish.Input, string, error) {
 	var (
 		gotDef  uuid.UUID
 		typ     string
@@ -253,19 +254,19 @@ func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (Input,
 	).Scan(&gotDef, &typ, &payload)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return Input{}, "", fmt.Errorf("policy revision %s not found", revID)
+			return dnspublish.Input{}, "", fmt.Errorf("policy revision %s not found", revID)
 		}
-		return Input{}, "", err
+		return dnspublish.Input{}, "", err
 	}
 	if gotDef != defID {
-		return Input{}, "", fmt.Errorf("revision %s does not belong to definition %s", revID, defID)
+		return dnspublish.Input{}, "", fmt.Errorf("revision %s does not belong to definition %s", revID, defID)
 	}
 	if typ != string(api.PolicyTypeDnsProfile) {
-		return Input{}, "", fmt.Errorf("revision %s has type %s", revID, typ)
+		return dnspublish.Input{}, "", fmt.Errorf("revision %s has type %s", revID, typ)
 	}
 	var profile api.DnsProfilePayload
 	if err := json.Unmarshal(payload, &profile); err != nil {
-		return Input{}, "", err
+		return dnspublish.Input{}, "", err
 	}
 	var extra struct {
 		SafeSearch *bool `json:"safe_search"`
@@ -277,13 +278,13 @@ func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (Input,
 	}
 	rules, err := loadRules(ctx, tx, profile)
 	if err != nil {
-		return Input{}, "", err
+		return dnspublish.Input{}, "", err
 	}
 	feeds, err := loadFeeds(ctx, tx, profile)
 	if err != nil {
-		return Input{}, "", err
+		return dnspublish.Input{}, "", err
 	}
-	return Input{
+	return dnspublish.Input{
 		ProfileCode:       profile.ProfileCode,
 		BlockResponse:     string(profile.BlockResponse),
 		BlockedTTLSeconds: profile.BlockedTtlSeconds,
@@ -293,8 +294,8 @@ func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (Input,
 	}, profile.ProfileCode, nil
 }
 
-func loadRules(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([]Rule, error) {
-	var rules []Rule
+func loadRules(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([]dnspublish.Rule, error) {
+	var rules []dnspublish.Rule
 	for _, id := range profile.DomainRuleSetRevisionIds {
 		revID := uuid.UUID(id)
 		var typ string
@@ -315,17 +316,14 @@ func loadRules(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 				continue
 			}
 			action := string(dnspolicy.ActionBlock)
-			layer := layerAdminBlock
 			if rule.Action == api.DomainRuleActionAllow {
 				action = string(dnspolicy.ActionAllow)
-				layer = layerAdminAllow
 			}
-			rules = append(rules, Rule{
+			rules = append(rules, dnspublish.Rule{
 				RuleID:            uuid.UUID(rule.RuleId).String(),
 				Domain:            rule.Domain,
 				IncludeSubdomains: rule.IncludeSubdomains,
 				Action:            action,
-				Layer:             layer,
 				Reason:            rule.Reason,
 			})
 		}
@@ -333,8 +331,8 @@ func loadRules(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 	return rules, nil
 }
 
-func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([]Feed, error) {
-	var feeds []Feed
+func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([]dnspublish.Feed, error) {
+	var feeds []dnspublish.Feed
 	for _, id := range profile.ThreatFeedRevisionIds {
 		revID := uuid.UUID(id)
 		var typ string
@@ -354,7 +352,7 @@ func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 		for i, c := range feed.Categories {
 			cats[i] = string(c)
 		}
-		feeds = append(feeds, Feed{
+		feeds = append(feeds, dnspublish.Feed{
 			FeedCode:      feed.FeedCode,
 			ContentSHA256: feed.ContentSha256,
 			Format:        string(feed.Format),
@@ -364,7 +362,7 @@ func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 	return feeds, nil
 }
 
-func insertDocument(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, code string, gen decstr.U64, compiled Compiled) error {
+func insertDocument(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, code string, gen decstr.U64, compiled dnspublish.Compiled) error {
 	tag, err := tx.Exec(ctx, `
 		INSERT INTO dns_resolver_documents (
 			profile_revision_id, definition_id, profile_code, policy_generation,

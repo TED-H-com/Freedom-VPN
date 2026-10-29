@@ -1262,3 +1262,109 @@ func TestF04_ReplayUnavailableTombstonesAndRetentionPurge(t *testing.T) {
 		t.Fatalf("expected DELETE FROM usage_rollups to be rejected by F-02 trigger")
 	}
 }
+
+func TestMTR03_CheckpointInitRaceDeterministic(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 25, 9, 0, 0, 0, time.UTC)
+
+	ev1 := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     100,
+			DownloadBytes:   200,
+		},
+	})
+	ev2 := makeSignedEvent(t, env.identity1, 2, meterEpoch, base.Add(time.Minute), base.Add(2*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     300,
+			DownloadBytes:   400,
+		},
+	})
+
+	// Deterministically reproduce the fresh-stream checkpoint init race:
+	// 1. Slow worker (ingesting ev2) sees pgx.ErrNoRows on the initial selectCheckpointForUpdateInTx.
+	// 2. Fast worker (ingesting ev1) creates the checkpoint row and commits ev1 (seq=1).
+	// 3. Slow worker acquires node_incarnations; if it fails to re-check selectCheckpointForUpdateInTx
+	//    and instead computes watermark (1, 1) while fast worker commits a second event (or while ev1
+	//    was committed between watermark read and INSERT), its BEFORE INSERT check_usage_checkpoint
+	//    trigger fails with SQLSTATE 23514.
+	initialMissEntered := make(chan struct{})
+	releaseInitialMiss := make(chan struct{})
+	var missOnce, insertOnce sync.Once
+
+	tracedCtx := usage.WithCheckpointInitTrace(ctx, &usage.CheckpointInitTrace{
+		AfterInitialMiss: func() {
+			missOnce.Do(func() {
+				close(initialMissEntered)
+				<-releaseInitialMiss
+			})
+		},
+		BeforeInsert: func() {
+			insertOnce.Do(func() {
+				// If the slow path reaches INSERT after another transaction already created the
+				// checkpoint row, a concurrent fast-path event commit changes usage_events
+				// before BEFORE INSERT check_usage_checkpoint runs.
+				if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+					NodeId:            env.node1,
+					NodeIncarnationId: env.inc1,
+					Events:            []api.UsageEvent{ev1},
+				}); err != nil {
+					t.Errorf("concurrent fast-path IngestBatch(ev1) failed: %v", err)
+				}
+			})
+		},
+	})
+
+	errCh := make(chan error, 1)
+	go func() {
+		_, err := env.svc.IngestBatch(tracedCtx, env.identity1, api.UsageBatchRequest{
+			NodeId:            env.node1,
+			NodeIncarnationId: env.inc1,
+			Events:            []api.UsageEvent{ev2},
+		})
+		errCh <- err
+	}()
+
+	<-initialMissEntered
+	// Create the stream checkpoint row via GetCheckpoint (or an initial event) while slow worker is paused after initial miss.
+	if _, err := env.svc.GetCheckpoint(ctx, env.identity1); err != nil {
+		t.Fatalf("GetCheckpoint to initialize stream: %v", err)
+	}
+	close(releaseInitialMiss)
+
+	if err := <-errCh; err != nil {
+		t.Fatalf("deterministic checkpoint init race failed: %v", err)
+	}
+
+	cpEnv, err := env.svc.GetCheckpoint(ctx, env.identity1)
+	if err != nil {
+		t.Fatalf("GetCheckpoint after race: %v", err)
+	}
+	// If BeforeInsert was skipped (because slow worker re-checked selectCheckpointForUpdateInTx and
+	// locked the existing checkpoint row), ingest ev1 now so both ev1 and ev2 are present.
+	if cpEnv.Signed.HighestContiguousSeq == 0 {
+		if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+			NodeId:            env.node1,
+			NodeIncarnationId: env.inc1,
+			Events:            []api.UsageEvent{ev1},
+		}); err != nil {
+			t.Fatalf("IngestBatch(ev1): %v", err)
+		}
+		cpEnv, err = env.svc.GetCheckpoint(ctx, env.identity1)
+		if err != nil {
+			t.Fatalf("GetCheckpoint final: %v", err)
+		}
+	}
+	if cpEnv.Signed.HighestContiguousSeq != 2 || cpEnv.Signed.MaxSeenSeq != 2 {
+		t.Fatalf("expected hcs=2 max=2, got hcs=%d max=%d", cpEnv.Signed.HighestContiguousSeq, cpEnv.Signed.MaxSeenSeq)
+	}
+}

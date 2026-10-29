@@ -1,6 +1,6 @@
 //go:build integration
 
-package dnspublish
+package store
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -159,7 +160,7 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if len(stored.Document.Feeds) != 1 || stored.Document.Feeds[0].ContentSHA256 == "" {
 		t.Fatalf("feed pin missing: %+v", stored.Document.Feeds)
 	}
-	sum, raw, err := Hash(stored.Document)
+	sum, raw, err := dnspublish.Hash(stored.Document)
 	if err != nil || sum != stored.DocumentHash || string(raw) != string(stored.Canonical) {
 		t.Fatalf("stored bytes do not match the canonical hash")
 	}

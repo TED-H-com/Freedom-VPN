@@ -1,11 +1,10 @@
 package worker
 
-import "github.com/jackc/pgx/v5/pgxpool"
-
-// Jobs is the single composition point for domain jobs (§14.5).
-// Each domain adds one Register line. pool is the worker database.
-func Jobs(pool *pgxpool.Pool) Registry {
-	r := make(Registry)
-	r.Register(dnsPublishEvent, dnsPublishHandler(pool))
-	return r
+// Domains is the only registration list. Add exactly one line per domain;
+// constructors and wiring belong in jobs_<area>.go. See docs/control/COMPOSITION.md.
+func Domains() []Domain {
+	return []Domain{
+		members(),
+		dns(),
+	}
 }

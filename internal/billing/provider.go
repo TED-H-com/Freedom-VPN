@@ -87,6 +87,8 @@ type Config struct {
 	ReturnURLs       []string
 	LeaseDuration    time.Duration
 	MaxWebhookBytes  int
+	// AllowedPriceIDs is required by production composition; nil permits test fixtures.
+	AllowedPriceIDs []string
 }
 
 func TestConfig() Config {

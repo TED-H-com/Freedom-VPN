@@ -1,6 +1,7 @@
 // Package dnspublish compiles an active dns_profile revision into a
-// deterministic resolver document and stores it for desired-state policy_refs
-// (§12.4, §12.5, §12.7).
+// deterministic resolver document for desired-state policy_refs
+// (§12.4, §12.5, §12.7). Persistence lives in the store subpackage so node
+// code can verify documents without a database driver.
 package dnspublish
 
 import (

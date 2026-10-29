@@ -7,12 +7,12 @@ An activated `dns_profile` becomes one canonical resolver document. The worker s
 ## Pipeline
 
 1. An admin activates a `dns_profile` revision. The policies store writes `policy.activated` and the existing compiled bundle.
-2. Migration `00180` inserts a second outbox row, `dns.publish`, for `payload.type = dns_profile` only. `policy.activated` stays available for desired-state compilation (§14.5).
-3. `apps/worker` handles `dns.publish`. It loads the profile, the referenced domain rules, and the threat-feed identities, then calls `dnspublish.Compile`.
+2. Migration `00180` inserts a second outbox row, `dns.publish`, for `payload.type = dns_profile` only. `policy.activated` stays available for desired-state compilation (§14.5). That trigger is the current fan-out. A later worker may fan out from the `policy.activated` handler instead.
+3. `worker.Domains` registers `dns()`. The handler in `internal/dnspublish/store` loads the profile, the referenced domain rules, and the threat-feed identities, then calls `dnspublish.Compile`. The document package does not import a database driver.
 4. The RFC 8785 bytes and their SHA-256 are stored in `dns_resolver_documents`, keyed by `profile_revision_id`. That is the id `desired_states.policy_refs` already carries. `dns_publication_heads` points at the current document.
 5. The node agent (not edited here) passes the document to `node/dns`. The applier converges every configured resolver or restores the previous configuration.
 
-Upstreams and bootstrap servers are worker configuration (`dnspublish.Config`), not fields of the policy payload. The default upstream is `https://dns.example.com/dns-query` and is never dialed by the compiler. The same rules plus the same config produce the same bytes. A config change is a different document.
+Upstreams and bootstrap servers are worker configuration (`dnspublish/store.Config`), not fields of the policy payload. The default upstream is `https://dns.example.com/dns-query` and is never dialed by the compiler. The same rules plus the same config produce the same bytes. A config change is a different document.
 
 Threat-feed revisions store metadata and `content_sha256` only. The publisher does not fetch feed URLs (§12.3). The document pins `feed_code`, `content_sha256`, `format`, and categories. Feed domain bodies are not in the policy revision, so they are not rendered as filter rules.
 

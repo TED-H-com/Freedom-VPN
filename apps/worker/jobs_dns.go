@@ -1,14 +1,20 @@
 package worker
 
 import (
+	"context"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
-	"github.com/jackc/pgx/v5/pgxpool"
+	dnsstore "github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store"
 )
 
-// dnsPublishEvent is fanned out from dns_profile activation. policy.activated
-// stays unregistered here so desired-state compilation can consume it (§14.5).
-const dnsPublishEvent = dnspublish.EventDNSPublish
-
-func dnsPublishHandler(pool *pgxpool.Pool) Handler {
-	return dnspublish.NewHandler(pool, dnspublish.DefaultConfig())
+// dns registers DNS publication. policy.activated stays unregistered so
+// desired-state compilation can consume it (§14.5). The build only constructs
+// the handler; it does not start work.
+func dns() Domain {
+	return Domain{Name: "dns", Build: func(_ context.Context, d Dependencies) (Built, error) {
+		publisher := dnsstore.NewPublisher(d.Pool, dnsstore.DefaultConfig())
+		jobs := Registry{}
+		jobs.Register(dnspublish.EventDNSPublish, publisher.Handle)
+		return Built{Jobs: jobs, Runners: nil}, nil
+	}}
 }
