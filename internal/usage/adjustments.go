@@ -2,6 +2,7 @@ package usage
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -124,6 +125,28 @@ func (s *Service) CreateAdjustment(ctx context.Context, req AdjustmentCreate) (A
 		)
 		if err != nil {
 			return fmt.Errorf("usage: insert adjustment: %w", err)
+		}
+
+		actID, actType := auditActor(req.Actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"adjustment_id":  adjID.String(),
+			"member_id":      req.MemberID.String(),
+			"period":         monthPeriod.ID,
+			"upload_bytes":   req.UploadBytes,
+			"download_bytes": req.DownloadBytes,
+			"reason":         req.Reason,
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage.adjustment.create",
+			Resource:      "member:" + req.MemberID.String(),
+			Result:        "succeeded",
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append adjustment audit: %w", err)
 		}
 
 		out = Adjustment{

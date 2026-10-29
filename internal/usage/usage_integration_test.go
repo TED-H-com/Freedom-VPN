@@ -58,13 +58,22 @@ func setupTestEnv(t *testing.T) *testEnv {
 	}
 	const keyID = "test-recovery-key-1"
 	signer := usage.NewRecoverySigner(keyID, priv)
-	ts, err := envelope.NewTrustStore(envelope.TrustedKey{
-		KeyID:     keyID,
-		PublicKey: pub,
-		Purposes:  []envelope.Purpose{envelope.PurposeRecovery},
-		NotBefore: now.Add(-24 * time.Hour),
-		NotAfter:  now.Add(24 * time.Hour),
-	})
+	ts, err := envelope.NewTrustStore(
+		envelope.TrustedKey{
+			KeyID:     keyID,
+			PublicKey: pub,
+			Purposes:  []envelope.Purpose{envelope.PurposeRecovery},
+			NotBefore: now.Add(-24 * time.Hour),
+			NotAfter:  now.Add(24 * time.Hour),
+		},
+		envelope.TrustedKey{
+			KeyID:     keyID + "-ledger-epoch",
+			PublicKey: signer.LedgerEpochPublicKey(),
+			Purposes:  []envelope.Purpose{envelope.PurposeLedgerEpoch},
+			NotBefore: now.Add(-24 * time.Hour),
+			NotAfter:  now.Add(24 * time.Hour),
+		},
+	)
 	if err != nil {
 		t.Fatalf("NewTrustStore: %v", err)
 	}
@@ -847,6 +856,13 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	}
 	if recState.NewLedgerEpoch == oldEpoch || recState.Mode != usage.LedgerModeReconciling {
 		t.Fatalf("unexpected RecoveryState: %+v", recState)
+	}
+	rawRecEnv, err := recState.SignedRecord.MarshalCanonical()
+	if err != nil {
+		t.Fatalf("marshal signed recovery record: %v", err)
+	}
+	if _, _, err := envelope.Verify(rawRecEnv, envRestored.trustStore, envelope.PurposeLedgerEpoch, envRestored.now); err != nil {
+		t.Fatalf("central verification of signed recovery record with purpose ledger-epoch failed: %v", err)
 	}
 
 	// Verify rollups are marked reconciliation_in_progress = true.

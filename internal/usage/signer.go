@@ -1,6 +1,7 @@
 package usage
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/hex"
@@ -10,32 +11,78 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
 
-// Signer signs recovery documents (usage checkpoints and recovery records)
-// using a recovery-purpose key (§16.2, §17.3).
+// Signer signs recovery documents (usage checkpoints with purpose "recovery"
+// and recovery records with purpose "ledger-epoch") (§16.2, §16.3, §17.3).
 type Signer interface {
 	Sign(purpose envelope.Purpose, signed any) (envelope.Envelope, error)
 }
 
-// Ed25519Signer is an in-memory Signer implementation backed by an Ed25519 key.
-type Ed25519Signer struct {
-	KeyID      string
-	PrivateKey ed25519.PrivateKey
-	Purpose    envelope.Purpose
+// ProviderSigner adapts a central PKI signing.Provider to usage.Signer,
+// signing checkpoints with signing.Recovery ("recovery") and recovery records
+// with signing.LedgerEpoch ("ledger-epoch") (§16.2, §16.3, §17.3).
+type ProviderSigner struct {
+	provider signing.Provider
 }
 
-// NewRecoverySigner creates an Ed25519Signer restricted to envelope.PurposeRecovery.
-func NewRecoverySigner(keyID string, priv ed25519.PrivateKey) *Ed25519Signer {
-	return &Ed25519Signer{
-		KeyID:      keyID,
-		PrivateKey: priv,
-		Purpose:    envelope.PurposeRecovery,
+// NewProviderSigner constructs a Signer backed by a central signing.Provider.
+func NewProviderSigner(p signing.Provider) *ProviderSigner {
+	return &ProviderSigner{provider: p}
+}
+
+// Sign implements Signer.
+func (s *ProviderSigner) Sign(purpose envelope.Purpose, signed any) (envelope.Envelope, error) {
+	if s == nil || s.provider == nil {
+		return envelope.Envelope{}, fmt.Errorf("usage: signing provider is nil")
 	}
+	switch purpose {
+	case envelope.PurposeRecovery:
+		return s.provider.SignEnvelope(context.Background(), signing.Recovery, signed)
+	case envelope.PurposeLedgerEpoch:
+		return s.provider.SignEnvelope(context.Background(), signing.LedgerEpoch, signed)
+	default:
+		return envelope.Envelope{}, fmt.Errorf("usage: unsupported signing purpose %q for usage signer", purpose)
+	}
+}
+
+// Ed25519Signer is an in-memory Signer implementation backed by Ed25519 keys.
+type Ed25519Signer struct {
+	KeyID                 string
+	PrivateKey            ed25519.PrivateKey
+	LedgerEpochKeyID      string
+	LedgerEpochPrivateKey ed25519.PrivateKey
+	Purpose               envelope.Purpose
+}
+
+// NewRecoverySigner creates an Ed25519Signer restricted to envelope.PurposeRecovery
+// (and derives a domain-separated key for envelope.PurposeLedgerEpoch).
+func NewRecoverySigner(keyID string, priv ed25519.PrivateKey) *Ed25519Signer {
+	var lePriv ed25519.PrivateKey
+	if len(priv) == ed25519.PrivateKeySize {
+		seed := sha256.Sum256(append([]byte("fvpn:ledger-epoch:"), priv.Seed()...))
+		lePriv = ed25519.NewKeyFromSeed(seed[:])
+	}
+	return &Ed25519Signer{
+		KeyID:                 keyID,
+		PrivateKey:            priv,
+		LedgerEpochKeyID:      keyID + "-ledger-epoch",
+		LedgerEpochPrivateKey: lePriv,
+		Purpose:               envelope.PurposeRecovery,
+	}
+}
+
+// LedgerEpochPublicKey returns the Ed25519 public key used for envelope.PurposeLedgerEpoch.
+func (s *Ed25519Signer) LedgerEpochPublicKey() ed25519.PublicKey {
+	if s == nil || len(s.LedgerEpochPrivateKey) != ed25519.PrivateKeySize {
+		return nil
+	}
+	return s.LedgerEpochPrivateKey.Public().(ed25519.PublicKey)
 }
 
 // Sign implements Signer.
@@ -46,10 +93,21 @@ func (s *Ed25519Signer) Sign(purpose envelope.Purpose, signed any) (envelope.Env
 	if !purpose.Valid() {
 		return envelope.Envelope{}, fmt.Errorf("usage: invalid signing purpose %q", purpose)
 	}
+	keyID := s.KeyID
+	priv := s.PrivateKey
 	if s.Purpose != "" && purpose != s.Purpose {
-		return envelope.Envelope{}, fmt.Errorf("usage: signer purpose mismatch: got %q, want %q", purpose, s.Purpose)
+		if s.Purpose == envelope.PurposeRecovery && purpose == envelope.PurposeLedgerEpoch && len(s.LedgerEpochPrivateKey) == ed25519.PrivateKeySize {
+			if s.LedgerEpochKeyID != "" {
+				keyID = s.LedgerEpochKeyID
+			} else {
+				keyID = s.KeyID + "-ledger-epoch"
+			}
+			priv = s.LedgerEpochPrivateKey
+		} else {
+			return envelope.Envelope{}, fmt.Errorf("usage: signer purpose mismatch: got %q, want %q", purpose, s.Purpose)
+		}
 	}
-	return envelope.Sign(signed, s.PrivateKey, s.KeyID)
+	return envelope.Sign(signed, priv, keyID)
 }
 
 // ComputeEventHash computes the RFC 8785 canonical JSON of ev (including payload_sha256)

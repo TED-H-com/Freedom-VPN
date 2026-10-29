@@ -3,6 +3,7 @@ package usage
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -15,6 +16,14 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
+
+func auditActor(actor string) (string, string) {
+	trimmed := strings.TrimSpace(actor)
+	if id, err := uuid.Parse(trimmed); err == nil && id != uuid.Nil {
+		return id.String(), "admin"
+	}
+	return trimmed, "system"
+}
 
 // RecoveryRequest contains parameters to enter ledger recovery mode (§17.3).
 type RecoveryRequest struct {
@@ -62,6 +71,11 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 		return apierr.Validation("reason is required", apierr.FieldError{Field: "/reason", Reason: "required"})
 	}
 	now := s.now()
+	actID, actType := auditActor(actor)
+	afterBytes, _ := json.Marshal(map[string]any{
+		"mode":   string(LedgerModeFrozen),
+		"reason": reason,
+	})
 	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		tag, err := tx.Exec(ctx, `
 			UPDATE usage_ledger_state
@@ -73,6 +87,18 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 		}
 		if tag.RowsAffected() == 0 {
 			return fmt.Errorf("usage: usage_ledger_state singleton missing")
+		}
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage_ledger.freeze",
+			Resource:      "fleet_config:" + ledgerStateSingletonID,
+			Result:        "succeeded",
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append freeze audit: %w", err)
 		}
 		return nil
 	})
@@ -178,7 +204,7 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 			StreamCount:         len(streams),
 			CreatedAt:           now,
 		}
-		rawEnv, err := s.signer.Sign(envelope.PurposeRecovery, payload)
+		rawEnv, err := s.signer.Sign(envelope.PurposeLedgerEpoch, payload)
 		if err != nil {
 			return fmt.Errorf("usage: sign recovery record: %w", err)
 		}
@@ -257,6 +283,28 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 			return fmt.Errorf("usage: update usage_ledger_state for recovery: %w", err)
 		}
 
+		actID, actType := auditActor(req.Actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"recovery_id":           recoveryID.String(),
+			"previous_ledger_epoch": prevEpoch.String(),
+			"new_ledger_epoch":      newEpoch.String(),
+			"mode":                  string(LedgerModeReconciling),
+			"reason":                req.Reason,
+			"recomputed_streams":    len(streams),
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage_ledger.begin_recovery",
+			Resource:      "fleet_config:" + ledgerStateSingletonID,
+			Result:        "succeeded",
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append begin_recovery audit: %w", err)
+		}
+
 		result = RecoveryState{
 			RecoveryID:          recoveryID,
 			PreviousLedgerEpoch: prevEpoch,
@@ -282,6 +330,7 @@ func (s *Service) CompleteRecovery(ctx context.Context, actor string) error {
 		return apierr.Validation("actor is required", apierr.FieldError{Field: "/actor", Reason: "required"})
 	}
 	now := s.now()
+	actID, actType := auditActor(actor)
 	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		state, err := s.getLedgerStateInTx(ctx, tx)
 		if err != nil {
@@ -313,6 +362,23 @@ func (s *Service) CompleteRecovery(ctx context.Context, actor string) error {
 			WHERE id = $1
 		`, ledgerStateSingletonID, string(LedgerModeNormal), actor, now); err != nil {
 			return fmt.Errorf("usage: set ledger mode normal: %w", err)
+		}
+
+		afterBytes, _ := json.Marshal(map[string]any{
+			"ledger_epoch": state.LedgerEpoch.String(),
+			"mode":         string(LedgerModeNormal),
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage_ledger.complete_recovery",
+			Resource:      "fleet_config:" + ledgerStateSingletonID,
+			Result:        "succeeded",
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append complete_recovery audit: %w", err)
 		}
 		return nil
 	})
