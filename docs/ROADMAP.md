@@ -29,12 +29,23 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | Task | Work package | Status |
 |---|---|---|
 | w0-bootstrap: repositories, contract, spec | WP01 | done |
-| w1-contracts: OpenAPI, schemas, vectors, shared leaf packages | WP03 | in progress |
+| w1-contracts: OpenAPI, schemas, vectors, shared leaf packages | WP03 | done (#4) |
 | w1-db: PostgreSQL schema, DB foundation, CI | WP03 | done (#1) |
 | w1-netlab: G2 isolation, metering and shaping lab | WP02, WP05, WP07 | in progress |
 | w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | in progress |
 | w1-portal: Admin and Member portal on a mock API | WP10 | done (#2) |
+| w1-deps-bump: current pgx, goose and transitive module pins | WP03 | done (#3) |
 | w1-dnspolicy: domain rules, bundle compiler, AdGuard Home backend | WP08 | in progress |
+| w2-control-core: HTTP framework, auth, idempotency, ETag, operations, audit, worker | WP04, WP09 | in progress |
+| w2-pki-enroll: node CA, enrollment, CSR issuance, revocation, signing service | WP04 | in progress |
+| w2-members-billing: members, entitlement, devices, billing adapter and webhooks | WP06 | in progress |
+| w2-nodes-desiredstate: node registry, desired state compiler, serving leases, exits | WP04, WP05 | in progress |
+| w2-usage-central: usage ledger ingest, checkpoints, projection, rollups | WP07 | in progress |
+| w2-policies-fup: plan, fair-use, DNS and release-support policies, FUP tiers | WP07, WP08 | in progress |
+| w2-fleet-update: releases, manifests, update batches, serving-version policy | WP09 | in progress |
+| w2-updater: node updater, update journal, release packaging | WP09 | in progress |
+| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after w1-netlab) |
+| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after w1-netlab) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
 

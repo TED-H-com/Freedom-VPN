@@ -18,6 +18,8 @@ Freedom VPN is a member-based, multi-region VPN platform for a small paid commun
 - Product and engineering spec (Traditional Chinese): [docs/spec/PROJECT_SPEC.zh-TW.md](docs/spec/PROJECT_SPEC.zh-TW.md)
 - Engineering contract for contributors and AI agents: [AGENTS.md](AGENTS.md)
 - Roadmap and task board: [docs/ROADMAP.md](docs/ROADMAP.md)
+- API contract conventions and endpoint table: [docs/contracts/README.md](docs/contracts/README.md)
+- Database foundation: [docs/db/README.md](docs/db/README.md)
 
 ## Repository layout
 

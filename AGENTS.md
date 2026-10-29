@@ -83,7 +83,7 @@ This file binds every contributor, human or AI agent. Read it completely before 
 - Commit early and often on your branch. Message format: `<area>: <summary>`, with the trailer `Agent: <cli>/<model>`. Never push, merge, tag, or rewrite `main`.
 - Self-check before you finish:
   1. Build, vet and all relevant tests pass. Paste the real output tails into the report.
-  2. Formatting and lint are clean (`gofmt -l` empty, eslint clean).
+  2. Formatting and lint are clean: `gofmt -l` empty, eslint clean, and the root `make go-lint` (gofmt, vet, staticcheck pinned in `mk/go.mk`) exits 0 for the whole module. Your `<area>-lint` target runs the same pinned staticcheck over your own packages.
   3. `git status` is clean and everything is committed.
   4. `git diff --stat main...HEAD` lists only owned paths and the allowed shared files.
   5. The hygiene check in §8 passes.
