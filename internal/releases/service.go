@@ -22,11 +22,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// SystemActorID is the internal system identity retained for this revision.
-//
-// Deprecated: use audit.SystemActor (or its ID for non-audit references).
-var SystemActorID = audit.SystemActor.ID.String()
-
 const FleetID = "00000000-0000-0000-0000-000000000001"
 
 type Service struct {
