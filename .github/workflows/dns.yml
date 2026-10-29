@@ -1,0 +1,75 @@
+name: dns
+
+on:
+  push:
+    paths:
+      - "internal/dnspolicy/**"
+      - "deploy/dev/adguard/**"
+      - "docs/dns/**"
+      - "mk/dns.mk"
+      - ".github/workflows/dns.yml"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - "internal/dnspolicy/**"
+      - "deploy/dev/adguard/**"
+      - "docs/dns/**"
+      - "mk/dns.mk"
+      - ".github/workflows/dns.yml"
+      - "go.mod"
+      - "go.sum"
+  workflow_dispatch:
+  schedule:
+    - cron: "15 3 * * *"
+
+env:
+  CGO_ENABLED: "0"
+
+jobs:
+  unit:
+    name: DNS Unit & Cross-Compile
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Lint & Vet
+        run: make -f mk/dns.mk dns-lint
+
+      - name: Cross-Compile (linux/amd64 and linux/arm64)
+        run: make -f mk/dns.mk dns-build
+
+      - name: Unit Tests
+        run: make -f mk/dns.mk dns-test
+
+  integration:
+    name: AdGuard Home Integration Suite
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    needs: unit
+    env:
+      FVPN_DNS_PREFIX: fvpn-ci-dns
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Start Dev AdGuard Home Stack
+        run: make -f mk/dns.mk dns-up
+
+      - name: Run Integration Tests
+        run: make -f mk/dns.mk dns-test-integration
+
+      - name: Tear Down Dev AdGuard Home Stack
+        if: always()
+        run: make -f mk/dns.mk dns-down

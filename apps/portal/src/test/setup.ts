@@ -18,6 +18,15 @@ afterEach(() => {
   etagCache.clear();
   window.localStorage.clear();
   window.sessionStorage.clear();
+  if (typeof document !== 'undefined' && document.cookie) {
+    for (const part of document.cookie.split(';')) {
+      const eq = part.indexOf('=');
+      const name = (eq === -1 ? part : part.slice(0, eq)).trim();
+      if (name) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+      }
+    }
+  }
 });
 
 afterAll(() => {

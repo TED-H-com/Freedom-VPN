@@ -70,6 +70,10 @@ export interface BatchSummary {
   computedState: UpdateBatchState;
 }
 
+export function computeVerifiedSuccessCount(counts: UpdateBatchCounts): number {
+  return counts.succeeded + counts.already_current;
+}
+
 export function sumBatchBuckets(counts: UpdateBatchCounts): number {
   let total = 0;
   for (const key of UPDATE_BUCKET_KEYS) {

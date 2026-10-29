@@ -1,102 +1,154 @@
-import React, { useEffect, useState } from 'react';
-import { portalApi, type MemberItem } from '../../api';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient, deriveMemberServiceReason } from '../../api';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
 
 export function MemberServicePage(): React.ReactElement {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { persona } = useSession();
-  const [member, setMember] = useState<MemberItem | null>(null);
 
-  useEffect(() => {
-    void portalApi.getMemberMe().then((res) => setMember(res.data.member));
-  }, [persona]);
+  const selfQuery = useQuery({
+    queryKey: ['member', 'me', persona],
+    queryFn: () => apiClient.getMemberSelf(),
+  });
 
-  if (!member) {
-    return <div className="card">Loading service status...</div>;
+  const usageQuery = useQuery({
+    queryKey: ['member', 'usage', persona],
+    queryFn: () => apiClient.getMemberUsage(),
+  });
+
+  if (selfQuery.isLoading || !selfQuery.data) {
+    return (
+      <div className="card" role="status">
+        Loading service status...
+      </div>
+    );
   }
 
-  return (
-    <div>
-      <header className="page-header">
-        <h1>{t('member.service.title')}</h1>
-      </header>
+  const me = selfQuery.data;
+  const ent = me.entitlement;
+  const usage = usageQuery.data;
+  const isActive =
+    ent.state === 'active' ||
+    ent.state === 'cancel_at_period_end' ||
+    ent.state === 'past_due';
+  const isFupAdjusted = usage?.fair_use.state === 'adjusted';
+  const resetAt = me.fair_use_reset_at ?? usage?.fair_use.resets_at ?? '-';
+  const planName =
+    ent.plan?.display_name[locale] ??
+    ent.plan?.display_name['zh-TW'] ??
+    ent.plan?.code ??
+    '-';
+  const reasonText = deriveMemberServiceReason(me, locale);
 
-      {member.fup_tier_index > 0 && (
+  return (
+    <div data-testid="member-service-page">
+      <div className="page-header">
+        <div>
+          <h1>{t('member.service.title')}</h1>
+          <p className="page-subtitle mono">
+            {me.display_name} · {me.email ?? '-'}
+          </p>
+        </div>
+        <span
+          className={`badge ${
+            ent.state === 'active'
+              ? 'badge-success'
+              : ent.state === 'suspended' || ent.state === 'expired'
+                ? 'badge-danger'
+                : 'badge-warning'
+          }`}
+          data-testid="member-entitlement-state-badge"
+        >
+          {ent.state}
+        </span>
+      </div>
+
+      {/* Exact required FUP throttling phrase (§11.6, §18.4) */}
+      {isFupAdjusted && (
         <div
           className="alert alert-warning"
           role="status"
           data-testid="member-fup-throttled-banner"
         >
-          <strong>
-            {t('member.service.fupThrottledBanner', {
-              resetAt: member.next_fup_reset_at,
-            })}
-          </strong>
+          {t('member.service.fupThrottledBanner', {
+            resetAt,
+          })}
         </div>
       )}
 
-      <div className="metrics-grid">
-        <article className="metric-card" data-testid="member-entitlement-card">
-          <div>
-            <h2>{t('member.service.stateLabel')}</h2>
-            <div className="metric-value">
-              <span
-                className={
-                  member.entitlement_state === 'active'
-                    ? 'badge badge-success'
-                    : member.entitlement_state === 'suspended' ||
-                        member.entitlement_state === 'expired' ||
-                        member.entitlement_state === 'closed'
-                      ? 'badge badge-danger'
-                      : 'badge badge-warning'
-                }
-                style={{ fontSize: '1.1rem', padding: '6px 12px' }}
-                data-testid="member-entitlement-state-badge"
-              >
-                {member.entitlement_state}
-              </span>
-            </div>
-            <p className="metric-desc" data-testid="member-entitlement-reason">
-              <strong>{t('member.service.reasonLabel')}:</strong>{' '}
-              {member.entitlement_reason}
-            </p>
-          </div>
-        </article>
+      <div className="stat-grid">
+        <div className="stat-card" data-testid="member-state-card">
+          <span className="stat-label">{t('member.service.stateLabel')}</span>
+          <span
+            className="stat-value"
+            style={{
+              fontSize: '1.35rem',
+              color: isActive ? 'var(--color-success)' : 'var(--color-danger)',
+            }}
+          >
+            {ent.state}
+          </span>
+          <span className="stat-subtext" data-testid="member-state-reason">
+            {reasonText}
+          </span>
+        </div>
 
-        <article className="metric-card">
-          <div>
-            <h2>{t('member.service.planLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.25rem' }}>
-              {member.plan_name}
-            </div>
-            <p className="metric-desc">
-              Devices: {member.authorized_device_count} / {member.device_limit}
-            </p>
-          </div>
-        </article>
+        <div className="stat-card">
+          <span className="stat-label">{t('member.service.planLabel')}</span>
+          <span className="stat-value" style={{ fontSize: '1.35rem' }}>
+            {planName}
+          </span>
+          <span className="stat-subtext mono">
+            Devices: {me.limits.authorized_device_count} / {me.limits.device_limit}
+          </span>
+        </div>
 
-        <article className="metric-card">
-          <div>
-            <h2>{t('member.service.effectiveEndLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.2rem' }}>
-              <code>{member.effective_service_end}</code>
-            </div>
-            <p className="metric-desc">
-              {t('member.service.paidThroughLabel')}: <code>{member.paid_through}</code>
-            </p>
-          </div>
-        </article>
+        <div className="stat-card">
+          <span className="stat-label">{t('member.service.effectiveEndLabel')}</span>
+          <span
+            className="stat-value mono"
+            style={{ fontSize: '1.1rem' }}
+            data-testid="member-effective-end"
+          >
+            {ent.effective_service_end ?? 'None'}
+          </span>
+          <span className="stat-subtext mono">
+            {t('member.service.paidThroughLabel')}: {ent.paid_through ?? 'None'}
+          </span>
+        </div>
 
-        <article className="metric-card">
-          <div>
-            <h2>{t('member.service.nextResetLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.2rem' }}>
-              <code>{member.next_fup_reset_at}</code>
-            </div>
-            <p className="metric-desc">FUP Tier: {member.fup_tier_name}</p>
-          </div>
-        </article>
+        <div className="stat-card">
+          <span className="stat-label">{t('member.service.nextResetLabel')}</span>
+          <span className="stat-value mono" style={{ fontSize: '1.1rem' }}>
+            {resetAt}
+          </span>
+          <span className="stat-subtext">
+            {usage?.fair_use.tier_name
+              ? (usage.fair_use.tier_name[locale] ?? usage.fair_use.tier_name['zh-TW'])
+              : 'Normal speed'}
+          </span>
+        </div>
+      </div>
+
+      <div className="card" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <Link to="/member/getting-started" className="btn btn-primary">
+          {t('nav.member.gettingStarted')}
+        </Link>
+        <Link to="/member/exits" className="btn btn-secondary">
+          {t('nav.member.exits')}
+        </Link>
+        <Link to="/member/devices" className="btn btn-secondary">
+          {t('nav.member.devices')}
+        </Link>
+        <Link to="/member/usage" className="btn btn-secondary">
+          {t('nav.member.usage')}
+        </Link>
+        <Link to="/member/billing" className="btn btn-secondary">
+          {t('nav.member.billing')}
+        </Link>
       </div>
     </div>
   );

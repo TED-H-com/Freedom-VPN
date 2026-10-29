@@ -5,7 +5,7 @@ export function MemberDnsProtectionPage(): React.ReactElement {
   const { t } = useI18n();
 
   return (
-    <div>
+    <div data-testid="member-dns-protection-page">
       <header className="page-header">
         <h1>{t('member.dns.title')}</h1>
       </header>
@@ -13,7 +13,7 @@ export function MemberDnsProtectionPage(): React.ReactElement {
       <section
         className="card"
         aria-labelledby="dns-scope-heading"
-        data-testid="dns-protection-scope-card"
+        data-testid="dns-scope-card"
       >
         <h2 id="dns-scope-heading">{t('member.dns.scopeTitle')}</h2>
         <p>{t('member.dns.scopeBody')}</p>
@@ -22,7 +22,7 @@ export function MemberDnsProtectionPage(): React.ReactElement {
       <section
         className="card alert-warning"
         aria-labelledby="dns-limitations-heading"
-        data-testid="dns-protection-limitations-card"
+        data-testid="dns-limitations-card"
       >
         <h2 id="dns-limitations-heading">{t('member.dns.limitationsTitle')}</h2>
         <p>{t('member.dns.limitationsBody')}</p>

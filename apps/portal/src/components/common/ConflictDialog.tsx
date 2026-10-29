@@ -3,17 +3,23 @@ import type { ApiError } from '../../api';
 import { useI18n } from '../../i18n';
 
 interface ConflictDialogProps {
-  conflictError: ApiError | null;
-  onReloadAndDismiss: () => void;
+  error?: ApiError | null;
+  conflictError?: ApiError | null;
+  onReload?: () => void;
+  onReloadAndDismiss?: () => void;
 }
 
 export function ConflictDialog({
+  error,
   conflictError,
+  onReload,
   onReloadAndDismiss,
 }: ConflictDialogProps): React.ReactElement | null {
   const { t } = useI18n();
+  const activeError = error ?? conflictError ?? null;
+  const handleReload = onReload ?? onReloadAndDismiss;
 
-  if (!conflictError) {
+  if (!activeError) {
     return null;
   }
 
@@ -26,27 +32,30 @@ export function ConflictDialog({
       data-testid="conflict-dialog"
     >
       <div className="modal-dialog">
-        <h2 id="conflict-dialog-title" style={{ marginTop: 0, color: 'var(--danger)' }}>
+        <h2
+          id="conflict-dialog-title"
+          style={{ marginTop: 0, color: 'var(--color-danger)' }}
+        >
           {t('conflict.dialog.title')}
         </h2>
         <p>{t('conflict.dialog.description')}</p>
-        {conflictError.currentResourceVersion && (
+        {activeError.currentResourceVersion && (
           <p>
             <strong>
               {t('conflict.dialog.currentVersion', {
-                version: conflictError.currentResourceVersion,
+                version: activeError.currentResourceVersion,
               })}
             </strong>
           </p>
         )}
-        <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
-          {t('op.requestIdLabel')}: <code>{conflictError.request_id}</code>
+        <p style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)' }}>
+          {t('op.requestIdLabel')}: <code>{activeError.requestId}</code>
         </p>
         <div className="btn-row" style={{ marginTop: '18px' }}>
           <button
             type="button"
             className="btn btn-primary"
-            onClick={onReloadAndDismiss}
+            onClick={handleReload}
             data-testid="conflict-reload-btn"
           >
             {t('conflict.dialog.reloadBtn')}
