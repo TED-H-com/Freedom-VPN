@@ -1,0 +1,57 @@
+{
+  "$comment": "Derived from contracts/openapi.yaml component ReleaseSupportPayload (§13.2, §14.2, AT27). Candidate for promotion to contracts/schemas/.",
+  "$id": "urn:fvpn:contracts:schema:release-support-payload:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Supported and revoked release set (§13.2, §14.2, AT27).",
+  "properties": {
+    "approved_release_ids": {
+      "description": "Releases allowed as update targets.",
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "maxItems": 64,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "minimum_serving_version": {
+      "additionalProperties": false,
+      "description": "Explicit compatibility rule; v1 expresses it by membership in `serving_release_ids`.",
+      "properties": {
+        "serving_release_ids": {
+          "description": "Releases allowed to hold a serving lease and carry member traffic.",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "serving_release_ids"
+      ],
+      "type": "object"
+    },
+    "revoked_release_ids": {
+      "description": "Releases immediately barred from serving or being targeted.",
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "maxItems": 256,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "approved_release_ids",
+    "revoked_release_ids",
+    "minimum_serving_version"
+  ],
+  "title": "ReleaseSupportPayload",
+  "type": "object"
+}
