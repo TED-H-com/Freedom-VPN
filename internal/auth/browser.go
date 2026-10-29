@@ -136,7 +136,7 @@ func (b *Browser) callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id, e := b.verifier.Verify(ctx, raw)
-	if e != nil || subtle.ConstantTimeCompare([]byte(id.Nonce), []byte(f.Nonce)) != 1 {
+	if e != nil || id.Subject == "" || subtle.ConstantTimeCompare([]byte(id.Nonce), []byte(f.Nonce)) != 1 {
 		fail()
 		return
 	}

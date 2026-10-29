@@ -48,7 +48,8 @@ type Store struct{ Pool *pgxpool.Pool }
 // Create must share the domain transaction with desired state, audit and outbox.
 func Create(ctx context.Context, tx pgx.Tx, r CreateRequest) (uuid.UUID, error) {
 	id := uuid.Must(uuid.NewV7())
-	if len(r.Steps) < 1 || len(r.Steps) > 64 || r.Resource.Id == uuid.Nil || r.RequestID == uuid.Nil || r.Principal.ID == uuid.Nil || (r.Principal.Role != auth.Admin && r.Principal.Role != auth.Member) {
+	validPrincipal := ((r.Principal.Role == auth.Admin || r.Principal.Role == auth.Member) && r.Principal.ID != uuid.Nil) || (r.Principal.Role == auth.Agent && r.Principal.NodeID != uuid.Nil && r.Principal.IncarnationID != uuid.Nil)
+	if len(r.Steps) < 1 || len(r.Steps) > 64 || r.Resource.Id == uuid.Nil || r.RequestID == uuid.Nil || !validPrincipal {
 		return uuid.Nil, errors.New("invalid operation")
 	}
 	validKinds := []string{"node.update", "node.publish", "node.unpublish", "node.disable", "node.revoke", "node.retire", "member.update", "member.suspend", "member.unsuspend", "member.grant", "member.device_revoke", "policy.activate", "release.register", "update_batch.create", "update_batch.retry", "checkout.create"}

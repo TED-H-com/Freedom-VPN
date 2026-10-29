@@ -93,7 +93,8 @@ days and is configurable; durable domain uniqueness survives key expiry.
 
 Enrollment Replay must recheck the proof/credential binding and return the same
 enrollment with `secret_available=false`, `token=null`, and no reconstructed
-installer secret. The original token must never enter the idempotency record.
+installer secret. The framework additionally strips the token and forces the flag
+false on enrollment replays. The original token must never enter the idempotency record.
 Other replay handlers likewise re-read resources and recheck ownership. These are
 domain hooks because the framework cannot know resource semantics or reproduce a
 one-time secret safely. Do not cache serialized response bodies.
@@ -112,3 +113,7 @@ Schema-expressible rules are enforced at the boundary. Domain semantic validatio
 for example clear_capacity versus capacity or policy tier ordering, belongs to
 the owning service before its transactional writes. Return safe apierr values;
 never expose SQL, driver or provider errors in error messages/details.
+
+Agent handlers without Idempotency-Key own their normal domain transaction. When
+an agent key is supplied, reuse `Transaction(ctx)` instead; do not open an inner
+transaction. The same service can accept a transaction parameter from either path.

@@ -49,6 +49,9 @@ func (f *commandFixture) UpdateNode(ctx context.Context, r gen.UpdateNodeRequest
 	if e != nil {
 		return nil, e
 	}
+	if r.Body.Name != nil && *r.Body.Name == "rollback" {
+		return gen.UpdateNode202JSONResponse{OperationAcceptedJSONResponse: operations.Accepted(api.Operation{OperationId: id, Status: "pending"}, p.Role)}, nil
+	}
 	e = SetResult(ctx, db.IdempotencyResult{ResourceType: "node", ResourceID: &r.NodeId, OperationID: &id, ResponseStatus: 202})
 	if e != nil {
 		return nil, e
@@ -145,6 +148,9 @@ func TestAPI01_IdempotencyReplayConflictConcurrentExpiry(t *testing.T) {
 	r := request("PATCH", path, `{"name":"conflict"}`, p)
 	r.Header.Set("If-Match", `"6"`)
 	assertStatus(t, h, r, 412)
+	r = request("PATCH", path, `{"name":"rollback"}`, p)
+	r.Header.Set("If-Match", `"7"`)
+	assertStatus(t, h, r, 500)
 	var records, outbox int
 	if e = pool.QueryRow(t.Context(), `SELECT count(*) FROM operations`).Scan(&records); e != nil {
 		t.Fatal(e)

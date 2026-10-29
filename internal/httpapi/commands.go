@@ -52,6 +52,9 @@ func SetResult(ctx context.Context, r db.IdempotencyResult) error {
 	if !ok {
 		return errors.New("command transaction unavailable")
 	}
+	if r.ResponseStatus < 200 || r.ResponseStatus >= 300 || (r.ResponseStatus == 202 && r.OperationID == nil) {
+		return errors.New("command result must reference an accepted success")
+	}
 	if s.result != nil {
 		return errors.New("command result already recorded")
 	}
@@ -219,4 +222,27 @@ func sanitizeReplay(operationID string, response any) (any, error) {
 		}
 	}
 	return nil, errors.New("invalid enrollment replay response")
+}
+
+func validateHandlerSets(sets []any) error {
+	contract := reflect.TypeFor[gen.StrictServerInterface]()
+	for _, set := range sets {
+		v := reflect.ValueOf(set)
+		if !v.IsValid() || (v.Kind() == reflect.Pointer && v.IsNil()) {
+			return errors.New("nil handler set")
+		}
+		matched := false
+		for i := 0; i < contract.NumMethod(); i++ {
+			method := contract.Method(i)
+			actual := v.MethodByName(method.Name)
+			if actual.IsValid() && actual.Type() == method.Type {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return errors.New("handler set implements no contract operation")
+		}
+	}
+	return nil
 }

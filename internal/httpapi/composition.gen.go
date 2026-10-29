@@ -11,6 +11,9 @@ type Composite struct{ sets []any }
 
 // Compose rejects overlapping registrations at startup.
 func Compose(sets ...any) (*Composite, error) {
+	if err := validateHandlerSets(sets); err != nil {
+		return nil, err
+	}
 	c := &Composite{sets: append([]any(nil), sets...)}
 	{
 		n := 0

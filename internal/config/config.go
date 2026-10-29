@@ -48,6 +48,7 @@ type Config struct {
 	WebhookBodyBytes        int64    `json:"webhook_body_bytes"`
 	MaxConcurrent           int      `json:"max_concurrent"`
 	MaxRatePrincipals       int      `json:"max_rate_principals"`
+	IngressRate             Bucket   `json:"ingress_rate"`
 	BrowserRate             Bucket   `json:"browser_rate"`
 	AgentRate               Bucket   `json:"agent_rate"`
 	HeartbeatRate           Bucket   `json:"heartbeat_rate"`
@@ -70,7 +71,7 @@ func Defaults() Config {
 		RecentAuthSeconds: 900, SessionIdleSeconds: 1800, SessionAbsoluteSeconds: 43200, LoginTTLSeconds: 300, IdempotencySeconds: 604800,
 		ReadTimeoutSeconds: 15, WriteTimeoutSeconds: 30, IdleTimeoutSeconds: 60, ShutdownSeconds: 30,
 		BrowserBodyBytes: 1 << 20, AgentBodyBytes: 1 << 20, UsageBodyBytes: 8 << 20, WebhookBodyBytes: 1 << 20, MaxConcurrent: 128, MaxRatePrincipals: 10000,
-		BrowserRate: Bucket{10, 30}, AgentRate: Bucket{5, 10}, HeartbeatRate: Bucket{1, 5}, LeaseRate: Bucket{1, 5}, UsageRate: Bucket{2, 10}, AnonymousRate: Bucket{2, 10},
+		IngressRate: Bucket{20, 60}, BrowserRate: Bucket{10, 30}, AgentRate: Bucket{5, 10}, HeartbeatRate: Bucket{1, 5}, LeaseRate: Bucket{1, 5}, UsageRate: Bucket{2, 10}, AnonymousRate: Bucket{2, 10},
 		WorkerConcurrency: 4, WorkerLeaseSeconds: 60, WorkerJobSeconds: 40, WorkerPollSeconds: 1, WorkerAttempts: 10, WorkerBackoffSeconds: 1, WorkerBackoffMaxSeconds: 300,
 	}
 }
@@ -137,7 +138,7 @@ func (c Config) Validate() error {
 			return fmt.Errorf("invalid positive bound: %s", t.Field(i).Tag.Get("json"))
 		}
 	}
-	for _, b := range []Bucket{c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate} {
+	for _, b := range []Bucket{c.IngressRate, c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate} {
 		if b.PerSecond <= 0 || b.PerSecond > 100000 || b.Burst < 1 || b.Burst > 100000 {
 			return errors.New("invalid rate bucket")
 		}

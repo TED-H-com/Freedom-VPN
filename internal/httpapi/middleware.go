@@ -114,6 +114,9 @@ func Transport(log *slog.Logger, next http.Handler) http.Handler {
 		if b.status == 0 {
 			b.status = 200
 		}
+		if strings.HasPrefix(r.URL.Path, "/auth/") || strings.HasPrefix(r.URL.Path, "/api/v1/") {
+			b.header.Set("Cache-Control", "no-store")
+		}
 		b.header.Set("X-Request-ID", id)
 		b.header.Set("X-Content-Type-Options", "nosniff")
 		b.header.Set("Referrer-Policy", "no-referrer")
@@ -222,6 +225,9 @@ func New(c *Composite, o Options) (http.Handler, error) {
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
+		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(o.Config.WriteTimeoutSeconds)*time.Second)
+		defer cancel()
+		r = r.WithContext(ctx)
 		route, params, e := findRoute(router, r)
 		if e != nil {
 			code := apierr.ResourceNotFound
@@ -252,6 +258,12 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			r = r.WithContext(context.WithValue(r.Context(), metaKey{}, m))
 		}
 		m.route = r.Method + " /api/v1" + route.Path
+		ingressClass, _, _ := classify(op, o.Config)
+		peer, _, _ := net.SplitHostPort(r.RemoteAddr)
+		if delay := lim.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
+			return
+		}
 		var p auth.Principal
 		if tag == "admin" || tag == "member" {
 			if o.Sessions == nil {

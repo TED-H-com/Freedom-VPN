@@ -27,7 +27,8 @@ for safe errors, or an ordinary error for a generic 500.
 ## Request boundary
 
 Order: central UUID v7 and isolated client trace context → buffered panic recovery
-and security headers → contract route/listener classification → session or machine
+and security headers → contract route/listener classification and per-peer ingress
+limits → session or machine
 authentication → role/MFA checks → per-principal rate and concurrency buckets →
 Origin/CSRF and recent admin authentication → required key/If-Match headers →
 body limit → strict JSON syntax and schema validation → machine identity consistency
@@ -48,7 +49,8 @@ the high-impact rule conservatively (§16.1). Unknown fields in allowlisted writ
 schemas fail before domain code. Semantic domain constraints listed in
 `docs/contracts/README.md` remain each owning service's responsibility.
 
-Rate buckets and concurrency gates are separate for browser, agent control,
+Pre-authentication ingress buckets also bound credential/database work per direct
+peer and route class. Rate buckets and concurrency gates are separate for browser, agent control,
 heartbeat, lease and usage traffic; anonymous enrollment/webhooks have another
 bucket. Auth routes are additionally bounded per direct peer address. Limits are
 per process, with a bounded principal map; deployment replicas multiply capacity.
@@ -98,3 +100,11 @@ Integration tests use `internal/db/dbtest`, require `FVPN_TEST_DATABASE_URL`, an
 create/drop only random isolated databases. Make recipes use disk scratch under
 `.agent/tmp` and remove it on exit. Unit tests use local httptest providers and
 need no external network, root or Docker.
+
+## Toolchain security
+
+Control CI uses Go 1.27.3. The supplied Go 1.27.1 baseline has reachable standard
+library advisories; Go 1.27.3 fixes the reported issues. See the official
+[Go release history](https://go.dev/doc/devel/release#go1.27.3). Deployment and the
+repository-wide Go workflow should use at least this patched release; the shared
+minimum directive remains unchanged for the orchestrator to coordinate.
