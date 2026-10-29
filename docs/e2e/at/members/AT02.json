@@ -1,0 +1,139 @@
+{
+  "id": "AT02",
+  "title": "Device quota race and isolation",
+  "spec": [
+    "§19.1",
+    "§19 AT02",
+    "MEM01 MEM02 MEM03 SEC01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "real peer readback",
+      "detail": "pass; expected: connected machine peer has no native user identity; actual: peer_present=true; user_id_present=false; command: GET NetBird /api/peers after documented member entrypoint"
+    },
+    {
+      "name": "concurrent negative admission",
+      "detail": "pass; expected: both reject unverified machine identity; no fabricated bindings; actual: ErrUnmapped=2/2; member_devices=0; device_bindings=0; verified_NetBird_mappings=0; command: two barrier-released goroutines: devices.Service.ObserveAndAuthorize with real NetBirdAdapter"
+    },
+    {
+      "name": "node/member binding separation",
+      "detail": "pass; expected: observe node peer binding separately; actual: node_peer_bindings=0; member_device_bindings=0; command: SELECT node_incarnations and device_bindings"
+    },
+    {
+      "name": "unowned ID denial",
+      "detail": "pass; expected: 403/404; no other member identifier; actual: list=200; delete=404; member_B_leaked=false; command: GET /member/devices; DELETE unknown device UUID"
+    },
+    {
+      "name": "mTLS usage binding negative control",
+      "detail": "pass; expected: binding_not_found; no made-up binding accepted; actual: HTTP=200; per_event_results=1; binding_not_found=true; command: POST /agent/usage-batches with real node mTLS and explicitly unknown device"
+    },
+    {
+      "name": "blocked",
+      "detail": "Actual member entrypoint creates a setup-key peer with empty user_id; devices.ObserveAndAuthorize returns ErrUnmapped before quota locking. There are zero member_devices/device_bindings. Last-slot winner/loser, cross-member EXISTING-device isolation, revoke-slot reuse and gateway denial need native peer admission. node.peer.observe only fills node_incarnations.peer_id; it is not the member admission path."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=4e500392333b00caf380ca155b7e2c722447044d; applied generation=0; incarnation=01a18a0e-3ee6-7bef-8c05-a34e115bfcac; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-10-29T23:45:59Z",
+  "build": {
+    "source_commit": "4e500392333b00caf380ca155b7e2c722447044d",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:1f69e8a9bfa7e537ba773fc1389e45f54b05e3afb33b17c83b1eb4060dd7cb72",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:6e07dd4a8c9b4cde67bc39af7a989869d47e8fef67ed3a9df2b42e5289d1d2dd",
+      "member": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "origin": "sha256:3b69c46fd7e0edec5cf85fdd410fe5f32a416e540829646ef46bfc8b11f1f4dd",
+      "payment": "sha256:ab528e98893a9a65648dc008d92e0a245a8a5708acaadf5ed49d37f225c832f4",
+      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+      "worker": "sha256:65ef14a342f025ce3b6e4da138e7897c980e7496b32ab466072fd36081f72c28"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "7cc57a753da1f5c002e69c13ec740ec51ac01942d47d51684eac50d2d6be877a",
+      "fvpn-control": "f2daedc1a981fb638f3176bad73b8464dc705ce5a1038fb6f5d0ad3273df590f",
+      "fvpn-updater": "29f05a7834ab25d608b5d41669f6c2c66e8c7bff47913f846dfb9a2a609b1cbf",
+      "fvpn-worker": "8cc584afb350889242112e4a7a9601fb0a06b6681cb4571f2e5073541fbded5c"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      }
+    }
+  },
+  "policy_revision": "0",
+  "active_policy_revisions": {},
+  "node_incarnation": "01a18a0e-3ee6-7bef-8c05-a34e115bfcac",
+  "steps": [
+    {
+      "name": "real peer readback",
+      "status": "pass",
+      "expected": "connected machine peer has no native user identity",
+      "actual": "peer_present=true; user_id_present=false",
+      "command": "GET NetBird /api/peers after documented member entrypoint",
+      "at": "2026-10-29T23:46:01Z"
+    },
+    {
+      "name": "concurrent negative admission",
+      "status": "pass",
+      "expected": "both reject unverified machine identity; no fabricated bindings",
+      "actual": "ErrUnmapped=2/2; member_devices=0; device_bindings=0; verified_NetBird_mappings=0",
+      "command": "two barrier-released goroutines: devices.Service.ObserveAndAuthorize with real NetBirdAdapter",
+      "at": "2026-10-29T23:46:01Z"
+    },
+    {
+      "name": "node/member binding separation",
+      "status": "pass",
+      "expected": "observe node peer binding separately",
+      "actual": "node_peer_bindings=0; member_device_bindings=0",
+      "command": "SELECT node_incarnations and device_bindings",
+      "at": "2026-10-29T23:46:01Z"
+    },
+    {
+      "name": "unowned ID denial",
+      "status": "pass",
+      "expected": "403/404; no other member identifier",
+      "actual": "list=200; delete=404; member_B_leaked=false",
+      "command": "GET /member/devices; DELETE unknown device UUID",
+      "at": "2026-10-29T23:46:02Z"
+    },
+    {
+      "name": "mTLS usage binding negative control",
+      "status": "pass",
+      "expected": "binding_not_found; no made-up binding accepted",
+      "actual": "HTTP=200; per_event_results=1; binding_not_found=true",
+      "command": "POST /agent/usage-batches with real node mTLS and explicitly unknown device",
+      "at": "2026-10-29T23:46:03Z"
+    }
+  ],
+  "blockers": [
+    "Actual member entrypoint creates a setup-key peer with empty user_id; devices.ObserveAndAuthorize returns ErrUnmapped before quota locking. There are zero member_devices/device_bindings. Last-slot winner/loser, cross-member EXISTING-device isolation, revoke-slot reuse and gateway denial need native peer admission. node.peer.observe only fills node_incarnations.peer_id; it is not the member admission path."
+  ]
+}

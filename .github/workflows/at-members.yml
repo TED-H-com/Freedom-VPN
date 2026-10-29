@@ -1,0 +1,55 @@
+name: Member acceptance
+
+on:
+  pull_request:
+    paths:
+      - tests/e2e/at/members/**
+      - docs/e2e/at/members/**
+      - mk/at-members.mk
+      - .github/workflows/at-members.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+  FVPN_E2E_PREFIX: w4-members
+  FVPN_E2E_PORT_BASE: "24000"
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - run: make -f mk/at-members.mk at-members-lint at-members-test at-members-build
+
+  assigned-stack:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: Attempt assigned fresh stack
+        id: up
+        continue-on-error: true
+        run: make -f mk/e2e.mk e2e-up
+      - name: Record live acceptance (blocked is non-green)
+        if: steps.up.outcome == 'success'
+        run: make -f mk/at-members.mk at-members
+      - name: Remove only this job's stack
+        if: always() && steps.up.outcome != 'skipped'
+        run: make -f mk/e2e.mk e2e-down
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: at-members-evidence
+          path: docs/e2e/at/members/AT*
