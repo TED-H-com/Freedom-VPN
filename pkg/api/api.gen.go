@@ -2579,7 +2579,7 @@ type DomainRule struct {
 	// Reason Reason code, for example `admin_rule` or `false_positive`.
 	Reason string `json:"reason"`
 
-	// Revision Revision of this rule.
+	// Revision Positive uint64 decimal-string revision of this rule, starting at 1 (§12.4, §14.2). Zero is invalid; the upper bound 18446744073709551615 is enforced by decstr.
 	Revision decstr.U64         `json:"revision"`
 	RuleId   openapi_types.UUID `json:"rule_id"`
 }
@@ -4620,7 +4620,13 @@ type UpdateTarget struct {
 	NodeId           openapi_types.UUID        `json:"node_id"`
 	NodeName         nullable.Nullable[string] `json:"node_name"`
 	OnlineAtSnapshot bool                      `json:"online_at_snapshot"`
-	Retryable        bool                      `json:"retryable"`
+
+	// PolicyGeneration Applied desired-state config_generation reported by the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. The uint64 upper bound is enforced by decstr.
+	PolicyGeneration nullable.Nullable[decstr.U64] `json:"policy_generation,omitzero"`
+
+	// PolicyRefs Applied policy revision references for the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. An explicit empty array means known evidence with no policy references.
+	PolicyRefs nullable.Nullable[[]openapi_types.UUID] `json:"policy_refs,omitzero"`
+	Retryable  bool                                    `json:"retryable"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`

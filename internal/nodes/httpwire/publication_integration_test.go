@@ -45,6 +45,13 @@ func (f *fixture) activate(typ string, definition uuid.UUID, revision int, paylo
 // TEST ONLY serving fixture uses the D-030 entitlement projection, with no assignments.
 func servingFixture(t *testing.T) (*fixture, api.EnrollResponse, *x509.Certificate, uuid.UUID, uuid.UUID) {
 	t.Helper()
+	f, enrolled, cert, member, revision := publicationFixture(t)
+	f.sql(`UPDATE exits SET publication_intent='published',resource_version=resource_version+1 WHERE node_id=$1`, enrolled.NodeId)
+	return f, enrolled, cert, member, revision
+}
+
+func publicationFixture(t *testing.T) (*fixture, api.EnrollResponse, *x509.Certificate, uuid.UUID, uuid.UUID) {
+	t.Helper()
 	f := setup(t)
 	vault := f.r.Provider.(*signing.FileProvider)
 	for _, purpose := range []signing.Purpose{signing.DesiredState, signing.Lease} {
@@ -63,7 +70,6 @@ func servingFixture(t *testing.T) (*fixture, api.EnrollResponse, *x509.Certifica
 	f.r.Config.DNSResolverIPv4 = []string{"100.64.0.53"}
 	_, enrolled, cert := f.enroll(f.create(nil))
 	f.sql(`UPDATE nodes SET provisioning_state='ready',control_status='online',data_health='healthy',safety_status='passed',capacity='{"down_bps":1000000000,"up_bps":1000000000,"member_down_bps_cap":60000000,"member_up_bps_cap":30000000}',resource_version=resource_version+1 WHERE id=$1`, enrolled.NodeId)
-	f.sql(`UPDATE exits SET publication_intent='published',resource_version=resource_version+1 WHERE node_id=$1`, enrolled.NodeId)
 	group, plan, planRev, member := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	f.sql(`INSERT INTO member_groups(id,code,name) VALUES($1,'TEST ONLY group','TEST ONLY group')`, group)
 	f.sql(`INSERT INTO exit_groups(exit_id,group_id) SELECT id,$2 FROM exits WHERE node_id=$1`, enrolled.NodeId, group)

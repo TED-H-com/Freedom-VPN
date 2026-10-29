@@ -286,5 +286,11 @@
     "pointer": "",
     "keyword": "required",
     "note": "D-031 successful checkout must return the URL; an operation alone cannot complete checkout."
+  },
+  "PolicyRevisionCreate.domain-rule-zero-revision.json": {
+    "kind": "schema",
+    "pointer": "/payload/rules/0/revision",
+    "keyword": "pattern",
+    "note": "Domain rule revisions start at 1 (§12.4, §14.2); zero is rejected at the HTTP boundary, matching the owner schema and ReasonDNSInvalidRevision."
   }
 }
