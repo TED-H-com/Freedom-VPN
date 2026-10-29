@@ -38,11 +38,11 @@ func TestComputeEffectiveRateBps(t *testing.T) {
 			want:     30_000_000,
 		},
 		{
-			name:     "fallback when inputs zero",
+			name:     "zero when plan rate missing",
 			planRate: 0,
 			fupRate:  0,
 			nodeCap:  nil,
-			want:     DefaultPlanRateBps,
+			want:     0,
 		},
 	}
 

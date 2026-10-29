@@ -10,7 +10,7 @@ release policy is explicitly configured.
 
 ## Running
 
-Use Go 1.27.1, `GOTOOLCHAIN=local`, `CGO_ENABLED=0`. Supply connection strings
+Use Go 1.27.3, `GOTOOLCHAIN=local`, `CGO_ENABLED=0`. Supply connection strings
 through the environment/secret manager; never commit them or pass them as CLI
 arguments. `FVPN_DATABASE_URL` is the migration/development database;
 `FVPN_TEST_DATABASE_URL` is an admin connection used only to create isolated
@@ -117,7 +117,7 @@ numeric/hash/JSON checks.
 | subscriptions | `subscriptions_external_key`: U(provider,external_subscription_id); partial `subscriptions_primary_active_key`: U(member_id) WHERE is_primary AND is_active; plan FK/index; provider status is opaque, active flag is controller-computed; paid/grace endpoints occur in pairs and are finite; grace reason required. paid_through, cancellation and grace are separate facts. Subscription identity/member/provider/customer cannot be rebound; billing_records_subscription_member_fk binds invoices to the same member. | §9.2–3; §15.2 L1618 |
 | billing_records | `billing_records_external_key`: U(provider,record_type,external_reference); member/subscription/inbox FKs; money checks; finite service interval; append-only. External reference represents an invoice, refund or correction according to type. | §15.2 L1619 |
 | entitlement_grants | Member FK; immutable grant evidence; finite interval; nonblank reason and creator; revocation requires a reason. Trial/grace/manual source remains explicit. | §9.2; §15.2 L1620 |
-| entitlements | U(member_id); plan FK/index; nonnegative device limit; finite valid_from..effective_service_end; revision cannot regress. Source UUIDs are polymorphic references validated by the calculator; no lease expiry here. | §15.2 L1621, L1626 |
+| entitlements | U(member_id); plan FK/index; nonnegative device limit; paired nullable service interval for pending_payment after 00120, otherwise finite valid_from..effective_service_end; revision cannot regress. Source UUIDs are polymorphic references validated by the calculator; no lease expiry here. | §15.2 L1621, L1626 |
 | member_devices | `member_devices_peer_key`: U(deployment_id,peer_id); (member_id,status) index; allowed statuses; device/member relationship and peer identity immutable; versioned; no deletion. | §9.4; §15.2 L1622 |
 | device_bindings | `device_bindings_revision_key`: U(device_id,binding_revision); device/member composite FK; host-address masks only; valid interval; `device_bindings_no_overlap` GiST exclusion on scope, inet IP and `[valid_from,valid_until)`; historical identity immutable; valid_until may close a mapping only without excluding committed usage. Samples lock the binding against concurrent shortening. | §2; §15.2 L1623 |
 | member_groups | U(code), U(name). | §15.2 L1624 |
@@ -286,8 +286,11 @@ rewritten. Certificate renewal and grant correction create new evidence rows.
 
 ## Migrations and compatibility
 
-SQL files are five-digit, increasing, goose `Up`-only migrations embedded by
-`db/migrations`. Do not add Down migrations. Migrations 00001–00005 were corrected
+SQL files are five-digit goose migrations embedded by `db/migrations`.
+The normal policy is forward-only. D-035 explicitly adds
+`00006_purge_retained_audit_format.sql` with a Down that restores the previous
+function body; this is a narrow rollback exception, not permission to reverse
+domain data migrations. Migrations 00001–00005 were corrected
 in place for F-01–F-16 and the CLI/retention audit follow-up while all databases are disposable development/test
 instances. **Migrations become append-only the moment the orchestrator announces
 the first deployed environment.** After that point, append a new migration;
@@ -296,6 +299,19 @@ configuration, so no mutable global dialect/filesystem settings race. Its
 [session locker](https://pressly.github.io/goose/documentation/provider/) uses a
 fixed database advisory lock shared by Migrate and MigrationStatus. Empty,
 repeat and concurrent first-use migration tests exercise this path.
+
+Only `00004` previously defined `purge_retained`; no later domain migration
+replaces it. `00006` is therefore the last definition on a fresh migration run.
+For a database already beyond version 6, the ordinary CLI rejects an unapplied
+lower version. The controlled upgrade must explicitly apply version 6 with the
+goose provider's `ApplyVersion(ctx, 6, true)` before resuming ordinary `up`.
+Use the schema owner and the same migration session locker; do not downgrade
+domain migrations or enable out-of-order migration execution globally.
+`TestReviewD035_PurgeAuditMigrationRoundTrip` exercises that upgrade after all
+existing domain migrations, checks owner/ACL/security settings, restores the
+exact prior body with `ApplyVersion(ctx, 6, false)`, and reapplies Up. Down
+restores the old incompatible audit encoding; neither direction rewrites
+existing append-only audit rows.
 
 Follow §15.5 expand/contract: add compatible fields and indexes, deploy code that
 can coexist with old agents, backfill, validate, then separately contract. Never
@@ -393,17 +409,20 @@ search_path. EXECUTE is revoked from PUBLIC. It allows only audit_events,
 usage_event_payloads and usage_rollups, checks a finite cutoff against the
 configured minimum age, deletes eligible rows and appends an audit event with
 system actor, typed resource, target, configuration snapshot, cutoff, count and
-reason **in the same transaction**. `actor_type` is `system`; `actor` retains
-`session_user` as local executor evidence and the HTTP system actor ID is null.
-`resource` stores JSON for `ResourceRef` with type `fleet_config` and singleton
-UUID `00000000-0000-0000-0000-000000000001`: the current contract has no
+reason **in the same transaction**. After D-035 (`00006`), `actor_type` is
+`system` and `actor` is the nil UUID `00000000-0000-0000-0000-000000000000`.
+The reader returns that UUID as the system actor ID. `resource` is the canonical
+`<api.ResourceType>:<uuid>` string
+`fleet_config:00000000-0000-0000-0000-000000000001`; the current contract has no
 `retention_config` resource type. The action/result are `retention.purge` and
 `succeeded`. `after_diff` carries `table`, decimal-string `fleet_generation`
 and `deleted_rows`, the full `retention_config` snapshot (including its UUID),
 `cutoff`, redacted `reason` and `schema_version`. Fleet generation is context,
 not a retention-policy or projection generation; retention_config has no
-generation column. Readers decode the resource JSON and expose the diffs as
-`changes.before`/`changes.after`.
+generation column. `audit.Store.List` splits the canonical resource string and
+exposes the diffs as `changes.before`/`changes.after`. D-035 changes only actor
+and resource encoding; retention eligibility, locking, counts, diffs, SECURITY
+DEFINER/search_path and existing EXECUTE grants remain unchanged.
 A rollback undoes both. The local `fvpn.retention_purge` setting is a trigger
 signal, not authorization: the trigger also checks the executing role against
 the function owner. Only the SECURITY DEFINER purge function enables this flag
@@ -521,8 +540,12 @@ whose Database field was mutated. All dbtest pool creation now starts with the
 isolated URL, so later serialization also stays isolated.
 
 The retention audit follow-up uses the closest supported singleton resource,
-`fleet_config`, as detailed above. F-02/F-03 check contract serialization and
-preserved evidence without weakening age or projection-completeness gates.
+`fleet_config`, as detailed above. D-035 supersedes the original JSON resource
+and session-user actor encoding with the audit reader's canonical format.
+F-02/F-03 now read actual purge rows through `audit.Store.List`, assert zero
+anomalies, and validate the returned contract and preserved evidence.
+`TestReviewD035_PurgeAuditMigrationRoundTrip` also covers audit-row purges,
+reader resource/actor filters, an invalid cutoff, and migration Up/Down/Up.
 
 F-16 changes the guard in base migration `00005`; no later/domain migration is
 changed. Enrollment may insert an unbound incarnation, then the NetBird worker
@@ -540,6 +563,46 @@ managed inside purge_retained, fvpn.restore permits historical INSERT replay,
 and fvpn.migration permits reviewed immutable-field backfills. All require the
 schema/function owner as well as the transaction-local flag; none authorizes a
 runtime application to weaken a constraint.
+
+### Accepted domain relaxations (D-033)
+
+These accepted extensions stay in their owning domain migrations. They are not
+moved into `00001`–`00005` and do not remove the base protections listed below.
+
+- **Pending service interval — `00120_members_billing.sql` (F-11; §9.2,
+  §15.2).** A `pending_payment` member has no service interval yet; manufacturing
+  a deadline would imply unsupported eligibility. The migration drops NOT NULL
+  on `entitlements.valid_from` and `effective_service_end` and adds
+  `entitlements_nullable_interval`, which requires both dates absent or both
+  present. The base finite/increasing interval CHECK still applies when dates
+  are present. `billing_check_service_interval`, installed as
+  `zz_billing_device_interval` and `zz_billing_lease_interval`, explicitly rejects
+  authorization/lease membership when either date is missing or the member is
+  manually suspended. It takes the member lock before the entitlement lock.
+  Base device quota, member status, time bounds, tombstones, lease revision and
+  deadline checks, current unrevoked node incarnation, and transaction seals
+  remain. The existing owner-only `fvpn.restore` exception permits historical
+  replay; it does not grant ordinary runtime eligibility.
+- **First-sync snapshot — `00160_fleet_updates.sql` (F-07; §13.1, §13.8,
+  §15.4).** A new or reinstalled node needs its own sealed first-sync batch,
+  distinct from an earlier admin fleet snapshot. The migration drops and
+  replaces `update_batches_scope_check` with `all_nodes|first_sync`, and drops
+  and recreates `update_batches_count` with `WHEN (NEW.scope='all_nodes')`.
+  The original `check_snapshot_count()` still validates all-node batches.
+  `update_batches_first_sync_check` restricts first-sync batches to a named
+  node, exactly one target, `reason='first_sync'`, and the reserved system
+  creator; all-node batches must have no first-sync node. The deferred
+  `update_batches_first_sync_count` / `check_first_sync_snapshot()` requires
+  exactly that eligible, non-revoked/non-retired node and its current bound
+  execution incarnation. Base SHARE locks, same-transaction snapshot insertion,
+  immutable target identity, composite FKs, one-time execution binding and
+  target uniqueness remain. The public create API remains `all_nodes`; a
+  first-sync batch never enlarges an existing batch's denominator.
+
+Existing domain evidence includes
+`TestENT01_PendingProjectionCannotReceiveServingLease` and
+`TestAT24_FirstSyncSnapshotGuards`; the base F-07/F-11 regressions remain part
+of `make db-test` (the database entry in the root verify aggregate).
 
 ## Entity relationships
 

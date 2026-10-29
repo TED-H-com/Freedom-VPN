@@ -8,11 +8,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -139,27 +141,30 @@ func TestReviewF03_PurgeRequiresOneCompleteGeneration(t *testing.T) {
 }
 
 // §14.8, §15.4, §16.4: SQL-produced evidence must fit the HTTP audit contract.
-// Database role names identify system executors locally; system actor.id is null.
+// D-035: read through the real audit store; no test-only resource/actor adapter.
 func reviewRetentionAudit(t *testing.T, p *pgxpool.Pool, table string, counts ...string) {
 	t.Helper()
 	doc, err := openapi3.NewLoader().LoadFromFile("../../contracts/openapi.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
-	rows, err := p.Query(t.Context(), `SELECT jsonb_build_object(
-  'audit_event_id',id,'occurred_at',to_char(occurred_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
-  'actor',jsonb_build_object('type',actor_type,'id',NULL), 'action',action,'resource',resource::jsonb,
-  'request_id',request_id,'operation_id',operation_id,'result',result,
-  'changes',jsonb_build_object('before',before_diff,'after',after_diff))
- FROM audit_events WHERE action='retention.purge' ORDER BY occurred_at,id`)
+	store := audit.Store{Pool: p}
+	page, err := store.List(t.Context(), api.ListAuditEventsParams{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer rows.Close()
+	if store.AnomalyCount() != 0 {
+		t.Fatalf("retention audit anomalies=%d", store.AnomalyCount())
+	}
+	if !page.NextCursor.IsNull() || len(page.Items) != len(counts) {
+		t.Fatalf("audit items=%d want=%d", len(page.Items), len(counts))
+	}
+	// Store.List returns newest first; purge expectations follow execution order.
+	slices.Reverse(page.Items)
 	var got []string
-	for rows.Next() {
-		var raw []byte
-		if err := rows.Scan(&raw); err != nil {
+	for _, event := range page.Items {
+		raw, err := json.Marshal(event)
+		if err != nil {
 			t.Fatal(err)
 		}
 		var value any
@@ -173,9 +178,9 @@ func reviewRetentionAudit(t *testing.T, p *pgxpool.Pool, table string, counts ..
 				openapi3.NewRegexpFormatValidator(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`))); err != nil {
 			t.Fatalf("retention audit violates contract: %v", err)
 		}
-		var event api.AuditEvent
-		if err := json.Unmarshal(raw, &event); err != nil {
-			t.Fatal(err)
+		actor, err := event.Actor.Id.Get()
+		if err != nil || actor != uuid.Nil || event.Action != "retention.purge" {
+			t.Fatalf("incorrect canonical actor/action: actor=%v action=%q err=%v", actor, event.Action, err)
 		}
 		if event.Actor.Type != api.AuditEventActorTypeSystem || event.Resource.Type != api.ResourceTypeFleetConfig || event.Resource.Id != uuid.MustParse("00000000-0000-0000-0000-000000000001") || event.Result != api.AuditEventResultSucceeded {
 			t.Fatalf("incorrect retention actor/resource/result: %+v", event)
@@ -205,9 +210,6 @@ func reviewRetentionAudit(t *testing.T, p *pgxpool.Pool, table string, counts ..
 			t.Fatalf("missing or incorrect retention evidence: %+v", after)
 		}
 		got = append(got, after.Count.String())
-	}
-	if err := rows.Err(); err != nil {
-		t.Fatal(err)
 	}
 	if strings.Join(got, ",") != strings.Join(counts, ",") {
 		t.Fatalf("purge audit counts=%v want=%v", got, counts)
