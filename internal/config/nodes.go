@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/netip"
+	"net/url"
 	"os"
 )
 
@@ -32,9 +33,9 @@ type Nodes struct {
 	ReleaseOrigins        []string `json:"release_origins"`
 }
 
-func LoadNodes() (Nodes, error) {
+func LoadNodes(path string) (Nodes, error) {
 	c := Nodes{InstallerSeconds: 900, PreinstalledSeconds: 604800}
-	f, e := os.Open(os.Getenv("FVPN_NODES_CONFIG_FILE"))
+	f, e := os.Open(path)
 	if e != nil {
 		return c, errors.New("node configuration required")
 	}
@@ -61,6 +62,10 @@ func (c Nodes) Validate() error {
 	}
 	if c.RenewalOverlapSeconds < 0 || c.RenewalOverlapSeconds >= c.CertificateSeconds {
 		return errors.New("invalid renewal overlap")
+	}
+	u, e := url.Parse(c.NetBirdURL)
+	if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.Path != "/api" || u.RawQuery != "" || u.Fragment != "" || c.NetBirdDeployment == "" || c.NetBirdTokenFile == "" {
+		return errors.New("node NetBird settings required")
 	}
 	for _, ip := range c.DNSResolverIPv4 {
 		a, e := netip.ParseAddr(ip)

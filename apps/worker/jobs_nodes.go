@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"os"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	nodelib "github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
@@ -259,46 +258,67 @@ func scheduleNodeReconcile(ctx context.Context, tx pgx.Tx, event db.ClaimedEvent
 	if seconds <= 0 {
 		return errors.New("node reconciliation period required")
 	}
+	return enqueueNodeReconcile(ctx, tx, event.ID, time.Now().Add(time.Duration(seconds)*time.Second))
+}
+func enqueueNodeReconcile(ctx context.Context, tx pgx.Tx, exclude uuid.UUID, available time.Time) error {
 	var exists bool
-	if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM outbox_events WHERE event_type='node.reconcile' AND delivered_at IS NULL AND dead_lettered_at IS NULL AND id<>$1)`, event.ID).Scan(&exists); e != nil {
+	if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM outbox_events WHERE event_type='node.reconcile' AND delivered_at IS NULL AND dead_lettered_at IS NULL AND id<>$1)`, exclude).Scan(&exists); e != nil {
 		return e
 	}
 	if exists {
 		return nil
 	}
 	raw, _ := canonjson.Marshal(map[string]int{"schema_version": 1})
-	return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: uuid.MustParse(releases.FleetID), AggregateType: "fleet_config", AggregateVersion: "1", EventType: "node.reconcile", SchemaVersion: 1, Payload: raw, AvailableAt: time.Now().Add(time.Duration(seconds) * time.Second)})
+	return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: uuid.MustParse(releases.FleetID), AggregateType: "fleet_config", AggregateVersion: "1", EventType: "node.reconcile", SchemaVersion: 1, Payload: raw, AvailableAt: available})
 }
 
-// The current Jobs() framework has no pool/lifecycle injection. Each dispatched
-// node job opens a bounded connection pool from the same secret-file setting.
-func nodeJobs() Registry {
-	out := Registry{}
-	for _, name := range []string{"release.verify", "node.provision.requested", "node.peer.observe", "node.routes.withdraw", "node.peer.withdraw", "node.reconcile", "fleet.update_created", "fleet.first_sync_created", "fleet.update_retry", "fleet.release_support_changed", "node.updated"} {
-		out.Register(name, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-			dsn, e := config.ReadSecret(os.Getenv("FVPN_DATABASE_URL_FILE"))
-			if e != nil {
-				return "", e
-			}
-			pool, e := db.Open(ctx, dsn, db.OpenOptions{})
-			if e != nil {
-				return "", e
-			}
-			defer pool.Close()
-			r, e := httpwire.Open(ctx, pool, nil)
-			if e != nil {
-				return "", e
-			}
-			nb, e := netbird.New(netbird.Config{BaseURL: r.Config.NetBirdURL, DeploymentID: r.Config.NetBirdDeployment, Token: netbird.TokenFile(r.Config.NetBirdTokenFile), Bindings: nodes.NetBirdBindings{Pool: pool}, Timeout: time.Duration(r.Config.FetchSeconds) * time.Second})
-			if e != nil {
-				return "", e
-			}
-			fetch, e := releases.NewHTTPSFetcher(r.Releases.Validator, time.Duration(r.Config.FetchSeconds)*time.Second)
-			if e != nil {
-				return "", e
-			}
-			return NodeJobs(r, nb, fetch)[event.EventType](ctx, event)
-		})
+// nodes builds once from the process-owned pool/configuration (D-026). The
+// dispatcher is the only outbox claimant; the runner only seeds durable work.
+func nodes() Domain {
+	return Domain{Name: "nodes", Build: func(ctx context.Context, d Dependencies) (Built, error) {
+		cfg, err := config.LoadNodes(d.Config.NodesConfigFile)
+		if err != nil {
+			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
+		}
+		runtime, err := httpwire.Open(ctx, d.Pool, cfg, d.Logger)
+		if err != nil {
+			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
+		}
+		adapter, err := netbird.New(netbird.Config{BaseURL: cfg.NetBirdURL, DeploymentID: cfg.NetBirdDeployment, Token: netbird.TokenFile(cfg.NetBirdTokenFile), Bindings: nodelib.NetBirdBindings{Pool: d.Pool}, Timeout: time.Duration(cfg.FetchSeconds) * time.Second})
+		if err != nil {
+			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
+		}
+		fetch, err := releases.NewHTTPSFetcher(runtime.Releases.Validator, time.Duration(cfg.FetchSeconds)*time.Second)
+		if err != nil {
+			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
+		}
+		return Built{Jobs: NodeJobs(runtime, adapter, fetch), Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}}, nil
+	}}
+}
+
+// RunNodeSchedule seeds immediately and repairs a missing reconciliation chain.
+// Fleet locking coalesces concurrent workers and the chain's delayed successors.
+// A returned error is supervised; cancellation never leaves a child goroutine.
+func RunNodeSchedule(ctx context.Context, runtime *httpwire.Runtime) error {
+	if runtime == nil || runtime.Pool == nil || runtime.Config.ReconcileSeconds < 1 {
+		return errors.New("node schedule configuration required")
 	}
-	return out
+	seed := func() error {
+		return commandtx.InTx(ctx, runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return enqueueNodeReconcile(ctx, tx, uuid.Nil, time.Now()) })
+	}
+	ticker := time.NewTicker(time.Duration(runtime.Config.ReconcileSeconds) * time.Second)
+	defer ticker.Stop()
+	for {
+		if err := seed(); err != nil {
+			if ctx.Err() != nil {
+				return nil
+			}
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+		}
+	}
 }

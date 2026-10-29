@@ -35,9 +35,15 @@ type Runtime struct {
 	Config     config.Nodes
 }
 
-func Open(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) (*Runtime, error) {
-	c, e := config.LoadNodes()
-	if e != nil {
+// Open builds services once from process-owned dependencies. It neither reads
+// environment nor opens a pool, and does not start background work (D-026).
+func Open(ctx context.Context, pool *pgxpool.Pool, c config.Nodes, log *slog.Logger) (*Runtime, error) {
+	if e := c.Validate(); e != nil {
+		return nil, e
+	}
+	// Validate the configured credential at startup; the adapter reloads it for
+	// rotation and never retains/logs this validation result.
+	if _, e := config.ReadSecret(c.NetBirdTokenFile); e != nil {
 		return nil, e
 	}
 	provider, e := signing.OpenFileProvider(c.ProviderDirectory)

@@ -5,10 +5,12 @@ References: Project Spec §5–7, §13.1–2/10, §14.4–5, §15.3, §16.1–3,
 
 ## Composition and operation list
 
-`apps/control/wire_nodes.go` composes `internal/nodes/httpwire`. The one server
-hook installs the PKI authenticator and enrollment credential context before
-listeners start. It rebuilds only the API routing boundary; browser session and
-health routes keep the framework implementation. All command handlers reuse
+`nodes(),` is the single registration line in each process's `Domains()` list.
+`apps/control/wire_nodes.go` builds `internal/nodes/httpwire` once using the
+process-owned pool, configuration and logger. Its `Built` supplies the strict
+handlers, PKI authenticator and enrollment credential middleware to the
+[D-026 composition seam](../control/COMPOSITION.md). The framework owns both
+listeners, routing, response tracking and request IDs. All command handlers reuse
 `httpapi.Transaction`, set durable resource references, and implement replay.
 Standalone service callers retain their existing transaction/idempotency APIs.
 
@@ -73,12 +75,11 @@ packet-level pass.
 
 ## Worker jobs and read-back
 
-`apps/worker/jobs_nodes.go` registers node jobs. `NodeJobs` accepts dependencies
-for integration tests. The existing zero-argument `Jobs()` hook requires the
-runtime adapter to open/close a small pool per dispatched job using
-`FVPN_DATABASE_URL_FILE`; it must name the same database as the main worker.
-Set that environment variable even when the main process uses a JSON config file.
-A future framework dependency hook can reuse its pool without changing jobs.
+`apps/worker/jobs_nodes.go` builds its registry and clients once from
+`Dependencies.Pool`, `Dependencies.Config` and `Dependencies.Logger`. `NodeJobs`
+also accepts explicit dependencies for integration tests. No domain opens a pool,
+reads environment variables, or starts a listener/dispatcher/goroutine during
+construction. `Built.Runners` supplies `RunNodeSchedule` to the process supervisor.
 
 | Event | Durable evidence and external calls |
 |---|---|
@@ -90,14 +91,18 @@ A future framework dependency hook can reuse its pool without changing jobs.
 | `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
 
-The periodic chain starts with enrollment provisioning or a fleet/node event;
-there is no startup timer in the current framework. A dead-lettered chain requires
-operator recovery. Reconciliation never guesses success for stuck/offline jobs.
+The supervised runner seeds reconciliation immediately at startup and checks for
+a missing chain each `reconcile_seconds`. Fleet locking coalesces seeds from
+multiple processes and event-created successors. Runners only enqueue; the shared
+dispatcher claims and completes work. Enqueue failures return to the supervisor;
+cancellation stops the runner. Reconciliation never guesses success for
+stuck/offline jobs.
 
-`nodes.NetBirdBindings` uses durable `external_bindings` with provider namespace
-`netbird-adapter`, deterministic UUIDs for opaque adapter keys, and a deployment
-session advisory lock. All adapter writers for the same deployment must share
-this store/lock convention. HTTP calls never hold a SQL request transaction.
+`nodes.NetBirdBindings` aliases `devices.NetBirdBindings`, sharing the
+[member/device binding convention](../members/README.md#netbird-binding-and-lock-namespace-convention):
+provider `netbird`, reversible encoded keys, JCS SHA-256 resource UUIDs and
+PostgreSQL deployment session-lock namespace 119. HTTP calls never hold a SQL
+request transaction.
 Transport loss after remote key creation may make the one-time secret unavailable:
 the worker fails visibly and requires explicit enrollment recovery, never another
 automatic key creation. No real NetBird deployment or device behavior is claimed.
@@ -108,8 +113,13 @@ cannot commit release verification, bootstrap storage or operation advancement.
 
 ## Configuration
 
-`FVPN_NODES_CONFIG_FILE` points to a strict JSON document consumed by both
-processes. Do not put key material or bearer tokens in JSON. Provision the local
+The central configuration's required `nodes_config_file` points to a strict JSON
+document consumed by both domains through `Dependencies.Config.NodesConfigFile`.
+Only the binary's central loader interprets the corresponding
+`FVPN_NODES_CONFIG_FILE` environment override. Missing, malformed or unreadable
+configuration/credentials fails startup with `config.SettingError` naming
+`nodes_config_file`; there is no request-time configuration fallback.
+Do not put key material or bearer tokens in JSON. Provision the local
 FileProvider vault and public CA certificate explicitly; this development provider
 is not a production HSM or independent anti-rollback appliance.
 
@@ -180,3 +190,9 @@ lease deadlines and replay, NetBird setup read-back/retry, peer readiness, exter
 key/peer withdrawal and worker fencing.
 Full packet isolation, throughput, real arm64 execution and native client
 compatibility still require their separate labs.
+
+The composition tests also exercise missing settings (including ignoring ambient
+environment in domain builds), immediate/coalesced reconciliation seeding and
+cancellation. A subprocess test runs both actual binaries with the production
+member and node domains registered, enrolls over TLS, consumes bootstrap over
+mTLS once, observes durable scheduled work and verifies clean SIGTERM shutdown.

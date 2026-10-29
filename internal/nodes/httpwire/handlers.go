@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -24,27 +22,14 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Handlers struct {
 	Runtime *Runtime
-	pool    *pgxpool.Pool
-	log     *slog.Logger
-	once    sync.Once
-	err     error
 }
 
-func Configured(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
-	return &Handlers{pool: pool, log: log}
-}
-func (h *Handlers) ready(ctx context.Context) error {
-	h.once.Do(func() {
-		if h.Runtime == nil {
-			h.Runtime, h.err = Open(ctx, h.pool, h.log)
-		}
-	})
-	if h.err != nil {
+func (h *Handlers) ready(context.Context) error {
+	if h.Runtime == nil {
 		return apierr.New(apierr.DependencyUnavailable, "Node services are not configured.")
 	}
 	return nil
@@ -53,7 +38,7 @@ func (h *Handlers) ready(ctx context.Context) error {
 type tokenKey struct{}
 
 // RequestContext retains enrollment credentials in request-local memory only.
-// Install outside httpapi.New; logging never consumes this context value.
+// The domain returns it as Built.Middleware; logging never consumes this value.
 func RequestContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/v1/agent/enroll" {
