@@ -63,9 +63,9 @@ type rowReader interface {
 func (s *Service) check(ctx context.Context, q rowReader, id NodeIdentity, cert *x509.Certificate) error {
 	fp := sha256.Sum256(cert.Raw)
 	var allowed bool
-	err := q.QueryRow(ctx, `SELECT n.lifecycle_state IN ('enrolling','registered') AND n.current_incarnation_id=i.id
+	err := q.QueryRow(ctx, `SELECT coalesce(n.lifecycle_state IN ('enrolling','registered') AND n.current_incarnation_id=i.id
  AND i.revoked_at IS NULL AND c.revoked_at IS NULL AND c.not_before<=clock_timestamp()
- AND least(c.not_after,coalesce(c.usable_until,c.not_after))>clock_timestamp()
+ AND least(c.not_after,coalesce(c.usable_until,c.not_after))>clock_timestamp(),false)
  FROM nodes n JOIN node_incarnations i ON i.node_id=n.id JOIN node_certificates c ON c.incarnation_id=i.id
  WHERE n.id=$1 AND i.id=$2 AND c.issuer=$3 AND c.fingerprint=$4`, id.NodeID, id.IncarnationID, s.ca.Issuer(), fp[:]).Scan(&allowed)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -91,6 +91,9 @@ func (s *Service) LockAuthenticated(ctx context.Context, tx pgx.Tx, cert *x509.C
 	var node uuid.UUID
 	if err = tx.QueryRow(ctx, `SELECT id FROM nodes WHERE id=$1 FOR UPDATE`, id.NodeID).Scan(&node); err != nil {
 		return NodeIdentity{}, apierr.New(apierr.Unauthenticated, "Unknown identity.")
+	}
+	if err = s.CheckFence(ctx, id); err != nil {
+		return NodeIdentity{}, err
 	}
 	if err = s.check(ctx, tx, id, cert); err != nil {
 		return NodeIdentity{}, err

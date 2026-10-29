@@ -34,6 +34,10 @@ type NodeIdentity struct {
 type AgentAuthenticator interface {
 	Authenticate(context.Context, *x509.Certificate) (NodeIdentity, error)
 }
+
+// Revocations is a local durable journal, independent of database snapshots.
+// Implementations must not make external network calls; the journal is read
+// again while holding node locks to fence in-flight requests on revocation.
 type Revocations interface {
 	IdentityDenied(context.Context, string) (bool, error)
 	DenyIdentity(context.Context, string) error
@@ -56,7 +60,7 @@ func ParseCSR(input string) (*x509.CertificateRequest, error) {
 		return nil, invalidCSR()
 	}
 	key, ok := csr.PublicKey.(*ecdsa.PublicKey)
-	if !ok || key.Curve != elliptic.P256() || csr.CheckSignature() != nil || csr.SignatureAlgorithm != x509.ECDSAWithSHA256 || !bytes.Equal(csr.RawSubject, []byte{0x30, 0}) || len(csr.Extensions) > 0 || len(csr.Attributes) > 0 {
+	if !ok || key.Curve != elliptic.P256() || csr.CheckSignature() != nil || csr.SignatureAlgorithm != x509.ECDSAWithSHA256 || !bytes.Equal(csr.RawSubject, []byte{0x30, 0}) || len(csr.Extensions) > 0 {
 		return nil, invalidCSR()
 	}
 	// x509 ignores unrecognized PKCS#10 attributes; inspect the raw ASN.1 too.
@@ -97,7 +101,7 @@ type Issued struct {
 
 // NewCA takes a public CA certificate and an opaque provider key reference.
 func NewCA(ctx context.Context, provider signing.Provider, keyID string, der []byte, validity time.Duration) (*CA, error) {
-	if provider == nil || validity <= 0 {
+	if provider == nil || validity < time.Second {
 		return nil, errors.New("pki: explicit certificate validity required")
 	}
 	c, err := x509.ParseCertificate(der)
@@ -124,7 +128,7 @@ func NewCA(ctx context.Context, provider signing.Provider, keyID string, der []b
 // CreateDevCA generates a public, self-signed development CA certificate.
 // The private key has already been generated in the provider and never leaves it.
 func CreateDevCA(ctx context.Context, p signing.Provider, keyID string, validity time.Duration) ([]byte, error) {
-	if validity <= 0 {
+	if validity < time.Second {
 		return nil, errors.New("pki: explicit CA validity required")
 	}
 	k, err := p.CertificateSigner(ctx, keyID)

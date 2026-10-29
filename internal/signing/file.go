@@ -117,7 +117,11 @@ func (p *FileProvider) with(ctx context.Context, fn func(*ledger) error) error {
 func validateLedger(s ledger) error {
 	ids, active, pubs := map[string]bool{}, map[Purpose]bool{}, map[string]bool{}
 	for _, k := range s.Keys {
-		if _, err := uuid.Parse(k.ID); err != nil {
+		if k.Purpose == Release {
+			if k.ID == "" || len(k.ID) > 128 {
+				return ErrUnavailable
+			}
+		} else if _, err := uuid.Parse(k.ID); err != nil {
 			return ErrUnavailable
 		}
 		if ids[k.ID] || !k.NotBefore.Before(k.NotAfter) || k.NotBefore.IsZero() {

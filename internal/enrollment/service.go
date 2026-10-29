@@ -108,6 +108,13 @@ func safe(err error) error {
 func audit(ctx context.Context, tx pgx.Tx, actor, action string, id uuid.UUID, op *uuid.UUID) error {
 	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: "service", Action: action, Resource: id.String(), OperationID: op, SchemaVersion: 1, Before: []byte(`{}`), After: []byte(`{}`), Result: "accepted"})
 }
+func auditReason(ctx context.Context, tx pgx.Tx, actor, action string, id uuid.UUID, op *uuid.UUID, reason string) error {
+	after, err := canonjson.Marshal(map[string]string{"reason": reason})
+	if err != nil {
+		return err
+	}
+	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: "admin", Action: action, Resource: id.String(), OperationID: op, SchemaVersion: 1, Before: []byte(`{}`), After: after, Result: "accepted"})
+}
 func (s *Service) log(ctx context.Context, event string, id uuid.UUID) {
 	if s.cfg.Logger != nil {
 		s.cfg.Logger.InfoContext(ctx, event, "resource_id", id.String())
@@ -178,7 +185,7 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 		}
 		groups := []uuid.UUID{}
 		if r.MemberGroupIds != nil {
-			groups = *r.MemberGroupIds
+			groups = append(groups, (*r.MemberGroupIds)...)
 		}
 		var count int
 		if e = tx.QueryRow(ctx, `SELECT count(*) FROM member_groups WHERE id=ANY($1::uuid[])`, groups).Scan(&count); e != nil {
@@ -200,7 +207,11 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 			return e
 		}
 		for _, group := range groups {
-			if _, e = tx.Exec(ctx, `INSERT INTO exit_groups(id,exit_id,group_id) VALUES($1,$2,$3)`, uuid.New(), exit, group); e != nil {
+			groupID, e := uuid.NewV7()
+			if e != nil {
+				return e
+			}
+			if _, e = tx.Exec(ctx, `INSERT INTO exit_groups(id,exit_id,group_id) VALUES($1,$2,$3)`, groupID, exit, group); e != nil {
 				return e
 			}
 		}
@@ -251,7 +262,7 @@ func (s *Service) GetEnrollment(ctx context.Context, id uuid.UUID) (api.Enrollme
 	return out, safe(err)
 }
 func (s *Service) RevokeEnrollment(ctx context.Context, cmd Command, id uuid.UUID, reason string) (out api.Enrollment, err error) {
-	if strings.TrimSpace(reason) == "" || len(reason) > 2000 {
+	if !validReason(reason) {
 		return out, apierr.New(apierr.ValidationFailed, "Revocation reason required.")
 	}
 	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
@@ -276,7 +287,7 @@ func (s *Service) RevokeEnrollment(ctx context.Context, cmd Command, id uuid.UUI
 		if e = complete(ctx, tx, record, "enrollment", id, 200, nil); e != nil {
 			return e
 		}
-		if e = audit(ctx, tx, cmd.Principal, "enrollment.revoked", id, nil); e != nil {
+		if e = auditReason(ctx, tx, cmd.Principal, "enrollment.revoked", id, nil, reason); e != nil {
 			return e
 		}
 		out, e = get(ctx, tx, id)
@@ -286,6 +297,9 @@ func (s *Service) RevokeEnrollment(ctx context.Context, cmd Command, id uuid.UUI
 		return api.Enrollment{}, safe(err)
 	}
 	return out, nil
+}
+func validReason(reason string) bool {
+	return utf8.ValidString(reason) && !strings.ContainsRune(reason, 0) && strings.TrimSpace(reason) != "" && utf8.RuneCountInString(reason) <= 500
 }
 
 type EnrollResult struct {
@@ -339,12 +353,15 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 		if e := tx.QueryRow(ctx, `SELECT lifecycle_state FROM nodes WHERE id=$1 FOR UPDATE`, nodeID).Scan(&lifecycle); e != nil {
 			return e
 		}
+		if e := s.auth.CheckFence(ctx, id); e != nil {
+			return e
+		}
 		var enrollmentID uuid.UUID
 		var state string
 		var expired bool
-		var boundFP, boundHash []byte
+		var boundFP []byte
 		var requestID, incarnation, certID, opID *uuid.UUID
-		e := tx.QueryRow(ctx, `SELECT id,state,expiry<=clock_timestamp(),public_key_fingerprint,request_hash,request_id,incarnation_id,certificate_id,operation_id FROM node_enrollments WHERE token_hash=$1 FOR UPDATE`, hash).Scan(&enrollmentID, &state, &expired, &boundFP, &boundHash, &requestID, &incarnation, &certID, &opID)
+		e := tx.QueryRow(ctx, `SELECT id,state,expiry<=clock_timestamp(),public_key_fingerprint,request_id,incarnation_id,certificate_id,operation_id FROM node_enrollments WHERE token_hash=$1 FOR UPDATE`, hash).Scan(&enrollmentID, &state, &expired, &boundFP, &requestID, &incarnation, &certID, &opID)
 		if e != nil {
 			return e
 		}
@@ -359,7 +376,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 		}
 		var cert *x509.Certificate
 		if state == "consumed" {
-			if !bytes.Equal(boundFP, fp) || requestID == nil || *requestID != r.EnrollmentRequestId || incarnation == nil || *incarnation != r.NodeIncarnationId || !bytes.Equal(boundHash, requestHash) {
+			if !bytes.Equal(boundFP, fp) || requestID == nil || *requestID != r.EnrollmentRequestId || incarnation == nil || *incarnation != r.NodeIncarnationId {
 				return apierr.New(apierr.EnrollmentKeyMismatch, "Enrollment binding does not match.")
 			}
 			if certID == nil || opID == nil {

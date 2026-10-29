@@ -58,6 +58,9 @@ func (s *Service) StoreBootstrap(ctx context.Context, id pki.NodeIdentity, opera
 		if !allowed {
 			return apierr.New(apierr.IdentityRevoked, "Node identity revoked.")
 		}
+		if e := s.auth.CheckFence(ctx, id); e != nil {
+			return e
+		}
 		var savedExternal string
 		var savedOperation uuid.UUID
 		e = tx.QueryRow(ctx, `SELECT external_key_id,operation_id FROM node_bootstrap_secrets WHERE incarnation_id=$1`, id.IncarnationID).Scan(&savedExternal, &savedOperation)
@@ -141,6 +144,10 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 	plain, err := s.secrets.Open(ctx, sealed, aad)
 	if err != nil {
 		return BootstrapDelivery{}, safe(err)
+	}
+	if !time.Now().Before(out.ExpiresAt) {
+		clear(plain)
+		return BootstrapDelivery{}, apierr.New(apierr.StateConflict, "Bootstrap delivery expired.")
 	}
 	out.SetupKey = string(plain)
 	clear(plain)

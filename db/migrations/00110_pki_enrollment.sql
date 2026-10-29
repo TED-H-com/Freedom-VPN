@@ -72,6 +72,22 @@ BEGIN
  END IF;
  RETURN NEW;
 END $$;
+CREATE FUNCTION pki_guard_bootstrap() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF OLD.erased_at IS NOT NULL AND (NEW.erased_at IS DISTINCT FROM OLD.erased_at
+    OR NEW.delivered_at IS DISTINCT FROM OLD.delivered_at OR NEW.ciphertext IS NOT NULL OR NEW.encryption_key_id IS NOT NULL)
+    OR NEW.ciphertext IS NOT NULL AND (NEW.ciphertext IS DISTINCT FROM OLD.ciphertext OR NEW.encryption_key_id IS DISTINCT FROM OLD.encryption_key_id) THEN
+  RAISE EXCEPTION 'bootstrap material cannot be replaced or restored' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE FUNCTION pki_guard_mapping_freeze() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF OLD.mapping_frozen AND NEW IS DISTINCT FROM OLD THEN
+  RAISE EXCEPTION 'identity mapping frozen' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
 -- +goose StatementEnd
 CREATE TRIGGER pki_nodes_terminal BEFORE UPDATE ON nodes FOR EACH ROW EXECUTE FUNCTION pki_guard_terminal();
 CREATE TRIGGER pki_incarnations_terminal BEFORE UPDATE ON node_incarnations FOR EACH ROW EXECUTE FUNCTION pki_guard_terminal();
@@ -82,3 +98,16 @@ CREATE TRIGGER pki_certificates_identity BEFORE UPDATE ON node_certificates FOR 
 CREATE TRIGGER pki_certificates_keep BEFORE DELETE OR TRUNCATE ON node_certificates FOR EACH STATEMENT EXECUTE FUNCTION forbid_delete();
 CREATE TRIGGER pki_incarnations_keep BEFORE DELETE OR TRUNCATE ON node_incarnations FOR EACH STATEMENT EXECUTE FUNCTION forbid_delete();
 CREATE TRIGGER pki_renewals_immutable BEFORE UPDATE OR DELETE ON node_certificate_renewals FOR EACH ROW EXECUTE FUNCTION immutable_row();
+CREATE TRIGGER pki_enrollments_keep BEFORE DELETE OR TRUNCATE ON node_enrollments FOR EACH STATEMENT EXECUTE FUNCTION forbid_delete();
+CREATE TRIGGER pki_enrollments_metadata BEFORE UPDATE ON node_enrollments FOR EACH ROW EXECUTE FUNCTION immutable_fields('delivery','name','region','notes','member_group_ids');
+CREATE TRIGGER pki_bootstrap_identity BEFORE UPDATE ON node_bootstrap_secrets FOR EACH ROW EXECUTE FUNCTION immutable_fields('incarnation_id','operation_id','external_key_id','expires_at');
+CREATE TRIGGER pki_bootstrap_erasure BEFORE UPDATE ON node_bootstrap_secrets FOR EACH ROW EXECUTE FUNCTION pki_guard_bootstrap();
+CREATE TRIGGER pki_bootstrap_keep BEFORE DELETE OR TRUNCATE ON node_bootstrap_secrets FOR EACH STATEMENT EXECUTE FUNCTION forbid_delete();
+CREATE TRIGGER pki_mapping_frozen BEFORE UPDATE ON node_identity_endpoints FOR EACH ROW EXECUTE FUNCTION pki_guard_mapping_freeze();
+CREATE TRIGGER pki_endpoints_keep BEFORE DELETE OR TRUNCATE ON node_identity_endpoints FOR EACH STATEMENT EXECUTE FUNCTION forbid_delete();
+CREATE TRIGGER pki_conflicts_immutable BEFORE UPDATE OR DELETE ON node_identity_conflicts FOR EACH ROW EXECUTE FUNCTION immutable_row();
+CREATE TRIGGER pki_conflicts_keep BEFORE TRUNCATE ON node_identity_conflicts FOR EACH STATEMENT EXECUTE FUNCTION forbid_delete();
+COMMENT ON TABLE node_certificate_renewals IS 'Project Spec §15.3, §14.5: immutable certificate renewal receipts.';
+COMMENT ON TABLE node_bootstrap_secrets IS 'Project Spec §6.4, §14.7: encrypted, single-delivery bootstrap material.';
+COMMENT ON TABLE node_identity_endpoints IS 'Project Spec §6.2: opaque endpoint compatibility hashes and mapping freeze.';
+COMMENT ON TABLE node_identity_conflicts IS 'Project Spec §6.2: retained evidence of incompatible concurrent identities.';

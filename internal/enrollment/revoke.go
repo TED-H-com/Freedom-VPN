@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -27,7 +26,7 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 	if expected == nil {
 		return out, apierr.New(apierr.PreconditionRequired, "If-Match required.")
 	}
-	if strings.TrimSpace(reason) == "" || len(reason) > 2000 {
+	if !validReason(reason) {
 		return out, apierr.New(apierr.ValidationFailed, "Revocation reason required.")
 	}
 	body := struct {
@@ -111,7 +110,7 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if e = complete(ctx, tx, record, "node", node, 202, &out.OperationID); e != nil {
 			return e
 		}
-		return audit(ctx, tx, cmd.Principal, "node.revoked", node, &out.OperationID)
+		return auditReason(ctx, tx, cmd.Principal, "node.revoked", node, &out.OperationID, reason)
 	})
 	if err != nil {
 		return RevocationResult{}, safe(err)
