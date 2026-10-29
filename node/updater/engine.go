@@ -56,9 +56,12 @@ type Engine struct {
 	Jitter        func() float64
 	FreeBytes     func(path string) (uint64, error)
 	AllowLoopback bool
-	// AllowedOrigins exempts exact scheme://host[:port] artifact, manifest
-	// and result origins from the private and CGNAT guard (D-046). Empty
-	// keeps the guard. The dial is pinned to that host's resolution.
+	// AllowedOrigins exempts artifact, manifest and result origins from the
+	// private and CGNAT guard (D-046). An entry matches when the scheme, host
+	// and effective port are equal. The effective port of a URL or entry
+	// without an explicit port is the scheme default: 443 for https and 80
+	// for http. Empty keeps the guard. The dial is pinned to that host's
+	// resolution.
 	AllowedOrigins []string
 	Faults         Faults
 	Log            *slog.Logger
@@ -971,8 +974,10 @@ func (e *Engine) httpClient() *http.Client {
 	return clientWithDial(e.HTTP, e.urlPolicy())
 }
 
-// clientWithDial clones base and pins every dial to dialPolicy. A transport
-// that is not *http.Transport is left alone; the URL check still runs.
+// clientWithDial clones base and pins every dial to dialPolicy. The request
+// scheme is stored on the dial context so the allowlist matches scheme, host
+// and effective port. A transport that is not *http.Transport is left alone;
+// the URL check still runs.
 func clientWithDial(base *http.Client, policy urlPolicy) *http.Client {
 	if base == nil {
 		base = http.DefaultClient
@@ -991,7 +996,7 @@ func clientWithDial(base *http.Client, policy urlPolicy) *http.Client {
 		tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return dialPolicy(ctx, network, addr, policy)
 		}
-		clone.Transport = tr
+		clone.Transport = schemeDialTransport{base: tr}
 	}
 	inner := base.CheckRedirect
 	clone.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -1007,6 +1012,31 @@ func clientWithDial(base *http.Client, policy urlPolicy) *http.Client {
 		return nil
 	}
 	return &clone
+}
+
+// schemeDialTransport records the request scheme for dialPolicy. DialContext
+// receives only host:port, and the allowlist matches scheme as well as host
+// and effective port (D-046).
+type schemeDialTransport struct {
+	base http.RoundTripper
+}
+
+var _ interface{ CloseIdleConnections() } = schemeDialTransport{}
+
+func (s schemeDialTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	scheme := ""
+	if req.URL != nil {
+		scheme = req.URL.Scheme
+	}
+	req = req.WithContext(withDialScheme(req.Context(), scheme))
+	return s.base.RoundTrip(req)
+}
+
+func (s schemeDialTransport) CloseIdleConnections() {
+	type idleCloser interface{ CloseIdleConnections() }
+	if c, ok := s.base.(idleCloser); ok {
+		c.CloseIdleConnections()
+	}
 }
 
 // lockBusyDetail keeps a stale-holder reason visible on UPDATE_BUSY. A live

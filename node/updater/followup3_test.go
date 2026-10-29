@@ -311,12 +311,13 @@ func TestUPD_AllowedOriginPinsDial(t *testing.T) {
 		return nil, errors.New("dial stopped")
 	}
 	policy := urlPolicy{AllowedOrigins: []string{"https://releases.internal"}}
-	_, err := dialPolicy(context.Background(), "tcp", "releases.internal:443", policy)
+	ctx := withDialScheme(context.Background(), "https")
+	_, err := dialPolicy(ctx, "tcp", "releases.internal:443", policy)
 	if dialed != "10.1.2.3:443" {
 		t.Fatalf("dialed %q err %v", dialed, err)
 	}
 	dialed = ""
-	_, err = dialPolicy(context.Background(), "tcp", "releases.internal:443", urlPolicy{})
+	_, err = dialPolicy(ctx, "tcp", "releases.internal:443", urlPolicy{})
 	if dialed != "" || asOp(err) == nil || asOp(err).Code != apierr.SignatureInvalid {
 		t.Fatalf("unguarded dialed %q err %v", dialed, err)
 	}
