@@ -249,6 +249,7 @@ func TestReviewF06_IdempotencyReferenceAndExpiry(t *testing.T) {
 			id := uuid.New()
 			switch field {
 			case "operation":
+				exec(t, p, `INSERT INTO operations(id,kind,principal,resource_type) VALUES($1,'other','test','node')`, id)
 				changed.OperationID = &id
 			case "resource":
 				changed.ResourceID = &id
@@ -341,6 +342,21 @@ func TestReviewF07_SnapshotMembershipAndRestore(t *testing.T) {
 	}
 	reviewCount(t, p, `SELECT count(*) FROM update_batches WHERE id=$1 AND snapshot_xid='1'::xid8`, 1, restored)
 	reviewReject(t, p, `INSERT INTO update_targets(batch_id,node_id,target_generation) VALUES($1,$2,2)`, restored, enrolling)
+	t.Run("restore requires owner", func(t *testing.T) {
+		var super bool
+		if err := p.QueryRow(context.Background(), `SELECT rolsuper FROM pg_roles WHERE rolname=current_user`).Scan(&super); err != nil {
+			t.Fatal(err)
+		}
+		if !super {
+			t.Skip("role impersonation requires superuser test admin")
+		}
+		exec(t, p, `GRANT INSERT ON update_targets TO pg_read_all_data`)
+		tx := reviewTx(t, p)
+		exec(t, tx, `SET LOCAL ROLE pg_read_all_data`)
+		exec(t, tx, `SET LOCAL fvpn.restore='on'`)
+		_, err := tx.Exec(context.Background(), `INSERT INTO update_targets(batch_id,node_id,target_generation) VALUES($1,$2,2)`, restored, enrolling)
+		sqlError(t, err, "23514", "")
+	})
 }
 
 func TestReviewF08_OwnerMigrationBackfill(t *testing.T) {
@@ -461,6 +477,22 @@ func TestReviewF11_LeaseEligibilityAndSeal(t *testing.T) {
 		})
 	}
 	reviewReject(t, p, reviewLeaseMemberSQL, f.lease, f.member)
+	t.Run("restore requires owner", func(t *testing.T) {
+		var super bool
+		if err := p.QueryRow(ctx, `SELECT rolsuper FROM pg_roles WHERE rolname=current_user`).Scan(&super); err != nil {
+			t.Fatal(err)
+		}
+		if !super {
+			t.Skip("role impersonation requires superuser test admin")
+		}
+		exec(t, p, `GRANT INSERT ON serving_lease_members TO pg_read_all_data`)
+		exec(t, p, `GRANT UPDATE ON serving_leases TO pg_read_all_data`)
+		tx := reviewTx(t, p)
+		exec(t, tx, `SET LOCAL ROLE pg_read_all_data`)
+		exec(t, tx, `SET LOCAL fvpn.restore='on'`)
+		_, err := tx.Exec(ctx, reviewLeaseMemberSQL, f.lease, f.member)
+		sqlError(t, err, "23514", "")
+	})
 	tx := reviewTx(t, p)
 	lease := uuid.New()
 	exec(t, tx, reviewLeaseSQL, lease, f.node, f.inc)

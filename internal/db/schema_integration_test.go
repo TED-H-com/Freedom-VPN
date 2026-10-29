@@ -5,6 +5,10 @@ package db_test
 import (
 	"context"
 	"errors"
+	"os"
+	osexec "os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 
@@ -220,4 +224,36 @@ func TestUPD_UpdateTargetAndJobUnique(t *testing.T) {
 		return err
 	})
 	sqlError(t, err, "23505", "update_targets_node_key")
+}
+
+// §15.5: the operator CLI still applies an empty schema, is idempotent, and
+// reports all five embedded migrations. All subprocess scratch inherits the
+// integration runner's disk TMPDIR; credentials are passed only in environment.
+func Test15_5_MigrateCLI(t *testing.T) {
+	p := dbtest.NewUnmigrated(t)
+	binary := filepath.Join(t.TempDir(), "fvpn-migrate")
+	build := osexec.CommandContext(t.Context(), "go", "build", "-o", binary, "./cmd/fvpn-migrate")
+	if output, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build migration CLI: %v\n%s", err, output)
+	}
+	run := func(arg string) string {
+		t.Helper()
+		cmd := osexec.CommandContext(t.Context(), binary, arg)
+		cmd.Env = append(os.Environ(), "FVPN_DATABASE_URL="+p.Config().ConnConfig.ConnString())
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("migration CLI %s: %v\n%s", arg, err, output)
+		}
+		return string(output)
+	}
+	for range 2 {
+		if output := run("up"); strings.TrimSpace(output) != "migrations applied" {
+			t.Fatalf("unexpected up output: %s", output)
+		}
+	}
+	expected := "00001 applied\n00002 applied\n00003 applied\n00004 applied\n00005 applied\n"
+	if output := run("status"); output != expected {
+		t.Fatalf("unexpected status: %s", output)
+	}
+	t.Log("CLI: empty up, repeated up and five applied migration statuses verified")
 }
