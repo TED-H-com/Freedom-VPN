@@ -105,7 +105,7 @@ check(isDecimalString(urPolicy.result.policy_generation) && BigInt(urPolicy.resu
 check(hashWithout({ ...urPolicy.result, policy_generation: "9007199254740994" }, "payload_hash") !== urPolicy.payload_hash, "changed applied generation changes hash");
 
 // ---- signing vectors
-for (const f of ["release-manifest-signing.json", "desired-state-signing.json", "desired-state-revocations-signing.json", "serving-lease-signing.json", "usage-checkpoint-signing.json"]) {
+for (const f of ["release-trust-update-signing.json", "release-manifest-signing.json", "desired-state-signing.json", "desired-state-revocations-signing.json", "serving-lease-signing.json", "usage-checkpoint-signing.json"]) {
   const v = load(f);
   const canon = canonicalize(v.signed);
   check(canon === v.canonical_signed, `${f} canonical signed`);

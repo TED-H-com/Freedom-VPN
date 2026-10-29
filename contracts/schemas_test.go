@@ -239,7 +239,7 @@ func TestJSONSchemas_ConsistentWithOpenAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	entries, err := os.ReadDir("schemas")
+	entries, err := filepath.Glob("schemas/*.schema.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,13 +247,13 @@ func TestJSONSchemas_ConsistentWithOpenAPI(t *testing.T) {
 		t.Fatalf("schemas/ has %d files, want %d", len(entries), len(gen.SchemaTargets))
 	}
 	for _, e := range entries {
-		t.Run(e.Name(), func(t *testing.T) {
+		t.Run(filepath.Base(e), func(t *testing.T) {
 			var js map[string]any
-			readJSON(t, filepath.Join("schemas", e.Name()), &js)
+			readJSON(t, filepath.Join("schemas", filepath.Base(e)), &js)
 			if js["$schema"] != "https://json-schema.org/draft/2020-12/schema" {
 				t.Fatalf("$schema = %v", js["$schema"])
 			}
-			if js["$id"] != SchemaID(e.Name()) {
+			if js["$id"] != SchemaID(filepath.Base(e)) {
 				t.Fatalf("$id = %v", js["$id"])
 			}
 			title, _ := js["title"].(string)

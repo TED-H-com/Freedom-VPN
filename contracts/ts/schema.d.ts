@@ -1665,7 +1665,14 @@ export interface components {
             reason: string;
             payload: components["schemas"]["ReleaseSupportPayload"];
         };
-        /** @description One immutable policy revision; `type` selects the payload schema. */
+        /**
+         * @description One immutable policy revision; `type` selects the payload schema.
+         *     The owner's JSON Schema 2020-12 payload snapshots are published under
+         *     contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+         *     threat-feed and release-support, each named <type>-payload.schema.json).
+         *     See docs/contracts/README.md for provenance and known schema limitations;
+         *     the OpenAPI payload component remains authoritative for HTTP bodies.
+         */
         PolicyRevision: components["schemas"]["PlanPolicyRevision"] | components["schemas"]["FairUsePolicyRevision"] | components["schemas"]["DnsProfilePolicyRevision"] | components["schemas"]["DomainRuleSetPolicyRevision"] | components["schemas"]["ThreatFeedPolicyRevision"] | components["schemas"]["ReleaseSupportPolicyRevision"];
         PlanPolicyRevision: {
             /**
@@ -1680,6 +1687,12 @@ export interface components {
             revision: string;
             /** @enum {integer} */
             schema_version: 1;
+            /**
+             * @description Plan revision payload (§14.2, §15.2 plans/plan_revisions). Prices, device
+             *     limits and rates are pending business decisions (§21); the schema only
+             *     carries them.
+             *     Owner JSON Schema snapshot at contracts/schemas/policies/plan-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+             */
             payload: components["schemas"]["PlanPayload"];
             payload_sha256: string;
             reason: string;
@@ -1701,6 +1714,27 @@ export interface components {
             revision: string;
             /** @enum {integer} */
             schema_version: 1;
+            /**
+             * @description Fair-use policy revision (§11.1). Thresholds and rates are pending
+             *     business decisions; start in shadow mode.
+             *
+             *     Validation rules enforced on create (§11.1):
+             *     1. `tiers` is non-empty and `tiers[0].threshold_bytes` is "0", so tiers
+             *        cover usage completely from zero with no gap.
+             *     2. `threshold_bytes` is strictly increasing. Usage U is in tier i when
+             *        tiers[i].threshold_bytes <= U < tiers[i+1].threshold_bytes; the last
+             *        tier is unbounded above. U equal to a threshold enters that tier.
+             *     3. Every tier has both `down_bps` and `up_bps`; all rates are
+             *        non-negative integers.
+             *     4. Rates are non-increasing and `priority` is non-decreasing from one
+             *        tier to the next (a higher tier is never faster or more favored), so
+             *        within one period the tier only stays or moves to a stricter one.
+             *     5. Every tier rate is at least `minimum_rate` in each direction.
+             *     6. Overrides have a finite `valid_until` in the future, a reason and an
+             *        actor; at most one override per member.
+             *     A missing tier is never treated as unlimited.
+             *     Owner JSON Schema snapshot at contracts/schemas/policies/fair-use-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+             */
             payload: components["schemas"]["FairUsePayload"];
             payload_sha256: string;
             reason: string;
@@ -1722,6 +1756,12 @@ export interface components {
             revision: string;
             /** @enum {integer} */
             schema_version: 1;
+            /**
+             * @description DNS profile (§12.4, §12.5). References immutable domain_rule_set and
+             *     threat_feed revisions. A profile can never relax the fixed IP-layer
+             *     isolation baseline.
+             *     Owner JSON Schema snapshot at contracts/schemas/policies/dns-profile-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+             */
             payload: components["schemas"]["DnsProfilePayload"];
             payload_sha256: string;
             reason: string;
@@ -1743,6 +1783,15 @@ export interface components {
             revision: string;
             /** @enum {integer} */
             schema_version: 1;
+            /**
+             * @description Admin domain rules (§12.4). Precedence: fixed isolation and member
+             *     authorization, then `block` (forced deny), then `allow` (overrides threat
+             *     and category lists only), then enabled lists, then normal resolution.
+             *     Validation rejects duplicate rule_ids and two rules with the same
+             *     (profile_id, domain, include_subdomains) — conflicting actions in the same
+             *     layer are never resolved by last-write-wins.
+             *     Owner JSON Schema snapshot at contracts/schemas/policies/domain-rule-set-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+             */
             payload: components["schemas"]["DomainRuleSetPayload"];
             payload_sha256: string;
             reason: string;
@@ -1764,6 +1813,12 @@ export interface components {
             revision: string;
             /** @enum {integer} */
             schema_version: 1;
+            /**
+             * @description Threat or category feed source with license basis (§12.3, §14.2). A feed
+             *     whose commercial use is not confirmed must not be placed in a production
+             *     profile. Fetch times and results are observations stored separately.
+             *     Owner JSON Schema snapshot at contracts/schemas/policies/threat-feed-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+             */
             payload: components["schemas"]["ThreatFeedPayload"];
             payload_sha256: string;
             reason: string;
@@ -1785,6 +1840,15 @@ export interface components {
             revision: string;
             /** @enum {integer} */
             schema_version: 1;
+            /**
+             * @description Approved, revoked and minimum-serving releases (§13.2, §14.2).
+             *     Validation: approved_release_ids is a subset of
+             *     minimum_serving_version.serving_release_ids; revoked_release_ids is
+             *     disjoint from both. A normal update never raises the minimum serving set
+             *     implicitly; changing it is an explicit, audited policy change whose effect
+             *     (nodes may stop serving) the UI must show.
+             *     Owner JSON Schema snapshot at contracts/schemas/policies/release-support-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
+             */
             payload: components["schemas"]["ReleaseSupportPayload"];
             payload_sha256: string;
             reason: string;

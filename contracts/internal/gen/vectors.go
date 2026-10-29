@@ -194,6 +194,27 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	twoAMDEnv := envJSON(sign(twoAMD, keys["release"]))
 	out["examples/semantic-invalid/ReleaseRegisterRequest.two-amd64.json"] = prettyDoc(mustCanon(`{"manifest":` + string(twoAMDEnv) + `,"manifest_url":"https://releases.example.invalid/r42/manifest.json"}`))
 
+	// ---- release trust update: the old release root authorizes a new public key.
+	trustUpdate := mustCanon(fmt.Sprintf(`{"kind":"fvpn-release-trust-v1","revision":"9007199254740993","keys":[{"id":%q,"purpose":"release","public":%q,"state":"active","not_before":%q,"not_after":%q}]}`,
+		keys["untrusted"].KeyID, keys["untrusted"].PubB64, TestKeyNotBefore, TestKeyNotAfter))
+	trustEnv := sign(trustUpdate, keys["release"])
+	out["vectors/release-trust-update-signing.json"] = signingVector("ReleaseUpdate authorized by the OLD release key (§13.4); the previously untrusted test public key becomes authorized only after verification.", "release", keys["release"], trustUpdate, trustEnv)
+	out["examples/trust/valid/release-update.json"] = prettyDoc(envJSON(trustEnv))
+	for _, tc := range []struct {
+		name  string
+		path  []string
+		value string
+	}{
+		{"wrong-kind", []string{"kind"}, `"fvpn-unknown-trust-v1"`},
+		{"numeric-revision", []string{"revision"}, `2`},
+		{"wrong-purpose", []string{"keys", "purpose"}, `"desired-state"`},
+		{"private-material", []string{"keys", "private"}, `"TEST ONLY - NOT A SECRET"`},
+		{"revoked-without-time", []string{"keys", "state"}, `"revoked"`},
+		{"bad-public-key", []string{"keys", "public"}, `"AA=="`},
+	} {
+		out["examples/trust/invalid/"+tc.name+".json"] = prettyDoc(envJSON(sign(setMember(trustUpdate, tc.path, tc.value), keys["release"])))
+	}
+
 	// ---- desired state
 	ds := mustCanon(strings.ReplaceAll(desiredState, "%MANIFEST_SHA256%", manifestSHA))
 	dsEnv := sign(ds, keys["desired-state"])

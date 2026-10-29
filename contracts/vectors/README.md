@@ -24,6 +24,7 @@ by hand.
 | `usage-checkpoint-signing.json` | usage checkpoint signing vector (`recovery` key) | §17.3 |
 | `desired-state-revocations-signing.json` | signed explicit revoked releases, using the existing desired-state test key | §13.4, D-034 |
 | `update-result-policy-generation-hash.json` | applied generation above 2^53 and node-reported ARTIFACT_INVALID | §13.10.3 |
+| `release-trust-update-signing.json` | old release root authorizes public release trust update | §13.4, §17.2 |
 | `test-keys.json` | key labels, key IDs, purposes, seeds, public keys, validity window and `verify_at` | §16.2 |
 
 ## Signing vector fields

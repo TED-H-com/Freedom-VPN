@@ -1,0 +1,83 @@
+{
+  "$comment": "Derived from contracts/openapi.yaml component DnsProfilePayload (§12.2, §12.4, §14.2). Candidate for promotion to contracts/schemas/.",
+  "$defs": {
+    "LocalizedText": {
+      "additionalProperties": false,
+      "description": "Display text in Traditional Chinese (`zh-TW`) and English (`en`).",
+      "properties": {
+        "en": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "zh-TW": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "zh-TW"
+      ],
+      "title": "LocalizedText",
+      "type": "object"
+    }
+  },
+  "$id": "urn:fvpn:contracts:schema:dns-profile-payload:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "DNS profile revision payload (§12.2, §12.4, §14.2).",
+  "properties": {
+    "block_response": {
+      "description": "Recommended default `nxdomain` (§12.4).",
+      "enum": [
+        "nxdomain",
+        "refused",
+        "null_address"
+      ],
+      "type": "string"
+    },
+    "blocked_ttl_seconds": {
+      "maximum": 86400,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "display_name": {
+      "$ref": "#/$defs/LocalizedText"
+    },
+    "domain_rule_set_revision_ids": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "maxItems": 32,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "profile_code": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+      "type": "string"
+    },
+    "threat_feed_revision_ids": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "maxItems": 32,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "profile_code",
+    "display_name",
+    "domain_rule_set_revision_ids",
+    "threat_feed_revision_ids",
+    "block_response",
+    "blocked_ttl_seconds"
+  ],
+  "title": "DnsProfilePayload",
+  "type": "object"
+}

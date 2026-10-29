@@ -2516,6 +2516,7 @@ type DnsProfilePolicyRevision struct {
 	// Payload DNS profile (§12.4, §12.5). References immutable domain_rule_set and
 	// threat_feed revisions. A profile can never relax the fixed IP-layer
 	// isolation baseline.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/dns-profile-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       DnsProfilePayload                     `json:"payload"`
 	PayloadSha256 string                                `json:"payload_sha256"`
 	Reason        string                                `json:"reason"`
@@ -2608,6 +2609,7 @@ type DomainRuleSetPolicyRevision struct {
 	// Validation rejects duplicate rule_ids and two rules with the same
 	// (profile_id, domain, include_subdomains) — conflicting actions in the same
 	// layer are never resolved by last-write-wins.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/domain-rule-set-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       DomainRuleSetPayload                     `json:"payload"`
 	PayloadSha256 string                                   `json:"payload_sha256"`
 	Reason        string                                   `json:"reason"`
@@ -2953,6 +2955,7 @@ type FairUsePolicyRevision struct {
 	// 6. Overrides have a finite `valid_until` in the future, a reason and an
 	//    actor; at most one override per member.
 	// A missing tier is never treated as unlimited.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/fair-use-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       FairUsePayload                     `json:"payload"`
 	PayloadSha256 string                             `json:"payload_sha256"`
 	Reason        string                             `json:"reason"`
@@ -3797,6 +3800,7 @@ type PlanPolicyRevision struct {
 	// Payload Plan revision payload (§14.2, §15.2 plans/plan_revisions). Prices, device
 	// limits and rates are pending business decisions (§21); the schema only
 	// carries them.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/plan-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       PlanPayload                     `json:"payload"`
 	PayloadSha256 string                          `json:"payload_sha256"`
 	Reason        string                          `json:"reason"`
@@ -3880,6 +3884,11 @@ type PolicyActivateRequest struct {
 // The ETag for activation is `"<resource_version>"`.
 type PolicyDefinition struct {
 	// ActiveRevision One immutable policy revision; `type` selects the payload schema.
+	// The owner's JSON Schema 2020-12 payload snapshots are published under
+	// contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+	// threat-feed and release-support, each named <type>-payload.schema.json).
+	// See docs/contracts/README.md for provenance and known schema limitations;
+	// the OpenAPI payload component remains authoritative for HTTP bodies.
 	ActiveRevision   *PolicyRevision                       `json:"active_revision,omitempty"`
 	ActiveRevisionId nullable.Nullable[openapi_types.UUID] `json:"active_revision_id"`
 	Code             string                                `json:"code"`
@@ -3890,6 +3899,11 @@ type PolicyDefinition struct {
 	Generation decstr.U64 `json:"generation"`
 
 	// LatestRevision One immutable policy revision; `type` selects the payload schema.
+	// The owner's JSON Schema 2020-12 payload snapshots are published under
+	// contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+	// threat-feed and release-support, each named <type>-payload.schema.json).
+	// See docs/contracts/README.md for provenance and known schema limitations;
+	// the OpenAPI payload component remains authoritative for HTTP bodies.
 	LatestRevision  *PolicyRevision `json:"latest_revision,omitempty"`
 	ResourceVersion decstr.U64      `json:"resource_version"`
 
@@ -3915,6 +3929,11 @@ type PolicyRefs struct {
 }
 
 // PolicyRevision One immutable policy revision; `type` selects the payload schema.
+// The owner's JSON Schema 2020-12 payload snapshots are published under
+// contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+// threat-feed and release-support, each named <type>-payload.schema.json).
+// See docs/contracts/README.md for provenance and known schema limitations;
+// the OpenAPI payload component remains authoritative for HTTP bodies.
 type PolicyRevision struct {
 	union json.RawMessage
 }
@@ -4096,6 +4115,7 @@ type ReleaseSupportPolicyRevision struct {
 	// disjoint from both. A normal update never raises the minimum serving set
 	// implicitly; changing it is an explicit, audited policy change whose effect
 	// (nodes may stop serving) the UI must show.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/release-support-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       ReleaseSupportPayload                     `json:"payload"`
 	PayloadSha256 string                                    `json:"payload_sha256"`
 	Reason        string                                    `json:"reason"`
@@ -4313,6 +4333,7 @@ type ThreatFeedPolicyRevision struct {
 	// Payload Threat or category feed source with license basis (§12.3, §14.2). A feed
 	// whose commercial use is not confirmed must not be placed in a production
 	// profile. Fetch times and results are observations stored separately.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/threat-feed-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       ThreatFeedPayload                     `json:"payload"`
 	PayloadSha256 string                                `json:"payload_sha256"`
 	Reason        string                                `json:"reason"`
