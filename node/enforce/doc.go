@@ -10,4 +10,10 @@
 // device per direction, incremented only after the lease and isolation checks,
 // on the inner IP packet, before SNAT. DNS-to-resolver and diagnostic drops
 // use other counter names and are not usage.
+//
+// DetectResets compares counter values only: a backwards or missing counter
+// is a meter epoch, and a counter that stays at zero is idle. DetectMeterResets
+// is that comparison plus the ruleset. Use it when the caller holds a State,
+// so a table, forward chain, or generation cleared outside the agent is still
+// one epoch when the numbers did not move.
 package enforce
