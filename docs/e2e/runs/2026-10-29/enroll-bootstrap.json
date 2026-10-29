@@ -5,7 +5,7 @@
     "§6",
     "§19 AT06"
   ],
-  "status": "fail",
+  "status": "pass",
   "observations": [
     {
       "name": "token_length",
@@ -17,7 +17,7 @@
     },
     {
       "name": "node_id",
-      "detail": "01a189b1-879a-7cdf-a4ca-33bd49738105"
+      "detail": "01a189d8-e638-78b4-9be1-fb4419e4d64e"
     },
     {
       "name": "setup_key_persisted",
@@ -28,9 +28,21 @@
       "detail": "BOOTSTRAP_CONSUMED"
     },
     {
-      "name": "netbird",
-      "detail": "netbird_failed"
+      "name": "signal_before",
+      "detail": "first run client: DeadlineExceeded dialing netbird.example.invalid with no port; failed to connect to the signalling server: dial context deadline exceeded"
+    },
+    {
+      "name": "signal_after",
+      "detail": "Connected"
+    },
+    {
+      "name": "peer_count",
+      "detail": "1"
+    },
+    {
+      "name": "setup_key_count",
+      "detail": "1"
     }
   ],
-  "at": "2026-10-29T22:07:42Z"
+  "at": "2026-10-29T22:47:47Z"
 }

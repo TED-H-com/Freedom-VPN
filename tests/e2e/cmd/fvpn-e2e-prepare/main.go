@@ -29,19 +29,26 @@ import (
 func main() {
 	state := flag.String("state", "", "git-ignored state directory")
 	reset := flag.Bool("reset", false, "replace an existing state directory")
+	prefix := flag.String("prefix", "e2e", "short stack prefix")
+	portBase := flag.Int("port-base", 18000, "loopback port base")
 	flag.Parse()
 	if *state == "" {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-prepare: -state is required")
 		os.Exit(2)
 	}
-	if err := run(*state, *reset); err != nil {
+	lay, err := parseLayout(*prefix, *portBase)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: %s\n", err.Error())
+		os.Exit(2)
+	}
+	if err := run(*state, *reset, lay); err != nil {
 		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: failed: %s\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("e2e state ready")
 }
 
-func run(state string, reset bool) error {
+func run(state string, reset bool, lay layout) error {
 	marker := filepath.Join(state, "ready")
 	if !reset {
 		if _, err := os.Stat(marker); err == nil {
@@ -76,7 +83,7 @@ func run(state string, reset bool) error {
 		{"control", []string{"portal.example.invalid", "agent.example.invalid"}, nil},
 		{"idp", []string{"idp.example.invalid"}, nil},
 		{"payment", []string{"api.stripe.com"}, nil},
-		{"origin", []string{"releases.example.invalid"}, []net.IP{net.ParseIP("192.0.3.10")}},
+		{"origin", []string{"releases.example.invalid"}, []net.IP{net.ParseIP(lay.OriginIP)}},
 		{"netbird", []string{"netbird.example.invalid"}, nil},
 	}
 	for _, item := range certs {
@@ -209,7 +216,7 @@ func run(state string, reset bool) error {
 		OnlineSeconds: 180, StuckSeconds: 600, ReconcileSeconds: 5, FetchSeconds: 20, DesiredStateSeconds: 600,
 		NetBirdURL: "https://netbird.example.invalid/api", NetBirdDeployment: "e2e",
 		NetBirdTokenFile: "/secrets/netbird.token",
-		DNSResolverIPv4:  []string{"172.28.30.53"}, DNSResolverIPv6: []string{},
+		DNSResolverIPv4:  []string{lay.AdGuardIP}, DNSResolverIPv6: []string{},
 		ReleaseOrigins: []string{"https://releases.example.invalid"},
 	}
 	if err := nodes.Validate(); err != nil {
@@ -230,7 +237,7 @@ func run(state string, reset bool) error {
 	if err := members.Validate(); err != nil {
 		return err
 	}
-	dnsCfg := config.DNS{Upstreams: []string{"172.28.30.54:53"}, BootstrapDNS: []string{"172.28.30.54:53"}}
+	dnsCfg := config.DNS{Upstreams: []string{lay.CoreDNSIP + ":53"}, BootstrapDNS: []string{lay.CoreDNSIP + ":53"}}
 	if err := dnsCfg.Validate(); err != nil {
 		return err
 	}
@@ -245,7 +252,20 @@ func run(state string, reset bool) error {
 		"session_idle_seconds": 1800, "session_absolute_seconds": 43200,
 		"migrate_on_start":    true,
 		"members_config_file": "/etc/fvpn/members.json", "nodes_config_file": "/etc/fvpn/nodes.json",
-		"dns_config_file": "/etc/fvpn/dns.json",
+		"dns_config_file":      "/etc/fvpn/dns.json",
+		"policies_config_file": "/etc/fvpn/policies.json",
+		"usage_config_file":    "/etc/fvpn/usage.json",
+	}
+	policies := config.PoliciesConfig{FUPSweepSeconds: 60, FUPBatchSize: 100, DNSUpstreamProfile: "lab"}
+	if err := policies.Validate(); err != nil {
+		return err
+	}
+	usageCfg := config.UsageConfig{
+		SigningConfigFile: "/var/lib/fvpn/vault", RawUsageRetentionDays: 60, RollupRetentionMonths: 24,
+		AuditRetentionDays: 365, ProjectionBatchSize: 512,
+	}
+	if err := usageCfg.Validate(); err != nil {
+		return err
 	}
 	if err := writeJSON(filepath.Join(state, "config", "central.json"), central); err != nil {
 		return err
@@ -259,13 +279,19 @@ func run(state string, reset bool) error {
 	if err := writeJSON(filepath.Join(state, "config", "dns.json"), dnsCfg); err != nil {
 		return err
 	}
+	if err := writeJSON(filepath.Join(state, "config", "policies.json"), policies); err != nil {
+		return err
+	}
+	if err := writeJSON(filepath.Join(state, "config", "usage.json"), usageCfg); err != nil {
+		return err
+	}
 	if err := writeAgentConfigs(state); err != nil {
 		return err
 	}
 	if err := writeNetBird(state); err != nil {
 		return err
 	}
-	if err := writeAdGuard(state); err != nil {
+	if err := writeAdGuard(state, lay.CoreDNSIP); err != nil {
 		return err
 	}
 	if err := os.MkdirAll(filepath.Join(state, "releases"), 0o755); err != nil {
@@ -289,15 +315,38 @@ func run(state string, reset bool) error {
 		"client_id":      "portal-e2e",
 		"price_id":       "e2e-price",
 		"return_url":     "https://portal.example.invalid:8443/billing/return",
-		"prefix":         "fvpn-w3-devstack-e2e",
-		"ports": map[string]int{
-			"control": 8443, "agent": 9443, "idp": 443, "netbird": 443, "origin": 443, "postgres": 5432,
-		},
+		"prefix":         "fvpn-" + lay.Prefix,
+		"port_base":      lay.PortBase,
+		"origin_ip":      lay.OriginIP,
+		"lab_prefix":     lay.LabPrefix,
+		"host_ports":     lay.Ports,
 	}
 	if err := writeJSON(filepath.Join(state, "stack.json"), stack); err != nil {
 		return err
 	}
+	if err := writeComposeEnv(state, lay); err != nil {
+		return err
+	}
 	return os.WriteFile(marker, []byte("ready\n"), 0o600)
+}
+
+func writeComposeEnv(state string, lay layout) error {
+	body := fmt.Sprintf(`FVPN_E2E_PREFIX=%s
+FVPN_E2E_PORT_BASE=%d
+FVPN_E2E_LAB_PREFIX=%s
+FVPN_E2E_ORIGIN_PREFIX=%s
+FVPN_E2E_PORT_CONTROL=%d
+FVPN_E2E_PORT_AGENT=%d
+FVPN_E2E_PORT_IDP=%d
+FVPN_E2E_PORT_ORIGIN=%d
+FVPN_E2E_PORT_PAYMENT=%d
+FVPN_E2E_PORT_GATEWAY=%d
+FVPN_E2E_PORT_STUN=%d
+FVPN_E2E_PORT_POSTGRES=%d
+`, lay.Prefix, lay.PortBase, lay.LabPrefix, lay.OriginPrefix,
+		lay.Ports["control"], lay.Ports["agent"], lay.Ports["idp"], lay.Ports["origin"],
+		lay.Ports["payment"], lay.Ports["gateway"], lay.Ports["stun"], lay.Ports["postgres"])
+	return writeSecret(filepath.Join(state, "render", "compose.env"), []byte(body))
 }
 
 func writeAgentConfigs(state string) error {
@@ -334,7 +383,7 @@ func writeNetBird(state string) error {
 		return err
 	}
 	cfg := map[string]any{"server": map[string]any{
-		"listenAddress": ":8080", "exposedAddress": "https://netbird.example.invalid",
+		"listenAddress": ":8080", "exposedAddress": "https://netbird.example.invalid:443",
 		"stunPorts": []int{3478}, "metricsPort": 9090, "healthcheckAddress": ":9000",
 		"logLevel": "warn", "logFile": "console", "authSecret": authSecret, "dataDir": "/var/lib/netbird",
 		"disableAnonymousMetrics": true, "disableGeoliteUpdate": true,
@@ -351,7 +400,7 @@ func writeNetBird(state string) error {
 	return writeJSON(filepath.Join(state, "netbird", "config.yaml"), cfg)
 }
 
-func writeAdGuard(state string) error {
+func writeAdGuard(state, coreDNS string) error {
 	password, err := randomHex(16)
 	if err != nil {
 		return err
@@ -407,7 +456,7 @@ dns:
   refuse_any: true
   serve_plain_dns: true
   upstream_dns:
-    - 172.28.30.54:53
+    - %s:53
   upstream_mode: load_balance
 filtering:
   blocked_services:
@@ -450,7 +499,7 @@ users:
   - name: e2e
     password: %q
 whitelist_filters: []
-`, string(hash))
+`, coreDNS, string(hash))
 	dir := filepath.Join(state, "adguard", "conf")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
