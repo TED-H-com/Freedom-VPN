@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -299,7 +300,7 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 		Rules: []api.DomainRule{
 			{
 				RuleId:            openapi_types.UUID(uuid.New()),
-				ProfileId:         strPtr("standard"),
+				ProfileId:         presence.NewNullableWithValue("standard"),
 				Domain:            "tracker.example.com",
 				IncludeSubdomains: true,
 				Action:            api.DomainRuleActionBlock,
@@ -308,7 +309,7 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 			},
 			{
 				RuleId:            openapi_types.UUID(uuid.New()),
-				ProfileId:         nil, // service-wide rule
+				ProfileId:         presence.NewNullNullable[string](), // service-wide rule
 				Domain:            "cdn.example.com",
 				IncludeSubdomains: false,
 				Action:            api.DomainRuleActionAllow,
@@ -338,7 +339,7 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 		LicenseName:           "Commercial Threat Feed License",
 		LicenseUrl:            "https://feeds.example.com/license",
 		CommercialUseBasis:    "Licensed for commercial SaaS/VPN redistribution (TEST ONLY).",
-		Attribution:           strPtr("Threat intel by Example"),
+		Attribution:           presence.FromPointer(strPtr("Threat intel by Example")),
 		SourceUrl:             "https://feeds.example.com/malware.txt",
 		Format:                api.ThreatFeedPayloadFormatDomainList,
 		Categories:            []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware},
@@ -434,7 +435,8 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 			Provider:         "test-provider",
 			ProviderPriceRef: "price_TEST_ONLY_standard",
 		},
-		RateLimit:            nil,
+		RateLimit: presence.NewNullNullable[api.RatePair](),
+
 		FairUseRevisionId:    openapi_types.UUID(fupRev.RevisionID),
 		DnsProfileRevisionId: openapi_types.UUID(dnsRev.RevisionID),
 	}
@@ -486,7 +488,7 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(allPage1.Items) != 2 || allPage1.NextCursor == nil {
+	if len(allPage1.Items) != 2 || (!allPage1.NextCursor.IsSpecified() || allPage1.NextCursor.IsNull()) {
 		t.Fatalf("expected 2 items and next_cursor, got len=%d next=%v", len(allPage1.Items), allPage1.NextCursor)
 	}
 	planType := api.PolicyTypePlan

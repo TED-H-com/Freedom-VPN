@@ -63,7 +63,7 @@ func create(t *testing.T, f fixture) api.EnrollmentCreated {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if r.Token == nil || !r.SecretAvailable {
+	if (!r.Token.IsSpecified() || r.Token.IsNull()) || !r.SecretAvailable {
 		t.Fatal("first token missing")
 	}
 	return r
@@ -72,7 +72,7 @@ func enroll(t *testing.T, f fixture) (api.EnrollmentCreated, api.EnrollRequest, 
 	t.Helper()
 	c := create(t, f)
 	r, _ := pkitest.Request(t)
-	out, err := f.s.Enroll(context.Background(), *c.Token, r)
+	out, err := f.s.Enroll(context.Background(), nullableValue(c.Token), r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if second.SecretAvailable || second.Token != nil || second.Enrollment.EnrollmentId != first.Enrollment.EnrollmentId {
+	if second.SecretAvailable || !second.Token.IsNull() || second.Enrollment.EnrollmentId != first.Enrollment.EnrollmentId {
 		t.Fatal("creation replay leaked secret or changed resource")
 	}
 	changed := req
@@ -121,11 +121,11 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 	_, err = f.s.CreateEnrollment(ctx, cmd, changed)
 	expectCode(t, err, apierr.IdempotencyConflict)
 	r, key := pkitest.Request(t)
-	original, err := f.s.Enroll(ctx, *first.Token, r)
+	original, err := f.s.Enroll(ctx, nullableValue(first.Token), r)
 	if err != nil {
 		t.Fatal(err)
 	}
-	retry, err := f.s.Enroll(ctx, *first.Token, r)
+	retry, err := f.s.Enroll(ctx, nullableValue(first.Token), r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +137,7 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 	resigned := r
 	resigned.CsrPem = pkitest.CSRWith(t, key, &x509.CertificateRequest{})
 	pkitest.SignRequest(t, &resigned, key)
-	resignedResult, err := f.s.Enroll(ctx, *first.Token, resigned)
+	resignedResult, err := f.s.Enroll(ctx, nullableValue(first.Token), resigned)
 	if err != nil || resignedResult.Response != original.Response {
 		t.Fatal("same-key CSR retry rejected", err)
 	}
@@ -145,16 +145,16 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 		t.Fatal("replay duplicated state")
 	}
 	other, _ := pkitest.Request(t)
-	_, err = f.s.Enroll(ctx, *first.Token, other)
+	_, err = f.s.Enroll(ctx, nullableValue(first.Token), other)
 	expectCode(t, err, apierr.EnrollmentKeyMismatch)
 	noProof := r
 	noProof.Proof = ""
-	_, err = f.s.Enroll(ctx, *first.Token, noProof)
+	_, err = f.s.Enroll(ctx, nullableValue(first.Token), noProof)
 	expectCode(t, err, apierr.ValidationFailed)
 	changedID := r
 	changedID.EnrollmentRequestId = uuid.New()
 	pkitest.SignRequest(t, &changedID, key)
-	_, err = f.s.Enroll(ctx, *first.Token, changedID)
+	_, err = f.s.Enroll(ctx, nullableValue(first.Token), changedID)
 	expectCode(t, err, apierr.EnrollmentKeyMismatch)
 	_, err = f.s.RevokeEnrollment(ctx, command(), first.Enrollment.EnrollmentId, "test consumed")
 	expectCode(t, err, apierr.StateConflict)
@@ -165,7 +165,7 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 	var wg sync.WaitGroup
 	results := make(chan error, 2)
 	for _, request := range []api.EnrollRequest{a, b} {
-		wg.Go(func() { _, e := f.s.Enroll(ctx, *racing.Token, request); results <- e })
+		wg.Go(func() { _, e := f.s.Enroll(ctx, nullableValue(racing.Token), request); results <- e })
 	}
 	wg.Wait()
 	close(results)
@@ -187,13 +187,13 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	scanSecrets(t, f, []string{*first.Token, *racing.Token, base64.StdEncoding.EncodeToString(privateDER)})
+	scanSecrets(t, f, []string{nullableValue(first.Token), nullableValue(racing.Token), base64.StdEncoding.EncodeToString(privateDER)})
 	assertNoPrivateDER(t, f, privateDER)
 	// Stored public recovery remains available after the issuing key retires.
 	if _, err = f.vault.Rotate(ctx, signing.NodeCA, 24*time.Hour, time.Hour); err != nil {
 		t.Fatal(err)
 	}
-	retry, err = f.s.Enroll(ctx, *first.Token, r)
+	retry, err = f.s.Enroll(ctx, nullableValue(first.Token), r)
 	if err != nil || retry.Response != original.Response {
 		t.Fatal("replay unnecessarily requires CA signing", err)
 	}
@@ -228,14 +228,14 @@ func TestAT06_ExpiryRevocationAndTransactionalRollback(t *testing.T) {
 	if _, err = f.s.RevokeEnrollment(ctx, cmd, revoked.Enrollment.EnrollmentId, "test revocation"); err != nil {
 		t.Fatal(err)
 	}
-	_, err = f.s.Enroll(ctx, *revoked.Token, r)
+	_, err = f.s.Enroll(ctx, nullableValue(revoked.Token), r)
 	expectCode(t, err, apierr.EnrollmentTokenRevoked)
 	// Inject failure after the identity and certificate inserts. The entire
 	// consumption transaction must roll back, then retry successfully.
 	rollback := create(t, f)
 	exec(t, f, `CREATE FUNCTION test_reject_outbox() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'TEST ONLY injected outbox failure'; END $$`)
 	exec(t, f, `CREATE TRIGGER test_reject_outbox BEFORE INSERT ON outbox_events FOR EACH ROW EXECUTE FUNCTION test_reject_outbox()`)
-	_, err = f.s.Enroll(ctx, *rollback.Token, r)
+	_, err = f.s.Enroll(ctx, nullableValue(rollback.Token), r)
 	expectCode(t, err, apierr.DependencyUnavailable)
 	got, err := f.s.GetEnrollment(ctx, rollback.Enrollment.EnrollmentId)
 	if err != nil || got.State != "pending" {
@@ -245,7 +245,7 @@ func TestAT06_ExpiryRevocationAndTransactionalRollback(t *testing.T) {
 		t.Fatal("partial enrollment persisted")
 	}
 	exec(t, f, `DROP TRIGGER test_reject_outbox ON outbox_events`)
-	if _, err = f.s.Enroll(ctx, *rollback.Token, r); err != nil {
+	if _, err = f.s.Enroll(ctx, nullableValue(rollback.Token), r); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -338,7 +338,7 @@ func TestAT28_AuthenticationRenewalAndPermanentRevocation(t *testing.T) {
 	expectCode(t, err, apierr.IdentityRevoked)
 	_, err = f.auth.Renew(ctx, current, renewal)
 	expectCode(t, err, apierr.IdentityRevoked)
-	_, err = f.s.Enroll(ctx, *c.Token, r)
+	_, err = f.s.Enroll(ctx, nullableValue(c.Token), r)
 	expectCode(t, err, apierr.IdentityRevoked)
 	if count(t, f, "outbox_events") != 3 || count(t, f, "operations") != 2 {
 		t.Fatal("revocation work missing or duplicated")
@@ -403,7 +403,7 @@ func TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets(t *testing.T) {
 	_, _, _, otherCert := enroll(t, f)
 	_, err = f.s.TakeBootstrap(ctx, otherCert)
 	expectCode(t, err, apierr.StateConflict)
-	scanSecrets(t, f, []string{*c.Token, secret})
+	scanSecrets(t, f, []string{nullableValue(c.Token), secret})
 	var wg sync.WaitGroup
 	results := make(chan error, 2)
 	deliveries := make(chan enrollment.BootstrapDelivery, 2)
@@ -441,7 +441,7 @@ func TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets(t *testing.T) {
 	expectCode(t, err, apierr.StateConflict)
 	err = f.s.StoreBootstrap(ctx, id, out.OperationID, "different-test-key", secret, expiry)
 	expectCode(t, err, apierr.StateConflict)
-	scanSecrets(t, f, []string{*c.Token, secret})
+	scanSecrets(t, f, []string{nullableValue(c.Token), secret})
 }
 
 func TestENR02_BootstrapExpiryAndConflictFreeze(t *testing.T) {
@@ -506,13 +506,13 @@ func TestAT05_UniformDeliveryMetadataAndPlatforms(t *testing.T) {
 			if delta < 0 || delta > time.Second {
 				t.Fatal("default lifetime differs", delta)
 			}
-			if created.Enrollment.Name == nil || *created.Enrollment.Name != name || created.Enrollment.MemberGroupIds[0] != group {
+			if (!created.Enrollment.Name.IsSpecified() || created.Enrollment.Name.IsNull()) || nullableValue(created.Enrollment.Name) != name || created.Enrollment.MemberGroupIds[0] != group {
 				t.Fatal("metadata lost")
 			}
 			r, key := pkitest.Request(t)
 			r.Platform.Arch = arch
 			pkitest.SignRequest(t, &r, key)
-			out, err := f.s.Enroll(ctx, *created.Token, r)
+			out, err := f.s.Enroll(ctx, nullableValue(created.Token), r)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -319,7 +320,7 @@ func TestISO01_DNSIsolationBaselineAndConflicts(t *testing.T) {
 				Rules: []api.DomainRule{
 					{
 						RuleId:            openapi_types.UUID(uuid.New()),
-						ProfileId:         strPtr("standard"),
+						ProfileId:         presence.NewNullableWithValue("standard"),
 						Domain:            badDomain,
 						IncludeSubdomains: true,
 						Action:            api.DomainRuleActionAllow,
@@ -342,7 +343,7 @@ func TestISO01_DNSIsolationBaselineAndConflicts(t *testing.T) {
 			Rules: []api.DomainRule{
 				{
 					RuleId:            openapi_types.UUID(uuid.New()),
-					ProfileId:         strPtr("standard"),
+					ProfileId:         presence.NewNullableWithValue("standard"),
 					Domain:            "xn--bcher-kva.example.com",
 					IncludeSubdomains: true,
 					Action:            api.DomainRuleActionBlock,
@@ -351,7 +352,7 @@ func TestISO01_DNSIsolationBaselineAndConflicts(t *testing.T) {
 				},
 				{
 					RuleId:            openapi_types.UUID(uuid.New()),
-					ProfileId:         strPtr("standard"),
+					ProfileId:         presence.NewNullableWithValue("standard"),
 					Domain:            "bücher.example.com",
 					IncludeSubdomains: false,
 					Action:            api.DomainRuleActionAllow,
@@ -373,7 +374,7 @@ func TestISO01_DNSIsolationBaselineAndConflicts(t *testing.T) {
 			Rules: []api.DomainRule{
 				{
 					RuleId:            dupID,
-					ProfileId:         strPtr("standard"),
+					ProfileId:         presence.NewNullableWithValue("standard"),
 					Domain:            "one.example.com",
 					IncludeSubdomains: true,
 					Action:            api.DomainRuleActionBlock,
@@ -382,7 +383,7 @@ func TestISO01_DNSIsolationBaselineAndConflicts(t *testing.T) {
 				},
 				{
 					RuleId:            dupID,
-					ProfileId:         strPtr("standard"),
+					ProfileId:         presence.NewNullableWithValue("standard"),
 					Domain:            "two.example.com",
 					IncludeSubdomains: true,
 					Action:            api.DomainRuleActionBlock,

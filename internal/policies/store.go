@@ -15,6 +15,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -549,11 +550,11 @@ func (s *Store) buildAndValidateDNSProfileTx(ctx context.Context, tx pgx.Tx, bun
 		}
 		for _, r := range rs.Rules {
 			ridStr := uuid.UUID(r.RuleId).String()
-			if r.ProfileId != nil && *r.ProfileId != p.ProfileCode {
+			if profile, err := r.ProfileId.Get(); err == nil && profile != p.ProfileCode {
 				return nil, nil, newValidationError(
 					fmt.Sprintf("/payload/domain_rule_set_revision_ids/%d", i),
 					ReasonDNSProfileMismatch,
-					fmt.Sprintf("domain rule %q targets profile %q, cannot be included in profile %q", ridStr, *r.ProfileId, p.ProfileCode),
+					fmt.Sprintf("domain rule %q targets profile %q, cannot be included in profile %q", ridStr, profile, p.ProfileCode),
 				)
 			}
 			if prevSet, dup := seenRuleIDs[ridStr]; dup {
@@ -640,10 +641,7 @@ func (s *Store) buildAndValidateDNSProfileTx(ctx context.Context, tx pgx.Tx, bun
 		}
 		seenFeedCodes[tf.FeedCode] = uid
 
-		attr := ""
-		if tf.Attribution != nil {
-			attr = *tf.Attribution
-		}
+		attr, _ := tf.Attribution.Get()
 		var srcFormat dnspolicy.SourceFormat
 		switch tf.Format {
 		case api.ThreatFeedPayloadFormatDomainList:
@@ -1059,10 +1057,16 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 					Type: api.ResourceType("policy_definition"),
 					Id:   openapi_types.UUID(in.DefinitionID),
 				},
-				DesiredGeneration: &newGen,
-				ResourceVersion:   &newVer,
+				DesiredGeneration: presence.NewNullableWithValue(newGen),
+				ResourceVersion:   presence.NewNullableWithValue(newVer),
 				CreatedAt:         opCreatedAt.UTC(),
 				UpdatedAt:         opUpdatedAt.UTC(),
+				CompletedAt:       presence.NewNullNullable[time.Time](),
+				Error: presence.NewNullNullable[struct {
+					Code    api.ErrorCode `json:"code"`
+					Message string        `json:"message"`
+				}](),
+				ObservedGeneration: presence.NewNullNullable[decstr.U64](),
 			},
 			CompiledBundle: compiledBundle,
 		}
@@ -1290,7 +1294,7 @@ func (s *Store) ListDefinitions(ctx context.Context, filter ListDefinitionsFilte
 		}
 		out = api.PolicyDefinitionList{
 			Items:      items,
-			NextCursor: nextCursor,
+			NextCursor: presence.FromPointer(nextCursor),
 		}
 		return nil
 	})
@@ -1381,7 +1385,7 @@ func getDefinitionTx(ctx context.Context, tx pgx.Tx, definitionID uuid.UUID) (ap
 		DefinitionId:     openapi_types.UUID(defID),
 		Type:             api.PolicyType(defType),
 		Code:             defCode,
-		ActiveRevisionId: apiActiveRevID,
+		ActiveRevisionId: presence.FromPointer(apiActiveRevID),
 		ActiveRevision:   activeAPIRec,
 		LatestRevision:   latestAPIRec,
 		Revisions:        summaries,
@@ -1430,10 +1434,16 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 			Type: api.ResourceType(resType),
 			Id:   refID,
 		},
-		DesiredGeneration: desiredGen,
+		DesiredGeneration: presence.FromPointer(desiredGen),
 		CreatedAt:         createdAt.UTC(),
 		UpdatedAt:         updatedAt.UTC(),
-		CompletedAt:       completedAt,
+		CompletedAt:       presence.FromPointer(completedAt),
+		Error: presence.NewNullNullable[struct {
+			Code    api.ErrorCode `json:"code"`
+			Message string        `json:"message"`
+		}](),
+		ObservedGeneration: presence.NewNullNullable[decstr.U64](),
+		ResourceVersion:    presence.NewNullNullable[decstr.U64](),
 	}, nil
 }
 
@@ -1473,8 +1483,16 @@ func getOrCreateNoOpActivateOperationTx(ctx context.Context, tx pgx.Tx, in Activ
 			Type: api.ResourceType("policy_definition"),
 			Id:   openapi_types.UUID(in.DefinitionID),
 		},
-		CreatedAt: createdAt.UTC(),
-		UpdatedAt: createdAt.UTC(),
+		CreatedAt:         createdAt.UTC(),
+		UpdatedAt:         createdAt.UTC(),
+		CompletedAt:       presence.NewNullNullable[time.Time](),
+		DesiredGeneration: presence.NewNullNullable[decstr.U64](),
+		Error: presence.NewNullNullable[struct {
+			Code    api.ErrorCode `json:"code"`
+			Message string        `json:"message"`
+		}](),
+		ObservedGeneration: presence.NewNullNullable[decstr.U64](),
+		ResourceVersion:    presence.NewNullNullable[decstr.U64](),
 	}, nil
 }
 

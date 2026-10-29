@@ -94,10 +94,11 @@ func WithComputedHash(ev api.UsageEvent) (api.UsageEvent, error) {
 func normalizeEventForMarshal(ev api.UsageEvent) api.UsageEvent {
 	ev.IntervalStart = ev.IntervalStart.UTC()
 	ev.IntervalEnd = ev.IntervalEnd.UTC()
-	if ev.Gap != nil && ev.Gap.LastCheckpointAt != nil {
+	if ev.Gap != nil {
 		g := *ev.Gap
-		t := g.LastCheckpointAt.UTC()
-		g.LastCheckpointAt = &t
+		if t, err := g.LastCheckpointAt.Get(); err == nil {
+			g.LastCheckpointAt.Set(t.UTC())
+		}
 		ev.Gap = &g
 	}
 	if ev.Records == nil {

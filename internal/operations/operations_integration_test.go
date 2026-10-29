@@ -54,7 +54,7 @@ func TestAT28_OperationOwnershipAndObservedEvidence(t *testing.T) {
 		t.Fatal(e)
 	}
 	op, e = s.Get(t.Context(), id, p)
-	if e != nil || op.Status != "partially_succeeded" || op.CompletedAt == nil {
+	if e != nil || op.Status != "partially_succeeded" || (!op.CompletedAt.IsSpecified() || op.CompletedAt.IsNull()) {
 		t.Fatal(op.Status, e)
 	}
 	if e = transition("netbird", "running", nil, nil); e != nil {
@@ -64,7 +64,7 @@ func TestAT28_OperationOwnershipAndObservedEvidence(t *testing.T) {
 		t.Fatal(e)
 	}
 	op, e = s.Get(t.Context(), id, p)
-	if e != nil || op.Status != "succeeded" || op.CompletedAt == nil {
+	if e != nil || op.Status != "succeeded" || (!op.CompletedAt.IsSpecified() || op.CompletedAt.IsNull()) {
 		t.Fatal(op.Status, e)
 	}
 	if e = transition("agent", "running", nil, nil); e == nil {
@@ -102,7 +102,7 @@ func TestAPI01_OperationCreationAndFrozenTerminalRows(t *testing.T) {
 				t.Fatal(err)
 			}
 			op, err := s.Get(t.Context(), id, r.Principal)
-			if err != nil || op.Status != "pending" || op.CompletedAt != nil {
+			if err != nil || op.Status != "pending" || !op.CompletedAt.IsNull() {
 				t.Fatal("new operation must be pending", op.Status, err)
 			}
 			evidence := &Evidence{Reference: "observation:" + uuid.NewString(), ObservedAt: time.Now()}

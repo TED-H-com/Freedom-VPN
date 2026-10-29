@@ -142,7 +142,7 @@ func TestUPD02_ListContractAndVerificationErrors(t *testing.T) {
 		t.Fatal(e)
 	}
 	list, e = s.List(ctx, "", 0)
-	if e != nil || list.Items[0].VerificationState != "rejected" || list.Items[0].VerificationError == nil {
+	if e != nil || list.Items[0].VerificationState != "rejected" || (!list.Items[0].VerificationError.IsSpecified() || list.Items[0].VerificationError.IsNull()) {
 		t.Fatal(list, e)
 	}
 }

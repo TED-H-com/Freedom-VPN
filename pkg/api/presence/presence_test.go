@@ -65,3 +65,19 @@ func TestReviewC06_RequiredBooleanStateTransitions(t *testing.T) {
 		t.Fatalf("%s %v", raw, err)
 	}
 }
+
+func TestReviewC04_StoragePointerPresence(t *testing.T) {
+	n := FromPointer[int](nil)
+	if !n.IsSpecified() || !n.IsNull() {
+		t.Fatal("SQL NULL must be explicitly present")
+	}
+	value := 0
+	n = FromPointer(&value)
+	if got, err := n.Get(); err != nil || got != 0 {
+		t.Fatalf("zero value lost: %d %v", got, err)
+	}
+	value = 1
+	if got, _ := n.Get(); got != 0 {
+		t.Fatal("pointer conversion retained mutable storage")
+	}
+}

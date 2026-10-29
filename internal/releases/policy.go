@@ -9,6 +9,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -99,7 +100,8 @@ func PageLimit(n int) (int, error) {
 }
 
 func (s *Service) List(ctx context.Context, cursor string, limit int) (api.ReleaseList, error) {
-	out := api.ReleaseList{Items: []api.Release{}}
+	out := api.ReleaseList{Items: []api.Release{},
+		NextCursor: presence.NewNullNullable[string]()}
 	after, e := ParseCursor(cursor)
 	if e != nil {
 		return out, e
@@ -110,10 +112,11 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 	}
 	e = db.InTx(ctx, s.Pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
 		out.Items = []api.Release{}
-		out.NextCursor = nil
+		out.NextCursor.SetNull()
 		var gen, rv string
+		var defaultReleaseID *uuid.UUID
 		var serving, approved, revoked []uuid.UUID
-		e := tx.QueryRow(ctx, `SELECT desired_release_id,generation::text,resource_version::text,supported_release_ids,approved_release_ids,revoked_release_ids FROM fleet_config`).Scan(&out.Fleet.FleetDefaultReleaseId, &gen, &rv, &serving, &approved, &revoked)
+		e := tx.QueryRow(ctx, `SELECT desired_release_id,generation::text,resource_version::text,supported_release_ids,approved_release_ids,revoked_release_ids FROM fleet_config`).Scan(&defaultReleaseID, &gen, &rv, &serving, &approved, &revoked)
 		if e != nil {
 			return e
 		}
@@ -126,6 +129,8 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 			return e
 		}
 		out.Fleet.ServingReleaseIds = serving
+		out.Fleet.FleetDefaultReleaseId = presence.FromPointer(defaultReleaseID)
+		out.Fleet.ReleaseSupportRevisionId.SetNull()
 		rows, e := tx.Query(ctx, `SELECT r.id,r.manifest,encode(r.manifest_hash,'hex'),r.created_at,v.state,v.error_code FROM releases r JOIN release_verifications v ON v.release_id=r.id WHERE r.id>$1 ORDER BY r.id LIMIT $2`, after, limit+1)
 		if e != nil {
 			return e
@@ -133,13 +138,15 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 		defer rows.Close()
 		for rows.Next() {
 			var r api.Release
+			var verificationError *api.ErrorCode
 			var raw []byte
-			if e = rows.Scan(&r.ReleaseId, &raw, &r.ManifestSha256, &r.RegisteredAt, &r.VerificationState, &r.VerificationError); e != nil {
+			if e = rows.Scan(&r.ReleaseId, &raw, &r.ManifestSha256, &r.RegisteredAt, &r.VerificationState, &verificationError); e != nil {
 				return e
 			}
+			r.VerificationError = presence.FromPointer(verificationError)
 			if len(out.Items) == limit {
 				c := Cursor(out.Items[len(out.Items)-1].ReleaseId)
-				out.NextCursor = &c
+				out.NextCursor.Set(c)
 				break
 			}
 			var m api.ReleaseManifestEnvelope
@@ -169,7 +176,7 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 			for _, sig := range m.Signatures {
 				r.SigningKeyIds = append(r.SigningKeyIds, sig.KeyId)
 			}
-			r.IsFleetDefault = out.Fleet.FleetDefaultReleaseId != nil && *out.Fleet.FleetDefaultReleaseId == r.ReleaseId
+			r.IsFleetDefault = defaultReleaseID != nil && *defaultReleaseID == r.ReleaseId
 			r.ServingAllowed = slices.Contains(serving, r.ReleaseId) && !slices.Contains(revoked, r.ReleaseId)
 			r.SupportState = "not_approved"
 			if slices.Contains(approved, r.ReleaseId) {

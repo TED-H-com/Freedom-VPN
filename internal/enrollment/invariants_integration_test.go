@@ -84,7 +84,7 @@ func TestF06F10F13_ServiceWritesPreserveCommittedEvidence(t *testing.T) {
 	if err = f.pool.QueryRow(ctx, `SELECT to_jsonb(o)::text FROM operations o WHERE id=$1`, enrolled.OperationID).Scan(&frozenOperation); err != nil {
 		t.Fatal(err)
 	}
-	replayed, err := f.s.Enroll(ctx, *created.Token, request)
+	replayed, err := f.s.Enroll(ctx, nullableValue(created.Token), request)
 	if err != nil || !replayed.Replay || replayed.OperationID != enrolled.OperationID {
 		t.Fatal("completed provisioning operation could not be replayed", err)
 	}

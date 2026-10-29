@@ -25,8 +25,18 @@ type Nullable[T any] struct {
 
 func NewNullableWithValue[T any](v T) Nullable[T] { return Nullable[T]{value: v, specified: true} }
 func NewNullNullable[T any]() Nullable[T]         { return Nullable[T]{specified: true, null: true} }
-func (n Nullable[T]) IsSpecified() bool           { return n.specified }
-func (n Nullable[T]) IsNull() bool                { return n.specified && n.null }
+
+// FromPointer converts an existing nullable storage value into an explicitly
+// present JSON member. A nil storage pointer means null, never unspecified.
+func FromPointer[T any](v *T) Nullable[T] {
+	if v == nil {
+		return NewNullNullable[T]()
+	}
+	return NewNullableWithValue(*v)
+}
+
+func (n Nullable[T]) IsSpecified() bool { return n.specified }
+func (n Nullable[T]) IsNull() bool      { return n.specified && n.null }
 func (n Nullable[T]) Get() (T, error) {
 	if !n.specified {
 		return n.value, ErrUnspecified
