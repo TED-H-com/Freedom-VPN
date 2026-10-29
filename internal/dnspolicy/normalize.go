@@ -145,9 +145,7 @@ func NormalizeDomain(raw string) (NormalizedDomain, error) {
 	}
 
 	// 6. Strip at most one trailing root dot (".").
-	if strings.HasSuffix(s, ".") {
-		s = s[:len(s)-1]
-	}
+	s = strings.TrimSuffix(s, ".")
 	if s == "" {
 		return NormalizedDomain{}, newDomainError(ErrCodeDomainEmpty, raw, "domain name must not be empty or a bare root dot", nil)
 	}
