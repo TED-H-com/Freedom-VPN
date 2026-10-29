@@ -7,15 +7,11 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
-	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
-
-// Reserved system actor for internal snapshots, never taken from request JSON.
-const firstSyncActor = releases.SystemActorID
 
 // firstSync preserves §13.1's original all_nodes denominator. A separate system
 // batch supplies the same sealed target and composite identity FK as admin work.
@@ -33,7 +29,7 @@ func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid
 		return e
 	}
 	if _, e := tx.Exec(ctx, `INSERT INTO update_batches(id,operation_id,target_release_id,scope,created_by,target_count,generation,reason,online_at_snapshot,first_sync_node_id)
- SELECT $1,$2,$3,'first_sync',$4,1,generation,'first_sync',1,$5 FROM fleet_config`, batch, op, release, firstSyncActor, n.id); e != nil {
+ SELECT $1,$2,$3,'first_sync',$4,1,generation,'first_sync',1,$5 FROM fleet_config`, batch, op, release, audit.SystemActor.ID.String(), n.id); e != nil {
 		return e
 	}
 	if _, e := tx.Exec(ctx, `INSERT INTO update_targets(id,batch_id,node_id,incarnation_at_snapshot,execution_incarnation_id,target_generation,online_at_snapshot) VALUES($1,$2,$3,$4,$4,$5::numeric,true)`, target, batch, n.id, n.incarnation, generation.String()); e != nil {
@@ -43,7 +39,7 @@ func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid
 		return e
 	}
 	event, e := audit.NewEvent(audit.Entry{
-		Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(firstSyncActor)}, Action: "update_batch.first_sync",
+		Actor: audit.SystemActor, Action: "update_batch.first_sync",
 		Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, Result: api.AuditEventResultSucceeded,
 		OperationID: &op, RequestID: &requestID,
 		After: map[string]any{"node_id": n.id, "release_id": release}, Fields: []string{"node_id", "release_id"},

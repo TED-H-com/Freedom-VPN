@@ -4,8 +4,8 @@
 outbox (§14.5, §15.5). Supply a central request ID, principal, resource reference,
 optional decimal-string resource version/desired generation and 1–64 named steps.
 `Create` validates `api.OperationKind.Valid()` and `api.ResourceType.Valid()`;
-these generated enums are authoritative (D-029). `node.enroll` and
-`member.device_authorize` are not valid OperationKind values on this contract.
+these generated enums are authoritative (D-029), including revision 3's
+`node.enroll` and `member.device_authorize` kinds.
 The helper stores `Principal.Scope()`; domains must not write bare UUID principals.
 Creation/transition helpers live in `internal/operations/commands.go`.
 At least one step must be required; optional-only work is rejected. Operations
@@ -68,8 +68,14 @@ return audit.AppendEvent(ctx, tx, event)
 
 `accepted` is not an audit result. A successfully committed asynchronous command
 can audit `succeeded` for local acceptance while its operation stays pending.
-Agent actors use type `node` with the node UUID; system actors use a stable process
-or service UUID. Never allowlist raw provider payloads, browser history or
+Agent actors use type `node` with the node UUID. Internal system work uses
+`audit.SystemActor`, the D-029 actor with type `system` and singleton UUID
+`00000000-0000-0000-0000-000000000003`. Pass it directly as `Entry.Actor`; use
+`audit.SystemActor.ID` for other references to this identity. Treat the exported
+value as read-only and never populate it from request input. The deprecated
+`releases.SystemActorID` string alias remains for this revision; remove it only
+after in-flight callers and integration fixtures have adopted the audit value.
+Never allowlist raw provider payloads, browser history or
 unbounded free text. Audit stays append-only under the existing DB guards.
 
 The Admin audit endpoint supports resource type/ID, actor ID, request ID and
