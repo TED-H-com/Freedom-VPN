@@ -50,6 +50,12 @@ func TestID01_ScopedIdentitySessionRotationAndExpiry(t *testing.T) {
 	if members != 1 || audits != 1 {
 		t.Fatal(members, audits)
 	}
+	// §15.1 / F-14: setting the canonical identity is a versioned mutation.
+	var version string
+	var bound bool
+	if e := pool.QueryRow(t.Context(), `SELECT resource_version::text,canonical_identity_ref IS NOT NULL FROM members WHERE id=$1`, id).Scan(&version, &bound); e != nil || version != "2" || !bound {
+		t.Fatalf("canonical identity/version: %s %v %v", version, bound, e)
+	}
 	if _, e := store.Login(t.Context(), identity, "old", "", time.Hour, uuid.New()); e != nil {
 		t.Fatal(e)
 	}

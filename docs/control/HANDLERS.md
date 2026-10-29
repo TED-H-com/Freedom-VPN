@@ -4,7 +4,9 @@ Implement only the methods your domain owns from
 `internal/httpapi/gen.StrictServerInterface`. All request/response models alias
 `pkg/api`, so no model conversion is needed. Add one constructor line to
 `apps/control/handlers.go`'s `httpapi.Compose` call. Overlapping methods cause a
-startup error. Unimplemented methods keep the envelope-based 501 fallback.
+startup error. Unimplemented methods keep the transitional INTERNAL_ERROR/501
+fallback. Wave 3 domain wiring must remove every fallback; no contract change is
+needed for this transition.
 
 A command handler must also implement `httpapi.ReplayHandler`. The strict command
 middleware opens `db.InTx`, reserves the key, and invokes the handler only for a
@@ -85,7 +87,11 @@ resource's command. The key is hashed; validated raw JSON is canonicalized throu
 unknown fields and duplicate JSON keys fail before reservation. Decimal strings
 never pass through floating point. A bodyless command hashes `{}`.
 
-The record holds references/status only. A committed pending operation is the
+The record holds references/status only. `BeginIdempotent` cannot commit alone:
+the deferred database guard requires `response_status` and a resource or operation
+ID in the same transaction (DB F-06). The middleware calls `CompleteIdempotent`
+after the handler supplies `SetResult`; never commit the transaction in a handler.
+A completed HTTP command may reference an operation that is still pending. A committed pending operation is the
 same operation on every retry, with its current status re-read. Concurrent first
 uses serialize through the database uniqueness constraint. Different payloads
 return 409; expired keys can create a new command. Retention defaults to seven
@@ -103,7 +109,8 @@ one-time secret safely. Do not cache serialized response bodies.
 `CheckIfMatch(header, current)` returns 428 when absent and 412 with
 `details.current_resource_version` when stale, weak or wildcard. Call it inside
 the mutation transaction under a row lock, or combine it with `db.UpdateWithVersion`.
-The route boundary checks required header presence; only the domain can compare
+Every UPDATE of a versioned domain resource must strictly increase its version,
+even metadata-only updates (DB F-14). The route boundary checks required header presence; only the domain can compare
 the current resource version. `NotModified` implements weak/list/wildcard
 If-None-Match matching for safe GETs. Agent signed-envelope ETags must cover the
 whole envelope, including renewed signatures/timestamps (§14.7); do not use only

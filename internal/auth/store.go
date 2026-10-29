@@ -65,7 +65,7 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 			if _, e = tx.Exec(ctx, `INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,$3,$4,$5,'sub','oidc',clock_timestamp())`, binding, p.ID, i.Issuer, i.ClientScope, i.Subject); e != nil {
 				return e
 			}
-			if _, e = tx.Exec(ctx, `UPDATE members SET canonical_identity_ref=$2 WHERE id=$1`, p.ID, binding); e != nil {
+			if _, e = tx.Exec(ctx, `UPDATE members SET canonical_identity_ref=$2,resource_version=resource_version+1 WHERE id=$1`, p.ID, binding); e != nil {
 				return e
 			}
 			e = db.AppendAudit(ctx, tx, db.AuditEvent{Actor: p.ID.String(), ActorType: string(i.Role), Action: "member.register", Resource: "member:" + p.ID.String(), Result: "succeeded", RequestID: &request, SchemaVersion: 1, Before: json.RawMessage(`{}`), After: json.RawMessage(`{"status":"pending_payment"}`)})

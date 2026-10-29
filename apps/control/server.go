@@ -28,7 +28,7 @@ type Dependencies struct {
 }
 
 func Servers(c config.Config, d Dependencies) (public, agent *http.Server, err error) {
-	handlers, e := Handlers(d.Pool)
+	handlers, e := Handlers(d.Pool, d.Logger)
 	if e != nil {
 		return nil, nil, e
 	}

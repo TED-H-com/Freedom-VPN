@@ -5,12 +5,12 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/json"
-	"errors"
+	"log/slog"
 	"reflect"
+	"regexp"
 	"strings"
-	"time"
+	"sync/atomic"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -20,6 +20,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -96,9 +97,27 @@ func Append(ctx context.Context, tx pgx.Tx, event db.AuditEvent, before, after m
 	return db.AppendAudit(ctx, tx, event)
 }
 
-type Store struct{ Pool *pgxpool.Pool }
+// Store must not be copied after use. Anomalies counts malformed row encounters,
+// not distinct rows; a fresh page may encounter the same malformed row again.
+type Store struct {
+	Pool      *pgxpool.Pool
+	Logger    *slog.Logger
+	anomalies atomic.Uint64
+}
 
-func (s Store) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsRequestObject) (gen.ListAuditEventsResponseObject, error) {
+func (s *Store) AnomalyCount() uint64 { return s.anomalies.Load() }
+
+func (s *Store) recordAnomaly(ctx context.Context, id uuid.UUID, reason string) {
+	count := s.anomalies.Add(1)
+	logger := s.Logger
+	if logger == nil {
+		logger = slog.Default()
+	}
+	// Never log the malformed values, SQL, diffs or underlying parse errors.
+	logger.WarnContext(ctx, "audit row omitted", "audit_event_id", id, "reason", reason, "audit_anomalies_total", count)
+}
+
+func (s *Store) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsRequestObject) (gen.ListAuditEventsResponseObject, error) {
 	p, _ := auth.FromContext(ctx)
 	if p.Role != auth.Admin || !p.MFAVerified {
 		return nil, apierr.New(apierr.Forbidden, "Administrator MFA required.")
@@ -109,7 +128,7 @@ func (s Store) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsRequest
 	}
 	return gen.ListAuditEvents200JSONResponse{Body: v}, nil
 }
-func (s Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api.AuditEventList, err error) {
+func (s *Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api.AuditEventList, err error) {
 	page.Items = []api.AuditEvent{}
 	limit := 50
 	if p.Limit != nil {
@@ -129,14 +148,18 @@ func (s Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api.
 		return page, e
 	}
 	hash := sha256.Sum256(raw)
-	var cursorTime *time.Time
+	var cursorTime *pgtype.Timestamptz
+	types := pgtype.NewMap()
 	var cursorID *uuid.UUID
 	if p.Cursor != nil {
 		b, e := base64.RawURLEncoding.DecodeString(*p.Cursor)
-		if e != nil || len(b) != 57 || b[0] != 1 || string(b[25:]) != string(hash[:]) {
+		if e != nil || len(b) != 57 || b[0] != 2 || string(b[25:]) != string(hash[:]) {
 			return page, apierr.New(apierr.MalformedRequest, "Invalid audit cursor.")
 		}
-		t := time.UnixMicro(int64(binary.BigEndian.Uint64(b[1:9]))).UTC()
+		var t pgtype.Timestamptz
+		if e = types.Scan(pgtype.TimestamptzOID, pgtype.BinaryFormatCode, b[1:9], &t); e != nil {
+			return page, apierr.New(apierr.MalformedRequest, "Invalid audit cursor.")
+		}
 		id, e := uuid.FromBytes(b[9:25])
 		if e != nil {
 			return page, e
@@ -159,58 +182,102 @@ func (s Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api.
 		return page, e
 	}
 	defer rows.Close()
+	var last api.AuditEvent
+	var lastTime pgtype.Timestamptz
+	scanned := 0
+	more := false
 	for rows.Next() {
+		if scanned == limit {
+			more = true
+			break
+		}
 		var event api.AuditEvent
 		var actor, resource string
 		var before, after []byte
-		if e = rows.Scan(&event.AuditEventId, &event.OccurredAt, &actor, &event.Actor.Type, &event.Action, &resource, &event.RequestId, &event.OperationId, &event.Result, &before, &after); e != nil {
+		var occurred pgtype.Timestamptz
+		if e = rows.Scan(&event.AuditEventId, &occurred, &actor, &event.Actor.Type, &event.Action, &resource, &event.RequestId, &event.OperationId, &event.Result, &before, &after); e != nil {
 			return page, e
 		}
-		if id, e := uuid.Parse(actor); e == nil {
-			event.Actor.Id = &id
+		scanned++
+		last = event
+		lastTime = occurred
+		// Keep PostgreSQL's full timestamp range in the cursor, while omitting
+		// dates which cannot be represented by the contract's RFC 3339 JSON.
+		occurredUTC := occurred.Time.UTC()
+		if occurred.InfinityModifier != pgtype.Finite || occurredUTC.Year() < 1 || occurredUTC.Year() > 9999 {
+			s.recordAnomaly(ctx, event.AuditEventId, "occurred_at")
+			continue
 		}
-		parts := strings.SplitN(resource, ":", 2)
-		if len(parts) != 2 {
-			return page, errors.New("invalid stored audit resource reference")
+		event.OccurredAt = occurredUTC
+		if reason := decodeEvent(&event, actor, resource, before, after); reason != "" {
+			s.recordAnomaly(ctx, event.AuditEventId, reason)
+			continue
 		}
-		id, e := uuid.Parse(parts[1])
-		if e != nil {
-			return page, e
-		}
-		event.Resource = api.ResourceRef{Type: api.ResourceType(parts[0]), Id: id}
-		var b, a map[string]any
-		d := json.NewDecoder(strings.NewReader(string(before)))
-		d.UseNumber()
-		if e = d.Decode(&b); e != nil {
-			return page, e
-		}
-		d = json.NewDecoder(strings.NewReader(string(after)))
-		d.UseNumber()
-		if e = d.Decode(&a); e != nil {
-			return page, e
-		}
-		b = redact(b).(map[string]any)
-		a = redact(a).(map[string]any)
-		event.Changes.Before = &b
-		event.Changes.After = &a
-		event.OccurredAt = event.OccurredAt.UTC()
 		page.Items = append(page.Items, event)
 	}
 	if e = rows.Err(); e != nil {
 		return page, e
 	}
-	if len(page.Items) > limit {
-		page.Items = page.Items[:limit]
-		last := page.Items[limit-1]
+	// Advance by scanned rows, including omissions. Even an empty page must
+	// progress past malformed rows without losing the following valid event.
+	if more {
 		b := make([]byte, 57)
-		b[0] = 1
-		binary.BigEndian.PutUint64(b[1:9], uint64(last.OccurredAt.UnixMicro()))
+		b[0] = 2
+		if _, e = types.Encode(pgtype.TimestamptzOID, pgtype.BinaryFormatCode, lastTime, b[:1]); e != nil {
+			return page, e
+		}
 		copy(b[9:25], last.AuditEventId[:])
 		copy(b[25:], hash[:])
 		cursor := base64.RawURLEncoding.EncodeToString(b)
 		page.NextCursor = &cursor
 	}
 	return page, nil
+}
+
+// decodeEvent validates contract representations without synthesizing identities.
+// The producer must repair malformed values in its own write path.
+func decodeEvent(event *api.AuditEvent, actor, resource string, before, after []byte) string {
+	if !event.Actor.Type.Valid() {
+		return "actor_type"
+	}
+	if id, err := uuid.Parse(actor); err == nil {
+		event.Actor.Id = &id
+	} else if event.Actor.Type != api.AuditEventActorTypeSystem {
+		return "actor_id"
+	}
+	if !event.Result.Valid() {
+		return "result"
+	}
+	if len(event.Action) > 128 || !regexp.MustCompile(`^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`).MatchString(event.Action) {
+		return "action"
+	}
+	parts := strings.SplitN(resource, ":", 2)
+	if len(parts) != 2 || !api.ResourceType(parts[0]).Valid() {
+		return "resource_type"
+	}
+	id, err := uuid.Parse(parts[1])
+	if err != nil {
+		return "resource_id"
+	}
+	event.Resource = api.ResourceRef{Type: api.ResourceType(parts[0]), Id: id}
+	for i, raw := range [][]byte{before, after} {
+		var value map[string]any
+		decoder := json.NewDecoder(strings.NewReader(string(raw)))
+		decoder.UseNumber()
+		if err := decoder.Decode(&value); err != nil {
+			return "changes"
+		}
+		if value != nil {
+			value = redact(value).(map[string]any)
+			if i == 0 {
+				event.Changes.Before = &value
+			} else {
+				event.Changes.After = &value
+			}
+		}
+	}
+	event.OccurredAt = event.OccurredAt.UTC()
+	return ""
 }
 
 func normalizeRedacted(v any) (any, error) {

@@ -75,3 +75,62 @@ func TestAT28_OperationOwnershipAndObservedEvidence(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestAPI01_OperationCreationAndFrozenTerminalRows(t *testing.T) {
+	pool := dbtest.New(t)
+	s := Store{Pool: pool}
+	r := CreateRequest{Kind: "member.update", Principal: auth.Principal{Role: auth.Member, ID: uuid.New()}, Resource: api.ResourceRef{Type: "member", Id: uuid.New()}, RequestID: uuid.New(), Steps: map[string]Step{"optional": {Reason: "No external effect."}}}
+	if err := s.InTx(t.Context(), func(tx pgx.Tx) error {
+		_, err := Create(t.Context(), tx, r)
+		return err
+	}); err == nil {
+		t.Fatal("operation with no required work was created")
+	}
+	var count int
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM operations`).Scan(&count); err != nil || count != 0 {
+		t.Fatal("invalid operation persisted", count, err)
+	}
+	for _, terminal := range []api.OperationStepStatus{"succeeded", "cancelled"} {
+		t.Run(string(terminal), func(t *testing.T) {
+			r.Steps["readback"] = Step{Required: true}
+			var id uuid.UUID
+			if err := s.InTx(t.Context(), func(tx pgx.Tx) error {
+				var err error
+				id, err = Create(t.Context(), tx, r)
+				return err
+			}); err != nil {
+				t.Fatal(err)
+			}
+			op, err := s.Get(t.Context(), id, r.Principal)
+			if err != nil || op.Status != "pending" || op.CompletedAt != nil {
+				t.Fatal("new operation must be pending", op.Status, err)
+			}
+			evidence := &Evidence{Reference: "observation:" + uuid.NewString(), ObservedAt: time.Now()}
+			if err := s.InTx(t.Context(), func(tx pgx.Tx) error {
+				return Transition(t.Context(), tx, id, "readback", terminal, evidence, nil, nil)
+			}); err != nil {
+				t.Fatal(err)
+			}
+			var original string
+			if err := pool.QueryRow(t.Context(), `SELECT to_jsonb(o)::text FROM operations o WHERE id=$1`, id).Scan(&original); err != nil {
+				t.Fatal(err)
+			}
+			if err := s.InTx(t.Context(), func(tx pgx.Tx) error { return Transition(t.Context(), tx, id, "readback", "running", nil, nil, nil) }); err == nil {
+				t.Fatal("terminal transition accepted")
+			}
+			for _, query := range []string{
+				`UPDATE operations SET observed_refs='{"late":"unverified"}' WHERE id=$1`,
+				`UPDATE operations SET updated_at=clock_timestamp() WHERE id=$1`,
+				`DELETE FROM operations WHERE id=$1`,
+			} {
+				if _, err := pool.Exec(t.Context(), query, id); err == nil {
+					t.Fatal("terminal history changed", query)
+				}
+			}
+			var after string
+			if err := pool.QueryRow(t.Context(), `SELECT to_jsonb(o)::text FROM operations o WHERE id=$1`, id).Scan(&after); err != nil || after != original {
+				t.Fatal("terminal row was not frozen", err)
+			}
+		})
+	}
+}

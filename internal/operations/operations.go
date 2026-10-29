@@ -57,11 +57,13 @@ func Create(ctx context.Context, tx pgx.Tx, r CreateRequest) (uuid.UUID, error) 
 		return uuid.Nil, errors.New("invalid operation kind")
 	}
 	steps := make(map[string]Step, len(r.Steps))
+	required := 0
 	for name, s := range r.Steps {
 		if !regexp.MustCompile(`^[a-z][a-z0-9_]{0,63}$`).MatchString(name) {
 			return uuid.Nil, errors.New("invalid step name")
 		}
 		if s.Required {
+			required++
 			s = Step{Required: true, Status: "pending"}
 		} else {
 			if strings.TrimSpace(s.Reason) == "" || len(s.Reason) > 1000 {
@@ -71,17 +73,12 @@ func Create(ctx context.Context, tx pgx.Tx, r CreateRequest) (uuid.UUID, error) 
 		}
 		steps[name] = s
 	}
-	status := derive(steps)
-	refs := map[string]Evidence{}
-	var completed *time.Time
-	if status == "succeeded" {
-		now := time.Now().UTC()
-		completed = &now
-		refs["disposition"] = Evidence{Reference: "not_required", ObservedAt: now}
+	// §14.5 / DB F-10: new work starts pending and cannot succeed vacuously.
+	if required == 0 {
+		return uuid.Nil, errors.New("operation needs at least one required step")
 	}
 	body, _ := json.Marshal(steps)
-	evidence, _ := json.Marshal(refs)
-	_, e := tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,resource_version,desired_generation,steps,observed_refs,status,completed_at) VALUES($1,$2,$3,$4,$5,$6,$7::numeric,$8::numeric,$9,$10,$11,$12)`, id, r.Kind, r.Principal.Scope(), r.Resource.Type, r.Resource.Id, r.RequestID, decimal(r.ResourceVersion), decimal(r.DesiredGeneration), body, evidence, status, completed)
+	_, e := tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,resource_version,desired_generation,steps,observed_refs,status) VALUES($1,$2,$3,$4,$5,$6,$7::numeric,$8::numeric,$9,'{}','pending')`, id, r.Kind, r.Principal.Scope(), r.Resource.Type, r.Resource.Id, r.RequestID, decimal(r.ResourceVersion), decimal(r.DesiredGeneration), body)
 	return id, e
 }
 func decimal(v *decstr.U64) any {

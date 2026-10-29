@@ -161,6 +161,10 @@ func TestAPI01_IdempotencyReplayConflictConcurrentExpiry(t *testing.T) {
 	if records != 2 || outbox != 2 {
 		t.Fatal("non-atomic effects", records, outbox)
 	}
+	var incomplete, completed int
+	if e = pool.QueryRow(t.Context(), `SELECT count(*) FILTER (WHERE state<>'completed' OR response_status IS NULL OR (resource_id IS NULL AND operation_id IS NULL)),count(*) FROM idempotency_requests`).Scan(&incomplete, &completed); e != nil || incomplete != 0 || completed != 1 {
+		t.Fatal("command reservations must commit complete; failed commands must roll back", incomplete, completed, e)
+	}
 }
 
 func TestAT28_MemberOperationHTTPIsolation(t *testing.T) {

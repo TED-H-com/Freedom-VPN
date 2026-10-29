@@ -3,7 +3,9 @@
 package audit
 
 import (
+	"bytes"
 	"encoding/json"
+	"log/slog"
 	"strings"
 	"testing"
 	"time"
@@ -70,5 +72,75 @@ func TestSEC02_AuditRedactionFiltersAndStableCursor(t *testing.T) {
 	}
 	if _, e := pool.Exec(t.Context(), `UPDATE audit_events SET result='succeeded'`); e == nil {
 		t.Fatal("audit history mutable")
+	}
+}
+
+func TestSEC02_MalformedAuditRowsDoNotPoisonPages(t *testing.T) {
+	pool := dbtest.New(t)
+	var logs bytes.Buffer
+	s := Store{Pool: pool, Logger: slog.New(slog.NewJSONHandler(&logs, nil))}
+	base := db.AuditEvent{Actor: uuid.NewString(), ActorType: "admin", Action: "node.update", Resource: "node:" + uuid.NewString(), Result: "succeeded", SchemaVersion: 1, Before: []byte(`{}`), After: []byte(`{}`)}
+	// IDs are tied on occurred_at within this transaction. Malformed rows
+	// surround the valid rows so boundaries and empty pages are exercised.
+	const marker = "TEST-ONLY-MALFORMED-SECRET"
+	events := []db.AuditEvent{base, base, base, base, base, base, base, base}
+	events[0].ActorType = marker
+	events[1].Resource = marker
+	events[3].Resource = "node:" + marker
+	events[4].Actor = marker
+	events[5].Action = marker
+	events[6].Result = marker
+	if err := db.InTx(t.Context(), pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		for i := range events {
+			events[i].ID = uuid.Must(uuid.NewV7())
+			if err := db.AppendAudit(t.Context(), tx, events[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, timestamp := range []string{"infinity", "-infinity", "10000-01-01T00:00:00Z"} {
+		if _, err := pool.Exec(t.Context(), `INSERT INTO audit_events(actor,actor_type,action,resource,result,occurred_at) VALUES('system','system','audit.test',$1,'succeeded',$2::timestamptz)`, base.Resource, timestamp); err != nil {
+			t.Fatal(err)
+		}
+	}
+	limit := 1
+	params := api.ListAuditEventsParams{Limit: &limit}
+	seen := map[uuid.UUID]bool{}
+	emptyPages := 0
+	pages := 0
+	for {
+		page, err := s.List(t.Context(), params)
+		if err != nil {
+			t.Fatal(err)
+		}
+		pages++
+		if pages > len(events)+3 {
+			t.Fatal("pagination did not progress")
+		}
+		if len(page.Items) == 0 {
+			emptyPages++
+		}
+		for _, event := range page.Items {
+			if seen[event.AuditEventId] {
+				t.Fatal("repeated valid row")
+			}
+			seen[event.AuditEventId] = true
+		}
+		if page.NextCursor == nil {
+			break
+		}
+		if params.Cursor != nil && *params.Cursor == *page.NextCursor {
+			t.Fatal("repeated cursor")
+		}
+		params.Cursor = page.NextCursor
+	}
+	if pages != 11 || emptyPages != 9 || len(seen) != 2 || !seen[events[2].ID] || !seen[events[7].ID] || s.AnomalyCount() != 9 {
+		t.Fatal("lost rows, invented identity, or incorrect anomaly count", pages, emptyPages, seen, s.AnomalyCount())
+	}
+	if strings.Contains(logs.String(), marker) || strings.Count(logs.String(), `"msg":"audit row omitted"`) != 9 || !strings.Contains(logs.String(), `"audit_anomalies_total":9`) {
+		t.Fatal("anomaly logs missing or unsafe", logs.String())
 	}
 }
