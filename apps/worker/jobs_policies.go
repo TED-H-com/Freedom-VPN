@@ -104,6 +104,18 @@ func RegisterPoliciesJobsWithPool(r Registry, pool *pgxpool.Pool) {
 		defer cleanup()
 		return handleFUPMemberGenerationChanged(ctx, p, event)
 	})
+	r.Register("fleet.release_support_changed", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		p, cleanup, err := resolveWorkerPool(ctx, pool)
+		if err != nil {
+			return "", err
+		}
+		defer cleanup()
+		var fleetID uuid.UUID
+		if err := p.QueryRow(ctx, `SELECT id FROM fleet_config WHERE id = $1`, event.AggregateID).Scan(&fleetID); err != nil {
+			return "", fmt.Errorf("policies worker: read back fleet_config %s: %w", event.AggregateID, err)
+		}
+		return "fleet_config:" + fleetID.String(), nil
+	})
 }
 
 func handlePolicyActivated(ctx context.Context, pool *pgxpool.Pool, event db.ClaimedEvent) (string, error) {

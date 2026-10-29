@@ -57,6 +57,16 @@ func ensureAndLockCheckpointInTx(
 		return checkpointRow{}, fmt.Errorf("usage: lock node incarnation for checkpoint init: %w", err)
 	}
 
+	// Re-check after acquiring the node_incarnations lock: if a concurrent transaction
+	// already created usage_checkpoints, lock and return it without running BEFORE INSERT triggers.
+	cp, err = selectCheckpointForUpdateInTx(ctx, tx, nodeID, incarnationID)
+	if err == nil {
+		return cp, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return checkpointRow{}, fmt.Errorf("usage: lock checkpoint row after incarnation lock: %w", err)
+	}
+
 	newHCS, newMax, missing, proof, err := computeWatermarkFromEventsInTx(ctx, tx, nodeID, incarnationID, 0, 0, nil)
 	if err != nil {
 		return checkpointRow{}, err
