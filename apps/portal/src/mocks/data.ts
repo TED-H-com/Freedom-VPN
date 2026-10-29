@@ -504,6 +504,8 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
     rolledBackTarget.state = 'rolled_back';
     rolledBackTarget.current_release_id = FALLBACK_RELEASE_ID;
     rolledBackTarget.retryable = true;
+    rolledBackTarget.needs_attention = true;
+    rolledBackTarget.unconfirmed = false;
     if (rolledBackTarget.current_job) {
       rolledBackTarget.current_job.state = 'rolled_back';
       rolledBackTarget.current_job.error_code = 'HEALTH_CHECK_FAILED';
@@ -519,6 +521,8 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
     waitingOfflineTarget.current_job = null;
     waitingOfflineTarget.current_release_id = FALLBACK_RELEASE_ID;
     waitingOfflineTarget.retryable = true;
+    waitingOfflineTarget.needs_attention = false;
+    waitingOfflineTarget.unconfirmed = true;
 
     batch.targets = [templateTarget, rolledBackTarget, waitingOfflineTarget];
     batch.target_count = 3;
