@@ -398,7 +398,7 @@ func TestAT28_CancellationRedirectAndTokenFile(t *testing.T) {
 	targetHits := 0
 	target := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { targetHits++ }))
 	defer target.Close()
-	source := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, target.URL, 302) }))
+	source := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, target.URL, http.StatusFound) }))
 	defer source.Close()
 	redirected, e := New(Config{BaseURL: source.URL + "/api", DeploymentID: "TEST", Token: testToken("TEST ONLY token"), Bindings: NewMemoryBindingStore(), AllowInsecureHTTP: true})
 	require(t, e)

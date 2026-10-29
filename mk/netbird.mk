@@ -25,6 +25,7 @@ netbird-test:
 netbird-vet:
 	mkdir -p "$(NETBIRD_TMPDIR)"
 	TMPDIR="$(NETBIRD_TMPDIR)" go vet ./internal/netbird/...
+	TMPDIR="$(NETBIRD_TMPDIR)" go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./internal/netbird/...
 netbird-test-integration:
 	mkdir -p "$(NETBIRD_TMPDIR)"
 	TMPDIR="$(NETBIRD_TMPDIR)" FVPN_NETBIRD_API_URL="$${FVPN_NETBIRD_API_URL:-http://127.0.0.1:$${FVPN_NB_API_PORT:-18080}/api}" \
