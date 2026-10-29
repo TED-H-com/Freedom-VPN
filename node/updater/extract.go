@@ -17,12 +17,23 @@ import (
 // maxArchiveEntries is the default member cap (D-034a, D-034f).
 const maxArchiveEntries = 4096
 
-// defaultDecompressedCap bounds an extract that does not set MaxBytes.
+// defaultDecompressedCap bounds the extracted file bytes when MaxBytes is unset.
 const defaultDecompressedCap = 512 << 20
 
-// ExtractOptions bounds a safe extract (§13.5). MaxBytes is the decompressed
-// size cap. MaxEntries caps archive members; zero means maxArchiveEntries.
-// Deny lists persistent directories the archive must not touch.
+// archiveEntryOverhead is the per-member allowance on the decompressed tar
+// stream: a PAX header, the 512-byte ustar header and block padding, with margin.
+const archiveEntryOverhead int64 = 8 << 10
+
+// archiveTrailer is the two 512-byte zero blocks that end a tar, with margin.
+const archiveTrailer int64 = 2 << 10
+
+// ExtractOptions bounds a safe extract (§13.5). MaxBytes caps the sum of
+// extracted regular-file bytes, which is the manifest's installed_size_bytes.
+// The decompressed tar stream is bounded separately at
+// MaxBytes + MaxEntries*archiveEntryOverhead + archiveTrailer, so headers and
+// padding do not count against the installed size. MaxEntries caps archive
+// members; zero means maxArchiveEntries. Deny lists persistent directories
+// the archive must not touch.
 type ExtractOptions struct {
 	MaxBytes   int64
 	MaxEntries int
@@ -33,10 +44,12 @@ type ExtractOptions struct {
 }
 
 // ExtractArchive unpacks a tar.zst into dest. The archive may contain only
-// regular files and directories. Symlinks, hard links and every other member
-// type are rejected. It rejects absolute paths, ".." escapes, device files
-// and setuid/setgid/sticky modes. It does not follow symlinks and does not
-// execute anything. On error the caller removes dest.
+// regular files and directories (D-047). Symlinks, hard links and every other
+// member type are rejected. A directory entry whose cleaned path is "." is
+// the archive root, the entry `tar -C dir -cf … .` writes, not an escape.
+// It rejects absolute paths, ".." escapes, device files and setuid/setgid/sticky
+// modes. It does not follow symlinks and does not execute anything. On error
+// the caller removes dest.
 func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 	if dest == "" {
 		return permanent(apierr.ValidationFailed, "extract destination")
@@ -69,7 +82,10 @@ func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 	if maxEntries <= 0 {
 		maxEntries = maxArchiveEntries
 	}
-	tr := tar.NewReader(io.LimitReader(dec, capBytes+1))
+	// File bytes are capped at capBytes. The stream cap adds header overhead
+	// so an archive whose installed size equals MaxBytes still extracts.
+	stream := decompressedStreamCap(capBytes, maxEntries)
+	tr := tar.NewReader(io.LimitReader(dec, stream))
 	var written int64
 	var count int
 	for {
@@ -111,6 +127,9 @@ func extractOne(tr *tar.Reader, dest string, hdr *tar.Header, deny []string, cap
 	case tar.TypeDir:
 		return mkdirSafe(dest, full, 0o755)
 	case tar.TypeReg:
+		if full == dest {
+			return permanent(apierr.ValidationFailed, "archive path")
+		}
 		if hdr.Size < 0 {
 			return permanent(apierr.SizeMismatch, "archive member size")
 		}
@@ -168,7 +187,7 @@ func writeReg(tr *tar.Reader, dest, full string, hdr *tar.Header) error {
 }
 
 func safeJoin(dest, name string) (string, error) {
-	if name == "" || name == "." || strings.Contains(name, "\x00") {
+	if name == "" || strings.Contains(name, "\x00") {
 		return "", permanent(apierr.ValidationFailed, "archive path")
 	}
 	slashed := strings.ReplaceAll(name, "\\", "/")
@@ -176,7 +195,11 @@ func safeJoin(dest, name string) (string, error) {
 		return "", permanent(apierr.ValidationFailed, "absolute archive path")
 	}
 	clean := path.Clean(slashed)
-	if clean == ".." || strings.HasPrefix(clean, "../") || clean == "." {
+	// "." is the archive root (`./` from `tar -C dir -cf … .`), not an escape.
+	if clean == "." {
+		return dest, nil
+	}
+	if clean == ".." || strings.HasPrefix(clean, "../") {
 		return "", permanent(apierr.ValidationFailed, "archive path escapes")
 	}
 	full := filepath.Join(dest, filepath.FromSlash(clean))
@@ -242,6 +265,29 @@ func parentsReal(dest, full string) error {
 		}
 		dir = filepath.Dir(dir)
 	}
+}
+
+// decompressedStreamCap is MaxBytes plus per-member header overhead plus the
+// tar trailer. The +1 lets a stream that lands exactly on the allowance
+// finish; a longer stream ends as an unexpected EOF and is rejected.
+// Formula: fileBytes + entries*archiveEntryOverhead + archiveTrailer + 1.
+func decompressedStreamCap(fileBytes int64, entries int) int64 {
+	if fileBytes < 0 {
+		fileBytes = 0
+	}
+	if entries < 0 {
+		entries = 0
+	}
+	overhead := int64(entries) * archiveEntryOverhead
+	sum := saturatingAdd(saturatingAdd(fileBytes, overhead), archiveTrailer)
+	return saturatingAdd(sum, 1)
+}
+
+func saturatingAdd(a, b int64) int64 {
+	if a > (1<<63-1)-b {
+		return 1<<63 - 1
+	}
+	return a + b
 }
 
 // pathsOverlap reports whether path and root are the same directory or one
