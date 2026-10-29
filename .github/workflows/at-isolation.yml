@@ -1,0 +1,46 @@
+name: at-isolation
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 5 * * *"
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+
+jobs:
+  lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: isolation acceptance lint
+        run: make -f mk/at-isolation.mk at-isolation-lint
+
+  accept:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: AT10 to AT13
+        run: make -f mk/at-isolation.mk at-isolation
+      - name: tear down leftovers
+        if: always()
+        run: |
+          FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 make -f mk/e2e.mk e2e-down || true
+          FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-down || true
+          docker rmi fvpn-w4-at-isolation:lab >/dev/null 2>&1 || true
+          rm -f /tmp/fvpn-w4-at-isolation-fvpn-netlab
