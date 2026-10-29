@@ -189,6 +189,11 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	reasons["ReleaseManifestEnvelope.tampered.json"] = Reason{Kind: "signature", Code: envelope.CodeSignatureInvalid,
 		Note: "product_version changed after signing; the trusted key's signature no longer verifies."}
 
+	// Semantic-invalid fixtures keep valid signatures to isolate the service rule.
+	twoAMD := bytes.Replace(manifest, []byte(`"architecture":"arm64"`), []byte(`"architecture":"amd64"`), 1)
+	twoAMDEnv := envJSON(sign(twoAMD, keys["release"]))
+	out["examples/semantic-invalid/ReleaseRegisterRequest.two-amd64.json"] = prettyDoc(mustCanon(`{"manifest":` + string(twoAMDEnv) + `,"manifest_url":"https://releases.example.invalid/r42/manifest.json"}`))
+
 	// ---- desired state
 	ds := mustCanon(strings.ReplaceAll(desiredState, "%MANIFEST_SHA256%", manifestSHA))
 	dsEnv := sign(ds, keys["desired-state"])
@@ -247,6 +252,12 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	reasons["UsageEvent.numeric-bytes.json"] = Reason{Kind: "schema", Pointer: "/records/0/upload_bytes", Keyword: "type",
 		Note: "Bytes must be a decimal string, never a JSON number (§10.4)."}
 
+	// Usage semantic-invalid examples keep correct hashes.
+	gapOnComplete := setMember(evGap, []string{"quality"}, `"complete"`)
+	out["examples/semantic-invalid/UsageEvent.gap-on-complete.json"] = prettyDoc(withHash(gapOnComplete, "payload_sha256"))
+	inverted := setMember(evHashed, []string{"interval_end"}, `"2026-10-28T13:59:59Z"`)
+	out["examples/semantic-invalid/UsageEvent.inverted-interval.json"] = prettyDoc(withHash(inverted, "payload_sha256"))
+
 	// ---- update results
 	ur := withHash(mustCanon(strings.ReplaceAll(updateResult, "%MANIFEST_SHA256%", manifestSHA)), "payload_hash")
 	urRB := withHash(mustCanon(strings.ReplaceAll(updateResultRolledBack, "%MANIFEST_SHA256%", manifestSHA)), "payload_hash")
@@ -260,6 +271,7 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	})
 	out["examples/valid/UpdateResult.json"] = prettyDoc(ur)
 	out["examples/valid/UpdateResult.rolled-back.json"] = prettyDoc(urRB)
+	out["examples/valid/UpdateResult.null-stage.json"] = prettyDoc(withHash(setMember(ur, []string{"stage"}, "null"), "payload_hash"))
 	out["examples/invalid/UpdateResult.hash-mismatch.json"] = prettyDoc(setMember(ur, []string{"state"}, `"failed"`))
 	reasons["UpdateResult.hash-mismatch.json"] = Reason{Kind: "payload_hash", Field: "payload_hash",
 		Note: "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."}
@@ -288,6 +300,8 @@ type cjReject struct {
 }
 
 var cjCases = []cjCase{
+	{"depth-256", []byte(strings.Repeat("[", 256) + "0" + strings.Repeat("]", 256))},
+	{"utf16-differ-only-past-bmp", []byte(`{"prefix\ud801\udc00":3,"prefix\ud800\udc01":2,"prefix\ud800\udc00":1}`)},
 	{"rfc8785-3.2.2-without-numbers", []byte(`{"string": "\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/", "literals": [null, true, false]}`)},
 	{"rfc8785-3.2.3-sorting", []byte(`{"\u20ac": "Euro Sign", "\r": "Carriage Return", "\ufb33": "Hebrew Letter Dalet With Dagesh", "1": "One", "\ud83d\ude00": "Emoji: Grinning Face", "\u0080": "Control", "\u00f6": "Latin Small Letter O With Diaeresis"}`)},
 	{"rfc8785-arrays", []byte(`[56, {"d": true, "10": null, "1": [ ]}]`)},
@@ -303,6 +317,10 @@ var cjCases = []cjCase{
 }
 
 var cjRejects = []cjReject{
+	{"nested-duplicate-key", []byte(`{"outer":[{"a":1,"a":2}]}`), "duplicate_key"},
+	{"depth-257", []byte(strings.Repeat("[", 257) + "0" + strings.Repeat("]", 257)), "too_deep"},
+	{"leading-plus", []byte(`+1`), "syntax"},
+	{"positive-exponent", []byte(`1e+3`), "non_integer"},
 	{"fraction", []byte(`{"a":1.0}`), "non_integer"},
 	{"exponent", []byte(`[1e3]`), "non_integer"},
 	{"negative-zero", []byte(`-0`), "negative_zero"},
@@ -354,7 +372,8 @@ func canonicalJSONVectors() ([]byte, error) {
 	return pretty(map[string]any{
 		"description": "RFC 8785 (JCS) vectors for the Freedom VPN JSON subset (objects, arrays, strings, true, false, null, integers within ±(2^53-1)). input_b64 holds the exact input bytes; canonical is the UTF-8 canonical form; sha256 is its lowercase hex SHA-256. Rejects must fail with the given error class.",
 		"error_classes": map[string]string{
-			"syntax": "invalid JSON", "non_integer": "fraction or exponent", "negative_zero": "-0",
+			"too_deep": "nesting exceeds 256",
+			"syntax":   "invalid JSON", "non_integer": "fraction or exponent", "negative_zero": "-0",
 			"integer_range": "outside ±(2^53-1)", "duplicate_key": "duplicate member name after unescaping",
 			"invalid_utf8": "invalid UTF-8 bytes", "lone_surrogate": "unpaired UTF-16 surrogate escape",
 		},
@@ -366,6 +385,8 @@ func canonicalJSONVectors() ([]byte, error) {
 // ErrorClass maps a canonjson error to its vector error class.
 func ErrorClass(err error) string {
 	switch {
+	case isErr(err, canonjson.ErrTooDeep):
+		return "too_deep"
 	case isErr(err, canonjson.ErrNonInteger):
 		return "non_integer"
 	case isErr(err, canonjson.ErrNegativeZero):

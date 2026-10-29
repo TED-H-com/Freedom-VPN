@@ -183,7 +183,7 @@
     "kind": "schema",
     "pointer": "/manifest/signed/artifacts",
     "keyword": "minItems",
-    "note": "Both architectures are required (§13.4)."
+    "note": "The artifacts array needs at least two items. This length check does not prove architecture coverage; the release service enforces both amd64 and arm64 (§13.4)."
   },
   "UpdateBatch.missing-count.json": {
     "kind": "schema",
@@ -238,5 +238,29 @@
     "pointer": "/quality",
     "keyword": "enum",
     "note": "quality is complete, gap or boundary_estimated."
+  },
+  "EnrollmentCreateRequest.bad-node-id.json": {
+    "kind": "schema",
+    "pointer": "/node_id",
+    "keyword": "format",
+    "note": "Existing Node identifier for AT07 must be a UUID."
+  },
+  "UpdateTarget.missing-needs-attention.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "required",
+    "note": "Target attention and confirmation flags must always be explicit."
+  },
+  "UpdateTarget.missing-unconfirmed.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "required",
+    "note": "Target attention and confirmation flags must always be explicit."
+  },
+  "AgentBootstrap.missing-setup-key.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "required",
+    "note": "D-015 success has exactly the three required bootstrap delivery members."
   }
 }

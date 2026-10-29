@@ -277,21 +277,6 @@ func TestVerifyIgnoresUnknownKeysAndRotation(t *testing.T) {
 	}
 }
 
-func TestMultiPurposeKey(t *testing.T) {
-	keys := loadTestKeys(t)
-	k := keys["recovery"]
-	env, _ := Sign(doc, k.priv, k.KeyID)
-	ts := mustStore(t, trusted(k, func(tk *TrustedKey) { tk.Purposes = []Purpose{PurposeLease, PurposeRecovery} }))
-	for _, p := range []Purpose{PurposeLease, PurposeRecovery} {
-		if _, _, err := Verify(mustJSON(t, env), ts, p, nowTest); err != nil {
-			t.Fatalf("%s: %v", p, err)
-		}
-	}
-	if _, _, err := Verify(mustJSON(t, env), ts, PurposeRelease, nowTest); !errors.Is(err, ErrKeyUntrusted) {
-		t.Fatalf("release purpose: %v", err)
-	}
-}
-
 func TestNewTrustStoreValidation(t *testing.T) {
 	keys := loadTestKeys(t)
 	rel := keys["release"]

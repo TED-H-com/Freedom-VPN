@@ -86,6 +86,11 @@ const (
 	EnrollmentKeyMismatch  Code = "ENROLLMENT_KEY_MISMATCH"
 	LeaseExpired           Code = "LEASE_EXPIRED"
 	WebhookSignatureBad    Code = "WEBHOOK_SIGNATURE_INVALID"
+	BootstrapConsumed      Code = "BOOTSTRAP_CONSUMED"
+	BootstrapNotReady      Code = "BOOTSTRAP_NOT_READY"
+	BootstrapExpired       Code = "BOOTSTRAP_EXPIRED"
+	NodeIncarnationActive  Code = "NODE_INCARNATION_ACTIVE"
+	NodeRetired            Code = "NODE_RETIRED"
 )
 
 // specs is the authoritative table. The OpenAPI ErrorCode enum must list
@@ -123,7 +128,7 @@ var specs = []Spec{
 	{DownloadTimeout, http.StatusGatewayTimeout, true, "§13.11", true, "Artifact download timed out; bounded backoff retry."},
 	{StoreUnavailable, http.StatusServiceUnavailable, true, "§13.11", true, "Release store unavailable; bounded backoff retry."},
 	{UpdateBusy, http.StatusConflict, true, "§13.11", true, "Local update lock is held by another process."},
-	{AuthorizationExpired, http.StatusConflict, true, "§13.11", true, "Update authorization expired before switching; fetch a fresh authorized job."},
+	{AuthorizationExpired, http.StatusConflict, false, "§13.11", true, "Update authorization expired before switching; fetch a fresh authorized job."},
 	{StaleGeneration, http.StatusConflict, false, "§13.11", false, "Job generation is older than the current desired generation; the job is superseded."},
 	{IdentityRevoked, http.StatusForbidden, false, "§13.11", false, "Node identity (certificate or incarnation) is revoked; retrying cannot restore it."},
 	{IncarnationMismatch, http.StatusForbidden, false, "§13.11", false, "Body node_id/incarnation does not match the authenticated certificate binding (§14.4)."},
@@ -147,6 +152,11 @@ var specs = []Spec{
 	{EnrollmentKeyMismatch, http.StatusConflict, false, "§6.2, ENR02", false, "Token is already bound to a different public key or enrollment_request_id."},
 	{LeaseExpired, http.StatusConflict, false, "§16.3", true, "Serving lease expired; member forwarding is off until a new lease is applied."},
 	{WebhookSignatureBad, http.StatusUnauthorized, false, "§9.3", false, "Payment provider webhook signature is missing or invalid; entitlement unchanged."},
+	{BootstrapConsumed, http.StatusGone, false, "§6.4, §14.7 (D-015)", false, "Bootstrap delivery was consumed; plaintext is never replayed."},
+	{BootstrapNotReady, http.StatusConflict, true, "§6.4, §14.7 (D-015)", false, "Worker has not yet prepared the bootstrap delivery; retry the same request."},
+	{BootstrapExpired, http.StatusGone, false, "§6.4, §14.7 (D-015)", false, "Unconsumed bootstrap delivery deadline has passed."},
+	{NodeIncarnationActive, http.StatusConflict, false, "§6.4, AT07", false, "Reinstallation requires revocation of the existing Node incarnation first."},
+	{NodeRetired, http.StatusConflict, false, "§14.2, AT07", false, "A retired Node cannot be enrolled again."},
 }
 
 var byCode = func() map[Code]Spec {

@@ -117,12 +117,9 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if e := tx.QueryRow(ctx, `SELECT received_at FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND report_id=$3`, i.NodeID, i.IncarnationID, r.ReportId).Scan(&received); e != nil {
 		return e
 	}
-	generation := decstr.U64(0)
-	if r.Update.Generation != nil {
-		generation = *r.Update.Generation
-	}
-	if r.Update.JobId != nil {
-		j, e := readJob(ctx, tx, *r.Update.JobId)
+	generation, _ := r.Update.Generation.Get()
+	if jobID, err := r.Update.JobId.Get(); err == nil {
+		j, e := readJob(ctx, tx, jobID)
 		if e != nil {
 			return e
 		}
@@ -154,5 +151,12 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	} else if e != nil && !errors.Is(e, pgx.ErrNoRows) {
 		return e
 	}
-	return s.ObserveTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: r.CurrentReleaseId, LastGoodReleaseID: r.LastGoodReleaseId, ObservedAt: r.ObservedAt})
+	var currentReleaseID, lastGoodReleaseID *uuid.UUID
+	if value, err := r.CurrentReleaseId.Get(); err == nil {
+		currentReleaseID = &value
+	}
+	if value, err := r.LastGoodReleaseId.Get(); err == nil {
+		lastGoodReleaseID = &value
+	}
+	return s.ObserveTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt})
 }

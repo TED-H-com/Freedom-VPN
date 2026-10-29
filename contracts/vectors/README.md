@@ -42,7 +42,8 @@ by hand.
 `contracts/ts/verify-vectors.ts` is a dependency-free example that Node 24 runs
 directly (`node contracts/ts/verify-vectors.ts`). The pieces a client needs:
 
-1. **Canonical JSON for the subset.** Parse with `JSON.parse`, reject any
+1. **Canonical JSON for the subset.** Parse the original bytes with
+   `parseStrictJSON` from `strict-json.ts`, reject any
    number that is not `Number.isSafeInteger` (or is `-0`), sort object keys
    with the default `Array.prototype.sort()` (it compares UTF-16 code units,
    exactly as RFC 8785 requires), and emit strings with `JSON.stringify` (its
@@ -59,13 +60,15 @@ directly (`node contracts/ts/verify-vectors.ts`). The pieces a client needs:
 `JSON.parse` silently accepts duplicate keys, lone surrogates and integers
 beyond 2^53, so code that **accepts untrusted documents for hashing or
 verification** needs a strict parser that rejects every entry of `rejects` in
-`canonical-json.json`; the Go implementation is `pkg/canonjson`. A
+`canonical-json.json`; the Go implementation is `pkg/canonjson`. The independent
+TypeScript `strict-json.ts` checks all reject classes, a 1 MiB byte cap and depth
+256, including the depth-257 reject and keys differing past the BMP. A
 TypeScript test suite can load the files directly, for example:
 
 ```ts
 import vectors from "../../contracts/vectors/canonical-json.json" with { type: "json" };
 for (const c of vectors.cases) {
-  const input = new TextDecoder().decode(Uint8Array.from(atob(c.input_b64), (ch) => ch.charCodeAt(0)));
-  expect(canonicalize(JSON.parse(input))).toBe(c.canonical);
+  const input = Uint8Array.from(atob(c.input_b64), (ch) => ch.charCodeAt(0));
+  expect(canonicalize(parseStrictJSON(input))).toBe(c.canonical);
 }
 ```

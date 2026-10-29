@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -143,9 +144,16 @@ func (l *lab) intent(i Identity) *Work {
 func result(w *Work, state string) api.UpdateResult {
 	now := time.Now().UTC()
 	i := w.Intent
-	r := api.UpdateResult{ResultId: uuid.Must(uuid.NewV7()), NodeId: i.NodeId, IncarnationId: i.IncarnationId, BootId: uuid.New(), BatchId: i.BatchId, TargetId: i.TargetId, JobId: i.JobId, Attempt: i.Attempt, Generation: i.Generation, State: api.UpdateResultState(state), RequestedReleaseId: i.ReleaseId, CurrentReleaseId: &i.ReleaseId, ManifestSha256: i.ManifestSha256, PublicationIntent: i.PublicationIntent, StartedAt: now, StateSchemaVersion: 1, Health: &api.UpdateHealth{Processes: "passed", IdentityAndState: "passed", InternetOnly: "passed", DnsPolicy: "passed", TunnelProbe: "passed"}, UsageCheckpoint: &api.UpdateUsageCheckpoint{LastDurableEventSeq: 10, CentralAckedThrough: 9}}
+	r := api.UpdateResult{ResultId: uuid.Must(uuid.NewV7()), NodeId: i.NodeId, IncarnationId: i.IncarnationId, BootId: uuid.New(), BatchId: i.BatchId, TargetId: i.TargetId, JobId: i.JobId, Attempt: i.Attempt, Generation: i.Generation, State: api.UpdateResultState(state), RequestedReleaseId: i.ReleaseId, CurrentReleaseId: presence.NewNullableWithValue(i.ReleaseId), ManifestSha256: i.ManifestSha256, PublicationIntent: i.PublicationIntent, StartedAt: now, StateSchemaVersion: 1, Health: presence.NewNullableWithValue(api.UpdateHealth{Processes: "passed", IdentityAndState: "passed", InternetOnly: "passed", DnsPolicy: "passed", TunnelProbe: "passed"}), UsageCheckpoint: presence.NewNullableWithValue(api.UpdateUsageCheckpoint{LastDurableEventSeq: 10, CentralAckedThrough: 9,
+		ClosedMeterEpochId: presence.NewNullNullable[uuid.UUID](),
+		NewMeterEpochId:    presence.NewNullNullable[uuid.UUID]()}),
+		ErrorCode:         presence.NewNullNullable[api.ErrorCode](),
+		FinishedAt:        presence.NewNullNullable[time.Time](),
+		PreviousReleaseId: presence.NewNullNullable[uuid.UUID](),
+		RecoveryRequired:  presence.NewRequired(false),
+		Stage:             presence.NewNullNullable[api.UpdateStage]()}
 	if terminal(state) {
-		r.FinishedAt = &now
+		r.FinishedAt.Set(now)
 	}
 	return r
 }
@@ -209,7 +217,7 @@ func TestAT23_AllStatesArchitecturesAndEvidence(t *testing.T) {
 			t.Fatal(w.Artifact)
 		}
 		bad := result(w, "succeeded")
-		bad.Health = nil
+		bad.Health.SetNull()
 		if _, e := l.s.SubmitResult(l.ctx, i, payload(t, bad)); e == nil {
 			t.Fatal("success without evidence")
 		}
@@ -234,7 +242,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	}
 	unbound := l.get(b.BatchId)
 	for _, target := range unbound.Targets {
-		if target.NodeId == enrolling.NodeID && (target.CurrentJob != nil || target.Attempts != 0 || target.State != "waiting_online") {
+		if target.NodeId == enrolling.NodeID && (!target.CurrentJob.IsNull() || target.Attempts != 0 || target.State != "waiting_online") {
 			t.Fatal(target)
 		}
 	}
@@ -243,7 +251,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 		t.Fatal(e)
 	}
 	w := l.intent(offline)
-	if w.Intent.BatchId == nil || *w.Intent.BatchId != b.BatchId {
+	if (!w.Intent.BatchId.IsSpecified() || w.Intent.BatchId.IsNull()) || nullableValue(w.Intent.BatchId) != b.BatchId {
 		t.Fatal(w)
 	}
 	l.report(offline, w, "succeeded")
@@ -256,13 +264,13 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	l.report(enrolling, w, "already_current")
 	after := l.node("arm64", "disabled", "registered", true)
 	first := l.intent(after)
-	if first.Intent.BatchId == nil || *first.Intent.BatchId == b.BatchId || first.Intent.TargetId == nil || first.Intent.ReleaseId != l.new {
+	if (!first.Intent.BatchId.IsSpecified() || first.Intent.BatchId.IsNull()) || nullableValue(first.Intent.BatchId) == b.BatchId || (!first.Intent.TargetId.IsSpecified() || first.Intent.TargetId.IsNull()) || first.Intent.ReleaseId != l.new {
 		t.Fatal(first)
 	}
-	if again := l.intent(after); again.Intent.JobId != first.Intent.JobId || *again.Intent.BatchId != *first.Intent.BatchId {
+	if again := l.intent(after); again.Intent.JobId != first.Intent.JobId || nullableValue(again.Intent.BatchId) != nullableValue(first.Intent.BatchId) {
 		t.Fatal("first-sync retry created duplicate work")
 	}
-	firstBatch := l.get(*first.Intent.BatchId)
+	firstBatch := l.get(nullableValue(first.Intent.BatchId))
 	if firstBatch.TargetCount != 1 || firstBatch.Reason != "first_sync" || firstBatch.Targets[0].NodeId != after.NodeID {
 		t.Fatal(firstBatch)
 	}
@@ -275,7 +283,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 		t.Fatal(got)
 	}
 	for _, target := range got.Targets {
-		if target.NodeId == enrolling.NodeID && (target.IncarnationAtSnapshot != nil || target.ExecutionIncarnationId == nil || *target.ExecutionIncarnationId != enrolling.IncarnationID) {
+		if target.NodeId == enrolling.NodeID && (!target.IncarnationAtSnapshot.IsNull() || (!target.ExecutionIncarnationId.IsSpecified() || target.ExecutionIncarnationId.IsNull()) || nullableValue(target.ExecutionIncarnationId) != enrolling.IncarnationID) {
 			t.Fatal(target)
 		}
 	}
@@ -286,7 +294,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	}
 	replacement := l.enroll(Identity{NodeID: enrolling.NodeID}, "arm64")
 	next := l.intent(replacement)
-	if next.Intent.TargetId == nil || *next.Intent.TargetId == *w.Intent.TargetId || next.Intent.Generation <= w.Intent.Generation {
+	if (!next.Intent.TargetId.IsSpecified() || next.Intent.TargetId.IsNull()) || nullableValue(next.Intent.TargetId) == nullableValue(w.Intent.TargetId) || next.Intent.Generation <= w.Intent.Generation {
 		t.Fatal(next)
 	}
 	if _, e = l.s.SubmitResult(l.ctx, enrolling, payload(t, result(w, "succeeded"))); !errors.Is(e, apierr.New(apierr.IncarnationMismatch, "")) {
@@ -362,7 +370,7 @@ func TestAT26_IdempotencyConcurrencyAndLateResults(t *testing.T) {
 	l.report(queued, qNew, "succeeded")
 	l.report(applying, aNew, "succeeded")
 	lateFailure := result(qOld, "failed")
-	lateFailure.RecoveryRequired = true
+	lateFailure.RecoveryRequired = presence.NewRequired(true)
 	if _, e = l.s.SubmitResult(l.ctx, queued, payload(t, lateFailure)); e != nil {
 		t.Fatal(e)
 	}
@@ -394,9 +402,9 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	}
 	l.report(i, w, "applying")
 	rollback := result(w, "rolled_back")
-	rollback.CurrentReleaseId = &l.old
+	rollback.CurrentReleaseId.Set(l.old)
 	code := api.ErrorCode("HEALTH_CHECK_FAILED")
-	rollback.ErrorCode = &code
+	rollback.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, rollback)); e != nil {
 		t.Fatal(e)
 	}
@@ -409,8 +417,8 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	}
 	l.report(i, w, "applying")
 	rollback = result(w, "rolled_back")
-	rollback.CurrentReleaseId = &l.old
-	rollback.ErrorCode = &code
+	rollback.CurrentReleaseId.Set(l.old)
+	rollback.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, rollback)); !errors.Is(e, apierr.New(apierr.MinimumVersionViolation, "")) {
 		t.Fatal(e)
 	}
@@ -423,8 +431,8 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 		t.Fatal(e)
 	}
 	old := result(w, "failed")
-	old.CurrentReleaseId = &l.old
-	old.ErrorCode = &code
+	old.CurrentReleaseId.Set(l.old)
+	old.ErrorCode.Set(code)
 	ack, e := l.s.SubmitResult(l.ctx, i, payload(t, old))
 	if e != nil || ack.AppliedToCurrentObservation {
 		t.Fatal(ack, e)
@@ -441,8 +449,8 @@ func TestUPD05_RetryCancellationWatchdogAndAtomicity(t *testing.T) {
 	w := l.intent(i)
 	r := result(w, "failed")
 	code := api.ErrorCode("DOWNLOAD_TIMEOUT")
-	r.ErrorCode = &code
-	r.CurrentReleaseId = &l.old
+	r.ErrorCode.Set(code)
+	r.CurrentReleaseId.Set(l.old)
 	if _, e := l.s.SubmitResult(l.ctx, i, payload(t, r)); e != nil {
 		t.Fatal(e)
 	}
@@ -467,7 +475,7 @@ func TestUPD05_RetryCancellationWatchdogAndAtomicity(t *testing.T) {
 	if e = l.s.Reconcile(l.ctx); e != nil {
 		t.Fatal(e)
 	}
-	evidence, e := l.s.Evidence(l.ctx, *w.Intent.TargetId)
+	evidence, e := l.s.Evidence(l.ctx, nullableValue(w.Intent.TargetId))
 	if e != nil || !evidence.NeedsAttention {
 		t.Fatal(evidence, e)
 	}
@@ -514,13 +522,17 @@ func TestUPD02_ResultBindingExpiryAndRestore(t *testing.T) {
 		{"incarnation", func(r *api.UpdateResult) { r.IncarnationId = uuid.New() }, apierr.IncarnationMismatch},
 		{"generation", func(r *api.UpdateResult) { r.Generation++ }, apierr.StaleGeneration},
 		{"attempt", func(r *api.UpdateResult) { r.Attempt++ }, apierr.StaleGeneration},
-		{"target", func(r *api.UpdateResult) { id := uuid.New(); r.TargetId = &id }, apierr.StaleGeneration},
+		{"target", func(r *api.UpdateResult) { id := uuid.New(); r.TargetId.Set(id) }, apierr.StaleGeneration},
 		{"manifest", func(r *api.UpdateResult) {
 			r.ManifestSha256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		}, apierr.HashMismatch},
-		{"health", func(r *api.UpdateResult) { r.Health.InternetOnly = "failed" }, apierr.HealthCheckFailed},
-		{"version", func(r *api.UpdateResult) { r.CurrentReleaseId = &l.old }, apierr.HealthCheckFailed},
-		{"checkpoint", func(r *api.UpdateResult) { r.UsageCheckpoint.CentralAckedThrough = 11 }, apierr.CheckpointFailed},
+		{"health", func(r *api.UpdateResult) { h := nullableValue(r.Health); h.InternetOnly = "failed"; r.Health.Set(h) }, apierr.HealthCheckFailed},
+		{"version", func(r *api.UpdateResult) { r.CurrentReleaseId.Set(l.old) }, apierr.HealthCheckFailed},
+		{"checkpoint", func(r *api.UpdateResult) {
+			c := nullableValue(r.UsageCheckpoint)
+			c.CentralAckedThrough = 11
+			r.UsageCheckpoint.Set(c)
+		}, apierr.CheckpointFailed},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -574,11 +586,11 @@ func TestUPD05_PaginationRevokedTargetsAndRetryCompletion(t *testing.T) {
 	l.node("arm64", "unpublished", "registered", true)
 	b := l.batch(l.new)
 	first, e := l.s.GetBatch(l.ctx, b.BatchId, "", 1)
-	if e != nil || len(first.Targets) != 1 || first.NextCursor == nil {
+	if e != nil || len(first.Targets) != 1 || (!first.NextCursor.IsSpecified() || first.NextCursor.IsNull()) {
 		t.Fatal(first, e)
 	}
-	second, e := l.s.GetBatch(l.ctx, b.BatchId, *first.NextCursor, 1)
-	if e != nil || len(second.Targets) != 1 || first.Targets[0].TargetId == second.Targets[0].TargetId || second.NextCursor != nil {
+	second, e := l.s.GetBatch(l.ctx, b.BatchId, nullableValue(first.NextCursor), 1)
+	if e != nil || len(second.Targets) != 1 || first.Targets[0].TargetId == second.Targets[0].TargetId || !second.NextCursor.IsNull() {
 		t.Fatal(second, e)
 	}
 	raw, _ := json.Marshal(first)
@@ -592,7 +604,7 @@ func TestUPD05_PaginationRevokedTargetsAndRetryCompletion(t *testing.T) {
 	w := l.intent(i)
 	r := result(w, "failed")
 	code := api.ErrorCode("STORE_UNAVAILABLE")
-	r.ErrorCode = &code
+	r.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, r)); e != nil {
 		t.Fatal(e)
 	}
@@ -626,16 +638,19 @@ func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
 	i := l.node("amd64", "published", "registered", true)
 	l.batch(l.new)
 	w := l.intent(i)
-	r := api.ObservationReport{ReportId: uuid.New(), NodeId: i.NodeID, NodeIncarnationId: i.IncarnationID, ObservedAt: time.Now().UTC(), CurrentReleaseId: &l.new, LastGoodReleaseId: &l.new}
-	r.Update.JobId = &w.Intent.JobId
-	r.Update.Generation = &w.Intent.Generation
+	r := api.ObservationReport{ReportId: uuid.New(), NodeId: i.NodeID, NodeIncarnationId: i.IncarnationID, ObservedAt: time.Now().UTC(), CurrentReleaseId: presence.NewNullableWithValue(l.new), LastGoodReleaseId: presence.NewNullableWithValue(l.new),
+		AppliedBindingRevision:  presence.NewNullNullable[decstr.U64](),
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+		AppliedPolicyRefs:       presence.NewNullNullable[api.PolicyRefs]()}
+	r.Update.JobId.Set(w.Intent.JobId)
+	r.Update.Generation.Set(w.Intent.Generation)
 	insertAndObserve := func(r api.ObservationReport) error {
 		return db.InTx(l.ctx, l.s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 			// The node owner holds the fleet lock before inserting its validated receipt.
 			if e := l.s.lock(l.ctx, tx); e != nil {
 				return e
 			}
-			_, e := tx.Exec(l.ctx, `INSERT INTO node_observations(node_id,incarnation_id,report_id,payload_hash,observed_at,applied_generation,actual_release_id,schema_version,checks,control_status,data_health,safety_status) VALUES($1,$2,$3,$4,$5,0,$6,1,'{}','online','healthy','passed') ON CONFLICT(node_id,incarnation_id,report_id) DO NOTHING`, i.NodeID, i.IncarnationID, r.ReportId, make([]byte, 32), r.ObservedAt, r.CurrentReleaseId)
+			_, e := tx.Exec(l.ctx, `INSERT INTO node_observations(node_id,incarnation_id,report_id,payload_hash,observed_at,applied_generation,actual_release_id,schema_version,checks,control_status,data_health,safety_status) VALUES($1,$2,$3,$4,$5,0,$6,1,'{}','online','healthy','passed') ON CONFLICT(node_id,incarnation_id,report_id) DO NOTHING`, i.NodeID, i.IncarnationID, r.ReportId, make([]byte, 32), r.ObservedAt, nullableValue(r.CurrentReleaseId))
 			if e != nil {
 				return e
 			}
@@ -650,7 +665,7 @@ func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
 	}
 	r.ReportId = uuid.New()
 	r.ObservedAt = r.ObservedAt.Add(-time.Second)
-	r.CurrentReleaseId = &l.old
+	r.CurrentReleaseId.Set(l.old)
 	if e := insertAndObserve(r); e != nil {
 		t.Fatal(e)
 	}

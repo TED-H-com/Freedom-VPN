@@ -42,7 +42,12 @@ export interface paths {
          *     hash. A retry with the same Idempotency-Key and payload returns the same
          *     enrollment with `secret_available=false` and `token=null` (§14.5). Creating
          *     an enrollment is the authorization to join; there is no further manual
-         *     admission step (ENR01).
+         *     admission step (ENR01). Optional node_id authorizes reinstallation onto
+         *     that existing Node (AT07). Its previous incarnation must already be
+         *     revoked (409 NODE_INCARNATION_ACTIVE otherwise) and the Node must not be
+         *     retired (409 NODE_RETIRED). Successful enrollment creates a new
+         *     incarnation and retains Node history; never clear a revoked lifecycle
+         *     to reuse an old incarnation. Without node_id, reserve a new Node.
          */
         post: operations["createEnrollment"];
         delete?: never;
@@ -632,9 +637,44 @@ export interface paths {
          *     the same token fails with 409 ENROLLMENT_KEY_MISMATCH (ENR02). A consumed
          *     token alone can never read the certificate back (§6.2). The NetBird
          *     bootstrap secret is not in this response; it is delivered later over mTLS
-         *     (§14.7).
+         *     via POST /agent/bootstrap (§14.7, D-015). If the enrollment is bound to
+         *     an existing Node, create a new incarnation only after verifying that the
+         *     previous incarnation is revoked and the Node is not retired (AT07);
+         *     otherwise return NODE_INCARNATION_ACTIVE or NODE_RETIRED (409).
          */
         post: operations["enrollNode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Consume the one-time NetBird bootstrap credential
+         * @description D-015 (§6.4, §14.7): no request body. The verified agent mTLS certificate
+         *     determines the Node and incarnation; no caller-supplied identity is used.
+         *     The enrollment worker prepares a one-off NetBird setup key. This endpoint
+         *     returns 200 once, atomically consuming its delivery. A later request,
+         *     including one with the same Idempotency-Key, returns 410 BOOTSTRAP_CONSUMED;
+         *     lost responses do not permit plaintext replay. Before preparation it
+         *     returns 409 BOOTSTRAP_NOT_READY (retryable=true). After the delivery
+         *     deadline, an unconsumed delivery returns 410 BOOTSTRAP_EXPIRED
+         *     (retryable=false). Consumption takes precedence over expiry on retries.
+         *     All responses use Cache-Control: no-store. Setup keys must never appear
+         *     in enrollment responses, desired state, logs or audit payloads. The
+         *     delivery deadline is separate from the enrollment token lifetime and
+         *     NetBird's native setup-key expiry (§6.4).
+         */
+        post: operations["consumeAgentBootstrap"];
         delete?: never;
         options?: never;
         head?: never;
@@ -891,7 +931,7 @@ export interface components {
          *     (update results, observations).
          * @enum {string}
          */
-        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "WEBHOOK_SIGNATURE_INVALID";
+        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
         /** @description Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type). */
         PeriodId: string;
         /** @description User-facing text. zh-TW is the default UI language; English is second. */
@@ -1241,6 +1281,11 @@ export interface components {
         /** @enum {string} */
         EnrollmentState: "pending" | "consumed" | "expired" | "revoked";
         EnrollmentCreateRequest: {
+            /**
+             * Format: uuid
+             * @description Existing Node for authorized reinstallation (AT07). Previous incarnation must already be revoked and Node must not be retired; never clear revoked lifecycle. Omit to reserve a new Node.
+             */
+            node_id?: string;
             delivery: components["schemas"]["EnrollmentDelivery"];
             /** @description Token lifetime. Default depends on delivery (preinstalled 604800, installer 900; recommended defaults, configurable). */
             expires_in_seconds?: number;
@@ -2222,6 +2267,10 @@ export interface components {
             /** Format: date-time */
             last_observed_at: string | null;
             retryable: boolean;
+            /** @description Central side has flagged this target for operator attention. */
+            needs_attention: boolean;
+            /** @description The node has not confirmed the last issued job. */
+            unconfirmed: boolean;
         };
         UpdateJobSummary: {
             /** Format: uuid */
@@ -2501,6 +2550,18 @@ export interface components {
             certificate_not_after: string;
             /** @enum {string} */
             next: "/api/v1/agent/desired-state";
+        };
+        /** @description One-time NetBird setup credential delivered only over agent mTLS (D-015, §6.4). TEST ONLY examples are not usable keys. */
+        AgentBootstrap: {
+            /** @description Opaque NetBird setup key ID, retained for reconciliation. */
+            external_key_id: string;
+            /** @description One-off bootstrap secret; never log, audit or replay it. */
+            setup_key: string;
+            /**
+             * Format: date-time
+             * @description UTC expiry of the bootstrap credential. The server also enforces the separate delivery deadline.
+             */
+            expires_at: string;
         };
         CertificateRenewRequest: {
             /** Format: uuid */
@@ -3128,10 +3189,8 @@ export interface components {
              */
             lease_end: string;
         };
-        /** @description Provider-defined JSON body. Verified and stored byte for byte; not constrained by this contract. */
-        ProviderWebhookPayload: {
-            [key: string]: unknown;
-        };
+        /** @description Provider-defined JSON body. Handlers must verify r.Body before any parse; preserve the original bytes for signature verification and the inbox. Never verify a remarshal of this type. */
+        ProviderWebhookPayload: unknown;
         WebhookAck: {
             /** @enum {boolean} */
             received: true;
@@ -3203,9 +3262,33 @@ export interface components {
                 "application/json": components["schemas"]["ErrorEnvelope"];
             };
         };
+        /** @description BOOTSTRAP_NOT_READY. Worker has not prepared the delivery; retryable=true with the same request. */
+        BootstrapNotReady: {
+            headers: {
+                "X-Request-ID": components["headers"]["X-Request-ID"];
+                "Cache-Control": components["headers"]["Cache-Control-No-Store"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description BOOTSTRAP_CONSUMED after delivery, or BOOTSTRAP_EXPIRED after an unconsumed delivery deadline; retryable=false. Plaintext is never replayed. */
+        BootstrapGone: {
+            headers: {
+                "X-Request-ID": components["headers"]["X-Request-ID"];
+                "Cache-Control": components["headers"]["Cache-Control-No-Store"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
         /**
          * @description IDEMPOTENCY_CONFLICT, STATE_CONFLICT, USAGE_EVENT_CONFLICT, ACK_CONFLICT,
-         *     LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH or DEVICE_LIMIT_REACHED.
+         *     LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH, DEVICE_LIMIT_REACHED,
+         *     UPDATE_BUSY, AUTHORIZATION_EXPIRED, STALE_GENERATION, LEASE_EXPIRED,
+         *     BOOTSTRAP_NOT_READY, NODE_INCARNATION_ACTIVE or NODE_RETIRED.
          *     Read the current state first; do not change the key to bypass a state
          *     conflict.
          */
@@ -3310,9 +3393,11 @@ export interface components {
          */
         IdempotencyKey: string;
         /**
-         * @description Optional for agent requests: the body carries a natural idempotency ID
+         * @description Optional for agent requests. Most bodies carry a natural idempotency ID
          *     (enrollment_request_id, renewal_request_id, report_id, result_id,
-         *     event_seq). When present it must be a UUID and follows §14.5.
+         *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+         *     has no body and deduplicates by delivery state; it never replays a
+         *     consumed secret, even with the same key (D-015).
          */
         IdempotencyKeyOptional: string;
         /**
@@ -4544,9 +4629,11 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional for agent requests: the body carries a natural idempotency ID
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
                  *     (enrollment_request_id, renewal_request_id, report_id, result_id,
-                 *     event_seq). When present it must be a UUID and follows §14.5.
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
@@ -4592,14 +4679,55 @@ export interface operations {
             503: components["responses"]["ServiceUnavailable"];
         };
     };
+    consumeAgentBootstrap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
+                 *     (enrollment_request_id, renewal_request_id, report_id, result_id,
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One-time bootstrap credential; delivery has been consumed. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    "Cache-Control": components["headers"]["Cache-Control-No-Store"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentBootstrap"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["BootstrapNotReady"];
+            410: components["responses"]["BootstrapGone"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
     renewAgentCertificate: {
         parameters: {
             query?: never;
             header?: {
                 /**
-                 * @description Optional for agent requests: the body carries a natural idempotency ID
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
                  *     (enrollment_request_id, renewal_request_id, report_id, result_id,
-                 *     event_seq). When present it must be a UUID and follows §14.5.
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
@@ -4671,9 +4799,11 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional for agent requests: the body carries a natural idempotency ID
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
                  *     (enrollment_request_id, renewal_request_id, report_id, result_id,
-                 *     event_seq). When present it must be a UUID and follows §14.5.
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
@@ -4710,7 +4840,16 @@ export interface operations {
     submitUsageBatch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /**
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
+                 *     (enrollment_request_id, renewal_request_id, report_id, result_id,
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -4773,9 +4912,11 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional for agent requests: the body carries a natural idempotency ID
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
                  *     (enrollment_request_id, renewal_request_id, report_id, result_id,
-                 *     event_seq). When present it must be a UUID and follows §14.5.
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
@@ -4814,9 +4955,11 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional for agent requests: the body carries a natural idempotency ID
+                 * @description Optional for agent requests. Most bodies carry a natural idempotency ID
                  *     (enrollment_request_id, renewal_request_id, report_id, result_id,
-                 *     event_seq). When present it must be a UUID and follows §14.5.
+                 *     event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+                 *     has no body and deduplicates by delivery state; it never replays a
+                 *     consumed secret, even with the same key (D-015).
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };

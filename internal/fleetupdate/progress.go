@@ -10,6 +10,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -144,7 +145,8 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		return b, e
 	}
 	e = db.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
-		b = api.UpdateBatch{Targets: []api.UpdateTarget{}}
+		b = api.UpdateBatch{Targets: []api.UpdateTarget{},
+			NextCursor: presence.NewNullNullable[string]()}
 		e := tx.QueryRow(ctx, `SELECT b.id,b.operation_id,b.target_release_id,b.target_count,b.created_at,b.created_by::uuid,b.reason,(r.manifest->'signed'->'compatibility'->>'requires_service_restart')::boolean,coalesce(p.updated_at,b.created_at) FROM update_batches b JOIN releases r ON r.id=b.target_release_id LEFT JOIN update_batch_progress p ON p.batch_id=b.id WHERE b.id=$1`, id).Scan(&b.BatchId, &b.OperationId, &b.ReleaseId, &b.TargetCount, &b.CreatedAt, &b.CreatedBy, &b.Reason, &b.RequiresServiceRestart, &b.UpdatedAt)
 		if errors.Is(e, pgx.ErrNoRows) {
 			return apierr.New(apierr.ResourceNotFound, "Update batch does not exist")
@@ -160,7 +162,10 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
 		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
- `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false)
+ `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),coalesce(j.needs_attention,false),
+ s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false)
+ OR (j.issued_at IS NOT NULL AND (s.observation_incarnation_id IS DISTINCT FROM j.execution_incarnation_id
+ OR coalesce(s.observed_update_generation<j.generation,true) OR coalesce(s.received_at<j.issued_at,true)))
  FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
@@ -169,30 +174,50 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		for rows.Next() {
 			var t api.UpdateTarget
 			var j api.UpdateJobSummary
-			var jobID *uuid.UUID
+			var jobID, incarnationAtSnapshot, executionIncarnation, currentRelease *uuid.UUID
+			var lastObserved, lastResult, startedAt, finishedAt *time.Time
+			var errorCode *api.ErrorCode
+			var stage *api.UpdateStage
+			var recoveryRequired bool
 			var gen string
-			if e = rows.Scan(&t.TargetId, &t.NodeId, &t.IncarnationAtSnapshot, &t.ExecutionIncarnationId, &gen, &t.OnlineAtSnapshot, &t.CurrentReleaseId, &t.LastObservedAt, &t.LastResultAt, &t.State, &jobID, &j.Attempt, &j.State, &j.ErrorCode, &j.Stage, &j.StartedAt, &j.FinishedAt, &j.RecoveryRequired); e != nil {
+			if e = rows.Scan(&t.TargetId, &t.NodeId, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed); e != nil {
 				return e
 			}
 			if len(b.Targets) == limit {
 				c := releases.Cursor(b.Targets[len(b.Targets)-1].TargetId)
-				b.NextCursor = &c
+				b.NextCursor.Set(c)
 				break
 			}
 			t.Generation, e = decstr.Parse(gen)
 			if e != nil {
 				return e
 			}
-			utcTime(t.LastResultAt)
-			utcTime(t.LastObservedAt)
-			utcTime(j.StartedAt)
-			utcTime(j.FinishedAt)
+			utcTime(lastResult)
+			utcTime(lastObserved)
+			utcTime(startedAt)
+			utcTime(finishedAt)
+			t.IncarnationAtSnapshot = presence.FromPointer(incarnationAtSnapshot)
+			t.ExecutionIncarnationId = presence.FromPointer(executionIncarnation)
+			t.CurrentReleaseId = presence.FromPointer(currentRelease)
+			t.LastObservedAt = presence.FromPointer(lastObserved)
+			t.LastResultAt = presence.FromPointer(lastResult)
+			t.NodeName.SetNull()
+			t.CurrentJob.SetNull()
+			j.ErrorCode = presence.FromPointer(errorCode)
+			j.Stage = presence.FromPointer(stage)
+			j.StartedAt = presence.FromPointer(startedAt)
+			j.FinishedAt = presence.FromPointer(finishedAt)
+			j.RecoveryRequired = presence.NewRequired(recoveryRequired)
+			// §13.8: preserve watchdog attention and expose terminal operator exceptions.
+			// Confirmation also requires an observation of this incarnation/generation
+			// received after issuance and after the latest result (query above).
+			t.NeedsAttention = t.NeedsAttention || j.State == "failed" || j.State == "rolled_back" || j.State == "blocked" || j.State == "already_current" && (currentRelease == nil || *currentRelease != b.ReleaseId)
 			t.Attempts = j.Attempt
 			if jobID != nil {
 				j.JobId = *jobID
-				t.CurrentJob = &j
+				t.CurrentJob.Set(j)
 			}
-			t.Retryable = retryable(string(t.State), j.ErrorCode) && j.Attempt < 1000
+			t.Retryable = retryable(string(t.State), errorCode) && j.Attempt < 1000
 			b.Targets = append(b.Targets, t)
 		}
 		return rows.Err()
@@ -200,7 +225,7 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 	return b, e
 }
 
-// TargetEvidence exposes fields not yet present in the generated HTTP response.
+// TargetEvidence exposes the stored watchdog and observation evidence.
 type TargetEvidence struct {
 	NeedsAttention, Unconfirmed  bool
 	LastResultAt, LastObservedAt *time.Time

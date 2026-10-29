@@ -13,6 +13,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
@@ -155,22 +156,25 @@ func (s *Service) GetMemberUsage(ctx context.Context, q MemberUsageQuery) (api.M
 	var fairUse api.FairUseStatus
 	if q.FairUse != nil {
 		fairUse = *q.FairUse
-		if fairUse.AsOf == nil {
-			fairUse.AsOf = total.AggregateAsOf
+		if !fairUse.AsOf.IsSpecified() || fairUse.AsOf.IsNull() {
+			fairUse.AsOf = presence.FromPointer(total.AggregateAsOf)
 		}
-		if fairUse.ResetsAt == nil {
+		if !fairUse.ResetsAt.IsSpecified() || fairUse.ResetsAt.IsNull() {
 			endCopy := monthPeriod.End
-			fairUse.ResetsAt = &endCopy
+			fairUse.ResetsAt.Set(endCopy)
 		}
 	} else {
 		tierZero := 0
 		endCopy := monthPeriod.End
 		fairUse = api.FairUseStatus{
 			State:     api.FairUseStatusStateNormal,
-			TierIndex: &tierZero,
+			TierIndex: presence.NewNullableWithValue(tierZero),
 			Applying:  false,
-			AsOf:      total.AggregateAsOf,
-			ResetsAt:  &endCopy,
+			AsOf:      presence.FromPointer(total.AggregateAsOf),
+			ResetsAt:  presence.NewNullableWithValue(endCopy),
+			Rate:      presence.NewNullNullable[api.RatePair](),
+			Reason:    presence.NewNullNullable[api.FairUseStatusReason](),
+			TierName:  presence.NewNullNullable[api.LocalizedText](),
 		}
 	}
 
@@ -190,8 +194,8 @@ func (s *Service) GetMemberUsage(ctx context.Context, q MemberUsageQuery) (api.M
 			Gap:                      total.Gap,
 			ReconciliationInProgress: total.ReconciliationInProgress,
 		},
-		LastObservedAt: total.LastObservedAt,
-		AggregateAsOf:  total.AggregateAsOf,
+		LastObservedAt: presence.FromPointer(total.LastObservedAt),
+		AggregateAsOf:  presence.FromPointer(total.AggregateAsOf),
 		Days:           days,
 		FairUse:        fairUse,
 	}, nil
@@ -211,8 +215,8 @@ func (s *Service) GetMemberUsageSummary(
 	return api.MemberUsageSummary{
 		PeriodId:         total.Period,
 		TotalBytes:       total.TotalBytes,
-		FairUseTierIndex: fairUseTierIndex,
-		AggregateAsOf:    total.AggregateAsOf,
+		FairUseTierIndex: presence.FromPointer(fairUseTierIndex),
+		AggregateAsOf:    presence.FromPointer(total.AggregateAsOf),
 		Quality: api.UsageQualityFlags{
 			Estimated:                total.Estimated,
 			Gap:                      total.Gap,

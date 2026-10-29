@@ -11,6 +11,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
@@ -321,7 +322,7 @@ func (s *Service) GetCheckpoint(ctx context.Context, nodeIdentity NodeIdentity) 
 			NodeId:               nodeIdentity.NodeID,
 			NodeIncarnationId:    nodeIdentity.NodeIncarnationID,
 			LedgerEpoch:          state.LedgerEpoch,
-			RecoveryRecordId:     state.ActiveRecoveryID,
+			RecoveryRecordId:     presence.FromPointer(state.ActiveRecoveryID),
 			HighestContiguousSeq: decstr.U64(cp.highestContiguous),
 			MaxSeenSeq:           decstr.U64(cp.maxSeen),
 			MissingRanges:        toAPIRanges(cp.missingRanges),

@@ -15,6 +15,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
@@ -68,8 +69,8 @@ func (s *Service) IngestBatch(
 	if state.Mode == LedgerModeFrozen {
 		return BatchResult{}, apierr.New(apierr.DependencyUnavailable, "usage ledger is frozen for recovery; do not advance ACK")
 	}
-	if batch.LedgerEpoch != nil {
-		if *batch.LedgerEpoch != state.LedgerEpoch {
+	if epoch, err := batch.LedgerEpoch.Get(); err == nil {
+		if epoch != state.LedgerEpoch {
 			return BatchResult{}, apierr.New(apierr.LedgerEpochMismatch, "batch ledger_epoch does not match current central ledger_epoch").
 				WithDetail("current_ledger_epoch", state.LedgerEpoch.String())
 		}
@@ -127,7 +128,7 @@ func (s *Service) IngestBatch(
 			NodeIncarnationId:    nodeIdentity.NodeIncarnationID,
 			LedgerEpoch:          state.LedgerEpoch,
 			HighestContiguousSeq: decstr.U64(finalCP.highestContiguous),
-			BlockedSeq:           blockedSeq,
+			BlockedSeq:           presence.FromPointer(blockedSeq),
 			Results:              results,
 			ReceivedAt:           receivedAt,
 		},
@@ -188,6 +189,12 @@ func (s *Service) ingestSingleEvent(
 					out = api.UsageEventResult{
 						EventSeq: ev.EventSeq,
 						Status:   api.UsageEventResultStatusDuplicate,
+						Error: presence.NewNullNullable[struct {
+							Code   api.ErrorCode    `json:"code"`
+							Fields []api.FieldError `json:"fields"`
+
+							Message string `json:"message"`
+						}](),
 					}
 					return nil
 				}
@@ -451,6 +458,12 @@ func (s *Service) ingestSingleEvent(
 		out = api.UsageEventResult{
 			EventSeq: ev.EventSeq,
 			Status:   api.UsageEventResultStatusAccepted,
+			Error: presence.NewNullNullable[struct {
+				Code   api.ErrorCode    `json:"code"`
+				Fields []api.FieldError `json:"fields"`
+
+				Message string `json:"message"`
+			}](),
 		}
 		return nil
 	})
@@ -815,7 +828,7 @@ func makeErrorResult(
 	return api.UsageEventResult{
 		EventSeq: seq,
 		Status:   status,
-		Error: &struct {
+		Error: presence.NewNullableWithValue(struct {
 			Code    api.ErrorCode    `json:"code"`
 			Fields  []api.FieldError `json:"fields"`
 			Message string           `json:"message"`
@@ -823,6 +836,6 @@ func makeErrorResult(
 			Code:    api.ErrorCode(code),
 			Fields:  fields,
 			Message: msg,
-		},
+		}),
 	}
 }

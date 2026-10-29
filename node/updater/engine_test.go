@@ -22,6 +22,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -186,6 +187,7 @@ func (w *world) makeRelease(marker string, schemaTo int, from []int) builtRel {
 			ControlApiMajor: 1, PolicySchemaVersions: []int{1}, UsageEventSchemaVersions: []int{1},
 			MinimumUpdaterVersion: "1.0.0", StateSchemaFrom: from, StateSchemaTo: schemaTo,
 			RequiresServiceRestart: true,
+			MigrationId:            presence.NewNullNullable[string](),
 		},
 		Rollback: api.ManifestRollback{
 			AllowedReleaseIds: []uuid.UUID{}, StateReadableByPrevious: true,
@@ -273,6 +275,8 @@ func (w *world) work(rel builtRel, gen string, intent api.PublicationIntent) Wor
 			IssuedAt: w.now.Add(-time.Minute), JobId: uuid.Must(uuid.NewV7()),
 			ManifestSha256: rel.sum, ManifestUrl: w.srv.URL + "/m/" + rel.id.String(),
 			NodeId: w.node.ID, PublicationIntent: intent, ReleaseId: rel.id,
+			BatchId:  presence.NewNullNullable[uuid.UUID](),
+			TargetId: presence.NewNullNullable[uuid.UUID](),
 		},
 		Serving: []uuid.UUID{rel.id}, Revoked: []uuid.UUID{},
 		PolicyGeneration: decstr.MustParse("3"),
@@ -368,8 +372,8 @@ func TestUPD_SuccessfulSwitchPreservesIdentity(t *testing.T) {
 	if res.State != api.UpdateResultStateSucceeded || res.PublicationIntent != api.PublicationIntentPublished {
 		t.Fatalf("result %+v", res.State)
 	}
-	if !res.MemberForwardingEnabled || res.RecoveryRequired {
-		t.Fatalf("forwarding %v recovery %v", res.MemberForwardingEnabled, res.RecoveryRequired)
+	if !res.MemberForwardingEnabled || requiredValue(t, res.RecoveryRequired) {
+		t.Fatalf("forwarding %v recovery %v", res.MemberForwardingEnabled, requiredValue(t, res.RecoveryRequired))
 	}
 	if res.PayloadHash == "" || res.ResultId == uuid.Nil {
 		t.Fatal("missing result id or hash")
@@ -687,6 +691,7 @@ func replaceAmd(t *testing.T, w *world, rel builtRel, amd []byte) {
 		Compatibility: api.ManifestCompatibility{
 			ControlApiMajor: 1, PolicySchemaVersions: []int{1}, UsageEventSchemaVersions: []int{1},
 			MinimumUpdaterVersion: "1.0.0", StateSchemaFrom: []int{1}, StateSchemaTo: 1, RequiresServiceRestart: true,
+			MigrationId: presence.NewNullNullable[string](),
 		},
 		Rollback: api.ManifestRollback{
 			AllowedReleaseIds: []uuid.UUID{}, StateReadableByPrevious: true,
@@ -762,8 +767,8 @@ func TestUPD_RollbackRestoresLastGood(t *testing.T) {
 	}
 	w.mustCurrent(old.id)
 	res := w.oneResult()
-	if res.State != api.UpdateResultStateRolledBack || res.RecoveryRequired {
-		t.Fatalf("state %s recovery %v", res.State, res.RecoveryRequired)
+	if res.State != api.UpdateResultStateRolledBack || requiredValue(t, res.RecoveryRequired) {
+		t.Fatalf("state %s recovery %v", res.State, requiredValue(t, res.RecoveryRequired))
 	}
 	assertSameBytes(t, idPath, beforeID)
 	assertSameBytes(t, usagePath, beforeUsage)
@@ -791,8 +796,8 @@ func TestUPD_RecoveryRequiredWhenLastGoodUnsafe(t *testing.T) {
 		t.Fatal("members were not held")
 	}
 	res := w.oneResult()
-	if !res.RecoveryRequired || res.MemberForwardingEnabled {
-		t.Fatalf("recovery %v forwarding %v", res.RecoveryRequired, res.MemberForwardingEnabled)
+	if !requiredValue(t, res.RecoveryRequired) || res.MemberForwardingEnabled {
+		t.Fatalf("recovery %v forwarding %v", requiredValue(t, res.RecoveryRequired), res.MemberForwardingEnabled)
 	}
 }
 
@@ -936,4 +941,13 @@ func containsStr(xs []string, s string) bool {
 		}
 	}
 	return false
+}
+
+func requiredValue[T any](t *testing.T, value interface{ Get() (T, error) }) T {
+	t.Helper()
+	v, err := value.Get()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
 }

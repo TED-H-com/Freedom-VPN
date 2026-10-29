@@ -344,8 +344,8 @@ func ValidatePlan(p api.PlanPayload) error {
 		return newValidationError("/payload/price/provider_price_ref", ReasonPlanPriceInvalid, "price.provider_price_ref is required")
 	}
 
-	if p.RateLimit != nil {
-		if p.RateLimit.DownBps < 0 || p.RateLimit.UpBps < 0 {
+	if rate, err := p.RateLimit.Get(); err == nil {
+		if rate.DownBps < 0 || rate.UpBps < 0 {
 			return newValidationError("/payload/rate_limit", ReasonPlanRateLimitInvalid, "rate_limit down_bps and up_bps must be non-negative")
 		}
 	}
@@ -481,8 +481,8 @@ func ValidateDomainRuleSet(p api.DomainRuleSetPayload) error {
 		}
 		seenRuleIDs[rid] = i
 
-		if r.ProfileId != nil && !codePattern.MatchString(*r.ProfileId) {
-			return newValidationError(prefix+"/profile_id", ReasonDNSInvalidProfile, fmt.Sprintf("invalid profile_id %q", *r.ProfileId))
+		if profile, err := r.ProfileId.Get(); err == nil && !codePattern.MatchString(profile) {
+			return newValidationError(prefix+"/profile_id", ReasonDNSInvalidProfile, fmt.Sprintf("invalid profile_id %q", profile))
 		}
 
 		if err := checkDomainIsolationBaseline(r.Domain, prefix+"/domain"); err != nil {
@@ -497,10 +497,7 @@ func ValidateDomainRuleSet(p api.DomainRuleSetPayload) error {
 			return err
 		}
 
-		prof := ""
-		if r.ProfileId != nil {
-			prof = *r.ProfileId
-		}
+		prof, _ := r.ProfileId.Get()
 		// Check for same-profile or service-wide conflict on the normalized canonical domain
 		// BEFORE failing on non-canonical spelling so IDNA-equivalent duplicates/conflicts
 		// are caught even when one side was given in Unicode.

@@ -7,6 +7,10 @@ generate:
 output-options:
   # Keep every component, including ones only referenced by JSON Schemas.
   skip-prune: true
+  nullable-type: true
+  # Use our presence type: unset required fields must fail marshaling.
+  user-templates:
+    imports.tmpl: contracts/codegen/imports.tmpl
 compatibility:
   # Always prefix enum constants with their type name, so adding an enum
   # value elsewhere never renames existing constants.

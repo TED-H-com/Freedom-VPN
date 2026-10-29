@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
@@ -187,6 +188,7 @@ func sampleInput(amd, arm, sbom string) BuildInput {
 			ControlApiMajor: 1, PolicySchemaVersions: []int{1}, UsageEventSchemaVersions: []int{1},
 			MinimumUpdaterVersion: "1.0.0", StateSchemaFrom: []int{1}, StateSchemaTo: 1,
 			RequiresServiceRestart: true,
+			MigrationId:            presence.NewNullNullable[string](),
 		},
 		Rollback: api.ManifestRollback{
 			AllowedReleaseIds: []uuid.UUID{}, StateReadableByPrevious: true,

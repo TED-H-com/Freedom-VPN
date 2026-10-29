@@ -235,6 +235,26 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
     'zh-TW': '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
     en: 'Node serving lease has expired; member forwarding has stopped.',
   },
+  BOOTSTRAP_CONSUMED: {
+    'zh-TW': '節點啟動憑證已領取，無法再次領取。',
+    en: 'The node bootstrap credential has already been consumed.',
+  },
+  BOOTSTRAP_NOT_READY: {
+    'zh-TW': '節點啟動憑證尚未準備完成，請稍後再試。',
+    en: 'The node bootstrap credential is not ready. Please retry shortly.',
+  },
+  BOOTSTRAP_EXPIRED: {
+    'zh-TW': '節點啟動憑證的領取期限已過。',
+    en: 'The node bootstrap credential delivery deadline has expired.',
+  },
+  NODE_INCARNATION_ACTIVE: {
+    'zh-TW': '節點目前的實例仍有效，請先撤銷再重新註冊。',
+    en: 'The current node incarnation must be revoked before re-enrollment.',
+  },
+  NODE_RETIRED: {
+    'zh-TW': '此節點已退役，無法重新註冊。',
+    en: 'This node is retired and cannot re-enroll.',
+  },
   WEBHOOK_SIGNATURE_INVALID: {
     'zh-TW': '支付供應商 Webhook 簽章驗證失敗。',
     en: 'Payment provider webhook signature verification failed.',

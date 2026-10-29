@@ -19,6 +19,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -378,15 +379,20 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 		if err != nil {
 			return err
 		}
-		if nodeDetail.ExitId == nil {
+		exitID, exitErr := nodeDetail.ExitId.Get()
+		if exitErr != nil {
 			return apierr.Newf(apierr.StateConflict, "node %s has no exit record", p.NodeID)
 		}
 
 		// When setting intent=published, verify the node meets the serving baseline (§5.1, §14.2).
 		if p.Request.PublicationIntent == api.PublicationIntentPublished {
 			var appliedGen uint64
-			if nodeDetail.ConfigGeneration.Applied != nil {
-				appliedGen = uint64(*nodeDetail.ConfigGeneration.Applied)
+			if gen, err := nodeDetail.ConfigGeneration.Applied.Get(); err == nil {
+				appliedGen = uint64(gen)
+			}
+			var currentReleaseID *uuid.UUID
+			if id, err := nodeDetail.Releases.CurrentReleaseId.Get(); err == nil {
+				currentReleaseID = &id
 			}
 			if err := nodes.CheckPublishable(nodes.ServingReadiness{
 				LifecycleState:          nodeDetail.LifecycleState,
@@ -397,7 +403,7 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 				DataHealth:              nodeDetail.DataHealth,
 				DesiredConfigGeneration: uint64(nodeDetail.ConfigGeneration.Desired),
 				AppliedConfigGeneration: appliedGen,
-				CurrentReleaseID:        nodeDetail.Releases.CurrentReleaseId,
+				CurrentReleaseID:        currentReleaseID,
 			}); err != nil {
 				return err
 			}
@@ -424,7 +430,7 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 			SET publication_intent = $1,
 			    resource_version = resource_version + 1
 			WHERE id = $2`,
-			string(p.Request.PublicationIntent), *nodeDetail.ExitId); err != nil {
+			string(p.Request.PublicationIntent), exitID); err != nil {
 			return err
 		}
 
@@ -446,7 +452,7 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 
 		payload, _ := json.Marshal(map[string]any{
 			"node_id":            p.NodeID.String(),
-			"exit_id":            nodeDetail.ExitId.String(),
+			"exit_id":            exitID.String(),
 			"operation_id":       op.OperationId.String(),
 			"publication_intent": string(p.Request.PublicationIntent),
 			"desired_generation": strconv.FormatUint(nextGen, 10),
@@ -557,8 +563,8 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		return api.Operation{}, err
 	}
 	var desiredGen uint64
-	if op.DesiredGeneration != nil {
-		desiredGen = uint64(*op.DesiredGeneration)
+	if gen, err := op.DesiredGeneration.Get(); err == nil {
+		desiredGen = uint64(gen)
 	}
 	if s.compiler != nil && uint64(nodeDetail.ConfigGeneration.Desired) < desiredGen {
 		compiled, cErr := s.compiler.Compile(ctx, nodeID)
@@ -574,12 +580,16 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 
 	var appliedGen uint64
 	appliedGenStr := "0"
-	if nodeDetail.ConfigGeneration.Applied != nil {
-		appliedGen = uint64(*nodeDetail.ConfigGeneration.Applied)
-		appliedGenStr = nodeDetail.ConfigGeneration.Applied.String()
+	if gen, err := nodeDetail.ConfigGeneration.Applied.Get(); err == nil {
+		appliedGen = uint64(gen)
+		appliedGenStr = gen.String()
 	}
 
 	// Step 1: Confirm node isolation, readiness, online control status, and policy ACK (§5.2 step 2).
+	var currentReleaseID *uuid.UUID
+	if id, err := nodeDetail.Releases.CurrentReleaseId.Get(); err == nil {
+		currentReleaseID = &id
+	}
 	if err := nodes.CheckPublishable(nodes.ServingReadiness{
 		LifecycleState:            nodeDetail.LifecycleState,
 		ProvisioningState:         nodeDetail.ProvisioningState,
@@ -589,7 +599,7 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		DataHealth:                nodeDetail.DataHealth,
 		DesiredConfigGeneration:   desiredGen,
 		AppliedConfigGeneration:   appliedGen,
-		CurrentReleaseID:          nodeDetail.Releases.CurrentReleaseId,
+		CurrentReleaseID:          currentReleaseID,
 		RequireOnlineAndACKForRun: true,
 	}); err != nil {
 		return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), err.Error())
@@ -600,13 +610,14 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 	}
 
 	// Step 2: Consult external_bindings and publish route via NetBird adapter, then read back (§5.2 step 2-3).
-	if nodeDetail.ExitId == nil {
+	exitID, exitErr := nodeDetail.ExitId.Get()
+	if exitErr != nil {
 		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.StateConflict), "node has no exit record")
 	}
-	exitID := *nodeDetail.ExitId
+
 	peerID := ""
-	if nodeDetail.NetbirdPeerId != nil {
-		peerID = *nodeDetail.NetbirdPeerId
+	if value, err := nodeDetail.NetbirdPeerId.Get(); err == nil {
+		peerID = value
 	}
 	deploymentID, err := s.lookupDeploymentID(ctx, nodeID)
 	if err != nil {
@@ -624,12 +635,12 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 	}
 
 	dispName := ""
-	if nodeDetail.Name != nil {
-		dispName = *nodeDetail.Name
+	if value, err := nodeDetail.Name.Get(); err == nil {
+		dispName = value
 	}
 	regName := ""
-	if nodeDetail.Region != nil {
-		regName = *nodeDetail.Region
+	if value, err := nodeDetail.Region.Get(); err == nil {
+		regName = value
 	}
 
 	pubEv, err := s.netbird.PublishExit(ctx, PublishExitSpec{
@@ -735,12 +746,12 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 		return api.Operation{}, err
 	}
 	var desiredGen uint64
-	if op.DesiredGeneration != nil {
-		desiredGen = uint64(*op.DesiredGeneration)
+	if gen, err := op.DesiredGeneration.Get(); err == nil {
+		desiredGen = uint64(gen)
 	}
 
 	// Step 1: Compile new desired-state generation withdrawing member forwarding if node has an incarnation.
-	if s.compiler != nil && nodeDetail.CurrentIncarnationId != nil && uint64(nodeDetail.ConfigGeneration.Desired) < desiredGen {
+	if s.compiler != nil && (nodeDetail.CurrentIncarnationId.IsSpecified() && !nodeDetail.CurrentIncarnationId.IsNull()) && uint64(nodeDetail.ConfigGeneration.Desired) < desiredGen {
 		if compiled, cErr := s.compiler.Compile(ctx, nodeID); cErr == nil {
 			desiredGen = compiled.Generation
 			nodeDetail, _, _ = s.NodeService().GetNode(ctx, nodeID)
@@ -749,14 +760,15 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 
 	var appliedGen uint64
 	appliedGenStr := "0"
-	if nodeDetail.ConfigGeneration.Applied != nil {
-		appliedGen = uint64(*nodeDetail.ConfigGeneration.Applied)
-		appliedGenStr = nodeDetail.ConfigGeneration.Applied.String()
+	if gen, err := nodeDetail.ConfigGeneration.Applied.Get(); err == nil {
+		appliedGen = uint64(gen)
+		appliedGenStr = gen.String()
 	}
 
+	forwarding, forwardingErr := nodeDetail.MemberForwardingObserved.Get()
 	nodeConfirmed := nodeDetail.ControlStatus == api.ControlStatusOnline &&
 		appliedGen >= desiredGen &&
-		nodeDetail.MemberForwardingObserved != nil && !*nodeDetail.MemberForwardingObserved
+		forwardingErr == nil && !forwarding
 
 	if nodeConfirmed {
 		if err := s.markStepSucceeded(ctx, opID, nodes.StepAgentPolicy, fmt.Sprintf("node:%s:gen:%s:forwarding:false", nodeID, appliedGenStr), now); err != nil {
@@ -765,10 +777,11 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 	}
 
 	// Step 2: Withdraw NetBird route and peer permissions centrally even if the node did not respond (§5.2 step 4).
-	if nodeDetail.ExitId == nil {
+	exitID, exitErr := nodeDetail.ExitId.Get()
+	if exitErr != nil {
 		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.StateConflict), "node has no exit record")
 	}
-	exitID := *nodeDetail.ExitId
+
 	deploymentID, err := s.lookupDeploymentID(ctx, nodeID)
 	if err != nil {
 		return api.Operation{}, err
@@ -792,8 +805,8 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 	}
 
 	peerID := ""
-	if nodeDetail.NetbirdPeerId != nil {
-		peerID = *nodeDetail.NetbirdPeerId
+	if value, err := nodeDetail.NetbirdPeerId.Get(); err == nil {
+		peerID = value
 	}
 	desiredHash, _ := computeExitDesiredHash(exitID, peerID, false, nil)
 	extIDToStore := existingExtID
@@ -946,16 +959,16 @@ func (s *Service) ReconcileNetBird(ctx context.Context) ([]ReconcileItem, error)
 				obv := "withdrawn"
 				drift = append(drift, api.StateDrift{
 					Field:    "netbird_route",
-					Desired:  &des,
-					Observed: &obv,
+					Desired:  presence.NewNullableWithValue(des),
+					Observed: presence.NewNullableWithValue(obv),
 				})
 			} else if len(item.desiredHash) > 0 && len(obs.ObservedHash) > 0 && !bytes.Equal(item.desiredHash, obs.ObservedHash) {
 				des := fmt.Sprintf("%x", item.desiredHash[:8])
 				obv := fmt.Sprintf("%x", obs.ObservedHash[:8])
 				drift = append(drift, api.StateDrift{
 					Field:    "netbird_route_config",
-					Desired:  &des,
-					Observed: &obv,
+					Desired:  presence.NewNullableWithValue(des),
+					Observed: presence.NewNullableWithValue(obv),
 				})
 			}
 		} else {
@@ -964,8 +977,8 @@ func (s *Service) ReconcileNetBird(ctx context.Context) ([]ReconcileItem, error)
 				obv := "published"
 				drift = append(drift, api.StateDrift{
 					Field:    "netbird_route",
-					Desired:  &des,
-					Observed: &obv,
+					Desired:  presence.NewNullableWithValue(des),
+					Observed: presence.NewNullableWithValue(obv),
 				})
 			}
 		}

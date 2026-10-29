@@ -57,7 +57,8 @@ type statusWriter struct {
 	status int
 }
 
-func (w statusWriter) WriteHeader(int) { w.ResponseWriter.WriteHeader(w.status) }
+func (w statusWriter) WriteHeader(int)             { w.ResponseWriter.WriteHeader(w.status) }
+func (w statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func WriteError(w http.ResponseWriter, r *http.Request, e error) {
 	if errors.Is(e, errNotImplemented) {
 		apierr.Write(statusWriter{w, 501}, r, apierr.New(apierr.InternalError, "Operation is not implemented."))
@@ -92,6 +93,7 @@ func (w *bufferWriter) Write(b []byte) (int, error) {
 // URLs, bodies, panic values or error strings enter access logs (§16.2, SEC02).
 func Transport(log *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w = apierr.TrackResponse(w)
 		start := time.Now()
 		id := uuid.Must(uuid.NewV7()).String()
 		trace := r.Header.Get("X-Request-ID")
@@ -109,7 +111,7 @@ func Transport(log *slog.Logger, next http.Handler) http.Handler {
 					apierr.Write(b, r, errors.New("panic"))
 				}
 			}()
-			next.ServeHTTP(b, r)
+			next.ServeHTTP(apierr.TrackResponse(b), r)
 		}()
 		if b.status == 0 {
 			b.status = 200
@@ -224,6 +226,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		gates[class] = make(chan struct{}, o.Config.MaxConcurrent)
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w = apierr.TrackResponse(w)
 		w.Header().Set("Cache-Control", "no-store")
 		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(o.Config.WriteTimeoutSeconds)*time.Second)
 		defer cancel()
@@ -347,6 +350,10 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			return
 		}
 		m.raw = raw
+		if op.OperationID == "ConsumeAgentBootstrap" && len(raw) != 0 {
+			apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Bootstrap does not accept a request body."))
+			return
+		}
 		if len(raw) > 0 && tag != "webhook" {
 			typ, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 			if err != nil || typ != "application/json" {
@@ -470,6 +477,7 @@ func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 	lim := &limiter{entries: map[string]bucketState{}, max: c.MaxRatePrincipals}
 	gate := make(chan struct{}, c.MaxConcurrent)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w = apierr.TrackResponse(w)
 		host, _, _ := net.SplitHostPort(r.RemoteAddr)
 		if d := lim.allow(host, c.AnonymousRate); d > 0 {
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login request rate exceeded.").WithRetryAfter(d))

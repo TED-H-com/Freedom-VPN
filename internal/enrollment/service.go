@@ -22,6 +22,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -164,7 +165,7 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 		ttl = time.Duration(*r.ExpiresInSeconds) * time.Second
 	}
 	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		out = api.EnrollmentCreated{}
+		out = api.EnrollmentCreated{Token: presence.NewNullNullable[string]()}
 		record, e := begin(ctx, tx, cmd, "/api/v1/admin/enrollments", r)
 		if e != nil {
 			return e
@@ -230,7 +231,7 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 			return e
 		}
 		out.Enrollment, e = get(ctx, tx, id)
-		out.Token = &token
+		out.Token.Set(token)
 		out.SecretAvailable = true
 		return e
 	})
@@ -253,10 +254,21 @@ type querier interface {
 
 func get(ctx context.Context, q querier, id uuid.UUID) (out api.Enrollment, err error) {
 	var fp []byte
-	err = q.QueryRow(ctx, `SELECT id,node_id,delivery,CASE WHEN state='pending' AND expiry<=clock_timestamp() THEN 'expired' ELSE state END,expiry,name,region,notes,member_group_ids,request_id,incarnation_id,public_key_fingerprint,created_at,consumed_at,revoked_at FROM node_enrollments WHERE id=$1`, id).Scan(&out.EnrollmentId, &out.NodeId, &out.Delivery, &out.State, &out.ExpiresAt, &out.Name, &out.Region, &out.Notes, &out.MemberGroupIds, &out.EnrollmentRequestId, &out.NodeIncarnationId, &fp, &out.CreatedAt, &out.ConsumedAt, &out.RevokedAt)
+	var name, region, notes *string
+	var requestID, incarnationID *uuid.UUID
+	var consumedAt, revokedAt *time.Time
+	err = q.QueryRow(ctx, `SELECT id,node_id,delivery,CASE WHEN state='pending' AND expiry<=clock_timestamp() THEN 'expired' ELSE state END,expiry,name,region,notes,member_group_ids,request_id,incarnation_id,public_key_fingerprint,created_at,consumed_at,revoked_at FROM node_enrollments WHERE id=$1`, id).Scan(&out.EnrollmentId, &out.NodeId, &out.Delivery, &out.State, &out.ExpiresAt, &name, &region, &notes, &out.MemberGroupIds, &requestID, &incarnationID, &fp, &out.CreatedAt, &consumedAt, &revokedAt)
+	out.Name = presence.FromPointer(name)
+	out.Region = presence.FromPointer(region)
+	out.Notes = presence.FromPointer(notes)
+	out.EnrollmentRequestId = presence.FromPointer(requestID)
+	out.NodeIncarnationId = presence.FromPointer(incarnationID)
+	out.ConsumedAt = presence.FromPointer(consumedAt)
+	out.RevokedAt = presence.FromPointer(revokedAt)
+	out.BoundPublicKeySha256.SetNull()
 	if len(fp) > 0 {
 		v := hex.EncodeToString(fp)
-		out.BoundPublicKeySha256 = &v
+		out.BoundPublicKeySha256.Set(v)
 	}
 	out.ExpiresAt = out.ExpiresAt.UTC()
 	out.CreatedAt = out.CreatedAt.UTC()

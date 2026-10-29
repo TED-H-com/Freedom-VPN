@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -180,8 +181,8 @@ func BuildNodeMemberRatePolicy(eval *EvaluationResult, planRate, nodeCap *api.Ra
 		TierIndex:  eval.EnforcedTierIndex,
 		Reason:     reason,
 		Priority:   priority,
-		DownBps:    downBps,
-		UpBps:      upBps,
+		DownBps:    presence.FromPointer(downBps),
+		UpBps:      presence.FromPointer(upBps),
 		ValidFrom:  eval.ValidFrom,
 		ValidUntil: eval.ValidUntil,
 	}

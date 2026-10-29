@@ -13,6 +13,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -28,6 +29,40 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 	if r.NodeId != i.NodeID || r.IncarnationId != i.IncarnationID {
 		return ack, apierr.New(apierr.IncarnationMismatch, "Result identity differs from mTLS identity")
 	}
+	// Raw schema validation above requires every member; null maps to SQL NULL.
+	var batchID *uuid.UUID
+	if value, err := r.BatchId.Get(); err == nil {
+		batchID = &value
+	}
+	var targetID *uuid.UUID
+	if value, err := r.TargetId.Get(); err == nil {
+		targetID = &value
+	}
+	var currentReleaseID *uuid.UUID
+	if value, err := r.CurrentReleaseId.Get(); err == nil {
+		currentReleaseID = &value
+	}
+	var health *api.UpdateHealth
+	if value, err := r.Health.Get(); err == nil {
+		health = &value
+	}
+	var finishedAt *time.Time
+	if value, err := r.FinishedAt.Get(); err == nil {
+		finishedAt = &value
+	}
+	var usageCheckpoint *api.UpdateUsageCheckpoint
+	if value, err := r.UsageCheckpoint.Get(); err == nil {
+		usageCheckpoint = &value
+	}
+	var errorCode *api.ErrorCode
+	if value, err := r.ErrorCode.Get(); err == nil {
+		errorCode = &value
+	}
+	var stage *api.UpdateStage
+	if value, err := r.Stage.Get(); err == nil {
+		stage = &value
+	}
+	recoveryRequired, _ := r.RecoveryRequired.Get()
 	hash, e := canonjson.HashHex(raw, "payload_hash")
 	if e != nil || hash != r.PayloadHash {
 		return ack, apierr.New(apierr.HashMismatch, "Result payload hash does not match")
@@ -75,7 +110,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if j.nodeID != i.NodeID || j.incarnation == nil || *j.incarnation != i.IncarnationID {
 			return apierr.New(apierr.IncarnationMismatch, "Job is not bound to this incarnation")
 		}
-		if j.generation != r.Generation || j.attempt != r.Attempt || !equalID(j.batch, r.BatchId) || !equalID(j.target, r.TargetId) {
+		if j.generation != r.Generation || j.attempt != r.Attempt || !equalID(j.batch, batchID) || !equalID(j.target, targetID) {
 			return apierr.New(apierr.StaleGeneration, "Result does not match the authorized job attempt")
 		}
 		if r.RequestedReleaseId != j.releaseID || r.ManifestSha256 != j.manifestHash {
@@ -91,14 +126,14 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if !r.StartedAt.Before(*j.validUntil) || r.StartedAt.Before(*j.issued) {
 			return apierr.New(apierr.AuthorizationExpired, "Transaction started after authorization expired")
 		}
-		if isTerminal && (r.CurrentReleaseId == nil || r.Health == nil || r.FinishedAt == nil || r.FinishedAt.Before(r.StartedAt)) {
+		if isTerminal && (currentReleaseID == nil || health == nil || finishedAt == nil || finishedAt.Before(r.StartedAt)) {
 			return apierr.New(apierr.ValidationFailed, "Terminal result requires actual version, checks and completion time")
 		}
-		if r.UsageCheckpoint != nil && r.UsageCheckpoint.CentralAckedThrough > r.UsageCheckpoint.LastDurableEventSeq {
+		if usageCheckpoint != nil && usageCheckpoint.CentralAckedThrough > usageCheckpoint.LastDurableEventSeq {
 			return apierr.New(apierr.CheckpointFailed, "Usage acknowledgement exceeds durable checkpoint")
 		}
 		success := r.State == "succeeded" || r.State == "already_current"
-		if success && (r.CurrentReleaseId == nil || *r.CurrentReleaseId != j.releaseID || !healthy(r.Health) || r.RecoveryRequired || r.ErrorCode != nil || r.UsageCheckpoint == nil) {
+		if success && (currentReleaseID == nil || *currentReleaseID != j.releaseID || !healthy(health) || recoveryRequired || errorCode != nil || usageCheckpoint == nil) {
 			return apierr.New(apierr.HealthCheckFailed, "Target completion requires version, health and durable checkpoint evidence")
 		}
 		manifest, e := s.releases.Manifest(ctx, tx, j.releaseID)
@@ -113,9 +148,9 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 			return e
 		}
 		currentJob := n.job != nil && *n.job == j.id && j.generation == n.generation
-		recovery := r.RecoveryRequired || n.lastGood != nil && slices.Contains(revoked, *n.lastGood) || r.CurrentReleaseId != nil && slices.Contains(revoked, *r.CurrentReleaseId)
+		recovery := recoveryRequired || n.lastGood != nil && slices.Contains(revoked, *n.lastGood) || currentReleaseID != nil && slices.Contains(revoked, *currentReleaseID)
 		if r.State == "rolled_back" {
-			if r.CurrentReleaseId == nil || !slices.Contains(serving, *r.CurrentReleaseId) || slices.Contains(revoked, *r.CurrentReleaseId) {
+			if currentReleaseID == nil || !slices.Contains(serving, *currentReleaseID) || slices.Contains(revoked, *currentReleaseID) {
 				_, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=true WHERE node_id=$1 AND $2`, i.NodeID, currentJob)
 				if e != nil {
 					return e
@@ -123,18 +158,18 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 				rejection = apierr.New(apierr.MinimumVersionViolation, "Rollback release may not serve")
 				return releases.Audit(ctx, tx, i.NodeID.String(), "agent", "update_result.rollback_refused", j.id.String(), nil, map[string]any{"recovery_required": true})
 			}
-			rollbackManifest, _, _, e := s.releases.Eligible(ctx, tx, *r.CurrentReleaseId)
+			rollbackManifest, _, _, e := s.releases.Eligible(ctx, tx, *currentReleaseID)
 			if e != nil {
 				return e
 			}
 			if r.StateSchemaVersion != rollbackManifest.Signed.Compatibility.StateSchemaTo {
 				return apierr.New(apierr.SchemaIncompatible, "Rollback state schema differs from the active release")
 			}
-			if !manifest.Signed.Rollback.StateReadableByPrevious || !slices.Contains(manifest.Signed.Rollback.AllowedReleaseIds, *r.CurrentReleaseId) || *r.CurrentReleaseId == j.releaseID || !healthy(r.Health) {
+			if !manifest.Signed.Rollback.StateReadableByPrevious || !slices.Contains(manifest.Signed.Rollback.AllowedReleaseIds, *currentReleaseID) || *currentReleaseID == j.releaseID || !healthy(health) {
 				return apierr.New(apierr.SchemaIncompatible, "Rollback lacks allowed release and health evidence")
 			}
 		}
-		if r.MemberForwardingEnabled && (n.publication != "published" || r.PublicationIntent != "published" || r.State == "applying" || r.State == "checking" || recovery || r.CurrentReleaseId == nil || !slices.Contains(serving, *r.CurrentReleaseId) || slices.Contains(revoked, *r.CurrentReleaseId)) {
+		if r.MemberForwardingEnabled && (n.publication != "published" || r.PublicationIntent != "published" || r.State == "applying" || r.State == "checking" || recovery || currentReleaseID == nil || !slices.Contains(serving, *currentReleaseID) || slices.Contains(revoked, *currentReleaseID)) {
 			return apierr.New(apierr.NodeNotServiceable, "Forwarding contradicts current serving restrictions")
 		}
 		history := n.job == nil || *n.job != j.id || j.generation != n.generation || terminal(j.state) || !canAdvance(j.state, string(r.State))
@@ -143,7 +178,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		updateJob := !terminal(j.state) && canAdvance(j.state, string(r.State))
 		if updateJob {
 			_, e = tx.Exec(ctx, `UPDATE update_jobs SET state=$2,phase_since=CASE WHEN state<>$2 THEN clock_timestamp() ELSE phase_since END,needs_attention=false,started_at=coalesce(started_at,clock_timestamp()),completed_at=CASE WHEN $3 THEN clock_timestamp() ELSE completed_at END,
- actual_release_id=$4,last_good_release_id=CASE WHEN $5 THEN $4 ELSE last_good_release_id END,last_result_at=clock_timestamp(),result_id=CASE WHEN $3 THEN $6 ELSE result_id END,result_hash=CASE WHEN $3 THEN $7 ELSE result_hash END,error_code=$8,observed_evidence=$9,recovery_required=$10,stage=$11 WHERE id=$1`, j.id, string(r.State), isTerminal, r.CurrentReleaseId, success || r.State == "rolled_back", r.ResultId, digest, r.ErrorCode, raw, recovery, r.Stage)
+ actual_release_id=$4,last_good_release_id=CASE WHEN $5 THEN $4 ELSE last_good_release_id END,last_result_at=clock_timestamp(),result_id=CASE WHEN $3 THEN $6 ELSE result_id END,result_hash=CASE WHEN $3 THEN $7 ELSE result_hash END,error_code=$8,observed_evidence=$9,recovery_required=$10,stage=$11 WHERE id=$1`, j.id, string(r.State), isTerminal, currentReleaseID, success || r.State == "rolled_back", r.ResultId, digest, errorCode, raw, recovery, stage)
 			if e != nil {
 				return e
 			}
@@ -153,10 +188,10 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 			}
 		}
 		applied := false
-		if !history && isTerminal && r.CurrentReleaseId != nil {
+		if !history && isTerminal && currentReleaseID != nil {
 			// Result time is not an observation sequence. Once a heartbeat arrived
 			// after authorization, wait for another heartbeat rather than replacing it.
-			tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND (s.received_at IS NULL OR s.received_at<=$4) AND s.observed_update_generation<=$5::numeric`, i.NodeID, r.CurrentReleaseId, success || r.State == "rolled_back", j.issued, r.Generation.String())
+			tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND (s.received_at IS NULL OR s.received_at<=$4) AND s.observed_update_generation<=$5::numeric`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", j.issued, r.Generation.String())
 			if e != nil {
 				return e
 			}

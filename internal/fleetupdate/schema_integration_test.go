@@ -20,7 +20,7 @@ func TestAT24_UnboundSupersessionAndCancellation(t *testing.T) {
 	i := l.node("arm64", "disabled", "enrolling", false)
 	old := l.batch(l.old)
 	newer := l.batch(l.new)
-	if got := l.get(old.BatchId); got.Counts.Superseded != 1 || got.Targets[0].CurrentJob != nil {
+	if got := l.get(old.BatchId); got.Counts.Superseded != 1 || !got.Targets[0].CurrentJob.IsNull() {
 		t.Fatal(got)
 	}
 	if l.scalar(`SELECT count(*) FROM update_jobs`) != 0 {
@@ -33,7 +33,7 @@ func TestAT24_UnboundSupersessionAndCancellation(t *testing.T) {
 	}
 	i = l.enroll(i, "arm64")
 	w := l.intent(i)
-	if *w.Intent.BatchId != newer.BatchId || w.Intent.Attempt != 1 || l.scalar(`SELECT count(*) FROM update_jobs`) != 1 {
+	if nullableValue(w.Intent.BatchId) != newer.BatchId || w.Intent.Attempt != 1 || l.scalar(`SELECT count(*) FROM update_jobs`) != 1 {
 		t.Fatal(w)
 	}
 	if got := l.get(old.BatchId); got.Counts.Superseded != 1 {
@@ -48,7 +48,7 @@ func TestAT24_UnboundSupersessionAndCancellation(t *testing.T) {
 			}
 			got := l.get(b.BatchId)
 			for _, target := range got.Targets {
-				if target.NodeId == pending.NodeID && (string(target.State) != "cancelled_"+lifecycle || target.CurrentJob != nil || target.Attempts != 0) {
+				if target.NodeId == pending.NodeID && (string(target.State) != "cancelled_"+lifecycle || !target.CurrentJob.IsNull() || target.Attempts != 0) {
 					t.Fatal(target)
 				}
 			}

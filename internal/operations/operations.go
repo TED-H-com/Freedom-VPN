@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -207,7 +208,9 @@ func (s Store) Get(ctx context.Context, id uuid.UUID, p auth.Principal) (op api.
 	var raw []byte
 	var version, desired, observed *string
 	var rid *uuid.UUID
-	err = s.Pool.QueryRow(ctx, `SELECT id,kind,status,resource_type,resource_id,resource_version::text,desired_generation::text,observed_generation::text,steps,request_id,created_at,updated_at,completed_at FROM operations WHERE id=$1 AND ($2::boolean OR principal=$3)`, id, p.Role == auth.Admin, p.Scope()).Scan(&op.OperationId, &op.Kind, &op.Status, &op.Resource.Type, &op.Resource.Id, &version, &desired, &observed, &raw, &rid, &op.CreatedAt, &op.UpdatedAt, &op.CompletedAt)
+	var completedAt *time.Time
+	op.Error.SetNull()
+	err = s.Pool.QueryRow(ctx, `SELECT id,kind,status,resource_type,resource_id,resource_version::text,desired_generation::text,observed_generation::text,steps,request_id,created_at,updated_at,completed_at FROM operations WHERE id=$1 AND ($2::boolean OR principal=$3)`, id, p.Role == auth.Admin, p.Scope()).Scan(&op.OperationId, &op.Kind, &op.Status, &op.Resource.Type, &op.Resource.Id, &version, &desired, &observed, &raw, &rid, &op.CreatedAt, &op.UpdatedAt, &completedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return op, apierr.New(apierr.ResourceNotFound, "Operation not found.")
 	}
@@ -217,13 +220,18 @@ func (s Store) Get(ctx context.Context, id uuid.UUID, p auth.Principal) (op api.
 	if rid != nil {
 		op.RequestId = *rid
 	}
-	for str, target := range map[*string]**decstr.U64{version: &op.ResourceVersion, desired: &op.DesiredGeneration, observed: &op.ObservedGeneration} {
+	for _, field := range []struct {
+		str    *string
+		target *presence.Nullable[decstr.U64]
+	}{{version, &op.ResourceVersion}, {desired, &op.DesiredGeneration}, {observed, &op.ObservedGeneration}} {
+		str, target := field.str, field.target
+		target.SetNull()
 		if str != nil {
 			v, e := decstr.Parse(*str)
 			if e != nil {
 				return op, e
 			}
-			*target = &v
+			target.Set(v)
 		}
 	}
 	var steps map[string]Step
@@ -238,29 +246,31 @@ func (s Store) Get(ctx context.Context, id uuid.UUID, p auth.Principal) (op api.
 	op.Steps = make([]api.OperationStep, 0, len(names))
 	for _, name := range names {
 		v := steps[name]
-		step := api.OperationStep{Name: name, Required: v.Required, Status: v.Status, ObservedAt: v.ObservedAt, ErrorCode: v.ErrorCode}
+		step := api.OperationStep{Name: name, Required: v.Required, Status: v.Status, ObservedAt: presence.FromPointer(v.ObservedAt), ErrorCode: presence.FromPointer(v.ErrorCode),
+			Message: presence.NewNullNullable[string]()}
 		if v.Reason != "" {
 			reason := v.Reason
-			step.Message = &reason
+			step.Message.Set(reason)
 		}
 		if v.ErrorCode != nil {
 			message := "Step failed; quote the operation ID."
-			step.Message = &message
+			step.Message.Set(message)
 		}
-		if (op.Status == "failed" || op.Status == "partially_succeeded") && v.ErrorCode != nil && op.Error == nil {
-			op.Error = &struct {
+		if (op.Status == "failed" || op.Status == "partially_succeeded") && v.ErrorCode != nil && op.Error.IsNull() {
+			op.Error.Set(struct {
 				Code    api.ErrorCode `json:"code"`
 				Message string        `json:"message"`
-			}{Code: *v.ErrorCode, Message: "Required operation step failed; quote the operation ID."}
+			}{Code: *v.ErrorCode, Message: "Required operation step failed; quote the operation ID."})
 		}
 		op.Steps = append(op.Steps, step)
 	}
 	op.CreatedAt = op.CreatedAt.UTC()
 	op.UpdatedAt = op.UpdatedAt.UTC()
-	if op.CompletedAt != nil {
-		t := op.CompletedAt.UTC()
-		op.CompletedAt = &t
+	if completedAt != nil {
+		t := completedAt.UTC()
+		completedAt = &t
 	}
+	op.CompletedAt = presence.FromPointer(completedAt)
 	return op, nil
 }
 func (s Store) GetAdminOperation(ctx context.Context, r gen.GetAdminOperationRequestObject) (gen.GetAdminOperationResponseObject, error) {

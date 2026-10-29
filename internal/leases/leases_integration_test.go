@@ -15,7 +15,9 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -162,7 +164,8 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 		RenewalRequestId:        reqID,
 		NodeId:                  nodeID,
 		NodeIncarnationId:       incID,
-		AppliedConfigGeneration: &cfgGen,
+		AppliedConfigGeneration: presence.NewNullableWithValue(cfgGen),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("Renew initial: %v", err)
@@ -223,7 +226,8 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 		RenewalRequestId:        reqID,
 		NodeId:                  nodeID,
 		NodeIncarnationId:       incID,
-		AppliedConfigGeneration: &cfgGen,
+		AppliedConfigGeneration: presence.NewNullableWithValue(cfgGen),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("Renew replay: %v", err)
@@ -262,9 +266,11 @@ func TestLeases_UnpublishedDisabledAndRevokedNode(t *testing.T) {
 
 	// 1. Unpublished node receives 0 member grants.
 	envUnpub, err := svc.Renew(ctx, unpubNodeID, unpubIncID, api.LeaseRenewalRequest{
-		RenewalRequestId:  uuid.New(),
-		NodeId:            unpubNodeID,
-		NodeIncarnationId: unpubIncID,
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  unpubNodeID,
+		NodeIncarnationId:       unpubIncID,
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("Renew(unpublished): %v", err)
@@ -275,9 +281,11 @@ func TestLeases_UnpublishedDisabledAndRevokedNode(t *testing.T) {
 
 	// 2. Disabled node receives 0 member grants.
 	envDis, err := svc.Renew(ctx, disabledNodeID, disabledIncID, api.LeaseRenewalRequest{
-		RenewalRequestId:  uuid.New(),
-		NodeId:            disabledNodeID,
-		NodeIncarnationId: disabledIncID,
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  disabledNodeID,
+		NodeIncarnationId:       disabledIncID,
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("Renew(disabled): %v", err)
@@ -288,9 +296,11 @@ func TestLeases_UnpublishedDisabledAndRevokedNode(t *testing.T) {
 
 	// 3. Mismatched incarnation -> 403 INCARNATION_MISMATCH.
 	_, err = svc.Renew(ctx, unpubNodeID, uuid.New(), api.LeaseRenewalRequest{
-		RenewalRequestId:  uuid.New(),
-		NodeId:            unpubNodeID,
-		NodeIncarnationId: unpubIncID,
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  unpubNodeID,
+		NodeIncarnationId:       unpubIncID,
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	var ae *apierr.Error
 	if !errors.As(err, &ae) || ae.Code != apierr.IncarnationMismatch || ae.HTTPStatus() != 403 {
@@ -302,9 +312,11 @@ func TestLeases_UnpublishedDisabledAndRevokedNode(t *testing.T) {
 		t.Fatalf("revoke node: %v", err)
 	}
 	_, err = svc.Renew(ctx, unpubNodeID, unpubIncID, api.LeaseRenewalRequest{
-		RenewalRequestId:  uuid.New(),
-		NodeId:            unpubNodeID,
-		NodeIncarnationId: unpubIncID,
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  unpubNodeID,
+		NodeIncarnationId:       unpubIncID,
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if !errors.As(err, &ae) || ae.Code != apierr.IdentityRevoked || ae.HTTPStatus() != 403 {
 		t.Fatalf("revoked node err = %v, want 403 IDENTITY_REVOKED", err)

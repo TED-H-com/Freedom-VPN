@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -304,8 +305,12 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 			// §11.2 step 3: effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap)
 			var downCap, upCap *int64
 			if nodeCap != nil {
-				downCap = nodeCap.MemberDownBpsCap
-				upCap = nodeCap.MemberUpBpsCap
+				if v, err := nodeCap.MemberDownBpsCap.Get(); err == nil {
+					downCap = &v
+				}
+				if v, err := nodeCap.MemberUpBpsCap.Get(); err == nil {
+					upCap = &v
+				}
 			}
 			effDown := ComputeEffectiveRateBps(m.PlanDownBps, m.FairUseTierDownBps, downCap)
 			effUp := ComputeEffectiveRateBps(m.PlanUpBps, m.FairUseTierUpBps, upCap)
@@ -336,8 +341,8 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				Mode:       mode,
 				Reason:     reason,
 				TierIndex:  m.TierIndex,
-				DownBps:    &effDown,
-				UpBps:      &effUp,
+				DownBps:    presence.NewNullableWithValue(effDown),
+				UpBps:      presence.NewNullableWithValue(effUp),
 				Priority:   prio,
 				ValidFrom:  validFrom,
 				ValidUntil: validUntil,
@@ -397,7 +402,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		IssuedAt:                 issuedAt,
 		ExpiresAt:                expiresAt,
 		PublicationIntent:        pubIntent,
-		DesiredReleaseId:         snap.DesiredReleaseID,
+		DesiredReleaseId:         presence.FromPointer(snap.DesiredReleaseID),
 		SupportedReleasePolicyId: snap.SupportedReleasePolicyID,
 		ServingReleaseIds:        snap.ServingReleaseIDs,
 		PolicyRefs: api.PolicyRefs{
@@ -411,11 +416,11 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 			ResolverIpv4: snap.DNSResolverIPv4,
 			ResolverIpv6: snap.DNSResolverIPv6,
 		},
-		NodeCapacity:       nodeCap,
+		NodeCapacity:       presence.FromPointer(nodeCap),
 		AccountingPeriod:   snap.AccountingPeriod,
 		DeviceBindings:     deviceBindings,
 		MemberRatePolicies: memberRatePolicies,
-		Update:             snap.UpdateIntent,
+		Update:             presence.FromPointer(snap.UpdateIntent),
 	}
 
 	dsEnv, etag, configHash, err := c.signDesiredState(ctx, desired)

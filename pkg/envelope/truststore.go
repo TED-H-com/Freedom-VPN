@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"sort"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 // TrustedKey is one public key a verifier trusts.
@@ -51,10 +53,11 @@ type TrustStore struct {
 }
 
 // NewTrustStore validates keys and builds a trust store. Key ids must be
-// unique and non-empty, public keys 32 bytes, purposes valid and windows
-// non-empty.
+// unique and non-empty, public keys unique and 32 bytes, exactly one valid
+// purpose per key, and windows non-empty (§16.2, §17.2).
 func NewTrustStore(keys ...TrustedKey) (*TrustStore, error) {
 	ts := &TrustStore{keys: make(map[string]TrustedKey, len(keys))}
+	publicKeys := make(map[string]bool, len(keys))
 	for _, k := range keys {
 		if k.KeyID == "" {
 			return nil, errors.New("envelope: trusted key with empty key_id")
@@ -65,8 +68,12 @@ func NewTrustStore(keys ...TrustedKey) (*TrustStore, error) {
 		if len(k.PublicKey) != ed25519.PublicKeySize {
 			return nil, fmt.Errorf("envelope: key %q: public key must be %d bytes", k.KeyID, ed25519.PublicKeySize)
 		}
-		if len(k.Purposes) == 0 {
-			return nil, fmt.Errorf("envelope: key %q: no purposes", k.KeyID)
+		if publicKeys[string(k.PublicKey)] {
+			return nil, errors.New("envelope: duplicate trusted public key")
+		}
+		publicKeys[string(k.PublicKey)] = true
+		if len(k.Purposes) != 1 {
+			return nil, fmt.Errorf("envelope: key %q: exactly one purpose required", k.KeyID)
 		}
 		for _, p := range k.Purposes {
 			if !p.Valid() {
@@ -118,8 +125,11 @@ type trustedKeyJSON struct {
 //	           "purposes": ["release"], "not_before": "...Z", "not_after": "...Z",
 //	           "revoked": false}]}
 //
-// Unknown fields are rejected.
+// Unknown fields, duplicate JSON members and trailing data are rejected.
 func ParseTrustStoreJSON(raw []byte) (*TrustStore, error) {
+	if _, err := canonjson.Canonicalize(raw); err != nil {
+		return nil, fmt.Errorf("envelope: trust store: %w", err)
+	}
 	var f trustStoreFile
 	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.DisallowUnknownFields()
@@ -161,4 +171,33 @@ func (ts *TrustStore) MarshalJSON() ([]byte, error) {
 		})
 	}
 	return json.Marshal(f)
+}
+
+// NewNodeTrustStore builds a store for a node bundle. Central-only ledger-epoch
+// keys must never be distributed to nodes; checkpoints use recovery (§17.3).
+func NewNodeTrustStore(keys ...TrustedKey) (*TrustStore, error) {
+	ts, err := NewTrustStore(keys...)
+	if err != nil {
+		return nil, err
+	}
+	return ts.forNode()
+}
+
+// ParseNodeTrustStoreJSON is the node-bundle entry point; the general
+// ParseTrustStoreJSON also supports central-only signing purposes.
+func ParseNodeTrustStoreJSON(raw []byte) (*TrustStore, error) {
+	ts, err := ParseTrustStoreJSON(raw)
+	if err != nil {
+		return nil, err
+	}
+	return ts.forNode()
+}
+
+func (ts *TrustStore) forNode() (*TrustStore, error) {
+	for _, k := range ts.keys {
+		if k.Purposes[0] == PurposeLedgerEpoch {
+			return nil, errors.New("envelope: central-only ledger-epoch key in node trust bundle")
+		}
+	}
+	return ts, nil
 }

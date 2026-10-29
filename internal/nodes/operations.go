@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -213,12 +214,13 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		errCode     *string
 		errMsg      *string
 		resVer      *string
+		completedAt *time.Time
 	)
 	err := q.QueryRow(ctx, sqlQuery, opID).Scan(
 		&op.OperationId, &kind, &resType, &resID,
 		&op.RequestId, &desiredGen, &observedGen,
 		&status, &stepsBytes, &refsBytes, &errCode, &errMsg,
-		&resVer, &op.CreatedAt, &op.UpdatedAt, &op.CompletedAt,
+		&resVer, &op.CreatedAt, &op.UpdatedAt, &completedAt,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -226,6 +228,11 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		}
 		return api.Operation{}, err
 	}
+	op.CompletedAt = presence.FromPointer(completedAt)
+	op.ResourceVersion.SetNull()
+	op.DesiredGeneration.SetNull()
+	op.ObservedGeneration.SetNull()
+	op.Error.SetNull()
 	op.Kind = api.OperationKind(kind)
 	op.Resource = api.ResourceRef{
 		Id:   resID,
@@ -234,17 +241,17 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 	op.Status = api.OperationStatus(status)
 	if resVer != nil {
 		if v, err := decstr.Parse(*resVer); err == nil {
-			op.ResourceVersion = &v
+			op.ResourceVersion.Set(v)
 		}
 	}
 	if desiredGen != nil {
 		if v, err := decstr.Parse(*desiredGen); err == nil {
-			op.DesiredGeneration = &v
+			op.DesiredGeneration.Set(v)
 		}
 	}
 	if observedGen != nil {
 		if v, err := decstr.Parse(*observedGen); err == nil {
-			op.ObservedGeneration = &v
+			op.ObservedGeneration.Set(v)
 		}
 	}
 	if errCode != nil && *errCode != "" {
@@ -252,13 +259,13 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		if errMsg != nil {
 			msg = *errMsg
 		}
-		op.Error = &struct {
+		op.Error.Set(struct {
 			Code    api.ErrorCode `json:"code"`
 			Message string        `json:"message"`
 		}{
 			Code:    api.ErrorCode(*errCode),
 			Message: msg,
-		}
+		})
 	}
 
 	var storedSteps map[string]StoredStep
@@ -292,24 +299,26 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 			Name:       item.name,
 			Required:   item.step.Required,
 			Status:     api.OperationStepStatus(item.step.Status),
-			ObservedAt: &updatedAt,
+			ObservedAt: presence.NewNullableWithValue(updatedAt),
+			ErrorCode:  presence.NewNullNullable[api.ErrorCode](),
+			Message:    presence.NewNullNullable[string](),
 		}
 		if item.step.ErrorCode != nil && *item.step.ErrorCode != "" {
 			code := api.ErrorCode(*item.step.ErrorCode)
-			stepOut.ErrorCode = &code
+			stepOut.ErrorCode.Set(code)
 		}
 		if item.step.ErrorMessage != nil && *item.step.ErrorMessage != "" {
 			msgCopy := *item.step.ErrorMessage
-			stepOut.Message = &msgCopy
+			stepOut.Message.Set(msgCopy)
 		} else if item.step.Reason != "" {
 			reasonCopy := item.step.Reason
-			stepOut.Message = &reasonCopy
+			stepOut.Message.Set(reasonCopy)
 		} else if item.step.ObservedRef != "" {
 			if val, ok := refs[item.step.ObservedRef]; ok && val != "" {
-				stepOut.Message = &val
+				stepOut.Message.Set(val)
 			} else {
 				refCopy := item.step.ObservedRef
-				stepOut.Message = &refCopy
+				stepOut.Message.Set(refCopy)
 			}
 		}
 		apiSteps = append(apiSteps, stepOut)

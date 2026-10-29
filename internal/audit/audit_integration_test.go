@@ -53,10 +53,11 @@ func TestSEC02_AuditRedactionFiltersAndStableCursor(t *testing.T) {
 		if strings.Contains(string(raw), "TEST-ONLY-") {
 			t.Fatal("secret leaked", string(raw))
 		}
-		if page.NextCursor == nil {
+		if !page.NextCursor.IsSpecified() || page.NextCursor.IsNull() {
 			break
 		}
-		params.Cursor = page.NextCursor
+		cursor := nullableValue(page.NextCursor)
+		params.Cursor = &cursor
 	}
 	if len(seen) != 5 {
 		t.Fatal("missing rows", len(seen))
@@ -129,13 +130,14 @@ func TestSEC02_MalformedAuditRowsDoNotPoisonPages(t *testing.T) {
 			}
 			seen[event.AuditEventId] = true
 		}
-		if page.NextCursor == nil {
+		if !page.NextCursor.IsSpecified() || page.NextCursor.IsNull() {
 			break
 		}
-		if params.Cursor != nil && *params.Cursor == *page.NextCursor {
+		if params.Cursor != nil && *params.Cursor == nullableValue(page.NextCursor) {
 			t.Fatal("repeated cursor")
 		}
-		params.Cursor = page.NextCursor
+		cursor := nullableValue(page.NextCursor)
+		params.Cursor = &cursor
 	}
 	if pages != 11 || emptyPages != 9 || len(seen) != 2 || !seen[events[2].ID] || !seen[events[7].ID] || s.AnomalyCount() != 9 {
 		t.Fatal("lost rows, invented identity, or incorrect anomaly count", pages, emptyPages, seen, s.AnomalyCount())

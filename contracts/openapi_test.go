@@ -48,8 +48,9 @@ var specEndpoints = []string{
 	"POST /member/checkout-sessions",
 	"POST /member/billing-portal-sessions",
 	"GET /member/operations/{operation_id}",
-	// §14.4 Agent and webhook (9)
+	// §14.4 Agent and webhook (10, including D-015)
 	"POST /agent/enroll",
+	"POST /agent/bootstrap",
 	"POST /agent/certificates/renew",
 	"GET /agent/desired-state",
 	"POST /agent/observations",
@@ -75,7 +76,7 @@ var specStatuses = map[string][]string{
 	"DELETE /member/devices/{device_id}": {"202"}, "GET /member/exits": {"200"}, "GET /member/usage": {"200"},
 	"POST /member/checkout-sessions": {"201", "202"}, "POST /member/billing-portal-sessions": {"201"},
 	"GET /member/operations/{operation_id}": {"200"}, "POST /agent/enroll": {"200", "201"},
-	"POST /agent/certificates/renew": {"201"}, "GET /agent/desired-state": {"200", "304"}, "POST /agent/observations": {"202"},
+	"POST /agent/bootstrap": {"200"}, "POST /agent/certificates/renew": {"201"}, "GET /agent/desired-state": {"200", "304"}, "POST /agent/observations": {"202"},
 	"POST /agent/usage-batches": {"200"}, "GET /agent/usage-checkpoint": {"200"}, "POST /agent/update-results": {"202"},
 	"POST /agent/lease-renewals": {"200"}, "POST /webhooks/{provider}": {"200", "202"},
 }
@@ -100,12 +101,12 @@ func operations(t *testing.T) []opInfo {
 	return ops
 }
 
-func TestAPI01_EndpointCountIs40(t *testing.T) {
+func TestAPI01_EndpointCountIs41(t *testing.T) {
 	ops := operations(t)
-	if len(ops) != 40 {
-		t.Fatalf("got %d operations, want 40 (§14.1)", len(ops))
+	if len(ops) != 41 {
+		t.Fatalf("got %d operations, want 41 (§14.1, D-015)", len(ops))
 	}
-	if len(specEndpoints) != 40 {
+	if len(specEndpoints) != 41 {
 		t.Fatalf("spec table has %d entries", len(specEndpoints))
 	}
 	var got []string
@@ -449,7 +450,7 @@ func TestMTR03_DecimalStringConvention(t *testing.T) {
 // conventions of §14.1.
 func TestAPI01_IDTimeAndMoneyConventions(t *testing.T) {
 	opaqueIDs := map[string]bool{"key_id": true, "peer_id": true, "netbird_peer_id": true, "build_id": true, "os_id": true,
-		"profile_id": true, "migration_id": true, "period_id": true, "provider_price_ref": true}
+		"external_key_id": true, "profile_id": true, "migration_id": true, "period_id": true, "provider_price_ref": true}
 	timeNames := regexp.MustCompile(`(_at|^valid_from|^valid_until|_start|_end|^paid_through|^grace_until|_valid_until)$`)
 	walkSchemas(t, func(v schemaVisit) {
 		s := v.s
@@ -554,8 +555,8 @@ func TestUPD04_EnumsMatchSpec(t *testing.T) {
 }
 
 // TestAPI01_NoOptionalNullableFields forbids properties that are both
-// optional and nullable: generated Go types cannot tell JSON null from an
-// absent member, so null is only allowed on required members.
+// optional and nullable: the contract permits null only on required members.
+// Generated presence types distinguish missing from explicit null in Go.
 func TestAPI01_NoOptionalNullableFields(t *testing.T) {
 	walkSchemas(t, func(v schemaVisit) {
 		req := map[string]bool{}

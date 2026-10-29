@@ -402,7 +402,7 @@ func TestFUP02_AT19_ShadowVsEnforceAndIdempotentGeneration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetMemberStatus shadow failed: %v", err)
 	}
-	if memView.State != api.FairUseStatusStateNormal || memView.Rate != nil || memView.Applying {
+	if memView.State != api.FairUseStatusStateNormal || !memView.Rate.IsNull() || memView.Applying {
 		t.Fatalf("shadow mode must report normal with no throttling to member: %+v", memView)
 	}
 
@@ -483,7 +483,7 @@ func TestAT18_EffectiveRateAndTwoExitScope(t *testing.T) {
 		UpBps:   20_000_000,
 	}
 	polA := BuildNodeMemberRatePolicy(eval, planRate, nodeACap)
-	if polA.DownBps == nil || *polA.DownBps != 25_000_000 || polA.UpBps == nil || *polA.UpBps != 10_000_000 {
+	if (!polA.DownBps.IsSpecified() || polA.DownBps.IsNull()) || nullableValue(polA.DownBps) != 25_000_000 || (!polA.UpBps.IsSpecified() || polA.UpBps.IsNull()) || nullableValue(polA.UpBps) != 10_000_000 {
 		t.Fatalf("node A effective rate mismatch: down=%v up=%v", polA.DownBps, polA.UpBps)
 	}
 
@@ -494,7 +494,7 @@ func TestAT18_EffectiveRateAndTwoExitScope(t *testing.T) {
 		UpBps:   8_000_000,
 	}
 	polB := BuildNodeMemberRatePolicy(eval, planRate, nodeBCap)
-	if polB.DownBps == nil || *polB.DownBps != 15_000_000 || polB.UpBps == nil || *polB.UpBps != 8_000_000 {
+	if (!polB.DownBps.IsSpecified() || polB.DownBps.IsNull()) || nullableValue(polB.DownBps) != 15_000_000 || (!polB.UpBps.IsSpecified() || polB.UpBps.IsNull()) || nullableValue(polB.UpBps) != 8_000_000 {
 		t.Fatalf("node B effective rate mismatch: down=%v up=%v", polB.DownBps, polB.UpBps)
 	}
 }

@@ -9,7 +9,7 @@
 // signature_b64 is standard base64 with padding of the 64-byte signature.
 //
 // Verification is fail closed (§16.2): unknown algorithms, an empty signature
-// list, malformed base64, and any signature by a known key that is revoked,
+// list, duplicate signature key_ids, malformed base64, and any signature by a known key that is revoked,
 // outside its validity window, not allowed for the requested purpose or that
 // does not verify, all reject the whole envelope. Signatures by unknown
 // key_ids are ignored, but at least one valid signature by a trusted key is
@@ -34,20 +34,20 @@ const AlgorithmEd25519 = "ed25519"
 // Purpose is the use a signing key is authorized for (§16.2).
 type Purpose string
 
-// The four signing purposes. Keys are never shared between purposes in
-// production; the trust store enforces that a key signs only documents of
-// purposes it is allowed for.
+// Signing purposes. Each trusted key has exactly one purpose (§16.2).
+// Ledger-epoch is central-only and must never be included in node bundles.
 const (
 	PurposeRelease      Purpose = "release"       // release manifests (§13.3)
 	PurposeDesiredState Purpose = "desired-state" // desired state and policy (§14.7)
 	PurposeLease        Purpose = "lease"         // serving leases (§16.3)
+	PurposeLedgerEpoch  Purpose = "ledger-epoch"  // central-only ledger epoch authority (§17.3); never in node bundles
 	PurposeRecovery     Purpose = "recovery"      // usage checkpoints and recovery records (§17.3)
 )
 
 // Valid reports whether p is one of the defined purposes.
 func (p Purpose) Valid() bool {
 	switch p {
-	case PurposeRelease, PurposeDesiredState, PurposeLease, PurposeRecovery:
+	case PurposeRelease, PurposeDesiredState, PurposeLease, PurposeRecovery, PurposeLedgerEpoch:
 		return true
 	}
 	return false
@@ -143,6 +143,11 @@ func (e *Envelope) AddSignature(priv ed25519.PrivateKey, keyID string) error {
 	if keyID == "" {
 		return errors.New("envelope: empty key_id")
 	}
+	for _, s := range e.Signatures {
+		if s.KeyID == keyID {
+			return invalid(keyID, "duplicate signature key_id")
+		}
+	}
 	c, err := canonicalObject([]byte(e.Signed))
 	if err != nil {
 		return err
@@ -220,10 +225,15 @@ func Verify(raw []byte, ts *TrustStore, purpose Purpose, now time.Time) (signedJ
 
 	// Structural checks apply to every signature, known key or not.
 	sigs := make([][]byte, len(env.Signatures))
+	seen := make(map[string]bool, len(env.Signatures))
 	for i, s := range env.Signatures {
 		if s.KeyID == "" {
 			return nil, "", invalid("", fmt.Sprintf("signature %d has empty key_id", i))
 		}
+		if seen[s.KeyID] {
+			return nil, "", invalid(s.KeyID, "duplicate signature key_id")
+		}
+		seen[s.KeyID] = true
 		if s.Algorithm != AlgorithmEd25519 {
 			return nil, "", invalid(s.KeyID, fmt.Sprintf("unsupported algorithm %q", short(s.Algorithm)))
 		}
