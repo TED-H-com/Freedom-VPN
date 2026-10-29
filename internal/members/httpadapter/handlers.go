@@ -15,6 +15,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/members"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -95,8 +96,8 @@ func (h Handlers) accepted(ctx context.Context, id uuid.UUID) (gen.OperationAcce
 	op, err := (operations.Store{Pool: h.Pool}).Get(ctx, id, p)
 	return operations.Accepted(op, p.Role), err
 }
-func result(ctx context.Context, kind string, id uuid.UUID, op *uuid.UUID, status int) error {
-	return httpapi.SetResult(ctx, db.IdempotencyResult{ResourceType: entitlement.ResourceType(kind), ResourceID: &id, OperationID: op, ResponseStatus: status})
+func result(ctx context.Context, kind api.ResourceType, id uuid.UUID, op *uuid.UUID, status int) error {
+	return httpapi.SetResult(ctx, db.IdempotencyResult{ResourceType: string(kind), ResourceID: &id, OperationID: op, ResponseStatus: status})
 }
 
 // Deferred visitors execute only after Commands has committed. Provider I/O and

@@ -28,8 +28,21 @@ correlate required `nodes` steps with persisted node observations. Without that
 compiler, policy-dependent jobs fail/retry/dead-letter after NetBird sync; billing
 and reconciliation work still runs. Never substitute the compiler's TEST ONLY
 fallback rates or mark node enforcement complete from compilation alone. The
-baseline desired-state reader uses `assignments`, whereas member rights use the
-entitlement's pinned plan and exit groups; that reader remains node/policy work.
+baseline desired-state reader still needs its owner's D-030 follow-up to consume
+`entitlement.ListServingMembersForGroups`. `assignments` is reserved in v1:
+no new reader or writer may use it. The authoritative group set is
+`entitlements.projection.exit_group_ids`, the sorted union of the entitlement's
+pinned plan revision groups and `members.member_group_ids`.
+
+`ListServingMembersForGroups(ctx, q, groupIDs, asOf)` and
+`ServingExitGroups(ctx, q, memberID, asOf)` share one predicate: active member,
+no member or projected suspension, entitlement state outside
+pending_payment/suspended/expired/closed, and `valid_from <= asOf <
+effective_service_end`. Grace is already folded into that end. Returned plan
+rates come from the pinned entitlement plan, including grant-only members;
+a nil rate limit means no additional plan cap, never an invented default.
+The readers accept a pool or transaction and return only current serving rights.
+The node/desired-state/lease owners must adopt these helpers in their follow-ups.
 
 ## HTTP operations
 
@@ -42,7 +55,7 @@ entitlement's pinned plan and exit groups; that reader remains node/policy work.
 | `GetMemberSelf` | `GET /member/me` | Principal-owned account, entitlement, subscription, limits and next actions. |
 | `ListMemberDevices` | `GET /member/devices` | Principal-owned devices; unobserved authorization appears pending. |
 | `RevokeMemberDevice` | `DELETE /member/devices/{device_id}` | Ownership in SQL, local slot release, tombstone and 202 read-back operation. |
-| `CreateCheckoutSession` | `POST /member/checkout-sessions` | Committed intent and 202 operation; worker creates the hosted session. |
+| `CreateCheckoutSession` | `POST /member/checkout-sessions` | Reserve intent, call provider after commit, persist encrypted result and return 201 with checkout_url. |
 | `CreateBillingPortalSession` | `POST /member/billing-portal-sessions` | Commit intent first, then provider I/O, then 201 hosted URL. |
 | `ReceiveProviderWebhook` | `POST /webhooks/{provider}` | Signature over original bytes, transactional encrypted inbox plus dispatch intent, then 202. |
 
@@ -55,17 +68,38 @@ route is invented.
 All commands reuse `httpapi.Transaction`, record `httpapi.SetResult`, and
 implement `Replay`. Standalone service callers still own their transactions.
 Replay rereads persisted state under the authenticated principal; it does not
-cache a plaintext response. For checkout, repeat the same POST, body and
-Idempotency-Key after polling its operation: once fulfilled, replay returns the
-contract's 201 `CheckoutSession`. Before fulfillment it remains 202. A portal
-provider failure returns 503 after its recoverable intent commits; the same key
-recovers the same provider session.
+cache a plaintext response. Checkout returns 201 with the hosted URL on the
+first successful request and every same-key replay. The post-commit visitor
+performs provider I/O outside the command transaction. Failure marks the durable
+session reservation and provider operation step failed, with safe step and
+top-level errors, and returns retryable 503 DEPENDENCY_UNAVAILABLE. Retrying the
+same key retains the session UUID/provider idempotency key, including ambiguous
+provider timeouts. Concurrent requests wait briefly outside transactions or
+return retryable 503 if the winning call is still outstanding. Even an expired
+checkout replay returns the original URL/expiry; a new checkout requires a new
+key. No return page or session creation changes service rights.
+
+The framework's durable command reference records the intended 201 before I/O
+(to satisfy DB F-06); `billing_sessions.fulfillment_state` records the separate
+pending/failed/succeeded effect. A failed effect never emits that 201. This does
+not require storing plaintext response bodies or deleting deduplication keys.
+Portal failures likewise retain their recoverable intent and stable provider key.
 
 The actor always comes from the authenticated principal. `account_status` is
 `active` for an open account and `closed` for a tombstone; payment/suspension
 remain in `entitlement.state`. Every outward timestamp is UTC `Z`. Operation
 resource types follow the contract (`member_device`, `checkout_session`, etc.),
-while internal outbox aggregate names remain stable.
+while internal outbox aggregate names remain stable. Audit resources use the
+same typed enum and UUID; operation principals use the authenticated scope form.
+Grant operations reference `entitlement_grant:<grant_id>`. NetBird completion
+follows those grants through their member; node ACK writers must also recognize
+that resource type. Device operations belong to the member, so member retries
+can read operations initiated by administrators. Audit retains the actual actor.
+A device already at its target state returns its original operation with 202.
+Legacy rows without an operation enqueue a fresh observation/withdrawal
+operation; 202 never has an empty operation or fabricated completion.
+The current OperationKind enum lacks device authorization and grant revocation:
+these use `member.update` and `member.grant` respectively pending contract revision.
 
 ## Devices and observed evidence
 
@@ -112,7 +146,7 @@ not claim/discard unrelated rows.
 
 | Event | Action |
 |---|---|
-| `billing.session_requested` | Fulfill the persisted session using its UUID as provider idempotency key; encrypted result is the receipt. |
+| `billing.session_requested` | Legacy events only; no new checkout or portal request emits this event. The existing unowned worker registration remains a recovery compatibility path pending removal by its owner. |
 | `billing.inbox_received` | Process exactly `inbox_id`; fetch authoritative provider state, append evidence and recompute rights. |
 | `member.entitlement_changed` | Sync every member device from current state, then compile affected node policies. |
 | `member.suspended` | Idempotently sync current member state and compile affected node policies. |
