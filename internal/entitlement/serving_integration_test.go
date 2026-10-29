@@ -99,6 +99,10 @@ func TestENT01_D030ServingReaders(t *testing.T) {
 			if e != nil || (len(rows) == 1) != tc.want {
 				t.Fatal(rows, e)
 			}
+			lockedRows, e := ListServingMembersForGroupsForShare(ctx, tx, groups, now.Add(tc.offset))
+			if e != nil || (len(lockedRows) == 1) != tc.want {
+				t.Fatal(lockedRows, e)
+			}
 			exitGroups, e := ServingExitGroups(ctx, tx, m, now.Add(tc.offset))
 			if e != nil || (len(exitGroups) == 2) != tc.want {
 				t.Fatal(exitGroups, e)
