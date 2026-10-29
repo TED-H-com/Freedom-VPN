@@ -75,7 +75,7 @@ func refusal(t *testing.T, h http.Handler, r *http.Request, status int, code str
 // This proves the outer role/listener boundary, not object-level ownership;
 // member/device/operation ownership is exercised by the domain integration suites.
 func TestAT28_AllContractRoleBoundaries(t *testing.T) {
-	doc, err := gen.GetSwagger()
+	doc, err := gen.GetSpec()
 	if err != nil {
 		t.Fatal(err)
 	}

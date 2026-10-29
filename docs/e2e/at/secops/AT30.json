@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "run_started_at": "2026-10-29T23:14:59Z",
+  "run_finished_at": "2026-10-29T23:15:32Z",
+  "source_revision": "04e68ff06cf10dfec3df7dcc9adbb24ee4022dc7",
+  "probe_source_sha256": "8236e5eee7c3313e8c20ca11e721a9886edd89c8b9f6d97ca0e624d9ba445de2",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "8ba24be91b85f56829065476385c83b319fd2eba98b046ba6fdc50d46f89353f",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-amd64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:14:59Z",
+      "finished_at": "2026-10-29T23:15:00Z",
+      "elapsed_seconds": 0.665,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-amd64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "4ef4a2f17f44aed8ad0988e72e6735cd684fb7479751259af9f011c2c578211b",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-arm64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:15:00Z",
+      "finished_at": "2026-10-29T23:15:02Z",
+      "elapsed_seconds": 2.371,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-arm64",
+        "bytes": 0,
+        "findings": []
+      }
+    }
+  ],
+  "image_digests": [],
+  "policy_revision": null,
+  "node_incarnation": null,
+  "unavailable_metadata_reason": "No deployed node or image was observed in this run. Test binaries are identified separately.",
+  "stack": {
+    "status": "blocked",
+    "reason": "needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.",
+    "inventory_before": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    },
+    "up": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-up"
+      ],
+      "started_at": "2026-10-29T23:14:59Z",
+      "finished_at": "2026-10-29T23:14:59Z",
+      "elapsed_seconds": 0.415,
+      "exit_code": 2,
+      "scan": {
+        "stream": "e2e-up",
+        "bytes": 515,
+        "findings": []
+      }
+    },
+    "down": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-down"
+      ],
+      "started_at": "2026-10-29T23:14:59Z",
+      "finished_at": "2026-10-29T23:14:59Z",
+      "elapsed_seconds": 0.215,
+      "exit_code": 0,
+      "scan": {
+        "stream": "e2e-down",
+        "bytes": 414,
+        "findings": []
+      }
+    },
+    "inventory_after": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    }
+  },
+  "id": "AT30",
+  "spec": [
+    "§19.1",
+    "§19 AT30"
+  ],
+  "requirements": [
+    "DATA01",
+    "BILL01",
+    "MTR03"
+  ],
+  "status": "blocked",
+  "verdict": "not passed",
+  "expected": "An isolated DB/WAL restore replays previously ACKed node archives, reconciles provider and peers without duplicates or entitlement extension, and measures complete-service RPO/RTO.",
+  "actual": {
+    "component_status": "passed",
+    "component_suites": [
+      "member-ownership",
+      "restore-ledger",
+      "restore-cli",
+      "node-archive",
+      "node-replay",
+      "payment-reconciliation",
+      "peer-reconciliation"
+    ],
+    "full_stack_executed": false
+  },
+  "blockers": [
+    "needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.",
+    "No isolated DB/WAL restore hook or backup/WAL configuration in the documented dev stack. The existing restore-ledger test seeds two isolated databases; it is NOT a physical backup restore.",
+    "No full-stack coordinated provider/NetBird/identity-journal restore checkpoint. RPO/RTO remain null. No admin database or live stack is restored."
+  ],
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT02_DeviceLimitRevokeOwnershipReadbackHTTP|TestAT04_SuspensionGrantGraceAndHTTPPreconditions|TestAPI01_ConcurrentHTTPReplayAndRealSessionRateLimit|TestBILL01_WorkerReconciliationRepairsMissedWebhook|TestMEM03_NetBirdLostCreateIdentityDriftAndPersistentBindings)$",
+      "./internal/members/httpadapter"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable|TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination|TestAT15_DedupeOutOfOrderAckAndConflict|Test17_3_FreezeFencesInFlightIngest)$",
+      "./internal/usage"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestCLI_FreezeRecoveryCompleteAdjustAndAudit)$",
+      "./internal/usage/cmd/fvpn-usage-admin"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT30_LedgerEpochRestore|TestPurgeArchiveKeepsUnacked|TestIdentityAndLowerACK)$",
+      "./node/internal/usagestore"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestEpochMismatchFetchesCheckpoint|TestRestoreSchedulesAndClears)$",
+      "./node/internal/usageupload"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestBILL01_ReconciliationRepairsDroppedWebhookAndGraceExpires|TestAT04_CancelRefundRenewSuspendAndExactlyOneOutbox)$",
+      "./internal/billing"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT08_LostCreateResponsesDoNotDuplicate|TestAT08_DriftDuplicatesAndUnconfirmedWrites|TestMEM03_LostAuthorizationWrite)$",
+      "./internal/netbird"
+    ]
+  ],
+  "operator_run": {
+    "status": "needs operator run",
+    "script": "operator-runs.md#at30"
+  },
+  "evidence": [
+    "components.json",
+    "secret-scan.json",
+    "requests.md"
+  ],
+  "recovery": {
+    "backup_id": null,
+    "wal_checkpoint": null,
+    "restored_checkpoint": null,
+    "rpo_seconds": null,
+    "rto_seconds": null,
+    "model_only": true
+  }
+}

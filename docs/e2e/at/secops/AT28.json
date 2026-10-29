@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "run_started_at": "2026-10-29T23:14:59Z",
+  "run_finished_at": "2026-10-29T23:15:32Z",
+  "source_revision": "04e68ff06cf10dfec3df7dcc9adbb24ee4022dc7",
+  "probe_source_sha256": "8236e5eee7c3313e8c20ca11e721a9886edd89c8b9f6d97ca0e624d9ba445de2",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "8ba24be91b85f56829065476385c83b319fd2eba98b046ba6fdc50d46f89353f",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-amd64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:14:59Z",
+      "finished_at": "2026-10-29T23:15:00Z",
+      "elapsed_seconds": 0.665,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-amd64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "4ef4a2f17f44aed8ad0988e72e6735cd684fb7479751259af9f011c2c578211b",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-arm64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:15:00Z",
+      "finished_at": "2026-10-29T23:15:02Z",
+      "elapsed_seconds": 2.371,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-arm64",
+        "bytes": 0,
+        "findings": []
+      }
+    }
+  ],
+  "image_digests": [],
+  "policy_revision": null,
+  "node_incarnation": null,
+  "unavailable_metadata_reason": "No deployed node or image was observed in this run. Test binaries are identified separately.",
+  "stack": {
+    "status": "blocked",
+    "reason": "needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.",
+    "inventory_before": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    },
+    "up": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-up"
+      ],
+      "started_at": "2026-10-29T23:14:59Z",
+      "finished_at": "2026-10-29T23:14:59Z",
+      "elapsed_seconds": 0.415,
+      "exit_code": 2,
+      "scan": {
+        "stream": "e2e-up",
+        "bytes": 515,
+        "findings": []
+      }
+    },
+    "down": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-down"
+      ],
+      "started_at": "2026-10-29T23:14:59Z",
+      "finished_at": "2026-10-29T23:14:59Z",
+      "elapsed_seconds": 0.215,
+      "exit_code": 0,
+      "scan": {
+        "stream": "e2e-down",
+        "bytes": 414,
+        "findings": []
+      }
+    },
+    "inventory_after": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    }
+  },
+  "id": "AT28",
+  "spec": [
+    "§19.1",
+    "§19 AT28"
+  ],
+  "requirements": [
+    "SEC01",
+    "API01",
+    "ID01"
+  ],
+  "status": "blocked",
+  "verdict": "not passed",
+  "expected": "Every resource is role/owner scoped; mTLS binds node/incarnation; invalid credentials, CSRF, oversize bodies and replay refuse safely; all stack logs and audit streams are secret-free.",
+  "actual": {
+    "component_status": "passed",
+    "component_suites": [
+      "boundary",
+      "sessions",
+      "http-security",
+      "pki-enrollment-audit",
+      "node-http",
+      "member-ownership"
+    ],
+    "full_stack_executed": false
+  },
+  "blockers": [
+    "needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.",
+    "No running production stack: full per-object family IDOR matrix and complete stack log/audit-stream scan are blocked. Middleware role checks are not object authorization proof."
+  ],
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT28_AllContractRoleBoundaries|TestAT28_TransportSecretCanaries|TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs)$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT28_OIDCVerificationAndSessions|TestAT28_RoleCookiesCoexistAndLogoutIndependently|TestAT28_BrowserSelectorRequiresBothCookies|TestID01_ScopedIdentitySessionRotationAndExpiry|TestAT01_AdminIdentityAndEverySessionAudited)$",
+      "./internal/auth"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT28_RolesAndFallback|TestAT28_CertificateIdentityAndForgedHeaders|TestAT28_CSRFSchemaSizeAndPreconditions|TestAT28_ErrorAndLogRedaction|TestAT28_BootstrapTransport|TestAT28_MemberOperationHTTPIsolation|TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets|TestAT28_BrowserRateAndConcurrencyRetryAfter|TestAPI01_IdempotencyReplayConflictConcurrentExpiry|TestAPI01_ETag)$",
+      "./internal/httpapi"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT28_AuthenticationRenewalAndPermanentRevocation|TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets|TestD029_EnrollmentAuditAndOperationsRoundTrip|TestAT06_IdempotentCreationLostResponseAndRace|TestAT06_ExpiryRevocationAndTransactionalRollback|TestAT05_UniformDeliveryMetadataAndPlatforms)$",
+      "./internal/enrollment"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT06_AT28_NodeCompositionUsesMiddlewareAndPKI|TestAT28_HTTPBootstrapExactlyOnce|TestENR02_HTTPCertificateRenewalAndIdentityChecks|TestAT29_HTTPSignedLeaseWindowAndReplay|TestAT29_HTTPKeyedLeaseHoldsShareLocksAndRollsBack)$",
+      "./internal/nodes/httpwire"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT02_DeviceLimitRevokeOwnershipReadbackHTTP|TestAT04_SuspensionGrantGraceAndHTTPPreconditions|TestAPI01_ConcurrentHTTPReplayAndRealSessionRateLimit|TestBILL01_WorkerReconciliationRepairsMissedWebhook|TestMEM03_NetBirdLostCreateIdentityDriftAndPersistentBindings)$",
+      "./internal/members/httpadapter"
+    ]
+  ],
+  "operator_run": {
+    "status": "needs operator run",
+    "script": "operator-runs.md#at28"
+  },
+  "evidence": [
+    "components.json",
+    "secret-scan.json",
+    "requests.md"
+  ]
+}

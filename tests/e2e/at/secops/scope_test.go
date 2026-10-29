@@ -12,7 +12,7 @@ import (
 // §19 AT32 also requires three-source E2E evidence. This check is deliberately
 // restricted to the HTTP schema surface; it cannot prove absence of code branches.
 func TestAT32_UnifiedNodeContractSurface(t *testing.T) {
-	doc, err := gen.GetSwagger()
+	doc, err := gen.GetSpec()
 	if err != nil {
 		t.Fatal(err)
 	}
