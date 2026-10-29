@@ -153,6 +153,10 @@ func (e *Engine) Flush(ctx context.Context) error {
 	if err := e.open(ctx); err != nil {
 		return err
 	}
+	return e.withLock(ctx, func() error { return e.flushLocked(ctx) })
+}
+
+func (e *Engine) flushLocked(ctx context.Context) error {
 	pending, err := e.Journal.Pending(ctx, 50)
 	if err != nil {
 		return err

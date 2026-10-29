@@ -2,6 +2,7 @@ package updater
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -158,9 +159,10 @@ func intsContain(xs []int, v int) bool {
 }
 
 // checkURL allows https URLs and, only when allowLoopback is set, http to
-// a loopback address for tests. Link-local and metadata hosts are refused
-// (§16.2). The signature is what authorizes the URL; this stops a manifest
-// from pointing at the cloud metadata service.
+// a loopback address for tests. Loopback, link-local, multicast, unspecified,
+// private, CGNAT (100.64.0.0/10) and metadata hosts are refused (§16.2,
+// D-034f). The same address check runs again on every address DialContext
+// resolves, so a public name that answers with a private address is refused.
 func checkURL(raw string, allowLoopback bool) error {
 	u, err := url.Parse(raw)
 	if err != nil || u.Host == "" || u.User != nil {
@@ -171,14 +173,8 @@ func checkURL(raw string, allowLoopback bool) error {
 		return permanent(apierr.SignatureInvalid, "artifact url host")
 	}
 	if ip := net.ParseIP(host); ip != nil {
-		if ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
-			return permanent(apierr.SignatureInvalid, "artifact url address")
-		}
-		if ip.IsLoopback() {
-			if allowLoopback {
-				return nil
-			}
-			return permanent(apierr.SignatureInvalid, "artifact url loopback")
+		if err := rejectIP(ip, allowLoopback); err != nil {
+			return err
 		}
 	}
 	if u.Scheme != "https" {
@@ -188,6 +184,63 @@ func checkURL(raw string, allowLoopback bool) error {
 		return permanent(apierr.SignatureInvalid, "artifact url scheme")
 	}
 	return nil
+}
+
+func rejectIP(ip net.IP, allowLoopback bool) error {
+	if ip == nil {
+		return permanent(apierr.SignatureInvalid, "artifact url address")
+	}
+	if ip.IsLoopback() {
+		if allowLoopback {
+			return nil
+		}
+		return permanent(apierr.SignatureInvalid, "artifact url loopback")
+	}
+	if ip.IsPrivate() || isCGNAT(ip) || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+		return permanent(apierr.SignatureInvalid, "artifact url address")
+	}
+	return nil
+}
+
+// isCGNAT reports the IPv4 shared address space 100.64.0.0/10 (RFC 6598).
+func isCGNAT(ip net.IP) bool {
+	v4 := ip.To4()
+	if v4 == nil {
+		return false
+	}
+	return v4[0] == 100 && v4[1]&0xc0 == 0x40
+}
+
+// dialChecked resolves addr and refuses any private, CGNAT, link-local or
+// otherwise forbidden address before it connects (D-034f). allowLoopback
+// permits a loopback destination and nothing else.
+func dialChecked(ctx context.Context, network, addr string, allowLoopback bool) (net.Conn, error) {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, permanent(apierr.SignatureInvalid, "artifact url address")
+	}
+	var ips []net.IP
+	if ip := net.ParseIP(host); ip != nil {
+		ips = []net.IP{ip}
+	} else {
+		found, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+		if err != nil {
+			return nil, err
+		}
+		if len(found) == 0 {
+			return nil, permanent(apierr.SignatureInvalid, "artifact url address")
+		}
+		for _, one := range found {
+			ips = append(ips, one.IP)
+		}
+	}
+	for _, ip := range ips {
+		if err := rejectIP(ip, allowLoopback); err != nil {
+			return nil, err
+		}
+	}
+	d := &net.Dialer{Timeout: 30 * time.Second}
+	return d.DialContext(ctx, network, net.JoinHostPort(ips[0].String(), port))
 }
 
 func isLoopbackName(host string) bool {

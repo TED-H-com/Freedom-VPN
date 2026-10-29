@@ -100,10 +100,11 @@ func LoadKey(path string) (SigningKey, error) {
 	return KeyFromSeed(f.KeyID, seed)
 }
 
-// TrustStore builds a one-key release trust store for the validity window
-// [notBefore, notAfter). Nodes receive this public document, not the seed.
+// TrustStore builds a one-key node release trust store for the validity
+// window [notBefore, notAfter). Nodes receive this public document, not the
+// seed. Ledger-epoch keys are rejected by the node trust store.
 func (k SigningKey) TrustStore(notBefore, notAfter time.Time) (*envelope.TrustStore, error) {
-	return envelope.NewTrustStore(envelope.TrustedKey{
+	return envelope.NewNodeTrustStore(envelope.TrustedKey{
 		KeyID:     k.KeyID,
 		PublicKey: k.Public(),
 		Purposes:  []envelope.Purpose{envelope.PurposeRelease},
