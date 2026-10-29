@@ -1,0 +1,673 @@
+package agent
+
+import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
+	"log/slog"
+	"net/netip"
+	"os"
+	"os/exec"
+	"sync"
+	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/agentstore"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
+	"github.com/google/uuid"
+)
+
+// certRenewLead is how early a certificate is renewed. Five minutes is a
+// TEST ONLY overlap until an operator chooses the production window (§6.4).
+const certRenewLead = 5 * time.Minute
+
+// Options builds an Engine. Nil dependencies take the production defaults.
+type Options struct {
+	Config  Config
+	Store   *agentstore.Store
+	Client  *controlclient.Client
+	Plane   Plane
+	Clock   timeanchor.Clock
+	Hooks   Hooks
+	Log     *slog.Logger
+	Barrier Barrier
+	Trust   *envelope.TrustStore
+}
+
+// Engine is one agent process (§5, §16.3). It is not safe for concurrent Step.
+type Engine struct {
+	cfg      Config
+	store    *agentstore.Store
+	client   *controlclient.Client
+	plane    Plane
+	clock    timeanchor.Clock
+	bootID   uuid.UUID
+	trust    *envelope.TrustStore
+	hooks    Hooks
+	log      *slog.Logger
+	barrier  Barrier
+	ownStore bool
+
+	mu      sync.Mutex
+	tlsCert *tls.Certificate
+
+	nodeID         uuid.UUID
+	incID          uuid.UUID
+	enrolled       bool
+	revoked        bool
+	bootstrapLost  bool
+	desired        *api.DesiredState
+	desiredETag    string
+	desiredOK      bool
+	desiredExpired bool
+	lease          *api.ServingLease
+	leaseMono      time.Duration
+	leaseBoot      uuid.UUID
+	highestIssued  time.Time
+	leaseFresh     bool
+	anchor         timeanchor.Anchor
+	anchorOK       bool
+	baselineOK     bool
+	storageOK      bool
+	serving        bool
+	appliedGen     uint64
+	assignments    map[uuid.UUID]uint16
+	counters       map[string]enforce.CounterValue
+	addresses      []string
+	recoverBlocked bool
+	recovered      bool
+	latchBlocked   bool
+	outboxFull     bool
+	meterFailed    bool
+	decision       Decision
+	policyExpires  time.Duration
+	lastObs        time.Time
+	lastServing    bool
+}
+
+// Start opens the store, the trust bundle and the control client.
+func Start(opt Options) (*Engine, error) {
+	if opt.Clock == nil {
+		opt.Clock = systemClock{}
+	}
+	if opt.Plane == nil {
+		opt.Plane = SystemPlane{}
+	}
+	if opt.Barrier == nil {
+		opt.Barrier = NopBarrier{}
+	}
+	if opt.Log == nil {
+		opt.Log = slog.New(RedactHandler{Next: slog.DiscardHandler})
+	} else {
+		opt.Log = slog.New(RedactHandler{Next: opt.Log.Handler()})
+	}
+	boot, err := watchdog.ReadBootID(opt.Config.BootIDFile)
+	if err != nil {
+		return nil, err
+	}
+	trust := opt.Trust
+	if trust == nil {
+		raw, err := os.ReadFile(opt.Config.TrustBundle)
+		if err != nil {
+			return nil, err
+		}
+		trust, err = envelope.ParseNodeTrustStoreJSON(raw)
+		if err != nil {
+			return nil, err
+		}
+	}
+	ownStore := false
+	store := opt.Store
+	if store == nil {
+		store, err = agentstore.Open(opt.Config.DBPath())
+		if err != nil {
+			return nil, err
+		}
+		ownStore = true
+	}
+	e := &Engine{
+		cfg: opt.Config, store: store, client: opt.Client, plane: opt.Plane,
+		clock: opt.Clock, bootID: boot, trust: trust, hooks: opt.Hooks,
+		log: opt.Log, barrier: opt.Barrier, ownStore: ownStore, storageOK: true,
+	}
+	if e.client == nil {
+		pool := x509.NewCertPool()
+		pem, err := os.ReadFile(opt.Config.ServerCAFile)
+		if err != nil {
+			_ = e.Close()
+			return nil, err
+		}
+		if !pool.AppendCertsFromPEM(pem) {
+			_ = e.Close()
+			return nil, errors.New("agent: server CA is empty")
+		}
+		client, err := controlclient.New(controlclient.Config{
+			BaseURL:              opt.Config.ControlURL,
+			RootCAs:              pool,
+			GetClientCertificate: e.clientCert,
+		})
+		if err != nil {
+			_ = e.Close()
+			return nil, err
+		}
+		e.client = client
+	}
+	if err := e.loadIdentity(context.Background()); err != nil {
+		_ = e.Close()
+		return nil, err
+	}
+	return e, nil
+}
+
+// Close closes the client and, when Start opened it, the store.
+func (e *Engine) Close() error {
+	if e == nil {
+		return nil
+	}
+	if e.client != nil {
+		e.client.Close()
+		e.client = nil
+	}
+	if e.ownStore && e.store != nil {
+		err := e.store.Close()
+		e.store = nil
+		return err
+	}
+	return nil
+}
+
+func (e *Engine) clientCert(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if e.tlsCert == nil {
+		// An empty certificate tells the handshake not to send one. A nil
+		// certificate panics inside crypto/tls when the server asks.
+		return &tls.Certificate{}, nil
+	}
+	c := *e.tlsCert
+	return &c, nil
+}
+
+func (e *Engine) setCert(c tls.Certificate) {
+	e.mu.Lock()
+	e.tlsCert = &c
+	e.mu.Unlock()
+}
+
+func (e *Engine) loadCert() error {
+	certPEM, err := os.ReadFile(e.cfg.certPath())
+	if err != nil {
+		return err
+	}
+	keyPEM, err := os.ReadFile(e.cfg.keyPath())
+	if err != nil {
+		return err
+	}
+	pair, err := tlsPair(certPEM, keyPEM)
+	if err != nil {
+		return err
+	}
+	e.setCert(pair)
+	if e.client != nil {
+		e.client.ResetConnections()
+	}
+	return nil
+}
+
+func (e *Engine) loadIdentity(ctx context.Context) error {
+	if v, ok, err := e.store.Meta(ctx, "revoked"); err != nil {
+		return err
+	} else if ok && v == "1" {
+		e.revoked = true
+	}
+	if v, ok, err := e.store.Meta(ctx, "bootstrap_lost"); err != nil {
+		return err
+	} else if ok && v == "1" && !fileExists(e.cfg.setupKeyPath()) {
+		e.bootstrapLost = true
+	}
+	id, ok, err := e.store.Identity(ctx)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return nil
+	}
+	e.nodeID = id.NodeID
+	e.incID = id.IncarnationID
+	e.enrolled = true
+	if err := e.loadCert(); err != nil {
+		e.log.Warn("identity certificate is unavailable")
+	}
+	return nil
+}
+
+// Boot installs the fail-closed baseline before any member forwarding (§8.2, §13.5).
+// A stored lease does not count as fresh until this process accepts one.
+func (e *Engine) Boot(ctx context.Context) error {
+	dp, err := e.cfg.DatapathValue()
+	if err != nil {
+		return err
+	}
+	if err := e.plane.Baseline(ctx, dp); err != nil {
+		e.baselineOK = false
+		e.log.Error("baseline", "err", err.Error())
+	} else {
+		e.baselineOK = true
+	}
+	if err := e.loadRuntime(ctx); err != nil {
+		e.storageOK = false
+		return err
+	}
+	e.leaseFresh = false
+	e.serving = false
+	e.recoverOnce(ctx)
+	e.latch()
+	e.beat()
+	return nil
+}
+
+// Run boots, then steps until ctx ends.
+func (e *Engine) Run(ctx context.Context) error {
+	if err := e.Boot(ctx); err != nil {
+		return err
+	}
+	interval := time.Duration(e.cfg.HeartbeatSeconds) * time.Second
+	poll := time.Duration(e.cfg.PollSeconds) * time.Second
+	if poll > 0 && poll < interval {
+		interval = poll
+	}
+	if interval <= 0 {
+		interval = time.Second
+	}
+	for {
+		if err := e.Step(ctx); err != nil && ctx.Err() != nil {
+			return ctx.Err()
+		}
+		t := time.NewTimer(interval)
+		select {
+		case <-ctx.Done():
+			t.Stop()
+			return ctx.Err()
+		case <-t.C:
+		}
+	}
+}
+
+// Step is one control pass. A 304 does not move the lease (§14.7). Member
+// forwarding stays off unless every gate in Decide passes.
+func (e *Engine) Step(ctx context.Context) error {
+	defer e.beat()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	e.latch()
+	if e.revoked {
+		_ = e.baseline(ctx)
+		e.serving = false
+		e.decision = Decide(e.input())
+		_ = e.observe(ctx)
+		_ = e.flush(ctx)
+		return nil
+	}
+	if !e.enrolled {
+		return nil
+	}
+	// Refresh the anchor before any 304. A wall jump must be visible to the
+	// lease renewal decision even when desired state is unchanged (§16.3).
+	_, _ = e.verifyTime()
+	_ = e.flush(ctx)
+	if err := e.syncDesired(ctx); err != nil && ctx.Err() != nil {
+		return err
+	}
+	if e.revoked {
+		_ = e.baseline(ctx)
+		e.serving = false
+		return nil
+	}
+	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
+		return err
+	}
+	if e.revoked {
+		_ = e.baseline(ctx)
+		e.serving = false
+		return nil
+	}
+	_ = e.syncCert(ctx)
+	_ = e.syncBootstrap(ctx)
+	e.refreshDesired()
+	if ok, err := e.barrier.Health(ctx); err != nil || !ok {
+		e.meterFailed = true
+	} else {
+		e.meterFailed = false
+	}
+	if pending, err := e.store.Pending(ctx); err == nil {
+		e.outboxFull = len(pending) >= 32
+	}
+	e.decision = Decide(e.input())
+	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
+		return err
+	}
+	_ = e.observe(ctx)
+	_ = e.flush(ctx)
+	return nil
+}
+
+func (e *Engine) loadRuntime(ctx context.Context) error {
+	if d, ok, err := e.store.Desired(ctx); err != nil {
+		return err
+	} else if ok {
+		e.desiredETag = d.ETag
+		if d.HasApplied {
+			e.appliedGen = d.Applied
+		}
+		now := e.clock.Wall()
+		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && ds.NodeId == e.nodeID && ds.NodeIncarnationId == e.incID {
+			e.desired = &ds
+			if err := writeAtomic(e.cfg.DesiredStatePath, d.Envelope, 0o644); err != nil {
+				e.log.Warn("desired state file", "err", err.Error())
+			}
+		}
+	}
+	if l, ok, err := e.store.Lease(ctx); err != nil {
+		return err
+	} else if ok {
+		if lease, err := verifyLease(l.Envelope, e.trust, e.clock.Wall()); err == nil {
+			e.lease = &lease
+		}
+		e.leaseMono = l.MonoSent
+		e.leaseBoot = l.BootID
+		e.highestIssued = l.HighestIssuedAt
+	}
+	if a, ok, err := e.store.Anchor(ctx); err != nil {
+		return err
+	} else if ok && a.Trusted && a.BootID == e.bootID {
+		e.anchor = timeanchor.Anchor{BootID: a.BootID, Server: a.Server, Mono: a.Mono, Wall: a.Wall, Trusted: true}
+	}
+	var err error
+	if e.assignments, err = e.store.QoS(ctx); err != nil {
+		return err
+	}
+	raw, err := e.store.Counters(ctx)
+	if err != nil {
+		return err
+	}
+	e.counters = map[string]enforce.CounterValue{}
+	for name, c := range raw {
+		e.counters[name] = enforce.CounterValue{Packets: c.Packets, Bytes: c.Bytes}
+	}
+	e.addresses, err = e.store.Addresses(ctx)
+	return err
+}
+
+func (e *Engine) input() Input {
+	_, _ = e.verifyTime()
+	dp, _ := e.cfg.DatapathValue()
+	exempt, _ := parsePrefixes(e.cfg.TestExemptV4)
+	extra, _ := parsePrefixes(e.cfg.ExtraDeniedV4)
+	host, _ := parsePrefixes(e.cfg.HostV4)
+	now := e.clock.Wall()
+	if e.anchorOK {
+		if t, err := e.anchor.TrustedNow(e.bootID, e.clock, timeanchor.DefaultBackwardSkew, timeanchor.DefaultForwardSkew); err == nil {
+			now = t
+		}
+	}
+	return Input{
+		Now: now, MonoNow: e.clock.Mono(), Datapath: dp,
+		Desired: e.desired, DesiredOK: e.desiredOK, DesiredExpired: e.desiredExpired,
+		Lease: e.lease, LeaseFresh: e.leaseFresh && e.lease != nil, LeaseMonoSent: e.leaseMono,
+		AnchorOK: e.anchorOK, LatchBlocked: e.latchBlocked, RecoverBlocked: e.recoverBlocked,
+		Backend: e.cfg.NetbirdBackend, ReleaseID: e.cfg.ReleaseUUID(), Assignments: e.assignments,
+		TestMode: e.cfg.TestMode, ExemptV4: exempt, ExtraDenied: extra, HostV4: host,
+		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
+		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
+		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
+	}
+}
+
+// verifyTime reports the time used to check a signed document.
+// The second result is false during a clock anomaly: a new desired state
+// must not be accepted (§16.3). Before the first anchor, wall time is used.
+func (e *Engine) verifyTime() (time.Time, bool) {
+	if e.anchor.Trusted {
+		t, err := e.anchor.TrustedNow(e.bootID, e.clock, timeanchor.DefaultBackwardSkew, timeanchor.DefaultForwardSkew)
+		if err != nil {
+			e.anchorOK = false
+			return e.clock.Wall(), false
+		}
+		e.anchorOK = true
+		return t, true
+	}
+	e.anchorOK = false
+	return e.clock.Wall(), true
+}
+
+func (e *Engine) refreshDesired() {
+	now, ok := e.verifyTime()
+	if !ok {
+		now = e.clock.Wall()
+	}
+	if e.desired == nil {
+		e.desiredOK = false
+		e.desiredExpired = false
+		return
+	}
+	e.desiredExpired = now.Before(e.desired.IssuedAt) || !now.Before(e.desired.ExpiresAt)
+	e.desiredOK = !e.desiredExpired
+}
+
+func (e *Engine) latch() {
+	e.latchBlocked = ForwardingBlocked(e.cfg.JournalDir)
+}
+
+func (e *Engine) recoverOnce(ctx context.Context) {
+	if e.recovered {
+		return
+	}
+	e.recovered = true
+	if e.cfg.UpdaterRecover == "" {
+		return
+	}
+	if e.cfg.UpdaterConfig == "" {
+		e.recoverBlocked = true
+		return
+	}
+	cmd := exec.CommandContext(ctx, e.cfg.UpdaterRecover, "recover", "-config", e.cfg.UpdaterConfig)
+	err := cmd.Run()
+	if err == nil {
+		e.recoverBlocked = false
+		return
+	}
+	var ee *exec.ExitError
+	if errors.As(err, &ee) && ee.ExitCode() == 2 {
+		e.recoverBlocked = true
+		return
+	}
+	e.recoverBlocked = true
+	e.log.Error("updater recover", "err", "forwarding stays blocked")
+}
+
+func (e *Engine) baseline(ctx context.Context) error {
+	dp, err := e.cfg.DatapathValue()
+	if err != nil {
+		return err
+	}
+	if err := e.plane.Baseline(ctx, dp); err != nil {
+		e.baselineOK = false
+		return err
+	}
+	e.baselineOK = true
+	e.policyExpires = 0
+	return nil
+}
+
+func (e *Engine) enforce(ctx context.Context, d Decision) error {
+	if !d.Serve {
+		e.serving = false
+		e.policyExpires = 0
+		return e.baseline(ctx)
+	}
+	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 3, 50*time.Millisecond)
+	if errors.Is(err, nodelock.ErrBusy) {
+		e.decision.Errors = append(e.decision.Errors, api.NodeError{
+			Code: api.ErrorCodeUPDATEBUSY, Message: "UPDATE_BUSY",
+			ObservedAt: e.clock.Wall().UTC(), Stage: "apply",
+		})
+		if !e.serving {
+			e.decision.Reasons = append(e.decision.Reasons, api.ForwardingBlockReasonUpdateInProgress)
+			e.decision.Serve = false
+		}
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	defer lock.Release()
+	model := d.Model
+	model.Revoke = droppedAddrs(e.addresses, model)
+	prev := map[string]enforce.CounterValue{}
+	for name, c := range e.counters {
+		prev[name] = c
+	}
+	res, err := e.plane.Apply(ctx, model, prev)
+	if err != nil {
+		e.serving = false
+		e.policyExpires = 0
+		e.noteApply(err)
+		_ = e.baseline(ctx)
+		return nil
+	}
+	e.serving = true
+	e.baselineOK = true
+	e.policyExpires = d.PolicyExpires
+	e.appliedGen = model.Generation
+	if err := e.store.MarkApplied(ctx, model.Generation); err != nil {
+		e.storageOK = false
+		e.log.Warn("applied generation", "err", err.Error())
+	}
+	if res.Plan.Assignments != nil {
+		e.assignments = res.Plan.Assignments
+		if err := e.store.SaveQoS(ctx, e.assignments); err != nil {
+			e.storageOK = false
+		}
+	}
+	e.counters = map[string]enforce.CounterValue{}
+	stored := map[string]agentstore.Counter{}
+	for name, c := range res.Counters {
+		e.counters[name] = c
+		stored[name] = agentstore.Counter{Packets: c.Packets, Bytes: c.Bytes}
+	}
+	if err := e.store.SaveCounters(ctx, stored); err != nil {
+		e.storageOK = false
+	}
+	e.addresses = bindingAddrs(model)
+	if err := e.store.SaveAddresses(ctx, e.addresses); err != nil {
+		e.storageOK = false
+	}
+	for _, reset := range res.Resets {
+		e.decision.Errors = append(e.decision.Errors, api.NodeError{
+			Code: api.ErrorCodeHEALTHCHECKFAILED, Message: string(reset.Reason),
+			ObservedAt: e.clock.Wall().UTC(), Stage: "meter",
+		})
+	}
+	return nil
+}
+
+func (e *Engine) noteApply(err error) {
+	var ce *enforce.CheckError
+	code := api.ErrorCodeHEALTHCHECKFAILED
+	msg := "apply failed"
+	if errors.As(err, &ce) {
+		msg = string(ce.Reason)
+		if api.ErrorCode(ce.Reason).Valid() {
+			code = api.ErrorCode(ce.Reason)
+		}
+	}
+	e.decision.Errors = append(e.decision.Errors, api.NodeError{
+		Code: code, Message: msg, ObservedAt: e.clock.Wall().UTC(), Stage: "apply",
+	})
+	e.log.Warn("apply", "err", msg)
+}
+
+func (e *Engine) markRevoked(ctx context.Context) {
+	e.revoked = true
+	e.serving = false
+	e.policyExpires = 0
+	if err := e.store.SetMeta(ctx, "revoked", "1"); err != nil {
+		e.storageOK = false
+	}
+	_ = e.baseline(ctx)
+	e.log.Warn("identity revoked")
+}
+
+func (e *Engine) beat() {
+	mono := e.clock.Mono()
+	if mono <= 0 || e.bootID == uuid.Nil {
+		return
+	}
+	reason := "-"
+	if e.serving {
+		reason = "serving"
+	} else if len(e.decision.Reasons) > 0 {
+		reason = string(e.decision.Reasons[0])
+	}
+	err := watchdog.WriteHeartbeat(e.cfg.HeartbeatPath, watchdog.Beat{
+		BootID: e.bootID, Mono: mono, Wall: e.clock.Wall().UTC(),
+		PolicyExpires: e.policyExpires, BaselineOK: e.baselineOK, Serving: e.serving,
+		Generation: e.appliedGen, Reason: reason,
+	})
+	if err != nil {
+		e.log.Warn("heartbeat", "err", err.Error())
+	}
+}
+
+func (e *Engine) renewLead(window time.Duration) time.Duration {
+	lead := time.Duration(e.cfg.RenewLeadSeconds) * time.Second
+	if window > 0 && lead > window/2 {
+		lead = window / 2
+	}
+	if lead < time.Second {
+		lead = time.Second
+	}
+	return lead
+}
+
+func droppedAddrs(prev []string, m enforce.Model) []netip.Addr {
+	keep := map[string]bool{}
+	for _, b := range m.Bindings {
+		for _, p := range b.AllowedV4 {
+			keep[p.Addr().String()] = true
+		}
+	}
+	var out []netip.Addr
+	for _, s := range prev {
+		if keep[s] {
+			continue
+		}
+		a, err := netip.ParseAddr(s)
+		if err == nil {
+			out = append(out, a)
+		}
+	}
+	return out
+}
+
+func bindingAddrs(m enforce.Model) []string {
+	var out []string
+	seen := map[string]bool{}
+	for _, b := range m.Bindings {
+		for _, p := range b.AllowedV4 {
+			s := p.Addr().String()
+			if !seen[s] {
+				seen[s] = true
+				out = append(out, s)
+			}
+		}
+	}
+	return out
+}

@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 const (
@@ -88,6 +90,72 @@ type canonicalBundlePayload struct {
 	UserRules     []string               `json:"user_rules"`
 	RuleCount     int                    `json:"rule_count"`
 	SmokeTests    []SmokeTestExpectation `json:"smoke_tests"`
+}
+
+func (b *CompiledBundle) canonicalPayload() canonicalBundlePayload {
+	settings := b.Settings
+	if settings.UpstreamDNS == nil {
+		settings.UpstreamDNS = []string{}
+	}
+	if settings.BootstrapDNS == nil {
+		settings.BootstrapDNS = []string{}
+	}
+	if settings.FallbackDNS == nil {
+		settings.FallbackDNS = []string{}
+	}
+	if settings.AllowedClients == nil {
+		settings.AllowedClients = []string{}
+	}
+	userRules := b.UserRules
+	if userRules == nil {
+		userRules = []string{}
+	}
+	smokeTests := b.SmokeTests
+	if smokeTests == nil {
+		smokeTests = []SmokeTestExpectation{}
+	}
+	return canonicalBundlePayload{
+		SchemaVersion: b.SchemaVersion,
+		ProfileID:     b.ProfileID,
+		Revision:      b.Revision,
+		ValidFrom:     b.ValidFrom.UTC().Format(time.RFC3339),
+		ValidUntil:    b.ValidUntil.UTC().Format(time.RFC3339),
+		Settings:      settings,
+		UserRules:     userRules,
+		RuleCount:     b.RuleCount,
+		SmokeTests:    smokeTests,
+	}
+}
+
+// CanonicalBytes returns the deterministic RFC 8785 (JCS) canonical JSON
+// representation of the bundle payload over which SHA256 is computed.
+func (b *CompiledBundle) CanonicalBytes() ([]byte, error) {
+	if b == nil {
+		return nil, &ValidationError{
+			Code:    ErrCodeBundleSyntaxInvalid,
+			Field:   "bundle",
+			Message: "bundle must not be nil",
+		}
+	}
+	return canonjson.Marshal(b.canonicalPayload())
+}
+
+// UnmarshalJSON decodes a CompiledBundle from JSON and deterministically
+// reconstructs CompiledBytes using RFC 8785 canonical JSON (canonjson.Marshal)
+// so bundles loaded from dns_compiled_bundles.bundle survive a JSON round-trip.
+func (b *CompiledBundle) UnmarshalJSON(data []byte) error {
+	type bundleAlias CompiledBundle
+	var aux bundleAlias
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	*b = CompiledBundle(aux)
+	compiledBytes, err := b.CanonicalBytes()
+	if err != nil {
+		return fmt.Errorf("reconstruct canonical bundle bytes: %w", err)
+	}
+	b.CompiledBytes = compiledBytes
+	return nil
 }
 
 // CompileOptions provides backend environment parameters and validation bounds
@@ -519,38 +587,27 @@ func CompileBundle(profile Profile, opts CompileOptions) (*CompiledBundle, error
 		UsePrivatePTRResolvers: false,
 	}
 
-	payload := canonicalBundlePayload{
+	bundle := &CompiledBundle{
 		SchemaVersion: BundleSchemaVersion,
 		ProfileID:     profile.ProfileID,
 		Revision:      profile.Revision,
-		ValidFrom:     validFrom.Format(time.RFC3339),
-		ValidUntil:    validUntil.Format(time.RFC3339),
-		Settings:      settings,
-		UserRules:     userRules,
-		RuleCount:     activeRuleCount,
-		SmokeTests:    smokeTests,
-	}
-
-	compiledBytes, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("marshal canonical bundle payload: %w", err)
-	}
-	sum := sha256.Sum256(compiledBytes)
-	digest := hex.EncodeToString(sum[:])
-
-	return &CompiledBundle{
-		SchemaVersion: BundleSchemaVersion,
-		ProfileID:     profile.ProfileID,
-		Revision:      profile.Revision,
-		SHA256:        digest,
 		ValidFrom:     validFrom,
 		ValidUntil:    validUntil,
 		Settings:      settings,
 		UserRules:     userRules,
 		RuleCount:     activeRuleCount,
 		SmokeTests:    smokeTests,
-		CompiledBytes: compiledBytes,
-	}, nil
+	}
+
+	compiledBytes, err := bundle.CanonicalBytes()
+	if err != nil {
+		return nil, fmt.Errorf("marshal canonical bundle payload: %w", err)
+	}
+	sum := sha256.Sum256(compiledBytes)
+	bundle.SHA256 = hex.EncodeToString(sum[:])
+	bundle.CompiledBytes = compiledBytes
+
+	return bundle, nil
 }
 
 // AdGuardUserRulesWithHash returns the UserRules slice with the bundle SHA-256

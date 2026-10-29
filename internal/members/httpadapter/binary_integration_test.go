@@ -81,6 +81,8 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	c := testTLSConfig(t, config.Defaults())
 	c.DatabaseURLFile = write("database-url", []byte(dsn))
 	c.MembersConfigFile = write("members.json", raw)
+	// TEST ONLY documentation prefix. The worker must not invent a resolver.
+	c.DNSConfigFile = write("dns.json", []byte(`{"upstreams":["192.0.2.53:53"]}`))
 	c.PublicAddress = availableAddress(t)
 	c.MetricsAddress = availableAddress(t)
 	c.ShutdownSeconds = 3
@@ -239,7 +241,7 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 		values []string
 	}{
 		{controlLogs, []string{"control-core", "members", "GetMemberSelf", "ReceiveProviderWebhook"}},
-		{workerLogs, []string{"members", "billing.inbox_received", "devices.discover"}},
+		{workerLogs, []string{"members", "dns", "dns.publish", "billing.inbox_received", "devices.discover"}},
 	} {
 		for _, value := range check.values {
 			if !strings.Contains(check.logs.String(), value) {

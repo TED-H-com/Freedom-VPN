@@ -240,12 +240,12 @@ func Compute(in Input) (Result, error) {
 		p.ExitGroups = ids(p.ExitGroups)
 		r.Plan = &p
 		r.DeviceLimit = p.DeviceLimit
-		r.ExitGroups = p.ExitGroups
+		r.ExitGroups = ids(append(append([]uuid.UUID{}, p.ExitGroups...), in.MemberGroups...))
 	}
 	if r.Plan == nil && (r.State == "active" || r.State == "grace" || r.State == "cancel_at_period_end") {
 		return r, ErrInvalid
 	}
-	if in.AdminSuspended || in.MemberStatus == "suspended" {
+	if in.AdminSuspended {
 		r.State = "suspended"
 		r.AdminSuspended = true
 	}

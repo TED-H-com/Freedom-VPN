@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"net/netip"
 	"time"
 
@@ -159,8 +160,12 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 				return entitlement.ErrConflict
 			}
 
-			result = Change{DeviceID: existing, MemberID: member, Revision: projection.Revision, Replayed: true}
-			return entitlement.Complete(ctx, tx, record, "device", existing, nil, 202)
+			op, err := s.targetOperation(ctx, tx, c.Actor, existing, member, api.OperationKindMemberUpdate, "device.authorized", projection.Revision)
+			if err != nil {
+				return err
+			}
+			result = Change{DeviceID: existing, MemberID: member, Revision: projection.Revision, OperationID: &op, Replayed: true}
+			return entitlement.Complete(ctx, tx, record, api.ResourceTypeMemberDevice, existing, &op, 202)
 		}
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return err
@@ -189,8 +194,8 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 		if err != nil {
 			return err
 		}
-		opActor := entitlement.Actor{ID: member, Role: "member", RequestID: c.Actor.RequestID}
-		op, err := entitlement.Operation(ctx, tx, opActor, "member.update", "device", device, 1)
+		opActor := entitlement.Actor{ID: member, Role: string(api.AuditEventActorTypeMember), RequestID: c.Actor.RequestID}
+		op, err := entitlement.Operation(ctx, tx, opActor, api.OperationKindMemberUpdate, api.ResourceTypeMemberDevice, device, 1)
 		if err != nil {
 			return err
 		}
@@ -198,11 +203,11 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 		if err = enqueue(ctx, tx, "device.authorized", evt); err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "device.authorize", device, nil, map[string]any{"member_id": member, "status": "authorized"}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "device.authorize", api.ResourceTypeMemberDevice, device, nil, map[string]any{"member_id": member, "status": "authorized"}); err != nil {
 			return err
 		}
 		result = Change{DeviceID: device, MemberID: member, OperationID: &op, Revision: projection.Revision}
-		return entitlement.Complete(ctx, tx, record, "device", device, &op, 202)
+		return entitlement.Complete(ctx, tx, record, api.ResourceTypeMemberDevice, device, &op, 202)
 	})
 	return result, err
 }
@@ -302,12 +307,12 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		}
 		if status == "revoked" || status == "closed" {
 			result.Replayed = true
-			var op uuid.UUID
-			if err = tx.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type='member_device' AND resource_id=$1 AND kind='member.device_revoke' ORDER BY created_at DESC LIMIT 1`, id).Scan(&op); err != nil {
-				return db.MapError(err)
+			op, err := s.targetOperation(ctx, tx, c.Actor, id, d.MemberID, api.OperationKindMemberDeviceRevoke, "device.revoked", projection.Revision)
+			if err != nil {
+				return err
 			}
 			result.OperationID = &op
-			return entitlement.Complete(ctx, tx, record, "device", id, &op, 202)
+			return entitlement.Complete(ctx, tx, record, api.ResourceTypeMemberDevice, id, &op, 202)
 		}
 		now := s.Entitlements.Time()
 		_, err = tx.Exec(ctx, `UPDATE member_devices SET status='revoked',revoked_at=$2,resource_version=resource_version+1 WHERE id=$1`, id, now)
@@ -322,7 +327,7 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.device_revoke", "device", id, version)
+		op, err := entitlement.Operation(ctx, tx, entitlement.Actor{ID: d.MemberID, Role: string(api.AuditEventActorTypeMember), RequestID: c.Actor.RequestID}, api.OperationKindMemberDeviceRevoke, api.ResourceTypeMemberDevice, id, version)
 		if err != nil {
 			return err
 		}
@@ -333,13 +338,41 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		if err = enqueue(ctx, tx, "device.revoked", Event{MemberID: d.MemberID, DeviceID: id, DeviceVersion: version, EntitlementRevision: projection.Revision, DeploymentID: deployment, PeerID: peer, BindingRevision: binding, OperationID: &op}); err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "device.revoke", id, map[string]any{"status": status}, map[string]any{"status": "revoked"}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "device.revoke", api.ResourceTypeMemberDevice, id, map[string]any{"status": status}, map[string]any{"status": "revoked"}); err != nil {
 			return err
 		}
 		result.MemberID = d.MemberID
 		result.OperationID = &op
 		result.Revision = projection.Revision
-		return entitlement.Complete(ctx, tx, record, "device", id, &op, 202)
+		return entitlement.Complete(ctx, tx, record, api.ResourceTypeMemberDevice, id, &op, 202)
 	})
 	return result, err
+}
+
+// D-029 / review finding 15: device operations belong to the member; admins can read them too.
+// A new key for an achieved state returns its original operation. Legacy rows
+// without one enqueue a fresh read-back reconciliation, never an empty 202.
+func (s *Service) targetOperation(ctx context.Context, tx pgx.Tx, actor entitlement.Actor, device, member uuid.UUID, kind api.OperationKind, event string, revision decstr.U64) (uuid.UUID, error) {
+	var op uuid.UUID
+	err := tx.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type=$1 AND resource_id=$2 AND kind=$3 AND principal=$4 AND desired_generation=(SELECT resource_version FROM member_devices WHERE id=$2) ORDER BY created_at DESC,id DESC LIMIT 1`, api.ResourceTypeMemberDevice, device, kind, string(api.AuditEventActorTypeMember)+":"+member.String()).Scan(&op)
+	if err == nil {
+		return op, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return uuid.Nil, err
+	}
+	var version, binding decstr.U64
+	var deployment, peer string
+	if err = tx.QueryRow(ctx, `UPDATE member_devices SET resource_version=resource_version+1 WHERE id=$1 RETURNING resource_version::text,deployment_id,peer_id`, device).Scan(&version, &deployment, &peer); err != nil {
+		return uuid.Nil, err
+	}
+	if err = tx.QueryRow(ctx, `SELECT coalesce(max(binding_revision),0)::text FROM device_bindings WHERE device_id=$1`, device).Scan(&binding); err != nil {
+		return uuid.Nil, err
+	}
+	op, err = entitlement.Operation(ctx, tx, entitlement.Actor{ID: member, Role: string(api.AuditEventActorTypeMember), RequestID: actor.RequestID}, kind, api.ResourceTypeMemberDevice, device, version)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	err = enqueue(ctx, tx, event, Event{MemberID: member, DeviceID: device, DeviceVersion: version, EntitlementRevision: revision, DeploymentID: deployment, PeerID: peer, BindingRevision: binding, OperationID: &op})
+	return op, err
 }

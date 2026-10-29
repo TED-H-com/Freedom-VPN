@@ -103,13 +103,23 @@ type DBEntitlementReader struct{}
 
 // ListLeaseEntitlementsForGroups queries PostgreSQL for active entitlements assigned to groupIDs.
 func (DBEntitlementReader) ListLeaseEntitlementsForGroups(ctx context.Context, q nodes.Querier, groupIDs []uuid.UUID, asOf time.Time) ([]MemberLeaseInput, error) {
+	return queryLeaseEntitlementsForGroups(ctx, q, groupIDs, asOf, false)
+}
+
+func queryLeaseEntitlementsForGroups(
+	ctx context.Context,
+	q nodes.Querier,
+	groupIDs []uuid.UUID,
+	asOf time.Time,
+	lockForShare bool,
+) ([]MemberLeaseInput, error) {
 	if len(groupIDs) == 0 {
 		return nil, nil
 	}
 	asOf = asOf.UTC()
 
-	const sqlQuery = `
-		SELECT DISTINCT
+	sqlQuery := `
+		SELECT
 			m.id,
 			e.revision::text,
 			(m.status <> 'active' OR m.admin_suspended OR e.admin_suspended) AS is_suspended,
@@ -117,14 +127,52 @@ func (DBEntitlementReader) ListLeaseEntitlementsForGroups(ctx context.Context, q
 			e.effective_service_end
 		FROM members m
 		JOIN entitlements e ON e.member_id = m.id
-		LEFT JOIN subscriptions sub ON sub.member_id = m.id AND sub.is_active = true
-		JOIN assignments a ON a.group_id = ANY($1)
-			AND a.valid_from <= $2
-			AND (a.valid_until IS NULL OR a.valid_until > $2)
-			AND (a.member_id = m.id OR (sub.plan_revision_id IS NOT NULL AND a.plan_revision_id = sub.plan_revision_id))
 		WHERE e.valid_from IS NOT NULL
 		  AND e.effective_service_end IS NOT NULL
-		ORDER BY m.id ASC`
+		  AND EXISTS (
+			SELECT 1
+			FROM assignments a
+			LEFT JOIN subscriptions sub ON sub.member_id = m.id AND sub.is_active = true
+			WHERE a.group_id = ANY($1)
+			  AND a.valid_from <= $2
+			  AND (a.valid_until IS NULL OR a.valid_until > $2)
+			  AND (
+				a.member_id = m.id
+				OR (coalesce(e.plan_revision_id, sub.plan_revision_id) IS NOT NULL AND a.plan_revision_id = coalesce(e.plan_revision_id, sub.plan_revision_id))
+			  )
+		  )
+		ORDER BY m.id ASC
+		FOR KEY SHARE OF m, e`
+	if lockForShare {
+		sqlQuery = `
+		SELECT
+			m.id,
+			e.revision::text,
+			false AS is_suspended,
+			e.valid_from,
+			e.effective_service_end
+		FROM members m
+		JOIN entitlements e ON e.member_id = m.id
+		WHERE m.status = 'active'
+		  AND NOT m.admin_suspended
+		  AND NOT e.admin_suspended
+		  AND e.valid_from IS NOT NULL
+		  AND e.effective_service_end IS NOT NULL
+		  AND EXISTS (
+			SELECT 1
+			FROM assignments a
+			LEFT JOIN subscriptions sub ON sub.member_id = m.id AND sub.is_active = true
+			WHERE a.group_id = ANY($1)
+			  AND a.valid_from <= $2
+			  AND (a.valid_until IS NULL OR a.valid_until > $2)
+			  AND (
+				a.member_id = m.id
+				OR (coalesce(e.plan_revision_id, sub.plan_revision_id) IS NOT NULL AND a.plan_revision_id = coalesce(e.plan_revision_id, sub.plan_revision_id))
+			  )
+		  )
+		ORDER BY m.id ASC
+		FOR SHARE OF m, e`
+	}
 
 	rows, err := q.Query(ctx, sqlQuery, groupIDs, asOf)
 	if err != nil {
@@ -399,71 +447,25 @@ func (s *Service) Renew(
 		}
 
 		grants := []api.MemberLease{}
-		type dbMemberLease struct {
-			memberID   uuid.UUID
-			revision   uint64
-			validFrom  time.Time
-			expiresAt  time.Time
-			grantRefID uuid.UUID
-		}
 		var dbMemberLeases []dbMemberLease
 		var maxAuthGen uint64 = 1
 
-		// Only issue member grants when exit publication_intent == 'published' and node is registered & ready (§16.3).
-		if pubIntentStr == string(api.PublicationIntentPublished) &&
+		includeMembers := pubIntentStr == string(api.PublicationIntentPublished) &&
 			lifecycleState == string(api.LifecycleStateRegistered) &&
 			provisioningState == string(api.ProvisioningStateReady) &&
-			len(groupIDs) > 0 {
+			len(groupIDs) > 0
 
+		// Only issue member grants when exit publication_intent == 'published' and node is registered & ready (§16.3).
+		if includeMembers {
 			entitled, err := s.entitlements.ListLeaseEntitlementsForGroups(ctx, tx, groupIDs, issuedAt)
 			if err != nil {
 				return err
 			}
-			sort.Slice(entitled, func(i, j int) bool {
-				return entitled[i].MemberID.String() < entitled[j].MemberID.String()
-			})
-
-			for _, m := range entitled {
-				if m.AdminSuspended {
-					continue
-				}
-				if !m.EffectiveServiceEnd.UTC().After(issuedAt) {
-					continue
-				}
-				validFrom := issuedAt
-				if m.ValidFrom.UTC().After(validFrom) {
-					validFrom = m.ValidFrom.UTC()
-				}
-				memberLeaseEnd := ComputeMemberLeaseEnd(issuedAt, maxOfflineDur, m.EffectiveServiceEnd, nodeLeaseEnd)
-				if !memberLeaseEnd.After(validFrom) {
-					continue
-				}
-
-				rev := m.EntitlementRevision
-				if rev > maxAuthGen {
-					maxAuthGen = rev
-				}
-
-				grants = append(grants, api.MemberLease{
-					MemberId:            m.MemberID,
-					EntitlementRevision: nodes.ParseU64(rev),
-					EffectiveServiceEnd: m.EffectiveServiceEnd.UTC(),
-					LeaseEnd:            memberLeaseEnd,
-				})
-				dbMemberLeases = append(dbMemberLeases, dbMemberLease{
-					memberID:   m.MemberID,
-					revision:   rev,
-					validFrom:  validFrom,
-					expiresAt:  memberLeaseEnd,
-					grantRefID: m.MemberID,
-				})
-			}
+			grants, dbMemberLeases, maxAuthGen = buildLeaseGrants(entitled, issuedAt, maxOfflineDur, nodeLeaseEnd)
 		}
 
+		// Sign nodes.desired_config_generation; client applied_config_generation is an observation input only (§16.3).
 		cfgGen, _ := strconv.ParseUint(desiredGenStr, 10, 64)
-		if gen, err := req.AppliedConfigGeneration.Get(); err == nil {
-			cfgGen = uint64(gen)
-		}
 
 		leaseID := uuid.New()
 		leaseDoc := api.ServingLease{
@@ -479,34 +481,40 @@ func (s *Service) Renew(
 			Members:                 grants,
 		}
 
-		leaseCanon, err := canonjson.Marshal(leaseDoc)
+		var (
+			keyID       string
+			payloadHash []byte
+			envJSON     []byte
+		)
+		outEnv, keyID, payloadHash, envJSON, err = s.signLeaseDoc(ctx, leaseDoc)
 		if err != nil {
 			return err
 		}
-		payloadHashArr := sha256.Sum256(leaseCanon)
-		rawEnv, err := s.signer.Sign(ctx, envelope.PurposeLease, leaseDoc)
-		if err != nil {
-			return err
-		}
-		sigs := make([]api.Signature, 0, len(rawEnv.Signatures))
-		keyID := "lease-key"
-		for i, sig := range rawEnv.Signatures {
-			if i == 0 && sig.KeyID != "" {
-				keyID = sig.KeyID
+
+		// Lock eligible member and entitlement rows (FOR SHARE) and hold the locks until commit.
+		// If the eligible set differs after signing, discard the signature, rebuild the document, and sign again (§16.3).
+		if includeMembers {
+			var lockedEntitled []MemberLeaseInput
+			if _, isDB := s.entitlements.(DBEntitlementReader); isDB {
+				lockedEntitled, err = queryLeaseEntitlementsForGroups(ctx, tx, groupIDs, issuedAt, true)
+			} else {
+				lockedEntitled, err = s.entitlements.ListLeaseEntitlementsForGroups(ctx, tx, groupIDs, issuedAt)
 			}
-			sigs = append(sigs, api.Signature{
-				Algorithm:    api.SignatureAlgorithm(sig.Algorithm),
-				KeyId:        sig.KeyID,
-				SignatureB64: sig.SignatureB64,
-			})
-		}
-		outEnv = api.ServingLeaseEnvelope{
-			Signed:     leaseDoc,
-			Signatures: sigs,
-		}
-		envJSON, err := json.Marshal(outEnv)
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+			lockedGrants, lockedDBMemberLeases, lockedMaxAuthGen := buildLeaseGrants(lockedEntitled, issuedAt, maxOfflineDur, nodeLeaseEnd)
+			if !sameLeaseGrants(dbMemberLeases, lockedDBMemberLeases) {
+				grants = lockedGrants
+				dbMemberLeases = lockedDBMemberLeases
+				maxAuthGen = lockedMaxAuthGen
+				leaseDoc.AuthorizationGeneration = nodes.ParseU64(maxAuthGen)
+				leaseDoc.Members = grants
+				outEnv, keyID, payloadHash, envJSON, err = s.signLeaseDoc(ctx, leaseDoc)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		grantRefs := make([]uuid.UUID, 0, len(dbMemberLeases))
@@ -529,33 +537,15 @@ func (s *Service) Renew(
 		if _, err := tx.Exec(ctx, insertLease,
 			leaseID, authNodeID, authIncarnationID, strconv.FormatUint(cfgGen, 10),
 			strconv.FormatUint(maxAuthGen, 10), grantRefs,
-			issuedAt, nodeLeaseEnd, keyID, payloadHashArr[:],
+			issuedAt, nodeLeaseEnd, keyID, payloadHash,
 			req.RenewalRequestId, envJSON,
 		); err != nil {
 			return err
 		}
 
-		// Persist serving_lease_members for active members with matching, unsuspended entitlements in the same transaction (F-11, §15.3, §16.3).
+		// Persist serving_lease_members for every member in the final signed grant list in the same transaction;
+		// any failed member-row insert fails the whole renewal (F-11, §15.3, §16.3).
 		for _, ml := range dbMemberLeases {
-			var eligible bool
-			if err := tx.QueryRow(ctx, `
-				SELECT EXISTS(
-					SELECT 1
-					FROM members m
-					JOIN entitlements e ON e.member_id = m.id
-					WHERE m.id = $1
-					  AND m.status = 'active'
-					  AND NOT m.admin_suspended
-					  AND NOT e.admin_suspended
-					  AND e.revision = $2::numeric
-					  AND e.valid_from IS NOT NULL
-					  AND e.effective_service_end IS NOT NULL
-				)`, ml.memberID, strconv.FormatUint(ml.revision, 10)).Scan(&eligible); err != nil {
-				return err
-			}
-			if !eligible {
-				continue
-			}
 			if _, err := tx.Exec(ctx, `
 				INSERT INTO serving_lease_members (
 					lease_id, member_id, entitlement_revision, valid_from, expires_at
@@ -574,4 +564,118 @@ func (s *Service) Renew(
 		return api.ServingLeaseEnvelope{}, err
 	}
 	return outEnv, nil
+}
+
+type dbMemberLease struct {
+	memberID            uuid.UUID
+	revision            uint64
+	effectiveServiceEnd time.Time
+	validFrom           time.Time
+	expiresAt           time.Time
+	grantRefID          uuid.UUID
+}
+
+func buildLeaseGrants(
+	entitled []MemberLeaseInput,
+	issuedAt time.Time,
+	maxOfflineDur time.Duration,
+	nodeLeaseEnd time.Time,
+) ([]api.MemberLease, []dbMemberLease, uint64) {
+	sorted := append([]MemberLeaseInput(nil), entitled...)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].MemberID.String() < sorted[j].MemberID.String()
+	})
+	grants := []api.MemberLease{}
+	var dbMemberLeases []dbMemberLease
+	var maxAuthGen uint64 = 1
+
+	for _, m := range sorted {
+		if m.AdminSuspended {
+			continue
+		}
+		if !m.EffectiveServiceEnd.UTC().After(issuedAt) {
+			continue
+		}
+		validFrom := issuedAt
+		if m.ValidFrom.UTC().After(validFrom) {
+			validFrom = m.ValidFrom.UTC()
+		}
+		memberLeaseEnd := ComputeMemberLeaseEnd(issuedAt, maxOfflineDur, m.EffectiveServiceEnd, nodeLeaseEnd)
+		if !memberLeaseEnd.After(validFrom) {
+			continue
+		}
+
+		rev := m.EntitlementRevision
+		if rev > maxAuthGen {
+			maxAuthGen = rev
+		}
+
+		grants = append(grants, api.MemberLease{
+			MemberId:            m.MemberID,
+			EntitlementRevision: nodes.ParseU64(rev),
+			EffectiveServiceEnd: m.EffectiveServiceEnd.UTC(),
+			LeaseEnd:            memberLeaseEnd,
+		})
+		dbMemberLeases = append(dbMemberLeases, dbMemberLease{
+			memberID:            m.MemberID,
+			revision:            rev,
+			effectiveServiceEnd: m.EffectiveServiceEnd.UTC(),
+			validFrom:           validFrom,
+			expiresAt:           memberLeaseEnd,
+			grantRefID:          m.MemberID,
+		})
+	}
+	return grants, dbMemberLeases, maxAuthGen
+}
+
+func sameLeaseGrants(a, b []dbMemberLease) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].memberID != b[i].memberID ||
+			a[i].revision != b[i].revision ||
+			!a[i].effectiveServiceEnd.Equal(b[i].effectiveServiceEnd) ||
+			!a[i].validFrom.Equal(b[i].validFrom) ||
+			!a[i].expiresAt.Equal(b[i].expiresAt) {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *Service) signLeaseDoc(
+	ctx context.Context,
+	leaseDoc api.ServingLease,
+) (api.ServingLeaseEnvelope, string, []byte, []byte, error) {
+	leaseCanon, err := canonjson.Marshal(leaseDoc)
+	if err != nil {
+		return api.ServingLeaseEnvelope{}, "", nil, nil, err
+	}
+	payloadHashArr := sha256.Sum256(leaseCanon)
+	rawEnv, err := s.signer.Sign(ctx, envelope.PurposeLease, leaseDoc)
+	if err != nil {
+		return api.ServingLeaseEnvelope{}, "", nil, nil, err
+	}
+	sigs := make([]api.Signature, 0, len(rawEnv.Signatures))
+	keyID := "lease-key"
+	for i, sig := range rawEnv.Signatures {
+		if i == 0 && sig.KeyID != "" {
+			keyID = sig.KeyID
+		}
+		sigs = append(sigs, api.Signature{
+			Algorithm:    api.SignatureAlgorithm(sig.Algorithm),
+			KeyId:        sig.KeyID,
+			SignatureB64: sig.SignatureB64,
+		})
+	}
+	outEnv := api.ServingLeaseEnvelope{
+		Signed:     leaseDoc,
+		Signatures: sigs,
+	}
+	envJSON, err := json.Marshal(outEnv)
+	if err != nil {
+		return api.ServingLeaseEnvelope{}, "", nil, nil, err
+	}
+	return outEnv, keyID, payloadHashArr[:], envJSON, nil
 }

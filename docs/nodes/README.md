@@ -269,3 +269,30 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
    - A `202 Accepted` observation does not by itself complete an operation step.
    - For `node.publish` and `node.update`, step `agent_policy` advances to `succeeded` only when `applied_config_generation >= desired_generation` and `safety_status == passed`.
    - For `node.unpublish`, `node.disable`, `node.revoke`, and `node.retire`, step `agent_policy` advances to `succeeded` only when `applied_config_generation >= desired_generation` and `member_forwarding_enabled == false`.
+
+---
+
+## 6. Desired state and lease decisions, follow-up 2
+
+1. **Null `desired_release_id` when no release target is set (§13.2, §14.7)**:
+   - `DBPolicyReader.ReadPolicySnapshot` checks `fleet_config.desired_release_id` and `nodes.desired_release_id`. When neither sets a release target, `DesiredReleaseID` remains `nil` (`"desired_release_id": null` in the signed envelope).
+   - No query inside a compile transaction ever discards a SQL error and continues; the first SQL error aborts and returns immediately.
+2. **Fair-use state (`fup_member_states`) and missing plan rates (§11.2, §11.5)**:
+   - `DBEntitlementReader.ListEntitledMembersForGroups` reads `fup_member_states` for the current accounting period alongside the referenced `policy_revisions` payload.
+   - When `fup_member_states.mode == 'shadow'`, or when the fair-use policy revision has `mode == 'shadow'` or `as_of < effective_at`, the compiled member rate policy stamps `mode = "shadow"`, `tier_index = 0`, `reason = "normal"`, and a **null tier rate** so `effective_rate = min(plan_rate, node_member_rate_cap)` (shadow `would_apply_*` rates are never enforced).
+   - When `mode == 'enforce'` and `as_of >= effective_at`, the compiler stamps `mode = "enforce"` and uses the stored `enforced_down_bps`, `enforced_up_bps`, `enforced_tier_index`, `enforced_priority`, `enforced_reason`, and `generation` from `fup_member_states` to compute `effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap)`.
+   - Production paths have no default plan rate (`DefaultPlanRateBps` is removed). If a member's plan revision omits a positive `down_bps` or `up_bps`, that member is omitted from both `member_rate_policies` and `device_bindings`, recorded in `CompiledDesiredState.OmittedMembers` (`reason = "plan_missing_rate"`), and logged via `slog.WarnContext`.
+3. **DNS profile generation and resolver configuration seam for `w3-dns-publish` (§8.1, §12.2, §12.4)**:
+   - `DBPolicyReader.ReadPolicySnapshot` matches the contract policy type `dns_profile` (`api.PolicyTypeDnsProfile`) and stamps `policy_refs.dns_generation` from the active `dns_profile` revision's generation (`greatest(policy_definitions.generation, policy_revisions.revision)`).
+   - Designated resolver addresses (`dns.resolver_ipv4`, `dns.resolver_ipv6`) are deployment configuration—never read from `dns_profile` revision payloads and with no production default (`TestOnlyDefaultDNSResolverIPv4` exists solely for `FakePolicyReader` in unit tests).
+   - **Seam for `w3-dns-publish`**: `desiredstate.NewCompiler` accepts `desiredstate.WithDNSResolvers(ipv4, ipv6 []string)` supplied by central control configuration at construction. When `w3-dns-publish` introduces a published resolver document, it can either supply those addresses via `WithDNSResolvers` or populate `PolicySnapshot.DNSResolverIPv4` / `DNSResolverIPv6` in `DBPolicyReader.ReadPolicySnapshot` (which `CompileTx` preserves whenever `WithDNSResolvers` is not overriding them).
+4. **Lease signing concurrency and member grant consistency (§15.3, §16.3)**:
+   - `leases.Service.Renew` locks eligible `members` and `entitlements` rows (`FOR SHARE OF m, e` in deterministic `m.id ASC` order) and holds those locks until transaction commit.
+   - If the locked eligible member set differs after `Signer.Sign` (for example, if a member was suspended concurrently while signing), `Renew` discards the first signature, rebuilds the `ServingLease` document from the locked eligible set, and signs again.
+   - `serving_leases.member_grant_refs` always equals the final signed `Members` list, and all `serving_lease_members` rows are inserted in the same transaction; any member-row insert failure aborts the entire lease renewal.
+5. **Signed lease `config_generation` authority (§14.4, §16.3)**:
+   - `ServingLease.ConfigGeneration` and `serving_leases.policy_generation` are always stamped from `nodes.desired_config_generation`. The agent's request `applied_config_generation` is an observation input only and never overwrites the signed lease generation.
+6. **`Compiler.ReSign` lifecycle and revocation guard (§14.7)**:
+   - `Compiler.ReSign` reads `nodes.lifecycle_state`, `nodes.current_incarnation_id`, and `node_incarnations.revoked_at` under `FOR UPDATE OF n` in the same transaction and refuses `revoked` or `retired` nodes (or revoked incarnations) with `403 IDENTITY_REVOKED`.
+7. **QoS class IDs (§11.4)**:
+   - Traffic-control class IDs remain node-local per §11.4 and are not embedded in central desired-state envelopes.
