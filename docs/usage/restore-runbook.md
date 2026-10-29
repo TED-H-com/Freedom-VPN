@@ -83,10 +83,20 @@ The node verifies the `recovery` signature against its local trust store before 
 ### Step 5: Complete Recovery (`CompleteRecovery`)
 Once all active nodes have synchronized to the new `ledger_epoch` and replayed their retained events:
 ```go
-err := usageSvc.CompleteRecovery(ctx)
+err := usageSvc.CompleteRecovery(ctx, actorUUID)
 ```
 - Clears `reconciliation_in_progress = FALSE` on `usage_rollups` while preserving `gap = TRUE` on any periods affected by `replay_unavailable` or event gaps.
 - Sets `usage_ledger_state.mode = 'normal'` and records `completed_at` on `usage_ledger_epochs`.
+
+### Operator CLI (`fvpn-usage-admin`)
+All five operator recovery and drill-down workflows can be invoked from the CLI against the central configuration file:
+```bash
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json freeze --actor <admin-uuid> --reason "planned snapshot restore"
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json begin-recovery --actor <admin-uuid> --reason "restored snapshot"
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json complete-recovery --actor <admin-uuid>
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json adjust --member-id <uuid> --period 2026-10 --upload-bytes -1024 --download-bytes -2048 --actor <admin-uuid> --reason "correction"
+go run ./internal/usage/cmd/fvpn-usage-admin -config /etc/fvpn/control.json drill-down --member-id <uuid> --period 2026-10
+```
 
 ---
 

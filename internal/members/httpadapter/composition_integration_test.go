@@ -28,6 +28,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
+	"github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -105,6 +107,8 @@ func TestAPI01_CompositionMiddlewareBothListenersInsideTransport(t *testing.T) {
 	f := newFixture(t)
 	nodes := nodestest.New(t, nodestest.NetBird{})
 	f.config.NodesConfigFile, f.config.AgentCAFile = nodes.Path, nodes.Nodes.CACertificateFile
+	f.config.PoliciesConfigFile = policiestest.New(t).Path
+	f.config.UsageConfigFile = usagetest.New(t).Path
 	type orderKey struct{}
 	domains := control.Domains()
 	// Replace only the test service dependencies; keep the production middleware.

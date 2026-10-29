@@ -32,6 +32,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
+	"github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 )
 
 type synchronizedBuffer struct {
@@ -86,6 +88,8 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	c.NodesConfigFile, c.AgentCAFile = nodes.Path, nodes.Nodes.CACertificateFile
 	// TEST ONLY documentation prefix. The worker must not invent a resolver.
 	c.DNSConfigFile = write("dns.json", []byte(`{"upstreams":["192.0.2.53:53"]}`))
+	c.PoliciesConfigFile = policiestest.New(t).Path
+	c.UsageConfigFile = usagetest.New(t).Path
 	c.PublicAddress = availableAddress(t)
 	c.MetricsAddress = availableAddress(t)
 	c.ShutdownSeconds = 3
