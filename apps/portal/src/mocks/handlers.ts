@@ -1,1317 +1,1175 @@
 /**
- * MSW request handlers for `/api/v1/*` covering:
- * - Role & session switching
- * - Idempotency-Key deduplication & 409 IDEMPOTENCY_CONFLICT detection
- * - ETag & If-Match precondition verification (428 missing, 412 conflict)
- * - 202 Accepted multi-step operation polling with `Retry-After`
- * - One-time enrollment token (`Cache-Control: no-store` on POST, never returned on GET)
- * - Fleet update batches with all 12 mutually exclusive buckets
- * - Member endpoints & checkout sessions
+ * MSW v2 request handlers for `/auth/*` and `/api/v1/*` backed by
+ * `contracts/examples/valid/*.json` (Deliverables 3, 4, 5).
  */
 
 import { http, HttpResponse } from 'msw';
 import type {
-  CreateEnrollmentRequest,
-  CreateMemberGrantRequest,
-  CreateUpdateBatchRequest,
-  DnsPolicyState,
-  DnsRule,
-  EnrollmentCreatedResponse,
-  EnrollmentDetail,
-  FairUsePolicyDraft,
-  FairUsePolicyState,
-  MemberItem,
-  NodeItem,
-  Operation,
-  PatchMemberRequest,
-  UpdateBatchDetail,
-  UpdateNodePatchRequest,
-  UpdateNodePublicationRequest,
+  EnrollmentCreateRequest,
+  GrantCreateRequest,
+  MemberPatchRequest,
+  NodePatchRequest,
+  NodeSummaryItem,
+  OperationResource,
+  PolicyActivateRequest,
+  PolicyRevision,
+  PolicyRevisionCreate,
+  PublicationRequest,
+  ReasonRequest,
+  UpdateBatchAccepted,
+  UpdateBatchCreateRequest,
 } from '../api/types';
+import { normalizeAndValidateDomain } from '../lib/dns';
 import {
-  buildOverviewSummary,
-  createMultiStepOperation,
-  getPersonaSession,
-  INITIAL_AUDIT_EVENTS,
-  INITIAL_BATCH,
-  INITIAL_DNS_POLICY,
-  INITIAL_ENROLLMENTS,
-  INITIAL_FUP_POLICY,
-  INITIAL_MEMBERS,
-  INITIAL_NODES,
-  INITIAL_RELEASES_RESPONSE,
-  MEMBER_EXITS,
-  type MockPersonaKey,
+  buildMemberSelfForPersona,
+  buildMemberUsageForPersona,
+  buildPersonaSession,
+  CONTRACT_EXAMPLES_USED_BY_MOCKS,
+  createInitialMockState,
+  type MockPersona,
+  type MockState,
 } from './data';
 
-interface StoredOperation {
-  polls: Operation[];
-  cursor: number;
+export type { MockPersona };
+
+let state: MockState = createInitialMockState('admin');
+let opCounter = 500;
+
+export function resetMockState(persona: MockPersona = 'admin'): void {
+  state = createInitialMockState(persona);
+  opCounter = 500;
 }
 
-interface MockServerState {
-  persona: MockPersonaKey;
-  forceSessionExpired: boolean;
-  nodes: NodeItem[];
-  enrollments: EnrollmentDetail[];
-  members: MemberItem[];
-  fupPolicy: FairUsePolicyState;
-  dnsPolicy: DnsPolicyState;
-  activeBatch: UpdateBatchDetail;
-  operations: Map<string, StoredOperation>;
-  idempotencyRecords: Map<
-    string,
-    { payloadJson: string; status: number; responseBody: unknown }
-  >;
-  reqCounter: number;
-}
-
-function clone<T>(val: T): T {
-  return JSON.parse(JSON.stringify(val)) as T;
-}
-
-function createInitialState(): MockServerState {
-  return {
-    persona: 'admin',
-    forceSessionExpired: false,
-    nodes: clone(INITIAL_NODES),
-    enrollments: clone(INITIAL_ENROLLMENTS),
-    members: clone(INITIAL_MEMBERS),
-    fupPolicy: clone(INITIAL_FUP_POLICY),
-    dnsPolicy: clone(INITIAL_DNS_POLICY),
-    activeBatch: clone(INITIAL_BATCH),
-    operations: new Map(),
-    idempotencyRecords: new Map(),
-    reqCounter: 100,
-  };
-}
-
-let state: MockServerState = createInitialState();
-
-export function resetMockState(persona: MockPersonaKey = 'admin'): void {
-  state = createInitialState();
+export function setMockPersona(persona: MockPersona): void {
   state.persona = persona;
+  state.forceSession401 = false;
 }
 
-export function setMockPersona(persona: MockPersonaKey): void {
-  state.persona = persona;
-  state.forceSessionExpired = false;
-}
-
-export function getMockPersona(): MockPersonaKey {
+export function getMockPersona(): MockPersona {
   return state.persona;
 }
 
 export function triggerMockSessionExpired(): void {
-  state.forceSessionExpired = true;
+  state.forceSession401 = true;
 }
 
-function nextRequestId(): string {
-  state.reqCounter += 1;
-  const suffix = state.reqCounter.toString(16).padStart(12, '0');
-  return `a12d4141-4f3e-487b-8638-${suffix}`;
+function nextOperationId(): string {
+  opCounter += 1;
+  const suffix = String(opCounter).padStart(12, '0');
+  return `8089f821-cd9b-4c3f-a526-${suffix}`;
 }
 
-function nextUuid(prefixHex: string): string {
-  state.reqCounter += 1;
-  const suffix = state.reqCounter.toString(16).padStart(12, '0');
-  return `${prefixHex}-cd9b-4c3f-a526-${suffix}`;
-}
-
-function checkAuth(_request: Request, requireAdmin = false): Response | null {
-  const reqId = nextRequestId();
-  if (state.forceSessionExpired) {
-    return HttpResponse.json(
-      {
-        error: {
-          code: 'UNAUTHENTICATED',
-          message: '登入階段已過期，請重新登入。',
-          request_id: reqId,
-          retryable: false,
-        },
+function makeErrorResponse(
+  status: number,
+  code: string,
+  message: string,
+  retryable = false,
+  details: Record<string, unknown> = {},
+  extraHeaders: Record<string, string> = {},
+) {
+  const baseEnvelope = structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.ErrorEnvelope);
+  return HttpResponse.json(
+    {
+      error: {
+        ...baseEnvelope.error,
+        code,
+        message,
+        retryable,
+        details,
       },
-      { status: 401, headers: { 'X-Request-ID': reqId } },
-    );
+    },
+    { status, headers: extraHeaders },
+  );
+}
+
+function checkSessionGuard(
+  request: Request,
+  requireAdmin: boolean,
+): ReturnType<typeof makeErrorResponse> | null {
+  if (state.forceSession401) {
+    return makeErrorResponse(401, 'SESSION_EXPIRED', 'Session has expired.');
   }
-  const session = getPersonaSession(state.persona);
-  if (requireAdmin && session.role !== 'admin') {
-    return HttpResponse.json(
-      {
-        error: {
-          code: 'FORBIDDEN',
-          message: '您的帳號角色無權存取管理員端點。',
-          request_id: reqId,
-          retryable: false,
-        },
-      },
-      {
-        status: 403,
-        headers: {
-          'X-Request-ID': reqId,
-          ' detail-header': reqId,
-        },
-      },
-    );
+  const session = buildPersonaSession(state.persona);
+  if (!session.authenticated) {
+    return makeErrorResponse(401, 'UNAUTHENTICATED', 'Authentication required.');
+  }
+  if (requireAdmin) {
+    if (session.role !== 'admin') {
+      return makeErrorResponse(
+        403,
+        'FORBIDDEN',
+        'Member role is not permitted to access /api/v1/admin/* endpoints.',
+      );
+    }
+    if (!session.mfa_verified) {
+      return makeErrorResponse(
+        403,
+        'MFA_REQUIRED',
+        'Administrator MFA verification is required.',
+      );
+    }
+  }
+  const method = request.method.toUpperCase();
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const idemKey = request.headers.get('Idempotency-Key');
+    if (!idemKey || idemKey.trim().length === 0) {
+      return makeErrorResponse(
+        422,
+        'VALIDATION_ERROR',
+        'Missing required Idempotency-Key header on mutating request.',
+      );
+    }
   }
   return null;
 }
 
+function createTrackedOperation(
+  kind: OperationResource['kind'],
+  resourceType: OperationResource['resource']['type'],
+  resourceId: string,
+  steps: OperationResource['steps'],
+  desiredGen = '129',
+  observedGen = '128',
+  resourceVersion: string | null = '43',
+): OperationResource {
+  const op = structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.Operation);
+  const opId = nextOperationId();
+  op.operation_id = opId;
+  op.kind = kind;
+  op.status = 'running';
+  op.resource = {
+    type: resourceType,
+    id: resourceId,
+  };
+  op.resource_version = resourceVersion;
+  op.desired_generation = desiredGen;
+  op.observed_generation = observedGen;
+  op.steps = steps;
+  op.error = null;
+  op.completed_at = null;
+  state.operations[opId] = op;
+  state.operationPolls[opId] = 0;
+  return op;
+}
+
+function advanceAndGetOperation(operationId: string): OperationResource | null {
+  const op = state.operations[operationId];
+  if (!op) return null;
+
+  const polls = (state.operationPolls[operationId] ?? 0) + 1;
+  state.operationPolls[operationId] = polls;
+
+  if (polls >= 1 && (op.status === 'pending' || op.status === 'running')) {
+    const hasFailedStep = op.steps.some((s) => s.status === 'failed');
+    if (hasFailedStep) {
+      op.status = 'partially_succeeded';
+    } else {
+      op.status = 'succeeded';
+      op.observed_generation = op.desired_generation;
+      op.steps = op.steps.map((s) => ({
+        ...s,
+        status: 'succeeded',
+        observed_at: '2026-10-28T15:05:10Z',
+      }));
+    }
+    op.updated_at = '2026-10-28T15:05:10Z';
+    op.completed_at = '2026-10-28T15:05:10Z';
+  }
+  return op;
+}
+
+function toNodeSummary(detail: (typeof state.nodes)[string]): NodeSummaryItem {
+  return {
+    node_id: detail.node_id,
+    exit_id: detail.exit_id,
+    name: detail.name,
+    region: detail.region,
+    member_group_ids: detail.member_group_ids,
+    lifecycle_state: detail.lifecycle_state,
+    provisioning_state: detail.provisioning_state,
+    publication_intent: detail.publication_intent,
+    publication_observed: detail.publication_observed,
+    control_status: detail.control_status,
+    data_health: detail.data_health,
+    safety_status: detail.safety_status,
+    member_forwarding_observed: detail.member_forwarding_observed,
+    config_generation: detail.config_generation,
+    releases: detail.releases,
+    update: detail.update,
+    last_seen_at: detail.last_seen_at,
+    resource_version: detail.resource_version,
+    created_at: detail.created_at,
+  };
+}
+
 export const handlers = [
-  // Session
-  http.get('/api/v1/session', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(getPersonaSession(state.persona), {
+  // --- Browser Auth Session Routes (outside /api/v1) ---
+  http.get('/auth/session', () => {
+    if (state.forceSession401) {
+      return makeErrorResponse(401, 'SESSION_EXPIRED', 'Session expired.');
+    }
+    const session = buildPersonaSession(state.persona);
+    return HttpResponse.json(session, {
       status: 200,
       headers: {
-        'X-Request-ID': reqId,
         'Cache-Control': 'no-store',
       },
     });
   }),
 
-  // Admin Overview
-  http.get('/api/v1/admin/overview', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(buildOverviewSummary(state.nodes, state.members), {
-      status: 200,
-      headers: { 'X-Request-ID': reqId },
-    });
-  }),
-
-  // Admin Nodes List
-  http.get('/api/v1/admin/nodes', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(
-      { items: state.nodes },
-      { status: 200, headers: { 'X-Request-ID': reqId } },
-    );
-  }),
-
-  // Admin Node Detail
-  http.get('/api/v1/admin/nodes/:nodeId', ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const node = state.nodes.find((n) => n.node_id === params['nodeId']);
-    if (!node) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的節點。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-    return HttpResponse.json(node, {
-      status: 200,
+  http.post('/auth/logout', () => {
+    state.persona = 'anonymous';
+    state.forceSession401 = false;
+    return new HttpResponse(null, {
+      status: 204,
       headers: {
-        'X-Request-ID': reqId,
-        ETag: node.etag,
+        'Cache-Control': 'no-store',
       },
     });
   }),
 
-  // Admin Node PATCH (ETag + 412 conflict + 202 operation)
-  http.patch('/api/v1/admin/nodes/:nodeId', async ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const node = state.nodes.find((n) => n.node_id === params['nodeId']);
+  // --- Admin Nodes ---
+  http.get('/api/v1/admin/nodes', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const url = new URL(request.url);
+    const pubFilter = url.searchParams.get('publication_intent');
+    const controlFilter = url.searchParams.get('control_status');
+
+    let items = Object.values(state.nodes).map(toNodeSummary);
+    if (pubFilter) {
+      items = items.filter((n) => n.publication_intent === pubFilter);
+    }
+    if (controlFilter) {
+      items = items.filter((n) => n.control_status === controlFilter);
+    }
+
+    return HttpResponse.json({
+      items,
+      next_cursor: null,
+    });
+  }),
+
+  http.get('/api/v1/admin/nodes/:nodeId', ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const nodeId = String(params.nodeId);
+    const node = state.nodes[nodeId];
     if (!node) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的節點。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
+      return makeErrorResponse(404, 'NOT_FOUND', `Node ${nodeId} not found.`);
+    }
+
+    return HttpResponse.json(node, {
+      headers: {
+        ETag: `"${node.resource_version}"`,
+      },
+    });
+  }),
+
+  http.patch('/api/v1/admin/nodes/:nodeId', async ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const nodeId = String(params.nodeId);
+    const node = state.nodes[nodeId];
+    if (!node) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Node ${nodeId} not found.`);
+    }
+
+    const currentEtag = `"${node.resource_version}"`;
+    const ifMatch = request.headers.get('If-Match');
+    if (!ifMatch) {
+      return makeErrorResponse(
+        428,
+        'PRECONDITION_REQUIRED',
+        'If-Match header is required when updating node configuration.',
       );
+    }
+    if (ifMatch !== currentEtag) {
+      return makeErrorResponse(
+        412,
+        'RESOURCE_VERSION_CONFLICT',
+        'Node configuration was modified by another process.',
+        false,
+        {
+          current_resource_version: node.resource_version,
+        },
+      );
+    }
+
+    const body = (await request.json()) as NodePatchRequest;
+    if (body.capacity && (body.capacity.up_bps <= 0 || body.capacity.down_bps <= 0)) {
+      return makeErrorResponse(
+        422,
+        'VALIDATION_ERROR',
+        'Capacity bps values must be positive integers.',
+      );
+    }
+
+    if (body.name !== undefined) node.name = body.name;
+    if (body.region !== undefined) node.region = body.region;
+    if (body.member_group_ids !== undefined) {
+      node.member_group_ids = body.member_group_ids;
+    }
+    if (body.clear_capacity) {
+      node.capacity = null;
+    } else if (body.capacity !== undefined) {
+      node.capacity = body.capacity;
+    }
+    if (body.notes !== undefined) {
+      node.notes = body.notes;
+    }
+
+    const nextVer = String(BigInt(node.resource_version) + 1n);
+    const nextGen = String(BigInt(node.config_generation.desired) + 1n);
+    node.resource_version = nextVer;
+    node.config_generation.desired = nextGen;
+
+    return HttpResponse.json(node, {
+      status: 200,
+      headers: {
+        ETag: `"${nextVer}"`,
+      },
+    });
+  }),
+
+  http.delete('/api/v1/admin/nodes/:nodeId', ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const nodeId = String(params.nodeId);
+    const node = state.nodes[nodeId];
+    if (!node) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Node ${nodeId} not found.`);
+    }
+    const ifMatch = request.headers.get('If-Match');
+    if (!ifMatch) {
+      return makeErrorResponse(
+        428,
+        'PRECONDITION_REQUIRED',
+        'If-Match header is required when retiring a node.',
+      );
+    }
+    if (ifMatch !== `"${node.resource_version}"`) {
+      return makeErrorResponse(
+        412,
+        'RESOURCE_VERSION_CONFLICT',
+        'Node version conflict.',
+        false,
+        { current_resource_version: node.resource_version },
+      );
+    }
+
+    node.lifecycle_state = 'retired';
+    node.publication_intent = 'disabled';
+    node.publication_observed = 'withdrawn';
+    node.member_forwarding_observed = false;
+    node.retired_at = '2026-10-28T15:05:00Z';
+    const nextVer = String(BigInt(node.resource_version) + 1n);
+    node.resource_version = nextVer;
+
+    const op = createTrackedOperation(
+      'node.retire',
+      'node',
+      nodeId,
+      [
+        {
+          name: 'netbird_route_readback',
+          status: 'succeeded',
+          required: true,
+          observed_at: '2026-10-28T15:05:01Z',
+          error_code: null,
+          message: null,
+        },
+      ],
+      node.config_generation.desired,
+      node.config_generation.applied ?? '0',
+      nextVer,
+    );
+    return HttpResponse.json(op, {
+      status: 202,
+      headers: { ETag: `"${nextVer}"` },
+    });
+  }),
+
+  http.put('/api/v1/admin/nodes/:nodeId/publication', async ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const nodeId = String(params.nodeId);
+    const node = state.nodes[nodeId];
+    if (!node) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Node ${nodeId} not found.`);
     }
 
     const ifMatch = request.headers.get('If-Match');
     if (!ifMatch) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'PRECONDITION_REQUIRED',
-            message: '修改既有資源必須提供 If-Match ETag 標頭。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 428, headers: { 'X-Request-ID': reqId } },
+      return makeErrorResponse(
+        428,
+        'PRECONDITION_REQUIRED',
+        'If-Match header is required when changing node publication intent.',
+      );
+    }
+    if (ifMatch !== `"${node.resource_version}"`) {
+      return makeErrorResponse(
+        412,
+        'RESOURCE_VERSION_CONFLICT',
+        'Node version conflict.',
+        false,
+        { current_resource_version: node.resource_version },
       );
     }
 
-    const body = (await request.json()) as UpdateNodePatchRequest;
-
-    if (body.simulate_conflict || ifMatch !== node.etag) {
-      // Simulate another admin having incremented the version on the server
-      if (body.simulate_conflict) {
-        const nextVer = String(BigInt(node.resource_version) + 1n);
-        node.resource_version = nextVer;
-        node.etag = `"node-${node.node_id.slice(0, 8)}-v${nextVer}"`;
-        node.notes = `${node.notes} [Concurrent update v${nextVer}]`;
-      }
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_VERSION_CONFLICT',
-            message: '節點設定已有更新，請重新讀取後再儲存。',
-            request_id: reqId,
-            retryable: false,
-            details: { current_resource_version: node.resource_version },
-          },
-        },
-        { status: 412, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-
-    const nextVer = String(BigInt(node.resource_version) + 1n);
+    const body = (await request.json()) as PublicationRequest;
     const nextGen = String(BigInt(node.config_generation.desired) + 1n);
-    node.resource_version = nextVer;
-    node.etag = `"node-${node.node_id.slice(0, 8)}-v${nextVer}"`;
-    if (body.name !== undefined) node.name = body.name;
-    if (body.region !== undefined) node.region = body.region;
-    if (body.member_groups !== undefined) node.member_groups = body.member_groups;
-    if (body.desired_up_bps !== undefined) {
-      node.capacity.desired_up_bps = body.desired_up_bps;
-    }
-    if (body.desired_down_bps !== undefined) {
-      node.capacity.desired_down_bps = body.desired_down_bps;
-    }
-    if (body.notes !== undefined) node.notes = body.notes;
-    node.config_generation.desired = nextGen;
-
-    const opId = nextUuid('8089f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'node.configure',
-      resourceVersion: nextVer,
-      desiredGeneration: nextGen,
-      observedGeneration: node.config_generation.applied,
-      finalStatus: 'succeeded',
-    });
-
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: node.etag,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
-    });
-  }),
-
-  // Admin Node Publication (PUT -> 202 with step progress)
-  http.put('/api/v1/admin/nodes/:nodeId/publication', async ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const node = state.nodes.find((n) => n.node_id === params['nodeId']);
-    if (!node) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的節點。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-
-    const body = (await request.json()) as UpdateNodePublicationRequest;
-    const idemKey = request.headers.get('Idempotency-Key');
-    const bodyJson = JSON.stringify(body);
-    if (idemKey) {
-      const scopeKey = `PUT:/admin/nodes/${node.node_id}/publication:${idemKey}`;
-      const existing = state.idempotencyRecords.get(scopeKey);
-      if (existing) {
-        if (existing.payloadJson !== bodyJson) {
-          return HttpResponse.json(
-            {
-              error: {
-                code: 'IDEMPOTENCY_CONFLICT',
-                message: '相同的 Idempotency-Key 搭配了不同的請求內容。',
-                request_id: reqId,
-                retryable: false,
-              },
-            },
-            { status: 409, headers: { 'X-Request-ID': reqId } },
-          );
-        }
-        return HttpResponse.json(existing.responseBody as Operation, {
-          status: 202,
-          headers: { 'X-Request-ID': reqId, 'Retry-After': '1' },
-        });
-      }
-    }
-
     const nextVer = String(BigInt(node.resource_version) + 1n);
-    const nextGen = String(BigInt(node.config_generation.desired) + 1n);
     node.publication_intent = body.publication_intent;
-    node.publication_observed = 'applying';
-    node.resource_version = nextVer;
-    node.etag = `"node-${node.node_id.slice(0, 8)}-v${nextVer}"`;
     node.config_generation.desired = nextGen;
+    node.resource_version = nextVer;
 
-    const isOfflineUnpublish =
-      node.control_status === 'offline' && body.publication_intent !== 'published';
-
-    const opId = nextUuid('8089f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: body.publication_intent === 'published' ? 'node.publish' : 'node.unpublish',
-      resourceVersion: nextVer,
-      desiredGeneration: nextGen,
-      observedGeneration: node.config_generation.applied,
-      finalStatus: isOfflineUnpublish ? 'partially_succeeded' : 'succeeded',
-      summaryCode: isOfflineUnpublish ? 'route_withdrawn_device_unconfirmed' : undefined,
-      stepNames:
-        body.publication_intent === 'published'
-          ? ['agent_policy', 'netbird_route_readback', 'data_path_probe']
-          : ['netbird_route_readback', 'node_allowset_withdraw'],
-    });
-
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    if (idemKey) {
-      const scopeKey = `PUT:/admin/nodes/${node.node_id}/publication:${idemKey}`;
-      state.idempotencyRecords.set(scopeKey, {
-        payloadJson: bodyJson,
+    if (body.publication_intent === 'published') {
+      node.publication_observed = 'applying';
+      const op = createTrackedOperation(
+        'node.publish',
+        'node',
+        nodeId,
+        [
+          {
+            name: 'agent_policy',
+            status: 'succeeded',
+            required: true,
+            observed_at: '2026-10-28T15:05:01Z',
+            error_code: null,
+            message: null,
+          },
+          {
+            name: 'netbird_route_readback',
+            status: 'running',
+            required: true,
+            observed_at: null,
+            error_code: null,
+            message: null,
+          },
+          {
+            name: 'data_path_probe',
+            status: 'pending',
+            required: true,
+            observed_at: null,
+            error_code: null,
+            message: null,
+          },
+        ],
+        nextGen,
+        node.config_generation.applied ?? '0',
+        nextVer,
+      );
+      return HttpResponse.json(op, {
         status: 202,
-        responseBody: createdOp.polls[0],
+        headers: { ETag: `"${nextVer}"` },
       });
     }
 
-    return HttpResponse.json(createdOp.polls[0], {
+    node.publication_observed = 'withdrawn';
+    node.member_forwarding_observed = false;
+    const isOffline = node.control_status === 'offline';
+    const op = createTrackedOperation(
+      'node.unpublish',
+      'node',
+      nodeId,
+      [
+        {
+          name: 'netbird_route_readback',
+          status: 'succeeded',
+          required: true,
+          observed_at: '2026-10-28T15:05:01Z',
+          error_code: null,
+          message: null,
+        },
+        {
+          name: 'node_allowset_withdraw',
+          status: isOffline ? 'failed' : 'running',
+          required: true,
+          observed_at: isOffline ? '2026-10-28T15:05:02Z' : null,
+          error_code: isOffline ? 'DEPENDENCY_UNAVAILABLE' : null,
+          message: isOffline ? '中央已撤銷路由；設備撤權尚未確認／受租約限制' : null,
+        },
+      ],
+      nextGen,
+      node.config_generation.applied ?? '0',
+      nextVer,
+    );
+    return HttpResponse.json(op, {
       status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: node.etag,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
+      headers: { ETag: `"${nextVer}"` },
     });
   }),
 
-  // Admin Node Revoke (POST -> 202)
-  http.post('/api/v1/admin/nodes/:nodeId/revoke', ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const node = state.nodes.find((n) => n.node_id === params['nodeId']);
+  http.post('/api/v1/admin/nodes/:nodeId/revoke', async ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const nodeId = String(params.nodeId);
+    const node = state.nodes[nodeId];
     if (!node) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的節點。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
+      return makeErrorResponse(404, 'NOT_FOUND', `Node ${nodeId} not found.`);
+    }
+
+    const ifMatch = request.headers.get('If-Match');
+    if (!ifMatch) {
+      return makeErrorResponse(
+        428,
+        'PRECONDITION_REQUIRED',
+        'If-Match header is required when revoking node identity.',
+      );
+    }
+    if (ifMatch !== `"${node.resource_version}"`) {
+      return makeErrorResponse(
+        412,
+        'RESOURCE_VERSION_CONFLICT',
+        'Node version conflict.',
+        false,
+        { current_resource_version: node.resource_version },
       );
     }
 
+    const body = (await request.json()) as ReasonRequest;
+    const nextGen = String(BigInt(node.config_generation.desired) + 1n);
+    const nextVer = String(BigInt(node.resource_version) + 1n);
     node.lifecycle_state = 'revoked';
     node.publication_intent = 'disabled';
     node.publication_observed = 'withdrawn';
-    node.serving_allowed = false;
-    node.summary_code = 'revoked_not_serving';
+    node.member_forwarding_observed = false;
+    node.config_generation.desired = nextGen;
+    node.resource_version = nextVer;
+    node.notes = `${node.notes ?? ''} [Revoked: ${body.reason}]`.trim();
 
-    const opId = nextUuid('8089f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'node.revoke',
-      resourceVersion: node.resource_version,
-      desiredGeneration: node.config_generation.desired,
-      observedGeneration: node.config_generation.applied,
-      finalStatus: 'succeeded',
-      stepNames: [
-        'netbird_route_readback',
-        'cert_and_peer_revoke',
-        'node_allowset_withdraw',
+    const op = createTrackedOperation(
+      'node.revoke',
+      'node',
+      nodeId,
+      [
+        {
+          name: 'cert_and_peer_revoke',
+          status: 'succeeded',
+          required: true,
+          observed_at: '2026-10-28T15:05:01Z',
+          error_code: null,
+          message: null,
+        },
+        {
+          name: 'netbird_route_readback',
+          status: 'succeeded',
+          required: true,
+          observed_at: '2026-10-28T15:05:02Z',
+          error_code: null,
+          message: null,
+        },
       ],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
+      nextGen,
+      node.config_generation.applied ?? '0',
+      nextVer,
+    );
+    return HttpResponse.json(op, {
       status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
+      headers: { ETag: `"${nextVer}"` },
     });
   }),
 
-  // Admin Create Enrollment (POST -> 201 with one-time token and Cache-Control: no-store)
+  // --- Admin Enrollments (§14.5, §18.2) ---
   http.post('/api/v1/admin/enrollments', async ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const body = (await request.json()) as CreateEnrollmentRequest;
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
 
-    const enrollmentId = nextUuid('550e8400');
-    const nodeId = nextUuid('93bc18d9');
-    const nowIso = '2026-10-29T12:00:00Z';
-    const expiresIso = '2026-11-05T12:00:00Z';
-
-    const detailRecord: EnrollmentDetail = {
-      enrollment_id: enrollmentId,
-      node_id: nodeId,
-      state: 'unused',
-      secret_available: false,
-      name: body.name?.trim() || 'pending-node',
-      region: body.region?.trim() || 'UNASSIGNED',
-      member_groups: body.member_groups.length > 0 ? body.member_groups : ['standard'],
-      notes: body.notes?.trim() || '',
-      expires_at: expiresIso,
-      created_at: nowIso,
-      consumed_at: null,
-      revoked_at: null,
-    };
-    state.enrollments.unshift(detailRecord);
-
-    const createdResponse: EnrollmentCreatedResponse = {
-      enrollment_id: enrollmentId,
-      node_id: nodeId,
-      state: 'unused',
-      // TEST ONLY one-time token generated per request, never stored in detailRecord
-      enrollment_token: `fvpn_enr_test_only_${enrollmentId.replace(/-/g, '')}`,
-      secret_available: true,
-      name: detailRecord.name,
-      region: detailRecord.region,
-      member_groups: detailRecord.member_groups,
-      notes: detailRecord.notes,
-      expires_at: expiresIso,
-      created_at: nowIso,
-    };
-
-    return HttpResponse.json(createdResponse, {
-      status: 201,
-      headers: {
-        'X-Request-ID': reqId,
-        'Cache-Control': 'no-store',
-      },
-    });
-  }),
-
-  // Admin Get Enrollment (NEVER returns the raw token)
-  http.get('/api/v1/admin/enrollments/:enrollmentId', ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const record = state.enrollments.find(
-      (e) => e.enrollment_id === params['enrollmentId'],
-    );
-    if (!record) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的啟用碼紀錄。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
+    const idemKey = request.headers.get('Idempotency-Key') ?? '';
+    const existing = state.idempotencyRecords[`enrollment:${idemKey}`];
+    if (existing) {
+      const replay = structuredClone(
+        CONTRACT_EXAMPLES_USED_BY_MOCKS.EnrollmentCreatedReplay,
       );
-    }
-    return HttpResponse.json(record, {
-      status: 200,
-      headers: {
-        'X-Request-ID': reqId,
-        'Cache-Control': 'no-store',
-      },
-    });
-  }),
-
-  // Admin Revoke Enrollment
-  http.post('/api/v1/admin/enrollments/:enrollmentId/revoke', ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const record = state.enrollments.find(
-      (e) => e.enrollment_id === params['enrollmentId'],
-    );
-    if (!record) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的啟用碼紀錄。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-    record.state = 'revoked';
-    record.revoked_at = '2026-10-29T12:05:00Z';
-    return HttpResponse.json(record, {
-      status: 200,
-      headers: { 'X-Request-ID': reqId },
-    });
-  }),
-
-  // Admin Releases & Active Update Batch
-  http.get('/api/v1/admin/releases', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(
-      {
-        ...INITIAL_RELEASES_RESPONSE,
-        fleet_default_release_id: state.activeBatch.fleet_default_release_id,
-        active_batch: state.activeBatch,
-      },
-      { status: 200, headers: { 'X-Request-ID': reqId } },
-    );
-  }),
-
-  // Admin Create Update Batch (202 Accepted)
-  http.post('/api/v1/admin/update-batches', async ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const body = (await request.json()) as CreateUpdateBatchRequest;
-    const idemKey = request.headers.get('Idempotency-Key');
-    const bodyJson = JSON.stringify(body);
-
-    if (idemKey) {
-      const scopeKey = `POST:/admin/update-batches:${idemKey}`;
-      const existing = state.idempotencyRecords.get(scopeKey);
-      if (existing) {
-        if (existing.payloadJson !== bodyJson) {
-          return HttpResponse.json(
-            {
-              error: {
-                code: 'IDEMPOTENCY_CONFLICT',
-                message: '相同的 Idempotency-Key 搭配了不同的請求內容。',
-                request_id: reqId,
-                retryable: false,
-              },
-            },
-            { status: 409, headers: { 'X-Request-ID': reqId } },
-          );
-        }
-        return HttpResponse.json(existing.responseBody as UpdateBatchDetail, {
-          status: 202,
-          headers: { 'X-Request-ID': reqId },
-        });
-      }
-    }
-
-    const rel = INITIAL_RELEASES_RESPONSE.releases.find(
-      (r) => r.release_id === body.release_id,
-    );
-    if (!rel || !rel.approved) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RELEASE_NOT_APPROVED',
-            message: '所選發行版本未核准，不可建立批次更新。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 422, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-
-    state.activeBatch = {
-      ...state.activeBatch,
-      release_id: rel.release_id,
-      product_version: rel.product_version,
-      requires_service_restart: rel.requires_service_restart,
-      fleet_default_release_id: rel.release_id,
-      updated_at: '2026-10-29T12:00:00Z',
-    };
-
-    if (idemKey) {
-      const scopeKey = `POST:/admin/update-batches:${idemKey}`;
-      state.idempotencyRecords.set(scopeKey, {
-        payloadJson: bodyJson,
-        status: 202,
-        responseBody: state.activeBatch,
+      return HttpResponse.json(replay, {
+        status: 201,
+        headers: { 'Cache-Control': 'no-store' },
       });
     }
 
-    return HttpResponse.json(state.activeBatch, {
-      status: 202,
-      headers: { 'X-Request-ID': reqId },
-    });
-  }),
+    const body = (await request.json()) as EnrollmentCreateRequest;
+    const created = structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.EnrollmentCreated);
+    created.enrollment.delivery = body.delivery;
+    if (body.name !== undefined) {
+      created.enrollment.name = body.name;
+    }
+    if (body.region !== undefined) {
+      created.enrollment.region = body.region;
+    }
+    if (body.member_group_ids !== undefined) {
+      created.enrollment.member_group_ids = body.member_group_ids;
+    }
+    if (body.notes !== undefined) {
+      created.enrollment.notes = body.notes;
+    }
 
-  // Admin Get Update Batch
-  http.get('/api/v1/admin/update-batches/:batchId', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(state.activeBatch, {
-      status: 200,
-      headers: { 'X-Request-ID': reqId },
-    });
-  }),
+    // Store record without secret for subsequent GETs
+    const storedRecord = structuredClone(created.enrollment);
+    state.enrollments[storedRecord.enrollment_id] = storedRecord;
+    state.idempotencyRecords[`enrollment:${idemKey}`] = {
+      status: 201,
+      body: created,
+    };
 
-  // Admin Retry Failed Targets in Batch (202 Accepted)
-  http.post('/api/v1/admin/update-batches/:batchId/retry', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-
-    const opId = nextUuid('9012f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'update_batch.retry_failed',
-      resourceVersion: '43',
-      desiredGeneration: '8',
-      observedGeneration: '7',
-      finalStatus: 'succeeded',
-      stepNames: ['agent_policy', 'data_path_probe'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
+    return HttpResponse.json(created, {
+      status: 201,
       headers: {
-        'X-Request-ID': reqId,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
+        'Cache-Control': 'no-store',
       },
     });
   }),
 
-  // Admin Members List & Detail
+  http.get('/api/v1/admin/enrollments/:enrollmentId', ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const enrollmentId = String(params.enrollmentId);
+    const record = state.enrollments[enrollmentId];
+    if (!record) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Enrollment ${enrollmentId} not found.`);
+    }
+    return HttpResponse.json(record, {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    });
+  }),
+
+  http.post('/api/v1/admin/enrollments/:enrollmentId/revoke', ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const enrollmentId = String(params.enrollmentId);
+    const record = state.enrollments[enrollmentId];
+    if (!record) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Enrollment ${enrollmentId} not found.`);
+    }
+    record.state = 'revoked';
+    record.revoked_at = '2026-10-28T15:06:00Z';
+    return HttpResponse.json(record);
+  }),
+
+  // --- Admin Releases & Fleet Updates (§13.12) ---
+  http.get('/api/v1/admin/releases', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+    return HttpResponse.json(state.releaseList);
+  }),
+
+  http.post('/api/v1/admin/update-batches', async ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const body = (await request.json()) as UpdateBatchCreateRequest;
+    const rel = state.releaseList.items.find((r) => r.release_id === body.release_id);
+    if (!rel) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Release ${body.release_id} not found.`);
+    }
+    if (rel.support_state === 'revoked') {
+      return makeErrorResponse(
+        409,
+        'RELEASE_REVOKED',
+        'Cannot deploy a revoked release.',
+      );
+    }
+
+    state.releaseList.fleet.fleet_default_release_id = rel.release_id;
+    state.updateBatch.release_id = rel.release_id;
+    state.updateBatch.reason = body.reason;
+    state.updateBatch.requires_service_restart =
+      rel.compatibility.requires_service_restart;
+    state.updateBatch.state = 'running';
+
+    const accepted: UpdateBatchAccepted = {
+      ...structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateBatchAccepted),
+      batch_id: state.updateBatch.batch_id,
+      release_id: rel.release_id,
+      target_count: state.updateBatch.target_count,
+      fleet_default_release_id: rel.release_id,
+    };
+
+    return HttpResponse.json(accepted, { status: 202 });
+  }),
+
+  http.get('/api/v1/admin/update-batches/:batchId', ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const batchId = String(params.batchId);
+    if (batchId !== state.updateBatch.batch_id) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Update batch ${batchId} not found.`);
+    }
+    return HttpResponse.json(state.updateBatch);
+  }),
+
+  http.post('/api/v1/admin/update-batches/:batchId/retry', ({ request, params }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const batchId = String(params.batchId);
+    if (batchId !== state.updateBatch.batch_id) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Update batch ${batchId} not found.`);
+    }
+
+    const op = createTrackedOperation('update_batch.retry', 'update_batch', batchId, [
+      {
+        name: 'agent_policy',
+        status: 'running',
+        required: true,
+        observed_at: null,
+        error_code: null,
+        message: null,
+      },
+    ]);
+    return HttpResponse.json(op, { status: 202 });
+  }),
+
+  // --- Admin Members & Entitlements (§9.2, §14.2) ---
   http.get('/api/v1/admin/members', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(
-      { items: state.members },
-      { status: 200, headers: { 'X-Request-ID': reqId } },
-    );
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const url = new URL(request.url);
+    const stateFilter = url.searchParams.get('entitlement_state');
+    let items = state.memberList.items;
+    if (stateFilter) {
+      items = items.filter((m) => m.entitlement.state === stateFilter);
+    }
+    return HttpResponse.json({
+      items,
+      next_cursor: null,
+    });
   }),
 
   http.get('/api/v1/admin/members/:memberId', ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const member = state.members.find((m) => m.member_id === params['memberId']);
-    if (!member) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的會員。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const memberId = String(params.memberId);
+    if (memberId !== state.memberDetail.member_id) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Member ${memberId} not found.`);
     }
-    return HttpResponse.json(member, {
-      status: 200,
+    return HttpResponse.json(state.memberDetail, {
       headers: {
-        'X-Request-ID': reqId,
-        ETag: member.etag,
+        ETag: `"${state.memberDetail.resource_version}"`,
       },
     });
   }),
 
   http.patch('/api/v1/admin/members/:memberId', async ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const member = state.members.find((m) => m.member_id === params['memberId']);
-    if (!member) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的會員。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const memberId = String(params.memberId);
+    if (memberId !== state.memberDetail.member_id) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Member ${memberId} not found.`);
     }
 
     const ifMatch = request.headers.get('If-Match');
     if (!ifMatch) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'PRECONDITION_REQUIRED',
-            message: '修改會員資料必須提供 If-Match ETag。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 428, headers: { 'X-Request-ID': reqId } },
+      return makeErrorResponse(
+        428,
+        'PRECONDITION_REQUIRED',
+        'If-Match header is required when updating member state.',
+      );
+    }
+    if (ifMatch !== `"${state.memberDetail.resource_version}"`) {
+      return makeErrorResponse(
+        412,
+        'RESOURCE_VERSION_CONFLICT',
+        'Member resource version conflict.',
+        false,
+        { current_resource_version: state.memberDetail.resource_version },
       );
     }
 
-    if (ifMatch !== member.etag) {
-      return HttpResponse.json(
+    const body = (await request.json()) as MemberPatchRequest;
+    const nextVer = String(BigInt(state.memberDetail.resource_version) + 1n);
+    const nextRev = String(BigInt(state.memberDetail.entitlement.revision) + 1n);
+    state.memberDetail.resource_version = nextVer;
+    state.memberDetail.entitlement.revision = nextRev;
+
+    const suspended = body.admin_suspended ?? state.memberDetail.suspension.suspended;
+    const reason = body.suspension_reason ?? state.memberDetail.suspension.reason;
+    state.memberDetail.entitlement.admin_suspended = suspended;
+    state.memberDetail.entitlement.state = suspended ? 'suspended' : 'active';
+    state.memberDetail.suspension = {
+      suspended,
+      reason: suspended ? reason : null,
+      suspended_at: suspended ? '2026-10-28T15:05:00Z' : null,
+      suspended_by: suspended ? '6a7d5389-5347-41a4-9cd7-768e07072254' : null,
+    };
+
+    const summary = state.memberList.items.find((m) => m.member_id === memberId);
+    if (summary) {
+      summary.entitlement.admin_suspended = suspended;
+      summary.entitlement.state = state.memberDetail.entitlement.state;
+      summary.resource_version = nextVer;
+    }
+
+    const op = createTrackedOperation(
+      suspended ? 'member.suspend' : 'member.unsuspend',
+      'member',
+      memberId,
+      [
         {
-          error: {
-            code: 'RESOURCE_VERSION_CONFLICT',
-            message: '會員狀態已被更新，請重新載入後再試。',
-            request_id: reqId,
-            retryable: false,
-            details: { current_resource_version: member.resource_version },
-          },
+          name: 'policy_outbox_sync',
+          status: 'running',
+          required: true,
+          observed_at: null,
+          error_code: null,
+          message: null,
         },
-        { status: 412, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-
-    const body = (await request.json()) as PatchMemberRequest;
-    const nextVer = String(BigInt(member.resource_version) + 1n);
-    member.resource_version = nextVer;
-    member.etag = `"member-${member.member_id.slice(-4)}-v${nextVer}"`;
-
-    if (typeof body.admin_suspended === 'boolean') {
-      member.admin_suspended = body.admin_suspended;
-      member.admin_suspension_reason = body.admin_suspended
-        ? (body.admin_suspension_reason ?? '管理員執行人工停權')
-        : null;
-      member.entitlement_state = body.admin_suspended ? 'suspended' : 'active';
-      member.entitlement_reason = body.admin_suspended
-        ? '管理員已執行人工停權（優先於付款狀態，所有裝置立即停止轉送，§9.2）'
-        : '人工停權已解除，依有效服務期限恢復轉送資格';
-    }
-
-    const opId = nextUuid('7012f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: body.admin_suspended ? 'member.suspend' : 'member.resume',
-      resourceVersion: nextVer,
-      desiredGeneration: '53',
-      observedGeneration: '52',
-      finalStatus: 'succeeded',
-      stepNames: ['policy_outbox_sync', 'node_allowset_withdraw'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
+      ],
+      nextRev,
+      String(BigInt(nextRev) - 1n),
+      nextVer,
+    );
+    return HttpResponse.json(op, {
       status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: member.etag,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
+      headers: { ETag: `"${nextVer}"` },
     });
   }),
 
   http.post('/api/v1/admin/members/:memberId/grants', async ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const member = state.members.find((m) => m.member_id === params['memberId']);
-    if (!member) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的會員。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const memberId = String(params.memberId);
+    const body = (await request.json()) as GrantCreateRequest;
+    if (
+      !body.valid_until ||
+      !body.valid_until.endsWith('Z') ||
+      Number.isNaN(Date.parse(body.valid_until)) ||
+      !body.reason?.trim()
+    ) {
+      return makeErrorResponse(
+        422,
+        'GRANT_INVALID_WINDOW',
+        'Grant requires a finite UTC RFC 3339 valid_until timestamp and a non-empty reason.',
       );
     }
 
-    const body = (await request.json()) as CreateMemberGrantRequest;
-    if (!body.valid_until || !body.reason.trim()) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'VALIDATION_FAILED',
-            message: '有限期人工授權必須提供截止時間與理由（§14.2）。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 422, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-
-    member.grants.unshift({
-      grant_id: nextUuid('660e8400'),
-      member_id: member.member_id,
-      source: 'admin_manual_grant',
-      valid_from: '2026-10-29T12:00:00Z',
+    state.memberDetail.grants.push({
+      grant_id: `3bc6d106-3081-443d-b9f4-${String(state.memberDetail.grants.length + 10).padStart(12, '0')}`,
+      member_id: memberId,
+      source: body.source,
+      valid_from: body.valid_from ?? '2026-10-28T15:05:00Z',
       valid_until: body.valid_until,
       reason: body.reason,
-      created_by: 'admin-01@example.com',
+      plan_revision_id: body.plan_revision_id ?? null,
+      created_by: '6a7d5389-5347-41a4-9cd7-768e07072254',
+      created_at: '2026-10-28T15:05:00Z',
       revoked_at: null,
     });
-    member.effective_service_end = body.valid_until;
+    if (
+      state.memberDetail.entitlement.effective_service_end &&
+      body.valid_until > state.memberDetail.entitlement.effective_service_end
+    ) {
+      state.memberDetail.entitlement.effective_service_end = body.valid_until;
+    }
 
-    const opId = nextUuid('7012f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'member.grant.create',
-      resourceVersion: member.resource_version,
-      desiredGeneration: '54',
-      observedGeneration: '53',
-      finalStatus: 'succeeded',
-      stepNames: ['policy_outbox_sync', 'agent_policy'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
+    const op = createTrackedOperation('member.grant', 'member', memberId, [
+      {
+        name: 'policy_outbox_sync',
+        status: 'running',
+        required: true,
+        observed_at: null,
+        error_code: null,
+        message: null,
       },
+    ]);
+    return HttpResponse.json(op, { status: 202 });
+  }),
+
+  // --- Admin Policies (§11, §12, §14.2) ---
+  http.get('/api/v1/admin/policies', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const url = new URL(request.url);
+    const typeFilter = url.searchParams.get('type');
+    const items = typeFilter
+      ? state.policyDefinitions.items.filter((d) => d.type === typeFilter)
+      : state.policyDefinitions.items;
+
+    return HttpResponse.json({
+      items,
+      next_cursor: null,
     });
   }),
 
+  http.post('/api/v1/admin/policies', async ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const body = (await request.json()) as PolicyRevisionCreate;
+    if (body.type === 'domain_rule_set') {
+      for (const r of body.payload.rules) {
+        const norm = normalizeAndValidateDomain(r.domain);
+        if (!norm.valid) {
+          return makeErrorResponse(
+            422,
+            'DOMAIN_RULE_INVALID',
+            `Invalid domain rule: ${r.domain}`,
+          );
+        }
+      }
+    }
+
+    const def = state.policyDefinitions.items.find(
+      (d) =>
+        (body.definition_id && d.definition_id === body.definition_id) ||
+        (body.code && d.type === body.type && d.code === body.code) ||
+        d.type === body.type,
+    );
+
+    const baseRev = structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.PolicyRevision);
+    const nextRevNum = def ? String(BigInt(def.generation) + 1n) : '4';
+    const newRevId = `8d3b9d9a-d489-4583-a054-${nextRevNum.padStart(12, '0')}`;
+    const createdRev: PolicyRevision = {
+      ...baseRev,
+      type: body.type,
+      revision_id: newRevId,
+      definition_id: def?.definition_id ?? baseRev.definition_id,
+      revision: nextRevNum,
+      schema_version: body.schema_version,
+      payload: body.payload,
+      reason: body.reason,
+      created_at: '2026-10-28T15:05:00Z',
+    } as PolicyRevision;
+
+    if (def) {
+      def.latest_revision = createdRev;
+      def.revisions.unshift({
+        revision_id: createdRev.revision_id,
+        revision: createdRev.revision,
+        schema_version: createdRev.schema_version,
+        payload_sha256: createdRev.payload_sha256,
+        reason: createdRev.reason,
+        created_by: createdRev.created_by,
+        created_at: createdRev.created_at,
+      });
+    }
+
+    return HttpResponse.json(createdRev, { status: 201 });
+  }),
+
   http.post(
-    '/api/v1/admin/members/:memberId/devices/:deviceId/revoke',
-    ({ request, params }) => {
-      const authErr = checkAuth(request, true);
-      if (authErr) return authErr;
-      const reqId = nextRequestId();
-      const member = state.members.find((m) => m.member_id === params['memberId']);
-      const dev = member?.devices.find((d) => d.device_id === params['deviceId']);
-      if (dev && member) {
-        dev.status = 'revoked';
-        dev.revoked_at = '2026-10-29T12:00:00Z';
-        member.authorized_device_count = member.devices.filter(
-          (d) => d.status === 'authorized',
-        ).length;
+    '/api/v1/admin/policies/:definitionId/activate',
+    async ({ request, params }) => {
+      const guard = checkSessionGuard(request, true);
+      if (guard) return guard;
+
+      const definitionId = String(params.definitionId);
+      const def = state.policyDefinitions.items.find(
+        (d) => d.definition_id === definitionId,
+      );
+      if (!def) {
+        return makeErrorResponse(
+          404,
+          'NOT_FOUND',
+          `Policy definition ${definitionId} not found.`,
+        );
       }
 
-      const opId = nextUuid('7012f821');
-      const createdOp = createMultiStepOperation({
-        operationId: opId,
-        kind: 'device.revoke',
-        resourceVersion: member?.resource_version ?? '1',
-        desiredGeneration: '55',
-        observedGeneration: '54',
-        finalStatus: 'succeeded',
-        stepNames: ['node_allowset_withdraw', 'cert_and_peer_revoke'],
-      });
-      state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
+      const ifMatch = request.headers.get('If-Match');
+      if (!ifMatch) {
+        return makeErrorResponse(
+          428,
+          'PRECONDITION_REQUIRED',
+          'If-Match header is required when activating a policy revision.',
+        );
+      }
+      if (ifMatch !== `"${def.resource_version}"`) {
+        return makeErrorResponse(
+          412,
+          'RESOURCE_VERSION_CONFLICT',
+          'Policy definition version conflict.',
+          false,
+          { current_resource_version: def.resource_version },
+        );
+      }
 
-      return HttpResponse.json(createdOp.polls[0], {
+      const body = (await request.json()) as PolicyActivateRequest;
+      const nextGen = String(BigInt(def.generation) + 1n);
+      const nextVer = String(BigInt(def.resource_version) + 1n);
+      def.active_revision_id = body.revision_id;
+      if (def.latest_revision && def.latest_revision.revision_id === body.revision_id) {
+        def.active_revision = structuredClone(def.latest_revision);
+      } else if (def.active_revision) {
+        const summary = def.revisions.find((r) => r.revision_id === body.revision_id);
+        if (summary) {
+          def.active_revision.revision_id = summary.revision_id;
+          def.active_revision.revision = summary.revision;
+        }
+      }
+      def.generation = nextGen;
+      def.resource_version = nextVer;
+
+      const steps: OperationResource['steps'] =
+        def.type === 'domain_rule_set' || def.type === 'dns_profile'
+          ? [
+              {
+                name: 'resolver_1_smoke_apply',
+                status: 'succeeded',
+                required: true,
+                observed_at: '2026-10-28T15:05:01Z',
+                error_code: null,
+                message: null,
+              },
+              {
+                name: 'resolver_2_smoke_apply',
+                status: 'running',
+                required: true,
+                observed_at: null,
+                error_code: null,
+                message: null,
+              },
+            ]
+          : [
+              {
+                name: 'policy_outbox_sync',
+                status: 'running',
+                required: true,
+                observed_at: null,
+                error_code: null,
+                message: null,
+              },
+            ];
+
+      const op = createTrackedOperation(
+        'policy.activate',
+        'policy_definition',
+        definitionId,
+        steps,
+        nextGen,
+        String(BigInt(nextGen) - 1n),
+        nextVer,
+      );
+      return HttpResponse.json(op, {
         status: 202,
-        headers: {
-          'X-Request-ID': reqId,
-          Location: `/api/v1/admin/operations/${opId}`,
-          'Retry-After': '1',
-        },
+        headers: { ETag: `"${nextVer}"` },
       });
     },
   ),
 
-  // Admin FUP Policy
-  http.get('/api/v1/admin/policies/fair_use', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(state.fupPolicy, {
-      status: 200,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: state.fupPolicy.etag,
-      },
-    });
-  }),
-
-  http.post('/api/v1/admin/policies/fair_use/activate', async ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const draft = (await request.json()) as FairUsePolicyDraft;
-
-    const nextRev = String(BigInt(state.fupPolicy.active_revision_number) + 1n);
-    state.fupPolicy = {
-      ...state.fupPolicy,
-      active_revision_number: nextRev,
-      resource_version: nextRev,
-      etag: `"policy-fup-v${nextRev}"`,
-      current: draft,
-    };
-
-    const opId = nextUuid('8089f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'policy.fair_use.activate',
-      resourceVersion: nextRev,
-      desiredGeneration: nextRev,
-      observedGeneration: String(BigInt(nextRev) - 1n),
-      finalStatus: 'succeeded',
-      stepNames: ['policy_outbox_sync', 'agent_policy'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: state.fupPolicy.etag,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
-    });
-  }),
-
-  // Admin DNS Policy
-  http.get('/api/v1/admin/policies/dns', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(state.dnsPolicy, {
-      status: 200,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: state.dnsPolicy.etag,
-      },
-    });
-  }),
-
-  http.post('/api/v1/admin/policies/dns/rules', async ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const body = (await request.json()) as Omit<DnsRule, 'rule_id' | 'revision'>;
-
-    const nextVer = String(BigInt(state.dnsPolicy.resource_version) + 1n);
-    const newRule: DnsRule = {
-      ...body,
-      rule_id: nextUuid('8e210b2c'),
-      revision: nextVer,
-    };
-    state.dnsPolicy = {
-      ...state.dnsPolicy,
-      desired_revision: nextVer,
-      resource_version: nextVer,
-      etag: `"policy-dns-v${nextVer}"`,
-      rules: [newRule, ...state.dnsPolicy.rules],
-    };
-
-    return HttpResponse.json(state.dnsPolicy, {
-      status: 201,
-      headers: {
-        'X-Request-ID': reqId,
-        ETag: state.dnsPolicy.etag,
-      },
-    });
-  }),
-
-  http.post('/api/v1/admin/policies/dns/activate', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-
-    const opId = nextUuid('8089f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'policy.dns.activate',
-      resourceVersion: state.dnsPolicy.resource_version,
-      desiredGeneration: state.dnsPolicy.desired_revision,
-      observedGeneration: state.dnsPolicy.active_revision,
-      finalStatus: 'succeeded',
-      stepNames: ['resolver_1_smoke_apply', 'resolver_2_smoke_apply'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-    state.dnsPolicy.active_revision = state.dnsPolicy.desired_revision;
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
-    });
-  }),
-
-  http.post('/api/v1/admin/policies/dns/rollback', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-
-    const opId = nextUuid('8089f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'policy.dns.rollback',
-      resourceVersion: state.dnsPolicy.resource_version,
-      desiredGeneration: state.dnsPolicy.active_revision,
-      observedGeneration: state.dnsPolicy.active_revision,
-      finalStatus: 'succeeded',
-      stepNames: ['resolver_1_smoke_apply', 'resolver_2_smoke_apply'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        Location: `/api/v1/admin/operations/${opId}`,
-        'Retry-After': '1',
-      },
-    });
-  }),
-
-  // Admin Audit Events
-  http.get('/api/v1/admin/audit-events', ({ request }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(
-      { items: INITIAL_AUDIT_EVENTS },
-      { status: 200, headers: { 'X-Request-ID': reqId } },
-    );
-  }),
-
-  // Admin & Member Operation Polling
+  // --- Admin Operations & Audit ---
   http.get('/api/v1/admin/operations/:operationId', ({ request, params }) => {
-    const authErr = checkAuth(request, true);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const opId = String(params['operationId']);
-    const stored = state.operations.get(opId);
-    if (!stored) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的操作紀錄。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const opId = String(params.operationId);
+    const op = advanceAndGetOperation(opId);
+    if (!op) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Operation ${opId} not found.`);
     }
-    const idx = Math.min(stored.cursor, stored.polls.length - 1);
-    const currentOp = stored.polls[idx]!;
-    if (stored.cursor < stored.polls.length - 1) {
-      stored.cursor += 1;
-    }
-    return HttpResponse.json(currentOp, {
-      status: 200,
-      headers: {
-        'X-Request-ID': reqId,
-        'Retry-After': '1',
-      },
-    });
+    return HttpResponse.json(op);
   }),
 
   http.get('/api/v1/member/operations/:operationId', ({ request, params }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const opId = String(params['operationId']);
-    const stored = state.operations.get(opId);
-    if (!stored) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的操作紀錄。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
+
+    const opId = String(params.operationId);
+    const op = advanceAndGetOperation(opId);
+    if (!op) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Operation ${opId} not found.`);
     }
-    const idx = Math.min(stored.cursor, stored.polls.length - 1);
-    const currentOp = stored.polls[idx]!;
-    if (stored.cursor < stored.polls.length - 1) {
-      stored.cursor += 1;
+    return HttpResponse.json(op);
+  }),
+
+  http.get('/api/v1/admin/audit-events', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const url = new URL(request.url);
+    const resourceType = url.searchParams.get('resource_type');
+    let items = state.auditEvents;
+    if (resourceType) {
+      items = items.filter((e) => e.resource.type === resourceType);
     }
-    return HttpResponse.json(currentOp, {
-      status: 200,
-      headers: {
-        'X-Request-ID': reqId,
-        'Retry-After': '1',
-      },
+    return HttpResponse.json({
+      items,
+      next_cursor: null,
     });
   }),
 
-  // Member Endpoints
+  // --- Member Endpoints (§14.3, §18.4) ---
   http.get('/api/v1/member/me', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const session = getPersonaSession(state.persona);
-    const member =
-      state.members.find((m) => m.member_id === session.member_id) ?? state.members[0]!;
-    return HttpResponse.json(
-      {
-        member,
-        management_url: 'https://netbird.vpn.example.com',
-      },
-      {
-        status: 200,
-        headers: {
-          'X-Request-ID': reqId,
-          'Cache-Control': 'no-store',
-        },
-      },
-    );
-  }),
-
-  http.get('/api/v1/member/devices', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const session = getPersonaSession(state.persona);
-    const member =
-      state.members.find((m) => m.member_id === session.member_id) ?? state.members[0]!;
-    return HttpResponse.json(
-      { items: member.devices },
-      { status: 200, headers: { 'X-Request-ID': reqId } },
-    );
-  }),
-
-  http.delete('/api/v1/member/devices/:deviceId', ({ request, params }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const session = getPersonaSession(state.persona);
-    const member =
-      state.members.find((m) => m.member_id === session.member_id) ?? state.members[0]!;
-    const dev = member.devices.find((d) => d.device_id === params['deviceId']);
-    if (!dev) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'RESOURCE_NOT_FOUND',
-            message: '找不到指定的裝置。',
-            request_id: reqId,
-            retryable: false,
-          },
-        },
-        { status: 404, headers: { 'X-Request-ID': reqId } },
-      );
-    }
-
-    dev.status = 'revoked';
-    dev.revoked_at = '2026-10-29T12:00:00Z';
-    member.authorized_device_count = member.devices.filter(
-      (d) => d.status === 'authorized',
-    ).length;
-
-    const opId = nextUuid('7012f821');
-    const createdOp = createMultiStepOperation({
-      operationId: opId,
-      kind: 'member.device.revoke',
-      resourceVersion: dev.resource_version,
-      desiredGeneration: '60',
-      observedGeneration: '59',
-      finalStatus: 'succeeded',
-      stepNames: ['node_allowset_withdraw', 'cert_and_peer_revoke'],
-    });
-    state.operations.set(opId, { polls: createdOp.polls, cursor: 0 });
-
-    return HttpResponse.json(createdOp.polls[0], {
-      status: 202,
-      headers: {
-        'X-Request-ID': reqId,
-        Location: `/api/v1/member/operations/${opId}`,
-        'Retry-After': '1',
-      },
-    });
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
+    return HttpResponse.json(buildMemberSelfForPersona(state.persona));
   }),
 
   http.get('/api/v1/member/exits', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    return HttpResponse.json(
-      { items: MEMBER_EXITS },
-      { status: 200, headers: { 'X-Request-ID': reqId } },
-    );
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
+    return HttpResponse.json(state.memberExits);
+  }),
+
+  http.get('/api/v1/member/devices', ({ request }) => {
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
+    return HttpResponse.json(state.memberDevices);
+  }),
+
+  http.delete('/api/v1/member/devices/:deviceId', ({ request, params }) => {
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
+
+    const deviceId = String(params.deviceId);
+    const dev = state.memberDevices.items.find((d) => d.device_id === deviceId);
+    if (!dev) {
+      return makeErrorResponse(404, 'NOT_FOUND', `Device ${deviceId} not found.`);
+    }
+    dev.status = 'revoked';
+    dev.revoked_at = '2026-10-28T15:05:00Z';
+    state.memberDevices.authorized_count = state.memberDevices.items.filter(
+      (d) => d.status === 'authorized',
+    ).length;
+
+    const op = createTrackedOperation('member.device_revoke', 'member_device', deviceId, [
+      {
+        name: 'cert_and_peer_revoke',
+        status: 'running',
+        required: true,
+        observed_at: null,
+        error_code: null,
+        message: null,
+      },
+    ]);
+    return HttpResponse.json(op, { status: 202 });
   }),
 
   http.get('/api/v1/member/usage', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
-    const session = getPersonaSession(state.persona);
-    const member =
-      state.members.find((m) => m.member_id === session.member_id) ?? state.members[0]!;
-    return HttpResponse.json(member, {
-      status: 200,
-      headers: { 'X-Request-ID': reqId },
-    });
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
+    return HttpResponse.json(buildMemberUsageForPersona(state.persona));
   }),
 
   http.post('/api/v1/member/checkout-sessions', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
     return HttpResponse.json(
-      {
-        checkout_session_id: 'cs_test_9911223344',
-        hosted_url:
-          'https://checkout.payment-provider.example.com/pay/cs_test_9911223344',
-        expires_at: '2026-10-29T13:00:00Z',
-      },
-      {
-        status: 201,
-        headers: {
-          'X-Request-ID': reqId,
-          'Cache-Control': 'no-store',
-        },
-      },
+      structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.CheckoutSession),
+      { status: 201 },
     );
   }),
 
   http.post('/api/v1/member/billing-portal-sessions', ({ request }) => {
-    const authErr = checkAuth(request, false);
-    if (authErr) return authErr;
-    const reqId = nextRequestId();
+    const guard = checkSessionGuard(request, false);
+    if (guard) return guard;
     return HttpResponse.json(
-      {
-        portal_session_id: 'bps_test_55667788',
-        hosted_url: 'https://billing.payment-provider.example.com/p/bps_test_55667788',
-      },
-      {
-        status: 201,
-        headers: {
-          'X-Request-ID': reqId,
-          'Cache-Control': 'no-store',
-        },
-      },
+      structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.BillingPortalSession),
+      { status: 201 },
     );
   }),
 ];

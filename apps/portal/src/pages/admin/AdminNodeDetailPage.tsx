@@ -1,228 +1,298 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  apiClient,
   ApiError,
-  portalApi,
-  toOperationResponse,
-  useOperationPoller,
-  type NodeItem,
-  type Operation,
+  deriveNodeSummaryPhrase,
+  type OperationResource,
 } from '../../api';
 import { ConflictDialog } from '../../components/common/ConflictDialog';
 import { OperationBanner } from '../../components/common/OperationBanner';
-import { useI18n } from '../../i18n';
+import { useI18n, type TranslationKey } from '../../i18n';
 import { formatBpsMbps } from '../../lib/decimal';
+import { PRIMARY_NODE_ID } from '../../mocks/data';
 
 export function AdminNodeDetailPage(): React.ReactElement {
-  const { nodeId = '' } = useParams<{ nodeId: string }>();
-  const { t } = useI18n();
+  const { nodeId = PRIMARY_NODE_ID } = useParams<{ nodeId: string }>();
+  const { t, locale } = useI18n();
+  const queryClient = useQueryClient();
 
-  const [node, setNode] = useState<NodeItem | null>(null);
-  const [nameInput, setNameInput] = useState('');
-  const [regionInput, setRegionInput] = useState('');
-  const [groupsInput, setGroupsInput] = useState('');
-  const [upBpsInput, setUpBpsInput] = useState('');
-  const [downBpsInput, setDownBpsInput] = useState('');
-  const [notesInput, setNotesInput] = useState('');
+  const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
   const [conflictError, setConflictError] = useState<ApiError | null>(null);
-  const [loadError, setLoadError] = useState<ApiError | null>(null);
+  const [actionError, setActionError] = useState<ApiError | null>(null);
+  const [savedNotice, setSavedNotice] = useState(false);
 
-  const populateForm = useCallback((data: NodeItem) => {
-    setNode(data);
-    setLoadError(null);
-    setNameInput(data.name);
-    setRegionInput(data.region);
-    setGroupsInput(data.member_groups.join(', '));
-    setUpBpsInput(data.capacity.desired_up_bps);
-    setDownBpsInput(data.capacity.desired_down_bps);
-    setNotesInput(data.notes);
-  }, []);
+  const [name, setName] = useState('');
+  const [region, setRegion] = useState('');
+  const [groups, setGroups] = useState('');
+  const [upBps, setUpBps] = useState('');
+  const [downBps, setDownBps] = useState('');
+  const [notes, setNotes] = useState('');
 
-  const reloadNode = useCallback(async () => {
-    if (!nodeId) return;
-    try {
-      const res = await portalApi.getAdminNode(nodeId);
-      populateForm(res.data);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setLoadError(err);
-      }
-    }
-  }, [nodeId, populateForm]);
-
-  const poller = useOperationPoller({
-    scope: 'admin',
-    onTerminal: () => {
-      void reloadNode();
-    },
+  const nodeQuery = useQuery({
+    queryKey: ['admin', 'node', nodeId],
+    queryFn: () => apiClient.getNode(nodeId),
   });
 
-  useEffect(() => {
-    void reloadNode();
-  }, [reloadNode]);
+  const node = nodeQuery.data?.data;
+  const etag = nodeQuery.data?.etag ?? null;
 
-  if (loadError) {
+  useEffect(() => {
+    if (node) {
+      setName(node.name ?? '');
+      setRegion(node.region ?? '');
+      setGroups(node.member_group_ids.join(', '));
+      setUpBps(String(node.capacity?.up_bps ?? 1000000000));
+      setDownBps(String(node.capacity?.down_bps ?? 1000000000));
+      setNotes(node.notes ?? '');
+    }
+  }, [node]);
+
+  if (nodeQuery.isLoading || !node) {
     return (
-      <div className="alert alert-danger" role="alert">
-        {loadError.message} ({loadError.code})
+      <div className="card" role="status">
+        Loading node detail...
       </div>
     );
   }
 
-  if (!node) {
-    return <div className="card">Loading node detail...</div>;
-  }
-
-  const handleSaveSettings = async (simulateConflict = false) => {
+  const handlePublish = async () => {
+    setActionError(null);
     try {
-      const res = await portalApi.patchAdminNode(
+      const op = await apiClient.publishNode(
+        node.node_id,
+        etag ?? undefined,
+        `publish:${node.node_id}:${node.resource_version}`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 412) setConflictError(err);
+        else setActionError(err);
+      }
+    }
+  };
+
+  const handleDisable = async () => {
+    setActionError(null);
+    try {
+      const op = await apiClient.disableNode(
+        node.node_id,
+        etag ?? undefined,
+        `disable:${node.node_id}:${node.resource_version}`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 412) setConflictError(err);
+        else setActionError(err);
+      }
+    }
+  };
+
+  const handleRevoke = async () => {
+    setActionError(null);
+    try {
+      const op = await apiClient.revokeNode(
+        node.node_id,
+        'Admin revoked identity from portal',
+        etag ?? undefined,
+        `revoke:${node.node_id}:${node.resource_version}`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 412) setConflictError(err);
+        else setActionError(err);
+      }
+    }
+  };
+
+  const handleSavePatch = async (overrideEtag?: string) => {
+    setActionError(null);
+    setSavedNotice(false);
+    try {
+      const parsedUp = Number.parseInt(upBps.trim(), 10);
+      const parsedDown = Number.parseInt(downBps.trim(), 10);
+      await apiClient.updateNode(
         node.node_id,
         {
-          name: nameInput.trim(),
-          region: regionInput.trim(),
-          member_groups: groupsInput
+          name,
+          region,
+          member_group_ids: groups
             .split(',')
             .map((s) => s.trim())
             .filter(Boolean),
-          desired_up_bps: upBpsInput.trim(),
-          desired_down_bps: downBpsInput.trim(),
-          notes: notesInput,
-          simulate_conflict: simulateConflict,
+          capacity: {
+            up_bps: Number.isNaN(parsedUp) ? -1 : parsedUp,
+            down_bps: Number.isNaN(parsedDown) ? -1 : parsedDown,
+            member_up_bps_cap: node.capacity?.member_up_bps_cap ?? null,
+            member_down_bps_cap: node.capacity?.member_down_bps_cap ?? null,
+          },
+          notes,
         },
-        { ifMatch: node.etag },
+        overrideEtag ?? etag ?? undefined,
+        `patch:${node.node_id}:${overrideEtag ?? etag ?? 'none'}`,
       );
-
-      if (res.status === 202) {
-        poller.startTracking(
-          toOperationResponse({
-            ...res,
-            data: res.data as Operation,
-          }),
-        );
-      } else {
-        await reloadNode();
-      }
+      setSavedNotice(true);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
     } catch (err) {
-      if (err instanceof ApiError && err.isConflict) {
-        setConflictError(err);
+      if (err instanceof ApiError) {
+        if (err.status === 412) {
+          setConflictError(err);
+        } else {
+          setActionError(err);
+        }
       }
     }
   };
 
-  const handlePublicationChange = async (intent: 'published' | 'disabled') => {
-    const opRes = await portalApi.putNodePublication(node.node_id, {
-      publication_intent: intent,
-    });
-    poller.startTracking(opRes);
-  };
-
-  const handleRevokeIdentity = async () => {
-    const opRes = await portalApi.revokeNode(
-      node.node_id,
-      'Admin triggered permanent machine identity revocation',
-    );
-    poller.startTracking(opRes);
-  };
-
-  const handleReloadAfterConflict = async () => {
+  const handleReloadConflict = async () => {
     setConflictError(null);
-    await reloadNode();
+    await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
   };
+
+  const phraseCode = deriveNodeSummaryPhrase(node);
+  const summaryKey = `node.summary.${phraseCode}` as TranslationKey;
+  const isRevokedOrRetired =
+    node.lifecycle_state === 'revoked' || node.lifecycle_state === 'retired';
+  const latestError = node.recent_errors[0];
 
   return (
-    <div>
-      <ConflictDialog
-        conflictError={conflictError}
-        onReloadAndDismiss={() => void handleReloadAfterConflict()}
-      />
-
-      <div style={{ marginBottom: 12 }}>
+    <div data-testid="admin-node-detail-page">
+      <div style={{ marginBottom: '0.75rem' }}>
         <Link to="/admin/nodes">{t('admin.nodeDetail.back')}</Link>
       </div>
 
-      <header className="page-header">
-        <h1>{t('admin.nodeDetail.title', { name: node.name })}</h1>
-        <p className="page-subtitle" data-testid="node-detail-meta">
-          {t('admin.nodeDetail.meta', {
-            nodeId: node.node_id,
-            incarnationId: node.node_incarnation_id,
-            etag: node.etag,
-          })}
-        </p>
-      </header>
+      <div className="page-header">
+        <div>
+          <h1>{t('admin.nodeDetail.title', { name: node.name ?? node.node_id })}</h1>
+          <p className="page-subtitle mono" data-testid="node-detail-meta">
+            {t('admin.nodeDetail.meta', {
+              nodeId: node.node_id,
+              incarnationId: node.current_incarnation_id ?? '-',
+              etag: etag ?? `"${node.resource_version}"`,
+            })}
+          </p>
+        </div>
+        <span className="badge badge-info" data-testid="node-detail-summary-badge">
+          {t(summaryKey)}
+        </span>
+      </div>
+
+      <ConflictDialog error={conflictError} onReload={handleReloadConflict} />
 
       <OperationBanner
-        operation={poller.operation}
-        requestId={poller.requestId}
-        isPolling={poller.isPolling}
-        onDismiss={poller.reset}
+        operation={activeOp}
+        onDismiss={() => setActiveOp(null)}
+        onTerminal={() => {
+          void queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+        }}
       />
 
-      <section className="card" aria-labelledby="desired-observed-heading">
-        <h2 id="desired-observed-heading">
-          {t('admin.nodeDetail.desiredVsObserved.title')}
-        </h2>
-        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+      {savedNotice && (
+        <div
+          className="alert alert-info"
+          role="status"
+          data-testid="saved-pending-apply-banner"
+        >
+          <strong>{t('op.savedPendingApply')}</strong> — Desired config_generation:{' '}
+          <span className="mono">{node.config_generation.desired}</span> / Observed
+          applied_config_generation:{' '}
+          <span className="mono">{node.config_generation.applied ?? '-'}</span>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="alert alert-danger" role="alert" data-testid="node-action-error">
+          <strong>{actionError.code}</strong>: {actionError.messageForLocale(locale)} (
+          <span className="mono">{actionError.requestId}</span>)
+        </div>
+      )}
+
+      {/* Desired vs Observed comparison (§18.1, §18.3) */}
+      <section className="card" data-testid="desired-vs-observed-section">
+        <h2>{t('admin.nodeDetail.desiredVsObserved.title')}</h2>
+        <p className="page-subtitle">
           {t('admin.nodeDetail.lastAckAt', {
-            time: node.config_generation.last_ack_at ?? '—',
+            time: node.last_seen_at ?? 'Never',
           })}
         </p>
-        <div className="table-wrapper">
-          <table className="data-table" data-testid="desired-observed-table">
+
+        <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
+          <table className="data-table">
             <thead>
               <tr>
-                <th scope="col">{t('admin.nodeDetail.field.setting')}</th>
-                <th scope="col">{t('admin.nodeDetail.field.desired')}</th>
-                <th scope="col">{t('admin.nodeDetail.field.observed')}</th>
+                <th>{t('admin.nodeDetail.field.setting')}</th>
+                <th>{t('admin.nodeDetail.field.desired')}</th>
+                <th>{t('admin.nodeDetail.field.observed')}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>{t('admin.nodeDetail.field.publication')}</td>
-                <td data-testid="desired-publication">{node.publication_intent}</td>
-                <td data-testid="observed-publication">{node.publication_observed}</td>
+                <td>
+                  <span className="badge badge-info" data-testid="desired-publication">
+                    {node.publication_intent}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`badge ${
+                      node.publication_observed === 'active'
+                        ? 'badge-success'
+                        : 'badge-warning'
+                    }`}
+                    data-testid="observed-publication"
+                  >
+                    {node.publication_observed} (peer: {node.netbird_peer_id ?? 'unknown'}
+                    )
+                  </span>
+                </td>
               </tr>
               <tr>
                 <td>{t('admin.nodeDetail.field.configGen')}</td>
-                <td data-testid="desired-generation">{node.config_generation.desired}</td>
-                <td data-testid="observed-generation">
-                  {node.config_generation.applied}
+                <td className="mono" data-testid="desired-config-gen">
+                  {node.config_generation.desired}
+                </td>
+                <td className="mono" data-testid="observed-config-gen">
+                  {node.config_generation.applied ?? '-'}
                 </td>
               </tr>
               <tr>
                 <td>{t('admin.nodeDetail.field.release')}</td>
-                <td>
-                  {node.release.desired_version} (
-                  <code>{node.release.desired_release_id}</code>)
-                </td>
-                <td>
-                  {node.release.current_version} (last_good:{' '}
-                  <code>{node.release.last_good_release_id}</code>, min:{' '}
-                  <code>{node.release.minimum_serving_version}</code>)
+                <td className="mono">{node.releases.desired_release_id ?? '-'}</td>
+                <td className="mono">
+                  current: {node.releases.current_release_id ?? '-'} / last_good:{' '}
+                  {node.releases.last_good_release_id ?? '-'}
                 </td>
               </tr>
               <tr>
                 <td>{t('admin.nodeDetail.field.memberGroups')}</td>
-                <td>{node.member_groups.join(', ') || '—'}</td>
-                <td>{node.observed_member_groups.join(', ') || '—'}</td>
+                <td className="mono">{node.member_group_ids.join(', ')}</td>
+                <td className="mono">
+                  forwarding: {node.member_forwarding_observed ? 'true' : 'false'}
+                </td>
               </tr>
               <tr>
                 <td>{t('admin.nodeDetail.field.capacity')}</td>
-                <td>
-                  Up {formatBpsMbps(node.capacity.desired_up_bps)} / Down{' '}
-                  {formatBpsMbps(node.capacity.desired_down_bps)}
+                <td className="mono">
+                  {node.capacity ? (
+                    <>
+                      Up: {formatBpsMbps(String(node.capacity.up_bps))} / Down:{' '}
+                      {formatBpsMbps(String(node.capacity.down_bps))}
+                    </>
+                  ) : (
+                    '-'
+                  )}
                 </td>
-                <td>
-                  Up {formatBpsMbps(node.capacity.applied_up_bps)} / Down{' '}
-                  {formatBpsMbps(node.capacity.applied_down_bps)}
-                </td>
-              </tr>
-              <tr>
-                <td>{t('admin.nodeDetail.field.safetyAndIp')}</td>
-                <td>internet-only-v1 (fixed mandatory)</td>
-                <td>
-                  safety: <strong>{node.safety_status}</strong> · exit IPv4:{' '}
-                  <code>{node.observed_exit_ipv4}</code>
+                <td className="mono">
+                  Safety: {node.safety_status} · Exit IP:{' '}
+                  {node.observed_exit_ipv4 ?? node.observed_exit_ipv6 ?? '-'}
                 </td>
               </tr>
             </tbody>
@@ -230,212 +300,193 @@ export function AdminNodeDetailPage(): React.ReactElement {
         </div>
       </section>
 
-      <section className="card" aria-labelledby="pub-actions-heading">
-        <h2 id="pub-actions-heading">{t('admin.nodeDetail.pubActions.title')}</h2>
-        <div className="btn-row" style={{ marginBottom: 16 }}>
+      {/* Publication vs Revoke Machine Identity actions (§5.2, §18.3) */}
+      <section className="card">
+        <h2>{t('admin.nodeDetail.pubActions.title')}</h2>
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
+            marginTop: '0.75rem',
+            marginBottom: '1.25rem',
+          }}
+        >
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => void handlePublicationChange('published')}
-            disabled={poller.isPolling || node.lifecycle_state === 'revoked'}
             data-testid="publish-node-btn"
+            onClick={() => void handlePublish()}
+            disabled={isRevokedOrRetired}
           >
             {t('admin.nodeDetail.pubActions.publishBtn')}
           </button>
           <button
             type="button"
-            className="btn"
-            onClick={() => void handlePublicationChange('disabled')}
-            disabled={poller.isPolling || node.lifecycle_state === 'revoked'}
+            className="btn btn-secondary"
             data-testid="disable-node-btn"
+            onClick={() => void handleDisable()}
+            disabled={isRevokedOrRetired}
           >
             {t('admin.nodeDetail.pubActions.disableBtn')}
           </button>
         </div>
 
-        <div className="alert alert-warning">
-          <h3 style={{ margin: '0 0 6px', fontSize: '1rem' }}>
+        <div
+          style={{
+            borderTop: '1px solid var(--color-border)',
+            paddingTop: '1rem',
+          }}
+        >
+          <h3 style={{ color: 'var(--color-danger)' }}>
             {t('admin.nodeDetail.pubActions.revokeSectionTitle')}
           </h3>
-          <p style={{ margin: '0 0 10px', fontSize: '0.9rem' }}>
+          <p
+            style={{
+              fontSize: '0.85rem',
+              color: 'var(--color-text-muted)',
+              marginTop: '0.35rem',
+              marginBottom: '0.75rem',
+            }}
+          >
             {t('admin.nodeDetail.pubActions.revokeDistinctNote')}
           </p>
           <button
             type="button"
             className="btn btn-danger"
-            onClick={() => void handleRevokeIdentity()}
-            disabled={poller.isPolling || node.lifecycle_state === 'revoked'}
             data-testid="revoke-node-identity-btn"
+            onClick={() => void handleRevoke()}
+            disabled={isRevokedOrRetired}
           >
             {t('admin.nodeDetail.pubActions.revokeBtn')}
           </button>
         </div>
       </section>
 
-      <section className="card" aria-labelledby="edit-node-heading">
-        <h2 id="edit-node-heading">{t('admin.nodeDetail.editForm.title')}</h2>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="node-edit-name">{t('admin.nodeDetail.editForm.name')}</label>
-            <input
-              id="node-edit-name"
-              type="text"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-            />
+      {/* Edit Node Form with If-Match ETag */}
+      <section className="card">
+        <h2>{t('admin.nodeDetail.editForm.title')}</h2>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSavePatch();
+          }}
+          style={{ marginTop: '0.75rem' }}
+        >
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="edit-node-name">
+                {t('admin.nodeDetail.editForm.name')}
+              </label>
+              <input
+                id="edit-node-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-node-region">
+                {t('admin.nodeDetail.editForm.region')}
+              </label>
+              <input
+                id="edit-node-region"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-node-groups">
+                {t('admin.nodeDetail.editForm.groups')}
+              </label>
+              <input
+                id="edit-node-groups"
+                value={groups}
+                onChange={(e) => setGroups(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-node-up">{t('admin.nodeDetail.editForm.upBps')}</label>
+              <input
+                id="edit-node-up"
+                className="mono"
+                value={upBps}
+                onChange={(e) => setUpBps(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-node-down">
+                {t('admin.nodeDetail.editForm.downBps')}
+              </label>
+              <input
+                id="edit-node-down"
+                className="mono"
+                value={downBps}
+                onChange={(e) => setDownBps(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="edit-node-notes">
+                {t('admin.nodeDetail.editForm.notes')}
+              </label>
+              <input
+                id="edit-node-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="form-field">
-            <label htmlFor="node-edit-region">
-              {t('admin.nodeDetail.editForm.region')}
-            </label>
-            <input
-              id="node-edit-region"
-              type="text"
-              value={regionInput}
-              onChange={(e) => setRegionInput(e.target.value)}
-            />
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              data-testid="save-node-patch-btn"
+            >
+              {t('admin.nodeDetail.editForm.saveBtn')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid="simulate-conflict-btn"
+              onClick={() => void handleSavePatch('"0"')}
+            >
+              {t('admin.nodeDetail.editForm.simulateConflictBtn')}
+            </button>
           </div>
-          <div className="form-field">
-            <label htmlFor="node-edit-groups">
-              {t('admin.nodeDetail.editForm.groups')}
-            </label>
-            <input
-              id="node-edit-groups"
-              type="text"
-              value={groupsInput}
-              onChange={(e) => setGroupsInput(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="node-edit-up">{t('admin.nodeDetail.editForm.upBps')}</label>
-            <input
-              id="node-edit-up"
-              type="text"
-              value={upBpsInput}
-              onChange={(e) => setUpBpsInput(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="node-edit-down">
-              {t('admin.nodeDetail.editForm.downBps')}
-            </label>
-            <input
-              id="node-edit-down"
-              type="text"
-              value={downBpsInput}
-              onChange={(e) => setDownBpsInput(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="node-edit-notes">
-              {t('admin.nodeDetail.editForm.notes')}
-            </label>
-            <input
-              id="node-edit-notes"
-              type="text"
-              value={notesInput}
-              onChange={(e) => setNotesInput(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="btn-row">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => void handleSaveSettings(false)}
-            data-testid="save-node-settings-btn"
-          >
-            {t('admin.nodeDetail.editForm.saveBtn')}
-          </button>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => void handleSaveSettings(true)}
-            data-testid="simulate-412-btn"
-          >
-            {t('admin.nodeDetail.editForm.simulateConflictBtn')}
-          </button>
-        </div>
+        </form>
       </section>
 
-      <section className="card" aria-labelledby="node-errors-heading">
-        <h2 id="node-errors-heading">{t('admin.nodeDetail.errors.title')}</h2>
-        {node.recent_errors.length === 0 ? (
-          <p>{t('admin.nodeDetail.errors.empty')}</p>
+      {/* Recent Errors & Diagnostics */}
+      <section className="card">
+        <h2>{t('admin.nodeDetail.errors.title')}</h2>
+        {!latestError ? (
+          <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+            {t('admin.nodeDetail.errors.empty')}
+          </p>
         ) : (
-          node.recent_errors.map((err) => (
-            <details
-              key={err.error_id}
-              style={{ marginBottom: 10 }}
-              open
-              data-testid={`node-error-${err.error_code}`}
-            >
+          <div style={{ marginTop: '0.5rem' }}>
+            <details style={{ marginBottom: '0.5rem' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 600 }}>
-                <span className="badge badge-danger">{err.error_code}</span> ·{' '}
-                {err.occurred_at} · stage: <code>{err.stage}</code>
+                <span className="badge badge-danger" style={{ marginRight: '0.5rem' }}>
+                  {latestError.code}
+                </span>
+                {latestError.message}
               </summary>
-              <div style={{ padding: '10px 12px', background: 'var(--bg-subtle)' }}>
-                <p style={{ margin: '0 0 6px' }}>{err.message}</p>
-                <div style={{ fontSize: '0.82rem' }}>
-                  operation_id: <code>{err.operation_id}</code> ｜ request_id:{' '}
-                  <code>{err.request_id}</code>
-                </div>
+              <div
+                className="mono"
+                style={{
+                  fontSize: '0.8rem',
+                  padding: '0.5rem',
+                  background: '#f8fafc',
+                  marginTop: '0.35rem',
+                }}
+              >
+                checks:{' '}
+                {node.checks.map((c) => `${c.name}=${c.status}`).join(', ') || 'none'}
               </div>
             </details>
-          ))
+          </div>
         )}
-      </section>
-
-      <section className="card" aria-labelledby="node-history-heading">
-        <h2 id="node-history-heading">{t('admin.nodeDetail.history.title')}</h2>
-        <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th scope="col">Job ID / Batch ID</th>
-                <th scope="col">Generation / Attempt</th>
-                <th scope="col">State</th>
-                <th scope="col">Releases (Prev → Current / Requested)</th>
-                <th scope="col">Error Code</th>
-                <th scope="col">Started / Finished</th>
-              </tr>
-            </thead>
-            <tbody>
-              {node.update_history.map((item) => (
-                <tr key={item.job_id}>
-                  <td>
-                    <code>{item.job_id}</code>
-                    <div style={{ fontSize: '0.78rem' }}>
-                      batch: <code>{item.batch_id}</code>
-                    </div>
-                  </td>
-                  <td>
-                    gen {item.generation} (attempt #{item.attempt})
-                  </td>
-                  <td>
-                    <span
-                      className={
-                        item.state === 'succeeded'
-                          ? 'badge badge-success'
-                          : 'badge badge-danger'
-                      }
-                    >
-                      {item.state}
-                    </span>
-                  </td>
-                  <td>
-                    <code>{item.previous_release_id}</code> →{' '}
-                    <code>{item.current_release_id}</code>
-                  </td>
-                  <td>{item.error_code ?? '—'}</td>
-                  <td>
-                    {item.started_at} → {item.finished_at ?? '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </section>
     </div>
   );
