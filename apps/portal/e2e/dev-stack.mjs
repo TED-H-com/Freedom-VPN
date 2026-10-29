@@ -971,9 +971,14 @@ async function performOidcLogin(controlBaseUrl, oidcController, persona, caPem) 
   }
   const sessionCookie = (callbackRes.headers['set-cookie'] || [])
     .map((c) => c.split(';')[0])
-    .find((c) => c.startsWith('__Host-fvpn-session='));
+    .find(
+      (c) =>
+        c.startsWith('__Host-fvpn-session=') ||
+        c.startsWith('__Host-fvpn-admin=') ||
+        c.startsWith('__Host-fvpn-member='),
+    );
   if (!sessionCookie) {
-    throw new Error('Missing __Host-fvpn-session cookie from /auth/callback');
+    throw new Error('Missing session cookie from /auth/callback');
   }
 
   const sessionRes = await httpsRequest(`${controlBaseUrl}/auth/session`, {
@@ -1591,7 +1596,7 @@ async function seedDatabase(pool, adminId, defaultMemberId, enrolledNodeId) {
 
   await pool.query(
     `INSERT INTO usage_rollups(id, member_id, period, granularity, projection_generation, metering_version, upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end, estimated, gap, reconciliation_in_progress)
-     VALUES ($1, $2, $3, 'month', 1, 'v1', 9007199254740993, 9007199254740995, clock_timestamp(), clock_timestamp(), $4, $5, true, true, false)
+     VALUES ($1, $2, $3, 'month', 1, 'forward_admission_v1', 9007199254740993, 9007199254740995, clock_timestamp(), clock_timestamp(), $4, $5, true, true, false)
      ON CONFLICT (member_id, period, granularity, projection_generation) DO NOTHING`,
     [crypto.randomUUID(), defaultMemberId, currentMonth, periodStart, periodEnd],
   );
@@ -2460,6 +2465,39 @@ async function main() {
       JSON.stringify({ upstreams: ['192.0.2.53:53'] }, null, 2),
     );
 
+    const policiesConfigPath = path.join(tmpDir, 'policies.json');
+    fs.writeFileSync(
+      policiesConfigPath,
+      JSON.stringify(
+        {
+          // TEST ONLY settings for local/E2E control-plane and worker composition (D-045)
+          fup_mode: 'shadow',
+          fup_sweep_seconds: 60,
+          fup_batch_size: 256,
+          dns_upstream_profile: 'test-recursive-v1',
+        },
+        null,
+        2,
+      ),
+    );
+
+    const usageConfigPath = path.join(tmpDir, 'usage.json');
+    fs.writeFileSync(
+      usageConfigPath,
+      JSON.stringify(
+        {
+          // TEST ONLY settings referencing per-run ephemeral signing vault (D-045)
+          signing_config_file: certs.vaultDir,
+          raw_usage_retention_days: 90,
+          rollup_retention_months: 24,
+          audit_retention_days: 365,
+          projection_batch_size: 256,
+        },
+        null,
+        2,
+      ),
+    );
+
     const centralConfig = {
       public_address: `127.0.0.1:${publicPort}`,
       agent_address: `127.0.0.1:${agentPort}`,
@@ -2477,9 +2515,12 @@ async function main() {
       members_config_file: membersConfigPath,
       nodes_config_file: nodesConfigPath,
       dns_config_file: dnsConfigPath,
+      policies_config_file: policiesConfigPath,
+      usage_config_file: usageConfigPath,
       ingress_rate: { per_second: 1000, burst: 1000 },
       browser_rate: { per_second: 1000, burst: 1000 },
       agent_rate: { per_second: 1000, burst: 1000 },
+      usage_rate: { per_second: 1000, burst: 1000 },
       anonymous_rate: { per_second: 1000, burst: 1000 },
       worker_poll_seconds: 1,
       migrate_on_start: true,
@@ -2576,9 +2617,9 @@ async function main() {
       caPem,
     );
     const adminRowRes = await pool.query(
-      `SELECT member_id FROM identity_bindings WHERE subject = 'oidc-sub-admin-1' LIMIT 1`,
+      `SELECT id FROM admin_identities WHERE subject = 'oidc-sub-admin-1' LIMIT 1`,
     );
-    const adminId = adminRowRes.rows[0].member_id;
+    const adminId = adminRowRes.rows[0]?.id || '00000000-0000-0000-0000-000000000003';
 
     const memberAuth = await performOidcLogin(
       controlBaseUrl,
@@ -2935,7 +2976,12 @@ async function main() {
             );
             const sessionCookie = (cbRes.headers['set-cookie'] || [])
               .map((c) => c.split(';')[0])
-              .find((c) => c.startsWith('__Host-fvpn-session='));
+              .find(
+                (c) =>
+                  c.startsWith('__Host-fvpn-session=') ||
+                  c.startsWith('__Host-fvpn-admin=') ||
+                  c.startsWith('__Host-fvpn-member='),
+              );
             if (sessionCookie) {
               const sessCheck = await httpsRequest(`${controlBaseUrl}/auth/session`, {
                 method: 'GET',
