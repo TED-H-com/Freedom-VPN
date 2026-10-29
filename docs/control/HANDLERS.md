@@ -6,7 +6,7 @@ Implement only the methods your domain owns from
 `apps/control/handlers.go`'s `Domains()` list, following the
 [composition seam](COMPOSITION.md). The domain returns handler sets and any
 request middleware; only the shared server calls `httpapi.Compose`/`httpapi.New`. Overlapping methods cause a
-startup error. Unimplemented methods keep the transitional INTERNAL_ERROR/501
+startup error. Unimplemented methods keep the transitional NOT_IMPLEMENTED/501
 fallback. Wave 3 domain wiring must remove every fallback; no contract change is
 needed for this transition.
 
@@ -126,3 +126,21 @@ never expose SQL, driver or provider errors in error messages/details.
 Agent handlers without Idempotency-Key own their normal domain transaction. When
 an agent key is supplied, reuse `Transaction(ctx)` instead; do not open an inner
 transaction. The same service can accept a transaction parameter from either path.
+
+### Agent receipt exception (D-029 follow-up)
+
+`SetResult` normally requires an `OperationID` for every 202 operator command.
+The only receipt exception is an authenticated Agent submitting
+`POST /api/v1/agent/observations` or `POST /api/v1/agent/update-results`. These are
+called `submitNodeObservation` / `submitNodeUpdateResult` in the wiring task;
+the current generated strict methods are `SubmitObservation` / `SubmitUpdateResult`
+(OpenAPI operation IDs `submitObservation` / `submitUpdateResult`). For these two
+methods, a keyed command may set `ResponseStatus: 202` with `OperationID: nil` and
+a nonnil `ResourceID` pointing to the durable observation/result receipt. Store
+it in `Transaction(ctx)` and implement `Replay` to re-read that receipt under the
+certificate identity, returning the same generated 202 receipt response. The
+middleware commits the reference and response status together and never invents
+an operation. All other 202 commands, including any operator principal, retain
+the operation requirement. Unkeyed Agent submissions use the domain transaction
+and return their generated receipt directly; `SetResult` requires a keyed command
+context. This exception does not authorize submission through the public listener.

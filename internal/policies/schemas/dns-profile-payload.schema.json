@@ -1,5 +1,5 @@
 {
-  "$comment": "Derived from contracts/openapi.yaml component DnsProfilePayload (§12.2, §12.4, §14.2). Candidate for promotion to contracts/schemas/.",
+  "$comment": "Derived from contracts/openapi.yaml component DnsProfilePayload (§12.2, §12.4, §14.2); promoted to contracts/schemas/policies/dns-profile-payload.schema.json.",
   "$defs": {
     "LocalizedText": {
       "additionalProperties": false,
@@ -29,6 +29,7 @@
   "description": "DNS profile revision payload (§12.2, §12.4, §14.2).",
   "properties": {
     "block_response": {
+      "default": "nxdomain",
       "description": "Recommended default `nxdomain` (§12.4).",
       "enum": [
         "nxdomain",
@@ -50,13 +51,11 @@
         "format": "uuid",
         "type": "string"
       },
-      "maxItems": 32,
+      "maxItems": 50,
       "type": "array",
       "uniqueItems": true
     },
     "profile_code": {
-      "maxLength": 64,
-      "minLength": 1,
       "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
       "type": "string"
     },
@@ -65,7 +64,7 @@
         "format": "uuid",
         "type": "string"
       },
-      "maxItems": 32,
+      "maxItems": 50,
       "type": "array",
       "uniqueItems": true
     }

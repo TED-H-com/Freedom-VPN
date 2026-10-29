@@ -13,6 +13,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/prometheus/client_golang/prometheus"
@@ -65,7 +66,7 @@ func TestAPI01_UnknownMemberEventsDeadLetterObservably(t *testing.T) {
 				t.Fatal("dead letter was reclaimed", worked, err)
 			}
 			var audits int
-			err = pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action='outbox.dead_letter' AND resource=$1`, "billing_session:"+aggregate.String()).Scan(&audits)
+			err = pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action='outbox.dead_letter' AND resource=$1`, string(api.ResourceTypeCheckoutSession)+":"+aggregate.String()).Scan(&audits)
 			if err != nil || audits != 1 {
 				t.Fatal("dead-letter audit missing or duplicated", audits, err)
 			}

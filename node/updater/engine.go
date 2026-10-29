@@ -56,8 +56,12 @@ type Engine struct {
 	Jitter        func() float64
 	FreeBytes     func(path string) (uint64, error)
 	AllowLoopback bool
-	Faults        Faults
-	Log           *slog.Logger
+	// AllowedOrigins exempts exact scheme://host[:port] artifact, manifest
+	// and result origins from the private and CGNAT guard (D-046). Empty
+	// keeps the guard. The dial is pinned to that host's resolution.
+	AllowedOrigins []string
+	Faults         Faults
+	Log            *slog.Logger
 	// lockHeld is true while this process already owns the update lock.
 	// Flush and Retain run from inside Run and must not take it again.
 	lockHeld bool
@@ -115,7 +119,7 @@ func (e *Engine) withLock(ctx context.Context, fn func() error) error {
 	lk, err := nodelock.Acquire(ctx, e.Layout.Lock, 5, 20*time.Millisecond)
 	if err != nil {
 		if errors.Is(err, nodelock.ErrBusy) {
-			return transient(apierr.UpdateBusy, "lock")
+			return transient(apierr.UpdateBusy, lockBusyDetail(err))
 		}
 		return err
 	}
@@ -144,6 +148,9 @@ func (e *Engine) recoverLocked(ctx context.Context) error {
 		return err
 	}
 	if err := e.ensureReported(ctx); err != nil {
+		return err
+	}
+	if err := e.holdIfRevoked(ctx); err != nil {
 		return err
 	}
 	on, _ := e.Journal.BlocksForwarding(ctx)
@@ -176,11 +183,23 @@ func (e *Engine) runOnce(ctx context.Context) (bool, error) {
 		return false, errors.New("updater: no desired-state source")
 	}
 	work, err := e.Source.Current(ctx)
-	if errors.Is(err, ErrNoWork) {
+	noWork := errors.Is(err, ErrNoWork)
+	if err != nil && !noWork {
+		return false, err
+	}
+	// A legacy envelope with no job carries no policy and no signed set.
+	// Leave the latch alone, as before.
+	if noWork && work.PolicyGeneration == 0 && !work.PolicyKnown && work.SignedRevoked == nil {
 		return false, nil
 	}
-	if err != nil {
+	if err := e.acceptDesired(ctx, &work); err != nil {
 		return false, err
+	}
+	if err := e.rollbackIfRevoked(ctx, e.claimFrom(work)); err != nil {
+		return false, err
+	}
+	if noWork {
+		return false, nil
 	}
 	if err := e.preflight(ctx, work); err != nil {
 		return false, err
@@ -490,7 +509,7 @@ func (e *Engine) verifyRelease(ctx context.Context, c claimed, m api.ReleaseMani
 	if err != nil {
 		return api.ManifestArtifact{}, err
 	}
-	if err := checkURL(art.Url, e.AllowLoopback); err != nil {
+	if err := checkURLPolicy(art.Url, e.urlPolicy()); err != nil {
 		return api.ManifestArtifact{}, err
 	}
 	need, ok := sumU64(art.SizeBytes.Uint64(), art.InstalledSizeBytes.Uint64(), m.Rollback.RequiredFreeBytes.Uint64())
@@ -527,6 +546,13 @@ func (e *Engine) fetchArtifact(ctx context.Context, c claimed, art api.ManifestA
 func (e *Engine) installTree(ctx context.Context, c claimed, m api.ReleaseManifest, env []byte, art api.ManifestArtifact, artifactPath string) error {
 	id := c.Intent.ReleaseId.String()
 	dir := e.Layout.releaseDir(id)
+	signed, err := e.signedRevokedIDs(ctx)
+	if err != nil {
+		return err
+	}
+	if containsID(c.Revoked, c.Intent.ReleaseId) || containsID(signed, c.Intent.ReleaseId) {
+		return permanent(apierr.ReleaseNotApproved, "revoked release")
+	}
 	if rel, err := e.Journal.GetRelease(ctx, id); err == nil {
 		sum, herr := fsutil.TreeHash(dir)
 		if herr == nil && sum == rel.TreeHash && strings.EqualFold(rel.ManifestSHA256, c.Intent.ManifestSha256) {
@@ -554,9 +580,11 @@ func (e *Engine) installTree(ctx context.Context, c claimed, m api.ReleaseManife
 		return err
 	}
 	defer f.Close()
-	max := int64(art.InstalledSizeBytes.Uint64()) * 2
-	if max < int64(art.SizeBytes.Uint64())*2 {
-		max = int64(art.SizeBytes.Uint64()) * 2
+	// MaxBytes is the installed file-byte cap. ExtractArchive adds tar header
+	// overhead on the decompressed stream, so this is not doubled.
+	max := int64(art.InstalledSizeBytes.Uint64())
+	if max < 1 {
+		max = int64(art.SizeBytes.Uint64())
 	}
 	if max < 1 {
 		max = 1 << 20
@@ -794,9 +822,15 @@ func (e *Engine) enforce(ctx context.Context, releaseID string, c claimed, outco
 		}
 		return false, nil
 	}
+	signed, err := e.signedRevokedIDs(ctx)
+	if err != nil {
+		return false, err
+	}
 	id, _ := uuid.Parse(releaseID)
+	// A signed revocation is persisted in the journal. The claim's unsigned
+	// list alone must not let that release pass the gate (§13.4).
 	allow := c.Intent.PublicationIntent == api.PublicationIntentPublished &&
-		releaseID != "" && containsID(c.Serving, id) && !containsID(c.Revoked, id)
+		releaseID != "" && containsID(c.Serving, id) && !containsID(c.Revoked, id) && !containsID(signed, id)
 	if err := e.Journal.SetGate(ctx, updatejournal.GateRecord{
 		PublicationIntent: string(c.Intent.PublicationIntent),
 		ForwardingBlocked: !allow,
@@ -926,8 +960,20 @@ func (e *Engine) log() *slog.Logger {
 
 func (e *Engine) jitter() float64 { return rand.Float64() }
 
+func (e *Engine) urlPolicy() urlPolicy {
+	if e == nil {
+		return urlPolicy{}
+	}
+	return urlPolicy{AllowLoopback: e.AllowLoopback, AllowedOrigins: e.AllowedOrigins}
+}
+
 func (e *Engine) httpClient() *http.Client {
-	base := e.HTTP
+	return clientWithDial(e.HTTP, e.urlPolicy())
+}
+
+// clientWithDial clones base and pins every dial to dialPolicy. A transport
+// that is not *http.Transport is left alone; the URL check still runs.
+func clientWithDial(base *http.Client, policy urlPolicy) *http.Client {
 	if base == nil {
 		base = http.DefaultClient
 	}
@@ -943,7 +989,7 @@ func (e *Engine) httpClient() *http.Client {
 	}
 	if tr != nil {
 		tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-			return dialChecked(ctx, network, addr, e.AllowLoopback)
+			return dialPolicy(ctx, network, addr, policy)
 		}
 		clone.Transport = tr
 	}
@@ -952,7 +998,7 @@ func (e *Engine) httpClient() *http.Client {
 		if len(via) >= 3 {
 			return errors.New("updater: too many redirects")
 		}
-		if err := checkURL(req.URL.String(), e.AllowLoopback); err != nil {
+		if err := checkURLPolicy(req.URL.String(), policy); err != nil {
 			return err
 		}
 		if inner != nil {
@@ -961,6 +1007,19 @@ func (e *Engine) httpClient() *http.Client {
 		return nil
 	}
 	return &clone
+}
+
+// lockBusyDetail keeps a stale-holder reason visible on UPDATE_BUSY. A live
+// flock stays "lock". The file is not removed in either case.
+func lockBusyDetail(err error) string {
+	msg := err.Error()
+	if i := strings.LastIndex(msg, ": "); i >= 0 {
+		switch msg[i+2:] {
+		case "boot id", "pid", "process", "start time":
+			return "lock " + msg[i+2:]
+		}
+	}
+	return "lock"
 }
 
 func safeURL(raw string) string {

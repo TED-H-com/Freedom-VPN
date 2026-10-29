@@ -31,6 +31,34 @@ provisioning operation/outbox event in one transaction. The node becomes
 The worker must provide evidence before setting `ready`. No second human
 admission approval is introduced. A uniqueness failure rolls back everything.
 
+An administrator can set `EnrollmentCreateRequest.node_id` to authorize AT07
+reinstallation on the same Node. Creation locks that Node `FOR UPDATE`: a
+missing Node returns `404 RESOURCE_NOT_FOUND`, a retired Node returns
+`409 NODE_RETIRED`, and any unrevoked incarnation returns
+`409 NODE_INCARNATION_ACTIVE`. It reserves only a new enrollment; it does not
+clear lifecycle, revocation timestamps, journal denials or publication intent.
+Existing exit metadata and historical identities remain attached to the Node.
+
+`Enroll` checks again under the node lock, then inserts a fresh incarnation and
+certificate, creates the provisioning operation, and consumes the bound
+enrollment before updating `nodes.current_incarnation_id` and lifecycle to
+`registered`. The operation/outbox and this transition commit together. A second
+pending enrollment cannot replace the first one's active incarnation. Registered
+Nodes whose old incarnation was separately revoked are also eligible; retirement
+remains terminal. Reinstallation retains disabled publication until separately
+authorized publishing and successful provisioning.
+
+Migration `00111_pki_reinstall.sql` installs the narrow `pki_guard_terminal`
+exception for `revoked` → `registered`: the pointer must select a different,
+unrevoked incarnation belonging to the same Node, with its unrevoked certificate
+and a matching consumed enrollment from the current transaction. The enrollment
+must have been consumed before expiry and have the same public-key fingerprint;
+no other incarnation may remain unrevoked. Bare lifecycle updates and heartbeat
+reports have no such evidence and are rejected. `retired` cannot transition via
+`revoked` to bypass this rule. Existing certificate and incarnation revocation
+timestamps are never cleared. Goose Down restores the previous stricter guard
+without deleting identity history; existing reenrollments stay recorded.
+
 Replay still requires a valid CSR self-signature and request proof. The same
 request ID, incarnation ID and key return the original certificate and
 operation. A newly randomized CSR signature from that key is accepted;
@@ -39,6 +67,17 @@ returns `ENROLLMENT_KEY_MISMATCH`. An expired token cannot be replayed, and a
 revoked identity or expired/overlap-ended original certificate cannot be revived.
 No reissue is necessary for a lost response; returning the stored certificate
 keeps serial history bounded. Normal renewal has its own serial receipts.
+
+D-029 audit records use UUID actors, `node:<uuid>` or `enrollment:<uuid>`
+resources, and the generated `succeeded` result for committed local changes.
+Bootstrap claims refer to the stable Node; its incarnation remains in the
+identity and bootstrap tables. Administrator service callers supply
+`admin:<uuid>` (or a bare canonical administrator UUID), never a display label.
+Operations use generated kinds `node.enroll`, `node.revoke` and `node.retire`,
+start pending with required steps, and share the command's request ID with its
+audit row. Enrollment's operation has `netbird_setup`, `peer_readback` and
+`node_policy` steps. Local audit success does not assert that external work has
+finished; the worker transitions operation steps only with read-back evidence.
 
 ## Exact proof format
 
@@ -109,8 +148,14 @@ or changing its bound metadata makes authentication fail.
 `TakeBootstrap` authenticates the supplied TLS peer certificate, serializes
 against node revocation, and atomically clears ciphertext/encryption-key ID
 before decrypting outside the transaction and returning plaintext. At most
-one caller succeeds. Crypto/response failure after erasure does not restore
-the secret. Expired secrets are erased on retrieval or by `ExpireBootstrap`.
+one caller succeeds. The expiry verdict comes only from PostgreSQL while the
+row is locked: absent material gives retryable `409 BOOTSTRAP_NOT_READY`,
+previously delivered material gives `410 BOOTSTRAP_CONSUMED`, and material
+expired before delivery gives `410 BOOTSTRAP_EXPIRED`. Expiry erases the secret
+without setting `delivered_at`, so later calls remain expired. Slow decryption
+after a committed delivery cannot change that call to a 410. Crypto/response
+failure after erasure does not restore the secret. Expired secrets are erased
+on retrieval or by `ExpireBootstrap`.
 Store retries for the same external key/operation do not resurrect erased data;
 a different external key is a conflict. The external ID and processing metadata
 remain for read-back. This deliberately handles a lost **enroll** response
@@ -143,7 +188,7 @@ there is no automatic unfreeze or new remote-shell capability.
 
 An explicitly authorized reinstall uses the same stable Node and a new incarnation.
 Incarnation journal tombstones are permanent; an old token/proof/certificate never
-revives them. The proposed additive migration permits only a newly consumed
+revives them. Migration 00111 permits only a newly consumed
 bound enrollment to transition revoked→registered. Existing node-level journal
 denials remain fail closed and require operator reconciliation; they are never
 silently erased. Retirement cannot be undone.

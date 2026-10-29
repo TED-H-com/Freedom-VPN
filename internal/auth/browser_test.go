@@ -147,7 +147,11 @@ func TestAT28_OIDCVerificationAndSessions(t *testing.T) {
 				}
 				callback.AddCookie(c)
 			}
-			callback.AddCookie(&http.Cookie{Name: SessionCookie, Value: "old-session"})
+			oldRole := Member
+			if mode == "admin" {
+				oldRole = Admin
+			}
+			callback.AddCookie(&http.Cookie{Name: cookieNameForRole(oldRole), Value: "old-session"})
 			w := httptest.NewRecorder()
 			mux.ServeHTTP(w, callback)
 			want := 401
@@ -174,7 +178,7 @@ func TestAT28_OIDCVerificationAndSessions(t *testing.T) {
 			}
 			var sessionCookie *http.Cookie
 			for _, c := range w.Result().Cookies() {
-				if c.Name == SessionCookie {
+				if c.Name == cookieNameForRole(oldRole) {
 					sessionCookie = c
 				}
 			}

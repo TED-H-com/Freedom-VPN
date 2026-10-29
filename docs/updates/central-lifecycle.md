@@ -14,7 +14,10 @@ The generated HTTP types remain the wire contract.
    Artifact, manifest, SBOM, notices and source URLs must all pass this allowlist.
 3. Pass authenticated admin identity, UUID idempotency key and the raw JSON
    `ReleaseRegisterRequest` to `Service.Register`. Raw bytes preserve signature
-   validation and reject duplicate JSON members. The hash is SHA-256 of the JCS
+   validation and reject duplicate JSON members. The service enforces
+   `canonjson.MaxBytes` and the request schema, extracts only the raw envelope,
+   verifies its signature/schema, then decodes `api.ReleaseRegisterRequest`.
+   The hash is SHA-256 of the JCS
    **whole envelope**, as specified by the shared signing vector.
 4. Registration verifies Ed25519 trust purpose/window/revocation, the embedded
    JSON Schema, decimal ranges, Ubuntu 24.04 amd64 and arm64 coverage, duplicate
@@ -34,7 +37,11 @@ The generated HTTP types remain the wire contract.
    `VerifyRelease` streams every artifact through a size limit and SHA-256 check
    outside database transactions. Only a pending verification can commit its
    result; a crash before commit can safely retry. Failed verification remains
-   ineligible. The current implementation makes one fetch attempt per worker
+   ineligible. Re-registration with a new idempotency key and the same manifest
+   returns 409 `STATE_CONFLICT` with `details.verification_state="failed"` after
+   failure, 202 with the existing operation while pending, or 201 once verified.
+   Exact command replay retains its original ACK and operation (§14.5).
+   The current implementation makes one fetch attempt per worker
    invocation and records a fetch error as failed; there is no infinite retry.
 7. Use `NewHTTPSFetcher(validator, measuredTimeout)` in production. It disables
    environment proxies, rejects redirects, rejects private/special DNS answers
@@ -82,6 +89,9 @@ existing signed desired-state `update` field. The selected artifact allows the
 compiler to check the node platform without modifying that field's schema.
 The caller also reads the node's latest desired release; an older applying job
 may legitimately name a different release while finishing its transaction.
+Intent refresh returns the stored first `issued_at` and the stored extended
+`authorization_valid_until`, including PostgreSQL timestamp precision. The signed
+intent therefore agrees with the authorization row on every retrieval.
 
 Queued/downloading/verifying jobs become superseded when a newer target appears.
 Applying/checking jobs finish first while the desired pointer already names the
@@ -131,8 +141,8 @@ response; 202 is acceptance, never completion.
 | Rolled back without compatible, approved, trusted manifest and healthy checks | Reject; never count rollback as target success |
 | Older applying/checking job finishes | Finish that job's ledger, ACK as history, leave newest pointer/generation intact |
 | Superseded/terminal job reports late, progress goes backwards, already_current arrives after download began, or rollback arrives before applying | Append history; preserve terminal ledger/current pointer |
-| Current terminal result, no heartbeat since authorization | May update observed release if the stored observed generation is not newer |
-| Heartbeat already arrived after authorization | Save result and ACK; await a new heartbeat for the current-version observation |
+| Current terminal result with a strictly greater update generation than the observation | Advance actual and last-good release when supported by result evidence, even if a routine pre-switch heartbeat arrived after authorization |
+| Heartbeat already carries the same or a newer update generation | Save result and ACK; preserve the heartbeat observation and return `applied_to_current_observation=false` |
 | Report claims forwarding while disabled, disruptive, unsupported or recovery-required | `NODE_NOT_SERVICEABLE`; never rewrite publication intent |
 
 All accepted results, their ACK, generation-conditional observation, job evidence,
@@ -159,6 +169,8 @@ into `superseded`; target rows preserve the exact reason. Any waiting_online
 bucket takes display precedence over running work. All-terminal snapshots are
 completed only if every target succeeded or was already_current. Empty snapshots
 complete with zero targets. Cursor pages never change whole-batch counts.
+Target `node_name` comes from the exit display name and is null only when the
+node has no display name.
 
 ## Serving and observed versions
 
@@ -233,3 +245,51 @@ HTTP and worker composition, including the receipt-transaction framework gaps,
 is documented in [node wiring](../nodes/WIRING.md). The response mapping and
 `Evidence` now share attention/confirmation predicates; `NodeVersionView` uses
 the same confirmation predicate. Observations preserve central receipt time.
+
+## Operation and audit evidence (D-029)
+
+Create, first-sync, retry and release verification operations use control-core's
+`operations.Create` and `operations.Transition`, with generated operation kinds
+`update_batch.create`, `update_batch.retry` and `release.register`. Batch steps
+separately record the persisted snapshot and target outcomes; retry operations
+record their attempts. A batch with exceptions has a failed target step and a
+successful snapshot step, so its operation is partially_succeeded. An entirely
+successful batch/retry requires actual persisted target evidence.
+
+Verification failure records a failed `verify` step with a safe error code.
+`operations.Store.Get` exposes that code with a fixed, safe top-level error
+message. Fetcher error text, URLs and payloads do not enter the operation response.
+Every domain audit writer constructs a typed event with `audit.NewEvent` and
+persists it with `audit.AppendEvent` in the action's transaction (§16.4).
+Actors use contract types and nonzero UUIDs. Verification and first-sync use the
+existing system singleton `00000000-0000-0000-0000-000000000003`; node reports
+use their authenticated node UUID. Results are `succeeded` or `failed`, including
+`failed` for conflicting results and refused rollbacks. Actions such as
+`release.verify` and `update_result.accept` describe the audited action and are
+independent of operation-kind enums.
+Resource types are release, update_batch, update_target and node. Release support
+changes audit each affected release, including removed releases. Request IDs and
+operation IDs retain traceability; worker verification retains the registering
+operation's request ID. Job/result UUIDs stay in allowlisted diff fields on real
+node/target resources; they are never relabeled as other entity types. Free-form
+reasons are excluded from audit diffs. The integration fixtures read every event
+back through `audit.Store.List` and operations through `operations.Store.Get`,
+assert zero anomalies, and verify actor IDs, resource relationships and correlation.
+
+## Applied policy evidence (§13.10.3)
+
+Contract revision 3 keeps `UpdateResult.policy_generation` required. It names the
+actually applied desired-state `config_generation`, independently of job generation.
+Migration 00161 derives an exact numeric column from the immutable result payload
+and stores `policy_refs` from the matching node/incarnation/generation in
+`desired_states`. Unavailable history leaves refs null; it never substitutes the
+latest policy. Accepted old-job history and conflict payloads cannot overwrite
+accepted evidence. `Evidence(targetID)` exposes the accepted job's policy generation
+and references, including integers beyond JavaScript's safe range.
+
+The revision 3 generated `UpdateTarget` has no policy-generation/reference fields,
+and UpdateResult does not carry policy_refs. `GetBatch` retains its generated
+contract return type. The contract owner must add nullable `policy_generation`
+(decimal string) and `policy_refs` (UUID array) to UpdateTarget before the node HTTP
+adapter can expose this evidence in batch targets. No undeclared wire fields are
+added by this domain.

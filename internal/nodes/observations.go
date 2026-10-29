@@ -11,7 +11,9 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -25,6 +27,11 @@ const (
 	DefaultStaleTimeout      = 90 * time.Second
 	DefaultOfflineTimeout    = 180 * time.Second
 )
+
+// SubmitObservationTx joins observation ingestion to the caller's command transaction (§14.5).
+func (s *Service) SubmitObservationTx(ctx context.Context, tx pgx.Tx, nodeID, incarnationID uuid.UUID, report api.ObservationReport) (api.ObservationAccepted, error) {
+	return s.SubmitObservation(commandtx.WithTransaction(ctx, tx), nodeID, incarnationID, report)
+}
 
 // SubmitObservation ingests an agent observation report (`POST /agent/observations`, §5.1, §14.4, §15.3).
 //
@@ -254,8 +261,30 @@ func (s *Service) SubmitObservation(
 				return err
 			}
 
+			obsAuditID := uuid.Must(uuid.NewV7())
+			afterObsAudit, _ := json.Marshal(map[string]any{
+				"report_id":                 report.ReportId.String(),
+				"applied_config_generation": appliedGenStr,
+				"safety_status":             string(effectiveSafety),
+				"data_health":               string(effectiveHealth),
+				"provisioning_state":        string(report.ProvisioningState),
+			})
+			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+				ID:            obsAuditID,
+				Actor:         authNodeID.String(),
+				ActorType:     string(api.AuditEventActorTypeNode),
+				Action:        "node.observation_applied",
+				Resource:      "node:" + authNodeID.String(),
+				Result:        string(api.AuditEventResultSucceeded),
+				SchemaVersion: 1,
+				Before:        []byte(`{}`),
+				After:         afterObsAudit,
+			}); err != nil {
+				return err
+			}
+
 			// 5. Feed pending/running operation steps ONLY if concrete evidence is satisfied.
-			if err := advanceNodeOperationsOnObservation(ctx, tx, authNodeID, report, effectiveSafety, effectiveHealth, effectiveForwarding, receivedAt); err != nil {
+			if err := advanceNodeOperationsOnObservation(ctx, tx, authNodeID, report, effectiveSafety, effectiveHealth, effectiveForwarding, receivedAt, obsAuditID); err != nil {
 				return err
 			}
 		} else {
@@ -348,6 +377,7 @@ func advanceNodeOperationsOnObservation(
 	effectiveHealth api.DataHealth,
 	effectiveForwarding bool,
 	now time.Time,
+	obsAuditID uuid.UUID,
 ) error {
 	rows, err := tx.Query(ctx, `
 		SELECT id, kind, status, desired_generation::text, steps, observed_refs
@@ -422,6 +452,7 @@ func advanceNodeOperationsOnObservation(
 				if effectiveSafety == api.SafetyStatusPassed && report.ProvisioningState == api.ProvisioningStateReady {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepAgentPolicy
+					step.ObservedAt = &now
 					step.ErrorCode = nil
 					step.ErrorMessage = nil
 					step.UpdatedAt = now
@@ -436,6 +467,7 @@ func advanceNodeOperationsOnObservation(
 					effectiveHealth == api.DataHealthHealthy {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepDataPathProbe
+					step.ObservedAt = &now
 					step.ErrorCode = nil
 					step.ErrorMessage = nil
 					step.UpdatedAt = now
@@ -451,6 +483,7 @@ func advanceNodeOperationsOnObservation(
 				if !effectiveForwarding {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepAgentPolicy
+					step.ObservedAt = &now
 					step.ErrorCode = nil
 					step.ErrorMessage = nil
 					step.UpdatedAt = now
@@ -536,6 +569,101 @@ func advanceNodeOperationsOnObservation(
 					UPDATE exits
 					SET publication_observed = 'withdrawn', resource_version = resource_version + 1
 					WHERE node_id = $1`, nodeID); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	// Also advance the "nodes" step on member, entitlement_grant (via entitlement_grants.member_id),
+	// and member_device (via member_devices.member_id) operations when the node has applied its
+	// desired config generation and passed safety checks (Members request 3).
+	if effectiveSafety == api.SafetyStatusPassed &&
+		report.ProvisioningState == api.ProvisioningStateReady &&
+		report.AppliedConfigGeneration.IsSpecified() &&
+		!report.AppliedConfigGeneration.IsNull() &&
+		appliedGen > 0 {
+		var desiredNodeGenStr string
+		if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr); err != nil {
+			return err
+		}
+		desiredNodeGen, _ := strconv.ParseUint(desiredNodeGenStr, 10, 64)
+		if appliedGen >= desiredNodeGen {
+			mRows, err := tx.Query(ctx, `
+				SELECT o.id
+				FROM operations o
+				LEFT JOIN entitlement_grants g ON o.resource_type = 'entitlement_grant' AND g.id = o.resource_id
+				LEFT JOIN member_devices d ON o.resource_type = 'member_device' AND d.id = o.resource_id
+				LEFT JOIN members m ON m.id = CASE
+					WHEN o.resource_type = 'member' THEN o.resource_id
+					WHEN o.resource_type = 'entitlement_grant' THEN g.member_id
+					WHEN o.resource_type = 'member_device' THEN d.member_id
+				END
+				LEFT JOIN entitlements e ON e.member_id = m.id
+				WHERE o.resource_type IN ('member', 'entitlement_grant', 'member_device')
+				  AND m.id IS NOT NULL
+				  AND o.status IN ('pending', 'running', 'failed', 'partially_succeeded')
+				  AND o.steps->'nodes'->>'status' IN ('pending', 'running', 'failed')
+				  AND (
+					(o.resource_type IN ('member', 'entitlement_grant') AND (o.desired_generation IS NULL OR (e.revision IS NOT NULL AND e.revision >= o.desired_generation)))
+					OR (o.resource_type = 'member_device' AND (o.desired_generation IS NULL OR (d.resource_version IS NOT NULL AND d.resource_version >= o.desired_generation)))
+				  )
+				  AND (
+					o.kind <> 'member.grant'
+					OR NOT EXISTS (
+						SELECT 1 FROM entitlement_grants g2
+						WHERE (g2.operation_id = o.id OR (o.resource_type = 'entitlement_grant' AND g2.id = o.resource_id))
+						  AND g2.valid_from > $2
+					)
+				  )
+				  AND (
+					NOT EXISTS (SELECT 1 FROM exits ex JOIN exit_groups eg ON eg.exit_id = ex.id WHERE ex.node_id = $1)
+					OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
+					OR EXISTS (
+						SELECT 1
+						FROM exits ex
+						JOIN exit_groups eg ON eg.exit_id = ex.id
+						WHERE ex.node_id = $1
+						  AND (
+							(e.projection->'exit_group_ids') ? eg.group_id::text
+							OR eg.group_id = ANY(m.member_group_ids)
+						  )
+					)
+				  )
+				ORDER BY o.id ASC
+				FOR UPDATE OF o`, nodeID, now)
+			if err != nil {
+				return err
+			}
+			var memberOpIDs []uuid.UUID
+			for mRows.Next() {
+				var opID uuid.UUID
+				if err := mRows.Scan(&opID); err != nil {
+					mRows.Close()
+					return err
+				}
+				memberOpIDs = append(memberOpIDs, opID)
+			}
+			if err := mRows.Err(); err != nil {
+				mRows.Close()
+				return err
+			}
+			mRows.Close()
+
+			for _, opID := range memberOpIDs {
+				var failed bool
+				if err := tx.QueryRow(ctx, `SELECT steps->'nodes'->>'status' = 'failed' FROM operations WHERE id = $1`, opID).Scan(&failed); err != nil {
+					return err
+				}
+				if failed {
+					if err := entitlement.TransitionOperation(ctx, tx, opID, "nodes", api.OperationStepStatusRunning, nil); err != nil {
+						return err
+					}
+				}
+				if err := entitlement.TransitionOperation(ctx, tx, opID, "nodes", api.OperationStepStatusSucceeded, &operations.Evidence{
+					Reference:  "audit_event:" + obsAuditID.String(),
+					ObservedAt: now,
+				}); err != nil {
 					return err
 				}
 			}

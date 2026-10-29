@@ -12,10 +12,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -38,6 +42,15 @@ const (
 	EnforcedStateOverride EnforcedState = "override"
 )
 
+// LedgerWatermark captures the usage.GetMemberPeriodTotal watermark snapshot
+// recorded during a Fair-Use evaluation (§11.1, §11.2).
+type LedgerWatermark struct {
+	LedgerEpoch          uuid.UUID               `json:"ledger_epoch,omitempty"`
+	ProjectionGeneration decstr.U64              `json:"projection_generation,omitempty"`
+	AggregateAsOf        time.Time               `json:"aggregate_as_of"`
+	Streams              []usage.StreamWatermark `json:"streams,omitempty"`
+}
+
 // UsageSnapshot represents a member's aggregated usage across all nodes for an accounting period
 // along with the ledger watermark (`AggregateAsOf`) and any negative ledger adjustment metadata (§10.4, §11.1).
 type UsageSnapshot struct {
@@ -50,11 +63,70 @@ type UsageSnapshot struct {
 	MeteringVersion       string
 	HasNegativeAdjustment bool
 	AdjustmentReason      string
+	Watermark             *LedgerWatermark
 }
 
 // UsageReader reads a member's period total across all nodes with its ledger watermark.
 type UsageReader interface {
 	GetMemberPeriodUsage(ctx context.Context, memberID uuid.UUID, periodID string) (UsageSnapshot, error)
+}
+
+// NewUsageServiceReader adapts `*usage.Service.GetMemberPeriodTotal` into a `UsageReader`,
+// propagating its `LedgerWatermark` (`LedgerEpoch`, `ProjectionGeneration`, `Watermarks`, `AggregateAsOf`)
+// into every Fair-Use computation (§11.2).
+func NewUsageServiceReader(svc *usage.Service, pool *pgxpool.Pool) UsageReader {
+	return &usageServiceReader{svc: svc, db: pool}
+}
+
+type usageServiceReader struct {
+	svc *usage.Service
+	db  *pgxpool.Pool
+}
+
+func (r *usageServiceReader) GetMemberPeriodUsage(ctx context.Context, memberID uuid.UUID, periodID string) (UsageSnapshot, error) {
+	tot, err := r.svc.GetMemberPeriodTotal(ctx, memberID, periodID)
+	if err != nil {
+		return UsageSnapshot{}, err
+	}
+	asOf := time.Now().UTC()
+	if tot.AggregateAsOf != nil && !tot.AggregateAsOf.IsZero() {
+		asOf = tot.AggregateAsOf.UTC()
+	} else if tot.LastObservedAt != nil && !tot.LastObservedAt.IsZero() {
+		asOf = tot.LastObservedAt.UTC()
+	}
+	wm := &LedgerWatermark{
+		LedgerEpoch:          tot.LedgerEpoch,
+		ProjectionGeneration: tot.ProjectionGeneration,
+		AggregateAsOf:        asOf,
+		Streams:              tot.Watermarks,
+	}
+	snap := UsageSnapshot{
+		MemberID:        memberID,
+		PeriodID:        tot.Period,
+		PeriodStart:     tot.PeriodStart,
+		PeriodEnd:       tot.PeriodEnd,
+		TotalBytes:      tot.TotalBytes,
+		AggregateAsOf:   asOf,
+		MeteringVersion: tot.MeteringVersion,
+		Watermark:       wm,
+	}
+	if r.db != nil {
+		var negReason string
+		err = r.db.QueryRow(ctx, `
+			SELECT reason
+			FROM usage_adjustments
+			WHERE member_id = $1 AND period = $2 AND (upload_bytes + download_bytes) < 0
+			ORDER BY created_at DESC
+			LIMIT 1
+		`, memberID, tot.Period).Scan(&negReason)
+		if err == nil {
+			snap.HasNegativeAdjustment = true
+			snap.AdjustmentReason = negReason
+		} else if !errors.Is(err, pgx.ErrNoRows) {
+			return UsageSnapshot{}, fmt.Errorf("fup: query usage_adjustments: %w", err)
+		}
+	}
+	return snap, nil
 }
 
 // MemberPolicyContext holds the active plan and fair-use policy revision resolved for a member.
@@ -144,6 +216,7 @@ type EvaluationResult struct {
 	AggregateAsOf         time.Time                   `json:"aggregate_as_of"`
 	OverrideID            *uuid.UUID                  `json:"override_id,omitempty"`
 	OverrideValidUntil    *time.Time                  `json:"override_valid_until,omitempty"`
+	Watermark             *LedgerWatermark            `json:"ledger_watermark,omitempty"`
 	ImpactSummary         map[string]any              `json:"impact_summary"`
 	ComputedAt            time.Time                   `json:"computed_at"`
 }
@@ -199,6 +272,7 @@ type Engine struct {
 	usageReader  UsageReader
 	policyReader MemberPolicyReader
 	ackReader    NodeAckReader
+	modeOverride *api.FairUsePayloadMode
 
 	// In-memory state fallback when db is nil (used by pure unit tests with no DB).
 	mu             sync.RWMutex
@@ -234,6 +308,24 @@ func NewEngine(db *pgxpool.Pool, usageReader UsageReader, policyReader MemberPol
 	return e
 }
 
+// SetModeOverride sets an optional runtime override for the Fair-Use mode ("shadow" or "enforce")
+// from central configuration (`FVPN_FUP_MODE`, §11.2). Passing "" clears the override so the active
+// policy revision's `mode` field governs.
+func (e *Engine) SetModeOverride(mode string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	switch strings.TrimSpace(mode) {
+	case string(api.FairUsePayloadModeShadow):
+		m := api.FairUsePayloadModeShadow
+		e.modeOverride = &m
+	case string(api.FairUsePayloadModeEnforce):
+		m := api.FairUsePayloadModeEnforce
+		e.modeOverride = &m
+	default:
+		e.modeOverride = nil
+	}
+}
+
 func stateKey(memberID uuid.UUID, periodID string) string {
 	return memberID.String() + ":" + periodID
 }
@@ -259,7 +351,7 @@ func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResul
 	}
 	actor := strings.TrimSpace(in.Actor)
 	if actor == "" {
-		actor = "system/fup-engine"
+		actor = fupSystemActorUUID
 	}
 
 	if e.usageReader == nil || e.policyReader == nil {
@@ -359,6 +451,11 @@ func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResul
 
 	// Determine effective mode: if policy.Mode is "shadow" or now < policy.EffectiveAt, run in shadow mode (§11.1, §11.2).
 	effectiveMode := policy.Mode
+	e.mu.RLock()
+	if e.modeOverride != nil {
+		effectiveMode = *e.modeOverride
+	}
+	e.mu.RUnlock()
 	if now.Before(policy.EffectiveAt) {
 		effectiveMode = api.FairUsePayloadModeShadow
 	}
@@ -378,6 +475,9 @@ func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResul
 		"would_apply_reason":     string(wouldApplyReason),
 		"relaxed":                relaxed,
 		"late_period_event":      isLatePreviousPeriod,
+	}
+	if usageSnap.Watermark != nil {
+		impactSummary["ledger_watermark"] = usageSnap.Watermark
 	}
 	if overrideValidUntil != nil {
 		impactSummary["override_valid_until"] = overrideValidUntil.Format(time.RFC3339Nano)
@@ -497,6 +597,7 @@ func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResul
 		AggregateAsOf:         usageSnap.AggregateAsOf.UTC(),
 		OverrideID:            overrideID,
 		OverrideValidUntil:    overrideValidUntil,
+		Watermark:             usageSnap.Watermark,
 		ImpactSummary:         impactSummary,
 		ComputedAt:            now,
 	}
@@ -559,20 +660,6 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 	}
 
 	if e.db != nil {
-		afterDiff, err := json.Marshal(map[string]any{
-			"override_id": ov.ID.String(),
-			"member_id":   ov.MemberID.String(),
-			"down_bps":    ov.DownBps,
-			"up_bps":      ov.UpBps,
-			"priority":    ov.Priority,
-			"valid_from":  ov.ValidFrom.Format(time.RFC3339Nano),
-			"valid_until": ov.ValidUntil.Format(time.RFC3339Nano),
-			"reason":      ov.Reason,
-		})
-		if err != nil {
-			return nil, nil, err
-		}
-
 		err = db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
 			if _, err := tx.Exec(ctx, `
 				INSERT INTO fup_member_overrides (
@@ -583,16 +670,26 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 				ov.ValidFrom, ov.ValidUntil, ov.Reason, ov.ActorID, ov.CreatedAt); err != nil {
 				return fmt.Errorf("fup: insert override: %w", err)
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         in.ActorID.String(),
-				ActorType:     "admin",
-				Action:        "fup.override.set",
-				Resource:      "member/" + in.MemberID.String(),
-				Result:        "succeeded",
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         afterDiff,
-			}); err != nil {
+			auditEv, err := audit.NewEvent(audit.Entry{
+				Actor:    audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: in.ActorID},
+				Action:   "fup.override.set",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(in.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After: map[string]any{
+					"override_id": ov.ID.String(),
+					"member_id":   ov.MemberID.String(),
+					"down_bps":    ov.DownBps,
+					"up_bps":      ov.UpBps,
+					"priority":    ov.Priority,
+					"valid_from":  ov.ValidFrom.Format(time.RFC3339Nano),
+					"valid_until": ov.ValidUntil.Format(time.RFC3339Nano),
+				},
+				Fields: []string{"override_id", "member_id", "down_bps", "up_bps", "priority", "valid_from", "valid_until"},
+			})
+			if err != nil {
+				return fmt.Errorf("fup: build override audit event: %w", err)
+			}
+			if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
 				return fmt.Errorf("fup: append override audit event: %w", err)
 			}
 			return nil
@@ -628,18 +725,7 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 	}
 
 	if e.db != nil {
-		afterDiff, err := json.Marshal(map[string]any{
-			"override_id":       in.OverrideID.String(),
-			"member_id":         in.MemberID.String(),
-			"revoked_at":        now.Format(time.RFC3339Nano),
-			"revoked_by":        in.ActorID.String(),
-			"revocation_reason": in.Reason,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		err = db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
+		err := db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
 			tag, err := tx.Exec(ctx, `
 				UPDATE fup_member_overrides
 				SET revoked_at = $1, revoked_by = $2, revocation_reason = $3
@@ -651,16 +737,23 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 			if tag.RowsAffected() == 0 {
 				return ErrMemberStateNotFound
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         in.ActorID.String(),
-				ActorType:     "admin",
-				Action:        "fup.override.revoked",
-				Resource:      "member/" + in.MemberID.String(),
-				Result:        "succeeded",
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         afterDiff,
-			}); err != nil {
+			auditEv, err := audit.NewEvent(audit.Entry{
+				Actor:    audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: in.ActorID},
+				Action:   "fup.override.revoked",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(in.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After: map[string]any{
+					"override_id": in.OverrideID.String(),
+					"member_id":   in.MemberID.String(),
+					"revoked_at":  now.Format(time.RFC3339Nano),
+					"revoked_by":  in.ActorID.String(),
+				},
+				Fields: []string{"override_id", "member_id", "revoked_at", "revoked_by"},
+			})
+			if err != nil {
+				return fmt.Errorf("fup: build revoke override audit: %w", err)
+			}
+			if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
 				return fmt.Errorf("fup: append revoke override audit: %w", err)
 			}
 			return nil
@@ -1138,33 +1231,31 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 			return fmt.Errorf("fup: insert fup_evaluations: %w", err)
 		}
 
+		act := fupAuditActor(actor)
 		if res.Relaxed {
-			relaxAudit, err := json.Marshal(map[string]any{
-				"member_id":         res.MemberID.String(),
-				"period_id":         res.PeriodID,
-				"tier_index":        res.WouldApplyTierIndex,
-				"total_bytes":       res.TotalBytes.String(),
-				"relaxation_reason": res.RelaxationReason,
+			relaxEv, err := audit.NewEvent(audit.Entry{
+				Actor:    act,
+				Action:   "fup.tier.relaxed",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(res.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After: map[string]any{
+					"member_id":   res.MemberID.String(),
+					"period_id":   res.PeriodID,
+					"tier_index":  res.WouldApplyTierIndex,
+					"total_bytes": res.TotalBytes.String(),
+				},
+				Fields: []string{"member_id", "period_id", "tier_index", "total_bytes"},
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("fup: build relaxation audit event: %w", err)
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         actor,
-				ActorType:     "system",
-				Action:        "fup.tier.relaxed",
-				Resource:      "member/" + res.MemberID.String(),
-				Result:        "succeeded",
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         relaxAudit,
-			}); err != nil {
+			if err := audit.AppendEvent(ctx, tx, relaxEv); err != nil {
 				return fmt.Errorf("fup: append relaxation audit event: %w", err)
 			}
 		}
 
 		if res.GenerationIncremented {
-			outboxPayload, err := json.Marshal(map[string]any{
+			genAfter := map[string]any{
 				"member_id":          res.MemberID.String(),
 				"period_id":          res.PeriodID,
 				"policy_revision_id": res.PolicyRevisionID.String(),
@@ -1177,7 +1268,8 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 				"reason":             enforcedReasonStr,
 				"valid_from":         res.ValidFrom.Format(time.RFC3339Nano),
 				"valid_until":        res.ValidUntil.Format(time.RFC3339Nano),
-			})
+			}
+			outboxPayload, err := json.Marshal(genAfter)
 			if err != nil {
 				return err
 			}
@@ -1192,16 +1284,18 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 			}); err != nil {
 				return fmt.Errorf("fup: enqueue outbox event: %w", err)
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         actor,
-				ActorType:     "system",
-				Action:        "fup.generation.issued",
-				Resource:      "member/" + res.MemberID.String(),
-				Result:        "succeeded",
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         outboxPayload,
-			}); err != nil {
+			genEv, err := audit.NewEvent(audit.Entry{
+				Actor:    act,
+				Action:   "fup.generation.issued",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(res.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After:    genAfter,
+				Fields:   []string{"member_id", "period_id", "policy_revision_id", "generation", "enforced_state", "tier_index", "down_bps", "up_bps", "priority", "reason", "valid_from", "valid_until"},
+			})
+			if err != nil {
+				return fmt.Errorf("fup: build generation audit event: %w", err)
+			}
+			if err := audit.AppendEvent(ctx, tx, genEv); err != nil {
 				return fmt.Errorf("fup: append generation audit event: %w", err)
 			}
 		}
@@ -1210,6 +1304,31 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 }
 
 // Default PostgreSQL implementations of UsageReader, MemberPolicyReader, and NodeAckReader.
+
+const fupSystemActorUUID = "00000000-0000-0000-0000-000000000003"
+
+func fupAuditActor(actor string) audit.Actor {
+	trimmed := strings.TrimSpace(actor)
+	if id, err := uuid.Parse(trimmed); err == nil {
+		if id == uuid.Nil || id.String() == fupSystemActorUUID {
+			return audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(fupSystemActorUUID)}
+		}
+		return audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: id}
+	}
+	return audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(fupSystemActorUUID)}
+}
+
+func parseFUPUint64(field, val string) (decstr.U64, error) {
+	u, err := decstr.Parse(strings.TrimSpace(val))
+	if err != nil {
+		return 0, apierr.Wrap(
+			fmt.Errorf("fup: %s=%q: %w: %w", field, val, decstr.ErrOverflow, err),
+			apierr.InternalError,
+			"usage byte total overflows uint64",
+		).WithDetail("detail_code", usage.ErrCodeUint64Overflow).WithDetail("field", field)
+	}
+	return u, nil
+}
 
 type pgUsageReader struct {
 	db *pgxpool.Pool
@@ -1230,31 +1349,104 @@ func (r *pgUsageReader) GetMemberPeriodUsage(ctx context.Context, memberID uuid.
 		MeteringVersion: string(api.MeteringVersionForwardAdmissionV1),
 	}
 
-	var totalStr string
-	var aggAsOf time.Time
-	var meteringVer string
-	err = r.db.QueryRow(ctx, `
-		SELECT LEAST(GREATEST(total_bytes, 0), 18446744073709551615)::numeric(20,0)::text,
-		       aggregate_as_of,
-		       metering_version,
-		       period_start,
-		       period_end
-		FROM usage_rollups
-		WHERE member_id = $1 AND period = $2 AND granularity = 'month'
-		ORDER BY projection_generation DESC
-		LIMIT 1
-	`, memberID, periodID).Scan(&totalStr, &aggAsOf, &meteringVer, &snap.PeriodStart, &snap.PeriodEnd)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+	rows, err := r.db.Query(ctx, `
+		SELECT r.upload_bytes::text,
+		       r.download_bytes::text,
+		       r.total_bytes::text,
+		       r.aggregate_as_of,
+		       r.metering_version,
+		       r.period_start,
+		       r.period_end,
+		       COALESCE((SELECT current_epoch FROM usage_ledger_state LIMIT 1), '00000000-0000-0000-0000-000000000000'::uuid),
+		       r.projection_generation::text
+		FROM usage_rollups r
+		JOIN usage_projection_generations g
+		  ON g.projection_name = 'member_usage'
+		 AND g.state = 'active'
+		 AND g.generation = r.projection_generation
+		WHERE r.member_id = $1 AND r.period = $2 AND r.granularity = 'month'
+		ORDER BY r.metering_version ASC
+	`, memberID, periodID)
+	if err != nil {
 		return UsageSnapshot{}, fmt.Errorf("fup: query usage_rollups: %w", err)
 	}
-	if err == nil {
-		u, parseErr := decstr.Parse(totalStr)
-		if parseErr != nil {
-			return UsageSnapshot{}, parseErr
+	defer rows.Close()
+
+	var (
+		hasRows   bool
+		totalSum  decstr.U64
+		latestAgg time.Time
+		epoch     uuid.UUID
+		gen       decstr.U64
+	)
+	for rows.Next() {
+		var (
+			upStr, downStr, totalStr, genStr string
+			aggAsOf                          time.Time
+			meteringVer                      string
+			rowStart, rowEnd                 time.Time
+			rowEpoch                         uuid.UUID
+		)
+		if err := rows.Scan(&upStr, &downStr, &totalStr, &aggAsOf, &meteringVer, &rowStart, &rowEnd, &rowEpoch, &genStr); err != nil {
+			return UsageSnapshot{}, fmt.Errorf("fup: scan usage_rollups: %w", err)
 		}
-		snap.TotalBytes = u
-		snap.AggregateAsOf = aggAsOf.UTC()
+		up, err := parseFUPUint64("upload_bytes", upStr)
+		if err != nil {
+			return UsageSnapshot{}, err
+		}
+		down, err := parseFUPUint64("download_bytes", downStr)
+		if err != nil {
+			return UsageSnapshot{}, err
+		}
+		total, err := parseFUPUint64("total_bytes", totalStr)
+		if err != nil {
+			return UsageSnapshot{}, err
+		}
+		if _, err := up.Add(down); err != nil {
+			return UsageSnapshot{}, apierr.Wrap(
+				fmt.Errorf("fup: upload_bytes+download_bytes (%s+%s): %w", up, down, err),
+				apierr.InternalError,
+				"usage byte total overflows uint64",
+			).WithDetail("detail_code", usage.ErrCodeUint64Overflow).WithDetail("field", "total_bytes")
+		}
+		nextTotal, err := totalSum.Add(total)
+		if err != nil {
+			return UsageSnapshot{}, apierr.Wrap(
+				fmt.Errorf("fup: sum(total_bytes) (%s+%s): %w", totalSum, total, err),
+				apierr.InternalError,
+				"usage byte total overflows uint64",
+			).WithDetail("detail_code", usage.ErrCodeUint64Overflow).WithDetail("field", "total_bytes")
+		}
+		rowGen, err := decstr.Parse(genStr)
+		if err != nil {
+			return UsageSnapshot{}, fmt.Errorf("fup: parse projection_generation=%q: %w", genStr, err)
+		}
+		totalSum = nextTotal
+		if !hasRows || aggAsOf.After(latestAgg) {
+			latestAgg = aggAsOf.UTC()
+		}
+		if !hasRows || rowStart.Before(snap.PeriodStart) {
+			snap.PeriodStart = rowStart.UTC()
+		}
+		if !hasRows || rowEnd.After(snap.PeriodEnd) {
+			snap.PeriodEnd = rowEnd.UTC()
+		}
 		snap.MeteringVersion = meteringVer
+		epoch = rowEpoch
+		gen = rowGen
+		hasRows = true
+	}
+	if err := rows.Err(); err != nil {
+		return UsageSnapshot{}, fmt.Errorf("fup: iterate usage_rollups: %w", err)
+	}
+	if hasRows {
+		snap.TotalBytes = totalSum
+		snap.AggregateAsOf = latestAgg
+		snap.Watermark = &LedgerWatermark{
+			LedgerEpoch:          epoch,
+			ProjectionGeneration: gen,
+			AggregateAsOf:        latestAgg,
+		}
 	}
 
 	// Check if there is any negative adjustment in `usage_adjustments` for this member and period (§11.1).
@@ -1311,11 +1503,12 @@ type pgNodeAckReader struct {
 
 func (r *pgNodeAckReader) GetMemberNodeAckStatus(ctx context.Context, _ uuid.UUID, generation decstr.U64) (NodeAckStatus, error) {
 	rows, err := r.db.Query(ctx, `
-		SELECT n.applied_config_generation::text,
-		       COALESCE(
+		SELECT COALESCE(
 		           (SELECT no.checks->'applied_policy_refs'->>'fup_generation'
 		            FROM node_observations no
 		            WHERE no.node_id = n.id
+		              AND no.safety_status = 'passed'
+		              AND no.control_status = 'online'
 		            ORDER BY no.received_at DESC
 		            LIMIT 1),
 		           ''
@@ -1330,18 +1523,18 @@ func (r *pgNodeAckReader) GetMemberNodeAckStatus(ctx context.Context, _ uuid.UUI
 
 	var status NodeAckStatus
 	for rows.Next() {
-		var appliedCfgGenStr, obsFupGenStr string
-		if err := rows.Scan(&appliedCfgGenStr, &obsFupGenStr); err != nil {
+		var obsFupGenStr string
+		if err := rows.Scan(&obsFupGenStr); err != nil {
 			return NodeAckStatus{}, err
 		}
 		status.TotalServingNodes++
 		acked := false
+		// Fail-closed: only an online node with safety_status=passed and an explicit
+		// applied_policy_refs.fup_generation >= generation counts as ACKed (§11.2, FUP03).
 		if obsFupGenStr != "" {
 			if gen, err := decstr.Parse(obsFupGenStr); err == nil && gen >= generation {
 				acked = true
 			}
-		} else if gen, err := decstr.Parse(appliedCfgGenStr); err == nil && gen >= generation {
-			acked = true
 		}
 		if acked {
 			status.AckedNodes++

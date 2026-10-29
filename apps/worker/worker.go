@@ -12,9 +12,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	centralconfig "github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -172,6 +174,40 @@ func invoke(ctx context.Context, h Handler, e db.ClaimedEvent) (receipt string, 
 	return h(ctx, e)
 }
 func (d *Dispatcher) deadLetter(ctx context.Context, event db.ClaimedEvent, code string) error {
+	resourceType := api.ResourceType(event.AggregateType)
+	// D-029: explicit domain aliases, never invent a type for unknown aggregates.
+	switch event.AggregateType {
+	case "node-incarnation":
+		resourceType = api.ResourceTypeNode
+	case "device":
+		resourceType = api.ResourceTypeMemberDevice
+	case "billing_session":
+		resourceType = api.ResourceTypeCheckoutSession
+	case "fleet":
+		resourceType = api.ResourceTypeFleetConfig
+	case "fleet_update":
+		resourceType = api.ResourceTypeUpdateBatch
+	}
+	resource := api.ResourceRef{Type: resourceType, Id: event.AggregateID}
+	after := map[string]any{"dead_lettered": true}
+	fields := []string{"dead_lettered"}
+	unmapped := !resourceType.Valid()
+	if unmapped {
+		// D-040, §15.4: unknown aggregates still terminate with an audit against
+		// the fixed, seeded fleet singleton; never invent a domain resource alias.
+		resource = api.ResourceRef{Type: api.ResourceTypeFleetConfig, Id: uuid.MustParse("00000000-0000-0000-0000-000000000001")}
+		after["aggregate_type"] = event.AggregateType
+		after["aggregate_id"] = event.AggregateID.String()
+		fields = append(fields, "aggregate_type", "aggregate_id")
+	}
+	actorID, err := uuid.Parse(d.name)
+	if err != nil {
+		return errors.New("invalid worker identity")
+	}
+	auditEvent, err := audit.NewEvent(audit.Entry{Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: actorID}, Action: "outbox.dead_letter", Resource: resource, Result: api.AuditEventResultFailed, After: after, Fields: fields})
+	if err != nil {
+		return err
+	}
 	e := db.InTx(ctx, d.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		tag, e := tx.Exec(ctx, `UPDATE outbox_events SET dead_lettered_at=clock_timestamp(),last_error_code=$4,available_at='infinity',lease_owner=NULL,lease_token=NULL,lease_until=NULL WHERE id=$1 AND lease_owner=$2 AND lease_token=$3 AND lease_until>clock_timestamp() AND delivered_at IS NULL AND dead_lettered_at IS NULL`, event.ID, event.Worker, event.LeaseToken, code)
 		if e != nil {
@@ -180,9 +216,17 @@ func (d *Dispatcher) deadLetter(ctx context.Context, event db.ClaimedEvent, code
 		if tag.RowsAffected() != 1 {
 			return db.ErrLeaseLost
 		}
-		return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: "system", ActorType: "system", Action: "outbox.dead_letter", Resource: event.AggregateType + ":" + event.AggregateID.String(), Result: "failed", SchemaVersion: 1, Before: []byte(`{}`), After: []byte(`{"dead_lettered":true}`)})
+		return audit.AppendEvent(ctx, tx, auditEvent)
 	})
 	if e == nil {
+		if unmapped {
+			d.results.WithLabelValues("dead_letter_mapping_error").Inc()
+			logger := d.log
+			if logger == nil {
+				logger = slog.Default()
+			}
+			logger.ErrorContext(ctx, "outbox dead letter mapping failed", "event_id", event.ID, "error_code", "AUDIT_RESOURCE_TYPE_UNKNOWN")
+		}
 		d.results.WithLabelValues("dead_letter").Inc()
 		d.dead.Inc()
 		if d.log != nil {

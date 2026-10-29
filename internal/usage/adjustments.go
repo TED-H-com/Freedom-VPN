@@ -2,6 +2,7 @@ package usage
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 )
 
@@ -124,6 +126,47 @@ func (s *Service) CreateAdjustment(ctx context.Context, req AdjustmentCreate) (A
 		)
 		if err != nil {
 			return fmt.Errorf("usage: insert adjustment: %w", err)
+		}
+
+		actID, actType := auditActor(req.Actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"adjustment_id":  adjID.String(),
+			"member_id":      req.MemberID.String(),
+			"period":         monthPeriod.ID,
+			"upload_bytes":   req.UploadBytes,
+			"download_bytes": req.DownloadBytes,
+			"reason":         req.Reason,
+			"actor":          req.Actor,
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage.adjustment.create",
+			Resource:      string(api.ResourceTypeMember) + ":" + req.MemberID.String(),
+			Result:        string(api.AuditEventResultSucceeded),
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append adjustment audit: %w", err)
+		}
+
+		allowRelax := (req.UploadBytes + req.DownloadBytes) < 0
+		outboxPayload, _ := json.Marshal(map[string]any{
+			"member_id":         req.MemberID.String(),
+			"period_id":         monthPeriod.ID,
+			"allow_relaxation":  allowRelax,
+			"relaxation_reason": req.Reason,
+		})
+		if err := db.EnqueueOutbox(ctx, tx, db.OutboxEvent{
+			AggregateID:      req.MemberID,
+			AggregateType:    string(api.ResourceTypeMember),
+			AggregateVersion: "1",
+			EventType:        "fup.evaluate",
+			SchemaVersion:    1,
+			Payload:          outboxPayload,
+		}); err != nil {
+			return fmt.Errorf("usage: enqueue fup.evaluate outbox for adjustment: %w", err)
 		}
 
 		out = Adjustment{

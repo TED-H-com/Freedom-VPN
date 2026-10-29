@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -80,5 +81,18 @@ func TestPackageRejectsSymlink(t *testing.T) {
 	err := PackageDir(tree, filepath.Join(root, "out.tar.zst"), time.Unix(0, 0))
 	if err == nil {
 		t.Fatal("symlink was packaged")
+	}
+}
+
+func TestPackageRejectsHardLink(t *testing.T) {
+	root := t.TempDir()
+	tree := writeTree(t, root, "hard")
+	src := filepath.Join(tree, "bin", "fvpn-agent")
+	if err := os.Link(src, filepath.Join(tree, "bin", "fvpn-agent-2")); err != nil {
+		t.Fatal(err)
+	}
+	err := PackageDir(tree, filepath.Join(root, "out.tar.zst"), time.Unix(0, 0))
+	if err == nil || !strings.Contains(err.Error(), "hard link") {
+		t.Fatalf("hard link packaged: %v", err)
 	}
 }

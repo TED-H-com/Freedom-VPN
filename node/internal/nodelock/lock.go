@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -28,16 +29,19 @@ type Lock struct {
 }
 
 // holder is the metadata written only after flock succeeds (D-034d).
+// StartTime is field 22 of /proc/<pid>/stat, in clock ticks since boot.
 type holder struct {
-	PID    int    `json:"pid"`
-	BootID string `json:"boot_id"`
+	PID       int    `json:"pid"`
+	BootID    string `json:"boot_id"`
+	StartTime int64  `json:"start_time"`
 }
 
 // TryAcquire takes LOCK_EX|LOCK_NB before it writes holder metadata. It
 // returns ErrBusy when the lock is held elsewhere and does not remove the
 // file. A crashed holder is released by the kernel when its descriptor
-// closes. Stale detection compares the recorded boot id and pid; a stale
-// record does not justify deleting a file another process still has locked.
+// closes. Stale detection compares the recorded boot id, pid and process
+// start time. A stale record does not justify deleting a file another
+// process still has locked: the error names the reason and the flock stays.
 func TryAcquire(path string) (*Lock, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return nil, err
@@ -50,9 +54,11 @@ func TryAcquire(path string) (*Lock, error) {
 		if errors.Is(err, syscall.EWOULDBLOCK) {
 			h, ok := readHolder(f)
 			_ = f.Close()
-			if ok && holderStale(h, readBootID()) {
-				// The record is stale, but flock is still held. Do not unlink.
-				return nil, fmt.Errorf("%w", ErrBusy)
+			if ok {
+				if reason, stale := holderStaleReason(h, readBootID()); stale {
+					// The record is stale, but flock is still held. Do not unlink.
+					return nil, fmt.Errorf("%w: %s", ErrBusy, reason)
+				}
 			}
 			return nil, ErrBusy
 		}
@@ -93,7 +99,11 @@ func readHolder(f *os.File) (holder, bool) {
 }
 
 func writeHolder(f *os.File) error {
-	raw, err := json.Marshal(holder{PID: os.Getpid(), BootID: readBootID()})
+	start, ok := processStartTime(os.Getpid())
+	if !ok {
+		return errors.New("nodelock: process start time")
+	}
+	raw, err := json.Marshal(holder{PID: os.Getpid(), BootID: readBootID(), StartTime: start})
 	if err != nil {
 		return err
 	}
@@ -108,15 +118,62 @@ func writeHolder(f *os.File) error {
 
 // holderStale reports whether a recorded holder cannot still be this boot's
 // live process. A different boot id is stale even when the pid number has
-// been reused. A dead pid is stale on the same boot.
+// been reused. A dead pid is stale on the same boot. The same pid is stale
+// when its /proc start time differs, which is how a reused pid is told apart
+// from the process that took the lock.
 func holderStale(h holder, boot string) bool {
+	_, stale := holderStaleReason(h, boot)
+	return stale
+}
+
+// holderStaleReason names why a record is stale: "boot id", "pid",
+// "process" or "start time". A live flock holder is not stale.
+func holderStaleReason(h holder, boot string) (string, bool) {
 	if h.BootID != boot {
-		return true
+		return "boot id", true
 	}
 	if h.PID <= 0 {
-		return true
+		return "pid", true
 	}
-	return syscall.Kill(h.PID, 0) != nil
+	if syscall.Kill(h.PID, 0) != nil {
+		return "process", true
+	}
+	start, ok := processStartTime(h.PID)
+	if !ok {
+		return "process", true
+	}
+	if h.StartTime == 0 || h.StartTime != start {
+		return "start time", true
+	}
+	return "", false
+}
+
+// processStartTime reads field 22 of /proc/<pid>/stat (starttime, clock ticks
+// since boot). The command name is in parentheses and may itself contain
+// spaces and parentheses, so the fields are counted after the last ')'.
+func processStartTime(pid int) (int64, bool) {
+	b, err := os.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
+	if err != nil {
+		return 0, false
+	}
+	return parseStatStart(string(b))
+}
+
+func parseStatStart(s string) (int64, bool) {
+	i := strings.LastIndex(s, ")")
+	if i < 0 || i+2 >= len(s) {
+		return 0, false
+	}
+	fields := strings.Fields(s[i+2:])
+	// Field 22 is index 19 of the fields that follow the command name.
+	if len(fields) <= 19 {
+		return 0, false
+	}
+	n, err := strconv.ParseInt(fields[19], 10, 64)
+	if err != nil || n <= 0 {
+		return 0, false
+	}
+	return n, true
 }
 
 // Acquire retries TryAcquire with a fixed interval until attempts run out or

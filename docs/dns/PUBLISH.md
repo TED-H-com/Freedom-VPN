@@ -16,7 +16,7 @@ Upstreams and bootstrap servers are deployment configuration, not fields of the 
 
 Threat-feed revisions store metadata and `content_sha256` only. The publisher does not fetch feed URLs (§12.3). The document pins `feed_code`, `content_sha256`, `format`, and categories. Feed domain bodies are not in the policy revision, so they are not rendered as filter rules.
 
-The handler does not mark `policy.activate` succeeded. `desired_state_compile` stays pending. It records `observed_refs.dns_document` with the hash and generation while the operation remains pending (§14.5). Audit rows store the hash, generation, status, and whether the head moved. They do not store domain names.
+The handler does not mark `policy.activate` succeeded. `desired_state_compile` stays pending. It records `observed_refs.dns_document` with the hash and generation while the operation remains pending (§14.5). A committed publication or withdrawal appends `dns.publish` or `dns.withdraw` with `audit.NewEvent` for the policy definition and again for the profile revision (D-029). The actor is the system singleton, the result is `succeeded`, and the operation's request id is copied when that row has one. The diff stores the hash, generation, status, and whether the head moved. It does not store domain names.
 
 ## Document
 
