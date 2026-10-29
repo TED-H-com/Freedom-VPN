@@ -89,10 +89,13 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | in progress |
 | r2-ledger-review confirmation pass on main 3224345: probes re-run read-only, 11 of 12 findings closed; finding 9 (uint64 clamp) still open in internal/fup → policies follow-up | WP05, WP07, WP08 | done (read-only) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | in progress |
-| w2-policies-fup follow-up: reconcile embedded policy schemas with contracts/schemas/policies (D-044), fup uint64 overflow instead of clamp, D-029 audit conformance for policies and fup writers | WP07 | in progress |
-| r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | in progress |
+| w2-policies-fup follow-up: reconcile embedded policy schemas with contracts/schemas/policies (D-044), fup uint64 overflow instead of clamp, D-029 audit conformance for policies and fup writers | WP07 | done (#46) |
+| r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | done (16/16 findings closed; regressions R-01..R-05 → updater follow-up 3) |
+| w2-updater follow-up 3: review re-run regressions (revoked-current rescue path, artifact origin allowlist D-046, extract caps and ./ root D-047, resume semantics, nodelock start time) | WP09 | in progress |
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
-| r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | in progress |
+| r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | done (16/16 closed; 2 wiring findings → nodes httpwire follow-up 3, usage replay follow-up 3) |
+| w3-wire-nodes follow-up 3: real wiring behind the httpwire 503 gates (publish via exits, member policies in desired state, keyed agent receipts, transactional lease renewal) | WP04, WP05 | in progress |
+| w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | in progress |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 

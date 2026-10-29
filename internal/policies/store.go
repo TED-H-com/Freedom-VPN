@@ -12,6 +12,7 @@ import (
 
 	"context"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
@@ -336,30 +337,27 @@ func (s *Store) CreateRevision(ctx context.Context, in CreateRevisionInput) (*Re
 			}
 		}
 
-		afterJSON, err := json.Marshal(map[string]any{
-			"revision_id":    revID.String(),
-			"definition_id":  defID.String(),
-			"type":           string(in.Type),
-			"code":           defCode,
-			"revision":       nextRev.String(),
-			"schema_version": in.SchemaVersion,
-			"payload_sha256": validated.PayloadSHA256,
-			"reason":         in.Reason,
+		auditEv, err := audit.NewEvent(audit.Entry{
+			Actor:     audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: in.ActorID},
+			Action:    "policy.revision.create",
+			Resource:  api.ResourceRef{Type: api.ResourceTypePolicyRevision, Id: openapi_types.UUID(revID)},
+			RequestID: &reqID,
+			Result:    api.AuditEventResultSucceeded,
+			After: map[string]any{
+				"revision_id":    revID.String(),
+				"definition_id":  defID.String(),
+				"type":           string(in.Type),
+				"code":           defCode,
+				"revision":       nextRev.String(),
+				"schema_version": in.SchemaVersion,
+				"payload_sha256": validated.PayloadSHA256,
+			},
+			Fields: []string{"revision_id", "definition_id", "type", "code", "revision", "schema_version", "payload_sha256"},
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("build audit for policy revision create: %w", err)
 		}
-		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-			Actor:         in.ActorID.String(),
-			ActorType:     string(api.AuditEventActorTypeAdmin),
-			Action:        "policy.revision.create",
-			Resource:      string(api.ResourceTypePolicyRevision) + ":" + revID.String(),
-			RequestID:     &reqID,
-			Result:        string(api.AuditEventResultSucceeded),
-			SchemaVersion: 1,
-			Before:        []byte(`{}`),
-			After:         afterJSON,
-		}); err != nil {
+		if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
 			return fmt.Errorf("append audit for policy revision create: %w", err)
 		}
 
@@ -1027,7 +1025,6 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		if activeRevID != nil {
 			beforeMap["active_revision_id"] = activeRevID.String()
 		}
-		beforeJSON, _ := json.Marshal(beforeMap)
 
 		afterMap := map[string]any{
 			"active_revision_id": in.RevisionID.String(),
@@ -1036,22 +1033,23 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			"resource_version":   newVer.String(),
 			"effective_at":       effectiveAt.Format(time.RFC3339Nano),
 			"operation_id":       opID.String(),
-			"reason":             in.Reason,
 		}
-		afterJSON, _ := json.Marshal(afterMap)
 
-		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-			Actor:         in.ActorID.String(),
-			ActorType:     string(api.AuditEventActorTypeAdmin),
-			Action:        "policy.activate",
-			Resource:      string(api.ResourceTypePolicyDefinition) + ":" + in.DefinitionID.String(),
-			RequestID:     &reqID,
-			OperationID:   &opID,
-			Result:        string(api.AuditEventResultSucceeded),
-			SchemaVersion: 1,
-			Before:        beforeJSON,
-			After:         afterJSON,
-		}); err != nil {
+		auditEv, err := audit.NewEvent(audit.Entry{
+			Actor:       audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: in.ActorID},
+			Action:      "policy.activate",
+			Resource:    api.ResourceRef{Type: api.ResourceTypePolicyDefinition, Id: openapi_types.UUID(in.DefinitionID)},
+			RequestID:   &reqID,
+			OperationID: &opID,
+			Result:      api.AuditEventResultSucceeded,
+			Before:      beforeMap,
+			After:       afterMap,
+			Fields:      []string{"active_revision_id", "revision", "generation", "resource_version", "effective_at", "operation_id"},
+		})
+		if err != nil {
+			return fmt.Errorf("build audit for policy.activate: %w", err)
+		}
+		if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
 			return fmt.Errorf("append audit for policy.activate: %w", err)
 		}
 

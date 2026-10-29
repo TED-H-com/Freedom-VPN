@@ -10,6 +10,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
@@ -93,6 +94,60 @@ func ValidateJSONSchema(policyType api.PolicyType, rawPayload []byte) error {
 	if err := sch.Validate(inst); err != nil {
 		return classifySchemaError(policyType, rawObj, err)
 	}
+	if err := validateDecstrFields(policyType, rawObj); err != nil {
+		return err
+	}
+	return nil
+}
+
+// validateDecstrFields enforces pkg/decstr uint64 bounds directly on decimal
+// string fields so callers of ValidateJSONSchema never rely on regex length alone.
+func validateDecstrFields(policyType api.PolicyType, rawObj map[string]any) error {
+	if rawObj == nil {
+		return nil
+	}
+	switch policyType {
+	case api.PolicyTypeFairUse:
+		if tiersAny, ok := rawObj["tiers"].([]any); ok {
+			for i, tAny := range tiersAny {
+				if tMap, ok := tAny.(map[string]any); ok {
+					tb, ok := tMap["threshold_bytes"].(string)
+					if !ok {
+						return newValidationError(fmt.Sprintf("/payload/tiers/%d/threshold_bytes", i), ReasonSchemaInvalid, "threshold_bytes must be a uint64 decimal string")
+					}
+					if _, err := decstr.Parse(tb); err != nil {
+						return newValidationError(fmt.Sprintf("/payload/tiers/%d/threshold_bytes", i), ReasonSchemaInvalid, fmt.Sprintf("invalid threshold_bytes %q: %v", tb, err))
+					}
+				}
+			}
+		}
+	case api.PolicyTypeDomainRuleSet:
+		if rulesAny, ok := rawObj["rules"].([]any); ok {
+			for i, rAny := range rulesAny {
+				if rMap, ok := rAny.(map[string]any); ok {
+					rev, ok := rMap["revision"].(string)
+					if !ok {
+						return newValidationError(fmt.Sprintf("/payload/rules/%d/revision", i), ReasonSchemaInvalid, "revision must be a uint64 decimal string")
+					}
+					v, err := decstr.Parse(rev)
+					if err != nil {
+						return newValidationError(fmt.Sprintf("/payload/rules/%d/revision", i), ReasonSchemaInvalid, fmt.Sprintf("invalid revision %q: %v", rev, err))
+					}
+					if v == 0 {
+						return newValidationError(fmt.Sprintf("/payload/rules/%d/revision", i), ReasonDNSInvalidRevision, "domain rule revision must be >= 1")
+					}
+				}
+			}
+		}
+	case api.PolicyTypeThreatFeed:
+		maxSize, ok := rawObj["max_size_bytes"].(string)
+		if !ok {
+			return newValidationError("/payload/max_size_bytes", ReasonSchemaInvalid, "max_size_bytes must be a uint64 decimal string")
+		}
+		if _, err := decstr.Parse(maxSize); err != nil {
+			return newValidationError("/payload/max_size_bytes", ReasonSchemaInvalid, fmt.Sprintf("invalid max_size_bytes %q: %v", maxSize, err))
+		}
+	}
 	return nil
 }
 
@@ -174,6 +229,9 @@ func classifySchemaError(policyType api.PolicyType, rawObj map[string]any, schEr
 							if err != nil || norm.Canonical != dom {
 								return newValidationError(fmt.Sprintf("/payload/rules/%d/domain", i), ReasonDNSDomainNotCanonical, fmt.Sprintf("domain %q is not in canonical IDNA2008 ASCII form", dom))
 							}
+						}
+						if rev, ok := rMap["revision"].(string); ok && rev == "0" {
+							return newValidationError(fmt.Sprintf("/payload/rules/%d/revision", i), ReasonDNSInvalidRevision, "domain rule revision must be >= 1")
 						}
 					}
 				}

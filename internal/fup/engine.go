@@ -12,11 +12,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -657,20 +660,6 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 	}
 
 	if e.db != nil {
-		afterDiff, err := json.Marshal(map[string]any{
-			"override_id": ov.ID.String(),
-			"member_id":   ov.MemberID.String(),
-			"down_bps":    ov.DownBps,
-			"up_bps":      ov.UpBps,
-			"priority":    ov.Priority,
-			"valid_from":  ov.ValidFrom.Format(time.RFC3339Nano),
-			"valid_until": ov.ValidUntil.Format(time.RFC3339Nano),
-			"reason":      ov.Reason,
-		})
-		if err != nil {
-			return nil, nil, err
-		}
-
 		err = db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
 			if _, err := tx.Exec(ctx, `
 				INSERT INTO fup_member_overrides (
@@ -681,16 +670,26 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 				ov.ValidFrom, ov.ValidUntil, ov.Reason, ov.ActorID, ov.CreatedAt); err != nil {
 				return fmt.Errorf("fup: insert override: %w", err)
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         in.ActorID.String(),
-				ActorType:     string(api.AuditEventActorTypeAdmin),
-				Action:        "fup.override.set",
-				Resource:      string(api.ResourceTypeMember) + ":" + in.MemberID.String(),
-				Result:        string(api.AuditEventResultSucceeded),
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         afterDiff,
-			}); err != nil {
+			auditEv, err := audit.NewEvent(audit.Entry{
+				Actor:    audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: in.ActorID},
+				Action:   "fup.override.set",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(in.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After: map[string]any{
+					"override_id": ov.ID.String(),
+					"member_id":   ov.MemberID.String(),
+					"down_bps":    ov.DownBps,
+					"up_bps":      ov.UpBps,
+					"priority":    ov.Priority,
+					"valid_from":  ov.ValidFrom.Format(time.RFC3339Nano),
+					"valid_until": ov.ValidUntil.Format(time.RFC3339Nano),
+				},
+				Fields: []string{"override_id", "member_id", "down_bps", "up_bps", "priority", "valid_from", "valid_until"},
+			})
+			if err != nil {
+				return fmt.Errorf("fup: build override audit event: %w", err)
+			}
+			if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
 				return fmt.Errorf("fup: append override audit event: %w", err)
 			}
 			return nil
@@ -726,18 +725,7 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 	}
 
 	if e.db != nil {
-		afterDiff, err := json.Marshal(map[string]any{
-			"override_id":       in.OverrideID.String(),
-			"member_id":         in.MemberID.String(),
-			"revoked_at":        now.Format(time.RFC3339Nano),
-			"revoked_by":        in.ActorID.String(),
-			"revocation_reason": in.Reason,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		err = db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
+		err := db.InTx(ctx, e.db, db.TxOptions{}, func(tx pgx.Tx) error {
 			tag, err := tx.Exec(ctx, `
 				UPDATE fup_member_overrides
 				SET revoked_at = $1, revoked_by = $2, revocation_reason = $3
@@ -749,16 +737,23 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 			if tag.RowsAffected() == 0 {
 				return ErrMemberStateNotFound
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         in.ActorID.String(),
-				ActorType:     string(api.AuditEventActorTypeAdmin),
-				Action:        "fup.override.revoked",
-				Resource:      string(api.ResourceTypeMember) + ":" + in.MemberID.String(),
-				Result:        string(api.AuditEventResultSucceeded),
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         afterDiff,
-			}); err != nil {
+			auditEv, err := audit.NewEvent(audit.Entry{
+				Actor:    audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: in.ActorID},
+				Action:   "fup.override.revoked",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(in.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After: map[string]any{
+					"override_id": in.OverrideID.String(),
+					"member_id":   in.MemberID.String(),
+					"revoked_at":  now.Format(time.RFC3339Nano),
+					"revoked_by":  in.ActorID.String(),
+				},
+				Fields: []string{"override_id", "member_id", "revoked_at", "revoked_by"},
+			})
+			if err != nil {
+				return fmt.Errorf("fup: build revoke override audit: %w", err)
+			}
+			if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
 				return fmt.Errorf("fup: append revoke override audit: %w", err)
 			}
 			return nil
@@ -1236,34 +1231,31 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 			return fmt.Errorf("fup: insert fup_evaluations: %w", err)
 		}
 
-		actID, actType := fupAuditActor(actor)
+		act := fupAuditActor(actor)
 		if res.Relaxed {
-			relaxAudit, err := json.Marshal(map[string]any{
-				"member_id":         res.MemberID.String(),
-				"period_id":         res.PeriodID,
-				"tier_index":        res.WouldApplyTierIndex,
-				"total_bytes":       res.TotalBytes.String(),
-				"relaxation_reason": res.RelaxationReason,
+			relaxEv, err := audit.NewEvent(audit.Entry{
+				Actor:    act,
+				Action:   "fup.tier.relaxed",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(res.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After: map[string]any{
+					"member_id":   res.MemberID.String(),
+					"period_id":   res.PeriodID,
+					"tier_index":  res.WouldApplyTierIndex,
+					"total_bytes": res.TotalBytes.String(),
+				},
+				Fields: []string{"member_id", "period_id", "tier_index", "total_bytes"},
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("fup: build relaxation audit event: %w", err)
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         actID,
-				ActorType:     actType,
-				Action:        "fup.tier.relaxed",
-				Resource:      string(api.ResourceTypeMember) + ":" + res.MemberID.String(),
-				Result:        string(api.AuditEventResultSucceeded),
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         relaxAudit,
-			}); err != nil {
+			if err := audit.AppendEvent(ctx, tx, relaxEv); err != nil {
 				return fmt.Errorf("fup: append relaxation audit event: %w", err)
 			}
 		}
 
 		if res.GenerationIncremented {
-			outboxPayload, err := json.Marshal(map[string]any{
+			genAfter := map[string]any{
 				"member_id":          res.MemberID.String(),
 				"period_id":          res.PeriodID,
 				"policy_revision_id": res.PolicyRevisionID.String(),
@@ -1276,7 +1268,8 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 				"reason":             enforcedReasonStr,
 				"valid_from":         res.ValidFrom.Format(time.RFC3339Nano),
 				"valid_until":        res.ValidUntil.Format(time.RFC3339Nano),
-			})
+			}
+			outboxPayload, err := json.Marshal(genAfter)
 			if err != nil {
 				return err
 			}
@@ -1291,16 +1284,18 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 			}); err != nil {
 				return fmt.Errorf("fup: enqueue outbox event: %w", err)
 			}
-			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         actID,
-				ActorType:     actType,
-				Action:        "fup.generation.issued",
-				Resource:      string(api.ResourceTypeMember) + ":" + res.MemberID.String(),
-				Result:        string(api.AuditEventResultSucceeded),
-				SchemaVersion: 1,
-				Before:        []byte(`{}`),
-				After:         outboxPayload,
-			}); err != nil {
+			genEv, err := audit.NewEvent(audit.Entry{
+				Actor:    act,
+				Action:   "fup.generation.issued",
+				Resource: api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(res.MemberID)},
+				Result:   api.AuditEventResultSucceeded,
+				After:    genAfter,
+				Fields:   []string{"member_id", "period_id", "policy_revision_id", "generation", "enforced_state", "tier_index", "down_bps", "up_bps", "priority", "reason", "valid_from", "valid_until"},
+			})
+			if err != nil {
+				return fmt.Errorf("fup: build generation audit event: %w", err)
+			}
+			if err := audit.AppendEvent(ctx, tx, genEv); err != nil {
 				return fmt.Errorf("fup: append generation audit event: %w", err)
 			}
 		}
@@ -1312,15 +1307,27 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 
 const fupSystemActorUUID = "00000000-0000-0000-0000-000000000003"
 
-func fupAuditActor(actor string) (string, string) {
+func fupAuditActor(actor string) audit.Actor {
 	trimmed := strings.TrimSpace(actor)
 	if id, err := uuid.Parse(trimmed); err == nil {
 		if id == uuid.Nil || id.String() == fupSystemActorUUID {
-			return fupSystemActorUUID, string(api.AuditEventActorTypeSystem)
+			return audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(fupSystemActorUUID)}
 		}
-		return id.String(), string(api.AuditEventActorTypeAdmin)
+		return audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: id}
 	}
-	return fupSystemActorUUID, string(api.AuditEventActorTypeSystem)
+	return audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(fupSystemActorUUID)}
+}
+
+func parseFUPUint64(field, val string) (decstr.U64, error) {
+	u, err := decstr.Parse(strings.TrimSpace(val))
+	if err != nil {
+		return 0, apierr.Wrap(
+			fmt.Errorf("fup: %s=%q: %w: %w", field, val, decstr.ErrOverflow, err),
+			apierr.InternalError,
+			"usage byte total overflows uint64",
+		).WithDetail("detail_code", usage.ErrCodeUint64Overflow).WithDetail("field", field)
+	}
+	return u, nil
 }
 
 type pgUsageReader struct {
@@ -1342,12 +1349,10 @@ func (r *pgUsageReader) GetMemberPeriodUsage(ctx context.Context, memberID uuid.
 		MeteringVersion: string(api.MeteringVersionForwardAdmissionV1),
 	}
 
-	var totalStr, genStr string
-	var epoch uuid.UUID
-	var aggAsOf time.Time
-	var meteringVer string
-	err = r.db.QueryRow(ctx, `
-		SELECT r.total_bytes::text,
+	rows, err := r.db.Query(ctx, `
+		SELECT r.upload_bytes::text,
+		       r.download_bytes::text,
+		       r.total_bytes::text,
 		       r.aggregate_as_of,
 		       r.metering_version,
 		       r.period_start,
@@ -1360,27 +1365,87 @@ func (r *pgUsageReader) GetMemberPeriodUsage(ctx context.Context, memberID uuid.
 		 AND g.state = 'active'
 		 AND g.generation = r.projection_generation
 		WHERE r.member_id = $1 AND r.period = $2 AND r.granularity = 'month'
-		LIMIT 1
-	`, memberID, periodID).Scan(&totalStr, &aggAsOf, &meteringVer, &snap.PeriodStart, &snap.PeriodEnd, &epoch, &genStr)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		ORDER BY r.metering_version ASC
+	`, memberID, periodID)
+	if err != nil {
 		return UsageSnapshot{}, fmt.Errorf("fup: query usage_rollups: %w", err)
 	}
-	if err == nil {
-		u, parseErr := decstr.Parse(totalStr)
-		if parseErr != nil {
-			return UsageSnapshot{}, fmt.Errorf("fup: parse usage_rollups total_bytes=%q: %w", totalStr, parseErr)
+	defer rows.Close()
+
+	var (
+		hasRows   bool
+		totalSum  decstr.U64
+		latestAgg time.Time
+		epoch     uuid.UUID
+		gen       decstr.U64
+	)
+	for rows.Next() {
+		var (
+			upStr, downStr, totalStr, genStr string
+			aggAsOf                          time.Time
+			meteringVer                      string
+			rowStart, rowEnd                 time.Time
+			rowEpoch                         uuid.UUID
+		)
+		if err := rows.Scan(&upStr, &downStr, &totalStr, &aggAsOf, &meteringVer, &rowStart, &rowEnd, &rowEpoch, &genStr); err != nil {
+			return UsageSnapshot{}, fmt.Errorf("fup: scan usage_rollups: %w", err)
 		}
-		gen, parseGenErr := decstr.Parse(genStr)
-		if parseGenErr != nil {
-			return UsageSnapshot{}, fmt.Errorf("fup: parse projection_generation=%q: %w", genStr, parseGenErr)
+		up, err := parseFUPUint64("upload_bytes", upStr)
+		if err != nil {
+			return UsageSnapshot{}, err
 		}
-		snap.TotalBytes = u
-		snap.AggregateAsOf = aggAsOf.UTC()
+		down, err := parseFUPUint64("download_bytes", downStr)
+		if err != nil {
+			return UsageSnapshot{}, err
+		}
+		total, err := parseFUPUint64("total_bytes", totalStr)
+		if err != nil {
+			return UsageSnapshot{}, err
+		}
+		if _, err := up.Add(down); err != nil {
+			return UsageSnapshot{}, apierr.Wrap(
+				fmt.Errorf("fup: upload_bytes+download_bytes (%s+%s): %w", up, down, err),
+				apierr.InternalError,
+				"usage byte total overflows uint64",
+			).WithDetail("detail_code", usage.ErrCodeUint64Overflow).WithDetail("field", "total_bytes")
+		}
+		nextTotal, err := totalSum.Add(total)
+		if err != nil {
+			return UsageSnapshot{}, apierr.Wrap(
+				fmt.Errorf("fup: sum(total_bytes) (%s+%s): %w", totalSum, total, err),
+				apierr.InternalError,
+				"usage byte total overflows uint64",
+			).WithDetail("detail_code", usage.ErrCodeUint64Overflow).WithDetail("field", "total_bytes")
+		}
+		rowGen, err := decstr.Parse(genStr)
+		if err != nil {
+			return UsageSnapshot{}, fmt.Errorf("fup: parse projection_generation=%q: %w", genStr, err)
+		}
+		totalSum = nextTotal
+		if !hasRows || aggAsOf.After(latestAgg) {
+			latestAgg = aggAsOf.UTC()
+		}
+		if !hasRows || rowStart.Before(snap.PeriodStart) {
+			snap.PeriodStart = rowStart.UTC()
+		}
+		if !hasRows || rowEnd.After(snap.PeriodEnd) {
+			snap.PeriodEnd = rowEnd.UTC()
+		}
 		snap.MeteringVersion = meteringVer
+		epoch = rowEpoch
+		gen = rowGen
+		hasRows = true
+	}
+	if err := rows.Err(); err != nil {
+		return UsageSnapshot{}, fmt.Errorf("fup: iterate usage_rollups: %w", err)
+	}
+	if hasRows {
+		snap.TotalBytes = totalSum
+		snap.AggregateAsOf = latestAgg
 		snap.Watermark = &LedgerWatermark{
 			LedgerEpoch:          epoch,
 			ProjectionGeneration: gen,
-			AggregateAsOf:        aggAsOf.UTC(),
+			AggregateAsOf:        latestAgg,
 		}
 	}
 
