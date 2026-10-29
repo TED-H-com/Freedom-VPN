@@ -1,19 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n } from '../../i18n';
-import { PRIMARY_ENROLLMENT_ID } from '../../mocks/data';
 
 export function AdminEnrollmentDetailPage(): React.ReactElement {
-  const { enrollmentId = PRIMARY_ENROLLMENT_ID } = useParams<{ enrollmentId: string }>();
+  const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
   const { t } = useI18n();
   const queryClient = useQueryClient();
+  const [actionError, setActionError] = useState<unknown>(null);
 
   const enrollmentQuery = useQuery({
     queryKey: ['admin', 'enrollment', enrollmentId],
     queryFn: () => apiClient.getEnrollment(enrollmentId),
+    enabled: Boolean(enrollmentId),
   });
+
+  if (enrollmentQuery.error) {
+    return (
+      <div data-testid="admin-enrollment-detail-page">
+        <ApiErrorAlert error={enrollmentQuery.error} testId="enrollment-detail-error" />
+      </div>
+    );
+  }
 
   if (enrollmentQuery.isLoading || !enrollmentQuery.data) {
     return (
@@ -26,10 +36,15 @@ export function AdminEnrollmentDetailPage(): React.ReactElement {
   const record = enrollmentQuery.data;
 
   const handleRevoke = async () => {
-    await apiClient.revokeEnrollment(record.enrollment_id);
-    await queryClient.invalidateQueries({
-      queryKey: ['admin', 'enrollment', enrollmentId],
-    });
+    setActionError(null);
+    try {
+      await apiClient.revokeEnrollment(record.enrollment_id);
+      await queryClient.invalidateQueries({
+        queryKey: ['admin', 'enrollment', enrollmentId],
+      });
+    } catch (err) {
+      setActionError(err);
+    }
   };
 
   return (
@@ -55,6 +70,8 @@ export function AdminEnrollmentDetailPage(): React.ReactElement {
       >
         {t('admin.enrollment.detail.secretGone')}
       </div>
+
+      <ApiErrorAlert error={actionError} testId="enrollment-revoke-error" />
 
       <div className="card">
         <dl className="form-grid">

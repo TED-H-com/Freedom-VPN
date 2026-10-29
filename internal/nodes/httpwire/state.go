@@ -43,6 +43,19 @@ func (s policySnapshot) ReadPolicySnapshot(context.Context, uuid.UUID, time.Time
 	return s.value, nil
 }
 
+// DesiredStateCompiler builds the runtime compiler for background execution.
+func (r *Runtime) DesiredStateCompiler() *desiredstate.Compiler {
+	return r.desiredStateCompiler(purposeSigner{r.Provider, envelope.PurposeDesiredState})
+}
+
+func (r *Runtime) desiredStateCompiler(signer desiredstate.Signer, opts ...desiredstate.Option) *desiredstate.Compiler {
+	base := []desiredstate.Option{
+		desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds) * time.Second),
+		desiredstate.WithDNSResolvers(r.Config.DNSResolverIPv4, r.Config.DNSResolverIPv6),
+	}
+	return desiredstate.NewCompiler(r.Pool, signer, append(base, opts...)...)
+}
+
 // CompileControlState compiles current DB policy, entitlement and update inputs
 // in one transaction. A valid unchanged envelope retains its generation and ETag.
 func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uuid.UUID) (out desiredstate.CompiledDesiredState, err error) {
@@ -111,12 +124,10 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 			}
 		}
 		signer := cachedStateSigner{signer: purposeSigner{r.Provider, envelope.PurposeDesiredState}, cached: cachedResult}
-		compiler := desiredstate.NewCompiler(r.Pool, signer,
+		compiler := r.desiredStateCompiler(signer,
 			desiredstate.WithClock(func() time.Time { return now }),
-			desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds)*time.Second),
 			desiredstate.WithEntitlementReader(desiredstate.NewDBEntitlementReader(tx)),
-			desiredstate.WithPolicyReader(policySnapshot{snap}),
-			desiredstate.WithDNSResolvers(r.Config.DNSResolverIPv4, r.Config.DNSResolverIPv6))
+			desiredstate.WithPolicyReader(policySnapshot{snap}))
 		out, e = compiler.CompileTx(ctx, tx, node)
 		if errors.Is(e, errStateUnchanged) {
 			out = *cachedResult

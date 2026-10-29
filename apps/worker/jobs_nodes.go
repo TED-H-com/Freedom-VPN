@@ -8,7 +8,10 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
+	"github.com/TED-H-com/Freedom-VPN/internal/exits"
+	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	nodelib "github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
@@ -24,8 +27,70 @@ import (
 
 // NodeJobs is injectable for composition and tests. External calls all go through
 // the NetBird adapter; it verifies remote state before returning success.
-func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher) Registry {
+func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, publicationAdapter ...exits.NetBirdAdapter) Registry {
+	return nodeJobs(r, nb, fetch, attempts, r.DesiredStateCompiler(), publicationAdapter...)
+}
+
+func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
+	var publication exits.NetBirdAdapter = httpwire.NewPublicationAdapter(r, nb)
+	if len(publicationAdapter) > 1 {
+		panic("at most one publication adapter")
+	}
+	if len(publicationAdapter) == 1 {
+		publication = publicationAdapter[0]
+	}
+	pub := exits.NewService(r.Pool, compiler, publication)
+	jobs.Register(desiredstate.EventNodePublicationChanged, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		var payload struct {
+			OperationID uuid.UUID `json:"operation_id"`
+		}
+		if err := json.Unmarshal(event.Payload, &payload); err != nil {
+			return "", err
+		}
+		if payload.OperationID == uuid.Nil || event.AggregateType != "node" {
+			return "", errors.New("invalid publication event")
+		}
+		ctx = commandtx.WithClaim(ctx, event)
+		if err := commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(pgx.Tx) error { return nil }); err != nil {
+			return "", err
+		}
+		op, err := nodelib.GetOperation(ctx, r.Pool, payload.OperationID)
+		if err != nil {
+			return "", err
+		}
+		if op.Resource.Type != api.ResourceTypeNode || op.Resource.Id != event.AggregateID || (op.Kind != api.OperationKindNodePublish && op.Kind != api.OperationKindNodeUnpublish && op.Kind != api.OperationKindNodeDisable) {
+			return "", errors.New("publication operation does not match event")
+		}
+		switch op.Status {
+		case api.OperationStatusSucceeded, api.OperationStatusSuperseded, api.OperationStatusPartiallySucceeded:
+			return op.OperationId.String(), nil
+		}
+		op, err = pub.ExecuteOperation(ctx, payload.OperationID)
+		if err != nil {
+			return "", err
+		}
+		if op.Status == api.OperationStatusFailed {
+			// The executor records failure as an operation, not a Go error.
+			// §14.5 / D-040: running means another retry remains. At or past
+			// the dispatcher's budget, preserve failed status and its evidence
+			// so dead-lettering cannot leave an operation claiming progress.
+			if event.Attempt < attempts {
+				err = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+					_, e := tx.Exec(ctx, `UPDATE operations SET status='running',resource_version=coalesce(resource_version,0)+1 WHERE id=$1 AND status='failed'`, op.OperationId)
+					return e
+				})
+				if err != nil {
+					return "", err
+				}
+			}
+			return "", errors.New("publication execution failed")
+		}
+		if op.Status != api.OperationStatusSucceeded && op.Status != api.OperationStatusSuperseded && op.Status != api.OperationStatusPartiallySucceeded {
+			return "", errors.New("publication execution incomplete")
+		}
+		return op.OperationId.String(), nil
+	})
 	jobs.Register("release.verify", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
 		if e := r.Releases.VerifyRelease(ctx, event.AggregateID, fetch); e != nil {
@@ -140,6 +205,8 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher) R
 		})
 		return "observation:" + payload.ReportID.String(), e
 	})
+	// Compatibility: enrollment.RevokeNode still emits both withdrawal events.
+	// Remove only when that producer and its peer/key revocation are migrated.
 	withdraw := func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var p struct {
 			NodeID        uuid.UUID  `json:"node_id"`
@@ -292,7 +359,14 @@ func nodes() Domain {
 		if err != nil {
 			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
 		}
-		return Built{Jobs: NodeJobs(runtime, adapter, fetch), Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}}, nil
+		compiler := runtime.DesiredStateCompiler()
+		return Built{
+			Jobs: nodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts, compiler),
+			// D-026: all decorators run before member/device jobs, independent
+			// of domain build order. Share the configured signer, TTL and DNS.
+			Context: func(ctx context.Context) context.Context { return membersruntime.WithCompiler(ctx, compiler) },
+			Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }},
+		}, nil
 	}}
 }
 

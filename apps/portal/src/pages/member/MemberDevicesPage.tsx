@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiError, type OperationResource } from '../../api';
+import { apiClient, type OperationResource } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n } from '../../i18n';
+import { formatLocaleWithUtc } from '../../lib/datetime';
 
 export function MemberDevicesPage(): React.ReactElement {
   const { t, locale } = useI18n();
   const queryClient = useQueryClient();
 
   const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
-  const [error, setError] = useState<ApiError | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const devicesQuery = useQuery({
     queryKey: ['member', 'devices'],
     queryFn: () => apiClient.listMemberDevices(),
   });
+
+  if (devicesQuery.error) {
+    return (
+      <div data-testid="member-devices-page">
+        <ApiErrorAlert error={devicesQuery.error} testId="member-devices-error" />
+      </div>
+    );
+  }
 
   if (devicesQuery.isLoading || !devicesQuery.data) {
     return (
@@ -35,8 +45,9 @@ export function MemberDevicesPage(): React.ReactElement {
       );
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['member', 'devices'] });
+      await queryClient.invalidateQueries({ queryKey: ['member', 'me'] });
     } catch (err) {
-      if (err instanceof ApiError) setError(err);
+      setError(err);
     }
   };
 
@@ -55,13 +66,38 @@ export function MemberDevicesPage(): React.ReactElement {
         </span>
       </div>
 
-      <OperationBanner operation={activeOp} onDismiss={() => setActiveOp(null)} />
+      <div
+        className="alert alert-info"
+        role="note"
+        data-testid="member-devices-add-guide"
+      >
+        {t('member.devices.addGuide')}
+      </div>
 
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          <strong>{error.code}</strong>: {error.messageForLocale(locale)}
+      {device_limit !== null && authorized_count >= device_limit && (
+        <div
+          className="alert alert-warning"
+          role="status"
+          data-testid="device-limit-warning"
+        >
+          {t('member.devices.quotaSummary', {
+            used: authorized_count,
+            limit: device_limit,
+          })}
         </div>
       )}
+
+      <OperationBanner
+        operation={activeOp}
+        scope="member"
+        onDismiss={() => setActiveOp(null)}
+        onTerminal={() => {
+          void queryClient.invalidateQueries({ queryKey: ['member', 'devices'] });
+          void queryClient.invalidateQueries({ queryKey: ['member', 'me'] });
+        }}
+      />
+
+      <ApiErrorAlert error={error} testId="member-device-action-error" />
 
       <div className="card">
         <div className="table-wrapper">
@@ -103,8 +139,8 @@ export function MemberDevicesPage(): React.ReactElement {
                     </span>
                   </td>
                   <td className="mono" style={{ fontSize: '0.75rem' }}>
-                    <div>seen: {dev.last_seen_at ?? '-'}</div>
-                    <div>auth: {dev.authorized_at}</div>
+                    <div>seen: {formatLocaleWithUtc(dev.last_seen_at, locale)}</div>
+                    <div>auth: {formatLocaleWithUtc(dev.authorized_at, locale)}</div>
                   </td>
                   <td>
                     {dev.status === 'authorized' && (

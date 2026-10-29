@@ -106,7 +106,7 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 		t.Fatal(e, len(events))
 	}
 	event := events[0]
-	jobs := worker.NodeJobs(f.r, nb, nil)
+	jobs := worker.NodeJobs(f.r, nb, nil, 3)
 	for range 2 {
 		receipt, e := jobs[event.EventType](ctx, event)
 		if e != nil || !strings.HasPrefix(receipt, "bootstrap:") {
@@ -228,7 +228,7 @@ func TestUPD02_WorkerReleaseVerificationFence(t *testing.T) {
 	if _, e = f.r.Pool.Exec(ctx, `UPDATE outbox_events SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, event.ID); e != nil {
 		t.Fatal(e)
 	}
-	jobs := worker.NodeJobs(f.r, nil, invalidArtifact{})
+	jobs := worker.NodeJobs(f.r, nil, invalidArtifact{}, 3)
 	if _, e = jobs[event.EventType](ctx, event); !errors.Is(e, db.ErrLeaseLost) {
 		t.Fatal("unfenced verification", e)
 	}

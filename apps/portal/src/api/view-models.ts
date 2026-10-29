@@ -416,13 +416,14 @@ export function buildDnsPolicyViewModel(
 
 export function extractMinimumServingVersionLabel(
   policies: PolicyDefinitionListResponse | undefined,
-  fleetServingIds: string[],
+  fleetServingIds: string[] = [],
 ): string {
   const relSup = policies?.items.find((d) => d.type === 'release_support');
   const rev = relSup?.active_revision ?? relSup?.latest_revision;
   if (rev && rev.type === 'release_support') {
-    const payload = rev.payload as ReleaseSupportPayload;
-    return `${payload.minimum_serving_version.serving_release_ids.length} release(s)`;
+    const payload = rev.payload as ReleaseSupportPayload | undefined;
+    const ids = payload?.minimum_serving_version?.serving_release_ids ?? fleetServingIds;
+    return `${ids.length} release(s)`;
   }
   return `${fleetServingIds.length} release(s)`;
 }
