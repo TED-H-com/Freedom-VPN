@@ -412,7 +412,7 @@ func (h *UsageHandler) notifyFairUseOnAcceptedEvents(ctx context.Context, events
 			return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{
 				AggregateID:      mp.memberID,
 				AggregateType:    "member",
-				AggregateVersion: mp.periodID,
+				AggregateVersion: "1",
 				EventType:        "fup.evaluate",
 				SchemaVersion:    1,
 				Payload:          payload,

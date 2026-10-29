@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -21,9 +22,12 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/fup"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -707,5 +711,64 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	}
 	if muAcked.FairUse.Applying {
 		t.Fatalf("expected applying=false after serving node ACKed fup_generation 1")
+	}
+}
+
+type noopMembersCompiler struct{}
+
+func (noopMembersCompiler) RecompileBatch(context.Context, []db.ClaimedEvent) ([]desiredstate.CompiledDesiredState, error) {
+	return nil, nil
+}
+
+func TestPoliciesAndUsageCompositionSeam(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+
+	// 1. Missing Pool fails with config.SettingError naming database_url_file.
+	for _, dom := range []control.Domain{
+		control.NewPoliciesDomain(nil),
+		control.NewUsageDomain(nil, nil, nil),
+	} {
+		_, err := dom.Build(ctx, control.Dependencies{Config: config.Defaults()})
+		var se *config.SettingError
+		if !errors.As(err, &se) || se.Name != "database_url_file" {
+			t.Fatalf("control domain %s with nil Pool: err=%v, want SettingError(database_url_file)", dom.Name, err)
+		}
+	}
+
+	// 2. Invalid policies/usage settings fail startup with config.SettingError naming the setting.
+	badPolCfg := config.PoliciesDefaults()
+	badPolCfg.FUPBatchSize = -1
+	if _, err := worker.NewPoliciesDomain(&badPolCfg, nil).Build(ctx, worker.Dependencies{Config: config.Defaults(), Pool: pool}); err == nil {
+		t.Fatal("expected SettingError for negative fup_batch_size")
+	} else {
+		var se *config.SettingError
+		if !errors.As(err, &se) || se.Name != "fup_batch_size" {
+			t.Fatalf("err=%v, want SettingError(fup_batch_size)", err)
+		}
+	}
+
+	badUsageCfg := config.UsageDefaults()
+	badUsageCfg.RawUsageRetentionDays = 0
+	if _, err := worker.NewUsageDomain(&badUsageCfg).Build(ctx, worker.Dependencies{Config: config.Defaults(), Pool: pool}); err == nil {
+		t.Fatal("expected SettingError for zero raw_usage_retention_days")
+	} else {
+		var se *config.SettingError
+		if !errors.As(err, &se) || se.Name != "raw_usage_retention_days" {
+			t.Fatalf("err=%v, want SettingError(raw_usage_retention_days)", err)
+		}
+	}
+
+	// 3. Worker Built.Context decorates both WithFUPCompiler and membersruntime.WithCompiler.
+	built, err := worker.NewPoliciesDomain(nil, noopMembersCompiler{}).Build(ctx, worker.Dependencies{Config: config.Defaults(), Pool: pool})
+	if err != nil {
+		t.Fatalf("NewPoliciesDomain.Build: %v", err)
+	}
+	decorated := built.Context(ctx)
+	if worker.FUPCompilerFromContext(decorated) == nil {
+		t.Fatal("expected FUPCompilerFromContext to be non-nil on decorated worker context")
+	}
+	if membersruntime.CompilerFromContext(decorated) == nil {
+		t.Fatal("expected membersruntime.CompilerFromContext to be non-nil on decorated worker context")
 	}
 }

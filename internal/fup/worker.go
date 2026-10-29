@@ -159,7 +159,7 @@ func (w *Worker) Flush(ctx context.Context, now time.Time) ([]*EvaluationResult,
 			CurrentPeriodID:  curPeriod,
 			AllowRelaxation:  job.AllowRelaxation,
 			RelaxationReason: job.RelaxationReason,
-			Actor:            "system/fup-worker",
+			Actor:            fupSystemActorUUID,
 			Now:              now,
 		})
 		if err != nil {

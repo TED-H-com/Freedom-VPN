@@ -351,11 +351,11 @@ func (s *Store) CreateRevision(ctx context.Context, in CreateRevisionInput) (*Re
 		}
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         in.ActorID.String(),
-			ActorType:     "admin",
+			ActorType:     string(api.AuditEventActorTypeAdmin),
 			Action:        "policy.revision.create",
-			Resource:      "policy_revision:" + revID.String(),
+			Resource:      string(api.ResourceTypePolicyRevision) + ":" + revID.String(),
 			RequestID:     &reqID,
-			Result:        "succeeded",
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
 			After:         afterJSON,
@@ -1042,12 +1042,12 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         in.ActorID.String(),
-			ActorType:     "admin",
+			ActorType:     string(api.AuditEventActorTypeAdmin),
 			Action:        "policy.activate",
-			Resource:      "policy_definition:" + in.DefinitionID.String(),
+			Resource:      string(api.ResourceTypePolicyDefinition) + ":" + in.DefinitionID.String(),
 			RequestID:     &reqID,
 			OperationID:   &opID,
-			Result:        "succeeded",
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        beforeJSON,
 			After:         afterJSON,

@@ -161,7 +161,7 @@ func (s *Service) CreateAdjustment(ctx context.Context, req AdjustmentCreate) (A
 		if err := db.EnqueueOutbox(ctx, tx, db.OutboxEvent{
 			AggregateID:      req.MemberID,
 			AggregateType:    string(api.ResourceTypeMember),
-			AggregateVersion: adjID.String(),
+			AggregateVersion: "1",
 			EventType:        "fup.evaluate",
 			SchemaVersion:    1,
 			Payload:          outboxPayload,

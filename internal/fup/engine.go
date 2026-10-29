@@ -348,7 +348,7 @@ func (e *Engine) Compute(ctx context.Context, in ComputeInput) (*EvaluationResul
 	}
 	actor := strings.TrimSpace(in.Actor)
 	if actor == "" {
-		actor = "system/fup-engine"
+		actor = fupSystemActorUUID
 	}
 
 	if e.usageReader == nil || e.policyReader == nil {
@@ -683,10 +683,10 @@ func (e *Engine) SetOverride(ctx context.Context, in SetOverrideInput) (*MemberO
 			}
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 				Actor:         in.ActorID.String(),
-				ActorType:     "admin",
+				ActorType:     string(api.AuditEventActorTypeAdmin),
 				Action:        "fup.override.set",
-				Resource:      "member:" + in.MemberID.String(),
-				Result:        "succeeded",
+				Resource:      string(api.ResourceTypeMember) + ":" + in.MemberID.String(),
+				Result:        string(api.AuditEventResultSucceeded),
 				SchemaVersion: 1,
 				Before:        []byte(`{}`),
 				After:         afterDiff,
@@ -751,10 +751,10 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 			}
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 				Actor:         in.ActorID.String(),
-				ActorType:     "admin",
+				ActorType:     string(api.AuditEventActorTypeAdmin),
 				Action:        "fup.override.revoked",
-				Resource:      "member:" + in.MemberID.String(),
-				Result:        "succeeded",
+				Resource:      string(api.ResourceTypeMember) + ":" + in.MemberID.String(),
+				Result:        string(api.AuditEventResultSucceeded),
 				SchemaVersion: 1,
 				Before:        []byte(`{}`),
 				After:         afterDiff,
@@ -1236,6 +1236,7 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 			return fmt.Errorf("fup: insert fup_evaluations: %w", err)
 		}
 
+		actID, actType := fupAuditActor(actor)
 		if res.Relaxed {
 			relaxAudit, err := json.Marshal(map[string]any{
 				"member_id":         res.MemberID.String(),
@@ -1248,11 +1249,11 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 				return err
 			}
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         actor,
-				ActorType:     "system",
+				Actor:         actID,
+				ActorType:     actType,
 				Action:        "fup.tier.relaxed",
-				Resource:      "member:" + res.MemberID.String(),
-				Result:        "succeeded",
+				Resource:      string(api.ResourceTypeMember) + ":" + res.MemberID.String(),
+				Result:        string(api.AuditEventResultSucceeded),
 				SchemaVersion: 1,
 				Before:        []byte(`{}`),
 				After:         relaxAudit,
@@ -1291,11 +1292,11 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 				return fmt.Errorf("fup: enqueue outbox event: %w", err)
 			}
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-				Actor:         actor,
-				ActorType:     "system",
+				Actor:         actID,
+				ActorType:     actType,
 				Action:        "fup.generation.issued",
-				Resource:      "member:" + res.MemberID.String(),
-				Result:        "succeeded",
+				Resource:      string(api.ResourceTypeMember) + ":" + res.MemberID.String(),
+				Result:        string(api.AuditEventResultSucceeded),
 				SchemaVersion: 1,
 				Before:        []byte(`{}`),
 				After:         outboxPayload,
@@ -1308,6 +1309,19 @@ func (e *Engine) persistEvaluation(ctx context.Context, res *EvaluationResult, a
 }
 
 // Default PostgreSQL implementations of UsageReader, MemberPolicyReader, and NodeAckReader.
+
+const fupSystemActorUUID = "00000000-0000-0000-0000-000000000003"
+
+func fupAuditActor(actor string) (string, string) {
+	trimmed := strings.TrimSpace(actor)
+	if id, err := uuid.Parse(trimmed); err == nil {
+		if id == uuid.Nil || id.String() == fupSystemActorUUID {
+			return fupSystemActorUUID, string(api.AuditEventActorTypeSystem)
+		}
+		return id.String(), string(api.AuditEventActorTypeAdmin)
+	}
+	return fupSystemActorUUID, string(api.AuditEventActorTypeSystem)
+}
 
 type pgUsageReader struct {
 	db *pgxpool.Pool
@@ -1333,16 +1347,19 @@ func (r *pgUsageReader) GetMemberPeriodUsage(ctx context.Context, memberID uuid.
 	var aggAsOf time.Time
 	var meteringVer string
 	err = r.db.QueryRow(ctx, `
-		SELECT LEAST(GREATEST(total_bytes, 0), 18446744073709551615)::numeric(20,0)::text,
-		       aggregate_as_of,
-		       metering_version,
-		       period_start,
-		       period_end,
+		SELECT r.total_bytes::text,
+		       r.aggregate_as_of,
+		       r.metering_version,
+		       r.period_start,
+		       r.period_end,
 		       COALESCE((SELECT current_epoch FROM usage_ledger_state LIMIT 1), '00000000-0000-0000-0000-000000000000'::uuid),
-		       projection_generation::text
-		FROM usage_rollups
-		WHERE member_id = $1 AND period = $2 AND granularity = 'month'
-		ORDER BY projection_generation DESC
+		       r.projection_generation::text
+		FROM usage_rollups r
+		JOIN usage_projection_generations g
+		  ON g.projection_name = 'member_usage'
+		 AND g.state = 'active'
+		 AND g.generation = r.projection_generation
+		WHERE r.member_id = $1 AND r.period = $2 AND r.granularity = 'month'
 		LIMIT 1
 	`, memberID, periodID).Scan(&totalStr, &aggAsOf, &meteringVer, &snap.PeriodStart, &snap.PeriodEnd, &epoch, &genStr)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -1351,9 +1368,12 @@ func (r *pgUsageReader) GetMemberPeriodUsage(ctx context.Context, memberID uuid.
 	if err == nil {
 		u, parseErr := decstr.Parse(totalStr)
 		if parseErr != nil {
-			return UsageSnapshot{}, parseErr
+			return UsageSnapshot{}, fmt.Errorf("fup: parse usage_rollups total_bytes=%q: %w", totalStr, parseErr)
 		}
-		gen, _ := decstr.Parse(genStr)
+		gen, parseGenErr := decstr.Parse(genStr)
+		if parseGenErr != nil {
+			return UsageSnapshot{}, fmt.Errorf("fup: parse projection_generation=%q: %w", genStr, parseGenErr)
+		}
 		snap.TotalBytes = u
 		snap.AggregateAsOf = aggAsOf.UTC()
 		snap.MeteringVersion = meteringVer

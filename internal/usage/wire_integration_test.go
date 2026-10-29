@@ -736,8 +736,9 @@ func TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination(t *testing
 			if item.Resource.Type != "fleet_config" || uuid.UUID(item.Resource.Id).String() != "00000000-0000-0000-0000-000000000001" {
 				t.Fatalf("unexpected retention.purge resource: %+v", item.Resource)
 			}
-			if !item.Actor.Id.IsNull() {
-				t.Fatalf("expected retention.purge system role actor.id to be null")
+			actorID, err := item.Actor.Id.Get()
+			if err != nil || uuid.UUID(actorID) != uuid.Nil {
+				t.Fatalf("expected retention.purge system role actor.id to be nil UUID, got %v (err=%v)", actorID, err)
 			}
 		}
 		if item.Action == "usage_ledger.begin_recovery" {

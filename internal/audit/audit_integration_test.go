@@ -147,30 +147,33 @@ func TestSEC02_MalformedAuditRowsDoNotPoisonPages(t *testing.T) {
 	}
 }
 
-func TestPurgeRetained_AuditRowDecodesResourceRefAndNullSystemActor(t *testing.T) {
+func TestSEC02_PurgeRetainedAuditRowDecoding(t *testing.T) {
 	pool := dbtest.New(t)
 	if _, err := pool.Exec(t.Context(), `SELECT public.purge_retained('audit_events', '2000-01-01T00:00:00Z'::timestamptz, 'scheduled retention purge')`); err != nil {
 		t.Fatalf("purge_retained: %v", err)
 	}
 	s := Store{Pool: pool}
-	rt := api.ResourceType("fleet_config")
+	rt := api.ResourceTypeFleetConfig
 	rid := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	actor := uuid.Nil
 	page, err := s.List(t.Context(), api.ListAuditEventsParams{
+		ActorId:      &actor,
 		ResourceType: &rt,
 		ResourceId:   &rid,
 	})
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
-	if len(page.Items) != 1 {
-		t.Fatalf("expected 1 purge_retained audit event, got %d (anomalies=%d)", len(page.Items), s.AnomalyCount())
+	if len(page.Items) != 1 || s.AnomalyCount() != 0 {
+		t.Fatalf("expected 1 purge_retained audit event and 0 anomalies, got items=%d anomalies=%d", len(page.Items), s.AnomalyCount())
 	}
 	ev := page.Items[0]
 	if ev.Action != "retention.purge" {
 		t.Fatalf("expected action retention.purge, got %q", ev.Action)
 	}
-	if ev.Actor.Type != api.AuditEventActorTypeSystem || !ev.Actor.Id.IsSpecified() || !ev.Actor.Id.IsNull() {
-		t.Fatalf("expected system actor with id=null, got %+v", ev.Actor)
+	actorID, err := ev.Actor.Id.Get()
+	if ev.Actor.Type != api.AuditEventActorTypeSystem || err != nil || uuid.UUID(actorID) != uuid.Nil {
+		t.Fatalf("expected system actor with id=nil UUID, got %+v (err=%v)", ev.Actor, err)
 	}
 	if ev.Resource.Type != rt || ev.Resource.Id != rid {
 		t.Fatalf("expected resource %s:%s, got %+v", rt, rid, ev.Resource)
