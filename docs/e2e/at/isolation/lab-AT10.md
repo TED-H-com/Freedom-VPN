@@ -34,4 +34,3 @@ Commands:
 - flap: veth fv-px 198.18.0.0/30 inside the lab container
 - internet: 203.0.113.10:80 allowed
 - scope: mechanism lab; product status is AT10.json
-

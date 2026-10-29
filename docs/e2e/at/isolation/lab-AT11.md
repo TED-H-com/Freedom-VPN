@@ -31,4 +31,3 @@ Commands:
 - ctv6_delta: 3
 - route_mode: not implemented in v1
 - scope: mechanism lab; product status is AT11.json
-

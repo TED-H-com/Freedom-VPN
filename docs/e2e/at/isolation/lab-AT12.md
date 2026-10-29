@@ -26,5 +26,3 @@ Commands:
 
 - `FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-up`
 - `FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-at-isolation FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at`
-
-

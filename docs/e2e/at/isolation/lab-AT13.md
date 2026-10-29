@@ -32,4 +32,3 @@ Commands:
 - baseline: generation 0, member forwarding denied
 - not_exercised: NetBird restart, node reboot, updater switch
 - scope: mechanism lab; product status is AT13.json
-
