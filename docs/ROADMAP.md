@@ -44,15 +44,15 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-pki-enroll: node CA, enrollment, CSR issuance, revocation, signing service | WP04 | done (#11) |
 | w2-members-billing: members, entitlement, devices, billing adapter and webhooks | WP06 | done (#9) |
 | w2-nodes-desiredstate: node registry, desired state compiler, serving leases, exits | WP04, WP05 | done (#17) |
-| w2-nodes-desiredstate follow-up 2: review fixes (compile without release target, fair-use state, dns_profile, lease locking, signed generation) | WP05 | in progress |
+| w2-nodes-desiredstate follow-up 2: review fixes (compile without release target, fair-use state, dns_profile, lease locking, signed generation) | WP05 | done (#27) |
 | w2-usage-central: usage ledger ingest, checkpoints, projection, rollups | WP07 | done (#15) |
 | w2-usage-central follow-up: checkpoint initialisation race under concurrent first events (MTR03 flake) | WP07 | done (#21) |
 | w2-usage-central follow-up 3: review fixes (freeze fence, gap and replay scoping, overflow, ledger-epoch purpose) | WP07 | done (#23) |
 | w2-policies-fup: plan, fair-use, DNS and release-support policies, FUP tiers | WP07, WP08 | done (#12) |
 | w2-fleet-update: releases, manifests, update batches, serving-version policy | WP09 | done (#10) |
 | w2-updater: node updater, update journal, release packaging | WP09 | done (#18) |
-| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | in progress |
-| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | in progress |
+| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | done (#25) |
+| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | done (#24) |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
 | w3-toolchain: Go 1.27.3 in go.mod and every CI pin | WP01 | done (#19) |
 | r2-control-review: adversarial review of the merged control plane (read-only) | WP04, WP06 | done (7 blockers, 7 majors, 2 minors → owner follow-ups) |
@@ -68,9 +68,13 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 1: review fixes (conformance helpers, role cookies, limiter split, agent receipts) | WP04 | in progress |
 | w2-updater follow-up 1: review fixes (symlink escape, forwarding gate, persistent-data check, nodelock, downloads) | WP09 | in progress |
 | w1-netlab follow-up 1: review fixes (HTB class cleanup, deadline fail-closed, reset detection, IPv4 validation, evidence dir) | WP02, WP05 | in progress |
-| w1-dnspolicy follow-up 1: compiled bundle round-trip, source fetch SSRF | WP08 | in progress |
+| w1-dnspolicy follow-up 1: compiled bundle round-trip, source fetch SSRF | WP08 | done (#26) |
 | w3-wire-policies-usage follow-up 1: adopt the composition seam over the ledger fixes, single-format audit reader, FUP cap removal | WP07, WP08 | in progress |
-| w2-db-fixes-2 follow-up 1: canonical purge_retained audit row (D-035), accepted domain relaxations documented (D-033) | WP03 | in progress |
+| w2-db-fixes-2 follow-up 1: canonical purge_retained audit row (D-035), accepted domain relaxations documented (D-033) | WP03 | done (#28) |
+| w2-agent-core follow-up 1: usage ledger integration, required host reserve, fake control usage endpoints | WP05, WP07 | in progress |
+| w2-control-core follow-up 2: members fixture on role cookies, module-wide integration suite | WP02 | in progress |
+| w3-wire-members follow-up 1: retire legacy session job, composition guide refresh | WP02 | in progress |
+| w3-contracts-r3: additive enums (node.enroll, device_authorize, grant_revoke, admin_identity), node-reported codes, revoked_release_ids, policy_generation, checkout 201-only, role selector, policy schema promotion | WP01 | in progress |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | queued (after the wire tasks) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | queued (after agent-core and the wire tasks) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
