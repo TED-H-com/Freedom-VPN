@@ -177,7 +177,9 @@ func (h *Handlers) SetNodePublication(ctx context.Context, r gen.SetNodePublicat
 		return nil, e
 	}
 	if r.Body.PublicationIntent == api.PublicationIntentPublished {
-		return nil, apierr.New(apierr.DependencyUnavailable, "Member policy compiler is unavailable.")
+		// SetPublication still opens its own transaction. Its owner must add a
+		// caller-transaction seam before publication can commit atomically (§14.5).
+		return nil, apierr.New(apierr.DependencyUnavailable, "Publication transaction support is unavailable.")
 	}
 	tx, e := httpapi.Transaction(ctx)
 	if e != nil {

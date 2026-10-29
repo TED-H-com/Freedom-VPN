@@ -5,6 +5,7 @@ package httpwire_test
 import (
 	"crypto/x509"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -105,6 +106,10 @@ func TestAPI01_PublishedDesiredStateDBPolicyAndEligibilityCache(t *testing.T) {
 	if cached.Code != 304 {
 		t.Fatalf("unchanged state not cached: %d %s", cached.Code, cached.Body.String())
 	}
+	var compiledRows int
+	if err = f.r.Pool.QueryRow(t.Context(), `SELECT count(*) FROM desired_states WHERE node_id=$1`, enrolled.NodeId).Scan(&compiledRows); err != nil || compiledRows != 1 {
+		t.Fatal("cache hit wrote another desired state", compiledRows, err)
+	}
 	var definition uuid.UUID
 	if err = f.r.Pool.QueryRow(t.Context(), `SELECT definition_id FROM policy_revisions WHERE id=$1`, revision).Scan(&definition); err != nil {
 		t.Fatal(err)
@@ -137,6 +142,13 @@ func TestAPI01_PublishedDesiredStateDBPolicyAndEligibilityCache(t *testing.T) {
 	if state.Signed.PolicyRefs.DnsGeneration != 9 {
 		t.Fatal("DNS head generation missing")
 	}
+	// FUP changes need no active-policy revision change to invalidate an envelope.
+	f.sql(`UPDATE fup_member_states SET mode='shadow',generation=generation+1 WHERE member_id=$1`, member)
+	fourth, state = read(fourth.Header().Get("ETag"))
+	rate = state.Signed.MemberRatePolicies[0]
+	if rate.Mode != api.MemberRatePolicyModeShadow || mustValue(t, rate.DownBps) != 60000000 || mustValue(t, rate.UpBps) != 30000000 || rate.TierIndex != 0 {
+		t.Fatal("shadow FUP/cap evidence did not invalidate cache", rate)
+	}
 	f.sql(`UPDATE members SET admin_suspended=true,resource_version=resource_version+1 WHERE id=$1`, member)
 	fifth, state := read(fourth.Header().Get("ETag"))
 	if len(state.Signed.MemberRatePolicies) != 0 || len(state.Signed.DeviceBindings) != 0 {
@@ -147,5 +159,20 @@ func TestAPI01_PublishedDesiredStateDBPolicyAndEligibilityCache(t *testing.T) {
 	_, state = read(fifth.Header().Get("ETag"))
 	if len(state.Signed.MemberRatePolicies) != 0 {
 		t.Fatal("unpublished member grants")
+	}
+}
+
+func TestAPI01_DesiredStateRequiresExplicitDNSAndReleaseSupport(t *testing.T) {
+	f, _, cert, _, _ := servingFixture(t)
+	f.r.Config.DNSResolverIPv4 = nil
+	w := f.call("GET", "/api/v1/agent/desired-state", nil, cert, nil)
+	if w.Code != 503 || !strings.Contains(w.Body.String(), "Node DNS configuration required") {
+		t.Fatalf("missing DNS accepted: %d %s", w.Code, w.Body.String())
+	}
+	f.r.Config.DNSResolverIPv4 = []string{"100.64.0.53"}
+	f.sql(`UPDATE policy_definitions SET active_revision_id=NULL,resource_version=resource_version+1 WHERE type='release_support'`)
+	w = f.call("GET", "/api/v1/agent/desired-state", nil, cert, nil)
+	if w.Code != 503 || !strings.Contains(w.Body.String(), "Release support policy required") {
+		t.Fatalf("missing release policy accepted: %d %s", w.Code, w.Body.String())
 	}
 }

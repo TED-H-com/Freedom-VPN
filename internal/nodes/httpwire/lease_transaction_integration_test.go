@@ -107,9 +107,21 @@ func TestAT29_HTTPKeyedLeaseHoldsShareLocksAndRollsBack(t *testing.T) {
 	if len(out.Signed.Members) != 1 || out.Signed.Members[0].MemberId != member {
 		t.Fatal("D-030 member grant missing")
 	}
+	probe.after = func(context.Context) error { return nil }
 	// Once the command commits, revocation proceeds and a fresh lease omits the member.
 	f.sql(`UPDATE members SET admin_suspended=true,resource_version=resource_version+1 WHERE id=$1`, member)
+	old := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", body, cert, headers), 200)
+	if old.Signed.LeaseId != out.Signed.LeaseId || !old.Signed.ExpiresAt.Equal(out.Signed.ExpiresAt) || len(old.Signed.Members) != 1 {
+		t.Fatal("HTTP replay recomputed the original lease")
+	}
 	if err = f.r.Pool.QueryRow(t.Context(), `SELECT count(*) FROM idempotency_requests WHERE route LIKE '%lease-renewals%' AND response_status=200 AND operation_id IS NULL`).Scan(&count); err != nil || count != 1 {
 		t.Fatal("lease command receipt missing", count, err)
 	}
+	body.RenewalRequestId = uuid.New()
+	heads := map[string]string{"Idempotency-Key": uuid.NewString()}
+	fresh := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", body, cert, heads), 200)
+	if len(fresh.Signed.Members) != 0 {
+		t.Fatal("fresh lease authorized a suspended member")
+	}
+
 }
