@@ -196,7 +196,7 @@ func TestAPI01_NodeRunnerSeedsCoalescesAndStops(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if len(built.Runners) != 1 || len(built.Jobs) != 11 {
+	if len(built.Runners) != 1 || len(built.Jobs) != 12 || built.Jobs["node.publication_changed"] == nil {
 		t.Fatal("incomplete node build")
 	}
 	var count int
