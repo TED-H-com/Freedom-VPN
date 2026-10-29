@@ -96,7 +96,8 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
 | r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | done (16/16 closed; 2 wiring findings → nodes httpwire follow-up 3, usage replay follow-up 3) |
 | w3-wire-nodes follow-up 3: real wiring behind the httpwire 503 gates (publish via exits, member policies in desired state, keyed agent receipts, transactional lease renewal) | WP04, WP05 | in progress |
-| w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | in progress |
+| w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
+| w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | in progress |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
