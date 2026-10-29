@@ -91,6 +91,16 @@ func run(state string, reset bool) error {
 		if err := writeSecret(filepath.Join(dir, item.name+".key"), keyPEM); err != nil {
 			return err
 		}
+		if item.name == "control" {
+			// The secrets directory is one read-only mount. A second mount of
+			// these files inside that directory cannot create its mountpoint.
+			if err := writeSecret(filepath.Join(state, "secrets", "tls.crt"), certPEM); err != nil {
+				return err
+			}
+			if err := writeSecret(filepath.Join(state, "secrets", "tls.key"), keyPEM); err != nil {
+				return err
+			}
+		}
 	}
 
 	password, err := randomHex(24)

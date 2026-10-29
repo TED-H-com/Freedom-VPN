@@ -215,8 +215,6 @@ services:
     volumes:
       - ${FVPN_E2E_STATE}/config:/etc/fvpn:ro
       - ${FVPN_E2E_STATE}/secrets:/secrets:ro
-      - ${FVPN_E2E_STATE}/certs/control.crt:/secrets/tls.crt:ro
-      - ${FVPN_E2E_STATE}/certs/control.key:/secrets/tls.key:ro
       - ${FVPN_E2E_STATE}/ca.pem:/certs/ca.pem:ro
       - ${FVPN_E2E_STATE}/vault:/var/lib/fvpn/vault
     depends_on:
