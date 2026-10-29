@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"sync"
 	"testing"
+	"time"
 )
 
 type failingCheckout struct {
@@ -99,6 +100,14 @@ func TestBILL03_D031SynchronousCheckoutFailureAndRetry(t *testing.T) {
 	}
 	if f.count(`SELECT count(*) FROM billing_sessions`) != 1 || f.count(`SELECT count(*) FROM idempotency_requests`) != 1 || f.count(`SELECT count(*) FROM outbox_events WHERE event_type='billing.session_requested'`) != 0 || f.count(`SELECT count(*) FROM entitlements`) != 0 {
 		t.Fatal("checkout duplicated work or granted service")
+	}
+	// D-031 replays retain the originally stored 201 and expiry, even after
+	// the hosted link has expired; a new session requires a new command key.
+	f.services.HTTP.Billing.Entitlements.Now = func() time.Time { return result.ExpiresAt.Add(time.Hour) }
+	w = f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
+	requireStatus(t, w, 201)
+	if again := decode[api.CheckoutSession](t, w); again != result || provider.calls != 2 {
+		t.Fatal(again, provider.calls)
 	}
 	if f.count(`SELECT count(*) FROM operations WHERE error_code IS NOT NULL OR error_message IS NOT NULL`) != 0 {
 		t.Fatal("recovered operation kept stale error")

@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestMEM02_D029D015DeviceOperationsAndAudit(t *testing.T) {
+func TestMEM02_D029DeviceReplayOperationsAndAudit(t *testing.T) {
 	s, member, peers := setupDevices(t)
 	ctx := context.Background()
 	c, err := s.AuthorizeDevice(ctx, deviceCommand("system", member), peers[0])
