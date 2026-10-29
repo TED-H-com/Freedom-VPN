@@ -132,6 +132,8 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 	// Explicit TEST ONLY member configuration keeps both production domains active.
 	members := config.Members{Provider: "stripe", APIKeyFile: writeFixture(t, dir, "payment-key", []byte(hex.EncodeToString(random))), WebhookSecretFiles: []string{writeFixture(t, dir, "webhook-secret", []byte(hex.EncodeToString(random)))}, VaultActiveKey: "TEST ONLY", VaultKeyFiles: map[string]string{"TEST ONLY": writeFixture(t, dir, "billing-key", random)}, LiveMode: &live, PriceIDs: []string{"TEST ONLY price"}, ReturnURLs: []string{cfg.PublicOrigin + "/billing/return"}, FullRefundPolicy: "revoke_original_period", GraceSeconds: &zero, TrialMaxSeconds: &zero, GrantMaxSeconds: 86400, DeviceLimit: 3, PortalTTLSeconds: 60, BillingLeaseSeconds: 60, MaxWebhookBytes: 1 << 20, ReconcileSeconds: 3600, DeviceSyncSeconds: 3600, NetBirdURL: n.NetBirdURL, NetBirdDeployment: n.NetBirdDeployment, NetBirdTokenFile: n.NetBirdTokenFile, OverlayScope: "TEST ONLY"}
 	cfg.MembersConfigFile = jsonFixture(t, dir, "members.json", members)
+	// TEST ONLY upstream: the idle DNS worker does not dial it.
+	cfg.DNSConfigFile = writeFixture(t, dir, "dns.json", []byte(`{"upstreams":["192.0.2.53:53"]}`))
 	cfg.DatabaseURLFile = writeFixture(t, dir, "database-url", []byte(dsn))
 	cfg.OIDCIssuer = issuer
 	cfg.OIDCClientID = "TEST ONLY portal"
