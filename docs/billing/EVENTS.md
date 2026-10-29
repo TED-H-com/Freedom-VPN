@@ -14,6 +14,7 @@ Times are UTC and intervals are half-open.
 | `device.authorized` | device / device resource version | `devices.Event`: `member_id`, `device_id`, `device_version`, `entitlement_revision`, `deployment_id`, `peer_id`, `binding_revision`, nullable `operation_id` |
 | `device.revoked` | device / device resource version | Same shape as `device.authorized`; the binding interval is already closed |
 | `netbird.device_sync` | device / device resource version | Same device event; separate external adapter delivery intent |
+| `billing.inbox_received` | billing_inbox / `"1"` | `inbox_id` (UUID); inserted atomically with a new authenticated inbox row |
 | `billing.session_requested` | billing session / `"1"` | `session_id`, `member_id`, nullable `operation_id` |
 
 Each *changed* entitlement projection has exactly one
@@ -69,9 +70,24 @@ append-only billing records retain invoices/refunds and the grace reason.
    Checkout operations use the contract kind `checkout.create`. Portal intents
    have no public operation: `CreateBillingPortalSession` completes before 201.
 
-`internal/netbird` is absent from this worktree's baseline. Implement the narrow
-`devices.Adapter` using that task's observed peer/user IDs and idempotent managed
-group operations. `ObservePeer.Groups` must contain only platform-owned access
-groups; preserve unrelated groups. Never map identities by email. Real NetBird
-and node read-back evidence remain integration work; fake-adapter success is not
-network enforcement evidence.
+`devices.NetBirdAdapter` now implements the narrow adapter with
+`internal/netbird` and the durable `devices.NetBirdBindings` store. It verifies
+actual user IDs, preserves unmanaged groups and records independent read-back.
+Native SSO creates peers; the worker discovers/adopts them rather than inventing
+WireGuard identities through REST. Device tombstones prevent reauthorization.
+
+`billing.inbox_received` calls `ProcessInbox(inbox_id)` for exactly that event,
+so the shared dispatcher supplies fenced completion, backoff and dead-lettering.
+Standalone `ProcessOne` remains available to library callers, but the registered
+jobs do not drain unrelated queues. Periodic `billing.reconcile`,
+`members.reconcile` and `devices.discover` intents are enqueued by
+`worker.RunMemberSchedule`; pages and scheduler slots have stable dedupe IDs.
+
+Operation and audit resource names use the binding contract
+(`member_device`, `checkout_session`, `entitlement_grant`). Internal outbox
+aggregate names above intentionally remain unchanged.
+
+See [member integration](../members/README.md) for the registered operation/event
+lists, explicit configuration, remaining command-entrypoint hooks and precise
+acceptance scope. NetBird read-back does not complete the separate `nodes` step;
+real native devices and gateway enforcement remain external acceptance work.

@@ -81,8 +81,12 @@ func (s *Service) IngestBatch(
 
 	receivedAt := s.now()
 
-	// Process replay_unavailable ranges if present (§10.8 step 4, §17.3 step 9).
+	// Process replay_unavailable ranges if present (§10.8 step 4, §17.3 step 9, Decision D-027).
 	if batch.ReplayUnavailable != nil && len(*batch.ReplayUnavailable) > 0 {
+		if state.Mode != LedgerModeReconciling {
+			return BatchResult{}, apierr.New(apierr.StateConflict, "replay_unavailable is only accepted while ledger mode is reconciling").
+				WithDetail("ledger_mode", string(state.Mode))
+		}
 		if err := s.recordReplayUnavailable(ctx, nodeIdentity, state.LedgerEpoch, *batch.ReplayUnavailable, receivedAt); err != nil {
 			return BatchResult{}, err
 		}
@@ -149,7 +153,27 @@ func (s *Service) ingestSingleEvent(
 
 	var out api.UsageEventResult
 	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		state, err := s.getLedgerStateInTx(ctx, tx)
+		preState, err := s.getLedgerStateInTx(ctx, tx)
+		if err != nil {
+			return err
+		}
+		if preState.Mode == LedgerModeFrozen {
+			return apierr.New(apierr.DependencyUnavailable, "usage ledger is frozen for recovery")
+		}
+		if preState.LedgerEpoch != initialState.LedgerEpoch {
+			return apierr.New(apierr.LedgerEpochMismatch, "ledger_epoch changed during batch ingestion").
+				WithDetail("current_ledger_epoch", preState.LedgerEpoch.String())
+		}
+
+		if _, err := ensureAndLockCheckpointInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, preState.LedgerEpoch, receivedAt); err != nil {
+			return err
+		}
+
+		// Acquire a share-level row lock on usage_ledger_state after checkpoint locking
+		// and re-read the mode immediately before writing usage_events so FreezeIngest
+		// and BeginRecovery (which take FOR UPDATE) fence in-flight ingests without
+		// serializing concurrent ingests on each other (§17.3 step 1).
+		state, err := s.lockLedgerStateForShareInTx(ctx, tx)
 		if err != nil {
 			return err
 		}
@@ -159,10 +183,6 @@ func (s *Service) ingestSingleEvent(
 		if state.LedgerEpoch != initialState.LedgerEpoch {
 			return apierr.New(apierr.LedgerEpochMismatch, "ledger_epoch changed during batch ingestion").
 				WithDetail("current_ledger_epoch", state.LedgerEpoch.String())
-		}
-
-		if _, err := ensureAndLockCheckpointInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, state.LedgerEpoch, receivedAt); err != nil {
-			return err
 		}
 
 		// 1. If seq > 0, check whether (node_id, incarnation_id, event_seq) already exists in usage_events.
