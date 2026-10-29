@@ -27,6 +27,7 @@ type acceptanceCase struct {
 // A prepare-binary digest is not a control/node build or a container digest.
 type provenance struct {
 	SourceCommit      string   `json:"source_commit"`
+	SourceDirty       bool     `json:"source_dirty"`
 	PrepareSHA256     string   `json:"prepare_binary_sha256"`
 	ImageDigests      []string `json:"image_digests"`
 	PolicyRevision    *string  `json:"policy_revision"`
@@ -95,6 +96,12 @@ func TestATMembers_AssignedStackGate(t *testing.T) {
 	if err != nil {
 		t.Fatal("source commit unavailable")
 	}
+	dirtyCmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
+	dirtyCmd.Dir = root
+	dirty, err := dirtyCmd.Output()
+	if err != nil {
+		t.Fatal("source worktree status unavailable")
+	}
 	prepare := exec.CommandContext(ctx, bin, "-state", filepath.Join(scratch, "state"), "-prefix", "w4-members", "-port-base", "19000")
 	prepare.Dir = root
 	out, runErr := prepare.CombinedOutput()
@@ -131,7 +138,7 @@ func TestATMembers_AssignedStackGate(t *testing.T) {
 						{Name: "procedure", Detail: "See PROCEDURES.md and BLOCKERS.md in this directory"},
 					}},
 				Scope: "startup prerequisite only", Expected: c.expected, Actual: actual, Commands: commands,
-				Build: provenance{SourceCommit: strings.TrimSpace(string(commit)), PrepareSHA256: hex.EncodeToString(sum[:]), ImageDigests: []string{}, UnavailableReason: "No running stack observed; image, policy and incarnation provenance unavailable"},
+				Build: provenance{SourceCommit: strings.TrimSpace(string(commit)), SourceDirty: len(dirty) != 0, PrepareSHA256: hex.EncodeToString(sum[:]), ImageDigests: []string{}, UnavailableReason: "No running stack observed; image, policy and incarnation provenance unavailable"},
 			}
 			if c.operator {
 				rec.OperatorStatus = "needs operator run"
@@ -140,6 +147,16 @@ func TestATMembers_AssignedStackGate(t *testing.T) {
 			dir := filepath.Join(root, "docs", "e2e", "at", "members")
 			if err := e2e.Write(dir, rec.Record); err != nil {
 				t.Fatal("write shared runner evidence failed")
+			}
+			// The shared writer appends a blank line at EOF; normalize only our
+			// pages so the public-repository whitespace check stays clean.
+			page := filepath.Join(dir, c.id+".md")
+			markdown, err := os.ReadFile(page)
+			if err != nil {
+				t.Fatal("read generated evidence page failed")
+			}
+			if err := os.WriteFile(page, []byte(strings.TrimRight(string(markdown), "\n")+"\n"), 0o644); err != nil {
+				t.Fatal("normalize generated evidence page failed")
 			}
 			// Keep the runner's Markdown format and add typed provenance to JSON.
 			raw, err := json.MarshalIndent(rec, "", "  ")
