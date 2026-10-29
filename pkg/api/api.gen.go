@@ -430,68 +430,74 @@ func (e EntitlementState) Valid() bool {
 
 // Defines values for ErrorCode.
 const (
-	ErrorCodeACKCONFLICT             ErrorCode = "ACK_CONFLICT"
-	ErrorCodeAUTHORIZATIONEXPIRED    ErrorCode = "AUTHORIZATION_EXPIRED"
-	ErrorCodeBOOTSTRAPCONSUMED       ErrorCode = "BOOTSTRAP_CONSUMED"
-	ErrorCodeBOOTSTRAPEXPIRED        ErrorCode = "BOOTSTRAP_EXPIRED"
-	ErrorCodeBOOTSTRAPNOTREADY       ErrorCode = "BOOTSTRAP_NOT_READY"
-	ErrorCodeCHECKPOINTFAILED        ErrorCode = "CHECKPOINT_FAILED"
-	ErrorCodeCONTROLAPIINCOMPATIBLE  ErrorCode = "CONTROL_API_INCOMPATIBLE"
-	ErrorCodeCSRFTOKENINVALID        ErrorCode = "CSRF_TOKEN_INVALID"
-	ErrorCodeDEPENDENCYUNAVAILABLE   ErrorCode = "DEPENDENCY_UNAVAILABLE"
-	ErrorCodeDEVICELIMITREACHED      ErrorCode = "DEVICE_LIMIT_REACHED"
-	ErrorCodeDISKSPACELOW            ErrorCode = "DISK_SPACE_LOW"
-	ErrorCodeDOWNLOADTIMEOUT         ErrorCode = "DOWNLOAD_TIMEOUT"
-	ErrorCodeENROLLMENTKEYMISMATCH   ErrorCode = "ENROLLMENT_KEY_MISMATCH"
-	ErrorCodeENROLLMENTTOKENEXPIRED  ErrorCode = "ENROLLMENT_TOKEN_EXPIRED"
-	ErrorCodeENROLLMENTTOKENINVALID  ErrorCode = "ENROLLMENT_TOKEN_INVALID"
-	ErrorCodeENROLLMENTTOKENREVOKED  ErrorCode = "ENROLLMENT_TOKEN_REVOKED"
-	ErrorCodeFORBIDDEN               ErrorCode = "FORBIDDEN"
-	ErrorCodeHASHMISMATCH            ErrorCode = "HASH_MISMATCH"
-	ErrorCodeHEALTHCHECKFAILED       ErrorCode = "HEALTH_CHECK_FAILED"
-	ErrorCodeIDEMPOTENCYCONFLICT     ErrorCode = "IDEMPOTENCY_CONFLICT"
-	ErrorCodeIDENTITYREVOKED         ErrorCode = "IDENTITY_REVOKED"
-	ErrorCodeINCARNATIONMISMATCH     ErrorCode = "INCARNATION_MISMATCH"
-	ErrorCodeINTERNALERROR           ErrorCode = "INTERNAL_ERROR"
-	ErrorCodeKEYUNTRUSTED            ErrorCode = "KEY_UNTRUSTED"
-	ErrorCodeLEASEEXPIRED            ErrorCode = "LEASE_EXPIRED"
-	ErrorCodeLEDGEREPOCHMISMATCH     ErrorCode = "LEDGER_EPOCH_MISMATCH"
-	ErrorCodeMALFORMEDREQUEST        ErrorCode = "MALFORMED_REQUEST"
-	ErrorCodeMETERPATHINVALID        ErrorCode = "METER_PATH_INVALID"
-	ErrorCodeMETHODNOTALLOWED        ErrorCode = "METHOD_NOT_ALLOWED"
-	ErrorCodeMIGRATIONFAILED         ErrorCode = "MIGRATION_FAILED"
-	ErrorCodeMINIMUMVERSIONVIOLATION ErrorCode = "MINIMUM_VERSION_VIOLATION"
-	ErrorCodeNODEINCARNATIONACTIVE   ErrorCode = "NODE_INCARNATION_ACTIVE"
-	ErrorCodeNODENOTSERVICEABLE      ErrorCode = "NODE_NOT_SERVICEABLE"
-	ErrorCodeNODERETIRED             ErrorCode = "NODE_RETIRED"
-	ErrorCodePAYLOADTOOLARGE         ErrorCode = "PAYLOAD_TOO_LARGE"
-	ErrorCodePRECONDITIONREQUIRED    ErrorCode = "PRECONDITION_REQUIRED"
-	ErrorCodeRATELIMITED             ErrorCode = "RATE_LIMITED"
-	ErrorCodeRELEASENOTAPPROVED      ErrorCode = "RELEASE_NOT_APPROVED"
-	ErrorCodeREPLAYUNAVAILABLE       ErrorCode = "REPLAY_UNAVAILABLE"
-	ErrorCodeRESOURCENOTFOUND        ErrorCode = "RESOURCE_NOT_FOUND"
-	ErrorCodeRESOURCEVERSIONCONFLICT ErrorCode = "RESOURCE_VERSION_CONFLICT"
-	ErrorCodeROLLBACKFAILED          ErrorCode = "ROLLBACK_FAILED"
-	ErrorCodeSCHEMAINCOMPATIBLE      ErrorCode = "SCHEMA_INCOMPATIBLE"
-	ErrorCodeSIGNATUREINVALID        ErrorCode = "SIGNATURE_INVALID"
-	ErrorCodeSIZEMISMATCH            ErrorCode = "SIZE_MISMATCH"
-	ErrorCodeSTALEGENERATION         ErrorCode = "STALE_GENERATION"
-	ErrorCodeSTARTFAILED             ErrorCode = "START_FAILED"
-	ErrorCodeSTATECONFLICT           ErrorCode = "STATE_CONFLICT"
-	ErrorCodeSTOREUNAVAILABLE        ErrorCode = "STORE_UNAVAILABLE"
-	ErrorCodeUNAUTHENTICATED         ErrorCode = "UNAUTHENTICATED"
-	ErrorCodeUNSUPPORTEDMEDIATYPE    ErrorCode = "UNSUPPORTED_MEDIA_TYPE"
-	ErrorCodeUNSUPPORTEDPLATFORM     ErrorCode = "UNSUPPORTED_PLATFORM"
-	ErrorCodeUPDATEBUSY              ErrorCode = "UPDATE_BUSY"
-	ErrorCodeUSAGEEVENTCONFLICT      ErrorCode = "USAGE_EVENT_CONFLICT"
-	ErrorCodeVALIDATIONFAILED        ErrorCode = "VALIDATION_FAILED"
-	ErrorCodeWEBHOOKSIGNATUREINVALID ErrorCode = "WEBHOOK_SIGNATURE_INVALID"
+	ErrorCodeACKCONFLICT              ErrorCode = "ACK_CONFLICT"
+	ErrorCodeARTIFACTINVALID          ErrorCode = "ARTIFACT_INVALID"
+	ErrorCodeAUTHORIZATIONEXPIRED     ErrorCode = "AUTHORIZATION_EXPIRED"
+	ErrorCodeBOOTSTRAPCONSUMED        ErrorCode = "BOOTSTRAP_CONSUMED"
+	ErrorCodeBOOTSTRAPEXPIRED         ErrorCode = "BOOTSTRAP_EXPIRED"
+	ErrorCodeBOOTSTRAPNOTREADY        ErrorCode = "BOOTSTRAP_NOT_READY"
+	ErrorCodeCHECKPOINTFAILED         ErrorCode = "CHECKPOINT_FAILED"
+	ErrorCodeCONTROLAPIINCOMPATIBLE   ErrorCode = "CONTROL_API_INCOMPATIBLE"
+	ErrorCodeCSRFTOKENINVALID         ErrorCode = "CSRF_TOKEN_INVALID"
+	ErrorCodeDEPENDENCYUNAVAILABLE    ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	ErrorCodeDEVICELIMITREACHED       ErrorCode = "DEVICE_LIMIT_REACHED"
+	ErrorCodeDISKSPACELOW             ErrorCode = "DISK_SPACE_LOW"
+	ErrorCodeDOWNLOADTIMEOUT          ErrorCode = "DOWNLOAD_TIMEOUT"
+	ErrorCodeENROLLMENTKEYMISMATCH    ErrorCode = "ENROLLMENT_KEY_MISMATCH"
+	ErrorCodeENROLLMENTTOKENEXPIRED   ErrorCode = "ENROLLMENT_TOKEN_EXPIRED"
+	ErrorCodeENROLLMENTTOKENINVALID   ErrorCode = "ENROLLMENT_TOKEN_INVALID"
+	ErrorCodeENROLLMENTTOKENREVOKED   ErrorCode = "ENROLLMENT_TOKEN_REVOKED"
+	ErrorCodeFORBIDDEN                ErrorCode = "FORBIDDEN"
+	ErrorCodeHASHMISMATCH             ErrorCode = "HASH_MISMATCH"
+	ErrorCodeHEALTHCHECKFAILED        ErrorCode = "HEALTH_CHECK_FAILED"
+	ErrorCodeIDEMPOTENCYCONFLICT      ErrorCode = "IDEMPOTENCY_CONFLICT"
+	ErrorCodeIDENTITYREVOKED          ErrorCode = "IDENTITY_REVOKED"
+	ErrorCodeINCARNATIONMISMATCH      ErrorCode = "INCARNATION_MISMATCH"
+	ErrorCodeINTERNALERROR            ErrorCode = "INTERNAL_ERROR"
+	ErrorCodeISOLATIONBASELINEMISSING ErrorCode = "ISOLATION_BASELINE_MISSING"
+	ErrorCodeKEYUNTRUSTED             ErrorCode = "KEY_UNTRUSTED"
+	ErrorCodeLEASEEXPIRED             ErrorCode = "LEASE_EXPIRED"
+	ErrorCodeLEDGEREPOCHMISMATCH      ErrorCode = "LEDGER_EPOCH_MISMATCH"
+	ErrorCodeMALFORMEDREQUEST         ErrorCode = "MALFORMED_REQUEST"
+	ErrorCodeMETEREPOCHCHANGE         ErrorCode = "METER_EPOCH_CHANGE"
+	ErrorCodeMETERPATHINVALID         ErrorCode = "METER_PATH_INVALID"
+	ErrorCodeMETHODNOTALLOWED         ErrorCode = "METHOD_NOT_ALLOWED"
+	ErrorCodeMIGRATIONFAILED          ErrorCode = "MIGRATION_FAILED"
+	ErrorCodeMINIMUMVERSIONVIOLATION  ErrorCode = "MINIMUM_VERSION_VIOLATION"
+	ErrorCodeNODEINCARNATIONACTIVE    ErrorCode = "NODE_INCARNATION_ACTIVE"
+	ErrorCodeNODENOTSERVICEABLE       ErrorCode = "NODE_NOT_SERVICEABLE"
+	ErrorCodeNODERETIRED              ErrorCode = "NODE_RETIRED"
+	ErrorCodeNOTIMPLEMENTED           ErrorCode = "NOT_IMPLEMENTED"
+	ErrorCodePAYLOADTOOLARGE          ErrorCode = "PAYLOAD_TOO_LARGE"
+	ErrorCodePRECONDITIONREQUIRED     ErrorCode = "PRECONDITION_REQUIRED"
+	ErrorCodeRATELIMITED              ErrorCode = "RATE_LIMITED"
+	ErrorCodeRELEASENOTAPPROVED       ErrorCode = "RELEASE_NOT_APPROVED"
+	ErrorCodeREPLAYUNAVAILABLE        ErrorCode = "REPLAY_UNAVAILABLE"
+	ErrorCodeRESOURCENOTFOUND         ErrorCode = "RESOURCE_NOT_FOUND"
+	ErrorCodeRESOURCEVERSIONCONFLICT  ErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ErrorCodeROLLBACKFAILED           ErrorCode = "ROLLBACK_FAILED"
+	ErrorCodeSCHEMAINCOMPATIBLE       ErrorCode = "SCHEMA_INCOMPATIBLE"
+	ErrorCodeSIGNATUREINVALID         ErrorCode = "SIGNATURE_INVALID"
+	ErrorCodeSIZEMISMATCH             ErrorCode = "SIZE_MISMATCH"
+	ErrorCodeSTALEGENERATION          ErrorCode = "STALE_GENERATION"
+	ErrorCodeSTARTFAILED              ErrorCode = "START_FAILED"
+	ErrorCodeSTATECONFLICT            ErrorCode = "STATE_CONFLICT"
+	ErrorCodeSTOREUNAVAILABLE         ErrorCode = "STORE_UNAVAILABLE"
+	ErrorCodeUNAUTHENTICATED          ErrorCode = "UNAUTHENTICATED"
+	ErrorCodeUNSUPPORTEDMEDIATYPE     ErrorCode = "UNSUPPORTED_MEDIA_TYPE"
+	ErrorCodeUNSUPPORTEDPLATFORM      ErrorCode = "UNSUPPORTED_PLATFORM"
+	ErrorCodeUPDATEBUSY               ErrorCode = "UPDATE_BUSY"
+	ErrorCodeUSAGEEVENTCONFLICT       ErrorCode = "USAGE_EVENT_CONFLICT"
+	ErrorCodeVALIDATIONFAILED         ErrorCode = "VALIDATION_FAILED"
+	ErrorCodeWEBHOOKSIGNATUREINVALID  ErrorCode = "WEBHOOK_SIGNATURE_INVALID"
 )
 
 // Valid indicates whether the value is a known member of the ErrorCode enum.
 func (e ErrorCode) Valid() bool {
 	switch e {
 	case ErrorCodeACKCONFLICT:
+		return true
+	case ErrorCodeARTIFACTINVALID:
 		return true
 	case ErrorCodeAUTHORIZATIONEXPIRED:
 		return true
@@ -537,6 +543,8 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case ErrorCodeINTERNALERROR:
 		return true
+	case ErrorCodeISOLATIONBASELINEMISSING:
+		return true
 	case ErrorCodeKEYUNTRUSTED:
 		return true
 	case ErrorCodeLEASEEXPIRED:
@@ -544,6 +552,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeLEDGEREPOCHMISMATCH:
 		return true
 	case ErrorCodeMALFORMEDREQUEST:
+		return true
+	case ErrorCodeMETEREPOCHCHANGE:
 		return true
 	case ErrorCodeMETERPATHINVALID:
 		return true
@@ -558,6 +568,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeNODENOTSERVICEABLE:
 		return true
 	case ErrorCodeNODERETIRED:
+		return true
+	case ErrorCodeNOTIMPLEMENTED:
 		return true
 	case ErrorCodePAYLOADTOOLARGE:
 		return true
@@ -1225,22 +1237,25 @@ func (e ObservationReportNetbirdBackend) Valid() bool {
 
 // Defines values for OperationKind.
 const (
-	OperationKindCheckoutCreate     OperationKind = "checkout.create"
-	OperationKindMemberDeviceRevoke OperationKind = "member.device_revoke"
-	OperationKindMemberGrant        OperationKind = "member.grant"
-	OperationKindMemberSuspend      OperationKind = "member.suspend"
-	OperationKindMemberUnsuspend    OperationKind = "member.unsuspend"
-	OperationKindMemberUpdate       OperationKind = "member.update"
-	OperationKindNodeDisable        OperationKind = "node.disable"
-	OperationKindNodePublish        OperationKind = "node.publish"
-	OperationKindNodeRetire         OperationKind = "node.retire"
-	OperationKindNodeRevoke         OperationKind = "node.revoke"
-	OperationKindNodeUnpublish      OperationKind = "node.unpublish"
-	OperationKindNodeUpdate         OperationKind = "node.update"
-	OperationKindPolicyActivate     OperationKind = "policy.activate"
-	OperationKindReleaseRegister    OperationKind = "release.register"
-	OperationKindUpdateBatchCreate  OperationKind = "update_batch.create"
-	OperationKindUpdateBatchRetry   OperationKind = "update_batch.retry"
+	OperationKindCheckoutCreate        OperationKind = "checkout.create"
+	OperationKindMemberDeviceAuthorize OperationKind = "member.device_authorize"
+	OperationKindMemberDeviceRevoke    OperationKind = "member.device_revoke"
+	OperationKindMemberGrant           OperationKind = "member.grant"
+	OperationKindMemberGrantRevoke     OperationKind = "member.grant_revoke"
+	OperationKindMemberSuspend         OperationKind = "member.suspend"
+	OperationKindMemberUnsuspend       OperationKind = "member.unsuspend"
+	OperationKindMemberUpdate          OperationKind = "member.update"
+	OperationKindNodeDisable           OperationKind = "node.disable"
+	OperationKindNodeEnroll            OperationKind = "node.enroll"
+	OperationKindNodePublish           OperationKind = "node.publish"
+	OperationKindNodeRetire            OperationKind = "node.retire"
+	OperationKindNodeRevoke            OperationKind = "node.revoke"
+	OperationKindNodeUnpublish         OperationKind = "node.unpublish"
+	OperationKindNodeUpdate            OperationKind = "node.update"
+	OperationKindPolicyActivate        OperationKind = "policy.activate"
+	OperationKindReleaseRegister       OperationKind = "release.register"
+	OperationKindUpdateBatchCreate     OperationKind = "update_batch.create"
+	OperationKindUpdateBatchRetry      OperationKind = "update_batch.retry"
 )
 
 // Valid indicates whether the value is a known member of the OperationKind enum.
@@ -1248,9 +1263,13 @@ func (e OperationKind) Valid() bool {
 	switch e {
 	case OperationKindCheckoutCreate:
 		return true
+	case OperationKindMemberDeviceAuthorize:
+		return true
 	case OperationKindMemberDeviceRevoke:
 		return true
 	case OperationKindMemberGrant:
+		return true
+	case OperationKindMemberGrantRevoke:
 		return true
 	case OperationKindMemberSuspend:
 		return true
@@ -1259,6 +1278,8 @@ func (e OperationKind) Valid() bool {
 	case OperationKindMemberUpdate:
 		return true
 	case OperationKindNodeDisable:
+		return true
+	case OperationKindNodeEnroll:
 		return true
 	case OperationKindNodePublish:
 		return true
@@ -1660,6 +1681,7 @@ func (e ReplayUnavailableRangeReason) Valid() bool {
 
 // Defines values for ResourceType.
 const (
+	ResourceTypeAdminIdentity    ResourceType = "admin_identity"
 	ResourceTypeCheckoutSession  ResourceType = "checkout_session"
 	ResourceTypeEnrollment       ResourceType = "enrollment"
 	ResourceTypeEntitlementGrant ResourceType = "entitlement_grant"
@@ -1678,6 +1700,8 @@ const (
 // Valid indicates whether the value is a known member of the ResourceType enum.
 func (e ResourceType) Valid() bool {
 	switch e {
+	case ResourceTypeAdminIdentity:
+		return true
 	case ResourceTypeCheckoutSession:
 		return true
 	case ResourceTypeEnrollment:
@@ -2792,7 +2816,10 @@ type ErrorBody struct {
 	// default retryable flag of each code are defined in `pkg/apierr`; the
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
-	// (update results, observations).
+	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+	// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+	// endpoints must not ship with it in a release.
 	Code ErrorCode `json:"code"`
 
 	// Details Machine-readable context, always an object (empty when there is none).
@@ -2816,7 +2843,10 @@ type ErrorBody struct {
 // default retryable flag of each code are defined in `pkg/apierr`; the
 // contracts tests keep this enum identical to that table. Codes marked
 // node-local in `pkg/apierr` are reported mainly inside agent payloads
-// (update results, observations).
+// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+// endpoints must not ship with it in a release.
 type ErrorCode string
 
 // ErrorEnvelope Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
@@ -3473,7 +3503,10 @@ type NodeError struct {
 	// default retryable flag of each code are defined in `pkg/apierr`; the
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
-	// (update results, observations).
+	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+	// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+	// endpoints must not ship with it in a release.
 	Code ErrorCode `json:"code"`
 
 	// Message Redacted summary; never tokens, keys, environment or browsing data (§13.11).
@@ -3669,7 +3702,10 @@ type Operation struct {
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
-		// (update results, observations).
+		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+		// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+		// endpoints must not ship with it in a release.
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
 	}] `json:"error"`
@@ -4690,7 +4726,10 @@ type UsageEventResult struct {
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
-		// (update results, observations).
+		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+		// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+		// endpoints must not ship with it in a release.
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
 		Message string       `json:"message"`

@@ -50,6 +50,23 @@ x-fvpn-mutual-tls:
     state on every request, and treats node_id / node_incarnation_id in bodies
     only as consistency checks (mismatch: 403 INCARNATION_MISMATCH). Headers
     such as X-Node-ID or X-Client-Cert supplied by a client are never trusted.
+x-fvpn-browser-auth:
+  description: |
+    Existing browser routes outside /api/v1 (D-032), excluded from the 41 API
+    endpoints. There are no /api/v1/auth/session or /api/v1/auth/logout aliases.
+  routes: ['GET /auth/session', 'POST /auth/logout']
+  parameters:
+    - name: role
+      in: query
+      required: false
+      description: |
+        Selects __Host-fvpn-admin or __Host-fvpn-member. Required only when both
+        role cookies are present; ignored otherwise. Missing or invalid role
+        with both cookies is MALFORMED_REQUEST. The selected session supplies
+        the principal and logout CSRF context; a query never grants a role.
+      schema:
+        type: string
+        enum: [admin, member]
 servers:
   - url: https://control.example.invalid/api/v1
     description: Example deployment (placeholder host)
@@ -2523,7 +2540,10 @@ components:
         default retryable flag of each code are defined in `pkg/apierr`; the
         contracts tests keep this enum identical to that table. Codes marked
         node-local in `pkg/apierr` are reported mainly inside agent payloads
-        (update results, observations).
+        (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+        and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+        NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+        endpoints must not ship with it in a release.
       enum:
         - MALFORMED_REQUEST
         - UNAUTHENTICATED
@@ -2541,6 +2561,7 @@ components:
         - PRECONDITION_REQUIRED
         - RATE_LIMITED
         - INTERNAL_ERROR
+        - NOT_IMPLEMENTED
         - DEPENDENCY_UNAVAILABLE
         - RELEASE_NOT_APPROVED
         - UNSUPPORTED_PLATFORM
@@ -2550,6 +2571,7 @@ components:
         - KEY_UNTRUSTED
         - HASH_MISMATCH
         - SIZE_MISMATCH
+        - ARTIFACT_INVALID
         - DISK_SPACE_LOW
         - DOWNLOAD_TIMEOUT
         - STORE_UNAVAILABLE
@@ -2569,6 +2591,8 @@ components:
         - LEDGER_EPOCH_MISMATCH
         - REPLAY_UNAVAILABLE
         - METER_PATH_INVALID
+        - ISOLATION_BASELINE_MISSING
+        - METER_EPOCH_CHANGE
         - DEVICE_LIMIT_REACHED
         - ENROLLMENT_TOKEN_INVALID
         - ENROLLMENT_TOKEN_EXPIRED
@@ -2604,7 +2628,7 @@ components:
     ResourceType:
       type: string
       description: Kinds of resources referenced by operations and audit events.
-      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config]
+      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config, admin_identity]
     ResourceRef:
       type: object
       required: [type, id]
@@ -2745,6 +2769,7 @@ components:
     OperationKind:
       type: string
       enum:
+        - node.enroll
         - node.update
         - node.publish
         - node.unpublish
@@ -2755,6 +2780,8 @@ components:
         - member.suspend
         - member.unsuspend
         - member.grant
+        - member.grant_revoke
+        - member.device_authorize
         - member.device_revoke
         - policy.activate
         - release.register

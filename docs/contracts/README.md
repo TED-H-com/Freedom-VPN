@@ -131,6 +131,46 @@ wrapping it after the response starts cannot recover that information. Use
 `http.ResponseController` for optional writer operations. Invalid pre-set
 response/context request IDs are replaced with central UUIDs (§14.1).
 
+## Revision 3 enums and reported codes
+
+| Enum | Additions | Intended writer |
+|---|---|---|
+| `OperationKind` | `node.enroll` | Node enrollment operation |
+| `OperationKind` | `member.device_authorize`, `member.grant_revoke` | Device authorization and finite grant revocation |
+| `ResourceType` | `admin_identity` | Administrator login/logout audit; administrators are never members (D-037, D-032) |
+
+`ErrorCode` is shared by HTTP errors, `NodeError.code` and
+`UpdateResult.error_code`. `pkg/apierr.All()` is the complete table, in spec
+section order. Its `NodeLocal` flag marks codes primarily reported by nodes;
+legacy codes retain their existing HTTP statuses (including DISK_SPACE_LOW
+507 and LEASE_EXPIRED 409). A zero table status means report-only;
+`apierr.Write` converts accidental use in an HTTP error into 500 INTERNAL_ERROR.
+
+| New code | HTTP status | Retryable default | Use |
+|---|---|---|---|
+| `NOT_IMPLEMENTED` | 501 | false | Transitional HTTP response; never ship a documented endpoint with this response in a release |
+| `ARTIFACT_INVALID` | none | false | NodeError / UpdateResult: hostile or malformed archive, symlink, entry or byte cap exceeded |
+| `ISOLATION_BASELINE_MISSING` | none | false | NodeError / UpdateResult: missing isolation baseline; forwarding off |
+| `METER_EPOCH_CHANGE` | none | false | NodeError / UpdateResult: meter epoch changed; incarnation event sequence continues (§17.3) |
+
+`LEDGER_MODE_CONFLICT` is not a contract code (D-036).
+
+## Browser role selector (D-032)
+
+`GET /auth/session` and `POST /auth/logout` are existing browser routes outside
+`/api/v1` and outside the 41-endpoint API. Their query parameter is recorded in
+`openapi.yaml` under `x-fvpn-browser-auth`:
+
+| Parameter | Type | Presence | Cookies |
+|---|---|---|---|
+| `role` | `admin` or `member` | Required only when both role cookies are present; ignored otherwise | `__Host-fvpn-admin`, `__Host-fvpn-member` |
+
+With both cookies, absent or invalid `role` produces MALFORMED_REQUEST. Session
+identity and logout CSRF context come from the selected cookie. The selector
+does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
+on main; adding them would violate the fixed endpoint count. No aliases are
+introduced by this revision.
+
 ## Service-enforced rules
 
 Schema acceptance is only structural validation. The following owners must
