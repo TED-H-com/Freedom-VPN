@@ -8,9 +8,9 @@ import (
 	"slices"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
-	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -69,6 +69,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		return ack, apierr.New(apierr.HashMismatch, "Result payload hash does not match")
 	}
 	digest, _ := hex.DecodeString(hash)
+	requestID := commandtx.RequestID(ctx)
 	var rejection error
 	e = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		rejection = nil
@@ -99,7 +100,15 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 				return e
 			}
 			rejection = apierr.New(apierr.AckConflict, "Result ID already has different content")
-			return releases.Audit(ctx, tx, i.NodeID, api.AuditEventActorTypeNode, "update_result.conflict", api.ResourceRef{Type: api.ResourceTypeNode, Id: i.NodeID}, nil, api.AuditEventResultDenied, map[string]any{"result_id": r.ResultId, "conflicting_hash": hash})
+			event, e := audit.NewEvent(audit.Entry{
+				Actor: audit.Actor{Type: api.AuditEventActorTypeNode, ID: i.NodeID}, Action: "update_result.conflict",
+				Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: i.NodeID}, Result: api.AuditEventResultFailed, RequestID: &requestID,
+				After: map[string]any{"result_id": r.ResultId, "conflicting_hash": hash}, Fields: []string{"result_id", "conflicting_hash"},
+			})
+			if e != nil {
+				return e
+			}
+			return audit.AppendEvent(ctx, tx, event)
 		}
 		if !errors.Is(e, pgx.ErrNoRows) {
 			return e
@@ -157,7 +166,15 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 					return e
 				}
 				rejection = apierr.New(apierr.MinimumVersionViolation, "Rollback release may not serve")
-				return releases.Audit(ctx, tx, i.NodeID, api.AuditEventActorTypeNode, "update_result.rollback_refused", api.ResourceRef{Type: api.ResourceTypeUpdateTarget, Id: *j.target}, nil, api.AuditEventResultDenied, map[string]any{"recovery_required": true})
+				event, e := audit.NewEvent(audit.Entry{
+					Actor: audit.Actor{Type: api.AuditEventActorTypeNode, ID: i.NodeID}, Action: "update_result.rollback_refused",
+					Resource: api.ResourceRef{Type: api.ResourceTypeUpdateTarget, Id: *j.target}, Result: api.AuditEventResultFailed, RequestID: &requestID,
+					After: map[string]any{"recovery_required": true, "result_id": r.ResultId, "job_id": j.id}, Fields: []string{"recovery_required", "result_id", "job_id"},
+				})
+				if e != nil {
+					return e
+				}
+				return audit.AppendEvent(ctx, tx, event)
 			}
 			rollbackManifest, _, _, e := s.releases.Eligible(ctx, tx, *currentReleaseID)
 			if e != nil {
@@ -223,7 +240,15 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if e != nil {
 			return e
 		}
-		if e = releases.Audit(ctx, tx, i.NodeID, api.AuditEventActorTypeNode, "update_result.accept", api.ResourceRef{Type: api.ResourceTypeUpdateTarget, Id: *j.target}, nil, api.AuditEventResultSucceeded, map[string]any{"state": r.State, "accepted_as_history": history, "result_id": r.ResultId}); e != nil {
+		event, e := audit.NewEvent(audit.Entry{
+			Actor: audit.Actor{Type: api.AuditEventActorTypeNode, ID: i.NodeID}, Action: "update_result.accept",
+			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateTarget, Id: *j.target}, Result: api.AuditEventResultSucceeded, RequestID: &requestID,
+			After: map[string]any{"state": r.State, "accepted_as_history": history, "result_id": r.ResultId, "job_id": j.id}, Fields: []string{"state", "accepted_as_history", "result_id", "job_id"},
+		})
+		if e != nil {
+			return e
+		}
+		if e = audit.AppendEvent(ctx, tx, event); e != nil {
 			return e
 		}
 		return recomputeAll(ctx, tx)
