@@ -159,16 +159,26 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 	svc := NewService(pool, signer, WithClock(func() time.Time { return now }))
 
 	reqID := uuid.New()
-	cfgGen := nodes.ParseU64(3)
+	disagreeingClientGen := nodes.ParseU64(99)
 	env1, err := svc.Renew(ctx, nodeID, incID, api.LeaseRenewalRequest{
 		RenewalRequestId:        reqID,
 		NodeId:                  nodeID,
 		NodeIncarnationId:       incID,
-		AppliedConfigGeneration: presence.NewNullableWithValue(cfgGen),
+		AppliedConfigGeneration: presence.NewNullableWithValue(disagreeingClientGen),
 		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("Renew initial: %v", err)
+	}
+
+	// Verify signed ConfigGeneration and serving_leases.policy_generation use nodes.desired_config_generation (3),
+	// never the client's disagreeing applied_config_generation (99).
+	if env1.Signed.ConfigGeneration != 3 {
+		t.Fatalf("signed ConfigGeneration = %s, want 3 (nodes.desired_config_generation)", env1.Signed.ConfigGeneration)
+	}
+	var storedPolicyGen string
+	if err := pool.QueryRow(ctx, `SELECT policy_generation::text FROM serving_leases WHERE id = $1`, env1.Signed.LeaseId).Scan(&storedPolicyGen); err != nil || storedPolicyGen != "3" {
+		t.Fatalf("serving_leases.policy_generation = %q (err=%v), want 3", storedPolicyGen, err)
 	}
 
 	// Verify signature with pkg/envelope.Verify for PurposeLease.
@@ -226,7 +236,7 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 		RenewalRequestId:        reqID,
 		NodeId:                  nodeID,
 		NodeIncarnationId:       incID,
-		AppliedConfigGeneration: presence.NewNullableWithValue(cfgGen),
+		AppliedConfigGeneration: presence.NewNullableWithValue(disagreeingClientGen),
 		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
@@ -238,6 +248,119 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 	if !envReplay.Signed.ExpiresAt.Equal(env1.Signed.ExpiresAt) || !envReplay.Signed.IssuedAt.Equal(env1.Signed.IssuedAt) {
 		t.Errorf("replay restarted TTL: got [%v, %v), want [%v, %v)",
 			envReplay.Signed.IssuedAt, envReplay.Signed.ExpiresAt, env1.Signed.IssuedAt, env1.Signed.ExpiresAt)
+	}
+}
+
+type suspendMemberDuringSign struct {
+	inner    Signer
+	pool     *pgxpool.Pool
+	memberID uuid.UUID
+	calls    int
+}
+
+func (s *suspendMemberDuringSign) Sign(ctx context.Context, purpose envelope.Purpose, signed any) (envelope.Envelope, error) {
+	s.calls++
+	if _, err := s.pool.Exec(ctx, `
+		UPDATE members
+		SET admin_suspended = true,
+		    suspension_reason = 'concurrent-suspension',
+		    resource_version = resource_version + 1
+		WHERE id = $1`, s.memberID); err != nil {
+		return envelope.Envelope{}, err
+	}
+	if _, err := s.pool.Exec(ctx, `
+		UPDATE entitlements SET admin_suspended = true WHERE member_id = $1`, s.memberID); err != nil {
+		return envelope.Envelope{}, err
+	}
+	return s.inner.Sign(ctx, purpose, signed)
+}
+
+func TestLeases_SuspendDuringSignRebuildsAndExcludesSuspendedMember(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+
+	grpID := uuid.New()
+	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-suspend-sign', 'grp-suspend-sign')`, grpID); err != nil {
+		t.Fatalf("insert group: %v", err)
+	}
+	nodeID, incID := seedLeaseTestNode(t, ctx, pool, grpID, api.PublicationIntentPublished)
+
+	memberSuspended := uuid.New()
+	memberActive := uuid.New()
+	validFrom := now.Add(-24 * time.Hour)
+	validUntil := now.Add(7 * 24 * time.Hour)
+
+	for i, mid := range []uuid.UUID{memberSuspended, memberActive} {
+		email := mid.String()[:8] + "@example.com"
+		if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, $2, 'member', 'active')`, mid, email); err != nil {
+			t.Fatalf("insert member: %v", err)
+		}
+		if _, err := pool.Exec(ctx, `INSERT INTO entitlements (member_id, revision, device_limit, valid_from, effective_service_end, admin_suspended) VALUES ($1, $2, 3, $3, $4, false)`, mid, i+2, validFrom, validUntil); err != nil {
+			t.Fatalf("insert entitlement: %v", err)
+		}
+		if _, err := pool.Exec(ctx, `INSERT INTO assignments (member_id, group_id, valid_from, valid_until) VALUES ($1, $2, $3, $4)`, mid, grpID, validFrom, validUntil); err != nil {
+			t.Fatalf("insert assignment: %v", err)
+		}
+	}
+
+	inner, ts := testLeaseSignerAndTrustStore(t, now)
+	hookSigner := &suspendMemberDuringSign{
+		inner:    inner,
+		pool:     pool,
+		memberID: memberSuspended,
+	}
+	svc := NewService(pool, hookSigner, WithClock(func() time.Time { return now }))
+
+	env, err := svc.Renew(ctx, nodeID, incID, api.LeaseRenewalRequest{
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  nodeID,
+		NodeIncarnationId:       incID,
+		AppliedConfigGeneration: presence.NewNullableWithValue(decstr.U64(3)),
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+	})
+	if err != nil {
+		t.Fatalf("Renew: %v", err)
+	}
+	if hookSigner.calls < 2 {
+		t.Fatalf("expected Sign to be called again after eligibility changed, calls=%d", hookSigner.calls)
+	}
+
+	raw, err := json.Marshal(env)
+	if err != nil {
+		t.Fatalf("marshal lease: %v", err)
+	}
+	if _, _, err := envelope.Verify(raw, ts, envelope.PurposeLease, now); err != nil {
+		t.Fatalf("envelope.Verify after re-sign failed: %v", err)
+	}
+
+	if len(env.Signed.Members) != 1 || env.Signed.Members[0].MemberId != memberActive {
+		t.Fatalf("signed Members = %+v, want only active member %s", env.Signed.Members, memberActive)
+	}
+
+	var grantRefs []uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT member_grant_refs FROM serving_leases WHERE id = $1`, env.Signed.LeaseId).Scan(&grantRefs); err != nil {
+		t.Fatalf("select member_grant_refs: %v", err)
+	}
+	if len(grantRefs) != 1 || grantRefs[0] != memberActive {
+		t.Fatalf("serving_leases.member_grant_refs = %v, want [%s]", grantRefs, memberActive)
+	}
+
+	var dbMembers []uuid.UUID
+	rows, err := pool.Query(ctx, `SELECT member_id FROM serving_lease_members WHERE lease_id = $1`, env.Signed.LeaseId)
+	if err != nil {
+		t.Fatalf("select serving_lease_members: %v", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var mid uuid.UUID
+		if err := rows.Scan(&mid); err != nil {
+			t.Fatal(err)
+		}
+		dbMembers = append(dbMembers, mid)
+	}
+	if len(dbMembers) != 1 || dbMembers[0] != memberActive {
+		t.Fatalf("serving_lease_members = %v, want [%s]", dbMembers, memberActive)
 	}
 }
 
