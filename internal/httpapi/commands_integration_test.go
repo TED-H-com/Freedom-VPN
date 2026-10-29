@@ -19,7 +19,9 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -50,13 +52,31 @@ func (f *commandFixture) UpdateNode(ctx context.Context, r gen.UpdateNodeRequest
 		return nil, e
 	}
 	if r.Body.Name != nil && *r.Body.Name == "rollback" {
-		return gen.UpdateNode202JSONResponse{OperationAcceptedJSONResponse: operations.Accepted(api.Operation{OperationId: id, Status: "pending"}, p.Role)}, nil
+		return gen.UpdateNode202JSONResponse{OperationAcceptedJSONResponse: operations.Accepted(api.Operation{OperationId: id, Status: "pending",
+			CompletedAt:       presence.NewNullNullable[time.Time](),
+			DesiredGeneration: presence.NewNullNullable[decstr.U64](),
+			Error: presence.NewNullNullable[struct {
+				Code    api.ErrorCode `json:"code"`
+				Message string        `json:"message"`
+			}](),
+			ObservedGeneration: presence.NewNullNullable[decstr.U64](),
+			ResourceVersion:    presence.NewNullNullable[decstr.U64](),
+		}, p.Role)}, nil
 	}
 	e = SetResult(ctx, db.IdempotencyResult{ResourceType: "node", ResourceID: &r.NodeId, OperationID: &id, ResponseStatus: 202})
 	if e != nil {
 		return nil, e
 	}
-	return gen.UpdateNode202JSONResponse{OperationAcceptedJSONResponse: operations.Accepted(api.Operation{OperationId: id, Status: "pending"}, p.Role)}, nil
+	return gen.UpdateNode202JSONResponse{OperationAcceptedJSONResponse: operations.Accepted(api.Operation{OperationId: id, Status: "pending",
+		CompletedAt:       presence.NewNullNullable[time.Time](),
+		DesiredGeneration: presence.NewNullNullable[decstr.U64](),
+		Error: presence.NewNullNullable[struct {
+			Code    api.ErrorCode `json:"code"`
+			Message string        `json:"message"`
+		}](),
+		ObservedGeneration: presence.NewNullNullable[decstr.U64](),
+		ResourceVersion:    presence.NewNullNullable[decstr.U64](),
+	}, p.Role)}, nil
 }
 func (f *commandFixture) Replay(ctx context.Context, _ string, r db.IdempotencyRecord) (any, error) {
 	p, _ := auth.FromContext(ctx)
