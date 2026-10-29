@@ -98,7 +98,9 @@ session creation derives the customer exclusively from this table. Return URLs
 match an explicit HTTPS URL allowlist exactly; return pages only poll the central
 state and cannot create billing evidence or entitlement.
 
-Checkout intents and their operations/outbox commit before calling the provider.
+Checkout intents and their operation references commit before calling the provider;
+new sessions do not emit an outbox event. The response is synchronous 201 only
+after the encrypted hosted result is persisted.
 A stable UUID is also the provider idempotency key. Hosted responses are encrypted.
 Ambiguous requests older than 23 hours are refused for operator reconciliation,
 so a provider-pruned key cannot create an accidental second session. API adapters
@@ -165,3 +167,12 @@ network changes are used. No container is required when the shared test DSN exis
 
 No real payment or NetBird credentials are needed for the fake-provider tests.
 See [SANDBOX.md](SANDBOX.md) for provider configuration and current Stripe sources.
+
+
+D-029–D-031 review integration: see [member composition](../members/README.md)
+for the shared serving readers, reserved assignments table, typed operation/audit
+resources, and synchronous checkout. `Checkout` completes provider work before
+returning its populated URL; HTTP uses `ReserveCheckout` inside its transaction
+and `CompleteSession` only after commit. Migration 00121 adds the effect state
+for durable failed reservations. Provider errors are persisted only as fixed
+safe codes/messages; same-key retries preserve the provider idempotency key.

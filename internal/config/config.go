@@ -64,6 +64,7 @@ type Config struct {
 	WorkerBackoffMaxSeconds int      `json:"worker_backoff_max_seconds"`
 	MigrateOnStart          bool     `json:"migrate_on_start"`
 	MembersConfigFile       string   `json:"members_config_file"`
+	DNSConfigFile           string   `json:"dns_config_file"`
 	NodesConfigFile         string   `json:"nodes_config_file"`
 }
 
