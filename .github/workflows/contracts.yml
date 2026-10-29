@@ -1,0 +1,71 @@
+name: contracts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+      - 'pkg/decstr/**'
+      - 'pkg/canonjson/**'
+      - 'pkg/envelope/**'
+      - 'pkg/apierr/**'
+      - 'pkg/api/**'
+      - 'docs/contracts/**'
+      - 'mk/contracts.mk'
+      - '.github/workflows/contracts.yml'
+      - 'go.mod'
+      - 'go.sum'
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - 'pkg/decstr/**'
+      - 'pkg/canonjson/**'
+      - 'pkg/envelope/**'
+      - 'pkg/apierr/**'
+      - 'pkg/api/**'
+      - 'docs/contracts/**'
+      - 'mk/contracts.mk'
+      - '.github/workflows/contracts.yml'
+      - 'go.mod'
+      - 'go.sum'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CGO_ENABLED: '0'
+  GOTOOLCHAIN: local
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Vet and cross-compile (linux/amd64, linux/arm64)
+        run: make -f mk/contracts.mk contracts-build
+      - name: OpenAPI lint (Redocly, pinned) and gofmt
+        run: make -f mk/contracts.mk contracts-lint
+      - name: Codegen drift (schemas, vectors, examples, pkg/api, contracts/ts)
+        run: make -f mk/contracts.mk contracts-drift
+      - name: TypeScript typecheck of generated types
+        run: make -f mk/contracts.mk contracts-typecheck
+      - name: Go tests, contract and example validation, TypeScript vector check
+        run: make -f mk/contracts.mk contracts-test
+      - name: Leaf package coverage (>= 85%)
+        run: make -f mk/contracts.mk contracts-cover
+      - name: Fuzz smoke (decstr, canonjson)
+        run: |
+          go test -run='^$' -fuzz=FuzzParse -fuzztime=20s ./pkg/decstr
+          go test -run='^$' -fuzz=FuzzCanonicalize -fuzztime=20s ./pkg/canonjson

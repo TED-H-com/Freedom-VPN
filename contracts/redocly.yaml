@@ -1,0 +1,11 @@
+# Redocly CLI configuration for the contracts lint (make -f mk/contracts.mk contracts-lint).
+# recommended-strict turns every recommended warning into an error.
+extends:
+  - recommended-strict
+rules:
+  operation-description: error
+  operation-tag-defined: error
+  tag-description: error
+  no-ambiguous-paths: error
+  paths-kebab-case: error
+  component-name-unique: error

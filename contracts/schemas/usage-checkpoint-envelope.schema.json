@@ -1,0 +1,138 @@
+{
+  "$comment": "Generated from contracts/openapi.yaml component UsageCheckpointEnvelope (§17.3) by contracts/internal/cmd/contractsgen. DO NOT EDIT.",
+  "$defs": {
+    "SeqRange": {
+      "additionalProperties": false,
+      "description": "Inclusive range of event sequence numbers, start_seq <= end_seq.",
+      "properties": {
+        "end_seq": {
+          "maxLength": 20,
+          "pattern": "^[1-9][0-9]*$",
+          "type": "string"
+        },
+        "start_seq": {
+          "maxLength": 20,
+          "pattern": "^[1-9][0-9]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start_seq",
+        "end_seq"
+      ],
+      "title": "SeqRange",
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "description": "One Ed25519 signature over the RFC 8785 canonical JSON of the envelope's\n`signed` object (§13.3, §16.2, `pkg/envelope`). Verifiers reject unknown\nalgorithms, ignore unknown key_ids, and require at least one valid\nsignature by a key trusted for the document's purpose.\n",
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "ed25519"
+          ],
+          "type": "string"
+        },
+        "key_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+          "type": "string"
+        },
+        "signature_b64": {
+          "description": "Standard padded base64 of the 64-byte signature.",
+          "pattern": "^[A-Za-z0-9+/]{86}==$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id",
+        "algorithm",
+        "signature_b64"
+      ],
+      "title": "Signature",
+      "type": "object"
+    },
+    "UsageCheckpoint": {
+      "additionalProperties": false,
+      "description": "Central ledger watermark for one node incarnation stream (§17.3). Computed\nfrom events that actually exist and are committed, never from\nmax(event_seq) or an unchecked old checkpoint. missing_ranges lists every\ngap between highest_contiguous_seq and max_seen_seq (inclusive ranges).\nrecovery_record_id is null when no restore happened in this ledger_epoch.\n",
+      "properties": {
+        "highest_contiguous_seq": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "ledger_epoch": {
+          "description": "Central data generation; not a node incarnation or meter epoch.",
+          "format": "uuid",
+          "type": "string"
+        },
+        "max_seen_seq": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "missing_ranges": {
+          "items": {
+            "$ref": "#/$defs/SeqRange"
+          },
+          "maxItems": 10000,
+          "type": "array"
+        },
+        "node_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "node_incarnation_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "recovery_record_id": {
+          "format": "uuid",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ledger_epoch",
+        "node_id",
+        "node_incarnation_id",
+        "highest_contiguous_seq",
+        "max_seen_seq",
+        "missing_ranges",
+        "recovery_record_id",
+        "issued_at"
+      ],
+      "title": "UsageCheckpoint",
+      "type": "object"
+    }
+  },
+  "$id": "urn:fvpn:contracts:schema:usage-checkpoint-envelope:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Signed usage checkpoint (§17.3), signed with a `recovery` purpose key. The\nagent verifies the signature, purpose, node and incarnation binding and the\nrecovery record before accepting a watermark lower than a previous ACK.\nWithin one ledger_epoch the ACK never goes backwards; only a new verified\nledger_epoch starts a new baseline.\n",
+  "properties": {
+    "signatures": {
+      "items": {
+        "$ref": "#/$defs/Signature"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "type": "array"
+    },
+    "signed": {
+      "$ref": "#/$defs/UsageCheckpoint"
+    }
+  },
+  "required": [
+    "signed",
+    "signatures"
+  ],
+  "title": "UsageCheckpointEnvelope",
+  "type": "object"
+}

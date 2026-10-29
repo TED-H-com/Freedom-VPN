@@ -1,0 +1,45 @@
+{
+  "DesiredStateEnvelope.no-signatures.json": {
+    "kind": "schema",
+    "pointer": "/signatures",
+    "keyword": "minItems",
+    "note": "An unsigned envelope is a downgrade and is rejected (§16.2)."
+  },
+  "DesiredStateEnvelope.untrusted-key.json": {
+    "kind": "signature",
+    "code": "KEY_UNTRUSTED",
+    "note": "Valid Ed25519 signature by a key that is not in the trust store."
+  },
+  "ReleaseManifestEnvelope.tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "product_version changed after signing; the trusted key's signature no longer verifies."
+  },
+  "ServingLeaseEnvelope.wrong-purpose.json": {
+    "kind": "signature",
+    "code": "KEY_UNTRUSTED",
+    "note": "Signed by the trusted desired-state key, which is not allowed for the lease purpose."
+  },
+  "UpdateResult.hash-mismatch.json": {
+    "kind": "payload_hash",
+    "field": "payload_hash",
+    "note": "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."
+  },
+  "UsageCheckpointEnvelope.bad-algorithm.json": {
+    "kind": "schema",
+    "pointer": "/signatures/0/algorithm",
+    "keyword": "enum",
+    "note": "Unknown signature algorithms are rejected."
+  },
+  "UsageEvent.hash-mismatch.json": {
+    "kind": "payload_hash",
+    "field": "payload_sha256",
+    "note": "upload_bytes changed without recomputing payload_sha256."
+  },
+  "UsageEvent.numeric-bytes.json": {
+    "kind": "schema",
+    "pointer": "/records/0/upload_bytes",
+    "keyword": "type",
+    "note": "Bytes must be a decimal string, never a JSON number (§10.4)."
+  }
+}

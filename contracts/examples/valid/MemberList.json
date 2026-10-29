@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+      "display_name": "Member A",
+      "email": "member-a@example.com",
+      "account_status": "active",
+      "entitlement": {
+        "state": "active",
+        "revision": "31",
+        "plan": {
+          "plan_id": "b4fe029a-ecbf-4b1a-9ee7-de399791ae6e",
+          "plan_revision_id": "6b025e19-07f5-4675-9d6f-a9c4f25b942e",
+          "code": "standard",
+          "display_name": {
+            "zh-TW": "標準方案",
+            "en": "Standard"
+          }
+        },
+        "device_limit": 3,
+        "valid_from": "2026-10-20T00:00:00Z",
+        "effective_service_end": "2026-11-20T00:00:00Z",
+        "paid_through": "2026-11-20T00:00:00Z",
+        "grace_until": null,
+        "cancel_at_period_end": false,
+        "admin_suspended": false,
+        "computed_at": "2026-10-28T15:00:00Z"
+      },
+      "authorized_device_count": 2,
+      "usage": {
+        "period_id": "2026-10",
+        "total_bytes": "53687091200",
+        "aggregate_as_of": "2026-10-28T14:58:00Z",
+        "fair_use_tier_index": 0,
+        "quality": {
+          "estimated": false,
+          "gap": false,
+          "reconciliation_in_progress": false
+        }
+      },
+      "resource_version": "17",
+      "created_at": "2026-10-20T00:00:00Z"
+    }
+  ],
+  "next_cursor": null
+}

@@ -1,0 +1,180 @@
+{
+  "cases": [
+    {
+      "name": "rfc8785-3.2.2-without-numbers",
+      "input_b64": "eyJzdHJpbmciOiAiXHUyMGFjJFx1MDAwRlx1MDAwYUEnXHUwMDQyXHUwMDIyXHUwMDVjXFxcIlwvIiwgImxpdGVyYWxzIjogW251bGwsIHRydWUsIGZhbHNlXX0=",
+      "input": "{\"string\": \"\\u20ac$\\u000F\\u000aA'\\u0042\\u0022\\u005c\\\\\\\"\\/\", \"literals\": [null, true, false]}",
+      "canonical": "{\"literals\":[null,true,false],\"string\":\"€$\\u000f\\nA'B\\\"\\\\\\\\\\\"/\"}",
+      "sha256": "834b0ae0dd68944f19836aa49d608aa4975f03998f927466f8b648d5f927ecee"
+    },
+    {
+      "name": "rfc8785-3.2.3-sorting",
+      "input_b64": "eyJcdTIwYWMiOiAiRXVybyBTaWduIiwgIlxyIjogIkNhcnJpYWdlIFJldHVybiIsICJcdWZiMzMiOiAiSGVicmV3IExldHRlciBEYWxldCBXaXRoIERhZ2VzaCIsICIxIjogIk9uZSIsICJcdWQ4M2RcdWRlMDAiOiAiRW1vamk6IEdyaW5uaW5nIEZhY2UiLCAiXHUwMDgwIjogIkNvbnRyb2wiLCAiXHUwMGY2IjogIkxhdGluIFNtYWxsIExldHRlciBPIFdpdGggRGlhZXJlc2lzIn0=",
+      "input": "{\"\\u20ac\": \"Euro Sign\", \"\\r\": \"Carriage Return\", \"\\ufb33\": \"Hebrew Letter Dalet With Dagesh\", \"1\": \"One\", \"\\ud83d\\ude00\": \"Emoji: Grinning Face\", \"\\u0080\": \"Control\", \"\\u00f6\": \"Latin Small Letter O With Diaeresis\"}",
+      "canonical": "{\"\\r\":\"Carriage Return\",\"1\":\"One\",\"\":\"Control\",\"ö\":\"Latin Small Letter O With Diaeresis\",\"€\":\"Euro Sign\",\"😀\":\"Emoji: Grinning Face\",\"דּ\":\"Hebrew Letter Dalet With Dagesh\"}",
+      "sha256": "5e321556d22018a9656991a9e94f77ec175fa193e52a2429d312f8419ec8b08c"
+    },
+    {
+      "name": "rfc8785-arrays",
+      "input_b64": "WzU2LCB7ImQiOiB0cnVlLCAiMTAiOiBudWxsLCAiMSI6IFsgXX1d",
+      "input": "[56, {\"d\": true, \"10\": null, \"1\": [ ]}]",
+      "canonical": "[56,{\"1\":[],\"10\":null,\"d\":true}]",
+      "sha256": "099601b171cafed97c333f8878d68e7f8c8f795412adb34b2fdcf0e7c7beac42"
+    },
+    {
+      "name": "rfc8785-structures-integer",
+      "input_b64": "eyIxIjogeyJmIjogeyJmIjogImhpIiwiRiI6IDV9ICwiXG4iOiA1Nn0sIjEwIjogeyB9LCIiOiAiZW1wdHkiLCJhIjogeyB9LCIxMTEiOiBbIHsiZSI6ICJ5ZXMiLCJFIjogIm5vIiB9IF0sIkEiOiB7IH19",
+      "input": "{\"1\": {\"f\": {\"f\": \"hi\",\"F\": 5} ,\"\\n\": 56},\"10\": { },\"\": \"empty\",\"a\": { },\"111\": [ {\"e\": \"yes\",\"E\": \"no\" } ],\"A\": { }}",
+      "canonical": "{\"\":\"empty\",\"1\":{\"\\n\":56,\"f\":{\"F\":5,\"f\":\"hi\"}},\"10\":{},\"111\":[{\"E\":\"no\",\"e\":\"yes\"}],\"A\":{},\"a\":{}}",
+      "sha256": "605f65004ec2db7692522a0852c22f1c989e036d547e88963d1a3143cf3195d5"
+    },
+    {
+      "name": "rfc8785-unicode-no-normalization",
+      "input_b64": "eyJVbm5vcm1hbGl6ZWQgVW5pY29kZSI6IkFcdTAzMGEifQ==",
+      "input": "{\"Unnormalized Unicode\":\"A\\u030a\"}",
+      "canonical": "{\"Unnormalized Unicode\":\"Å\"}",
+      "sha256": "0d99aad92a125196ff887876643fd3206786a84ddce2cee52ba4ad256d2381d3"
+    },
+    {
+      "name": "rfc8785-weird",
+      "input_b64": "eyJcdTIwYWMiOiAiRXVybyBTaWduIiwgIlxyIjogIkNhcnJpYWdlIFJldHVybiIsICJcdTAwMGEiOiAiTmV3bGluZSIsICIxIjogIk9uZSIsICJcdTAwODAiOiAiQ29udHJvbFx1MDA3ZiIsICJcdWQ4M2RcdWRlMDIiOiAiU21pbGV5IiwgIlx1MDBmNiI6ICJMYXRpbiBTbWFsbCBMZXR0ZXIgTyBXaXRoIERpYWVyZXNpcyIsICJcdWZiMzMiOiAiSGVicmV3IExldHRlciBEYWxldCBXaXRoIERhZ2VzaCIsICI8L3NjcmlwdD4iOiAiQnJvd3NlciBDaGFsbGVuZ2UifQ==",
+      "input": "{\"\\u20ac\": \"Euro Sign\", \"\\r\": \"Carriage Return\", \"\\u000a\": \"Newline\", \"1\": \"One\", \"\\u0080\": \"Control\\u007f\", \"\\ud83d\\ude02\": \"Smiley\", \"\\u00f6\": \"Latin Small Letter O With Diaeresis\", \"\\ufb33\": \"Hebrew Letter Dalet With Dagesh\", \"</script>\": \"Browser Challenge\"}",
+      "canonical": "{\"\\n\":\"Newline\",\"\\r\":\"Carriage Return\",\"1\":\"One\",\"</script>\":\"Browser Challenge\",\"\":\"Control\",\"ö\":\"Latin Small Letter O With Diaeresis\",\"€\":\"Euro Sign\",\"😂\":\"Smiley\",\"דּ\":\"Hebrew Letter Dalet With Dagesh\"}",
+      "sha256": "6af595a9aa80110b964b4de3f82a05fa6ae7423005019bacfa2620dddc4e94d1"
+    },
+    {
+      "name": "integers-at-limits",
+      "input_b64": "WzAsIDEsIC0xLCA5MDA3MTk5MjU0NzQwOTkxLCAtOTAwNzE5OTI1NDc0MDk5MV0=",
+      "input": "[0, 1, -1, 9007199254740991, -9007199254740991]",
+      "canonical": "[0,1,-1,9007199254740991,-9007199254740991]",
+      "sha256": "3fb2e7f7f27e956bb936d78c13514cd21af6c7b32d370de937ceafbd01005d88"
+    },
+    {
+      "name": "control-escapes",
+      "input_b64": "Ilx1MDAwMFx1MDAwMVx1MDAwOFx1MDAwOVx1MDAwYVx1MDAwY1x1MDAwZFx1MDAxZlx1MDA3ZiI=",
+      "input": "\"\\u0000\\u0001\\u0008\\u0009\\u000a\\u000c\\u000d\\u001f\\u007f\"",
+      "canonical": "\"\\u0000\\u0001\\b\\t\\n\\f\\r\\u001f\"",
+      "sha256": "a692ae325ae20657a2e6cb76bf1eb6d572257483bf2c27ab8b1391ab767d87f8"
+    },
+    {
+      "name": "no-html-or-solidus-escaping",
+      "input_b64": "IjxhIGhyZWY9XCJ4XCI+JmFtcDs8L2E+IFwvIFx1MjAyOFx1MjAyOSI=",
+      "input": "\"<a href=\\\"x\\\">&amp;</a> \\/ \\u2028\\u2029\"",
+      "canonical": "\"<a href=\\\"x\\\">&amp;</a> / \u2028\u2029\"",
+      "sha256": "b9337cda5ebde9e86c098341cd771b066bd284997fb80fd2b67055fc530bdc4e"
+    },
+    {
+      "name": "decimal-strings-stay-strings",
+      "input_b64": "eyJ1cGxvYWRfYnl0ZXMiOiAiOTAwNzE5OTI1NDc0MDk5MyIsICJldmVudF9zZXEiOiAiMTg0NDY3NDQwNzM3MDk1NTE2MTUifQ==",
+      "input": "{\"upload_bytes\": \"9007199254740993\", \"event_seq\": \"18446744073709551615\"}",
+      "canonical": "{\"event_seq\":\"18446744073709551615\",\"upload_bytes\":\"9007199254740993\"}",
+      "sha256": "a035216352057b304b8fb68e66446e29630962b0ebebf0102c8fbd31f45c3e4b"
+    },
+    {
+      "name": "nested-sorting-and-whitespace",
+      "input_b64": "ewogICJiIjogWyB7InoiOiAxLCAiYSI6IDJ9IF0sCgkiYSI6IHsgInkiOiBudWxsLCAieCI6IHRydWUgfQ0KfQ==",
+      "input": "{\n  \"b\": [ {\"z\": 1, \"a\": 2} ],\n\t\"a\": { \"y\": null, \"x\": true }\r\n}",
+      "canonical": "{\"a\":{\"x\":true,\"y\":null},\"b\":[{\"a\":2,\"z\":1}]}",
+      "sha256": "a8286eb558c95035dc71c16da583cf2c5cd854fa3f90cd96a4889043260808ad"
+    },
+    {
+      "name": "literal-utf8-passthrough",
+      "input_b64": "eyLlkI3nqLEiOiLnr4Dpu54iLCLDqW1vamkiOiLwn5iAIn0=",
+      "input": "{\"名稱\":\"節點\",\"émoji\":\"😀\"}",
+      "canonical": "{\"émoji\":\"😀\",\"名稱\":\"節點\"}",
+      "sha256": "f53893eaa7e756234e34ff7decdae7b5cce0e9d7ad72cd1acae73751265cc6fe"
+    }
+  ],
+  "description": "RFC 8785 (JCS) vectors for the Freedom VPN JSON subset (objects, arrays, strings, true, false, null, integers within ±(2^53-1)). input_b64 holds the exact input bytes; canonical is the UTF-8 canonical form; sha256 is its lowercase hex SHA-256. Rejects must fail with the given error class.",
+  "error_classes": {
+    "duplicate_key": "duplicate member name after unescaping",
+    "integer_range": "outside ±(2^53-1)",
+    "invalid_utf8": "invalid UTF-8 bytes",
+    "lone_surrogate": "unpaired UTF-16 surrogate escape",
+    "negative_zero": "-0",
+    "non_integer": "fraction or exponent",
+    "syntax": "invalid JSON"
+  },
+  "rejects": [
+    {
+      "name": "fraction",
+      "input_b64": "eyJhIjoxLjB9",
+      "error": "non_integer"
+    },
+    {
+      "name": "exponent",
+      "input_b64": "WzFlM10=",
+      "error": "non_integer"
+    },
+    {
+      "name": "negative-zero",
+      "input_b64": "LTA=",
+      "error": "negative_zero"
+    },
+    {
+      "name": "above-2^53-1",
+      "input_b64": "OTAwNzE5OTI1NDc0MDk5Mg==",
+      "error": "integer_range"
+    },
+    {
+      "name": "below--(2^53-1)",
+      "input_b64": "LTkwMDcxOTkyNTQ3NDA5OTI=",
+      "error": "integer_range"
+    },
+    {
+      "name": "duplicate-key",
+      "input_b64": "eyJhIjoxLCJhIjoyfQ==",
+      "error": "duplicate_key"
+    },
+    {
+      "name": "duplicate-key-after-unescape",
+      "input_b64": "eyJhIjoxLCJcdTAwNjEiOjJ9",
+      "error": "duplicate_key"
+    },
+    {
+      "name": "invalid-utf8",
+      "input_b64": "eyJhIjoi/yJ9",
+      "error": "invalid_utf8"
+    },
+    {
+      "name": "utf8-encoded-surrogate",
+      "input_b64": "Iu2ggCI=",
+      "error": "invalid_utf8"
+    },
+    {
+      "name": "lone-high-surrogate",
+      "input_b64": "Ilx1ZDgwMCI=",
+      "error": "lone_surrogate"
+    },
+    {
+      "name": "lone-low-surrogate",
+      "input_b64": "Ilx1ZGMwMCI=",
+      "error": "lone_surrogate"
+    },
+    {
+      "name": "leading-zero",
+      "input_b64": "MDE=",
+      "error": "syntax"
+    },
+    {
+      "name": "trailing-comma",
+      "input_b64": "WzEsXQ==",
+      "error": "syntax"
+    },
+    {
+      "name": "raw-control-character",
+      "input_b64": "ImEJYiI=",
+      "error": "syntax"
+    },
+    {
+      "name": "byte-order-mark",
+      "input_b64": "77u/e30=",
+      "error": "syntax"
+    },
+    {
+      "name": "trailing-data",
+      "input_b64": "e30ge30=",
+      "error": "syntax"
+    }
+  ]
+}
