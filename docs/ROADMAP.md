@@ -38,7 +38,8 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w1-dnspolicy: domain rules, bundle compiler, AdGuard Home backend | WP08 | done (#5) |
 | r1-db-review: adversarial review of the merged schema (read-only) | WP03 | done (3 blockers, 8 majors → w2-db-fixes) |
 | w2-db-fixes: review fixes F-01..F-15 in migrations 00001–00005, regressions, service invariants doc | WP03 | done (#7) |
-| r1-contracts-review: adversarial review of OpenAPI, schemas, canonjson, envelope (read-only) | WP02 | in progress |
+| r1-contracts-review: adversarial review of OpenAPI, schemas, canonjson, envelope (read-only) | WP02 | done (5 majors, 7 minors → w2-contracts-r2) |
+| w2-contracts-r2: review fixes, agent bootstrap endpoint, reinstall target, UpdateTarget flags, ledger-epoch purpose | WP02 | in progress |
 | w2-control-core: HTTP framework, auth, idempotency, ETag, operations, audit, worker | WP04, WP09 | in progress |
 | w2-pki-enroll: node CA, enrollment, CSR issuance, revocation, signing service | WP04 | in progress |
 | w2-members-billing: members, entitlement, devices, billing adapter and webhooks | WP06 | in progress |
@@ -49,7 +50,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater: node updater, update journal, release packaging | WP09 | in progress |
 | w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after w1-netlab) |
 | w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after w1-netlab) |
-| w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | in progress |
+| w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
 
