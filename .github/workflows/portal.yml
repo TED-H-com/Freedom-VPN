@@ -1,0 +1,59 @@
+name: Portal CI
+
+on:
+  push:
+    branches:
+      - main
+      - w1-portal
+      - w2-portal-wire
+    paths:
+      - 'apps/portal/**'
+      - 'contracts/ts/**'
+      - 'contracts/examples/**'
+      - 'docs/portal/**'
+      - 'mk/portal.mk'
+      - '.github/workflows/portal.yml'
+  pull_request:
+    paths:
+      - 'apps/portal/**'
+      - 'contracts/ts/**'
+      - 'contracts/examples/**'
+      - 'docs/portal/**'
+      - 'mk/portal.mk'
+      - '.github/workflows/portal.yml'
+
+jobs:
+  portal:
+    name: Verify Portal (Node 24)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/portal
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: apps/portal/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Build production bundle
+        run: npm run build

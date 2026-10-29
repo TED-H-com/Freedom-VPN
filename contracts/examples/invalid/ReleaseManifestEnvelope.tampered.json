@@ -1,0 +1,80 @@
+{
+  "signatures": [
+    {
+      "algorithm": "ed25519",
+      "key_id": "release-signing-test-2026",
+      "signature_b64": "RUW7lxdonIGpQXoM6gmtAA2g/7qGR76uzJwmobJl8M9ojtMLyq/n3TvO3DtwsFJ+cMzkoK/iTqloEbJBMYjACQ=="
+    }
+  ],
+  "signed": {
+    "artifacts": [
+      {
+        "architecture": "amd64",
+        "format": "tar.zst",
+        "installed_size_bytes": "209715200",
+        "os_id": "ubuntu",
+        "os_versions": [
+          "24.04"
+        ],
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "size_bytes": "83886080",
+        "url": "https://releases.example.invalid/r42/amd64.tar.zst"
+      },
+      {
+        "architecture": "arm64",
+        "format": "tar.zst",
+        "installed_size_bytes": "199229440",
+        "os_id": "ubuntu",
+        "os_versions": [
+          "24.04"
+        ],
+        "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "size_bytes": "78643200",
+        "url": "https://releases.example.invalid/r42/arm64.tar.zst"
+      }
+    ],
+    "build_id": "build-test-42",
+    "compatibility": {
+      "control_api_major": 1,
+      "migration_id": null,
+      "minimum_updater_version": "1.0.0",
+      "policy_schema_versions": [
+        1
+      ],
+      "requires_service_restart": true,
+      "state_schema_from": [
+        1
+      ],
+      "state_schema_to": 1,
+      "usage_event_schema_versions": [
+        1
+      ]
+    },
+    "components": {
+      "enforcement": "1.1.0",
+      "netbird": "0.76.2",
+      "node_agent": "1.1.0",
+      "node_updater": "1.1.0"
+    },
+    "created_at": "2026-10-28T14:00:00Z",
+    "evidence": {
+      "notices_url": "https://releases.example.invalid/r42/NOTICE.txt",
+      "sbom_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "sbom_url": "https://releases.example.invalid/r42/sbom.json",
+      "source_url": "https://releases.example.invalid/r42/source.tar.zst"
+    },
+    "manifest_schema_version": 1,
+    "product_version": "1.1.1",
+    "release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+    "release_sequence": "42",
+    "rollback": {
+      "allowed_release_ids": [
+        "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+      ],
+      "health_profile": "vpn-node-standard-v1",
+      "required_free_bytes": "419430400",
+      "state_readable_by_previous": true
+    },
+    "source_commit": "1111111111111111111111111111111111111111"
+  }
+}

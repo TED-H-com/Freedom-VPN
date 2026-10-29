@@ -1,0 +1,48 @@
+{
+  "period_id": "2026-10",
+  "period_start": "2026-10-01T00:00:00Z",
+  "period_end": "2026-11-01T00:00:00Z",
+  "granularity": "day",
+  "metering_version": "forward_admission_v1",
+  "totals": {
+    "upload_bytes": "9007199254740993",
+    "download_bytes": "987654",
+    "total_bytes": 9007199255728648.0
+  },
+  "quality": {
+    "estimated": true,
+    "gap": false,
+    "reconciliation_in_progress": false
+  },
+  "last_observed_at": "2026-10-28T14:00:10Z",
+  "aggregate_as_of": "2026-10-28T14:01:30Z",
+  "days": [
+    {
+      "date": "2026-10-28",
+      "upload_bytes": "9007199254740993",
+      "download_bytes": "987654",
+      "total_bytes": "9007199255728647",
+      "quality": {
+        "estimated": true,
+        "gap": false,
+        "reconciliation_in_progress": false
+      }
+    }
+  ],
+  "fair_use": {
+    "state": "adjusted",
+    "tier_index": 2,
+    "tier_name": {
+      "zh-TW": "公平使用調整中",
+      "en": "Fair-use adjusted"
+    },
+    "rate": {
+      "down_bps": 20000000,
+      "up_bps": 10000000
+    },
+    "reason": "fair_use_tier",
+    "applying": false,
+    "resets_at": "2026-11-01T00:00:00Z",
+    "as_of": "2026-10-28T14:01:30Z"
+  }
+}

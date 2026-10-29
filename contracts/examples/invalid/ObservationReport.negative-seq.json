@@ -1,0 +1,59 @@
+{
+  "report_id": "9d93e97b-dc01-40c0-8de6-0ba0b2f6e14d",
+  "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+  "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+  "boot_id": "dc4f6bc5-954b-46e8-825d-57fdf335bee5",
+  "observed_at": "2026-10-28T15:00:30Z",
+  "agent_version": "1.1.0",
+  "current_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+  "last_good_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+  "applied_config_generation": "128",
+  "applied_policy_refs": {
+    "authorization_generation": "52",
+    "fup_generation": "9",
+    "dns_generation": "12"
+  },
+  "applied_binding_revision": "407",
+  "provisioning_state": "ready",
+  "safety_status": "passed",
+  "data_health": "healthy",
+  "member_forwarding_enabled": false,
+  "forwarding_block_reasons": [
+    "not_published"
+  ],
+  "lease": {
+    "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed",
+    "expires_at": "2026-10-29T15:00:00Z"
+  },
+  "netbird": {
+    "peer_id": "peer-test-node-01",
+    "version": "0.76.2",
+    "backend": "kernel"
+  },
+  "usage": {
+    "ledger_epoch": "7612b7d9-1e70-4390-b86b-7c3456e4df27",
+    "meter_epoch_id": "909f68b7-a5b4-44da-afd5-e1683e42c6fd",
+    "last_durable_event_seq": "-1",
+    "central_acked_through": "12058",
+    "blocked_seq": null,
+    "unacked_event_count": 2,
+    "unacked_payload_bytes": "1840",
+    "oldest_unacked_at": "2026-10-28T15:00:10Z",
+    "acked_archive_bytes": "7340032"
+  },
+  "update": {
+    "job_id": null,
+    "generation": null,
+    "state": null,
+    "stage": null
+  },
+  "checks": [
+    {
+      "name": "internet_only",
+      "status": "passed",
+      "observed_at": "2026-10-28T15:00:30Z",
+      "error_code": null
+    }
+  ],
+  "errors": []
+}

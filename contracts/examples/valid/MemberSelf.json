@@ -1,0 +1,43 @@
+{
+  "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+  "display_name": "Member A",
+  "email": "member-a@example.com",
+  "entitlement": {
+    "state": "active",
+    "revision": "31",
+    "plan": {
+      "plan_id": "b4fe029a-ecbf-4b1a-9ee7-de399791ae6e",
+      "plan_revision_id": "6b025e19-07f5-4675-9d6f-a9c4f25b942e",
+      "code": "standard",
+      "display_name": {
+        "zh-TW": "標準方案",
+        "en": "Standard"
+      }
+    },
+    "device_limit": 3,
+    "valid_from": "2026-10-20T00:00:00Z",
+    "effective_service_end": "2026-11-20T00:00:00Z",
+    "paid_through": "2026-11-20T00:00:00Z",
+    "grace_until": null,
+    "cancel_at_period_end": false,
+    "admin_suspended": false,
+    "computed_at": "2026-10-28T15:00:00Z"
+  },
+  "subscription": {
+    "provider": "stripe",
+    "provider_status": "active",
+    "paid_through": "2026-11-20T00:00:00Z",
+    "cancel_at_period_end": false,
+    "last_reconciled_at": "2026-10-28T12:00:00Z",
+    "reconciliation_status": "ok"
+  },
+  "limits": {
+    "device_limit": 3,
+    "authorized_device_count": 2,
+    "exit_count": 4
+  },
+  "fair_use_reset_at": "2026-11-01T00:00:00Z",
+  "next_actions": [
+    "install_app"
+  ]
+}
