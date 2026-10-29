@@ -74,7 +74,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-agent-core follow-up 1: usage ledger integration, required host reserve, fake control usage endpoints | WP05, WP07 | done (#36) |
 | w2-control-core follow-up 2: members fixture on role cookies, module-wide integration suite | WP02 | in progress |
 | w3-wire-members follow-up 1: retire legacy session job, composition guide refresh | WP02 | done (#31) |
-| w3-contracts-r3: additive enums (node.enroll, device_authorize, grant_revoke, admin_identity), node-reported codes, revoked_release_ids, policy_generation, checkout 201-only, role selector, policy schema promotion | WP02 | done (#34) | WP01 | in progress |
+| w3-contracts-r3: additive enums (node.enroll, device_authorize, grant_revoke, admin_identity), node-reported codes, revoked_release_ids, policy_generation, checkout 201-only, role selector, policy schema promotion | WP02 | done (#34) |
 | w2-nodes-desiredstate follow-up 3: entitlement serving readers (D-030), dns_generation from publication heads, RenewTx, audit conformance | WP04, WP05 | done (#39) |
 | w3-wire-nodes follow-up 2: D-039 fixture isolation (nodestest), dual-stack resolver configuration | WP04, WP05 | done (#32) |
 | w2-control-core follow-up 3: terminal dead-lettering with fleet singleton fallback (D-040); follow-up 4: members dead-letter test on D-029 | WP04 | in progress (follow-up 5 adds revision 3 adoption; lands with fleet-update follow-up 2 because the stricter audit writer rejects the legacy fleet actor) |
