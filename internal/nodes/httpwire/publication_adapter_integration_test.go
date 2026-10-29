@@ -32,6 +32,7 @@ func TestAT08_PublicationWorkerRealAdapterBridge(t *testing.T) {
 	}
 	objects["peers"]["TEST-peer"] = map[string]any{"id": "TEST-peer", "name": "TEST ONLY node", "ip": "100.64.1.2", "user_id": "", "ephemeral": false}
 	serial, routeCreates, routeReads := 0, 0, 0
+	lostCreateReply := true
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -101,6 +102,13 @@ func TestAT08_PublicationWorkerRealAdapterBridge(t *testing.T) {
 				value["peers"] = peers
 			}
 			bucket[id] = value
+			if kind == "routes" && r.Method == "POST" && lostCreateReply {
+				lostCreateReply = false
+				// Remote creation committed, but the caller cannot confirm it.
+				w.WriteHeader(http.StatusServiceUnavailable)
+				respond(map[string]string{"message": "TEST ONLY uncertain write"})
+				return
+			}
 			respond(value)
 		default:
 			t.Errorf("unexpected adapter method %s", r.Method)
@@ -129,6 +137,12 @@ func TestAT08_PublicationWorkerRealAdapterBridge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	f.publicationDispatch(d, op.OperationId)
+	if got := f.publicationOperation(op.OperationId); got.Status != api.OperationStatusRunning {
+		t.Fatal("uncertain route creation was acknowledged", got)
+	}
+	// Retry discovers the already-created stable route, even before a binding
+	// or external reference could be persisted from the lost create response.
 	f.publicationDispatch(d, op.OperationId)
 	if got := f.publicationOperation(op.OperationId); got.Status != api.OperationStatusSucceeded {
 		t.Fatal(got)
