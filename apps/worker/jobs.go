@@ -5,5 +5,6 @@ package worker
 func Domains() []Domain {
 	return []Domain{
 		members(),
+		dns(),
 	}
 }
