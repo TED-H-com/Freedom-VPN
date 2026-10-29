@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -24,8 +23,10 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -33,39 +34,31 @@ import (
 )
 
 type usageHTTPStack struct {
-	pool    *pgxpool.Pool
-	prov    *signing.FileProvider
-	svc     *usage.Service
-	public  http.Handler
-	agent   http.Handler
-	adminP  auth.Principal
-	memP    auth.Principal
-	agentP  auth.Principal
-	disp    *worker.Application
-	memberA uuid.UUID
-	deviceA uuid.UUID
-	node1   uuid.UUID
-	inc1    uuid.UUID
-	node2   uuid.UUID
-	inc2    uuid.UUID
+	pool         *pgxpool.Pool
+	prov         *signing.FileProvider
+	centralTrust *envelope.TrustStore
+	svc          *usage.Service
+	public       http.Handler
+	agent        http.Handler
+	adminP       auth.Principal
+	memP         auth.Principal
+	agentP       auth.Principal
+	disp         *worker.Application
+	memberA      uuid.UUID
+	deviceA      uuid.UUID
+	node1        uuid.UUID
+	inc1         uuid.UUID
+	node2        uuid.UUID
+	inc2         uuid.UUID
 }
 
 func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 	t.Helper()
 	pool := dbtest.New(t)
-	ctx := context.Background()
 
-	// Initialize a real PKI FileProvider for Recovery and LedgerEpoch signing (§16.3, §17.3).
-	vaultDir := filepath.Join(t.TempDir(), "vault")
-	prov, err := signing.InitializeFileProvider(vaultDir)
-	if err != nil {
-		t.Fatalf("InitializeFileProvider: %v", err)
-	}
-	for _, p := range []signing.Purpose{signing.DesiredState, signing.Lease, signing.Recovery, signing.LedgerEpoch} {
-		if _, err := prov.Rotate(ctx, p, 48*time.Hour, time.Hour); err != nil {
-			t.Fatalf("Rotate %s: %v", p, err)
-		}
-	}
+	uFix := usagetest.New(t)
+	pFix := policiestest.New(t)
+	prov := uFix.Provider
 
 	ps := usage.NewProviderSigner(prov)
 	svc, err := usage.NewService(usage.Config{
@@ -119,18 +112,14 @@ func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 	c.AgentRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.WorkerAttempts = 3
-
-	uCfg := config.UsageDefaults()
-	uCfg.SigningConfigFile = vaultDir
+	c.PoliciesConfigFile = pFix.Path
+	c.UsageConfigFile = uFix.Path
 
 	deps := control.Dependencies{Config: c, Pool: pool}
 	var handlerSets []any
 	for _, dom := range control.Domains() {
-		if dom.Name == "members" {
+		if dom.Name != "control-core" && dom.Name != "policies" && dom.Name != "usage" {
 			continue
-		}
-		if dom.Name == "usage" {
-			dom = control.NewUsageDomain(&uCfg, nil, ps)
 		}
 		built, err := dom.Build(t.Context(), deps)
 		if err != nil {
@@ -179,19 +168,20 @@ func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 	}
 
 	st := &usageHTTPStack{
-		pool:    pool,
-		prov:    prov,
-		svc:     svc,
-		public:  httpapi.Transport(nil, pubAPI),
-		adminP:  adminP,
-		memP:    memP,
-		agentP:  agentP,
-		memberA: memberA,
-		deviceA: deviceA,
-		node1:   node1,
-		inc1:    inc1,
-		node2:   node2,
-		inc2:    inc2,
+		pool:         pool,
+		prov:         prov,
+		centralTrust: uFix.CentralTrust,
+		svc:          svc,
+		public:       httpapi.Transport(nil, pubAPI),
+		adminP:       adminP,
+		memP:         memP,
+		agentP:       agentP,
+		memberA:      memberA,
+		deviceA:      deviceA,
+		node1:        node1,
+		inc1:         inc1,
+		node2:        node2,
+		inc2:         inc2,
 	}
 
 	agentOpts := pubOpts
@@ -209,7 +199,7 @@ func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 		t.Context(),
 		worker.Dependencies{Config: c, Pool: pool},
 		worker.NewPoliciesDomain(nil, nil),
-		worker.NewUsageDomain(&uCfg),
+		worker.NewUsageDomain(nil),
 	)
 	if err != nil {
 		t.Fatalf("worker.Open: %v", err)
@@ -608,7 +598,7 @@ func TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination(t *testing
 	if err != nil {
 		t.Fatalf("MarshalCanonical recovery envelope: %v", err)
 	}
-	if _, _, err := envelope.Verify(recEnvBytes, ts, envelope.PurposeLedgerEpoch, time.Now().UTC()); err != nil {
+	if _, _, err := envelope.Verify(recEnvBytes, st.centralTrust, envelope.PurposeLedgerEpoch, time.Now().UTC()); err != nil {
 		t.Fatalf("envelope.Verify PurposeLedgerEpoch failed: %v", err)
 	}
 

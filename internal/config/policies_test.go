@@ -8,10 +8,6 @@ import (
 )
 
 func TestPoliciesConfig_LoadAndValidate(t *testing.T) {
-	c := PoliciesDefaults()
-	if err := c.Validate(); err != nil {
-		t.Fatalf("PoliciesDefaults Validate: %v", err)
-	}
 	if _, err := LoadPolicies(""); err == nil {
 		t.Fatal("expected empty path to fail LoadPolicies")
 	} else {
@@ -21,15 +17,31 @@ func TestPoliciesConfig_LoadAndValidate(t *testing.T) {
 		}
 	}
 
-	p := filepath.Join(t.TempDir(), "policies.json")
-	if err := os.WriteFile(p, []byte(`{"fup_mode":"shadow","fup_sweep_seconds":30,"fup_batch_size":128}`), 0600); err != nil {
+	dir := t.TempDir()
+	// Incomplete JSON without required fields fails LoadPolicies with policies_config_file.
+	incomplete := filepath.Join(dir, "incomplete.json")
+	if err := os.WriteFile(incomplete, []byte(`{"fup_mode":"shadow"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadPolicies(incomplete); err == nil {
+		t.Fatal("expected incomplete policies file to fail LoadPolicies")
+	} else {
+		var se *SettingError
+		if !errors.As(err, &se) || se.Setting() != "policies_config_file" {
+			t.Fatalf("expected SettingError(policies_config_file), got %v", err)
+		}
+	}
+
+	p := filepath.Join(dir, "policies.json")
+	// TEST ONLY explicit settings.
+	if err := os.WriteFile(p, []byte(`{"fup_mode":"shadow","fup_sweep_seconds":30,"fup_batch_size":128,"dns_upstream_profile":"TEST-ONLY"}`), 0600); err != nil {
 		t.Fatal(err)
 	}
 	loaded, err := LoadPolicies(p)
 	if err != nil {
 		t.Fatalf("LoadPolicies: %v", err)
 	}
-	if loaded.FUPMode != "shadow" || loaded.FUPSweepSeconds != 30 || loaded.FUPBatchSize != 128 {
+	if loaded.FUPMode != "shadow" || loaded.FUPSweepSeconds != 30 || loaded.FUPBatchSize != 128 || loaded.DNSUpstreamProfile != "TEST-ONLY" {
 		t.Fatalf("unexpected loaded config: %+v", loaded)
 	}
 	loaded.FUPMode = "invalid"
@@ -43,12 +55,12 @@ func TestPoliciesConfig_LoadAndValidate(t *testing.T) {
 	}
 
 	baseCfg := Defaults()
-	if _, err := PoliciesFromConfig(baseCfg); err != nil {
-		t.Fatalf("PoliciesFromConfig(Defaults()): %v", err)
+	if err := ValidatePoliciesCentralBounds(baseCfg); err != nil {
+		t.Fatalf("ValidatePoliciesCentralBounds(Defaults()): %v", err)
 	}
 	baseCfg.IdempotencySeconds = 0
-	if _, err := PoliciesFromConfig(baseCfg); err == nil {
-		t.Fatal("expected invalid IdempotencySeconds to fail PoliciesFromConfig")
+	if err := ValidatePoliciesCentralBounds(baseCfg); err == nil {
+		t.Fatal("expected invalid IdempotencySeconds to fail ValidatePoliciesCentralBounds")
 	} else {
 		var se *SettingError
 		if !errors.As(err, &se) || se.Setting() != "idempotency_seconds" {

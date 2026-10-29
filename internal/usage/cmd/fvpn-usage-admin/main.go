@@ -42,15 +42,16 @@ func runMain(ctx context.Context, args []string, stdout io.Writer) error {
 	if err != nil {
 		return err
 	}
-	uCfg, err := config.UsageFromConfig(c)
-	if err != nil {
+	if err := config.ValidateUsageCentralBounds(c); err != nil {
 		return err
 	}
+	usagePath := c.UsageConfigFile
 	if *usageConfigFile != "" {
-		uCfg, err = config.LoadUsage(*usageConfigFile)
-		if err != nil {
-			return err
-		}
+		usagePath = *usageConfigFile
+	}
+	uCfg, err := config.LoadUsage(usagePath)
+	if err != nil {
+		return err
 	}
 
 	dsn, err := config.ReadSecret(c.DatabaseURLFile)
@@ -63,19 +64,16 @@ func runMain(ctx context.Context, args []string, stdout io.Writer) error {
 	}
 	defer pool.Close()
 
-	var signer usage.Signer
-	if uCfg.SigningConfigFile != "" {
-		prov, err := signing.OpenFileProvider(uCfg.SigningConfigFile)
-		if err != nil {
-			return fmt.Errorf("load signing config: %w", err)
-		}
-		signer = usage.NewProviderSigner(prov)
+	prov, err := signing.OpenFileProvider(uCfg.SigningConfigFile)
+	if err != nil {
+		return &config.SettingError{Name: "signing_config_file", Err: err}
 	}
 
+	ps := usage.NewProviderSigner(prov)
 	svc, err := usage.NewService(usage.Config{
 		Pool:              pool,
-		Signer:            signer,
-		LedgerEpochSigner: signer,
+		Signer:            ps,
+		LedgerEpochSigner: ps,
 	})
 	if err != nil {
 		return err

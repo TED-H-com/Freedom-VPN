@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	defaultSigningKeyRef = "policy-key-v1-test-only" // TEST ONLY - NOT A SECRET
+	defaultSigningKeyRef = "central-policy-key"
 	defaultBundleTTL     = 24 * time.Hour
 )
 

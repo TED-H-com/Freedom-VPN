@@ -10,10 +10,6 @@ import (
 )
 
 func TestUsageConfig_LoadValidateAndRedact(t *testing.T) {
-	c := UsageDefaults()
-	if err := c.Validate(); err != nil {
-		t.Fatalf("UsageDefaults Validate: %v", err)
-	}
 	if _, err := LoadUsage(""); err == nil {
 		t.Fatal("expected empty path to fail LoadUsage")
 	} else {
@@ -23,15 +19,31 @@ func TestUsageConfig_LoadValidateAndRedact(t *testing.T) {
 		}
 	}
 
-	p := filepath.Join(t.TempDir(), "usage.json")
-	if err := os.WriteFile(p, []byte(`{"signing_config_file":"secrets/signing.json","raw_usage_retention_days":60,"projection_batch_size":512}`), 0600); err != nil {
+	dir := t.TempDir()
+	// Missing signing_config_file fails with SettingError naming signing_config_file.
+	noSigning := filepath.Join(dir, "no-signing.json")
+	if err := os.WriteFile(noSigning, []byte(`{"raw_usage_retention_days":90,"rollup_retention_months":24,"audit_retention_days":365,"projection_batch_size":256}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadUsage(noSigning); err == nil {
+		t.Fatal("expected missing signing_config_file to fail LoadUsage")
+	} else {
+		var se *SettingError
+		if !errors.As(err, &se) || se.Setting() != "signing_config_file" {
+			t.Fatalf("expected SettingError(signing_config_file), got %v", err)
+		}
+	}
+
+	p := filepath.Join(dir, "usage.json")
+	// TEST ONLY explicit settings.
+	if err := os.WriteFile(p, []byte(`{"signing_config_file":"secrets/signing.json","raw_usage_retention_days":60,"rollup_retention_months":24,"audit_retention_days":365,"projection_batch_size":512}`), 0600); err != nil {
 		t.Fatal(err)
 	}
 	loaded, err := LoadUsage(p)
 	if err != nil {
 		t.Fatalf("LoadUsage: %v", err)
 	}
-	if loaded.RawUsageRetentionDays != 60 || loaded.ProjectionBatchSize != 512 {
+	if loaded.RawUsageRetentionDays != 60 || loaded.RollupRetentionMonths != 24 || loaded.AuditRetentionDays != 365 || loaded.ProjectionBatchSize != 512 {
 		t.Fatalf("unexpected loaded config: %+v", loaded)
 	}
 	raw, _ := json.Marshal(loaded.Effective())
@@ -49,12 +61,12 @@ func TestUsageConfig_LoadValidateAndRedact(t *testing.T) {
 	}
 
 	baseCfg := Defaults()
-	if _, err := UsageFromConfig(baseCfg); err != nil {
-		t.Fatalf("UsageFromConfig(Defaults()): %v", err)
+	if err := ValidateUsageCentralBounds(baseCfg); err != nil {
+		t.Fatalf("ValidateUsageCentralBounds(Defaults()): %v", err)
 	}
 	baseCfg.UsageBodyBytes = 0
-	if _, err := UsageFromConfig(baseCfg); err == nil {
-		t.Fatal("expected invalid UsageBodyBytes to fail UsageFromConfig")
+	if err := ValidateUsageCentralBounds(baseCfg); err == nil {
+		t.Fatal("expected invalid UsageBodyBytes to fail ValidateUsageCentralBounds")
 	} else {
 		var se *SettingError
 		if !errors.As(err, &se) || se.Setting() != "usage_body_bytes" {

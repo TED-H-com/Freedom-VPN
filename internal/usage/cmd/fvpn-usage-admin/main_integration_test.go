@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -14,8 +13,8 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
-	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
@@ -24,19 +23,8 @@ func TestCLI_FreezeRecoveryCompleteAdjustAndAudit(t *testing.T) {
 	ctx := context.Background()
 	pool := dbtest.New(t)
 
-	vaultDir := filepath.Join(t.TempDir(), "vault")
-	prov, err := signing.InitializeFileProvider(vaultDir)
-	if err != nil {
-		t.Fatalf("InitializeFileProvider: %v", err)
-	}
-	if _, err := prov.Rotate(ctx, signing.Recovery, 24*time.Hour, time.Hour); err != nil {
-		t.Fatalf("Rotate Recovery: %v", err)
-	}
-	if _, err := prov.Rotate(ctx, signing.LedgerEpoch, 24*time.Hour, time.Hour); err != nil {
-		t.Fatalf("Rotate LedgerEpoch: %v", err)
-	}
-
-	ps := usage.NewProviderSigner(prov)
+	uFix := usagetest.New(t)
+	ps := usage.NewProviderSigner(uFix.Provider)
 	svc, err := usage.NewService(usage.Config{
 		Pool:              pool,
 		Signer:            ps,
@@ -70,15 +58,11 @@ func TestCLI_FreezeRecoveryCompleteAdjustAndAudit(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &recState); err != nil {
 		t.Fatalf("unmarshal begin-recovery output: %v", err)
 	}
-	ts, err := prov.TrustBundle(ctx)
-	if err != nil {
-		t.Fatalf("TrustBundle: %v", err)
-	}
 	rawRecEnv, err := recState.SignedRecord.MarshalCanonical()
 	if err != nil {
 		t.Fatalf("MarshalCanonical: %v", err)
 	}
-	if _, _, err := envelope.Verify(rawRecEnv, ts, envelope.PurposeLedgerEpoch, time.Now().UTC()); err != nil {
+	if _, _, err := envelope.Verify(rawRecEnv, uFix.CentralTrust, envelope.PurposeLedgerEpoch, time.Now().UTC()); err != nil {
 		t.Fatalf("Verify recovery record with PurposeLedgerEpoch: %v", err)
 	}
 

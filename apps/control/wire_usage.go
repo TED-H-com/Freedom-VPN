@@ -2,12 +2,11 @@ package control
 
 import (
 	"context"
-	"crypto/ed25519"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 
@@ -27,51 +26,24 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 )
 
-// DefaultRecoveryKeyID is the key identifier used by the fallback TEST ONLY
-// recovery signer when no signing config file is configured in tests.
-const DefaultRecoveryKeyID = "test-only-central-recovery-key"
-
-// DefaultLedgerEpochKeyID is the key identifier used by the fallback TEST ONLY
-// ledger-epoch signer when no signing config file is configured in tests.
-const DefaultLedgerEpochKeyID = "test-only-central-recovery-key-ledger-epoch"
-
-// DefaultTestRecoveryPublicKey returns the Ed25519 public key for DefaultRecoveryKeyID
-// (TEST ONLY - NOT A SECRET).
-func DefaultTestRecoveryPublicKey() ed25519.PublicKey {
-	return defaultTestRecoverySigner().PrivateKey.Public().(ed25519.PublicKey)
-}
-
-// DefaultTestLedgerEpochPublicKey returns the Ed25519 public key for DefaultLedgerEpochKeyID
-// (TEST ONLY - NOT A SECRET).
-func DefaultTestLedgerEpochPublicKey() ed25519.PublicKey {
-	return defaultTestLedgerEpochSigner().PrivateKey.Public().(ed25519.PublicKey)
-}
-
-func defaultTestRecoverySigner() *usagepkg.Ed25519Signer {
-	// TEST ONLY - NOT A SECRET: deterministic seed used only when SigningConfigFile is unset.
-	seed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET: fvpn-control-default-recovery-signer-v1"))
-	priv := ed25519.NewKeyFromSeed(seed[:])
-	return usagepkg.NewRecoverySigner(DefaultRecoveryKeyID, priv)
-}
-
-func defaultTestLedgerEpochSigner() *usagepkg.Ed25519Signer {
-	// TEST ONLY - NOT A SECRET: deterministic seed used only when SigningConfigFile is unset.
-	seed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET: fvpn-control-default-ledger-epoch-signer-v1"))
-	priv := ed25519.NewKeyFromSeed(seed[:])
-	return usagepkg.NewLedgerEpochSigner(DefaultLedgerEpochKeyID, priv)
-}
-
 func usage() Domain {
 	return NewUsageDomain(nil, nil, nil)
 }
 
 // NewUsageDomain constructs the control-plane Domain for usage ingestion,
-// checkpoints, and member usage queries (§10.9, §14.2, §14.3, §15.4).
-// When uCfg or pCfg is nil, settings are validated from Dependencies.Config.
+// checkpoints, and member usage queries (§10.9, §14.2, §14.3, §15.4, D-045).
+// When uCfg or pCfg is nil, settings are loaded from Dependencies.Config.UsageConfigFile
+// and Dependencies.Config.PoliciesConfigFile.
 func NewUsageDomain(uCfg *config.UsageConfig, pCfg *config.PoliciesConfig, signer usagepkg.Signer) Domain {
 	return Domain{
 		Name: "usage",
 		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			if err := config.ValidateUsageCentralBounds(d.Config); err != nil {
+				return Built{}, err
+			}
+			if err := config.ValidatePoliciesCentralBounds(d.Config); err != nil {
+				return Built{}, err
+			}
 			var uc config.UsageConfig
 			if uCfg != nil {
 				if err := uCfg.Validate(); err != nil {
@@ -80,7 +52,7 @@ func NewUsageDomain(uCfg *config.UsageConfig, pCfg *config.PoliciesConfig, signe
 				uc = *uCfg
 			} else {
 				var err error
-				uc, err = config.UsageFromConfig(d.Config)
+				uc, err = config.LoadUsage(d.Config.UsageConfigFile)
 				if err != nil {
 					return Built{}, err
 				}
@@ -93,13 +65,10 @@ func NewUsageDomain(uCfg *config.UsageConfig, pCfg *config.PoliciesConfig, signe
 				pc = *pCfg
 			} else {
 				var err error
-				pc, err = config.PoliciesFromConfig(d.Config)
+				pc, err = config.LoadPolicies(d.Config.PoliciesConfigFile)
 				if err != nil {
 					return Built{}, err
 				}
-			}
-			if d.Pool == nil {
-				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("usage database required")}
 			}
 			h, err := NewUsageHandler(d.Pool, d.Logger, uc, pc, signer)
 			if err != nil {
@@ -126,6 +95,8 @@ type UsageHandler struct {
 }
 
 // NewUsageHandler constructs a UsageHandler from explicit configuration.
+// When signer is nil, uCfg.SigningConfigFile is opened with signing.OpenFileProvider;
+// there is no fallback or compiled-in signing key (D-045).
 func NewUsageHandler(
 	pool *pgxpool.Pool,
 	logger *slog.Logger,
@@ -134,7 +105,10 @@ func NewUsageHandler(
 	signer usagepkg.Signer,
 ) (*UsageHandler, error) {
 	var epochSigner usagepkg.Signer
-	if signer == nil && uCfg.SigningConfigFile != "" {
+	if signer == nil {
+		if strings.TrimSpace(uCfg.SigningConfigFile) == "" {
+			return nil, &config.SettingError{Name: "signing_config_file", Err: errors.New("signing_config_file required")}
+		}
 		prov, err := signing.OpenFileProvider(uCfg.SigningConfigFile)
 		if err != nil {
 			return nil, &config.SettingError{Name: "signing_config_file", Err: err}
@@ -142,21 +116,20 @@ func NewUsageHandler(
 		ps := usagepkg.NewProviderSigner(prov)
 		signer = ps
 		epochSigner = ps
-	}
-	if signer == nil {
-		signer = defaultTestRecoverySigner()
-		epochSigner = defaultTestLedgerEpochSigner()
-	} else if epochSigner == nil {
+	} else {
 		epochSigner = signer
 	}
-
-	svc, err := usagepkg.NewService(usagepkg.Config{
-		Pool:              pool,
-		Signer:            signer,
-		LedgerEpochSigner: epochSigner,
-	})
-	if err != nil {
-		return nil, err
+	var svc *usagepkg.Service
+	if pool != nil {
+		var err error
+		svc, err = usagepkg.NewService(usagepkg.Config{
+			Pool:              pool,
+			Signer:            signer,
+			LedgerEpochSigner: epochSigner,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var usageReader fup.UsageReader

@@ -61,14 +61,14 @@ Because backup restore/recovery (`FreezeIngest`, `BeginRecovery`, `CompleteRecov
 
 ---
 
-## 5. Configuration (`internal/config/usage.go`)
+## 5. Configuration (`internal/config/usage.go`, Decision D-045)
 
-Loaded via `config.UsageFromConfig(d.Config)` or `config.LoadUsage(path)` (strict JSON file or config struct; no environment variables are read inside the domain, and any missing or invalid setting returns `&config.SettingError{Name: ...}`):
+Production composition in `fvpn-control`, `fvpn-worker`, and `fvpn-usage-admin` loads the usage configuration file referenced by `Dependencies.Config.UsageConfigFile` (`"usage_config_file"` in central `config.json`) via `config.LoadUsage(path)` and validates central bounds via `config.ValidateUsageCentralBounds(d.Config)`. `signing_config_file` inside the usage configuration file is required and opened with `signing.OpenFileProvider`; there are no compiled-in signing keys or fallback signers (`UsageDefaults`, `UsageFromConfig`, `defaultTestRecoverySigner`, and `defaultTestLedgerEpochSigner` have been removed). A missing or unreadable `usage_config_file` or `signing_config_file` fails startup with `&config.SettingError{Name: "usage_config_file"}` or `&config.SettingError{Name: "signing_config_file"}`. Composition tests use `internal/usage/usagetest.New(t)` under `t.TempDir()`.
 
-| JSON Field / Setting Name | Type | Default | Description |
+| JSON Field / Setting Name | Type | Requirement | Description |
 |---|---|---|---|
-| `signing_config_file` | `string` (path) | `""` | Optional path to the PKI signing vault JSON configuration (`internal/signing.OpenFileProvider`) used for `PurposeRecovery` and `PurposeLedgerEpoch`. |
-| `raw_usage_retention_days` | `int` (`1..3650`) | `90` | Retention window in days for raw `usage_event_payloads` (§15.4). |
-| `rollup_retention_months` | `int` (`1..120`) | `24` | Retention window in months for `usage_rollups` and `usage_rollup_details` (§15.4). |
-| `audit_retention_days` | `int` (`1..3650`) | `365` | Retention window in days for `audit_events` (§15.4). |
-| `projection_batch_size` | `int` (`1..10000`) | `256` | Batch size for usage projection rebuild/processing. |
+| `signing_config_file` | `string` (non-empty path) | Required | Path to the PKI signing vault directory opened with `internal/signing.OpenFileProvider` for `signing.Recovery` (`"recovery"`) and `signing.LedgerEpoch` (`"ledger-epoch"`). |
+| `raw_usage_retention_days` | `int` (`1..3650`) | Required | Retention window in days for raw `usage_event_payloads` (§15.4). |
+| `rollup_retention_months` | `int` (`1..120`) | Required | Retention window in months for `usage_rollups` and `usage_rollup_details` (§15.4). |
+| `audit_retention_days` | `int` (`1..3650`) | Required | Retention window in days for `audit_events` (§15.4). |
+| `projection_batch_size` | `int` (`1..10000`) | Required | Batch size for usage projection rebuild/processing. |

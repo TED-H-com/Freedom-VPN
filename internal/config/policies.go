@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-// PoliciesConfig holds bounded configuration for policy activation and the
-// Fair-Use worker (§11, §14.5).
+// PoliciesConfig holds explicit bounded configuration for policy activation and the
+// Fair-Use worker (§11, §14.5, D-045). There are no compiled-in business defaults.
 type PoliciesConfig struct {
 	// FUPMode optionally overrides the active fair_use policy revision's mode.
 	// Valid values are "" (use active policy revision mode), "shadow", or "enforce".
@@ -21,21 +21,11 @@ type PoliciesConfig struct {
 	DNSUpstreamProfile string `json:"dns_upstream_profile"`
 }
 
-// PoliciesDefaults returns recommended default parameters for policies and FUP.
-func PoliciesDefaults() PoliciesConfig {
-	return PoliciesConfig{
-		FUPMode:            "",
-		FUPSweepSeconds:    60,
-		FUPBatchSize:       64,
-		DNSUpstreamProfile: "cloudflare",
-	}
-}
-
 // LoadPolicies loads a strict JSON configuration file and validates all fields.
-// No environment variables are read here; missing or invalid files/fields return
-// a SettingError naming the offending setting.
+// No environment variables or compiled defaults are used; missing or invalid files/fields
+// return a SettingError naming the offending setting.
 func LoadPolicies(path string) (PoliciesConfig, error) {
-	c := PoliciesDefaults()
+	var c PoliciesConfig
 	if strings.TrimSpace(path) == "" {
 		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: errors.New("policies configuration file required")}
 	}
@@ -53,32 +43,34 @@ func LoadPolicies(path string) (PoliciesConfig, error) {
 	if d.Decode(&extra) != io.EOF {
 		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: errors.New("trailing policies configuration data")}
 	}
-	return c, c.Validate()
+	if err := c.Validate(); err != nil {
+		return PoliciesConfig{}, &SettingError{Name: "policies_config_file", Err: err}
+	}
+	return c, nil
 }
 
-// PoliciesFromConfig validates the central Config fields required by the policies
-// domain and returns the validated PoliciesConfig.
-func PoliciesFromConfig(c Config) (PoliciesConfig, error) {
+// ValidatePoliciesCentralBounds checks the central Config bounds required by the
+// policies domain in addition to loading policies_config_file.
+func ValidatePoliciesCentralBounds(c Config) error {
 	if c.IdempotencySeconds <= 0 || c.IdempotencySeconds > 1<<30 {
-		return PoliciesConfig{}, &SettingError{Name: "idempotency_seconds", Err: errors.New("invalid positive bound: idempotency_seconds")}
+		return &SettingError{Name: "idempotency_seconds", Err: errors.New("invalid positive bound: idempotency_seconds")}
 	}
 	if c.BrowserBodyBytes <= 0 || c.BrowserBodyBytes > 1<<30 {
-		return PoliciesConfig{}, &SettingError{Name: "browser_body_bytes", Err: errors.New("invalid positive bound: browser_body_bytes")}
+		return &SettingError{Name: "browser_body_bytes", Err: errors.New("invalid positive bound: browser_body_bytes")}
 	}
 	if c.WorkerLeaseSeconds <= 0 || c.WorkerLeaseSeconds > 86400 {
-		return PoliciesConfig{}, &SettingError{Name: "worker_lease_seconds", Err: errors.New("invalid positive bound: worker_lease_seconds")}
+		return &SettingError{Name: "worker_lease_seconds", Err: errors.New("invalid positive bound: worker_lease_seconds")}
 	}
 	if c.WorkerJobSeconds <= 0 || c.WorkerJobSeconds >= c.WorkerLeaseSeconds {
-		return PoliciesConfig{}, &SettingError{Name: "worker_job_seconds", Err: errors.New("invalid bound: worker_job_seconds")}
+		return &SettingError{Name: "worker_job_seconds", Err: errors.New("invalid bound: worker_job_seconds")}
 	}
 	if c.WorkerPollSeconds <= 0 || c.WorkerPollSeconds > 1<<30 {
-		return PoliciesConfig{}, &SettingError{Name: "worker_poll_seconds", Err: errors.New("invalid positive bound: worker_poll_seconds")}
+		return &SettingError{Name: "worker_poll_seconds", Err: errors.New("invalid positive bound: worker_poll_seconds")}
 	}
 	if c.WorkerAttempts <= 0 || c.WorkerAttempts > 1<<30 {
-		return PoliciesConfig{}, &SettingError{Name: "worker_attempts", Err: errors.New("invalid positive bound: worker_attempts")}
+		return &SettingError{Name: "worker_attempts", Err: errors.New("invalid positive bound: worker_attempts")}
 	}
-	p := PoliciesDefaults()
-	return p, p.Validate()
+	return nil
 }
 
 // Validate checks bounds and allowed enum values, returning a SettingError on failure.

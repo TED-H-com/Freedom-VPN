@@ -28,12 +28,15 @@ func policies() Domain {
 }
 
 // NewPoliciesDomain constructs the control-plane Domain for the policy catalog
-// and Fair-Use evaluation (§11, §12.4, §14.5). When cfg is nil, settings are
-// validated from Dependencies.Config.
+// and Fair-Use evaluation (§11, §12.4, §14.5, D-045). When cfg is nil, settings
+// are loaded from Dependencies.Config.PoliciesConfigFile via config.LoadPolicies.
 func NewPoliciesDomain(cfg *config.PoliciesConfig) Domain {
 	return Domain{
 		Name: "policies",
 		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			if err := config.ValidatePoliciesCentralBounds(d.Config); err != nil {
+				return Built{}, err
+			}
 			var pCfg config.PoliciesConfig
 			if cfg != nil {
 				if err := cfg.Validate(); err != nil {
@@ -42,13 +45,10 @@ func NewPoliciesDomain(cfg *config.PoliciesConfig) Domain {
 				pCfg = *cfg
 			} else {
 				var err error
-				pCfg, err = config.PoliciesFromConfig(d.Config)
+				pCfg, err = config.LoadPolicies(d.Config.PoliciesConfigFile)
 				if err != nil {
 					return Built{}, err
 				}
-			}
-			if d.Pool == nil {
-				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("policies database required")}
 			}
 			return Built{
 				Handlers: []any{NewPoliciesHandler(d.Pool, d.Logger, pCfg)},

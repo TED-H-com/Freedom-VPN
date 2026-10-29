@@ -32,7 +32,7 @@ Wave 3 removes the transitional `501 Not Implemented` fallback for all three pol
 | `policy.activated` | `policies.Store.ActivateRevision` | Reads back committed `policy_definitions` state (`active_revision_id`, `generation`). When `type` is `fair_use` or `plan`, schedules a coalesced Fair-Use sweep across active members (`fup.Worker.ScheduleMemberSweep` + `Flush`). Transitions the `policy.activate` operation's `desired_state_compile` step to `succeeded` with read-back evidence `policy_definition:<definition_id>`. |
 | `fup.evaluate` | `usage.Service.IngestBatch` / `usage.Service.CreateAdjustment` (`wire_usage.go`, `adjustments.go`) | Runs `fup.Worker` (`NotifyLedgerChange` or `NotifyLedgerCorrection` when `allow_relaxation = true`) and `Flush` against `usage.Service.GetMemberPeriodTotal`, recording the evaluation's `LedgerWatermark` (`ledger_epoch`, `projection_generation`, `aggregate_as_of`, per-stream watermarks). Returns evidence `fup_evaluation:<evaluation_id>` (or `member:<member_id>`). |
 | `fup.member_generation_changed` | `fup.Engine.Compute` (in `enforce` mode when enforced tier/rate/override changes) | Reads back `fup_member_states` for the aggregate ID and returns evidence `fup_member_state:<state_id>` so downstream desired-state compilation can observe the member's new rate policy generation. |
-| `fleet.release_support_changed` | `releases.Service.ApplySupportTx` (invoked inside `ActivateRevision` for `release_support`) | Reads back `fleet_config` (`00000000-0000-0000-0000-000000000001`) and returns evidence `fleet_config:<id>`. |
+| `fleet.release_support_changed` | `releases.Service.ApplySupportTx` (invoked inside `ActivateRevision` for `release_support`) | Enqueued by `release_support` policy activation; dispatched by the `nodes` worker domain (`apps/worker/jobs_nodes.go`) to refresh node desired state against `fleet_config`. |
 
 ### Exported Desired-State Rate Policy Helpers
 
@@ -44,13 +44,13 @@ func BuildNodeMemberRatePolicy(eval *EvaluationResult, planRate, nodeCap *api.Ra
 
 ---
 
-## 3. Configuration (`internal/config/policies.go`)
+## 3. Configuration (`internal/config/policies.go`, Decision D-045)
 
-Loaded via `config.PoliciesFromConfig(d.Config)` or `config.LoadPolicies(path)` (strict JSON file or config struct; no environment variables are read inside the domain, and any missing or invalid setting returns `&config.SettingError{Name: ...}`):
+Production composition in both `fvpn-control` and `fvpn-worker` loads the policies configuration file referenced by `Dependencies.Config.PoliciesConfigFile` (`"policies_config_file"` in central `config.json`) via `config.LoadPolicies(path)` and validates central bounds via `config.ValidatePoliciesCentralBounds(d.Config)`. There are no compiled-in business defaults (`PoliciesDefaults` and `PoliciesFromConfig` have been removed); a missing or invalid file fails startup with `&config.SettingError{Name: "policies_config_file"}` or the invalid field's `SettingError`. Composition tests use `internal/policies/policiestest.New(t)` under `t.TempDir()`.
 
-| JSON Field / Setting Name | Type | Default | Description |
+| JSON Field / Setting Name | Type | Requirement | Description |
 |---|---|---|---|
-| `fup_mode` | `"" \| "shadow" \| "enforce"` | `""` (uses active `fair_use` policy revision's `mode`) | Optional operator override for Fair-Use evaluation mode (`shadow` vs. `enforce`, §11.2). |
-| `fup_sweep_seconds` | `int` (`1..86400`) | `60` | Coalescing / sweep interval in seconds for `fup.Worker` member evaluation sweeps. |
-| `fup_batch_size` | `int` (`1..10000`) | `64` | Maximum member batch size per coalesced Fair-Use sweep. |
-| `dns_upstream_profile` | `string` (non-empty) | `"cloudflare"` | Upstream DNS resolver profile name used by policy compilation. |
+| `fup_mode` | `"" \| "shadow" \| "enforce"` | Optional (`""` uses active `fair_use` policy revision's `mode`) | Optional operator override for Fair-Use evaluation mode (`shadow` vs. `enforce`, §11.2). |
+| `fup_sweep_seconds` | `int` (`1..86400`) | Required | Coalescing / sweep interval in seconds for `fup.Worker` member evaluation sweeps. |
+| `fup_batch_size` | `int` (`1..10000`) | Required | Maximum member batch size per coalesced Fair-Use sweep. |
+| `dns_upstream_profile` | `string` (non-empty) | Required | Upstream DNS resolver profile name used by policy compilation. |

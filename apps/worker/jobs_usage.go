@@ -11,6 +11,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	usagepkg "github.com/TED-H-com/Freedom-VPN/internal/usage"
 )
 
@@ -40,12 +41,15 @@ func usage() Domain {
 }
 
 // NewUsageDomain constructs the worker Domain for usage projection rebuild and
-// retention purge jobs (§10.9, §15.4). When cfg is nil, settings are validated
-// from Dependencies.Config.
+// retention purge jobs (§10.9, §15.4, D-045). When cfg is nil, settings are
+// loaded from Dependencies.Config.UsageConfigFile via config.LoadUsage.
 func NewUsageDomain(cfg *config.UsageConfig) Domain {
 	return Domain{
 		Name: "usage",
 		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			if err := config.ValidateUsageCentralBounds(d.Config); err != nil {
+				return Built{}, err
+			}
 			var uCfg config.UsageConfig
 			if cfg != nil {
 				if err := cfg.Validate(); err != nil {
@@ -54,17 +58,26 @@ func NewUsageDomain(cfg *config.UsageConfig) Domain {
 				uCfg = *cfg
 			} else {
 				var err error
-				uCfg, err = config.UsageFromConfig(d.Config)
+				uCfg, err = config.LoadUsage(d.Config.UsageConfigFile)
 				if err != nil {
 					return Built{}, err
 				}
 			}
-			if d.Pool == nil {
-				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("usage worker database required")}
-			}
-			svc, err := usagepkg.NewService(usagepkg.Config{Pool: d.Pool})
+			prov, err := signing.OpenFileProvider(uCfg.SigningConfigFile)
 			if err != nil {
-				return Built{}, err
+				return Built{}, &config.SettingError{Name: "signing_config_file", Err: err}
+			}
+			ps := usagepkg.NewProviderSigner(prov)
+			var svc *usagepkg.Service
+			if d.Pool != nil {
+				svc, err = usagepkg.NewService(usagepkg.Config{
+					Pool:              d.Pool,
+					Signer:            ps,
+					LedgerEpochSigner: ps,
+				})
+				if err != nil {
+					return Built{}, err
+				}
 			}
 			s := &UsageServices{
 				Pool:    d.Pool,

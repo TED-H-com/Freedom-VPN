@@ -13,7 +13,6 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
-	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/fup"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
@@ -100,22 +99,19 @@ func NewPoliciesServices(pool *pgxpool.Pool, pCfg config.PoliciesConfig, compile
 	if err := pCfg.Validate(); err != nil {
 		return nil, err
 	}
-	if pool == nil {
-		return nil, errors.New("policies worker database required")
+	var usageReader fup.UsageReader
+	if pool != nil {
+		uSvc, err := usagepkg.NewService(usagepkg.Config{Pool: pool})
+		if err != nil {
+			return nil, err
+		}
+		usageReader = fup.NewUsageServiceReader(uSvc, pool)
 	}
-	uSvc, err := usagepkg.NewService(usagepkg.Config{Pool: pool})
-	if err != nil {
-		return nil, err
-	}
-	usageReader := fup.NewUsageServiceReader(uSvc, pool)
 	engine := fup.NewEngine(pool, usageReader, nil, nil)
 	if pCfg.FUPMode != "" {
 		engine.SetModeOverride(pCfg.FUPMode)
 	}
 	fupW := fup.NewWorker(engine)
-	if compiler == nil {
-		compiler = desiredstate.NewCompiler(pool, nil)
-	}
 	return &PoliciesServices{
 		Pool:      pool,
 		Config:    pCfg,
@@ -130,12 +126,15 @@ func policies() Domain {
 }
 
 // NewPoliciesDomain constructs the worker Domain for policy activation and
-// Fair-Use evaluation (§11, §14.5). When cfg is nil, settings are validated
-// from Dependencies.Config.
+// Fair-Use evaluation (§11, §14.5, D-045). When cfg is nil, settings are
+// loaded from Dependencies.Config.PoliciesConfigFile via config.LoadPolicies.
 func NewPoliciesDomain(cfg *config.PoliciesConfig, compiler membersruntime.Compiler) Domain {
 	return Domain{
 		Name: "policies",
 		Build: func(_ context.Context, d Dependencies) (Built, error) {
+			if err := config.ValidatePoliciesCentralBounds(d.Config); err != nil {
+				return Built{}, err
+			}
 			var pCfg config.PoliciesConfig
 			if cfg != nil {
 				if err := cfg.Validate(); err != nil {
@@ -144,13 +143,10 @@ func NewPoliciesDomain(cfg *config.PoliciesConfig, compiler membersruntime.Compi
 				pCfg = *cfg
 			} else {
 				var err error
-				pCfg, err = config.PoliciesFromConfig(d.Config)
+				pCfg, err = config.LoadPolicies(d.Config.PoliciesConfigFile)
 				if err != nil {
 					return Built{}, err
 				}
-			}
-			if d.Pool == nil {
-				return Built{}, &config.SettingError{Name: "database_url_file", Err: errors.New("policies worker database required")}
 			}
 			s, err := NewPoliciesServices(d.Pool, pCfg, compiler)
 			if err != nil {
@@ -178,7 +174,6 @@ func PolicyJobs() Registry {
 		"policy.activated",
 		"fup.evaluate",
 		"fup.member_generation_changed",
-		"fleet.release_support_changed",
 	} {
 		r.Register(name, policyJob)
 	}
@@ -200,12 +195,6 @@ func policyJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		return handleFUPEvaluate(ctx, s, event)
 	case "fup.member_generation_changed":
 		return handleFUPMemberGenerationChanged(ctx, s, event)
-	case "fleet.release_support_changed":
-		var fleetID uuid.UUID
-		if err := s.Pool.QueryRow(ctx, `SELECT id FROM fleet_config WHERE id = $1`, event.AggregateID).Scan(&fleetID); err != nil {
-			return "", fmt.Errorf("policies worker: read back fleet_config %s: %w", event.AggregateID, err)
-		}
-		return "fleet_config:" + fleetID.String(), nil
 	default:
 		return "", errors.New("unowned policy event")
 	}

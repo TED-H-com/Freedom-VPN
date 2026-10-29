@@ -28,7 +28,9 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/fup"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
+	"github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -51,11 +53,13 @@ func newHTTPStack(t *testing.T, pool *pgxpool.Pool, adminID, memberID, nodeID, i
 	c.AgentRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.WorkerAttempts = 3
+	c.PoliciesConfigFile = policiestest.New(t).Path
+	c.UsageConfigFile = usagetest.New(t).Path
 
 	deps := control.Dependencies{Config: c, Pool: pool}
 	var handlerSets []any
 	for _, dom := range control.Domains() {
-		if dom.Name == "members" {
+		if dom.Name != "control-core" && dom.Name != "policies" && dom.Name != "usage" {
 			continue
 		}
 		built, err := dom.Build(t.Context(), deps)
@@ -611,7 +615,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 		t.Fatalf("unexpected shadow MemberUsage: state=%s total=%s", muShadow.FairUse.State, muShadow.Totals.TotalBytes)
 	}
 
-	polServices, err := worker.NewPoliciesServices(pool, config.PoliciesDefaults(), nil)
+	polServices, err := worker.NewPoliciesServices(pool, policiestest.New(t).Policies, nil)
 	if err != nil {
 		t.Fatalf("worker.NewPoliciesServices: %v", err)
 	}
@@ -723,23 +727,42 @@ func (noopMembersCompiler) RecompileBatch(context.Context, []db.ClaimedEvent) ([
 func TestPoliciesAndUsageCompositionSeam(t *testing.T) {
 	pool := dbtest.New(t)
 	ctx := context.Background()
+	polFix := policiestest.New(t)
+	useFix := usagetest.New(t)
 
-	// 1. Missing Pool fails with config.SettingError naming database_url_file.
-	for _, dom := range []control.Domain{
-		control.NewPoliciesDomain(nil),
-		control.NewUsageDomain(nil, nil, nil),
-	} {
-		_, err := dom.Build(ctx, control.Dependencies{Config: config.Defaults()})
-		var se *config.SettingError
-		if !errors.As(err, &se) || se.Name != "database_url_file" {
-			t.Fatalf("control domain %s with nil Pool: err=%v, want SettingError(database_url_file)", dom.Name, err)
-		}
+	validCfg := config.Defaults()
+	validCfg.PoliciesConfigFile = polFix.Path
+	validCfg.UsageConfigFile = useFix.Path
+
+	// 1. Missing policies_config_file, usage_config_file, or signing_config_file fails with SettingError naming the setting.
+	noPolCfg := validCfg
+	noPolCfg.PoliciesConfigFile = ""
+	_, err := control.NewPoliciesDomain(nil).Build(ctx, control.Dependencies{Config: noPolCfg})
+	var se *config.SettingError
+	if !errors.As(err, &se) || se.Name != "policies_config_file" {
+		t.Fatalf("control domain policies with missing policies_config_file: err=%v, want SettingError(policies_config_file)", err)
+	}
+
+	noUsageCfg := validCfg
+	noUsageCfg.UsageConfigFile = ""
+	_, err = control.NewUsageDomain(nil, nil, nil).Build(ctx, control.Dependencies{Config: noUsageCfg})
+	se = nil
+	if !errors.As(err, &se) || se.Name != "usage_config_file" {
+		t.Fatalf("control domain usage with missing usage_config_file: err=%v, want SettingError(usage_config_file)", err)
+	}
+
+	badSignUsage := useFix.Usage
+	badSignUsage.SigningConfigFile = ""
+	_, err = control.NewUsageDomain(&badSignUsage, &polFix.Policies, nil).Build(ctx, control.Dependencies{Config: validCfg})
+	se = nil
+	if !errors.As(err, &se) || se.Name != "signing_config_file" {
+		t.Fatalf("control domain usage with missing signing_config_file: err=%v, want SettingError(signing_config_file)", err)
 	}
 
 	// 2. Invalid policies/usage settings fail startup with config.SettingError naming the setting.
-	badPolCfg := config.PoliciesDefaults()
+	badPolCfg := polFix.Policies
 	badPolCfg.FUPBatchSize = -1
-	if _, err := worker.NewPoliciesDomain(&badPolCfg, nil).Build(ctx, worker.Dependencies{Config: config.Defaults(), Pool: pool}); err == nil {
+	if _, err := worker.NewPoliciesDomain(&badPolCfg, nil).Build(ctx, worker.Dependencies{Config: validCfg, Pool: pool}); err == nil {
 		t.Fatal("expected SettingError for negative fup_batch_size")
 	} else {
 		var se *config.SettingError
@@ -748,9 +771,9 @@ func TestPoliciesAndUsageCompositionSeam(t *testing.T) {
 		}
 	}
 
-	badUsageCfg := config.UsageDefaults()
+	badUsageCfg := useFix.Usage
 	badUsageCfg.RawUsageRetentionDays = 0
-	if _, err := worker.NewUsageDomain(&badUsageCfg).Build(ctx, worker.Dependencies{Config: config.Defaults(), Pool: pool}); err == nil {
+	if _, err := worker.NewUsageDomain(&badUsageCfg).Build(ctx, worker.Dependencies{Config: validCfg, Pool: pool}); err == nil {
 		t.Fatal("expected SettingError for zero raw_usage_retention_days")
 	} else {
 		var se *config.SettingError
@@ -760,7 +783,7 @@ func TestPoliciesAndUsageCompositionSeam(t *testing.T) {
 	}
 
 	// 3. Worker Built.Context decorates both WithFUPCompiler and membersruntime.WithCompiler.
-	built, err := worker.NewPoliciesDomain(nil, noopMembersCompiler{}).Build(ctx, worker.Dependencies{Config: config.Defaults(), Pool: pool})
+	built, err := worker.NewPoliciesDomain(nil, noopMembersCompiler{}).Build(ctx, worker.Dependencies{Config: validCfg, Pool: pool})
 	if err != nil {
 		t.Fatalf("NewPoliciesDomain.Build: %v", err)
 	}
