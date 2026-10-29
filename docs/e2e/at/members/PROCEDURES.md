@@ -1,14 +1,13 @@
 # Member acceptance execution procedures
 
-Status: **not executed; blocked by B1**. These are the concrete procedures for
-the next live run, not implemented scenario claims. Shared hooks requested in
-[BLOCKERS.md](BLOCKERS.md) must land first. The current `at-members` target is
-only the startup gate. No procedure below authorizes editing the shared lab in
-this task or choosing another port slot.
+The JSON records are the authority for executed subchecks. These procedures
+specify full acceptance, including steps blocked by the observed prerequisites
+in [BLOCKERS.md](BLOCKERS.md). They do not authorize editing the shared lab or
+substituting mock identity, payment or forwarding evidence.
 
 ## Common setup and evidence (§19.1)
 
-Use only the assigned `w4-members` stack, base `19000`, and
+Use only the assigned `w4-members` stack, base `24000`, and
 `.agent/e2e-state-w4-members`. Bring it up fresh once. Do not use `e2e-test` after
 fixture creation: that target tears down and recreates the stack. Do not run the
 existing whole scenario runner as a setup hook: it also performs updates,

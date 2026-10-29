@@ -1,10 +1,11 @@
 # AT02 device-to-usage binding trace
 
-Status: **blocked** for live evidence. The assigned stack fails before startup.
-This is a source trace at the source commit in AT02.json, not a new packet/DB
-observation. Earlier [usage evidence](../../runs/2026-10-29/usage.json) records
-`rejected VALIDATION_FAILED binding_not_found`, total 0. Do not label that
-historical result as a new run.
+Status: **blocked**, with live admission and binding diagnostics in
+[AT02.json](AT02.json). Browser identities are real; the member container joins
+using its documented setup-key file. That peer is deliberately a machine-peer
+negative control, not a fabricated native user. Two simultaneous real-adapter
+admission calls test its fail-closed rejection. The mTLS upload uses the real
+node certificate and an explicitly unknown device to isolate the binding guard.
 
 | Stage | Current code | What it establishes |
 |---|---|---|
@@ -22,7 +23,7 @@ member path alone leaves the random device UUID invalid. Fixing that UUID alone
 can still produce `interval_outside_binding_window` if a newly authorized
 binding is newer than the synthetic five-minute interval.
 
-After B1/B2 are fixed, the runner should execute these read-only probes through
+The runner performs count probes; the following expanded diagnostic can be run through
 its own stack DB connection. Pass `peer` from NetBird readback (never a guessed
 name or overlay IP); `deployment` from this stack's members settings. The SQL
 below reports only counts/booleans, not identities or secrets:

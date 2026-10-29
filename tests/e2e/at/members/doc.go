@@ -1,7 +1,4 @@
-// Package members holds the Wave 4 member acceptance startup gate.
-//
-// The assigned stack cannot start on this revision: its port-base validator
-// rejects 19000. The tagged gate reproduces that prerequisite failure through
-// the existing prepare command and writes blocked evidence for all assigned
-// cases. It does not replace the dev-stack runner or claim live AT coverage.
+// Package members drives Wave 4 acceptance against the assigned dev stack.
+// Live tests require -tags e2e and FVPN_E2E=1; evidence distinguishes verified
+// subchecks from blocked end-to-end and operator-only requirements (§19.1).
 package members

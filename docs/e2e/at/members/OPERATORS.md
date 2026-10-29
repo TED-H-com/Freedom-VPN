@@ -1,7 +1,7 @@
 # Physical and native-client runs
 
 Status for every row below: **needs operator run**. No platform, physical arm64
-or second-NAT capability is claimed by the startup gate or by Linux CLI tests.
+or second-NAT capability is claimed by the live Linux lab tests.
 References: §19 AT01, AT05, AT09, AT21; §7.3, §8.3, §12.6.
 
 ## Inputs and preparation

@@ -1,60 +1,59 @@
 # Wave 4 member acceptance
 
-**Blocked at startup; no assigned AT has passed.** The prescribed fresh-stack
-command rejected port base `19000` before creating any containers. This is a
-partial hand-off, not a completed live acceptance suite. It needs devstack
-follow-up 2: reconcile the assigned ports with the merged slot validator.
+The suite runs real HTTP, database, NetBird, DNS and container probes on the
+assigned devstack. **No complete assigned AT has passed.** Each JSON/page records
+successful subchecks separately from observed missing prerequisites. Native
+platforms and physical hardware remain **needs operator run**.
+
+The orchestrator corrected the slot assignment to `24000`; the startup gate
+accepts it. That earlier assignment error is resolved and is not a lab defect.
 
 ```sh
-FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=19000 make -f mk/e2e.mk e2e-up
+FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
 make -f mk/at-members.mk at-members
-FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=19000 make -f mk/e2e.mk e2e-down
+FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
 ```
 
-Actual startup diagnostic:
+Use a fresh stack. The suite authenticates through its IdP, writes finite grants
+through HTTP, enrolls the installer node through the documented token-file hook,
+uses a setup-key peer only as a negative admission control, submits real signed
+webhooks, activates DNS policy, pauses/restores its resolver containers and runs
+the guarded retention purge. It never inserts member identity proofs or device
+bindings. TEST ONLY plan/group catalogue rows and synthetic old/young audit rows
+are the only direct fixture writes. It does not run the whole shared scenario
+runner, which also revokes nodes and performs update faults.
 
-```text
-fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000
-make: *** [mk/e2e.mk:39: e2e-up] Error 2
-```
+`at-members` exits nonzero for a blocked or failed AT. This is intentional: a
+successful HTTP command or an unavailable positive control cannot pass a full
+acceptance case. `tests/e2e.Write` renders the evidence; JSON adds step UTC times,
+commands, expected/actual values, source/build/image digests, applied generation
+and node incarnation. Only aggregate, synthetic or allowlisted fields are
+published. Raw provider bodies, database dumps and container logs stay in memory.
 
-`at-members` reproduces the owner's prepare-command rejection using private disk
-scratch, writes a JSON record and Markdown page for each AT, and exits nonzero.
-It uses the shared `tests/e2e.Write` evidence format and adds typed provenance.
-It does not start a second lab, copy the runner, change ports, or report the
-startup rejection as a passed acceptance test. A future successful prepare also
-remains blocked until the live cases are implemented and executed. The recorded
-prepare executable hash is **not** a digest of a running service image. Missing
-image digests, policy revision and incarnation are explicitly unavailable.
-
-| AT | Lab status | Additional operator work | Evidence |
+| AT | Status | Evidence | Remaining operator requirement |
 |---|---|---|---|
-| AT01 | blocked | needs operator run: Windows, macOS, iOS, Android | [JSON](AT01.json), [page](AT01.md) |
-| AT02 | blocked | real gateway denial still required | [JSON](AT02.json), [page](AT02.md), [binding trace](AT02-TRACE.md) |
-| AT03 | blocked | none substituted for missing lab hooks | [JSON](AT03.json), [page](AT03.md) |
-| AT04 | blocked | all-node flow-stop timing still required | [JSON](AT04.json), [page](AT04.md) |
-| AT05 | blocked | needs operator run: physical arm64, all three sources | [JSON](AT05.json), [page](AT05.md) |
-| AT08 | blocked | pending/applied UI and forwarding still required | [JSON](AT08.json), [page](AT08.md) |
-| AT09 | blocked | needs operator run: platforms, second physical NAT | [JSON](AT09.json), [page](AT09.md) |
-| AT20 | blocked | actual resolver and rebinding traffic still required | [JSON](AT20.json), [page](AT20.md) |
-| AT21 | blocked | needs operator run: Private DNS and browser DoH | [JSON](AT21.json), [page](AT21.md) |
-| AT22 | blocked | candidate config, backup and retention still required | [JSON](AT22.json), [page](AT22.md) |
+| AT01 | blocked | [JSON](AT01.json), [page](AT01.md) | four native platforms |
+| AT02 | blocked | [JSON](AT02.json), [page](AT02.md), [trace](AT02-TRACE.md) | none substituted for missing lab admission |
+| AT03 | blocked | [JSON](AT03.json), [page](AT03.md) | none substituted for missing provider snapshots |
+| AT04 | blocked | [JSON](AT04.json), [page](AT04.md) | rendered screen and every-node flow stop |
+| AT05 | blocked | [JSON](AT05.json), [page](AT05.md) | physical arm64, three sources |
+| AT08 | blocked | [JSON](AT08.json), [page](AT08.md) | applied publication and group traffic |
+| AT09 | blocked | [JSON](AT09.json), [page](AT09.md) | platforms, second physical NAT |
+| AT20 | blocked | [JSON](AT20.json), [page](AT20.md) | none substituted for missing DNS fixtures |
+| AT21 | blocked | [JSON](AT21.json), [page](AT21.md) | Private DNS/browser DoH |
+| AT22 | blocked | [JSON](AT22.json), [page](AT22.md) | candidate config and retention inventory |
 
-[PROCEDURES.md](PROCEDURES.md) specifies the tests to implement after the shared
-hooks land. [OPERATORS.md](OPERATORS.md) gives the platform run script and member
-guidance. [BLOCKERS.md](BLOCKERS.md) gives owner, function, reproduction and
-expected behaviour for each missing prerequisite. Historical evidence in
-`docs/e2e/runs/2026-10-29` belongs to the earlier runner; it is not this run.
-
-Offline verification:
+[PROCEDURES.md](PROCEDURES.md) gives the complete remaining acceptance script;
+[OPERATORS.md](OPERATORS.md) gives exact platform actions and draft member
+guidance. [BLOCKERS.md](BLOCKERS.md) identifies owner paths and requested fixes.
+Older `docs/e2e/runs` evidence is not presented as a result of this run.
 
 ```sh
 make -f mk/at-members.mk at-members-lint at-members-test
 make go-lint
-# Set TMPDIR and GOTMPDIR to private disk scratch under .agent/tmp first.
 go vet -tags e2e ./tests/...
 ```
 
-The workflow runs lint on relevant PRs. Manual dispatch attempts the assigned
-stack, records the non-green startup gate, tears down that prefix and uploads
-only public evidence. It does not upload `.agent` or generated secrets.
+Targets use private disk scratch. The workflow lints PRs, cross-compiles the
+probe for both architectures, and runs the assigned live stack on manual
+dispatch. It removes only its prefix and uploads only public AT evidence.
