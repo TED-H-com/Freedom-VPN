@@ -1,0 +1,27 @@
+# agent hand-off scratch (never committed)
+/.agent/
+# build outputs
+/bin/
+/dist/
+*.test
+*.out
+coverage*.txt
+coverage*.html
+# node / frontend
+node_modules/
+apps/portal/dist/
+apps/portal/coverage/
+# local state of dev deployments and labs
+deploy/dev/*/.state/
+tests/netlab/out/
+tests/**/out/
+tmp/
+*.log
+# env files with real values
+.env
+.env.*
+!.env.example
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
