@@ -30,7 +30,7 @@ type Handlers struct {
 
 func (h *Handlers) ready(context.Context) error {
 	if h.Runtime == nil {
-		return apierr.New(apierr.DependencyUnavailable, "Node services are not configured.")
+		return errors.New("node runtime was not constructed")
 	}
 	return nil
 }
@@ -270,13 +270,18 @@ func (h *Handlers) SubmitObservation(ctx context.Context, r gen.SubmitObservatio
 		return nil, e
 	}
 	i := identity(ctx)
-	out, e := h.Runtime.Nodes.SubmitObservation(ctx, i.NodeID, i.IncarnationID, *r.Body)
+	var out api.ObservationAccepted
+	var e error
+	if tx, err := httpapi.Transaction(ctx); err == nil {
+		out, e = h.Runtime.Nodes.SubmitObservationTx(ctx, tx, i.NodeID, i.IncarnationID, *r.Body)
+	} else {
+		out, e = h.Runtime.Nodes.SubmitObservation(ctx, i.NodeID, i.IncarnationID, *r.Body)
+	}
 	if e != nil {
 		return nil, e
 	}
-	// Framework 202 requires an operation reference, but this contract is a receipt.
-	if _, ok := commandtx.Transaction(ctx); ok {
-		return nil, apierr.New(apierr.DependencyUnavailable, "Observation receipt command support is unavailable.")
+	if e = result(ctx, "node", i.NodeID, 202, nil); e != nil {
+		return nil, e
 	}
 	return gen.SubmitObservation202JSONResponse{Body: out}, nil
 }
@@ -341,10 +346,17 @@ func (h *Handlers) SubmitUpdateResult(ctx context.Context, r gen.SubmitUpdateRes
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
-	if _, ok := commandtx.Transaction(ctx); ok {
-		return nil, apierr.New(apierr.DependencyUnavailable, "Update receipt command support is unavailable.")
+	var out api.UpdateResultAck
+	var e error
+	if tx, err := httpapi.Transaction(ctx); err == nil {
+		out, e = h.Runtime.Fleet.SubmitResultTx(ctx, tx, identity(ctx), httpapi.RawBody(ctx))
+	} else {
+		out, e = h.Runtime.Fleet.SubmitResult(ctx, identity(ctx), httpapi.RawBody(ctx))
 	}
-	out, e := h.Runtime.Fleet.SubmitResult(ctx, identity(ctx), httpapi.RawBody(ctx))
+	if e != nil {
+		return nil, e
+	}
+	e = result(ctx, "node", principal(ctx).NodeID, 202, nil)
 	return gen.SubmitUpdateResult202JSONResponse{Body: out}, e
 }
 
@@ -356,6 +368,8 @@ func (h *Handlers) Replay(ctx context.Context, name string, ref db.IdempotencyRe
 		return nil, e
 	}
 	switch name {
+	case "SubmitObservation", "SubmitUpdateResult", "RenewServingLease":
+		return h.replayAgentReceipt(ctx, name, ref)
 	case "CreateEnrollment":
 		out, e := h.Runtime.Enrollment.GetEnrollment(ctx, *ref.ResourceID)
 		return gen.CreateEnrollment201JSONResponse{Body: api.EnrollmentCreated{Enrollment: out, SecretAvailable: false, Token: presence.NewNullNullable[string]()}}, e
