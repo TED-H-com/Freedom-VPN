@@ -2,8 +2,8 @@
 
 Executed 2026-10-29 UTC on the task worktree. All 13 selected existing tests
 passed. These use isolated PostgreSQL databases through `internal/db/dbtest`,
-real domain/HTTP code and test adapters. They do not use the blocked devstack,
-native clients or real gateway traffic. **AT01–AT04 remain blocked.**
+real domain/HTTP code and test adapters. They do not exercise the devstack, native clients or real gateway traffic;
+the later live run is recorded separately in the per-AT JSON files. **AT01–AT04 remain blocked.**
 
 Command (TMPDIR/GOTMPDIR pointed at private disk scratch under `.agent/tmp`,
 removed afterwards):

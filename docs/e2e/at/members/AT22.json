@@ -9,57 +9,222 @@
   "status": "blocked",
   "observations": [
     {
-      "name": "scope",
-      "detail": "startup prerequisite only; no live scenario executed"
+      "name": "privacy sentinel query",
+      "detail": "pass; expected: controlled resolver responds; actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}; command: member probe DNS unique TEST ONLY sentinel"
     },
     {
-      "name": "expected",
-      "detail": "Synthetic qnames/URLs absent from query history, logs, metrics, audit and backups; bounded retention purges and licensed last-good feed handling verified."
+      "name": "/control/querylog/config",
+      "detail": "pass; expected: disabled; actual: read_ok=true; enabled=false; file_enabled=false; command: AdGuard GET /control/querylog/config"
     },
     {
-      "name": "actual",
-      "detail": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2."
+      "name": "/control/stats/config",
+      "detail": "pass; expected: disabled; actual: read_ok=true; enabled=false; file_enabled=false; command: AdGuard GET /control/stats/config"
     },
     {
-      "name": "remaining_preconditions",
-      "detail": "Candidate configuration, backup/retention fixture and approved feed inventory; queried sentinel traffic and update-failure hook."
+      "name": "/control/querylog sentinel scan",
+      "detail": "pass; expected: no sentinel retained; actual: read_ok=true; sentinel_matches=0; command: scan actual resolver API response in memory"
     },
     {
-      "name": "source_commit",
-      "detail": "3b595de2a8f96d1e9647ee0b3843d574a75f0b05"
+      "name": "/control/stats sentinel scan",
+      "detail": "pass; expected: no sentinel retained; actual: read_ok=true; sentinel_matches=0; command: scan actual resolver API response in memory"
     },
     {
-      "name": "prepare_binary_sha256",
-      "detail": "9cd40d5b9c2bd0f1aaec02134974dc8686d1810f2dd87af87ab4aa3a5b8c9166"
+      "name": "on-disk privacy config",
+      "detail": "pass; expected: query history and statistics disabled; actual: read_ok=true; querylog=false; querylog_file=false; statistics=false; command: read assigned AdGuardHome.yaml; emit only booleans"
     },
     {
-      "name": "runtime_provenance",
-      "detail": "image digests, policy revision and node incarnation unavailable: no stack observed"
+      "name": "service log scan",
+      "detail": "pass; expected: 12 services; no sentinel; actual: services_scanned=12; sentinel_matches=0; command: docker logs assigned containers; count sentinel in memory"
     },
     {
-      "name": "commands",
-      "detail": "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare ; \u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+      "name": "metrics scan",
+      "detail": "pass; expected: record endpoint availability and sentinel matches; actual: read_ok=false; sentinel_matches=0; command: control loopback /metrics via probe"
     },
     {
-      "name": "procedure",
-      "detail": "See PROCEDURES.md and BLOCKERS.md in this directory"
+      "name": "database backup scan",
+      "detail": "pass; expected: dump succeeds; no query sentinel; actual: dump_ok=true; sentinel_matches=0; command: pg_dump own lab DB into memory only; scan sentinel"
+    },
+    {
+      "name": "audit scan",
+      "detail": "pass; expected: no query sentinel; actual: sentinel_rows=0; command: SELECT count audit JSON containing sentinel"
+    },
+    {
+      "name": "bounded audit retention",
+      "detail": "pass; expected: reject early cutoff; delete only expired synthetic row; actual: early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1; command: SELECT purge_retained audit_events; inspect old/young IDs"
+    },
+    {
+      "name": "feed inventory",
+      "detail": "pass; expected: record actual active feed count; actual: active_feed_definitions=0; command: SELECT active threat_feed policies"
+    },
+    {
+      "name": "blocked",
+      "detail": "Configured control metrics listener 127.0.0.1:9091 is unreachable from the control container; metrics privacy cannot be inspected. Config.MetricsAddress is not wired by apps/control."
+    },
+    {
+      "name": "blocked",
+      "detail": "No active licensed threat feed exists in the running lab; source/license review and last-good update failure cannot be exercised. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=4e500392333b00caf380ca155b7e2c722447044d; applied generation=0; incarnation=01a18a0e-3ee6-7bef-8c05-a34e115bfcac; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-29T23:11:53Z",
-  "scope": "startup prerequisite only",
+  "at": "2026-10-29T23:47:53Z",
   "build": {
-    "source_commit": "3b595de2a8f96d1e9647ee0b3843d574a75f0b05",
-    "source_dirty": false,
-    "prepare_binary_sha256": "9cd40d5b9c2bd0f1aaec02134974dc8686d1810f2dd87af87ab4aa3a5b8c9166",
-    "image_digests": [],
-    "policy_revision": null,
-    "node_incarnation": null,
-    "unavailable_reason": "No running stack observed; image, policy and incarnation provenance unavailable"
+    "source_commit": "4e500392333b00caf380ca155b7e2c722447044d",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:1f69e8a9bfa7e537ba773fc1389e45f54b05e3afb33b17c83b1eb4060dd7cb72",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:6e07dd4a8c9b4cde67bc39af7a989869d47e8fef67ed3a9df2b42e5289d1d2dd",
+      "member": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "origin": "sha256:3b69c46fd7e0edec5cf85fdd410fe5f32a416e540829646ef46bfc8b11f1f4dd",
+      "payment": "sha256:ab528e98893a9a65648dc008d92e0a245a8a5708acaadf5ed49d37f225c832f4",
+      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+      "worker": "sha256:65ef14a342f025ce3b6e4da138e7897c980e7496b32ab466072fd36081f72c28"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "7cc57a753da1f5c002e69c13ec740ec51ac01942d47d51684eac50d2d6be877a",
+      "fvpn-control": "f2daedc1a981fb638f3176bad73b8464dc705ce5a1038fb6f5d0ad3273df590f",
+      "fvpn-updater": "29f05a7834ab25d608b5d41669f6c2c66e8c7bff47913f846dfb9a2a609b1cbf",
+      "fvpn-worker": "8cc584afb350889242112e4a7a9601fb0a06b6681cb4571f2e5073541fbded5c"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      }
+    }
   },
-  "expected": "Synthetic qnames/URLs absent from query history, logs, metrics, audit and backups; bounded retention purges and licensed last-good feed handling verified.",
-  "actual": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2.",
-  "commands": [
-    "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare",
-    "\u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+  "policy_revision": "0",
+  "active_policy_revisions": {
+    "dns_profile": "01a18a0f-b330-7a62-b805-6c4cfc911e67"
+  },
+  "node_incarnation": "01a18a0e-3ee6-7bef-8c05-a34e115bfcac",
+  "steps": [
+    {
+      "name": "privacy sentinel query",
+      "status": "pass",
+      "expected": "controlled resolver responds",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}",
+      "command": "member probe DNS unique TEST ONLY sentinel",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "/control/querylog/config",
+      "status": "pass",
+      "expected": "disabled",
+      "actual": "read_ok=true; enabled=false; file_enabled=false",
+      "command": "AdGuard GET /control/querylog/config",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "/control/stats/config",
+      "status": "pass",
+      "expected": "disabled",
+      "actual": "read_ok=true; enabled=false; file_enabled=false",
+      "command": "AdGuard GET /control/stats/config",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "/control/querylog sentinel scan",
+      "status": "pass",
+      "expected": "no sentinel retained",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "scan actual resolver API response in memory",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "/control/stats sentinel scan",
+      "status": "pass",
+      "expected": "no sentinel retained",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "scan actual resolver API response in memory",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "on-disk privacy config",
+      "status": "pass",
+      "expected": "query history and statistics disabled",
+      "actual": "read_ok=true; querylog=false; querylog_file=false; statistics=false",
+      "command": "read assigned AdGuardHome.yaml; emit only booleans",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "service log scan",
+      "status": "pass",
+      "expected": "12 services; no sentinel",
+      "actual": "services_scanned=12; sentinel_matches=0",
+      "command": "docker logs assigned containers; count sentinel in memory",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "metrics scan",
+      "status": "pass",
+      "expected": "record endpoint availability and sentinel matches",
+      "actual": "read_ok=false; sentinel_matches=0",
+      "command": "control loopback /metrics via probe",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "database backup scan",
+      "status": "pass",
+      "expected": "dump succeeds; no query sentinel",
+      "actual": "dump_ok=true; sentinel_matches=0",
+      "command": "pg_dump own lab DB into memory only; scan sentinel",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "audit scan",
+      "status": "pass",
+      "expected": "no query sentinel",
+      "actual": "sentinel_rows=0",
+      "command": "SELECT count audit JSON containing sentinel",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "bounded audit retention",
+      "status": "pass",
+      "expected": "reject early cutoff; delete only expired synthetic row",
+      "actual": "early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1",
+      "command": "SELECT purge_retained audit_events; inspect old/young IDs",
+      "at": "2026-10-29T23:47:53Z"
+    },
+    {
+      "name": "feed inventory",
+      "status": "pass",
+      "expected": "record actual active feed count",
+      "actual": "active_feed_definitions=0",
+      "command": "SELECT active threat_feed policies",
+      "at": "2026-10-29T23:47:53Z"
+    }
+  ],
+  "blockers": [
+    "Configured control metrics listener 127.0.0.1:9091 is unreachable from the control container; metrics privacy cannot be inspected. Config.MetricsAddress is not wired by apps/control.",
+    "No active licensed threat feed exists in the running lab; source/license review and last-good update failure cannot be exercised. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed."
   ]
 }

@@ -1,118 +1,146 @@
 # Requests to orchestrator
 
-All live cases are blocked by B1. B2–B7 are source-inspection findings and
-requirements for the next run, not runtime defects reproduced on this branch.
-No application, lab, contract or base migration was changed.
+These requests refer to observed live prerequisites in the per-AT records.
+Application, lab, contract and migration files remain unchanged by this task.
+The legal slot `w4-members / 24000` starts successfully. The earlier slot
+assignment error is resolved; it is not a devstack defect. Publication worker
+follow-up 5 is included in the tested source.
 
-## B1 — assigned port base rejected (all assigned ATs)
+## B2 — native member admission and usage binding (AT01–AT04)
 
-Owner: devstack task. `tests/e2e/cmd/fvpn-e2e-prepare/layout.go`, `parseLayout`;
-`mk/e2e.mk`; orchestrator's stack assignment.
+Owners: devstack (`tests/e2e/scenarios_test.go: memberNetBird, replayUsageBatch`,
+`deploy/devstack/entrypoint-member.sh`); members owner for identity verification.
+See [AT02-TRACE.md](AT02-TRACE.md) and [AT02.json](AT02.json).
 
-Reproduce with exactly:
+Reproduction: fresh assigned stack, Portal login A, finite grant, documented
+member setup-key handoff, NetBird `/api/peers` readback, then two simultaneous
+`devices.Service.ObserveAndAuthorize` calls using the real `NetBirdAdapter`.
+The setup-key peer has no `user_id`; verified NetBird mappings, member devices
+and device bindings remain absent. A real-node mTLS usage event with an explicitly
+unknown device reproduces `VALIDATION_FAILED / binding_not_found`.
 
-```sh
-FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=19000 make -f mk/e2e.mk e2e-up
-```
+This is the correct rejection, not an ingest defect. `node.peer.observe` in
+`apps/worker/jobs_nodes.go` updates **node** incarnation `deployment_id/peer_id`.
+It must not authorize member peers. `devices.discover` in
+`apps/worker/jobs_members.go` skips machine peers and unverified users; verified
+admission in `internal/devices/service.go` creates `member_devices` and finite
+`device_bindings` together under the member lock.
 
-Observed: exit 2, `port base must be 18000 plus a multiple of 6000`. Preparation
-exits before `run`, secret generation, image builds and compose startup. The
-accepted sequence is documented in `docs/e2e/README.md`; 19000 is outside it.
-This is **needs devstack follow-up 2**, despite both variable names being present.
-The acceptance task did not select another slot. Owner must reconcile the
-binding assignment with collision-free ports/subnets for concurrent stacks.
+Expected devstack follow-up 3: native member SSO, trusted cross-client linkage,
+normal discovery/admission, paid-group readback and node ACK. Upload with the
+actual device ID/revision and an interval entirely inside the binding. The
+current shared `replayUsageBatch` generates a random device ID and a five-minute
+lookback; even a corrected ID can fail `interval_outside_binding_window`.
+Never insert a fake binding just to make usage green. If a TEST ONLY identity
+seed is offered as a limited workaround, label it and keep native mapping AT01
+blocked. Two verified candidate peers and B's existing device are still required
+for the true final-slot race, cross-owner delete, revoke-slot reuse and gateway
+winner/loser positive controls.
 
-Expected: the explicitly assigned prefix/base prepares its own state and starts
-without overlapping another task. Then rerun the fresh stack and the live ATs.
+## B3 — second OAuth client (AT01, AT02)
 
-## B2 — member fixture and usage record cannot establish device ownership (AT01–AT04)
+Owner: devstack, `tests/e2e/cmd/fvpn-e2e-idp/main.go: server.authorize/token`,
+`fvpn-e2e-prepare/main.go`. The running IdP returns HTTP 400 for the native
+client; it is configured with only `portal-e2e`. Portal re-login maps correctly,
+but that does not establish cross-client identity.
 
-Owners: devstack (`tests/e2e/scenarios_test.go`, `memberNetBird`,
-`replayUsageBatch`; `deploy/devstack/entrypoint-member.sh`), with members owner
-for the verified cross-client proof contract. Details and executable read-only
-queries: [AT02-TRACE.md](AT02-TRACE.md).
+Provide two registered clients, native authentication, stable-claim proof and
+multiple real user peers. Document a reusable session/NetBird/DB setup seam;
+the existing shared runner's `lab`, `runner`, `login` and `call` are private.
+No new public device-authorize HTTP endpoint is requested: the acceptance race
+can call the existing service against the real adapter as this suite does.
 
-`memberNetBird` creates a setup key; member entrypoint uses `--setup-key-file`.
-Discovery is for native user peers with a verified identity mapping. A connected
-machine peer does not imply a `member_devices` or `device_bindings` row.
-Independently, `replayUsageBatch` uses `DeviceId: uuid.New()` with binding revision
-1; the usage lookup has no corresponding row. This explains the earlier
-`binding_not_found` evidence without weakening usage validation.
+## B4 — authoritative payment and Portal fixtures (AT03, AT04)
 
-Expected devstack follow-up 3: create the member via the second real IdP client,
-verify its cross-client mapping, let the normal discovery/admission path create
-device/binding rows, and wait for external readback and node ACK. Select the
-actual `(device_id, binding_revision)` and an interval contained by the binding
-when uploading usage. Do not insert a random binding merely to satisfy ingest.
-If follow-up 3 uses a TEST ONLY binding seed, label it explicitly and keep AT01
-cross-client/native-client coverage blocked. Do not make `node.peer.observe`
-authorize a member: it handles node identity, not member discovery.
+Owner: devstack payment fixture,
+`tests/e2e/cmd/fvpn-e2e-payment/main.go: server.route`.
 
-## B3 — second OAuth client and admission-race hook absent (AT01, AT02)
+Reproduction: send the same correctly signed invoice event ten times and all
+six created/paid/failed orders. The real inbox deduplicates; bad signatures
+receive 401 and create no inbox row. However, the controlled provider's
+`GET /v1/subscriptions/{id}` returns 404, and subscription/invoice/refund list
+endpoints contain no records. No successful paid reconciliation is possible.
+The control origin also returns 404 for `/billing/return`.
 
-Owner: devstack. `tests/e2e/cmd/fvpn-e2e-idp/main.go` (`server`, authorize/token
-handlers) stores a single `clientID`/redirect and rejects other clients.
-`fvpn-e2e-prepare/main.go` configures `portal-e2e`; the member uses a setup key.
+Provide authenticated TEST ONLY snapshot/event hooks for subscription, invoices,
+line items, cancellation and full/partial refunds. The billing adapter must
+read authoritative provider state; webhook payloads are not payment truth.
+Serve the built Portal through a documented stack hook to test return-page and
+member-screen behavior. Current finite grants, real clock expiry and persistent
+manual suspension are partial evidence; they do not prove successful-payment
+precedence or flow termination on every node.
 
-Expected: two registered clients with distinct audiences, authenticated
-native-member login, independently verified stable-claim linkage, and at least
-three members. Provide a documented test hook to drive two
-`devices.Service.ObserveAndAuthorize` calls behind a goroutine start barrier
-using real observed peers. There is no public device-authorize HTTP endpoint;
-do not invent one. Discovery's sequential loop alone is not a simultaneous
-last-slot test. Expose a supported session/DB/NetBird runner extension seam;
-`lab`, `openLab`, `runner`, `login`, `call` are currently package-private.
+## B5 — valid serving baseline and publication application (AT01–AT05, AT08, AT09)
 
-## B4 — provider has no authoritative invoice/refund fixtures (AT03, AT04)
+Owners: devstack follow-up 3 (`tests/e2e/harness.go: insertReleaseSupport`,
+`tests/e2e/scenarios_test.go` setup); nodes owner if readiness still fails after
+valid release/config fixtures. Publication follow-up 5 is already present.
 
-Owner: devstack payment fixture. `tests/e2e/cmd/fvpn-e2e-payment/main.go`,
-`server.route`, returns empty lists for subscriptions/invoices/refunds and 404
-for unsupported details. It supports checkout and portal creation only.
+Reproduction: enroll the actual installer node, classify it to group A and
+call `PUT /admin/nodes/{id}/publication` with the current ETag. The running API
+rejects publication with `422 NODE_NOT_SERVICEABLE`; NetBird has no exit route
+and no successful member forwarding baseline exists. Raw forward-chain accept
+rules include NetBird control traffic; their count is not member authorization. Disable is accepted and its intent
+survives a node-container restart, while external application remains pending.
 
-Expected: authenticated TEST ONLY hooks for authoritative subscription, invoice,
-line-item and refund snapshots, deterministic event bytes/signing, replay and
-ordering, and cancellation/refund transitions. The real billing adapter must
-read this state. Injecting webhook payloads alone cannot prove reconciliation.
-No public provider or third-party payment traffic is authorized for this test.
+The lab has no active release-support policy or installed candidate serving
+release. The API correctly rejects an empty `serving_release_ids` array (422).
+The shared runner currently bypasses that contract with a direct `{}` policy
+insert. Supply a valid signed candidate release and support policy through the
+real interfaces, plus required isolation/DNS/meter health and member binding.
+Do not weaken readiness or treat 202, NetBird Connected, an online heartbeat,
+or a drop-only chain as proof of serving. Preserve pending versus observed
+operation state and include real controlled TCP/UDP forwarding readback.
 
-## B5 — serving node and binding follow-ups pending (AT01–AT04, AT08–AT21)
+## B6 — DNS application and missing topology (AT05, AT09, AT20, AT21)
 
-Owners: wire-nodes follow-up 5 (`apps/worker/jobs_nodes.go`, `NodeJobs`) and
-devstack follow-up 3 (`tests/e2e/scenarios_test.go`, enrollment/member setup).
-On this revision `NodeJobs` has no `node.publication_changed` registration;
-the lab runner never submits node publication. The orchestrator already owns
-these fixes; this task did not reimplement them.
+Owners: devstack (`deploy/devstack/compose.yaml`, prepare, node/member
+entrypoints), node-agent/DNS wiring (`node/agent`, `node/dns`).
 
-Expected: publish through `PUT /api/v1/admin/nodes/{node_id}/publication`, retain
-202/pending until route readback, matching node generation/ACK and actual
-forwarding are observed. Supply a controlled echo and sustained TCP/UDP endpoint
-reachable only through the member path. A baseline drop chain, `fvnb0` accepts,
-healthy heartbeat or NetBird `Connected` is not positive forwarding evidence.
+Reproduction: create canonical rules, create/activate a DNS profile, inspect
+`dns_resolver_documents` and real AdGuard `/control/filtering/status`, and query
+the actual resolver. Activation is accepted but `user_rules` stays empty; the
+requested blocked controlled name still returns A/NOERROR after bounded
+convergence. The policy operation reports desired_state_compile succeeded;
+that central operation is not a resolver ACK. Provide the
+node-agent document/application hook and authenticated resolver targets from
+`docs/dns/PUBLISH.md`; require readback, synthetic probe and matching ACK.
 
-## B6 — topology and platform hooks missing (AT05, AT09–AT21)
+Observed topology: one enrolled exit, one filtering AdGuard resolver, one
+CoreDNS upstream; member starts with `--disable-dns --disable-ipv6`. Pausing
+either resolver/upstream causes timeouts and unpause restores responses; this
+is not two-filtering-resolver failover. There is no successful exit baseline.
 
-Owner: devstack (`deploy/devstack/compose.yaml`, prepare and entrypoints).
-The current compose has one node and one AdGuard Home with CoreDNS upstream;
-CoreDNS is not a second filtering resolver with the same profile. Member
-entrypoint has `--disable-dns --disable-ipv6`. Prior gateway logs report relay
-WebSocket 404; this run did not reach a gateway.
+Provide documented hooks for three boot-source flavours, two exits, two
+filtering resolvers, native DNS, network move and policy-sync faults, controlled
+A/AAAA/CNAME/HTTPS/SVCB/rebinding zones, long TCP/UDP flows, QUIC/PMTU and forced
+relay/direct baselines. CoreDNS's root NXDOMAIN template keeps all test names
+inside the lab. Physical arm64, platforms and second physical NAT remain
+operator work, with scripts in OPERATORS.md. Prior-run relay errors are not
+claimed as reproduced here.
 
-Expected documented hooks: three join-source node variants, two independent
-exits, two controlled filtering resolvers, normal member DNS, network-change
-and resolver/policy-sync faults, controlled A/AAAA/CNAME/HTTPS/SVCB/rebinding
-zones, TCP/UDP/QUIC/PMTU fixtures and a functioning forced-relay path. Missing
-physical arm64, real clients and physical second NAT remain operator work.
+## B7 — privacy inventory, feeds and retention coverage (AT22)
 
-## B7 — candidate privacy/feed/retention fixture not supplied (AT22)
+Owners: devstack, DNS and retention operators. Live checks show disabled query
+logging/statistics, no DNS sentinel in inspected service logs/API/audit/database
+dump, and correct guarded audit purge of old versus young synthetic rows.
+There are zero active threat-feed definitions. No licensed feed refresh can be
+faulted, and no successful member URL-flow privacy baseline exists.
 
-Owners: devstack and DNS/data operators. `docs/dns/FEEDS.md` explicitly leaves
-commercial feed approval pending and `docs/dns/PUBLISH.md` says publication pins
-feed metadata but does not fetch/render feed bodies. `SourceRegistry.Ingest`
-last-good unit coverage is not proof of the running worker's update pipeline.
+Supply approved source/license inventory, controlled feed transport and a
+last-good failure hook. `docs/dns/PUBLISH.md` explicitly says feed metadata is
+pinned but feed domain bodies are not fetched/rendered. Component tests do not
+prove the running refresh pipeline. Provide retained-file/backups inventory,
+raw-usage/rollup purge fixtures and candidate log retention behavior. Keep
+financial retention and commercial feed approval explicit business decisions.
 
-Expected: candidate source/license inventory, controlled feed transport hook,
-observable failed refresh preserving the previous hash, generated browsing
-sentinels, metrics/log inventories and an isolated backup/retention fixture.
-Only the approved `purge_retained` targets may be exercised. Financial retention
-must stay a required decision. Do not invent a production license approval,
-refund rule, grace period or DNS TTL to make acceptance green.
+## B8 — configured metrics endpoint is unavailable (AT22)
+
+Owner: control composition/observability (`apps/control/server.go`,
+`internal/config.Config.MetricsAddress`), with devstack configuration owner.
+Reproduction: execute the bounded HTTP probe inside the running control
+container against its configured loopback `127.0.0.1:9091/metrics`; it fails.
+`MetricsAddress` is configured by prepare, but no control listener consumes it
+in this source. Wire the intended endpoint or document the supported metrics
+surface, then inspect actual metrics for synthetic qnames/URLs. An unavailable
+endpoint is not privacy evidence.

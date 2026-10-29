@@ -9,57 +9,306 @@
   "status": "blocked",
   "observations": [
     {
-      "name": "scope",
-      "detail": "startup prerequisite only; no live scenario executed"
+      "name": "reject noncanonical EXAMPLE.COM",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
     },
     {
-      "name": "expected",
-      "detail": "Case/dot/IDNA and label boundaries match; URL input rejects; all RR types obey block/TTL; allowlisted rebinding never opens internal networks."
+      "name": "reject noncanonical example.com.",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
     },
     {
-      "name": "actual",
-      "detail": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2."
+      "name": "reject noncanonical bücher.example.com",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
     },
     {
-      "name": "remaining_preconditions",
-      "detail": "Two filtering resolvers, controlled RR fixtures, applied policy and actual member DNS/forwarding path."
+      "name": "reject noncanonical https://example.com/path",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
     },
     {
-      "name": "source_commit",
-      "detail": "3b595de2a8f96d1e9647ee0b3843d574a75f0b05"
+      "name": "canonical rules",
+      "detail": "pass; expected: 201, immutable canonical payload; actual: HTTP 201 ; command: POST canonical A-label, include_subdomains and allow rules"
     },
     {
-      "name": "prepare_binary_sha256",
-      "detail": "9cd40d5b9c2bd0f1aaec02134974dc8686d1810f2dd87af87ab4aa3a5b8c9166"
+      "name": "duplicate and conflict rejection",
+      "detail": "pass; expected: both 409 conflict; actual: duplicate=409; conflict=409; command: POST duplicate/conflicting rules"
     },
     {
-      "name": "runtime_provenance",
-      "detail": "image digests, policy revision and node incarnation unavailable: no stack observed"
+      "name": "DNS profile",
+      "detail": "pass; expected: 201 with TEST ONLY 5-second TTL; actual: HTTP 201 ; command: POST /admin/policies dns_profile"
     },
     {
-      "name": "commands",
-      "detail": "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare ; \u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+      "name": "DNS activation",
+      "detail": "pass; expected: 202 pending external apply; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
     },
     {
-      "name": "procedure",
-      "detail": "See PROCEDURES.md and BLOCKERS.md in this directory"
+      "name": "compiled DNS documents",
+      "detail": "pass; expected: observe central publication separately from resolver apply; actual: stored_documents=1; command: SELECT count dns_resolver_documents"
+    },
+    {
+      "name": "policy operation versus resolver",
+      "detail": "pass; expected: record compilation operation separately from application; actual: latest_policy_operation=succeeded; command: SELECT operations.status for policy.activate"
+    },
+    {
+      "name": "actual resolver readback",
+      "detail": "pass; expected: record applied-rule presence; actual: API_ok=true; user_rules=0; requested_block_present=false; command: AdGuard GET /control/filtering/status"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS LAB.example.invalid. type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS sub.lab.example.invalid type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS notexample.com type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":0}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 5",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 28",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":10}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 65",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 64",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "blocked",
+      "detail": "After central publication and a 20-second apply window, activated policy is not present in real AdGuard user_rules. Node desired-state publication does not configure this shared lab resolver; no resolver apply credentials/hook are supplied. Responses above are precondition observations, not passing block/cache semantics."
+    },
+    {
+      "name": "blocked",
+      "detail": "No admitted member DNS/forwarding path and no controlled CNAME/HTTPS/SVCB/rebinding zone fixtures. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=4e500392333b00caf380ca155b7e2c722447044d; applied generation=0; incarnation=01a18a0e-3ee6-7bef-8c05-a34e115bfcac; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-29T23:11:53Z",
-  "scope": "startup prerequisite only",
+  "at": "2026-10-29T23:47:22Z",
   "build": {
-    "source_commit": "3b595de2a8f96d1e9647ee0b3843d574a75f0b05",
-    "source_dirty": false,
-    "prepare_binary_sha256": "9cd40d5b9c2bd0f1aaec02134974dc8686d1810f2dd87af87ab4aa3a5b8c9166",
-    "image_digests": [],
-    "policy_revision": null,
-    "node_incarnation": null,
-    "unavailable_reason": "No running stack observed; image, policy and incarnation provenance unavailable"
+    "source_commit": "4e500392333b00caf380ca155b7e2c722447044d",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:1f69e8a9bfa7e537ba773fc1389e45f54b05e3afb33b17c83b1eb4060dd7cb72",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:6e07dd4a8c9b4cde67bc39af7a989869d47e8fef67ed3a9df2b42e5289d1d2dd",
+      "member": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "origin": "sha256:3b69c46fd7e0edec5cf85fdd410fe5f32a416e540829646ef46bfc8b11f1f4dd",
+      "payment": "sha256:ab528e98893a9a65648dc008d92e0a245a8a5708acaadf5ed49d37f225c832f4",
+      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+      "worker": "sha256:65ef14a342f025ce3b6e4da138e7897c980e7496b32ab466072fd36081f72c28"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "7cc57a753da1f5c002e69c13ec740ec51ac01942d47d51684eac50d2d6be877a",
+      "fvpn-control": "f2daedc1a981fb638f3176bad73b8464dc705ce5a1038fb6f5d0ad3273df590f",
+      "fvpn-updater": "29f05a7834ab25d608b5d41669f6c2c66e8c7bff47913f846dfb9a2a609b1cbf",
+      "fvpn-worker": "8cc584afb350889242112e4a7a9601fb0a06b6681cb4571f2e5073541fbded5c"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      }
+    }
   },
-  "expected": "Case/dot/IDNA and label boundaries match; URL input rejects; all RR types obey block/TTL; allowlisted rebinding never opens internal networks.",
-  "actual": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2.",
-  "commands": [
-    "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare",
-    "\u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+  "policy_revision": "0",
+  "active_policy_revisions": {
+    "dns_profile": "01a18a0f-b330-7a62-b805-6c4cfc911e67"
+  },
+  "node_incarnation": "01a18a0e-3ee6-7bef-8c05-a34e115bfcac",
+  "steps": [
+    {
+      "name": "reject noncanonical EXAMPLE.COM",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-29T23:47:22Z"
+    },
+    {
+      "name": "reject noncanonical example.com.",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-29T23:47:23Z"
+    },
+    {
+      "name": "reject noncanonical bücher.example.com",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-29T23:47:24Z"
+    },
+    {
+      "name": "reject noncanonical https://example.com/path",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-29T23:47:24Z"
+    },
+    {
+      "name": "canonical rules",
+      "status": "pass",
+      "expected": "201, immutable canonical payload",
+      "actual": "HTTP 201 ",
+      "command": "POST canonical A-label, include_subdomains and allow rules",
+      "at": "2026-10-29T23:47:25Z"
+    },
+    {
+      "name": "duplicate and conflict rejection",
+      "status": "pass",
+      "expected": "both 409 conflict",
+      "actual": "duplicate=409; conflict=409",
+      "command": "POST duplicate/conflicting rules",
+      "at": "2026-10-29T23:47:26Z"
+    },
+    {
+      "name": "DNS profile",
+      "status": "pass",
+      "expected": "201 with TEST ONLY 5-second TTL",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies dns_profile",
+      "at": "2026-10-29T23:47:27Z"
+    },
+    {
+      "name": "DNS activation",
+      "status": "pass",
+      "expected": "202 pending external apply",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-29T23:47:27Z"
+    },
+    {
+      "name": "compiled DNS documents",
+      "status": "pass",
+      "expected": "observe central publication separately from resolver apply",
+      "actual": "stored_documents=1",
+      "command": "SELECT count dns_resolver_documents",
+      "at": "2026-10-29T23:47:28Z"
+    },
+    {
+      "name": "policy operation versus resolver",
+      "status": "pass",
+      "expected": "record compilation operation separately from application",
+      "actual": "latest_policy_operation=succeeded",
+      "command": "SELECT operations.status for policy.activate",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "actual resolver readback",
+      "status": "pass",
+      "expected": "record applied-rule presence",
+      "actual": "API_ok=true; user_rules=0; requested_block_present=false",
+      "command": "AdGuard GET /control/filtering/status",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "wire DNS LAB.example.invalid. type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "wire DNS sub.lab.example.invalid type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "wire DNS notexample.com type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":0}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 5",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:48Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 28",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":10}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:49Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 65",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:49Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 64",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-29T23:47:49Z"
+    }
+  ],
+  "blockers": [
+    "After central publication and a 20-second apply window, activated policy is not present in real AdGuard user_rules. Node desired-state publication does not configure this shared lab resolver; no resolver apply credentials/hook are supplied. Responses above are precondition observations, not passing block/cache semantics.",
+    "No admitted member DNS/forwarding path and no controlled CNAME/HTTPS/SVCB/rebinding zone fixtures. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20."
   ]
 }

@@ -9,62 +9,153 @@
   "status": "blocked",
   "observations": [
     {
-      "name": "scope",
-      "detail": "startup prerequisite only; no live scenario executed"
+      "name": "same-client stable identity",
+      "detail": "pass; expected: same member UUID across browser sessions; actual: same_member=true; distinct_members=true; command: IdP assume; /auth/login?role=member; GET /auth/session"
     },
     {
-      "name": "expected",
-      "detail": "Two OAuth clients map through verified identity to the correct member/device; selected exit forwards; sign-out, network change and wake recover correctly."
+      "name": "finite entitlement command",
+      "detail": "pass; expected: 202 accepted, not applied; actual: HTTP 202 ; command: POST /admin/members/{A}/grants"
     },
     {
-      "name": "actual",
-      "detail": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2."
+      "name": "member self read",
+      "detail": "pass; expected: 200; actual: HTTP 200 ; command: GET /member/me"
     },
     {
-      "name": "remaining_preconditions",
-      "detail": "Second OAuth client and native user-peer fixture; serving node and bound device; four platform runs."
+      "name": "second OAuth client precondition",
+      "detail": "pass; expected: record actual response; actual: HTTP 400 ; command: GET test IdP /authorize with native client_id"
     },
     {
-      "name": "source_commit",
-      "detail": "3b595de2a8f96d1e9647ee0b3843d574a75f0b05"
+      "name": "browser sign-out",
+      "detail": "pass; expected: session unauthenticated; actual: logout=204; authenticated=false; command: POST /auth/logout; GET /auth/session"
     },
     {
-      "name": "prepare_binary_sha256",
-      "detail": "9cd40d5b9c2bd0f1aaec02134974dc8686d1810f2dd87af87ab4aa3a5b8c9166"
+      "name": "native device precondition",
+      "detail": "pass; expected: observe real member device count; actual: member_A_devices=0; command: SELECT count(*) FROM member_devices WHERE member_id=A"
     },
     {
-      "name": "runtime_provenance",
-      "detail": "image digests, policy revision and node incarnation unavailable: no stack observed"
+      "name": "blocked",
+      "detail": "Test IdP rejects the native OAuth client (HTTP 400 ); only Portal login is available. Two-client stable-subject mapping and a native user peer cannot be proved."
     },
     {
-      "name": "commands",
-      "detail": "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare ; \u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+      "name": "blocked",
+      "detail": "No admitted native member device exists in this run; selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake have no successful forwarding baseline. Platform script: OPERATORS.md."
     },
     {
-      "name": "procedure",
-      "detail": "See PROCEDURES.md and BLOCKERS.md in this directory"
+      "name": "provenance",
+      "detail": "source=4e500392333b00caf380ca155b7e2c722447044d; applied generation=0; incarnation=01a18a0e-3ee6-7bef-8c05-a34e115bfcac; image/binary digests in JSON"
     },
     {
-      "name": "operator_status",
-      "detail": "needs operator run"
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
     }
   ],
-  "at": "2026-10-29T23:11:53Z",
-  "scope": "startup prerequisite only",
+  "at": "2026-10-29T23:45:54Z",
   "build": {
-    "source_commit": "3b595de2a8f96d1e9647ee0b3843d574a75f0b05",
-    "source_dirty": false,
-    "prepare_binary_sha256": "9cd40d5b9c2bd0f1aaec02134974dc8686d1810f2dd87af87ab4aa3a5b8c9166",
-    "image_digests": [],
-    "policy_revision": null,
-    "node_incarnation": null,
-    "unavailable_reason": "No running stack observed; image, policy and incarnation provenance unavailable"
+    "source_commit": "4e500392333b00caf380ca155b7e2c722447044d",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:1f69e8a9bfa7e537ba773fc1389e45f54b05e3afb33b17c83b1eb4060dd7cb72",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:6e07dd4a8c9b4cde67bc39af7a989869d47e8fef67ed3a9df2b42e5289d1d2dd",
+      "member": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "origin": "sha256:3b69c46fd7e0edec5cf85fdd410fe5f32a416e540829646ef46bfc8b11f1f4dd",
+      "payment": "sha256:ab528e98893a9a65648dc008d92e0a245a8a5708acaadf5ed49d37f225c832f4",
+      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+      "worker": "sha256:65ef14a342f025ce3b6e4da138e7897c980e7496b32ab466072fd36081f72c28"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "7cc57a753da1f5c002e69c13ec740ec51ac01942d47d51684eac50d2d6be877a",
+      "fvpn-control": "f2daedc1a981fb638f3176bad73b8464dc705ce5a1038fb6f5d0ad3273df590f",
+      "fvpn-updater": "29f05a7834ab25d608b5d41669f6c2c66e8c7bff47913f846dfb9a2a609b1cbf",
+      "fvpn-worker": "8cc584afb350889242112e4a7a9601fb0a06b6681cb4571f2e5073541fbded5c"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
+        "vcs.time": "2026-10-29T23:44:52Z"
+      }
+    }
   },
-  "expected": "Two OAuth clients map through verified identity to the correct member/device; selected exit forwards; sign-out, network change and wake recover correctly.",
-  "actual": "fvpn-e2e-prepare: port base must be 18000 plus a multiple of 6000; exit 2 before stack creation. Needs devstack follow-up 2.",
-  "commands": [
-    "go build -trimpath -o \u003cowned-disk-scratch\u003e/prepare ./tests/e2e/cmd/fvpn-e2e-prepare",
-    "\u003cowned-disk-scratch\u003e/prepare -state \u003cowned-disk-scratch\u003e/state -prefix w4-members -port-base 19000"
+  "policy_revision": "0",
+  "active_policy_revisions": {},
+  "node_incarnation": "01a18a0e-3ee6-7bef-8c05-a34e115bfcac",
+  "steps": [
+    {
+      "name": "same-client stable identity",
+      "status": "pass",
+      "expected": "same member UUID across browser sessions",
+      "actual": "same_member=true; distinct_members=true",
+      "command": "IdP assume; /auth/login?role=member; GET /auth/session",
+      "at": "2026-10-29T23:45:56Z"
+    },
+    {
+      "name": "finite entitlement command",
+      "status": "pass",
+      "expected": "202 accepted, not applied",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/members/{A}/grants",
+      "at": "2026-10-29T23:45:56Z"
+    },
+    {
+      "name": "member self read",
+      "status": "pass",
+      "expected": "200",
+      "actual": "HTTP 200 ",
+      "command": "GET /member/me",
+      "at": "2026-10-29T23:45:57Z"
+    },
+    {
+      "name": "second OAuth client precondition",
+      "status": "pass",
+      "expected": "record actual response",
+      "actual": "HTTP 400 ",
+      "command": "GET test IdP /authorize with native client_id",
+      "at": "2026-10-29T23:45:58Z"
+    },
+    {
+      "name": "browser sign-out",
+      "status": "pass",
+      "expected": "session unauthenticated",
+      "actual": "logout=204; authenticated=false",
+      "command": "POST /auth/logout; GET /auth/session",
+      "at": "2026-10-29T23:45:59Z"
+    },
+    {
+      "name": "native device precondition",
+      "status": "pass",
+      "expected": "observe real member device count",
+      "actual": "member_A_devices=0",
+      "command": "SELECT count(*) FROM member_devices WHERE member_id=A",
+      "at": "2026-10-29T23:45:59Z"
+    }
+  ],
+  "blockers": [
+    "Test IdP rejects the native OAuth client (HTTP 400 ); only Portal login is available. Two-client stable-subject mapping and a native user peer cannot be proved.",
+    "No admitted native member device exists in this run; selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake have no successful forwarding baseline. Platform script: OPERATORS.md."
   ],
   "operator_status": "needs operator run"
 }
