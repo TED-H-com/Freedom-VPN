@@ -188,20 +188,23 @@ func (d *Dispatcher) deadLetter(ctx context.Context, event db.ClaimedEvent, code
 	case "fleet_update":
 		resourceType = api.ResourceTypeUpdateBatch
 	}
-	if !resourceType.Valid() {
-		d.results.WithLabelValues("dead_letter_mapping_error").Inc()
-		logger := d.log
-		if logger == nil {
-			logger = slog.Default()
-		}
-		logger.ErrorContext(ctx, "outbox dead letter mapping failed", "event_id", event.ID, "error_code", "AUDIT_RESOURCE_TYPE_UNKNOWN")
-		return errors.New("unknown dead-letter aggregate type")
+	resource := api.ResourceRef{Type: resourceType, Id: event.AggregateID}
+	after := map[string]any{"dead_lettered": true}
+	fields := []string{"dead_lettered"}
+	unmapped := !resourceType.Valid()
+	if unmapped {
+		// D-040, §15.4: unknown aggregates still terminate with an audit against
+		// the fixed, seeded fleet singleton; never invent a domain resource alias.
+		resource = api.ResourceRef{Type: api.ResourceTypeFleetConfig, Id: uuid.MustParse("00000000-0000-0000-0000-000000000001")}
+		after["aggregate_type"] = event.AggregateType
+		after["aggregate_id"] = event.AggregateID.String()
+		fields = append(fields, "aggregate_type", "aggregate_id")
 	}
 	actorID, err := uuid.Parse(d.name)
 	if err != nil {
 		return errors.New("invalid worker identity")
 	}
-	auditEvent, err := audit.NewEvent(audit.Entry{Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: actorID}, Action: "outbox.dead_letter", Resource: api.ResourceRef{Type: resourceType, Id: event.AggregateID}, Result: api.AuditEventResultFailed, After: map[string]any{"dead_lettered": true}, Fields: []string{"dead_lettered"}})
+	auditEvent, err := audit.NewEvent(audit.Entry{Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: actorID}, Action: "outbox.dead_letter", Resource: resource, Result: api.AuditEventResultFailed, After: after, Fields: fields})
 	if err != nil {
 		return err
 	}
@@ -216,6 +219,14 @@ func (d *Dispatcher) deadLetter(ctx context.Context, event db.ClaimedEvent, code
 		return audit.AppendEvent(ctx, tx, auditEvent)
 	})
 	if e == nil {
+		if unmapped {
+			d.results.WithLabelValues("dead_letter_mapping_error").Inc()
+			logger := d.log
+			if logger == nil {
+				logger = slog.Default()
+			}
+			logger.ErrorContext(ctx, "outbox dead letter mapping failed", "event_id", event.ID, "error_code", "AUDIT_RESOURCE_TYPE_UNKNOWN")
+		}
 		d.results.WithLabelValues("dead_letter").Inc()
 		d.dead.Inc()
 		if d.log != nil {

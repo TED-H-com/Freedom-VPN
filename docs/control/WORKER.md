@@ -60,9 +60,20 @@ Dead-letter audit references use contract resource types (D-029). Existing contr
 names are kept; aliases map explicitly: `node-incarnation → node`,
 `device → member_device`, `billing_session → checkout_session`,
 `fleet → fleet_config`, `fleet_update → update_batch`. The aggregate UUID is
-preserved. The actor is `system` with the dispatcher's process UUID. Unknown
-aggregate types fail before any dead-letter or audit write, emit a structured
-`AUDIT_RESOURCE_TYPE_UNKNOWN` error with the event UUID and increment
-`fvpn_worker_events_total{result="dead_letter_mapping_error"}`. The invalid value
-is not logged. The lease then expires for recovery after the producer/mapping is
-fixed; the worker never acknowledges unaudited completion.
+preserved. The actor is `system` with the dispatcher's process UUID.
+
+Dead-lettering is always terminal (D-040). An unmapped aggregate type, including
+`billing_inbox`, uses the seeded singleton audit resource
+`fleet_config:00000000-0000-0000-0000-000000000001`. Its allowlisted diff contains
+`dead_lettered`, `aggregate_type` and `aggregate_id`, subject to the audit helper's
+normal redaction. No event payload or provider error is copied into the diff.
+The fenced terminal update and audit append commit together, just as for known
+resource types; an unknown mapping never causes an endless retry loop.
+
+After a fallback commits, it emits a structured `AUDIT_RESOURCE_TYPE_UNKNOWN`
+error with only the event UUID as identifying context and increments
+`fvpn_worker_events_total{result="dead_letter_mapping_error"}` as well as the
+normal dead-letter metrics. Aggregate values are not logged or used as metric
+labels. A stale claim or repeated completion attempt cannot add another audit,
+mapping signal or terminal count. The existing lease checks and transactional
+rollback still apply if persistence fails.
