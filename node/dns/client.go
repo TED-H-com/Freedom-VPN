@@ -23,11 +23,6 @@ type engines struct {
 	YouTube    bool `json:"youtube"`
 }
 
-func (e engines) all(on bool) bool {
-	return e.Bing == on && e.DuckDuckGo == on && e.Ecosia == on && e.Google == on &&
-		e.Pixabay == on && e.Yandex == on && e.YouTube == on
-}
-
 type resolverState struct {
 	Rules        []string
 	Upstreams    []string

@@ -30,7 +30,7 @@ CREATE TABLE dns_publication_heads (
     policy_generation NUMERIC(20,0) CHECK (policy_generation >= 0 AND policy_generation <= 18446744073709551615) NOT NULL,
     document_sha256 TEXT CHECK (document_sha256 ~ '^[0-9a-f]{64}$') NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('active', 'withdrawn')),
-    resource_version NUMERIC(20,0) CHECK (resource_version >= 1 AND resource_version <= 18446744073709551615) NOT NULL DEFAULT 1,
+    resource_version NUMERIC(20,0) CHECK (resource_version >= 0 AND resource_version <= 18446744073709551615) NOT NULL DEFAULT 1,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE dns_publication_heads IS 'Head pointer from a dns_profile definition to the resolver document desired state references via policy_refs (§12.5).';
