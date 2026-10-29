@@ -23,6 +23,43 @@ func vault(t *testing.T) *FileProvider {
 	}
 	return p
 }
+
+func TestSEC01_NodeTrustBundleExcludesLedgerEpoch(t *testing.T) {
+	p := vault(t)
+	ctx := context.Background()
+	for _, purpose := range []Purpose{DesiredState, Lease, Recovery, LedgerEpoch} {
+		if _, err := p.Rotate(ctx, purpose, time.Hour, time.Minute); err != nil {
+			t.Fatal(err)
+		}
+	}
+	bundle, err := p.TrustBundle(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := json.Marshal(bundle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := envelope.ParseNodeTrustStoreJSON(raw)
+	if err != nil {
+		t.Fatal("node rejected central bundle", err)
+	}
+	encoded, err := json.Marshal(parsed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var public struct {
+		Keys []envelope.TrustedKey `json:"keys"`
+	}
+	if err = json.Unmarshal(encoded, &public); err != nil || len(public.Keys) != 3 {
+		t.Fatal("node bundle lost an eligible purpose", err)
+	}
+	for _, key := range public.Keys {
+		if len(key.Purposes) != 1 || key.Purposes[0] == envelope.PurposeLedgerEpoch {
+			t.Fatal("central-only or combined purpose exported")
+		}
+	}
+}
 func TestSEC01_RotationOverlapAndRevocation(t *testing.T) {
 	ctx := context.Background()
 	p := vault(t)

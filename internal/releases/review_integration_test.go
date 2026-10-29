@@ -95,5 +95,5 @@ func TestUPD02_FailedRegistrationAndOperationEvidence(t *testing.T) {
 	if err != nil || codeErr != nil || failure.Code != code || failure.Message == "" || code != api.ErrorCode(apierr.SizeMismatch) {
 		t.Fatal(op, err, codeErr)
 	}
-	releasetest.AssertLedger(t, pool, f.Validator)
+	releasetest.AssertLedger(t, pool, f.Validator, "release.register", "release.verify")
 }

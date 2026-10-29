@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
@@ -292,14 +293,15 @@ type SetPublicationParams struct {
 }
 
 // SetPublication writes the exit's publication_intent, increments resource_version,
-// creates a pending operation with steps (`agent_policy`, `netbird_route_readback`, `data_path_probe`),
-// enqueues an outbox event, and appends an audit event in one atomic transaction (§5.2 step 1, §14.2, §15.5.5).
+// advances desired_config_generation once, creates a pending operation with steps
+// (`agent_policy`, `netbird_route_readback`, `data_path_probe`), enqueues an outbox event,
+// and appends an audit event in one atomic transaction (§5.2 step 1, §14.2, §15.5.5).
+// It opens a transaction, manages idempotency, and delegates to SetPublicationTx.
 func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (api.Operation, string, error) {
 	if p.IdempotencyKey == uuid.Nil {
 		return api.Operation{}, "", apierr.New(apierr.MalformedRequest, "Idempotency-Key header is required")
 	}
-	expectedVer, err := nodes.ParseIfMatch(p.IfMatch)
-	if err != nil {
+	if _, err := nodes.ParseIfMatch(p.IfMatch); err != nil {
 		return api.Operation{}, "", err
 	}
 	if strings.TrimSpace(p.Request.Reason) == "" {
@@ -307,23 +309,11 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 			apierr.FieldError{Field: "/reason", Reason: "required"},
 		)
 	}
-
-	var opKind string
-	switch p.Request.PublicationIntent {
-	case api.PublicationIntentPublished:
-		opKind = nodes.OpKindPublish
-	case api.PublicationIntentUnpublished:
-		opKind = nodes.OpKindUnpublish
-	case api.PublicationIntentDisabled:
-		opKind = nodes.OpKindDisable
-	default:
-		return api.Operation{}, "", apierr.Validation(
-			fmt.Sprintf("invalid publication_intent %q", p.Request.PublicationIntent),
-			apierr.FieldError{Field: "/publication_intent", Reason: "enum"},
-		)
+	if _, err := publicationOperationKind(p.Request.PublicationIntent); err != nil {
+		return api.Operation{}, "", err
 	}
 
-	actorUUID, actorType, principal := nodes.ResolveAdminActor(ctx, p.Principal)
+	_, _, principal := nodes.ResolveAdminActor(ctx, p.Principal)
 
 	reqCanon, err := canonjson.Marshal(map[string]any{
 		"node_id":            p.NodeID.String(),
@@ -372,126 +362,8 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 			return nil
 		}
 
-		nodeDetail, _, err := nodes.GetNodeTx(ctx, tx, p.NodeID)
+		op, etag, err := s.SetPublicationTx(ctx, tx, p)
 		if err != nil {
-			return err
-		}
-		exitID, exitErr := nodeDetail.ExitId.Get()
-		if exitErr != nil {
-			return apierr.Newf(apierr.StateConflict, "node %s has no exit record", p.NodeID)
-		}
-
-		// When setting intent=published, verify the node meets the serving baseline (§5.1, §14.2).
-		if p.Request.PublicationIntent == api.PublicationIntentPublished {
-			var appliedGen uint64
-			if gen, err := nodeDetail.ConfigGeneration.Applied.Get(); err == nil {
-				appliedGen = uint64(gen)
-			}
-			var currentReleaseID *uuid.UUID
-			if id, err := nodeDetail.Releases.CurrentReleaseId.Get(); err == nil {
-				currentReleaseID = &id
-			}
-			if err := nodes.CheckPublishable(nodes.ServingReadiness{
-				LifecycleState:          nodeDetail.LifecycleState,
-				ProvisioningState:       nodeDetail.ProvisioningState,
-				PublicationIntent:       p.Request.PublicationIntent,
-				ControlStatus:           nodeDetail.ControlStatus,
-				SafetyStatus:            nodeDetail.SafetyStatus,
-				DataHealth:              nodeDetail.DataHealth,
-				DesiredConfigGeneration: uint64(nodeDetail.ConfigGeneration.Desired),
-				AppliedConfigGeneration: appliedGen,
-				CurrentReleaseID:        currentReleaseID,
-			}); err != nil {
-				return err
-			}
-		}
-
-		// Optimistic concurrency check on nodes.resource_version (§14.5).
-		newVer, err := db.UpdateWithVersion(ctx, tx, "nodes", p.NodeID, expectedVer, map[string]any{
-			"updated_at": s.now().UTC(),
-		})
-		if err != nil {
-			if errors.Is(err, db.ErrVersionConflict) {
-				var currentVer string
-				if qErr := tx.QueryRow(ctx, `SELECT resource_version::text FROM nodes WHERE id = $1`, p.NodeID).Scan(&currentVer); qErr == nil {
-					return apierr.New(apierr.ResourceVersionConflict, "If-Match version does not match current resource_version").
-						WithDetail("current_resource_version", currentVer)
-				}
-			}
-			return err
-		}
-
-		// Update exits.publication_intent (which lives only on exits, §15.3).
-		if _, err := tx.Exec(ctx, `
-			UPDATE exits
-			SET publication_intent = $1,
-			    resource_version = resource_version + 1
-			WHERE id = $2`,
-			string(p.Request.PublicationIntent), exitID); err != nil {
-			return err
-		}
-
-		now := s.now().UTC()
-		nextGen := uint64(nodeDetail.ConfigGeneration.Desired) + 1
-		op, err := nodes.CreateOperation(ctx, tx, nodes.CreateOperationParams{
-			Kind:              opKind,
-			Principal:         principal,
-			ResourceType:      "node",
-			ResourceID:        p.NodeID,
-			ResourceVersion:   &newVer,
-			RequestID:         p.RequestID,
-			DesiredGeneration: &nextGen,
-			Now:               now,
-		})
-		if err != nil {
-			return err
-		}
-
-		payload, _ := json.Marshal(map[string]any{
-			"node_id":            p.NodeID.String(),
-			"exit_id":            exitID.String(),
-			"operation_id":       op.OperationId.String(),
-			"publication_intent": string(p.Request.PublicationIntent),
-			"desired_generation": strconv.FormatUint(nextGen, 10),
-			"resource_version":   newVer,
-			"occurred_at":        now.Format(time.RFC3339Nano),
-		})
-		if err := db.EnqueueOutbox(ctx, tx, db.OutboxEvent{
-			AggregateID:      p.NodeID,
-			AggregateType:    "node",
-			AggregateVersion: newVer,
-			EventType:        desiredstate.EventNodePublicationChanged,
-			SchemaVersion:    1,
-			Payload:          payload,
-		}); err != nil {
-			return err
-		}
-
-		reason := strings.TrimSpace(p.Request.Reason)
-		beforeJSON, _ := json.Marshal(map[string]any{
-			"publication_intent":   string(nodeDetail.PublicationIntent),
-			"publication_observed": string(nodeDetail.PublicationObserved),
-			"resource_version":     nodeDetail.ResourceVersion.String(),
-		})
-		afterJSON, _ := json.Marshal(map[string]any{
-			"publication_intent":   string(p.Request.PublicationIntent),
-			"publication_observed": string(nodeDetail.PublicationObserved),
-			"operation_id":         op.OperationId.String(),
-			"reason":               reason,
-			"resource_version":     newVer,
-		})
-		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-			Actor:         actorUUID.String(),
-			ActorType:     actorType,
-			Action:        opKind,
-			Resource:      "exit:" + exitID.String(),
-			Result:        "succeeded",
-			RequestID:     p.RequestID,
-			OperationID:   &op.OperationId,
-			SchemaVersion: 1,
-			Before:        beforeJSON,
-			After:         afterJSON,
-		}); err != nil {
 			return err
 		}
 
@@ -506,13 +378,240 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 		}
 
 		outOp = op
-		outETag = nodes.FormatETag(newVer)
+		outETag = etag
 		return nil
 	})
 	if err != nil {
 		return api.Operation{}, "", err
 	}
 	return outOp, outETag, nil
+}
+
+// SetPublicationTx executes the publication change inside the caller's transaction (§5.2 step 1, §14.2, §15.5.5).
+//
+// Invariants enforced:
+//   - Locks `nodes` before `exits` (`FOR UPDATE OF n, e`, nodes before exits) and checks `If-Match` under the row lock.
+//   - Verifies serving readiness when `publication_intent == published`.
+//   - Writes `exits.publication_intent`, bumps `nodes.resource_version` and `exits.resource_version`, and advances `nodes.desired_config_generation` exactly once per accepted change.
+//   - Creates a pending operation (`node.publish` with `agent_policy`, `netbird_route_readback`, `data_path_probe`; `node.unpublish`; `node.disable`).
+//   - Enqueues the `node.publication_changed` outbox event and appends an `exit:<uuid>` audit event through `audit.NewEvent`/`audit.AppendEvent`.
+func (s *Service) SetPublicationTx(ctx context.Context, tx pgx.Tx, p SetPublicationParams) (api.Operation, string, error) {
+	expectedVer, err := nodes.ParseIfMatch(p.IfMatch)
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+	reason := strings.TrimSpace(p.Request.Reason)
+	if reason == "" {
+		return api.Operation{}, "", apierr.Validation("reason is required",
+			apierr.FieldError{Field: "/reason", Reason: "required"},
+		)
+	}
+	opKind, err := publicationOperationKind(p.Request.PublicationIntent)
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+
+	actorUUID, actorType, principal := nodes.ResolveAdminActor(ctx, p.Principal)
+	reqID := p.RequestID
+	if reqID == nil {
+		if rawReqID, ok := apierr.RequestIDFromContext(ctx); ok {
+			if parsed, pErr := uuid.Parse(rawReqID); pErr == nil && parsed != uuid.Nil {
+				reqID = &parsed
+			}
+		}
+	} else if *reqID == uuid.Nil {
+		reqID = nil
+	}
+
+	// Lock nodes before exits (`FOR UPDATE OF n, e`, §15.3, docs/db/README.md).
+	var nodeExists bool
+	if err := tx.QueryRow(ctx, `SELECT true FROM nodes n WHERE n.id = $1 FOR UPDATE OF n`, p.NodeID).Scan(&nodeExists); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return api.Operation{}, "", apierr.Newf(apierr.ResourceNotFound, "node %s not found", p.NodeID)
+		}
+		return api.Operation{}, "", err
+	}
+
+	var (
+		currentVerStr string
+		currentGenStr string
+		exitID        uuid.UUID
+		oldIntent     string
+		oldObserved   string
+	)
+	if err := tx.QueryRow(ctx, `
+		SELECT n.resource_version::text, n.desired_config_generation::text, e.id, e.publication_intent, e.publication_observed
+		FROM nodes n
+		JOIN exits e ON e.node_id = n.id
+		WHERE n.id = $1
+		FOR UPDATE OF n, e`, p.NodeID).Scan(&currentVerStr, &currentGenStr, &exitID, &oldIntent, &oldObserved); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return api.Operation{}, "", apierr.Newf(apierr.StateConflict, "node %s has no exit record", p.NodeID)
+		}
+		return api.Operation{}, "", err
+	}
+
+	// Check If-Match under the row lock (§14.5).
+	currentVer, err := strconv.ParseUint(currentVerStr, 10, 64)
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+	if currentVerStr != expectedVer {
+		return api.Operation{}, "", apierr.New(apierr.ResourceVersionConflict, "If-Match version does not match current resource_version").
+			WithDetail("current_resource_version", currentVerStr)
+	}
+
+	nodeDetail, _, err := nodes.GetNodeTx(ctx, tx, p.NodeID)
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+
+	// When setting intent=published, verify the node meets the serving baseline (§5.1, §14.2).
+	if p.Request.PublicationIntent == api.PublicationIntentPublished {
+		var appliedGen uint64
+		if gen, err := nodeDetail.ConfigGeneration.Applied.Get(); err == nil {
+			appliedGen = uint64(gen)
+		}
+		var currentReleaseID *uuid.UUID
+		if id, err := nodeDetail.Releases.CurrentReleaseId.Get(); err == nil {
+			currentReleaseID = &id
+		}
+		if err := nodes.CheckPublishable(nodes.ServingReadiness{
+			LifecycleState:          nodeDetail.LifecycleState,
+			ProvisioningState:       nodeDetail.ProvisioningState,
+			PublicationIntent:       p.Request.PublicationIntent,
+			ControlStatus:           nodeDetail.ControlStatus,
+			SafetyStatus:            nodeDetail.SafetyStatus,
+			DataHealth:              nodeDetail.DataHealth,
+			DesiredConfigGeneration: uint64(nodeDetail.ConfigGeneration.Desired),
+			AppliedConfigGeneration: appliedGen,
+			CurrentReleaseID:        currentReleaseID,
+		}); err != nil {
+			return api.Operation{}, "", err
+		}
+	}
+
+	now := s.now().UTC()
+	currentGen, err := strconv.ParseUint(currentGenStr, 10, 64)
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+	nextGen := currentGen + 1
+	nextGenStr := strconv.FormatUint(nextGen, 10)
+	newVer := strconv.FormatUint(currentVer+1, 10)
+
+	// Advance desired_config_generation once and bump resource_version on nodes.
+	if _, err := tx.Exec(ctx, `
+		UPDATE nodes
+		SET desired_config_generation = $2::numeric,
+		    resource_version = $3::numeric,
+		    updated_at = $4
+		WHERE id = $1`,
+		p.NodeID, nextGenStr, newVer, now); err != nil {
+		return api.Operation{}, "", err
+	}
+
+	// Update exits.publication_intent (which lives only on exits, §15.3).
+	if _, err := tx.Exec(ctx, `
+		UPDATE exits
+		SET publication_intent = $1,
+		    resource_version = resource_version + 1
+		WHERE id = $2`,
+		string(p.Request.PublicationIntent), exitID); err != nil {
+		return api.Operation{}, "", err
+	}
+
+	op, err := nodes.CreateOperation(ctx, tx, nodes.CreateOperationParams{
+		Kind:              string(opKind),
+		Principal:         principal,
+		ResourceType:      "node",
+		ResourceID:        p.NodeID,
+		ResourceVersion:   &newVer,
+		RequestID:         reqID,
+		DesiredGeneration: &nextGen,
+		Now:               now,
+	})
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+
+	payload, _ := json.Marshal(map[string]any{
+		"node_id":            p.NodeID.String(),
+		"exit_id":            exitID.String(),
+		"operation_id":       op.OperationId.String(),
+		"publication_intent": string(p.Request.PublicationIntent),
+		"desired_generation": nextGenStr,
+		"resource_version":   newVer,
+		"occurred_at":        now.Format(time.RFC3339Nano),
+	})
+	if err := db.EnqueueOutbox(ctx, tx, db.OutboxEvent{
+		AggregateID:      p.NodeID,
+		AggregateType:    "node",
+		AggregateVersion: newVer,
+		EventType:        desiredstate.EventNodePublicationChanged,
+		SchemaVersion:    1,
+		Payload:          payload,
+	}); err != nil {
+		return api.Operation{}, "", err
+	}
+
+	auditEv, err := audit.NewEvent(audit.Entry{
+		Actor: audit.Actor{
+			Type: api.AuditEventActorType(actorType),
+			ID:   actorUUID,
+		},
+		Action: string(opKind),
+		Resource: api.ResourceRef{
+			Type: api.ResourceTypeExit,
+			Id:   exitID,
+		},
+		Result:      api.AuditEventResultSucceeded,
+		OperationID: &op.OperationId,
+		RequestID:   reqID,
+		Before: map[string]any{
+			"publication_intent":   oldIntent,
+			"publication_observed": oldObserved,
+			"resource_version":     currentVerStr,
+		},
+		After: map[string]any{
+			"publication_intent":   string(p.Request.PublicationIntent),
+			"publication_observed": oldObserved,
+			"operation_id":         op.OperationId.String(),
+			"reason":               reason,
+			"resource_version":     newVer,
+		},
+		Fields: []string{
+			"publication_intent",
+			"publication_observed",
+			"operation_id",
+			"reason",
+			"resource_version",
+		},
+	})
+	if err != nil {
+		return api.Operation{}, "", err
+	}
+	if err := audit.AppendEvent(ctx, tx, auditEv); err != nil {
+		return api.Operation{}, "", err
+	}
+
+	return op, nodes.FormatETag(newVer), nil
+}
+
+func publicationOperationKind(intent api.PublicationIntent) (api.OperationKind, error) {
+	switch intent {
+	case api.PublicationIntentPublished:
+		return api.OperationKindNodePublish, nil
+	case api.PublicationIntentUnpublished:
+		return api.OperationKindNodeUnpublish, nil
+	case api.PublicationIntentDisabled:
+		return api.OperationKindNodeDisable, nil
+	default:
+		return "", apierr.Validation(
+			fmt.Sprintf("invalid publication_intent %q", intent),
+			apierr.FieldError{Field: "/publication_intent", Reason: "enum"},
+		)
+	}
 }
 
 // ExecuteOperation runs or retries the worker job for a node publication/withdrawal operation

@@ -3,6 +3,7 @@ package usage
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -76,6 +77,24 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 		}
 		if tag.RowsAffected() == 0 {
 			return fmt.Errorf("usage: usage_ledger_state singleton missing")
+		}
+		actID, actType := auditActor(actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"mode":   string(LedgerModeFrozen),
+			"reason": reason,
+			"actor":  actor,
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage_ledger.freeze",
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Result:        string(api.AuditEventResultSucceeded),
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append freeze audit: %w", err)
 		}
 		return nil
 	})
@@ -254,6 +273,29 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 			return fmt.Errorf("usage: update usage_ledger_state for recovery: %w", err)
 		}
 
+		actID, actType := auditActor(req.Actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"recovery_id":           recoveryID.String(),
+			"previous_ledger_epoch": prevEpoch.String(),
+			"new_ledger_epoch":      newEpoch.String(),
+			"mode":                  string(LedgerModeReconciling),
+			"reason":                req.Reason,
+			"actor":                 req.Actor,
+			"recomputed_streams":    len(streams),
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage_ledger.begin_recovery",
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Result:        string(api.AuditEventResultSucceeded),
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append begin_recovery audit: %w", err)
+		}
+
 		result = RecoveryState{
 			RecoveryID:          recoveryID,
 			PreviousLedgerEpoch: prevEpoch,
@@ -310,6 +352,24 @@ func (s *Service) CompleteRecovery(ctx context.Context, actor string) error {
 			WHERE id = $1
 		`, ledgerStateSingletonID, string(LedgerModeNormal), actor, now); err != nil {
 			return fmt.Errorf("usage: set ledger mode normal: %w", err)
+		}
+		actID, actType := auditActor(actor)
+		afterBytes, _ := json.Marshal(map[string]any{
+			"mode":         string(LedgerModeNormal),
+			"ledger_epoch": state.LedgerEpoch.String(),
+			"actor":        actor,
+		})
+		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
+			Actor:         actID,
+			ActorType:     actType,
+			Action:        "usage_ledger.complete_recovery",
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Result:        string(api.AuditEventResultSucceeded),
+			SchemaVersion: 1,
+			Before:        []byte(`{}`),
+			After:         afterBytes,
+		}); err != nil {
+			return fmt.Errorf("usage: append complete_recovery audit: %w", err)
 		}
 		return nil
 	})
@@ -660,4 +720,17 @@ func markReplayUnavailableOnRollupsInTx(
 		}
 	}
 	return nil
+}
+
+const systemActorUUID = "00000000-0000-0000-0000-000000000003"
+
+func auditActor(actor string) (string, string) {
+	trimmed := strings.TrimSpace(actor)
+	if id, err := uuid.Parse(trimmed); err == nil {
+		if id.String() == systemActorUUID || id == uuid.Nil {
+			return systemActorUUID, string(api.AuditEventActorTypeSystem)
+		}
+		return id.String(), string(api.AuditEventActorTypeAdmin)
+	}
+	return systemActorUUID, string(api.AuditEventActorTypeSystem)
 }

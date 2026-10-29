@@ -6,7 +6,7 @@ Implement only the methods your domain owns from
 `apps/control/handlers.go`'s `Domains()` list, following the
 [composition seam](COMPOSITION.md). The domain returns handler sets and any
 request middleware; only the shared server calls `httpapi.Compose`/`httpapi.New`. Overlapping methods cause a
-startup error. Unimplemented methods keep the transitional INTERNAL_ERROR/501
+startup error. Unimplemented methods keep the transitional NOT_IMPLEMENTED/501
 fallback. Wave 3 domain wiring must remove every fallback; no contract change is
 needed for this transition.
 
@@ -18,6 +18,13 @@ another transaction or perform an external call. Record the result with
 or a returned error rolls back all local effects. Command handlers without Replay
 fail closed. Replay runs after the reservation transaction commits and must read
 current persisted state under the original caller's authorization.
+
+`httpapi.CommandRecord(ctx) (db.IdempotencyRecord, bool)` returns the framework's
+exact reservation, including `ID` and `Expiry`, inside that command transaction.
+It returns false outside a new keyed command, including unkeyed Agent handlers
+and replay callbacks; `Replay` receives the completed record as its argument.
+Do not query for the reservation by principal/method/key: that omits the route
+from the scope and can select another command's record (§14.5).
 
 This worked adapter is suitable for a domain service that performs a node command
 in the caller's transaction. The service checks If-Match under a row lock, writes
@@ -105,7 +112,13 @@ installer secret. The framework additionally strips the token and forces the fla
 false on enrollment replays. The original token must never enter the idempotency record.
 Other replay handlers likewise re-read resources and recheck ownership. These are
 domain hooks because the framework cannot know resource semantics or reproduce a
-one-time secret safely. Do not cache serialized response bodies.
+one-time secret safely. When a domain requires a durable nonsecret first-response
+receipt (for example usage batch results), use `record, ok := httpapi.CommandRecord(ctx)`
+and require `ok`. Persist it in the command transaction, keyed by `record.ID`,
+with exactly `record.Expiry`. Replays read
+it by the passed record ID and recheck authorization; the body expires with the
+record. Never persist secret-bearing responses or extend a receipt's replay
+lifetime beyond its reservation.
 
 `httpapi.ETag(resourceVersion)` creates a strong decimal-string ETag.
 `CheckIfMatch(header, current)` returns 428 when absent and 412 with
@@ -126,3 +139,21 @@ never expose SQL, driver or provider errors in error messages/details.
 Agent handlers without Idempotency-Key own their normal domain transaction. When
 an agent key is supplied, reuse `Transaction(ctx)` instead; do not open an inner
 transaction. The same service can accept a transaction parameter from either path.
+
+### Agent receipt exception (D-029 follow-up)
+
+`SetResult` normally requires an `OperationID` for every 202 operator command.
+The only receipt exception is an authenticated Agent submitting
+`POST /api/v1/agent/observations` or `POST /api/v1/agent/update-results`. These are
+called `submitNodeObservation` / `submitNodeUpdateResult` in the wiring task;
+the current generated strict methods are `SubmitObservation` / `SubmitUpdateResult`
+(OpenAPI operation IDs `submitObservation` / `submitUpdateResult`). For these two
+methods, a keyed command may set `ResponseStatus: 202` with `OperationID: nil` and
+a nonnil `ResourceID` pointing to the durable observation/result receipt. Store
+it in `Transaction(ctx)` and implement `Replay` to re-read that receipt under the
+certificate identity, returning the same generated 202 receipt response. The
+middleware commits the reference and response status together and never invents
+an operation. All other 202 commands, including any operator principal, retain
+the operation requirement. Unkeyed Agent submissions use the domain transaction
+and return their generated receipt directly; `SetResult` requires a keyed command
+context. This exception does not authorize submission through the public listener.

@@ -14,7 +14,7 @@ Test keys in `contracts/vectors/test-keys.json` are labeled `TEST ONLY - NOT A S
 
 `verify` checks the envelope against a public trust store at a chosen time. The trust window is half-open `[not_before, not_after)`. A revoked, expired, not-yet-valid or wrong-purpose key fails closed. Optional `-artifact arch=path` checks that file's size and SHA-256 against the manifest.
 
-`package` writes a reproducible `tar.zst` of a release tree: paths are sorted, owners are root, mtimes are the value passed in, and the zstd encoder uses one thread, a fixed window and a CRC. Symlinks and device files are rejected at pack time. The updater rejects them again at extract time.
+`package` writes a reproducible `tar.zst` of a release tree: paths are sorted, owners are root, mtimes are the value passed in, and the zstd encoder uses one thread, a fixed window and a CRC. A release tree contains only regular files and directories (D-047). Symlinks, hard links and device files are rejected at pack time with an error that names the path, so the failure happens on the build machine and not on a node. The updater rejects symlinks, hard links and devices again at extract time. A directory entry that cleans to `.` is the archive root. Any other `.` or `..` segment is rejected at extract time.
 
 The artifact format is `tar.zst` because that is the only value in the manifest schema. The standard library has no zstd decoder. The encoder and decoder are `github.com/klauspost/compress` (BSD-3-Clause, pure Go). The pin is the latest stable release at the time this package was added.
 

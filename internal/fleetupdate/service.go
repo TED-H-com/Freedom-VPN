@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
@@ -161,9 +162,10 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 		if e != nil {
 			return e
 		}
+		requestID := commandtx.RequestID(ctx)
 		op, e := operations.Create(ctx, tx, operations.CreateRequest{
 			Kind: api.OperationKindUpdateBatchCreate, Principal: auth.Principal{Role: auth.Admin, ID: c.ActorID},
-			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, RequestID: commandtx.RequestID(ctx),
+			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, RequestID: requestID,
 			DesiredGeneration: &desiredGeneration,
 			Steps:             map[string]operations.Step{"snapshot": {Required: true}, "targets": {Required: true}},
 		})
@@ -191,7 +193,16 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 		if e = notify(ctx, tx, batch, "fleet.update_created"); e != nil {
 			return e
 		}
-		if e = releases.Audit(ctx, tx, c.ActorID, api.AuditEventActorTypeAdmin, "update_batch.create", api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, &op, api.AuditEventResultSucceeded, map[string]any{"target_count": len(nodes), "release_id": r.ReleaseId, "reason": r.Reason}); e != nil {
+		event, e := audit.NewEvent(audit.Entry{
+			Actor: audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: c.ActorID}, Action: "update_batch.create",
+			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, Result: api.AuditEventResultSucceeded,
+			OperationID: &op, RequestID: &requestID,
+			After: map[string]any{"target_count": len(nodes), "release_id": r.ReleaseId}, Fields: []string{"target_count", "release_id"},
+		})
+		if e != nil {
+			return e
+		}
+		if e = audit.AppendEvent(ctx, tx, event); e != nil {
 			return e
 		}
 		if e = recomputeAll(ctx, tx); e != nil {

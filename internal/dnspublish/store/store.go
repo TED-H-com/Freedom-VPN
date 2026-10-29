@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
@@ -141,7 +142,7 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 		if err != nil {
 			return err
 		}
-		if err := writeAudit(ctx, tx, operationID, defID, "dns.publish", gen, compiled.Hash, statusActive, advanced); err != nil {
+		if err := writeAudit(ctx, tx, operationID, defID, revID, "dns.publish", api.AuditEventResultSucceeded, gen, compiled.Hash, statusActive, advanced); err != nil {
 			return err
 		}
 		if err := noteOperation(ctx, tx, operationID, gen, compiled.Hash, statusActive); err != nil {
@@ -175,7 +176,7 @@ func (p *Publisher) withdraw(ctx context.Context, defID, revID uuid.UUID, gen de
 		if err != nil {
 			return err
 		}
-		if err := writeAudit(ctx, tx, operationID, defID, "dns.withdraw", gen, hash, statusWithdrawn, advanced); err != nil {
+		if err := writeAudit(ctx, tx, operationID, defID, revID, "dns.withdraw", api.AuditEventResultSucceeded, gen, hash, statusWithdrawn, advanced); err != nil {
 			return err
 		}
 		return noteOperation(ctx, tx, operationID, gen, hash, statusWithdrawn)
@@ -450,39 +451,60 @@ func advanceHead(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, gen dec
 	return true, nil
 }
 
-func writeAudit(ctx context.Context, tx pgx.Tx, operationID string, defID uuid.UUID, action string, gen decstr.U64, hash, status string, advanced bool) error {
-	var op *uuid.UUID
+func writeAudit(ctx context.Context, tx pgx.Tx, operationID string, defID, revID uuid.UUID, action string, result api.AuditEventResult, gen decstr.U64, hash, status string, advanced bool) error {
+	var op, requestID *uuid.UUID
 	if operationID != "" {
 		id, err := uuid.Parse(operationID)
 		if err != nil {
 			return fmt.Errorf("operation_id: %w", err)
 		}
 		op = &id
+		var req *uuid.UUID
+		err = tx.QueryRow(ctx, `SELECT request_id FROM operations WHERE id = $1`, id).Scan(&req)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+		if req != nil && *req != uuid.Nil {
+			requestID = req
+		}
 	}
 	head := "unchanged"
 	if advanced {
 		head = "advanced"
 	}
-	after, err := json.Marshal(map[string]string{
-		"policy_generation": gen.String(),
-		"document_sha256":   hash,
-		"status":            status,
-		"head":              head,
-	})
-	if err != nil {
-		return err
+	// The definition owns the publication head. The revision owns the document,
+	// so it is a second subject rather than a bare id inside the definition row.
+	after := map[string]any{
+		"definition_id":       defID.String(),
+		"profile_revision_id": revID.String(),
+		"policy_generation":   gen.String(),
+		"document_sha256":     hash,
+		"status":              status,
+		"head":                head,
 	}
-	return db.AppendAudit(ctx, tx, db.AuditEvent{
-		Actor:         "system",
-		ActorType:     "system",
-		Action:        action,
-		Resource:      defID.String(),
-		OperationID:   op,
-		Result:        "succeeded",
-		SchemaVersion: 1,
-		Before:        []byte(`{}`),
-		After:         after,
-	})
+	fields := []string{"definition_id", "profile_revision_id", "policy_generation", "document_sha256", "status", "head"}
+	for _, resource := range []api.ResourceRef{
+		{Type: api.ResourceTypePolicyDefinition, Id: defID},
+		{Type: api.ResourceTypePolicyRevision, Id: revID},
+	} {
+		event, err := audit.NewEvent(audit.Entry{
+			Actor:       audit.SystemActor,
+			Action:      action,
+			Resource:    resource,
+			Result:      result,
+			OperationID: op,
+			RequestID:   requestID,
+			After:       after,
+			Fields:      fields,
+		})
+		if err != nil {
+			return err
+		}
+		if err := audit.AppendEvent(ctx, tx, event); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func noteOperation(ctx context.Context, tx pgx.Tx, operationID string, gen decstr.U64, hash, status string) error {

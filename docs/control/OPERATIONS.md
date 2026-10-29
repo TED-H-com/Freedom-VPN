@@ -3,6 +3,11 @@
 `operations.Create` belongs in the transaction that writes desired state and its
 outbox (§14.5, §15.5). Supply a central request ID, principal, resource reference,
 optional decimal-string resource version/desired generation and 1–64 named steps.
+`Create` validates `api.OperationKind.Valid()` and `api.ResourceType.Valid()`;
+these generated enums are authoritative (D-029), including revision 3's
+`node.enroll` and `member.device_authorize` kinds.
+The helper stores `Principal.Scope()`; domains must not write bare UUID principals.
+Creation/transition helpers live in `internal/operations/commands.go`.
 At least one step must be required; optional-only work is rejected. Operations
 are inserted as pending, and required steps start pending. Every omitted external
 effect must instead be an explicit `Required:false` step with a reason; it becomes `not_required`.
@@ -15,6 +20,12 @@ The database independently enforces required-step evidence. Observed generation
 cannot decrease or exceed this operation's desired generation. Finished successful
 or superseded operations cannot be changed, including their evidence and metadata.
 All operation rows are protected against DELETE/TRUNCATE (DB F-10).
+A failed transition needs a valid `api.ErrorCode`. It records that code on the step
+and persists a deterministic top-level code with a fixed safe message. Retrying
+clears obsolete errors; any other failed step remains represented. `Store.Get`
+uses step errors first, then stored `error_code`/`error_message` for failed or
+partially succeeded operations whose producer omitted the step code. Producers
+must store safe user-facing messages, never raw SQL/provider errors.
 
 Status is derived from required steps: all pending → pending; started/incomplete
 → running; all successful → succeeded; terminal failures with successful steps →
@@ -34,11 +45,36 @@ of the target resource's version, not an operation revision. Step transitions le
 that snapshot unchanged. Mutable domain resources must increment their own version
 on every UPDATE, including metadata changes (DB F-14, §15.1).
 
-`audit.Append` wraps `db.AppendAudit` within the caller's transaction. Supply the
-actor UUID/type, dotted action, `resource_type:uuid`, request/operation IDs and
-result. Its diff includes only explicitly allowlisted changed fields, with recursive
-secret-name redaction. Never allowlist raw provider payloads, browser history or
-unbounded free text. Audit is append-only under the existing DB guards.
+D-029 domain writes use `audit.NewEvent(audit.Entry{...})` followed by
+`audit.AppendEvent(ctx, tx, event)`. The constructor validates the generated actor,
+resource and result enums, nonzero UUIDs, dotted action and optional correlation
+IDs, then copies and redacts only `Fields`-allowlisted before/after differences.
+The resulting `Event` is opaque; an unconstructed zero value cannot be appended.
+Existing `audit.Append` remains a low-level compatibility API; migrate domain
+writers rather than loosening the audit reader.
+
+```go
+event, err := audit.NewEvent(audit.Entry{
+    Actor: audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: principal.ID},
+    Action: "node.update",
+    Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: nodeID},
+    Result: api.AuditEventResultSucceeded,
+    RequestID: &requestID, OperationID: &operationID,
+    Before: before, After: after, Fields: []string{"enabled"},
+})
+if err != nil { return err }
+return audit.AppendEvent(ctx, tx, event)
+```
+
+`accepted` is not an audit result. A successfully committed asynchronous command
+can audit `succeeded` for local acceptance while its operation stays pending.
+Agent actors use type `node` with the node UUID. Internal system work uses
+`audit.SystemActor`, the D-029 actor with type `system` and singleton UUID
+`00000000-0000-0000-0000-000000000003`. Pass it directly as `Entry.Actor`; use
+`audit.SystemActor.ID` for other references to this identity. Treat the exported
+value as read-only and never populate it from request input.
+Never allowlist raw provider payloads, browser history or
+unbounded free text. Audit stays append-only under the existing DB guards.
 
 The Admin audit endpoint supports resource type/ID, actor ID, request ID and
 half-open time filters. Pages default to 50 and cap at 100. Ordering is descending

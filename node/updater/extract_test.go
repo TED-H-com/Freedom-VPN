@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/klauspost/compress/zstd"
 )
 
@@ -97,5 +99,99 @@ func TestUPD_ExtractRejectsRelativeSymlink(t *testing.T) {
 	}
 	if _, statErr := os.Lstat(filepath.Join(dest, "bin/link")); !os.IsNotExist(statErr) {
 		t.Fatalf("symlink left behind: %v", statErr)
+	}
+}
+
+func TestUPD_ExtractExactInstalledSize(t *testing.T) {
+	root := t.TempDir()
+	tree := filepath.Join(root, "tree")
+	if err := os.MkdirAll(filepath.Join(tree, "bin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	agent := bytes.Repeat([]byte("A"), 4000)
+	updater := bytes.Repeat([]byte("U"), 4000)
+	readme := []byte("Freedom VPN release notes\n")
+	if err := os.WriteFile(filepath.Join(tree, "bin", "fvpn-agent"), agent, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tree, "bin", "fvpn-updater"), updater, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tree, "README"), readme, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	installed := int64(len(agent) + len(updater) + len(readme))
+	arc := filepath.Join(root, "release.tar.zst")
+	if err := release.PackageDir(tree, arc, time.Unix(1_700_000_000, 0).UTC()); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(arc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dest := filepath.Join(root, "out")
+	if err := ExtractArchive(bytes.NewReader(raw), dest, ExtractOptions{MaxBytes: installed}); err != nil {
+		t.Fatal(err)
+	}
+	if got := fileBytes(t, filepath.Join(dest, "bin", "fvpn-agent")); !bytes.Equal(got, agent) {
+		t.Fatalf("agent bytes %d", len(got))
+	}
+}
+
+func TestUPD_ExtractRejectsInternalDotDot(t *testing.T) {
+	dest := filepath.Join(t.TempDir(), "out")
+	err := ExtractArchive(packTar(t, []tarMember{
+		{name: "bin/sub/../fvpn-agent", body: "agent", mode: 0o755},
+	}), dest, ExtractOptions{MaxBytes: 1024})
+	if err == nil {
+		t.Fatal("internal .. was extracted")
+	}
+	if _, statErr := os.Stat(filepath.Join(dest, "bin", "fvpn-agent")); !os.IsNotExist(statErr) {
+		t.Fatalf("cleaned member exists: %v", statErr)
+	}
+	err = ExtractArchive(packTar(t, []tarMember{
+		{name: "bin/./x", body: "x"},
+	}), dest, ExtractOptions{MaxBytes: 1024})
+	if err == nil {
+		t.Fatal("internal . was extracted")
+	}
+}
+
+func TestUPD_ExtractAcceptsDotSlashFile(t *testing.T) {
+	dest := filepath.Join(t.TempDir(), "out")
+	err := ExtractArchive(packTar(t, []tarMember{
+		{name: "./bin/x", body: "ok", mode: 0o644},
+	}), dest, ExtractOptions{MaxBytes: 1024})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(fileBytes(t, filepath.Join(dest, "bin", "x"))); got != "ok" {
+		t.Fatalf("body %q", got)
+	}
+}
+
+func TestUPD_ExtractAcceptsDotRoot(t *testing.T) {
+	raw := packTar(t, []tarMember{
+		{name: "./", typ: tar.TypeDir, mode: 0o755},
+		{name: "./bin/", typ: tar.TypeDir, mode: 0o755},
+		{name: "./bin/fvpn-agent", body: "agent", mode: 0o755},
+	})
+	dest := filepath.Join(t.TempDir(), "out")
+	if err := ExtractArchive(raw, dest, ExtractOptions{MaxBytes: 1 << 20}); err != nil {
+		t.Fatal(err)
+	}
+	if got := string(fileBytes(t, filepath.Join(dest, "bin", "fvpn-agent"))); got != "agent" {
+		t.Fatalf("body %q", got)
+	}
+}
+
+func TestUPD_ExtractRejectsHardLink(t *testing.T) {
+	dest := filepath.Join(t.TempDir(), "out")
+	err := ExtractArchive(packTar(t, []tarMember{
+		{name: "bin/tool", body: "tool", mode: 0o755},
+		{name: "bin/alias", typ: tar.TypeLink, link: "bin/tool"},
+	}), dest, ExtractOptions{MaxBytes: 1 << 20})
+	if err == nil {
+		t.Fatal("hard link was extracted")
 	}
 }

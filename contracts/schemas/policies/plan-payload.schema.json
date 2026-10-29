@@ -1,5 +1,5 @@
 {
-  "$comment": "Derived from contracts/openapi.yaml component PlanPayload (§14.2). Candidate for promotion to contracts/schemas/.",
+  "$comment": "Derived from contracts/openapi.yaml component PlanPayload (§14.2); promoted to contracts/schemas/policies/plan-payload.schema.json.",
   "$defs": {
     "LocalizedText": {
       "additionalProperties": false,
@@ -29,6 +29,7 @@
         "amount_minor": {
           "description": "Integer minor units (cents or TWD integer units).",
           "format": "int64",
+          "maximum": 9007199254740991,
           "minimum": 0,
           "type": "integer"
         },
@@ -46,13 +47,12 @@
         },
         "provider": {
           "description": "Opaque payment provider identifier (`TEST ONLY` until decided).",
-          "maxLength": 64,
-          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]{0,31}$",
           "type": "string"
         },
         "provider_price_ref": {
           "description": "External price/plan identifier at the payment provider.",
-          "maxLength": 256,
+          "maxLength": 255,
           "minLength": 1,
           "type": "string"
         }
@@ -73,12 +73,14 @@
         "down_bps": {
           "description": "Bits per second, Internet to member.",
           "format": "int64",
+          "maximum": 9007199254740991,
           "minimum": 0,
           "type": "integer"
         },
         "up_bps": {
           "description": "Bits per second, member to Internet.",
           "format": "int64",
+          "maximum": 9007199254740991,
           "minimum": 0,
           "type": "integer"
         }
@@ -97,7 +99,7 @@
   "description": "Subscription plan revision payload (§14.2, §15.2).",
   "properties": {
     "device_limit": {
-      "description": "Default 3 (§7.4).",
+      "description": "Maximum authorized devices (MEM02). Counted on authorized devices, not concurrent WireGuard sessions.",
       "maximum": 100,
       "minimum": 1,
       "type": "integer"
@@ -115,7 +117,7 @@
         "format": "uuid",
         "type": "string"
       },
-      "maxItems": 64,
+      "maxItems": 100,
       "minItems": 1,
       "type": "array",
       "uniqueItems": true

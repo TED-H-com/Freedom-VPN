@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
@@ -581,13 +582,13 @@ func TestAT27_ReleaseSupportActivationUpdatesFleetConfig(t *testing.T) {
 	}
 
 	var policyMode string
-	var supportedIDs []uuid.UUID
-	var fleetGen, fleetVer string
-	if err := pool.QueryRow(ctx, `SELECT supported_release_policy, supported_release_ids, generation::text, resource_version::text FROM fleet_config WHERE id = '00000000-0000-0000-0000-000000000001'`).Scan(&policyMode, &supportedIDs, &fleetGen, &fleetVer); err != nil {
+	var supportedIDs, approvedIDs []uuid.UUID
+	var supportGen, fleetGen, fleetVer string
+	if err := pool.QueryRow(ctx, `SELECT supported_release_policy, supported_release_ids, approved_release_ids, support_generation::text, generation::text, resource_version::text FROM fleet_config WHERE id = '00000000-0000-0000-0000-000000000001'`).Scan(&policyMode, &supportedIDs, &approvedIDs, &supportGen, &fleetGen, &fleetVer); err != nil {
 		t.Fatal(err)
 	}
-	if policyMode != "allowlist" || len(supportedIDs) != 2 || fleetGen != "1" || fleetVer != "2" {
-		t.Fatalf("fleet_config policy=%s supportedIDs=%v gen=%s ver=%s", policyMode, supportedIDs, fleetGen, fleetVer)
+	if policyMode != "allowlist" || len(supportedIDs) != 2 || len(approvedIDs) != 1 || approvedIDs[0] != relApprovedNew || supportGen != "1" || fleetGen != "1" || fleetVer != "2" {
+		t.Fatalf("fleet_config policy=%s supportedIDs=%v approvedIDs=%v supportGen=%s gen=%s ver=%s", policyMode, supportedIDs, approvedIDs, supportGen, fleetGen, fleetVer)
 	}
 
 	// Prove F-14 on CreateRevision by Code: creating a second revision using Code
@@ -605,5 +606,84 @@ func TestAT27_ReleaseSupportActivationUpdatesFleetConfig(t *testing.T) {
 	}
 	if rev2.Revision != 2 || rev2.DefinitionID != rev.DefinitionID {
 		t.Fatalf("unexpected rev2: %+v", rev2)
+	}
+}
+
+func TestOPS02_PoliciesAuditReadBackZeroAnomalies(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	fixedNow := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+	store := policies.NewStore(pool, policies.WithClock(func() time.Time { return fixedNow }))
+	actorID := uuid.New()
+
+	raw, _ := json.Marshal(validFairUsePayload())
+	code := "audit-fup"
+	rev, err := store.CreateRevision(ctx, policies.CreateRevisionInput{
+		Code:          &code,
+		Type:          api.PolicyTypeFairUse,
+		SchemaVersion: 1,
+		Reason:        "Create revision for audit read-back conformance",
+		Payload:       raw,
+		ActorID:       actorID,
+	})
+	if err != nil {
+		t.Fatalf("CreateRevision failed: %v", err)
+	}
+
+	act, err := store.ActivateRevision(ctx, policies.ActivateRevisionInput{
+		DefinitionID:    rev.DefinitionID,
+		RevisionID:      rev.RevisionID,
+		ExpectedVersion: "1",
+		Reason:          "Activate revision for audit read-back conformance",
+		ActorID:         actorID,
+	})
+	if err != nil {
+		t.Fatalf("ActivateRevision failed: %v", err)
+	}
+
+	auditStore := audit.Store{Pool: pool}
+	page, err := auditStore.List(ctx, api.ListAuditEventsParams{})
+	if err != nil {
+		t.Fatalf("audit.Store.List: %v", err)
+	}
+	if got := auditStore.AnomalyCount(); got != 0 {
+		t.Fatalf("audit.Store.AnomalyCount = %d, want 0 (items=%+v)", got, page.Items)
+	}
+
+	wantResources := map[string]api.ResourceRef{
+		"policy.revision.create": {Type: api.ResourceTypePolicyRevision, Id: openapi_types.UUID(rev.RevisionID)},
+		"policy.activate":        {Type: api.ResourceTypePolicyDefinition, Id: openapi_types.UUID(rev.DefinitionID)},
+	}
+	seenActions := map[string]bool{}
+	for _, ev := range page.Items {
+		wantRes, ok := wantResources[ev.Action]
+		if !ok {
+			continue
+		}
+		seenActions[ev.Action] = true
+		if ev.Actor.Type != api.AuditEventActorTypeAdmin {
+			t.Fatalf("%s: Actor.Type = %q, want admin", ev.Action, ev.Actor.Type)
+		}
+		evActorID, err := ev.Actor.Id.Get()
+		if err != nil || uuid.UUID(evActorID) != actorID {
+			t.Fatalf("%s: Actor.Id = %v (err=%v), want %s", ev.Action, evActorID, err, actorID)
+		}
+		if ev.Resource != wantRes {
+			t.Fatalf("%s: Resource = %+v, want %+v", ev.Action, ev.Resource, wantRes)
+		}
+		if ev.Result != api.AuditEventResultSucceeded {
+			t.Fatalf("%s: Result = %q, want succeeded", ev.Action, ev.Result)
+		}
+		if ev.Action == "policy.activate" {
+			opID, err := ev.OperationId.Get()
+			if err != nil || opID != act.Operation.OperationId {
+				t.Fatalf("policy.activate: OperationId = %v (err=%v), want %s", opID, err, act.Operation.OperationId)
+			}
+		}
+	}
+	for action := range wantResources {
+		if !seenActions[action] {
+			t.Fatalf("missing expected audit action %q in %+v", action, page.Items)
+		}
 	}
 }

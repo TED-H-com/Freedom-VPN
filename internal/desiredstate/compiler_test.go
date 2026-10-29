@@ -3,55 +3,81 @@ package desiredstate
 import (
 	"testing"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/internal/fup"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/google/uuid"
 )
 
-func TestComputeEffectiveRateBps(t *testing.T) {
+func TestNodeCapacityRatePairAndFUPBuilder(t *testing.T) {
 	cap40M := int64(40_000_000)
 	cap200M := int64(200_000_000)
+	fup50M := int64(50_000_000)
+	fup25M := int64(25_000_000)
+	fup80M := int64(80_000_000)
+	reasonTier := api.MemberRatePolicyReasonFairUseTier
+	prio2 := 2
 
 	cases := []struct {
 		name     string
-		planRate int64
-		fupRate  int64
-		nodeCap  *int64
-		want     int64
+		planDown int64
+		fupDown  *int64
+		nodeCap  *api.NodeCapacity
+		wantDown int64
 	}{
 		{
-			name:     "node cap is lowest",
-			planRate: 100_000_000,
-			fupRate:  50_000_000,
-			nodeCap:  &cap40M,
-			want:     40_000_000,
+			name:     "node member cap is lowest",
+			planDown: 100_000_000,
+			fupDown:  &fup50M,
+			nodeCap: &api.NodeCapacity{
+				DownBps:          1_000_000_000,
+				UpBps:            1_000_000_000,
+				MemberDownBpsCap: presence.NewNullableWithValue(cap40M),
+				MemberUpBpsCap:   presence.NewNullableWithValue(cap40M),
+			},
+			wantDown: 40_000_000,
 		},
 		{
 			name:     "fup tier rate is lowest",
-			planRate: 100_000_000,
-			fupRate:  25_000_000,
-			nodeCap:  &cap200M,
-			want:     25_000_000,
+			planDown: 100_000_000,
+			fupDown:  &fup25M,
+			nodeCap: &api.NodeCapacity{
+				DownBps:          1_000_000_000,
+				UpBps:            1_000_000_000,
+				MemberDownBpsCap: presence.NewNullableWithValue(cap200M),
+				MemberUpBpsCap:   presence.NewNullableWithValue(cap200M),
+			},
+			wantDown: 25_000_000,
 		},
 		{
 			name:     "plan rate is lowest with nil node cap",
-			planRate: 30_000_000,
-			fupRate:  80_000_000,
+			planDown: 30_000_000,
+			fupDown:  &fup80M,
 			nodeCap:  nil,
-			want:     30_000_000,
-		},
-		{
-			name:     "zero when plan rate missing",
-			planRate: 0,
-			fupRate:  0,
-			nodeCap:  nil,
-			want:     0,
+			wantDown: 30_000_000,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ComputeEffectiveRateBps(tc.planRate, tc.fupRate, tc.nodeCap)
-			if got != tc.want {
-				t.Errorf("ComputeEffectiveRateBps(%d, %d, %v) = %d, want %d",
-					tc.planRate, tc.fupRate, tc.nodeCap, got, tc.want)
+			eval := &fup.EvaluationResult{
+				MemberID:          uuid.New(),
+				PeriodID:          "2026-10",
+				Mode:              api.FairUsePayloadModeEnforce,
+				Generation:        1,
+				EnforcedTierIndex: 1,
+				EnforcedDownBps:   tc.fupDown,
+				EnforcedUpBps:     tc.fupDown,
+				EnforcedPriority:  &prio2,
+				EnforcedReason:    &reasonTier,
+				ValidFrom:         time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC),
+				ValidUntil:        time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC),
+			}
+			pol := fup.BuildNodeMemberRatePolicy(eval, &api.RatePair{DownBps: tc.planDown, UpBps: tc.planDown}, nodeCapacityRatePair(tc.nodeCap))
+			got, err := pol.DownBps.Get()
+			if err != nil || got != tc.wantDown {
+				t.Errorf("BuildNodeMemberRatePolicy DownBps = (%d, %v), want %d", got, err, tc.wantDown)
 			}
 		})
 	}

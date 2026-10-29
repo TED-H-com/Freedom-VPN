@@ -30,6 +30,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
+	"github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -134,6 +136,8 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 	cfg.MembersConfigFile = jsonFixture(t, dir, "members.json", members)
 	// TEST ONLY upstream: the idle DNS worker does not dial it.
 	cfg.DNSConfigFile = writeFixture(t, dir, "dns.json", []byte(`{"upstreams":["192.0.2.53:53"]}`))
+	cfg.PoliciesConfigFile = policiestest.New(t).Path
+	cfg.UsageConfigFile = usagetest.New(t).Path
 	cfg.DatabaseURLFile = writeFixture(t, dir, "database-url", []byte(dsn))
 	cfg.OIDCIssuer = issuer
 	cfg.OIDCClientID = "TEST ONLY portal"
@@ -222,7 +226,7 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	token, e := runtime.Enrollment.CreateEnrollment(t.Context(), enrollment.Command{Principal: "TEST ONLY admin", Key: uuid.New()}, api.EnrollmentCreateRequest{Delivery: "installer"})
+	token, e := runtime.Enrollment.CreateEnrollment(t.Context(), enrollment.Command{Principal: "admin:" + uuid.NewString(), Key: uuid.New()}, api.EnrollmentCreateRequest{Delivery: "installer"})
 	if e != nil {
 		t.Fatal(e)
 	}

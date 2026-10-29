@@ -23,7 +23,7 @@ import (
 
 // ReplayHandler re-reads only persisted references, with caller authorization.
 // Return the generated response type for operationID. Enrollment replays MUST
-// return secret_available=false; neither plaintext responses nor secrets persist.
+// return secret_available=false; secret-bearing responses must never persist.
 type ReplayHandler interface {
 	Replay(context.Context, string, db.IdempotencyRecord) (any, error)
 }
@@ -32,8 +32,10 @@ type Commands struct {
 	Retention time.Duration
 }
 type commandState struct {
-	tx     pgx.Tx
-	result *db.IdempotencyResult
+	tx           pgx.Tx
+	record       db.IdempotencyRecord
+	result       *db.IdempotencyResult
+	agentReceipt bool
 }
 type commandKey struct{}
 
@@ -45,6 +47,18 @@ func Transaction(ctx context.Context) (pgx.Tx, error) {
 	return s.tx, nil
 }
 
+// CommandRecord returns the reservation owned by Transaction(ctx), including its
+// ID and expiry. It is available only while handling a new keyed command; Replay
+// receives its record separately. Persisted nonsecret replay bodies must use this
+// record's ID and expiry, not reconstruct its principal/method/route/key scope.
+func CommandRecord(ctx context.Context) (db.IdempotencyRecord, bool) {
+	s, ok := ctx.Value(commandKey{}).(*commandState)
+	if !ok || s == nil || s.tx == nil {
+		return db.IdempotencyRecord{}, false
+	}
+	return s.record, true
+}
+
 // SetResult must accompany desired state, operation, audit and outbox writes in
 // Transaction(ctx). No external network calls are allowed inside this boundary.
 func SetResult(ctx context.Context, r db.IdempotencyResult) error {
@@ -52,7 +66,7 @@ func SetResult(ctx context.Context, r db.IdempotencyResult) error {
 	if !ok {
 		return errors.New("command transaction unavailable")
 	}
-	if r.ResponseStatus < 200 || r.ResponseStatus >= 300 || (r.ResponseStatus == 202 && r.OperationID == nil) {
+	if r.ResponseStatus < 200 || r.ResponseStatus >= 300 || (r.ResponseStatus == 202 && r.OperationID == nil && !s.agentReceipt) || (r.ResourceID == nil && r.OperationID == nil) {
 		return errors.New("command result must reference an accepted success")
 	}
 	if s.result != nil {
@@ -143,7 +157,7 @@ func (c *Commands) middleware(handlers *Composite) gen.StrictMiddlewareFunc {
 				if !record.New {
 					return nil
 				}
-				state := &commandState{tx: tx}
+				state := &commandState{tx: tx, record: record, agentReceipt: p.Role == auth.Agent && (operationID == "SubmitObservation" || operationID == "SubmitUpdateResult")}
 				commandCtx := context.WithValue(ctx, commandKey{}, state)
 				response, e = next(commandCtx, w, r, request)
 				if e != nil {

@@ -13,14 +13,12 @@ import (
 	"sync/atomic"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
-	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -87,15 +85,6 @@ func Diff(before, after map[string]any, allow ...string) (json.RawMessage, json.
 	}
 	aa, e := json.Marshal(a)
 	return bb, aa, e
-}
-func Append(ctx context.Context, tx pgx.Tx, event db.AuditEvent, before, after map[string]any, allow ...string) error {
-	var e error
-	event.Before, event.After, e = Diff(before, after, allow...)
-	if e != nil {
-		return e
-	}
-	event.SchemaVersion = 1
-	return db.AppendAudit(ctx, tx, event)
 }
 
 // Store must not be copied after use. Anomalies counts malformed row encounters,

@@ -24,13 +24,30 @@ The following transitional 501 handlers are removed:
 | `renewAgentCertificate` | New CSR and serial with bounded older-serial overlap; same renewal ID replays. |
 | `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. |
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
-| `setNodePublication` | Disabled/unpublished intents and withdrawal operations. Publication is blocked pending the policy integration below. |
-| `getDesiredState` | Signed staging/disabled state, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. |
+| `setNodePublication` | Disabled/unpublished intents and withdrawal operations. Publishing remains blocked pending the exit service transaction adapter described below. |
+| `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
 | `renewServingLease` | Signed 24-hour default maximum, bounded member grants, natural renewal-ID replay without restarting deadlines. |
 | `submitObservation` | Immutable deduplicated receipt, then `ObserveReportTx` in the same transaction, fleet lock before node lock. |
 | `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
 | `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
 | `submitUpdateResult` | Durable 202 ACK; identical result replays, changed payload returns 409 ACK_CONFLICT with retained conflict evidence. |
+
+Agent keys now join the same command transaction as their domain writes (§14.5).
+The transactional entry points delegate to the existing implementations rather
+than duplicating ingestion logic. Natural report/result/renewal IDs continue to
+work without a key.
+
+| Keyed operation | First acceptance | Replay source (no writes) |
+|---|---|---|
+| `submitObservation` | `SubmitObservationTx`, 202 receipt, node resource | `node_observations.received_at`, authenticated node/incarnation + report ID |
+| `submitUpdateResult` | `SubmitResultTx`, 202 receipt, node resource | Stored `update_results.ack`, authenticated node/incarnation + result ID |
+| `renewServingLease` | `RenewTx`, 200 envelope, node resource | `leases.ReadRenewal`, the original `serving_leases.envelope` |
+
+Receipts have no synthetic operation. Lease replay preserves the original lease
+ID, expiry and signature. `RenewTx` holds node/member/entitlement SHARE locks
+until the HTTP command commits; any command failure rolls back the lease,
+member grants, audit and HTTP key together. The contract renewal route is
+`POST /api/v1/agent/lease-renewals`.
 
 Every API response passes through `apierr`/response tracking and `no-store`.
 Certificate authentication uses the verified TLS certificate, current incarnation,
@@ -43,28 +60,19 @@ bootstrap; no private key is retrieved or transmitted.
 
 This branch is **not a complete production node control plane**:
 
-1. `policies.BuildNodeMemberRatePolicy` is absent from this checkout. Published
-   desired state and publication commands return 503, rather than using the legacy
-   compiler's independent rate calculation. Staging/disabled state has no member
-   grants. The policy owner must export the promised builder and a transaction-aware
-   integration into `desiredstate.Compiler`, then this gate can be removed.
-2. `httpapi.SetResult` rejects any 202 without an operation ID, although observation
-   and update-result responses are receipts. When these two agent routes supply an
-   optional Idempotency-Key, they return 503 and roll back. Without the header,
-   their natural report/result IDs work. The framework needs a receipt result
-   variant; do not invent a completed operation to satisfy its current check.
-3. `leases.Service.Renew` has no caller-transaction method. Requests with an
-   optional Idempotency-Key return 503 before issuance; natural renewal-ID replay
-   is supported. The lease owner must expose `RenewTx` to complete atomic HTTP
-   key storage. Published member lease behavior remains the existing lease service.
-4. Migration 00110 unconditionally prohibits revoked→registered, conflicting with
-   the new reinstall contract. The reviewed proposal is
-   `internal/pki/migrations/reinstall.sql`; a new integration test explicitly applies
-   it to its isolated database. The database owner must package it as a new
-   embedded migration before reinstall can work in deployed databases. Runtime
-   code never executes DDL or weakens a base guard. Naked lifecycle resets remain
-   forbidden; old certificates/incarnations remain revoked.
-5. The contract contains no batch cancel operation or enrollment collection GET.
+1. `exits.Service.SetPublication` still owns a separate `db.InTx`, nested service
+   idempotency, and computes but does not store `desired_config_generation + 1`.
+   Its transaction must join the HTTP command before publishing can be enabled.
+   Publishing therefore retains its 503 gate; do not call that standalone method
+   from the HTTP transaction and claim atomic acceptance. The current HTTP
+   unpublish/disable path remains unchanged.
+2. Desired-state compilation now uses the merged DB readers. The compiler still
+   constructs member rates inline instead of delegating to
+   `fup.BuildNodeMemberRatePolicy`; replacing that implementation requires its
+   owner's production-code change. No alternate rate calculation was added to
+   the HTTP adapter. This is separate from the now-working published desired-state
+   read path and its cache invalidation.
+3. The contract contains no batch cancel operation or enrollment collection GET.
    None is invented. Existing batch cancellation on revocation/retirement remains.
    `UpdateTarget` includes both required booleans; `NodeUpdateSummary` has no such
    fields in the current contract.
@@ -215,3 +223,21 @@ local TLS fake URL, deployment and token file and configure trust for it. The
 returned `Path` supplies `NodesConfigFile`; `Nodes.CACertificateFile` supplies the
 agent listener CA. The helper has no dependency on either application, changes
 no environment variables, and adds no production defaults.
+
+The HTTP desired-state path reads `NewDBPolicyReader(tx)` and
+`NewDBEntitlementReader(tx)` in the same fleet-before-node transaction. The
+entitlement reader uses D-030 serving projections and persisted FUP evidence;
+unpublished nodes contain no member policies. The policy reader supplies active
+revision references and the active `dns_publication_heads` generation. The adapter
+adds the authorized fleet update intent and filters serving releases through the
+explicit fleet allowlist minus revocations. Missing resolver configuration or
+release-support policy remains fail closed.
+
+Cache validation compares concrete revision references and the fully compiled
+document, including generations, DNS, member eligibility, FUP rates and bindings.
+It ignores only the candidate's new generation and issue/expiry timestamps after
+checking the stored generation, signature and refresh deadline. The compiler's
+signing boundary occurs before persistence: an unchanged document returns the
+existing envelope without another desired-state/audit write. A policy revision,
+DNS publication, FUP update or member suspension therefore cannot remain hidden
+behind an otherwise fresh ETag.

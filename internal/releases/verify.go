@@ -12,6 +12,7 @@ import (
 	"net/netip"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
@@ -112,8 +113,8 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 		}
 	}
 	return commandtx.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		var op *uuid.UUID
-		if e = tx.QueryRow(ctx, `SELECT state,operation_id FROM release_verifications WHERE release_id=$1 FOR UPDATE`, id).Scan(&state, &op); e != nil {
+		var op, requestID *uuid.UUID
+		if e = tx.QueryRow(ctx, `SELECT v.state,v.operation_id,(SELECT request_id FROM operations WHERE id=v.operation_id) FROM release_verifications v WHERE v.release_id=$1 FOR UPDATE`, id).Scan(&state, &op, &requestID); e != nil {
 			return e
 		}
 		if state != "pending" {
@@ -135,6 +136,9 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 			return e
 		}
 		result := api.AuditEventResultSucceeded
+		if verifyErr != nil {
+			result = api.AuditEventResultFailed
+		}
 		if op != nil {
 			status := api.OperationStepStatusSucceeded
 			var safeCode *api.ErrorCode
@@ -143,7 +147,6 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 				status = api.OperationStepStatusFailed
 				c := api.ErrorCode(*code)
 				safeCode = &c
-				result = api.AuditEventResultFailed
 			} else {
 				evidence = &operations.Evidence{Reference: "release:" + id.String(), ObservedAt: time.Now().UTC()}
 			}
@@ -151,7 +154,20 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 				return e
 			}
 		}
-		return Audit(ctx, tx, uuid.Nil, api.AuditEventActorTypeSystem, "release.verify", api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, op, result, map[string]any{"verification_state": state, "error_code": code})
+		if requestID == nil {
+			id := commandtx.RequestID(ctx)
+			requestID = &id
+		}
+		event, e := audit.NewEvent(audit.Entry{
+			Actor: audit.SystemActor, Action: "release.verify",
+			Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, Result: result,
+			OperationID: op, RequestID: requestID,
+			After: map[string]any{"verification_state": state, "error_code": code}, Fields: []string{"verification_state", "error_code"},
+		})
+		if e != nil {
+			return e
+		}
+		return audit.AppendEvent(ctx, tx, event)
 	})
 }
 func (s *Service) verifyArtifact(ctx context.Context, f Fetcher, a api.ManifestArtifact) error {

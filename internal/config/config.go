@@ -66,6 +66,8 @@ type Config struct {
 	MembersConfigFile       string   `json:"members_config_file"`
 	DNSConfigFile           string   `json:"dns_config_file"`
 	NodesConfigFile         string   `json:"nodes_config_file"`
+	PoliciesConfigFile      string   `json:"policies_config_file"`
+	UsageConfigFile         string   `json:"usage_config_file"`
 }
 
 func Defaults() Config {
