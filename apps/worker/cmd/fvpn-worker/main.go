@@ -47,7 +47,7 @@ func run(log *slog.Logger) error {
 	}
 	defer pool.Close()
 	metrics := prometheus.NewRegistry()
-	d, e := worker.New(pool, worker.Jobs(), worker.Config{Concurrency: c.WorkerConcurrency, Attempts: c.WorkerAttempts, Lease: time.Duration(c.WorkerLeaseSeconds) * time.Second, JobTimeout: time.Duration(c.WorkerJobSeconds) * time.Second, Poll: time.Duration(c.WorkerPollSeconds) * time.Second, Backoff: time.Duration(c.WorkerBackoffSeconds) * time.Second, MaxBackoff: time.Duration(c.WorkerBackoffMaxSeconds) * time.Second}, metrics, log)
+	d, e := worker.New(pool, worker.Jobs(pool), worker.Config{Concurrency: c.WorkerConcurrency, Attempts: c.WorkerAttempts, Lease: time.Duration(c.WorkerLeaseSeconds) * time.Second, JobTimeout: time.Duration(c.WorkerJobSeconds) * time.Second, Poll: time.Duration(c.WorkerPollSeconds) * time.Second, Backoff: time.Duration(c.WorkerBackoffSeconds) * time.Second, MaxBackoff: time.Duration(c.WorkerBackoffMaxSeconds) * time.Second}, metrics, log)
 	if e != nil {
 		return e
 	}
