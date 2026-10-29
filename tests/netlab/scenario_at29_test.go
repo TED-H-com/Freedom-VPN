@@ -69,28 +69,18 @@ func TestAT29_LeaseTimeout(t *testing.T) {
 
 func probeTimeNamespace(t *testing.T) string {
 	t.Helper()
-	before := strings.TrimSpace(mustExec(t, "date", "+%s"))
-	out, errOut, err := dockerExec("unshare", "--time", "--fork", "sh", "-c", "date -s @1577836800 >/dev/null && date -u +%Y-%m-%dT%H:%M:%SZ")
-	after := strings.TrimSpace(mustExec(t, "date", "+%s"))
+	// A different time-namespace inode is not proof of an isolated clock.
+	// On this kernel, unshare --time creates a new inode and date -s inside
+	// that child still moves the container clock. Do not call date -s.
+	// Lease expiry is the kernel nft set timeout, which follows jiffies.
+	parent := strings.TrimSpace(mustExec(t, "readlink", "/proc/self/ns/time"))
+	childOut, errOut, err := dockerExec("unshare", "--time", "--fork", "readlink", "/proc/self/ns/time")
+	child := strings.TrimSpace(childOut)
+	errNote := ""
 	if err != nil {
-		return "clock_step=skipped reason=" + oneLine(errOut+" "+err.Error()) + " container_before=" + before + " container_after=" + after
+		errNote = " unshare_err=" + oneLine(err.Error())
 	}
-	b, _ := parseSec(before)
-	a, _ := parseSec(after)
-	if a+30 < b {
-		// The child namespace was not isolated. Put the container clock back
-		// immediately. This is the container's time namespace, which on Docker
-		// is the host clock, so this restore is mandatory.
-		_, _, _ = dockerExec("date", "-s", "@"+before)
-		return "clock_step=UNSAFE restored=1 before=" + before + " after=" + after
-	}
-	return "clock_step=isolated child=" + strings.TrimSpace(out) + " container_before=" + before + " container_after=" + after + " note=nft timeout follows jiffies, not the wall clock"
-}
-
-func parseSec(s string) (int64, error) {
-	var n int64
-	_, err := fmt.Sscan(s, &n)
-	return n, err
+	return "clock_step=skipped reason=child time namespace is not an isolated clock container=" + parent + " child=" + oneLine(child+" "+errOut) + errNote
 }
 
 func oneLine(s string) string {

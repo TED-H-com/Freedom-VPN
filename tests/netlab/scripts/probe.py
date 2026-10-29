@@ -220,22 +220,25 @@ def main() -> None:
         groups.setdefault(case["ns"], []).append(case)
     results = []
     procs = []
+    token = f"{os.getpid()}-{time.monotonic_ns()}"
     for ns, cases in groups.items():
-        part = f"/scratch/probe-{ns}.json"
-        out = f"/scratch/probe-{ns}.out"
+        # denyloop and the test harness probe at the same time. A fixed path
+        # lets one invocation read the other's partial output.
+        part = f"/scratch/probe-{token}-{ns}.json"
+        out = f"/scratch/probe-{token}-{ns}.out"
         with open(part, "w", encoding="utf-8") as fh:
             json.dump({"cases": cases}, fh)
         env = dict(os.environ)
         env["FV_INSIDE"] = "1"
         outfh = open(out, "w", encoding="utf-8")
-        procs.append((ns, out, outfh, subprocess.Popen(
+        procs.append((ns, part, out, outfh, subprocess.Popen(
             ["ip", "netns", "exec", ns, "python3", "/opt/netlab/scripts/probe.py", part],
             stdout=outfh,
             stderr=subprocess.PIPE,
             env=env,
         )))
     failed = False
-    for ns, out, outfh, proc in procs:
+    for ns, part, out, outfh, proc in procs:
         err = proc.stderr.read().decode("utf-8", "replace") if proc.stderr else ""
         code = proc.wait()
         outfh.close()
@@ -258,6 +261,11 @@ def main() -> None:
             })
         if code not in (0, 2):
             failed = True
+        try:
+            os.remove(part)
+            os.remove(out)
+        except OSError:
+            pass
     json.dump({"results": results}, sys.stdout)
     sys.stdout.write("\n")
     if failed or not all(item["ok"] for item in results):

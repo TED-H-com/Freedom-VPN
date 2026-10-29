@@ -54,7 +54,7 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 	if err := dockerDetach("ip", "netns", "exec", "fv-a1", "python3", "/opt/netlab/scripts/stream.py", "203.0.113.10", "9001", "9000", "/scratch/stream-a1.log"); err != nil {
 		t.Fatal(err)
 	}
-	startCapture(t, "fv-lan", "fv-ll", "", "/scratch/cap-at10-lan.txt")
+	startCapture(t, "fv-lan", "fv-ll", "ip and (dst host 10.1.2.10 or dst host 192.168.10.10 or dst host 172.16.5.10 or dst host 169.254.169.254 or dst host 192.0.2.200)", "/scratch/cap-at10-lan.txt")
 	startCapture(t, "fv-a2", "fv-wg0", "dst port 8080", "/scratch/cap-at10-a2.txt")
 	startCapture(t, "fv-inet", "fv-ii", "dst port 8080", "/scratch/cap-at10-dns.txt")
 	waitStreamReady(t, "/scratch/stream-a1.log", 8*time.Second)
@@ -196,7 +196,9 @@ func flapLAN(t *testing.T) {
 	mustExec(t, "ip", "addr", "add", "198.18.0.2/30", "dev", "fv-py")
 	mustExec(t, "ip", "addr", "add", "198.18.0.10/32", "dev", "fv-py")
 	mustExec(t, "ip", "route", "add", "198.18.0.10/32", "via", "198.18.0.2", "dev", "fv-px")
-	startCapture(t, "root", "fv-py", "", "/scratch/cap-at10-flap.txt")
+	// Bringing the veth up emits IPv6 neighbor discovery from the host stack.
+	// That is not a forwarded member packet. Capture only IPv4 to the new target.
+	startCapture(t, "root", "fv-py", "ip and host 198.18.0.10", "/scratch/cap-at10-flap.txt")
 	time.Sleep(200 * time.Millisecond)
 	res := runProbe(t, []probeCase{{"flap", "fv-a1", "tcp", "198.18.0.10", 80, "", "deny", 800, "", "", "", "", 0}})
 	requireProbe(t, res)
