@@ -26,7 +26,7 @@ import (
 
 // NodeJobs is injectable for composition and tests. External calls all go through
 // the NetBird adapter; it verifies remote state before returning success.
-func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, publicationAdapter ...exits.NetBirdAdapter) Registry {
+func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
 	var publication exits.NetBirdAdapter = httpwire.NewPublicationAdapter(r, nb)
 	if len(publicationAdapter) > 1 {
@@ -67,16 +67,19 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, p
 		}
 		if op.Status == api.OperationStatusFailed {
 			// The executor records failure as an operation, not a Go error.
-			// Keep it running while D-040 owns retries; retain the failed step
-			// and error evidence rather than acknowledging the outbox event.
-			err = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-				_, e := tx.Exec(ctx, `UPDATE operations SET status='running',resource_version=coalesce(resource_version,0)+1 WHERE id=$1 AND status='failed'`, op.OperationId)
-				return e
-			})
-			if err != nil {
-				return "", err
+			// §14.5 / D-040: running means another retry remains. At or past
+			// the dispatcher's budget, preserve failed status and its evidence
+			// so dead-lettering cannot leave an operation claiming progress.
+			if event.Attempt < attempts {
+				err = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+					_, e := tx.Exec(ctx, `UPDATE operations SET status='running',resource_version=coalesce(resource_version,0)+1 WHERE id=$1 AND status='failed'`, op.OperationId)
+					return e
+				})
+				if err != nil {
+					return "", err
+				}
 			}
-			return "", errors.New("publication execution requires retry")
+			return "", errors.New("publication execution failed")
 		}
 		if op.Status != api.OperationStatusSucceeded && op.Status != api.OperationStatusSuperseded && op.Status != api.OperationStatusPartiallySucceeded {
 			return "", errors.New("publication execution incomplete")
@@ -351,7 +354,7 @@ func nodes() Domain {
 		if err != nil {
 			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
 		}
-		return Built{Jobs: NodeJobs(runtime, adapter, fetch), Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}}, nil
+		return Built{Jobs: NodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts), Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}}, nil
 	}}
 }
 

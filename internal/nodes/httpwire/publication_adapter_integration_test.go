@@ -133,7 +133,7 @@ func TestAT08_PublicationWorkerRealAdapterBridge(t *testing.T) {
 	op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
 	f.acknowledgePublication(enrolled, cert, true)
 	f.sql(`UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type<>$1`, desiredstate.EventNodePublicationChanged)
-	d, err := worker.New(f.r.Pool, worker.NodeJobs(f.r, nb, nil), worker.Config{Concurrency: 1, Attempts: 3, Lease: time.Minute, JobTimeout: 30 * time.Second, Poll: time.Millisecond, Backoff: time.Millisecond, MaxBackoff: time.Millisecond}, nil, nil)
+	d, err := worker.New(f.r.Pool, worker.NodeJobs(f.r, nb, nil, 3), worker.Config{Concurrency: 1, Attempts: 3, Lease: time.Minute, JobTimeout: 30 * time.Second, Poll: time.Millisecond, Backoff: time.Millisecond, MaxBackoff: time.Millisecond}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
