@@ -27,6 +27,10 @@ const (
 
 	// ledgerStateSingletonID is the fixed UUID of the usage_ledger_state singleton row.
 	ledgerStateSingletonID = "00000000-0000-0000-0000-000000000130"
+
+	// ErrCodeUint64Overflow is the detail/log code attached to InternalError when a
+	// rollup or adjusted byte total exceeds math.MaxUint64 on read (§10.4).
+	ErrCodeUint64Overflow = "usage_uint64_overflow"
 )
 
 // LedgerMode represents the central usage ledger operating mode (§17.3).
@@ -58,17 +62,19 @@ type LedgerState struct {
 
 // Config configures the central usage ledger Service.
 type Config struct {
-	Pool   *pgxpool.Pool
-	Signer Signer
-	Clock  func() time.Time
+	Pool              *pgxpool.Pool
+	Signer            Signer
+	LedgerEpochSigner Signer
+	Clock             func() time.Time
 }
 
 // Service implements the central usage ledger, checkpoints, projection,
 // adjustments, queries, and restore/replay workflows (§10, §15.4, §17.3).
 type Service struct {
-	pool   *pgxpool.Pool
-	signer Signer
-	clock  func() time.Time
+	pool              *pgxpool.Pool
+	signer            Signer
+	ledgerEpochSigner Signer
+	clock             func() time.Time
 }
 
 // NewService constructs a central usage ledger Service.
@@ -81,9 +87,10 @@ func NewService(cfg Config) (*Service, error) {
 		clock = func() time.Time { return time.Now().UTC() }
 	}
 	return &Service{
-		pool:   cfg.Pool,
-		signer: cfg.Signer,
-		clock:  clock,
+		pool:              cfg.Pool,
+		signer:            cfg.Signer,
+		ledgerEpochSigner: cfg.LedgerEpochSigner,
+		clock:             clock,
 	}, nil
 }
 
@@ -135,12 +142,24 @@ func (s *Service) GetLedgerState(ctx context.Context) (LedgerState, error) {
 }
 
 func (s *Service) getLedgerStateInTx(ctx context.Context, tx pgx.Tx) (LedgerState, error) {
+	return s.queryLedgerStateInTx(ctx, tx, "")
+}
+
+func (s *Service) lockLedgerStateForShareInTx(ctx context.Context, tx pgx.Tx) (LedgerState, error) {
+	return s.queryLedgerStateInTx(ctx, tx, "FOR SHARE OF s")
+}
+
+func (s *Service) lockLedgerStateForUpdateInTx(ctx context.Context, tx pgx.Tx) (LedgerState, error) {
+	return s.queryLedgerStateInTx(ctx, tx, "FOR UPDATE OF s")
+}
+
+func (s *Service) queryLedgerStateInTx(ctx context.Context, tx pgx.Tx, lockClause string) (LedgerState, error) {
 	var (
 		st      LedgerState
 		modeStr string
 		genText string
 	)
-	err := tx.QueryRow(ctx, `
+	q := `
 		SELECT s.current_epoch,
 		       s.mode,
 		       s.mode_reason,
@@ -152,7 +171,11 @@ func (s *Service) getLedgerStateInTx(ctx context.Context, tx pgx.Tx) (LedgerStat
 		JOIN usage_projection_generations g
 		  ON g.projection_name = $2 AND g.state = 'active'
 		WHERE s.id = $1
-	`, ledgerStateSingletonID, ProjectionNameMemberUsage).Scan(
+	`
+	if lockClause != "" {
+		q += "\n\t\t" + lockClause
+	}
+	err := tx.QueryRow(ctx, q, ledgerStateSingletonID, ProjectionNameMemberUsage).Scan(
 		&st.LedgerEpoch,
 		&modeStr,
 		&st.ModeReason,
@@ -208,6 +231,26 @@ func parseNumericUint64(s string) (uint64, error) {
 		return 0, err
 	}
 	return u.Uint64(), nil
+}
+
+func parseByteTotalUint64(s, field string) (uint64, error) {
+	u, err := decstr.Parse(s)
+	if err != nil {
+		if errors.Is(err, decstr.ErrOverflow) {
+			return 0, uint64OverflowError(field, s)
+		}
+		return 0, err
+	}
+	return u.Uint64(), nil
+}
+
+func uint64OverflowError(field, value string) error {
+	return apierr.Wrap(
+		fmt.Errorf("usage: %s=%s: %w", field, value, decstr.ErrOverflow),
+		apierr.InternalError,
+		"usage byte total overflows uint64",
+	).WithDetail("detail_code", ErrCodeUint64Overflow).
+		WithDetail("field", field)
 }
 
 func formatUint64(v uint64) string {
