@@ -44,6 +44,7 @@ CREATE TABLE plans (
 CREATE TABLE plan_revisions (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), plan_id UUID NOT NULL REFERENCES plans,
  revision NUMERIC(20,0) CHECK (revision >= 0 AND revision <= 18446744073709551615) NOT NULL, device_limit INTEGER NOT NULL CHECK(device_limit >= 0),
+ exit_group_ids UUID[] NOT NULL DEFAULT '{}',
  fup_policy_revision_id UUID, provider TEXT, provider_price_ref TEXT,
  schema_version INTEGER NOT NULL CHECK(schema_version > 0),
  payload JSONB NOT NULL CHECK(jsonb_typeof(payload) = 'object'),
@@ -68,8 +69,9 @@ CREATE TABLE subscriptions (
  resource_version NUMERIC(20,0) CHECK (resource_version >= 0 AND resource_version <= 18446744073709551615) NOT NULL DEFAULT 1,
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
  CONSTRAINT subscriptions_external_key UNIQUE(provider,external_subscription_id),
+ CONSTRAINT subscriptions_member_key UNIQUE(id,member_id),
  CHECK((paid_from IS NULL AND paid_through IS NULL) OR (paid_from IS NOT NULL AND paid_through IS NOT NULL AND isfinite(paid_from) AND isfinite(paid_through) AND paid_from < paid_through)),
- CHECK((grace_from IS NULL AND grace_until IS NULL) OR (grace_from IS NOT NULL AND grace_until IS NOT NULL AND isfinite(grace_from) AND isfinite(grace_until) AND grace_from < grace_until AND grace_reason IS NOT NULL))
+ CHECK((grace_from IS NULL AND grace_until IS NULL) OR (grace_from IS NOT NULL AND grace_until IS NOT NULL AND isfinite(grace_from) AND isfinite(grace_until) AND grace_from < grace_until AND grace_reason IS NOT NULL AND grace_reason ~ '[^[:space:]]'))
 );
 CREATE UNIQUE INDEX subscriptions_primary_active_key ON subscriptions(member_id) WHERE is_primary AND is_active;
 CREATE INDEX subscriptions_plan_idx ON subscriptions(plan_revision_id);
@@ -87,7 +89,7 @@ CREATE TABLE inbox_events (
 -- §9.3, §15.2: unsigned amounts; record_type distinguishes refunds/corrections.
 CREATE TABLE billing_records (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), member_id UUID NOT NULL REFERENCES members,
- subscription_id UUID REFERENCES subscriptions, provider TEXT NOT NULL,
+ subscription_id UUID, provider TEXT NOT NULL,
  record_type TEXT NOT NULL, external_reference TEXT NOT NULL,
  amount_minor BIGINT NOT NULL CHECK(amount_minor >= 0 AND amount_minor <= 9223372036854775807),
  currency CHAR(3) NOT NULL CHECK(currency ~ '^[A-Z]{3}$'),
@@ -95,6 +97,7 @@ CREATE TABLE billing_records (
  source_event_id UUID NOT NULL REFERENCES inbox_events,
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
  CONSTRAINT billing_records_external_key UNIQUE(provider,record_type,external_reference),
+ CONSTRAINT billing_records_subscription_member_fk FOREIGN KEY(subscription_id,member_id) REFERENCES subscriptions(id,member_id),
  CHECK(isfinite(service_start) AND isfinite(service_end) AND service_start < service_end)
 );
 
@@ -102,10 +105,10 @@ CREATE TABLE billing_records (
 CREATE TABLE entitlement_grants (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), member_id UUID NOT NULL REFERENCES members,
  source TEXT NOT NULL, valid_from TIMESTAMPTZ NOT NULL, valid_until TIMESTAMPTZ NOT NULL,
- reason TEXT NOT NULL CHECK(length(reason)>0), created_by TEXT NOT NULL,
+ reason TEXT NOT NULL CHECK(reason ~ '[^[:space:]]'), created_by TEXT NOT NULL CHECK(created_by ~ '[^[:space:]]'),
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(), revoked_at TIMESTAMPTZ, revocation_reason TEXT,
  CHECK(isfinite(valid_from) AND isfinite(valid_until) AND valid_from < valid_until),
- CHECK(revoked_at IS NULL OR revocation_reason IS NOT NULL)
+ CHECK(revoked_at IS NULL OR (revocation_reason IS NOT NULL AND revocation_reason ~ '[^[:space:]]'))
 );
 
 -- §9.2, §15.2: recomputable projection; never holds a node lease expiry.
@@ -141,7 +144,7 @@ CREATE TABLE device_bindings (
  peer_ref TEXT NOT NULL,
  FOREIGN KEY(device_id,member_id) REFERENCES member_devices(id,member_id),
  CONSTRAINT device_bindings_revision_key UNIQUE(device_id,binding_revision),
- CHECK(valid_from < valid_until),
+ CHECK(isfinite(valid_from) AND isfinite(valid_until) AND valid_from < valid_until),
  CHECK(masklen(overlay_ip) = CASE family(overlay_ip) WHEN 4 THEN 32 ELSE 128 END),
  CONSTRAINT device_bindings_no_overlap EXCLUDE USING gist(overlay_scope WITH =, overlay_ip WITH =, tstzrange(valid_from,valid_until,'[)') WITH &&)
 );
@@ -154,7 +157,7 @@ CREATE TABLE assignments (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), member_id UUID REFERENCES members,
  plan_revision_id UUID REFERENCES plan_revisions, group_id UUID NOT NULL REFERENCES member_groups,
  valid_from TIMESTAMPTZ NOT NULL, valid_until TIMESTAMPTZ NOT NULL,
- CHECK(num_nonnulls(member_id,plan_revision_id)=1), CHECK(valid_from < valid_until),
+ CHECK(num_nonnulls(member_id,plan_revision_id)=1), CHECK(isfinite(valid_from) AND isfinite(valid_until) AND valid_from < valid_until),
  CONSTRAINT assignments_member_no_overlap EXCLUDE USING gist(member_id WITH =,group_id WITH =,tstzrange(valid_from,valid_until,'[)') WITH &&) WHERE(member_id IS NOT NULL),
  CONSTRAINT assignments_plan_no_overlap EXCLUDE USING gist(plan_revision_id WITH =,group_id WITH =,tstzrange(valid_from,valid_until,'[)') WITH &&) WHERE(plan_revision_id IS NOT NULL)
 );
