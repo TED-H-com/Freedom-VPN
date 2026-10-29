@@ -566,8 +566,9 @@ export interface paths {
          * @description Creates a provider checkout for an allowed plan with a return URL from the
          *     server allowlist (§9.3, §16.2). The return page is never evidence of
          *     payment (BILL03); entitlement changes only after a verified webhook or
-         *     reconciliation. 201 when the session was created synchronously, 202 with
-         *     an operation when the provider call is pending.
+         *     reconciliation. Success is 201 only and includes checkout_url (D-031).
+         *     Provider failure is 503 DEPENDENCY_UNAVAILABLE, retryable true; retry
+         *     with the same Idempotency-Key. There is no asynchronous success response.
          */
         post: operations["createCheckoutSession"];
         delete?: never;
@@ -4621,7 +4622,6 @@ export interface operations {
                     "application/json": components["schemas"]["CheckoutSession"];
                 };
             };
-            202: components["responses"]["OperationAccepted"];
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];

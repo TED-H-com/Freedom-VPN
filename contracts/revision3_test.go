@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
@@ -63,5 +64,24 @@ func TestUPD05_AppliedPolicyGenerationHash(t *testing.T) {
 	got, err := canonjson.HashHex(v.Result, "payload_hash")
 	if err != nil || got != v.Hash {
 		t.Fatalf("hash=%s err=%v", got, err)
+	}
+}
+
+func TestAT02_Checkout201Only(t *testing.T) {
+	doc := loadDoc(t)
+	op := doc.Paths.Value("/member/checkout-sessions").Post
+	if op.Responses.Status(202) != nil {
+		t.Fatal("checkout must not return an asynchronous success")
+	}
+	success := op.Responses.Status(201)
+	if success == nil || success.Value.Content.Get("application/json").Schema.Ref != "#/components/schemas/CheckoutSession" {
+		t.Fatal("checkout success must carry checkout_url")
+	}
+	failure := op.Responses.Status(503)
+	if failure == nil || failure.Ref != "#/components/responses/ServiceUnavailable" {
+		t.Fatal("provider failure must use 503")
+	}
+	if apierr.DependencyUnavailable.HTTPStatus() != 503 || !apierr.DependencyUnavailable.DefaultRetryable() {
+		t.Fatal("provider failure must be retryable")
 	}
 }

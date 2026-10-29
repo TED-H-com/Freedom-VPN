@@ -392,7 +392,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `DELETE /member/devices/{device_id}` | `revokeMemberDevice` | csrfToken + memberSession | 202 | §14.3, §9.4 | MEM03 ENT02 |
 | `GET /member/exits` | `listMemberExits` | memberSession | 200 | §14.3, §18.4 | MEM01 EXIT02 |
 | `GET /member/usage` | `getMemberUsage` | memberSession | 200 | §14.3, §10.9, §11.6 | MEM01 MTR02 MTR04 FUP03 |
-| `POST /member/checkout-sessions` | `createCheckoutSession` | csrfToken + memberSession | 201,202 | §14.3, §9.3, §16.2 | BILL01 BILL03 MEM01 |
+| `POST /member/checkout-sessions` | `createCheckoutSession` | csrfToken + memberSession | 201 | §14.3, §9.3, §16.2 | BILL01 BILL03 MEM01 |
 | `POST /member/billing-portal-sessions` | `createBillingPortalSession` | csrfToken + memberSession | 201 | §14.3, §16.2 | MEM01 BILL01 |
 | `GET /member/operations/{operation_id}` | `getMemberOperation` | memberSession | 200 | §14.3, §14.5 | API01 MEM01 |
 | `POST /agent/enroll` | `enrollNode` | enrollmentToken | 200,201 | §14.4, §6.1, §6.2, §14.7 | ENR01 ENR02 ENR03 ENR04 |
@@ -457,3 +457,12 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 - `UpdateTarget.needs_attention` and `unconfirmed` are required booleans:
   central operator attention and lack of confirmation of the last issued job,
   respectively. The update service owns these observations.
+
+- D-031: `POST /member/checkout-sessions` succeeds only with 201 and a
+  `CheckoutSession` containing `checkout_url`. Provider failure is 503
+  `DEPENDENCY_UNAVAILABLE` (retryable true; use the same Idempotency-Key).
+  The former 202 alternative is removed: there is no API to retrieve a checkout
+  URL from an asynchronous operation. This is revision 3's deliberate HTTP
+  breaking change. Regenerate clients; the strict server's
+  `CreateCheckoutSession202JSONResponse` no longer exists. Legacy outbox/session
+  writers require owner reconciliation, outside mechanical consumer adaptation.
