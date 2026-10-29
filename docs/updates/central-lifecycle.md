@@ -259,11 +259,22 @@ successful batch/retry requires actual persisted target evidence.
 Verification failure records a failed `verify` step with a safe error code.
 `operations.Store.Get` exposes that code with a fixed, safe top-level error
 message. Fetcher error text, URLs and payloads do not enter the operation response.
-Audit events use contract actor types, UUID resource references and
-`succeeded|failed|denied` results through control-core's redacting writer.
+Every domain audit writer constructs a typed event with `audit.NewEvent` and
+persists it with `audit.AppendEvent` in the action's transaction (§16.4).
+Actors use contract types and nonzero UUIDs. Verification and first-sync use the
+existing system singleton `00000000-0000-0000-0000-000000000003`; node reports
+use their authenticated node UUID. Results are `succeeded` or `failed`, including
+`failed` for conflicting results and refused rollbacks. Actions such as
+`release.verify` and `update_result.accept` describe the audited action and are
+independent of operation-kind enums.
 Resource types are release, update_batch, update_target and node. Release support
 changes audit each affected release, including removed releases. Request IDs and
-operation IDs retain traceability; free-form reasons are excluded from audit diffs.
+operation IDs retain traceability; worker verification retains the registering
+operation's request ID. Job/result UUIDs stay in allowlisted diff fields on real
+node/target resources; they are never relabeled as other entity types. Free-form
+reasons are excluded from audit diffs. The integration fixtures read every event
+back through `audit.Store.List` and operations through `operations.Store.Get`,
+assert zero anomalies, and verify actor IDs, resource relationships and correlation.
 
 ## Applied policy evidence (§13.10.3)
 
