@@ -114,7 +114,8 @@ export function PolicyActivationCard({
               {t('admin.policies.confirmDialogTitle')}
             </h3>
             <div className="mono" style={{ fontSize: '0.82rem', marginBottom: '10px' }}>
-              Definition: {pending.definition.code} ({pending.definition.type}) ｜ ETag: &quot;
+              Definition: {pending.definition.code} ({pending.definition.type}) ｜ ETag:
+              &quot;
               {pending.definition.resource_version}&quot; ｜ Active Revision:{' '}
               {pending.definition.active_revision?.revision ?? '—'} → Target Revision: #
               {pending.targetSummary.revision} ({pending.targetSummary.revision_id})
@@ -126,7 +127,9 @@ export function PolicyActivationCard({
               style={{ marginBottom: '12px' }}
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '4px' }}>
+                <div
+                  style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '4px' }}
+                >
                   Current Active Revision (
                   {pending.definition.active_revision
                     ? `#${pending.definition.active_revision.revision}`
@@ -151,7 +154,9 @@ export function PolicyActivationCard({
                 </pre>
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '4px' }}>
+                <div
+                  style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '4px' }}
+                >
                   Target Revision (#{pending.targetSummary.revision})
                 </div>
                 <pre

@@ -44,8 +44,7 @@ export function MemberServicePage(): React.ReactElement {
     ent.state === 'active' ||
     ent.state === 'cancel_at_period_end' ||
     ent.state === 'past_due';
-  const isClosed =
-    ent.state === 'closed' || me.next_actions.includes('contact_support');
+  const isClosed = ent.state === 'closed' || me.next_actions.includes('contact_support');
   const isFupAdjusted = usage?.fair_use.state === 'adjusted';
   const resetAt = me.fair_use_reset_at ?? usage?.fair_use.resets_at ?? '-';
   const planName =

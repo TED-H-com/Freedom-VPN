@@ -24,7 +24,11 @@ export function MemberUsagePage(): React.ReactElement {
             <h1>{t('member.usage.title')}</h1>
           </div>
         </div>
-        <div className="alert alert-info" role="note" data-testid="honest-metering-banner">
+        <div
+          className="alert alert-info"
+          role="note"
+          data-testid="honest-metering-banner"
+        >
           {t('member.usage.honestyBanner')}
         </div>
         <ApiErrorAlert error={usageQuery.error} testId="member-usage-error" />

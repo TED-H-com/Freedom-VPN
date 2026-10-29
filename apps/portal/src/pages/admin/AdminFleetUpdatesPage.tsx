@@ -16,9 +16,7 @@ const IS_MOCK_ENV =
   !import.meta.env.PROD &&
   (import.meta.env.VITE_API_MOCK === '1' || import.meta.env.MODE === 'test');
 
-const MOCK_FALLBACK_BATCH_ID = IS_MOCK_ENV
-  ? '85ef720a-31a0-4250-90d2-4b92c58695bc'
-  : '';
+const MOCK_FALLBACK_BATCH_ID = IS_MOCK_ENV ? '85ef720a-31a0-4250-90d2-4b92c58695bc' : '';
 const MOCK_FALLBACK_RELEASE_ID = IS_MOCK_ENV
   ? '6d2797d0-b9a5-4724-96af-9b3039d351b1'
   : '';
@@ -111,8 +109,7 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
   const handleRunAllUpdate = async () => {
     setError(null);
     try {
-      const targetGen =
-        expectedGeneration.trim() || batch?.targets[0]?.generation || '0';
+      const targetGen = expectedGeneration.trim() || batch?.targets[0]?.generation || '0';
       const created = await apiClient.createUpdateBatch({
         release_id: selectedRelease?.release_id ?? selectedReleaseId,
         scope: 'all_nodes',
@@ -278,7 +275,12 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
 
         <div
           className="form-grid"
-          style={{ alignItems: 'end', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--color-border)' }}
+          style={{
+            alignItems: 'end',
+            marginTop: '1rem',
+            paddingTop: '0.75rem',
+            borderTop: '1px solid var(--color-border)',
+          }}
         >
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label htmlFor="batch-id-lookup-input">Inspect Update Batch ID</label>
@@ -518,7 +520,10 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
             Registered release: <span className="mono">{registerSuccess}</span>
           </div>
         )}
-        <form onSubmit={(e) => void handleRegisterRelease(e)} style={{ marginTop: '0.75rem' }}>
+        <form
+          onSubmit={(e) => void handleRegisterRelease(e)}
+          style={{ marginTop: '0.75rem' }}
+        >
           <div className="form-group">
             <label htmlFor="register-manifest-url">
               {t('admin.updates.manifestUrlLabel')}

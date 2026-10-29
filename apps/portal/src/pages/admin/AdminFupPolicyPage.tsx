@@ -59,9 +59,8 @@ export function AdminFupPolicyPage(): React.ReactElement {
   const [newOverrideMemberId, setNewOverrideMemberId] = useState('');
   const [newOverrideDownBps, setNewOverrideDownBps] = useState('100000000');
   const [newOverrideUpBps, setNewOverrideUpBps] = useState('100000000');
-  const [newOverrideValidUntil, setNewOverrideValidUntil] = useState(
-    '2026-12-31T00:00:00Z',
-  );
+  const [newOverrideValidUntil, setNewOverrideValidUntil] =
+    useState('2026-12-31T00:00:00Z');
   const [newOverrideReason, setNewOverrideReason] = useState(
     'Temporary support override',
   );

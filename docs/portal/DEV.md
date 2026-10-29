@@ -1,21 +1,37 @@
 # Portal Local Development & Control Service Proxy (`DEV.md`)
 
-This guide explains how to run `apps/portal` in two modes:
-1. **Contract-Mocked Mode (default in dev & tests):** Runs standalone in the browser/Vitest using MSW handlers backed by `contracts/examples/valid/*.json`.
+This guide explains how to run `apps/portal` in three modes:
+1. **Live Control Plane Stack (`portal-dev-stack` & `portal-e2e`):** Runs real `fvpn-control` and `fvpn-worker` against an isolated PostgreSQL database from `$FVPN_TEST_DATABASE_URL` with test OIDC and fake NetBird/Stripe servers.
 2. **Live Control Service Mode (`fvpn-control` proxy):** Proxies `/api/v1` and `/auth` from the Vite dev server to a local `fvpn-control` process.
+3. **Contract-Mocked Mode (`VITE_API_MOCK=1` in dev & Vitest):** Runs standalone in the browser/Vitest using MSW handlers backed by `contracts/examples/valid/*.json`. Never included in production builds (`import.meta.env.PROD`).
 
 ---
 
 ## Environment Variables
 
-All Vite environment variables are optional and have contract-compliant defaults:
+All Vite and E2E environment variables are optional and have contract-compliant defaults:
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_BASE_URL` | `/api/v1` | Base URL prefix for all 40 OpenAPI contract endpoints (`src/api/client.ts`). |
+| `VITE_API_BASE_URL` | `/api/v1` | Base URL prefix for all 41 OpenAPI contract endpoints (`src/api/client.ts`). |
 | `VITE_AUTH_BASE_URL` | `/auth` | Base URL prefix for browser session routes (`GET /auth/session`, `/auth/login`, `POST /auth/logout` in `src/api/auth.ts`). |
-| `VITE_API_MOCK` | `1` in dev, `0` in prod build | Set to `1` to enable browser MSW mocking; set to `0` to disable MSW and use the Vite dev proxy / real backend. |
+| `VITE_API_MOCK` | `0` in prod build (`VITE_API_MOCK=1` only in dev) | Set to `1` in non-production dev to enable browser MSW mocking; production builds strip MSW completely. |
 | `VITE_API_PROXY_TARGET` | `http://127.0.0.1:8080` | Target origin for Vite's dev proxy when `VITE_API_MOCK=0`. |
+| `PORTAL_E2E_BASE_URL` | `http://127.0.0.1:4173` | Target URL for Playwright end-to-end tests (`apps/portal/playwright.config.ts`). |
+
+---
+
+## Mode 0: Full Live Control Plane Stack (`portal-dev-stack` & `portal-e2e`)
+
+Requires `$FVPN_TEST_DATABASE_URL` (an admin PostgreSQL 17 DSN). Creates an isolated `fvpn_w3_portal_live_*` database, runs migrations, starts `fvpn-control` and `fvpn-worker` with test OIDC, fake NetBird, and fake Stripe servers, enrolls a live mTLS node, and serves the portal on `http://127.0.0.1:4173` (dropping the isolated database on exit):
+
+```bash
+# Start interactive live stack on http://127.0.0.1:4173
+make -f mk/portal.mk portal-dev-stack
+
+# Run Playwright E2E suite against the live stack
+make -f mk/portal.mk portal-e2e
+```
 
 ---
 

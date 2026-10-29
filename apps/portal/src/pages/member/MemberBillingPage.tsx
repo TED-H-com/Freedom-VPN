@@ -18,14 +18,23 @@ export function MemberBillingPage(): React.ReactElement {
     () => `checkout-${Date.now()}`,
   );
 
-  const isCheckoutReturn = searchParams.get('checkout') === 'return';
+  const isCheckoutReturnParam = searchParams.get('checkout') === 'return';
 
   const selfQuery = useQuery({
     queryKey: ['member', 'me', persona],
     queryFn: () => apiClient.getMemberSelf(),
     refetchInterval: (query) => {
-      const state = query.state.data?.entitlement.state;
-      if (isCheckoutReturn && state && state !== 'active' && state !== 'cancel_at_period_end') {
+      const data = query.state.data;
+      const state = data?.entitlement.state;
+      const waitingConfirm =
+        isCheckoutReturnParam ||
+        Boolean(data?.next_actions.includes('wait_for_payment_confirmation'));
+      if (
+        waitingConfirm &&
+        state &&
+        state !== 'active' &&
+        state !== 'cancel_at_period_end'
+      ) {
         return 1000;
       }
       return false;
@@ -50,6 +59,8 @@ export function MemberBillingPage(): React.ReactElement {
 
   const me = selfQuery.data;
   const ent = me.entitlement;
+  const isCheckoutReturn =
+    isCheckoutReturnParam || me.next_actions.includes('wait_for_payment_confirmation');
   const showPendingConfirm =
     isCheckoutReturn && ent.state !== 'active' && ent.state !== 'cancel_at_period_end';
 

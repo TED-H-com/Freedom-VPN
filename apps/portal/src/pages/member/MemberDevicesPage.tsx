@@ -74,6 +74,19 @@ export function MemberDevicesPage(): React.ReactElement {
         {t('member.devices.addGuide')}
       </div>
 
+      {device_limit !== null && authorized_count >= device_limit && (
+        <div
+          className="alert alert-warning"
+          role="status"
+          data-testid="device-limit-warning"
+        >
+          {t('member.devices.quotaSummary', {
+            used: authorized_count,
+            limit: device_limit,
+          })}
+        </div>
+      )}
+
       <OperationBanner
         operation={activeOp}
         scope="member"
@@ -126,12 +139,8 @@ export function MemberDevicesPage(): React.ReactElement {
                     </span>
                   </td>
                   <td className="mono" style={{ fontSize: '0.75rem' }}>
-                    <div>
-                      seen: {formatLocaleWithUtc(dev.last_seen_at, locale)}
-                    </div>
-                    <div>
-                      auth: {formatLocaleWithUtc(dev.authorized_at, locale)}
-                    </div>
+                    <div>seen: {formatLocaleWithUtc(dev.last_seen_at, locale)}</div>
+                    <div>auth: {formatLocaleWithUtc(dev.authorized_at, locale)}</div>
                   </td>
                   <td>
                     {dev.status === 'authorized' && (

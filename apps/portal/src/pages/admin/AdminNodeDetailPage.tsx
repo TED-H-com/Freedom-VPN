@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -40,17 +40,18 @@ export function AdminNodeDetailPage(): React.ReactElement {
   const node = nodeQuery.data?.data;
   const etag = nodeQuery.data?.etag ?? null;
 
-  useEffect(() => {
-    if (node) {
-      setName(node.name ?? '');
-      setRegion(node.region ?? '');
-      setGroups(node.member_group_ids.join(', '));
-      setUpBps(String(node.capacity?.up_bps ?? 1000000000));
-      setDownBps(String(node.capacity?.down_bps ?? 1000000000));
-      setClearCapacity(false);
-      setNotes(node.notes ?? '');
-    }
-  }, [node]);
+  const [syncedNodeKey, setSyncedNodeKey] = useState<string>('');
+  const currentNodeKey = node ? `${node.node_id}:${node.resource_version}` : '';
+  if (node && syncedNodeKey !== currentNodeKey) {
+    setSyncedNodeKey(currentNodeKey);
+    setName(node.name ?? '');
+    setRegion(node.region ?? '');
+    setGroups(node.member_group_ids.join(', '));
+    setUpBps(String(node.capacity?.up_bps ?? 1000000000));
+    setDownBps(String(node.capacity?.down_bps ?? 1000000000));
+    setClearCapacity(false);
+    setNotes(node.notes ?? '');
+  }
 
   if (nodeQuery.error) {
     return (
@@ -515,7 +516,9 @@ export function AdminNodeDetailPage(): React.ReactElement {
           </div>
 
           <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+            >
               <input
                 type="checkbox"
                 data-testid="clear-capacity-checkbox"

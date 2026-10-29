@@ -841,7 +841,7 @@ export class FreedomVpnApiClient {
   createCheckoutSession(
     body: CheckoutSessionRequest = {
       plan_id: 'b4fe029a-ecbf-4b1a-9ee7-de399791ae6e',
-      return_url: 'https://portal.example.com/member/billing?checkout=return',
+      return_url: 'https://portal.example.com/member/billing',
     },
     actionId?: string,
   ): Promise<CheckoutSessionResponse | OperationResource> {
