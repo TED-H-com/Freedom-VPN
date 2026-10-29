@@ -105,6 +105,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | in progress |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | in progress |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | in progress |
+| w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | in progress |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
