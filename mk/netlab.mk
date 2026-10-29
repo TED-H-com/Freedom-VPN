@@ -12,7 +12,7 @@ NETLAB_IMAGE := $(FVPN_LAB_PREFIX):lab
 NETLAB_SCRATCH := /tmp/$(FVPN_LAB_PREFIX)-scratch
 NETLAB_BIN := /tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 
-.PHONY: netlab-unit netlab-build netlab-image netlab-up netlab-down netlab-test netlab-test-full
+.PHONY: netlab-unit netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full
 
 netlab-unit:
 	cd $(ROOT) && CGO_ENABLED=0 go test ./node/enforce/...
@@ -23,10 +23,16 @@ netlab-build:
 netlab-image:
 	docker build -t $(NETLAB_IMAGE) $(ROOT)/tests/netlab
 
+# Keys under the scratch mount are created as root inside the container.
+# The host user cannot unlink them. Wipe through a root container.
+netlab-wipe-scratch:
+	mkdir -p $(NETLAB_SCRATCH)
+	docker run --rm --network none -v $(NETLAB_SCRATCH):/scratch $(NETLAB_IMAGE) \
+		find /scratch -mindepth 1 -delete
+
 netlab-up: netlab-build netlab-image
 	docker rm -f $(FVPN_LAB_PREFIX) >/dev/null 2>&1 || true
-	rm -rf $(NETLAB_SCRATCH)
-	mkdir -p $(NETLAB_SCRATCH)
+	$(MAKE) -f $(NETLAB_MK) netlab-wipe-scratch FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)'
 	docker run -d --name $(FVPN_LAB_PREFIX) --privileged --network none \
 		--cap-add NET_ADMIN --cap-add SYS_TIME \
 		-v $(ROOT):/work:ro \
@@ -37,7 +43,8 @@ netlab-up: netlab-build netlab-image
 
 netlab-down:
 	docker rm -f $(FVPN_LAB_PREFIX) >/dev/null 2>&1 || true
-	rm -rf $(NETLAB_SCRATCH)
+	$(MAKE) -f $(NETLAB_MK) netlab-wipe-scratch FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)'
+	rmdir $(NETLAB_SCRATCH) 2>/dev/null || true
 
 netlab-test:
 	@set -eu; \

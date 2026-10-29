@@ -44,6 +44,13 @@ mkdir -p "$SCRATCH/keys" "$SCRATCH/log"
 chmod 700 "$SCRATCH/keys"
 umask 077
 
+# Host AppArmor profile "wg" attaches to /usr/bin/wg and denies reading key
+# files outside /etc/wireguard. /usr/local/bin/wg is the same binary, unconfined.
+if [[ ! -x /usr/local/bin/wg ]]; then
+	cp -a /usr/bin/wg /usr/local/bin/wg
+fi
+WG=/usr/local/bin/wg
+
 log "forwarding off before any path exists"
 sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 net.ipv6.conf.default.forwarding=0 >/dev/null
 
@@ -66,8 +73,8 @@ nsdo root ip -6 addr add fd00:db8:ff::33/64 dev fv-fh nodad
 nsdo fv-fwd ip -6 addr add fd00:db8:ff::34/64 dev fv-ff nodad
 # Internet side. SNAT address is 192.0.2.37.
 veth_pair root fv-ih 192.0.2.37/30 fv-inet fv-ii 192.0.2.38/30 1500
-nsdo root ip -6 addr add fd00:db8:inet::37/64 dev fv-ih nodad
-nsdo fv-inet ip -6 addr add fd00:db8:inet::38/64 dev fv-ii nodad
+nsdo root ip -6 addr add fd00:db8:17::37/64 dev fv-ih nodad
+nsdo fv-inet ip -6 addr add fd00:db8:17::38/64 dev fv-ii nodad
 nsdo fv-inet ip addr add 203.0.113.10/32 dev fv-ii
 nsdo fv-inet ip addr add 203.0.113.20/32 dev fv-ii
 nsdo fv-inet ip addr add 198.51.100.53/32 dev fv-ii
@@ -95,35 +102,35 @@ ip route add 172.16.5.10/32 via 192.168.0.2 dev fv-lh
 ip route add 169.254.169.254/32 via 192.168.0.2 dev fv-lh
 ip route add 169.254.1.50/32 via 192.168.0.2 dev fv-lh
 ip route add 192.0.2.200/32 via 192.168.0.2 dev fv-lh
-ip -6 route add 2001:db8:203::10/128 via fd00:db8:inet::38 dev fv-ih
+ip -6 route add 2001:db8:203::10/128 via fd00:db8:17::38 dev fv-ih
 ip -6 route add 2001:db8::10/128 via fd00:db8:ffff::10 dev fv-lh
 ip -6 route add fd00:db8:a1::/64 via fd00:db8:ff::34 dev fv-fh
 
 nsdo fv-inet ip route add default via 192.0.2.37 dev fv-ii
-nsdo fv-inet ip -6 route add default via fd00:db8:inet::37 dev fv-ii
+nsdo fv-inet ip -6 route add default via fd00:db8:17::37 dev fv-ii
 nsdo fv-lan ip route add default via 192.168.0.1 dev fv-ll
 nsdo fv-lan ip -6 route add default via fd00:db8:ffff::1 dev fv-ll
 
 log "wireguard keys in /scratch (not the repo)"
 for name in fwd a1 a2 b1 rogue; do
-	wg genkey | tee "$SCRATCH/keys/$name" | wg pubkey >"$SCRATCH/keys/$name.pub"
+	"$WG" genkey | tee "$SCRATCH/keys/$name" | "$WG" pubkey >"$SCRATCH/keys/$name.pub"
 done
 chmod 600 "$SCRATCH/keys"/*
 
 nsdo fv-fwd ip link add fv-wg0 type wireguard
-nsdo fv-fwd wg set fv-wg0 listen-port 51820 private-key "$SCRATCH/keys/fwd" \
+nsdo fv-fwd "$WG" set fv-wg0 listen-port 51820 private-key "$SCRATCH/keys/fwd" \
 	peer "$(cat "$SCRATCH/keys/a1.pub")" allowed-ips 100.64.1.1/32,fd00:db8:a1::1/128 \
 	peer "$(cat "$SCRATCH/keys/a2.pub")" allowed-ips 100.64.1.2/32 \
 	peer "$(cat "$SCRATCH/keys/b1.pub")" allowed-ips 100.64.2.1/32 \
 	peer "$(cat "$SCRATCH/keys/rogue.pub")" allowed-ips 100.64.9.9/32
 nsdo fv-fwd ip addr add 100.64.0.1/32 dev fv-wg0
-nsdo fv-fwd ip -6 addr add fd00:db8:fwd::1/128 dev fv-wg0 nodad
+nsdo fv-fwd ip -6 addr add fd00:db8:f::1/128 dev fv-wg0 nodad
 nsdo fv-fwd ip link set fv-wg0 up mtu 1420
 
 setup_member() {
 	local ns="$1" key="$2" endpoint="$3" addr="$4" v6="${5:-}"
 	nsdo "$ns" ip link add fv-wg0 type wireguard
-	nsdo "$ns" wg set fv-wg0 private-key "$SCRATCH/keys/$key" \
+	nsdo "$ns" "$WG" set fv-wg0 private-key "$SCRATCH/keys/$key" \
 		peer "$(cat "$SCRATCH/keys/fwd.pub")" \
 		endpoint "${endpoint}:51820" \
 		allowed-ips 0.0.0.0/0,::/0 \
@@ -203,7 +210,7 @@ for attempt in 1 2 3 4 5 6 7 8; do
 	nsdo fv-a2 ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
 	nsdo fv-b1 ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
 	nsdo fv-rogue ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
-	count=$(nsdo fv-fwd wg show fv-wg0 latest-handshakes | awk '$2 > 0 { n++ } END { print n+0 }')
+	count=$(nsdo fv-fwd "$WG" show fv-wg0 latest-handshakes | awk '$2 > 0 { n++ } END { print n+0 }')
 	if [[ "$count" == 4 ]]; then
 		ready=1
 		break
@@ -212,7 +219,7 @@ for attempt in 1 2 3 4 5 6 7 8; do
 done
 if [[ "$ready" != 1 ]]; then
 	log "handshake failed"
-	nsdo fv-fwd wg show fv-wg0 | awk '{ print $1 }' >&2 || true
+	nsdo fv-fwd "$WG" show fv-wg0 | awk '{ print $1 }' >&2 || true
 	exit 1
 fi
 

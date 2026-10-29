@@ -19,6 +19,12 @@ RUN apt-get update \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# The host AppArmor profile "wg" attaches to the path /usr/bin/wg
+# (flags=attach_disconnected) even inside a privileged container, and it
+# allows fopen of key files only under /etc/wireguard. A copy at another
+# path is not attached to that profile. topology.sh uses this binary.
+RUN cp -a /usr/bin/wg /usr/local/bin/wg
+
 COPY scripts/ /opt/netlab/scripts/
 
 CMD ["sleep", "infinity"]

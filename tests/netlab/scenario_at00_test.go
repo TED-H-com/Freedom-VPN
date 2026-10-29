@@ -12,7 +12,7 @@ func TestAT00_Topology(t *testing.T) {
 	if !scratchExists("/scratch/topology.ok") {
 		t.Fatal("topology did not finish; /scratch/topology.ok is missing")
 	}
-	out := mustExec(t, "ip", "netns", "exec", "fv-fwd", "wg", "show", "fv-wg0", "latest-handshakes")
+	out := mustExec(t, "ip", "netns", "exec", "fv-fwd", "/usr/local/bin/wg", "show", "fv-wg0", "latest-handshakes")
 	n := 0
 	for _, line := range strings.Split(out, "\n") {
 		fields := strings.Fields(line)
