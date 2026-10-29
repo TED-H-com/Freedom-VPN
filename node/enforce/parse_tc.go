@@ -52,12 +52,18 @@ func ParseQdiscJSON(raw []byte) (QdiscView, error) {
 }
 
 // ParseClassJSON reads `tc -j class show dev IFACE` and merges it into view.
+// iproute2 on Ubuntu 24.04 prints class listings as text even with -j, while
+// qdisc listings are JSON. Both forms are accepted.
 func ParseClassJSON(raw []byte, view QdiscView) (QdiscView, error) {
 	if view.Classes == nil {
 		view.Classes = map[string]ClassView{}
 	}
-	if len(bytes.TrimSpace(raw)) == 0 {
+	trim := bytes.TrimSpace(raw)
+	if len(trim) == 0 {
 		return view, nil
+	}
+	if trim[0] != '[' && trim[0] != '{' {
+		return parseClassText(trim, view)
 	}
 	var arr []map[string]any
 	dec := json.NewDecoder(bytes.NewReader(raw))
@@ -80,6 +86,39 @@ func ParseClassJSON(raw []byte, view QdiscView) (QdiscView, error) {
 		opts, _ := obj["options"].(map[string]any)
 		rate, ceil := ratePair(opts)
 		view.Classes[handle] = ClassView{RateBPS: rate, CeilBPS: ceil, Found: true}
+	}
+	return view, nil
+}
+
+func parseClassText(raw []byte, view QdiscView) (QdiscView, error) {
+	found := 0
+	for _, line := range strings.Split(string(raw), "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "class htb ") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) < 3 {
+			continue
+		}
+		var rate, ceil uint64
+		var haveRate, haveCeil bool
+		for i := 0; i+1 < len(fields); i++ {
+			switch fields[i] {
+			case "rate":
+				rate, haveRate = parseRateString(fields[i+1])
+			case "ceil":
+				ceil, haveCeil = parseRateString(fields[i+1])
+			}
+		}
+		if !haveRate || !haveCeil {
+			return view, fmt.Errorf("tc class %s has no rate and ceil", fields[2])
+		}
+		view.Classes[fields[2]] = ClassView{RateBPS: rate, CeilBPS: ceil, Found: true}
+		found++
+	}
+	if found == 0 {
+		return view, fmt.Errorf("tc class text: no htb classes")
 	}
 	return view, nil
 }

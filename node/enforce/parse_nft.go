@@ -190,7 +190,9 @@ func ParseState(raw []byte) (State, error) {
 	return st, nil
 }
 
-// classAssignments reads "fvpn_class=<uuid>:<minorhex>,..." from a rule comment.
+// classAssignments reads "fvpn_class=<uuid>:<minorhex>" from a rule comment.
+// Several members may be comma-separated in one comment; the renderer emits
+// one member per comment because nft allows at most 128 bytes.
 func classAssignments(comment string) map[uuid.UUID]uint16 {
 	const key = "fvpn_class="
 	i := strings.Index(comment, key)
@@ -331,12 +333,30 @@ func noteMeta(meta map[string]any, parent map[string]any, rv *RuleView) {
 	}
 }
 
+// parseClassID reads the nft JSON form of meta priority. nft 1.0.9 prints a
+// classid as "major:minor", both hexadecimal, for example "1:2dc5".
+func parseClassID(s string) (uint64, bool) {
+	major, minor, ok := strings.Cut(s, ":")
+	if !ok || major == "" || minor == "" || strings.Contains(minor, ":") {
+		return 0, false
+	}
+	maj, err1 := strconv.ParseUint(major, 16, 16)
+	min, err2 := strconv.ParseUint(minor, 16, 16)
+	if err1 != nil || err2 != nil {
+		return 0, false
+	}
+	return (maj << 16) | min, true
+}
+
 func asUint(v any) (uint64, bool) {
 	switch t := v.(type) {
 	case json.Number:
 		n, err := strconv.ParseUint(t.String(), 10, 64)
 		return n, err == nil
 	case string:
+		if n, ok := parseClassID(t); ok {
+			return n, true
+		}
 		n, err := strconv.ParseUint(strings.TrimPrefix(t, "0x"), 16, 64)
 		if err == nil && strings.HasPrefix(t, "0x") {
 			return n, true

@@ -82,9 +82,16 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 
 	in := m.Datapath.MemberIngress
 	up := m.Datapath.Uplink
-	comment := fmt.Sprintf("fvpn_generation=%d fvpn_metering=%s fvpn_class=%s", m.Generation, MeteringVersion, formatClasses(assignments))
-	// Unreachable marker so the generation is visible without accepting traffic.
-	rule(&b, "forward", fmt.Sprintf("ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment %q", comment))
+	// Unreachable markers. nft comments are at most 128 bytes, so the class
+	// map is one rule per member rather than one packed comment (§8.2, §11.4).
+	if err := markerRule(&b, "forward", fmt.Sprintf("fvpn_generation=%d fvpn_metering=%s", m.Generation, MeteringVersion)); err != nil {
+		return RenderPlan{}, err
+	}
+	for _, id := range sortedIDs(assignments) {
+		if err := markerRule(&b, "forward", fmt.Sprintf("fvpn_class=%s:%x", id, assignments[id])); err != nil {
+			return RenderPlan{}, err
+		}
+	}
 
 	// IPv6 member forwarding is blocked in v1 (§8.3). The counter is diagnostic.
 	rule(&b, "forward", fmt.Sprintf("iifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
@@ -195,8 +202,9 @@ func RenderBaseline(dp Datapath, state State) (string, error) {
 	replaceChain(&b, state, "input", fmt.Sprintf("type filter hook input priority %d; policy accept;", HookPriorityFilter))
 	replaceChain(&b, state, "output", fmt.Sprintf("type filter hook output priority %d; policy accept;", HookPriorityFilter))
 	replaceChain(&b, state, "postrouting", fmt.Sprintf("type nat hook postrouting priority %d; policy accept;", HookPrioritySNAT))
-	comment := "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=" + MeteringVersion
-	rule(&b, "forward", fmt.Sprintf("ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment %q", comment))
+	if err := markerRule(&b, "forward", "fvpn_generation=0 fvpn_baseline=1 fvpn_metering="+MeteringVersion); err != nil {
+		return "", err
+	}
 	rule(&b, "forward", fmt.Sprintf("iifname %q counter name %q drop", dp.MemberIngress, counterBase))
 	rule(&b, "forward", fmt.Sprintf("oifname %q counter name %q drop", dp.MemberIngress, counterBase))
 	rule(&b, "forward", fmt.Sprintf("iifname %q meta nfproto ipv6 counter name %q drop", dp.MemberIngress, counterV6))
@@ -231,6 +239,26 @@ func rule(b *strings.Builder, chain, body string) {
 	fmt.Fprintf(b, "add rule %s %s %s %s\n", TableFamily, TableName, chain, body)
 }
 
+// nftCommentMax is the userspace limit (nft 1.0.9: "128 characters maximum").
+const nftCommentMax = 128
+
+func markerRule(b *strings.Builder, chain, comment string) error {
+	if len(comment) > nftCommentMax {
+		return fmt.Errorf("nft comment is %d bytes, maximum is %d", len(comment), nftCommentMax)
+	}
+	rule(b, chain, fmt.Sprintf("ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment %q", comment))
+	return nil
+}
+
+func sortedIDs(assignments map[uuid.UUID]uint16) []uuid.UUID {
+	ids := make([]uuid.UUID, 0, len(assignments))
+	for id := range assignments {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i].String() < ids[j].String() })
+	return ids
+}
+
 func allowedElements(devices []admittedDevice) string {
 	var parts []string
 	for _, d := range devices {
@@ -258,19 +286,6 @@ func addrList(a []netip.Addr) string {
 		parts[i] = x.String()
 	}
 	return strings.Join(parts, ", ")
-}
-
-func formatClasses(assignments map[uuid.UUID]uint16) string {
-	ids := make([]uuid.UUID, 0, len(assignments))
-	for id := range assignments {
-		ids = append(ids, id)
-	}
-	sort.Slice(ids, func(i, j int) bool { return ids[i].String() < ids[j].String() })
-	parts := make([]string, len(ids))
-	for i, id := range ids {
-		parts[i] = fmt.Sprintf("%s:%x", id, assignments[id])
-	}
-	return strings.Join(parts, ",")
 }
 
 func sortedKeys(m map[string]bool) []string {

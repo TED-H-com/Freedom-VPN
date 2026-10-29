@@ -233,7 +233,15 @@ func expectChain(rs Ruleset, name, typ, hook, policy string, prio int64) error {
 func generationComment(ch ChainView, generation uint64) bool {
 	want := fmt.Sprintf("fvpn_generation=%d", generation)
 	for _, rule := range ch.Rules {
-		if strings.Contains(rule.Comment, want) {
+		rest, ok := strings.CutPrefix(rule.Comment, want)
+		if !ok {
+			idx := strings.Index(rule.Comment, want)
+			if idx < 0 {
+				continue
+			}
+			rest = rule.Comment[idx+len(want):]
+		}
+		if rest == "" || rest[0] < '0' || rest[0] > '9' {
 			return true
 		}
 	}

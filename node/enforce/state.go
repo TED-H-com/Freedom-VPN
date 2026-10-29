@@ -10,8 +10,9 @@ type State struct {
 	Chains   map[string]bool
 	Sets     map[string]bool
 	Counters map[string]CounterValue
-	// Classes are member minors read back from the generation comment so a
-	// later render does not move a member (§11.4).
+	// Classes are member minors read back from per-member fvpn_class comments
+	// so a later render does not move a member (§11.4). nft comments are
+	// at most 128 bytes, so each member has its own marker rule.
 	Classes map[uuid.UUID]uint16
 }
 

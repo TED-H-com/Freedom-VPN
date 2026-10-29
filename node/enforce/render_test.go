@@ -342,6 +342,77 @@ func TestRender_KeepsStoredClassMinor(t *testing.T) {
 	}
 }
 
+func TestRender_NFTCommentLimit(t *testing.T) {
+	plan, err := Render(goldenModel(), State{}, TCState{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, line := range strings.Split(plan.NFT, "\n") {
+		start := strings.Index(line, `comment "`)
+		if start < 0 {
+			continue
+		}
+		body := line[start+len(`comment "`):]
+		end := strings.LastIndex(body, `"`)
+		if end < 0 {
+			t.Fatalf("unclosed comment: %s", line)
+		}
+		if len(body[:end]) > nftCommentMax {
+			t.Fatalf("comment length %d: %s", len(body[:end]), body[:end])
+		}
+	}
+	if !strings.Contains(plan.NFT, "fvpn_class="+memberA.String()+":2dc5") {
+		t.Fatal("member A class marker missing")
+	}
+	if !strings.Contains(plan.NFT, "fvpn_class="+memberB.String()+":2dc6") {
+		t.Fatal("member B class marker missing")
+	}
+}
+
+func TestParse_NftPriorityClassID(t *testing.T) {
+	// nft 1.0.9 JSON prints meta priority as a classid string, not an integer.
+	raw := []byte(`{"nftables":[{"rule":{"family":"inet","table":"fvpn","chain":"forward","expr":[
+		{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fv-fh"}},
+		{"counter":"u_019a00000000700080000000000000a1"},
+		{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:2dc5"}},
+		{"accept":null}
+	]}}]}`)
+	rs, err := ParseRuleset(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rule := rs.Chains["forward"].Rules[0]
+	if rule.Counter != "u_019a00000000700080000000000000a1" || rule.Verdict != "accept" {
+		t.Fatalf("%+v", rule)
+	}
+	if len(rule.Prios) != 1 || rule.Prios[0] != 0x12dc5 {
+		t.Fatalf("prios %v", rule.Prios)
+	}
+}
+
+func TestParse_TCClassText(t *testing.T) {
+	text := []byte("class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b \n" +
+		"class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b \n" +
+		"class htb 1:2dc5 parent 1:1 leaf 2dc5: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b \n")
+	view, err := ParseClassJSON(text, QdiscView{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if view.Classes["1:2dc5"].RateBPS != 50_000_000 || view.Classes["1:1"].CeilBPS != 200_000_000 {
+		t.Fatalf("%+v", view.Classes)
+	}
+}
+
+func TestGenerationCommentBoundary(t *testing.T) {
+	ch := ChainView{Rules: []RuleView{{Comment: "fvpn_generation=12 fvpn_metering=forward_admission_v1"}}}
+	if generationComment(ch, 1) || generationComment(ch, 2) {
+		t.Fatal("shorter generation matched a longer one")
+	}
+	if !generationComment(ch, 12) {
+		t.Fatal("generation 12 did not match")
+	}
+}
+
 func TestApply_ReusesKernelClass(t *testing.T) {
 	m := smallModel()
 	comment := "fvpn_generation=2 fvpn_metering=" + MeteringVersion + " fvpn_class=" + memberA.String() + ":20"

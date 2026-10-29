@@ -35,7 +35,9 @@ add chain inet fvpn forward { type filter hook forward priority -150; policy dro
 add chain inet fvpn input { type filter hook input priority -150; policy accept; }
 add chain inet fvpn output { type filter hook output priority -150; policy accept; }
 add chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }
-add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=7 fvpn_metering=forward_admission_v1 fvpn_class=019a0000-0000-7000-8000-00000000000a:2dc5,019a0000-0000-7000-8000-00000000000b:2dc6"
+add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=7 fvpn_metering=forward_admission_v1"
+add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000a:2dc5"
+add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000b:2dc6"
 add rule inet fvpn forward iifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
 add rule inet fvpn forward oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
 add rule inet fvpn forward iifname "fv-fh" ct state invalid counter name "ctinv" drop

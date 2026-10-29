@@ -2,6 +2,7 @@
 """Lab listeners. They log accepts only (no payloads, no query names)."""
 
 import socket
+import struct
 import sys
 import threading
 
@@ -113,17 +114,33 @@ def serve_tcp(port: int, handler) -> None:
 
 
 def serve_udp(port: int, kind: str) -> None:
+    # Secondary addresses (203.0.113.10, 198.51.100.53) share fv-ii. A socket
+    # bound to 0.0.0.0 would reply from the primary address 192.0.2.38, which
+    # does not match the conntrack entry created by SNAT, so the reply never
+    # returns to the member (§10.2). Reply from the header destination.
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_IP, socket.IP_PKTINFO, 1)
     sock.bind(("0.0.0.0", port))
+
+    def reply(payload: bytes, addr, ancdata) -> None:
+        for level, typ, data in ancdata:
+            if level == socket.SOL_IP and typ == socket.IP_PKTINFO and len(data) >= 12:
+                ifindex, _spec, dest = struct.unpack("I4s4s", data[:12])
+                cmsg = struct.pack("I4s4s", ifindex, dest, dest)
+                sock.sendmsg([payload], [(socket.SOL_IP, socket.IP_PKTINFO, cmsg)], 0, addr)
+                return
+        sock.sendto(payload, addr)
 
     def loop() -> None:
         while True:
-            data, addr = sock.recvfrom(4096)
+            data, ancdata, _flags, addr = sock.recvmsg(4096, socket.CMSG_SPACE(32))
             note(f"udp {addr[0]}:{addr[1]} -> 0.0.0.0:{port} bytes={len(data)}")
             if kind == "echo":
-                sock.sendto(data, addr)
+                reply(data, addr, ancdata)
             elif kind == "dns":
-                sock.sendto(dns_response(data), addr)
+                resp = dns_response(data)
+                if resp:
+                    reply(resp, addr, ancdata)
 
     threading.Thread(target=loop, daemon=True).start()
 
