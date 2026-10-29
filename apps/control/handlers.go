@@ -14,5 +14,7 @@ func Handlers(pool *pgxpool.Pool, logger *slog.Logger) (*httpapi.Composite, erro
 	return httpapi.Compose(
 		operations.Store{Pool: pool},
 		&audit.Store{Pool: pool, Logger: logger},
+		wirePolicies(pool, logger),
+		wireUsage(pool, logger),
 	)
 }

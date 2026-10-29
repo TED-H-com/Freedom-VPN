@@ -825,13 +825,10 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		return nil, newValidationError("/reason", ReasonSchemaInvalid, "reason is required and must be 1..500 characters")
 	}
 
-	expectedVersion := cleanETag(in.ExpectedVersion)
-	if expectedVersion == "" {
+	if strings.TrimSpace(in.ExpectedVersion) == "" {
 		return nil, apierr.New(apierr.PreconditionRequired, "If-Match header is required to activate a policy revision")
 	}
-	if _, err := decstr.Parse(expectedVersion); err != nil {
-		return nil, apierr.New(apierr.ValidationFailed, "If-Match must be a valid decimal uint64 resource_version")
-	}
+	expectedVersion := cleanETag(in.ExpectedVersion)
 
 	effectiveAt := s.now()
 	if in.EffectiveAt != nil && !in.EffectiveAt.IsZero() {
@@ -898,7 +895,7 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			return err
 		}
 
-		if curVerStr != expectedVersion {
+		if _, err := decstr.Parse(expectedVersion); err != nil || curVerStr != expectedVersion {
 			return apierr.Wrap(
 				db.ErrVersionConflict,
 				apierr.ResourceVersionConflict,
@@ -1677,7 +1674,9 @@ func buildActivateIdempotencyScope(in ActivateRevisionInput) (db.IdempotencyScop
 
 func cleanETag(raw string) string {
 	s := strings.TrimSpace(raw)
-	s = strings.TrimPrefix(s, "W/")
+	if strings.HasPrefix(s, "W/") {
+		return s
+	}
 	s = strings.Trim(s, `"`)
 	return strings.TrimSpace(s)
 }
