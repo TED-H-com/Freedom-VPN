@@ -342,6 +342,19 @@ const (
 	metaLastGoodRelease    = "last_good_release_id"
 	metaDesiredState       = "last_desired_state"
 	metaStateSchema        = "state_schema_version"
+	metaPublicationIntent  = "publication_intent"
+	metaForwardingBlocked  = "forwarding_blocked"
+	metaTerminalOutcome    = "terminal_outcome"
+)
+
+// Terminal outcomes stored with the forwarding gate. There is no journal
+// stage named failed; a failed terminal job is this outcome (D-034b).
+const (
+	OutcomeSucceeded        = "succeeded"
+	OutcomeFailed           = "failed"
+	OutcomeRolledBack       = "rolled_back"
+	OutcomeRecoveryRequired = "recovery_required"
+	OutcomeAlreadyCurrent   = "already_current"
 )
 
 func getMeta(ctx context.Context, q interface {
@@ -402,6 +415,69 @@ func (j *Journal) SetPointers(ctx context.Context, p Pointers) error {
 		}
 	}
 	return tx.Commit()
+}
+
+// GateRecord is the latest applied publication intent and the forwarding
+// decision, written in one step. Recover replays this record. It does not
+// infer the decision from an older transaction (D-034b).
+type GateRecord struct {
+	PublicationIntent string
+	ForwardingBlocked bool
+	TerminalOutcome   string
+	Present           bool
+}
+
+// GateRecord returns the persisted forwarding decision. Present is false
+// when none of the gate keys have been written.
+func (j *Journal) GateRecord(ctx context.Context) (GateRecord, error) {
+	var g GateRecord
+	pub, okPub, err := getMeta(ctx, j.db, metaPublicationIntent)
+	if err != nil {
+		return g, err
+	}
+	blk, okBlk, err := getMeta(ctx, j.db, metaForwardingBlocked)
+	if err != nil {
+		return g, err
+	}
+	out, okOut, err := getMeta(ctx, j.db, metaTerminalOutcome)
+	if err != nil {
+		return g, err
+	}
+	g.PublicationIntent = pub
+	g.ForwardingBlocked = blk == "1"
+	g.TerminalOutcome = out
+	g.Present = okPub || okBlk || okOut
+	return g, nil
+}
+
+// SetGate writes the publication intent, the blocked bit and the terminal
+// outcome in one transaction.
+func (j *Journal) SetGate(ctx context.Context, g GateRecord) error {
+	tx, err := j.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+	if err := writeGate(ctx, tx, g); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func writeGate(ctx context.Context, q interface {
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+}, g GateRecord) error {
+	blocked := "0"
+	if g.ForwardingBlocked {
+		blocked = "1"
+	}
+	if err := setMeta(ctx, q, metaPublicationIntent, g.PublicationIntent); err != nil {
+		return err
+	}
+	if err := setMeta(ctx, q, metaForwardingBlocked, blocked); err != nil {
+		return err
+	}
+	return setMeta(ctx, q, metaTerminalOutcome, g.TerminalOutcome)
 }
 
 // SaveDesiredState stores the raw bytes of the latest verified desired state

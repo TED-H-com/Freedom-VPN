@@ -477,12 +477,12 @@ func bundle(s *ledger, releaseOnly bool) (*envelope.TrustStore, error) {
 	var keys []envelope.TrustedKey
 	for _, k := range s.Keys {
 		purpose := envelope.Purpose(k.Purpose)
-		if !purpose.Valid() || (releaseOnly && k.Purpose != Release) {
+		if !purpose.Valid() || k.Purpose == LedgerEpoch || (releaseOnly && k.Purpose != Release) {
 			continue
 		}
 		keys = append(keys, envelope.TrustedKey{KeyID: k.ID, PublicKey: k.Public, Purposes: []envelope.Purpose{purpose}, NotBefore: k.NotBefore, NotAfter: k.NotAfter, Revoked: k.State == "revoked"})
 	}
-	return envelope.NewTrustStore(keys...)
+	return envelope.NewNodeTrustStore(keys...)
 }
 func (p *FileProvider) TrustBundle(ctx context.Context) (out *envelope.TrustStore, err error) {
 	err = p.with(ctx, func(s *ledger) error { var e error; out, e = bundle(s, false); return e })

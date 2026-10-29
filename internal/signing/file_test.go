@@ -208,3 +208,29 @@ func TestSEC01_ReleaseTrustRequiresExistingAuthorization(t *testing.T) {
 		t.Fatal("revoked root authorized rotation")
 	}
 }
+
+func TestSEC01_NodeTrustBundleExcludesCentralLedgerKey(t *testing.T) {
+	p := vault(t)
+	ctx := context.Background()
+	id, e := p.Rotate(ctx, LedgerEpoch, time.Hour, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = p.Rotate(ctx, Lease, time.Hour, 0); e != nil {
+		t.Fatal(e)
+	}
+	trust, e := p.TrustBundle(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, ok := trust.Lookup(id); ok {
+		t.Fatal("central ledger key exposed to nodes")
+	}
+	raw, e := json.Marshal(trust)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = envelope.ParseNodeTrustStoreJSON(raw); e != nil {
+		t.Fatal(e)
+	}
+}

@@ -1,0 +1,217 @@
+# Node control and worker wiring
+
+References: Project Spec §5–7, §13.1–2/10, §14.4–5, §15.3, §16.1–3,
+§17.1. The current OpenAPI contract takes precedence over older service docs.
+
+## Composition and operation list
+
+`nodes(),` is the single registration line in each process's `Domains()` list.
+`apps/control/wire_nodes.go` builds `internal/nodes/httpwire` once using the
+process-owned pool, configuration and logger. Its `Built` supplies the strict
+handlers, PKI authenticator and enrollment credential middleware to the
+[D-026 composition seam](../control/COMPOSITION.md). The framework owns both
+listeners, routing, response tracking and request IDs. All command handlers reuse
+`httpapi.Transaction`, set durable resource references, and implement replay.
+Standalone service callers retain their existing transaction/idempotency APIs.
+
+The following transitional 501 handlers are removed:
+
+| Operation | Behavior |
+|---|---|
+| `createEnrollment`, `getEnrollment`, `revokeEnrollment` | Issue a hash-only token, read its state, revoke unused tokens. Replayed creation never returns plaintext. |
+| `enrollNode` | CSR proof, durable incarnation/certificate/provisioning operation; same proof returns the original certificate. |
+| `consumeAgentBootstrap` | Authenticated single delivery: 409 not ready, one 200, then 410 consumed; expired undelivered material returns 410 expired. |
+| `renewAgentCertificate` | New CSR and serial with bounded older-serial overlap; same renewal ID replays. |
+| `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. |
+| `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
+| `setNodePublication` | Disabled/unpublished intents and withdrawal operations. Publication is blocked pending the policy integration below. |
+| `getDesiredState` | Signed staging/disabled state, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. |
+| `renewServingLease` | Signed 24-hour default maximum, bounded member grants, natural renewal-ID replay without restarting deadlines. |
+| `submitObservation` | Immutable deduplicated receipt, then `ObserveReportTx` in the same transaction, fleet lock before node lock. |
+| `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
+| `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
+| `submitUpdateResult` | Durable 202 ACK; identical result replays, changed payload returns 409 ACK_CONFLICT with retained conflict evidence. |
+
+Every API response passes through `apierr`/response tracking and `no-store`.
+Certificate authentication uses the verified TLS certificate, current incarnation,
+certificate history, effective validity, and independent revocation journal.
+`X-Node-ID` and proxy certificate headers cannot select identity. The internal
+principal ID selects the authenticated public certificate serial for renewal and
+bootstrap; no private key is retrieved or transmitted.
+
+## Boundaries still requiring another owner
+
+This branch is **not a complete production node control plane**:
+
+1. `policies.BuildNodeMemberRatePolicy` is absent from this checkout. Published
+   desired state and publication commands return 503, rather than using the legacy
+   compiler's independent rate calculation. Staging/disabled state has no member
+   grants. The policy owner must export the promised builder and a transaction-aware
+   integration into `desiredstate.Compiler`, then this gate can be removed.
+2. `httpapi.SetResult` rejects any 202 without an operation ID, although observation
+   and update-result responses are receipts. When these two agent routes supply an
+   optional Idempotency-Key, they return 503 and roll back. Without the header,
+   their natural report/result IDs work. The framework needs a receipt result
+   variant; do not invent a completed operation to satisfy its current check.
+3. `leases.Service.Renew` has no caller-transaction method. Requests with an
+   optional Idempotency-Key return 503 before issuance; natural renewal-ID replay
+   is supported. The lease owner must expose `RenewTx` to complete atomic HTTP
+   key storage. Published member lease behavior remains the existing lease service.
+4. Migration 00110 unconditionally prohibits revoked→registered, conflicting with
+   the new reinstall contract. The reviewed proposal is
+   `internal/pki/migrations/reinstall.sql`; a new integration test explicitly applies
+   it to its isolated database. The database owner must package it as a new
+   embedded migration before reinstall can work in deployed databases. Runtime
+   code never executes DDL or weakens a base guard. Naked lifecycle resets remain
+   forbidden; old certificates/incarnations remain revoked.
+5. The contract contains no batch cancel operation or enrollment collection GET.
+   None is invented. Existing batch cancellation on revocation/retirement remains.
+   `UpdateTarget` includes both required booleans; `NodeUpdateSummary` has no such
+   fields in the current contract.
+
+The spec has no §8.4; the applicable §8.1–3 were read. Its AT10 concerns network
+isolation; lease-window evidence here corresponds to §16.3/AT29, not an AT10
+packet-level pass.
+
+## Worker jobs and read-back
+
+`apps/worker/jobs_nodes.go` builds its registry and clients once from
+`Dependencies.Pool`, `Dependencies.Config` and `Dependencies.Logger`. `NodeJobs`
+also accepts explicit dependencies for integration tests. No domain opens a pool,
+reads environment variables, or starts a listener/dispatcher/goroutine during
+construction. `Built.Runners` supplies `RunNodeSchedule` to the process supervisor.
+
+| Event | Durable evidence and external calls |
+|---|---|
+| `node.provision.requested` | `CreateNodeSetupKey(operation_id)` locates the stable name and saved ID before creation. The adapter ensures staging group, creates one-off/usage_limit=1/non-ephemeral key with 86400-second external expiry, and GETs it to verify settings. Only then is bounded AES-GCM ciphertext stored and `netbird_setup` advanced. |
+| `node.peer.observe` | Loads the immutable authenticated report; `EnsureNodePeer` GETs the reported peer and validates server/non-ephemeral identity. The one-time deployment/peer binding and provisioning steps commit after read-back. Frozen mappings and revoked/current-incarnation changes are denied. |
+| `node.routes.withdraw` | `WithdrawExit` locates route/policy, deletes, and confirms absence. Exit observed state, receipt and operation step are persisted under the current claim. |
+| `node.peer.withdraw` | Withdraws exit first, revokes setup keys by stable provisioning operation ID (including lost responses), then reads/binds known revoked-incarnation peers and `DeletePeer` verifies no remaining route reference and deletion. Active reinstall incarnations are excluded. |
+| `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
+| `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
+| `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
+
+The supervised runner seeds reconciliation immediately at startup and checks for
+a missing chain each `reconcile_seconds`. Fleet locking coalesces seeds from
+multiple processes and event-created successors. Runners only enqueue; the shared
+dispatcher claims and completes work. Enqueue failures return to the supervisor;
+cancellation stops the runner. Reconciliation never guesses success for
+stuck/offline jobs.
+
+`nodes.NetBirdBindings` aliases `devices.NetBirdBindings`, sharing the
+[member/device binding convention](../members/README.md#netbird-binding-and-lock-namespace-convention):
+provider `netbird`, reversible encoded keys, JCS SHA-256 resource UUIDs and
+PostgreSQL deployment session-lock namespace 119. HTTP calls never hold a SQL
+request transaction.
+Transport loss after remote key creation may make the one-time secret unavailable:
+the worker fails visibly and requires explicit enrollment recovery, never another
+automatic key creation. No real NetBird deployment or device behavior is claimed.
+
+Worker mutations check the claim token/owner/deadline again after external calls.
+The dispatcher records final delivery under its fenced claim. Expired workers
+cannot commit release verification, bootstrap storage or operation advancement.
+
+## Configuration
+
+The central configuration's required `nodes_config_file` points to a strict JSON
+document consumed by both domains through `Dependencies.Config.NodesConfigFile`.
+Only the binary's central loader interprets the corresponding
+`FVPN_NODES_CONFIG_FILE` environment override. Missing, malformed or unreadable
+configuration/credentials fails startup with `config.SettingError` naming
+`nodes_config_file`; there is no request-time configuration fallback.
+Do not put key material or bearer tokens in JSON. Provision the local
+FileProvider vault and public CA certificate explicitly; this development provider
+is not a production HSM or independent anti-rollback appliance.
+
+| JSON key | Requirement |
+|---|---|
+| `provider_directory`, `ca_certificate_file`, `ca_key_id` | Existing vault, public CA PEM and provider-held key reference. Never initialize a new authority silently. |
+| `certificate_seconds`, `renewal_overlap_seconds` | Explicit certificate lifetime and nonnegative overlap less than lifetime. |
+| `bootstrap_seconds` | Explicit local one-time delivery lifetime, independent of NetBird's external lifetime. |
+| `installer_seconds`, `preinstalled_seconds` | Defaults 900 and 604800; configurable. |
+| `authorization_seconds`, `online_seconds`, `stuck_seconds` | Explicit fleet authorization/online/watchdog windows. |
+| `reconcile_seconds`, `fetch_seconds`, `desired_state_seconds` | Explicit reconciliation, HTTP fetch and desired-envelope durations. |
+| `release_origins` | Exact HTTPS origins for immutable manifests/artifacts. |
+| `dns_resolver_ipv4`, `dns_resolver_ipv6` | Fleet-wide designated resolver address arrays, validated by family; at least one address across the two arrays is required. No production default. |
+| `netbird_url`, `netbird_deployment`, `netbird_token_file` | Adapter `/api` HTTPS URL, deployment scope and bearer-token file. |
+
+A complete **TEST ONLY** configuration shape follows. Provision the vault, CA
+key and certificate first; replace the test key reference with that provider's
+returned key ID. The non-default time windows below are test values, not approved
+production settings.
+
+```json
+{
+  "provider_directory": "/var/lib/fvpn-control/signing",
+  "ca_certificate_file": "/etc/fvpn-control/node-ca.pem",
+  "ca_key_id": "test-ca-key-reference",
+  "certificate_seconds": 86400,
+  "renewal_overlap_seconds": 300,
+  "bootstrap_seconds": 300,
+  "installer_seconds": 900,
+  "preinstalled_seconds": 604800,
+  "authorization_seconds": 300,
+  "online_seconds": 180,
+  "stuck_seconds": 600,
+  "reconcile_seconds": 30,
+  "fetch_seconds": 30,
+  "desired_state_seconds": 600,
+  "release_origins": ["https://releases.example.invalid"],
+  "dns_resolver_ipv4": ["100.64.0.53"],
+  "dns_resolver_ipv6": ["2001:db8::53"],
+  "netbird_url": "https://netbird.example.invalid/api",
+  "netbird_deployment": "test-deployment",
+  "netbird_token_file": "/etc/fvpn-control/netbird-token"
+}
+```
+
+Resolver addresses come only from this deployment configuration, never a policy
+revision payload. The node compiler receives them through
+`desiredstate.WithDNSResolvers(ipv4, ipv6)` (see [README §6](README.md#6-desired-state-and-lease-decisions-follow-up-2)).
+Both families participate in desired-envelope cache validation; changing either
+invalidates the stored ETag. These are fleet-wide settings, with no per-node
+override. A single-family deployment may omit the other array.
+
+The fleet's `max_offline_lease_seconds` remains authoritative, default 86400.
+Release trust is independently pinned in the vault and reloaded at each manifest
+authorization, so an already constructed service cannot retain revoked trust.
+Node trust bundles exclude central-only ledger-epoch keys. No release private
+key is loaded. Mutable configured files require controlled provisioning and
+process restart except the provider's current key/revocation ledger.
+
+## Evidence interpretation
+
+`needs_attention` is the stored watchdog flag OR failed/rolled_back/blocked OR
+already_current without the target observed release. `unconfirmed` requires a
+matching executing incarnation/generation and a central observation receipt
+strictly after issuance and no older than the latest result. Unbound jobs remain
+unconfirmed. Batch mapping, `Evidence` and `NodeVersionView` share the SQL
+predicates. `ObserveReportTx` retains the actual receipt time instead of substituting
+a later processing timestamp. No new evidence migration is needed.
+
+Integration coverage lives under `internal/nodes/httpwire` and uses the real
+httpapi middleware, test CA, isolated PostgreSQL databases and local HTTP fakes.
+It covers enrollment replay/conflict/reinstall, one-time bootstrap, certificate
+revocation/overlap expiry, snapshot stability and first sync, update-result
+conflicts, observation dedupe and confirmation, signed control state/ETags,
+lease deadlines and replay, NetBird setup read-back/retry, peer readiness, external
+key/peer withdrawal and worker fencing.
+Full packet isolation, throughput, real arm64 execution and native client
+compatibility still require their separate labs.
+
+The composition tests also exercise missing settings (including ignoring ambient
+environment in domain builds), immediate/coalesced reconciliation seeding and
+cancellation. A subprocess test runs both actual binaries with the production
+member and node domains registered, enrolls over TLS, consumes bootstrap over
+mTLS once, observes durable scheduled work and verifies clean SIGTERM shutdown.
+
+D-039 limits domain integration tests to core plus the domains under test; only
+composition and binary tests use the production `Domains()` list. Shared helper
+`internal/nodes/nodestest.New(t, nodestest.NetBird{})` writes a strict **TEST ONLY**
+configuration, ephemeral CA/vault and synthetic token under the test's private
+disk temporary directory. Its default NetBird URL points at a local TLS fake that
+rejects unexpected calls. Tests that exercise adapter requests pass their own
+local TLS fake URL, deployment and token file and configure trust for it. The
+returned `Path` supplies `NodesConfigFile`; `Nodes.CACertificateFile` supplies the
+agent listener CA. The helper has no dependency on either application, changes
+no environment variables, and adds no production defaults.

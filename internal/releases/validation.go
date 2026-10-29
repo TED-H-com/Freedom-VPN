@@ -22,10 +22,11 @@ import (
 
 // Validator holds immutable compiled contracts and a separately provisioned trust root.
 type Validator struct {
-	trust   *envelope.TrustStore
-	schema  *jsonschema.Schema
-	api     *openapi3.T
-	origins map[string]bool
+	trust        *envelope.TrustStore
+	currentTrust func() (*envelope.TrustStore, error)
+	schema       *jsonschema.Schema
+	api          *openapi3.T
+	origins      map[string]bool
 }
 
 func NewValidator(trust *envelope.TrustStore, origins []string) (*Validator, error) {
@@ -91,7 +92,15 @@ func (v *Validator) AllowURL(raw string) bool {
 // hash binds the whole envelope, matching contracts/vectors (§13.10.2).
 func (v *Validator) ValidateManifest(raw []byte, now time.Time) (api.ReleaseManifestEnvelope, string, error) {
 	var m api.ReleaseManifestEnvelope
-	_, _, e := envelope.Verify(raw, v.trust, envelope.PurposeRelease, now)
+	trust := v.trust
+	if v.currentTrust != nil {
+		var e error
+		trust, e = v.currentTrust()
+		if e != nil {
+			return m, "", apierr.New(apierr.DependencyUnavailable, "Release trust unavailable")
+		}
+	}
+	_, _, e := envelope.Verify(raw, trust, envelope.PurposeRelease, now)
 	if e != nil {
 		code := apierr.SignatureInvalid
 		if errors.Is(e, envelope.ErrKeyUntrusted) {
@@ -142,4 +151,12 @@ func (v *Validator) ValidateManifest(raw []byte, now time.Time) (api.ReleaseMani
 	}
 	hash, e := canonjson.HashHex(raw)
 	return m, hash, e
+}
+
+// WithCurrentTrust returns an immutable validator using the current local trust
+// authority on every authorization. The callback must not call external services.
+func (v *Validator) WithCurrentTrust(source func() (*envelope.TrustStore, error)) *Validator {
+	copy := *v
+	copy.currentTrust = source
+	return &copy
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -69,7 +70,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 	}
 	digest, _ := hex.DecodeString(hash)
 	var rejection error
-	e = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		rejection = nil
 		ack = api.UpdateResultAck{}
 		if e := s.lock(ctx, tx); e != nil {

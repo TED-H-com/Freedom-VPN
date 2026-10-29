@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
@@ -94,10 +95,19 @@ func (e *Engine) stepSample(ctx context.Context, txn updatejournal.Txn) (updatej
 	return e.advance(ctx, txn, updatejournal.StageFinalSampled, updatejournal.StageUpdate{Checkpoint: apiCP})
 }
 
+func schemaChange(txn updatejournal.Txn) bool {
+	return txn.PreviousReleaseID != "" && txn.StateSchemaFrom > 0 && txn.StateSchemaFrom != txn.StateSchemaTo
+}
+
 func (e *Engine) stepStop(ctx context.Context, txn updatejournal.Txn) (updatejournal.Txn, error) {
 	same, err := fsutil.SameFilesystem(e.Layout.Releases, filepath.Dir(e.Layout.Current))
 	if err != nil || !same {
 		return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStopServices, nil)
+	}
+	// A release that needs a schema change and has no real migrator fails
+	// before services stop, so the rollback is not destructive (D-034c).
+	if schemaChange(txn) && e.migrationUnsupported() {
+		return e.beginRollback(ctx, txn, apierr.MigrationFailed, api.UpdateStageMigrate, nil)
 	}
 	if e.Services == nil {
 		return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStopServices, nil)
@@ -155,6 +165,14 @@ func (e *Engine) stepStart(ctx context.Context, txn updatejournal.Txn) (updatejo
 	if e.Services == nil {
 		return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStart, nil)
 	}
+	// Snapshot the immutable set after migration and before the new
+	// services or the meter epoch run (D-034c).
+	if err := e.snapshotIdentity(); err != nil {
+		return e.beginRollback(ctx, txn, apierr.CheckpointFailed, api.UpdateStageStart, nil)
+	}
+	if err := e.snapshotPointers(ctx); err != nil {
+		return e.beginRollback(ctx, txn, apierr.CheckpointFailed, api.UpdateStageStart, nil)
+	}
 	if err := e.Services.Start(ctx, e.Layout.releaseDir(txn.ReleaseID)); err != nil {
 		return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStart, nil)
 	}
@@ -182,7 +200,7 @@ func (e *Engine) stepCheck(ctx context.Context, txn updatejournal.Txn) (updatejo
 		return txn, err
 	}
 	if n > maxCheckAttempts {
-		return e.toRecovery(ctx, txn, apierr.HealthCheckFailed, api.UpdateStageCheck, nil)
+		return e.beginRollback(ctx, txn, apierr.HealthCheckFailed, api.UpdateStageCheck, nil)
 	}
 	if e.Services != nil {
 		if err := e.Services.Start(ctx, e.Layout.releaseDir(txn.ReleaseID)); err != nil {
@@ -217,12 +235,7 @@ func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c clai
 	if n > maxRollbackAttempts {
 		return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
 	}
-	in := e.evalLastGood(ctx, txn.LastGoodReleaseID, c)
-	if txn.Destructive {
-		if mm := e.manifestOf(ctx, txn.ReleaseID); mm != nil && mm.Rollback.StateReadableByPrevious {
-			in.SchemaReadable = true
-		}
-	}
+	in := e.evalLastGood(ctx, txn.LastGoodReleaseID, c, e.manifestOf(ctx, txn.ReleaseID))
 	plan := DecideRollback(in)
 	if !plan.Restore {
 		return e.toRecovery(ctx, txn, plan.Code, api.UpdateStageRollback, nil)
@@ -246,6 +259,11 @@ func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c clai
 			if err := e.Services.Start(ctx, e.Layout.releaseDir(txn.LastGoodReleaseID)); err != nil {
 				return e.toRecovery(ctx, txn, apierr.StartFailed, api.UpdateStageRollback, nil)
 			}
+		}
+		// Pointers now name last_good. Refresh that half of the snapshot
+		// and keep the identity snapshot taken before the failed start.
+		if err := e.snapshotPointers(ctx); err != nil {
+			return e.toRecovery(ctx, txn, apierr.CheckpointFailed, api.UpdateStageRollback, nil)
 		}
 		view := e.viewFor(ctx, txn.LastGoodReleaseID, e.manifestOf(ctx, txn.LastGoodReleaseID))
 		h, ok := e.runHealth(ctx, view)
@@ -330,7 +348,7 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 			_ = e.Gate.Block(ctx)
 		}
 	} else if e.Gate != nil {
-		forwarding, err = e.enforce(ctx, current, c)
+		forwarding, err = e.enforce(ctx, current, c, txnOutcome(txn))
 		if err != nil {
 			return err
 		}
@@ -371,10 +389,30 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 		}
 	}
 	_ = e.Retain(ctx)
+	e.cleanTxnNotes(txn.TxnID)
 	if recovery {
 		return ErrMembersBlocked
 	}
 	return nil
+}
+
+func txnOutcome(txn updatejournal.Txn) string {
+	switch txn.Stage {
+	case updatejournal.StageLocallySucceeded:
+		return updatejournal.OutcomeSucceeded
+	case updatejournal.StageRolledBack:
+		return updatejournal.OutcomeRolledBack
+	case updatejournal.StageRecoveryRequired:
+		return updatejournal.OutcomeRecoveryRequired
+	default:
+		return updatejournal.OutcomeFailed
+	}
+}
+
+func (e *Engine) cleanTxnNotes(txnID string) {
+	for _, prefix := range []string{"epoch-", "checks-", "rollback-"} {
+		_ = os.Remove(filepath.Join(e.Layout.Journal, prefix+txnID))
+	}
 }
 
 func (e *Engine) claimedFor(ctx context.Context, txn updatejournal.Txn) (claimed, error) {

@@ -15,11 +15,18 @@ fvpn-updater flush   -config updater.json
 fvpn-updater version
 ```
 
-`recover` runs before member services start. Exit 0 means the journal does not require forwarding to stay off. Exit 2 means members must stay blocked (`ErrMembersBlocked`). Exit 1 is any other failure.
+`recover` runs before member services start.
 
-`run` calls `recover` first, then takes the current desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`.
+| Exit | Meaning |
+|---|---|
+| 0 | The journal does not require forwarding to stay off. `help` and `version` also exit 0. |
+| 2 | Only `ErrMembersBlocked`. Members must stay blocked. |
+| 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
+| 64 | Usage, an unknown command, a bad flag, or a missing `-config`. |
 
-The config file holds paths and ids. It does not hold the release private key. `allow_loopback` is TEST ONLY and must stay false on a node. Stock health checks (`NodeChecks`) compare the release tree and the identity and state trees. Isolation, DNS and the tunnel probe fail closed until the agent supplies its own checks (§13.9). An empty stop or start command fails closed. The updater does not guess systemd.
+`run` calls `recover` first, then takes the current desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`. `Run`, `Recover`, `Flush` and `Retain` take the node lock at entry, before they supersede an older job, claim, download or install.
+
+The config file holds paths and ids. It does not hold the release private key. `allow_loopback` is TEST ONLY and must stay false on a node. Stock health checks (`NodeChecks`) compare the release tree, the identity directory, and an immutable record of the pointers and the state-schema marker. They do not hash the mutable state directory. Isolation, DNS and the tunnel probe fail closed until the agent supplies its own checks (§13.9). An empty stop or start command fails closed. The updater does not guess systemd. `Config.Engine` installs a migrator that refuses a schema change, so a release that needs one fails before services stop when no real migrator was supplied.
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
 
@@ -31,7 +38,9 @@ The desired-state document has `serving_release_ids` and no revoked-release list
 
 A job is refused when the attempt is below 1, the node is revoked, the incarnation does not match, the release is revoked, the generation is older than the accepted one, or the authorization window has ended. Authorization is half-open: `now < authorization_valid_until`. Those refusals are recorded. A stale or revoked job is not claimed.
 
-`already_current` is reported only when the current release matches the job, the manifest still verifies, compatibility holds, and the release is in the serving set. Services are not restarted (§13.6). A current release that is outside the serving set is `MINIMUM_VERSION_VIOLATION` and is not restarted.
+`already_current` is reported only when the current release matches the job and `last_good`, the journal is not holding forwarding, the last terminal outcome is not `failed`, `rolled_back` or `recovery_required`, the manifest still verifies, compatibility holds, and the release is in the serving set. Services are not restarted (§13.6). A manifest, compatibility or serving-list failure on that path blocks the gate before the function returns. A current release that is outside the serving set is `MINIMUM_VERSION_VIOLATION`, the gate is blocked, and services are not restarted. `recovery_required` is never reported as `already_current`.
+
+The latest publication intent and the forwarding-blocked bit live in one journal record (`publication_intent`, `forwarding_blocked`, `terminal_outcome`), written in the same step that changes them. `BlocksForwarding` and `reapplyPublication` read that record. They do not replay a stale `LastTxn`. There is no `failed` stage. A failed job stores the terminal outcome `failed`, and that outcome blocks forwarding. A verified `rolled_back` does not, by itself, keep members off.
 
 ## State machine
 
@@ -59,7 +68,7 @@ A newer generation while the job is queued, downloading or verifying supersedes 
 
 ### Rollback decision (§13.9)
 
-`last_good` is restored only when all of these hold, in this order: a tree is present and its hash matches, the manifest signature verifies, the release is not revoked, the release is in the serving set, and the state schema is readable by that release. Otherwise the outcome is `recovery_required` and members stay blocked.
+`last_good` is restored only when all of these hold, in this order: a tree is present and its hash matches, the manifest signature verifies, the release is not revoked, the release is in the serving set, and the state schema is readable by that release. When the candidate manifest's `rollback.allowed_release_ids` is non-empty, `last_good` must also be in that list. The serving set and the allow list fail closed: missing either one is `MINIMUM_VERSION_VIOLATION` and `recovery_required`. An empty allow list adds no extra restriction. `StateReadableByPrevious` does not mark a schema readable when the journal schema is not the last-good schema. Otherwise the outcome is `recovery_required` and members stay blocked. A health check past the 8-attempt cap starts a rollback. It does not jump straight to recovery.
 
 When `last_good` is unsafe, the `current` symlink is left on the failed candidate. Forwarding stays off. The symlink is not moved to an unverified tree.
 
@@ -81,19 +90,19 @@ The result outbox stores the canonical JSON and `payload_hash` (`canonjson.HashH
 
 `POST /agent/update-results` is answered with 202 in the contract. 409 is a conflict. Anything else leaves the row pending.
 
-Sidecar files next to the database (not inside it): `identity.snap` and `state.snap` (tree hashes taken before the transaction), `epoch-<txn>` (the new meter epoch, so `OpenEpoch` is idempotent), the check and rollback counters, and `forwarding.blocked`.
+Sidecar files next to the database (not inside it): `identity.snap` (identity tree hash) and `immutable.snap` / `immutable.record` (pointers and the state-schema marker). Both are taken after migration and before services start, and again for the pointers only after a rollback restores `last_good`. The mutable state directory is not in that record. `epoch-<txn>` is the new meter epoch for that transaction. It lives in the journal directory, not under state, and it is removed when the transaction completes. `FileMeter.OpenEpoch` does not write a sidecar. The check and rollback counters and `forwarding.blocked` are the other sidecars.
 
-The single-updater lock is `/var/lib/vpn-node/update.lock`, a `flock` held by `node/internal/nodelock`. The agent, the installer and the updater take that same lock.
+The single-updater lock is `/var/lib/vpn-node/update.lock`, a kernel `flock(LOCK_EX|LOCK_NB)` held by `node/internal/nodelock`. The descriptor stays open until `Release`. Holder metadata (`pid`, `boot_id`) is written only after the lock is held. A stale pid or a different boot id does not steal a lock the kernel still holds, and the file is not removed on contention. The agent, the installer and the updater take that same lock.
 
 ## Download and verify (§13.4)
 
-The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. The artifact hash is the raw file. A partial download resumes only when the content hash is unchanged and the server's range agrees with the bytes already stored. A changed body deletes the partial and downloads the whole file again. One content retry is allowed. A second hash or signature failure is permanent and is not retried. Network errors use bounded backoff with full jitter. The default budget (待實測) is 5 attempts, 200 ms initial, 30 s cap, 60 s per attempt.
+The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. The artifact hash is the raw file. `.partial.meta` is written when the `200` or `206` headers arrive, before the body, so an interrupted download still resumes with `If-Range`. A partial download resumes only when the content hash is unchanged and the server's range agrees with the bytes already stored. When `Content-Length` is known, the bytes written must equal it (`200`) or the prior offset plus it (`206`). A changed body deletes the partial and downloads the whole file again. One content retry is allowed. A second hash or signature failure is permanent and is not retried. Network errors use bounded backoff with full jitter. The default budget (待實測) is 5 attempts, 200 ms initial, 30 s cap, 60 s per attempt. Manifest downloads are capped at `canonjson.MaxBytes` (1 MiB).
 
-Verification checks the release trust store, both Ubuntu 24.04 architectures (`amd64` and `arm64`, `tar.zst`), this node's artifact, size, SHA-256, control API major, policy schema, usage schema, state schema, minimum updater version and the disk reserve (`artifact + installed size + required_free_bytes`). `product_version` is display only. `minimum_updater_version` is compared as three dotted numeric components, so `1.10.0` is newer than `1.9.0`.
+Verification checks the release trust store, both Ubuntu 24.04 architectures (`amd64` and `arm64`, `tar.zst`), this node's artifact, size, SHA-256, control API major, policy schema, usage schema, state schema, minimum updater version and the disk reserve (`artifact + installed size + required_free_bytes` on the releases filesystem, and the artifact size on the staging filesystem). A duplicate matching platform entry is `VALIDATION_FAILED`. `product_version` is display only. `minimum_updater_version` is SemVer 2.0.0: three numeric components, no leading zeros, build metadata ignored, and a pre-release is older than the same core without one. `1.10.0` is newer than `1.9.0`. `1.0.0-alpha.1` is older than `1.0.0`.
 
-URLs must be `https`. Loopback, link-local and the metadata host names are refused. `allow_loopback` is the test exception. The resolved address is not pinned.
+URLs must be `https`. Loopback, link-local, multicast, unspecified, private (RFC 1918 and IPv6 ULA), CGNAT (`100.64.0.0/10`) and the metadata host names are refused. `allow_loopback` is the test exception and permits loopback only. The same check runs on every address `DialContext` resolves, so a public name that answers with a private address is refused (D-034f). Pinning one specific address is still not required.
 
-Extraction rejects absolute paths, `..`, NUL, backslash, device files, fifos, sockets, hard links, setuid/setgid/sticky modes, symlinks that point outside the release, and any path that overlaps identity, state or the journal. A relative symlink inside the tree is allowed. Nothing in the archive is executed.
+Extraction accepts regular files and directories only. It rejects absolute paths, `..`, NUL, backslash, device files, fifos, sockets, hard links, symlinks (including a relative symlink inside the tree), every other member type, setuid/setgid/sticky modes, more than 4096 members, a decompressed size past the cap, and any path that overlaps identity, state or the journal. Overlap is symmetric and is checked before the release directory is removed. Nothing in the archive is executed. The updater's own `current` symlink stays outside the release tree.
 
 `current` is a relative symlink, switched by rename in the same directory, then the parent directory is fsynced. A different filesystem fails closed.
 
@@ -117,16 +126,24 @@ The hook used by tests fires after the stage is durable and before that stage's 
 | `rolled_back` (before the result is enqueued) | result `rolled_back` | not blocked when the restored release may serve |
 | `recovery_required` (before the result is enqueued) | result with `recovery_required` | stay blocked, exit 2 |
 
-Identity and the usage outbox are not rewritten by the update or the rollback (§13.7). The meter `FinalSample` and `OpenEpoch` calls are idempotent. The updater also stores the epoch id in `epoch-<txn>` so a second process does not open a second epoch.
+Identity and the usage outbox are not rewritten by the update or the rollback (§13.7). The meter `FinalSample` is read from the checkpoint the meter wrote. `OpenEpoch` returns a new id and writes nothing into state. The updater stores that id in the journal note `epoch-<txn>` so a resume does not open a second epoch, and deletes the note when the transaction completes.
 
 ## Decisions
 
 - `boot_id` is the boot that claimed the job. Keep.
 - Hostile archive paths, devices and symlink escapes stay `VALIDATION_FAILED`. A dedicated code is deferred to the next contract revision.
-- Refusing loopback, link-local and metadata names is sufficient for this phase. Pinning the resolved address is not required. Artifact fetches move behind the agent's mTLS client in Wave 3.
+- Refusing loopback, link-local and metadata names was the original bar, and pinning one resolved address was not required. D-034f supersedes the address check: private and CGNAT ranges are refused, and `DialContext` applies that check to every resolved address. Pinning one specific address is still not required. Artifact fetches move behind the agent's mTLS client in Wave 3.
 - Update results are accepted on HTTP 202 only. The contract wins over the handover text.
 - `revoked_release_ids` stay an unsigned agent-supplied list for now. The signed serving set is the only thing that gates forwarding. Adding the list to the signed desired state is a candidate for contract revision 3.
 - `policy_generation` is the desired-state `config_generation` for now (revision 3 candidate).
 - When `last_good` cannot be restored, `current` stays on the failed candidate, the symlink is never moved to an unverified tree, and members stay blocked. Confirmed.
 - A checkpoint failure before `stop_services` ends as `rolled_back`/`failed` without blocking members, because nothing destructive happened. Confirmed: §13.9 step 4 applies only after the destructive stage.
 - Toolchain 1.27.3 arrives in a separate orchestrator task (decision D-014). Keep `GOTOOLCHAIN=local` and `go.mod` at 1.27.1.
+- D-034a. Release archives contain regular files and directories only. `ExtractArchive` rejects symlinks, hard links and every other member type. `fsutil.TreeHash` returns an error on a symlink. The `current` pointer stays a symlink outside the tree.
+- D-034b. Publication intent and the forwarding-blocked state are one journal record, written in the same step that changes them. `reapplyPublication` and `BlocksForwarding` read that record, not a stale `LastTxn`. `maybeAlreadyCurrent` does not short-circuit when `current` is not `last_good`, when forwarding is blocked, or when the last terminal outcome is `failed`, `rolled_back` or `recovery_required`. A manifest, compatibility or serving-list failure blocks the gate before it returns. Outcome `failed` is blocking. There is no `failed` stage.
+- D-034c. Persistent data is the identity directory, the pointers record and the state-schema marker, snapshotted after migration and before start. The meter epoch hand-off is the journal note `epoch-<txn>`, removed when the transaction completes. `Config.Engine` supplies a migrator that fails a schema change before services stop.
+- D-034d. `nodelock.Acquire` takes `flock(LOCK_EX|LOCK_NB)` before it writes pid and boot id, and keeps the descriptor until `Release`. Stale detection compares boot id and pid and does not steal a held lock. `Run`, `Recover`, `Flush` and `Retain` acquire the lock at entry.
+- D-034e. A non-empty `allowed_release_ids` is a fail-closed intersection with `serving_release_ids`. Rollback does not override `SchemaReadable=false`. The health-check cap goes through rollback. `versionAtLeast` is SemVer 2.0.0, including pre-release ordering.
+- D-034f. `.partial.meta` is written when the success headers arrive. Manifest downloads are capped at `canonjson.MaxBytes`. A known `Content-Length` must match the bytes written. Archives have an entry cap and a decompressed-byte cap. `pathsOverlap` is symmetric and is checked before `RemoveAll`. `checkURL` rejects private and CGNAT ranges, and `DialContext` checks resolved addresses. `ensureSpace` also checks staging.
+- D-034g. Usage and flag errors exit 64. Exit 2 means only `ErrMembersBlocked`.
+- F-15. `SigningKey.TrustStore` uses `envelope.NewNodeTrustStore`. `fvpn-release verify` uses `envelope.ParseNodeTrustStoreJSON`. `CheckArtifact` rejects duplicate matching platform entries.

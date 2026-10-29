@@ -45,47 +45,176 @@ func DecideRollback(in RollbackInput) RollbackPlan {
 	}
 }
 
-// versionAtLeast reports whether have is at least minimum. Both are
-// dotted component versions; comparison is numeric per component, not
-// lexical (§13.4 minimum_updater_version).
+// versionAtLeast reports whether have is at least minimum under SemVer 2.0.0
+// precedence (spec section 11). Build metadata is ignored. A pre-release is
+// lower than the same core without one, so 1.0.0-alpha.1 < 1.0.0. An invalid
+// version fails closed.
 func versionAtLeast(have, minimum string) bool {
 	if have == "" || minimum == "" {
 		return false
 	}
-	h, m := splitVer(have), splitVer(minimum)
-	for i := 0; i < 3; i++ {
-		if h[i] > m[i] {
-			return true
+	h, okH := parseSemver(have)
+	m, okM := parseSemver(minimum)
+	if !okH || !okM {
+		return false
+	}
+	return compareSemver(h, m) >= 0
+}
+
+type semver struct {
+	major int
+	minor int
+	patch int
+	pre   []string
+}
+
+func parseSemver(s string) (semver, bool) {
+	if i := strings.IndexByte(s, '+'); i >= 0 {
+		s = s[:i]
+	}
+	var pre string
+	if i := strings.IndexByte(s, '-'); i >= 0 {
+		pre = s[i+1:]
+		s = s[:i]
+		if pre == "" {
+			return semver{}, false
 		}
-		if h[i] < m[i] {
+	}
+	parts := strings.Split(s, ".")
+	if len(parts) != 3 {
+		return semver{}, false
+	}
+	nums := [3]int{}
+	for i, p := range parts {
+		n, ok := semverCore(p)
+		if !ok {
+			return semver{}, false
+		}
+		nums[i] = n
+	}
+	var idents []string
+	if pre != "" {
+		idents = strings.Split(pre, ".")
+		for _, id := range idents {
+			if id == "" || !semverIdent(id) {
+				return semver{}, false
+			}
+		}
+	}
+	return semver{major: nums[0], minor: nums[1], patch: nums[2], pre: idents}, true
+}
+
+func semverCore(s string) (int, bool) {
+	if s == "" || (len(s) > 1 && s[0] == '0') {
+		return 0, false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return 0, false
+		}
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, false
+	}
+	return n, true
+}
+
+func semverIdent(s string) bool {
+	for _, c := range s {
+		if c != '-' && !unicode.IsDigit(c) && !unicode.IsLetter(c) {
+			return false
+		}
+	}
+	if numericIdent(s) && len(s) > 1 && s[0] == '0' {
+		return false
+	}
+	return true
+}
+
+func numericIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
 			return false
 		}
 	}
 	return true
 }
 
-func splitVer(s string) [3]int {
-	var out [3]int
-	parts := strings.SplitN(s, ".", 3)
-	for i := 0; i < len(parts) && i < 3; i++ {
-		out[i] = leadingInt(parts[i])
+func compareSemver(a, b semver) int {
+	if c := cmpInt(a.major, b.major); c != 0 {
+		return c
 	}
-	return out
+	if c := cmpInt(a.minor, b.minor); c != 0 {
+		return c
+	}
+	if c := cmpInt(a.patch, b.patch); c != 0 {
+		return c
+	}
+	if len(a.pre) == 0 && len(b.pre) == 0 {
+		return 0
+	}
+	if len(a.pre) == 0 {
+		return 1
+	}
+	if len(b.pre) == 0 {
+		return -1
+	}
+	n := len(a.pre)
+	if len(b.pre) < n {
+		n = len(b.pre)
+	}
+	for i := 0; i < n; i++ {
+		if c := cmpIdent(a.pre[i], b.pre[i]); c != 0 {
+			return c
+		}
+	}
+	return cmpInt(len(a.pre), len(b.pre))
 }
 
-func leadingInt(s string) int {
-	i := 0
-	for i < len(s) && unicode.IsDigit(rune(s[i])) {
-		i++
+func cmpInt(a, b int) int {
+	if a < b {
+		return -1
 	}
-	if i == 0 {
+	if a > b {
+		return 1
+	}
+	return 0
+}
+
+func cmpIdent(a, b string) int {
+	an, aNum := identNum(a)
+	bn, bNum := identNum(b)
+	switch {
+	case aNum && bNum:
+		return cmpInt(an, bn)
+	case aNum && !bNum:
+		return -1
+	case !aNum && bNum:
+		return 1
+	default:
+		if a < b {
+			return -1
+		}
+		if a > b {
+			return 1
+		}
 		return 0
 	}
-	n, err := strconv.Atoi(s[:i])
+}
+
+func identNum(s string) (int, bool) {
+	if !numericIdent(s) || (len(s) > 1 && s[0] == '0') {
+		return 0, false
+	}
+	n, err := strconv.Atoi(s)
 	if err != nil {
-		return 0
+		return 0, false
 	}
-	return n
+	return n, true
 }
 
 func containsID(ids []uuid.UUID, id uuid.UUID) bool {
