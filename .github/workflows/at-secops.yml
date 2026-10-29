@@ -1,0 +1,27 @@
+name: at-secops
+on:
+  pull_request:
+    paths:
+      - 'tests/e2e/at/secops/**'
+      - 'docs/e2e/at/secops/**'
+      - 'mk/at-secops.mk'
+      - '.github/workflows/at-secops.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  component-checks:
+    runs-on: ubuntu-24.04
+    env:
+      GOTOOLCHAIN: local
+      CGO_ENABLED: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
+      - run: make -f mk/at-secops.mk at-secops-test at-secops-lint at-secops-build
+      # The privileged acceptance run is explicit and produces blocked records
+      # until the assigned dev-stack slot and documented fixture hooks exist.
+      # This job validates supporting code; it does not certify AT28–AT32.
