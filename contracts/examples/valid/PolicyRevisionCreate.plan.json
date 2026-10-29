@@ -1,0 +1,26 @@
+{
+  "type": "plan",
+  "schema_version": 1,
+  "reason": "Initial plan revision.",
+  "payload": {
+    "display_name": {
+      "zh-TW": "標準方案",
+      "en": "Standard"
+    },
+    "device_limit": 3,
+    "exit_group_ids": [
+      "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+    ],
+    "price": {
+      "amount_minor": 30000,
+      "currency": "TWD",
+      "billing_interval": "month",
+      "provider": "stripe",
+      "provider_price_ref": "price_TEST_ONLY_standard"
+    },
+    "rate_limit": null,
+    "fair_use_revision_id": "8d3b9d9a-d489-4583-a054-d07a63b90415",
+    "dns_profile_revision_id": "3dac5c85-4d8c-4424-9a8d-0b15a37f3495"
+  },
+  "code": "standard"
+}

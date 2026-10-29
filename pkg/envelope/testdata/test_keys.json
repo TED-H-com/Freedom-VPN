@@ -1,0 +1,11 @@
+{
+  "_comment": "TEST ONLY - NOT A SECRET. Deterministic Ed25519 seeds for unit tests. seed_hex = SHA-256 of the UTF-8 string 'TEST ONLY - NOT A SECRET: fvpn <label> test key'. Never trust these keys outside tests.",
+  "keys": [
+    {"label": "release", "key_id": "test-release-2026", "purpose": "release", "seed_hex": "020b89494af9e41d10830f430080a1e872852f5403416be27ac870204d3e528b"},
+    {"label": "desired-state", "key_id": "test-desired-state-2026", "purpose": "desired-state", "seed_hex": "569aab0ce8de2938afda3c32a1d7ff9d48f962676e317117f018ec4ff8b3e78d"},
+    {"label": "lease", "key_id": "test-lease-2026", "purpose": "lease", "seed_hex": "49dbb8228805cf8f233eb24f55ce34f33187b1b3f70c4540138a88375b0eaedd"},
+    {"label": "recovery", "key_id": "test-recovery-2026", "purpose": "recovery", "seed_hex": "544443c730ceb80c56bbd99d3272210c299069eb4f46798f342e019caf3250c2"},
+    {"label": "release-2", "key_id": "test-release-2027", "purpose": "release", "seed_hex": "9f37b7953fe1130ef81e4905c0cce51c3170d4093b76922de4117ae4e28b6fcf"},
+    {"label": "untrusted", "key_id": "test-untrusted", "purpose": "release", "seed_hex": "039be126d8451377b0e075571dde5532af6f6a257d849b6ec05bc58941a6cdfb"}
+  ]
+}

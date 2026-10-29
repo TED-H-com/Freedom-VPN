@@ -1,0 +1,72 @@
+{
+  "_comment": "TEST ONLY - NOT A SECRET. Deterministic Ed25519 vector; the seed is public test data.",
+  "canonical_signed": "{\"authorization_generation\":\"52\",\"config_generation\":\"128\",\"expires_at\":\"2026-10-29T15:00:00Z\",\"issued_at\":\"2026-10-28T15:00:00Z\",\"lease_id\":\"c4506654-d908-46c6-95e5-e9fa6b30f9ed\",\"max_offline_seconds\":86400,\"members\":[{\"effective_service_end\":\"2026-11-20T00:00:00Z\",\"entitlement_revision\":\"31\",\"lease_end\":\"2026-10-29T15:00:00Z\",\"member_id\":\"dc01a74b-9e6f-41ac-81cd-03291d0a88c0\"},{\"effective_service_end\":\"2026-10-29T03:00:00Z\",\"entitlement_revision\":\"17\",\"lease_end\":\"2026-10-29T03:00:00Z\",\"member_id\":\"4e8ca24f-b523-45ef-a782-068cc1c9f809\"}],\"node_id\":\"93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb\",\"node_incarnation_id\":\"d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0\",\"schema_version\":1}",
+  "canonical_signed_sha256": "44c75223877554c32a8ccdd478b011d522d83589e3ab256c95063d0476c685b1",
+  "description": "Serving lease (§16.3).",
+  "envelope": {
+    "signatures": [
+      {
+        "algorithm": "ed25519",
+        "key_id": "lease-signing-test-2026",
+        "signature_b64": "Ca1n6qgHYX4hVra1UPtp/9CiNWVxIXC/o158u325N46+j9D2t0yg+RSetq3qYWqNY3KcdIu4xREhHQkYsK/9AA=="
+      }
+    ],
+    "signed": {
+      "authorization_generation": "52",
+      "config_generation": "128",
+      "expires_at": "2026-10-29T15:00:00Z",
+      "issued_at": "2026-10-28T15:00:00Z",
+      "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed",
+      "max_offline_seconds": 86400,
+      "members": [
+        {
+          "effective_service_end": "2026-11-20T00:00:00Z",
+          "entitlement_revision": "31",
+          "lease_end": "2026-10-29T15:00:00Z",
+          "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0"
+        },
+        {
+          "effective_service_end": "2026-10-29T03:00:00Z",
+          "entitlement_revision": "17",
+          "lease_end": "2026-10-29T03:00:00Z",
+          "member_id": "4e8ca24f-b523-45ef-a782-068cc1c9f809"
+        }
+      ],
+      "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+      "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+      "schema_version": 1
+    }
+  },
+  "envelope_sha256": "2d8d69669e91bc08983d5d01864b93bafc6c6c6a98936fb52caa3349698f08a6",
+  "key_id": "lease-signing-test-2026",
+  "public_key_b64": "sThrd0fZrXktC7rlca2S6XbRJbW28LCEcqfgkkFgLlQ=",
+  "purpose": "lease",
+  "seed_hex": "ca5e9e4b75c10cd2e37281ad847519f737ac785f0c25b88c18dd7d2f6558f749",
+  "signature_b64": "Ca1n6qgHYX4hVra1UPtp/9CiNWVxIXC/o158u325N46+j9D2t0yg+RSetq3qYWqNY3KcdIu4xREhHQkYsK/9AA==",
+  "signed": {
+    "authorization_generation": "52",
+    "config_generation": "128",
+    "expires_at": "2026-10-29T15:00:00Z",
+    "issued_at": "2026-10-28T15:00:00Z",
+    "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed",
+    "max_offline_seconds": 86400,
+    "members": [
+      {
+        "effective_service_end": "2026-11-20T00:00:00Z",
+        "entitlement_revision": "31",
+        "lease_end": "2026-10-29T15:00:00Z",
+        "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0"
+      },
+      {
+        "effective_service_end": "2026-10-29T03:00:00Z",
+        "entitlement_revision": "17",
+        "lease_end": "2026-10-29T03:00:00Z",
+        "member_id": "4e8ca24f-b523-45ef-a782-068cc1c9f809"
+      }
+    ],
+    "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+    "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+    "schema_version": 1
+  },
+  "verify_at": "2026-10-28T15:00:00Z"
+}

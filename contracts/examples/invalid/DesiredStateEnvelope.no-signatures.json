@@ -1,0 +1,125 @@
+{
+  "signatures": [],
+  "signed": {
+    "accounting_period": {
+      "period_end": "2026-11-01T00:00:00Z",
+      "period_id": "2026-10",
+      "period_start": "2026-10-01T00:00:00Z"
+    },
+    "binding_revision": "407",
+    "config_generation": "128",
+    "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+    "device_bindings": [
+      {
+        "allowed_ipv4": [
+          "100.64.10.11"
+        ],
+        "allowed_ipv6": [],
+        "binding_revision": "405",
+        "device_id": "2df6c7df-e7e8-4bd4-9f2c-a5836dd0d8ea",
+        "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+        "peer_id": "peer-test-a1",
+        "valid_from": "2026-10-20T00:00:00Z",
+        "valid_until": "2026-11-20T00:00:00Z"
+      },
+      {
+        "allowed_ipv4": [
+          "100.64.10.12"
+        ],
+        "allowed_ipv6": [],
+        "binding_revision": "406",
+        "device_id": "18fa8abd-79d4-43a5-8403-886930f651f9",
+        "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+        "peer_id": "peer-test-a2",
+        "valid_from": "2026-10-21T00:00:00Z",
+        "valid_until": "2026-11-20T00:00:00Z"
+      },
+      {
+        "allowed_ipv4": [
+          "100.64.10.21"
+        ],
+        "allowed_ipv6": [],
+        "binding_revision": "407",
+        "device_id": "de484d49-0949-45b1-b38a-40709eb79a7c",
+        "member_id": "4e8ca24f-b523-45ef-a782-068cc1c9f809",
+        "peer_id": "peer-test-b1",
+        "valid_from": "2026-10-22T00:00:00Z",
+        "valid_until": "2026-11-20T00:00:00Z"
+      }
+    ],
+    "dns": {
+      "resolver_ipv4": [
+        "100.64.0.53",
+        "100.64.1.53"
+      ],
+      "resolver_ipv6": []
+    },
+    "expires_at": "2026-10-29T15:00:00Z",
+    "issued_at": "2026-10-28T15:00:00Z",
+    "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+    "member_rate_policies": [
+      {
+        "down_bps": null,
+        "generation": "9",
+        "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+        "mode": "enforce",
+        "period_id": "2026-10",
+        "priority": 0,
+        "reason": "normal",
+        "tier_index": 0,
+        "up_bps": null,
+        "valid_from": "2026-10-01T00:00:00Z",
+        "valid_until": "2026-11-01T00:00:00Z"
+      },
+      {
+        "down_bps": 20000000,
+        "generation": "9",
+        "member_id": "4e8ca24f-b523-45ef-a782-068cc1c9f809",
+        "mode": "enforce",
+        "period_id": "2026-10",
+        "priority": 2,
+        "reason": "fair_use_tier",
+        "tier_index": 2,
+        "up_bps": 10000000,
+        "valid_from": "2026-10-25T08:00:00Z",
+        "valid_until": "2026-11-01T00:00:00Z"
+      }
+    ],
+    "node_capacity": {
+      "down_bps": 1000000000,
+      "member_down_bps_cap": 200000000,
+      "member_up_bps_cap": 100000000,
+      "up_bps": 1000000000
+    },
+    "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+    "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+    "policy_refs": {
+      "authorization_generation": "52",
+      "dns_generation": "12",
+      "fup_generation": "9"
+    },
+    "publication_intent": "published",
+    "safety_profile": "internet-only-v1",
+    "schema_version": 1,
+    "serving_release_ids": [
+      "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+      "6d2797d0-b9a5-4724-96af-9b3039d351b1"
+    ],
+    "supported_release_policy_id": "8e210b2c-f844-4ad9-88f6-7e6fa0cbbe68",
+    "update": {
+      "attempt": 1,
+      "authorization_valid_until": "2026-10-28T15:05:00Z",
+      "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+      "generation": "7",
+      "incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+      "issued_at": "2026-10-28T14:05:00Z",
+      "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+      "manifest_sha256": "19b53cae06737f3683c1ace22ec7f61e4fce1ab70a4c2096090c0804faaa0b7e",
+      "manifest_url": "https://releases.example.invalid/r42/manifest.json",
+      "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+      "publication_intent": "published",
+      "release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+      "target_id": "7648dcdb-c82e-4611-8608-06895697e0a9"
+    }
+  }
+}
