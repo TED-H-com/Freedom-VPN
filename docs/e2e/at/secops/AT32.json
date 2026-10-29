@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "run_started_at": "2026-10-29T23:14:59Z",
-  "run_finished_at": "2026-10-29T23:15:32Z",
-  "source_revision": "04e68ff06cf10dfec3df7dcc9adbb24ee4022dc7",
-  "probe_source_sha256": "8236e5eee7c3313e8c20ca11e721a9886edd89c8b9f6d97ca0e624d9ba445de2",
+  "run_started_at": "2026-10-29T23:34:22Z",
+  "run_finished_at": "2026-10-29T23:37:13Z",
+  "source_revision": "58e60202753105c5c716853ce4dfa6d262f458ad",
+  "probe_source_sha256": "35e2a03e5039bb9ee315638d8463d9a3da9ce679fccb62a1fd4c28ff20c4f849",
   "build_digests": [
     {
       "arch": "amd64",
       "kind": "acceptance_test_binary",
-      "sha256": "8ba24be91b85f56829065476385c83b319fd2eba98b046ba6fdc50d46f89353f",
+      "sha256": "fed8a72f874b43f225f714eae50f9fd6ec916e7a5fcf9226fc3cb6ce1fb74c3d",
       "command": [
         "go",
         "test",
@@ -19,9 +19,9 @@
         "<disk-scratch>/secops-amd64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:14:59Z",
-      "finished_at": "2026-10-29T23:15:00Z",
-      "elapsed_seconds": 0.665,
+      "started_at": "2026-10-29T23:36:49Z",
+      "finished_at": "2026-10-29T23:36:49Z",
+      "elapsed_seconds": 0.465,
       "exit_code": 0,
       "scan": {
         "stream": "build-amd64",
@@ -32,7 +32,7 @@
     {
       "arch": "arm64",
       "kind": "acceptance_test_binary",
-      "sha256": "4ef4a2f17f44aed8ad0988e72e6735cd684fb7479751259af9f011c2c578211b",
+      "sha256": "f03eaf7e9bdc21a917f9241e8dd7c0b2da02ed96d1156f0d900097bc65d333a5",
       "command": [
         "go",
         "test",
@@ -43,24 +43,132 @@
         "<disk-scratch>/secops-arm64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:15:00Z",
-      "finished_at": "2026-10-29T23:15:02Z",
-      "elapsed_seconds": 2.371,
+      "started_at": "2026-10-29T23:36:49Z",
+      "finished_at": "2026-10-29T23:36:50Z",
+      "elapsed_seconds": 0.465,
       "exit_code": 0,
       "scan": {
         "stream": "build-arm64",
         "bytes": 0,
         "findings": []
       }
+    },
+    {
+      "name": "fvpn-agent",
+      "arch": "amd64",
+      "sha256": "fed39e7c667e6b9850ec0d16c60e3196dc32fec4c865fb974ac65b494aa57cde",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-control",
+      "arch": "amd64",
+      "sha256": "bb09c98039f836d5aa05eb57f5c7f89f9e2adb34a20a8212fea87d6ab81ef505",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-idp",
+      "arch": "amd64",
+      "sha256": "fa833f577990b66911661c790f6c51be53cce37324447a6332c5f65d112ea24f",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "arch": "amd64",
+      "sha256": "2c40ab51a4667bb17c8a57084a646feeddafd61adff5c97b40860d377df38c1e",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-origin",
+      "arch": "amd64",
+      "sha256": "7ae2d28e59ac0367eed175da624266fc2bc50d8328496a4e3a65186dc3741f03",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "arch": "amd64",
+      "sha256": "f9bcd4d65ea95318b34fecedf69ce5ae475cd98a116a725ecfd6784451752042",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "arch": "amd64",
+      "sha256": "e13fe529c6ac0e01ea36ef9c4e2cc6b7c1b372c2377b980a91c42393ae76e8b0",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "arch": "amd64",
+      "sha256": "7635b7b75250eadddf9205e23cfb2759059b5f982eb463089451b2173e5e5807",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "arch": "amd64",
+      "sha256": "8753eac3791a0afc7ec64e25113613ca18d9ea119d5744c8985faaa29c41d2d6",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "arch": "amd64",
+      "sha256": "4a6c54b3678827915a3867378d70fadfb60019d48020778add00813f35cbd348",
+      "kind": "lab_build_binary"
     }
   ],
-  "image_digests": [],
-  "policy_revision": null,
-  "node_incarnation": null,
-  "unavailable_metadata_reason": "No deployed node or image was observed in this run. Test binaries are identified separately.",
+  "image_digests": [
+    {
+      "image_id": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:dd26038882beb5203f797f95073dc8d65b72e8fa40cd14bff65b014fae8acb4a",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:7ae910cff1f345992ca094414f56d80c55883e3accbdf47b2baa4784194af5b1",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:c659ea362de44d4ef96c6f781e5d6aa672e1c9a603de1a5b565363ddab677e33",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:24e87b6e94f09793c3c51c2dc6f9950c3215fd34bb88cc1b3e5eaa13db31eed0",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:36ba045d3ab299605741a5dd2908528346ae51bfe4222a8ccaf3ff1a6204472c",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:c8d1c407af772ab75642771bdc389e90d451066d1807c2ff7d32f42905f567d9",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:c8d1c407af772ab75642771bdc389e90d451066d1807c2ff7d32f42905f567d9",
+      "service": "member"
+    }
+  ],
+  "policy_revision": "1",
+  "node_incarnation": "a6e69712-df58-46ec-9686-e24e195af9d7",
   "stack": {
-    "status": "blocked",
-    "reason": "needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.",
+    "status": "running-stack-observed",
+    "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
     "inventory_before": {
       "containers": {
         "exit_code": 0,
@@ -86,13 +194,72 @@
         "mk/e2e.mk",
         "e2e-up"
       ],
-      "started_at": "2026-10-29T23:14:59Z",
-      "finished_at": "2026-10-29T23:14:59Z",
-      "elapsed_seconds": 0.415,
-      "exit_code": 2,
+      "started_at": "2026-10-29T23:34:22Z",
+      "finished_at": "2026-10-29T23:34:45Z",
+      "elapsed_seconds": 23.061,
+      "exit_code": 0,
       "scan": {
         "stream": "e2e-up",
-        "bytes": 515,
+        "bytes": 15388,
+        "findings": []
+      }
+    },
+    "live_probe": {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-tags",
+        "e2e,integration",
+        "-p",
+        "1",
+        "-parallel",
+        "2",
+        "-count=1",
+        "-timeout",
+        "8m",
+        "-run",
+        "^TestAT28_AT31_LiveStack$",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:34:45Z",
+      "finished_at": "2026-10-29T23:36:23Z",
+      "elapsed_seconds": 98.137,
+      "exit_code": 0,
+      "scan": {
+        "stream": "live-probe",
+        "bytes": 1460,
+        "findings": []
+      },
+      "status": "passed",
+      "required_tests": [
+        "TestAT28_AT31_LiveStack"
+      ],
+      "missing": [],
+      "skipped": [],
+      "tests": [
+        {
+          "name": "TestAT28_AT31_LiveStack",
+          "result": "pass",
+          "elapsed_seconds": 97.77
+        }
+      ],
+      "package_results": {
+        "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+      }
+    },
+    "isolated_restore": {
+      "command": [
+        "python3",
+        "tests/e2e/at/secops/restore.py"
+      ],
+      "started_at": "2026-10-29T23:36:23Z",
+      "finished_at": "2026-10-29T23:36:27Z",
+      "elapsed_seconds": 3.474,
+      "exit_code": 0,
+      "scan": {
+        "stream": "isolated-restore",
+        "bytes": 97,
         "findings": []
       }
     },
@@ -103,13 +270,13 @@
         "mk/e2e.mk",
         "e2e-down"
       ],
-      "started_at": "2026-10-29T23:14:59Z",
-      "finished_at": "2026-10-29T23:14:59Z",
-      "elapsed_seconds": 0.215,
+      "started_at": "2026-10-29T23:36:27Z",
+      "finished_at": "2026-10-29T23:36:49Z",
+      "elapsed_seconds": 21.877,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-down",
-        "bytes": 414,
+        "bytes": 2756,
         "findings": []
       }
     },
@@ -143,7 +310,7 @@
     "SCOPE01"
   ],
   "status": "blocked",
-  "verdict": "not passed",
+  "verdict": "blocked",
   "expected": "One source-independent Node model and update path; notes never authorize; public statements match measured behavior; no partner approval or maintenance product workflow.",
   "actual": {
     "component_status": "passed",
@@ -152,11 +319,11 @@
       "scope-schema",
       "scope-lifecycle"
     ],
-    "full_stack_executed": false
+    "full_stack_executed": true,
+    "full_acceptance_profile_executed": false
   },
   "blockers": [
-    "needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.",
-    "Document mismatches remain outside owned paths. Three-source physical end-to-end comparison and complete Wave 4 results are unavailable on this checkout."
+    "DOC01–DOC13 remain outside owned paths; three-source physical end-to-end comparison and complete Wave 4 evidence require operator runs."
   ],
   "commands": [
     [
@@ -216,6 +383,7 @@
     "script": "operator-runs.md#at32"
   },
   "evidence": [
+    "live.json",
     "components.json",
     "secret-scan.json",
     "requests.md",

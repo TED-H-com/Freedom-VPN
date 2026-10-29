@@ -11,10 +11,10 @@ TEST_TARGETS += at-secops-test
 
 # Exits 2 for blocked acceptance; evidence is still written for all five ATs.
 at-secops:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=23000 python3 tests/e2e/at/secops/run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py
 
 at-secops-components:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=23000 python3 tests/e2e/at/secops/run.py --components-only
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --components-only
 
 at-secops-test:
 	$(AT_SECOPS_RUN) go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops

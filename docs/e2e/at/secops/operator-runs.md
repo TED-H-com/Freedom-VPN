@@ -1,20 +1,20 @@
 # Remaining operator runs
 
 Every procedure below is **needs operator run**. It has not passed. Complete
-SECOPS-01/02/03 before attempting traffic. Use the shared `deploy/devstack`
+SECOPS-03 before attempting traffic. Use the shared `deploy/devstack`
 implementation with an orchestrator-assigned instance; do not fork it. On this
-branch the only assigned instance is `w4-secops`, base `23000`. No second restore
-slot or production hardware is allocated. Record UTC start/end, source commit,
+branch the only assigned instance is `w4-secops`, base `30000`. The automated logical restore uses a separate network-none container; no second
+networked restore slot or production hardware is allocated. Record UTC start/end, source commit,
 binary and image digests, OS/kernel/app builds, policy revision, incarnation,
 commands, expected/actual, and verdict for each row. All test rates are TEST ONLY.
 
 Protect generated cookies, tokens, curl configs, CA material, backup data and raw
 logs in `.agent` with mode 0600. No secrets belong in command-line arguments or
-published evidence. The requested shared fixture hook must provide protected
+published evidence. For this extended manual matrix, prepare protected
 curl configs for `admin`, `member-a`, `member-b`, `node-a`, `node-b`, `expired` and
-`revoked`, plus valid request bodies/IDs. Those hooks do not exist yet; the
-commands using these inputs are a precise fixture contract, not an assertion
-that the files are already present.
+`revoked`, plus valid request bodies/IDs. The automated Go probe creates in-memory sessions/certificates directly from
+the existing IdP and enrollment hooks. It does not export these operator curl
+files; prepare them privately for the additional manual steps.
 
 ## AT28
 
@@ -119,7 +119,9 @@ that the files are already present.
 
 This run must use a newly allocated isolated restore copy. Do not point any
 restore command at `FVPN_TEST_DATABASE_URL`, the live lab or another task's DB.
-The test runner currently executes only `dbtest` component models.
+The runner has passed a real isolated logical dump/replay subset (see
+[restore.json](restore.json)). The steps below extend that evidence to WAL/PITR,
+original node archives and coordinated external reconciliation; they are unrun.
 
 1. On the isolated source copy, use a valid node archive retaining at least
    72 hours. Generate original events 1–400, persist exact hashes/totals and

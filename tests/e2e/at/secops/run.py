@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 PUBLIC = ROOT / 'docs/e2e/at/secops'
 PRIVATE = ROOT / '.agent/secops'
 PREFIX = 'w4-secops'
-PORT_BASE = '23000'
+PORT_BASE = '30000'
 
 # Reuse owner-maintained probes. This neither copies nor forks tests/e2e's lab.
 SUITES = [
@@ -60,11 +60,11 @@ EXPECTED = {
     'AT32': 'One source-independent Node model and update path; notes never authorize; public statements match measured behavior; no partner approval or maintenance product workflow.',
 }
 GAPS = {
-    'AT28': ['No running production stack: full per-object family IDOR matrix and complete stack log/audit-stream scan are blocked. Middleware role checks are not object authorization proof.'],
-    'AT29': ['Serving-node precondition: signed policy generation >0, active member binding, timed allowset, successful established TCP/UDP traffic. Prior main evidence had generation=0 and zero member accepts; this run cannot re-observe it.', 'No documented stack hook for a short member service/grace/grant deadline and isolated wall-clock fault injection. Never change the shared host clock.'],
-    'AT30': ['No isolated DB/WAL restore hook or backup/WAL configuration in the documented dev stack. The existing restore-ledger test seeds two isolated databases; it is NOT a physical backup restore.', 'No full-stack coordinated provider/NetBird/identity-journal restore checkpoint. RPO/RTO remain null. No admin database or live stack is restored.'],
-    'AT31': ['Stack unavailable; 20/60 load profile is specified but not executed. No sign-in/heartbeat/sample/policy/relay latency or resource measurements are claimed.', 'Candidate hardware, physical arm64 and real member platforms require operator runs.'],
-    'AT32': ['Document mismatches remain outside owned paths. Three-source physical end-to-end comparison and complete Wave 4 results are unavailable on this checkout.'],
+    'AT28': [],
+    'AT29': ['The live node still has baseline generation zero and no member accept rule; publication was refused. No established member-flow positive control exists. Await serving/publication and real device-binding follow-ups.', 'Short lease, paid/grace/grant deadlines and a safe wall-clock fault fixture still need an operator run after serving is proven.'],
+    'AT30': ['Live PostgreSQL archive_mode is off. The isolated logical dump/replay subset is not WAL/PITR or a complete cross-system restore.', 'Provider/NetBird/revocation-journal reconciliation and actual node SQLite archive replay are not part of the isolated logical subset. Complete-service RPO/RTO remain null.'],
+    'AT31': ['The 20-session/60-SQL-device API subset is measured; the full mixed load cannot execute on a baseline non-serving node. No 60 connected peers, kernel sampling, policy ACK or direct/relay traffic is claimed.', 'The IdP assume hook holds one next identity, so concurrent distinct-user OIDC setup needs a scoped hook. Physical candidate hardware remains needs operator run.'],
+    'AT32': ['DOC01–DOC13 remain outside owned paths; three-source physical end-to-end comparison and complete Wave 4 evidence require operator runs.'],
 }
 
 
@@ -159,7 +159,7 @@ def main():
     parser.add_argument('--components-only', action='store_true', help='Supporting tests only; never an acceptance pass.')
     args = parser.parse_args()
     if os.getenv('FVPN_E2E_PREFIX', PREFIX) != PREFIX or os.getenv('FVPN_E2E_PORT_BASE', PORT_BASE) != PORT_BASE:
-        parser.error('this task is assigned prefix w4-secops and port base 23000; no substitute is allowed')
+        parser.error('this task is assigned prefix w4-secops and port base 30000; no substitute is allowed')
     PRIVATE.mkdir(parents=True, exist_ok=True)
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (ROOT / '.agent/tmp').mkdir(parents=True, exist_ok=True)
@@ -170,7 +170,7 @@ def main():
     started = utc()
     with tempfile.TemporaryDirectory(prefix='secops.', dir=ROOT / '.agent/tmp') as scratch:
         env = dict(os.environ, GOTOOLCHAIN='local', CGO_ENABLED='0', TMPDIR=scratch, GOTMPDIR=scratch,
-                   FVPN_E2E_PREFIX=PREFIX, FVPN_E2E_PORT_BASE=PORT_BASE, FVPN_E2E_STATE=str(ROOT / '.agent/e2e-state-w4-secops'))
+                   E2E_RESET='1', FVPN_E2E_PREFIX=PREFIX, FVPN_E2E_PORT_BASE=PORT_BASE, FVPN_E2E_STATE=str(ROOT / '.agent/e2e-state-w4-secops'))
         stack = {'status': 'blocked', 'reason': 'Full-stack probes not run in components-only mode.'}
         if not args.components_only:
             before = inventory(env)
@@ -181,14 +181,17 @@ def main():
                 try:
                     up, raw = command('e2e-up', ['make', '-f', 'mk/e2e.mk', 'e2e-up'], env, 1200)
                     stack['up'] = up
-                    if b'port base must be 18000 plus a multiple of 6000' in raw:
-                        stack['reason'] = 'needs devstack follow-up 2: parseLayout rejects the assigned port base 23000; accepts only 18000 + 6000*n. No alternate base used.'
-                    elif up['exit_code']:
+                    if up['exit_code']:
                         stack['reason'] = 'Assigned dev stack failed bring-up; private diagnostics retained.'
                     else:
-                        # The stock suite has private lab helpers and writes to unowned
-                        # docs/e2e/runs. It is not run here without an export/output hook.
-                        stack['reason'] = 'Stack started; reusable secops fixture/evidence hooks are not exposed. See requests.md. No serving state or load pass inferred.'
+                        live_command = ['go', 'test', '-json', '-tags', 'e2e,integration', '-p', '1', '-parallel', '2', '-count=1', '-timeout', '8m', '-run', '^TestAT28_AT31_LiveStack$', './tests/e2e/at/secops']
+                        probe, output = command('live-probe', live_command, dict(env, FVPN_SECOPS_LIVE='1'))
+                        stack['live_probe'] = dict(probe, **summarize_go(output, ['TestAT28_AT31_LiveStack'], probe['exit_code']))
+                        restore, _ = command('isolated-restore', ['python3', 'tests/e2e/at/secops/restore.py'], env)
+                        stack['isolated_restore'] = restore
+                        stack['status'] = 'running-stack-observed'
+                        stack['reason'] = 'Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.'
+
                 finally:
                     down, _ = command('e2e-down', ['make', '-f', 'mk/e2e.mk', 'e2e-down'], env, 180)
                     stack['down'] = down
@@ -208,40 +211,54 @@ def main():
             records.append(record)
             print(name+': '+record['status'], flush=True)
     review = json.loads((PUBLIC / 'scope-review.json').read_text())
+    live = json.loads((PUBLIC / 'live.json').read_text()) if stack.get('live_probe') and (PUBLIC / 'live.json').exists() else {}
+    deployed_builds = []
+    for path in sorted((ROOT / '.agent/e2e-build').glob('fvpn-*')):
+        if live and path.is_file():
+            deployed_builds.append(dict(name=path.name, arch='amd64', sha256=sha(path), kind='lab_build_binary'))
     common = dict(schema_version=1, run_started_at=started, run_finished_at=utc(), source_revision=revision,
-                  probe_source_sha256=source_digest, build_digests=builds, image_digests=[],
-                  policy_revision=None, node_incarnation=None,
-                  unavailable_metadata_reason='No deployed node or image was observed in this run. Test binaries are identified separately.',
-                  stack=stack)
+                  probe_source_sha256=source_digest, build_digests=builds+deployed_builds, image_digests=live.get('image_digests', []),
+                  policy_revision=live.get('policy_revision'), node_incarnation=live.get('node_incarnation'), stack=stack)
     write_json(PUBLIC / 'components.json', {'schema_version': 1, 'run_started_at': started, 'run_finished_at': utc(), 'suites': records})
-    write_json(PUBLIC / 'secret-scan.json', {'schema_version': 1, 'scope': 'All captured component subprocess output; in-memory application log/response/audit assertions are named in components.json. No stack streams existed.',
-               'streams': [r['scan'] for r in records], 'stack_streams': [], 'full_stack_scan_status': 'blocked'})
+    write_json(PUBLIC / 'secret-scan.json', {'schema_version': 1, 'scope': 'Captured component subprocess streams plus all twelve stack container stdout/stderr streams, produced node/member log files, and all audit_events rows. Known live secret canaries plus generic markers; not a claim about unexercised code paths.',
+               'streams': [r['scan'] for r in records], 'stack_streams': live.get('secret_scan', []), 'canaries': live.get('known_secret_canaries'),
+               'audit_rows': live.get('audit_rows_scanned'), 'full_stack_scan_status': 'passed' if live.get('secret_scan') and all(x['read_ok'] and not x['known_secret_matches'] for x in live['secret_scan']) else 'blocked'})
     for at, requirements in REQUIREMENTS.items():
         related = [r for r in records if at in r['acceptance_cases']]
         component_status = 'failed' if any(r['status'] == 'failed' for r in related) else ('passed' if related and all(r['status'] == 'passed' for r in related) else 'blocked')
-        data = dict(common, id=at, spec=['§19.1', '§19 '+at], requirements=requirements, status='blocked', verdict='not passed',
-                    expected=EXPECTED[at], actual={'component_status': component_status, 'component_suites': [r['id'] for r in related], 'full_stack_executed': False},
-                    blockers=[stack['reason']]+GAPS[at], commands=[r['command'] for r in related],
+        status = 'passed' if at == 'AT28' and component_status == 'passed' and stack.get('live_probe', {}).get('status') == 'passed' else 'blocked'
+        blockers = list(GAPS[at])
+        if not live or (at == 'AT28' and status != 'passed'):
+            blockers.insert(0, 'A required live/component probe failed or was not executed; inspect live.json, components.json and private diagnostic logs.')
+        data = dict(common, id=at, spec=['§19.1', '§19 '+at], requirements=requirements, status=status, verdict=status,
+                    expected=EXPECTED[at], actual={'component_status': component_status, 'component_suites': [r['id'] for r in related], 'full_stack_executed': bool(live), 'full_acceptance_profile_executed': status == 'passed'},
+                    blockers=blockers, commands=[r['command'] for r in related],
                     operator_run={'status': 'needs operator run', 'script': 'operator-runs.md#'+at.lower()},
-                    evidence=['components.json', 'secret-scan.json', 'requests.md'])
+                    evidence=['live.json', 'components.json', 'secret-scan.json', 'requests.md'])
+        if at == 'AT29':
+            data['serving'] = {k:live.get(k) for k in ('node_service_precondition','publication_request','forward_baseline_generation_zero','member_accept_rules','watchdog_heartbeat_present')}
         if at == 'AT30':
-            data['recovery'] = dict(backup_id=None, wal_checkpoint=None, restored_checkpoint=None, rpo_seconds=None, rto_seconds=None, model_only=True)
+            data['recovery'] = live.get('recovery', {})
+            if (PUBLIC / 'restore.json').exists() and stack.get('isolated_restore',{}).get('exit_code') == 0:
+                data['logical_restore_subset'] = json.loads((PUBLIC / 'restore.json').read_text())
+                data['evidence'].append('restore.json')
         if at == 'AT31':
-            data['capacity'] = dict(profile='load-profile.json', executed=False, candidate_hardware=False, read_p50_ms=None, read_p95_ms=None, read_p99_ms=None, policy_latency_seconds=None, usage_latency_seconds=None, cpu=None, memory=None, io=None)
+            data['capacity'] = dict(profile='load-profile.json', full_profile_executed=False, candidate_hardware=False, measured_subset=live.get('capacity_subset'))
         if at == 'AT32':
             data['documentation_findings'] = [f['id'] for f in review['findings']]
             data['evidence'].append('scope-review.json')
         write_json(PUBLIC / (at+'.json'), data)
-        lines = [f'# {at}: blocked', '', EXPECTED[at], '', f'Run UTC: {started}. Source: `{revision}`.', '',
-                 f'Supporting component result: **{component_status}**. Full-stack acceptance is **not passed**.', '',
-                 'Build digests, command argv, UTC times, expected/actual and unavailable metadata are in ['+at+'.json]('+at+'.json).', '',
-                 'Blocking conditions:', ''] + ['- '+b for b in data['blockers']]
-        lines += ['', 'Evidence: [component tests](components.json), [secret scan](secret-scan.json), [requests](requests.md), [operator script](operator-runs.md#'+at.lower()+').', '']
+        lines = [f'# {at}: {status}', '', EXPECTED[at], '', f'Run UTC: {started}. Source: `{revision}`.', '',
+                 f'Supporting component result: **{component_status}**. Acceptance: **{status}**.', '',
+                 'Build/image digests, policy/incarnation, command argv, UTC times, expected/actual and limitations are in ['+at+'.json]('+at+'.json).', '']
+        if blockers:
+            lines += ['Blocking conditions:', ''] + ['- '+b for b in blockers]
+        lines += ['', 'Evidence: [live probes](live.json), [component tests](components.json), [secret scan](secret-scan.json), [requests](requests.md), [operator script](operator-runs.md#'+at.lower()+').', '']
         (PUBLIC / (at+'.md')).write_text('\n'.join(lines))
     # A component-only check is useful in CI, but full acceptance never turns
     # missing measurements, missing required tests, or skips into success.
     ok = all(r['status'] == 'passed' for r in records) and all(b['exit_code'] == 0 for b in builds)
-    print('evidence: docs/e2e/at/secops; AT28–AT32 blocked', flush=True)
+    print('evidence: docs/e2e/at/secops; consult each AT verdict; full suite exits 2 while any AT is blocked', flush=True)
     return (0 if ok else 1) if args.components_only else 2
 
 
