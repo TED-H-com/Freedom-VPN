@@ -112,16 +112,35 @@ func (c *Config) applyDefaults() {
 	if c.ObservationSeconds <= 0 {
 		c.ObservationSeconds = 30
 	}
-	if c.HostReserveBPS == 0 {
-		// TEST ONLY stand-in until a measured host reserve is chosen (待實測).
-		c.HostReserveBPS = 1_000_000
-	}
 	if c.NetbirdBackend == "" {
 		c.NetbirdBackend = "unknown"
 	}
 }
 
+// ErrHostReserve means host_reserve_bps is missing or zero. The process
+// exits with ExitUsage before it touches the kernel or the network (D-034).
+var ErrHostReserve = errors.New("agent: host_reserve_bps is required and must be greater than zero")
+
+// ExitUsage is the usage-error status (64, D-034). fvpn-agent returns it
+// for ErrHostReserve. The updater process is not modified here.
+const ExitUsage = 64
+
+// ExitStatus maps a startup error to a process status. ErrHostReserve is
+// ExitUsage. Every other error is 1. A nil error is 0.
+func ExitStatus(err error) int {
+	if err == nil {
+		return 0
+	}
+	if errors.Is(err, ErrHostReserve) {
+		return ExitUsage
+	}
+	return 1
+}
+
 func (c Config) validate() error {
+	if c.HostReserveBPS == 0 {
+		return ErrHostReserve
+	}
 	if c.ControlURL == "" || c.ServerCAFile == "" || c.TrustBundle == "" {
 		return errors.New("agent: control URL, CA and trust bundle are required")
 	}
@@ -158,6 +177,9 @@ func (c Config) validate() error {
 
 // DBPath is the agent SQLite file.
 func (c Config) DBPath() string { return filepath.Join(c.StateDir, "agent.db") }
+
+// UsageDBPath is the usage ledger. It is a different file from the agent store.
+func (c Config) UsageDBPath() string { return filepath.Join(c.StateDir, "usage.db") }
 
 // DatapathValue parses the datapath section.
 func (c Config) DatapathValue() (enforce.Datapath, error) {
