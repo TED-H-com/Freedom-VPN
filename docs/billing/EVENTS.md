@@ -15,7 +15,7 @@ Times are UTC and intervals are half-open.
 | `device.revoked` | device / device resource version | Same shape as `device.authorized`; the binding interval is already closed |
 | `netbird.device_sync` | device / device resource version | Same device event; separate external adapter delivery intent |
 | `billing.inbox_received` | billing_inbox / `"1"` | `inbox_id` (UUID); inserted atomically with a new authenticated inbox row |
-| `billing.session_requested` | billing session / `"1"` | `session_id`, `member_id`, nullable `operation_id` |
+| `billing.session_requested` (legacy only) | billing session / `"1"` | No longer emitted; old events retain `session_id`, `member_id`, nullable `operation_id`. |
 
 Each *changed* entitlement projection has exactly one
 `member.entitlement_changed` row. A repeated computation writes neither a new
@@ -65,7 +65,8 @@ append-only billing records retain invoices/refunds and the grace reason.
    `nodes`, attach observed references, and transition to `succeeded` only when
    every required step is done. Superseded generations should be marked
    `superseded`. Do not display an accepted/running operation as completed.
-8. `billing.session_requested` calls `billing.Service.FulfillSession`; the hosted
+8. Checkout is synchronous (D-031); new commands never enqueue a session job.
+   Legacy `billing.session_requested` calls `billing.Service.FulfillSession`; the hosted
    URL stays encrypted and is returned only through the member-scoped result API.
    Checkout operations use the contract kind `checkout.create`. Portal intents
    have no public operation: `CreateBillingPortalSession` completes before 201.

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -111,6 +112,19 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 	if err != nil {
 		return out, err
 	}
+	// Keep the coarse account status and ETag consistent with the separate,
+	// more detailed entitlement state. Manual suspension remains an input.
+	status := result.State
+	switch status {
+	case "grace", "cancel_at_period_end":
+		status = "active"
+	case "past_due":
+		status = "expired"
+	}
+	if _, err = tx.Exec(ctx, `UPDATE members SET status=$2,resource_version=resource_version+1 WHERE id=$1 AND status<>$2`, memberID, status); err != nil {
+		return out, err
+	}
+
 	var old []byte
 	var version decstr.U64
 	var computed time.Time
@@ -127,17 +141,13 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 			return Projection{Result: result, MemberID: memberID, Revision: version, ComputedAt: computed}, s.schedule(ctx, tx, memberID, in)
 		}
 	}
-	// Keep the coarse account status and ETag consistent with the separate,
-	// more detailed entitlement state. Manual suspension remains an input.
-	status := result.State
-	switch status {
-	case "grace", "cancel_at_period_end":
-		status = "active"
-	case "past_due":
-		status = "expired"
-	}
-	if _, err = tx.Exec(ctx, `UPDATE members SET status=$2,resource_version=resource_version+1 WHERE id=$1`, memberID, status); err != nil {
-		return out, err
+
+	// A changed projection also changes the member representation/ETag. If
+	// status repair above already advanced it, do not advance it a second time.
+	if in.MemberStatus == status {
+		if _, err = tx.Exec(ctx, `UPDATE members SET resource_version=resource_version+1 WHERE id=$1`, memberID); err != nil {
+			return out, err
+		}
 	}
 
 	version, err = version.Add(1)
@@ -183,7 +193,7 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 	if err != nil {
 		return out, err
 	}
-	if err = Audit(ctx, tx, Actor{ID: memberID, Role: "system"}, "member.entitlement_changed", memberID, nil, map[string]any{"revision": version, "state": result.State}); err != nil {
+	if err = Audit(ctx, tx, Actor{ID: memberID, Role: string(api.AuditEventActorTypeSystem)}, "member.entitlement_changed", api.ResourceTypeMember, memberID, nil, map[string]any{"revision": version, "state": result.State}); err != nil {
 		return out, err
 	}
 	return out, s.schedule(ctx, tx, memberID, in)

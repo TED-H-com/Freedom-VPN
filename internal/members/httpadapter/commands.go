@@ -39,7 +39,7 @@ func (h Handlers) UpdateMember(ctx context.Context, r gen.UpdateMemberRequestObj
 	if change.OperationID != nil {
 		status = 202
 	}
-	if err = result(ctx, "member", r.MemberId, change.OperationID, status); err != nil {
+	if err = result(ctx, api.ResourceTypeMember, r.MemberId, change.OperationID, status); err != nil {
 		return nil, err
 	}
 	return h.updateResponse(ctx, r.MemberId, change.OperationID), nil
@@ -81,7 +81,7 @@ func (h Handlers) CreateMemberGrant(ctx context.Context, r gen.CreateMemberGrant
 	if err != nil {
 		return nil, domainError(err)
 	}
-	if err = result(ctx, "grant", change.ResourceID, change.OperationID, 202); err != nil {
+	if err = result(ctx, api.ResourceTypeEntitlementGrant, change.ResourceID, change.OperationID, 202); err != nil {
 		return nil, err
 	}
 	return h.grantResponse(ctx, *change.OperationID), nil
@@ -111,7 +111,7 @@ func (h Handlers) RevokeMemberDevice(ctx context.Context, r gen.RevokeMemberDevi
 	if change.OperationID == nil {
 		return nil, apierr.New(apierr.StateConflict, "Device has no revocation operation.")
 	}
-	if err = result(ctx, "device", r.DeviceId, change.OperationID, 202); err != nil {
+	if err = result(ctx, api.ResourceTypeMemberDevice, r.DeviceId, change.OperationID, 202); err != nil {
 		return nil, err
 	}
 	return h.revokeResponse(ctx, *change.OperationID), nil
@@ -134,35 +134,27 @@ func (h Handlers) CreateCheckoutSession(ctx context.Context, r gen.CreateCheckou
 	if err != nil {
 		return nil, err
 	}
-	intent, err := s.Billing.Checkout(ctx, c, r.Body.PlanId, r.Body.ReturnUrl)
+	intent, err := s.Billing.ReserveCheckout(ctx, c, r.Body.PlanId, r.Body.ReturnUrl)
 	if err != nil {
 		return nil, domainError(err)
 	}
-	if err = result(ctx, "billing_session", intent.ID, &intent.OperationID, 202); err != nil {
+	if err = result(ctx, api.ResourceTypeCheckoutSession, intent.ID, &intent.OperationID, 201); err != nil {
 		return nil, err
 	}
-	return h.checkoutResponse(ctx, intent.ID, intent.OperationID, false), nil
+	return h.checkoutResponse(ctx, intent.ID), nil
 }
-func (h Handlers) checkoutResponse(ctx context.Context, id, op uuid.UUID, replay bool) deferred {
+func (h Handlers) checkoutResponse(ctx context.Context, id uuid.UUID) deferred {
 	return deferred{func(w http.ResponseWriter) error {
 		s, e := h.services(ctx)
 		if e != nil {
 			return e
 		}
-		if replay {
-			hosted, e := s.Billing.SessionResult(ctx, actor(ctx), id)
-			if e == nil {
-				return (gen.CreateCheckoutSession201JSONResponse{Body: api.CheckoutSession{CheckoutSessionId: id, CheckoutUrl: hosted.URL, ExpiresAt: hosted.ExpiresAt, Provider: s.Billing.Provider.Name()}}).VisitCreateCheckoutSessionResponse(w)
-			}
-			if !errors.Is(e, billing.ErrBusy) {
-				return domainError(e)
-			}
-		}
-		a, e := h.accepted(ctx, op)
+		hosted, e := s.Billing.CompleteSession(ctx, actor(ctx), id)
 		if e != nil {
-			return e
+			return domainError(e)
 		}
-		return (gen.CreateCheckoutSession202JSONResponse{OperationAcceptedJSONResponse: a}).VisitCreateCheckoutSessionResponse(w)
+		w.Header().Set("Cache-Control", "no-store")
+		return (gen.CreateCheckoutSession201JSONResponse{Body: api.CheckoutSession{CheckoutSessionId: id, CheckoutUrl: hosted.URL, ExpiresAt: hosted.ExpiresAt, Provider: s.Billing.Provider.Name()}}).VisitCreateCheckoutSessionResponse(w)
 	}}
 }
 func (h Handlers) CreateBillingPortalSession(ctx context.Context, r gen.CreateBillingPortalSessionRequestObject) (gen.CreateBillingPortalSessionResponseObject, error) {
@@ -178,7 +170,7 @@ func (h Handlers) CreateBillingPortalSession(ctx context.Context, r gen.CreateBi
 	if err != nil {
 		return nil, domainError(err)
 	}
-	if err = result(ctx, "billing_session", intent.ID, nil, 201); err != nil {
+	if err = result(ctx, api.ResourceTypeCheckoutSession, intent.ID, nil, 201); err != nil {
 		return nil, err
 	}
 	return h.portalResponse(ctx, intent.ID), nil
@@ -228,7 +220,7 @@ func (h Handlers) Replay(ctx context.Context, name string, r db.IdempotencyRecor
 	case "RevokeMemberDevice":
 		return h.revokeResponse(ctx, *r.OperationID), nil
 	case "CreateCheckoutSession":
-		return h.checkoutResponse(ctx, *r.ResourceID, *r.OperationID, true), nil
+		return h.checkoutResponse(ctx, *r.ResourceID), nil
 	}
 	return nil, apierr.New(apierr.InternalError, "Unknown member command.")
 }
