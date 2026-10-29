@@ -46,8 +46,8 @@ func TestAT11_IPv6Blocked(t *testing.T) {
 	time.Sleep(300 * time.Millisecond)
 	stopCaptures(t)
 
-	inetCap := readScratch(t, "/scratch/cap-at11-inet.txt")
-	lanCap := readScratch(t, "/scratch/cap-at11-lan.txt")
+	inetCap := captureBody(t, "/scratch/cap-at11-inet.txt")
+	lanCap := captureBody(t, "/scratch/cap-at11-lan.txt")
 	if strings.TrimSpace(inetCap) != "" || strings.TrimSpace(lanCap) != "" {
 		t.Fatalf("ipv6 reached a target\ninet:\n%slan:\n%s", inetCap, lanCap)
 	}

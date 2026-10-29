@@ -164,7 +164,7 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 	}
 	stopCaptures(t)
 	for _, path := range []string{"/scratch/cap-at10-lan.txt", "/scratch/cap-at10-a2.txt", "/scratch/cap-at10-dns.txt"} {
-		body := readScratch(t, path)
+		body := captureBody(t, path)
 		if strings.TrimSpace(body) != "" {
 			save(t, "capture-leak.txt", body)
 			t.Fatalf("denied packet reached %s", path)
@@ -203,7 +203,7 @@ func flapLAN(t *testing.T) {
 	res := runProbe(t, []probeCase{{"flap", "fv-a1", "tcp", "198.18.0.10", 80, "", "deny", 800, "", "", "", "", 0}})
 	requireProbe(t, res)
 	stopOneCapture("/scratch/cap-at10-flap.txt")
-	body := readScratch(t, "/scratch/cap-at10-flap.txt")
+	body := captureBody(t, "/scratch/cap-at10-flap.txt")
 	if strings.TrimSpace(body) != "" {
 		t.Fatalf("flapped LAN received a packet:\n%s", body)
 	}

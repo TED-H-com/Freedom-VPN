@@ -452,7 +452,13 @@ func requireProbe(t *testing.T, results []probeResult) {
 
 func startCapture(t *testing.T, ns, iface, filter, path string) {
 	t.Helper()
-	script := fmt.Sprintf("echo $$ > %s.pid; exec tcpdump -n -l -s 96 -i %s %s > %s 2>%s.err", path, iface, filter, path, path)
+	// Quote the filter. Parentheses are part of the tcpdump expression, and
+	// an unquoted "(" is a shell subshell, so the capture file is never created.
+	expr := ""
+	if strings.TrimSpace(filter) != "" {
+		expr = " " + strconv.Quote(filter)
+	}
+	script := fmt.Sprintf("echo $$ > %s.pid; exec tcpdump -n -l -s 96 -i %s%s > %s 2>%s.err", path, iface, expr, path, path)
 	var err error
 	if ns == "" || ns == "root" {
 		err = dockerDetach("sh", "-c", script)
@@ -462,6 +468,15 @@ func startCapture(t *testing.T, ns, iface, filter, path string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func captureBody(t *testing.T, path string) string {
+	t.Helper()
+	errText := execText("sh", "-c", "cat "+path+".err 2>/dev/null || true")
+	if !strings.Contains(errText, "listening") {
+		t.Fatalf("capture %s did not start: %s", path, oneLine(errText))
+	}
+	return readScratch(t, path)
 }
 
 func stopOneCapture(path string) {

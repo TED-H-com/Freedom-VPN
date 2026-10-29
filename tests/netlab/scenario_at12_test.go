@@ -63,7 +63,7 @@ func TestAT12_ISO01_ISO04_AllowDeny(t *testing.T) {
 	table := printProbe(t, "AT12 deny", denied)
 	requireProbe(t, denied)
 	for _, path := range []string{"/scratch/cap-at12-lan.txt", "/scratch/cap-at12-a2.txt", "/scratch/cap-at12-lo.txt"} {
-		body := readScratch(t, path)
+		body := captureBody(t, path)
 		if strings.TrimSpace(body) != "" {
 			t.Fatalf("denied target capture %s was not empty:\n%s", path, body)
 		}
