@@ -50,7 +50,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater: node updater, update journal, release packaging | WP09 | in progress |
 | w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after w1-netlab) |
 | w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after w1-netlab) |
-| w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | in progress |
+| w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
 
