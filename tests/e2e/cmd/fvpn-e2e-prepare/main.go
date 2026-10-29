@@ -35,7 +35,7 @@ func main() {
 		os.Exit(2)
 	}
 	if err := run(*state, *reset); err != nil {
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-prepare: failed")
+		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: failed: %s\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("e2e state ready")
@@ -397,7 +397,11 @@ user_rules: []
 dhcp:
   enabled: false
 `, string(hash))
-	return os.WriteFile(filepath.Join(state, "adguard", "AdGuardHome.yaml"), []byte(body), 0o600)
+	dir := filepath.Join(state, "adguard")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, "AdGuardHome.yaml"), []byte(body), 0o600)
 }
 
 func cloneMap(in map[string]any) map[string]any {
