@@ -311,10 +311,14 @@ func Test14_5_IdempotencyAndConcurrentFirstUse(t *testing.T) {
 	}
 	err = db.InTx(ctx, p, db.TxOptions{}, func(tx pgx.Tx) error {
 		r, err := db.BeginIdempotent(ctx, tx, scope, 0)
-		if err == nil && !r.New {
+		if err != nil {
+			return err
+		}
+		if !r.New {
 			return errors.New("key survived rollback")
 		}
-		return err
+		id := uuid.New()
+		return db.CompleteIdempotent(ctx, tx, r.ID, db.IdempotencyResult{ResourceID: &id, ResponseStatus: 201})
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,7 +23,7 @@ type OutboxEvent struct {
 
 // EnqueueOutbox must share the domain transaction (§15.5).
 func EnqueueOutbox(ctx context.Context, tx pgx.Tx, evt OutboxEvent) error {
-	if !decimalUint64(evt.AggregateVersion) || !jsonObject(evt.Payload) || evt.SchemaVersion < 1 {
+	if evt.AggregateID == uuid.Nil || strings.TrimSpace(evt.AggregateType) == "" || strings.TrimSpace(evt.EventType) == "" || !decimalUint64(evt.AggregateVersion) || !jsonObject(evt.Payload) || evt.SchemaVersion < 1 {
 		return errors.New("invalid outbox event")
 	}
 	if evt.ID == uuid.Nil {
@@ -63,9 +64,9 @@ func ClaimOutbox(ctx context.Context, pool *pgxpool.Pool, worker string, n int, 
 	rows, err := pool.Query(ctx, `WITH candidates AS (
  SELECT id FROM outbox_events WHERE delivered_at IS NULL AND available_at<=clock_timestamp()
  AND (lease_until IS NULL OR lease_until<=clock_timestamp()) ORDER BY available_at,id FOR UPDATE SKIP LOCKED LIMIT $1
- ) UPDATE outbox_events e SET lease_owner=$2,lease_token=$3,lease_until=clock_timestamp()+$4::bigint*interval '1 millisecond',attempt=attempt+1
+ ), claimed AS (UPDATE outbox_events e SET lease_owner=$2,lease_token=$3,lease_until=clock_timestamp()+$4::bigint*interval '1 millisecond',attempt=attempt+1
  FROM candidates c WHERE e.id=c.id
- RETURNING e.id,e.aggregate_id,e.aggregate_type,e.aggregate_version::text,e.event_type,e.schema_version,e.payload,e.available_at,e.lease_until,e.attempt`, n, worker, token, leaseFor.Milliseconds())
+ RETURNING e.id,e.aggregate_id,e.aggregate_type,e.aggregate_version::text,e.event_type,e.schema_version,e.payload,e.available_at,e.lease_until,e.attempt) SELECT * FROM claimed ORDER BY available_at,id`, n, worker, token, leaseFor.Milliseconds())
 	if err != nil {
 		return nil, MapError(err)
 	}
