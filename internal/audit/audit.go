@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"reflect"
 	"regexp"
@@ -179,7 +180,7 @@ func (s *Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api
 	if p.ActorId != nil {
 		actor = p.ActorId.String()
 	}
-	rows, e := s.Pool.Query(ctx, `SELECT id,occurred_at,actor,actor_type,action,resource,request_id,operation_id,result,before_diff,after_diff FROM audit_events WHERE ($1::text IS NULL OR split_part(resource,':',1)=$1) AND ($2::text IS NULL OR split_part(resource,':',2)=$2) AND ($3::text IS NULL OR actor=$3) AND ($4::uuid IS NULL OR request_id=$4) AND ($5::timestamptz IS NULL OR occurred_at >= $5) AND ($6::timestamptz IS NULL OR occurred_at < $6) AND ($7::timestamptz IS NULL OR (occurred_at,id)<($7,$8::uuid)) ORDER BY occurred_at DESC,id DESC LIMIT $9`, resourceType, resourceID, actor, p.RequestId, p.OccurredFrom, p.OccurredTo, cursorTime, cursorID, limit+1)
+	rows, e := s.Pool.Query(ctx, `SELECT id,occurred_at,actor,actor_type,action,resource,request_id,operation_id,result,before_diff,after_diff FROM audit_events WHERE ($1::text IS NULL OR (CASE WHEN left(ltrim(resource), 1) = '{' AND pg_input_is_valid(resource, 'jsonb') THEN (resource::jsonb)->>'type' ELSE split_part(resource, ':', 1) END) = $1) AND ($2::text IS NULL OR (CASE WHEN left(ltrim(resource), 1) = '{' AND pg_input_is_valid(resource, 'jsonb') THEN (resource::jsonb)->>'id' ELSE split_part(resource, ':', 2) END) = $2) AND ($3::text IS NULL OR actor=$3) AND ($4::uuid IS NULL OR request_id=$4) AND ($5::timestamptz IS NULL OR occurred_at >= $5) AND ($6::timestamptz IS NULL OR occurred_at < $6) AND ($7::timestamptz IS NULL OR (occurred_at,id)<($7,$8::uuid)) ORDER BY occurred_at DESC,id DESC LIMIT $9`, resourceType, resourceID, actor, p.RequestId, p.OccurredFrom, p.OccurredTo, cursorTime, cursorID, limit+1)
 	if e != nil {
 		return page, e
 	}
@@ -259,15 +260,11 @@ func decodeEvent(event *api.AuditEvent, actor, resource string, before, after []
 	if len(event.Action) > 128 || !regexp.MustCompile(`^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`).MatchString(event.Action) {
 		return "action"
 	}
-	parts := strings.SplitN(resource, ":", 2)
-	if len(parts) != 2 || !api.ResourceType(parts[0]).Valid() {
-		return "resource_type"
+	ref, reason := decodeResource(resource)
+	if reason != "" {
+		return reason
 	}
-	id, err := uuid.Parse(parts[1])
-	if err != nil {
-		return "resource_id"
-	}
-	event.Resource = api.ResourceRef{Type: api.ResourceType(parts[0]), Id: id}
+	event.Resource = ref
 	for i, raw := range [][]byte{before, after} {
 		var value map[string]any
 		decoder := json.NewDecoder(strings.NewReader(string(raw)))
@@ -286,6 +283,49 @@ func decodeEvent(event *api.AuditEvent, actor, resource string, before, after []
 	}
 	event.OccurredAt = event.OccurredAt.UTC()
 	return ""
+}
+
+// decodeResource parses either the canonical "type:uuid" resource identifier or
+// a JSON ResourceRef object such as the retention purge row inserted by
+// purge_retained ({"type":"fleet_config","id":"00000000-0000-0000-0000-000000000001"}).
+func decodeResource(resource string) (api.ResourceRef, string) {
+	trimmed := strings.TrimSpace(resource)
+	if strings.HasPrefix(trimmed, "{") {
+		var raw struct {
+			Type *string `json:"type"`
+			ID   *string `json:"id"`
+		}
+		dec := json.NewDecoder(strings.NewReader(trimmed))
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&raw); err != nil || raw.Type == nil {
+			return api.ResourceRef{}, "resource_type"
+		}
+		var extra any
+		if err := dec.Decode(&extra); err != io.EOF {
+			return api.ResourceRef{}, "resource_type"
+		}
+		rt := api.ResourceType(*raw.Type)
+		if !rt.Valid() {
+			return api.ResourceRef{}, "resource_type"
+		}
+		if raw.ID == nil {
+			return api.ResourceRef{}, "resource_id"
+		}
+		id, err := uuid.Parse(*raw.ID)
+		if err != nil {
+			return api.ResourceRef{}, "resource_id"
+		}
+		return api.ResourceRef{Type: rt, Id: id}, ""
+	}
+	parts := strings.SplitN(resource, ":", 2)
+	if len(parts) != 2 || !api.ResourceType(parts[0]).Valid() {
+		return api.ResourceRef{}, "resource_type"
+	}
+	id, err := uuid.Parse(parts[1])
+	if err != nil {
+		return api.ResourceRef{}, "resource_id"
+	}
+	return api.ResourceRef{Type: api.ResourceType(parts[0]), Id: id}, ""
 }
 
 func normalizeRedacted(v any) (any, error) {
