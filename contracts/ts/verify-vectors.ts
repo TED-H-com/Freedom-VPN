@@ -99,8 +99,13 @@ check(isDecimalString(ue.event.records[1].upload_bytes), "2^53+1 bytes stay a de
 const ur = load("update-result-payload-hash.json");
 check(hashWithout(ur.result, "payload_hash") === ur.payload_hash, "update result payload_hash");
 
+const urPolicy = load("update-result-policy-generation-hash.json");
+check(hashWithout(urPolicy.result, "payload_hash") === urPolicy.payload_hash, "applied policy generation hash");
+check(isDecimalString(urPolicy.result.policy_generation) && BigInt(urPolicy.result.policy_generation) === 9007199254740993n, "applied generation preserves precision");
+check(hashWithout({ ...urPolicy.result, policy_generation: "9007199254740994" }, "payload_hash") !== urPolicy.payload_hash, "changed applied generation changes hash");
+
 // ---- signing vectors
-for (const f of ["release-manifest-signing.json", "desired-state-signing.json", "serving-lease-signing.json", "usage-checkpoint-signing.json"]) {
+for (const f of ["release-trust-update-signing.json", "release-manifest-signing.json", "desired-state-signing.json", "desired-state-revocations-signing.json", "serving-lease-signing.json", "usage-checkpoint-signing.json"]) {
   const v = load(f);
   const canon = canonicalize(v.signed);
   check(canon === v.canonical_signed, `${f} canonical signed`);
@@ -117,6 +122,9 @@ for (const f of ["release-manifest-signing.json", "desired-state-signing.json", 
 const man = load("release-manifest-signing.json");
 const dsv = load("desired-state-signing.json");
 check(dsv.signed.update.manifest_sha256 === man.envelope_sha256, "desired state binds the manifest envelope hash");
+
+const revoked = load("desired-state-revocations-signing.json");
+check(!ed25519Verify(revoked.public_key_b64, canonicalize({ ...revoked.signed, revoked_release_ids: [] }), revoked.signature_b64), "removed revocation invalidates signature");
 
 if (failures > 0) {
   console.error(`${failures} of ${checks} vector checks failed`);

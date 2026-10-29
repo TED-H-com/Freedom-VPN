@@ -262,5 +262,29 @@
     "pointer": "",
     "keyword": "required",
     "note": "D-015 success has exactly the three required bootstrap delivery members."
+  },
+  "OperationKind.unapproved-value.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "enum",
+    "note": "Only orchestrator-approved enum additions are valid."
+  },
+  "ResourceType.unapproved-value.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "enum",
+    "note": "Only orchestrator-approved enum additions are valid."
+  },
+  "ErrorCode.unapproved-value.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "enum",
+    "note": "Only orchestrator-approved enum additions are valid."
+  },
+  "CheckoutSession.missing-url.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "required",
+    "note": "D-031 successful checkout must return the URL; an operation alone cannot complete checkout."
   }
 }
