@@ -6,7 +6,8 @@ This document describes the browser session lifecycle, role/MFA guards, login re
 
 ## 1. Boundary Between `/auth/*` and `/api/v1/*`
 
-- Browser session routes live under `/auth` (configurable via `VITE_AUTH_BASE_URL`, default `/auth`), outside `/api/v1`, and are not part of the 40-endpoint OpenAPI contract.
+- Browser session routes live under `/auth` (configurable via `VITE_AUTH_BASE_URL`, default `/auth`), outside `/api/v1`, and are not part of the 41-endpoint OpenAPI contract.
+- Browser role selection (`?role=admin|member`) is supported on `/auth/session`, `/auth/login`, and `/auth/logout` per `x-fvpn-browser-auth` (D-032, D-042).
 - All `/auth/*` client helpers and types are isolated in a single small module: [`apps/portal/src/api/auth.ts`](../../apps/portal/src/api/auth.ts).
 
 | Route | Method | Purpose |

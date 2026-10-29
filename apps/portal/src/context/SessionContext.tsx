@@ -6,13 +6,25 @@ import React, {
   useState,
 } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient, buildLoginUrl, redirectToLogin, type AuthSession } from '../api';
 import {
-  getMockPersona,
-  setMockPersona,
-  triggerMockSessionExpired,
-  type MockPersona,
-} from '../mocks/handlers';
+  apiClient,
+  buildLoginUrl,
+  redirectToLogin,
+  type AuthSession,
+  type SessionRole,
+} from '../api';
+
+export type MockPersona =
+  | 'anonymous'
+  | 'admin_no_mfa'
+  | 'admin'
+  | 'member_active'
+  | 'member_throttled'
+  | 'member_pending_payment'
+  | 'member_cancel_at_period_end'
+  | 'member_grace'
+  | 'member_expired'
+  | 'member_suspended';
 
 interface SessionContextValue {
   session: AuthSession | null;
@@ -22,8 +34,8 @@ interface SessionContextValue {
   switchPersona: (next: MockPersona) => Promise<void>;
   simulateSessionExpired: () => void;
   recoverSession: () => Promise<void>;
-  loginUrlForPath: (returnTo?: string) => string;
-  startLogin: (returnTo?: string) => string;
+  loginUrlForPath: (returnTo?: string, role?: SessionRole) => string;
+  startLogin: (returnTo?: string, role?: SessionRole) => string;
   logout: () => Promise<void>;
 }
 
@@ -35,7 +47,7 @@ export function SessionProvider({
   children: React.ReactNode;
 }): React.ReactElement {
   const queryClient = useQueryClient();
-  const [persona, setPersonaState] = useState<MockPersona>(() => getMockPersona());
+  const [persona, setPersonaState] = useState<MockPersona>('admin');
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
@@ -55,7 +67,12 @@ export function SessionProvider({
 
   const switchPersona = useCallback(
     async (next: MockPersona) => {
-      setMockPersona(next);
+      if (!import.meta.env.PROD) {
+        if (import.meta.env.VITE_API_MOCK === '1' || import.meta.env.MODE === 'test') {
+          const mod = await import('../mocks/handlers');
+          mod.setMockPersona(next);
+        }
+      }
       setPersonaState(next);
       setSessionExpired(false);
       await queryClient.invalidateQueries();
@@ -64,30 +81,43 @@ export function SessionProvider({
   );
 
   const simulateSessionExpired = useCallback(() => {
-    triggerMockSessionExpired();
+    if (!import.meta.env.PROD) {
+      if (import.meta.env.VITE_API_MOCK === '1' || import.meta.env.MODE === 'test') {
+        void import('../mocks/handlers').then((mod) => {
+          mod.triggerMockSessionExpired();
+        });
+      }
+    }
     setSessionExpired(true);
   }, []);
 
   const recoverSession = useCallback(async () => {
-    setMockPersona(persona);
-    setSessionExpired(false);
-    await queryClient.invalidateQueries();
+    if (!import.meta.env.PROD) {
+      if (import.meta.env.VITE_API_MOCK === '1' || import.meta.env.MODE === 'test') {
+        const mod = await import('../mocks/handlers');
+        mod.setMockPersona(persona);
+        setSessionExpired(false);
+        await queryClient.invalidateQueries();
+        return;
+      }
+    }
+    redirectToLogin();
   }, [persona, queryClient]);
 
-  const loginUrlForPath = useCallback((returnTo?: string) => {
-    return buildLoginUrl(returnTo);
+  const loginUrlForPath = useCallback((returnTo?: string, role?: SessionRole) => {
+    return buildLoginUrl(returnTo, undefined, role);
   }, []);
 
-  const startLogin = useCallback((returnTo?: string) => {
-    return redirectToLogin(returnTo);
+  const startLogin = useCallback((returnTo?: string, role?: SessionRole) => {
+    return redirectToLogin(returnTo, undefined, undefined, role);
   }, []);
 
   const logout = useCallback(async () => {
-    await apiClient.logout();
-    setPersonaState(getMockPersona());
+    await apiClient.logout(sessionQuery.data?.role);
+    setPersonaState('anonymous');
     setSessionExpired(false);
     await queryClient.invalidateQueries();
-  }, [queryClient]);
+  }, [queryClient, sessionQuery.data?.role]);
 
   return (
     <SessionContext.Provider

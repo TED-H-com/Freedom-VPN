@@ -8,8 +8,12 @@ const repoRoot = path.resolve(__dirname, '../..');
 
 export default defineConfig(({ mode }) => {
   const apiMockEnv = process.env.VITE_API_MOCK;
-  const mockEnabled = apiMockEnv ? apiMockEnv === '1' : mode !== 'production';
-  const proxyTarget = process.env.VITE_API_PROXY_TARGET ?? 'http://127.0.0.1:8080';
+  const mockEnabled =
+    mode === 'production' ? false : apiMockEnv ? apiMockEnv === '1' : mode === 'test';
+  const proxyTarget =
+    process.env.VITE_API_PROXY_TARGET ??
+    process.env.VITE_DEV_API_ORIGIN ??
+    'https://127.0.0.1:8443';
 
   return {
     plugins: [react()],
@@ -32,16 +36,31 @@ export default defineConfig(({ mode }) => {
             '/api/v1': {
               target: proxyTarget,
               changeOrigin: true,
+              secure: false,
+              xfwd: false,
             },
             '/auth': {
               target: proxyTarget,
               changeOrigin: true,
+              secure: false,
+              xfwd: false,
+              rewrite: (reqPath) => {
+                if (reqPath.startsWith('/auth/login') && !/[?&]role=/.test(reqPath)) {
+                  const decoded = decodeURIComponent(reqPath);
+                  if (decoded.includes('return_to=/admin')) {
+                    return `${reqPath}${reqPath.includes('?') ? '&' : '?'}role=admin`;
+                  }
+                }
+                return reqPath;
+              },
             },
           },
     },
     test: {
       globals: true,
       environment: 'jsdom',
+      include: ['src/**/*.{test,spec}.{ts,tsx}'],
+      exclude: ['e2e/**', 'node_modules/**'],
       environmentOptions: {
         jsdom: {
           url: 'https://portal.example.com',

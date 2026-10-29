@@ -73,7 +73,15 @@ export const zhTW = {
   'op.completedApplied': '已套用（已取得實際觀測確認）',
   'op.partiallySucceeded': '部分完成（請檢視下方步驟與租約限制說明）',
   'op.failed': '套用失敗',
+  'op.superseded': '已被較新操作取代 (Superseded)',
   'op.routeWithdrawnDeviceUnconfirmed': '中央已撤銷路由；設備撤權尚未確認／受租約限制',
+  'api.error.title': 'API 請求錯誤',
+  'api.error.codeLabel': '錯誤代碼 (code)：{code}',
+  'api.error.requestIdLabel': '請求追蹤 ID (request_id)：{requestId}',
+  'api.error.retryAfterNotice':
+    '請求頻率或相依服務受限，請於 {seconds} 秒後重試 (Retry-After: {seconds}s)',
+  'common.nextPage': '載入下一頁 (Next Cursor)',
+  'common.resetPage': '回到第一頁',
   'op.idLabel': '操作 ID (operation_id)',
   'op.requestIdLabel': '請求追蹤 ID (request_id)',
   'op.generationsLabel':
@@ -442,6 +450,72 @@ export const zhTW = {
   'member.dns.falsePositiveTitle': '誤擋回報與協助',
   'member.dns.falsePositiveBody':
     '若您發現正常網站遭誤擋，請記下完整網域名稱（不需提供完整瀏覽網址路徑）並聯繫管理團隊（support@example.com）進行允許清單審核。',
+
+  // Wave 3 Live Control Plane Additions
+  'member.service.closedBanner':
+    '您的帳號與服務資格已結清關閉 (account_status: closed)。所有裝置授權已撤銷，歷史帳務與稽核紀錄依保留政策封存。',
+  'member.service.usageUnavailableNotice':
+    '目前無法載入最新彙總用量（將不會阻斷您的服務狀態檢視）。',
+  'member.billing.planSelectLabel': '選擇訂閱方案 (Plan ID)',
+  'member.billing.retryCheckoutBtn': '使用相同冪等鍵重試前往付款 (Retry Checkout)',
+  'member.devices.addGuideTitle': '如何新增與授權裝置 (§7.3, §9.4)',
+  'member.devices.addGuideBody':
+    '請在新裝置安裝官方 NetBird 客戶端並使用本帳號單一登入 (SSO)。控制平面收到登入後會建立待授權操作 (202 Accepted) 並在背景完成群組與對等節點授權。',
+  'admin.nodeDetail.pubActions.unpublishBtn': '設為未上架 (Unpublish)',
+  'admin.nodeDetail.retireSectionTitle': '退役並移除節點服務 (Retire Node, DELETE)',
+  'admin.nodeDetail.retireNote':
+    '退役會撤銷憑證、移除路由並將節點標記為 retired；已在進行中的更新批次目標會轉為 cancelled（§13.12）。',
+  'admin.nodeDetail.retireReasonLabel': '退役原因說明',
+  'admin.nodeDetail.retireBtn': '執行節點退役 (Retire Node)',
+  'admin.nodeDetail.editForm.clearCapacity': '清除節點容量上限 (clear_capacity)',
+  'admin.enrollment.form.delivery': '交付模式 (delivery)',
+  'admin.enrollment.form.deliveryInstaller':
+    '一鍵安裝腳本 (installer — 預設 15 分鐘有效)',
+  'admin.enrollment.form.deliveryPreinstalled':
+    '預裝設備出貨 (preinstalled — 預設 7 天有效)',
+  'admin.enrollment.form.reinstallNodeId':
+    '重裝既有節點 ID（選填 node_id，保留邏輯節點並換發新 Incarnation，AT07）',
+  'admin.updates.registerReleaseTitle':
+    '登錄已簽章發行版本 (Register Signed Release, §14.2)',
+  'admin.updates.registerReleaseBtn': '登錄新發行版本',
+  'admin.updates.needsAttentionBadge': '需人工留意 (needs_attention)',
+  'admin.updates.unconfirmedBadge': '逾時未確認 (unconfirmed)',
+  'admin.updates.noBatchSelected':
+    '目前尚無進行中或已選取的更新批次。請於上方選擇目標版本並按「一次更新全部節點」建立批次。',
+  'admin.memberDetail.patchSection':
+    '修改會員裝置上限覆寫與備註 (PATCH /admin/members/{id}, If-Match)',
+  'admin.memberDetail.deviceLimitOverrideLabel':
+    '單一會員裝置上限覆寫 (device_limit_override，1–20)',
+  'admin.memberDetail.clearDeviceLimitOverride': '清除裝置上限覆寫（回復方案預設值）',
+  'admin.memberDetail.notesLabel': '管理員內部備註 (notes)',
+  'admin.memberDetail.savePatchBtn': '儲存會員設定 (If-Match)',
+  'admin.fup.overridesTitle':
+    '單一會員臨時公平使用例外覆寫 (Temporary FUP Overrides, §11.1)',
+  'admin.fup.addOverrideBtn': '+ 新增臨時例外覆寫',
+  'admin.fup.planSectionTitle':
+    '建立方案政策修訂 (Create Plan Policy Revision, schema: plan)',
+  'admin.fup.createPlanBtn': '建立方案 Revision',
+  'admin.policies.listTitle': '已登錄政策修訂列表與啟用管理 (Policy Revisions)',
+  'admin.policies.activateBtn': '預覽差異並啟用 (Activate with Diff)',
+  'admin.policies.confirmDialogTitle':
+    '確認啟用政策修訂與變更差異對照 (Confirm Policy Activation & Diff)',
+  'admin.policies.confirmActivateBtn': '確認送出啟用 (Send If-Match & Activate)',
+  'admin.policies.cancelActivateBtn': '取消',
+  'admin.dns.otherSchemasTitle':
+    'DNS Profile、威脅情報名單與發行支援政策修訂 (dns_profile / threat_feed / release_support)',
+  'common.pagination.prev': '← 上一頁',
+  'common.pagination.next': '下一頁 →',
+  'member.devices.addGuide':
+    '如何新增與授權裝置 (§7.3, §9.4)：請在新裝置安裝官方 NetBird 客戶端並使用本帳號單一登入 (SSO)。控制平面收到登入後會建立待授權操作 (202 Accepted) 並在背景完成群組與對等節點授權。',
+  'admin.nodeDetail.pubActions.retireBtn': '執行節點退役 (Retire Node)',
+  'admin.memberDetail.deviceLimitLabel': '顯示名稱 (display_name)',
+  'admin.memberDetail.clearDeviceLimit': '會員群組 (member_group_ids，逗號分隔)',
+  'admin.fup.overrideMemberId': '會員 ID (member_id)',
+  'admin.fup.overrideValidUntil': '有效截止時間 (valid_until, UTC)',
+  'admin.policies.schemaSelectLabel': '選擇政策 Schema 類型',
+  'admin.policies.createRevisionTitle': '建立政策修訂 (Create Policy Revision)',
+  'admin.updates.manifestUrlLabel': 'Manifest URL (受信任儲存庫位址)',
+  'admin.updates.manifestJsonLabel': 'Signed Manifest Envelope JSON',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;
