@@ -24,6 +24,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
@@ -59,7 +60,7 @@ func setup(t *testing.T) *fixture {
 	}
 	runtime := &httpwire.Runtime{Pool: pool, PKI: identity, Enrollment: en, Nodes: nodes.NewService(pool), Provider: vault}
 	f := &fixture{t: t, r: runtime, p: auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: true, AuthenticatedAt: time.Now(), CSRFToken: "test-csrf"}}
-	handlers, e := httpapi.Compose(&httpwire.Handlers{Runtime: runtime})
+	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -294,6 +295,13 @@ func TestAT23_AT24_AT26_HTTPBatchSnapshotAndResultEvidence(t *testing.T) {
 	if e = json.Unmarshal(raw, &result); e != nil {
 		t.Fatal(e)
 	}
+	// D-048: accepted evidence must survive a newer desired state.
+	policyGeneration := decstr.MustParse("9007199254740993")
+	appliedPolicy, newerPolicy := uuid.New(), uuid.New()
+	for offset, ref := range []uuid.UUID{appliedPolicy, newerPolicy} {
+		f.sql(`INSERT INTO desired_states(node_id,incarnation_id,generation,policy_refs,binding_revision,release_id,config_hash,schema_version,signed_at) VALUES($1,$2,$3::numeric,$4,0,$5,$6,1,clock_timestamp())`, enrolled.NodeId, enrolled.NodeIncarnationId, (policyGeneration + decstr.U64(offset)).String(), []uuid.UUID{ref}, rf.Manifest.ReleaseId, make([]byte, 32))
+	}
+	result.PolicyGeneration = policyGeneration
 	intent := work.Intent
 	result.ResultId = uuid.New()
 	result.NodeId = intent.NodeId
@@ -385,7 +393,22 @@ func TestAT23_AT24_AT26_HTTPBatchSnapshotAndResultEvidence(t *testing.T) {
 		t.Fatalf("not confirmed: %+v %v", evidence, e)
 	}
 	view = decode[api.UpdateBatch](t, f.call("GET", "/api/v1/admin/update-batches/"+batch.BatchId.String(), nil, nil, nil), 200)
+	rawPage, e := json.Marshal(view)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = rf.Validator.ValidateBody("UpdateBatch", rawPage); e != nil {
+		t.Fatal(e)
+	}
 	for _, target := range view.Targets {
+		if target.NodeId == enrolled.NodeId {
+			refs := mustValue(t, target.PolicyRefs)
+			if mustValue(t, target.PolicyGeneration) != policyGeneration || len(refs) != 1 || refs[0] != appliedPolicy {
+				t.Fatal("accepted policy evidence missing or replaced", target)
+			}
+		} else if !target.PolicyGeneration.IsSpecified() || !target.PolicyGeneration.IsNull() || !target.PolicyRefs.IsSpecified() || !target.PolicyRefs.IsNull() {
+			t.Fatal("unknown policy evidence must be null", target)
+		}
 		if target.NodeId == enrolled.NodeId && (target.Unconfirmed != evidence.Unconfirmed || target.NeedsAttention != evidence.NeedsAttention) {
 			t.Fatal("mapping drift")
 		}
