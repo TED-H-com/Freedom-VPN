@@ -322,9 +322,15 @@ func (f *fixture) login(subject, role string) browserSession {
 	w = httptest.NewRecorder()
 	f.auth.ServeHTTP(w, callback)
 	requireStatus(f.t, w, 303)
+	cookieName := auth.MemberSessionCookie
+	identityQuery := `SELECT member_id FROM identity_bindings WHERE issuer=$1 AND client_scope='TEST-ONLY-portal' AND subject=$2`
+	if role == "admin" {
+		cookieName = auth.AdminSessionCookie
+		identityQuery = `SELECT id FROM admin_identities WHERE issuer=$1 AND client_scope='TEST-ONLY-portal' AND subject=$2`
+	}
 	var s browserSession
 	for _, c := range w.Result().Cookies() {
-		if c.Name == auth.SessionCookie {
+		if c.Name == cookieName {
 			s.cookie = c
 		}
 	}
@@ -337,7 +343,7 @@ func (f *fixture) login(subject, role string) browserSession {
 	f.auth.ServeHTTP(w, r)
 	requireStatus(f.t, w, 200)
 	s.csrf = w.Header().Get("X-CSRF-Token")
-	if e = f.pool.QueryRow(f.t.Context(), `SELECT member_id FROM identity_bindings WHERE issuer=$1 AND client_scope='TEST-ONLY-portal' AND subject=$2`, f.idp.server.URL, subject).Scan(&s.id); e != nil {
+	if e = f.pool.QueryRow(f.t.Context(), identityQuery, f.idp.server.URL, subject).Scan(&s.id); e != nil {
 		f.t.Fatal(e)
 	}
 	return s

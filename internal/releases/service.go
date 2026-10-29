@@ -9,6 +9,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
@@ -20,6 +21,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// SystemActorID is the canonical D-029 singleton used by nodes and members
+// workers. It is an internal identity, never supplied by request JSON.
+const SystemActorID = "00000000-0000-0000-0000-000000000003"
 
 const FleetID = "00000000-0000-0000-0000-000000000001"
 
@@ -149,11 +154,12 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 				}
 			}
 			out = Registration{ReleaseID: id, Status: 201}
+			requestID := commandtx.RequestID(ctx)
 			state := "verified"
 			if s.VerifyArtifacts {
 				op, err := operations.Create(ctx, tx, operations.CreateRequest{
 					Kind: api.OperationKindReleaseRegister, Principal: auth.Principal{Role: auth.Admin, ID: c.ActorID},
-					Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, RequestID: commandtx.RequestID(ctx),
+					Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, RequestID: requestID,
 					Steps: map[string]operations.Step{"verify": {Required: true}},
 				})
 				e = err
@@ -171,7 +177,16 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 			if e != nil {
 				return e
 			}
-			if e = Audit(ctx, tx, c.ActorID, api.AuditEventActorTypeAdmin, "release.register", api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, out.OperationID, api.AuditEventResultSucceeded, map[string]any{"verification_state": state}); e != nil {
+			event, e := audit.NewEvent(audit.Entry{
+				Actor: audit.Actor{Type: api.AuditEventActorTypeAdmin, ID: c.ActorID}, Action: "release.register",
+				Resource: api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, Result: api.AuditEventResultSucceeded,
+				OperationID: out.OperationID, RequestID: &requestID,
+				After: map[string]any{"verification_state": state}, Fields: []string{"verification_state"},
+			})
+			if e != nil {
+				return e
+			}
+			if e = audit.AppendEvent(ctx, tx, event); e != nil {
 				return e
 			}
 		} else {

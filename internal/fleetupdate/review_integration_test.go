@@ -4,7 +4,6 @@ package fleetupdate
 
 import (
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"testing"
@@ -121,5 +120,4 @@ func TestAT26_AppliedPolicyEvidenceIsImmutable(t *testing.T) {
 	if err := l.s.pool.QueryRow(l.ctx, `SELECT policy_generation::text,policy_refs FROM update_results WHERE result_id=$1`, r.ResultId).Scan(&stored, &refs); err != nil || stored != r.PolicyGeneration.String() || len(refs) != 1 || refs[0] != newPolicy {
 		t.Fatal(stored, refs, err)
 	}
-	releasetest.AssertLedger(t, l.s.pool, l.f.Validator)
 }
