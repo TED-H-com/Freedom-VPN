@@ -7,10 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/exits"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
@@ -59,7 +62,7 @@ func (f *fixture) publicationDispatcher(nb exits.NetBirdAdapter, attempts int) *
 	f.t.Helper()
 	// Keep unrelated provisioning/reconciliation fixtures pending for their own tests.
 	f.sql(`UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type<>$1`, desiredstate.EventNodePublicationChanged)
-	d, err := worker.New(f.r.Pool, worker.NodeJobs(f.r, nil, nil, nb), worker.Config{Concurrency: 1, Attempts: attempts, Lease: time.Minute, JobTimeout: 30 * time.Second, Poll: time.Millisecond, Backoff: time.Millisecond, MaxBackoff: time.Millisecond}, nil, nil)
+	d, err := worker.New(f.r.Pool, worker.NodeJobs(f.r, nil, nil, attempts, nb), worker.Config{Concurrency: 1, Attempts: attempts, Lease: time.Minute, JobTimeout: 30 * time.Second, Poll: time.Millisecond, Backoff: time.Millisecond, MaxBackoff: time.Millisecond}, nil, nil)
 	if err != nil {
 		f.t.Fatal(err)
 	}
@@ -76,11 +79,7 @@ func (f *fixture) publicationDispatch(d *worker.Dispatcher, op uuid.UUID) {
 
 func (f *fixture) publicationOperation(id uuid.UUID) api.Operation {
 	f.t.Helper()
-	op, err := nodes.GetOperation(f.t.Context(), f.r.Pool, id)
-	if err != nil {
-		f.t.Fatal(err)
-	}
-	return op
+	return decode[api.Operation](f.t, f.call("GET", "/api/v1/admin/operations/"+id.String(), nil, nil, nil), 200)
 }
 
 func TestAT08_HTTPPublicationWorkerRetryReadbackAndReplay(t *testing.T) {
@@ -182,25 +181,104 @@ func TestAT13_HTTPWithdrawalWorkerOnlineAndOffline(t *testing.T) {
 }
 
 func TestAT08_PublicationWorkerFailureRetriesAndDeadLetters(t *testing.T) {
-	f, enrolled, cert, _, _ := publicationFixture(t)
-	nb := exits.NewFakeNetBirdAdapter()
-	nb.SetPublishError(errors.New("TEST ONLY unavailable"))
-	op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
-	f.acknowledgePublication(enrolled, cert, true)
-	d := f.publicationDispatcher(nb, 2)
-	for attempt := 1; attempt <= 2; attempt++ {
-		f.publicationDispatch(d, op.OperationId)
-		var count int
-		var delivered, dead bool
-		if err := f.r.Pool.QueryRow(t.Context(), `SELECT attempt,delivered_at IS NOT NULL,dead_lettered_at IS NOT NULL FROM outbox_events WHERE payload->>'operation_id'=$1`, op.OperationId.String()).Scan(&count, &delivered, &dead); err != nil || count != attempt || delivered || dead != (attempt == 2) {
-			t.Fatal(count, delivered, dead, err)
-		}
-		got := f.publicationOperation(op.OperationId)
-		if got.Status != api.OperationStatusRunning || got.Error.IsNull() || nb.RouteCount() != 0 {
-			t.Fatal("failure lost or acknowledged", got)
+	for _, attempts := range []int{1, 2} {
+		t.Run(strconv.Itoa(attempts), func(t *testing.T) {
+			f, enrolled, cert, _, _ := publicationFixture(t)
+			nb := exits.NewFakeNetBirdAdapter()
+			nb.SetPublishError(errors.New("TEST ONLY unavailable"))
+			op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+			f.acknowledgePublication(enrolled, cert, true)
+			d := f.publicationDispatcher(nb, attempts)
+			for attempt := 1; attempt <= attempts; attempt++ {
+				f.publicationDispatch(d, op.OperationId)
+				var count int
+				var delivered, dead bool
+				if err := f.r.Pool.QueryRow(t.Context(), `SELECT attempt,delivered_at IS NOT NULL,dead_lettered_at IS NOT NULL FROM outbox_events WHERE payload->>'operation_id'=$1`, op.OperationId.String()).Scan(&count, &delivered, &dead); err != nil || count != attempt || delivered || dead != (attempt == attempts) {
+					t.Fatal(count, delivered, dead, err)
+				}
+				status := api.OperationStatusRunning
+				if attempt == attempts {
+					status = api.OperationStatusFailed
+				}
+				assertPublicationFailure(t, f.publicationOperation(op.OperationId), status)
+				if nb.RouteCount() != 0 {
+					t.Fatal("failed publication created a route")
+				}
+			}
+			if worked, err := d.Once(t.Context()); worked || err != nil {
+				t.Fatal("dead letter was reclaimed", worked, err)
+			}
+			failed := f.publicationOperation(op.OperationId)
+			// An operator submits a fresh audited intent after repairing the
+			// dependency; the exhausted operation and its evidence remain intact.
+			nb.SetPublishError(nil)
+			retry := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+			if retry.OperationId == op.OperationId || retry.Status != api.OperationStatusPending {
+				t.Fatal("publication did not create a fresh operation", retry)
+			}
+			f.acknowledgePublication(enrolled, cert, true)
+			f.publicationDispatch(d, retry.OperationId)
+			if got := f.publicationOperation(retry.OperationId); got.Status != api.OperationStatusSucceeded || nb.RouteCount() != 1 {
+				t.Fatal("fresh publication did not recover", got)
+			}
+			if got := f.publicationOperation(op.OperationId); !reflect.DeepEqual(got, failed) {
+				t.Fatal("fresh publication changed exhausted operation", got)
+			}
+		})
+	}
+}
+
+func assertPublicationFailure(t *testing.T, op api.Operation, status api.OperationStatus) {
+	t.Helper()
+	if op.Status != status || (status == api.OperationStatusFailed && op.Error.IsNull()) {
+		t.Fatal("failure lost or acknowledged", op)
+	}
+	for _, step := range op.Steps {
+		if step.Name == nodes.StepNetBirdRouteReadback {
+			code, err := step.ErrorCode.Get()
+			message, msgErr := step.Message.Get()
+			if step.Status != api.OperationStepStatusFailed || !step.ObservedAt.IsNull() || err != nil || code != api.ErrorCodeDEPENDENCYUNAVAILABLE || msgErr != nil || message == "" {
+				t.Fatal("failure evidence lost or read-back invented", step)
+			}
+			return
 		}
 	}
-	if worked, err := d.Once(t.Context()); worked || err != nil {
-		t.Fatal("dead letter was reclaimed", worked, err)
+	t.Fatal("missing route read-back step")
+}
+
+func TestAT08_PublicationWorkerExhaustedRedelivery(t *testing.T) {
+	for _, attempt := range []int{2, 3} {
+		t.Run(strconv.Itoa(attempt), func(t *testing.T) {
+			f, enrolled, cert, _, _ := publicationFixture(t)
+			nb := exits.NewFakeNetBirdAdapter()
+			nb.SetPublishError(errors.New("TEST ONLY unavailable"))
+			op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+			f.acknowledgePublication(enrolled, cert, true)
+			d := f.publicationDispatcher(nb, 2)
+			f.sql(`UPDATE outbox_events SET attempt=$2 WHERE payload->>'operation_id'=$1`, op.OperationId.String(), attempt-1)
+			events, err := db.ClaimOutbox(t.Context(), f.r.Pool, "TEST ONLY interrupted publication worker", 1, time.Minute)
+			if err != nil || len(events) != 1 || events[0].Attempt != attempt {
+				t.Fatal("publication claim", events, err)
+			}
+			job := worker.NodeJobs(f.r, nil, nil, 2, nb)[desiredstate.EventNodePublicationChanged]
+			if receipt, err := job(t.Context(), events[0]); err == nil || receipt != "" {
+				t.Fatal("failed execution acknowledged", receipt, err)
+			}
+			failed := f.publicationOperation(op.OperationId)
+			assertPublicationFailure(t, failed, api.OperationStatusFailed)
+			// Simulate death after the failed execution but before dead-lettering.
+			// The next claimant exceeds the budget and must not execute the job again.
+			f.sql(`UPDATE outbox_events SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, events[0].ID)
+			nb.SetPublishError(nil)
+			calls := nb.PublishCalls()
+			f.publicationDispatch(d, op.OperationId)
+			if got := f.publicationOperation(op.OperationId); !reflect.DeepEqual(got, failed) || nb.PublishCalls() != calls || nb.RouteCount() != 0 {
+				t.Fatal("exhausted redelivery changed the outcome", got)
+			}
+			var code string
+			if err := f.r.Pool.QueryRow(t.Context(), `SELECT last_error_code FROM outbox_events WHERE id=$1 AND attempt=$2 AND delivered_at IS NULL AND dead_lettered_at IS NOT NULL`, events[0].ID, attempt+1).Scan(&code); err != nil || code != "ATTEMPTS_EXHAUSTED" {
+				t.Fatal("redelivery not dead-lettered", code, err)
+			}
+		})
 	}
 }

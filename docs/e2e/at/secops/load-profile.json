@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "label": "TEST ONLY \u2014 initial dev-host profile, not candidate hardware",
+  "executed": false,
+  "members": 20,
+  "authorized_devices": 60,
+  "devices_per_member": 3,
+  "nodes": 2,
+  "warmup_seconds": 60,
+  "measurement_seconds": 300,
+  "repetitions": 1,
+  "concurrent_signins": 20,
+  "heartbeat_interval_seconds": 30,
+  "sampling_interval_seconds": 10,
+  "portal_reads_per_member_per_second": 1,
+  "policy_change_offsets_seconds": [
+    60,
+    180
+  ],
+  "paths": [
+    "direct",
+    "forced relay"
+  ],
+  "flows_per_device": {
+    "tcp_upload": 1,
+    "tcp_download": 1,
+    "udp_echo": 1
+  },
+  "controlled_targets_only": true,
+  "targets": {
+    "read_p95_ms": 500,
+    "policy_apply_seconds": 60,
+    "usage_visible_seconds": 120
+  },
+  "requirements": [
+    "No authorization mistakes",
+    "No missing or duplicated ledger events",
+    "Record all non-2xx responses; separate 429 from latency",
+    "Measure all requests, report p50/p95/p99 and error rate",
+    "Measure policy commit to final ACK plus dataplane check",
+    "Measure sampling interval end to usage visible with correct total",
+    "Record CPU, memory, IO, bytes and forced-relay proof",
+    "Do not retune the run after seeing results"
+  ],
+  "operator_hardware": [
+    "candidate hardware",
+    "physical arm64",
+    "second physical NAT",
+    "Windows",
+    "macOS",
+    "iOS",
+    "Android"
+  ]
+}

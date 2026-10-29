@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-29T23:45:04.425480+00:00",
+  "source_revision": "bf10a2c719b95def9753a1d3c5512b15be3b14a0",
+  "probe_source_sha256": "35e2a03e5039bb9ee315638d8463d9a3da9ce679fccb62a1fd4c28ff20c4f849",
+  "scope": "Final corrected-stack run; Go source hash matches the final probes exactly. Only evidence/docs changed after execution. Full acceptance exit 2 is retained for AT29\u2013AT32 preconditions, not hidden as success.",
+  "checks": [
+    {
+      "name": "root-lint",
+      "command": "GOFLAGS=-p=2 GOMAXPROCS=2 make go-lint",
+      "exit_code": 0,
+      "output_tail": [],
+      "note": "No output"
+    },
+    {
+      "name": "e2e-vet",
+      "command": "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e ./tests/...",
+      "exit_code": 0,
+      "output_tail": [],
+      "note": "No output"
+    },
+    {
+      "name": "offline-tests",
+      "command": "python3 tests/e2e/at/secops/diskexec.py go test -p 1 -parallel 2 ./...",
+      "exit_code": 0,
+      "output_tail": [
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment\t[no test files]",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare\t(cached)",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t(cached)",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t[no test files]"
+      ],
+      "note": ""
+    },
+    {
+      "name": "area-checks",
+      "command": "make -f mk/at-secops.mk at-secops-test at-secops-lint at-secops-build",
+      "exit_code": 0,
+      "output_tail": [
+        "....",
+        "----------------------------------------------------------------------",
+        "Ran 4 tests in 0.001s",
+        "",
+        "OK",
+        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+      ],
+      "note": ""
+    },
+    {
+      "name": "acceptance",
+      "command": "make -f mk/at-secops.mk at-secops",
+      "exit_code": 2,
+      "output_tail": [
+        "payment-reconciliation: passed",
+        "running peer-reconciliation",
+        "peer-reconciliation: passed",
+        "running scope-schema",
+        "scope-schema: passed",
+        "running scope-lifecycle",
+        "scope-lifecycle: passed",
+        "evidence: docs/e2e/at/secops; consult each AT verdict; full suite exits 2 while any AT is blocked",
+        "make: *** [mk/at-secops.mk:14: at-secops] Error 2"
+      ],
+      "note": ""
+    }
+  ],
+  "component_suites": 19,
+  "component_test_results": 342,
+  "live_checks": 129,
+  "builds": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "fed8a72f874b43f225f714eae50f9fd6ec916e7a5fcf9226fc3cb6ce1fb74c3d",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-amd64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:41:00Z",
+      "finished_at": "2026-10-29T23:41:01Z",
+      "elapsed_seconds": 0.515,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-amd64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "f03eaf7e9bdc21a917f9241e8dd7c0b2da02ed96d1156f0d900097bc65d333a5",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-arm64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-29T23:41:01Z",
+      "finished_at": "2026-10-29T23:41:01Z",
+      "elapsed_seconds": 0.465,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-arm64",
+        "bytes": 0,
+        "findings": []
+      }
+    }
+  ],
+  "cleanup": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "formatting": "gofmt -l empty; git diff --check empty",
+  "hygiene": "Required git diff grep produced no matches (grep exit 1)"
+}

@@ -5,7 +5,7 @@ TEST_TARGETS += portal-test
 LINT_TARGETS += portal-lint
 VERIFY_TARGETS += portal-verify
 
-.PHONY: portal-install portal-lint portal-test portal-build portal-verify
+.PHONY: portal-install portal-lint portal-test portal-build portal-dev-stack portal-e2e portal-verify
 
 portal-install:
 	cd $(PORTAL_DIR) && npm ci
@@ -20,5 +20,11 @@ portal-test:
 
 portal-build:
 	cd $(PORTAL_DIR) && npm run build
+
+portal-dev-stack:
+	cd $(PORTAL_DIR) && npm run dev:stack
+
+portal-e2e: portal-build
+	cd $(PORTAL_DIR) && npm run e2e; status=$$?; rm -rf test-results playwright-report; exit $$status
 
 portal-verify: portal-install portal-lint portal-test portal-build

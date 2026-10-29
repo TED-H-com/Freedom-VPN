@@ -30,6 +30,8 @@ func members() Domain {
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
 		}
+		// The nodes domain supplies its configured compiler through WithCompiler
+		// before dispatch (D-026); building members does not depend on its order.
 		services, e := membersruntime.New(d.Pool, cfg, nil)
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}

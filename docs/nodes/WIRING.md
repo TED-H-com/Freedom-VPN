@@ -105,6 +105,19 @@ also accepts explicit dependencies for integration tests. No domain opens a pool
 reads environment variables, or starts a listener/dispatcher/goroutine during
 construction. `Built.Runners` supplies `RunNodeSchedule` to the process supervisor.
 
+The nodes build creates one `Runtime.DesiredStateCompiler()` and shares it with
+the publication executor and member jobs through `Built.Context` and
+`membersruntime.WithCompiler`. All context decorators run before dispatch, so
+this does not depend on domain build order or change the D-026/D-045 domain list.
+The compiler uses the nodes signing provider, `desired_state_seconds`, and
+`dns_resolver_ipv4` / `dns_resolver_ipv6`, with the DB entitlement and policy
+readers. The members registry keeps ownership of `device.authorized`,
+`device.revoked`, `member.entitlement_changed`, and `member.suspended`: after
+NetBird authorization read-back, it recompiles affected node policies and records
+an audit receipt before acknowledging the event. Compilation failure retries
+without acknowledging success. A compiled generation is desired state; applied
+generation and node operation steps still require agent observations (§14.5).
+
 | Event | Durable evidence and external calls |
 |---|---|
 | `node.publication_changed` | Validates the operation/node and current claim, then runs the exits executor. Publication requires agent policy ACK, route/group/policy read-back and stored data-path probe evidence before `active`/`succeeded`. Unpublish/disable remove the route/access policy even offline; an absent agent ACK stays unconfirmed. |
@@ -146,10 +159,15 @@ that client's implementation. It has no raw HTTP bypass and sanitizes failures
 before they can become public operation messages.
 
 The executor returns failed outcomes as an operation with a nil Go error. The
-job retains the failed step/error evidence, keeps the operation `running` while
-retry work is outstanding, and returns a job error. The existing D-040 dispatcher
-retries with backoff and then dead-letters without a delivery receipt. Dead-letter
-recovery remains explicit operator work; the job never fabricates observation.
+job uses the dispatcher's configured `worker_attempts` budget: a failed execution
+remains `running` only when `event.Attempt` is below that budget, with failed
+step/error evidence retained for the next retry. At or above the budget it stays
+`failed` and still returns a job error, so D-040 dead-lettering leaves no delivery
+receipt or false claim of progress (§14.5). If the worker dies after that failure,
+the dispatcher's exhausted redelivery dead-letters without executing again.
+Recovery requires an operator's fresh publication command with a new idempotency
+key and current `If-Match`; the failed operation and evidence remain unchanged.
+The job never fabricates observation.
 A partial offline withdrawal is a completed central action with an unconfirmed
 agent step, so replay does not repeat its external effects. The fake-adapter
 worker tests and the real-client/local-HTTP test prove these orchestration paths;

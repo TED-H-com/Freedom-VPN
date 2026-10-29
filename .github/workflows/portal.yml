@@ -8,6 +8,10 @@ on:
       - w2-portal-wire
     paths:
       - 'apps/portal/**'
+      - 'apps/control/**'
+      - 'apps/worker/**'
+      - 'internal/**'
+      - 'pkg/**'
       - 'contracts/ts/**'
       - 'contracts/examples/**'
       - 'docs/portal/**'
@@ -16,6 +20,10 @@ on:
   pull_request:
     paths:
       - 'apps/portal/**'
+      - 'apps/control/**'
+      - 'apps/worker/**'
+      - 'internal/**'
+      - 'pkg/**'
       - 'contracts/ts/**'
       - 'contracts/examples/**'
       - 'docs/portal/**'
@@ -24,14 +32,37 @@ on:
 
 jobs:
   portal:
-    name: Verify Portal (Node 24)
+    name: Verify Portal & Live E2E (Node 24 + Go 1.27.3)
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fvpn_test_only_password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CGO_ENABLED: '0'
+      GOTOOLCHAIN: local
+      FVPN_TEST_DATABASE_URL: postgres://postgres:fvpn_test_only_password@127.0.0.1:5432/postgres?sslmode=disable
     defaults:
       run:
         working-directory: apps/portal
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Go 1.27.3
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v4
@@ -43,6 +74,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -52,8 +86,12 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Run tests with coverage
+      - name: Run unit tests with coverage
         run: npm run test:coverage
 
       - name: Build production bundle
         run: npm run build
+
+      - name: Run Playwright E2E against live fvpn-control and fvpn-worker
+        working-directory: .
+        run: make -f mk/portal.mk portal-e2e
