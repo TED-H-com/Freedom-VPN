@@ -12,7 +12,7 @@
  *   `effective_at` timestamp ending in `Z`.
  */
 
-import type { FairUsePolicyDraft, FairUseTier } from '../api/types';
+import type { FairUsePolicyDraft, FairUseTierDraft } from '../api/view-models';
 import {
   compareDecimalStrings,
   isValidDecimalString,
@@ -81,7 +81,7 @@ export function validateFupDraft(draft: FairUsePolicyDraft): FupValidationResult
     return { valid: false, errors };
   }
 
-  const firstTier: FairUseTier | undefined = draft.tiers[0];
+  const firstTier: FairUseTierDraft | undefined = draft.tiers[0];
   if (!firstTier || firstTier.threshold_bytes !== '0') {
     errors.push({
       field: 'tiers[0].threshold_bytes',
@@ -157,7 +157,7 @@ export function validateFupDraft(draft: FairUsePolicyDraft): FupValidationResult
       }
     }
 
-    if (!Number.isInteger(tier.priority) || tier.priority < 1 || tier.priority > 10) {
+    if (!Number.isInteger(tier.priority) || tier.priority < 0 || tier.priority > 10) {
       errors.push({
         field: `tiers[${i}].priority`,
         code: 'INVALID_PRIORITY',
@@ -172,3 +172,5 @@ export function validateFupDraft(draft: FairUsePolicyDraft): FupValidationResult
     errors,
   };
 }
+
+export const validateFupPolicyDraft = validateFupDraft;

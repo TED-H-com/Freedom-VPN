@@ -1,46 +1,46 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { portalApi, type AuditEventItem } from '../../api';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient, type ResourceType } from '../../api';
 import { useI18n } from '../../i18n';
 
 export function AdminAuditPage(): React.ReactElement {
   const { t } = useI18n();
-  const [events, setEvents] = useState<AuditEventItem[]>([]);
   const [resourceFilter, setResourceFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    void portalApi.getAuditEvents().then((res) => setEvents(res.data.items));
-  }, []);
+  const auditQuery = useQuery({
+    queryKey: ['admin', 'audit', resourceFilter],
+    queryFn: () =>
+      apiClient.listAuditEvents({
+        resource_type:
+          resourceFilter !== 'all' ? (resourceFilter as ResourceType) : undefined,
+      }),
+  });
 
-  const filtered = useMemo(() => {
-    return events.filter((ev) => {
-      if (resourceFilter !== 'all' && ev.resource_type !== resourceFilter) {
-        return false;
-      }
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        if (
-          !ev.request_id.toLowerCase().includes(q) &&
-          !ev.actor_email.toLowerCase().includes(q) &&
-          !ev.action.toLowerCase().includes(q)
-        ) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [events, resourceFilter, search]);
+  const allItems = auditQuery.data?.items ?? [];
+  const filtered = allItems.filter((evt) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      (evt.request_id ?? '').toLowerCase().includes(q) ||
+      (evt.actor.id ?? '').toLowerCase().includes(q) ||
+      evt.action.toLowerCase().includes(q) ||
+      evt.resource.id.toLowerCase().includes(q)
+    );
+  });
 
   return (
-    <div>
-      <header className="page-header">
-        <h1>{t('admin.audit.title')}</h1>
-        <p className="page-subtitle">{t('admin.audit.subtitle')}</p>
-      </header>
+    <div data-testid="admin-audit-page">
+      <div className="page-header">
+        <div>
+          <h1>{t('admin.audit.title')}</h1>
+          <p className="page-subtitle">{t('admin.audit.subtitle')}</p>
+        </div>
+      </div>
 
-      <section className="card" aria-label="Audit filters">
-        <div className="form-grid" style={{ marginBottom: 0 }}>
-          <div className="form-field">
+      <div className="card">
+        <div className="form-grid" style={{ marginBottom: '1rem' }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
             <label htmlFor="audit-resource-filter">
               {t('admin.audit.filter.resource')}
             </label>
@@ -51,70 +51,84 @@ export function AdminAuditPage(): React.ReactElement {
             >
               <option value="all">{t('admin.nodes.filter.all')}</option>
               <option value="node">node</option>
-              <option value="update_batch">update_batch</option>
+              <option value="enrollment">enrollment</option>
               <option value="member">member</option>
               <option value="policy">policy</option>
+              <option value="update_batch">update_batch</option>
             </select>
           </div>
-          <div className="form-field">
-            <label htmlFor="audit-search-input">{t('admin.audit.filter.search')}</label>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label htmlFor="audit-search">{t('admin.audit.filter.search')}</label>
             <input
-              id="audit-search-input"
+              id="audit-search"
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
-      </section>
 
-      <section className="card table-wrapper">
-        <table className="data-table" data-testid="audit-table">
-          <thead>
-            <tr>
-              <th scope="col">{t('admin.audit.col.time')}</th>
-              <th scope="col">{t('admin.audit.col.actor')}</th>
-              <th scope="col">{t('admin.audit.col.action')}</th>
-              <th scope="col">{t('admin.audit.col.trace')}</th>
-              <th scope="col">{t('admin.audit.col.result')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((ev) => (
-              <tr key={ev.audit_id}>
-                <td>
-                  <code>{ev.occurred_at}</code>
-                </td>
-                <td>
-                  <strong>{ev.actor_email}</strong> ({ev.actor_role})
-                </td>
-                <td>
-                  <code>{ev.action}</code>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    {ev.resource_type}: <code>{ev.resource_id}</code>
-                  </div>
-                </td>
-                <td>
-                  <div>
-                    req: <code>{ev.request_id}</code>
-                  </div>
-                  {ev.operation_id && (
-                    <div style={{ fontSize: '0.8rem' }}>
-                      op: <code>{ev.operation_id}</code>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  <span className="badge badge-info">{ev.result}</span>
-                  <div style={{ fontSize: '0.8rem', marginTop: 4 }}>
-                    <code>{JSON.stringify(ev.sanitized_diff)}</code>
-                  </div>
-                </td>
+        <div className="table-wrapper">
+          <table className="data-table" data-testid="audit-table">
+            <thead>
+              <tr>
+                <th>{t('admin.audit.col.time')}</th>
+                <th>{t('admin.audit.col.actor')}</th>
+                <th>{t('admin.audit.col.action')}</th>
+                <th>{t('admin.audit.col.trace')}</th>
+                <th>{t('admin.audit.col.result')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {filtered.map((evt) => (
+                <tr
+                  key={evt.audit_event_id}
+                  data-testid={`audit-row-${evt.audit_event_id}`}
+                >
+                  <td className="mono" style={{ fontSize: '0.8rem' }}>
+                    {evt.occurred_at}
+                  </td>
+                  <td>
+                    <div className="mono">{evt.actor.id}</div>
+                    <span className="badge badge-neutral">{evt.actor.type}</span>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{evt.action}</div>
+                    <div className="mono" style={{ fontSize: '0.75rem' }}>
+                      {evt.resource.type}:{evt.resource.id}
+                    </div>
+                  </td>
+                  <td className="mono" style={{ fontSize: '0.75rem' }}>
+                    <div>req: {evt.request_id}</div>
+                    <div>op: {evt.operation_id ?? '-'}</div>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        evt.result === 'succeeded' ? 'badge-success' : 'badge-danger'
+                      }`}
+                    >
+                      {evt.result}
+                    </span>
+                    <div
+                      className="mono"
+                      style={{
+                        fontSize: '0.75rem',
+                        marginTop: '0.25rem',
+                        color: 'var(--color-text-muted)',
+                      }}
+                    >
+                      {JSON.stringify(evt.changes?.before ?? null)} →{' '}
+                      {JSON.stringify(evt.changes?.after ?? null)}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

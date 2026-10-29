@@ -1,314 +1,421 @@
 /**
- * Typed API Error parsing and user-facing message mapping (§13.11, §14.6, §14.8, AGENTS.md §4).
- * Never exposes stack traces, SQL, certificates, or secrets.
+ * Standard API error envelope parsing, redaction, and localized user messaging (§13.11, §14.6, AGENTS.md §4).
+ *
+ * `ApiErrorCode` is derived directly from `components['schemas']['ErrorCode']` in the generated contract.
+ * Never exposes stack traces, SQL fragments, certificates, or tokens in user-visible messages.
  */
 
-import type { ApiErrorCode, ApiErrorEnvelope, ApiErrorPayload } from './types';
+import type { ApiErrorCode, ApiErrorEnvelope } from './types';
 
-export class ApiError extends Error {
-  public readonly status: number;
-  public readonly code: ApiErrorCode;
-  public readonly request_id: string;
-  public readonly retryable: boolean;
-  public readonly details?: Record<string, unknown>;
-  public readonly retryAfterSeconds: number | null;
+export type { ApiErrorCode, ApiErrorEnvelope };
 
-  constructor(params: {
-    status: number;
-    code: ApiErrorCode;
-    message: string;
-    request_id: string;
-    retryable: boolean;
-    details?: Record<string, unknown>;
-    retryAfterSeconds?: number | null;
-  }) {
-    super(params.message);
+export interface NormalizedApiError {
+  status: number;
+  code: ApiErrorCode | (string & {});
+  userMessage: Record<'zh-TW' | 'en', string>;
+  serverMessage: string;
+  requestId: string;
+  retryable: boolean;
+  retryAfterSeconds: number | null;
+  details: Record<string, unknown>;
+}
+
+const SENSITIVE_PATTERNS: readonly RegExp[] = [
+  /BEGIN\s+(?:RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY/i,
+  /\bsk_(?:live|test)_[A-Za-z0-9]+/i,
+  /\bgh[po]_[A-Za-z0-9]+/i,
+  /\bBearer\s+[A-Za-z0-9._~+/-]+=*/i,
+  /\bSELECT\s+.+\s+FROM\s+/i,
+  /\bINSERT\s+INTO\s+/i,
+  /\bUPDATE\s+\S+\s+SET\s+/i,
+  /\bgoroutine\s+\d+\s+\[/i,
+  /\bat\s+\S+\s+\([^)]+:\d+:\d+\)/i,
+  /\bfvpn_enr_[A-Za-z0-9_-]+/i,
+];
+
+const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> = {
+  MALFORMED_REQUEST: {
+    'zh-TW': '請求格式無法解析，請檢查輸入內容。',
+    en: 'The request body or parameters are malformed.',
+  },
+  UNAUTHENTICATED: {
+    'zh-TW': '尚未登入或登入階段已失效，請重新登入。',
+    en: 'You are not signed in or your session has expired. Please sign in again.',
+  },
+  FORBIDDEN: {
+    'zh-TW': '權限不足，您無權執行此操作或存取此頁面。',
+    en: 'Access denied. You do not have permission to perform this action.',
+  },
+  CSRF_TOKEN_INVALID: {
+    'zh-TW': '跨站請求保護驗證 (CSRF Token) 失敗，請重新整理頁面後再試。',
+    en: 'CSRF token verification failed. Please refresh the page and try again.',
+  },
+  RESOURCE_NOT_FOUND: {
+    'zh-TW': '找不到指定的資源。',
+    en: 'The requested resource was not found.',
+  },
+  METHOD_NOT_ALLOWED: {
+    'zh-TW': '不支援的 HTTP 請求方法。',
+    en: 'HTTP method not allowed for this endpoint.',
+  },
+  IDEMPOTENCY_CONFLICT: {
+    'zh-TW': '相同的 Idempotency-Key 已被用於不同請求內容，或相同操作正在處理中。',
+    en: 'Idempotency conflict: this key is in progress or was used with a different payload.',
+  },
+  STATE_CONFLICT: {
+    'zh-TW': '資源目前狀態不允許此操作，請重新載入最新狀態後再試。',
+    en: 'Current resource state conflicts with this action. Reload and try again.',
+  },
+  RESOURCE_VERSION_CONFLICT: {
+    'zh-TW':
+      '資源版本已被其他操作更新 (412 Conflict)，請重新載入最新狀態再決定是否重試。',
+    en: 'Resource version was modified concurrently (412 Conflict). Reload the latest state before retrying.',
+  },
+  PAYLOAD_TOO_LARGE: {
+    'zh-TW': '請求內容超過允許的大小上限。',
+    en: 'Request payload exceeds the maximum allowed size.',
+  },
+  UNSUPPORTED_MEDIA_TYPE: {
+    'zh-TW': '不支援的內容格式，請使用 application/json。',
+    en: 'Unsupported Content-Type; application/json is required.',
+  },
+  VALIDATION_FAILED: {
+    'zh-TW': '輸入欄位格式或條件不符合規範，請檢查後重試。',
+    en: 'One or more fields failed validation. Please review your input and try again.',
+  },
+  NODE_NOT_SERVICEABLE: {
+    'zh-TW': '節點目前未通過服務可用性或安全檢查，無法提供轉送服務。',
+    en: 'Node is currently not serviceable and cannot forward member traffic.',
+  },
+  PRECONDITION_REQUIRED: {
+    'zh-TW': '缺少版本前置條件 (If-Match ETag, 428)，請先重新讀取資源。',
+    en: 'Missing precondition header (If-Match ETag, 428). Reload the resource first.',
+  },
+  RATE_LIMITED: {
+    'zh-TW': '請求頻率過高，請依建議等待時間後再試。',
+    en: 'Too many requests. Please wait for the suggested retry window before trying again.',
+  },
+  INTERNAL_ERROR: {
+    'zh-TW': '系統發生內部錯誤，請附上請求追蹤碼 (request_id) 聯繫管理員。',
+    en: 'An internal error occurred. Please contact support with the request_id.',
+  },
+  DEPENDENCY_UNAVAILABLE: {
+    'zh-TW': '外部相依服務暫時無法連線，系統將稍後重試。',
+    en: 'An external dependency is temporarily unavailable. Please retry shortly.',
+  },
+  RELEASE_NOT_APPROVED: {
+    'zh-TW': '此發行版本尚未核准或已被撤銷，禁止部署。',
+    en: 'This release is not approved or has been revoked and cannot be deployed.',
+  },
+  UNSUPPORTED_PLATFORM: {
+    'zh-TW': '不支援的作業系統或硬體架構。',
+    en: 'Unsupported operating system or CPU architecture.',
+  },
+  CONTROL_API_INCOMPATIBLE: {
+    'zh-TW': '節點程式與控制面 API 版本不相容。',
+    en: 'Node software is incompatible with the control API major version.',
+  },
+  SCHEMA_INCOMPATIBLE: {
+    'zh-TW': '政策或狀態 Schema 版本不相容。',
+    en: 'Policy or local state schema version is incompatible.',
+  },
+  SIGNATURE_INVALID: {
+    'zh-TW': 'Ed25519 簽章驗證失敗，已拒絕套用。',
+    en: 'Ed25519 signature verification failed.',
+  },
+  KEY_UNTRUSTED: {
+    'zh-TW': '簽章金鑰不受信任、不在有效期間或用途不符。',
+    en: 'Signing key is untrusted, outside its validity window, or has the wrong purpose.',
+  },
+  HASH_MISMATCH: {
+    'zh-TW': 'SHA-256 雜湊驗證不符，已中止操作。',
+    en: 'SHA-256 digest mismatch detected; operation aborted.',
+  },
+  SIZE_MISMATCH: {
+    'zh-TW': '套件檔案大小與 Manifest 宣告不符。',
+    en: 'Artifact byte size does not match the manifest declaration.',
+  },
+  DISK_SPACE_LOW: {
+    'zh-TW': '節點磁碟可用空間不足，無法下載並保留最後良好版本 (last_good)。',
+    en: 'Insufficient node disk space to stage release while preserving last_good.',
+  },
+  DOWNLOAD_TIMEOUT: {
+    'zh-TW': '下載發行版套件逾時。',
+    en: 'Artifact download timed out.',
+  },
+  STORE_UNAVAILABLE: {
+    'zh-TW': '發行版儲存庫或本地儲存無法存取。',
+    en: 'Release store or local state store is unavailable.',
+  },
+  UPDATE_BUSY: {
+    'zh-TW': '節點正在執行另一項更新工作。',
+    en: 'Node updater is currently busy with another update job.',
+  },
+  AUTHORIZATION_EXPIRED: {
+    'zh-TW': '授權或期望狀態已過期，節點已依 Fail-Closed 停止轉送。',
+    en: 'Authorization or desired-state envelope has expired (fail-closed).',
+  },
+  STALE_GENERATION: {
+    'zh-TW': '世代序號 (generation) 過舊，已被拒絕。',
+    en: 'Stale generation rejected.',
+  },
+  IDENTITY_REVOKED: {
+    'zh-TW': '此節點機器身分已被永久撤銷，必須使用新啟用碼重新註冊。',
+    en: 'This node identity has been permanently revoked and must re-enroll.',
+  },
+  INCARNATION_MISMATCH: {
+    'zh-TW': '節點實例識別 (incarnation_id) 不一致，請重新同步節點狀態。',
+    en: 'Node incarnation mismatch detected. Please re-synchronize node state.',
+  },
+  CHECKPOINT_FAILED: {
+    'zh-TW': '更新前最終計量取樣或存檔失敗。',
+    en: 'Pre-update final usage sample or checkpoint failed.',
+  },
+  MIGRATION_FAILED: {
+    'zh-TW': '本地狀態資料遷移失敗。',
+    en: 'Local state schema migration failed.',
+  },
+  START_FAILED: {
+    'zh-TW': '節點服務啟動失敗。',
+    en: 'Node service failed to start during update switch.',
+  },
+  HEALTH_CHECK_FAILED: {
+    'zh-TW': '更新後本地健康檢查未通過。',
+    en: 'Post-update local health check failed.',
+  },
+  MINIMUM_VERSION_VIOLATION: {
+    'zh-TW': '節點版本低於最低允許服務版本 (minimum_serving_version)。',
+    en: 'Node release is not in the minimum allowed serving version set.',
+  },
+  ROLLBACK_FAILED: {
+    'zh-TW': '自動回復至 last_good 失敗，節點已停止轉送並等待人工修復 (Fail-Closed)。',
+    en: 'Automatic rollback to last_good failed; node stopped forwarding (fail-closed).',
+  },
+  ACK_CONFLICT: {
+    'zh-TW': '回報雜湊與既有紀錄衝突 (ACK_CONFLICT)。',
+    en: 'Result acknowledgment conflicts with an existing report hash.',
+  },
+  USAGE_EVENT_CONFLICT: {
+    'zh-TW': '用量事件序列或雜湊與帳本紀錄衝突。',
+    en: 'Usage event sequence or payload hash conflicts with the ledger.',
+  },
+  LEDGER_EPOCH_MISMATCH: {
+    'zh-TW': '節點用量帳本世代 (ledger_epoch) 不一致，需管理員執行異常復原。',
+    en: 'Node usage ledger epoch mismatch; administrator recovery is required.',
+  },
+  REPLAY_UNAVAILABLE: {
+    'zh-TW': '節點本地重送緩衝區已無此區間事件。',
+    en: 'Requested usage sequence range is no longer available for replay.',
+  },
+  METER_PATH_INVALID: {
+    'zh-TW': '節點計量鏈路異常，已依 Fail-Closed 停止會員轉送。',
+    en: 'Node metering path is invalid; member forwarding disabled (fail-closed).',
+  },
+  DEVICE_LIMIT_REACHED: {
+    'zh-TW': '已達方案允許的裝置上限（預設 3 台），請先撤銷舊裝置後再重試。',
+    en: 'Device limit reached for your plan (default 3). Revoke an existing device first.',
+  },
+  ENROLLMENT_TOKEN_INVALID: {
+    'zh-TW': '節點啟用碼無效或已被使用。',
+    en: 'The node enrollment token is invalid or has already been consumed.',
+  },
+  ENROLLMENT_TOKEN_EXPIRED: {
+    'zh-TW': '節點啟用碼已過期，請建立新的單次啟用碼。',
+    en: 'The node enrollment token has expired. Create a new one-time token.',
+  },
+  ENROLLMENT_TOKEN_REVOKED: {
+    'zh-TW': '此節點啟用碼已被管理員撤銷。',
+    en: 'This enrollment token has been revoked by an administrator.',
+  },
+  ENROLLMENT_KEY_MISMATCH: {
+    'zh-TW': '節點啟用重試的公鑰與首次綁定不一致。',
+    en: 'Enrollment retry public key does not match the bound key.',
+  },
+  LEASE_EXPIRED: {
+    'zh-TW': '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
+    en: 'Node serving lease has expired; member forwarding has stopped.',
+  },
+  WEBHOOK_SIGNATURE_INVALID: {
+    'zh-TW': '支付供應商 Webhook 簽章驗證失敗。',
+    en: 'Payment provider webhook signature verification failed.',
+  },
+};
+
+const GENERIC_MESSAGES: Record<'zh-TW' | 'en', string> = {
+  'zh-TW': '操作無法完成，請稍後再試或提供追蹤碼聯繫支援。',
+  en: 'The request could not be completed. Please try again later or contact support with the request ID.',
+};
+
+export function containsSensitiveLeak(text: string): boolean {
+  return SENSITIVE_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+export function sanitizeText(text: string): string {
+  if (!text || containsSensitiveLeak(text)) {
+    return '[REDACTED]';
+  }
+  return text;
+}
+
+export function sanitizeDetails(
+  details: Record<string, unknown> | undefined | null,
+): Record<string, unknown> {
+  if (!details || typeof details !== 'object') {
+    return {};
+  }
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(details)) {
+    if (/secret|token|password|private_key|authorization|cookie/i.test(key)) {
+      result[key] = '[REDACTED]';
+    } else if (typeof value === 'string') {
+      result[key] = sanitizeText(value);
+    } else if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      value === null
+    ) {
+      result[key] = value;
+    } else if (Array.isArray(value)) {
+      result[key] = value.map((item) =>
+        typeof item === 'string' ? sanitizeText(item) : item,
+      );
+    }
+  }
+  return result;
+}
+
+export const KNOWN_API_ERROR_CODES = Object.keys(ERROR_CODE_MESSAGES) as ApiErrorCode[];
+
+export function isKnownErrorCode(code: string): code is ApiErrorCode {
+  return Object.prototype.hasOwnProperty.call(ERROR_CODE_MESSAGES, code);
+}
+
+export function getUserErrorMessage(
+  code: string,
+  locale: 'zh-TW' | 'en' = 'zh-TW',
+): string {
+  if (isKnownErrorCode(code)) {
+    return ERROR_CODE_MESSAGES[code][locale];
+  }
+  return GENERIC_MESSAGES[locale];
+}
+
+export class ApiError extends Error implements NormalizedApiError {
+  readonly status: number;
+  readonly code: ApiErrorCode | (string & {});
+  readonly userMessage: Record<'zh-TW' | 'en', string>;
+  readonly serverMessage: string;
+  readonly requestId: string;
+  readonly retryable: boolean;
+  readonly retryAfterSeconds: number | null;
+  readonly details: Record<string, unknown>;
+
+  constructor(init: NormalizedApiError) {
+    super(init.userMessage['zh-TW']);
     this.name = 'ApiError';
-    this.status = params.status;
-    this.code = params.code;
-    this.request_id = params.request_id;
-    this.retryable = params.retryable;
-    this.details = params.details;
-    this.retryAfterSeconds = params.retryAfterSeconds ?? null;
+    this.status = init.status;
+    this.code = init.code;
+    this.userMessage = init.userMessage;
+    this.serverMessage = init.serverMessage;
+    this.requestId = init.requestId;
+    this.retryable = init.retryable;
+    this.retryAfterSeconds = init.retryAfterSeconds;
+    this.details = init.details;
   }
 
-  public get isConflict(): boolean {
-    return this.status === 412 || this.code === 'RESOURCE_VERSION_CONFLICT';
+  get request_id(): string {
+    return this.requestId;
   }
 
-  public get isPreconditionBug(): boolean {
-    return this.status === 428 || this.code === 'PRECONDITION_REQUIRED';
+  get currentResourceVersion(): string | null {
+    const val = this.details.current_resource_version;
+    return typeof val === 'string' ? val : null;
   }
 
-  public get isSessionExpired(): boolean {
-    return this.status === 401 || this.code === 'UNAUTHENTICATED';
-  }
-
-  public get isForbidden(): boolean {
-    return this.status === 403 || this.code === 'FORBIDDEN';
-  }
-
-  public get operationId(): string | undefined {
-    const opId = this.details?.['operation_id'];
-    return typeof opId === 'string' ? opId : undefined;
-  }
-
-  public get currentResourceVersion(): string | undefined {
-    const ver = this.details?.['current_resource_version'];
-    return typeof ver === 'string' ? ver : undefined;
+  messageForLocale(locale: 'zh-TW' | 'en'): string {
+    return this.userMessage[locale];
   }
 }
 
-function isErrorEnvelope(val: unknown): val is ApiErrorEnvelope {
-  if (typeof val !== 'object' || val === null || !('error' in val)) {
-    return false;
+export function parseRetryAfterSeconds(headerValue: string | null): number | null {
+  if (!headerValue) {
+    return null;
   }
-  const errObj = (val as { error: unknown }).error;
-  if (typeof errObj !== 'object' || errObj === null) {
-    return false;
+  const trimmed = headerValue.trim();
+  if (/^\d+$/.test(trimmed)) {
+    const seconds = Number.parseInt(trimmed, 10);
+    return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
   }
-  const payload = errObj as Partial<ApiErrorPayload>;
-  return typeof payload.code === 'string' && typeof payload.message === 'string';
-}
-
-export function parseRetryAfterSeconds(headerVal: string | null): number | null {
-  if (!headerVal) return null;
-  const parsed = Number.parseInt(headerVal.trim(), 10);
-  if (Number.isFinite(parsed) && parsed >= 0) {
-    return parsed;
+  const dateMs = Date.parse(trimmed);
+  if (!Number.isNaN(dateMs)) {
+    const diffSec = Math.ceil((dateMs - Date.now()) / 1000);
+    return Math.max(0, diffSec);
   }
   return null;
 }
 
-export function parseApiErrorResponse(
+export function parseApiError(
   status: number,
-  headers: Headers,
   body: unknown,
+  retryAfterHeader: string | null = null,
 ): ApiError {
-  const headerReqId = headers.get('X-Request-ID') ?? 'req-unknown';
-  const retryAfterSeconds = parseRetryAfterSeconds(headers.get('Retry-After'));
+  const retryAfterSeconds = parseRetryAfterSeconds(retryAfterHeader);
 
-  if (isErrorEnvelope(body)) {
-    const { code, message, request_id, retryable, details } = body.error;
+  if (
+    body &&
+    typeof body === 'object' &&
+    'error' in body &&
+    body.error &&
+    typeof body.error === 'object'
+  ) {
+    const errObj = body.error as Record<string, unknown>;
+    const rawCode = typeof errObj.code === 'string' ? errObj.code : 'INTERNAL_ERROR';
+    const rawMsg = typeof errObj.message === 'string' ? errObj.message : '';
+    const requestId =
+      typeof errObj.request_id === 'string' && errObj.request_id.trim().length > 0
+        ? sanitizeText(errObj.request_id)
+        : 'unknown';
+    const retryable = typeof errObj.retryable === 'boolean' ? errObj.retryable : false;
+    const rawDetails =
+      errObj.details && typeof errObj.details === 'object'
+        ? (errObj.details as Record<string, unknown>)
+        : {};
+
+    const userMessage = isKnownErrorCode(rawCode)
+      ? ERROR_CODE_MESSAGES[rawCode]
+      : GENERIC_MESSAGES;
+
     return new ApiError({
       status,
-      code,
-      message,
-      request_id: request_id || headerReqId,
-      retryable: Boolean(retryable),
-      details,
+      code: rawCode,
+      userMessage,
+      serverMessage: sanitizeText(rawMsg),
+      requestId,
+      retryable,
       retryAfterSeconds,
+      details: sanitizeDetails(rawDetails),
     });
   }
 
-  const defaultCodeByStatus: Record<number, ApiErrorCode> = {
-    400: 'MALFORMED_REQUEST',
-    401: 'UNAUTHENTICATED',
-    403: 'FORBIDDEN',
-    404: 'RESOURCE_NOT_FOUND',
-    409: 'STATE_CONFLICT',
-    412: 'RESOURCE_VERSION_CONFLICT',
-    422: 'VALIDATION_FAILED',
-    428: 'PRECONDITION_REQUIRED',
-    429: 'RATE_LIMITED',
-    503: 'DEPENDENCY_UNAVAILABLE',
-  };
+  let fallbackCode: ApiErrorCode = 'INTERNAL_ERROR';
+  if (status === 401) fallbackCode = 'UNAUTHENTICATED';
+  else if (status === 403) fallbackCode = 'FORBIDDEN';
+  else if (status === 404) fallbackCode = 'RESOURCE_NOT_FOUND';
+  else if (status === 409) fallbackCode = 'STATE_CONFLICT';
+  else if (status === 412) fallbackCode = 'RESOURCE_VERSION_CONFLICT';
+  else if (status === 422) fallbackCode = 'VALIDATION_FAILED';
+  else if (status === 428) fallbackCode = 'PRECONDITION_REQUIRED';
+  else if (status === 429) fallbackCode = 'RATE_LIMITED';
+  else if (status === 503) fallbackCode = 'DEPENDENCY_UNAVAILABLE';
 
   return new ApiError({
     status,
-    code: defaultCodeByStatus[status] ?? 'DEPENDENCY_UNAVAILABLE',
-    message: `HTTP ${status}`,
-    request_id: headerReqId,
+    code: fallbackCode,
+    userMessage: ERROR_CODE_MESSAGES[fallbackCode],
+    serverMessage: '',
+    requestId: 'unknown',
     retryable: status === 429 || status === 503,
     retryAfterSeconds,
+    details: {},
   });
-}
-
-export interface UserFacingErrorInfo {
-  title: string;
-  description: string;
-  code: string;
-  requestId: string;
-  operationId?: string;
-  retryable: boolean;
-  isConflict: boolean;
-  isPreconditionBug: boolean;
-}
-
-const ERROR_MESSAGES_ZH: Record<string, { title: string; description: string }> = {
-  MALFORMED_REQUEST: {
-    title: '請求格式錯誤',
-    description: '送出的欄位或標頭格式不正確，請檢查輸入內容後再試。',
-  },
-  UNAUTHENTICATED: {
-    title: '登入階段已過期',
-    description: '您的登入憑證已失效或過期，請重新登入後繼續操作。',
-  },
-  FORBIDDEN: {
-    title: '權限不足',
-    description: '您目前的帳號角色無權執行此操作或存取此資源。',
-  },
-  RESOURCE_NOT_FOUND: {
-    title: '找不到指定資源',
-    description: '目標資源不存在，或不在您的帳號可存取範圍內。',
-  },
-  IDEMPOTENCY_CONFLICT: {
-    title: '重複請求內容衝突 (409)',
-    description:
-      '相同的冪等識別碼 (Idempotency-Key) 被用於不同的請求內容，系統已拒絕覆寫。',
-  },
-  STATE_CONFLICT: {
-    title: '資源狀態衝突 (409)',
-    description: '目前資源狀態不允許此變更，請先重新讀取最新狀態。',
-  },
-  RESOURCE_VERSION_CONFLICT: {
-    title: '設定版本衝突 (412)',
-    description:
-      '此資源剛被其他管理員或背景程序更新，請重新載入最新資料後再決定是否修改，避免覆蓋他人變更。',
-  },
-  PRECONDITION_REQUIRED: {
-    title: '前端程式異常：缺少版本條件 (428)',
-    description:
-      '更新請求缺少必要的 If-Match ETag 標頭。這屬於前端程式錯誤，系統已阻止寫入。',
-  },
-  VALIDATION_FAILED: {
-    title: '資料驗證未通過 (422)',
-    description: '一或多個欄位不符合規格限制，請修正標示的欄位。',
-  },
-  NODE_NOT_SERVICEABLE: {
-    title: '節點未通過服務基線檢查 (422)',
-    description: '節點尚未完成配置或隔離檢查未通過，無法上架為出口。',
-  },
-  RATE_LIMITED: {
-    title: '請求過於頻繁 (429)',
-    description: '已達速率限制，請稍候依建議時間重試。',
-  },
-  DEPENDENCY_UNAVAILABLE: {
-    title: '服務暫時無法寫入 (503)',
-    description: '控制服務或相依元件暫時忙碌，可使用原操作安全重試。',
-  },
-  RELEASE_NOT_APPROVED: {
-    title: '發行版本未核准或已撤銷',
-    description: '所選 Release 尚未通過簽章與雙架構檢核，不可作為更新目標。',
-  },
-  START_FAILED: {
-    title: '節點新版本啟動失敗',
-    description:
-      '候選版本啟動或健康檢查未通過，節點已依規則回復至最後良好版本 (last_good)。',
-  },
-  HEALTH_CHECK_FAILED: {
-    title: '節點健康與隔離檢查失敗',
-    description: '資料路徑或 Internet-only 隔離檢查未通過，會員轉送維持關閉。',
-  },
-};
-
-const ERROR_MESSAGES_EN: Record<string, { title: string; description: string }> = {
-  MALFORMED_REQUEST: {
-    title: 'Malformed Request',
-    description: 'The request payload or headers are invalid. Please review your input.',
-  },
-  UNAUTHENTICATED: {
-    title: 'Session Expired',
-    description: 'Your session is no longer valid. Please sign in again to continue.',
-  },
-  FORBIDDEN: {
-    title: 'Access Denied',
-    description: 'Your account role does not have permission to access this resource.',
-  },
-  RESOURCE_NOT_FOUND: {
-    title: 'Resource Not Found',
-    description:
-      'The requested resource does not exist or is not accessible to your account.',
-  },
-  IDEMPOTENCY_CONFLICT: {
-    title: 'Idempotency Key Conflict (409)',
-    description:
-      'The same Idempotency-Key was sent with a different payload. Overwrite was prevented.',
-  },
-  STATE_CONFLICT: {
-    title: 'Resource State Conflict (409)',
-    description:
-      'The current state of the resource does not allow this action. Reload the latest state first.',
-  },
-  RESOURCE_VERSION_CONFLICT: {
-    title: 'Edit Conflict Detected (412)',
-    description:
-      'This resource was modified by another admin or worker. Reload the resource before saving so you do not overwrite recent changes.',
-  },
-  PRECONDITION_REQUIRED: {
-    title: 'Client Bug: Missing Precondition (428)',
-    description:
-      'A mutable resource update was sent without an If-Match ETag header. This is a client bug.',
-  },
-  VALIDATION_FAILED: {
-    title: 'Validation Failed (422)',
-    description:
-      'One or more fields failed contract validation. Please fix the highlighted fields.',
-  },
-  NODE_NOT_SERVICEABLE: {
-    title: 'Node Not Serviceable (422)',
-    description:
-      'Node provisioning or isolation check has not passed; it cannot be published as an exit.',
-  },
-  RATE_LIMITED: {
-    title: 'Rate Limited (429)',
-    description:
-      'Too many requests. Please wait for the Retry-After window before retrying.',
-  },
-  DEPENDENCY_UNAVAILABLE: {
-    title: 'Service Temporarily Unavailable (503)',
-    description:
-      'The control service is temporarily unavailable. You can safely retry this action.',
-  },
-  RELEASE_NOT_APPROVED: {
-    title: 'Release Not Approved',
-    description:
-      'The selected release is not approved or has been revoked and cannot be targeted.',
-  },
-  START_FAILED: {
-    title: 'Candidate Start Failed',
-    description:
-      'Candidate release failed to start or pass health checks and rolled back to last_good.',
-  },
-  HEALTH_CHECK_FAILED: {
-    title: 'Health & Isolation Check Failed',
-    description:
-      'Data path or Internet-only isolation check failed; member forwarding stays closed.',
-  },
-};
-
-export function mapErrorToUserMessage(
-  err: unknown,
-  locale: 'zh-TW' | 'en' = 'zh-TW',
-): UserFacingErrorInfo {
-  const dict = locale === 'en' ? ERROR_MESSAGES_EN : ERROR_MESSAGES_ZH;
-
-  if (err instanceof ApiError) {
-    const mapped = dict[err.code];
-    return {
-      title:
-        mapped?.title ??
-        (locale === 'en' ? `Operation Failed (${err.code})` : `操作失敗 (${err.code})`),
-      description: mapped?.description ?? err.message,
-      code: err.code,
-      requestId: err.request_id,
-      operationId: err.operationId,
-      retryable: err.retryable,
-      isConflict: err.isConflict,
-      isPreconditionBug: err.isPreconditionBug,
-    };
-  }
-
-  return {
-    title: locale === 'en' ? 'Network or Unexpected Error' : '網路或非預期錯誤',
-    description:
-      locale === 'en'
-        ? 'Could not reach the control API. Check your connection and retry.'
-        : '無法連線至控制服務 API，請檢查網路連線後重試。',
-    code: 'NETWORK_ERROR',
-    requestId: 'n/a',
-    retryable: true,
-    isConflict: false,
-    isPreconditionBug: false,
-  };
 }

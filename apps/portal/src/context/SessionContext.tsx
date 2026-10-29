@@ -5,92 +5,62 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { onUnauthorizedError, portalApi, type SessionInfo } from '../api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient, buildLoginUrl, redirectToLogin, type AuthSession } from '../api';
 import {
   getMockPersona,
   setMockPersona,
   triggerMockSessionExpired,
+  type MockPersona,
 } from '../mocks/handlers';
-import type { MockPersonaKey } from '../mocks/data';
 
 interface SessionContextValue {
-  session: SessionInfo | null;
-  loading: boolean;
+  session: AuthSession | null;
+  isLoading: boolean;
   sessionExpired: boolean;
-  persona: MockPersonaKey;
-  switchPersona: (nextPersona: MockPersonaKey) => Promise<void>;
+  persona: MockPersona;
+  switchPersona: (next: MockPersona) => Promise<void>;
   simulateSessionExpired: () => void;
   recoverSession: () => Promise<void>;
+  loginUrlForPath: (returnTo?: string) => string;
+  startLogin: (returnTo?: string) => string;
+  logout: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({
   children,
-  initialPersona,
 }: {
   children: React.ReactNode;
-  initialPersona?: MockPersonaKey;
 }): React.ReactElement {
-  const [persona, setPersonaState] = useState<MockPersonaKey>(() => {
-    if (initialPersona) {
-      setMockPersona(initialPersona);
-      return initialPersona;
-    }
-    if (typeof window !== 'undefined') {
-      const urlPersona = new URLSearchParams(window.location.search).get(
-        'persona',
-      ) as MockPersonaKey | null;
-      if (
-        urlPersona &&
-        [
-          'admin',
-          'member_active',
-          'member_throttled',
-          'member_pending',
-          'member_suspended',
-        ].includes(urlPersona)
-      ) {
-        setMockPersona(urlPersona);
-        return urlPersona;
-      }
-    }
-    return getMockPersona();
-  });
-  const [session, setSession] = useState<SessionInfo | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [sessionExpired, setSessionExpired] = useState<boolean>(false);
-
-  const loadSession = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await portalApi.getSession();
-      setSession(res.data);
-      setSessionExpired(false);
-    } catch {
-      setSessionExpired(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const queryClient = useQueryClient();
+  const [persona, setPersonaState] = useState<MockPersona>(() => getMockPersona());
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    void loadSession();
-  }, [loadSession]);
-
-  useEffect(() => {
-    return onUnauthorizedError(() => {
+    apiClient.setUnauthorizedHandler(() => {
       setSessionExpired(true);
     });
+    return () => {
+      apiClient.setUnauthorizedHandler(undefined);
+    };
   }, []);
 
+  const sessionQuery = useQuery({
+    queryKey: ['session', persona],
+    queryFn: () => apiClient.getSession(),
+    retry: false,
+  });
+
   const switchPersona = useCallback(
-    async (nextPersona: MockPersonaKey) => {
-      setMockPersona(nextPersona);
-      setPersonaState(nextPersona);
-      await loadSession();
+    async (next: MockPersona) => {
+      setMockPersona(next);
+      setPersonaState(next);
+      setSessionExpired(false);
+      await queryClient.invalidateQueries();
     },
-    [loadSession],
+    [queryClient],
   );
 
   const simulateSessionExpired = useCallback(() => {
@@ -101,19 +71,37 @@ export function SessionProvider({
   const recoverSession = useCallback(async () => {
     setMockPersona(persona);
     setSessionExpired(false);
-    await loadSession();
-  }, [persona, loadSession]);
+    await queryClient.invalidateQueries();
+  }, [persona, queryClient]);
+
+  const loginUrlForPath = useCallback((returnTo?: string) => {
+    return buildLoginUrl(returnTo);
+  }, []);
+
+  const startLogin = useCallback((returnTo?: string) => {
+    return redirectToLogin(returnTo);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await apiClient.logout();
+    setPersonaState(getMockPersona());
+    setSessionExpired(false);
+    await queryClient.invalidateQueries();
+  }, [queryClient]);
 
   return (
     <SessionContext.Provider
       value={{
-        session,
-        loading,
+        session: sessionQuery.data ?? null,
+        isLoading: sessionQuery.isLoading,
         sessionExpired,
         persona,
         switchPersona,
         simulateSessionExpired,
         recoverSession,
+        loginUrlForPath,
+        startLogin,
+        logout,
       }}
     >
       {children}

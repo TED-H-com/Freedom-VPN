@@ -1,176 +1,206 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { portalApi, useOperationPoller, type MemberItem } from '../../api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient, ApiError, type OperationResource } from '../../api';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n } from '../../i18n';
-import { formatBytesDual } from '../../lib/decimal';
+import { PRIMARY_MEMBER_ID } from '../../mocks/data';
 
 export function AdminMemberDetailPage(): React.ReactElement {
-  const { memberId = '' } = useParams<{ memberId: string }>();
-  const { t } = useI18n();
-  const [member, setMember] = useState<MemberItem | null>(null);
-  const [suspendReason, setSuspendReason] = useState('管理員安全調查停權');
-  const [grantUntil, setGrantUntil] = useState('2026-12-05T00:00:00Z');
-  const [grantReason, setGrantReason] = useState(
-    '既有手動 WireGuard 會員移轉並行期有限授權 (§20.3)',
+  const { memberId = PRIMARY_MEMBER_ID } = useParams<{ memberId: string }>();
+  const { t, locale } = useI18n();
+  const queryClient = useQueryClient();
+
+  const [suspendReason, setSuspendReason] = useState(
+    'Abuse ticket #991: terms violation review',
   );
+  const [grantValidUntil, setGrantValidUntil] = useState('2026-12-31T00:00:00Z');
+  const [grantReason, setGrantReason] = useState('Migration parallel transition grant');
+  const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
-  const loadMember = useCallback(async () => {
-    if (!memberId) return;
-    const res = await portalApi.getAdminMember(memberId);
-    setMember(res.data);
-  }, [memberId]);
-
-  const poller = useOperationPoller({
-    scope: 'admin',
-    onTerminal: () => {
-      void loadMember();
-    },
+  const memberQuery = useQuery({
+    queryKey: ['admin', 'member', memberId],
+    queryFn: () => apiClient.getMember(memberId),
   });
 
-  useEffect(() => {
-    void loadMember();
-  }, [loadMember]);
-
-  if (!member) {
-    return <div className="card">Loading member detail...</div>;
+  if (memberQuery.isLoading || !memberQuery.data) {
+    return (
+      <div className="card" role="status">
+        Loading member detail...
+      </div>
+    );
   }
 
-  const handleToggleSuspend = async (suspend: boolean) => {
-    const opRes = await portalApi.patchAdminMember(
-      member.member_id,
-      {
-        admin_suspended: suspend,
-        admin_suspension_reason: suspend ? suspendReason : undefined,
-      },
-      { ifMatch: member.etag },
-    );
-    poller.startTracking(opRes);
+  const m = memberQuery.data.data;
+  const etag = memberQuery.data.etag ?? undefined;
+
+  const handleSuspend = async () => {
+    setError(null);
+    try {
+      const res = await apiClient.suspendMember(m.member_id, suspendReason, etag);
+      if ('operation_id' in res.data) {
+        setActiveOp(res.data);
+      }
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
+    } catch (err) {
+      if (err instanceof ApiError) setError(err);
+    }
+  };
+
+  const handleResume = async () => {
+    setError(null);
+    try {
+      const res = await apiClient.resumeMember(
+        m.member_id,
+        'Review cleared by admin',
+        etag,
+      );
+      if ('operation_id' in res.data) {
+        setActiveOp(res.data);
+      }
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
+    } catch (err) {
+      if (err instanceof ApiError) setError(err);
+    }
   };
 
   const handleCreateGrant = async (e: React.FormEvent) => {
     e.preventDefault();
-    const opRes = await portalApi.createMemberGrant(member.member_id, {
-      valid_until: grantUntil.trim(),
-      reason: grantReason.trim(),
-    });
-    poller.startTracking(opRes);
-  };
-
-  const handleRevokeDevice = async (deviceId: string) => {
-    const opRes = await portalApi.revokeMemberDeviceAsAdmin(member.member_id, deviceId);
-    poller.startTracking(opRes);
+    setError(null);
+    try {
+      const op = await apiClient.createMemberGrant(m.member_id, {
+        source: 'admin_grant',
+        valid_until: grantValidUntil.trim(),
+        reason: grantReason.trim(),
+      });
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
+    } catch (err) {
+      if (err instanceof ApiError) setError(err);
+    }
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: 12 }}>
+    <div data-testid="admin-member-detail-page">
+      <div style={{ marginBottom: '0.75rem' }}>
         <Link to="/admin/members">{t('admin.memberDetail.back')}</Link>
       </div>
 
-      <header className="page-header">
-        <h1>{t('admin.memberDetail.title', { name: member.display_name })}</h1>
-        <p className="page-subtitle">
-          ID: <code>{member.member_id}</code> ｜ Email: <code>{member.email}</code> ｜
-          ETag: <code>{member.etag}</code>
-        </p>
-      </header>
-
-      <OperationBanner
-        operation={poller.operation}
-        requestId={poller.requestId}
-        isPolling={poller.isPolling}
-        onDismiss={poller.reset}
-      />
-
-      <section className="card" aria-labelledby="entitlement-breakdown-heading">
-        <h2 id="entitlement-breakdown-heading">
-          {t('admin.memberDetail.entitlementBox')}
-        </h2>
-        <p>
-          Entitlement State: <strong>{member.entitlement_state}</strong> —{' '}
-          {member.entitlement_reason}
-        </p>
-        <p>
-          {t('admin.memberDetail.paidThrough', { time: member.paid_through })} ｜{' '}
-          {t('admin.memberDetail.effectiveEnd', { time: member.effective_service_end })}{' '}
-          ｜ {t('admin.memberDetail.reconciledAt', { time: member.last_reconciled_at })}
-        </p>
-        <p>
-          Monthly Usage ({member.accounting_period}):{' '}
-          <strong>{formatBytesDual(member.monthly_total_bytes)}</strong> (raw:{' '}
-          <code>{member.monthly_total_bytes}</code> bytes, quality: {member.usage_quality}
-          )
-        </p>
-      </section>
-
-      <section className="card" aria-labelledby="suspend-member-heading">
-        <h2 id="suspend-member-heading">{t('admin.memberDetail.suspendSection')}</h2>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="suspend-reason-input">
-              {t('admin.memberDetail.suspendReasonLabel')}
-            </label>
-            <input
-              id="suspend-reason-input"
-              type="text"
-              value={suspendReason}
-              onChange={(e) => setSuspendReason(e.target.value)}
-            />
-          </div>
+      <div className="page-header">
+        <div>
+          <h1>
+            {t('admin.memberDetail.title', { name: m.display_name ?? m.member_id })}
+          </h1>
+          <p className="page-subtitle mono">
+            {m.member_id} · {m.email ?? '-'}
+          </p>
         </div>
-        <div className="btn-row">
-          {!member.admin_suspended ? (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={() => void handleToggleSuspend(true)}
-              data-testid="suspend-member-btn"
-            >
-              {t('admin.memberDetail.suspendBtn')}
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => void handleToggleSuspend(false)}
-              data-testid="resume-member-btn"
-            >
-              {t('admin.memberDetail.resumeBtn')}
-            </button>
-          )}
+        <span
+          className={`badge ${
+            m.entitlement.state === 'active' ? 'badge-success' : 'badge-danger'
+          }`}
+          data-testid="member-detail-entitlement-badge"
+        >
+          {m.entitlement.state}
+        </span>
+      </div>
+
+      <OperationBanner operation={activeOp} onDismiss={() => setActiveOp(null)} />
+
+      {error && (
+        <div
+          className="alert alert-danger"
+          role="alert"
+          data-testid="member-detail-error"
+        >
+          <strong>{error.code}</strong>: {error.messageForLocale(locale)}
+        </div>
+      )}
+
+      {/* Entitlement & Deadline Breakdown (§9.2, §15.2) */}
+      <section className="card">
+        <h2>{t('admin.memberDetail.entitlementBox')}</h2>
+        <div className="form-grid" style={{ marginTop: '0.75rem' }}>
+          <div className="mono">
+            {t('admin.memberDetail.paidThrough', {
+              time: m.entitlement.paid_through ?? 'None',
+            })}
+          </div>
+          <div className="mono" data-testid="member-effective-service-end">
+            {t('admin.memberDetail.effectiveEnd', {
+              time: m.entitlement.effective_service_end ?? 'None',
+            })}
+          </div>
+          <div className="mono">
+            {t('admin.memberDetail.reconciledAt', {
+              time: m.subscription?.last_reconciled_at ?? '-',
+            })}
+          </div>
         </div>
       </section>
 
-      <form
-        className="card"
-        aria-labelledby="grant-member-heading"
-        onSubmit={(e) => void handleCreateGrant(e)}
-      >
-        <h2 id="grant-member-heading">{t('admin.memberDetail.grantSection')}</h2>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="grant-valid-until">
-              {t('admin.memberDetail.grantValidUntil')}
-            </label>
-            <input
-              id="grant-valid-until"
-              type="text"
-              value={grantUntil}
-              onChange={(e) => setGrantUntil(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="grant-reason">{t('admin.memberDetail.grantReason')}</label>
-            <input
-              id="grant-reason"
-              type="text"
-              value={grantReason}
-              onChange={(e) => setGrantReason(e.target.value)}
-            />
-          </div>
+      {/* Admin Suspend / Resume */}
+      <section className="card">
+        <h2>{t('admin.memberDetail.suspendSection')}</h2>
+        <div className="form-group" style={{ marginTop: '0.75rem' }}>
+          <label htmlFor="suspend-reason-input">
+            {t('admin.memberDetail.suspendReasonLabel')}
+          </label>
+          <input
+            id="suspend-reason-input"
+            value={suspendReason}
+            onChange={(e) => setSuspendReason(e.target.value)}
+          />
         </div>
-        <div className="btn-row">
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            type="button"
+            className="btn btn-danger"
+            data-testid="suspend-member-btn"
+            onClick={() => void handleSuspend()}
+          >
+            {t('admin.memberDetail.suspendBtn')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-testid="resume-member-btn"
+            onClick={() => void handleResume()}
+          >
+            {t('admin.memberDetail.resumeBtn')}
+          </button>
+        </div>
+      </section>
+
+      {/* Finite Entitlement Grant */}
+      <section className="card">
+        <h2>{t('admin.memberDetail.grantSection')}</h2>
+        <form
+          onSubmit={(e) => void handleCreateGrant(e)}
+          style={{ marginTop: '0.75rem' }}
+        >
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="grant-valid-until">
+                {t('admin.memberDetail.grantValidUntil')}
+              </label>
+              <input
+                id="grant-valid-until"
+                className="mono"
+                value={grantValidUntil}
+                onChange={(e) => setGrantValidUntil(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="grant-reason">{t('admin.memberDetail.grantReason')}</label>
+              <input
+                id="grant-reason"
+                value={grantReason}
+                onChange={(e) => setGrantReason(e.target.value)}
+              />
+            </div>
+          </div>
           <button
             type="submit"
             className="btn btn-primary"
@@ -178,42 +208,37 @@ export function AdminMemberDetailPage(): React.ReactElement {
           >
             {t('admin.memberDetail.grantSubmitBtn')}
           </button>
-        </div>
-      </form>
+        </form>
+      </section>
 
-      <section className="card" aria-labelledby="member-devices-heading">
-        <h2 id="member-devices-heading">{t('admin.memberDetail.devicesSection')}</h2>
-        <div className="table-wrapper">
+      {/* Member Entitlement Grants */}
+      <section className="card">
+        <h2>{t('admin.memberDetail.devicesSection')}</h2>
+        <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
           <table className="data-table">
             <thead>
               <tr>
-                <th scope="col">Device / Platform</th>
-                <th scope="col">Overlay IPv4 / Peer</th>
-                <th scope="col">Status</th>
-                <th scope="col">Action</th>
+                <th>Grant ID</th>
+                <th>Source</th>
+                <th>Reason</th>
+                <th>Valid Window</th>
               </tr>
             </thead>
             <tbody>
-              {member.devices.map((dev) => (
-                <tr key={dev.device_id}>
-                  <td>
-                    <strong>{dev.name}</strong> ({dev.platform})
+              {m.grants.map((grant) => (
+                <tr
+                  key={grant.grant_id}
+                  data-testid={`admin-grant-row-${grant.grant_id}`}
+                >
+                  <td className="mono" style={{ fontSize: '0.75rem' }}>
+                    {grant.grant_id}
                   </td>
                   <td>
-                    <code>{dev.overlay_ipv4}</code> · <code>{dev.netbird_peer_id}</code>
+                    <span className="badge badge-info">{grant.source}</span>
                   </td>
-                  <td>{dev.status}</td>
-                  <td>
-                    {dev.status === 'authorized' && (
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        onClick={() => void handleRevokeDevice(dev.device_id)}
-                        data-testid={`admin-revoke-device-${dev.device_id}`}
-                      >
-                        {t('admin.memberDetail.revokeDeviceBtn')}
-                      </button>
-                    )}
+                  <td>{grant.reason}</td>
+                  <td className="mono" style={{ fontSize: '0.75rem' }}>
+                    {grant.valid_from} → {grant.valid_until}
                   </td>
                 </tr>
               ))}

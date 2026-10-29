@@ -192,3 +192,6 @@ export function previewDnsMatch(
     isolationNoteApplies,
   };
 }
+
+export const normalizeAndValidateDomainInput = normalizeAndValidateDomain;
+export const previewDnsDomainMatch = previewDnsMatch;

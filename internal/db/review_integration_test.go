@@ -5,6 +5,7 @@ package db_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -14,6 +15,9 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -97,7 +101,7 @@ func TestReviewF02_RollupRetentionGuards(t *testing.T) {
 	sqlError(t, err, "22023", "")
 	exec(t, p, `UPDATE usage_rollups SET period_start=now()-interval '16 months',period_end=now()-interval '15 months'`)
 	reviewCount(t, p, `SELECT purge_retained('usage_rollups',now()-interval '14 months','retention test')`, 1)
-	reviewCount(t, p, `SELECT count(*) FROM audit_events WHERE action='retention.purge' AND resource='usage_rollups'`, 1)
+	reviewRetentionAudit(t, p, "usage_rollups", "1")
 	reviewCount(t, p, `SELECT count(*) FROM usage_rollups`, 0)
 }
 
@@ -131,6 +135,83 @@ func TestReviewF03_PurgeRequiresOneCompleteGeneration(t *testing.T) {
 	exec(t, p, `UPDATE usage_rollups SET gap=false WHERE projection_generation=2`)
 	reviewCount(t, p, purge, 1)
 	reviewCount(t, p, `SELECT count(*) FROM usage_events WHERE id=$1`, 1, event)
+	reviewRetentionAudit(t, p, "usage_event_payloads", "0", "0", "0", "1")
+}
+
+// §14.8, §15.4, §16.4: SQL-produced evidence must fit the HTTP audit contract.
+// Database role names identify system executors locally; system actor.id is null.
+func reviewRetentionAudit(t *testing.T, p *pgxpool.Pool, table string, counts ...string) {
+	t.Helper()
+	doc, err := openapi3.NewLoader().LoadFromFile("../../contracts/openapi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := p.Query(t.Context(), `SELECT jsonb_build_object(
+  'audit_event_id',id,'occurred_at',to_char(occurred_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+  'actor',jsonb_build_object('type',actor_type,'id',NULL), 'action',action,'resource',resource::jsonb,
+  'request_id',request_id,'operation_id',operation_id,'result',result,
+  'changes',jsonb_build_object('before',before_diff,'after',after_diff))
+ FROM audit_events WHERE action='retention.purge' ORDER BY occurred_at,id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	var got []string
+	for rows.Next() {
+		var raw []byte
+		if err := rows.Scan(&raw); err != nil {
+			t.Fatal(err)
+		}
+		var value any
+		if err := json.Unmarshal(raw, &value); err != nil {
+			t.Fatal(err)
+		}
+		if err := doc.Components.Schemas["AuditEvent"].Value.VisitJSON(value,
+			openapi3.EnableFormatValidation(),
+			openapi3.WithStringFormatValidator("uuid", // The schema uses fixed singleton UUIDs as well as generated v4/v7
+				// IDs; validate UUID syntax without imposing a version on singletons.
+				openapi3.NewRegexpFormatValidator(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`))); err != nil {
+			t.Fatalf("retention audit violates contract: %v", err)
+		}
+		var event api.AuditEvent
+		if err := json.Unmarshal(raw, &event); err != nil {
+			t.Fatal(err)
+		}
+		if event.Actor.Type != api.AuditEventActorTypeSystem || event.Resource.Type != api.ResourceTypeFleetConfig || event.Resource.Id != uuid.MustParse("00000000-0000-0000-0000-000000000001") || event.Result != api.AuditEventResultSucceeded {
+			t.Fatalf("incorrect retention actor/resource/result: %+v", event)
+		}
+		var diff struct {
+			Changes struct {
+				After struct {
+					Table      string     `json:"table"`
+					Generation decstr.U64 `json:"fleet_generation"`
+					Count      decstr.U64 `json:"deleted_rows"`
+					Policy     struct {
+						ID           uuid.UUID `json:"id"`
+						RawUsageDays int       `json:"raw_usage_days"`
+						RollupMonths int       `json:"rollup_months"`
+						AuditDays    int       `json:"audit_days"`
+					} `json:"retention_config"`
+					Cutoff time.Time `json:"cutoff"`
+					Reason string    `json:"reason"`
+				} `json:"after"`
+			} `json:"changes"`
+		}
+		if err := json.Unmarshal(raw, &diff); err != nil {
+			t.Fatal(err)
+		}
+		after := diff.Changes.After
+		if after.Table != table || after.Generation != 0 || after.Policy.ID != uuid.MustParse("00000000-0000-0000-0000-000000000002") || after.Policy.RawUsageDays != 35 || after.Policy.RollupMonths != 13 || after.Policy.AuditDays != 180 || after.Reason == "" || after.Cutoff.IsZero() {
+			t.Fatalf("missing or incorrect retention evidence: %+v", after)
+		}
+		got = append(got, after.Count.String())
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(got, ",") != strings.Join(counts, ",") {
+		t.Fatalf("purge audit counts=%v want=%v", got, counts)
+	}
 }
 
 // §10.6, §17.3: durable records and exact watermarks, including epoch reset.
@@ -715,4 +796,53 @@ func TestReviewF15_PrimitiveValidationAndClaimOrder(t *testing.T) {
 		reviewReject(t, p, `UPDATE subscriptions SET grace_from='2026-01-01Z',grace_until='2026-01-02Z',grace_reason=$1,resource_version=resource_version+1`, blank)
 	}
 	exec(t, p, `UPDATE subscriptions SET grace_from='2026-01-01Z',grace_until='2026-01-02Z',grace_reason='approved TEST ONLY grace',resource_version=resource_version+1`)
+}
+
+// §6.2, §7.2: external read-back binds an enrollment incarnation exactly once.
+func TestReviewF16_IncarnationBindingOnce(t *testing.T) {
+	p := dbtest.New(t)
+	create := func() uuid.UUID {
+		t.Helper()
+		node, inc := uuid.New(), uuid.New()
+		exec(t, p, `INSERT INTO nodes(id) VALUES($1)`, node)
+		exec(t, p, `INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,os,arch)
+   VALUES($1::uuid,$2::uuid,decode(replace($1::uuid::text,'-','') || replace($2::uuid::text,'-',''),'hex'),'ubuntu','amd64')`, inc, node)
+		return inc
+	}
+	inc, other := create(), create()
+	// Both values must arrive together, and no-op updates before binding are safe.
+	exec(t, p, `UPDATE node_incarnations SET deployment_id=NULL,peer_id=NULL WHERE id=$1`, inc)
+	for _, change := range []string{`deployment_id='test-deployment'`, `peer_id='test-peer'`} {
+		reviewReject(t, p, `UPDATE node_incarnations SET `+change+` WHERE id=$1`, inc)
+	}
+	exec(t, p, `UPDATE node_incarnations SET deployment_id='test-deployment',peer_id='test-peer' WHERE id=$1`, inc)
+	exec(t, p, `UPDATE node_incarnations SET deployment_id='test-deployment',peer_id='test-peer' WHERE id=$1`, inc)
+	reviewCount(t, p, `SELECT count(*) FROM node_incarnations WHERE id=$1 AND revoked_at IS NULL AND deployment_id='test-deployment' AND peer_id='test-peer'`, 1, inc)
+	for _, change := range []string{
+		`deployment_id='other'`, `peer_id='other'`, `deployment_id='other',peer_id='other'`,
+		`deployment_id=NULL`, `peer_id=NULL`, `deployment_id=NULL,peer_id=NULL`,
+		`id=gen_random_uuid()`, `node_id=gen_random_uuid()`,
+		`public_key_fingerprint=decode(repeat('01',32),'hex')`, `created_at=created_at+interval '1 second'`,
+	} {
+		reviewReject(t, p, `UPDATE node_incarnations SET `+change+` WHERE id=$1`, inc)
+	}
+	_, err := p.Exec(t.Context(), `UPDATE node_incarnations SET deployment_id='test-deployment',peer_id='test-peer' WHERE id=$1`, other)
+	sqlError(t, err, "23505", "node_incarnations_peer_key")
+	// Peer IDs are deployment-scoped, not globally unique.
+	exec(t, p, `UPDATE node_incarnations SET deployment_id='other-deployment',peer_id='test-peer' WHERE id=$1`, other)
+	exec(t, p, `UPDATE node_incarnations SET revoked_at=now() WHERE id=$1`, inc)
+	for _, change := range []string{`revoked_at=NULL`, `revoked_at=revoked_at+interval '1 second'`, `deployment_id=NULL,peer_id=NULL`} {
+		reviewReject(t, p, `UPDATE node_incarnations SET `+change+` WHERE id=$1`, inc)
+	}
+	// A late first read-back may record association after revocation but must not
+	// revive the incarnation or alter its original revocation timestamp (§17.2).
+	late := create()
+	exec(t, p, `UPDATE node_incarnations SET revoked_at=now() WHERE id=$1`, late)
+	var revoked time.Time
+	if err := p.QueryRow(t.Context(), `SELECT revoked_at FROM node_incarnations WHERE id=$1`, late).Scan(&revoked); err != nil {
+		t.Fatal(err)
+	}
+	exec(t, p, `UPDATE node_incarnations SET deployment_id='test-deployment',peer_id='late-peer' WHERE id=$1`, late)
+	reviewCount(t, p, `SELECT count(*) FROM node_incarnations WHERE id=$1 AND revoked_at=$2`, 1, late, revoked)
+	reviewReject(t, p, `UPDATE node_incarnations SET peer_id='other' WHERE id=$1`, late)
 }
