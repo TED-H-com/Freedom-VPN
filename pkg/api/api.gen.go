@@ -430,68 +430,74 @@ func (e EntitlementState) Valid() bool {
 
 // Defines values for ErrorCode.
 const (
-	ErrorCodeACKCONFLICT             ErrorCode = "ACK_CONFLICT"
-	ErrorCodeAUTHORIZATIONEXPIRED    ErrorCode = "AUTHORIZATION_EXPIRED"
-	ErrorCodeBOOTSTRAPCONSUMED       ErrorCode = "BOOTSTRAP_CONSUMED"
-	ErrorCodeBOOTSTRAPEXPIRED        ErrorCode = "BOOTSTRAP_EXPIRED"
-	ErrorCodeBOOTSTRAPNOTREADY       ErrorCode = "BOOTSTRAP_NOT_READY"
-	ErrorCodeCHECKPOINTFAILED        ErrorCode = "CHECKPOINT_FAILED"
-	ErrorCodeCONTROLAPIINCOMPATIBLE  ErrorCode = "CONTROL_API_INCOMPATIBLE"
-	ErrorCodeCSRFTOKENINVALID        ErrorCode = "CSRF_TOKEN_INVALID"
-	ErrorCodeDEPENDENCYUNAVAILABLE   ErrorCode = "DEPENDENCY_UNAVAILABLE"
-	ErrorCodeDEVICELIMITREACHED      ErrorCode = "DEVICE_LIMIT_REACHED"
-	ErrorCodeDISKSPACELOW            ErrorCode = "DISK_SPACE_LOW"
-	ErrorCodeDOWNLOADTIMEOUT         ErrorCode = "DOWNLOAD_TIMEOUT"
-	ErrorCodeENROLLMENTKEYMISMATCH   ErrorCode = "ENROLLMENT_KEY_MISMATCH"
-	ErrorCodeENROLLMENTTOKENEXPIRED  ErrorCode = "ENROLLMENT_TOKEN_EXPIRED"
-	ErrorCodeENROLLMENTTOKENINVALID  ErrorCode = "ENROLLMENT_TOKEN_INVALID"
-	ErrorCodeENROLLMENTTOKENREVOKED  ErrorCode = "ENROLLMENT_TOKEN_REVOKED"
-	ErrorCodeFORBIDDEN               ErrorCode = "FORBIDDEN"
-	ErrorCodeHASHMISMATCH            ErrorCode = "HASH_MISMATCH"
-	ErrorCodeHEALTHCHECKFAILED       ErrorCode = "HEALTH_CHECK_FAILED"
-	ErrorCodeIDEMPOTENCYCONFLICT     ErrorCode = "IDEMPOTENCY_CONFLICT"
-	ErrorCodeIDENTITYREVOKED         ErrorCode = "IDENTITY_REVOKED"
-	ErrorCodeINCARNATIONMISMATCH     ErrorCode = "INCARNATION_MISMATCH"
-	ErrorCodeINTERNALERROR           ErrorCode = "INTERNAL_ERROR"
-	ErrorCodeKEYUNTRUSTED            ErrorCode = "KEY_UNTRUSTED"
-	ErrorCodeLEASEEXPIRED            ErrorCode = "LEASE_EXPIRED"
-	ErrorCodeLEDGEREPOCHMISMATCH     ErrorCode = "LEDGER_EPOCH_MISMATCH"
-	ErrorCodeMALFORMEDREQUEST        ErrorCode = "MALFORMED_REQUEST"
-	ErrorCodeMETERPATHINVALID        ErrorCode = "METER_PATH_INVALID"
-	ErrorCodeMETHODNOTALLOWED        ErrorCode = "METHOD_NOT_ALLOWED"
-	ErrorCodeMIGRATIONFAILED         ErrorCode = "MIGRATION_FAILED"
-	ErrorCodeMINIMUMVERSIONVIOLATION ErrorCode = "MINIMUM_VERSION_VIOLATION"
-	ErrorCodeNODEINCARNATIONACTIVE   ErrorCode = "NODE_INCARNATION_ACTIVE"
-	ErrorCodeNODENOTSERVICEABLE      ErrorCode = "NODE_NOT_SERVICEABLE"
-	ErrorCodeNODERETIRED             ErrorCode = "NODE_RETIRED"
-	ErrorCodePAYLOADTOOLARGE         ErrorCode = "PAYLOAD_TOO_LARGE"
-	ErrorCodePRECONDITIONREQUIRED    ErrorCode = "PRECONDITION_REQUIRED"
-	ErrorCodeRATELIMITED             ErrorCode = "RATE_LIMITED"
-	ErrorCodeRELEASENOTAPPROVED      ErrorCode = "RELEASE_NOT_APPROVED"
-	ErrorCodeREPLAYUNAVAILABLE       ErrorCode = "REPLAY_UNAVAILABLE"
-	ErrorCodeRESOURCENOTFOUND        ErrorCode = "RESOURCE_NOT_FOUND"
-	ErrorCodeRESOURCEVERSIONCONFLICT ErrorCode = "RESOURCE_VERSION_CONFLICT"
-	ErrorCodeROLLBACKFAILED          ErrorCode = "ROLLBACK_FAILED"
-	ErrorCodeSCHEMAINCOMPATIBLE      ErrorCode = "SCHEMA_INCOMPATIBLE"
-	ErrorCodeSIGNATUREINVALID        ErrorCode = "SIGNATURE_INVALID"
-	ErrorCodeSIZEMISMATCH            ErrorCode = "SIZE_MISMATCH"
-	ErrorCodeSTALEGENERATION         ErrorCode = "STALE_GENERATION"
-	ErrorCodeSTARTFAILED             ErrorCode = "START_FAILED"
-	ErrorCodeSTATECONFLICT           ErrorCode = "STATE_CONFLICT"
-	ErrorCodeSTOREUNAVAILABLE        ErrorCode = "STORE_UNAVAILABLE"
-	ErrorCodeUNAUTHENTICATED         ErrorCode = "UNAUTHENTICATED"
-	ErrorCodeUNSUPPORTEDMEDIATYPE    ErrorCode = "UNSUPPORTED_MEDIA_TYPE"
-	ErrorCodeUNSUPPORTEDPLATFORM     ErrorCode = "UNSUPPORTED_PLATFORM"
-	ErrorCodeUPDATEBUSY              ErrorCode = "UPDATE_BUSY"
-	ErrorCodeUSAGEEVENTCONFLICT      ErrorCode = "USAGE_EVENT_CONFLICT"
-	ErrorCodeVALIDATIONFAILED        ErrorCode = "VALIDATION_FAILED"
-	ErrorCodeWEBHOOKSIGNATUREINVALID ErrorCode = "WEBHOOK_SIGNATURE_INVALID"
+	ErrorCodeACKCONFLICT              ErrorCode = "ACK_CONFLICT"
+	ErrorCodeARTIFACTINVALID          ErrorCode = "ARTIFACT_INVALID"
+	ErrorCodeAUTHORIZATIONEXPIRED     ErrorCode = "AUTHORIZATION_EXPIRED"
+	ErrorCodeBOOTSTRAPCONSUMED        ErrorCode = "BOOTSTRAP_CONSUMED"
+	ErrorCodeBOOTSTRAPEXPIRED         ErrorCode = "BOOTSTRAP_EXPIRED"
+	ErrorCodeBOOTSTRAPNOTREADY        ErrorCode = "BOOTSTRAP_NOT_READY"
+	ErrorCodeCHECKPOINTFAILED         ErrorCode = "CHECKPOINT_FAILED"
+	ErrorCodeCONTROLAPIINCOMPATIBLE   ErrorCode = "CONTROL_API_INCOMPATIBLE"
+	ErrorCodeCSRFTOKENINVALID         ErrorCode = "CSRF_TOKEN_INVALID"
+	ErrorCodeDEPENDENCYUNAVAILABLE    ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	ErrorCodeDEVICELIMITREACHED       ErrorCode = "DEVICE_LIMIT_REACHED"
+	ErrorCodeDISKSPACELOW             ErrorCode = "DISK_SPACE_LOW"
+	ErrorCodeDOWNLOADTIMEOUT          ErrorCode = "DOWNLOAD_TIMEOUT"
+	ErrorCodeENROLLMENTKEYMISMATCH    ErrorCode = "ENROLLMENT_KEY_MISMATCH"
+	ErrorCodeENROLLMENTTOKENEXPIRED   ErrorCode = "ENROLLMENT_TOKEN_EXPIRED"
+	ErrorCodeENROLLMENTTOKENINVALID   ErrorCode = "ENROLLMENT_TOKEN_INVALID"
+	ErrorCodeENROLLMENTTOKENREVOKED   ErrorCode = "ENROLLMENT_TOKEN_REVOKED"
+	ErrorCodeFORBIDDEN                ErrorCode = "FORBIDDEN"
+	ErrorCodeHASHMISMATCH             ErrorCode = "HASH_MISMATCH"
+	ErrorCodeHEALTHCHECKFAILED        ErrorCode = "HEALTH_CHECK_FAILED"
+	ErrorCodeIDEMPOTENCYCONFLICT      ErrorCode = "IDEMPOTENCY_CONFLICT"
+	ErrorCodeIDENTITYREVOKED          ErrorCode = "IDENTITY_REVOKED"
+	ErrorCodeINCARNATIONMISMATCH      ErrorCode = "INCARNATION_MISMATCH"
+	ErrorCodeINTERNALERROR            ErrorCode = "INTERNAL_ERROR"
+	ErrorCodeISOLATIONBASELINEMISSING ErrorCode = "ISOLATION_BASELINE_MISSING"
+	ErrorCodeKEYUNTRUSTED             ErrorCode = "KEY_UNTRUSTED"
+	ErrorCodeLEASEEXPIRED             ErrorCode = "LEASE_EXPIRED"
+	ErrorCodeLEDGEREPOCHMISMATCH      ErrorCode = "LEDGER_EPOCH_MISMATCH"
+	ErrorCodeMALFORMEDREQUEST         ErrorCode = "MALFORMED_REQUEST"
+	ErrorCodeMETEREPOCHCHANGE         ErrorCode = "METER_EPOCH_CHANGE"
+	ErrorCodeMETERPATHINVALID         ErrorCode = "METER_PATH_INVALID"
+	ErrorCodeMETHODNOTALLOWED         ErrorCode = "METHOD_NOT_ALLOWED"
+	ErrorCodeMIGRATIONFAILED          ErrorCode = "MIGRATION_FAILED"
+	ErrorCodeMINIMUMVERSIONVIOLATION  ErrorCode = "MINIMUM_VERSION_VIOLATION"
+	ErrorCodeNODEINCARNATIONACTIVE    ErrorCode = "NODE_INCARNATION_ACTIVE"
+	ErrorCodeNODENOTSERVICEABLE       ErrorCode = "NODE_NOT_SERVICEABLE"
+	ErrorCodeNODERETIRED              ErrorCode = "NODE_RETIRED"
+	ErrorCodeNOTIMPLEMENTED           ErrorCode = "NOT_IMPLEMENTED"
+	ErrorCodePAYLOADTOOLARGE          ErrorCode = "PAYLOAD_TOO_LARGE"
+	ErrorCodePRECONDITIONREQUIRED     ErrorCode = "PRECONDITION_REQUIRED"
+	ErrorCodeRATELIMITED              ErrorCode = "RATE_LIMITED"
+	ErrorCodeRELEASENOTAPPROVED       ErrorCode = "RELEASE_NOT_APPROVED"
+	ErrorCodeREPLAYUNAVAILABLE        ErrorCode = "REPLAY_UNAVAILABLE"
+	ErrorCodeRESOURCENOTFOUND         ErrorCode = "RESOURCE_NOT_FOUND"
+	ErrorCodeRESOURCEVERSIONCONFLICT  ErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ErrorCodeROLLBACKFAILED           ErrorCode = "ROLLBACK_FAILED"
+	ErrorCodeSCHEMAINCOMPATIBLE       ErrorCode = "SCHEMA_INCOMPATIBLE"
+	ErrorCodeSIGNATUREINVALID         ErrorCode = "SIGNATURE_INVALID"
+	ErrorCodeSIZEMISMATCH             ErrorCode = "SIZE_MISMATCH"
+	ErrorCodeSTALEGENERATION          ErrorCode = "STALE_GENERATION"
+	ErrorCodeSTARTFAILED              ErrorCode = "START_FAILED"
+	ErrorCodeSTATECONFLICT            ErrorCode = "STATE_CONFLICT"
+	ErrorCodeSTOREUNAVAILABLE         ErrorCode = "STORE_UNAVAILABLE"
+	ErrorCodeUNAUTHENTICATED          ErrorCode = "UNAUTHENTICATED"
+	ErrorCodeUNSUPPORTEDMEDIATYPE     ErrorCode = "UNSUPPORTED_MEDIA_TYPE"
+	ErrorCodeUNSUPPORTEDPLATFORM      ErrorCode = "UNSUPPORTED_PLATFORM"
+	ErrorCodeUPDATEBUSY               ErrorCode = "UPDATE_BUSY"
+	ErrorCodeUSAGEEVENTCONFLICT       ErrorCode = "USAGE_EVENT_CONFLICT"
+	ErrorCodeVALIDATIONFAILED         ErrorCode = "VALIDATION_FAILED"
+	ErrorCodeWEBHOOKSIGNATUREINVALID  ErrorCode = "WEBHOOK_SIGNATURE_INVALID"
 )
 
 // Valid indicates whether the value is a known member of the ErrorCode enum.
 func (e ErrorCode) Valid() bool {
 	switch e {
 	case ErrorCodeACKCONFLICT:
+		return true
+	case ErrorCodeARTIFACTINVALID:
 		return true
 	case ErrorCodeAUTHORIZATIONEXPIRED:
 		return true
@@ -537,6 +543,8 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case ErrorCodeINTERNALERROR:
 		return true
+	case ErrorCodeISOLATIONBASELINEMISSING:
+		return true
 	case ErrorCodeKEYUNTRUSTED:
 		return true
 	case ErrorCodeLEASEEXPIRED:
@@ -544,6 +552,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeLEDGEREPOCHMISMATCH:
 		return true
 	case ErrorCodeMALFORMEDREQUEST:
+		return true
+	case ErrorCodeMETEREPOCHCHANGE:
 		return true
 	case ErrorCodeMETERPATHINVALID:
 		return true
@@ -558,6 +568,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeNODENOTSERVICEABLE:
 		return true
 	case ErrorCodeNODERETIRED:
+		return true
+	case ErrorCodeNOTIMPLEMENTED:
 		return true
 	case ErrorCodePAYLOADTOOLARGE:
 		return true
@@ -1225,22 +1237,25 @@ func (e ObservationReportNetbirdBackend) Valid() bool {
 
 // Defines values for OperationKind.
 const (
-	OperationKindCheckoutCreate     OperationKind = "checkout.create"
-	OperationKindMemberDeviceRevoke OperationKind = "member.device_revoke"
-	OperationKindMemberGrant        OperationKind = "member.grant"
-	OperationKindMemberSuspend      OperationKind = "member.suspend"
-	OperationKindMemberUnsuspend    OperationKind = "member.unsuspend"
-	OperationKindMemberUpdate       OperationKind = "member.update"
-	OperationKindNodeDisable        OperationKind = "node.disable"
-	OperationKindNodePublish        OperationKind = "node.publish"
-	OperationKindNodeRetire         OperationKind = "node.retire"
-	OperationKindNodeRevoke         OperationKind = "node.revoke"
-	OperationKindNodeUnpublish      OperationKind = "node.unpublish"
-	OperationKindNodeUpdate         OperationKind = "node.update"
-	OperationKindPolicyActivate     OperationKind = "policy.activate"
-	OperationKindReleaseRegister    OperationKind = "release.register"
-	OperationKindUpdateBatchCreate  OperationKind = "update_batch.create"
-	OperationKindUpdateBatchRetry   OperationKind = "update_batch.retry"
+	OperationKindCheckoutCreate        OperationKind = "checkout.create"
+	OperationKindMemberDeviceAuthorize OperationKind = "member.device_authorize"
+	OperationKindMemberDeviceRevoke    OperationKind = "member.device_revoke"
+	OperationKindMemberGrant           OperationKind = "member.grant"
+	OperationKindMemberGrantRevoke     OperationKind = "member.grant_revoke"
+	OperationKindMemberSuspend         OperationKind = "member.suspend"
+	OperationKindMemberUnsuspend       OperationKind = "member.unsuspend"
+	OperationKindMemberUpdate          OperationKind = "member.update"
+	OperationKindNodeDisable           OperationKind = "node.disable"
+	OperationKindNodeEnroll            OperationKind = "node.enroll"
+	OperationKindNodePublish           OperationKind = "node.publish"
+	OperationKindNodeRetire            OperationKind = "node.retire"
+	OperationKindNodeRevoke            OperationKind = "node.revoke"
+	OperationKindNodeUnpublish         OperationKind = "node.unpublish"
+	OperationKindNodeUpdate            OperationKind = "node.update"
+	OperationKindPolicyActivate        OperationKind = "policy.activate"
+	OperationKindReleaseRegister       OperationKind = "release.register"
+	OperationKindUpdateBatchCreate     OperationKind = "update_batch.create"
+	OperationKindUpdateBatchRetry      OperationKind = "update_batch.retry"
 )
 
 // Valid indicates whether the value is a known member of the OperationKind enum.
@@ -1248,9 +1263,13 @@ func (e OperationKind) Valid() bool {
 	switch e {
 	case OperationKindCheckoutCreate:
 		return true
+	case OperationKindMemberDeviceAuthorize:
+		return true
 	case OperationKindMemberDeviceRevoke:
 		return true
 	case OperationKindMemberGrant:
+		return true
+	case OperationKindMemberGrantRevoke:
 		return true
 	case OperationKindMemberSuspend:
 		return true
@@ -1259,6 +1278,8 @@ func (e OperationKind) Valid() bool {
 	case OperationKindMemberUpdate:
 		return true
 	case OperationKindNodeDisable:
+		return true
+	case OperationKindNodeEnroll:
 		return true
 	case OperationKindNodePublish:
 		return true
@@ -1660,6 +1681,7 @@ func (e ReplayUnavailableRangeReason) Valid() bool {
 
 // Defines values for ResourceType.
 const (
+	ResourceTypeAdminIdentity    ResourceType = "admin_identity"
 	ResourceTypeCheckoutSession  ResourceType = "checkout_session"
 	ResourceTypeEnrollment       ResourceType = "enrollment"
 	ResourceTypeEntitlementGrant ResourceType = "entitlement_grant"
@@ -1678,6 +1700,8 @@ const (
 // Valid indicates whether the value is a known member of the ResourceType enum.
 func (e ResourceType) Valid() bool {
 	switch e {
+	case ResourceTypeAdminIdentity:
+		return true
 	case ResourceTypeCheckoutSession:
 		return true
 	case ResourceTypeEnrollment:
@@ -2398,6 +2422,12 @@ type DesiredState struct {
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
 	PublicationIntent PublicationIntent `json:"publication_intent"`
 
+	// RevokedReleaseIds Releases barred from installation and serving (§13.4, D-034).
+	// A node must refuse to install and must stop serving any listed release.
+	// Absent and empty both mean no additional revocations; neither widens
+	// the serving/allowed release intersections enforced by the updater.
+	RevokedReleaseIds *[]openapi_types.UUID `json:"revoked_release_ids,omitempty"`
+
 	// SafetyProfile Fixed isolation baseline profile, for example `internet-only-v1`. No policy can relax it.
 	SafetyProfile string                    `json:"safety_profile"`
 	SchemaVersion DesiredStateSchemaVersion `json:"schema_version"`
@@ -2486,6 +2516,7 @@ type DnsProfilePolicyRevision struct {
 	// Payload DNS profile (§12.4, §12.5). References immutable domain_rule_set and
 	// threat_feed revisions. A profile can never relax the fixed IP-layer
 	// isolation baseline.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/dns-profile-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       DnsProfilePayload                     `json:"payload"`
 	PayloadSha256 string                                `json:"payload_sha256"`
 	Reason        string                                `json:"reason"`
@@ -2578,6 +2609,7 @@ type DomainRuleSetPolicyRevision struct {
 	// Validation rejects duplicate rule_ids and two rules with the same
 	// (profile_id, domain, include_subdomains) — conflicting actions in the same
 	// layer are never resolved by last-write-wins.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/domain-rule-set-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       DomainRuleSetPayload                     `json:"payload"`
 	PayloadSha256 string                                   `json:"payload_sha256"`
 	Reason        string                                   `json:"reason"`
@@ -2792,7 +2824,10 @@ type ErrorBody struct {
 	// default retryable flag of each code are defined in `pkg/apierr`; the
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
-	// (update results, observations).
+	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+	// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+	// endpoints must not ship with it in a release.
 	Code ErrorCode `json:"code"`
 
 	// Details Machine-readable context, always an object (empty when there is none).
@@ -2816,7 +2851,10 @@ type ErrorBody struct {
 // default retryable flag of each code are defined in `pkg/apierr`; the
 // contracts tests keep this enum identical to that table. Codes marked
 // node-local in `pkg/apierr` are reported mainly inside agent payloads
-// (update results, observations).
+// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+// endpoints must not ship with it in a release.
 type ErrorCode string
 
 // ErrorEnvelope Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
@@ -2917,6 +2955,7 @@ type FairUsePolicyRevision struct {
 	// 6. Overrides have a finite `valid_until` in the future, a reason and an
 	//    actor; at most one override per member.
 	// A missing tier is never treated as unlimited.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/fair-use-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       FairUsePayload                     `json:"payload"`
 	PayloadSha256 string                             `json:"payload_sha256"`
 	Reason        string                             `json:"reason"`
@@ -3473,7 +3512,10 @@ type NodeError struct {
 	// default retryable flag of each code are defined in `pkg/apierr`; the
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
-	// (update results, observations).
+	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+	// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+	// endpoints must not ship with it in a release.
 	Code ErrorCode `json:"code"`
 
 	// Message Redacted summary; never tokens, keys, environment or browsing data (§13.11).
@@ -3669,7 +3711,10 @@ type Operation struct {
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
-		// (update results, observations).
+		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+		// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+		// endpoints must not ship with it in a release.
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
 	}] `json:"error"`
@@ -3755,6 +3800,7 @@ type PlanPolicyRevision struct {
 	// Payload Plan revision payload (§14.2, §15.2 plans/plan_revisions). Prices, device
 	// limits and rates are pending business decisions (§21); the schema only
 	// carries them.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/plan-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       PlanPayload                     `json:"payload"`
 	PayloadSha256 string                          `json:"payload_sha256"`
 	Reason        string                          `json:"reason"`
@@ -3838,6 +3884,11 @@ type PolicyActivateRequest struct {
 // The ETag for activation is `"<resource_version>"`.
 type PolicyDefinition struct {
 	// ActiveRevision One immutable policy revision; `type` selects the payload schema.
+	// The owner's JSON Schema 2020-12 payload snapshots are published under
+	// contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+	// threat-feed and release-support, each named <type>-payload.schema.json).
+	// See docs/contracts/README.md for provenance and known schema limitations;
+	// the OpenAPI payload component remains authoritative for HTTP bodies.
 	ActiveRevision   *PolicyRevision                       `json:"active_revision,omitempty"`
 	ActiveRevisionId nullable.Nullable[openapi_types.UUID] `json:"active_revision_id"`
 	Code             string                                `json:"code"`
@@ -3848,6 +3899,11 @@ type PolicyDefinition struct {
 	Generation decstr.U64 `json:"generation"`
 
 	// LatestRevision One immutable policy revision; `type` selects the payload schema.
+	// The owner's JSON Schema 2020-12 payload snapshots are published under
+	// contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+	// threat-feed and release-support, each named <type>-payload.schema.json).
+	// See docs/contracts/README.md for provenance and known schema limitations;
+	// the OpenAPI payload component remains authoritative for HTTP bodies.
 	LatestRevision  *PolicyRevision `json:"latest_revision,omitempty"`
 	ResourceVersion decstr.U64      `json:"resource_version"`
 
@@ -3873,6 +3929,11 @@ type PolicyRefs struct {
 }
 
 // PolicyRevision One immutable policy revision; `type` selects the payload schema.
+// The owner's JSON Schema 2020-12 payload snapshots are published under
+// contracts/schemas/policies/ (plan, fair-use, dns-profile, domain-rule-set,
+// threat-feed and release-support, each named <type>-payload.schema.json).
+// See docs/contracts/README.md for provenance and known schema limitations;
+// the OpenAPI payload component remains authoritative for HTTP bodies.
 type PolicyRevision struct {
 	union json.RawMessage
 }
@@ -4054,6 +4115,7 @@ type ReleaseSupportPolicyRevision struct {
 	// disjoint from both. A normal update never raises the minimum serving set
 	// implicitly; changing it is an explicit, audited policy change whose effect
 	// (nodes may stop serving) the UI must show.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/release-support-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       ReleaseSupportPayload                     `json:"payload"`
 	PayloadSha256 string                                    `json:"payload_sha256"`
 	Reason        string                                    `json:"reason"`
@@ -4271,6 +4333,7 @@ type ThreatFeedPolicyRevision struct {
 	// Payload Threat or category feed source with license basis (§12.3, §14.2). A feed
 	// whose commercial use is not confirmed must not be placed in a production
 	// profile. Fetch times and results are observations stored separately.
+	// Owner JSON Schema snapshot at contracts/schemas/policies/threat-feed-payload.schema.json; see docs/contracts/README.md for limits. HTTP validation uses this OpenAPI component.
 	Payload       ThreatFeedPayload                     `json:"payload"`
 	PayloadSha256 string                                `json:"payload_sha256"`
 	Reason        string                                `json:"reason"`
@@ -4490,8 +4553,14 @@ type UpdateResult struct {
 	MemberForwardingEnabled bool                                  `json:"member_forwarding_enabled"`
 	NodeId                  openapi_types.UUID                    `json:"node_id"`
 	PayloadHash             string                                `json:"payload_hash"`
-	PolicyGeneration        decstr.U64                            `json:"policy_generation"`
-	PreviousReleaseId       nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
+
+	// PolicyGeneration The desired-state config_generation actually applied when this result
+	// was produced (§13.10.3, §14.7), not the update job generation or the
+	// newest received desired state. Component policy_refs belong to desired
+	// state; they do not replace this applied configuration generation.
+	// This member was already required in the v1 contract and remains so.
+	PolicyGeneration  decstr.U64                            `json:"policy_generation"`
+	PreviousReleaseId nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
 
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
 	PublicationIntent  PublicationIntent              `json:"publication_intent"`
@@ -4690,7 +4759,10 @@ type UsageEventResult struct {
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
-		// (update results, observations).
+		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
+		// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
+		// endpoints must not ship with it in a release.
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
 		Message string       `json:"message"`

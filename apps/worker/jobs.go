@@ -6,6 +6,7 @@ func Domains() []Domain {
 	return []Domain{
 		members(),
 		dns(),
+		nodes(),
 		policies(),
 		usage(),
 	}

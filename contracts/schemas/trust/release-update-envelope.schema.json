@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fvpn:contracts:schema:release-trust-update-envelope:v1",
+  "title": "ReleaseTrustUpdateEnvelope",
+  "description": "Release trust rotation (§13.4, §17.2; docs/pki/rotation.md). Verify the envelope with the OLD trust store and purpose release before accepting keys. The service enforces strictly increasing uint64 revision, unique IDs and public keys, not_before < not_after, immutable public bytes for existing IDs, nonexpanding validity windows, terminal revocation and no retired-to-active transitions. Omitted old keys remain recorded. Never bootstrap trust from the update itself.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signed",
+    "signatures"
+  ],
+  "properties": {
+    "signed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "revision",
+        "keys"
+      ],
+      "properties": {
+        "kind": {
+          "const": "fvpn-release-trust-v1"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 20,
+          "description": "Decimal-string uint64, at most 18446744073709551615; compare with decstr/BigInt, never Number."
+        },
+        "keys": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/KeyRecord"
+          }
+        }
+      }
+    },
+    "signatures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Signature"
+      }
+    }
+  },
+  "$defs": {
+    "KeyRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "purpose",
+        "public",
+        "state",
+        "not_before",
+        "not_after"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "purpose": {
+          "const": "release"
+        },
+        "public": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$",
+          "description": "Standard padded base64 of a 32-byte Ed25519 public key; no private material."
+        },
+        "state": {
+          "enum": [
+            "active",
+            "retired",
+            "revoked"
+          ]
+        },
+        "not_before": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+        },
+        "not_after": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+        },
+        "revoked_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+        }
+      },
+      "if": {
+        "properties": {
+          "state": {
+            "const": "revoked"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "revoked_at"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "revoked_at"
+          ]
+        }
+      }
+    },
+    "Signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key_id",
+        "algorithm",
+        "signature_b64"
+      ],
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "algorithm": {
+          "const": "ed25519"
+        },
+        "signature_b64": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      }
+    }
+  }
+}

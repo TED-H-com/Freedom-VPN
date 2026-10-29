@@ -12,7 +12,7 @@ NETLAB_IMAGE := $(FVPN_LAB_PREFIX):lab
 NETLAB_SCRATCH := /tmp/$(FVPN_LAB_PREFIX)-scratch
 NETLAB_BIN := /tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 
-.PHONY: netlab-unit netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full
+.PHONY: netlab-unit netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
 
 netlab-unit:
 	cd $(ROOT) && CGO_ENABLED=0 go test ./node/enforce/...
@@ -52,6 +52,20 @@ netlab-test:
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
 		cd $(ROOT) && FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+			go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
+	fi; \
+	$(MAKE) -f $(NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || true; \
+	exit $$status
+
+# Refresh the tracked Gate G2 evidence. Other netlab targets leave evidence
+# in the test's temporary directory.
+netlab-evidence:
+	@set -eu; \
+	status=0; \
+	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
+	if [ $$status -eq 0 ]; then \
+		cd $(ROOT) && FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+			FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-evidence' \
 			go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
 	$(MAKE) -f $(NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || true; \

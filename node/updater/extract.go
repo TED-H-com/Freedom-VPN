@@ -14,19 +14,28 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+// maxArchiveEntries is the default member cap (D-034a, D-034f).
+const maxArchiveEntries = 4096
+
+// defaultDecompressedCap bounds an extract that does not set MaxBytes.
+const defaultDecompressedCap = 512 << 20
+
 // ExtractOptions bounds a safe extract (§13.5). MaxBytes is the decompressed
-// size cap. Deny lists persistent directories the archive must not touch.
+// size cap. MaxEntries caps archive members; zero means maxArchiveEntries.
+// Deny lists persistent directories the archive must not touch.
 type ExtractOptions struct {
-	MaxBytes int64
-	Deny     []string
+	MaxBytes   int64
+	MaxEntries int
+	Deny       []string
 	// DiskFull forces ENOSPC-equivalent failure before any file is written.
 	// Tests use it; production leaves it false.
 	DiskFull bool
 }
 
-// ExtractArchive unpacks a tar.zst into dest. It rejects absolute paths,
-// ".." escapes, links that point outside dest, device files, hard links and
-// setuid/setgid/sticky modes. It does not follow symlinks and does not
+// ExtractArchive unpacks a tar.zst into dest. The archive may contain only
+// regular files and directories. Symlinks, hard links and every other member
+// type are rejected. It rejects absolute paths, ".." escapes, device files
+// and setuid/setgid/sticky modes. It does not follow symlinks and does not
 // execute anything. On error the caller removes dest.
 func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 	if dest == "" {
@@ -52,8 +61,17 @@ func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 		return permanent(apierr.HashMismatch, "artifact is not zstd")
 	}
 	defer dec.Close()
-	tr := tar.NewReader(dec)
+	capBytes := opt.MaxBytes
+	if capBytes <= 0 {
+		capBytes = defaultDecompressedCap
+	}
+	maxEntries := opt.MaxEntries
+	if maxEntries <= 0 {
+		maxEntries = maxArchiveEntries
+	}
+	tr := tar.NewReader(io.LimitReader(dec, capBytes+1))
 	var written int64
+	var count int
 	for {
 		hdr, err := tr.Next()
 		if errors.Is(err, io.EOF) {
@@ -62,13 +80,17 @@ func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 		if err != nil {
 			return permanent(apierr.ValidationFailed, "archive")
 		}
-		if err := extractOne(tr, dest, hdr, opt, &written); err != nil {
+		count++
+		if count > maxEntries {
+			return permanent(apierr.ValidationFailed, "archive entry cap")
+		}
+		if err := extractOne(tr, dest, hdr, opt.Deny, capBytes, &written); err != nil {
 			return err
 		}
 	}
 }
 
-func extractOne(tr *tar.Reader, dest string, hdr *tar.Header, opt ExtractOptions, written *int64) error {
+func extractOne(tr *tar.Reader, dest string, hdr *tar.Header, deny []string, capBytes int64, written *int64) error {
 	name := hdr.Name
 	if strings.Contains(name, "\x00") || strings.Contains(name, "\\") {
 		return permanent(apierr.ValidationFailed, "archive path")
@@ -77,7 +99,7 @@ func extractOne(tr *tar.Reader, dest string, hdr *tar.Header, opt ExtractOptions
 	if err != nil {
 		return err
 	}
-	for _, d := range opt.Deny {
+	for _, d := range deny {
 		if pathsOverlap(full, d) {
 			return permanent(apierr.ValidationFailed, "archive path touches persistent state")
 		}
@@ -92,15 +114,14 @@ func extractOne(tr *tar.Reader, dest string, hdr *tar.Header, opt ExtractOptions
 		if hdr.Size < 0 {
 			return permanent(apierr.SizeMismatch, "archive member size")
 		}
-		if opt.MaxBytes > 0 && *written+hdr.Size > opt.MaxBytes {
+		if capBytes > 0 && *written+hdr.Size > capBytes {
 			return permanent(apierr.SizeMismatch, "archive expands past the manifest")
 		}
 		*written += hdr.Size
 		return writeReg(tr, dest, full, hdr)
-	case tar.TypeSymlink:
-		return writeLink(dest, full, hdr.Linkname)
 	default:
-		// Devices, fifos, sockets and hard links are rejected (§13.5).
+		// Symlinks, hard links, devices, fifos and sockets are rejected.
+		// Release archives contain regular files and directories only (D-034a).
 		return permanent(apierr.ValidationFailed, "archive member type")
 	}
 }
@@ -143,32 +164,6 @@ func writeReg(tr *tar.Reader, dest, full string, hdr *tar.Header) error {
 		return err
 	}
 	ok = true
-	return nil
-}
-
-func writeLink(dest, full, target string) error {
-	if err := mkdirSafe(dest, filepath.Dir(full), 0o755); err != nil {
-		return err
-	}
-	if err := parentsReal(dest, full); err != nil {
-		return err
-	}
-	if target == "" || strings.Contains(target, "\x00") || filepath.IsAbs(target) || path.IsAbs(target) {
-		return permanent(apierr.ValidationFailed, "symlink target")
-	}
-	// Resolve the link against its parent using slash rules, then require
-	// the result to stay inside dest. The link is not followed later.
-	rel, err := filepath.Rel(dest, filepath.Dir(full))
-	if err != nil {
-		return permanent(apierr.ValidationFailed, "symlink")
-	}
-	joined := path.Clean(path.Join(filepath.ToSlash(rel), filepath.ToSlash(target)))
-	if joined == ".." || strings.HasPrefix(joined, "../") || path.IsAbs(joined) {
-		return permanent(apierr.ValidationFailed, "symlink escapes the release")
-	}
-	if err := os.Symlink(target, full); err != nil {
-		return permanent(apierr.ValidationFailed, "symlink")
-	}
 	return nil
 }
 
@@ -249,11 +244,17 @@ func parentsReal(dest, full string) error {
 	}
 }
 
+// pathsOverlap reports whether path and root are the same directory or one
+// contains the other. An empty path does not overlap anything (D-034f).
 func pathsOverlap(path, root string) bool {
-	if root == "" {
+	if path == "" || root == "" {
 		return false
 	}
 	path = filepath.Clean(path)
 	root = filepath.Clean(root)
-	return path == root || strings.HasPrefix(path, root+string(filepath.Separator))
+	if path == "." || root == "." {
+		return false
+	}
+	sep := string(filepath.Separator)
+	return path == root || strings.HasPrefix(path, root+sep) || strings.HasPrefix(root, path+sep)
 }
