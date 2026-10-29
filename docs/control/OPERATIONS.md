@@ -72,9 +72,7 @@ Agent actors use type `node` with the node UUID. Internal system work uses
 `audit.SystemActor`, the D-029 actor with type `system` and singleton UUID
 `00000000-0000-0000-0000-000000000003`. Pass it directly as `Entry.Actor`; use
 `audit.SystemActor.ID` for other references to this identity. Treat the exported
-value as read-only and never populate it from request input. The deprecated
-`releases.SystemActorID` string alias remains for this revision; remove it only
-after in-flight callers and integration fixtures have adopted the audit value.
+value as read-only and never populate it from request input.
 Never allowlist raw provider payloads, browser history or
 unbounded free text. Audit stays append-only under the existing DB guards.
 
