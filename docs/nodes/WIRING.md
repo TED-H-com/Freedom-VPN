@@ -146,10 +146,15 @@ that client's implementation. It has no raw HTTP bypass and sanitizes failures
 before they can become public operation messages.
 
 The executor returns failed outcomes as an operation with a nil Go error. The
-job retains the failed step/error evidence, keeps the operation `running` while
-retry work is outstanding, and returns a job error. The existing D-040 dispatcher
-retries with backoff and then dead-letters without a delivery receipt. Dead-letter
-recovery remains explicit operator work; the job never fabricates observation.
+job uses the dispatcher's configured `worker_attempts` budget: a failed execution
+remains `running` only when `event.Attempt` is below that budget, with failed
+step/error evidence retained for the next retry. At or above the budget it stays
+`failed` and still returns a job error, so D-040 dead-lettering leaves no delivery
+receipt or false claim of progress (§14.5). If the worker dies after that failure,
+the dispatcher's exhausted redelivery dead-letters without executing again.
+Recovery requires an operator's fresh publication command with a new idempotency
+key and current `If-Match`; the failed operation and evidence remain unchanged.
+The job never fabricates observation.
 A partial offline withdrawal is a completed central action with an unconfirmed
 agent step, so replay does not repeat its external effects. The fake-adapter
 worker tests and the real-client/local-HTTP test prove these orchestration paths;
