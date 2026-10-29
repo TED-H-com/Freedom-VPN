@@ -109,6 +109,8 @@ func TestAPI01_MemberMetadataETagFilteredPagesAndGrantRollback(t *testing.T) {
 	f := newFixture(t)
 	a := f.login("TEST-admin", "admin")
 	s := f.login("TEST-member", "member")
+	// D-032: administrators are separate identities, so pagination needs two members.
+	f.login("TEST-other", "member")
 	path := "/api/v1/admin/members/" + s.id.String()
 	w := f.call(a, "GET", path, "", nil)
 	requireStatus(t, w, 200)
