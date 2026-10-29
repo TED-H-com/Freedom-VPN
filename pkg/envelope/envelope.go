@@ -34,20 +34,20 @@ const AlgorithmEd25519 = "ed25519"
 // Purpose is the use a signing key is authorized for (§16.2).
 type Purpose string
 
-// The four signing purposes. Keys are never shared between purposes in
-// production; the trust store enforces that a key signs only documents of
-// purposes it is allowed for.
+// Signing purposes. Each trusted key has exactly one purpose (§16.2).
+// Ledger-epoch is central-only and must never be included in node bundles.
 const (
 	PurposeRelease      Purpose = "release"       // release manifests (§13.3)
 	PurposeDesiredState Purpose = "desired-state" // desired state and policy (§14.7)
 	PurposeLease        Purpose = "lease"         // serving leases (§16.3)
+	PurposeLedgerEpoch  Purpose = "ledger-epoch"  // central-only ledger epoch authority (§17.3); never in node bundles
 	PurposeRecovery     Purpose = "recovery"      // usage checkpoints and recovery records (§17.3)
 )
 
 // Valid reports whether p is one of the defined purposes.
 func (p Purpose) Valid() bool {
 	switch p {
-	case PurposeRelease, PurposeDesiredState, PurposeLease, PurposeRecovery:
+	case PurposeRelease, PurposeDesiredState, PurposeLease, PurposeRecovery, PurposeLedgerEpoch:
 		return true
 	}
 	return false

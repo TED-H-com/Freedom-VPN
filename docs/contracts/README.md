@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 40 endpoints of §14.2 to §14.4 | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 41 endpoints (§14.2 to §14.4 plus D-015) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/schema.d.ts`](../../contracts/ts/schema.d.ts) | generated |
@@ -42,7 +42,7 @@ against the exact committed documents.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs40`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs41`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -105,7 +105,10 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   public-key bytes must both be unique. Trust JSON rejects duplicate members
   and trailing data; envelope signatures reject repeated key IDs, including
   unknown keys. Purposes and keys: `release`, `desired-state`, `lease`,
-  `recovery`. The §14.7 and §17.3 examples show a single `signature` object;
+  `recovery`, and central-only `ledger-epoch`. Never include a ledger-epoch
+  key in node trust bundles; node checkpoints still use `recovery`. Node bundle
+  loaders must use `NewNodeTrustStore` / `ParseNodeTrustStoreJSON`, which reject
+  central-only keys. General trust-store constructors remain for central use. The §14.7 and §17.3 examples show a single `signature` object;
   this contract uses the uniform envelope instead (AGENTS.md §3).
 
 Canonical JSON input is capped at `canonjson.MaxBytes = 1 << 20` (1 MiB),
@@ -205,7 +208,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the §14 count of 40;
+1. Find the requirement in the spec. New endpoints change the current count of 41 (including D-015);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -269,6 +272,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `POST /member/billing-portal-sessions` | `createBillingPortalSession` | csrfToken + memberSession | 201 | §14.3, §16.2 | MEM01 BILL01 |
 | `GET /member/operations/{operation_id}` | `getMemberOperation` | memberSession | 200 | §14.3, §14.5 | API01 MEM01 |
 | `POST /agent/enroll` | `enrollNode` | enrollmentToken | 200,201 | §14.4, §6.1, §6.2, §14.7 | ENR01 ENR02 ENR03 ENR04 |
+| `POST /agent/bootstrap` | `consumeAgentBootstrap` | Agent mTLS | 200 | §14.4, §6.4, §14.7, §16.2 | ENR02 ENR03 SEC01 |
 | `POST /agent/certificates/renew` | `renewAgentCertificate` | Agent mTLS | 201 | §14.4, §6.4 | SEC01 ENR03 |
 | `GET /agent/desired-state` | `getDesiredState` | Agent mTLS | 200,304 | §14.4, §14.7, §13.10.2 | ISO02 UPD02 UPD04 SEC01 |
 | `POST /agent/observations` | `submitObservation` | Agent mTLS | 202 | §14.4, §5, §15.3 | NODE02 ISO02 SEC01 |
@@ -281,7 +285,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 ## Spec decisions recorded in the contract
 
 - The update batch targets page is part of `GET /admin/update-batches/{batch_id}`
-  (`targets`, `next_cursor`) because §14.2 fixes 40 endpoints; §13.10.4's
+  (`targets`, `next_cursor`) under D-007; the D-015 bootstrap addition makes 41 endpoints. §13.10.4's
   `targets_url` points to that resource.
 - `POST /agent/usage-batches` returns 200 with per-event results: §10.6's 409
   (same key, different hash) and 422 (invalid event) outcomes are reported per
@@ -311,3 +315,21 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 - D-016: `device_limit` has no schema default. Tests explicitly send 3;
   the production limit remains a business decision. Prices, fair-use rates
   and thresholds in examples are TEST ONLY, not production settings.
+
+- D-015 adds `POST /agent/bootstrap` (agent mTLS, no body, no-store): 200 once
+  with `external_key_id`, `setup_key`, `expires_at`; subsequent calls get
+  410 `BOOTSTRAP_CONSUMED` even with the original idempotency key. Before worker
+  preparation: 409 `BOOTSTRAP_NOT_READY`, retryable true. After the delivery
+  deadline while still unconsumed: 410 `BOOTSTRAP_EXPIRED`, retryable false.
+  Enrollment responses remain secret-free. The enrollment service owns atomic
+  delivery consumption, deadlines, and secret redaction; provider key expiry
+  remains distinct from both delivery and enrollment-token deadlines (§6.4).
+- AT07 reinstallation: optional `EnrollmentCreateRequest.node_id` binds to an
+  existing Node. The enrollment service checks that its previous incarnation
+  is revoked (otherwise 409 `NODE_INCARNATION_ACTIVE`) and it is not retired
+  (409 `NODE_RETIRED`). Successful enrollment creates a new incarnation while
+  retaining Node history, never by clearing revoked lifecycle. Both conflicts
+  are retryable false; ordinary fresh enrollment omits `node_id`.
+- `UpdateTarget.needs_attention` and `unconfirmed` are required booleans:
+  central operator attention and lack of confirmation of the last issued job,
+  respectively. The update service owns these observations.

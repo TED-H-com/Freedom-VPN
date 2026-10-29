@@ -172,3 +172,32 @@ func (ts *TrustStore) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(f)
 }
+
+// NewNodeTrustStore builds a store for a node bundle. Central-only ledger-epoch
+// keys must never be distributed to nodes; checkpoints use recovery (§17.3).
+func NewNodeTrustStore(keys ...TrustedKey) (*TrustStore, error) {
+	ts, err := NewTrustStore(keys...)
+	if err != nil {
+		return nil, err
+	}
+	return ts.forNode()
+}
+
+// ParseNodeTrustStoreJSON is the node-bundle entry point; the general
+// ParseTrustStoreJSON also supports central-only signing purposes.
+func ParseNodeTrustStoreJSON(raw []byte) (*TrustStore, error) {
+	ts, err := ParseTrustStoreJSON(raw)
+	if err != nil {
+		return nil, err
+	}
+	return ts.forNode()
+}
+
+func (ts *TrustStore) forNode() (*TrustStore, error) {
+	for _, k := range ts.keys {
+		if k.Purposes[0] == PurposeLedgerEpoch {
+			return nil, errors.New("envelope: central-only ledger-epoch key in node trust bundle")
+		}
+	}
+	return ts, nil
+}

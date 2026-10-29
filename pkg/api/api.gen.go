@@ -432,6 +432,9 @@ func (e EntitlementState) Valid() bool {
 const (
 	ErrorCodeACKCONFLICT             ErrorCode = "ACK_CONFLICT"
 	ErrorCodeAUTHORIZATIONEXPIRED    ErrorCode = "AUTHORIZATION_EXPIRED"
+	ErrorCodeBOOTSTRAPCONSUMED       ErrorCode = "BOOTSTRAP_CONSUMED"
+	ErrorCodeBOOTSTRAPEXPIRED        ErrorCode = "BOOTSTRAP_EXPIRED"
+	ErrorCodeBOOTSTRAPNOTREADY       ErrorCode = "BOOTSTRAP_NOT_READY"
 	ErrorCodeCHECKPOINTFAILED        ErrorCode = "CHECKPOINT_FAILED"
 	ErrorCodeCONTROLAPIINCOMPATIBLE  ErrorCode = "CONTROL_API_INCOMPATIBLE"
 	ErrorCodeCSRFTOKENINVALID        ErrorCode = "CSRF_TOKEN_INVALID"
@@ -458,7 +461,9 @@ const (
 	ErrorCodeMETHODNOTALLOWED        ErrorCode = "METHOD_NOT_ALLOWED"
 	ErrorCodeMIGRATIONFAILED         ErrorCode = "MIGRATION_FAILED"
 	ErrorCodeMINIMUMVERSIONVIOLATION ErrorCode = "MINIMUM_VERSION_VIOLATION"
+	ErrorCodeNODEINCARNATIONACTIVE   ErrorCode = "NODE_INCARNATION_ACTIVE"
 	ErrorCodeNODENOTSERVICEABLE      ErrorCode = "NODE_NOT_SERVICEABLE"
+	ErrorCodeNODERETIRED             ErrorCode = "NODE_RETIRED"
 	ErrorCodePAYLOADTOOLARGE         ErrorCode = "PAYLOAD_TOO_LARGE"
 	ErrorCodePRECONDITIONREQUIRED    ErrorCode = "PRECONDITION_REQUIRED"
 	ErrorCodeRATELIMITED             ErrorCode = "RATE_LIMITED"
@@ -489,6 +494,12 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeACKCONFLICT:
 		return true
 	case ErrorCodeAUTHORIZATIONEXPIRED:
+		return true
+	case ErrorCodeBOOTSTRAPCONSUMED:
+		return true
+	case ErrorCodeBOOTSTRAPEXPIRED:
+		return true
+	case ErrorCodeBOOTSTRAPNOTREADY:
 		return true
 	case ErrorCodeCHECKPOINTFAILED:
 		return true
@@ -542,7 +553,11 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case ErrorCodeMINIMUMVERSIONVIOLATION:
 		return true
+	case ErrorCodeNODEINCARNATIONACTIVE:
+		return true
 	case ErrorCodeNODENOTSERVICEABLE:
+		return true
+	case ErrorCodeNODERETIRED:
 		return true
 	case ErrorCodePAYLOADTOOLARGE:
 		return true
@@ -2231,6 +2246,18 @@ type AccountingPeriod struct {
 	PeriodStart time.Time `json:"period_start"`
 }
 
+// AgentBootstrap One-time NetBird setup credential delivered only over agent mTLS (D-015, §6.4). TEST ONLY examples are not usable keys.
+type AgentBootstrap struct {
+	// ExpiresAt UTC expiry of the bootstrap credential. The server also enforces the separate delivery deadline.
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// ExternalKeyId Opaque NetBird setup key ID, retained for reconciliation.
+	ExternalKeyId string `json:"external_key_id"`
+
+	// SetupKey One-off bootstrap secret; never log, audit or replay it.
+	SetupKey string `json:"setup_key"`
+}
+
 // Architecture Supported node CPU architectures (§3.2).
 type Architecture string
 
@@ -2684,8 +2711,11 @@ type EnrollmentCreateRequest struct {
 	ExpiresInSeconds *int                  `json:"expires_in_seconds,omitempty"`
 	MemberGroupIds   *[]openapi_types.UUID `json:"member_group_ids,omitempty"`
 	Name             *string               `json:"name,omitempty"`
-	Notes            *string               `json:"notes,omitempty"`
-	Region           *string               `json:"region,omitempty"`
+
+	// NodeId Existing Node for authorized reinstallation (AT07). Previous incarnation must already be revoked and Node must not be retired; never clear revoked lifecycle. Omit to reserve a new Node.
+	NodeId *openapi_types.UUID `json:"node_id,omitempty"`
+	Notes  *string             `json:"notes,omitempty"`
+	Region *string             `json:"region,omitempty"`
 }
 
 // EnrollmentCreated Creation response (§14.5). `token` is present only in the first response;
@@ -4515,10 +4545,13 @@ type UpdateTarget struct {
 	IncarnationAtSnapshot nullable.Nullable[openapi_types.UUID] `json:"incarnation_at_snapshot"`
 	LastObservedAt        nullable.Nullable[time.Time]          `json:"last_observed_at"`
 	LastResultAt          nullable.Nullable[time.Time]          `json:"last_result_at"`
-	NodeId                openapi_types.UUID                    `json:"node_id"`
-	NodeName              nullable.Nullable[string]             `json:"node_name"`
-	OnlineAtSnapshot      bool                                  `json:"online_at_snapshot"`
-	Retryable             bool                                  `json:"retryable"`
+
+	// NeedsAttention Central side has flagged this target for operator attention.
+	NeedsAttention   bool                      `json:"needs_attention"`
+	NodeId           openapi_types.UUID        `json:"node_id"`
+	NodeName         nullable.Nullable[string] `json:"node_name"`
+	OnlineAtSnapshot bool                      `json:"online_at_snapshot"`
+	Retryable        bool                      `json:"retryable"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
@@ -4527,6 +4560,9 @@ type UpdateTarget struct {
 	// into `superseded` and both cancelled states into `cancelled`.
 	State    UpdateJobState     `json:"state"`
 	TargetId openapi_types.UUID `json:"target_id"`
+
+	// Unconfirmed The node has not confirmed the last issued job.
+	Unconfirmed bool `json:"unconfirmed"`
 }
 
 // UpdateUsageCheckpoint Usage stream state around the switch (§13.6 steps 8 and 11). event_seq continues across meter epochs.
@@ -4791,6 +4827,12 @@ type OperationId = openapi_types.UUID
 
 // BadRequest Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
 type BadRequest = ErrorEnvelope
+
+// BootstrapGone Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
+type BootstrapGone = ErrorEnvelope
+
+// BootstrapNotReady Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
+type BootstrapNotReady = ErrorEnvelope
 
 // Conflict Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
 type Conflict = ErrorEnvelope
@@ -5063,11 +5105,23 @@ type RetryUpdateBatchParams struct {
 	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
 }
 
+// ConsumeAgentBootstrapParams defines parameters for ConsumeAgentBootstrap.
+type ConsumeAgentBootstrapParams struct {
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
+	// (enrollment_request_id, renewal_request_id, report_id, result_id,
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
+	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
+}
+
 // RenewAgentCertificateParams defines parameters for RenewAgentCertificate.
 type RenewAgentCertificateParams struct {
-	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
-	// event_seq). When present it must be a UUID and follows §14.5.
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
 	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
 }
 
@@ -5079,41 +5133,51 @@ type GetDesiredStateParams struct {
 
 // EnrollNodeParams defines parameters for EnrollNode.
 type EnrollNodeParams struct {
-	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
-	// event_seq). When present it must be a UUID and follows §14.5.
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
 	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
 }
 
 // RenewServingLeaseParams defines parameters for RenewServingLease.
 type RenewServingLeaseParams struct {
-	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
-	// event_seq). When present it must be a UUID and follows §14.5.
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
 	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
 }
 
 // SubmitObservationParams defines parameters for SubmitObservation.
 type SubmitObservationParams struct {
-	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
-	// event_seq). When present it must be a UUID and follows §14.5.
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
 	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
 }
 
 // SubmitUpdateResultParams defines parameters for SubmitUpdateResult.
 type SubmitUpdateResultParams struct {
-	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
-	// event_seq). When present it must be a UUID and follows §14.5.
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
 	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
 }
 
 // SubmitUsageBatchParams defines parameters for SubmitUsageBatch.
 type SubmitUsageBatchParams struct {
-	// IdempotencyKey Optional for agent requests: the body carries a natural idempotency ID
+	// IdempotencyKey Optional for agent requests. Most bodies carry a natural idempotency ID
 	// (enrollment_request_id, renewal_request_id, report_id, result_id,
-	// event_seq). When present it must be a UUID and follows §14.5.
+	// event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+	// has no body and deduplicates by delivery state; it never replays a
+	// consumed secret, even with the same key (D-015).
 	IdempotencyKey *IdempotencyKeyOptional `json:"Idempotency-Key,omitempty"`
 }
 

@@ -17,6 +17,8 @@ import (
 )
 
 var registry = map[string]func() any{
+	"AgentBootstrap":              func() any { return new(AgentBootstrap) },
+	"UpdateTarget":                func() any { return new(UpdateTarget) },
 	"AuditEventList":              func() any { return new(AuditEventList) },
 	"BillingPortalSession":        func() any { return new(BillingPortalSession) },
 	"BillingPortalSessionRequest": func() any { return new(BillingPortalSessionRequest) },
