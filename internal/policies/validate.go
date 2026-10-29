@@ -19,9 +19,11 @@ import (
 )
 
 var (
-	codePattern     = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
-	currencyPattern = regexp.MustCompile(`^[A-Z]{3}$`)
-	sha256Pattern   = regexp.MustCompile(`^[0-9a-f]{64}$`)
+	codePattern             = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
+	providerPattern         = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,31}$`)
+	domainRuleReasonPattern = regexp.MustCompile(`^[a-z][a-z0-9_]{0,63}$`)
+	currencyPattern         = regexp.MustCompile(`^[A-Z]{3}$`)
+	sha256Pattern           = regexp.MustCompile(`^[0-9a-f]{64}$`)
 )
 
 // ValidationOptions configures time-sensitive validation rules (such as
@@ -206,8 +208,14 @@ func ValidateFairUse(p api.FairUsePayload, opts ValidationOptions) error {
 	if p.MinimumRate.DownBps < 0 {
 		return newValidationError("/payload/minimum_rate/down_bps", ReasonFairUseNegativeRate, "minimum_rate.down_bps must be non-negative")
 	}
+	if p.MinimumRate.DownBps > canonjson.MaxSafeInteger {
+		return newValidationError("/payload/minimum_rate/down_bps", ReasonSchemaInvalid, fmt.Sprintf("minimum_rate.down_bps exceeds safe integer maximum %d", canonjson.MaxSafeInteger))
+	}
 	if p.MinimumRate.UpBps < 0 {
 		return newValidationError("/payload/minimum_rate/up_bps", ReasonFairUseNegativeRate, "minimum_rate.up_bps must be non-negative")
+	}
+	if p.MinimumRate.UpBps > canonjson.MaxSafeInteger {
+		return newValidationError("/payload/minimum_rate/up_bps", ReasonSchemaInvalid, fmt.Sprintf("minimum_rate.up_bps exceeds safe integer maximum %d", canonjson.MaxSafeInteger))
 	}
 
 	if len(p.Tiers) == 0 {
@@ -224,11 +232,20 @@ func ValidateFairUse(p api.FairUsePayload, opts ValidationOptions) error {
 	for i, tier := range p.Tiers {
 		prefix := fmt.Sprintf("/payload/tiers/%d", i)
 
+		if _, err := decstr.Parse(tier.ThresholdBytes.String()); err != nil {
+			return newValidationError(prefix+"/threshold_bytes", ReasonSchemaInvalid, fmt.Sprintf("tier threshold_bytes invalid uint64 decimal string: %v", err))
+		}
 		if tier.DownBps < 0 {
 			return newValidationError(prefix+"/down_bps", ReasonFairUseNegativeRate, "tier down_bps must be non-negative")
 		}
+		if tier.DownBps > canonjson.MaxSafeInteger {
+			return newValidationError(prefix+"/down_bps", ReasonSchemaInvalid, fmt.Sprintf("tier down_bps exceeds safe integer maximum %d", canonjson.MaxSafeInteger))
+		}
 		if tier.UpBps < 0 {
 			return newValidationError(prefix+"/up_bps", ReasonFairUseNegativeRate, "tier up_bps must be non-negative")
+		}
+		if tier.UpBps > canonjson.MaxSafeInteger {
+			return newValidationError(prefix+"/up_bps", ReasonSchemaInvalid, fmt.Sprintf("tier up_bps exceeds safe integer maximum %d", canonjson.MaxSafeInteger))
 		}
 		if tier.Priority < 0 || tier.Priority > 7 {
 			return newValidationError(prefix+"/priority", ReasonFairUsePriorityBounds, fmt.Sprintf("tier priority must be in [0, 7], got %d", tier.Priority))
@@ -265,6 +282,9 @@ func ValidateFairUse(p api.FairUsePayload, opts ValidationOptions) error {
 		}
 	}
 
+	if len(p.Overrides) > 1000 {
+		return newValidationError("/payload/overrides", ReasonSchemaInvalid, "overrides may contain at most 1000 entries")
+	}
 	seenMembers := make(map[uuid.UUID]int, len(p.Overrides))
 	for i, ov := range p.Overrides {
 		prefix := fmt.Sprintf("/payload/overrides/%d", i)
@@ -280,8 +300,14 @@ func ValidateFairUse(p api.FairUsePayload, opts ValidationOptions) error {
 		if ov.DownBps < 0 {
 			return newValidationError(prefix+"/down_bps", ReasonFairUseNegativeRate, "override down_bps must be non-negative")
 		}
+		if ov.DownBps > canonjson.MaxSafeInteger {
+			return newValidationError(prefix+"/down_bps", ReasonSchemaInvalid, fmt.Sprintf("override down_bps exceeds safe integer maximum %d", canonjson.MaxSafeInteger))
+		}
 		if ov.UpBps < 0 {
 			return newValidationError(prefix+"/up_bps", ReasonFairUseNegativeRate, "override up_bps must be non-negative")
+		}
+		if ov.UpBps > canonjson.MaxSafeInteger {
+			return newValidationError(prefix+"/up_bps", ReasonSchemaInvalid, fmt.Sprintf("override up_bps exceeds safe integer maximum %d", canonjson.MaxSafeInteger))
 		}
 		if ov.Priority < 0 || ov.Priority > 7 {
 			return newValidationError(prefix+"/priority", ReasonFairUsePriorityBounds, fmt.Sprintf("override priority must be in [0, 7], got %d", ov.Priority))
@@ -314,6 +340,9 @@ func ValidatePlan(p api.PlanPayload) error {
 	if len(p.ExitGroupIds) == 0 {
 		return newValidationError("/payload/exit_group_ids", ReasonPlanExitGroupsEmpty, "exit_group_ids must not be empty")
 	}
+	if len(p.ExitGroupIds) > 100 {
+		return newValidationError("/payload/exit_group_ids", ReasonSchemaInvalid, "exit_group_ids may contain at most 100 entries")
+	}
 	seenGroups := make(map[uuid.UUID]struct{}, len(p.ExitGroupIds))
 	for i, gid := range p.ExitGroupIds {
 		id := uuid.UUID(gid)
@@ -326,8 +355,8 @@ func ValidatePlan(p api.PlanPayload) error {
 		seenGroups[id] = struct{}{}
 	}
 
-	if p.Price.AmountMinor < 0 {
-		return newValidationError("/payload/price/amount_minor", ReasonPlanPriceInvalid, "price.amount_minor must be non-negative")
+	if p.Price.AmountMinor < 0 || p.Price.AmountMinor > canonjson.MaxSafeInteger {
+		return newValidationError("/payload/price/amount_minor", ReasonPlanPriceInvalid, fmt.Sprintf("price.amount_minor must be in [0, %d]", canonjson.MaxSafeInteger))
 	}
 	if !currencyPattern.MatchString(p.Price.Currency) {
 		return newValidationError("/payload/price/currency", ReasonPlanPriceInvalid, fmt.Sprintf("price.currency %q must be a 3-letter uppercase ISO 4217 code", p.Price.Currency))
@@ -337,16 +366,16 @@ func ValidatePlan(p api.PlanPayload) error {
 	default:
 		return newValidationError("/payload/price/billing_interval", ReasonPlanPriceInvalid, fmt.Sprintf("price.billing_interval must be month or year, got %q", p.Price.BillingInterval))
 	}
-	if strings.TrimSpace(p.Price.Provider) == "" {
-		return newValidationError("/payload/price/provider", ReasonPlanPriceInvalid, "price.provider is required")
+	if !providerPattern.MatchString(p.Price.Provider) {
+		return newValidationError("/payload/price/provider", ReasonPlanPriceInvalid, fmt.Sprintf("price.provider %q must match ^[a-z][a-z0-9_-]{0,31}$", p.Price.Provider))
 	}
-	if strings.TrimSpace(p.Price.ProviderPriceRef) == "" {
-		return newValidationError("/payload/price/provider_price_ref", ReasonPlanPriceInvalid, "price.provider_price_ref is required")
+	if strings.TrimSpace(p.Price.ProviderPriceRef) == "" || len(p.Price.ProviderPriceRef) > 255 {
+		return newValidationError("/payload/price/provider_price_ref", ReasonPlanPriceInvalid, "price.provider_price_ref must be 1..255 non-whitespace characters")
 	}
 
 	if rate, err := p.RateLimit.Get(); err == nil {
-		if rate.DownBps < 0 || rate.UpBps < 0 {
-			return newValidationError("/payload/rate_limit", ReasonPlanRateLimitInvalid, "rate_limit down_bps and up_bps must be non-negative")
+		if rate.DownBps < 0 || rate.UpBps < 0 || rate.DownBps > canonjson.MaxSafeInteger || rate.UpBps > canonjson.MaxSafeInteger {
+			return newValidationError("/payload/rate_limit", ReasonPlanRateLimitInvalid, fmt.Sprintf("rate_limit down_bps and up_bps must be in [0, %d]", canonjson.MaxSafeInteger))
 		}
 	}
 
@@ -377,6 +406,9 @@ func ValidateDNSProfile(p api.DnsProfilePayload) error {
 		return newValidationError("/payload/blocked_ttl_seconds", ReasonDNSInvalidProfile, fmt.Sprintf("blocked_ttl_seconds must be in [0, 86400], got %d", p.BlockedTtlSeconds))
 	}
 
+	if len(p.DomainRuleSetRevisionIds) > 50 {
+		return newValidationError("/payload/domain_rule_set_revision_ids", ReasonDNSInvalidProfile, "domain_rule_set_revision_ids may contain at most 50 entries")
+	}
 	seenRS := make(map[uuid.UUID]struct{}, len(p.DomainRuleSetRevisionIds))
 	for i, id := range p.DomainRuleSetRevisionIds {
 		u := uuid.UUID(id)
@@ -389,6 +421,9 @@ func ValidateDNSProfile(p api.DnsProfilePayload) error {
 		seenRS[u] = struct{}{}
 	}
 
+	if len(p.ThreatFeedRevisionIds) > 50 {
+		return newValidationError("/payload/threat_feed_revision_ids", ReasonDNSInvalidProfile, "threat_feed_revision_ids may contain at most 50 entries")
+	}
 	seenTF := make(map[uuid.UUID]struct{}, len(p.ThreatFeedRevisionIds))
 	for i, id := range p.ThreatFeedRevisionIds {
 		u := uuid.UUID(id)
@@ -463,6 +498,9 @@ func precheckRawDomainRules(rawPayload []byte) error {
 // delegating IDNA2008 domain normalization to internal/dnspolicy and enforcing
 // duplicate/conflict rejection and fixed isolation baseline guards (§12.4, §14.2).
 func ValidateDomainRuleSet(p api.DomainRuleSetPayload) error {
+	if len(p.Rules) > 100000 {
+		return newValidationError("/payload/rules", ReasonSchemaInvalid, "rules may contain at most 100000 entries")
+	}
 	seenRuleIDs := make(map[uuid.UUID]int, len(p.Rules))
 	type domainKey struct {
 		profile string
@@ -527,8 +565,11 @@ func ValidateDomainRuleSet(p api.DomainRuleSetPayload) error {
 			return newValidationError(prefix+"/action", ReasonSchemaInvalid, fmt.Sprintf("invalid domain rule action %q", r.Action))
 		}
 
-		if strings.TrimSpace(r.Reason) == "" || len(r.Reason) > 500 {
-			return newValidationError(prefix+"/reason", ReasonSchemaInvalid, "domain rule reason must be 1..500 non-whitespace characters")
+		if !domainRuleReasonPattern.MatchString(r.Reason) {
+			return newValidationError(prefix+"/reason", ReasonSchemaInvalid, fmt.Sprintf("domain rule reason %q must match ^[a-z][a-z0-9_]{0,63}$", r.Reason))
+		}
+		if _, err := decstr.Parse(r.Revision.String()); err != nil {
+			return newValidationError(prefix+"/revision", ReasonSchemaInvalid, fmt.Sprintf("domain rule revision invalid uint64 decimal string: %v", err))
 		}
 		if r.Revision == 0 {
 			return newValidationError(prefix+"/revision", ReasonDNSInvalidRevision, "domain rule revision must be >= 1")
@@ -575,23 +616,35 @@ func checkDomainIsolationBaseline(rawDomain string, fieldPath string) error {
 // ValidateThreatFeed enforces semantic rules on a ThreatFeedPayload, delegating
 // HTTPS/SSRF source URL validation to internal/dnspolicy (§12.3, §14.2).
 func ValidateThreatFeed(p api.ThreatFeedPayload) error {
-	if strings.TrimSpace(p.Provider) == "" {
-		return newValidationError("/payload/provider", ReasonSchemaInvalid, "provider is required")
+	if strings.TrimSpace(p.Provider) == "" || len(p.Provider) > 100 {
+		return newValidationError("/payload/provider", ReasonSchemaInvalid, "provider must be 1..100 non-whitespace characters")
 	}
 	if !codePattern.MatchString(p.FeedCode) {
 		return newValidationError("/payload/feed_code", ReasonSchemaInvalid, fmt.Sprintf("invalid feed_code %q", p.FeedCode))
 	}
-	if strings.TrimSpace(p.LicenseName) == "" {
-		return newValidationError("/payload/license_name", ReasonSchemaInvalid, "license_name is required")
+	if strings.TrimSpace(p.LicenseName) == "" || len(p.LicenseName) > 200 {
+		return newValidationError("/payload/license_name", ReasonSchemaInvalid, "license_name must be 1..200 non-whitespace characters")
+	}
+	if len(p.LicenseUrl) > 2048 {
+		return newValidationError("/payload/license_url", ReasonThreatFeedInvalidURL, "license_url must not exceed 2048 characters")
 	}
 	if err := dnspolicy.ValidateSourceURL(p.LicenseUrl); err != nil {
 		return newValidationError("/payload/license_url", ReasonThreatFeedInvalidURL, fmt.Sprintf("invalid license_url: %v", err))
 	}
+	if len(p.SourceUrl) > 2048 {
+		return newValidationError("/payload/source_url", ReasonThreatFeedInvalidURL, "source_url must not exceed 2048 characters")
+	}
 	if err := dnspolicy.ValidateSourceURL(p.SourceUrl); err != nil {
 		return newValidationError("/payload/source_url", ReasonThreatFeedInvalidURL, fmt.Sprintf("invalid source_url: %v", err))
 	}
+	if len(p.CommercialUseBasis) > 1000 {
+		return newValidationError("/payload/commercial_use_basis", ReasonSchemaInvalid, "commercial_use_basis must not exceed 1000 characters")
+	}
 	if !isConfirmedCommercialBasis(p.CommercialUseBasis) {
 		return newValidationError("/payload/commercial_use_basis", ReasonThreatFeedUnconfirmedBasis, "commercial_use_basis must confirm commercial SaaS/VPN redistribution rights")
+	}
+	if attr, err := p.Attribution.Get(); err == nil && len(attr) > 1000 {
+		return newValidationError("/payload/attribution", ReasonSchemaInvalid, "attribution must not exceed 1000 characters")
 	}
 
 	switch p.Format {
@@ -618,6 +671,9 @@ func ValidateThreatFeed(p api.ThreatFeedPayload) error {
 
 	if !sha256Pattern.MatchString(p.ContentSha256) {
 		return newValidationError("/payload/content_sha256", ReasonThreatFeedInvalidDigest, "content_sha256 must be 64 lowercase hex characters")
+	}
+	if _, err := decstr.Parse(p.MaxSizeBytes.String()); err != nil {
+		return newValidationError("/payload/max_size_bytes", ReasonSchemaInvalid, fmt.Sprintf("max_size_bytes invalid uint64 decimal string: %v", err))
 	}
 	if p.MaxSizeBytes == 0 {
 		return newValidationError("/payload/max_size_bytes", ReasonThreatFeedInvalidSize, "max_size_bytes must be > 0")
@@ -674,6 +730,9 @@ func ValidateReleaseSupport(p api.ReleaseSupportPayload) error {
 	if len(servingList) == 0 {
 		return newValidationError("/payload/minimum_serving_version/serving_release_ids", ReasonReleaseServingEmpty, "minimum_serving_version.serving_release_ids must not be empty")
 	}
+	if len(servingList) > 1000 {
+		return newValidationError("/payload/minimum_serving_version/serving_release_ids", ReasonSchemaInvalid, "minimum_serving_version.serving_release_ids may contain at most 1000 entries")
+	}
 
 	servingSet := make(map[uuid.UUID]struct{}, len(servingList))
 	for i, id := range servingList {
@@ -687,6 +746,9 @@ func ValidateReleaseSupport(p api.ReleaseSupportPayload) error {
 		servingSet[u] = struct{}{}
 	}
 
+	if len(p.ApprovedReleaseIds) > 1000 {
+		return newValidationError("/payload/approved_release_ids", ReasonSchemaInvalid, "approved_release_ids may contain at most 1000 entries")
+	}
 	approvedSet := make(map[uuid.UUID]struct{}, len(p.ApprovedReleaseIds))
 	for i, id := range p.ApprovedReleaseIds {
 		u := uuid.UUID(id)
@@ -702,6 +764,9 @@ func ValidateReleaseSupport(p api.ReleaseSupportPayload) error {
 		approvedSet[u] = struct{}{}
 	}
 
+	if len(p.RevokedReleaseIds) > 1000 {
+		return newValidationError("/payload/revoked_release_ids", ReasonSchemaInvalid, "revoked_release_ids may contain at most 1000 entries")
+	}
 	revokedSet := make(map[uuid.UUID]struct{}, len(p.RevokedReleaseIds))
 	for i, id := range p.RevokedReleaseIds {
 		u := uuid.UUID(id)

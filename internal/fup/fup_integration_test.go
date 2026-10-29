@@ -5,14 +5,19 @@ package fup
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -455,7 +460,8 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 			evalRelaxed.Relaxed, evalRelaxed.EnforcedTierIndex, evalRelaxed.Generation)
 	}
 
-	// Prove D-027 fail-closed: total_bytes exceeding math.MaxUint64 in active projection fails closed instead of capping.
+	// Prove D-027 / Finding 9 fail-closed: total_bytes exceeding math.MaxUint64 in active projection
+	// fails closed with decstr.ErrOverflow and ErrCodeUint64Overflow instead of capping.
 	_, err = pool.Exec(ctx, `
 		UPDATE usage_rollups
 		SET upload_bytes = 18446744073709551615, download_bytes = 1
@@ -464,11 +470,65 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("update usage_rollups above uint64: %v", err)
 	}
-	if _, err := engine.Compute(ctx, ComputeInput{
+	_, err = engine.Compute(ctx, ComputeInput{
 		MemberID: memberID,
 		PeriodID: periodID,
 		Now:      now.Add(7 * time.Minute),
-	}); err == nil {
-		t.Fatalf("expected Compute to fail closed when active rollup total_bytes exceeds uint64")
+	})
+	if !errors.Is(err, decstr.ErrOverflow) {
+		t.Fatalf("expected Compute to fail with decstr.ErrOverflow when active rollup total_bytes exceeds uint64, got: %v", err)
+	}
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.Code != apierr.InternalError || ae.Details["detail_code"] != usage.ErrCodeUint64Overflow {
+		t.Fatalf("expected InternalError with detail_code=%s, got: %#v", usage.ErrCodeUint64Overflow, err)
+	}
+
+	// Prove exact MaxUint64 succeeds without clamping, while MaxUint64 + 1 fails closed with decstr.ErrOverflow.
+	if _, err := pool.Exec(ctx, `
+		UPDATE usage_rollups
+		SET upload_bytes = 18446744073709551615, download_bytes = 0
+		WHERE member_id = $1 AND period = $2 AND granularity = 'month' AND projection_generation = 2
+	`, memberID, periodID); err != nil {
+		t.Fatalf("set rollup row to MaxUint64: %v", err)
+	}
+	evalMax, err := engine.Compute(ctx, ComputeInput{
+		MemberID: memberID,
+		PeriodID: periodID,
+		Now:      now.Add(8 * time.Minute),
+	})
+	if err != nil {
+		t.Fatalf("Compute at exact MaxUint64 failed: %v", err)
+	}
+	if evalMax.TotalBytes != ^decstr.U64(0) {
+		t.Fatalf("evalMax.TotalBytes = %s, want 18446744073709551615", evalMax.TotalBytes)
+	}
+
+	// Prove D-029 audit conformance: read back all audit events through audit.Store.List with zero anomalies.
+	auditStore := audit.Store{Pool: pool}
+	auditPage, err := auditStore.List(ctx, api.ListAuditEventsParams{})
+	if err != nil {
+		t.Fatalf("audit.Store.List: %v", err)
+	}
+	if got := auditStore.AnomalyCount(); got != 0 {
+		t.Fatalf("audit.Store.AnomalyCount = %d, want 0 (items=%+v)", got, auditPage.Items)
+	}
+	wantMemberRef := api.ResourceRef{Type: api.ResourceTypeMember, Id: openapi_types.UUID(memberID)}
+	seenFUPActions := map[string]int{}
+	for _, ev := range auditPage.Items {
+		switch ev.Action {
+		case "fup.generation.issued", "fup.override.set", "fup.override.revoked", "fup.tier.relaxed":
+			seenFUPActions[ev.Action]++
+			if ev.Resource != wantMemberRef {
+				t.Fatalf("%s: Resource = %+v, want %+v", ev.Action, ev.Resource, wantMemberRef)
+			}
+			if ev.Result != api.AuditEventResultSucceeded {
+				t.Fatalf("%s: Result = %q, want succeeded", ev.Action, ev.Result)
+			}
+		}
+	}
+	for _, wantAction := range []string{"fup.generation.issued", "fup.override.set", "fup.override.revoked", "fup.tier.relaxed"} {
+		if seenFUPActions[wantAction] == 0 {
+			t.Fatalf("missing expected FUP audit action %q in %+v", wantAction, auditPage.Items)
+		}
 	}
 }
