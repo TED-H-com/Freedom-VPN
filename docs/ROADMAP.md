@@ -95,7 +95,9 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | r2-updater-review confirmation: R-01..R-05 against main after updater follow-up 3 (read-only) | WP09 | in progress |
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
 | r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | done (16/16 closed; 2 wiring findings → nodes httpwire follow-up 3, usage replay follow-up 3) |
-| w3-wire-nodes follow-up 3: real wiring behind the httpwire 503 gates (publish via exits, member policies in desired state, keyed agent receipts, transactional lease renewal) | WP04, WP05 | in progress |
+| w3-wire-nodes follow-up 3: real wiring behind the httpwire 503 gates (member policies in desired state, keyed agent receipts, transactional lease renewal) | WP04, WP05 | done (#49; publish gate remains until the exits seam lands) |
+| w2-nodes-desiredstate follow-up 4: SetPublicationTx seam for all publication intents, one member rate algorithm (fup builder) | WP05, WP07 | in progress |
+| w3-wire-nodes follow-up 4: route SetNodePublication through the exits seam, remove the last placeholder 503 | WP04, WP05 | pending (after nodes-desiredstate follow-up 4) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | in progress |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
