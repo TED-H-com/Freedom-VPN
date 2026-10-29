@@ -1,0 +1,36 @@
+$ORIGIN example.net.
+$TTL 60
+
+@ IN SOA ns1.example.net. hostmaster.example.net. (
+    2026102901 ; serial
+    3600       ; refresh
+    1800       ; retry
+    604800     ; expire
+    60         ; minimum TTL
+)
+
+@                       IN NS    ns1.example.net.
+ns1                     IN A     192.0.2.3
+ns1                     IN AAAA  2001:db8::3
+
+@                       IN A     192.0.2.20
+@                       IN AAAA  2001:db8::20
+@                       IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.20" ipv6hint="2001:db8::20"
+@                       IN SVCB  1 svc.example.net. alpn="h2" port=8443
+
+svc                     IN A     192.0.2.21
+svc                     IN AAAA  2001:db8::21
+svc                     IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.21" ipv6hint="2001:db8::21"
+svc                     IN SVCB  1 svc.example.net. alpn="h2" port=8443
+
+; Intra-zone CNAME chain whose terminal target is blocked by src-malware-test
+cname-chain-blocked     IN CNAME cname-hop.example.net.
+cname-hop               IN CNAME cname-blocked-target.example.net.
+cname-blocked-target    IN A     192.0.2.99
+cname-blocked-target    IN AAAA  2001:db8::99
+cname-blocked-target    IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.99" ipv6hint="2001:db8::99"
+
+*                       IN A     192.0.2.20
+*                       IN AAAA  2001:db8::20
+*                       IN HTTPS 1 . alpn="h2,h3" ipv4hint="192.0.2.20" ipv6hint="2001:db8::20"
+*                       IN SVCB  1 svc.example.net. alpn="h2" port=8443
