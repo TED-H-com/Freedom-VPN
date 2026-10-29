@@ -61,10 +61,10 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-members: members, devices, entitlements, billing behind control and worker; NetBird devices adapter; composition seam (D-026) | WP06 | done (#22) |
 | w3-wire-nodes: PKI authenticator, enrollment and bootstrap, desired state, leases, observations, exits, releases, update batches | WP04, WP05, WP09 | in progress |
 | w3-wire-policies-usage: policies and Fair-Use operations, fup worker, usage mount with PKI signer, audit reader | WP07, WP08 | in progress |
-| w3-dns-publish: DNS policy compiler, node applier with evidence, lab scenario | WP08 | in progress |
+| w3-dns-publish: DNS policy compiler, node applier with evidence, lab scenario | WP08 | done (#30) |
 | w3-wire-nodes follow-up 1: adopt the composition seam | WP04, WP05, WP09 | in progress |
-| w3-dns-publish follow-up 1: adopt the worker seam, split document types from the store | WP08 | in progress |
-| w2-members-billing follow-up 1: review fixes (operations and audit conformance, exit-group eligibility reader, synchronous checkout, patch status) | WP06 | in progress |
+| w3-dns-publish follow-up 1: adopt the worker seam, split document types from the store | WP08 | done (#30) |
+| w2-members-billing follow-up 1: review fixes (operations and audit conformance, exit-group eligibility reader, synchronous checkout, patch status) | WP06 | done (#29) |
 | w2-control-core follow-up 1: review fixes (conformance helpers, role cookies, limiter split, agent receipts) | WP04 | in progress |
 | w2-updater follow-up 1: review fixes (symlink escape, forwarding gate, persistent-data check, nodelock, downloads) | WP09 | in progress |
 | w1-netlab follow-up 1: review fixes (HTB class cleanup, deadline fail-closed, reset detection, IPv4 validation, evidence dir) | WP02, WP05 | in progress |
@@ -75,6 +75,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 2: members fixture on role cookies, module-wide integration suite | WP02 | in progress |
 | w3-wire-members follow-up 1: retire legacy session job, composition guide refresh | WP02 | in progress |
 | w3-contracts-r3: additive enums (node.enroll, device_authorize, grant_revoke, admin_identity), node-reported codes, revoked_release_ids, policy_generation, checkout 201-only, role selector, policy schema promotion | WP01 | in progress |
+| w2-nodes-desiredstate follow-up 3: entitlement serving readers (D-030), dns_generation from publication heads, RenewTx, audit conformance | WP04, WP05 | in progress |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | queued (after the wire tasks) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | queued (after agent-core and the wire tasks) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
