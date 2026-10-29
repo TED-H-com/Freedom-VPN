@@ -124,7 +124,7 @@ func ActivatePlanRevision(ctx context.Context, tx pgx.Tx, planID, revisionID uui
 	return err
 }
 func validExternal(s string) bool {
-	return s != "" && len(s) <= 255 && !strings.ContainsAny(s, "\x00\r\n")
+	return strings.TrimSpace(s) != "" && len(s) <= 255 && !strings.ContainsAny(s, "\x00\r\n")
 }
 
 // ReadPlan returns the immutable revision referenced by subscriptions or grants.

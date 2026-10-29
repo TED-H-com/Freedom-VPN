@@ -143,7 +143,7 @@ func TestAT02_LastSlotRaceIsolationAndRevoke(t *testing.T) {
 		}
 	}
 	var open int
-	if err = s.Pool.QueryRow(ctx, `SELECT count(*) FROM device_bindings WHERE device_id=$1 AND valid_until='infinity'`, winner.DeviceID).Scan(&open); err != nil || open != 0 {
+	if err = s.Pool.QueryRow(ctx, `SELECT count(*) FROM device_bindings WHERE device_id=$1 AND valid_until>clock_timestamp()`, winner.DeviceID).Scan(&open); err != nil || open != 0 {
 		t.Fatal(open, err)
 	}
 	var events int
@@ -180,7 +180,7 @@ func TestAT01_VerifiedCrossClientMappingAndReadBack(t *testing.T) {
 	if err = s.SyncDevice(ctx, change.DeviceID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = s.Pool.Exec(ctx, `UPDATE members SET admin_suspended=true WHERE id=$1`, member); err != nil {
+	if _, err = s.Pool.Exec(ctx, `UPDATE members SET resource_version=resource_version+1,admin_suspended=true WHERE id=$1`, member); err != nil {
 		t.Fatal(err)
 	}
 	// The worker reads a recomputed entitlement, never old event authorization.

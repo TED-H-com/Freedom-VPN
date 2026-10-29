@@ -24,7 +24,7 @@ type Service struct {
 }
 
 func NewService(pool *pgxpool.Pool, provider Provider, vault *Vault, engine *entitlement.Store, config Config) (*Service, error) {
-	if pool == nil || provider == nil || vault == nil || engine == nil || (config.FullRefundPolicy != RevokeRefundedPeriod && config.FullRefundPolicy != KeepRefundedPeriod) || config.LeaseDuration < time.Second || config.LeaseDuration > 10*time.Minute || config.MaxWebhookBytes < 1024 || config.MaxWebhookBytes > 4<<20 || len(config.ReturnURLs) == 0 {
+	if pool == nil || provider == nil || !validExternal(provider.Name()) || vault == nil || engine == nil || (config.FullRefundPolicy != RevokeRefundedPeriod && config.FullRefundPolicy != KeepRefundedPeriod) || config.LeaseDuration < time.Second || config.LeaseDuration > 10*time.Minute || config.MaxWebhookBytes < 1024 || config.MaxWebhookBytes > 4<<20 || len(config.ReturnURLs) == 0 {
 		return nil, ErrPayload
 	}
 	for _, raw := range config.ReturnURLs {
@@ -63,7 +63,7 @@ func (s *Service) Ingest(ctx context.Context, raw []byte, signature string) (Ing
 	if err != nil {
 		return out, err
 	}
-	if !validExternal(event.ID) || event.Type == "" {
+	if !validExternal(event.ID) || !validExternal(event.Type) {
 		return out, ErrPayload
 	}
 	return s.insertInbox(ctx, event, minimized, raw)

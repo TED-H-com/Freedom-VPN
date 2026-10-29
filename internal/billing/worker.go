@@ -127,7 +127,7 @@ func (s *Service) syncSubscription(ctx context.Context, id, inbox uuid.UUID) err
 	}
 	var external, customer, price string
 	var member uuid.UUID
-	err = s.Pool.QueryRow(ctx, `UPDATE subscriptions s SET sync_token=$2,sync_until=clock_timestamp()+$3::bigint*interval '1 millisecond' FROM plan_revisions p WHERE s.id=$1 AND s.provider=$4 AND p.id=s.plan_revision_id AND (s.sync_until IS NULL OR s.sync_until<=clock_timestamp()) RETURNING s.external_subscription_id,s.external_customer_id,s.member_id,p.provider_price_ref`, id, token, s.Config.LeaseDuration.Milliseconds(), s.Provider.Name()).Scan(&external, &customer, &member, &price)
+	err = s.Pool.QueryRow(ctx, `UPDATE subscriptions s SET resource_version=s.resource_version+1,sync_token=$2,sync_until=clock_timestamp()+$3::bigint*interval '1 millisecond' FROM plan_revisions p WHERE s.id=$1 AND s.provider=$4 AND p.id=s.plan_revision_id AND (s.sync_until IS NULL OR s.sync_until<=clock_timestamp()) RETURNING s.external_subscription_id,s.external_customer_id,s.member_id,p.provider_price_ref`, id, token, s.Config.LeaseDuration.Milliseconds(), s.Provider.Name()).Scan(&external, &customer, &member, &price)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrBusy
 	}
@@ -137,7 +137,7 @@ func (s *Service) syncSubscription(ctx context.Context, id, inbox uuid.UUID) err
 	defer func() {
 		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		_, _ = s.Pool.Exec(cleanup, `UPDATE subscriptions SET sync_token=NULL,sync_until=NULL WHERE id=$1 AND sync_token=$2`, id, token)
+		_, _ = s.Pool.Exec(cleanup, `UPDATE subscriptions SET resource_version=resource_version+1,sync_token=NULL,sync_until=NULL WHERE id=$1 AND sync_token=$2`, id, token)
 	}()
 	sub, err := s.Provider.FetchSubscription(ctx, external)
 	if err != nil {
@@ -317,7 +317,7 @@ func validateInvoices(invoices []Invoice, sub Subscription) error {
 	return nil
 }
 func (s *Service) anomaly(ctx context.Context, id uuid.UUID, code string, cause error) error {
-	_, err := s.Pool.Exec(ctx, `UPDATE subscriptions SET reconciliation_anomalies=ARRAY[$2::text] WHERE id=$1`, id, code)
+	_, err := s.Pool.Exec(ctx, `UPDATE subscriptions SET resource_version=resource_version+1,reconciliation_anomalies=ARRAY[$2::text] WHERE id=$1`, id, code)
 	if err != nil {
 		return err
 	}

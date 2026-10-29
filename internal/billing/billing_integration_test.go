@@ -49,7 +49,7 @@ func setup(t *testing.T) fixture {
 	exec(`INSERT INTO member_groups(id,code,name) VALUES($1,'test','TEST ONLY')`, group)
 	exec(`INSERT INTO plans(id,code) VALUES($1,'test')`, f.plan)
 	exec(`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,provider,provider_price_ref,schema_version,payload) VALUES($1,$2,1,3,$3,'fake','test-price',1,'{}')`, f.revision, f.plan, []uuid.UUID{group})
-	exec(`UPDATE plans SET active_revision_id=$2 WHERE id=$1`, f.plan, f.revision)
+	exec(`UPDATE plans SET resource_version=resource_version+1,active_revision_id=$2 WHERE id=$1`, f.plan, f.revision)
 	exec(`INSERT INTO billing_customers(id,member_id,provider,external_customer_id) VALUES($1,$2,'fake','test-customer')`, uuid.New(), f.member)
 	exec(`INSERT INTO subscriptions(id,member_id,provider,external_subscription_id,external_customer_id,plan_revision_id,provider_status,is_active) VALUES($1,$2,'fake','test-subscription','test-customer',$3,'incomplete',true)`, f.sub, f.member, f.revision)
 	engine, err := entitlement.NewStore(entitlement.TestConfig())
@@ -317,7 +317,7 @@ func TestBILL01_FencingAndTransactionalRollback(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = f.s.Pool.Exec(ctx, `UPDATE subscriptions SET sync_token=$2,sync_until=clock_timestamp()+interval '1 minute' WHERE id=$1`, f.sub, uuid.New()); err != nil {
+	if _, err = f.s.Pool.Exec(ctx, `UPDATE subscriptions SET resource_version=resource_version+1,sync_token=$2,sync_until=clock_timestamp()+interval '1 minute' WHERE id=$1`, f.sub, uuid.New()); err != nil {
 		t.Fatal(err)
 	}
 	if err = f.s.syncSubscription(ctx, f.sub, insert.ID); !errors.Is(err, ErrBusy) {
@@ -417,7 +417,7 @@ func TestBILL01_StaleProviderReadCannotCommitAfterLeaseReplacement(t *testing.T)
 	case <-ctx.Done():
 		t.Fatal("worker did not reach provider")
 	}
-	if _, err = f.s.Pool.Exec(ctx, `UPDATE subscriptions SET sync_until=clock_timestamp()-interval '1 second' WHERE id=$1`, f.sub); err != nil {
+	if _, err = f.s.Pool.Exec(ctx, `UPDATE subscriptions SET resource_version=resource_version+1,sync_until=clock_timestamp()-interval '1 second' WHERE id=$1`, f.sub); err != nil {
 		t.Fatal(err)
 	}
 	renewed := f.invoice

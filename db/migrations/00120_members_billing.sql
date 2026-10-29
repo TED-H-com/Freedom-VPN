@@ -4,7 +4,7 @@ ALTER TABLE members ADD COLUMN admin_suspended BOOLEAN NOT NULL DEFAULT false,
  ADD COLUMN suspension_reason TEXT, ADD COLUMN suspended_at TIMESTAMPTZ,
  ADD COLUMN suspended_by UUID, ADD COLUMN notes TEXT NOT NULL DEFAULT '',
  ADD COLUMN member_group_ids UUID[] NOT NULL DEFAULT '{}';
-UPDATE members SET admin_suspended=true, suspension_reason='Legacy suspension retained during migration', suspended_at=updated_at WHERE status='suspended';
+UPDATE members SET admin_suspended=true, suspension_reason='Legacy suspension retained during migration', suspended_at=updated_at, resource_version=resource_version+1 WHERE status='suspended';
 ALTER TABLE entitlement_grants ADD COLUMN plan_revision_id UUID REFERENCES plan_revisions,
  ADD COLUMN operation_id UUID REFERENCES operations;
 
@@ -53,32 +53,37 @@ CREATE TABLE billing_sessions (
 );
 COMMENT ON TABLE billing_sessions IS '§14.3, §14.5: durable session intent; hosted URLs encrypted and never grant entitlement.';
 ALTER TABLE member_devices ADD COLUMN platform TEXT NOT NULL DEFAULT 'unknown',
- ADD COLUMN last_seen_at TIMESTAMPTZ, ADD COLUMN observed_authorized BOOLEAN NOT NULL DEFAULT false,
- ADD COLUMN observed_at TIMESTAMPTZ, ADD COLUMN observed_version NUMERIC(20,0) NOT NULL DEFAULT 0 CHECK(observed_version >= 0 AND observed_version <= 18446744073709551615),
- ADD COLUMN observed_entitlement_revision NUMERIC(20,0) NOT NULL DEFAULT 0 CHECK(observed_entitlement_revision >= 0 AND observed_entitlement_revision <= 18446744073709551615);
--- IP ownership is a historical fact, not an entitlement lease. Infinity here
--- means an open binding until explicit revocation, never infinite VPN access.
+ ADD COLUMN last_seen_at TIMESTAMPTZ;
+-- Observation writes must not mutate desired device state (F-05, F-14).
+CREATE TABLE device_authorization_observations (
+ device_id UUID PRIMARY KEY REFERENCES member_devices,
+ observed_authorized BOOLEAN NOT NULL,
+ observed_at TIMESTAMPTZ NOT NULL,
+ observed_version NUMERIC(20,0) NOT NULL CHECK(observed_version >= 0 AND observed_version <= 18446744073709551615),
+ observed_entitlement_revision NUMERIC(20,0) NOT NULL CHECK(observed_entitlement_revision >= 0 AND observed_entitlement_revision <= 18446744073709551615)
+);
 
+COMMENT ON TABLE device_authorization_observations IS '§9.4, §15.5: read-back evidence fenced by device and entitlement revisions.';
 
--- §16.3: nullable pending projections must not weaken the existing lease guard.
--- Keep legacy finite projections compatible while denying absent rights and
--- terminal member state; the engine supplies intervals only from paid/grant facts.
+-- Pending projections require nullable intervals (§9.2). Preserve ALL base
+-- lease/device guards, adding a fail-closed guard for the nullable extension.
 -- +goose StatementBegin
-CREATE OR REPLACE FUNCTION check_member_lease() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE l serving_leases; e entitlements; m members;
+CREATE FUNCTION billing_check_service_interval() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE e entitlements; m members;
 BEGIN
- SELECT * INTO STRICT l FROM serving_leases WHERE id=NEW.lease_id FOR SHARE;
- SELECT * INTO STRICT m FROM members WHERE id=NEW.member_id FOR SHARE;
- SELECT * INTO STRICT e FROM entitlements WHERE member_id=NEW.member_id FOR SHARE;
- IF e.valid_from IS NULL OR e.effective_service_end IS NULL
-    OR e.admin_suspended OR m.admin_suspended OR m.status IN ('closed','suspended')
-    OR e.revision <> NEW.entitlement_revision
-    OR NEW.valid_from < greatest(l.issued_at,e.valid_from)
-    OR NEW.expires_at > least(l.expires_at,e.effective_service_end) THEN
-  RAISE EXCEPTION 'lease exceeds entitlement or node deadline' USING ERRCODE='23514';
+ IF public.owner_setting('fvpn.restore') THEN RETURN NEW; END IF;
+ IF TG_TABLE_NAME='member_devices' THEN
+  IF NEW.status<>'authorized' THEN RETURN NEW; END IF;
+ END IF;
+ SELECT * INTO STRICT m FROM members WHERE id=NEW.member_id FOR UPDATE;
+ SELECT * INTO e FROM entitlements WHERE member_id=NEW.member_id FOR SHARE;
+ IF NOT FOUND OR e.valid_from IS NULL OR e.effective_service_end IS NULL OR m.admin_suspended THEN
+  RAISE EXCEPTION 'service interval absent or manually suspended' USING ERRCODE='23514';
  END IF;
  RETURN NEW;
 END $$;
 -- +goose StatementEnd
+CREATE TRIGGER zz_billing_device_interval BEFORE INSERT OR UPDATE ON member_devices FOR EACH ROW EXECUTE FUNCTION billing_check_service_interval();
+CREATE TRIGGER zz_billing_lease_interval BEFORE INSERT ON serving_lease_members FOR EACH ROW EXECUTE FUNCTION billing_check_service_interval();
 -- Bootstrap previously existing projections through the ordinary sweep path.
 UPDATE entitlements SET next_transition_at=clock_timestamp() WHERE projection='{}';

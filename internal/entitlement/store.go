@@ -153,6 +153,13 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 	if err != nil {
 		return out, err
 	}
+	// Renew finite IP ownership for still-authorized devices (§15.2). Never
+	// shorten committed usage history when an entitlement loses time.
+	if result.Allows(in.Now) {
+		if _, err = tx.Exec(ctx, `UPDATE device_bindings b SET valid_until=$2 WHERE b.member_id=$1 AND b.valid_until<$2 AND EXISTS(SELECT 1 FROM member_devices d WHERE d.id=b.device_id AND d.status='authorized')`, memberID, result.EffectiveServiceEnd); err != nil {
+			return out, err
+		}
+	}
 	historyID, err := uuid.NewV7()
 	if err != nil {
 		return out, err

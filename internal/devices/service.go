@@ -32,8 +32,7 @@ type Peer struct {
 	Groups                                                         []uuid.UUID
 }
 
-// Adapter is the narrow integration seam while internal/netbird is absent from
-// this baseline. Implementations preserve all groups outside platform ownership.
+// Adapter is the narrow seam for the Wave 3 internal/netbird integration. Implementations preserve all groups outside platform ownership.
 type Adapter interface {
 	ObservePeer(context.Context, string, string) (Peer, error)
 	SetAuthorization(context.Context, string, string, bool, []uuid.UUID) error
@@ -107,7 +106,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	if p.ExternalUserID == "" {
 		return result, ErrUnmapped
 	}
-	if p.DeploymentID == "" || p.ID == "" || p.OverlayScope == "" || !netip.MustParsePrefix("100.64.0.0/10").Contains(p.OverlayIP) || len([]rune(p.Name)) > 100 {
+	if !entitlement.Reason(p.DeploymentID, 1000) || !entitlement.Reason(p.ID, 1000) || !entitlement.Reason(p.ExternalUserID, 1000) || !entitlement.Reason(p.OverlayScope, 1000) || !netip.MustParsePrefix("100.64.0.0/10").Contains(p.OverlayIP) || len([]rune(p.Name)) > 100 {
 		return result, entitlement.ErrInvalid
 	}
 	switch p.Platform {
@@ -153,7 +152,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 				return entitlement.ErrConflict
 			}
 			var bindingMatches bool
-			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM device_bindings WHERE device_id=$1 AND overlay_scope=$2 AND overlay_ip=$3::inet AND valid_until='infinity')`, existing, p.OverlayScope, p.OverlayIP.String()).Scan(&bindingMatches); err != nil {
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM device_bindings WHERE device_id=$1 AND overlay_scope=$2 AND overlay_ip=$3::inet AND valid_from<=clock_timestamp() AND valid_until>clock_timestamp())`, existing, p.OverlayScope, p.OverlayIP.String()).Scan(&bindingMatches); err != nil {
 				return err
 			}
 			if !bindingMatches {
@@ -186,7 +185,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, `INSERT INTO device_bindings(id,device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref) VALUES($1,$2,$3,$4,$5::inet,1,$6,'infinity',$7)`, binding, device, member, p.OverlayScope, p.OverlayIP.String(), now, p.ID)
+		_, err = tx.Exec(ctx, `INSERT INTO device_bindings(id,device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref) VALUES($1,$2,$3,$4,$5::inet,1,$6,$8,$7)`, binding, device, member, p.OverlayScope, p.OverlayIP.String(), now, p.ID, projection.EffectiveServiceEnd)
 		if err != nil {
 			return err
 		}
@@ -207,7 +206,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	return result, err
 }
 
-const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,observed_authorized`
+const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,coalesce((SELECT observed_authorized FROM device_authorization_observations WHERE device_id=member_devices.id),false)`
 
 func scan(row pgx.Row) (Device, error) {
 	var d Device

@@ -196,7 +196,7 @@ func (s *Service) FulfillSession(ctx context.Context, id uuid.UUID) error {
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, `UPDATE operations SET status='succeeded',completed_at=clock_timestamp(),steps='{"provider":{"required":true,"status":"succeeded","observed_ref":"provider_session"}}',observed_refs=$2 WHERE id=$1`, operation, evidence)
+		_, err = tx.Exec(ctx, `UPDATE operations SET status='succeeded',completed_at=clock_timestamp(),steps='{"provider":{"required":true,"status":"succeeded","observed_ref":"provider_session"}}',observed_refs=$2 WHERE id=$1 AND status='running'`, operation, evidence)
 		return err
 	})
 }

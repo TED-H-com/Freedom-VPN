@@ -59,7 +59,7 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
 	}
 	var mapped bool
 	if preflight.DeploymentID == deployment && preflight.ID == peer && preflight.OverlayIP.IsValid() {
-		err = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id JOIN device_bindings b ON b.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.external_user_id=$3 AND n.mapping_proof<>'' AND i.stable_claim_ref<>'' AND b.device_id=$4 AND b.overlay_scope=$5 AND b.overlay_ip=$6::inet AND b.valid_until='infinity')`, member, deployment, preflight.ExternalUserID, id, preflight.OverlayScope, preflight.OverlayIP.String()).Scan(&mapped)
+		err = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id JOIN device_bindings b ON b.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.external_user_id=$3 AND n.mapping_proof<>'' AND i.stable_claim_ref<>'' AND b.device_id=$4 AND b.overlay_scope=$5 AND b.overlay_ip=$6::inet AND b.valid_from<=clock_timestamp() AND b.valid_until>clock_timestamp())`, member, deployment, preflight.ExternalUserID, id, preflight.OverlayScope, preflight.OverlayIP.String()).Scan(&mapped)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,10 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
 		if e := tx.QueryRow(ctx, `SELECT id FROM members WHERE id=$1 FOR UPDATE`, member).Scan(&lockedMember); e != nil {
 			return e
 		}
-		tag, e := tx.Exec(ctx, `UPDATE member_devices d SET observed_authorized=$2,observed_at=clock_timestamp(),observed_version=$3::numeric,observed_entitlement_revision=$4::numeric WHERE d.id=$1 AND d.resource_version=$3::numeric AND EXISTS(SELECT 1 FROM entitlements e WHERE e.member_id=d.member_id AND e.revision=$4::numeric)`, id, allow, version.String(), revision.String())
+		tag, e := tx.Exec(ctx, `INSERT INTO device_authorization_observations(device_id,observed_authorized,observed_at,observed_version,observed_entitlement_revision)
+ SELECT d.id,$2,clock_timestamp(),$3::numeric,$4::numeric FROM member_devices d
+ WHERE d.id=$1 AND d.resource_version=$3::numeric AND EXISTS(SELECT 1 FROM entitlements e WHERE e.member_id=d.member_id AND e.revision=$4::numeric)
+ ON CONFLICT(device_id) DO UPDATE SET observed_authorized=excluded.observed_authorized,observed_at=excluded.observed_at,observed_version=excluded.observed_version,observed_entitlement_revision=excluded.observed_entitlement_revision`, id, allow, version.String(), revision.String())
 		if e != nil {
 			return e
 		}
@@ -165,7 +168,7 @@ func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) error {
 			return e
 		}
 		var stale bool
-		if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM member_devices WHERE member_id=$1 AND (observed_version<>resource_version OR observed_entitlement_revision<>$2::numeric))`, member, revision.String()).Scan(&stale); e != nil {
+		if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM member_devices d LEFT JOIN device_authorization_observations o ON o.device_id=d.id WHERE d.member_id=$1 AND (o.observed_version IS DISTINCT FROM d.resource_version OR o.observed_entitlement_revision IS DISTINCT FROM $2::numeric))`, member, revision.String()).Scan(&stale); e != nil {
 			return e
 		}
 		if stale {

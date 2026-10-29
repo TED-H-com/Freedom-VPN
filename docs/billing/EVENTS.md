@@ -34,9 +34,10 @@ append-only billing records retain invoices/refunds and the grace reason.
    the aggregate version. Do not replay an old authorization payload after
    revocation. A member event invalidates every device of that member.
 3. Device events reference `device_bindings` for overlay scope, IP and interval.
-   Binding revision is independent of device resource version. IP ownership is
-   open until revoke; PostgreSQL infinity on a binding is historical ownership,
-   **never** an entitlement or lease deadline. All intervals remain strictly positive. Revocation at the exact authorization
+   Binding revision is independent of device resource version. IP ownership has a finite end, initially the effective service end.
+   Recompute extends it on renewal for authorized devices; it never shortens
+   historical usage when service rights expire or are refunded. Binding
+   ownership alone never grants forwarding. All intervals remain strictly positive. Revocation at the exact authorization
    timestamp closes the binding at the next PostgreSQL microsecond tick; the
    revoked device status immediately denies forwarding independently.
 4. `pending_payment`, `past_due`, `expired`, `suspended`, `closed`, absent plans,
@@ -51,7 +52,10 @@ append-only billing records retain invoices/refunds and the grace reason.
 6. `SyncDevice` serializes by peer with a PostgreSQL **session** advisory lock;
    provider calls run outside a transaction. It rechecks observed identity/IP,
    writes owned groups idempotently, reads them back, and fences evidence by
-   both the device version and entitlement revision. Lost identity mapping
+   both the device version and entitlement revision. Evidence lives in
+   `device_authorization_observations`, separately from desired device state,
+   so recording withdrawal after expiry does not reauthorize the device or
+   increment its desired resource version. Lost identity mapping
    withdraws authorization. Failed/mismatched read-back is retryable and does
    not mark the operation complete. Run periodic `SyncMember` reconciliation to
    repair drift or an ambiguous external timeout.
