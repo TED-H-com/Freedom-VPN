@@ -152,6 +152,14 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 			if status != "authorized" {
 				return entitlement.ErrConflict
 			}
+			var bindingMatches bool
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM device_bindings WHERE device_id=$1 AND overlay_scope=$2 AND overlay_ip=$3::inet AND valid_until='infinity')`, existing, p.OverlayScope, p.OverlayIP.String()).Scan(&bindingMatches); err != nil {
+				return err
+			}
+			if !bindingMatches {
+				return entitlement.ErrConflict
+			}
+
 			result = Change{DeviceID: existing, MemberID: member, Revision: projection.Revision, Replayed: true}
 			return entitlement.Complete(ctx, tx, record, "device", existing, nil, 202)
 		}
@@ -182,7 +190,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "device.authorize", "device", device, 1)
+		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.update", "device", device, 1)
 		if err != nil {
 			return err
 		}
@@ -199,11 +207,14 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	return result, err
 }
 
-const deviceColumns = `id,member_id,name,platform,status,authorized_at,revoked_at,last_seen_at,created_at,resource_version::text,observed_authorized`
+const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,observed_authorized`
 
 func scan(row pgx.Row) (Device, error) {
 	var d Device
 	err := row.Scan(&d.ID, &d.MemberID, &d.Name, &d.Platform, &d.Status, &d.AuthorizedAt, &d.RevokedAt, &d.LastSeenAt, &d.CreatedAt, &d.Version, &d.ObservedAuthorized)
+	if d.Status == "closed" {
+		d.Status = "revoked"
+	}
 	return d, db.MapError(err)
 }
 func (s *Service) Get(ctx context.Context, actor entitlement.Actor, id uuid.UUID) (Device, error) {
@@ -306,7 +317,7 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "device.revoke", "device", id, version)
+		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.device_revoke", "device", id, version)
 		if err != nil {
 			return err
 		}

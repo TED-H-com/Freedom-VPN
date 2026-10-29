@@ -5,7 +5,8 @@ ALTER TABLE members ADD COLUMN admin_suspended BOOLEAN NOT NULL DEFAULT false,
  ADD COLUMN suspended_by UUID, ADD COLUMN notes TEXT NOT NULL DEFAULT '',
  ADD COLUMN member_group_ids UUID[] NOT NULL DEFAULT '{}';
 UPDATE members SET admin_suspended=true, suspension_reason='Legacy suspension retained during migration', suspended_at=updated_at WHERE status='suspended';
-ALTER TABLE entitlement_grants ADD COLUMN plan_revision_id UUID REFERENCES plan_revisions;
+ALTER TABLE entitlement_grants ADD COLUMN plan_revision_id UUID REFERENCES plan_revisions,
+ ADD COLUMN operation_id UUID REFERENCES operations;
 
 -- A pending member has no service interval; never fabricate a deadline (§9.2).
 ALTER TABLE entitlements ALTER COLUMN valid_from DROP NOT NULL,
@@ -45,7 +46,7 @@ ALTER TABLE billing_records ADD COLUMN original_invoice_ref TEXT;
 CREATE TABLE billing_sessions (
  id UUID PRIMARY KEY, member_id UUID NOT NULL REFERENCES members, provider TEXT NOT NULL,
  kind TEXT NOT NULL CHECK(kind IN ('checkout','portal')), plan_revision_id UUID REFERENCES plan_revisions,
- operation_id UUID NOT NULL REFERENCES operations, return_url TEXT NOT NULL,
+ operation_id UUID REFERENCES operations, return_url TEXT NOT NULL,
  external_session_id TEXT, encrypted_response BYTEA, expires_at TIMESTAMPTZ,
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(), lease_token UUID, lease_until TIMESTAMPTZ,
  UNIQUE(provider,external_session_id)
@@ -53,9 +54,33 @@ CREATE TABLE billing_sessions (
 COMMENT ON TABLE billing_sessions IS '§14.3, §14.5: durable session intent; hosted URLs encrypted and never grant entitlement.';
 ALTER TABLE member_devices ADD COLUMN platform TEXT NOT NULL DEFAULT 'unknown',
  ADD COLUMN last_seen_at TIMESTAMPTZ, ADD COLUMN observed_authorized BOOLEAN NOT NULL DEFAULT false,
- ADD COLUMN observed_at TIMESTAMPTZ, ADD COLUMN observed_version NUMERIC(20,0) NOT NULL DEFAULT 0;
+ ADD COLUMN observed_at TIMESTAMPTZ, ADD COLUMN observed_version NUMERIC(20,0) NOT NULL DEFAULT 0,
+ ADD COLUMN observed_entitlement_revision NUMERIC(20,0) NOT NULL DEFAULT 0;
 -- IP ownership is a historical fact, not an entitlement lease. Infinity here
 -- means an open binding until explicit revocation, never infinite VPN access.
 -- Zero-duration intervals are permitted for authorize/revoke at the same instant.
 ALTER TABLE device_bindings DROP CONSTRAINT device_bindings_check;
 ALTER TABLE device_bindings ADD CONSTRAINT device_bindings_interval CHECK(valid_from<=valid_until);
+
+-- §16.3: nullable pending projections must not weaken the existing lease guard.
+-- Keep legacy finite projections compatible while denying absent rights and
+-- terminal member state; the engine supplies intervals only from paid/grant facts.
+-- +goose StatementBegin
+CREATE OR REPLACE FUNCTION check_member_lease() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE l serving_leases; e entitlements; m members;
+BEGIN
+ SELECT * INTO STRICT l FROM serving_leases WHERE id=NEW.lease_id FOR SHARE;
+ SELECT * INTO STRICT m FROM members WHERE id=NEW.member_id FOR SHARE;
+ SELECT * INTO STRICT e FROM entitlements WHERE member_id=NEW.member_id FOR SHARE;
+ IF e.valid_from IS NULL OR e.effective_service_end IS NULL
+    OR e.admin_suspended OR m.admin_suspended OR m.status IN ('closed','suspended')
+    OR e.revision <> NEW.entitlement_revision
+    OR NEW.valid_from < greatest(l.issued_at,e.valid_from)
+    OR NEW.expires_at > least(l.expires_at,e.effective_service_end) THEN
+  RAISE EXCEPTION 'lease exceeds entitlement or node deadline' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
+-- +goose StatementEnd
+-- Bootstrap previously existing projections through the ordinary sweep path.
+UPDATE entitlements SET next_transition_at=clock_timestamp() WHERE projection='{}';

@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"slices"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -39,6 +38,24 @@ type Member struct {
 	ClosedAt          *time.Time              `json:"closed_at"`
 	AuthorizedDevices int                     `json:"authorized_devices"`
 	Entitlement       *entitlement.Projection `json:"entitlement"`
+	Subscription      *Subscription           `json:"subscription,omitempty"`
+	Grants            []Grant                 `json:"grants,omitempty"`
+}
+
+type Subscription struct {
+	ID                                        uuid.UUID
+	Provider, ProviderStatus                  string
+	PlanRevisionID                            uuid.UUID
+	PaidThrough, GraceUntil, LastReconciledAt *time.Time
+	CancelAtPeriodEnd                         bool
+	Anomalies                                 []string
+}
+type Grant struct {
+	ID                    uuid.UUID
+	Source, Reason        string
+	PlanRevisionID        *uuid.UUID
+	ValidFrom, ValidUntil time.Time
+	RevokedAt             *time.Time
 }
 
 const columns = `m.id,m.display_name,m.email,m.status,m.resource_version::text,m.admin_suspended,m.suspension_reason,m.suspended_at,m.suspended_by,m.notes,m.member_group_ids,m.created_at,m.closed_at,(SELECT count(*) FROM member_devices d WHERE d.member_id=m.id AND d.status='authorized')`
@@ -67,6 +84,32 @@ func (s *Service) Get(ctx context.Context, actor entitlement.Actor, id uuid.UUID
 		m.Entitlement = &p
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		return m, err
+	}
+	var subscription Subscription
+	err = s.Pool.QueryRow(ctx, `SELECT id,provider,provider_status,plan_revision_id,paid_through,grace_until,last_reconciled_at,cancel_at_period_end,reconciliation_anomalies FROM subscriptions WHERE member_id=$1 AND is_primary ORDER BY is_active DESC,created_at DESC,id DESC LIMIT 1`, id).Scan(&subscription.ID, &subscription.Provider, &subscription.ProviderStatus, &subscription.PlanRevisionID, &subscription.PaidThrough, &subscription.GraceUntil, &subscription.LastReconciledAt, &subscription.CancelAtPeriodEnd, &subscription.Anomalies)
+	if err == nil {
+		m.Subscription = &subscription
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return m, err
+	}
+	rows, err := s.Pool.Query(ctx, `SELECT id,source,reason,plan_revision_id,valid_from,valid_until,revoked_at FROM entitlement_grants WHERE member_id=$1 ORDER BY created_at DESC,id DESC LIMIT 200`, id)
+	if err != nil {
+		return m, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var g Grant
+		if err = rows.Scan(&g.ID, &g.Source, &g.Reason, &g.PlanRevisionID, &g.ValidFrom, &g.ValidUntil, &g.RevokedAt); err != nil {
+			return m, err
+		}
+		m.Grants = append(m.Grants, g)
+	}
+	if err = rows.Err(); err != nil {
+		return m, err
+	}
+	if actor.Role == "member" {
+		m.Notes = ""
+		m.SuspendedBy = nil
 	}
 	return m, nil
 }
@@ -116,7 +159,31 @@ func (s *Service) List(ctx context.Context, actor entitlement.Actor, cursor stri
 		id := out.Items[limit-1].ID
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(append([]byte{1}, id[:]...))
 	}
-	return out, nil
+
+	rows.Close()
+	ids := make([]uuid.UUID, len(out.Items))
+	index := map[uuid.UUID]int{}
+	for i, m := range out.Items {
+		ids[i] = m.ID
+		index[m.ID] = i
+	}
+	projections, err := s.Pool.Query(ctx, `SELECT member_id,projection,revision::text,computed_at FROM entitlements WHERE member_id=ANY($1)`, ids)
+	if err != nil {
+		return out, err
+	}
+	defer projections.Close()
+	for projections.Next() {
+		var p entitlement.Projection
+		var raw []byte
+		if err = projections.Scan(&p.MemberID, &raw, &p.Revision, &p.ComputedAt); err != nil {
+			return out, err
+		}
+		if err = json.Unmarshal(raw, &p.Result); err != nil {
+			return out, err
+		}
+		out.Items[index[p.MemberID]].Entitlement = &p
+	}
+	return out, projections.Err()
 }
 
 type Change struct {
@@ -229,7 +296,15 @@ func (s *Service) Patch(ctx context.Context, c entitlement.Command, id uuid.UUID
 			}
 			result.Revision = projection.Revision
 			if projection.Changed {
-				op, e := entitlement.Operation(ctx, tx, c.Actor, "member.update", "member", id, projection.Revision)
+				kind := "member.update"
+				if p.AdminSuspended != nil {
+					if *p.AdminSuspended {
+						kind = "member.suspend"
+					} else {
+						kind = "member.unsuspend"
+					}
+				}
+				op, e := entitlement.Operation(ctx, tx, c.Actor, kind, "member", id, projection.Revision)
 				if e != nil {
 					return e
 				}
@@ -361,6 +436,14 @@ func (s *Service) Grant(ctx context.Context, c entitlement.Command, id uuid.UUID
 		if _, err = entitlement.LoadPlan(ctx, tx, plan); err != nil {
 			return err
 		}
+		var conflict bool
+		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND plan_revision_id<>$2 AND valid_from<$4 AND valid_until>$3) OR EXISTS(SELECT 1 FROM subscriptions WHERE member_id=$1 AND is_primary AND plan_revision_id<>$2 AND paid_from<$4 AND greatest(paid_through,grace_until)>$3)`, id, plan, start, g.ValidUntil.UTC()).Scan(&conflict); err != nil {
+			return err
+		}
+		if conflict {
+			return entitlement.ErrConflict
+		}
+
 		gid, err := uuid.NewV7()
 		if err != nil {
 			return err
@@ -378,6 +461,9 @@ func (s *Service) Grant(ctx context.Context, c entitlement.Command, id uuid.UUID
 			return err
 		}
 		if err = entitlement.Audit(ctx, tx, c.Actor, "member.grant", id, nil, map[string]any{"grant_id": gid, "source": g.Source, "reason": g.Reason, "valid_until": g.ValidUntil.UTC()}); err != nil {
+			return err
+		}
+		if _, err = tx.Exec(ctx, `UPDATE entitlement_grants SET operation_id=$2 WHERE id=$1`, gid, op); err != nil {
 			return err
 		}
 		result = Change{ResourceID: gid, OperationID: &op, Revision: p.Revision}
@@ -410,6 +496,9 @@ func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member
 		if tag.RowsAffected() == 0 {
 			return db.ErrNotFound
 		}
+		if _, err = tx.Exec(ctx, `UPDATE operations SET status='superseded' WHERE id=(SELECT operation_id FROM entitlement_grants WHERE id=$1) AND status IN ('pending','running')`, grant); err != nil {
+			return err
+		}
 		p, err := s.Entitlements.Recompute(ctx, tx, member)
 		if err != nil {
 			return err
@@ -423,9 +512,4 @@ func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member
 		}
 		return entitlement.Complete(ctx, tx, record, "grant", grant, &op, 202)
 	})
-}
-
-// ValidateGroups is also used by adapters that construct member commands.
-func ValidateGroups(groups []uuid.UUID) bool {
-	return len(groups) <= 100 && !slices.Contains(groups, uuid.Nil)
 }

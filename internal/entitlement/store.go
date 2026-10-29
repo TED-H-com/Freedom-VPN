@@ -107,6 +107,19 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 	if err != nil {
 		return out, err
 	}
+	// Keep the coarse account status and ETag consistent with the separate,
+	// more detailed entitlement state. Manual suspension remains an input.
+	status := result.State
+	switch status {
+	case "grace", "cancel_at_period_end":
+		status = "active"
+	case "past_due":
+		status = "expired"
+	}
+	if _, err = tx.Exec(ctx, `UPDATE members SET status=$2,resource_version=resource_version+1 WHERE id=$1 AND status<>$2`, memberID, status); err != nil {
+		return out, err
+	}
+
 	raw, err := canonjson.Marshal(result)
 	if err != nil {
 		return out, err
@@ -149,6 +162,12 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 		return out, err
 	}
 	out = Projection{Result: result, MemberID: memberID, Revision: version, ComputedAt: in.Now, Changed: true}
+	// A future grant's operation follows the revision that first includes its
+	// source, rather than becoming permanently stuck on its acceptance revision.
+	if _, err = tx.Exec(ctx, `UPDATE operations o SET desired_generation=$2::numeric WHERE o.id IN (SELECT operation_id FROM entitlement_grants WHERE member_id=$1 AND id=ANY($3) AND operation_id IS NOT NULL) AND o.status IN ('pending','running')`, memberID, version.String(), result.SourceRefs); err != nil {
+		return out, err
+	}
+
 	payload, err := canonjson.Marshal(out)
 	if err != nil {
 		return out, err
