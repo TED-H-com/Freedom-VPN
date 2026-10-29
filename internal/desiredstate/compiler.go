@@ -7,12 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/fup"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -352,30 +354,6 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 			if reason == "" {
 				reason = api.MemberRatePolicyReasonNormal
 			}
-			tierIndex := m.TierIndex
-			tierDown := m.FairUseTierDownBps
-			tierUp := m.FairUseTierUpBps
-			if mode == api.MemberRatePolicyModeShadow {
-				// Shadow mode has null tier rate; only plan_rate and node_member_rate_cap apply (§11.2, §11.5).
-				tierDown = 0
-				tierUp = 0
-				tierIndex = 0
-				reason = api.MemberRatePolicyReasonNormal
-			}
-
-			// §11.2 step 3: effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap)
-			var downCap, upCap *int64
-			if nodeCap != nil {
-				if v, err := nodeCap.MemberDownBpsCap.Get(); err == nil {
-					downCap = &v
-				}
-				if v, err := nodeCap.MemberUpBpsCap.Get(); err == nil {
-					upCap = &v
-				}
-			}
-			effDown := ComputeEffectiveRateBps(m.PlanDownBps, tierDown, downCap)
-			effUp := ComputeEffectiveRateBps(m.PlanUpBps, tierUp, upCap)
-
 			prio := m.Priority
 			if prio < 0 {
 				prio = 0
@@ -387,19 +365,36 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				fupGen = snap.FairUseGeneration
 			}
 
-			memberRatePolicies = append(memberRatePolicies, api.MemberRatePolicy{
-				MemberId:   m.MemberID,
+			eval := &fup.EvaluationResult{
+				MemberID:   m.MemberID,
+				PeriodID:   snap.AccountingPeriod.PeriodId,
+				Mode:       api.FairUsePayloadModeEnforce,
 				Generation: nodes.ParseU64(fupGen),
-				PeriodId:   snap.AccountingPeriod.PeriodId,
-				Mode:       mode,
-				Reason:     reason,
-				TierIndex:  tierIndex,
-				DownBps:    presence.NewNullableWithValue(effDown),
-				UpBps:      presence.NewNullableWithValue(effUp),
-				Priority:   prio,
 				ValidFrom:  validFrom,
 				ValidUntil: rateValidUntil,
-			})
+			}
+			if mode == api.MemberRatePolicyModeShadow {
+				// Shadow mode has null tier rate; only plan_rate and node_member_rate_cap apply (§11.2, §11.5).
+				eval.Mode = api.FairUsePayloadModeShadow
+			} else {
+				eval.EnforcedTierIndex = m.TierIndex
+				if m.FairUseTierDownBps > 0 {
+					d := m.FairUseTierDownBps
+					eval.EnforcedDownBps = &d
+				}
+				if m.FairUseTierUpBps > 0 {
+					u := m.FairUseTierUpBps
+					eval.EnforcedUpBps = &u
+				}
+				eval.EnforcedPriority = &prio
+				eval.EnforcedReason = &reason
+			}
+
+			planRate := &api.RatePair{
+				DownBps: m.PlanDownBps,
+				UpBps:   m.PlanUpBps,
+			}
+			memberRatePolicies = append(memberRatePolicies, fup.BuildNodeMemberRatePolicy(eval, planRate, nodeCapacityRatePair(nodeCap)))
 
 			bindings := append([]MemberDeviceBinding(nil), m.Bindings...)
 			sort.Slice(bindings, func(i, j int) bool {
@@ -979,17 +974,35 @@ func (c *Compiler) findNodesForGroups(ctx context.Context, groupIDs []uuid.UUID)
 	return nids, rows.Err()
 }
 
-// ComputeEffectiveRateBps computes effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap) (§11.2 step 3).
-func ComputeEffectiveRateBps(planRate, fupTierRate int64, nodeMemberCap *int64) int64 {
-	if planRate <= 0 {
-		return 0
+// nodeCapacityRatePair converts an api.NodeCapacity into the directional per-member rate cap
+// passed to fup.BuildNodeMemberRatePolicy (§11.2, §11.3).
+func nodeCapacityRatePair(nodeCap *api.NodeCapacity) *api.RatePair {
+	if nodeCap == nil {
+		return nil
 	}
-	eff := planRate
-	if fupTierRate > 0 && fupTierRate < eff {
-		eff = fupTierRate
+	downCap := nodeCap.DownBps
+	if v, err := nodeCap.MemberDownBpsCap.Get(); err == nil && v > 0 {
+		if downCap <= 0 || v < downCap {
+			downCap = v
+		}
 	}
-	if nodeMemberCap != nil && *nodeMemberCap > 0 && *nodeMemberCap < eff {
-		eff = *nodeMemberCap
+	upCap := nodeCap.UpBps
+	if v, err := nodeCap.MemberUpBpsCap.Get(); err == nil && v > 0 {
+		if upCap <= 0 || v < upCap {
+			upCap = v
+		}
 	}
-	return eff
+	if downCap <= 0 && upCap <= 0 {
+		return nil
+	}
+	if downCap <= 0 {
+		downCap = math.MaxInt64
+	}
+	if upCap <= 0 {
+		upCap = math.MaxInt64
+	}
+	return &api.RatePair{
+		DownBps: downCap,
+		UpBps:   upCap,
+	}
 }
