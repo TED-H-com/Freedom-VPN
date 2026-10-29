@@ -10,6 +10,8 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -36,7 +38,7 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 	if !slices.Contains(s.Config.ReturnURLs, returnURL) {
 		return out, ErrReturnURL
 	}
-	err := db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "POST", "/member/"+kind+"-sessions", map[string]any{"plan_id": plan, "return_url": returnURL})
 		if err != nil {
 			return err
@@ -58,9 +60,13 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 		var revision *uuid.UUID
 		if kind == "checkout" {
 			var id uuid.UUID
-			err = tx.QueryRow(ctx, `SELECT r.id FROM plans p JOIN plan_revisions r ON r.id=p.active_revision_id WHERE p.id=$1 AND r.provider=$2 AND r.provider_price_ref IS NOT NULL`, plan, s.Provider.Name()).Scan(&id)
+			var price string
+			err = tx.QueryRow(ctx, `SELECT r.id,r.provider_price_ref FROM plans p JOIN plan_revisions r ON r.id=p.active_revision_id WHERE p.id=$1 AND r.provider=$2 AND r.provider_price_ref IS NOT NULL`, plan, s.Provider.Name()).Scan(&id, &price)
 			if err != nil {
 				return db.MapError(err)
+			}
+			if s.Config.AllowedPriceIDs != nil && !slices.Contains(s.Config.AllowedPriceIDs, price) {
+				return ErrPayload
 			}
 			revision = &id
 		} else {
@@ -81,7 +87,7 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 				return e
 			}
 			op = &operationID
-			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,steps) VALUES($1,'checkout.create',$2,'billing_session',$3,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.ID.String(), id)
+			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,'checkout.create',$2,'billing_session',$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID)
 			if err != nil {
 				return err
 			}
@@ -105,7 +111,11 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 		if op != nil {
 			out.OperationID = *op
 		}
-		return entitlement.Complete(ctx, tx, record, "billing_session", id, op, 202)
+		statusCode := 202
+		if kind == "portal" {
+			statusCode = 201
+		}
+		return entitlement.Complete(ctx, tx, record, "billing_session", id, op, statusCode)
 	})
 	return out, err
 }
@@ -187,17 +197,9 @@ func (s *Service) FulfillSession(ctx context.Context, id uuid.UUID) error {
 		if operation == nil {
 			return nil
 		}
-		if _, err = tx.Exec(ctx, `UPDATE operations SET status='running' WHERE id=$1 AND status='pending'`, operation); err != nil {
-			return err
-		}
-		// Session creation responses are provider-owned session objects. Their ID is
-		// the completion evidence; hosted URLs are never placed in operation JSON.
-		evidence, err := canonjson.Marshal(map[string]any{"provider_session": map[string]any{"external_session_id": hosted.ID}})
-		if err != nil {
-			return err
-		}
-		_, err = tx.Exec(ctx, `UPDATE operations SET status='succeeded',completed_at=clock_timestamp(),steps='{"provider":{"required":true,"status":"succeeded","observed_ref":"provider_session"}}',observed_refs=$2 WHERE id=$1 AND status='running'`, operation, evidence)
-		return err
+		// The encrypted persisted provider-owned session is the evidence; URLs
+		// never appear in operations or audit. Provider idempotency recovers timeouts.
+		return operations.Transition(ctx, tx, *operation, "provider", api.OperationStepStatusSucceeded, &operations.Evidence{Reference: "billing_session:" + id.String(), ObservedAt: s.Entitlements.Time()}, nil, nil)
 	})
 }
 

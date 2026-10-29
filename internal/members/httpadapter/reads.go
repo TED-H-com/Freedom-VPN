@@ -1,0 +1,239 @@
+package httpadapter
+
+import (
+	"context"
+	"encoding/json"
+	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
+	"github.com/TED-H-com/Freedom-VPN/internal/members"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/google/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+)
+
+func value[T any](p *T) T {
+	if p != nil {
+		return *p
+	}
+	var zero T
+	return zero
+}
+func pointer[T any](v T) *T { return &v }
+func nullableText(s string) presence.Nullable[string] {
+	if s == "" {
+		return presence.NewNullNullable[string]()
+	}
+	return presence.NewNullableWithValue(s)
+}
+func email(s *string) presence.Nullable[openapi_types.Email] {
+	if s == nil {
+		return presence.NewNullNullable[openapi_types.Email]()
+	}
+	return presence.NewNullableWithValue(openapi_types.Email(*s))
+}
+
+func (h Handlers) entitlement(ctx context.Context, m members.Member) (api.EntitlementSummary, error) {
+	e := api.EntitlementSummary{State: api.EntitlementState(m.Status), ComputedAt: m.CreatedAt.UTC(), AdminSuspended: m.AdminSuspended,
+		DeviceLimit: presence.NewNullNullable[int](), Plan: presence.NewNullNullable[api.PlanRef](),
+		EffectiveServiceEnd: presence.NewNullNullable[time.Time](), GraceUntil: presence.NewNullNullable[time.Time](), PaidThrough: presence.NewNullNullable[time.Time](), ValidFrom: presence.NewNullNullable[time.Time]()}
+	p := m.Entitlement
+	if p == nil {
+		return e, nil
+	}
+	e.State = api.EntitlementState(p.State)
+	e.Revision = p.Revision
+	e.ComputedAt = p.ComputedAt.UTC()
+	e.AdminSuspended = p.AdminSuspended
+	e.CancelAtPeriodEnd = p.CancelAtPeriodEnd
+	e.EffectiveServiceEnd = presence.FromPointer(p.EffectiveServiceEnd)
+	e.GraceUntil = presence.FromPointer(p.GraceUntil)
+	e.PaidThrough = presence.FromPointer(p.PaidThrough)
+	e.ValidFrom = presence.FromPointer(p.ValidFrom)
+	// A stale projection never advertises usable service after its deadline (§9.2).
+	s, err := h.services(ctx)
+	if err != nil {
+		return e, err
+	}
+	if (p.State == "active" || p.State == "grace" || p.State == "cancel_at_period_end") && !p.Allows(s.Members.Entitlements.Time()) {
+		e.State = api.EntitlementStateExpired
+	}
+	if p.Plan != nil {
+		e.DeviceLimit.Set(p.DeviceLimit)
+		var ref api.PlanRef
+		var raw []byte
+		err := h.Pool.QueryRow(ctx, `SELECT p.id,p.code,r.payload FROM plans p JOIN plan_revisions r ON r.plan_id=p.id WHERE r.id=$1`, p.Plan.ID).Scan(&ref.PlanId, &ref.Code, &raw)
+		if err != nil {
+			return e, err
+		}
+		var payload struct {
+			DisplayName api.LocalizedText `json:"display_name"`
+		}
+		if err = json.Unmarshal(raw, &payload); err != nil {
+			return e, err
+		}
+		ref.PlanRevisionId = p.Plan.ID
+		ref.DisplayName = payload.DisplayName
+		if ref.DisplayName.ZhTW == "" {
+			ref.DisplayName.ZhTW = ref.Code
+		}
+		e.Plan.Set(ref)
+	}
+	return e, nil
+}
+func subscription(m members.Member) presence.Nullable[api.SubscriptionSummary] {
+	if m.Subscription == nil {
+		return presence.NewNullNullable[api.SubscriptionSummary]()
+	}
+	s := m.Subscription
+	status := api.SubscriptionSummaryReconciliationStatusOk
+	if s.LastReconciledAt == nil {
+		status = api.SubscriptionSummaryReconciliationStatusPending
+	}
+	if len(s.Anomalies) > 0 {
+		status = api.SubscriptionSummaryReconciliationStatusAnomaly
+	}
+	return presence.NewNullableWithValue(api.SubscriptionSummary{Provider: s.Provider, ProviderStatus: s.ProviderStatus, CancelAtPeriodEnd: s.CancelAtPeriodEnd, PaidThrough: presence.FromPointer(s.PaidThrough), LastReconciledAt: presence.FromPointer(s.LastReconciledAt), ReconciliationStatus: status})
+}
+func (h Handlers) summary(ctx context.Context, m members.Member) (api.MemberSummary, error) {
+	e, err := h.entitlement(ctx, m)
+	if err != nil {
+		return api.MemberSummary{}, err
+	}
+	u, err := usage.NewService(usage.Config{Pool: h.Pool})
+	if err != nil {
+		return api.MemberSummary{}, err
+	}
+	total, err := u.GetMemberUsageSummary(ctx, m.ID, "", nil)
+	if err != nil {
+		return api.MemberSummary{}, err
+	}
+	return api.MemberSummary{MemberId: m.ID, DisplayName: nullableText(m.DisplayName), Email: email(m.Email), AccountStatus: api.MemberSummaryAccountStatus(m.Status), CreatedAt: m.CreatedAt.UTC(), ResourceVersion: m.ResourceVersion, AuthorizedDeviceCount: m.AuthorizedDevices, Entitlement: e, Usage: total}, nil
+}
+func (h Handlers) detail(ctx context.Context, m members.Member) (api.MemberDetail, error) {
+	summary, err := h.summary(ctx, m)
+	if err != nil {
+		return api.MemberDetail{}, err
+	}
+	out := api.MemberDetail{MemberId: m.ID, DisplayName: summary.DisplayName, Email: summary.Email, AccountStatus: api.MemberDetailAccountStatus(m.Status), CreatedAt: summary.CreatedAt, ClosedAt: presence.FromPointer(m.ClosedAt), ResourceVersion: m.ResourceVersion, AuthorizedDeviceCount: m.AuthorizedDevices, Entitlement: summary.Entitlement, Usage: summary.Usage, Subscription: subscription(m), Notes: nullableText(m.Notes), MemberGroupIds: append([]uuid.UUID{}, m.Groups...), Grants: []api.EntitlementGrant{}}
+	out.Suspension.Suspended = m.AdminSuspended
+	out.Suspension.Reason = presence.FromPointer(m.SuspensionReason)
+	out.Suspension.SuspendedAt = presence.FromPointer(m.SuspendedAt)
+	out.Suspension.SuspendedBy = presence.FromPointer(m.SuspendedBy)
+	for _, g := range m.Grants {
+		creator, err := uuid.Parse(g.CreatedBy)
+		if err != nil {
+			return out, err
+		}
+		out.Grants = append(out.Grants, api.EntitlementGrant{GrantId: g.ID, MemberId: m.ID, PlanRevisionId: presence.FromPointer(g.PlanRevisionID), Source: api.GrantSource(g.Source), Reason: g.Reason, ValidFrom: g.ValidFrom.UTC(), ValidUntil: g.ValidUntil.UTC(), RevokedAt: presence.FromPointer(g.RevokedAt), CreatedAt: g.CreatedAt.UTC(), CreatedBy: creator})
+	}
+	return out, nil
+}
+func (h Handlers) ListMembers(ctx context.Context, r gen.ListMembersRequestObject) (gen.ListMembersResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	page, err := s.Members.ListFiltered(ctx, actor(ctx), value(r.Params.Cursor), value(r.Params.Limit), string(value(r.Params.EntitlementState)))
+	if err != nil {
+		return nil, domainError(err)
+	}
+	body := api.MemberList{Items: []api.MemberSummary{}, NextCursor: nullableText(page.NextCursor)}
+	for _, m := range page.Items {
+		v, e := h.summary(ctx, m)
+		if e != nil {
+			return nil, e
+		}
+		body.Items = append(body.Items, v)
+	}
+	return gen.ListMembers200JSONResponse{Body: body}, nil
+}
+func (h Handlers) GetMember(ctx context.Context, r gen.GetMemberRequestObject) (gen.GetMemberResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	m, err := s.Members.Get(ctx, actor(ctx), r.MemberId)
+	if err != nil {
+		return nil, domainError(err)
+	}
+	body, err := h.detail(ctx, m)
+	if err != nil {
+		return nil, err
+	}
+	return gen.GetMember200JSONResponse{Body: body, Headers: gen.GetMember200ResponseHeaders{ETag: pointer(httpapi.ETag(m.ResourceVersion))}}, nil
+}
+func (h Handlers) GetMemberSelf(ctx context.Context, _ gen.GetMemberSelfRequestObject) (gen.GetMemberSelfResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	a := actor(ctx)
+	m, err := s.Members.Get(ctx, a, a.ID)
+	if err != nil {
+		return nil, domainError(err)
+	}
+	e, err := h.entitlement(ctx, m)
+	if err != nil {
+		return nil, err
+	}
+	out := api.MemberSelf{MemberId: m.ID, DisplayName: nullableText(m.DisplayName), Email: email(m.Email), Entitlement: e, Subscription: subscription(m), FairUseResetAt: presence.NewNullNullable[time.Time](), NextActions: []api.NextAction{}}
+	out.Limits.AuthorizedDeviceCount = m.AuthorizedDevices
+	out.Limits.DeviceLimit = e.DeviceLimit
+	if m.Entitlement != nil && m.Entitlement.Allows(s.Members.Entitlements.Time()) {
+		err = h.Pool.QueryRow(ctx, `SELECT count(DISTINCT e.id) FROM exits e JOIN exit_groups eg ON eg.exit_id=e.id JOIN nodes n ON n.id=e.node_id WHERE eg.group_id=ANY($1) AND e.publication_intent='published' AND n.lifecycle_state='registered'`, m.Entitlement.ExitGroups).Scan(&out.Limits.ExitCount)
+		if err != nil {
+			return nil, err
+		}
+		now := s.Members.Entitlements.Time()
+		out.FairUseResetAt.Set(time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC))
+		if m.AuthorizedDevices >= m.Entitlement.DeviceLimit {
+			out.NextActions = append(out.NextActions, api.NextActionFreeDeviceSlot)
+		} else {
+			out.NextActions = append(out.NextActions, api.NextActionInstallApp, api.NextActionRegisterDevice)
+		}
+	} else {
+		switch e.State {
+		case "pending_payment":
+			out.NextActions = append(out.NextActions, api.NextActionCompletePayment)
+		case "suspended", "closed":
+			out.NextActions = append(out.NextActions, api.NextActionContactSupport)
+		default:
+			out.NextActions = append(out.NextActions, api.NextActionRenewSubscription)
+		}
+	}
+	var pending bool
+	if err = h.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM billing_sessions WHERE member_id=$1 AND kind='checkout' AND created_at>clock_timestamp()-interval '23 hours')`, m.ID).Scan(&pending); err != nil {
+		return nil, err
+	}
+	if e.State == "pending_payment" && pending {
+		out.NextActions = []api.NextAction{api.NextActionWaitForPaymentConfirmation}
+	}
+	return gen.GetMemberSelf200JSONResponse{Body: out}, nil
+}
+func (h Handlers) ListMemberDevices(ctx context.Context, r gen.ListMemberDevicesRequestObject) (gen.ListMemberDevicesResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	a := actor(ctx)
+	page, err := s.Devices.List(ctx, a, a.ID, value(r.Params.Cursor), value(r.Params.Limit))
+	if err != nil {
+		return nil, domainError(err)
+	}
+	out := api.MemberDeviceList{Items: []api.MemberDevice{}, NextCursor: nullableText(page.NextCursor), AuthorizedCount: page.AuthorizedCount, DeviceLimit: presence.NewNullNullable[int]()}
+	if page.DeviceLimit > 0 {
+		out.DeviceLimit.Set(page.DeviceLimit)
+	}
+	for _, d := range page.Items {
+		status := api.DeviceStatus(d.Status)
+		if d.Status == "authorized" && !d.ObservedAuthorized {
+			status = api.DeviceStatusPending
+		}
+		out.Items = append(out.Items, api.MemberDevice{DeviceId: d.ID, Name: d.Name, Platform: api.MemberDevicePlatform(d.Platform), Status: status, CreatedAt: d.CreatedAt.UTC(), AuthorizedAt: presence.FromPointer(d.AuthorizedAt), RevokedAt: presence.FromPointer(d.RevokedAt), LastSeenAt: presence.FromPointer(d.LastSeenAt)})
+	}
+	return gen.ListMemberDevices200JSONResponse{Body: out}, nil
+}

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -78,7 +80,7 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	if observed.DeploymentID != deployment || observed.ID != peer || observed.Authorized != allow || !sameGroups(observed.Groups, groups) {
+	if observed.DeploymentID != deployment || observed.ID != peer || observed.Authorized != allow || !sameGroups(observed.Groups, groups) || allow && (observed.ExternalUserID != preflight.ExternalUserID || observed.OverlayIP != preflight.OverlayIP || observed.OverlayScope != preflight.OverlayScope) {
 		return entitlement.ErrConflict
 	}
 
@@ -107,8 +109,7 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
 		if e != nil {
 			return e
 		}
-		_, e = tx.Exec(ctx, `UPDATE operations SET status='running',steps=jsonb_set(steps,'{netbird}','{"required":true,"status":"succeeded","observed_ref":"netbird"}'),observed_refs=jsonb_set(observed_refs,'{netbird}',$3::jsonb) WHERE resource_type='device' AND resource_id=$1 AND desired_generation=$2::numeric AND status IN ('pending','running')`, id, version.String(), evidence)
-		return e
+		return observeOperations(ctx, tx, "device", id, version, evidence, s.Entitlements.Time())
 	})
 	if err != nil {
 		return err
@@ -178,7 +179,42 @@ func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) error {
 		if e != nil {
 			return e
 		}
-		_, e = tx.Exec(ctx, `UPDATE operations SET status='running',steps=jsonb_set(steps,'{netbird}','{"required":true,"status":"succeeded","observed_ref":"netbird"}'),observed_refs=jsonb_set(observed_refs,'{netbird}',$3::jsonb) WHERE resource_type='member' AND resource_id=$1 AND desired_generation=$2::numeric AND status IN ('pending','running')`, member, revision.String(), evidence)
-		return e
+		return observeOperations(ctx, tx, "member", member, revision, evidence, s.Entitlements.Time())
 	})
+}
+
+// Preserve an immutable audit evidence row before transitioning the operation.
+// A successful NetBird step never fabricates the separate node enforcement ACK.
+func observeOperations(ctx context.Context, tx pgx.Tx, resource string, id uuid.UUID, revision decstr.U64, evidence []byte, now time.Time) error {
+	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE resource_type=$1 AND resource_id=$2 AND desired_generation=$3::numeric AND status IN ('pending','running') AND steps->'netbird'->>'status' IN ('pending','running') AND (kind<>'member.grant' OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, resource, id, revision.String(), now)
+	if err != nil {
+		return err
+	}
+	var ids []uuid.UUID
+	for rows.Next() {
+		var op uuid.UUID
+		if err = rows.Scan(&op); err != nil {
+			rows.Close()
+			return err
+		}
+		ids = append(ids, op)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil || len(ids) == 0 {
+		return err
+	}
+	evidenceID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+	if err = db.AppendAudit(ctx, tx, db.AuditEvent{ID: evidenceID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: "system", Action: "netbird.observed", Resource: resource + ":" + id.String(), SchemaVersion: 1, Before: []byte(`{}`), After: evidence, Result: "succeeded"}); err != nil {
+		return err
+	}
+	for _, op := range ids {
+		if err = operations.Transition(ctx, tx, op, "netbird", api.OperationStepStatusSucceeded, &operations.Evidence{Reference: "audit_event:" + evidenceID.String(), ObservedAt: now}, nil, nil); err != nil {
+			return err
+		}
+	}
+	return nil
 }
