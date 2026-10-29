@@ -2,7 +2,8 @@
 
 Pinned server/client 0.82.0, dashboard 2.96.0 and nginx 1.30.0; exact upstream
 index digests live in the four Dockerfiles and [VERSIONS](../../../docs/netbird/VERSIONS.md).
-Requires Go 1.27, Python 3 standard library, Docker Compose, Linux `/dev/net/tun`
+Go test/build scratch uses the disk-backed `.agent/netbird-tmp/` directory
+through Make; do not use a tmpfs TMPDIR. Requires Go 1.27, Python 3 standard library, Docker Compose, Linux `/dev/net/tun`
 and permission to run containers with NET_ADMIN/NET_RAW. No host networking
 commands or privileged host setup are part of this lab.
 

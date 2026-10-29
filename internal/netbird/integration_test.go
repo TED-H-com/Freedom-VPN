@@ -140,7 +140,7 @@ func TestAT08_LiveAdapterReadBack(t *testing.T) {
 		}
 		// The key travels over stdin into a mode-0600 transient container file. Never
 		// include it in docker arguments, environment, logs or test failure output.
-		script := `umask 077; cat > /tmp/fvpn-setup-key; netbird up --management-url "http://netbird.example.invalid:${FVPN_NB_API_PORT}" --hostname fvpn-exit --setup-key-file /tmp/fvpn-setup-key --disable-dns --disable-ipv6; result=$?; rm /tmp/fvpn-setup-key; exit "$result"`
+		script := `umask 077; cat > /var/lib/netbird/.fvpn-setup-key; netbird up --management-url "http://netbird.example.invalid:${FVPN_NB_API_PORT}" --hostname fvpn-exit --setup-key-file /var/lib/netbird/.fvpn-setup-key --disable-dns --disable-ipv6; result=$?; rm /var/lib/netbird/.fvpn-setup-key; exit "$result"`
 		_, e = cli(t, "exit", key.Secret.Reveal(), "sh", "-c", script)
 		check(t, e)
 		replay, e := cli(t, "replay", key.Secret.Reveal(), "sh", "-c", script)

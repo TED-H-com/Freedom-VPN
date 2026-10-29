@@ -24,6 +24,8 @@ jobs:
           cache: false
       - name: Unit, vet and architecture checks
         run: |
+          mkdir -p .agent/netbird-tmp
+          export TMPDIR="$PWD/.agent/netbird-tmp"
           make -f mk/netbird.mk netbird-test netbird-vet
           test -z "$(gofmt -l internal/netbird)"
           GOOS=linux GOARCH=arm64 go build ./internal/netbird/...

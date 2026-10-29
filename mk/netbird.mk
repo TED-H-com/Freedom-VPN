@@ -1,4 +1,5 @@
 # Works standalone and when included by the repository Makefile.
+NETBIRD_TMPDIR ?= $(CURDIR)/.agent/netbird-tmp
 NETBIRD_COMPOSE = docker compose -f deploy/dev/netbird/compose.yml
 export FVPN_NB_PREFIX ?= fvpn-dev-netbird
 export GOTOOLCHAIN = local
@@ -19,10 +20,13 @@ netbird-down:
 netbird-reset:
 	python3 -B deploy/dev/netbird/reset.py
 netbird-test:
-	go test ./internal/netbird/...
+	mkdir -p "$(NETBIRD_TMPDIR)"
+	TMPDIR="$(NETBIRD_TMPDIR)" go test ./internal/netbird/...
 netbird-vet:
-	go vet ./internal/netbird/...
+	mkdir -p "$(NETBIRD_TMPDIR)"
+	TMPDIR="$(NETBIRD_TMPDIR)" go vet ./internal/netbird/...
 netbird-test-integration:
-	FVPN_NETBIRD_API_URL="$${FVPN_NETBIRD_API_URL:-http://127.0.0.1:$${FVPN_NB_API_PORT:-18080}/api}" \
+	mkdir -p "$(NETBIRD_TMPDIR)"
+	TMPDIR="$(NETBIRD_TMPDIR)" FVPN_NETBIRD_API_URL="$${FVPN_NETBIRD_API_URL:-http://127.0.0.1:$${FVPN_NB_API_PORT:-18080}/api}" \
 	FVPN_NETBIRD_TOKEN_FILE="$${FVPN_NETBIRD_TOKEN_FILE:-$(CURDIR)/deploy/dev/netbird/.state/adapter-token}" \
 	FVPN_NETBIRD_CLIENT_TESTS=1 go test -count=1 -tags netbird_integration -v ./internal/netbird/...
