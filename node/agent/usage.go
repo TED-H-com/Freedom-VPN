@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -33,32 +34,81 @@ func (t usageTransport) GetUsageCheckpoint(ctx context.Context) (int, []byte, er
 	return status, body, err
 }
 
-// kernelSource reads forward-admission counters from table inet fvpn.
-// A missing table is an empty reading so the meter can open before the
-// first apply. Any other nft failure is a meter-path failure.
+// kernelSource reads forward-admission counters from table inet fvpn and
+// keeps the last State. A missing table is an empty reading so the meter
+// can open before the first apply. Any other nft failure is a meter-path
+// failure. The agent and the meter share one pointer so a sample and a
+// step see the same external-reset latch.
 type kernelSource struct {
 	boot     string
 	bindings func() []enforce.Binding
+	expect   func() bool
+	// read overrides the nft listing. Tests set it; production leaves it nil.
+	read func(context.Context) (enforce.State, error)
+
+	mu       sync.Mutex
+	prev     map[string]enforce.CounterValue
+	state    enforce.State
+	nudge    bool
+	switched bool
+	pending  bool
+	reported bool
+	external bool
 }
 
-func (k kernelSource) Read(ctx context.Context) (meter.Observation, error) {
-	raw, err := enforce.System{}.Output(ctx, "nft", "-j", "list", "table", enforce.TableFamily, enforce.TableName)
+func (k *kernelSource) Read(ctx context.Context) (meter.Observation, error) {
+	st, err := k.load(ctx)
+	if err != nil {
+		return meter.Observation{}, err
+	}
+	if st.Counters == nil {
+		st.Counters = map[string]enforce.CounterValue{}
+	}
 	obs := meter.Observation{Counters: map[string]enforce.CounterValue{}, BootID: k.boot}
 	if k.bindings != nil {
 		obs.Bindings = k.bindings()
 	}
-	if err != nil {
-		if nftMissing(err) {
-			return obs, nil
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	k.state = st
+	real := st.Counters
+	switch {
+	case k.nudge:
+		// A step already restored the ruleset. This read still has to look
+		// like a drop so the meter's value comparison opens the epoch.
+		obs.Counters = nudgeOne(real)
+		k.nudge = false
+		k.switched = true
+		k.pending = true
+		k.external = true
+	default:
+		expect := k.expect != nil && k.expect()
+		_, force, report := classifyExternal(k.prev, st, expect)
+		switch {
+		case force && !k.switched:
+			obs.Counters = nudgeOne(real)
+			k.switched = true
+			k.pending = true
+			k.external = true
+		case report && !k.reported:
+			obs.Counters = cloneCounters(real)
+			k.pending = true
+			if brokenRuleset(st) {
+				k.external = true
+			}
+		default:
+			obs.Counters = cloneCounters(real)
+			// A later healthy read ends the incident. A pending report is
+			// left intact so the step can still emit it once.
+			if !brokenRuleset(st) && !k.nudge && !k.pending {
+				k.switched = false
+				k.reported = false
+				k.external = false
+			}
 		}
-		return meter.Observation{}, err
 	}
-	st, err := enforce.ParseState(raw)
-	if err != nil {
-		return meter.Observation{}, err
-	}
-	if st.Counters != nil {
-		obs.Counters = st.Counters
+	if len(real) > 0 || len(k.prev) == 0 {
+		k.prev = cloneCounters(real)
 	}
 	return obs, nil
 }
@@ -85,7 +135,13 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 	e.usage = st
 	src := e.meterSource
 	if src == nil {
-		src = kernelSource{boot: e.bootID.String(), bindings: e.meterBindings}
+		ks := &kernelSource{
+			boot:     e.bootID.String(),
+			bindings: e.meterBindings,
+			expect:   func() bool { return e.expectServing.Load() },
+		}
+		e.kernel = ks
+		src = ks
 	}
 	m, err := meter.New(meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,

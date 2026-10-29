@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -59,20 +60,22 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
-	usage        *usagestore.Store
-	meter        *meter.Meter
-	uploader     *usageupload.Uploader
-	usageOnce    bool
-	sampleOn     bool
-	finalDone    bool
-	shutUsage    bool
-	meterSnap    []enforce.Binding
-	usageOutbox  bool
-	usageDisk    bool
-	usagePersist bool
-	loopCtx      context.Context
-	loopCancel   context.CancelFunc
-	loops        sync.WaitGroup
+	usage         *usagestore.Store
+	meter         *meter.Meter
+	kernel        *kernelSource
+	expectServing atomic.Bool
+	uploader      *usageupload.Uploader
+	usageOnce     bool
+	sampleOn      bool
+	finalDone     bool
+	shutUsage     bool
+	meterSnap     []enforce.Binding
+	usageOutbox   bool
+	usageDisk     bool
+	usagePersist  bool
+	loopCtx       context.Context
+	loopCancel    context.CancelFunc
+	loops         sync.WaitGroup
 
 	mu      sync.Mutex
 	tlsCert *tls.Certificate
@@ -330,6 +333,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	if e.revoked {
 		e.withdraw(ctx)
 		e.decision = Decide(e.input())
+		e.publishMeterEpoch()
 		_ = e.observe(ctx)
 		_ = e.flush(ctx)
 		return nil
@@ -370,6 +374,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
 		return err
 	}
+	e.publishMeterEpoch()
 	_ = e.observe(ctx)
 	_ = e.flush(ctx)
 	return nil
@@ -511,6 +516,9 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 }
 
 func (e *Engine) baseline(ctx context.Context) error {
+	// A planned baseline is not an external meter reset. Clear this before
+	// FinalSample reads the counters.
+	e.expectServing.Store(false)
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
 		return err
@@ -553,6 +561,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	for name, c := range e.counters {
 		prev[name] = c
 	}
+	wasServing := e.expectServing.Load()
 	res, err := e.plane.Apply(ctx, model, prev)
 	if err != nil {
 		e.handoff(ctx)
@@ -563,6 +572,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		return nil
 	}
 	e.serving = true
+	e.expectServing.Store(true)
 	e.baselineOK = true
 	e.policyExpires = d.PolicyExpires
 	e.appliedGen = model.Generation
@@ -590,13 +600,16 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.storageOK = false
 	}
 	e.setMeterBindings(model.Bindings)
-	e.resumeSampling()
-	for _, reset := range res.Resets {
-		e.decision.Errors = append(e.decision.Errors, api.NodeError{
-			Code: api.ErrorCodeHEALTHCHECKFAILED, Message: string(reset.Reason),
-			ObservedAt: e.clock.Wall().UTC(), Stage: "meter",
-		})
+	if e.kernel != nil {
+		if err := e.kernel.capture(ctx); err != nil {
+			e.log.Warn("meter state", "err", err.Error())
+		}
+		e.kernel.noteApply(prev, res.Resets, res.Counters, wasServing)
+	} else {
+		e.noteResetsWithoutKernel(prev, res.Resets, res.Counters, wasServing)
 	}
+	e.resumeSampling()
+	e.switchEpoch(ctx)
 	return nil
 }
 
@@ -611,7 +624,7 @@ func (e *Engine) noteApply(err error) {
 		}
 	}
 	e.decision.Errors = append(e.decision.Errors, api.NodeError{
-		Code: code, Message: msg, ObservedAt: e.clock.Wall().UTC(), Stage: "apply",
+		Code: code, Message: clipMsg(msg), ObservedAt: e.clock.Wall().UTC(), Stage: "apply",
 	})
 	e.log.Warn("apply", "err", msg)
 }

@@ -87,7 +87,9 @@ func (s *Server) SetUsageRetryAfter(n int, seconds int) {
 }
 
 // SetUsageConflict makes the next n usage-batch posts return 409
-// USAGE_EVENT_CONFLICT without storing anything.
+// USAGE_EVENT_CONFLICT before the body is read, and stores nothing.
+// A payload hash mismatch on the default path is HTTP 200 with a per-event
+// conflict result. This knob keeps the whole-request 409 path for tests.
 func (s *Server) SetUsageConflict(n int) {
 	if n < 0 {
 		n = 0
@@ -165,8 +167,9 @@ type inboundBatch struct {
 }
 
 type parsedUsage struct {
-	seq  uint64
-	hash string
+	seq     uint64
+	hash    string
+	badHash bool
 }
 
 func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
@@ -222,13 +225,9 @@ func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, r, apierr.New(apierr.ValidationFailed, "Invalid ledger epoch."))
 		return
 	}
-	parsed, conflict, bad := classifyUsage(batch.Events)
+	parsed, bad := classifyUsage(batch.Events)
 	if bad {
 		apierr.Write(w, r, apierr.New(apierr.ValidationFailed, "Invalid usage event."))
-		return
-	}
-	if conflict {
-		apierr.Write(w, r, apierr.New(apierr.UsageEventConflict, "Usage event hash does not match."))
 		return
 	}
 
@@ -245,11 +244,7 @@ func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
 		led = &usageLedger{hash: map[uint64]string{}}
 	}
 	work := led.clone()
-	results, clash := work.accept(parsed)
-	if clash {
-		apierr.Write(w, r, apierr.New(apierr.UsageEventConflict, "Usage event hash does not match."))
-		return
-	}
+	results := work.accept(parsed)
 	s.usageNodes[key] = work
 	writeUsageResult(w, node, inc, current, work.highest, results)
 }
@@ -271,51 +266,90 @@ func parseBatchEpoch(raw json.RawMessage) (uuid.UUID, bool, error) {
 }
 
 // classifyUsage checks each event's payload_sha256. A hash mismatch is a
-// conflict and does not mean the JSON was unreadable. A sequence of 0 or a
-// body that is not an event is invalid.
-func classifyUsage(raws []json.RawMessage) ([]parsedUsage, bool, bool) {
+// per-event conflict, not an unreadable body. A sequence of 0 or a body
+// that is not an event is invalid.
+func classifyUsage(raws []json.RawMessage) ([]parsedUsage, bool) {
 	out := make([]parsedUsage, 0, len(raws))
-	seen := map[uint64]string{}
 	for _, raw := range raws {
 		sum, err := canonjson.HashHex(raw, "payload_sha256")
 		if err != nil {
-			return nil, false, true
+			return nil, true
 		}
 		var ev struct {
 			EventSeq decstr.U64 `json:"event_seq"`
 			Hash     string     `json:"payload_sha256"`
 		}
 		if err := json.Unmarshal(raw, &ev); err != nil || uint64(ev.EventSeq) == 0 {
-			return nil, false, true
+			return nil, true
 		}
-		seq := uint64(ev.EventSeq)
-		if ev.Hash != sum {
-			return nil, true, false
-		}
-		if prev, ok := seen[seq]; ok && prev != ev.Hash {
-			return nil, true, false
-		}
-		seen[seq] = ev.Hash
-		out = append(out, parsedUsage{seq: seq, hash: ev.Hash})
+		out = append(out, parsedUsage{
+			seq: uint64(ev.EventSeq), hash: ev.Hash, badHash: ev.Hash != sum,
+		})
 	}
-	return out, false, false
+	return out, false
 }
 
 type usageItem struct {
 	seq    uint64
 	status string
+	code   string
+	msg    string
 }
 
-// accept stores a contiguous-capable batch. A stored hash that differs is
-// a conflict and the receiver is left unchanged (the caller passes a clone).
-func (l *usageLedger) accept(events []parsedUsage) ([]usageItem, bool) {
+// accept stores events up to the first payload-hash conflict. The conflicting
+// event is not stored, and neither is any later sequence, so the contiguous
+// prefix cannot jump the hole. The caller passes a clone and commits it.
+func (l *usageLedger) accept(events []parsedUsage) []usageItem {
+	first := map[uint64]string{}
+	conflictAt := map[uint64]bool{}
+	var blocked uint64
+	hasBlocked := false
+	note := func(seq uint64) {
+		conflictAt[seq] = true
+		if !hasBlocked || seq < blocked {
+			blocked = seq
+			hasBlocked = true
+		}
+	}
 	for _, ev := range events {
+		if ev.badHash {
+			note(ev.seq)
+			continue
+		}
 		if prev, ok := l.hash[ev.seq]; ok && prev != ev.hash {
-			return nil, true
+			note(ev.seq)
+			continue
+		}
+		if prev, ok := first[ev.seq]; ok && prev != ev.hash {
+			note(ev.seq)
+			continue
+		}
+		if _, ok := first[ev.seq]; !ok {
+			first[ev.seq] = ev.hash
 		}
 	}
 	items := make([]usageItem, 0, len(events))
 	for _, ev := range events {
+		if conflictAt[ev.seq] {
+			items = append(items, usageItem{
+				seq: ev.seq, status: string(api.UsageEventResultStatusConflict),
+				code: string(api.ErrorCodeUSAGEEVENTCONFLICT),
+				msg:  "Usage event hash does not match.",
+			})
+			continue
+		}
+		if hasBlocked && ev.seq > blocked {
+			if _, ok := l.hash[ev.seq]; ok {
+				items = append(items, usageItem{seq: ev.seq, status: string(api.UsageEventResultStatusDuplicate)})
+				continue
+			}
+			items = append(items, usageItem{
+				seq: ev.seq, status: string(api.UsageEventResultStatusRejected),
+				code: string(api.ErrorCodeUSAGEEVENTCONFLICT),
+				msg:  "Event was not stored past a conflicting sequence.",
+			})
+			continue
+		}
 		if _, ok := l.hash[ev.seq]; ok {
 			items = append(items, usageItem{seq: ev.seq, status: string(api.UsageEventResultStatusDuplicate)})
 			continue
@@ -334,7 +368,7 @@ func (l *usageLedger) accept(events []parsedUsage) ([]usageItem, bool) {
 		highest++
 	}
 	l.highest = highest
-	return items, false
+	return items
 }
 
 func writeUsageResult(w http.ResponseWriter, node, inc, epoch uuid.UUID, highest uint64, items []usageItem) {
@@ -343,9 +377,27 @@ func writeUsageResult(w http.ResponseWriter, node, inc, epoch uuid.UUID, highest
 		EventSeq string `json:"event_seq"`
 		Status   string `json:"status"`
 	}
+	var blocked any
+	var lowest uint64
+	hasBlocked := false
 	rows := make([]row, 0, len(items))
 	for _, it := range items {
-		rows = append(rows, row{Error: nil, EventSeq: strconv.FormatUint(it.seq, 10), Status: it.status})
+		var errObj any
+		if it.code != "" {
+			errObj = map[string]any{
+				"code": it.code, "message": it.msg, "fields": []any{},
+			}
+		}
+		if it.status == string(api.UsageEventResultStatusConflict) || it.status == string(api.UsageEventResultStatusRejected) {
+			if !hasBlocked || it.seq < lowest {
+				lowest = it.seq
+				hasBlocked = true
+			}
+		}
+		rows = append(rows, row{Error: errObj, EventSeq: strconv.FormatUint(it.seq, 10), Status: it.status})
+	}
+	if hasBlocked {
+		blocked = strconv.FormatUint(lowest, 10)
 	}
 	body := struct {
 		BlockedSeq           any       `json:"blocked_seq"`
@@ -356,7 +408,7 @@ func writeUsageResult(w http.ResponseWriter, node, inc, epoch uuid.UUID, highest
 		ReceivedAt           time.Time `json:"received_at"`
 		Results              []row     `json:"results"`
 	}{
-		BlockedSeq:           nil,
+		BlockedSeq:           blocked,
 		HighestContiguousSeq: strconv.FormatUint(highest, 10),
 		LedgerEpoch:          epoch,
 		NodeID:               node,
