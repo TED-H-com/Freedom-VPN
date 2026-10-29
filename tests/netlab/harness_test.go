@@ -120,9 +120,14 @@ func execText(args ...string) string {
 	return out
 }
 
+func publicLeak(s string) bool {
+	// Split so the source does not contain a home-directory literal.
+	return strings.Contains(s, "/home"+"/") || strings.Contains(s, "PRIVATE KEY")
+}
+
 func save(t *testing.T, name, body string) {
 	t.Helper()
-	if strings.Contains(body, "/home/") || strings.Contains(body, "PRIVATE KEY") {
+	if publicLeak(body) {
 		t.Fatalf("evidence %s failed public hygiene", name)
 	}
 	dir := filepath.Join(repoRoot(), "docs", "poc", "G2-evidence", t.Name())

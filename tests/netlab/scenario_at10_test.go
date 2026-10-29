@@ -320,7 +320,7 @@ func waitStreamReady(t *testing.T, path string, limit time.Duration) {
 }
 
 func sanitize(s string) string {
-	if strings.Contains(s, "/home/") || strings.Contains(s, "PRIVATE KEY") {
+	if publicLeak(s) {
 		return "redacted\n"
 	}
 	return s
