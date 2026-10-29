@@ -137,7 +137,16 @@ func TestAPI01_NodeDomainsRequireExplicitSettings(t *testing.T) {
 func TestAT06_AT28_NodeCompositionUsesMiddlewareAndPKI(t *testing.T) {
 	pool := dbtest.New(t)
 	cfg, n := domainConfig(t)
-	domain, _ := nodeDomains(t)
+	// D-039: exercise only core and nodes through the real composition seam.
+	var domains []control.Domain
+	for _, domain := range control.Domains() {
+		if domain.Name == "control-core" || domain.Name == "nodes" {
+			domains = append(domains, domain)
+		}
+	}
+	if len(domains) != 2 {
+		t.Fatal("core/node domains missing or duplicated")
+	}
 	r, e := httpwire.Open(t.Context(), pool, n, nil)
 	if e != nil {
 		t.Fatal(e)
@@ -146,7 +155,7 @@ func TestAT06_AT28_NodeCompositionUsesMiddlewareAndPKI(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	app, e := control.Servers(t.Context(), control.Dependencies{Config: cfg, Pool: pool, Browser: &auth.Browser{}}, domain)
+	app, e := control.Servers(t.Context(), control.Dependencies{Config: cfg, Pool: pool, Browser: &auth.Browser{}}, domains...)
 	if e != nil {
 		t.Fatal(e)
 	}
