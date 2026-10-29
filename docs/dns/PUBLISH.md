@@ -8,11 +8,11 @@ An activated `dns_profile` becomes one canonical resolver document. The worker s
 
 1. An admin activates a `dns_profile` revision. The policies store writes `policy.activated` and the existing compiled bundle.
 2. Migration `00180` inserts a second outbox row, `dns.publish`, for `payload.type = dns_profile` only. `policy.activated` stays available for desired-state compilation (§14.5). That trigger is the current fan-out. A later worker may fan out from the `policy.activated` handler instead.
-3. `worker.Domains` registers `dns()`. The handler in `internal/dnspublish/store` loads the profile, the referenced domain rules, and the threat-feed identities, then calls `dnspublish.Compile`. The document package does not import a database driver.
+3. `worker.Domains` registers `dns()`. It loads `dns_config_file` and fails startup with `config.SettingError{Name: "dns_config_file"}` when that file is missing or invalid. The handler in `internal/dnspublish/store` loads the profile, the referenced domain rules, and the threat-feed identities, then calls `dnspublish.Compile`. The document package does not import a database driver.
 4. The RFC 8785 bytes and their SHA-256 are stored in `dns_resolver_documents`, keyed by `profile_revision_id`. That is the id `desired_states.policy_refs` already carries. `dns_publication_heads` points at the current document.
 5. The node agent (not edited here) passes the document to `node/dns`. The applier converges every configured resolver or restores the previous configuration.
 
-Upstreams and bootstrap servers are worker configuration (`dnspublish/store.Config`), not fields of the policy payload. The default upstream is `https://dns.example.com/dns-query` and is never dialed by the compiler. The same rules plus the same config produce the same bytes. A config change is a different document.
+Upstreams and bootstrap servers are deployment configuration, not fields of the policy payload and not a built-in default (D-028). `dns_config_file` points at a JSON file: `upstreams` is a non-empty list of `host:port` values, each an IPv4 or IPv6 literal. `bootstrap_dns` uses the same form and may be empty, in which case the document copies `upstreams`. It is never a public resolver. [`config.example.json`](config.example.json) is TEST ONLY and uses documentation prefixes (`192.0.2.0/24`, `2001:db8::/32`). The same rules plus the same file produce the same bytes. A config change is a different document.
 
 Threat-feed revisions store metadata and `content_sha256` only. The publisher does not fetch feed URLs (§12.3). The document pins `feed_code`, `content_sha256`, `format`, and categories. Feed domain bodies are not in the policy revision, so they are not rendered as filter rules.
 

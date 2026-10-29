@@ -122,7 +122,10 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pub := NewPublisher(pool, DefaultConfig())
+	pub, err := NewPublisher(pool, Config{Upstreams: []string{"192.0.2.53:53"}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	ev1 := loadPublishEvent(t, ctx, pool, 0)
 	receipt, err := pub.Handle(ctx, ev1)
 	if err != nil {

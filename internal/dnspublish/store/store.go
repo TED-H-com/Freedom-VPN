@@ -24,16 +24,12 @@ const (
 	statusSuperseded = "superseded"
 )
 
-// Config is the stable resolver environment mixed into every document.
-// Two activations compiled with the same Config and the same rules match (§12.5).
+// Config is the resolver environment mixed into every document (§12.5, D-028).
+// Upstreams come from deployment configuration. An empty list is rejected.
+// Two activations compiled with the same Config and the same rules match.
 type Config struct {
 	Upstreams    []string
 	BootstrapDNS []string
-}
-
-// DefaultConfig uses the documentation upstream. The compiler never dials it.
-func DefaultConfig() Config {
-	return Config{Upstreams: append([]string(nil), dnspublish.DefaultUpstreams...)}
 }
 
 // Publication is the stored document plus the generation desired state references.
@@ -54,18 +50,26 @@ type Publisher struct {
 	cfg  Config
 }
 
-// NewPublisher builds a publisher. pool is required for Handle.
-func NewPublisher(pool *pgxpool.Pool, cfg Config) *Publisher {
+// NewPublisher builds a publisher. An empty upstream list is an error.
+// pool may be nil only for tests that reject the event before a query.
+func NewPublisher(pool *pgxpool.Pool, cfg Config) (*Publisher, error) {
 	if len(cfg.Upstreams) == 0 {
-		cfg = DefaultConfig()
+		return nil, errors.New("dns upstreams are required")
 	}
-	return &Publisher{pool: pool, cfg: cfg}
+	cfg.Upstreams = append([]string(nil), cfg.Upstreams...)
+	if cfg.BootstrapDNS != nil {
+		cfg.BootstrapDNS = append([]string(nil), cfg.BootstrapDNS...)
+	}
+	return &Publisher{pool: pool, cfg: cfg}, nil
 }
 
 // NewHandler is the worker callback for dns.publish (§14.5).
-func NewHandler(pool *pgxpool.Pool, cfg Config) func(context.Context, db.ClaimedEvent) (string, error) {
-	p := NewPublisher(pool, cfg)
-	return p.Handle
+func NewHandler(pool *pgxpool.Pool, cfg Config) (func(context.Context, db.ClaimedEvent) (string, error), error) {
+	p, err := NewPublisher(pool, cfg)
+	if err != nil {
+		return nil, err
+	}
+	return p.Handle, nil
 }
 
 // Handle compiles or withdraws the publication described by event.

@@ -55,10 +55,6 @@ const (
 	layerAdminAllow = "admin_allow"
 )
 
-// DefaultUpstreams is the worker default when no upstream list is configured.
-// The host is documentation-only and is never contacted by the compiler.
-var DefaultUpstreams = []string{"https://dns.example.com/dns-query"}
-
 var profileCodePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
 
 // Privacy is forced off in every document (§12.7, SEC02).
