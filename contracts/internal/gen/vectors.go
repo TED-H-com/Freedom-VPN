@@ -194,6 +194,27 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	twoAMDEnv := envJSON(sign(twoAMD, keys["release"]))
 	out["examples/semantic-invalid/ReleaseRegisterRequest.two-amd64.json"] = prettyDoc(mustCanon(`{"manifest":` + string(twoAMDEnv) + `,"manifest_url":"https://releases.example.invalid/r42/manifest.json"}`))
 
+	// ---- release trust update: the old release root authorizes a new public key.
+	trustUpdate := mustCanon(fmt.Sprintf(`{"kind":"fvpn-release-trust-v1","revision":"9007199254740993","keys":[{"id":%q,"purpose":"release","public":%q,"state":"active","not_before":%q,"not_after":%q}]}`,
+		keys["untrusted"].KeyID, keys["untrusted"].PubB64, TestKeyNotBefore, TestKeyNotAfter))
+	trustEnv := sign(trustUpdate, keys["release"])
+	out["vectors/release-trust-update-signing.json"] = signingVector("ReleaseUpdate authorized by the OLD release key (§13.4); the previously untrusted test public key becomes authorized only after verification.", "release", keys["release"], trustUpdate, trustEnv)
+	out["examples/trust/valid/release-update.json"] = prettyDoc(envJSON(trustEnv))
+	for _, tc := range []struct {
+		name  string
+		path  []string
+		value string
+	}{
+		{"wrong-kind", []string{"kind"}, `"fvpn-unknown-trust-v1"`},
+		{"numeric-revision", []string{"revision"}, `2`},
+		{"wrong-purpose", []string{"keys", "purpose"}, `"desired-state"`},
+		{"private-material", []string{"keys", "private"}, `"TEST ONLY - NOT A SECRET"`},
+		{"revoked-without-time", []string{"keys", "state"}, `"revoked"`},
+		{"bad-public-key", []string{"keys", "public"}, `"AA=="`},
+	} {
+		out["examples/trust/invalid/"+tc.name+".json"] = prettyDoc(envJSON(sign(setMember(trustUpdate, tc.path, tc.value), keys["release"])))
+	}
+
 	// ---- desired state
 	ds := mustCanon(strings.ReplaceAll(desiredState, "%MANIFEST_SHA256%", manifestSHA))
 	dsEnv := sign(ds, keys["desired-state"])
@@ -208,6 +229,28 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["examples/invalid/DesiredStateEnvelope.no-signatures.json"] = prettyDoc(envJSON(noSig))
 	reasons["DesiredStateEnvelope.no-signatures.json"] = Reason{Kind: "schema", Pointer: "/signatures", Keyword: "minItems",
 		Note: "An unsigned envelope is a downgrade and is rejected (§16.2)."}
+
+	// D-034 adds a signed revocation set without rewriting the original vector.
+	revoked := `["00000000-0000-4000-8000-000000000042"]`
+	dsRevoked := setMember(ds, []string{"revoked_release_ids"}, revoked)
+	dsRevokedEnv := sign(dsRevoked, keys["desired-state"])
+	out["vectors/desired-state-revocations-signing.json"] = signingVector(
+		"Signed desired state with explicit revoked releases (§13.4, D-034).",
+		"desired-state", keys["desired-state"], dsRevoked, dsRevokedEnv)
+	out["examples/valid/DesiredStateEnvelope.revocations.json"] = prettyDoc(envJSON(dsRevokedEnv))
+	out["examples/valid/DesiredStateEnvelope.empty-revocations.json"] = prettyDoc(envJSON(sign(setMember(ds, []string{"revoked_release_ids"}, `[]`), keys["desired-state"])))
+	for _, tc := range []struct{ name, value, pointer, keyword string }{
+		{"duplicate-revocations", `["00000000-0000-4000-8000-000000000042","00000000-0000-4000-8000-000000000042"]`, "/signed/revoked_release_ids", "uniqueItems"},
+		{"invalid-revocation-id", `["release-demo"]`, "/signed/revoked_release_ids/0", "format"},
+		{"null-revocations", `null`, "/signed/revoked_release_ids", "type"},
+	} {
+		name := "DesiredStateEnvelope." + tc.name + ".json"
+		out["examples/invalid/"+name] = prettyDoc(envJSON(sign(setMember(ds, []string{"revoked_release_ids"}, tc.value), keys["desired-state"])))
+		reasons[name] = Reason{Kind: "schema", Pointer: tc.pointer, Keyword: tc.keyword, Note: "Revocations must be a unique UUID array when present."}
+	}
+	revocationTamper := envelope.Envelope{Signed: setMember(dsRevoked, []string{"revoked_release_ids"}, `[]`), Signatures: dsRevokedEnv.Signatures}
+	out["examples/invalid/DesiredStateEnvelope.revocations-tampered.json"] = prettyDoc(envJSON(revocationTamper))
+	reasons["DesiredStateEnvelope.revocations-tampered.json"] = Reason{Kind: "signature", Code: envelope.CodeSignatureInvalid, Note: "Removing a signed revocation invalidates the signature."}
 
 	// ---- serving lease
 	lease := mustCanon(servingLease)
@@ -275,6 +318,22 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["examples/invalid/UpdateResult.hash-mismatch.json"] = prettyDoc(setMember(ur, []string{"state"}, `"failed"`))
 	reasons["UpdateResult.hash-mismatch.json"] = Reason{Kind: "payload_hash", Field: "payload_hash",
 		Note: "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."}
+
+	// The existing required policy_generation is hashed and remains a decimal string.
+	urPolicy := setMember(ur, []string{"policy_generation"}, `"9007199254740993"`)
+	urPolicy = setMember(urPolicy, []string{"state"}, `"failed"`)
+	urPolicy = withHash(setMember(urPolicy, []string{"error_code"}, `"ARTIFACT_INVALID"`), "payload_hash")
+	urPolicyNoHash, _ := canonjson.CanonicalizeWithout(urPolicy, "payload_hash")
+	urPolicyHash, _ := canonjson.HashHex(urPolicy, "payload_hash")
+	out["vectors/update-result-policy-generation-hash.json"] = pretty(map[string]any{
+		"description":            "Applied configuration generation above 2^53, distinct from job generation; ARTIFACT_INVALID is a node-reported code (§13.10.3).",
+		"canonical_without_hash": string(urPolicyNoHash), "payload_hash": urPolicyHash, "result": rawJSON(urPolicy),
+	})
+	out["examples/valid/UpdateResult.applied-policy-generation.json"] = prettyDoc(urPolicy)
+	out["examples/invalid/UpdateResult.numeric-policy-generation.json"] = prettyDoc(setMember(ur, []string{"policy_generation"}, `18`))
+	reasons["UpdateResult.numeric-policy-generation.json"] = Reason{Kind: "schema", Pointer: "/policy_generation", Keyword: "type", Note: "Applied policy generation must never pass through a JSON number."}
+	out["examples/invalid/UpdateResult.policy-generation-tampered.json"] = prettyDoc(setMember(urPolicy, []string{"policy_generation"}, `"9007199254740994"`))
+	reasons["UpdateResult.policy-generation-tampered.json"] = Reason{Kind: "payload_hash", Field: "payload_hash", Note: "Changing the applied policy generation changes the payload hash."}
 
 	// ---- canonical JSON and decimal string vectors
 	cj, err := canonicalJSONVectors()

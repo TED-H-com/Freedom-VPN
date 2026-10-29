@@ -116,13 +116,14 @@ a different external key is a conflict. The external ID and processing metadata
 remain for read-back. This deliberately handles a lost **enroll** response
 differently from a lost **one-time bootstrap** response.
 
-No plaintext is included in `EnrollResponse`. The exact HTTP placement of a
-bootstrap delivery needs the contract decision described in [README](README.md).
+No plaintext is included in `EnrollResponse`. D-015 places single delivery at
+`POST /agent/bootstrap`, over mTLS, with `Cache-Control: no-store`. See
+[the wiring contract](../nodes/WIRING.md) for error codes and replay behavior.
 
 ## Revocation and conflicts
 
 `RevokeNode` checks resource version and command idempotency, persists a terminal
-local journal denial, revokes every certificate/incarnation, cancels pending
+incarnation journal denial, revokes every certificate/incarnation, cancels pending
 enrollments, erases bootstrap material and records route/peer withdrawal work.
 The durable journal survives an older PostgreSQL restore. A journal write
 followed by a DB transaction failure intentionally leaves authentication denied;
@@ -138,3 +139,11 @@ identity from IP/MAC. Adapter policy must distinguish ordinary roaming from
 incompatible simultaneous activity. The worker must honor this freeze before
 mutating its external identity mapping. Resolution is explicit operator work;
 there is no automatic unfreeze or new remote-shell capability.
+
+
+An explicitly authorized reinstall uses the same stable Node and a new incarnation.
+Incarnation journal tombstones are permanent; an old token/proof/certificate never
+revives them. The proposed additive migration permits only a newly consumed
+bound enrollment to transition revoked→registered. Existing node-level journal
+denials remain fail closed and require operator reconciliation; they are never
+silently erased. Retirement cannot be undone.

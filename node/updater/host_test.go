@@ -184,8 +184,11 @@ func TestUPD_FileGateAndMeter(t *testing.T) {
 		t.Fatal(err)
 	}
 	e2, err := m.OpenEpoch(ctx)
-	if err != nil || e1 != e2 {
+	if err != nil || e1 == e2 || e1 == "" {
 		t.Fatalf("epoch %s %s %v", e1, e2, err)
+	}
+	if _, err := os.Stat(cp + ".epoch"); !os.IsNotExist(err) {
+		t.Fatal("meter epoch sidecar was written into state")
 	}
 	left, _ := os.ReadFile(cp)
 	if string(left) != string(body) {

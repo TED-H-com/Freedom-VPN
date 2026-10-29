@@ -111,8 +111,7 @@ staging group; no real group/account identifier is embedded here.
    `RevokeNode` also requires the parsed `If-Match` resource version.
 4. Agent adapters take the peer certificate from verified mTLS; never trust a
    body-supplied certificate, `X-Node-ID` or an unprotected proxy header.
-   `Authenticate` locally returns `NodeIdentity{NodeID, IncarnationID}`. Reconcile
-   this return type with `internal/httpapi.AgentAuthenticator` when it lands.
+   `Authenticate` locally returns `NodeIdentity{NodeID, IncarnationID}`. `AuthenticateAgent` adapts it to `internal/auth.AgentAuthenticator`.
 5. `CreateEnrollment` returns `api.EnrollmentCreated`; `Enroll` returns
    `EnrollResult.Response`, 201 for first success and 200 when `Replay` is true.
    Every error path returns no partial secret/result. Secret responses require
@@ -126,30 +125,15 @@ staging group; no real group/account identifier is embedded here.
    `node.peer.withdraw`, reconcile by operation/node/incarnation and read back
    removal. `RevokeNode` returns a pending operation, never external completion.
 
-The setup-key service is implemented, but **there is no permitted bootstrap
-field or endpoint in the current 40-endpoint contract**: desired state forbids
-unknown properties and enroll explicitly excludes secrets. Do not call
-`TakeBootstrap` from a GET adapter until the orchestrator chooses a contract
-extension; premature consumption could discard an undeliverable secret.
+The D-015 `POST /agent/bootstrap` contract now carries authenticated one-time
+setup delivery. Reinstall accepts an existing `node_id` only after the current
+incarnation is revoked; a retired Node stays terminal. Applying the proposed
+additive reinstall migration still requires the database owner. The base F-16
+guard already permits the first deployment/peer binding after NetBird read-back.
 
-The base `node_incarnations_identity` trigger in
-`db/migrations/00005_evidence_and_deadlines.sql` calls `immutable_fields` for
-`deployment_id` and `peer_id` (among other identity fields). It rejects even
-their first NULL→value UPDATE. This currently blocks recording a newly joined
-NetBird peer on an existing `node_incarnations` row. The database owner must
-decide whether to allow that one-time binding; this service does not drop the
-trigger, use a migration exemption, or bypass it through another write path.
-
-`pkg/envelope.Purpose.Valid` currently omits `ledger-epoch`. Its distinct central
-signer can create envelopes, but the shared trust-store parser cannot represent
-that purpose. The orchestrator must add it before connecting a ledger-epoch
-verifier. It is not aliased to recovery or exposed to nodes as another purpose.
-
-The current admin create contract has no existing `node_id`. It reserves a new
-Node. Rejoining a permanently revoked machine with a new enrollment therefore
-creates a new Node/incarnation and preserves the old tombstone/history.
-Reusing the same stable Node through a controlled reinstall needs an explicit
-contract/orchestrator decision; no hidden lifecycle reset is provided.
+See [node wiring](../nodes/WIRING.md) for the mounted APIs, worker configuration,
+current integration evidence and remaining cross-area blockers. Node trust
+bundles now use `envelope.NewNodeTrustStore` and exclude ledger-epoch keys.
 
 ## Verification and scope
 

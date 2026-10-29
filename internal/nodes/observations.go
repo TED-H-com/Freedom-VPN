@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -58,7 +59,7 @@ func (s *Service) SubmitObservation(
 	payloadHash := payloadHashArr[:]
 
 	var accepted api.ObservationAccepted
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		// 1. Lock the node row and verify identity and lifecycle state.
 		var (
 			lifecycleState       string
@@ -161,7 +162,7 @@ func (s *Service) SubmitObservation(
 			return err
 		}
 
-		receivedAt := s.now().UTC()
+		receivedAt := s.now().UTC().Truncate(time.Microsecond)
 		observedAt := report.ObservedAt.UTC()
 		appliedGenStr := "0"
 		if gen, err := report.AppliedConfigGeneration.Get(); err == nil {
@@ -200,6 +201,24 @@ func (s *Service) SubmitObservation(
 			return err
 		}
 
+		if s.observeVersion != nil {
+			if err := s.observeVersion(ctx, tx, report); err != nil {
+				return err
+			}
+			// The fleet ledger owns version ordering; node wall time alone cannot replace it.
+			currentReleaseID = nil
+			lastGoodReleaseID = nil
+		}
+		provisioning := report.ProvisioningState
+		if s.observeVersion != nil && provisioning == api.ProvisioningStateReady {
+			var bound bool
+			if err := tx.QueryRow(ctx, `SELECT peer_id IS NOT NULL FROM node_incarnations WHERE id=$1`, authIncarnationID).Scan(&bound); err != nil {
+				return err
+			}
+			if !bound {
+				provisioning = api.ProvisioningStateApplying
+			}
+		}
 		// 4. Update node state. An older observed_at NEVER overrides newer observed state!
 		isNewerOrEqual := lastObservedAt == nil || !observedAt.Before(lastObservedAt.UTC())
 		if isNewerOrEqual {
@@ -223,7 +242,7 @@ func (s *Service) SubmitObservation(
 			if _, err := tx.Exec(ctx, updateNode,
 				authNodeID, receivedAt, observedAt,
 				appliedGenStr,
-				string(report.ProvisioningState),
+				string(provisioning),
 				string(effectiveHealth),
 				string(effectiveSafety),
 				effectiveForwarding,
@@ -554,7 +573,7 @@ func (s *Service) SweepStaleNodes(
 	offlineCutoff := now.Add(-offlineAfter)
 
 	var res StalenessSweepResult
-	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		// 1. Move online/stale nodes past offlineCutoff to offline.
 		tagOffline, err := tx.Exec(ctx, `
 			UPDATE nodes

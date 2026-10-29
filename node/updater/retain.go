@@ -17,6 +17,10 @@ func (e *Engine) Retain(ctx context.Context) error {
 	if e.Journal == nil {
 		return nil
 	}
+	return e.withLock(ctx, func() error { return e.retainLocked(ctx) })
+}
+
+func (e *Engine) retainLocked(ctx context.Context) error {
 	keep := map[string]bool{}
 	p, err := e.Journal.Pointers(ctx)
 	if err != nil {

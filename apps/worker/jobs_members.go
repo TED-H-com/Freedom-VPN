@@ -39,9 +39,11 @@ func members() Domain {
 }
 
 // MemberJobs returns a fresh registry; Open merges it and rejects overlap.
+// D-031 makes checkout synchronous. D-038 leaves legacy session events in
+// disposable development databases to the observable unknown-event path.
 func MemberJobs() Registry {
 	r := Registry{}
-	for _, name := range []string{"member.entitlement_changed", "member.suspended", "device.authorized", "device.revoked", "netbird.device_sync", "billing.session_requested", "billing.inbox_received", "billing.reconcile", "members.reconcile", "devices.discover"} {
+	for _, name := range []string{"member.entitlement_changed", "member.suspended", "device.authorized", "device.revoked", "netbird.device_sync", "billing.inbox_received", "billing.reconcile", "members.reconcile", "devices.discover"} {
 		r.Register(name, memberJob)
 	}
 	return r
@@ -67,25 +69,6 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 			return "", e
 		}
 		return "billing_inbox:" + p.ID.String(), nil
-	case "billing.session_requested":
-		var p struct {
-			ID     uuid.UUID `json:"session_id"`
-			Member uuid.UUID `json:"member_id"`
-		}
-		if json.Unmarshal(event.Payload, &p) != nil || p.ID != event.AggregateID || p.Member == uuid.Nil {
-			return "", errors.New("invalid session event")
-		}
-		var matches bool
-		if e := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM billing_sessions WHERE id=$1 AND member_id=$2)`, p.ID, p.Member).Scan(&matches); e != nil {
-			return "", e
-		}
-		if !matches {
-			return "", errors.New("session owner mismatch")
-		}
-		if e := s.HTTP.Billing.FulfillSession(ctx, p.ID); e != nil {
-			return "", e
-		}
-		return "billing_session:" + p.ID.String(), nil
 	case "netbird.device_sync", "device.authorized", "device.revoked":
 		var p devices.Event
 		if json.Unmarshal(event.Payload, &p) != nil || p.DeviceID != event.AggregateID || p.MemberID == uuid.Nil || p.DeviceVersion.String() != event.AggregateVersion {

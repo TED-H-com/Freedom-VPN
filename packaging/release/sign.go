@@ -80,15 +80,20 @@ func ParsedManifest(signed []byte) (api.ReleaseManifest, error) {
 // (§13.4, UPD-A04).
 func CheckArtifact(manifest api.ReleaseManifest, architecture, path string) error {
 	var found *api.ManifestArtifact
+	matches := 0
 	for i := range manifest.Artifacts {
 		a := &manifest.Artifacts[i]
 		if string(a.Architecture) == architecture && string(a.OsId) == BaselineOSID {
 			for _, v := range a.OsVersions {
 				if v == BaselineOSVersion {
+					matches++
 					found = a
 				}
 			}
 		}
+	}
+	if matches > 1 {
+		return fmt.Errorf("release: VALIDATION_FAILED: duplicate ubuntu %s %s artifact", BaselineOSVersion, architecture)
 	}
 	if found == nil {
 		return fmt.Errorf("release: UNSUPPORTED_PLATFORM: no ubuntu %s %s artifact", BaselineOSVersion, architecture)

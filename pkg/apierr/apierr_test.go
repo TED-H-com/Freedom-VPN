@@ -39,7 +39,7 @@ func TestTableInvariants(t *testing.T) {
 		if !codeRE.MatchString(string(s.Code)) {
 			t.Errorf("bad code %q", s.Code)
 		}
-		if s.HTTPStatus < 400 || s.HTTPStatus > 599 || http.StatusText(s.HTTPStatus) == "" {
+		if !(s.NodeLocal && s.HTTPStatus == 0) && (s.HTTPStatus < 400 || s.HTTPStatus > 599 || http.StatusText(s.HTTPStatus) == "") {
 			t.Errorf("%s: bad status %d", s.Code, s.HTTPStatus)
 		}
 		if s.Section == "" || s.Description == "" {
@@ -260,5 +260,25 @@ func TestErrorHelpers(t *testing.T) {
 	}
 	if New(ValidationFailed, "").HTTPStatus() != 422 || !New(RateLimited, "").IsRetryable() {
 		t.Fatal("status/retryable")
+	}
+}
+
+func TestAPI01_Revision3ReportOnlyCodes(t *testing.T) {
+	for _, code := range []Code{ArtifactInvalid, IsolationBaselineMissing, MeterEpochChange} {
+		spec, ok := Lookup(code)
+		if !ok || !spec.NodeLocal || spec.HTTPStatus != 0 || spec.Retryable {
+			t.Fatalf("%s: %+v", code, spec)
+		}
+		rec := httptest.NewRecorder()
+		Write(rec, nil, New(code, "node report only"))
+		if rec.Code != 500 || decode(t, rec).Error.Code != InternalError {
+			t.Fatalf("report code leaked into HTTP: %s", rec.Body)
+		}
+	}
+	rec := httptest.NewRecorder()
+	Write(rec, nil, New(NotImplemented, "Command not implemented."))
+	body := decode(t, rec)
+	if rec.Code != 501 || body.Error.Code != NotImplemented || body.Error.Retryable {
+		t.Fatal(body)
 	}
 }

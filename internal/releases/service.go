@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -43,7 +44,7 @@ func Begin(ctx context.Context, tx pgx.Tx, c Command, route string, body []byte)
 		return db.IdempotencyRecord{}, e
 	}
 	key := sha256.Sum256([]byte(c.IdempotencyKey.String()))
-	r, e := db.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: c.ActorID.String(), Method: "POST", Route: route, KeyHash: key[:], RequestHash: h[:]}, 0)
+	r, e := commandtx.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: c.ActorID.String(), Method: "POST", Route: route, KeyHash: key[:], RequestHash: h[:]}, 0)
 	if errors.Is(e, db.ErrIdempotencyConflict) {
 		e = apierr.New(apierr.IdempotencyConflict, "Idempotency-Key has different content")
 	}
@@ -83,7 +84,7 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 		return Registration{}, e
 	}
 	var out Registration
-	e = db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		rec, e := Begin(ctx, tx, c, "/api/v1/admin/releases", raw)
 		if e != nil {
 			return e
@@ -139,7 +140,7 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 				out.OperationID = &op
 				out.Status = 202
 				state = "pending"
-				_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id) VALUES($1,'release.verify',$2,'release',$3)`, op, c.ActorID.String(), id)
+				_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id) VALUES($1,'release.register',$2,'release',$3,$4)`, op, c.ActorID.String(), id, commandtx.RequestID(ctx))
 				if e != nil {
 					return e
 				}
@@ -157,7 +158,7 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 		} else {
 			return e
 		}
-		return db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "release", ResourceID: &out.ReleaseID, OperationID: out.OperationID, ResponseStatus: out.Status})
+		return commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "release", ResourceID: &out.ReleaseID, OperationID: out.OperationID, ResponseStatus: out.Status})
 	})
 	var constraint *db.ConstraintError
 	if errors.As(e, &constraint) && constraint.Constraint == "releases_version_key" {

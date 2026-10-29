@@ -8,7 +8,8 @@ type Code string
 
 // Spec describes one error code.
 type Spec struct {
-	Code       Code
+	Code Code
+	// HTTPStatus is zero for report-only codes, which must not be HTTP responses.
 	HTTPStatus int
 	// Retryable is the default value of the envelope "retryable" flag: true
 	// when the same request (with the same Idempotency-Key) may succeed
@@ -18,8 +19,8 @@ type Spec struct {
 	Section string
 	// NodeLocal is true for codes that are primarily reported inside agent
 	// payloads (update results §13.10.3, observations) rather than returned
-	// by the central API. They still map to an HTTP status for the rare case
-	// the API returns them, and appear in the OpenAPI ErrorCode enum.
+	// by the central API. Legacy codes retain their HTTP mappings. Report-only
+	// codes have HTTPStatus zero. All appear in the OpenAPI ErrorCode enum.
 	NodeLocal bool
 	// Description is a short English description for documentation.
 	Description string
@@ -43,6 +44,7 @@ const (
 	PreconditionRequired    Code = "PRECONDITION_REQUIRED"
 	RateLimited             Code = "RATE_LIMITED"
 	InternalError           Code = "INTERNAL_ERROR"
+	NotImplemented          Code = "NOT_IMPLEMENTED"
 	DependencyUnavailable   Code = "DEPENDENCY_UNAVAILABLE"
 )
 
@@ -56,6 +58,7 @@ const (
 	KeyUntrusted            Code = "KEY_UNTRUSTED"
 	HashMismatch            Code = "HASH_MISMATCH"
 	SizeMismatch            Code = "SIZE_MISMATCH"
+	ArtifactInvalid         Code = "ARTIFACT_INVALID"
 	DiskSpaceLow            Code = "DISK_SPACE_LOW"
 	DownloadTimeout         Code = "DOWNLOAD_TIMEOUT"
 	StoreUnavailable        Code = "STORE_UNAVAILABLE"
@@ -75,22 +78,24 @@ const (
 
 // Domain codes used elsewhere in the spec.
 const (
-	UsageEventConflict     Code = "USAGE_EVENT_CONFLICT"
-	LedgerEpochMismatch    Code = "LEDGER_EPOCH_MISMATCH"
-	ReplayUnavailable      Code = "REPLAY_UNAVAILABLE"
-	MeterPathInvalid       Code = "METER_PATH_INVALID"
-	DeviceLimitReached     Code = "DEVICE_LIMIT_REACHED"
-	EnrollmentTokenInvalid Code = "ENROLLMENT_TOKEN_INVALID"
-	EnrollmentTokenExpired Code = "ENROLLMENT_TOKEN_EXPIRED"
-	EnrollmentTokenRevoked Code = "ENROLLMENT_TOKEN_REVOKED"
-	EnrollmentKeyMismatch  Code = "ENROLLMENT_KEY_MISMATCH"
-	LeaseExpired           Code = "LEASE_EXPIRED"
-	WebhookSignatureBad    Code = "WEBHOOK_SIGNATURE_INVALID"
-	BootstrapConsumed      Code = "BOOTSTRAP_CONSUMED"
-	BootstrapNotReady      Code = "BOOTSTRAP_NOT_READY"
-	BootstrapExpired       Code = "BOOTSTRAP_EXPIRED"
-	NodeIncarnationActive  Code = "NODE_INCARNATION_ACTIVE"
-	NodeRetired            Code = "NODE_RETIRED"
+	UsageEventConflict       Code = "USAGE_EVENT_CONFLICT"
+	LedgerEpochMismatch      Code = "LEDGER_EPOCH_MISMATCH"
+	ReplayUnavailable        Code = "REPLAY_UNAVAILABLE"
+	MeterPathInvalid         Code = "METER_PATH_INVALID"
+	IsolationBaselineMissing Code = "ISOLATION_BASELINE_MISSING"
+	MeterEpochChange         Code = "METER_EPOCH_CHANGE"
+	DeviceLimitReached       Code = "DEVICE_LIMIT_REACHED"
+	EnrollmentTokenInvalid   Code = "ENROLLMENT_TOKEN_INVALID"
+	EnrollmentTokenExpired   Code = "ENROLLMENT_TOKEN_EXPIRED"
+	EnrollmentTokenRevoked   Code = "ENROLLMENT_TOKEN_REVOKED"
+	EnrollmentKeyMismatch    Code = "ENROLLMENT_KEY_MISMATCH"
+	LeaseExpired             Code = "LEASE_EXPIRED"
+	WebhookSignatureBad      Code = "WEBHOOK_SIGNATURE_INVALID"
+	BootstrapConsumed        Code = "BOOTSTRAP_CONSUMED"
+	BootstrapNotReady        Code = "BOOTSTRAP_NOT_READY"
+	BootstrapExpired         Code = "BOOTSTRAP_EXPIRED"
+	NodeIncarnationActive    Code = "NODE_INCARNATION_ACTIVE"
+	NodeRetired              Code = "NODE_RETIRED"
 )
 
 // specs is the authoritative table. The OpenAPI ErrorCode enum must list
@@ -113,6 +118,7 @@ var specs = []Spec{
 	{PreconditionRequired, http.StatusPreconditionRequired, false, "§14.6", false, "If-Match header is required to modify this resource."},
 	{RateLimited, http.StatusTooManyRequests, true, "§14.6", false, "Rate limit exceeded; honor Retry-After and back off with jitter."},
 	{InternalError, http.StatusInternalServerError, false, "§14.6", false, "Unexpected server error. No internal detail is returned; quote request_id."},
+	{NotImplemented, http.StatusNotImplemented, false, "§14.6 (transitional)", false, "Command not implemented; documented endpoints must not ship with this response in a release."},
 	{DependencyUnavailable, http.StatusServiceUnavailable, true, "§14.6", false, "Temporarily unable to persist or reach a dependency; retry with the same Idempotency-Key. Events were not acknowledged."},
 
 	// §13.11
@@ -124,6 +130,7 @@ var specs = []Spec{
 	{KeyUntrusted, http.StatusUnprocessableEntity, false, "§13.11", false, "No trusted key signed the document, or a signing key is revoked, expired or lacks the purpose."},
 	{HashMismatch, http.StatusUnprocessableEntity, false, "§13.11", true, "Downloaded content SHA-256 differs from the manifest; bounded re-download only."},
 	{SizeMismatch, http.StatusUnprocessableEntity, false, "§13.11", true, "Downloaded content size differs from the manifest; bounded re-download only."},
+	{ArtifactInvalid, 0, false, "§13.3, §13.4", true, "Hostile or malformed release archive, symlink, or entry/byte cap exceeded; node report only."},
 	{DiskSpaceLow, http.StatusInsufficientStorage, false, "§13.11", true, "Not enough disk space to start a destructive apply."},
 	{DownloadTimeout, http.StatusGatewayTimeout, true, "§13.11", true, "Artifact download timed out; bounded backoff retry."},
 	{StoreUnavailable, http.StatusServiceUnavailable, true, "§13.11", true, "Release store unavailable; bounded backoff retry."},
@@ -145,6 +152,8 @@ var specs = []Spec{
 	{LedgerEpochMismatch, http.StatusConflict, false, "§10.8, §17.3", false, "Batch references a ledger_epoch other than the current one; fetch GET /agent/usage-checkpoint first."},
 	{ReplayUnavailable, http.StatusGone, false, "§10.8, §15.4", false, "Requested sequence range is outside the verifiable replay window; a gap is recorded."},
 	{MeterPathInvalid, http.StatusUnprocessableEntity, false, "§10.3", true, "Metering hook, interface or binding generation is not valid; member forwarding stops."},
+	{IsolationBaselineMissing, 0, false, "§14.4, §16.3", true, "Isolation baseline is missing; member forwarding is off; node report only."},
+	{MeterEpochChange, 0, false, "§14.4, §17.3", true, "Meter epoch changed; event sequence continues within the incarnation; node report only."},
 	{DeviceLimitReached, http.StatusConflict, false, "§9.4, MEM02", false, "Authorizing another device would exceed the plan device limit."},
 	{EnrollmentTokenInvalid, http.StatusUnauthorized, false, "§6.1, ENR02", false, "Enrollment token is unknown or malformed."},
 	{EnrollmentTokenExpired, http.StatusUnauthorized, false, "§6.4, ENR02", false, "Enrollment token has expired."},
@@ -189,9 +198,10 @@ func (c Code) Valid() bool {
 	return ok
 }
 
-// HTTPStatus returns the HTTP status of code, or 500 for unknown codes.
+// HTTPStatus returns the HTTP status, or 500 for unknown/report-only codes.
+// Writer renders report-only codes as INTERNAL_ERROR, never as HTTP errors.
 func (c Code) HTTPStatus() int {
-	if s, ok := byCode[c]; ok {
+	if s, ok := byCode[c]; ok && s.HTTPStatus != 0 {
 		return s.HTTPStatus
 	}
 	return http.StatusInternalServerError
