@@ -199,31 +199,43 @@ func (s *Service) ListAdjustments(ctx context.Context, memberID uuid.UUID, perio
 	return result, nil
 }
 
-// applyNumericDelta applies a signed big.Int delta to an unsigned uint64 base,
-// clamping at [0, MaxUint64] so uint64 decimal string formatting never overflows.
-func applyNumericDelta(base uint64, delta *big.Int) uint64 {
-	if delta == nil || delta.Sign() == 0 {
-		return base
+// bigIntToUint64 converts a non-negative big.Int to uint64, failing closed with
+// decstr.ErrOverflow (mapped to apierr.InternalError with detail_code=usage_uint64_overflow)
+// if v exceeds math.MaxUint64 (§10.4).
+func bigIntToUint64(v *big.Int, field string) (uint64, error) {
+	if v == nil || v.Sign() <= 0 {
+		return 0, nil
 	}
-	b := new(big.Int).SetUint64(base)
-	b.Add(b, delta)
-	if b.Sign() <= 0 {
-		return 0
+	if !v.IsUint64() {
+		return 0, uint64OverflowError(field, v.String())
 	}
-	maxU64 := new(big.Int).SetUint64(^uint64(0))
-	if b.Cmp(maxU64) > 0 {
-		return ^uint64(0)
-	}
-	return b.Uint64()
+	return v.Uint64(), nil
 }
 
-func clampBigUint64(v *big.Int) uint64 {
-	if v == nil || v.Sign() <= 0 {
-		return 0
+// applyNumericDelta applies a signed big.Int delta to a non-negative big.Int base,
+// flooring negative net results at 0 and failing closed with decstr.ErrOverflow if the
+// net result exceeds math.MaxUint64 (§10.4).
+func applyNumericDelta(base *big.Int, delta *big.Int, field string) (uint64, error) {
+	b := new(big.Int)
+	if base != nil && base.Sign() > 0 {
+		b.Set(base)
 	}
-	maxU64 := new(big.Int).SetUint64(^uint64(0))
-	if v.Cmp(maxU64) > 0 {
-		return ^uint64(0)
+	if delta != nil && delta.Sign() != 0 {
+		b.Add(b, delta)
 	}
-	return v.Uint64()
+	if b.Sign() <= 0 {
+		return 0, nil
+	}
+	if !b.IsUint64() {
+		return 0, uint64OverflowError(field, b.String())
+	}
+	return b.Uint64(), nil
+}
+
+func addUint64Checked(a, b uint64, field string) (uint64, error) {
+	if a > ^uint64(0)-b {
+		sum := new(big.Int).Add(new(big.Int).SetUint64(a), new(big.Int).SetUint64(b))
+		return 0, uint64OverflowError(field, sum.String())
+	}
+	return a + b, nil
 }

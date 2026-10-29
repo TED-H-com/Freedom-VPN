@@ -29,13 +29,39 @@ type Ed25519Signer struct {
 	Purpose    envelope.Purpose
 }
 
-// NewRecoverySigner creates an Ed25519Signer restricted to envelope.PurposeRecovery.
+// NewRecoverySigner creates an Ed25519Signer restricted to envelope.PurposeRecovery
+// for signing per-stream usage checkpoints (§16.2, §17.3).
 func NewRecoverySigner(keyID string, priv ed25519.PrivateKey) *Ed25519Signer {
 	return &Ed25519Signer{
 		KeyID:      keyID,
 		PrivateKey: priv,
 		Purpose:    envelope.PurposeRecovery,
 	}
+}
+
+// NewLedgerEpochSigner creates an Ed25519Signer restricted to envelope.PurposeLedgerEpoch
+// for signing central-only usage_recovery_records when rotating ledger_epoch (§16.2, §17.3).
+// Ledger-epoch keys must never be included in node trust bundles.
+func NewLedgerEpochSigner(keyID string, priv ed25519.PrivateKey) *Ed25519Signer {
+	return &Ed25519Signer{
+		KeyID:      keyID,
+		PrivateKey: priv,
+		Purpose:    envelope.PurposeLedgerEpoch,
+	}
+}
+
+// VerifyRecoveryRecord verifies a signed usage_recovery_records envelope under
+// the central-only envelope.PurposeLedgerEpoch purpose (§16.2, §17.3).
+func VerifyRecoveryRecord(raw []byte, ts *envelope.TrustStore, now time.Time) (RecoverySignedPayload, string, error) {
+	signedJSON, keyID, err := envelope.Verify(raw, ts, envelope.PurposeLedgerEpoch, now)
+	if err != nil {
+		return RecoverySignedPayload{}, "", err
+	}
+	var payload RecoverySignedPayload
+	if err := json.Unmarshal(signedJSON, &payload); err != nil {
+		return RecoverySignedPayload{}, "", fmt.Errorf("usage: decode recovery record payload: %w", err)
+	}
+	return payload, keyID, nil
 }
 
 // Sign implements Signer.
