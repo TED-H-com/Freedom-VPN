@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -26,8 +27,8 @@ func jsonObject(b []byte) bool {
 
 // AppendAudit atomically records an action alongside its local state change.
 func AppendAudit(ctx context.Context, tx pgx.Tx, evt AuditEvent) error {
-	if !jsonObject(evt.Before) || !jsonObject(evt.After) || evt.SchemaVersion < 1 {
-		return errors.New("audit diffs must be versioned JSON objects")
+	if strings.TrimSpace(evt.Actor) == "" || strings.TrimSpace(evt.ActorType) == "" || strings.TrimSpace(evt.Action) == "" || strings.TrimSpace(evt.Resource) == "" || strings.TrimSpace(evt.Result) == "" || !jsonObject(evt.Before) || !jsonObject(evt.After) || evt.SchemaVersion < 1 {
+		return errors.New("invalid audit event")
 	}
 	if evt.ID == uuid.Nil {
 		var err error
