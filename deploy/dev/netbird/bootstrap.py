@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """TEST ONLY NetBird bootstrap, using public APIs exclusively; no secret output."""
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -59,6 +60,21 @@ def bootstrap():
     if not (STATE / 'owner-token').exists():
         raise RuntimeError('Owner token unavailable: use saved admin password to issue a replacement PAT, or follow README reset')
     owner_token = (STATE / 'owner-token').read_text().strip()
+    # IPv4-only G1 lab (§8.3): v0.82 defaults new accounts to IPv6 for All.
+    accounts = call('GET', '/accounts', token=owner_token)
+    if len(accounts) != 1:
+        raise RuntimeError('Expected exactly one dev account')
+    account = accounts[0]
+    settings = account['settings']
+    desired = {'ipv6_enabled_groups': [], 'auto_update_version': 'disabled',
+               'metrics_push_enabled': False, 'jwt_groups_enabled': False,
+               'groups_propagation_enabled': False}
+    if any(settings.get(k) != v for k, v in desired.items()):
+        settings.update(desired)
+        call('PUT', '/accounts/' + account['id'], {'settings': settings}, owner_token)
+    observed = call('GET', '/accounts', token=owner_token)
+    if any(observed[0]['settings'].get(k) != v for k, v in desired.items()):
+        raise RuntimeError('IPv4-only account setting not confirmed')
     # Remove the default before creating any non-admin identity or starting peers.
     groups = call('GET', '/groups', token=owner_token)
     all_id = next(g['id'] for g in groups if g['name'] == 'All')
@@ -109,8 +125,12 @@ def bootstrap():
 
 if __name__ == '__main__':
     try:
-        bootstrap()
-    except (RuntimeError, KeyError, OSError) as error:
+        os.umask(0o077)
+        STATE.mkdir(mode=0o700, exist_ok=True)
+        with (STATE / 'bootstrap.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            bootstrap()
+    except Exception as error:
         # No traceback or exception payload can accidentally include a response.
         print(str(error) if isinstance(error, RuntimeError) else 'Bootstrap state unavailable; see README recovery')
         raise SystemExit(1)

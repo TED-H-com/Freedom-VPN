@@ -159,6 +159,9 @@ func (c *Client) list(ctx context.Context, kind string) ([]object, error) {
 func (c *Client) get(ctx context.Context, kind, id string) (object, error) {
 	var o object
 	e := c.call(ctx, "GET", endpoint(kind, id), nil, &o)
+	if e == nil && (id == "" || stringField(o, "id") != id) {
+		return nil, failure(Unconfirmed)
+	}
 	return o, e
 }
 func nameField(kind string) string {
@@ -213,6 +216,7 @@ func (c *Client) locate(ctx context.Context, kind, key, name string) (object, er
 	return found, nil
 }
 func projection(kind string, o object) object {
+	o = decodeObject(o) // Normalize typed request slices to the same JSON tree as responses.
 	// Only API request fields are hashed; response-only IDs, counters and times
 	// are omitted. Normalize response group objects to request group IDs.
 	var fields []string

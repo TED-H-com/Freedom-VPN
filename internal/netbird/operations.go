@@ -204,6 +204,13 @@ func (c *Client) paid(ctx context.Context, externalID string) (object, error) {
 	if len(name) != len("fvpn-paid-")+24 || name[:len("fvpn-paid-")] != "fvpn-paid-" {
 		return nil, failure(Invalid)
 	}
+	_, known, err := c.store.FindExternal(ctx, c.deployment, "groups", externalID)
+	if err != nil {
+		return nil, err
+	}
+	if !known {
+		return nil, failure(Conflict)
+	}
 	return o, nil
 }
 
@@ -266,6 +273,15 @@ func (c *Client) authorize(ctx context.Context, peer string, wanted []string) er
 			oh, _ := hash(projection("groups", read))
 			if wh != oh {
 				return failure(Unconfirmed)
+			}
+			binding, known, err := c.store.FindExternal(ctx, c.deployment, "groups", id)
+			if err != nil {
+				return err
+			}
+			if known {
+				if err := c.bind(ctx, "groups", binding.InternalID, id, wh); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -354,8 +370,18 @@ func (c *Client) DeletePeer(ctx context.Context, bindingKey string) error {
 	if e != nil {
 		return e
 	}
+	groups, e := c.list(ctx, "groups")
+	if e != nil {
+		return e
+	}
+	peerGroups := []string{}
+	for _, group := range groups {
+		if slices.Contains(ids(group["peers"]), b.ExternalID) {
+			peerGroups = append(peerGroups, stringField(group, "id"))
+		}
+	}
 	for _, r := range routes {
-		if stringField(r, "peer") == b.ExternalID {
+		if stringField(r, "peer") == b.ExternalID || slices.ContainsFunc(ids(r["peer_groups"]), func(id string) bool { return slices.Contains(peerGroups, id) }) {
 			return failure(Conflict)
 		}
 	}
@@ -426,7 +452,7 @@ type AccessConfig struct {
 }
 
 func (c *Client) BootstrapAccess(ctx context.Context, a AccessConfig) error {
-	if len(a.PaidGroupIDs) == 0 || len(a.ResolverPeerIDs) != 2 || len(a.ResolverIPs) != 2 || len(a.OpsPorts) == 0 {
+	if len(a.PaidGroupIDs) == 0 || len(a.ResolverPeerIDs) == 0 || len(a.ResolverPeerIDs) != len(a.ResolverIPs) || len(a.OpsPorts) == 0 {
 		return failure(Invalid)
 	}
 	for _, ip := range a.ResolverIPs {
@@ -543,9 +569,49 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 	if stringField(observed, "name") != name || stringField(observed, "type") != "one-off" || observed["usage_limit"] != float64(1) || observed["ephemeral"] != false || !slices.Equal(ids(observed["auto_groups"]), []string{group}) {
 		return SetupKey{}, failure(Unconfirmed)
 	}
+	if result.SecretAvailable {
+		expires, err := time.Parse(time.RFC3339Nano, stringField(observed, "expires"))
+		remaining := time.Until(expires)
+		if err != nil || remaining <= 0 || remaining > 24*time.Hour+time.Minute || observed["revoked"] == true || observed["allow_extra_dns_labels"] == true {
+			return SetupKey{}, failure(Unconfirmed)
+		}
+	}
 	h, _ := hash(object{"name": name, "type": "one-off", "usage_limit": 1, "ephemeral": false, "auto_groups": []string{group}})
 	if e = c.bind(ctx, "setup-keys", enrollmentID, result.ID, h); e != nil {
 		return SetupKey{}, e
 	}
 	return result, nil
+}
+
+// RevokeNodeSetupKey is the explicit recovery path for a lost one-time secret.
+// It does not disconnect enrolled peers (§6.4); use WithdrawExit/DeletePeer for
+// revocation. A replacement uses a NEW authorized enrollment attempt ID.
+func (c *Client) RevokeNodeSetupKey(ctx context.Context, enrollmentID string) error {
+	if !valid(enrollmentID) {
+		return failure(Invalid)
+	}
+	unlock, err := c.lock(ctx)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	o, err := c.locate(ctx, "setup-keys", enrollmentID, stableName("enroll", enrollmentID))
+	if err != nil || o == nil {
+		return err
+	}
+	id := stringField(o, "id")
+	if o["revoked"] != true {
+		err = c.call(ctx, "PUT", endpoint("setup-keys", id), object{"revoked": true, "auto_groups": ids(o["auto_groups"])}, &object{})
+		if err != nil {
+			return err
+		}
+	}
+	o, err = c.get(ctx, "setup-keys", id)
+	if err != nil {
+		return err
+	}
+	if o["revoked"] != true {
+		return failure(Unconfirmed)
+	}
+	return nil
 }

@@ -21,6 +21,7 @@ type Binding struct {
 type BindingStore interface {
 	Lock(context.Context, string) (func(), error)
 	Get(context.Context, string, string, string) (Binding, bool, error)
+	FindExternal(context.Context, string, string, string) (Binding, bool, error)
 	Put(context.Context, Binding) error
 	Delete(context.Context, string, string, string) error
 }
@@ -74,6 +75,20 @@ func (s *MemoryBindingStore) Put(ctx context.Context, b Binding) error {
 	}
 	s.bindings[key] = b
 	return nil
+}
+
+func (s *MemoryBindingStore) FindExternal(ctx context.Context, deployment, kind, externalID string) (Binding, bool, error) {
+	if err := ctx.Err(); err != nil {
+		return Binding{}, false, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, b := range s.bindings {
+		if b.DeploymentID == deployment && b.Kind == kind && b.ExternalID == externalID {
+			return b, true, nil
+		}
+	}
+	return Binding{}, false, nil
 }
 func (s *MemoryBindingStore) Delete(ctx context.Context, d, k, id string) error {
 	if e := ctx.Err(); e != nil {

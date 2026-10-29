@@ -9,6 +9,12 @@ import secrets
 os.umask(0o077)
 state = Path(__file__).resolve().parent / '.state'
 state.mkdir(mode=0o700, exist_ok=True)
+state.chmod(0o700)
+prefix = os.environ.get('FVPN_NB_PREFIX', 'fvpn-dev-netbird')
+marker = state / 'prefix'
+if not prefix.startswith('fvpn-') or (marker.exists() and marker.read_text().strip() != prefix):
+    raise SystemExit('State belongs to another stack; use its prefix or reset it first')
+marker.write_text(prefix + '\n')
 port = int(os.environ.get('FVPN_NB_API_PORT', '18080'))
 config = state / 'config.yaml'
 if not config.exists():
