@@ -105,6 +105,19 @@ also accepts explicit dependencies for integration tests. No domain opens a pool
 reads environment variables, or starts a listener/dispatcher/goroutine during
 construction. `Built.Runners` supplies `RunNodeSchedule` to the process supervisor.
 
+The nodes build creates one `Runtime.DesiredStateCompiler()` and shares it with
+the publication executor and member jobs through `Built.Context` and
+`membersruntime.WithCompiler`. All context decorators run before dispatch, so
+this does not depend on domain build order or change the D-026/D-045 domain list.
+The compiler uses the nodes signing provider, `desired_state_seconds`, and
+`dns_resolver_ipv4` / `dns_resolver_ipv6`, with the DB entitlement and policy
+readers. The members registry keeps ownership of `device.authorized`,
+`device.revoked`, `member.entitlement_changed`, and `member.suspended`: after
+NetBird authorization read-back, it recompiles affected node policies and records
+an audit receipt before acknowledging the event. Compilation failure retries
+without acknowledging success. A compiled generation is desired state; applied
+generation and node operation steps still require agent observations (§14.5).
+
 | Event | Durable evidence and external calls |
 |---|---|
 | `node.publication_changed` | Validates the operation/node and current claim, then runs the exits executor. Publication requires agent policy ACK, route/group/policy read-back and stored data-path probe evidence before `active`/`succeeded`. Unpublish/disable remove the route/access policy even offline; an absent agent ACK stays unconfirmed. |
