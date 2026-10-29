@@ -42,8 +42,8 @@ func (s *Service) ApplySupportTx(ctx context.Context, tx pgx.Tx, actor uuid.UUID
 			return apierr.New(apierr.ValidationFailed, "Revoked releases cannot be approved or serve")
 		}
 	}
-	var previous []uuid.UUID
-	if e = tx.QueryRow(ctx, `SELECT revoked_release_ids FROM fleet_config WHERE id=$1 FOR UPDATE`, FleetID).Scan(&previous); e != nil {
+	var previous, previousServing, previousApproved []uuid.UUID
+	if e = tx.QueryRow(ctx, `SELECT revoked_release_ids,supported_release_ids,approved_release_ids FROM fleet_config WHERE id=$1 FOR UPDATE`, FleetID).Scan(&previous, &previousServing, &previousApproved); e != nil {
 		return e
 	}
 	for _, id := range previous {
@@ -71,7 +71,22 @@ func (s *Service) ApplySupportTx(ctx context.Context, tx pgx.Tx, actor uuid.UUID
 	if e = db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: uuid.MustParse(FleetID), AggregateType: "fleet", AggregateVersion: "1", EventType: "fleet.release_support_changed", SchemaVersion: 1, Payload: json.RawMessage(`{"schema_version":1}`)}); e != nil {
 		return e
 	}
-	return Audit(ctx, tx, actor.String(), "admin", "release_support.activate", FleetID, nil, map[string]any{"reason": reason, "policy": p})
+	// Audit real release resources, including removals from the serving set.
+	seen := map[uuid.UUID]bool{}
+	for _, ids := range [][]uuid.UUID{previous, previousServing, previousApproved, serving, p.ApprovedReleaseIds, p.RevokedReleaseIds} {
+		for _, id := range ids {
+			if seen[id] {
+				continue
+			}
+			seen[id] = true
+			if err := Audit(ctx, tx, actor, api.AuditEventActorTypeAdmin, "release_support.activate", api.ResourceRef{Type: api.ResourceTypeRelease, Id: id}, nil, api.AuditEventResultSucceeded, map[string]any{
+				"approved": slices.Contains(p.ApprovedReleaseIds, id), "serving": slices.Contains(serving, id), "revoked": slices.Contains(p.RevokedReleaseIds, id),
+			}); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Cursor encodes a stable UUID keyset; callers must retain the same resource URL.

@@ -26,6 +26,7 @@ type RenderPlan struct {
 // recreated. The script is one nft transaction: readers see either the old
 // ruleset or the new one, never an allow-all gap (§8.2).
 func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
+	m = reserveUnmappedClasses(m, tcState)
 	devices, assignments, denied, err := validateServing(m)
 	if err != nil {
 		return RenderPlan{}, err
@@ -94,14 +95,15 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	}
 
 	// IPv6 member forwarding is blocked in v1 (§8.3). The counter is diagnostic.
-	rule(&b, "forward", fmt.Sprintf("iifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
-	rule(&b, "forward", fmt.Sprintf("oifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
-	rule(&b, "forward", fmt.Sprintf("iifname %q ct state invalid counter name %q drop", in, counterInvalid))
-	rule(&b, "forward", fmt.Sprintf("oifname %q ct state invalid counter name %q drop", in, counterInvalid))
+	// Upload matches bind the uplink; download matches bind the uplink as ingress.
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q meta nfproto ipv6 counter name %q drop", in, up, counterV6))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q meta nfproto ipv6 counter name %q drop", up, in, counterV6))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ct state invalid counter name %q drop", in, up, counterInvalid))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ct state invalid counter name %q drop", up, in, counterInvalid))
 
 	// Lease and binding before any accept (§8.2, §16.3). An empty allow set
 	// drops every upload source.
-	rule(&b, "forward", fmt.Sprintf("iifname %q ip saddr != @allowed_v4 counter name %q drop", in, counterUnknown))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr != @allowed_v4 counter name %q drop", in, up, counterUnknown))
 
 	// DNS exception before the destination deny, because the resolver prefix
 	// is itself inside the spec deny list (§8.1, §10.1). These counters are
@@ -113,13 +115,13 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
 		dnsUp := usageCounter(dirDNSUpload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
-			rule(&b, "forward", fmt.Sprintf("iifname %q ip saddr %s ip daddr @resolver_v4 tcp dport 53 counter name %q meta priority set %s accept", in, addr, dnsUp, prio))
-			rule(&b, "forward", fmt.Sprintf("iifname %q ip saddr %s ip daddr @resolver_v4 udp dport 53 counter name %q meta priority set %s accept", in, addr, dnsUp, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 tcp dport 53 counter name %q meta priority set %s accept", in, up, addr, dnsUp, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 udp dport 53 counter name %q meta priority set %s accept", in, up, addr, dnsUp, prio))
 		}
 	}
-	rule(&b, "forward", fmt.Sprintf("iifname %q ip daddr @resolver_v4 counter name %q drop", in, counterBadDNS))
-	rule(&b, "forward", fmt.Sprintf("iifname %q ip daddr @denied_v4 counter name %q drop", in, counterDenied))
-	rule(&b, "forward", fmt.Sprintf("iifname %q ip daddr @host_v4 counter name %q drop", in, counterHost))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @resolver_v4 counter name %q drop", in, up, counterBadDNS))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @denied_v4 counter name %q drop", in, up, counterDenied))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @host_v4 counter name %q drop", in, up, counterHost))
 
 	for _, d := range devices {
 		if !d.TimeoutOK() {
@@ -128,15 +130,15 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
 		upCounter := usageCounter(dirUpload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
-			rule(&b, "forward", fmt.Sprintf("iifname %q ip saddr %s counter name %q meta priority set %s accept", in, addr, upCounter, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr %s counter name %q meta priority set %s accept", in, up, addr, upCounter, prio))
 		}
 	}
 
 	// Download: the same allow set is checked before established/related
 	// traffic is accepted, so a timeout or revocation stops an existing flow
 	// (§16.3). Reverse NAT has already restored the member address (§10.2).
-	rule(&b, "forward", fmt.Sprintf("oifname %q ip daddr != @allowed_v4 counter name %q drop", in, counterUnkDown))
-	rule(&b, "forward", fmt.Sprintf("oifname %q ct state != { established, related } counter name %q drop", in, counterNoDown))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop", up, in, counterUnkDown))
+	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ct state != { established, related } counter name %q drop", up, in, counterNoDown))
 	for _, d := range devices {
 		if !d.TimeoutOK() {
 			continue
@@ -145,9 +147,9 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		dnsDown := usageCounter(dirDNSDownload, d.Binding.DeviceID)
 		useDown := usageCounter(dirDownload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
-			rule(&b, "forward", fmt.Sprintf("oifname %q ip saddr @resolver_v4 ip daddr %s tcp sport 53 counter name %q meta priority set %s accept", in, addr, dnsDown, prio))
-			rule(&b, "forward", fmt.Sprintf("oifname %q ip saddr @resolver_v4 ip daddr %s udp sport 53 counter name %q meta priority set %s accept", in, addr, dnsDown, prio))
-			rule(&b, "forward", fmt.Sprintf("oifname %q ip daddr %s counter name %q meta priority set %s accept", in, addr, useDown, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s tcp sport 53 counter name %q meta priority set %s accept", up, in, addr, dnsDown, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s udp sport 53 counter name %q meta priority set %s accept", up, in, addr, dnsDown, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr %s counter name %q meta priority set %s accept", up, in, addr, useDown, prio))
 		}
 	}
 

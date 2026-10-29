@@ -323,10 +323,7 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 		)
 	}
 
-	principal := p.Principal
-	if principal == "" {
-		principal = "admin"
-	}
+	actorUUID, actorType, principal := nodes.ResolveAdminActor(ctx, p.Principal)
 
 	reqCanon, err := canonjson.Marshal(map[string]any{
 		"node_id":            p.NodeID.String(),
@@ -484,11 +481,11 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 			"resource_version":     newVer,
 		})
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
-			Actor:         principal,
-			ActorType:     "admin",
+			Actor:         actorUUID.String(),
+			ActorType:     actorType,
 			Action:        opKind,
-			Resource:      p.NodeID.String(),
-			Result:        "accepted",
+			Resource:      "exit:" + exitID.String(),
+			Result:        "succeeded",
 			RequestID:     p.RequestID,
 			OperationID:   &op.OperationId,
 			SchemaVersion: 1,
@@ -1064,6 +1061,7 @@ func (s *Service) markStepSucceeded(ctx context.Context, opID uuid.UUID, stepNam
 		st := steps[stepName]
 		st.Status = string(api.OperationStepStatusSucceeded)
 		st.ObservedRef = stepName
+		st.ObservedAt = &now
 		st.ErrorCode = nil
 		st.ErrorMessage = nil
 		st.UpdatedAt = now

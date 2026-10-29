@@ -13,6 +13,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/agentstore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/google/uuid"
 )
@@ -36,6 +37,14 @@ func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]en
 func (m *memPlane) Baseline(context.Context, enforce.Datapath) error {
 	m.baselines++
 	return nil
+}
+
+// staticSource is a counter reader with no kernel. Boot id matches the
+// process so a quiet open does not look like a reboot.
+type staticSource struct{ boot string }
+
+func (s staticSource) Read(context.Context) (meter.Observation, error) {
+	return meter.Observation{Counters: map[string]enforce.CounterValue{}, BootID: s.boot}, nil
 }
 
 type rig struct {
@@ -87,7 +96,7 @@ func newRig(t *testing.T) *rig {
 	plane := &memPlane{}
 	var buf bytes.Buffer
 	log := slog.New(slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	eng, err := Start(Options{Config: cfg, Clock: clock, Plane: plane, Log: log})
+	eng, err := Start(Options{Config: cfg, Clock: clock, Plane: plane, Log: log, MeterSource: staticSource{boot: boot.String()}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,7 +321,7 @@ func TestStep_RebootRequiresNewerLease(t *testing.T) {
 	}
 	defer store.Close()
 	plane := &memPlane{}
-	eng, err := Start(Options{Config: cfg, Store: store, Clock: r.clock, Plane: plane, Log: slog.New(slog.DiscardHandler)})
+	eng, err := Start(Options{Config: cfg, Store: store, Clock: r.clock, Plane: plane, Log: slog.New(slog.DiscardHandler), MeterSource: staticSource{boot: next.String()}})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -220,9 +221,6 @@ func NewFakePolicyReader(snap PolicySnapshot) *FakePolicyReader {
 	if snap.FairUseGeneration == 0 {
 		snap.FairUseGeneration = 1
 	}
-	if snap.DNSGeneration == 0 {
-		snap.DNSGeneration = 1
-	}
 	if len(snap.DNSResolverIPv4) == 0 {
 		snap.DNSResolverIPv4 = []string{TestOnlyDefaultDNSResolverIPv4}
 	}
@@ -320,125 +318,44 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 		}
 	}
 
-	const memberQuery = `
-		SELECT DISTINCT ON (m.id)
-			m.id,
-			m.status,
-			(m.admin_suspended OR e.admin_suspended) AS is_suspended,
-			e.valid_from,
-			e.effective_service_end,
-			coalesce(pr.payload, '{}'::jsonb)
-		FROM members m
-		JOIN entitlements e ON e.member_id = m.id
-		LEFT JOIN subscriptions sub ON sub.member_id = m.id AND sub.is_active = true
-		LEFT JOIN assignments a ON a.group_id = ANY($1)
-			AND a.valid_from <= $2
-			AND (a.valid_until IS NULL OR a.valid_until > $2)
-			AND (
-				a.member_id = m.id
-				OR (coalesce(e.plan_revision_id, sub.plan_revision_id) IS NOT NULL AND a.plan_revision_id = coalesce(e.plan_revision_id, sub.plan_revision_id))
-			)
-		LEFT JOIN plan_revisions pr ON pr.id = coalesce(e.plan_revision_id, sub.plan_revision_id, a.plan_revision_id)
-		WHERE m.status IN ('active', 'suspended')
-		  AND e.valid_from IS NOT NULL
-		  AND e.effective_service_end IS NOT NULL
-		  AND (a.id IS NOT NULL OR (pr.id IS NOT NULL AND pr.exit_group_ids && $1))
-		ORDER BY m.id ASC, (pr.id IS NULL) ASC`
-
-	rows, err := r.q.Query(ctx, memberQuery, groupIDs, asOf)
+	serving, err := entitlement.ListServingMembersForGroups(ctx, r.q, groupIDs, asOf)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	if len(serving) == 0 {
+		return nil, nil
+	}
 
-	var members []MemberEntitlement
-	memberIdx := map[uuid.UUID]int{}
-	var memberIDs []uuid.UUID
+	members := make([]MemberEntitlement, 0, len(serving))
+	memberIdx := make(map[uuid.UUID]int, len(serving))
+	memberIDs := make([]uuid.UUID, 0, len(serving))
 
-	for rows.Next() {
-		var (
-			memberID       uuid.UUID
-			memberStatus   string
-			adminSuspended bool
-			validFrom      time.Time
-			serviceEnd     time.Time
-			planPayload    []byte
-		)
-		if err := rows.Scan(&memberID, &memberStatus, &adminSuspended, &validFrom, &serviceEnd, &planPayload); err != nil {
-			return nil, err
-		}
-		suspended := memberStatus == "suspended" || adminSuspended
-		if !suspended && !serviceEnd.After(asOf) {
-			continue
-		}
-
+	for _, sm := range serving {
 		var planDown, planUp int64
-		prio := 1
-		if len(planPayload) > 0 {
-			var parsed struct {
-				DownBps   int64 `json:"down_bps"`
-				UpBps     int64 `json:"up_bps"`
-				Priority  *int  `json:"priority"`
-				RateLimit *struct {
-					DownBps int64 `json:"down_bps"`
-					UpBps   int64 `json:"up_bps"`
-				} `json:"rate_limit"`
-			}
-			if err := json.Unmarshal(planPayload, &parsed); err == nil {
-				if parsed.DownBps > 0 {
-					planDown = parsed.DownBps
-				} else if parsed.RateLimit != nil && parsed.RateLimit.DownBps > 0 {
-					planDown = parsed.RateLimit.DownBps
-				}
-				if parsed.UpBps > 0 {
-					planUp = parsed.UpBps
-				} else if parsed.RateLimit != nil && parsed.RateLimit.UpBps > 0 {
-					planUp = parsed.RateLimit.UpBps
-				}
-				if parsed.Priority != nil && *parsed.Priority >= 0 && *parsed.Priority <= 7 {
-					prio = *parsed.Priority
-				}
-			}
+		if sm.PlanRateLimit != nil {
+			planDown = sm.PlanRateLimit.DownBps
+			planUp = sm.PlanRateLimit.UpBps
 		}
-
-		var clamped *time.Time
-		if suspended {
-			clampedTime := asOf
-			if serviceEnd.Before(clampedTime) {
-				clampedTime = serviceEnd
-			}
-			clamped = &clampedTime
-		}
-
 		m := MemberEntitlement{
-			MemberID:            memberID,
-			GroupIDs:            append([]uuid.UUID(nil), groupIDs...),
-			Suspended:           suspended,
-			ClampedUntil:        clamped,
-			ValidFrom:           validFrom.UTC(),
-			EffectiveServiceEnd: serviceEnd.UTC(),
+			MemberID:            sm.MemberID,
+			GroupIDs:            append([]uuid.UUID(nil), sm.ExitGroupIDs...),
+			Suspended:           false,
+			ValidFrom:           sm.ValidFrom.UTC(),
+			EffectiveServiceEnd: sm.EffectiveServiceEnd.UTC(),
 			PlanDownBps:         planDown,
 			PlanUpBps:           planUp,
 			FairUseTierDownBps:  0,
 			FairUseTierUpBps:    0,
 			TierIndex:           0,
-			Priority:            prio,
+			Priority:            1,
 			FairUsePolicyGen:    0,
 			HasFairUseGen:       false,
 			Mode:                defaultFUPMode,
 			Reason:              api.MemberRatePolicyReasonNormal,
 		}
-		memberIdx[memberID] = len(members)
+		memberIdx[sm.MemberID] = len(members)
 		members = append(members, m)
-		memberIDs = append(memberIDs, memberID)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	if len(memberIDs) == 0 {
-		return nil, nil
+		memberIDs = append(memberIDs, sm.MemberID)
 	}
 
 	const fupQuery = `
@@ -628,12 +545,12 @@ func NewDBPolicyReader(q nodes.Querier) *DBPolicyReader {
 	return &DBPolicyReader{q: q}
 }
 
-// ReadPolicySnapshot reads active fair-use, DNS, and release support policies from PostgreSQL.
+// ReadPolicySnapshot reads active fair-use, DNS publication heads, and release support policies from PostgreSQL.
 func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUID, asOf time.Time) (PolicySnapshot, error) {
 	snap := PolicySnapshot{
 		AuthorizationGeneration:  1,
 		FairUseGeneration:        1,
-		DNSGeneration:            1,
+		DNSGeneration:            0,
 		DNSResolverIPv4:          []string{},
 		DNSResolverIPv6:          []string{},
 		SupportedReleasePolicyID: DefaultSupportedReleasePolicyUUID,
@@ -678,6 +595,7 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 		FROM policy_definitions pd
 		JOIN policy_revisions pr ON pr.id = pd.active_revision_id
 		WHERE pd.active_revision_id IS NOT NULL
+		  AND pd.type <> 'dns_profile'
 		ORDER BY pd.type ASC, pd.id ASC`)
 	if err != nil {
 		return PolicySnapshot{}, err
@@ -701,10 +619,6 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 			if gen > snap.FairUseGeneration {
 				snap.FairUseGeneration = gen
 			}
-		case string(api.PolicyTypeDnsProfile):
-			if gen > snap.DNSGeneration {
-				snap.DNSGeneration = gen
-			}
 		case string(api.PolicyTypeReleaseSupport):
 			snap.SupportedReleasePolicyID = revID
 			var relPol api.ReleaseSupportPayload
@@ -716,6 +630,37 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 	if err := pRows.Err(); err != nil {
 		return PolicySnapshot{}, err
 	}
+	pRows.Close()
+
+	// PolicySnapshot.DNSGeneration and dns_profile policy_refs come from the published head
+	// in dns_publication_heads, not from the policy revision; with no published head it is 0 (§12.4, §12.5).
+	hRows, err := r.q.Query(ctx, `
+		SELECT profile_revision_id, policy_generation::text
+		FROM dns_publication_heads
+		WHERE status = 'active'
+		ORDER BY definition_id ASC`)
+	if err != nil {
+		return PolicySnapshot{}, err
+	}
+	defer hRows.Close()
+	for hRows.Next() {
+		var (
+			revID  uuid.UUID
+			genStr string
+		)
+		if err := hRows.Scan(&revID, &genStr); err != nil {
+			return PolicySnapshot{}, err
+		}
+		gen, _ := strconv.ParseUint(genStr, 10, 64)
+		snap.PolicyRefs = append(snap.PolicyRefs, revID)
+		if gen > snap.DNSGeneration {
+			snap.DNSGeneration = gen
+		}
+	}
+	if err := hRows.Err(); err != nil {
+		return PolicySnapshot{}, err
+	}
+	hRows.Close()
 
 	return snap, nil
 }

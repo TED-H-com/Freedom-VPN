@@ -394,6 +394,13 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 		t.Fatalf("insert usage_adjustments: %v", err)
 	}
 	_, err = pool.Exec(ctx, `
+		INSERT INTO usage_projection_generations (projection_name, generation, state, started_at)
+		VALUES ('member_usage', 2, 'building', $1)
+	`, now.Add(6*time.Minute))
+	if err != nil {
+		t.Fatalf("insert building usage_projection_generations: %v", err)
+	}
+	_, err = pool.Exec(ctx, `
 		INSERT INTO usage_rollups (
 			member_id, period, granularity, projection_generation, metering_version,
 			upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end
@@ -401,6 +408,38 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 	`, memberID, periodID, now.Add(6*time.Minute), pStart, pEnd)
 	if err != nil {
 		t.Fatalf("insert corrected usage_rollups: %v", err)
+	}
+
+	// While generation 2 is still 'building', pgUsageReader must read only the 'active' generation 1.
+	evalStillGen1, err := engine.Compute(ctx, ComputeInput{
+		MemberID: memberID,
+		PeriodID: periodID,
+		Now:      now.Add(6 * time.Minute),
+	})
+	if err != nil {
+		t.Fatalf("Compute while gen 2 is building: %v", err)
+	}
+	if evalStillGen1.Relaxed || evalStillGen1.EnforcedTierIndex != 2 || evalStillGen1.Generation != 3 {
+		t.Fatalf("expected building gen 2 to be ignored (relaxed=false tier=2 gen=3), got relaxed=%v tier=%d gen=%d",
+			evalStillGen1.Relaxed, evalStillGen1.EnforcedTierIndex, evalStillGen1.Generation)
+	}
+
+	// Promote generation 2 to 'active' and supersede generation 1.
+	_, err = pool.Exec(ctx, `
+		UPDATE usage_projection_generations
+		SET state = 'superseded', superseded_at = $1
+		WHERE projection_name = 'member_usage' AND generation = 1
+	`, now.Add(6*time.Minute))
+	if err != nil {
+		t.Fatalf("supersede projection generation 1: %v", err)
+	}
+	_, err = pool.Exec(ctx, `
+		UPDATE usage_projection_generations
+		SET state = 'active', activated_at = $1
+		WHERE projection_name = 'member_usage' AND generation = 2
+	`, now.Add(6*time.Minute))
+	if err != nil {
+		t.Fatalf("activate projection generation 2: %v", err)
 	}
 
 	evalRelaxed, err := engine.Compute(ctx, ComputeInput{
@@ -414,5 +453,22 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 	if !evalRelaxed.Relaxed || evalRelaxed.EnforcedTierIndex != 0 || evalRelaxed.Generation != 4 {
 		t.Fatalf("expected relaxed=true tier=0 gen=4, got relaxed=%v tier=%d gen=%d",
 			evalRelaxed.Relaxed, evalRelaxed.EnforcedTierIndex, evalRelaxed.Generation)
+	}
+
+	// Prove D-027 fail-closed: total_bytes exceeding math.MaxUint64 in active projection fails closed instead of capping.
+	_, err = pool.Exec(ctx, `
+		UPDATE usage_rollups
+		SET upload_bytes = 18446744073709551615, download_bytes = 1
+		WHERE member_id = $1 AND period = $2 AND granularity = 'month' AND projection_generation = 2
+	`, memberID, periodID)
+	if err != nil {
+		t.Fatalf("update usage_rollups above uint64: %v", err)
+	}
+	if _, err := engine.Compute(ctx, ComputeInput{
+		MemberID: memberID,
+		PeriodID: periodID,
+		Now:      now.Add(7 * time.Minute),
+	}); err == nil {
+		t.Fatalf("expected Compute to fail closed when active rollup total_bytes exceeds uint64")
 	}
 }

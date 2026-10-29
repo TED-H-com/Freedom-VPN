@@ -8,8 +8,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -150,12 +152,21 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 				online++
 			}
 		}
-		batch, op := uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
+		batch := uuid.Must(uuid.NewV7())
 		_, e = tx.Exec(ctx, `UPDATE fleet_config SET generation=generation+1,resource_version=resource_version+1,desired_release_id=$1`, r.ReleaseId)
 		if e != nil {
 			return e
 		}
-		_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,desired_generation,request_id) SELECT $1,'update_batch.create',$2,'update_batch',$3,generation,$4 FROM fleet_config`, op, c.ActorID.String(), batch, commandtx.RequestID(ctx))
+		desiredGeneration, e := r.ExpectedGeneration.Add(1)
+		if e != nil {
+			return e
+		}
+		op, e := operations.Create(ctx, tx, operations.CreateRequest{
+			Kind: api.OperationKindUpdateBatchCreate, Principal: auth.Principal{Role: auth.Admin, ID: c.ActorID},
+			Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, RequestID: commandtx.RequestID(ctx),
+			DesiredGeneration: &desiredGeneration,
+			Steps:             map[string]operations.Step{"snapshot": {Required: true}, "targets": {Required: true}},
+		})
 		if e != nil {
 			return e
 		}
@@ -180,7 +191,7 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 		if e = notify(ctx, tx, batch, "fleet.update_created"); e != nil {
 			return e
 		}
-		if e = releases.Audit(ctx, tx, c.ActorID.String(), "admin", "fleet.update_created", batch.String(), &op, map[string]any{"target_count": len(nodes), "release_id": r.ReleaseId, "reason": r.Reason}); e != nil {
+		if e = releases.Audit(ctx, tx, c.ActorID, api.AuditEventActorTypeAdmin, "update_batch.create", api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, &op, api.AuditEventResultSucceeded, map[string]any{"target_count": len(nodes), "release_id": r.ReleaseId, "reason": r.Reason}); e != nil {
 			return e
 		}
 		if e = recomputeAll(ctx, tx); e != nil {

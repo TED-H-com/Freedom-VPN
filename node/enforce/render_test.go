@@ -108,12 +108,16 @@ func TestRender_TimeoutCeilAndExpiry(t *testing.T) {
 		t.Fatal("ceil did not cap the kernel timeout")
 	}
 	// A wall clock stepped backwards must not lengthen the capped timeout.
+	// ValidFrom moves with the test clock so the device stays admitted.
 	m.Now = m.Now.Add(-2 * time.Hour)
+	for i := range m.Bindings {
+		m.Bindings[i].ValidFrom = m.Now.Add(-time.Minute)
+	}
 	plan, err = Render(m, State{}, TCState{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(plan.NFT, "timeout 7200s") || strings.Contains(plan.NFT, "timeout 3600s") {
+	if strings.Contains(plan.NFT, "timeout 7200s") || strings.Contains(plan.NFT, "timeout 3600s") || !strings.Contains(plan.NFT, "timeout 30s") {
 		t.Fatal("clock step lengthened the kernel timeout")
 	}
 	m = goldenModel()
@@ -156,6 +160,26 @@ func TestRender_Rejects(t *testing.T) {
 	if _, err := Render(m, State{}, TCState{}); err == nil {
 		t.Fatal("generation 0 was accepted as serving")
 	}
+	m = goldenModel()
+	m.Resolvers = []netip.Addr{mustAddr("2001:db8::53")}
+	if _, err := Render(m, State{}, TCState{}); err == nil {
+		t.Fatal("ipv6 resolver was accepted")
+	}
+	m = goldenModel()
+	m.HostV4 = []netip.Prefix{mustPrefix("2001:db8::/32")}
+	if _, err := Render(m, State{}, TCState{}); err == nil {
+		t.Fatal("ipv6 host prefix was accepted")
+	}
+	m = goldenModel()
+	m.Revoke = []netip.Addr{mustAddr("2001:db8::1")}
+	if _, err := Render(m, State{}, TCState{}); err == nil {
+		t.Fatal("ipv6 revoke address was accepted")
+	}
+	m = goldenModel()
+	m.ExtraDeniedV4 = []netip.Prefix{mustPrefix("2001:db8::/32")}
+	if _, err := Render(m, State{}, TCState{}); err == nil {
+		t.Fatal("ipv6 extra deny prefix was accepted")
+	}
 }
 
 func TestAssignClasses_StableAndCollision(t *testing.T) {
@@ -197,6 +221,32 @@ func TestAssignClasses_StableAndCollision(t *testing.T) {
 	if err == nil {
 		t.Fatal("duplicate minor was accepted")
 	}
+	// The inclusive span is minorMax-minorMin+1. One free minor in that
+	// ring must be reachable from any start.
+	member := uuid.MustParse("01960000-0000-7000-8000-000000000001")
+	start := PreferredMinor(member)
+	free := start - 1
+	if start == 0x0010 {
+		free = 0xEFF0
+	}
+	existing := make(map[uuid.UUID]uint16, 61408)
+	for minor := uint16(0x0010); minor <= 0xEFF0; minor++ {
+		if minor == free {
+			continue
+		}
+		var id uuid.UUID
+		id[0] = 0x01
+		id[14] = byte(minor >> 8)
+		id[15] = byte(minor)
+		existing[id] = minor
+	}
+	got, err := AssignClasses([]uuid.UUID{member}, existing)
+	if err != nil {
+		t.Fatalf("free minor 0x%x was unreachable: %v", free, err)
+	}
+	if got[member] != free {
+		t.Fatalf("assigned 0x%x, want free minor 0x%x", got[member], free)
+	}
 }
 
 func TestDetectResets_AndLargeCounter(t *testing.T) {
@@ -216,6 +266,17 @@ func TestDetectResets_AndLargeCounter(t *testing.T) {
 	gone := DetectResets(map[string]CounterValue{"u_x": {Bytes: 1}}, map[string]CounterValue{})
 	if len(gone) != 1 {
 		t.Fatal("missing counter was hidden")
+	}
+	same := DetectResets(map[string]CounterValue{"u_x": {Bytes: 10, Packets: 1}}, map[string]CounterValue{"u_x": {Bytes: 10, Packets: 1}})
+	if len(same) != 0 {
+		t.Fatalf("unchanged counter looked like a reset: %+v", same)
+	}
+	idle := DetectResets(
+		map[string]CounterValue{"d_x": {Packets: 0, Bytes: 0}, "u_x": {Packets: 100, Bytes: 50000}},
+		map[string]CounterValue{"d_x": {Packets: 0, Bytes: 0}, "u_x": {Packets: 100, Bytes: 50000}},
+	)
+	if len(idle) != 0 {
+		t.Fatalf("idle zero counter looked like a reset: %+v", idle)
 	}
 }
 
@@ -250,6 +311,10 @@ func TestVerifyServing_AndFailures(t *testing.T) {
 	if err := EvaluateMeterPath(m.Bindings, []string{"100.64.1.1"}); err != nil {
 		t.Fatal(err)
 	}
+	decoy := bytesReplace(raw, []byte(`"@allowed_v4"`), []byte(`"not-the-set"`), 1)
+	if err := VerifyServing(decoy, m, plan.Assignments); err == nil {
+		t.Fatal("substring allowed_v4 was treated as the allow-set drop")
+	}
 }
 
 func TestVerifyBaseline(t *testing.T) {
@@ -283,7 +348,7 @@ func TestApply_FailClosed(t *testing.T) {
 			}
 			return []byte(`{"nftables":[{"table":{"family":"inet","name":"fvpn"}}]}`), nil
 		}
-		if strings.Contains(key, "tc -j qdisc show") {
+		if strings.Contains(key, "tc -j qdisc show") || strings.Contains(key, "tc -j class show") {
 			return []byte(`[]`), nil
 		}
 		if strings.Contains(key, "qdisc del") {
@@ -367,11 +432,17 @@ func TestRender_NFTCommentLimit(t *testing.T) {
 			t.Fatalf("comment length %d: %s", len(body[:end]), body[:end])
 		}
 	}
-	if !strings.Contains(plan.NFT, "fvpn_class="+memberA.String()+":2dc5") {
+	if !strings.Contains(plan.NFT, fmt.Sprintf("fvpn_class=%s:%x", memberA, plan.Assignments[memberA])) {
 		t.Fatal("member A class marker missing")
 	}
-	if !strings.Contains(plan.NFT, "fvpn_class="+memberB.String()+":2dc6") {
+	if !strings.Contains(plan.NFT, fmt.Sprintf("fvpn_class=%s:%x", memberB, plan.Assignments[memberB])) {
 		t.Fatal("member B class marker missing")
+	}
+	if !strings.Contains(plan.NFT, `iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 counter`) {
+		t.Fatal("upload allow is not bound to the uplink")
+	}
+	if !strings.Contains(plan.NFT, `iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 counter`) {
+		t.Fatal("download allow is not bound to the uplink")
 	}
 }
 
@@ -462,6 +533,143 @@ func TestDeadline_Earliest(t *testing.T) {
 	sec, admit := elementTimeout(Binding{ValidUntil: now.Add(10 * time.Minute)}, lease, now)
 	if !admit || sec != 600 {
 		t.Fatalf("binding cap %d admit %v", sec, admit)
+	}
+	lease.SignedServerTime = time.Time{}
+	if _, ok := ForwardingDeadline(lease); ok {
+		t.Fatal("zero SignedServerTime was accepted")
+	}
+	lease.SignedServerTime = now
+	lease.MaxOfflineSeconds = 0
+	if _, ok := ForwardingDeadline(lease); ok {
+		t.Fatal("MaxOfflineSeconds 0 was accepted")
+	}
+	lease.MaxOfflineSeconds = 30
+	lease.EffectiveServiceEnd = now.Add(48 * time.Hour)
+	lease.NodeLeaseEnd = now.Add(24 * time.Hour)
+	got, ok = ForwardingDeadline(lease)
+	if !ok || !got.Equal(now.Add(30*time.Second)) {
+		t.Fatalf("offline cap %s ok %v", got, ok)
+	}
+}
+
+func TestRender_DeletesOrphanClass(t *testing.T) {
+	m := smallModel()
+	orphan := PreferredMinor(memberA)
+	m.QoS.Assignments = map[uuid.UUID]uint16{memberB: orphan}
+	dev := TCDev{
+		RootHTB: true,
+		Leaves:  map[uint16]bool{orphan: true},
+		Classes: map[uint16]bool{orphan: true},
+	}
+	plan, err := Render(m, State{}, TCState{Devices: map[string]TCDev{"fv-ih": dev, "fv-fh": dev}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if plan.Assignments[memberA] == orphan {
+		t.Fatalf("live member reused orphan minor 0x%x", orphan)
+	}
+	handle := classHandle(orphan)
+	for _, iface := range []string{"fv-ih", "fv-fh"} {
+		qdisc := "qdisc del dev " + iface + " parent " + handle
+		class := "class del dev " + iface + " classid " + handle
+		if !strings.Contains(plan.TC, qdisc) || !strings.Contains(plan.TC, class) {
+			t.Fatalf("missing delete for %s:\n%s", iface, plan.TC)
+		}
+		if strings.Index(plan.TC, qdisc) > strings.Index(plan.TC, class) {
+			t.Fatalf("qdisc del is after class del for %s", iface)
+		}
+	}
+	live := "classid " + classHandle(plan.Assignments[memberA])
+	if strings.Index(plan.TC, "class del") > strings.Index(plan.TC, live) {
+		t.Fatalf("class del is not before the replacement class\n%s", plan.TC)
+	}
+
+	// A kernel class with no nft comment is still reserved, then deleted.
+	m.QoS.Assignments = nil
+	plan, err = Render(m, State{}, TCState{Devices: map[string]TCDev{"fv-ih": dev, "fv-fh": dev}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if plan.Assignments[memberA] == orphan {
+		t.Fatalf("unmapped kernel minor 0x%x was reused", orphan)
+	}
+	if !strings.Contains(plan.TC, "class del dev fv-ih classid "+handle) {
+		t.Fatal("unmapped kernel class was not deleted")
+	}
+}
+
+func TestApply_ExternalReset(t *testing.T) {
+	m := smallModel()
+	prev := map[string]CounterValue{
+		"u_kept": {Packets: 100, Bytes: 50000},
+		"d_zero": {Packets: 0, Bytes: 0},
+	}
+	// D-041: 0 -> 0 is idle. The cases below still report d_zero because the
+	// ruleset itself was cleared, which is DetectMeterResets, not the values.
+	if got := DetectResets(prev, prev); len(got) != 0 {
+		t.Fatalf("0 -> 0 is not a reset: %+v", got)
+	}
+	cases := []struct {
+		name    string
+		first   []byte
+		missing bool
+	}{
+		{
+			name: "generation cleared",
+			first: []byte(`{"nftables":[
+				{"table":{"family":"inet","name":"fvpn"}},
+				{"chain":{"family":"inet","table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":-150,"policy":"drop"}},
+				{"rule":{"family":"inet","table":"fvpn","chain":"forward","comment":"fvpn_generation=0 fvpn_baseline=1","expr":[]}},
+				{"counter":{"family":"inet","table":"fvpn","name":"u_kept","packets":100,"bytes":50000}}
+			]}`),
+		},
+		{
+			name: "forward chain missing",
+			first: []byte(`{"nftables":[
+				{"table":{"family":"inet","name":"fvpn"}},
+				{"chain":{"family":"inet","table":"fvpn","name":"input","type":"filter","hook":"input","prio":-150,"policy":"accept"}},
+				{"counter":{"family":"inet","table":"fvpn","name":"u_kept","packets":100,"bytes":50000}}
+			]}`),
+		},
+		{name: "table missing", missing: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := &fakeExec{}
+			listed := 0
+			f.handler = func(name string, args []string) ([]byte, error) {
+				key := name + " " + strings.Join(args, " ")
+				if strings.Contains(key, "nft -j list") {
+					listed++
+					if listed == 1 && tc.missing {
+						return nil, &CmdError{Cmd: key, Err: fmt.Errorf("exit"), Out: "Error: No such file or directory"}
+					}
+					if listed == 1 {
+						return tc.first, nil
+					}
+					return []byte(`{"nftables":[{"table":{"family":"inet","name":"fvpn"}}]}`), nil
+				}
+				if strings.Contains(key, "tc -j qdisc") || strings.Contains(key, "tc -j class") {
+					return []byte(`[]`), nil
+				}
+				if strings.Contains(key, "qdisc del") {
+					return nil, &CmdError{Cmd: key, Err: fmt.Errorf("exit"), Out: "No such file or directory"}
+				}
+				return nil, fmt.Errorf("unexpected %s", key)
+			}
+			res, err := Apply(context.Background(), f, m, prev)
+			if err == nil {
+				t.Fatal("expected the stub listing to fail verification")
+			}
+			if len(res.Resets) != len(prev) {
+				t.Fatalf("resets %+v", res.Resets)
+			}
+			for _, r := range res.Resets {
+				if r.Reason != ReasonMeterEpoch {
+					t.Fatalf("reset %+v", r)
+				}
+			}
+		})
 	}
 }
 
@@ -560,11 +768,13 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 			}}},
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.MemberIngress}},
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "oifname"}}, "right": m.Datapath.Uplink}},
 				map[string]any{"counter": map[string]any{"name": up}},
 				map[string]any{"mangle": map[string]any{"key": map[string]any{"meta": map[string]any{"key": "priority"}}, "value": classid}},
 				map[string]any{"accept": nil},
 			}}},
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.Uplink}},
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "oifname"}}, "right": m.Datapath.MemberIngress}},
 				map[string]any{"counter": map[string]any{"name": dn}},
 				map[string]any{"mangle": map[string]any{"key": map[string]any{"meta": map[string]any{"key": "priority"}}, "value": classid}},

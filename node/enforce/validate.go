@@ -57,6 +57,11 @@ func validateServing(m Model) ([]admittedDevice, map[uuid.UUID]uint16, []netip.P
 	if err := validateDatapath(m.Datapath); err != nil {
 		return nil, nil, nil, err
 	}
+	// Reject non-IPv4 set members before any tc or nft batch. An IPv6 literal
+	// in an ipv4_addr set fails nft only after the qdisc has already changed.
+	if err := validateIPv4Sets(m); err != nil {
+		return nil, nil, nil, err
+	}
 	denied, err := m.denyV4()
 	if err != nil {
 		return nil, nil, nil, err
@@ -146,6 +151,35 @@ func validateServing(m Model) ([]admittedDevice, map[uuid.UUID]uint16, []netip.P
 	}
 	sortDevices(devices)
 	return devices, assignments, denied, nil
+}
+
+func validateIPv4Sets(m Model) error {
+	for _, addr := range m.Resolvers {
+		if !addr.IsValid() || !addr.Is4() {
+			return fmt.Errorf("resolver %s is not an ipv4 address", addr)
+		}
+	}
+	for _, addr := range m.Revoke {
+		if !addr.IsValid() || !addr.Is4() {
+			return fmt.Errorf("revoke address %s is not an ipv4 address", addr)
+		}
+	}
+	if err := validateV4Prefixes(m.DeniedV4, "denied_v4"); err != nil {
+		return err
+	}
+	if err := validateV4Prefixes(m.ExtraDeniedV4, "extra_denied_v4"); err != nil {
+		return err
+	}
+	return validateV4Prefixes(m.HostV4, "host_v4")
+}
+
+func validateV4Prefixes(ps []netip.Prefix, name string) error {
+	for _, p := range ps {
+		if !p.IsValid() || !p.Addr().Is4() {
+			return fmt.Errorf("%s prefix %s is not an ipv4 prefix", name, p)
+		}
+	}
+	return nil
 }
 
 func (d admittedDevice) TimeoutOK() bool { return d.Timeout > 0 }

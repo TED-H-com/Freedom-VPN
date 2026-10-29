@@ -55,7 +55,10 @@ func TestLab02_WatchdogEnforces(t *testing.T) {
 	if !waitProbe(t, "allow", 20*time.Second) {
 		t.Fatalf("agent did not start forwarding:\n%s", debugPlane(t))
 	}
-	stopAgent()
+	// SIGKILL, not SIGTERM. A graceful stop is itself a hand-off and
+	// installs the baseline; this test needs the process to disappear
+	// so the watchdog is what fail-closes.
+	crashProc("fvpn-agent", labDir+"/agent.pid")
 	// Stale heartbeat is 3s. The watchdog, not a new control call, installs
 	// the baseline (§16.3).
 	if !waitProbe(t, "deny", 12*time.Second) {
@@ -77,10 +80,11 @@ func TestLab03_KernelTimeout(t *testing.T) {
 		stopAgent()
 		t.Fatalf("short lease did not forward:\n%s", debugPlane(t))
 	}
-	// Kill the watchdog first (it is not running) and then the agent, so
-	// nothing refreshes the element. The kernel timeout is the deadline.
-	stopWatch()
-	stopAgent()
+	// Crash both processes. SIGTERM is a graceful hand-off: Close installs
+	// the fail-closed baseline before the kernel element times out.
+	// SIGKILL leaves the allow element, so the kernel timeout is the deadline.
+	crashProc("fvpn-watchdog", labDir+"/watchdog.pid")
+	crashProc("fvpn-agent", labDir+"/agent.pid")
 	var stopped time.Duration
 	deadline := started.Add(14 * time.Second)
 	for time.Now().Before(deadline) {
@@ -97,6 +101,15 @@ func TestLab03_KernelTimeout(t *testing.T) {
 		t.Fatalf("forwarding stopped too soon (%s); the allow element was not installed", stopped)
 	}
 	fmt.Printf("SUMMARY AT29 stop_after=%s\n", stopped.Round(time.Millisecond))
+}
+
+// crashProc sends SIGKILL and does not SIGTERM first, so the process cannot
+// run its hand-off. stopProc stays the graceful stop used by the other labs.
+func crashProc(name, pidFile string) {
+	_, _, _ = dockerExec("sh", "-c", fmt.Sprintf(
+		"if [ -f %s ]; then kill -9 $(cat %s) 2>/dev/null || true; rm -f %s; fi; pkill -9 -x %s 2>/dev/null || true",
+		pidFile, pidFile, pidFile, name,
+	))
 }
 
 func TestLab04_RestartWaitsForLease(t *testing.T) {

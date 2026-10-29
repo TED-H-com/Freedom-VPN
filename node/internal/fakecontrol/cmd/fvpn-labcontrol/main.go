@@ -103,6 +103,52 @@ func serve(dir, admin string) error {
 		srv.SetServiceFor(time.Duration(body.Seconds) * time.Second)
 		w.WriteHeader(http.StatusNoContent)
 	})
+	mux.HandleFunc("POST /usage/unavailable", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			N int `json:"n"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.N < 0 {
+			http.Error(w, "n", http.StatusBadRequest)
+			return
+		}
+		srv.SetUsageUnavailable(body.N)
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.HandleFunc("POST /usage/retry", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			N       int `json:"n"`
+			Seconds int `json:"seconds"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.N < 0 || body.Seconds < 0 {
+			http.Error(w, "n", http.StatusBadRequest)
+			return
+		}
+		srv.SetUsageRetryAfter(body.N, body.Seconds)
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.HandleFunc("POST /usage/checkpoint", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Mode    string `json:"mode"`
+			Highest uint64 `json:"highest"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "mode", http.StatusBadRequest)
+			return
+		}
+		epoch, err := srv.SetUsageCheckpoint(body.Mode, body.Highest)
+		if err != nil {
+			http.Error(w, "mode", http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(map[string]any{"epoch": epoch.String()})
+	})
+	mux.HandleFunc("GET /usage", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(srv.UsageReport())
+	})
 	ln, err := net.Listen("tcp", admin)
 	if err != nil {
 		return err

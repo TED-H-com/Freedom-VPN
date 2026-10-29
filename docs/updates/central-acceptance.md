@@ -36,10 +36,17 @@ owner's schema/review integration suite passes with this migration applied.
 `TestUPD02_JobReferencesAndForwardPhases` also proves unknown job references fail
 and late or invalid phase reports cannot rewrite current terminal evidence.
 
-The current base CLI test round-trips a pgx `ConnString()` that retains the
-original admin database name, rather than dbtest's mutated database field. When
-running the database owner's suite, use a disposable, initially empty parent
-database as the admin DSN and drop it after the suite, in addition to dbtest's
-per-test databases. This isolates the CLI migration attempt. The database owner
-should correct that round-trip; fleetupdate's own integration tests use dbtest's
-isolated pools directly and do not have this issue.
+The database helper now reparses isolated database DSNs; the earlier CLI-test
+workaround is no longer needed. All domain tests continue to create and drop
+only their own databases.
+
+Review regression coverage:
+
+| Finding | Executable evidence |
+|---|---|
+| 12.1 | `TestAT23_ResultAfterRoutineHeartbeat`: older heartbeat permits result advancement; same/newer observed generations stay authoritative |
+| 12.2–3 | `TestAT24_IntentRefreshAndTargetNames`: returned/stored timestamps match exactly; named and unnamed nodes are distinguished |
+| 15.2 | `TestUPD02_RegistrationValidationBeforeTypedDecode`: oversize request stops before database work; invalid signature precedes typed uint64 overflow |
+| 15.3 | `TestUPD02_FailedRegistrationAndOperationEvidence`: pending reuse, failed re-registration conflict and original-command replay |
+| 4 / D-029 | `releasetest.AssertLedger`: every operation reads through `operations.Store.Get`; audit pages include all persisted events with zero anomalies; verification failure has a safe step and top-level error |
+| Applied policy generation | `TestAT26_AppliedPolicyEvidenceIsImmutable`: exact large decimal and matching policy refs, conflict handling, history cannot rewrite accepted evidence |

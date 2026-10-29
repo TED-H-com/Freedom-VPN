@@ -14,11 +14,14 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
+	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -26,7 +29,7 @@ import (
 )
 
 const (
-	defaultSigningKeyRef = "policy-key-v1-test-only" // TEST ONLY - NOT A SECRET
+	defaultSigningKeyRef = "central-policy-key"
 	defaultBundleTTL     = 24 * time.Hour
 )
 
@@ -39,6 +42,7 @@ type Store struct {
 	now           func() time.Time
 	signingKeyRef string
 	upstreamDNS   []string
+	releaseSvc    *releases.Service
 }
 
 // StoreOption configures a Store.
@@ -72,6 +76,16 @@ func WithUpstreamDNS(upstreams []string) StoreOption {
 	}
 }
 
+// WithReleaseService injects the release service used for release_support
+// policy activation (`releases.ApplySupportTx`).
+func WithReleaseService(rs *releases.Service) StoreOption {
+	return func(s *Store) {
+		if rs != nil {
+			s.releaseSvc = rs
+		}
+	}
+}
+
 // NewStore creates a new policy Store backed by pool.
 func NewStore(pool *pgxpool.Pool, opts ...StoreOption) *Store {
 	s := &Store{
@@ -84,6 +98,52 @@ func NewStore(pool *pgxpool.Pool, opts ...StoreOption) *Store {
 		opt(s)
 	}
 	return s
+}
+
+func (s *Store) releaseService() (*releases.Service, error) {
+	if s.releaseSvc != nil {
+		return s.releaseSvc, nil
+	}
+	trust, err := envelope.NewTrustStore()
+	if err != nil {
+		return nil, err
+	}
+	v, err := releases.NewValidator(trust, []string{"https://example.invalid"})
+	if err != nil {
+		return nil, err
+	}
+	return &releases.Service{Pool: s.pool, Validator: v}, nil
+}
+
+// runInTx runs fn inside callerTx if httpapi.Transaction(ctx) is present, or
+// opens a new db.InTx otherwise. managedIdem is true only when Store owns the
+// transaction (i.e. not wrapped by httpapi.Commands middleware).
+func (s *Store) runInTx(ctx context.Context, opts db.TxOptions, fn func(tx pgx.Tx, managedIdem bool) error) error {
+	if callerTx, err := httpapi.Transaction(ctx); err == nil && callerTx != nil {
+		return fn(callerTx, false)
+	}
+	return db.InTx(ctx, s.pool, opts, func(tx pgx.Tx) error {
+		return fn(tx, true)
+	})
+}
+
+func requestUUIDFromContext(ctx context.Context) uuid.UUID {
+	if raw, ok := apierr.RequestIDFromContext(ctx); ok {
+		if id, err := uuid.Parse(raw); err == nil && id != uuid.Nil {
+			return id
+		}
+	}
+	if id, err := uuid.NewV7(); err == nil {
+		return id
+	}
+	return uuid.New()
+}
+
+func principalScope(principal string, actorID uuid.UUID) string {
+	if p := strings.TrimSpace(principal); p != "" {
+		return p
+	}
+	return "admin:" + actorID.String()
 }
 
 // CreateRevisionInput carries the parameters for POST /admin/policies (§14.2).
@@ -188,9 +248,10 @@ func (s *Store) CreateRevision(ctx context.Context, in CreateRevisionInput) (*Re
 	}
 
 	var out *RevisionRecord
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	reqID := requestUUIDFromContext(ctx)
+	err = s.runInTx(ctx, db.TxOptions{}, func(tx pgx.Tx, managedIdem bool) error {
 		var idemRecord db.IdempotencyRecord
-		if in.IdempotencyKey != nil {
+		if managedIdem && in.IdempotencyKey != nil {
 			scope, err := buildCreateIdempotencyScope(in, validated.PayloadHash)
 			if err != nil {
 				return err
@@ -290,10 +351,11 @@ func (s *Store) CreateRevision(ctx context.Context, in CreateRevisionInput) (*Re
 		}
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         in.ActorID.String(),
-			ActorType:     "admin",
+			ActorType:     string(api.AuditEventActorTypeAdmin),
 			Action:        "policy.revision.create",
-			Resource:      revID.String(),
-			Result:        "succeeded",
+			Resource:      string(api.ResourceTypePolicyRevision) + ":" + revID.String(),
+			RequestID:     &reqID,
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
 			After:         afterJSON,
@@ -301,7 +363,7 @@ func (s *Store) CreateRevision(ctx context.Context, in CreateRevisionInput) (*Re
 			return fmt.Errorf("append audit for policy revision create: %w", err)
 		}
 
-		if in.IdempotencyKey != nil {
+		if managedIdem && in.IdempotencyKey != nil {
 			if err := db.CompleteIdempotent(ctx, tx, idemRecord.ID, db.IdempotencyResult{
 				ResourceType:   "policy_revision",
 				ResourceID:     &revID,
@@ -763,13 +825,10 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		return nil, newValidationError("/reason", ReasonSchemaInvalid, "reason is required and must be 1..500 characters")
 	}
 
-	expectedVersion := cleanETag(in.ExpectedVersion)
-	if expectedVersion == "" {
+	if strings.TrimSpace(in.ExpectedVersion) == "" {
 		return nil, apierr.New(apierr.PreconditionRequired, "If-Match header is required to activate a policy revision")
 	}
-	if _, err := decstr.Parse(expectedVersion); err != nil {
-		return nil, apierr.New(apierr.ValidationFailed, "If-Match must be a valid decimal uint64 resource_version")
-	}
+	expectedVersion := cleanETag(in.ExpectedVersion)
 
 	effectiveAt := s.now()
 	if in.EffectiveAt != nil && !in.EffectiveAt.IsZero() {
@@ -777,9 +836,10 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 	}
 
 	var out *ActivateResult
-	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	reqID := requestUUIDFromContext(ctx)
+	err := s.runInTx(ctx, db.TxOptions{}, func(tx pgx.Tx, managedIdem bool) error {
 		var idemRecord db.IdempotencyRecord
-		if in.IdempotencyKey != nil {
+		if managedIdem && in.IdempotencyKey != nil {
 			scope, err := buildActivateIdempotencyScope(in)
 			if err != nil {
 				return err
@@ -835,7 +895,7 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			return err
 		}
 
-		if curVerStr != expectedVersion {
+		if _, err := decstr.Parse(expectedVersion); err != nil || curVerStr != expectedVersion {
 			return apierr.Wrap(
 				db.ErrVersionConflict,
 				apierr.ResourceVersionConflict,
@@ -871,11 +931,11 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		// Same revision activated twice is a no-op: do not increment generation
 		// or enqueue duplicate recompilation work.
 		if activeRevID != nil && *activeRevID == in.RevisionID {
-			op, err := getOrCreateNoOpActivateOperationTx(ctx, tx, in)
+			op, err := getOrCreateNoOpActivateOperationTx(ctx, tx, in, reqID)
 			if err != nil {
 				return err
 			}
-			if in.IdempotencyKey != nil {
+			if managedIdem && in.IdempotencyKey != nil {
 				opID := uuid.UUID(op.OperationId)
 				if err := db.CompleteIdempotent(ctx, tx, idemRecord.ID, db.IdempotencyResult{
 					ResourceType:   "policy_definition",
@@ -933,24 +993,12 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			compiledBundle = bundle
 
 		case api.PolicyTypeReleaseSupport:
-			// Wave 3 will route release_support activation through the fleet-update
-			// owner's releases.ApplySupportTx; keep this singleton fleet_config update
-			// minimal (strictly incrementing generation and resource_version per F-14)
-			// so Wave 3 can replace it directly.
-			servingIDs := make([]uuid.UUID, 0, len(validated.ReleaseSupport.MinimumServingVersion.ServingReleaseIds))
-			for _, id := range validated.ReleaseSupport.MinimumServingVersion.ServingReleaseIds {
-				servingIDs = append(servingIDs, uuid.UUID(id))
+			rs, err := s.releaseService()
+			if err != nil {
+				return err
 			}
-			if _, err := tx.Exec(ctx,
-				`UPDATE fleet_config
-				 SET supported_release_policy = 'allowlist',
-				     supported_release_ids = $1,
-				     generation = generation + 1,
-				     resource_version = resource_version + 1
-				 WHERE id = '00000000-0000-0000-0000-000000000001'`,
-				servingIDs,
-			); err != nil {
-				return fmt.Errorf("update fleet_config from release_support activation: %w", err)
+			if err := rs.ApplySupportTx(ctx, tx, in.ActorID, *validated.ReleaseSupport, in.Reason); err != nil {
+				return err
 			}
 		}
 
@@ -962,10 +1010,10 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		stepsJSON := []byte(`{"desired_state_compile":{"required":true,"status":"pending"}}`)
 		var opCreatedAt time.Time
 		if err := tx.QueryRow(ctx,
-			`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, desired_generation, steps)
-			 VALUES ($1, 'policy.activate', 'pending', $2, 'policy_definition', $3, $4::numeric, $5::jsonb)
+			`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, request_id, resource_version, desired_generation, steps)
+			 VALUES ($1, 'policy.activate', 'pending', $2, 'policy_definition', $3, $4, $5::numeric, $6::numeric, $7::jsonb)
 			 RETURNING created_at`,
-			opID, in.ActorID.String(), in.DefinitionID, newGen.String(), stepsJSON,
+			opID, principalScope(in.Principal, in.ActorID), in.DefinitionID, reqID, newVer.String(), newGen.String(), stepsJSON,
 		).Scan(&opCreatedAt); err != nil {
 			return fmt.Errorf("insert policy.activate operation: %w", err)
 		}
@@ -994,11 +1042,12 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         in.ActorID.String(),
-			ActorType:     "admin",
+			ActorType:     string(api.AuditEventActorTypeAdmin),
 			Action:        "policy.activate",
-			Resource:      in.DefinitionID.String(),
+			Resource:      string(api.ResourceTypePolicyDefinition) + ":" + in.DefinitionID.String(),
+			RequestID:     &reqID,
 			OperationID:   &opID,
-			Result:        "accepted",
+			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        beforeJSON,
 			After:         afterJSON,
@@ -1032,7 +1081,7 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			return fmt.Errorf("enqueue policy.activated outbox event: %w", err)
 		}
 
-		if in.IdempotencyKey != nil {
+		if managedIdem && in.IdempotencyKey != nil {
 			if err := db.CompleteIdempotent(ctx, tx, idemRecord.ID, db.IdempotencyResult{
 				ResourceType:   "policy_definition",
 				ResourceID:     &in.DefinitionID,
@@ -1053,6 +1102,7 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 				OperationId: openapi_types.UUID(opID),
 				Kind:        api.OperationKind("policy.activate"),
 				Status:      api.OperationStatusPending,
+				RequestId:   openapi_types.UUID(reqID),
 				Resource: api.ResourceRef{
 					Type: api.ResourceType("policy_definition"),
 					Id:   openapi_types.UUID(in.DefinitionID),
@@ -1067,6 +1117,16 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 					Message string        `json:"message"`
 				}](),
 				ObservedGeneration: presence.NewNullNullable[decstr.U64](),
+				Steps: []api.OperationStep{
+					{
+						Name:       "desired_state_compile",
+						Required:   true,
+						Status:     api.OperationStepStatusPending,
+						Message:    presence.NewNullNullable[string](),
+						ObservedAt: presence.NewNullNullable[time.Time](),
+						ErrorCode:  presence.NewNullNullable[api.ErrorCode](),
+					},
+				},
 			},
 			CompiledBundle: compiledBundle,
 		}
@@ -1147,7 +1207,7 @@ func (s *Store) GetCompiledDNSBundle(ctx context.Context, profileRevID uuid.UUID
 // GetRevision fetches a single immutable policy revision by ID.
 func (s *Store) GetRevision(ctx context.Context, revisionID uuid.UUID) (*RevisionRecord, error) {
 	var rec *RevisionRecord
-	err := db.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
+	err := s.runInTx(ctx, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx, _ bool) error {
 		var e error
 		rec, e = getRevisionTx(ctx, tx, revisionID)
 		return e
@@ -1201,7 +1261,7 @@ func getRevisionTx(ctx context.Context, tx pgx.Tx, revisionID uuid.UUID) (*Revis
 // latest_revision, and revisions summary list (newest first).
 func (s *Store) GetDefinition(ctx context.Context, definitionID uuid.UUID) (*api.PolicyDefinition, error) {
 	var out *api.PolicyDefinition
-	err := db.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
+	err := s.runInTx(ctx, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx, _ bool) error {
 		def, err := getDefinitionTx(ctx, tx, definitionID)
 		if err != nil {
 			return err
@@ -1243,7 +1303,7 @@ func (s *Store) ListDefinitions(ctx context.Context, filter ListDefinitionsFilte
 	}
 
 	var out api.PolicyDefinitionList
-	err := db.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
+	err := s.runInTx(ctx, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx, _ bool) error {
 		query := `SELECT id FROM policy_definitions WHERE 1=1`
 		var args []any
 		if filter.Type != nil {
@@ -1397,39 +1457,70 @@ func getDefinitionTx(ctx context.Context, tx pgx.Tx, definitionID uuid.UUID) (ap
 	return def, nil
 }
 
+// GetOperation fetches an operation by ID within the current transaction (or a read-only transaction).
+func (s *Store) GetOperation(ctx context.Context, opID uuid.UUID) (api.Operation, error) {
+	var op api.Operation
+	err := s.runInTx(ctx, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx, _ bool) error {
+		var e error
+		op, e = getOperationTx(ctx, tx, opID)
+		return e
+	})
+	return op, err
+}
+
 func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operation, error) {
 	var op api.Operation
 	var kind, status, resType string
-	var resID *uuid.UUID
-	var desiredGenStr *string
-	var createdAt time.Time
+	var resID, reqID *uuid.UUID
+	var resVerStr, desiredGenStr, observedGenStr *string
+	var createdAt, updatedAt time.Time
 	var completedAt *time.Time
 	err := tx.QueryRow(ctx,
-		`SELECT kind, status, resource_type, resource_id, desired_generation::text, created_at, completed_at
+		`SELECT kind, status, resource_type, resource_id, request_id, resource_version::text, desired_generation::text, observed_generation::text, created_at, updated_at, completed_at
 		 FROM operations WHERE id = $1`,
 		opID,
-	).Scan(&kind, &status, &resType, &resID, &desiredGenStr, &createdAt, &completedAt)
+	).Scan(&kind, &status, &resType, &resID, &reqID, &resVerStr, &desiredGenStr, &observedGenStr, &createdAt, &updatedAt, &completedAt)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return op, apierr.New(apierr.ResourceNotFound, "Operation not found.")
+		}
 		return op, err
 	}
 	var refID openapi_types.UUID
 	if resID != nil {
 		refID = openapi_types.UUID(*resID)
 	}
-	var desiredGen *decstr.U64
+	var apiReqID openapi_types.UUID
+	if reqID != nil {
+		apiReqID = openapi_types.UUID(*reqID)
+	}
+	var resVer, desiredGen, observedGen *decstr.U64
+	if resVerStr != nil {
+		if v, err := decstr.Parse(*resVerStr); err == nil {
+			resVer = &v
+		}
+	}
 	if desiredGenStr != nil {
 		if g, err := decstr.Parse(*desiredGenStr); err == nil {
 			desiredGen = &g
 		}
 	}
-	updatedAt := createdAt
-	if completedAt != nil {
-		updatedAt = *completedAt
+	if observedGenStr != nil {
+		if g, err := decstr.Parse(*observedGenStr); err == nil {
+			observedGen = &g
+		}
+	}
+	stepStatus := api.OperationStepStatusPending
+	if status == string(api.OperationStatusSucceeded) {
+		stepStatus = api.OperationStepStatusSucceeded
+	} else if status == string(api.OperationStatusFailed) {
+		stepStatus = api.OperationStepStatusFailed
 	}
 	return api.Operation{
 		OperationId: openapi_types.UUID(opID),
 		Kind:        api.OperationKind(kind),
 		Status:      api.OperationStatus(status),
+		RequestId:   apiReqID,
 		Resource: api.ResourceRef{
 			Type: api.ResourceType(resType),
 			Id:   refID,
@@ -1442,12 +1533,22 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 			Code    api.ErrorCode `json:"code"`
 			Message string        `json:"message"`
 		}](),
-		ObservedGeneration: presence.NewNullNullable[decstr.U64](),
-		ResourceVersion:    presence.NewNullNullable[decstr.U64](),
+		ObservedGeneration: presence.FromPointer(observedGen),
+		ResourceVersion:    presence.FromPointer(resVer),
+		Steps: []api.OperationStep{
+			{
+				Name:       "desired_state_compile",
+				Required:   true,
+				Status:     stepStatus,
+				Message:    presence.NewNullNullable[string](),
+				ObservedAt: presence.FromPointer(completedAt),
+				ErrorCode:  presence.NewNullNullable[api.ErrorCode](),
+			},
+		},
 	}, nil
 }
 
-func getOrCreateNoOpActivateOperationTx(ctx context.Context, tx pgx.Tx, in ActivateRevisionInput) (api.Operation, error) {
+func getOrCreateNoOpActivateOperationTx(ctx context.Context, tx pgx.Tx, in ActivateRevisionInput, reqID uuid.UUID) (api.Operation, error) {
 	var existingID uuid.UUID
 	err := tx.QueryRow(ctx,
 		`SELECT id FROM operations
@@ -1468,10 +1569,10 @@ func getOrCreateNoOpActivateOperationTx(ctx context.Context, tx pgx.Tx, in Activ
 	}
 	var createdAt time.Time
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, steps)
-		 VALUES ($1, 'policy.activate', 'pending', $2, 'policy_definition', $3, '{"desired_state_compile":{"required":true,"status":"pending"}}'::jsonb)
+		`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, request_id, steps)
+		 VALUES ($1, 'policy.activate', 'pending', $2, 'policy_definition', $3, $4, '{"desired_state_compile":{"required":true,"status":"pending"}}'::jsonb)
 		 RETURNING created_at`,
-		opID, in.ActorID.String(), in.DefinitionID,
+		opID, principalScope(in.Principal, in.ActorID), in.DefinitionID, reqID,
 	).Scan(&createdAt); err != nil {
 		return api.Operation{}, err
 	}
@@ -1479,6 +1580,7 @@ func getOrCreateNoOpActivateOperationTx(ctx context.Context, tx pgx.Tx, in Activ
 		OperationId: openapi_types.UUID(opID),
 		Kind:        api.OperationKind("policy.activate"),
 		Status:      api.OperationStatusPending,
+		RequestId:   openapi_types.UUID(reqID),
 		Resource: api.ResourceRef{
 			Type: api.ResourceType("policy_definition"),
 			Id:   openapi_types.UUID(in.DefinitionID),
@@ -1493,6 +1595,16 @@ func getOrCreateNoOpActivateOperationTx(ctx context.Context, tx pgx.Tx, in Activ
 		}](),
 		ObservedGeneration: presence.NewNullNullable[decstr.U64](),
 		ResourceVersion:    presence.NewNullNullable[decstr.U64](),
+		Steps: []api.OperationStep{
+			{
+				Name:       "desired_state_compile",
+				Required:   true,
+				Status:     api.OperationStepStatusPending,
+				Message:    presence.NewNullNullable[string](),
+				ObservedAt: presence.NewNullNullable[time.Time](),
+				ErrorCode:  presence.NewNullNullable[api.ErrorCode](),
+			},
+		},
 	}, nil
 }
 
@@ -1562,7 +1674,9 @@ func buildActivateIdempotencyScope(in ActivateRevisionInput) (db.IdempotencyScop
 
 func cleanETag(raw string) string {
 	s := strings.TrimSpace(raw)
-	s = strings.TrimPrefix(s, "W/")
+	if strings.HasPrefix(s, "W/") {
+		return s
+	}
 	s = strings.Trim(s, `"`)
 	return strings.TrimSpace(s)
 }

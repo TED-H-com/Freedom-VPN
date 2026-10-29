@@ -3,10 +3,13 @@ package nodes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -15,6 +18,43 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
+
+// SystemActorUUID is the canonical D-029 UUID actor for system-initiated audit events.
+var SystemActorUUID = uuid.MustParse("00000000-0000-0000-0000-000000000003")
+
+// ResolveAdminActor resolves a caller-supplied principal or authenticated context
+// into a D-029 conformant actor UUID, actor_type ("admin" or "system"), and non-blank principal scope.
+func ResolveAdminActor(ctx context.Context, raw string) (uuid.UUID, string, string) {
+	trimmed := strings.TrimSpace(raw)
+	if p, ok := auth.FromContext(ctx); ok && p.ID != uuid.Nil {
+		actorType := "admin"
+		if p.Role == auth.Agent {
+			actorType = string(api.AuditEventActorTypeNode)
+		} else if p.Role != "" {
+			actorType = string(p.Role)
+		}
+		if trimmed == "" {
+			trimmed = p.Scope()
+		}
+		return p.ID, actorType, trimmed
+	}
+	if s := strings.TrimPrefix(trimmed, "admin:"); s != trimmed {
+		if parsed, err := uuid.Parse(strings.TrimSpace(s)); err == nil && parsed != uuid.Nil {
+			return parsed, "admin", trimmed
+		}
+	}
+	if parsed, err := uuid.Parse(trimmed); err == nil && parsed != uuid.Nil {
+		return parsed, "admin", trimmed
+	}
+	if trimmed == "system" {
+		return SystemActorUUID, "system", "system"
+	}
+	if trimmed == "" {
+		trimmed = "admin"
+	}
+	derived := uuid.NewSHA1(uuid.NameSpaceOID, []byte("fvpn-actor:"+trimmed))
+	return derived, "admin", trimmed
+}
 
 // Querier abstracts pgxpool.Pool and pgx.Tx for database queries.
 type Querier interface {
@@ -43,14 +83,15 @@ const (
 // StoredStep represents the JSONB structure persisted in operations.steps[name],
 // compatible with the database trigger guard_operation() (§15.4).
 type StoredStep struct {
-	Order        int       `json:"order"`
-	Required     bool      `json:"required"`
-	Status       string    `json:"status"`
-	ObservedRef  string    `json:"observed_ref,omitempty"`
-	Reason       string    `json:"reason,omitempty"`
-	ErrorCode    *string   `json:"error_code,omitempty"`
-	ErrorMessage *string   `json:"error_message,omitempty"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	Order        int        `json:"order"`
+	Required     bool       `json:"required"`
+	Status       string     `json:"status"`
+	ObservedRef  string     `json:"observed_ref,omitempty"`
+	ObservedAt   *time.Time `json:"observed_at,omitempty"`
+	Reason       string     `json:"reason,omitempty"`
+	ErrorCode    *string    `json:"error_code,omitempty"`
+	ErrorMessage *string    `json:"error_message,omitempty"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 // NewNodeOperationSteps constructs the initial step map for a node/exit operation.
@@ -135,7 +176,13 @@ func CreateOperation(ctx context.Context, tx pgx.Tx, p CreateOperationParams) (a
 		now = time.Now().UTC()
 	}
 	if p.ResourceType == "" {
-		p.ResourceType = "node"
+		p.ResourceType = string(api.ResourceTypeNode)
+	}
+	if !api.OperationKind(p.Kind).Valid() {
+		return api.Operation{}, fmt.Errorf("nodes: invalid operation kind %q", p.Kind)
+	}
+	if !api.ResourceType(p.ResourceType).Valid() {
+		return api.Operation{}, fmt.Errorf("nodes: invalid operation resource_type %q", p.ResourceType)
 	}
 	if p.Principal == "" {
 		p.Principal = "system"
@@ -190,6 +237,83 @@ func GetOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operation
 // GetOperationTx reads an operation by ID inside a transaction.
 func GetOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operation, error) {
 	return scanOperation(ctx, tx, opID)
+}
+
+// ListMemberOperations returns all operations associated with memberID, following
+// operations.resource_type = 'member' (directly), operations.resource_type = 'entitlement_grant'
+// through entitlement_grants.member_id, and operations.resource_type = 'member_device'
+// through member_devices.member_id.
+func (s *Service) ListMemberOperations(ctx context.Context, memberID uuid.UUID) ([]api.Operation, error) {
+	return ListMemberOperations(ctx, s.pool, memberID)
+}
+
+// ListMemberOperations queries operations associated with memberID across member,
+// entitlement_grant (via entitlement_grants.member_id), and member_device (via member_devices.member_id).
+func ListMemberOperations(ctx context.Context, q Querier, memberID uuid.UUID) ([]api.Operation, error) {
+	const sqlQuery = `
+		SELECT o.id
+		FROM operations o
+		WHERE (o.resource_type = 'member' AND o.resource_id = $1)
+		   OR (o.resource_type = 'entitlement_grant' AND o.resource_id IN (SELECT id FROM entitlement_grants WHERE member_id = $1))
+		   OR (o.resource_type = 'member_device' AND o.resource_id IN (SELECT id FROM member_devices WHERE member_id = $1))
+		ORDER BY o.created_at ASC, o.id ASC`
+	rows, err := q.Query(ctx, sqlQuery, memberID)
+	if err != nil {
+		return nil, err
+	}
+	var ids []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return nil, err
+	}
+	rows.Close()
+
+	out := make([]api.Operation, 0, len(ids))
+	for _, id := range ids {
+		op, err := scanOperation(ctx, q, id)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, op)
+	}
+	return out, nil
+}
+
+// GetMemberOperation reads an operation by ID only if it belongs to memberID
+// (via resource_type = 'member', resource_type = 'entitlement_grant' through entitlement_grants.member_id,
+// or resource_type = 'member_device' through member_devices.member_id).
+func (s *Service) GetMemberOperation(ctx context.Context, memberID uuid.UUID, opID uuid.UUID) (api.Operation, error) {
+	return GetMemberOperation(ctx, s.pool, memberID, opID)
+}
+
+// GetMemberOperation reads an operation by ID verifying ownership by memberID across
+// member, entitlement_grant (via entitlement_grants.member_id), and member_device (via member_devices.member_id).
+func GetMemberOperation(ctx context.Context, q Querier, memberID uuid.UUID, opID uuid.UUID) (api.Operation, error) {
+	var matchedID uuid.UUID
+	err := q.QueryRow(ctx, `
+		SELECT o.id
+		FROM operations o
+		WHERE o.id = $1
+		  AND (
+			(o.resource_type = 'member' AND o.resource_id = $2)
+			OR (o.resource_type = 'entitlement_grant' AND o.resource_id IN (SELECT id FROM entitlement_grants WHERE member_id = $2))
+			OR (o.resource_type = 'member_device' AND o.resource_id IN (SELECT id FROM member_devices WHERE member_id = $2))
+		  )`, opID, memberID).Scan(&matchedID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return api.Operation{}, apierr.Newf(apierr.ResourceNotFound, "operation %s not found", opID)
+		}
+		return api.Operation{}, err
+	}
+	return scanOperation(ctx, q, matchedID)
 }
 
 func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operation, error) {
@@ -272,9 +396,24 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 	if len(stepsBytes) > 0 {
 		_ = json.Unmarshal(stepsBytes, &storedSteps)
 	}
-	var refs map[string]string
+	refs := map[string]string{}
 	if len(refsBytes) > 0 {
-		_ = json.Unmarshal(refsBytes, &refs)
+		var rawRefs map[string]json.RawMessage
+		if json.Unmarshal(refsBytes, &rawRefs) == nil {
+			for k, raw := range rawRefs {
+				var s string
+				if json.Unmarshal(raw, &s) == nil {
+					refs[k] = s
+					continue
+				}
+				var ev struct {
+					Reference string `json:"reference"`
+				}
+				if json.Unmarshal(raw, &ev) == nil && ev.Reference != "" {
+					refs[k] = ev.Reference
+				}
+			}
+		}
 	}
 
 	type namedStep struct {
@@ -294,12 +433,17 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 
 	apiSteps := make([]api.OperationStep, 0, len(ordered))
 	for _, item := range ordered {
-		updatedAt := item.step.UpdatedAt
+		obsAt := presence.NewNullNullable[time.Time]()
+		if item.step.ObservedAt != nil && !item.step.ObservedAt.IsZero() {
+			obsAt = presence.NewNullableWithValue(item.step.ObservedAt.UTC())
+		} else if !item.step.UpdatedAt.IsZero() {
+			obsAt = presence.NewNullableWithValue(item.step.UpdatedAt.UTC())
+		}
 		stepOut := api.OperationStep{
 			Name:       item.name,
 			Required:   item.step.Required,
 			Status:     api.OperationStepStatus(item.step.Status),
-			ObservedAt: presence.NewNullableWithValue(updatedAt),
+			ObservedAt: obsAt,
 			ErrorCode:  presence.NewNullNullable[api.ErrorCode](),
 			Message:    presence.NewNullNullable[string](),
 		}

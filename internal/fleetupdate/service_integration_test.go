@@ -234,6 +234,7 @@ func TestAT23_AllStatesArchitecturesAndEvidence(t *testing.T) {
 }
 func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	l := newLab(t)
+	defer releasetest.AssertLedger(t, l.s.pool, l.f.Validator)
 	offline := l.node("amd64", "published", "registered", false)
 	enrolling := l.node("arm64", "unpublished", "enrolling", false)
 	b := l.batch(l.new)
@@ -303,6 +304,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 }
 func TestAT26_IdempotencyConcurrencyAndLateResults(t *testing.T) {
 	l := newLab(t)
+	defer releasetest.AssertLedger(t, l.s.pool, l.f.Validator)
 	queued := l.node("amd64", "published", "registered", true)
 	applying := l.node("arm64", "disabled", "registered", true)
 	request := l.request(l.old)
@@ -393,6 +395,7 @@ func TestAT26_IdempotencyConcurrencyAndLateResults(t *testing.T) {
 }
 func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	l := newLab(t)
+	defer releasetest.AssertLedger(t, l.s.pool, l.f.Validator)
 	i := l.node("amd64", "published", "registered", true)
 	l.batch(l.new)
 	w := l.intent(i)
@@ -582,6 +585,7 @@ func TestUPD02_ResultBindingExpiryAndRestore(t *testing.T) {
 }
 func TestUPD05_PaginationRevokedTargetsAndRetryCompletion(t *testing.T) {
 	l := newLab(t)
+	defer releasetest.AssertLedger(t, l.s.pool, l.f.Validator)
 	i := l.node("amd64", "disabled", "registered", true)
 	l.node("arm64", "unpublished", "registered", true)
 	b := l.batch(l.new)

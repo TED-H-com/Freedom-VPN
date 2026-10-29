@@ -506,7 +506,7 @@ func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, api.OperationKindMemberGrant, api.ResourceTypeEntitlementGrant, grant, p.Revision)
+		op, err := entitlement.Operation(ctx, tx, c.Actor, api.OperationKindMemberGrantRevoke, api.ResourceTypeEntitlementGrant, grant, p.Revision)
 		if err != nil {
 			return err
 		}

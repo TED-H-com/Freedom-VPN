@@ -2,7 +2,6 @@ package enforce
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -44,11 +43,11 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if err := checkForwardOrder(fwd); err != nil {
 		return err
 	}
-	if !strings.Contains(rs.Raw, m.Datapath.MemberIngress) {
+	if !rulesetBindsIface(rs, m.Datapath.MemberIngress) {
 		return checkf(ReasonIsolation, "member ingress %s is not in the ruleset", m.Datapath.MemberIngress)
 	}
 	snat := rs.Chains["postrouting"]
-	if !chainMentions(snat, m.Datapath.SNAT.String()) || !chainMentions(snat, m.Datapath.Uplink) {
+	if !chainHasSNAT(snat, m.Datapath.SNAT.String()) || !chainHasOIF(snat, m.Datapath.Uplink) {
 		return checkf(ReasonMeterPathInvalid, "postrouting does not SNAT %s out %s", m.Datapath.SNAT, m.Datapath.Uplink)
 	}
 	for _, d := range devices {
@@ -64,7 +63,9 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 			return checkf(ReasonDeviceClass, "missing download counter %s", dn)
 		}
 		want := ClassID(d.Minor)
-		if !ruleHasCounterAndPriority(fwd, up, want) || !ruleHasCounterAndPriority(fwd, dn, want) {
+		// Upload leaves through the uplink. Download arrives from the uplink.
+		if !ruleBinds(fwd, up, want, m.Datapath.MemberIngress, m.Datapath.Uplink) ||
+			!ruleBinds(fwd, dn, want, m.Datapath.Uplink, m.Datapath.MemberIngress) {
 			return checkf(ReasonQoS, "device %s is not classified to classid 0x%x", d.Binding.DeviceID, want)
 		}
 		if assignments != nil {
@@ -251,10 +252,10 @@ func generationComment(ch ChainView, generation uint64) bool {
 func checkForwardOrder(ch ChainView) error {
 	seenAllowDrop := false
 	for _, rule := range ch.Rules {
-		if rule.Verdict == "drop" && strings.Contains(rule.Raw, "allowed_v4") {
+		if rule.Verdict == "drop" && negatesSet(rule, "allowed_v4") {
 			seenAllowDrop = true
 		}
-		if rule.Verdict == "accept" && strings.Contains(rule.Raw, "established") && !seenAllowDrop {
+		if rule.Verdict == "accept" && rule.CTEstablished && !seenAllowDrop {
 			return checkf(ReasonCounterOrder, "established accept is before the allow-set drop")
 		}
 		if rule.Verdict == "accept" && rule.Counter == "" {
@@ -267,28 +268,69 @@ func checkForwardOrder(ch ChainView) error {
 	return nil
 }
 
-func chainMentions(ch ChainView, needle string) bool {
-	for _, rule := range ch.Rules {
-		if strings.Contains(rule.Raw, needle) || strings.Contains(rule.Comment, needle) {
+func negatesSet(rule RuleView, name string) bool {
+	for _, set := range rule.NegSets {
+		if set == name {
 			return true
 		}
 	}
 	return false
 }
 
-func ruleHasCounterAndPriority(ch ChainView, counter string, classid uint32) bool {
-	dec := strconv.FormatUint(uint64(classid), 10)
-	hex := fmt.Sprintf("0x%x", classid)
+func chainHasOIF(ch ChainView, name string) bool {
+	for _, rule := range ch.Rules {
+		if hasName(rule.OIF, name) {
+			return true
+		}
+	}
+	return false
+}
+
+func chainHasSNAT(ch ChainView, addr string) bool {
+	for _, rule := range ch.Rules {
+		if rule.SNAT == addr {
+			return true
+		}
+	}
+	return false
+}
+
+func rulesetBindsIface(rs Ruleset, name string) bool {
+	for _, ch := range rs.Chains {
+		for _, rule := range ch.Rules {
+			if hasName(rule.IIF, name) || hasName(rule.OIF, name) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func ruleBinds(ch ChainView, counter string, classid uint32, iif, oif string) bool {
 	for _, rule := range ch.Rules {
 		if rule.Counter != counter || rule.Verdict != "accept" {
 			continue
 		}
-		for _, p := range rule.Prios {
-			if p == classid {
-				return true
-			}
+		if !hasPrio(rule, classid) || !hasName(rule.IIF, iif) || !hasName(rule.OIF, oif) {
+			continue
 		}
-		if strings.Contains(rule.Raw, dec) || strings.Contains(strings.ToLower(rule.Raw), hex) {
+		return true
+	}
+	return false
+}
+
+func hasPrio(rule RuleView, classid uint32) bool {
+	for _, p := range rule.Prios {
+		if p == classid {
+			return true
+		}
+	}
+	return false
+}
+
+func hasName(names []string, want string) bool {
+	for _, name := range names {
+		if name == want {
 			return true
 		}
 	}
@@ -297,7 +339,7 @@ func ruleHasCounterAndPriority(ch ChainView, counter string, classid uint32) boo
 
 func hasDropOnIngress(ch ChainView, ifname string) bool {
 	for _, rule := range ch.Rules {
-		if rule.Verdict == "drop" && strings.Contains(rule.Raw, ifname) {
+		if rule.Verdict == "drop" && hasName(rule.IIF, ifname) {
 			return true
 		}
 	}

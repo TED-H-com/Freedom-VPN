@@ -1,6 +1,7 @@
 package usage
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/hex"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -17,9 +19,36 @@ import (
 )
 
 // Signer signs recovery documents (usage checkpoints and recovery records)
-// using a recovery-purpose key (§16.2, §17.3).
+// using a recovery-purpose or ledger-epoch-purpose key (§16.2, §17.3).
 type Signer interface {
 	Sign(purpose envelope.Purpose, signed any) (envelope.Envelope, error)
+}
+
+// ProviderSigner adapts a central PKI signing.Provider to usage.Signer,
+// signing checkpoints with signing.Recovery ("recovery") and recovery records
+// with signing.LedgerEpoch ("ledger-epoch") (§16.2, §16.3, §17.3).
+type ProviderSigner struct {
+	provider signing.Provider
+}
+
+// NewProviderSigner constructs a Signer backed by a central signing.Provider.
+func NewProviderSigner(p signing.Provider) *ProviderSigner {
+	return &ProviderSigner{provider: p}
+}
+
+// Sign implements Signer.
+func (s *ProviderSigner) Sign(purpose envelope.Purpose, signed any) (envelope.Envelope, error) {
+	if s == nil || s.provider == nil {
+		return envelope.Envelope{}, fmt.Errorf("usage: signing provider is nil")
+	}
+	switch purpose {
+	case envelope.PurposeRecovery:
+		return s.provider.SignEnvelope(context.Background(), signing.Recovery, signed)
+	case envelope.PurposeLedgerEpoch:
+		return s.provider.SignEnvelope(context.Background(), signing.LedgerEpoch, signed)
+	default:
+		return envelope.Envelope{}, fmt.Errorf("usage: unsupported signing purpose %q for usage signer", purpose)
+	}
 }
 
 // Ed25519Signer is an in-memory Signer implementation backed by an Ed25519 key.

@@ -129,8 +129,9 @@ func writeAgentConfig(controlURL string, stale, interval int) error {
 		"test_exempt_v4":            []string{"203.0.113.0/24"},
 		"extra_denied_v4":           []string{"192.0.2.200/32"},
 		"host_v4":                   []string{"192.0.2.33/32", "192.0.2.37/32", "192.168.0.1/32"},
-		"host_reserve_bps":          5000000,
-		"netbird_backend":           "kernel",
+		// TEST ONLY. Production host_reserve_bps is 待實測 and is set by the operator.
+		"host_reserve_bps": 5000000,
+		"netbird_backend":  "kernel",
 	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
