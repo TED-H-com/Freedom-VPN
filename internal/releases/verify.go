@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"io"
 	"math"
 	"net"
@@ -110,7 +111,7 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 			}
 		}
 	}
-	return db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	return commandtx.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var op *uuid.UUID
 		if e = tx.QueryRow(ctx, `SELECT state,operation_id FROM release_verifications WHERE release_id=$1 FOR UPDATE`, id).Scan(&state, &op); e != nil {
 			return e
@@ -142,7 +143,16 @@ func (s *Service) VerifyRelease(ctx context.Context, id uuid.UUID, fetch Fetcher
 				status = "failed"
 			}
 			evidence, _ := json.Marshal(map[string]any{"manifest": id.String(), "artifact_count": len(m.Signed.Artifacts)})
-			_, e = tx.Exec(ctx, `UPDATE operations SET status=$2,completed_at=clock_timestamp(),steps='{"verify":{"required":true,"status":"succeeded","observed_ref":"digests"}}',observed_refs=jsonb_build_object('digests',$3::jsonb) WHERE id=$1`, op, status, evidence)
+			steps := map[string]any{"verify": map[string]any{"required": true, "status": status}}
+			refs := []byte(`{}`)
+			if verifyErr == nil {
+				steps["verify"].(map[string]any)["observed_ref"] = "digests"
+				refs, _ = json.Marshal(map[string]json.RawMessage{"digests": evidence})
+			} else {
+				steps["verify"].(map[string]any)["error_code"] = code
+			}
+			stepJSON, _ := json.Marshal(steps)
+			_, e = tx.Exec(ctx, `UPDATE operations SET status=$2,completed_at=clock_timestamp(),steps=$3,observed_refs=$4 WHERE id=$1`, op, status, stepJSON, refs)
 			if e != nil {
 				return e
 			}

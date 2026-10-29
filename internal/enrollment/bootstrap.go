@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/x509"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"log/slog"
 	"time"
 
@@ -49,7 +50,7 @@ func (s *Service) StoreBootstrap(ctx context.Context, id pki.NodeIdentity, opera
 	if err != nil {
 		return safe(err)
 	}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var allowed bool
 		e := tx.QueryRow(ctx, `SELECT n.lifecycle_state IN ('enrolling','registered') AND n.current_incarnation_id=$2 AND i.revoked_at IS NULL FROM nodes n JOIN node_incarnations i ON i.node_id=n.id AND i.id=$2 WHERE n.id=$1 FOR UPDATE OF n`, id.NodeID, id.IncarnationID).Scan(&allowed)
 		if e != nil {
@@ -98,9 +99,9 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 	}
 	var sealed signing.Sealed
 	var op uuid.UUID
-	var unavailable bool
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		unavailable = false
+	var unavailable apierr.Code
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		unavailable = ""
 		sealed = signing.Sealed{}
 		out = BootstrapDelivery{}
 		if _, e := s.auth.LockAuthenticated(ctx, tx, cert); e != nil {
@@ -110,14 +111,17 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 		var expired bool
 		e := tx.QueryRow(ctx, `SELECT operation_id,external_key_id,encryption_key_id,ciphertext,expires_at,expires_at<=clock_timestamp() FROM node_bootstrap_secrets WHERE incarnation_id=$1 FOR UPDATE`, id.IncarnationID).Scan(&op, &out.ExternalKeyID, &keyID, &sealed.Ciphertext, &out.ExpiresAt, &expired)
 		if errors.Is(e, pgx.ErrNoRows) {
-			unavailable = true
+			unavailable = apierr.BootstrapNotReady
 			return nil
 		}
 		if e != nil {
 			return e
 		}
 		if keyID == nil {
-			unavailable = true
+			unavailable = apierr.BootstrapConsumed
+			if expired {
+				unavailable = apierr.BootstrapExpired
+			}
 			return nil
 		}
 		sealed.KeyID = *keyID
@@ -126,7 +130,7 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 			return e
 		}
 		if expired {
-			unavailable = true
+			unavailable = apierr.BootstrapExpired
 			return nil
 		}
 		return audit(ctx, tx, "node:"+id.NodeID.String(), "bootstrap.claimed", id.IncarnationID, &op)
@@ -134,8 +138,8 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 	if err != nil {
 		return BootstrapDelivery{}, safe(err)
 	}
-	if unavailable {
-		return BootstrapDelivery{}, apierr.New(apierr.StateConflict, "Bootstrap is absent, expired or already delivered.")
+	if unavailable != "" {
+		return BootstrapDelivery{}, apierr.New(unavailable, "Bootstrap delivery unavailable.")
 	}
 	aad, err := bootstrapAAD(id, op, out.ExternalKeyID, out.ExpiresAt)
 	if err != nil {
@@ -147,7 +151,7 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 	}
 	if !time.Now().Before(out.ExpiresAt) {
 		clear(plain)
-		return BootstrapDelivery{}, apierr.New(apierr.StateConflict, "Bootstrap delivery expired.")
+		return BootstrapDelivery{}, apierr.New(apierr.BootstrapExpired, "Bootstrap delivery expired.")
 	}
 	out.SetupKey = string(plain)
 	clear(plain)

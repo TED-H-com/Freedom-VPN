@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -33,7 +34,7 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		Version decstr.U64 `json:"expected_version"`
 		Reason  string     `json:"reason"`
 	}{*expected, reason}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		record, e := begin(ctx, tx, cmd, "/api/v1/admin/nodes/"+node.String()+"/revoke", body)
 		if e != nil {
 			return e
@@ -64,9 +65,6 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		// This is a local, durable revocation journal, not a remote KMS call.
 		// Persist before commit so an old DB restore cannot undo revocation.
 		// If the DB commit fails, the journal deliberately remains fail closed.
-		if e = s.fence.DenyIdentity(ctx, node.String()); e != nil {
-			return e
-		}
 		if incarnation != nil {
 			if e = s.fence.DenyIdentity(ctx, incarnation.String()); e != nil {
 				return e
@@ -133,7 +131,7 @@ func (s *Service) ObserveEndpoint(ctx context.Context, cert *x509.Certificate, e
 		return false, err
 	}
 	hash := sha256.Sum256([]byte(endpoint))
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, e := s.auth.LockAuthenticated(ctx, tx, cert); e != nil {
 			return e
 		}

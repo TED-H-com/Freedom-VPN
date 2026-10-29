@@ -108,6 +108,7 @@ func Servers(c config.Config, d Dependencies) (public, agent *http.Server, err e
 	}
 	public = makeServer(c.PublicAddress, root(publicAPI, false), &tls.Config{MinVersion: tls.VersionTLS13, Certificates: []tls.Certificate{certificate}})
 	agent = makeServer(c.AgentAddress, root(agentAPI, true), AgentTLSConfig(certificate, roots))
+	err = wireNodeServers(c, d, public, agent)
 	return
 }
 

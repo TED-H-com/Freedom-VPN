@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"slices"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -30,7 +31,7 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 	if e = s.releases.Validator.ValidateBody("UpdateBatchRetryRequest", raw); e != nil {
 		return out, e
 	}
-	e = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = RetryAccepted{}
 		rec, e := releases.Begin(ctx, tx, c, "/api/v1/admin/update-batches/"+batch.String()+"/retry", raw)
 		if e != nil {
@@ -149,7 +150,7 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 		if e = recomputeAll(ctx, tx); e != nil {
 			return e
 		}
-		return db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "update_batch", ResourceID: &batch, OperationID: &op, ResponseStatus: 202})
+		return commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "update_batch", ResourceID: &batch, OperationID: &op, ResponseStatus: 202})
 	})
 	return out, e
 }

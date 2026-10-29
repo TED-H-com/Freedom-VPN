@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -135,7 +136,7 @@ func (s *Service) Renew(ctx context.Context, cert *x509.Certificate, r api.Certi
 	if err != nil {
 		return out, err
 	}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, e := s.LockAuthenticated(ctx, tx, cert); e != nil {
 			return e
 		}

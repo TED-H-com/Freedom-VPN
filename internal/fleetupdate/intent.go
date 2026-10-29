@@ -3,6 +3,7 @@ package fleetupdate
 import (
 	"context"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"slices"
 	"time"
 
@@ -49,7 +50,7 @@ type Work struct {
 
 func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, error) {
 	var out *Work
-	e := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = nil
 		if e := s.lock(ctx, tx); e != nil {
 			return e

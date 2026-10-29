@@ -13,6 +13,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"log/slog"
 	"strings"
 	"time"
@@ -83,14 +84,14 @@ func begin(ctx context.Context, tx pgx.Tx, cmd Command, route string, body any) 
 	}
 	hash := sha256.Sum256(raw)
 	key := sha256.Sum256([]byte(cmd.Key.String()))
-	return db.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: cmd.Principal, Method: "POST", Route: route, KeyHash: key[:], RequestHash: hash[:]}, 0)
+	return commandtx.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: cmd.Principal, Method: "POST", Route: route, KeyHash: key[:], RequestHash: hash[:]}, 0)
 }
 
 func validIdentifier(value string) bool {
 	return utf8.ValidString(value) && strings.TrimSpace(value) != "" && !strings.ContainsRune(value, 0)
 }
 func complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, kind string, id uuid.UUID, status int, operation *uuid.UUID) error {
-	return db.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: kind, ResourceID: &id, ResponseStatus: status, OperationID: operation})
+	return commandtx.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: kind, ResourceID: &id, ResponseStatus: status, OperationID: operation})
 }
 func safe(err error) error {
 	if err == nil {
@@ -164,7 +165,7 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 	if r.ExpiresInSeconds != nil {
 		ttl = time.Duration(*r.ExpiresInSeconds) * time.Second
 	}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = api.EnrollmentCreated{Token: presence.NewNullNullable[string]()}
 		record, e := begin(ctx, tx, cmd, "/api/v1/admin/enrollments", r)
 		if e != nil {
@@ -206,19 +207,34 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 		}
 		token := TokenPrefix + base64.RawURLEncoding.EncodeToString(secret)
 		hash := sha256.Sum256([]byte(token))
-		if _, e = tx.Exec(ctx, `INSERT INTO nodes(id,notes) VALUES($1,$2)`, node, value(r.Notes)); e != nil {
-			return e
-		}
-		if _, e = tx.Exec(ctx, `INSERT INTO exits(id,node_id,display_name,region) VALUES($1,$2,$3,$4)`, exit, node, value(r.Name), value(r.Region)); e != nil {
-			return e
-		}
-		for _, group := range groups {
-			groupID, e := uuid.NewV7()
-			if e != nil {
+		if r.NodeId != nil {
+			node = *r.NodeId
+			var lifecycle string
+			var active bool
+			if e = tx.QueryRow(ctx, `SELECT lifecycle_state,EXISTS(SELECT 1 FROM node_incarnations i WHERE i.node_id=n.id AND i.revoked_at IS NULL) FROM nodes n WHERE n.id=$1 FOR UPDATE`, node).Scan(&lifecycle, &active); e != nil {
 				return e
 			}
-			if _, e = tx.Exec(ctx, `INSERT INTO exit_groups(id,exit_id,group_id) VALUES($1,$2,$3)`, groupID, exit, group); e != nil {
+			if lifecycle == "retired" {
+				return apierr.New(apierr.NodeRetired, "Node is retired.")
+			}
+			if active {
+				return apierr.New(apierr.NodeIncarnationActive, "Revoke the current incarnation before reinstalling.")
+			}
+		} else {
+			if _, e = tx.Exec(ctx, `INSERT INTO nodes(id,notes) VALUES($1,$2)`, node, value(r.Notes)); e != nil {
 				return e
+			}
+			if _, e = tx.Exec(ctx, `INSERT INTO exits(id,node_id,display_name,region) VALUES($1,$2,$3,$4)`, exit, node, value(r.Name), value(r.Region)); e != nil {
+				return e
+			}
+			for _, group := range groups {
+				groupID, e := uuid.NewV7()
+				if e != nil {
+					return e
+				}
+				if _, e = tx.Exec(ctx, `INSERT INTO exit_groups(id,exit_id,group_id) VALUES($1,$2,$3)`, groupID, exit, group); e != nil {
+					return e
+				}
 			}
 		}
 		if _, e = tx.Exec(ctx, `INSERT INTO node_enrollments(id,node_id,token_hash,expiry,delivery,name,region,notes,member_group_ids) VALUES($1,$2,$3,clock_timestamp()+$4::bigint*interval '1 millisecond',$5,$6,$7,$8,$9)`, id, node, hash[:], ttl.Milliseconds(), r.Delivery, r.Name, r.Region, r.Notes, groups); e != nil {
@@ -282,7 +298,7 @@ func (s *Service) RevokeEnrollment(ctx context.Context, cmd Command, id uuid.UUI
 	if !validReason(reason) {
 		return out, apierr.New(apierr.ValidationFailed, "Revocation reason required.")
 	}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		record, e := begin(ctx, tx, cmd, "/api/v1/admin/enrollments/"+id.String()+"/revoke", map[string]string{"reason": reason})
 		if e != nil {
 			return e
@@ -382,7 +398,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 			return out, safe(err)
 		}
 	}
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = EnrollResult{}
 		// All identity mutations lock node first, then enrollment/certificate.
 		var lifecycle string
@@ -407,7 +423,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 		if expired || state == "expired" {
 			return apierr.New(apierr.EnrollmentTokenExpired, "Enrollment expired.")
 		}
-		if lifecycle == "revoked" || lifecycle == "retired" {
+		if lifecycle == "retired" || lifecycle == "revoked" && state != "pending" {
 			return apierr.New(apierr.IdentityRevoked, "Node identity revoked.")
 		}
 		var cert *x509.Certificate
@@ -433,15 +449,13 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 			out.Replay = true
 			out.OperationID = *opID
 		} else if state == "pending" {
-			if lifecycle != "enrolling" {
+			if lifecycle != "enrolling" && lifecycle != "revoked" {
 				return apierr.New(apierr.StateConflict, "Node already has an identity.")
 			}
 			if _, e = tx.Exec(ctx, `INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,os,arch) VALUES($1,$2,$3,$4,$5)`, r.NodeIncarnationId, nodeID, fp, r.Platform.Os, r.Platform.Arch); e != nil {
 				return e
 			}
-			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_incarnation_id=$2,lifecycle_state='registered',provisioning_state='applying',resource_version=resource_version+1 WHERE id=$1`, nodeID, r.NodeIncarnationId); e != nil {
-				return e
-			}
+
 			storedCert, e := pki.StoreCertificate(ctx, tx, r.NodeIncarnationId, issued)
 			if e != nil {
 				return e
@@ -455,6 +469,9 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 				return e
 			}
 			if _, e = tx.Exec(ctx, `UPDATE node_enrollments SET state='consumed',request_id=$2,public_key_fingerprint=$3,consumed_at=clock_timestamp(),incarnation_id=$4,request_hash=$5,certificate_id=$6,operation_id=$7 WHERE id=$1`, enrollmentID, r.EnrollmentRequestId, fp, r.NodeIncarnationId, requestHash, storedCert, out.OperationID); e != nil {
+				return e
+			}
+			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_incarnation_id=$2,lifecycle_state='registered',provisioning_state='applying',resource_version=resource_version+1 WHERE id=$1`, nodeID, r.NodeIncarnationId); e != nil {
 				return e
 			}
 			payload, e := canonjson.Marshal(ProvisionEvent{1, nodeID, r.NodeIncarnationId, out.OperationID, true, 1, false, 86400, "staging"})
@@ -474,7 +491,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 		if e = tx.QueryRow(ctx, `SELECT publication_intent FROM exits WHERE node_id=$1`, nodeID).Scan(&publication); e != nil {
 			return e
 		}
-		out.Response = api.EnrollResponse{NodeId: nodeID, NodeIncarnationId: r.NodeIncarnationId, LifecycleState: api.LifecycleStateRegistered, PublicationIntent: publication, CertificatePem: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})), CaChainPem: s.ca.ChainPEM(), CertificateSerial: cert.SerialNumber.Text(16), CertificateNotAfter: cert.NotAfter.UTC(), Next: "/api/v1/agent/desired-state"}
+		out.Response = api.EnrollResponse{NodeId: nodeID, NodeIncarnationId: r.NodeIncarnationId, LifecycleState: api.LifecycleStateRegistered, PublicationIntent: publication, CertificatePem: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})), CaChainPem: s.ca.ChainPEM(), CertificateSerial: cert.SerialNumber.Text(16), CertificateNotAfter: cert.NotAfter.UTC(), Next: "/api/v1/agent/bootstrap"}
 		return nil
 	})
 	if err != nil {

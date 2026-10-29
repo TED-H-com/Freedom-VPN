@@ -12,6 +12,7 @@ import (
 // generated strict methods, plus Replay for commands. Overlap fails at startup.
 func Handlers(pool *pgxpool.Pool, logger *slog.Logger) (*httpapi.Composite, error) {
 	return httpapi.Compose(
+		nodeHandlers(pool, logger),
 		operations.Store{Pool: pool},
 		&audit.Store{Pool: pool, Logger: logger},
 	)

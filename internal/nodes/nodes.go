@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"strconv"
 	"strings"
 	"time"
@@ -39,12 +40,18 @@ const (
 // Service manages the central node registry, aggregate views, mutations,
 // observations, and staleness detection (§5, §14.2, §14.4, §15.3).
 type Service struct {
-	pool *pgxpool.Pool
-	now  func() time.Time
+	pool           *pgxpool.Pool
+	now            func() time.Time
+	observeVersion func(context.Context, pgx.Tx, api.ObservationReport) error
 }
 
 // Option configures a Service.
 type Option func(*Service)
+
+// WithVersionObserver joins deduplicated observation receipts and fleet evidence (§13.8).
+func WithVersionObserver(fn func(context.Context, pgx.Tx, api.ObservationReport) error) Option {
+	return func(s *Service) { s.observeVersion = fn }
+}
 
 // WithClock overrides the clock used by Service (for deterministic tests).
 func WithClock(now func() time.Time) Option {
@@ -80,8 +87,10 @@ func ParseIfMatch(ifMatch string) (string, error) {
 	if trimmed == "" {
 		return "", apierr.New(apierr.PreconditionRequired, "If-Match header is required for this mutation")
 	}
-	unquoted := strings.TrimPrefix(trimmed, "W/")
-	unquoted = strings.Trim(unquoted, `"`)
+	if len(trimmed) < 3 || trimmed[0] != '"' || trimmed[len(trimmed)-1] != '"' {
+		return "", apierr.New(apierr.ResourceVersionConflict, "Strong If-Match required")
+	}
+	unquoted := trimmed[1 : len(trimmed)-1]
 	if u, err := decstr.Parse(unquoted); err != nil || uint64(u) == 0 {
 		return "", apierr.New(apierr.ResourceVersionConflict, "If-Match header does not match a valid resource_version")
 	}
@@ -721,8 +730,8 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 	}
 
 	var result *UpdateNodeResult
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		rec, err := db.BeginIdempotent(ctx, tx, scope, 0)
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		rec, err := commandtx.BeginIdempotent(ctx, tx, scope, 0)
 		if err != nil {
 			if errors.Is(err, db.ErrIdempotencyConflict) {
 				return apierr.New(apierr.IdempotencyConflict, "Idempotency-Key reused with a different request payload")
@@ -908,7 +917,7 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 				return err
 			}
 			nodeIDCopy := p.NodeID
-			if err := db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
+			if err := commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
 				OperationID:    &op.OperationId,
 				ResourceType:   "node",
 				ResourceID:     &nodeIDCopy,
@@ -938,7 +947,7 @@ func (s *Service) UpdateNode(ctx context.Context, p UpdateNodeParams) (*UpdateNo
 			return err
 		}
 		nodeIDCopy := p.NodeID
-		if err := db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
+		if err := commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
 			ResourceType:   "node",
 			ResourceID:     &nodeIDCopy,
 			ResponseStatus: 200,
@@ -1055,8 +1064,8 @@ func (s *Service) revokeOrRetireNode(
 		outOp   api.Operation
 		outETag string
 	)
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		rec, err := db.BeginIdempotent(ctx, tx, scope, 0)
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		rec, err := commandtx.BeginIdempotent(ctx, tx, scope, 0)
 		if err != nil {
 			if errors.Is(err, db.ErrIdempotencyConflict) {
 				return apierr.New(apierr.IdempotencyConflict, "Idempotency-Key reused with a different request payload")
@@ -1195,7 +1204,7 @@ func (s *Service) revokeOrRetireNode(
 		}
 
 		nodeIDCopy := nodeID
-		if err := db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
+		if err := commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
 			OperationID:    &op.OperationId,
 			ResourceType:   "node",
 			ResourceID:     &nodeIDCopy,

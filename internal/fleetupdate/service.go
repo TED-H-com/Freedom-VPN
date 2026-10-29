@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -103,7 +104,7 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 	if e = s.releases.Validator.ValidateBody("UpdateBatchCreateRequest", raw); e != nil {
 		return out, e
 	}
-	e = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		rec, e := releases.Begin(ctx, tx, c, "/api/v1/admin/update-batches", raw)
 		if e != nil {
 			return e
@@ -189,7 +190,7 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 		if e != nil {
 			return e
 		}
-		return db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "update_batch", ResourceID: &batch, OperationID: &op, ResponseStatus: 202})
+		return commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "update_batch", ResourceID: &batch, OperationID: &op, ResponseStatus: 202})
 	})
 	return out, e
 }
@@ -243,4 +244,10 @@ func accepted(ctx context.Context, tx pgx.Tx, id uuid.UUID) (api.UpdateBatchAcce
 	a.State = "accepted"
 	a.StatusUrl = "/api/v1/admin/update-batches/" + id.String()
 	return a, e
+}
+
+// Accepted re-reads the immutable acceptance snapshot for HTTP command replay.
+func (s *Service) Accepted(ctx context.Context, id uuid.UUID) (out api.UpdateBatchAccepted, err error) {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error { var e error; out, e = accepted(ctx, tx, id); return e })
+	return
 }

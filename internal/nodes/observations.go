@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"strconv"
 	"time"
 
@@ -58,7 +59,7 @@ func (s *Service) SubmitObservation(
 	payloadHash := payloadHashArr[:]
 
 	var accepted api.ObservationAccepted
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		// 1. Lock the node row and verify identity and lifecycle state.
 		var (
 			lifecycleState       string
@@ -200,6 +201,14 @@ func (s *Service) SubmitObservation(
 			return err
 		}
 
+		if s.observeVersion != nil {
+			if err := s.observeVersion(ctx, tx, report); err != nil {
+				return err
+			}
+			// The fleet ledger owns version ordering; node wall time alone cannot replace it.
+			currentReleaseID = nil
+			lastGoodReleaseID = nil
+		}
 		// 4. Update node state. An older observed_at NEVER overrides newer observed state!
 		isNewerOrEqual := lastObservedAt == nil || !observedAt.Before(lastObservedAt.UTC())
 		if isNewerOrEqual {
@@ -554,7 +563,7 @@ func (s *Service) SweepStaleNodes(
 	offlineCutoff := now.Add(-offlineAfter)
 
 	var res StalenessSweepResult
-	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		// 1. Move online/stale nodes past offlineCutoff to offline.
 		tagOffline, err := tx.Exec(ctx, `
 			UPDATE nodes

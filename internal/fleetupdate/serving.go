@@ -3,6 +3,7 @@ package fleetupdate
 import (
 	"context"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"slices"
 	"time"
 
@@ -44,7 +45,7 @@ func (s *Service) NodeVersionView(ctx context.Context, nodeID uuid.UUID) (Versio
  coalesce(f.supported_release_policy='allowlist' AND n.current_release_id=ANY(f.supported_release_ids) AND NOT n.current_release_id=ANY(f.revoked_release_ids),false),
  coalesce(s.recovery_required,false) OR coalesce(n.last_good_release_id=ANY(f.revoked_release_ids),false),
  s.last_observed_at,j.last_result_at,coalesce(s.observed_update_generation,0)::text,
- s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false)
+ `+unconfirmedSQL+`
  FROM nodes n CROSS JOIN fleet_config f LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN update_jobs j ON j.id=s.current_job_id WHERE n.id=$1`, nodeID).Scan(&v.CurrentReleaseID, &v.DesiredReleaseID, &v.LastGoodReleaseID, &v.ReleaseServiceable, &v.RecoveryRequired, &v.LastObservedAt, &v.LastResultAt, &generation, &v.Unconfirmed)
 	if e != nil {
 		return v, e
@@ -61,10 +62,11 @@ type Observation struct {
 	Sequence, AppliedUpdateGeneration   decstr.U64
 	CurrentReleaseID, LastGoodReleaseID *uuid.UUID
 	ObservedAt                          time.Time
+	ReceivedAt                          time.Time
 }
 
 func (s *Service) Observe(ctx context.Context, i Identity, o Observation) error {
-	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error { return s.ObserveTx(ctx, tx, i, o) })
+	return commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error { return s.ObserveTx(ctx, tx, i, o) })
 }
 func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observation) error {
 	if e := s.lock(ctx, tx); e != nil {
@@ -84,9 +86,12 @@ func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	if e = tx.QueryRow(ctx, `SELECT coalesce($1::uuid=ANY(revoked_release_ids),false) FROM fleet_config`, o.LastGoodReleaseID).Scan(&recovery); e != nil {
 		return e
 	}
-	tag, e := tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,observation_seq,observed_update_generation,last_observed_at,received_at,recovery_required) VALUES($1,$2,$3::numeric,$4::numeric,$5,clock_timestamp(),$6)
+	if o.ReceivedAt.IsZero() {
+		o.ReceivedAt = time.Now().UTC()
+	}
+	tag, e := tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,observation_seq,observed_update_generation,last_observed_at,received_at,recovery_required) VALUES($1,$2,$3::numeric,$4::numeric,$5,$7,$6)
  ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,observation_seq=excluded.observation_seq,observed_update_generation=excluded.observed_update_generation,last_observed_at=excluded.last_observed_at,received_at=excluded.received_at,recovery_required=excluded.recovery_required
- WHERE fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR (fleet_node_state.observation_seq<excluded.observation_seq AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation)`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery)
+ WHERE fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR (fleet_node_state.observation_seq<excluded.observation_seq AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation)`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery, o.ReceivedAt)
 	if e != nil {
 		return e
 	}
@@ -158,5 +163,5 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if value, err := r.LastGoodReleaseId.Get(); err == nil {
 		lastGoodReleaseID = &value
 	}
-	return s.ObserveTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt})
+	return s.ObserveTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt, ReceivedAt: received})
 }
