@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
@@ -71,26 +72,36 @@ func (l *live) dnsRules(r *record) {
 			r.check("DNS activation", "202 pending external apply", detail(act), "POST /admin/policies/{id}/activate", act.status == 202)
 		}
 	}
+	// Worker publication and resolver application are asynchronous. Observe a
+	// bounded convergence window before declaring a missing application path.
+	_ = l.wait(30*time.Second, func() bool { return l.count(`SELECT count(*) FROM dns_resolver_documents`) > 0 })
 	documents := l.count(`SELECT count(*) FROM dns_resolver_documents`)
 	r.check("compiled DNS documents", "observe central publication separately from resolver apply", fmt.Sprintf("stored_documents=%d", documents), "SELECT count dns_resolver_documents", true)
 	var status struct {
 		UserRules []string `json:"user_rules"`
 	}
-	raw, err := l.resolver("/control/filtering/status")
-	_ = json.Unmarshal(raw, &status)
-	applied := false
-	for _, line := range status.UserRules {
-		if strings.Contains(line, "lab.example.invalid") {
-			applied = true
+	var err error
+	applied := l.wait(20*time.Second, func() bool {
+		var raw []byte
+		raw, err = l.resolver("/control/filtering/status")
+		_ = json.Unmarshal(raw, &status)
+		for _, line := range status.UserRules {
+			if strings.Contains(line, "lab.example.invalid") {
+				return true
+			}
 		}
-	}
+		return false
+	})
+	var compileStatus string
+	_ = l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE kind='policy.activate' ORDER BY created_at DESC LIMIT 1`).Scan(&compileStatus)
+	r.check("policy operation versus resolver", "record compilation operation separately from application", "latest_policy_operation="+compileStatus, "SELECT operations.status for policy.activate", compileStatus != "")
 	r.check("actual resolver readback", "record applied-rule presence", fmt.Sprintf("API_ok=%t; user_rules=%d; requested_block_present=%t", err == nil, len(status.UserRules), applied), "AdGuard GET /control/filtering/status", err == nil)
 	for _, q := range []struct{ name, typ string }{{"lab.example.invalid", "1"}, {"LAB.example.invalid.", "1"}, {"sub.lab.example.invalid", "1"}, {"notexample.com", "1"}, {"lab.example.invalid", "5"}, {"lab.example.invalid", "28"}, {"lab.example.invalid", "65"}, {"lab.example.invalid", "64"}} {
 		actual := l.dns(q.name, q.typ, "udp")
 		r.check("wire DNS "+q.name+" type "+q.typ, "record actual controlled resolver answer (management path)", actual, "docker exec member probe dns controlled-resolver", actual != "probe unavailable")
 	}
 	if !applied {
-		r.block("Activated policy is not present in real AdGuard user_rules. Node desired-state publication does not configure this shared lab resolver; no resolver apply credentials/hook are supplied. Responses above are precondition observations, not passing block/cache semantics.")
+		r.block("After central publication and a 20-second apply window, activated policy is not present in real AdGuard user_rules. Node desired-state publication does not configure this shared lab resolver; no resolver apply credentials/hook are supplied. Responses above are precondition observations, not passing block/cache semantics.")
 	}
 	r.block("No admitted member DNS/forwarding path and no controlled CNAME/HTTPS/SVCB/rebinding zone fixtures. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
 }
