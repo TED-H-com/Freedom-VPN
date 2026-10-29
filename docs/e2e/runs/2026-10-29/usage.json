@@ -10,12 +10,40 @@
   "observations": [
     {
       "name": "member_usage",
-      "detail": "501 INTERNAL_ERROR"
+      "detail": "200"
+    },
+    {
+      "name": "batch_status",
+      "detail": "200"
+    },
+    {
+      "name": "replay_status",
+      "detail": "200"
+    },
+    {
+      "name": "replay_results_equal",
+      "detail": "true"
+    },
+    {
+      "name": "batch_outcome",
+      "detail": "rejected VALIDATION_FAILED binding_not_found"
+    },
+    {
+      "name": "member_usage_after_batch",
+      "detail": "200"
+    },
+    {
+      "name": "member_total_bytes",
+      "detail": "0"
+    },
+    {
+      "name": "exact_bytes",
+      "detail": "false"
     },
     {
       "name": "note",
-      "detail": "usage domain is not mounted; exact bytes were not claimed"
+      "detail": "member usage is served and the idempotent replay returned the same results; exact byte totals were not claimed"
     }
   ],
-  "at": "2026-10-29T22:07:42Z"
+  "at": "2026-10-29T22:47:53Z"
 }

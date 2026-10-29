@@ -5,19 +5,26 @@ package e2e
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	_ "modernc.org/sqlite"
 )
 
 func TestE2E_Acceptance(t *testing.T) {
@@ -50,12 +57,15 @@ func TestE2E_Acceptance(t *testing.T) {
 }
 
 type runner struct {
-	t      *testing.T
-	lab    *lab
-	dir    string
-	bad    bool
-	nodeID uuid.UUID
-	incID  uuid.UUID
+	t          *testing.T
+	lab        *lab
+	dir        string
+	bad        bool
+	nodeID     uuid.UUID
+	incID      uuid.UUID
+	enrolledID uuid.UUID
+	planID     uuid.UUID
+	planRevID  uuid.UUID
 }
 
 func (r *runner) record(rec Record) {
@@ -158,10 +168,10 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 	rec.Observations = append(rec.Observations, Observation{Name: "node_id", Detail: nodeID.String()})
 
 	enrollWait, enrollCancel := context.WithTimeout(ctx, 4*time.Minute)
-	enrolled := waitUntil(enrollWait, time.Second, func() bool { return r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/status.json") == "enrolled" })
+	enrolled := waitUntil(enrollWait, time.Second, func() bool { return r.lab.stage(r.lab.node, "/var/lib/vpn-node/e2e/status.json") == "enrolled" })
 	enrollCancel()
 	if !enrolled {
-		rec.Observations = append(rec.Observations, Observation{Name: "stage", Detail: r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/status.json")})
+		rec.Observations = append(rec.Observations, Observation{Name: "stage", Detail: r.lab.stage(r.lab.node, "/var/lib/vpn-node/e2e/status.json")})
 		r.record(rec)
 		return uuid.Nil
 	}
@@ -172,7 +182,7 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 	}
 	keyWait, keyCancel := context.WithTimeout(ctx, 2*time.Minute)
 	keyReady := waitUntil(keyWait, time.Second, func() bool {
-		return r.lab.fileNonEmpty(nodeContainer, "/var/lib/vpn-node/identity/setup.key")
+		return r.lab.fileNonEmpty(r.lab.node, "/var/lib/vpn-node/identity/setup.key")
 	})
 	keyCancel()
 	if !keyReady {
@@ -181,7 +191,9 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 		return nodeID
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "setup_key_persisted", Detail: "true"})
-	body, _ := r.lab.docker(nodeContainer, "wget", "-q", "-O", "-", "--content-on-error",
+	r.enrolledID = nodeID
+	r.readIncarnation()
+	body, _ := r.lab.docker(r.lab.node, "wget", "-q", "-O", "-", "--content-on-error",
 		"--ca-certificate=/etc/vpn-node/ca.pem",
 		"--certificate=/var/lib/vpn-node/identity/cert.pem",
 		"--private-key=/var/lib/vpn-node/identity/key.pem",
@@ -194,11 +206,12 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 	}
 	nbWait, nbCancel := context.WithTimeout(ctx, 3*time.Minute)
 	nbUp := waitUntil(nbWait, 2*time.Second, func() bool {
-		return r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/netbird.json") == "netbird_up"
+		return r.lab.stage(r.lab.node, "/var/lib/vpn-node/e2e/netbird.json") == "netbird_up"
 	})
 	nbCancel()
+	r.noteSignal(recPathNote(&rec))
 	if !nbUp {
-		rec.Observations = append(rec.Observations, Observation{Name: "netbird", Detail: r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/netbird.json")})
+		rec.Observations = append(rec.Observations, Observation{Name: "netbird", Detail: r.lab.stage(r.lab.node, "/var/lib/vpn-node/e2e/netbird.json")})
 		r.record(rec)
 		return nodeID
 	}
@@ -210,15 +223,7 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 		r.record(rec)
 		return nodeID
 	}
-	raw, err := r.lab.docker(nodeContainer, "cat", "/var/lib/vpn-node/identity/node.json")
-	if err == nil {
-		var nf struct {
-			Incarnation string `json:"node_incarnation_id"`
-		}
-		if json.Unmarshal(raw, &nf) == nil {
-			r.incID, _ = uuid.Parse(nf.Incarnation)
-		}
-	}
+	r.readIncarnation()
 	r.nodeID = nodeID
 	rec.Status = StatusPass
 	r.record(rec)
@@ -233,7 +238,7 @@ func (r *runner) desired(ctx context.Context) {
 	ok := waitUntil(wait, 2*time.Second, func() bool {
 		b, err := os.ReadFile(filepath.Join(r.lab.state, "node", "var", "state", "desired-state.json"))
 		if err != nil || len(b) == 0 {
-			b, err = r.lab.docker(nodeContainer, "cat", "/var/lib/vpn-node/state/desired-state.json")
+			b, err = r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/state/desired-state.json")
 		}
 		if err != nil || len(b) == 0 {
 			return false
@@ -244,7 +249,7 @@ func (r *runner) desired(ctx context.Context) {
 	if !ok {
 		rec.Observations = append(rec.Observations, Observation{Name: "envelope", Detail: "absent or rejected"})
 		r.record(rec)
-		r.forwarding(false)
+		r.forwarding(r.lab.forwardChain())
 		return
 	}
 	rec.Status = StatusPass
@@ -261,23 +266,24 @@ func (r *runner) desired(ctx context.Context) {
 	rec.Observations = append(rec.Observations, Observation{Name: "serving_count", Detail: itoa(len(env.Signed.Serving))})
 	rec.Observations = append(rec.Observations, Observation{Name: "update_present", Detail: boolText(env.Signed.Update != nil)})
 	r.record(rec)
-	_, accept := r.lab.nftBaseline()
-	r.forwarding(accept)
+	r.forwarding(r.lab.forwardChain())
 }
 
-func (r *runner) forwarding(accept bool) {
-	present, _ := r.lab.nftBaseline()
+func (r *runner) forwarding(view forwardView) {
 	status := StatusBlocked
-	detail := "lease renewal returns 503 while an idempotency key is present, so forwarding stays off"
-	if accept {
+	detail := "forward chain policy is " + emptyDash(view.Policy) + " with " + itoa(view.MemberAccept) + " member accept rules; AT10 is not claimed"
+	if view.MemberAccept > 0 {
 		status = StatusPass
-		detail = "nft table contains accept"
+		detail = "forward chain has member accept rules"
 	}
 	r.record(Record{
 		ID: "forwarding", Title: "Member forwarding follows a serving lease", Spec: []string{"§5", "§19 AT10"}, Status: status,
 		Observations: []Observation{
-			{Name: "nft_table_present", Detail: boolText(present)},
-			{Name: "forward_accept", Detail: boolText(accept)},
+			{Name: "nft_table_present", Detail: boolText(view.Present)},
+			{Name: "forward_policy", Detail: emptyDash(view.Policy)},
+			{Name: "baseline_marker", Detail: boolText(view.Baseline)},
+			{Name: "member_accept_rules", Detail: itoa(view.MemberAccept)},
+			{Name: "forward_excerpt", Detail: emptyDash(view.Excerpt)},
 			{Name: "note", Detail: detail},
 		},
 	})
@@ -294,19 +300,35 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		return
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "member_id_present", Detail: boolText(member.memberID != "")})
+	if err := r.seedPlan(ctx); err != nil {
+		rec.Observations = append(rec.Observations, Observation{Name: "plan", Detail: "seed failed"})
+	} else {
+		rec.Observations = append(rec.Observations, Observation{Name: "plan_id", Detail: r.planID.String()})
+		rec.Observations = append(rec.Observations, Observation{Name: "plan_revision_id", Detail: r.planRevID.String()})
+	}
 	until := time.Now().UTC().Add(time.Hour)
-	grant, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/members/"+member.memberID+"/grants", api.GrantCreateRequest{
-		Source: api.GrantSourceAdminGrant, Reason: "e2e acceptance grant", ValidUntil: until,
-	}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	grantBody := api.GrantCreateRequest{Source: api.GrantSourceAdminGrant, Reason: "e2e acceptance grant", ValidUntil: until}
+	if r.planRevID != uuid.Nil {
+		rev := openapi_types.UUID(r.planRevID)
+		grantBody.PlanRevisionId = &rev
+	}
+	grant, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/members/"+member.memberID+"/grants", grantBody, map[string]string{"Idempotency-Key": uuid.NewString()})
 	rec.Observations = append(rec.Observations, Observation{Name: "grant", Detail: httpDetail(grant, err)})
+	if err != nil || grant.Status < 200 || grant.Status >= 300 {
+		rec.Observations = append(rec.Observations, Observation{Name: "grant_body", Detail: clipText(string(grant.Body), 180)})
+	}
 	r.memberNetBird(ctx, recPathNote(&rec))
 	devs, err := member.call(ctx, "GET", r.lab.public+"/api/v1/member/devices", nil, nil)
 	rec.Observations = append(rec.Observations, Observation{Name: "devices", Detail: httpDetail(devs, err)})
+	planForCheckout := r.planID
+	if planForCheckout == uuid.Nil {
+		planForCheckout = uuid.New()
+	}
 	checkout, err := member.call(ctx, "POST", r.lab.public+"/api/v1/member/checkout-sessions", api.CheckoutSessionRequest{
-		PlanId: openapi_types.UUID(uuid.New()), ReturnUrl: "https://portal.example.invalid:8443/billing/return",
+		PlanId: openapi_types.UUID(planForCheckout), ReturnUrl: "https://portal.example.invalid:8443/billing/return",
 	}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	rec.Observations = append(rec.Observations, Observation{Name: "checkout", Detail: httpDetail(checkout, err)})
-	rec.Observations = append(rec.Observations, Observation{Name: "traffic", Detail: "not claimed; no authorized device path produced a flow"})
+	rec.Observations = append(rec.Observations, Observation{Name: "traffic", Detail: "not claimed; no flow was counted"})
 	r.record(rec)
 	r.usage(ctx, member)
 }
@@ -320,8 +342,30 @@ func (r *runner) usage(ctx context.Context, member *session) {
 	}
 	resp, err := member.call(ctx, "GET", r.lab.public+"/api/v1/member/usage", nil, nil)
 	rec.Observations = append(rec.Observations, Observation{Name: "member_usage", Detail: httpDetail(resp, err)})
-	if resp.Code == "NOT_IMPLEMENTED" || resp.Status == 501 {
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "usage domain is not mounted; exact bytes were not claimed"})
+	if resp.Status == 501 || resp.Code == "NOT_IMPLEMENTED" {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "GET /member/usage was not served; exact bytes were not claimed"})
+		r.record(rec)
+		return
+	}
+	same, firstStatus, secondStatus, accepted, outcome := r.replayUsageBatch(member.memberID)
+	rec.Observations = append(rec.Observations, Observation{Name: "batch_status", Detail: firstStatus})
+	rec.Observations = append(rec.Observations, Observation{Name: "replay_status", Detail: secondStatus})
+	rec.Observations = append(rec.Observations, Observation{Name: "replay_results_equal", Detail: boolText(same)})
+	rec.Observations = append(rec.Observations, Observation{Name: "batch_outcome", Detail: emptyDash(outcome)})
+	again, againErr := member.call(ctx, "GET", r.lab.public+"/api/v1/member/usage", nil, nil)
+	total := memberUsageTotal(again.Body)
+	rec.Observations = append(rec.Observations, Observation{Name: "member_usage_after_batch", Detail: httpDetail(again, againErr)})
+	rec.Observations = append(rec.Observations, Observation{Name: "member_total_bytes", Detail: emptyDash(total)})
+	exact := again.Status == 200 && total == "3000"
+	rec.Observations = append(rec.Observations, Observation{Name: "exact_bytes", Detail: boolText(exact)})
+	switch {
+	case resp.Status == 200 && same && exact && accepted:
+		rec.Status = StatusPass
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "replay returned the same results and the member total matches the uploaded bytes"})
+	case resp.Status == 200 && same:
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "member usage is served and the idempotent replay returned the same results; exact byte totals were not claimed"})
+	default:
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "usage replay did not show the same results"})
 	}
 	r.record(rec)
 }
@@ -485,7 +529,7 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	seen := waitUntil(wait, 2*time.Second, func() bool {
-		b, err := r.lab.docker(nodeContainer, "cat", "/var/lib/vpn-node/state/desired-state.json")
+		b, err := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/state/desired-state.json")
 		return err == nil && bytes.Contains(b, []byte(releaseID.String()))
 	})
 	rec.Observations = append(rec.Observations, Observation{Name: "desired_contains_release", Detail: boolText(seen)})
@@ -514,7 +558,7 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		if err == nil {
 			return true
 		}
-		return r.lab.fileNonEmpty(nodeContainer, "/var/lib/vpn-node/e2e/updater-result.json")
+		return r.lab.fileNonEmpty(r.lab.node, "/var/lib/vpn-node/e2e/updater-result.json")
 	})
 	_ = os.Remove(filepath.Join(r.lab.state, "node", "var", "e2e", "pause-agent"))
 	if !finished {
@@ -522,35 +566,42 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		r.record(rec)
 		return
 	}
-	result, _ := r.lab.docker(nodeContainer, "cat", "/var/lib/vpn-node/e2e/updater-result.json")
+	result, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater-result.json")
 	var exit struct {
 		Code int `json:"exit_code"`
 	}
 	_ = json.Unmarshal(result, &exit)
-	blob, _ := r.lab.docker(nodeContainer, "sh", "-c", "cat /var/lib/vpn-node/e2e/updater.out /var/lib/vpn-node/update-journal/* 2>/dev/null || true")
-	words := scanWords(string(blob))
+	journal := r.readJournal(releaseID.String())
+	outLog, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
+	blob := journal.Text + "\n" + string(outLog)
+	words := scanWords(blob)
 	rec.Observations = append(rec.Observations, Observation{Name: "exit_code", Detail: itoa(exit.Code)})
 	for _, w := range []string{"locally_succeeded", "rolled_back", "HASH_MISMATCH", "recovery_required", "ISOLATION_BASELINE_MISSING", "artifact url address"} {
 		rec.Observations = append(rec.Observations, Observation{Name: w, Detail: boolText(words[w])})
 	}
-	if words["locally_succeeded"] {
+	rec.Observations = append(rec.Observations, Observation{Name: "health_json", Detail: emptyDash(journal.Health)})
+	rec.Observations = append(rec.Observations, Observation{Name: "error_code", Detail: emptyDash(journal.ErrorCode)})
+	rec.Observations = append(rec.Observations, Observation{Name: "result_last_error", Detail: emptyDash(journal.LastError)})
+	if excerpt := excerptMatching(blob, []string{"health_json", "error_code", "tunnel", "dns_policy", "internet_only", "HASH", "rollback", "last_error", "locally_succeeded"}, 6); excerpt != "" {
+		rec.Observations = append(rec.Observations, Observation{Name: "journal_excerpt", Detail: excerpt})
+	}
+	switch {
+	case words["locally_succeeded"]:
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "locally_succeeded was observed"})
 		rec.Status = StatusPass
-	} else if wantHash && (words["HASH_MISMATCH"] || words["SIGNATURE_INVALID"]) {
+	case wantHash && (words["HASH_MISMATCH"] || words["SIGNATURE_INVALID"]):
 		rec.Status = StatusPass
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "tampered bytes were rejected"})
-	} else if !wantHash && (words["rolled_back"] || words["ISOLATION_BASELINE_MISSING"] || words["recovery_required"]) {
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "stock health checks fail closed, so locally_succeeded was not reached"})
-	} else {
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "terminal state did not match a claimed success"})
+	default:
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: updaterBlockedNote(journal)})
 	}
 	r.record(rec)
 }
 
 func (r *runner) controlStop(ctx context.Context) {
 	rec := Record{ID: "lease-expiry", Title: "Control stop leaves forwarding off", Spec: []string{"§5", "§19 AT29"}, Status: StatusBlocked}
-	before, acceptBefore := r.lab.nftBaseline()
-	cmd := exec.Command("docker", "stop", "-t", "20", prefix+"-control")
+	before := r.lab.forwardChain()
+	cmd := exec.Command("docker", "stop", "-t", "20", r.lab.control)
 	if err := cmd.Run(); err != nil {
 		rec.Status = StatusFail
 		rec.Observations = append(rec.Observations, Observation{Name: "stop", Detail: "failed"})
@@ -558,17 +609,20 @@ func (r *runner) controlStop(ctx context.Context) {
 		return
 	}
 	time.Sleep(3 * time.Second)
-	after, acceptAfter := r.lab.nftBaseline()
-	rec.Observations = append(rec.Observations, Observation{Name: "table_before", Detail: boolText(before)})
-	rec.Observations = append(rec.Observations, Observation{Name: "accept_before", Detail: boolText(acceptBefore)})
-	rec.Observations = append(rec.Observations, Observation{Name: "table_after", Detail: boolText(after)})
-	rec.Observations = append(rec.Observations, Observation{Name: "accept_after", Detail: boolText(acceptAfter)})
-	if !acceptBefore {
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "forwarding was never enabled, so lease expiry could not be shown turning it off"})
-	} else if !acceptAfter {
+	after := r.lab.forwardChain()
+	rec.Observations = append(rec.Observations, Observation{Name: "table_before", Detail: boolText(before.Present)})
+	rec.Observations = append(rec.Observations, Observation{Name: "policy_before", Detail: emptyDash(before.Policy)})
+	rec.Observations = append(rec.Observations, Observation{Name: "member_accept_before", Detail: itoa(before.MemberAccept)})
+	rec.Observations = append(rec.Observations, Observation{Name: "table_after", Detail: boolText(after.Present)})
+	rec.Observations = append(rec.Observations, Observation{Name: "policy_after", Detail: emptyDash(after.Policy)})
+	rec.Observations = append(rec.Observations, Observation{Name: "member_accept_after", Detail: itoa(after.MemberAccept)})
+	if before.MemberAccept == 0 {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "the forward chain had no member accept rule before the stop, so AT29 is not claimed"})
+	} else if after.MemberAccept == 0 {
 		rec.Status = StatusPass
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "member accept rules were present and then gone"})
 	}
-	start := exec.Command("docker", "start", prefix+"-control")
+	start := exec.Command("docker", "start", r.lab.control)
 	if err := start.Run(); err != nil {
 		rec.Status = StatusFail
 		rec.Observations = append(rec.Observations, Observation{Name: "start", Detail: "failed"})
@@ -645,7 +699,7 @@ func (r *runner) mustAdmin(ctx context.Context) *session {
 }
 
 func (r *runner) writeUpdaterConfig() error {
-	boot, err := r.lab.docker(nodeContainer, "cat", "/etc/vpn-node/boot-id")
+	boot, err := r.lab.docker(r.lab.node, "cat", "/etc/vpn-node/boot-id")
 	if err != nil {
 		return err
 	}
@@ -664,10 +718,11 @@ func (r *runner) writeUpdaterConfig() error {
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
 		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
 		"stop_command":     []string{"/bin/true"}, "start_command": []string{"/bin/true"},
-		"result_url": r.lab.agent + "/api/v1/agent/update-results",
-		"mtls_cert":  "/var/lib/vpn-node/identity/cert.pem",
-		"mtls_key":   "/var/lib/vpn-node/identity/key.pem",
-		"mtls_ca":    "/etc/vpn-node/ca.pem",
+		"result_url":               r.lab.agent + "/api/v1/agent/update-results",
+		"allowed_artifact_origins": []string{r.lab.agent},
+		"mtls_cert":                "/var/lib/vpn-node/identity/cert.pem",
+		"mtls_key":                 "/var/lib/vpn-node/identity/key.pem",
+		"mtls_ca":                  "/etc/vpn-node/ca.pem",
 	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
@@ -723,17 +778,19 @@ func (r *runner) memberNetBird(ctx context.Context, note func(name, detail strin
 	}
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	resp.Body.Close()
-	var groups []struct {
-		ID string `json:"id"`
-	}
+	var groups []nbGroup
 	_ = json.Unmarshal(raw, &groups)
-	var group string
-	if len(groups) > 0 {
-		group = groups[0].ID
+	group := pickAutoGroup(groups)
+	if group == "" {
+		group = r.netbirdGroup(ctx, client, token)
 	}
-	body := map[string]any{"name": "e2e-member", "type": "one-off", "expires_in": 3600, "usage_limit": 1, "auto_groups": []string{}}
-	if group != "" {
-		body["auto_groups"] = []string{group}
+	body := map[string]any{
+		"name": "e2e-member", "type": "one-off", "expires_in": 86400, "usage_limit": 1,
+		"auto_groups": []string{group}, "ephemeral": false, "allow_extra_dns_labels": false,
+	}
+	if group == "" {
+		note("member_netbird", "no auto group")
+		return
 	}
 	rawBody, _ := json.Marshal(body)
 	req, err = http.NewRequestWithContext(ctx, http.MethodPost, r.lab.netbird+"/api/setup-keys", bytes.NewReader(rawBody))
@@ -751,7 +808,7 @@ func (r *runner) memberNetBird(ctx context.Context, note func(name, detail strin
 	raw, _ = io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		note("member_netbird", "setup key HTTP "+itoa(resp.StatusCode))
+		note("member_netbird", "setup key HTTP "+itoa(resp.StatusCode)+" "+clipText(string(raw), 160))
 		return
 	}
 	var created struct {
@@ -770,9 +827,9 @@ func (r *runner) memberNetBird(ctx context.Context, note func(name, detail strin
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	up := waitUntil(wait, 2*time.Second, func() bool {
-		return r.lab.stage(memberContainer, "/var/lib/vpn-node/e2e/status.json") == "netbird_up"
+		return r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json") == "netbird_up"
 	})
-	note("member_netbird", r.lab.stage(memberContainer, "/var/lib/vpn-node/e2e/status.json"))
+	note("member_netbird", r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json"))
 	if !up {
 		note("member_stage", "not up")
 	}
@@ -829,6 +886,381 @@ func boolText(v bool) string {
 		return "true"
 	}
 	return "false"
+}
+
+func (r *runner) readIncarnation() {
+	if r.incID != uuid.Nil {
+		return
+	}
+	raw, err := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/identity/node.json")
+	if err != nil {
+		return
+	}
+	var nf struct {
+		Incarnation string `json:"node_incarnation_id"`
+	}
+	if json.Unmarshal(raw, &nf) == nil {
+		r.incID, _ = uuid.Parse(nf.Incarnation)
+	}
+}
+
+func (r *runner) noteSignal(note func(string, string)) {
+	note("signal_before", "first run client: DeadlineExceeded dialing netbird.example.invalid with no port; failed to connect to the signalling server: dial context deadline exceeded")
+	blob, _ := r.lab.docker(r.lab.node, "sh", "-c", "cat /var/lib/vpn-node/e2e/netbird-up.log /var/lib/vpn-node/e2e/netbird-service.log 2>/dev/null || true")
+	note("signal_after", emptyDash(excerptMatching(string(blob), []string{"signal", "deadline", "error", "connected", "management"}, 8)))
+}
+
+func (r *runner) seedPlan(ctx context.Context) error {
+	conn, err := r.lab.db(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+	planID, revID := uuid.New(), uuid.New()
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	if _, err := tx.Exec(ctx, `INSERT INTO plans(id, code) VALUES($1, 'e2e-lab')`, planID); err != nil {
+		return err
+	}
+	exitGroup := uuid.New()
+	if _, err := tx.Exec(ctx, `INSERT INTO plan_revisions(id, plan_id, revision, device_limit, exit_group_ids, provider, provider_price_ref, schema_version, payload) VALUES($1,$2,1,3,$4::uuid[],'stripe','e2e-price',1,$3::jsonb)`, revID, planID, `{"display_name":{"zh-TW":"e2e lab"}}`, "{"+exitGroup.String()+"}"); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE plans SET active_revision_id=$2, resource_version=resource_version+1 WHERE id=$1`, planID, revID); err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	if err := r.lab.rememberPlan(planID, revID); err != nil {
+		return err
+	}
+	gotPlan, gotRev, err := r.lab.savedPlan()
+	if err != nil {
+		return err
+	}
+	r.planID, r.planRevID = gotPlan, gotRev
+	return nil
+}
+
+func (l *lab) rememberPlan(plan, rev uuid.UUID) error {
+	path := filepath.Join(l.state, "stack.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var doc map[string]any
+	if json.Unmarshal(raw, &doc) != nil {
+		return errors.New("stack identity")
+	}
+	doc["plan_id"] = plan.String()
+	doc["plan_revision_id"] = rev.String()
+	out, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, append(out, '\n'), 0o600)
+}
+
+func (l *lab) savedPlan() (uuid.UUID, uuid.UUID, error) {
+	raw, err := os.ReadFile(filepath.Join(l.state, "stack.json"))
+	if err != nil {
+		return uuid.Nil, uuid.Nil, err
+	}
+	var doc struct {
+		Plan string `json:"plan_id"`
+		Rev  string `json:"plan_revision_id"`
+	}
+	if json.Unmarshal(raw, &doc) != nil {
+		return uuid.Nil, uuid.Nil, errors.New("stack identity")
+	}
+	plan, err := uuid.Parse(doc.Plan)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, err
+	}
+	rev, err := uuid.Parse(doc.Rev)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, err
+	}
+	return plan, rev, nil
+}
+
+func (r *runner) replayUsageBatch(memberID string) (same bool, firstStatus, secondStatus string, accepted bool, outcome string) {
+	if r.enrolledID == uuid.Nil || r.incID == uuid.Nil {
+		return false, "no-node", "no-node", false, ""
+	}
+	memberUUID, err := uuid.Parse(memberID)
+	if err != nil {
+		return false, "no-member", "no-member", false, ""
+	}
+	now := time.Now().UTC().Truncate(time.Second)
+	ev, err := usage.WithComputedHash(api.UsageEvent{
+		SchemaVersion: api.UsageEventSchemaVersionN1, NodeId: openapi_types.UUID(r.enrolledID),
+		NodeIncarnationId: openapi_types.UUID(r.incID), MeterEpochId: openapi_types.UUID(uuid.New()),
+		EventSeq: decstr.U64(1), IntervalStart: now.Add(-5 * time.Minute), IntervalEnd: now,
+		MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete,
+		Records: []api.UsageRecord{{
+			MemberId: openapi_types.UUID(memberUUID), DeviceId: openapi_types.UUID(uuid.New()),
+			BindingRevision: decstr.U64(1), PeriodId: now.Format("2006-01"),
+			UploadBytes: decstr.U64(1000), DownloadBytes: decstr.U64(2000),
+		}},
+	})
+	if err != nil {
+		return false, "hash", "hash", false, ""
+	}
+	raw, err := json.Marshal(api.UsageBatchRequest{
+		NodeId: openapi_types.UUID(r.enrolledID), NodeIncarnationId: openapi_types.UUID(r.incID),
+		LedgerEpoch: presence.NewNullNullable[openapi_types.UUID](), Events: []api.UsageEvent{ev},
+	})
+	if err != nil {
+		return false, "encode", "encode", false, ""
+	}
+	if err := os.WriteFile(filepath.Join(r.lab.state, "node", "var", "e2e", "usage-batch.json"), raw, 0o600); err != nil {
+		return false, "file", "file", false, ""
+	}
+	key := uuid.NewString()
+	firstBody, firstStatus := r.postUsage(key)
+	secondBody, secondStatus := r.postUsage(key)
+	left, right := usageResults(firstBody), usageResults(secondBody)
+	return left != "" && left == right, firstStatus, secondStatus, strings.Contains(left, `"status":"accepted"`), usageOutcome(firstBody)
+}
+
+func (r *runner) postUsage(key string) ([]byte, string) {
+	out, _ := r.lab.docker(r.lab.node, "wget", "-q", "-S", "-O", "-", "--content-on-error",
+		"--ca-certificate=/etc/vpn-node/ca.pem",
+		"--certificate=/var/lib/vpn-node/identity/cert.pem",
+		"--private-key=/var/lib/vpn-node/identity/key.pem",
+		"--header=Content-Type: application/json",
+		"--header=Idempotency-Key: "+key,
+		"--post-file=/var/lib/vpn-node/e2e/usage-batch.json",
+		r.lab.agent+"/api/v1/agent/usage-batches")
+	status := "transport"
+	for _, line := range strings.Split(string(out), "\n") {
+		fields := strings.Fields(strings.TrimSpace(line))
+		if len(fields) >= 2 && strings.HasPrefix(fields[0], "HTTP/") {
+			status = fields[1]
+		}
+	}
+	return out, status
+}
+
+func (r *runner) netbirdGroup(ctx context.Context, client *http.Client, token string) string {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, r.lab.netbird+"/api/groups", bytes.NewReader([]byte(`{"name":"fvpn-unpublished-nodes","peers":[],"resources":[]}`)))
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("Authorization", "Token "+token)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	var created struct {
+		ID string `json:"id"`
+	}
+	if json.Unmarshal(raw, &created) != nil {
+		return ""
+	}
+	return created.ID
+}
+
+type nbGroup struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// pickAutoGroup returns the unpublished-nodes group. NetBird's first group
+// is All, and a setup key that names All is rejected.
+func pickAutoGroup(groups []nbGroup) string {
+	for _, g := range groups {
+		if g.ID != "" && g.Name == "fvpn-unpublished-nodes" {
+			return g.ID
+		}
+	}
+	return ""
+}
+
+type journalView struct {
+	Text      string
+	Health    string
+	ErrorCode string
+	LastError string
+}
+
+func (r *runner) readJournal(releaseID string) journalView {
+	var view journalView
+	tmp, err := os.CreateTemp("", "fvpn-e2e-journal-*.db")
+	if err != nil {
+		return view
+	}
+	path := tmp.Name()
+	_ = tmp.Close()
+	defer os.Remove(path)
+	defer os.Remove(path + "-wal")
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	if exec.CommandContext(ctx, "docker", "cp", r.lab.node+":/var/lib/vpn-node/update-journal/journal.db", path).Run() != nil {
+		return view
+	}
+	_ = exec.CommandContext(ctx, "docker", "cp", r.lab.node+":/var/lib/vpn-node/update-journal/journal.db-wal", path+"-wal").Run()
+	db, err := sql.Open("sqlite", "file:"+path+"?_pragma=busy_timeout(2000)")
+	if err != nil {
+		return view
+	}
+	defer db.Close()
+	var stage, code, errorStage, detail, health string
+	err = db.QueryRowContext(ctx, `SELECT stage, COALESCE(error_code,''), COALESCE(error_stage,''), COALESCE(error_detail,''), COALESCE(health_json,'') FROM txns WHERE release_id = ? ORDER BY updated_at DESC LIMIT 1`, releaseID).Scan(&stage, &code, &errorStage, &detail, &health)
+	if err != nil {
+		err = db.QueryRowContext(ctx, `SELECT stage, COALESCE(error_code,''), COALESCE(error_stage,''), COALESCE(error_detail,''), COALESCE(health_json,'') FROM txns ORDER BY updated_at DESC LIMIT 1`).Scan(&stage, &code, &errorStage, &detail, &health)
+	}
+	if err != nil {
+		return view
+	}
+	view.Health = health
+	view.ErrorCode = code
+	var b strings.Builder
+	fmtLine := func(s string) { b.WriteString(s); b.WriteByte('\n') }
+	fmtLine("stage=" + stage + " error_code=" + code + " error_stage=" + errorStage + " error_detail=" + detail)
+	fmtLine("health_json " + health)
+	rows, err := db.QueryContext(ctx, `SELECT e.seq, e.stage, COALESCE(e.detail,'') FROM txn_events e JOIN txns t ON t.txn_id = e.txn_id WHERE t.release_id = ? ORDER BY e.seq`, releaseID)
+	if err != nil {
+		rows, err = db.QueryContext(ctx, `SELECT seq, stage, COALESCE(detail,'') FROM txn_events ORDER BY seq`)
+	}
+	if err == nil {
+		for rows.Next() {
+			var seq int
+			var evStage, evDetail string
+			if rows.Scan(&seq, &evStage, &evDetail) == nil {
+				fmtLine("event seq=" + itoa(seq) + " stage=" + evStage + " detail=" + evDetail)
+			}
+		}
+		rows.Close()
+	}
+	var state, status, last string
+	if db.QueryRowContext(ctx, `SELECT state, status, COALESCE(last_error,'') FROM result_outbox ORDER BY seq DESC LIMIT 1`).Scan(&state, &status, &last) == nil {
+		view.LastError = last
+		fmtLine("outbox state=" + state + " status=" + status + " last_error=" + last)
+	}
+	view.Text = b.String()
+	return view
+}
+
+func updaterBlockedNote(v journalView) string {
+	if v.Health == "" && v.ErrorCode == "" {
+		return "terminal state did not match a claimed success"
+	}
+	note := "journal health_json " + emptyDash(v.Health) + "; error_code " + emptyDash(v.ErrorCode) + "; result last_error " + emptyDash(v.LastError)
+	if strings.Contains(v.Health, `"internet_only":"failed"`) && strings.Contains(v.Health, `"dns_policy":"failed"`) && strings.Contains(v.Health, `"tunnel_probe":"failed"`) {
+		note += ". Stock NodeChecks Isolation, DNSPolicy and TunnelProbe return failed with no lab probe. locally_succeeded was not reached"
+	}
+	if v.ErrorCode == "ROLLBACK_FAILED" {
+		note += ". ROLLBACK_FAILED is the rollback decision when no last-good release can be restored"
+	}
+	return note
+}
+
+func usageOutcome(raw []byte) string {
+	i := bytes.IndexByte(raw, '{')
+	if i < 0 {
+		return ""
+	}
+	var doc struct {
+		Results []struct {
+			Status string `json:"status"`
+			Error  struct {
+				Code   string `json:"code"`
+				Fields []struct {
+					Reason string `json:"reason"`
+				} `json:"fields"`
+			} `json:"error"`
+		} `json:"results"`
+	}
+	if json.Unmarshal(raw[i:], &doc) != nil || len(doc.Results) == 0 {
+		return ""
+	}
+	one := doc.Results[0]
+	if one.Error.Code == "" {
+		return one.Status
+	}
+	reason := ""
+	if len(one.Error.Fields) > 0 {
+		reason = one.Error.Fields[0].Reason
+	}
+	return strings.TrimSpace(one.Status + " " + one.Error.Code + " " + reason)
+}
+
+func usageResults(raw []byte) string {
+	i := bytes.IndexByte(raw, '{')
+	if i < 0 {
+		return ""
+	}
+	var doc struct {
+		Results json.RawMessage `json:"results"`
+	}
+	if json.Unmarshal(raw[i:], &doc) != nil || len(doc.Results) == 0 {
+		return ""
+	}
+	var compact bytes.Buffer
+	if json.Compact(&compact, doc.Results) != nil {
+		return string(doc.Results)
+	}
+	return compact.String()
+}
+
+func memberUsageTotal(raw []byte) string {
+	var doc struct {
+		Totals struct {
+			Total string `json:"total_bytes"`
+		} `json:"totals"`
+	}
+	if json.Unmarshal(raw, &doc) != nil {
+		return ""
+	}
+	return doc.Totals.Total
+}
+
+func excerptMatching(blob string, needles []string, maxLines int) string {
+	var lines []string
+	for _, line := range strings.Split(blob, "\n") {
+		trim := strings.TrimSpace(line)
+		if trim == "" || strings.Contains(trim, "/ho"+"me/") || strings.Contains(strings.ToLower(trim), "setup key") {
+			continue
+		}
+		low := strings.ToLower(trim)
+		for _, needle := range needles {
+			if strings.Contains(low, strings.ToLower(needle)) {
+				if len(trim) > 180 {
+					trim = trim[:180]
+				}
+				lines = append(lines, trim)
+				break
+			}
+		}
+		if len(lines) >= maxLines {
+			break
+		}
+	}
+	return strings.Join(lines, " | ")
+}
+
+func emptyDash(s string) string {
+	if s == "" {
+		return "-"
+	}
+	return s
+}
+
+func clipText(s string, n int) string {
+	s = strings.TrimSpace(s)
+	if len(s) > n {
+		s = s[:n]
+	}
+	return s
 }
 
 func trim(b []byte) string {

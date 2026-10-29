@@ -1,14 +1,32 @@
 #!/bin/sh
-# Bring up the dev stack (§3, §5). Secrets come from fvpn-e2e-prepare.
-# No host network changes. Every object uses the task prefix.
+# Bring up one prefixed dev stack (§3, §5). Secrets come from fvpn-e2e-prepare.
+# No host network changes. Published ports are loopback-only.
 set -eu
 cd "$(dirname "$0")/../.."
 ROOT=$(pwd)
-STATE=${FVPN_E2E_STATE:?FVPN_E2E_STATE is required}
-PREFIX=fvpn-w3-devstack-e2e
+SHORT=${FVPN_E2E_PREFIX:-e2e}
+PORT_BASE=${FVPN_E2E_PORT_BASE:-18000}
+STATE=${FVPN_E2E_STATE:-$ROOT/.agent/e2e-state-$SHORT}
+PREFIX=fvpn-$SHORT
 COMPOSE="docker compose -p $PREFIX -f $ROOT/deploy/devstack/compose.yaml"
+export FVPN_E2E_PREFIX=$SHORT
+export FVPN_E2E_PORT_BASE=$PORT_BASE
 export FVPN_E2E_STATE=$STATE
 RESET=${E2E_RESET:-0}
+
+case $SHORT in
+    [a-z]*[a-z0-9]) ;;
+    *)
+        echo "FVPN_E2E_PREFIX must be a short lowercase name" >&2
+        exit 2
+        ;;
+esac
+case $PORT_BASE in
+    ''|*[!0-9]*)
+        echo "FVPN_E2E_PORT_BASE must be an integer" >&2
+        exit 2
+        ;;
+esac
 
 mkdir -p "$ROOT/.agent/tmp" "$ROOT/.agent/e2e-build"
 export TMPDIR=$ROOT/.agent/tmp GOTMPDIR=$ROOT/.agent/tmp GOTOOLCHAIN=local CGO_ENABLED=0
@@ -24,8 +42,21 @@ if [ "$RESET" = "1" ] || [ ! -f "$STATE/ready" ]; then
         rm -rf "$STATE"
     fi
     go build -o "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" ./tests/e2e/cmd/fvpn-e2e-prepare
-    "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset
+    "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset -prefix "$SHORT" -port-base "$PORT_BASE"
 fi
+if [ ! -f "$STATE/render/compose.env" ]; then
+    echo "compose env is missing; set E2E_RESET=1" >&2
+    exit 1
+fi
+set -a
+# shellcheck disable=SC1091
+. "$STATE/render/compose.env"
+set +a
+if [ "$FVPN_E2E_PREFIX" != "$SHORT" ] || [ "$FVPN_E2E_PORT_BASE" != "$PORT_BASE" ]; then
+    echo "state was prepared for a different prefix or port base; set E2E_RESET=1" >&2
+    exit 1
+fi
+
 mkdir -p "$STATE/render/coredns" "$STATE/releases" "$STATE/node/var/e2e" "$STATE/member/var/e2e"
 cp "$ROOT/deploy/devstack/nginx.conf" "$STATE/render/nginx.conf"
 cp "$ROOT/deploy/devstack/coredns/Corefile" "$ROOT/deploy/devstack/coredns/example.invalid.zone" "$STATE/render/coredns/"
@@ -117,13 +148,12 @@ wait_http() {
     return 1
 }
 wait_exec "$PREFIX-postgres" pg_isready -U fvpn -d fvpn
-# Internal networks do not publish host ports on this daemon. Dial the lab addresses.
-wait_http https://172.28.30.11/healthz 60
+wait_http "https://127.0.0.1:${FVPN_E2E_PORT_IDP}/healthz" 60
 wait_exec "$PREFIX-payment" wget -q -O /dev/null --no-check-certificate https://127.0.0.1/healthz
-wait_http https://192.0.3.10/healthz 60
+wait_http "https://127.0.0.1:${FVPN_E2E_PORT_ORIGIN}/healthz" 60
 
 i=0
-until "$ROOT/.agent/e2e-build/fvpn-e2e-nbbootstrap" -dial 172.28.30.21:443 -ca "$STATE/ca.pem" -state "$STATE"; do
+until "$ROOT/.agent/e2e-build/fvpn-e2e-nbbootstrap" -dial "127.0.0.1:${FVPN_E2E_PORT_GATEWAY}" -ca "$STATE/ca.pem" -state "$STATE"; do
     i=$((i + 1))
     if [ "$i" -ge 30 ]; then
         echo "netbird bootstrap failed" >&2
@@ -133,6 +163,6 @@ until "$ROOT/.agent/e2e-build/fvpn-e2e-nbbootstrap" -dial 172.28.30.21:443 -ca "
 done
 
 $COMPOSE up -d control worker
-wait_http https://172.28.30.30:8443/readyz 90
+wait_http "https://127.0.0.1:${FVPN_E2E_PORT_CONTROL}/readyz" 90
 $COMPOSE up -d node member
 echo "e2e stack is up"

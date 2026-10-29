@@ -7,9 +7,11 @@ Status: blocked
 Spec: §8, §19 AT12
 
 - member_id_present: true
-- grant: 422 VALIDATION_FAILED
-- member_netbird: setup key HTTP 422
+- plan_id: 5c32e3d1-2f6b-44bd-a5fa-bc54d9ca0d98
+- plan_revision_id: dea8f0cc-d196-4de9-a3d0-cadfd59c9183
+- grant: 202
+- member_netbird: netbird_up
 - devices: 200
-- checkout: 404 RESOURCE_NOT_FOUND
-- traffic: not claimed; no authorized device path produced a flow
+- checkout: 201
+- traffic: not claimed; no flow was counted
 

@@ -89,7 +89,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | in progress |
 | r2-ledger-review confirmation pass on main 3224345: probes re-run read-only, 11 of 12 findings closed; finding 9 (uint64 clamp) still open in internal/fup → policies follow-up | WP05, WP07, WP08 | done (read-only) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | done (#50; 6 scenarios pass, lab gaps → follow-up 2) |
-| w3-devstack-e2e follow-up 2: policies/usage settings in the lab, side-by-side stacks (prefix + port base), NetBird signal via gateway, plan catalog, forwarding baseline check | WP11 | in progress |
+| w3-devstack-e2e follow-up 2: policies/usage settings in the lab, side-by-side stacks (prefix + port base), NetBird signal via gateway, plan catalog, forwarding baseline check | WP11 | done (#59; 7/12 scenarios pass, 5 blocked on the serving-node and device-binding preconditions) |
 | w2-policies-fup follow-up: reconcile embedded policy schemas with contracts/schemas/policies (D-044), fup uint64 overflow instead of clamp, D-029 audit conformance for policies and fup writers | WP07 | done (#46) |
 | r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | done (16/16 findings closed; regressions R-01..R-05 → updater follow-up 3) |
 | w2-updater follow-up 3: review re-run regressions (revoked-current rescue path, artifact origin allowlist D-046, extract caps and ./ root D-047, resume semantics, nodelock start time) | WP09 | done (#47) |
@@ -102,6 +102,8 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 4: route SetNodePublication through the exits seam, remove the last placeholder 503 | WP04, WP05 | done (#57) |
 | w3-contracts-r4: UpdateTarget applied-policy evidence members (D-048), positive DomainRule.revision (D-049), writer survey re-run | WP02 | done (#58) |
 | w3-wire-nodes follow-up 5: worker execution of node.publication_changed via exits.ExecuteOperation, applied-policy evidence on update targets (D-048) | WP04, WP05, WP09 | in progress |
+| w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | in progress |
+| w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | in progress |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
