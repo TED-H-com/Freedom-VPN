@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log/slog"
 	"os"
@@ -13,12 +14,15 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
-	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 )
 
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	if run(log) != nil {
+	if err := run(log); err != nil {
+		var setting interface{ Setting() string }
+		if errors.As(err, &setting) {
+			log.Error("invalid startup setting", "setting", setting.Setting())
+		}
 		log.Error("control stopped", "error_code", "STARTUP_OR_RUNTIME_FAILURE")
 		os.Exit(1)
 	}
@@ -66,30 +70,9 @@ func run(log *slog.Logger) error {
 	if e != nil {
 		return e
 	}
-	// The PKI task wires its database-backed AgentAuthenticator here. nil is a
-	// fail-closed boundary: even a CA-valid certificate grants no API authority.
-	public, agent, e := control.Servers(c, control.Dependencies{Pool: pool, Browser: browser, Logger: log})
+	app, e := control.Servers(ctx, control.Dependencies{Config: c, Pool: pool, Browser: browser, Logger: log})
 	if e != nil {
 		return e
 	}
-	go func() {
-		ticker := time.NewTicker(time.Minute)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				cleanup, cancel := context.WithTimeout(ctx, 10*time.Second)
-				if store.Cleanup(cleanup, time.Duration(c.SessionIdleSeconds)*time.Second) != nil {
-					log.Warn("authentication cleanup failed", "error_code", "CLEANUP_FAILED")
-				}
-				if (&httpapi.Commands{Pool: pool}).Cleanup(cleanup) != nil {
-					log.Warn("idempotency cleanup failed", "error_code", "CLEANUP_FAILED")
-				}
-				cancel()
-			}
-		}
-	}()
-	return control.Run(ctx, c, public, agent)
+	return control.Run(ctx, app)
 }

@@ -4,16 +4,23 @@ package worker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand/v2"
+	"net/http"
+	"slices"
 	"sync"
 	"time"
 
+	centralconfig "github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Handler must honor cancellation and make retries safe with stable external IDs,
@@ -197,4 +204,167 @@ func (d *Dispatcher) complete(ctx context.Context, event db.ClaimedEvent, receip
 		return db.ErrLeaseLost
 	}
 	return nil
+}
+
+// Dependencies belong to the process. Domain builds must not start goroutines,
+// read flags/environment, or open pools. Context only adds immutable values.
+type Dependencies struct {
+	Config  centralconfig.Config
+	Pool    *pgxpool.Pool
+	Metrics *prometheus.Registry
+	Logger  *slog.Logger
+}
+type Domain struct {
+	Name  string
+	Build func(context.Context, Dependencies) (Built, error)
+}
+type Built struct {
+	Jobs    Registry
+	Context func(context.Context) context.Context
+	Runners []func(context.Context) error
+}
+type Application struct {
+	dispatcher *Dispatcher
+	contexts   []func(context.Context) context.Context
+	runners    []func(context.Context) error
+	server     *http.Server
+	shutdown   time.Duration
+}
+
+// Open validates and merges all domain registrations before any work is claimed.
+// With no explicit domains it uses the production Domains list.
+func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application, error) {
+	if d.Metrics == nil {
+		d.Metrics = prometheus.NewRegistry()
+	}
+	if domains == nil {
+		domains = Domains()
+	}
+	names := map[string]bool{}
+	registry := Registry{}
+	app := &Application{shutdown: time.Duration(d.Config.ShutdownSeconds) * time.Second}
+	built := make([]Built, 0, len(domains))
+	for _, domain := range domains {
+		if domain.Name == "" || domain.Build == nil || names[domain.Name] {
+			return nil, errors.New("invalid or duplicate worker domain")
+		}
+		names[domain.Name] = true
+		result, e := domain.Build(ctx, d)
+		if e != nil {
+			return nil, fmt.Errorf("worker domain %s: %w", domain.Name, e)
+		}
+		for name, handler := range result.Jobs {
+			if name == "" || handler == nil {
+				return nil, fmt.Errorf("worker domain %s: invalid handler", domain.Name)
+			}
+			if registry[name] != nil {
+				return nil, fmt.Errorf("duplicate worker event: %s", name)
+			}
+			registry[name] = handler
+		}
+		for _, run := range result.Runners {
+			if run == nil {
+				return nil, fmt.Errorf("worker domain %s: nil runner", domain.Name)
+			}
+		}
+		if result.Context != nil {
+			app.contexts = append(app.contexts, result.Context)
+		}
+		app.runners = append(app.runners, result.Runners...)
+		built = append(built, result)
+	}
+	c := d.Config
+	if app.shutdown <= 0 {
+		return nil, errors.New("shutdown_seconds required")
+	}
+	dispatcher, e := New(d.Pool, registry, Config{Concurrency: c.WorkerConcurrency, Attempts: c.WorkerAttempts, Lease: time.Duration(c.WorkerLeaseSeconds) * time.Second, JobTimeout: time.Duration(c.WorkerJobSeconds) * time.Second, Poll: time.Duration(c.WorkerPollSeconds) * time.Second, Backoff: time.Duration(c.WorkerBackoffSeconds) * time.Second, MaxBackoff: time.Duration(c.WorkerBackoffMaxSeconds) * time.Second}, d.Metrics, d.Logger)
+	if e != nil {
+		return nil, e
+	}
+	app.dispatcher = dispatcher
+	mux := http.NewServeMux()
+	mux.Handle("GET /metrics", promhttp.HandlerFor(d.Metrics, promhttp.HandlerOpts{}))
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(200) })
+	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, r *http.Request) {
+		probe, cancel := context.WithTimeout(r.Context(), time.Second)
+		defer cancel()
+		if d.Pool.Ping(probe) != nil {
+			apierr.Write(w, r, apierr.New(apierr.DependencyUnavailable, "Database unavailable."))
+			return
+		}
+		w.WriteHeader(200)
+	})
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		apierr.Write(w, r, apierr.New(apierr.ResourceNotFound, "Route not found."))
+	})
+	app.server = &http.Server{Addr: c.MetricsAddress, Handler: httpapi.Transport(d.Logger, mux), ReadHeaderTimeout: time.Duration(c.ReadTimeoutSeconds) * time.Second, ReadTimeout: time.Duration(c.ReadTimeoutSeconds) * time.Second, WriteTimeout: time.Duration(c.WriteTimeoutSeconds) * time.Second, IdleTimeout: time.Duration(c.IdleTimeoutSeconds) * time.Second}
+	if d.Logger != nil {
+		for i, domain := range domains {
+			events := make([]string, 0, len(built[i].Jobs))
+			for name := range built[i].Jobs {
+				events = append(events, name)
+			}
+			slices.Sort(events)
+			d.Logger.Info("worker domain built", "domain", domain.Name, "events", events, "runners", len(built[i].Runners))
+		}
+	}
+	return app, nil
+}
+func (a *Application) context(ctx context.Context) context.Context {
+	for _, values := range a.contexts {
+		ctx = values(ctx)
+	}
+	return ctx
+}
+
+// Once dispatches one job through the same context composition as Run.
+func (a *Application) Once(ctx context.Context) (bool, error) {
+	return a.dispatcher.Once(a.context(ctx))
+}
+
+func (a *Application) Run(ctx context.Context) error {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
+	ctx = a.context(ctx)
+	results := make(chan error, len(a.runners)+2)
+	go func() { results <- a.dispatcher.Run(ctx) }()
+	go func() {
+		e := a.server.ListenAndServe()
+		if errors.Is(e, http.ErrServerClosed) {
+			e = nil
+		}
+		results <- e
+	}()
+	for _, run := range a.runners {
+		go func() { results <- run(ctx) }()
+	}
+	remaining := cap(results)
+	var err error
+	select {
+	case <-ctx.Done():
+	case err = <-results:
+		remaining--
+	}
+	if ctx.Err() != nil && errors.Is(err, context.Canceled) {
+		err = nil
+	}
+	stop()
+	shutdown, cancel := context.WithTimeout(context.Background(), a.shutdown)
+	defer cancel()
+	if e := a.server.Shutdown(shutdown); e != nil {
+		_ = a.server.Close()
+		err = errors.Join(err, e)
+	}
+	for remaining > 0 {
+		select {
+		case e := <-results:
+			remaining--
+			if e != nil && !errors.Is(e, context.Canceled) {
+				err = errors.Join(err, e)
+			}
+		case <-shutdown.Done():
+			return errors.Join(err, shutdown.Err())
+		}
+	}
+	return err
 }

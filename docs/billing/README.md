@@ -1,8 +1,9 @@
 # Members, entitlement, devices and billing
 
 These packages implement the central Go services for §2, §9, §14.2–5, §15.1–2,
-§15.5.2–3, §16.1–2 and §17.4.2. HTTP/session adapters and node enforcement are
-separate tasks. No provider credentials, card fields or hosted checkout URLs
+§15.5.2–3, §16.1–2 and §17.4.2. HTTP/session and worker adapters are described in
+[the member integration guide](../members/README.md); that guide lists the
+remaining binary startup hooks and node-enforcement boundary. No provider credentials, card fields or hosted checkout URLs
 are emitted to logs; the packages do not install a logger.
 
 ## Entitlement state machine
@@ -142,7 +143,8 @@ thresholds/rates have no production defaults in these packages.
   contract overrides the task prose's 400); invalid payload 422 as required by the route; missing version 428; version conflict 412; foreign IDs
   404; device limit 409 `DEVICE_LIMIT_REACHED`; unavailable entitlement 403
   `FORBIDDEN`; idempotency conflict 409; provider errors 503. Never
-  expose raw database/constraint/provider errors. No handlers are added here.
+  expose raw database/constraint/provider errors. Strict handlers now live in `internal/members/httpadapter`; see the member
+  integration guide for composition and replay.
 - Dispatch policy work as described in [EVENTS.md](EVENTS.md). Expiry and revocation
   of existing TCP/UDP flows require the node consumer; these central tests do not
   claim real gateway enforcement or convergence timing.
