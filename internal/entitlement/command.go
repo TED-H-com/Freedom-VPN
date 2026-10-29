@@ -77,7 +77,7 @@ func Complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, resou
 	if record.ID == uuid.Nil {
 		return nil
 	}
-	return db.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: resourceType, ResourceID: &id, OperationID: operation, ResponseStatus: status})
+	return db.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: ResourceType(resourceType), ResourceID: &id, OperationID: operation, ResponseStatus: status})
 }
 func Audit(ctx context.Context, tx pgx.Tx, actor Actor, action string, id uuid.UUID, before, after any) error {
 	if before == nil {
@@ -102,7 +102,7 @@ func Audit(ctx context.Context, tx pgx.Tx, actor Actor, action string, id uuid.U
 }
 func auditResource(action string) string {
 	if strings.HasPrefix(action, "device.") {
-		return "device"
+		return "member_device"
 	}
 	return "member"
 }
@@ -111,7 +111,22 @@ func Operation(ctx context.Context, tx pgx.Tx, actor Actor, kind, resource strin
 	if err != nil {
 		return op, err
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,desired_generation,request_id,steps) VALUES($1,$2,$3,$4,$5,$6::numeric,$7,'{"netbird":{"required":true,"status":"pending"},"nodes":{"required":true,"status":"pending"}}')`, op, kind, actor.Role+":"+actor.ID.String(), resource, id, revision.String(), actor.RequestID)
+	_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,desired_generation,request_id,steps) VALUES($1,$2,$3,$4,$5,$6::numeric,$7,'{"netbird":{"required":true,"status":"pending"},"nodes":{"required":true,"status":"pending"}}')`, op, kind, actor.Role+":"+actor.ID.String(), ResourceType(resource), id, revision.String(), actor.RequestID)
 	return op, err
 }
 func Reason(s string, max int) bool { return strings.TrimSpace(s) != "" && len([]rune(s)) <= max }
+
+// ResourceType translates internal aggregate names to the binding HTTP contract.
+// Outbox aggregate names remain the documented domain event vocabulary.
+func ResourceType(kind string) string {
+	switch kind {
+	case "device":
+		return "member_device"
+	case "grant":
+		return "entitlement_grant"
+	case "billing_session":
+		return "checkout_session"
+	default:
+		return kind
+	}
+}

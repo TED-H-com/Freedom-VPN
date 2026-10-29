@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/url"
 	"os"
 	"strings"
@@ -99,4 +100,5 @@ func LoadMembers(path string) (Members, error) {
 }
 
 // LogValue prevents accidental formatting of deployment details and secret paths.
-func (c Members) String() string { return "[REDACTED member configuration]" }
+func (c Members) String() string       { return "[REDACTED member configuration]" }
+func (c Members) LogValue() slog.Value { return slog.StringValue(c.String()) }

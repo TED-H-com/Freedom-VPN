@@ -186,7 +186,7 @@ func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) error {
 // Preserve an immutable audit evidence row before transitioning the operation.
 // A successful NetBird step never fabricates the separate node enforcement ACK.
 func observeOperations(ctx context.Context, tx pgx.Tx, resource string, id uuid.UUID, revision decstr.U64, evidence []byte, now time.Time) error {
-	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE resource_type=$1 AND resource_id=$2 AND desired_generation=$3::numeric AND status IN ('pending','running') AND steps->'netbird'->>'status' IN ('pending','running') AND (kind<>'member.grant' OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, resource, id, revision.String(), now)
+	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE resource_type=$1 AND resource_id=$2 AND desired_generation=$3::numeric AND status IN ('pending','running') AND steps->'netbird'->>'status' IN ('pending','running') AND (kind<>'member.grant' OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, entitlement.ResourceType(resource), id, revision.String(), now)
 	if err != nil {
 		return err
 	}
@@ -208,7 +208,7 @@ func observeOperations(ctx context.Context, tx pgx.Tx, resource string, id uuid.
 	if err != nil {
 		return err
 	}
-	if err = db.AppendAudit(ctx, tx, db.AuditEvent{ID: evidenceID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: "system", Action: "netbird.observed", Resource: resource + ":" + id.String(), SchemaVersion: 1, Before: []byte(`{}`), After: evidence, Result: "succeeded"}); err != nil {
+	if err = db.AppendAudit(ctx, tx, db.AuditEvent{ID: evidenceID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: "system", Action: "netbird.observed", Resource: entitlement.ResourceType(resource) + ":" + id.String(), SchemaVersion: 1, Before: []byte(`{}`), After: evidence, Result: "succeeded"}); err != nil {
 		return err
 	}
 	for _, op := range ids {

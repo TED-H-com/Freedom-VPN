@@ -87,7 +87,7 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 				return e
 			}
 			op = &operationID
-			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,'checkout.create',$2,'billing_session',$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID)
+			_, err = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,'checkout.create',$2,'checkout_session',$3,$4,'{"provider":{"required":true,"status":"pending"}}')`, op, c.Actor.Role+":"+c.Actor.ID.String(), id, c.Actor.RequestID)
 			if err != nil {
 				return err
 			}
@@ -178,6 +178,7 @@ func (s *Service) FulfillSession(ctx context.Context, id uuid.UUID) error {
 	if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || !validExternal(hosted.ID) || !hosted.ExpiresAt.After(s.Entitlements.Time()) {
 		return ErrPayload
 	}
+	hosted.ExpiresAt = hosted.ExpiresAt.UTC()
 	raw, err := json.Marshal(hosted)
 	if err != nil {
 		return err
@@ -228,6 +229,7 @@ func (s *Service) SessionResult(ctx context.Context, actor entitlement.Actor, id
 	if !out.ExpiresAt.After(s.Entitlements.Time()) {
 		return HostedSession{}, entitlement.ErrConflict
 	}
+	out.ExpiresAt = out.ExpiresAt.UTC()
 	return out, nil
 }
 

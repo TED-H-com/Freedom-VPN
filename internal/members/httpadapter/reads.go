@@ -3,6 +3,9 @@ package httpadapter
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
@@ -49,10 +52,10 @@ func (h Handlers) entitlement(ctx context.Context, m members.Member) (api.Entitl
 	e.ComputedAt = p.ComputedAt.UTC()
 	e.AdminSuspended = p.AdminSuspended
 	e.CancelAtPeriodEnd = p.CancelAtPeriodEnd
-	e.EffectiveServiceEnd = presence.FromPointer(p.EffectiveServiceEnd)
-	e.GraceUntil = presence.FromPointer(p.GraceUntil)
-	e.PaidThrough = presence.FromPointer(p.PaidThrough)
-	e.ValidFrom = presence.FromPointer(p.ValidFrom)
+	e.EffectiveServiceEnd = nullableTime(p.EffectiveServiceEnd)
+	e.GraceUntil = nullableTime(p.GraceUntil)
+	e.PaidThrough = nullableTime(p.PaidThrough)
+	e.ValidFrom = nullableTime(p.ValidFrom)
 	// A stale projection never advertises usable service after its deadline (§9.2).
 	s, err := h.services(ctx)
 	if err != nil {
@@ -96,7 +99,7 @@ func subscription(m members.Member) presence.Nullable[api.SubscriptionSummary] {
 	if len(s.Anomalies) > 0 {
 		status = api.SubscriptionSummaryReconciliationStatusAnomaly
 	}
-	return presence.NewNullableWithValue(api.SubscriptionSummary{Provider: s.Provider, ProviderStatus: s.ProviderStatus, CancelAtPeriodEnd: s.CancelAtPeriodEnd, PaidThrough: presence.FromPointer(s.PaidThrough), LastReconciledAt: presence.FromPointer(s.LastReconciledAt), ReconciliationStatus: status})
+	return presence.NewNullableWithValue(api.SubscriptionSummary{Provider: s.Provider, ProviderStatus: s.ProviderStatus, CancelAtPeriodEnd: s.CancelAtPeriodEnd, PaidThrough: nullableTime(s.PaidThrough), LastReconciledAt: nullableTime(s.LastReconciledAt), ReconciliationStatus: status})
 }
 func (h Handlers) summary(ctx context.Context, m members.Member) (api.MemberSummary, error) {
 	e, err := h.entitlement(ctx, m)
@@ -111,24 +114,24 @@ func (h Handlers) summary(ctx context.Context, m members.Member) (api.MemberSumm
 	if err != nil {
 		return api.MemberSummary{}, err
 	}
-	return api.MemberSummary{MemberId: m.ID, DisplayName: nullableText(m.DisplayName), Email: email(m.Email), AccountStatus: api.MemberSummaryAccountStatus(m.Status), CreatedAt: m.CreatedAt.UTC(), ResourceVersion: m.ResourceVersion, AuthorizedDeviceCount: m.AuthorizedDevices, Entitlement: e, Usage: total}, nil
+	return api.MemberSummary{MemberId: m.ID, DisplayName: nullableText(m.DisplayName), Email: email(m.Email), AccountStatus: api.MemberSummaryAccountStatus(accountStatus(m.Status)), CreatedAt: m.CreatedAt.UTC(), ResourceVersion: m.ResourceVersion, AuthorizedDeviceCount: m.AuthorizedDevices, Entitlement: e, Usage: total}, nil
 }
 func (h Handlers) detail(ctx context.Context, m members.Member) (api.MemberDetail, error) {
 	summary, err := h.summary(ctx, m)
 	if err != nil {
 		return api.MemberDetail{}, err
 	}
-	out := api.MemberDetail{MemberId: m.ID, DisplayName: summary.DisplayName, Email: summary.Email, AccountStatus: api.MemberDetailAccountStatus(m.Status), CreatedAt: summary.CreatedAt, ClosedAt: presence.FromPointer(m.ClosedAt), ResourceVersion: m.ResourceVersion, AuthorizedDeviceCount: m.AuthorizedDevices, Entitlement: summary.Entitlement, Usage: summary.Usage, Subscription: subscription(m), Notes: nullableText(m.Notes), MemberGroupIds: append([]uuid.UUID{}, m.Groups...), Grants: []api.EntitlementGrant{}}
+	out := api.MemberDetail{MemberId: m.ID, DisplayName: summary.DisplayName, Email: summary.Email, AccountStatus: api.MemberDetailAccountStatus(accountStatus(m.Status)), CreatedAt: summary.CreatedAt, ClosedAt: nullableTime(m.ClosedAt), ResourceVersion: m.ResourceVersion, AuthorizedDeviceCount: m.AuthorizedDevices, Entitlement: summary.Entitlement, Usage: summary.Usage, Subscription: subscription(m), Notes: nullableText(m.Notes), MemberGroupIds: append([]uuid.UUID{}, m.Groups...), Grants: []api.EntitlementGrant{}}
 	out.Suspension.Suspended = m.AdminSuspended
 	out.Suspension.Reason = presence.FromPointer(m.SuspensionReason)
-	out.Suspension.SuspendedAt = presence.FromPointer(m.SuspendedAt)
+	out.Suspension.SuspendedAt = nullableTime(m.SuspendedAt)
 	out.Suspension.SuspendedBy = presence.FromPointer(m.SuspendedBy)
 	for _, g := range m.Grants {
 		creator, err := uuid.Parse(g.CreatedBy)
 		if err != nil {
 			return out, err
 		}
-		out.Grants = append(out.Grants, api.EntitlementGrant{GrantId: g.ID, MemberId: m.ID, PlanRevisionId: presence.FromPointer(g.PlanRevisionID), Source: api.GrantSource(g.Source), Reason: g.Reason, ValidFrom: g.ValidFrom.UTC(), ValidUntil: g.ValidUntil.UTC(), RevokedAt: presence.FromPointer(g.RevokedAt), CreatedAt: g.CreatedAt.UTC(), CreatedBy: creator})
+		out.Grants = append(out.Grants, api.EntitlementGrant{GrantId: g.ID, MemberId: m.ID, PlanRevisionId: presence.FromPointer(g.PlanRevisionID), Source: api.GrantSource(g.Source), Reason: g.Reason, ValidFrom: g.ValidFrom.UTC(), ValidUntil: g.ValidUntil.UTC(), RevokedAt: nullableTime(g.RevokedAt), CreatedAt: g.CreatedAt.UTC(), CreatedBy: creator})
 	}
 	return out, nil
 }
@@ -139,6 +142,9 @@ func (h Handlers) ListMembers(ctx context.Context, r gen.ListMembersRequestObjec
 	}
 	page, err := s.Members.ListFiltered(ctx, actor(ctx), value(r.Params.Cursor), value(r.Params.Limit), string(value(r.Params.EntitlementState)))
 	if err != nil {
+		if errors.Is(err, entitlement.ErrInvalid) {
+			return nil, apierr.New(apierr.MalformedRequest, "Invalid member page.")
+		}
 		return nil, domainError(err)
 	}
 	body := api.MemberList{Items: []api.MemberSummary{}, NextCursor: nullableText(page.NextCursor)}
@@ -222,6 +228,9 @@ func (h Handlers) ListMemberDevices(ctx context.Context, r gen.ListMemberDevices
 	a := actor(ctx)
 	page, err := s.Devices.List(ctx, a, a.ID, value(r.Params.Cursor), value(r.Params.Limit))
 	if err != nil {
+		if errors.Is(err, entitlement.ErrInvalid) {
+			return nil, apierr.New(apierr.MalformedRequest, "Invalid device page.")
+		}
 		return nil, domainError(err)
 	}
 	out := api.MemberDeviceList{Items: []api.MemberDevice{}, NextCursor: nullableText(page.NextCursor), AuthorizedCount: page.AuthorizedCount, DeviceLimit: presence.NewNullNullable[int]()}
@@ -233,7 +242,22 @@ func (h Handlers) ListMemberDevices(ctx context.Context, r gen.ListMemberDevices
 		if d.Status == "authorized" && !d.ObservedAuthorized {
 			status = api.DeviceStatusPending
 		}
-		out.Items = append(out.Items, api.MemberDevice{DeviceId: d.ID, Name: d.Name, Platform: api.MemberDevicePlatform(d.Platform), Status: status, CreatedAt: d.CreatedAt.UTC(), AuthorizedAt: presence.FromPointer(d.AuthorizedAt), RevokedAt: presence.FromPointer(d.RevokedAt), LastSeenAt: presence.FromPointer(d.LastSeenAt)})
+		out.Items = append(out.Items, api.MemberDevice{DeviceId: d.ID, Name: d.Name, Platform: api.MemberDevicePlatform(d.Platform), Status: status, CreatedAt: d.CreatedAt.UTC(), AuthorizedAt: nullableTime(d.AuthorizedAt), RevokedAt: nullableTime(d.RevokedAt), LastSeenAt: nullableTime(d.LastSeenAt)})
 	}
 	return gen.ListMemberDevices200JSONResponse{Body: out}, nil
+}
+
+func nullableTime(t *time.Time) presence.Nullable[time.Time] {
+	if t == nil {
+		return presence.NewNullNullable[time.Time]()
+	}
+	return presence.NewNullableWithValue(t.UTC())
+}
+
+// Account closure and service rights are separate dimensions in the contract.
+func accountStatus(status string) string {
+	if status == "closed" {
+		return "closed"
+	}
+	return "active"
 }

@@ -303,7 +303,7 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		if status == "revoked" || status == "closed" {
 			result.Replayed = true
 			var op uuid.UUID
-			if err = tx.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type='device' AND resource_id=$1 AND kind='member.device_revoke' ORDER BY created_at DESC LIMIT 1`, id).Scan(&op); err != nil {
+			if err = tx.QueryRow(ctx, `SELECT id FROM operations WHERE resource_type='member_device' AND resource_id=$1 AND kind='member.device_revoke' ORDER BY created_at DESC LIMIT 1`, id).Scan(&op); err != nil {
 				return db.MapError(err)
 			}
 			result.OperationID = &op

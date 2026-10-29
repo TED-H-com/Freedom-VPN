@@ -87,8 +87,10 @@ func scanBinding(row pgx.Row, deployment, kind string) (netbird.Binding, bool, e
 	}
 	b.InternalID = string(key)
 	b.ExternalID = strings.TrimPrefix(external, kind+":")
-	b.DesiredHash = hex.EncodeToString(hash)
+	// NULL observation denotes the adapter's unconfirmed write marker.
+	b.DesiredHash = ""
 	if observed != nil {
+		b.DesiredHash = hex.EncodeToString(hash)
 		b.LastObservedAt = observed.UTC()
 	}
 	return b, true, nil
@@ -105,7 +107,10 @@ func (s NetBirdBindings) Put(ctx context.Context, b netbird.Binding) error {
 		return e
 	}
 	hash, e := hex.DecodeString(b.DesiredHash)
-	if e != nil || len(hash) != 32 {
+	if b.DesiredHash == "" && b.LastObservedAt.IsZero() {
+		hash = make([]byte, 32)
+	}
+	if e != nil || len(hash) != 32 || b.DesiredHash == "" && !b.LastObservedAt.IsZero() {
 		return entitlement.ErrInvalid
 	}
 	var observed *time.Time
