@@ -2,13 +2,16 @@ package fup
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -681,5 +684,62 @@ func Test11_1_CoalescedWorkerAndWatermark(t *testing.T) {
 	}
 	if !wm.LastComputedAt.Equal(now) || !wm.LedgerWatermark.Equal(watermark) || wm.EvaluationCount != 1 {
 		t.Fatalf("unexpected watermark record: %+v", wm)
+	}
+}
+
+type errUsageReader struct {
+	rawTotal string
+}
+
+func (r *errUsageReader) GetMemberPeriodUsage(_ context.Context, _ uuid.UUID, _ string) (UsageSnapshot, error) {
+	u, err := parseFUPUint64("total_bytes", r.rawTotal)
+	if err != nil {
+		return UsageSnapshot{}, err
+	}
+	return UsageSnapshot{TotalBytes: u}, nil
+}
+
+func TestFUP01_Uint64OverflowFailsClosed(t *testing.T) {
+	ctx := context.Background()
+	memberID := uuid.New()
+	periodID := "2026-10"
+	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+
+	polR := &fakePolicyReader{
+		policy: MemberPolicyContext{
+			FairUseRevisionID: uuid.New(),
+			FairUsePolicy:     testFairUsePolicy(api.FairUsePayloadModeEnforce),
+		},
+	}
+
+	// Exact math.MaxUint64 succeeds.
+	maxEngine := NewEngine(nil, &errUsageReader{rawTotal: "18446744073709551615"}, polR, nil)
+	evalMax, err := maxEngine.Compute(ctx, ComputeInput{
+		MemberID: memberID,
+		PeriodID: periodID,
+		Now:      now,
+	})
+	if err != nil {
+		t.Fatalf("Compute at math.MaxUint64 failed: %v", err)
+	}
+	if evalMax.TotalBytes != ^decstr.U64(0) {
+		t.Fatalf("TotalBytes = %s, want 18446744073709551615", evalMax.TotalBytes)
+	}
+
+	// math.MaxUint64 + 1 fails closed with decstr.ErrOverflow and ErrCodeUint64Overflow, never clamping.
+	for _, rawOverflow := range []string{"18446744073709551616", "99999999999999999999", "-1"} {
+		ovEngine := NewEngine(nil, &errUsageReader{rawTotal: rawOverflow}, polR, nil)
+		_, err := ovEngine.Compute(ctx, ComputeInput{
+			MemberID: memberID,
+			PeriodID: periodID,
+			Now:      now,
+		})
+		if !errors.Is(err, decstr.ErrOverflow) {
+			t.Fatalf("rawTotal=%q: expected errors.Is(err, decstr.ErrOverflow), got: %v", rawOverflow, err)
+		}
+		var ae *apierr.Error
+		if !errors.As(err, &ae) || ae.Code != apierr.InternalError || ae.Details["detail_code"] != usage.ErrCodeUint64Overflow {
+			t.Fatalf("rawTotal=%q: expected InternalError with detail_code=%s, got: %#v", rawOverflow, usage.ErrCodeUint64Overflow, err)
+		}
 	}
 }
