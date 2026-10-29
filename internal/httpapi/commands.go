@@ -23,7 +23,7 @@ import (
 
 // ReplayHandler re-reads only persisted references, with caller authorization.
 // Return the generated response type for operationID. Enrollment replays MUST
-// return secret_available=false; neither plaintext responses nor secrets persist.
+// return secret_available=false; secret-bearing responses must never persist.
 type ReplayHandler interface {
 	Replay(context.Context, string, db.IdempotencyRecord) (any, error)
 }
@@ -33,6 +33,7 @@ type Commands struct {
 }
 type commandState struct {
 	tx           pgx.Tx
+	record       db.IdempotencyRecord
 	result       *db.IdempotencyResult
 	agentReceipt bool
 }
@@ -44,6 +45,18 @@ func Transaction(ctx context.Context) (pgx.Tx, error) {
 		return nil, errors.New("command transaction unavailable")
 	}
 	return s.tx, nil
+}
+
+// CommandRecord returns the reservation owned by Transaction(ctx), including its
+// ID and expiry. It is available only while handling a new keyed command; Replay
+// receives its record separately. Persisted nonsecret replay bodies must use this
+// record's ID and expiry, not reconstruct its principal/method/route/key scope.
+func CommandRecord(ctx context.Context) (db.IdempotencyRecord, bool) {
+	s, ok := ctx.Value(commandKey{}).(*commandState)
+	if !ok || s == nil || s.tx == nil {
+		return db.IdempotencyRecord{}, false
+	}
+	return s.record, true
 }
 
 // SetResult must accompany desired state, operation, audit and outbox writes in
@@ -144,7 +157,7 @@ func (c *Commands) middleware(handlers *Composite) gen.StrictMiddlewareFunc {
 				if !record.New {
 					return nil
 				}
-				state := &commandState{tx: tx, agentReceipt: p.Role == auth.Agent && (operationID == "SubmitObservation" || operationID == "SubmitUpdateResult")}
+				state := &commandState{tx: tx, record: record, agentReceipt: p.Role == auth.Agent && (operationID == "SubmitObservation" || operationID == "SubmitUpdateResult")}
 				commandCtx := context.WithValue(ctx, commandKey{}, state)
 				response, e = next(commandCtx, w, r, request)
 				if e != nil {
