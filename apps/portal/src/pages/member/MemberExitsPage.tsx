@@ -1,63 +1,69 @@
-import React, { useEffect, useState } from 'react';
-import { portalApi, type MemberExitItem } from '../../api';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../api';
 import { useI18n } from '../../i18n';
 
 export function MemberExitsPage(): React.ReactElement {
-  const { locale, t } = useI18n();
-  const [exits, setExits] = useState<MemberExitItem[]>([]);
+  const { t, locale } = useI18n();
 
-  useEffect(() => {
-    void portalApi.getMemberExits().then((res) => setExits(res.data.items));
-  }, []);
+  const exitsQuery = useQuery({
+    queryKey: ['member', 'exits'],
+    queryFn: () => apiClient.listMemberExits(),
+  });
+
+  const items = exitsQuery.data?.items ?? [];
 
   return (
-    <div>
-      <header className="page-header">
-        <h1>{t('member.exits.title')}</h1>
-      </header>
+    <div data-testid="member-exits-page">
+      <div className="page-header">
+        <div>
+          <h1>{t('member.exits.title')}</h1>
+        </div>
+      </div>
 
+      {/* Mandatory Manual App Exit Selection Disclosure (EXIT02, §18.4, §18.5) */}
       <div
         className="alert alert-info"
         role="note"
         data-testid="manual-exit-selection-notice"
       >
-        <strong>{t('member.exits.manualSelectionNotice')}</strong>
+        {t('member.exits.manualSelectionNotice')}
       </div>
 
-      <section className="card table-wrapper">
-        <table className="data-table" data-testid="member-exits-table">
-          <thead>
-            <tr>
-              <th scope="col">{t('member.exits.col.name')}</th>
-              <th scope="col">{t('member.exits.col.region')}</th>
-              <th scope="col">{t('member.exits.col.status')}</th>
-              <th scope="col">{t('member.exits.col.notes')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {exits.map((exit) => (
-              <tr key={exit.exit_id}>
-                <td>
-                  <strong>{exit.name}</strong>
-                </td>
-                <td>{exit.region}</td>
-                <td>
-                  <span
-                    className={
-                      exit.status === 'available'
-                        ? 'badge badge-success'
-                        : 'badge badge-danger'
-                    }
-                  >
-                    {exit.status}
-                  </span>
-                </td>
-                <td>{locale === 'en' ? exit.note_en : exit.note_zh}</td>
+      <div className="card">
+        <div className="table-wrapper">
+          <table className="data-table" data-testid="member-exits-table">
+            <thead>
+              <tr>
+                <th>{t('member.exits.col.name')}</th>
+                <th>{t('member.exits.col.region')}</th>
+                <th>{t('member.exits.col.status')}</th>
+                <th>{t('member.exits.col.notes')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {items.map((exit) => (
+                <tr key={exit.exit_id} data-testid={`member-exit-row-${exit.exit_id}`}>
+                  <td style={{ fontWeight: 600 }}>{exit.display_name}</td>
+                  <td className="mono">{exit.region}</td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        exit.availability === 'available'
+                          ? 'badge-success'
+                          : 'badge-warning'
+                      }`}
+                    >
+                      {exit.availability}
+                    </span>
+                  </td>
+                  <td>{exit.note ? (exit.note[locale] ?? exit.note['zh-TW']) : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

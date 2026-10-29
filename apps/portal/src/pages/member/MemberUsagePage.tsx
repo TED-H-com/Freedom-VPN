@@ -1,118 +1,182 @@
-import React, { useEffect, useState } from 'react';
-import { portalApi, type MemberItem } from '../../api';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient, deriveUsageQualitySummary } from '../../api';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
 import { formatBpsMbps, formatBytesDual } from '../../lib/decimal';
 
 export function MemberUsagePage(): React.ReactElement {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { persona } = useSession();
-  const [usage, setUsage] = useState<MemberItem | null>(null);
 
-  useEffect(() => {
-    void portalApi.getMemberUsage().then((res) => setUsage(res.data));
-  }, [persona]);
+  const usageQuery = useQuery({
+    queryKey: ['member', 'usage', persona],
+    queryFn: () => apiClient.getMemberUsage(),
+  });
 
-  if (!usage) {
-    return <div className="card">Loading usage...</div>;
+  if (usageQuery.isLoading || !usageQuery.data) {
+    return (
+      <div className="card" role="status">
+        Loading usage ledger...
+      </div>
+    );
   }
 
-  return (
-    <div>
-      <header className="page-header">
-        <h1>{t('member.usage.title')}</h1>
-        <p className="page-subtitle" data-testid="member-usage-as-of">
-          {t('member.usage.asOfLabel', { asOf: usage.usage_aggregate_as_of })} ｜{' '}
-          {t('member.usage.periodLabel', { period: usage.accounting_period })}
-        </p>
-      </header>
+  const u = usageQuery.data;
+  const qualitySummary = deriveUsageQualitySummary(u, locale);
+  const tierLabel = u.fair_use.tier_name
+    ? (u.fair_use.tier_name[locale] ?? u.fair_use.tier_name['zh-TW'])
+    : 'Normal speed';
 
-      <div className="alert alert-info" data-testid="member-usage-honesty-banner">
+  return (
+    <div data-testid="member-usage-page">
+      <div className="page-header">
+        <div>
+          <h1>{t('member.usage.title')}</h1>
+          <p className="page-subtitle mono">
+            {t('member.usage.periodLabel', {
+              period: `${u.period_start} → ${u.period_end}`,
+            })}
+          </p>
+        </div>
+        <span className="badge badge-neutral mono" data-testid="usage-as-of-badge">
+          {t('member.usage.asOfLabel', { asOf: u.aggregate_as_of ?? '-' })}
+        </span>
+      </div>
+
+      {/* Honest metering disclosure (§10.1, §18.4) */}
+      <div className="alert alert-info" role="note" data-testid="honest-metering-banner">
         {t('member.usage.honestyBanner')}
       </div>
 
-      {usage.fup_tier_index > 0 && (
+      {/* Gap / Estimated warning when quality !== ok (§10.7, §18.4) */}
+      {qualitySummary.badge !== 'ok' && (
+        <div
+          className="alert alert-warning"
+          role="status"
+          data-testid="usage-gap-warning-banner"
+        >
+          <div style={{ fontWeight: 700 }}>
+            {t('member.usage.gapWarningTitle', { quality: qualitySummary.badge })}
+          </div>
+          <div style={{ marginTop: '0.25rem' }}>
+            {t('member.usage.gapWarningBody', {
+              note: qualitySummary.note ?? '',
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Exact required FUP throttling phrase when throttled (§11.6, §18.4) */}
+      {u.fair_use.state !== 'normal' && (
         <div
           className="alert alert-warning"
           role="status"
           data-testid="usage-fup-throttled-banner"
         >
-          <strong>
-            {t('member.service.fupThrottledBanner', {
-              resetAt: usage.next_fup_reset_at,
-            })}
-          </strong>
+          {t('member.service.fupThrottledBanner', {
+            resetAt: u.fair_use.resets_at ?? '-',
+          })}
         </div>
       )}
 
-      {usage.usage_quality !== 'complete' && (
-        <div className="alert alert-warning" role="alert" data-testid="usage-gap-warning">
-          <strong>
-            {t('member.usage.gapWarningTitle', { quality: usage.usage_quality })}
-          </strong>
-          <p style={{ margin: '6px 0 0' }}>
-            {t('member.usage.gapWarningBody', {
-              note: usage.usage_gap_note ?? usage.usage_quality,
-            })}
-          </p>
+      <div className="stat-grid">
+        <div className="stat-card" data-testid="usage-total-card">
+          <span className="stat-label">{t('member.usage.totalLabel')}</span>
+          <span className="stat-value mono" style={{ fontSize: '1.35rem' }}>
+            {formatBytesDual(u.totals.total_bytes)}
+          </span>
+          <span className="stat-subtext mono">raw: {u.totals.total_bytes} B</span>
         </div>
-      )}
 
-      <div className="metrics-grid">
-        <article className="metric-card" data-testid="usage-total-card">
-          <div>
-            <h2>{t('member.usage.totalLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.45rem' }}>
-              {formatBytesDual(usage.monthly_total_bytes)}
-            </div>
-            <p className="metric-desc">
-              Decimal string: <code>{usage.monthly_total_bytes}</code> bytes
-            </p>
-          </div>
-        </article>
+        <div className="stat-card">
+          <span className="stat-label">{t('member.usage.uploadLabel')}</span>
+          <span className="stat-value mono" style={{ fontSize: '1.25rem' }}>
+            {formatBytesDual(u.totals.upload_bytes)}
+          </span>
+          <span className="stat-subtext mono">raw: {u.totals.upload_bytes} B</span>
+        </div>
 
-        <article className="metric-card">
-          <div>
-            <h2>{t('member.usage.uploadLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.35rem' }}>
-              {formatBytesDual(usage.monthly_upload_bytes)}
-            </div>
-            <p className="metric-desc">
-              Decimal string: <code>{usage.monthly_upload_bytes}</code> bytes
-            </p>
-          </div>
-        </article>
+        <div className="stat-card">
+          <span className="stat-label">{t('member.usage.downloadLabel')}</span>
+          <span className="stat-value mono" style={{ fontSize: '1.25rem' }}>
+            {formatBytesDual(u.totals.download_bytes)}
+          </span>
+          <span className="stat-subtext mono">raw: {u.totals.download_bytes} B</span>
+        </div>
 
-        <article className="metric-card">
-          <div>
-            <h2>{t('member.usage.downloadLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.35rem' }}>
-              {formatBytesDual(usage.monthly_download_bytes)}
-            </div>
-            <p className="metric-desc">
-              Decimal string: <code>{usage.monthly_download_bytes}</code> bytes
-            </p>
-          </div>
-        </article>
-
-        <article className="metric-card" data-testid="usage-speed-card">
-          <div>
-            <h2>{t('member.usage.speedStatusLabel')}</h2>
-            <div className="metric-value" style={{ fontSize: '1.3rem' }}>
-              {usage.fup_tier_name}
-            </div>
-            <p className="metric-desc">
-              {t('member.usage.rateCapsLabel', {
-                down: formatBpsMbps(usage.effective_down_bps),
-                up: formatBpsMbps(usage.effective_up_bps),
-              })}
-            </p>
-            <p className="metric-desc">
-              {t('member.usage.nextResetLabel', { resetAt: usage.next_fup_reset_at })}
-            </p>
-          </div>
-        </article>
+        <div className="stat-card" data-testid="usage-speed-status-card">
+          <span className="stat-label">{t('member.usage.speedStatusLabel')}</span>
+          <span
+            className="stat-value"
+            style={{
+              fontSize: '1.25rem',
+              color:
+                u.fair_use.state !== 'normal'
+                  ? 'var(--color-warning)'
+                  : 'var(--color-success)',
+            }}
+          >
+            {tierLabel}
+          </span>
+          <span className="stat-subtext mono">
+            {t('member.usage.rateCapsLabel', {
+              down: u.fair_use.rate
+                ? formatBpsMbps(String(u.fair_use.rate.down_bps))
+                : '-',
+              up: u.fair_use.rate ? formatBpsMbps(String(u.fair_use.rate.up_bps)) : '-',
+            })}
+          </span>
+          <span className="stat-subtext mono">
+            {t('member.usage.nextResetLabel', { resetAt: u.fair_use.resets_at ?? '-' })}
+          </span>
+        </div>
       </div>
+
+      <section className="card">
+        <h2>Daily UTC Breakdown ({u.days.length} days)</h2>
+        <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
+          <table className="data-table" data-testid="usage-daily-table">
+            <thead>
+              <tr>
+                <th>UTC Date</th>
+                <th>Upload</th>
+                <th>Download</th>
+                <th>Total</th>
+                <th>Quality</th>
+              </tr>
+            </thead>
+            <tbody>
+              {u.days.map((d) => {
+                const dayQual = d.quality.gap
+                  ? 'gap'
+                  : d.quality.reconciliation_in_progress
+                    ? 'reconciling'
+                    : d.quality.estimated
+                      ? 'estimated'
+                      : 'ok';
+                return (
+                  <tr key={d.date}>
+                    <td className="mono">{d.date}</td>
+                    <td className="mono">{formatBytesDual(d.upload_bytes)}</td>
+                    <td className="mono">{formatBytesDual(d.download_bytes)}</td>
+                    <td className="mono">{formatBytesDual(d.total_bytes)}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          dayQual === 'ok' ? 'badge-success' : 'badge-warning'
+                        }`}
+                      >
+                        {dayQual}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,12 +1,19 @@
-import React from 'react';
-import type { Operation, OperationStep } from '../../api/types';
+import React, { useEffect, useState } from 'react';
+import {
+  apiClient,
+  hasOfflineRouteWithdrawnWarning,
+  isTerminalOperationStatus,
+  type OperationResource,
+  type OperationStep,
+} from '../../api';
 import { useI18n, type TranslationKey } from '../../i18n';
 
 interface OperationBannerProps {
-  operation: Operation | null;
-  requestId?: string | null;
-  isPolling: boolean;
+  operation: OperationResource | null;
+  scope?: 'admin' | 'member';
+  isPolling?: boolean;
   onDismiss?: () => void;
+  onTerminal?: (op: OperationResource) => void;
 }
 
 const STEP_NAME_KEYS: Record<string, TranslationKey> = {
@@ -35,20 +42,55 @@ function stepBadgeClass(status: OperationStep['status']): string {
 
 export function OperationBanner({
   operation,
-  requestId,
-  isPolling,
+  scope = 'admin',
+  isPolling = false,
   onDismiss,
+  onTerminal,
 }: OperationBannerProps): React.ReactElement | null {
   const { t } = useI18n();
+  const [polledOp, setPolledOp] = useState<OperationResource | null>(operation);
 
-  if (!operation) {
+  useEffect(() => {
+    setPolledOp(operation);
+  }, [operation]);
+
+  useEffect(() => {
+    if (!polledOp || isTerminalOperationStatus(polledOp.status)) {
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const updated =
+          scope === 'member'
+            ? await apiClient.getMemberOperation(polledOp.operation_id)
+            : await apiClient.getOperation(polledOp.operation_id);
+        if (!cancelled) {
+          setPolledOp(updated);
+          if (isTerminalOperationStatus(updated.status) && onTerminal) {
+            onTerminal(updated);
+          }
+        }
+      } catch {
+        // Keep current operation view if a single poll fails
+      }
+    }, 60);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [polledOp, scope, onTerminal]);
+
+  const current = polledOp ?? operation;
+  if (!current) {
     return null;
   }
 
   const isRunningOrPending =
-    operation.status === 'pending' || operation.status === 'running' || isPolling;
-  const isPartial = operation.status === 'partially_succeeded';
-  const isSucceeded = operation.status === 'succeeded' && !isPolling;
+    current.status === 'pending' || current.status === 'running' || isPolling;
+  const isPartial = current.status === 'partially_succeeded';
+  const isSucceeded = current.status === 'succeeded' && !isPolling;
 
   const alertClass = isRunningOrPending
     ? 'alert alert-info'
@@ -83,7 +125,7 @@ export function OperationBanner({
                   ? t('op.partiallySucceeded')
                   : t('op.failed')}
           </strong>
-          {operation.summary_code === 'route_withdrawn_device_unconfirmed' && (
+          {hasOfflineRouteWithdrawnWarning(current) && (
             <p
               style={{ margin: '6px 0 0', fontWeight: 700 }}
               data-testid="operation-offline-unpublish-warning"
@@ -93,32 +135,30 @@ export function OperationBanner({
           )}
           <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>
             <span>
-              {t('op.idLabel')}: <code>{operation.operation_id}</code>
+              {t('op.idLabel')}: <code>{current.operation_id}</code>
             </span>
-            {requestId && (
-              <span style={{ marginLeft: '12px' }}>
-                {t('op.requestIdLabel')}: <code>{requestId}</code>
-              </span>
-            )}
-            {operation.desired_generation && (
+            <span style={{ marginLeft: '12px' }}>
+              {t('op.requestIdLabel')}: <code>{current.request_id}</code>
+            </span>
+            {current.desired_generation && (
               <span style={{ marginLeft: '12px' }}>
                 {t('op.generationsLabel', {
-                  desired: operation.desired_generation,
-                  observed: operation.observed_generation ?? '—',
+                  desired: current.desired_generation,
+                  observed: current.observed_generation ?? '—',
                 })}
               </span>
             )}
           </div>
         </div>
-        {onDismiss && !isRunningOrPending && (
-          <button type="button" className="btn" onClick={onDismiss}>
+        {onDismiss && (
+          <button type="button" className="btn btn-secondary" onClick={onDismiss}>
             {t('op.dismiss')}
           </button>
         )}
       </div>
 
       <ul className="step-list" aria-label="Operation steps">
-        {operation.steps.map((step) => {
+        {current.steps.map((step) => {
           const labelKey = STEP_NAME_KEYS[step.name];
           const stepTitle = labelKey ? t(labelKey) : step.name;
           return (
@@ -129,9 +169,9 @@ export function OperationBanner({
             >
               <span className={stepBadgeClass(step.status)}>{step.status}</span>
               <span>{stepTitle}</span>
-              {step.detail && (
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                  ({step.detail})
+              {step.message && (
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                  ({step.message})
                 </span>
               )}
             </li>

@@ -66,7 +66,7 @@ func Test15_1_IntervalsAndFiniteExpiry(t *testing.T) {
 		{"certificate", `INSERT INTO node_certificates(incarnation_id,issuer,serial,fingerprint,public_certificate,not_before,not_after) VALUES($1,'test',gen_random_uuid()::text,decode(repeat('01',32),'hex'),'\x01','2026-01-01Z',$2)`, []any{f.inc}},
 		{"lease", `INSERT INTO serving_leases(node_id,incarnation_id,policy_generation,issued_at,expires_at,key_id,payload_hash) VALUES($1,$2,1,'2026-01-01Z',$3,'test',decode(repeat('01',32),'hex'))`, []any{f.node, f.inc}},
 		{"enrollment", `INSERT INTO node_enrollments(node_id,token_hash,created_at,expiry) VALUES($1,decode(repeat('02',32),'hex'),'2026-01-01Z',$2)`, []any{f.node}},
-		{"idempotency", `INSERT INTO idempotency_requests(principal,method,route,key_hash,request_hash,created_at,expiry) VALUES('test','POST','/test',decode(repeat('02',32),'hex'),decode(repeat('03',32),'hex'),'2026-01-01Z',$1)`, nil},
+		{"idempotency", `INSERT INTO idempotency_requests(principal,method,route,key_hash,request_hash,resource_id,response_status,created_at,expiry) VALUES('test','POST','/test',decode(repeat('02',32),'hex'),decode(repeat('03',32),'hex'),gen_random_uuid(),201,'2026-01-01Z',$1)`, nil},
 	}
 	for _, c := range cases {
 		for _, end := range []string{"2025-12-31Z", "2026-01-01Z", "infinity", "-infinity"} {
@@ -218,7 +218,9 @@ func TestAT15_ContiguousAckAndEpoch(t *testing.T) {
 	exec(t, p, `UPDATE usage_checkpoints SET highest_contiguous_seq=3`)
 	_, err = p.Exec(context.Background(), `UPDATE usage_checkpoints SET highest_contiguous_seq=1`)
 	sqlError(t, err, "23514", "")
-	exec(t, p, `UPDATE usage_checkpoints SET highest_contiguous_seq=1,ledger_epoch=gen_random_uuid()`)
+	_, err = p.Exec(context.Background(), `UPDATE usage_checkpoints SET highest_contiguous_seq=1,ledger_epoch=gen_random_uuid()`)
+	sqlError(t, err, "23514", "")
+	exec(t, p, `UPDATE usage_checkpoints SET highest_contiguous_seq=3,ledger_epoch=gen_random_uuid()`)
 	_, err = p.Exec(context.Background(), `UPDATE usage_checkpoints SET max_seen_seq=4`)
 	sqlError(t, err, "23514", "")
 }
@@ -226,15 +228,26 @@ func TestAT15_ContiguousAckAndEpoch(t *testing.T) {
 func Test16_3_MemberLeaseDeadline(t *testing.T) {
 	p := dbtest.New(t)
 	f := seed(t, p)
-	q := `INSERT INTO serving_lease_members(lease_id,member_id,entitlement_revision,valid_from,expires_at) VALUES($1,$2,1,'2026-01-01Z',$3)`
-	_, err := p.Exec(context.Background(), q, f.lease, f.member, "2026-01-03Z")
-	sqlError(t, err, "23514", "")
 	exec(t, p, `UPDATE entitlements SET effective_service_end='2026-01-01T12:00:00Z'`)
-	_, err = p.Exec(context.Background(), q, f.lease, f.member, "2026-01-02Z")
-	sqlError(t, err, "23514", "")
-	exec(t, p, q, f.lease, f.member, "2026-01-01T12:00:00Z")
-	_, err = p.Exec(context.Background(), q, f.lease, f.member, "2026-01-01T12:00:00Z")
-	sqlError(t, err, "23505", "serving_lease_members_member_key")
+	q := `INSERT INTO serving_lease_members(lease_id,member_id,entitlement_revision,valid_from,expires_at) VALUES($1,$2,1,'2026-01-01Z',$3)`
+	for _, end := range []string{"2026-01-03Z", "2026-01-02Z", "2026-01-01T12:00:00Z"} {
+		err := db.InTx(context.Background(), p, db.TxOptions{}, func(tx pgx.Tx) error {
+			lease := uuid.New()
+			if _, err := tx.Exec(context.Background(), `INSERT INTO serving_leases(id,node_id,incarnation_id,policy_generation,issued_at,expires_at,key_id,payload_hash) VALUES($1,$2,$3,1,'2026-01-01Z','2026-01-02Z','test',decode(repeat('01',32),'hex'))`, lease, f.node, f.inc); err != nil {
+				return err
+			}
+			if _, err := tx.Exec(context.Background(), q, lease, f.member, end); err != nil {
+				return err
+			}
+			_, err := tx.Exec(context.Background(), q, lease, f.member, end)
+			return err
+		})
+		if end == "2026-01-01T12:00:00Z" {
+			sqlError(t, err, "23505", "serving_lease_members_member_key")
+		} else {
+			sqlError(t, err, "23514", "")
+		}
+	}
 }
 
 func Test15_5_SnapshotCountAtCommit(t *testing.T) {
@@ -388,7 +401,7 @@ func TestMTR03_HistoricalBindingAndRecordCount(t *testing.T) {
 	p := dbtest.New(t)
 	f := seed(t, p)
 	var event uuid.UUID
-	if err := p.QueryRow(context.Background(), `INSERT INTO usage_events(node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,2,1,decode(repeat('01',32),'hex'),1) RETURNING id`, f.node, f.inc).Scan(&event); err != nil {
+	if err := p.QueryRow(context.Background(), `WITH e AS (INSERT INTO usage_events(node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,2,1,decode(repeat('01',32),'hex'),1) RETURNING id) INSERT INTO usage_event_payloads(event_id,payload) SELECT id,'\x01' FROM e RETURNING event_id`, f.node, f.inc).Scan(&event); err != nil {
 		t.Fatal(err)
 	}
 	q := `INSERT INTO usage_samples(event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,$3,$4,1,gen_random_uuid(),$5,$6,0,0,'test',1,'trusted')`
@@ -404,9 +417,15 @@ func Test16_4_PayloadPurgeRequiresWholeProjection(t *testing.T) {
 	f := seed(t, p)
 	ctx := context.Background()
 	event, sample := uuid.New(), uuid.New()
-	exec(t, p, `INSERT INTO usage_events(id,node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,$3,2,1,decode(repeat('01',32),'hex'),1)`, event, f.node, f.inc)
-	exec(t, p, `INSERT INTO usage_samples(id,event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,0,$3,$4,1,gen_random_uuid(),'2026-01-31Z','2026-02-02Z',2,0,'test-meter',1,'trusted')`, sample, event, f.member, f.device)
-	exec(t, p, `INSERT INTO usage_event_payloads(event_id,payload,created_at) VALUES($1,'\x01',now()-interval '40 days')`, event)
+	err := db.InTx(ctx, p, db.TxOptions{}, func(tx pgx.Tx) error {
+		exec(t, tx, `INSERT INTO usage_events(id,node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,$3,2,1,decode(repeat('01',32),'hex'),1)`, event, f.node, f.inc)
+		exec(t, tx, `INSERT INTO usage_samples(id,event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,0,$3,$4,1,gen_random_uuid(),'2026-01-31Z','2026-02-02Z',2,0,'test-meter',1,'trusted')`, sample, event, f.member, f.device)
+		exec(t, tx, `INSERT INTO usage_event_payloads(event_id,payload,created_at) VALUES($1,'\x01',now()-interval '40 days')`, event)
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	receipt := `INSERT INTO projection_receipts(sample_id,projection_name,generation,period) VALUES($1,'monthly',$2,$3)`
 	rollup := `INSERT INTO usage_rollups(member_id,period,granularity,projection_generation,metering_version,upload_bytes,download_bytes,last_observed_at,aggregate_as_of,period_start,period_end) VALUES($1,$2,'month',$3,'test-meter',1,0,now(),now(),$4,$5)`
 	checkPurge := func(want int) {

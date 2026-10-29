@@ -120,6 +120,7 @@ CREATE TABLE serving_leases (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), node_id UUID NOT NULL REFERENCES nodes, incarnation_id UUID NOT NULL,
  policy_generation NUMERIC(20,0) CHECK (policy_generation >= 0 AND policy_generation <= 18446744073709551615) NOT NULL, member_grant_refs UUID[] NOT NULL DEFAULT '{}',
  issued_at TIMESTAMPTZ NOT NULL, expires_at TIMESTAMPTZ NOT NULL,
+ snapshot_xid XID8 NOT NULL DEFAULT pg_current_xact_id(),
  key_id TEXT NOT NULL, payload_hash BYTEA NOT NULL CHECK(octet_length(payload_hash)=32),
  FOREIGN KEY(node_id,incarnation_id) REFERENCES node_incarnations(node_id,id),
  CHECK(isfinite(issued_at) AND isfinite(expires_at) AND issued_at < expires_at)

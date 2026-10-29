@@ -5,13 +5,20 @@ on:
     branches:
       - main
       - w1-portal
+      - w2-portal-wire
     paths:
       - 'apps/portal/**'
+      - 'contracts/ts/**'
+      - 'contracts/examples/**'
+      - 'docs/portal/**'
       - 'mk/portal.mk'
       - '.github/workflows/portal.yml'
   pull_request:
     paths:
       - 'apps/portal/**'
+      - 'contracts/ts/**'
+      - 'contracts/examples/**'
+      - 'docs/portal/**'
       - 'mk/portal.mk'
       - '.github/workflows/portal.yml'
 

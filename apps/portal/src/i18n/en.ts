@@ -15,6 +15,8 @@ export const en: Record<TranslationKey, string> = {
   'app.role.admin': 'Admin',
   'app.role.member': 'Member',
   'app.mockSwitcher.label': 'Mock Persona Switcher (TEST ONLY):',
+  'app.mockSwitcher.anonymous': 'Anonymous (Unauthenticated)',
+  'app.mockSwitcher.adminNoMfa': 'Admin: Without MFA (mfa_verified=false)',
   'app.mockSwitcher.admin': 'Admin',
   'app.mockSwitcher.memberActive': 'Member: Active (Normal Speed)',
   'app.mockSwitcher.memberThrottled': 'Member: Active (FUP Throttled / With Gap)',
@@ -25,6 +27,7 @@ export const en: Record<TranslationKey, string> = {
   'app.mockSwitcher.memberExpired': 'Member: Expired (expired)',
   'app.mockSwitcher.memberSuspended': 'Member: Admin Suspended (suspended)',
   'app.mockSwitcher.trigger401': 'Simulate Session Expired (401)',
+  'app.logout': 'Sign Out',
   'app.footer.securityNote':
     'This portal holds no NetBird management token, release signing key, or payment card data (§18.4, AGENTS.md §2).',
 
@@ -48,6 +51,14 @@ export const en: Record<TranslationKey, string> = {
   'nav.member.dnsProtection': 'Web Protection Info',
 
   // Auth & Guards
+  'auth.anonymous.title': 'Sign In Required (Unauthenticated)',
+  'auth.anonymous.description':
+    'Please sign in via single sign-on (OIDC) to access the Admin or Member portal.',
+  'auth.anonymous.loginBtn': 'Sign In with OIDC',
+  'auth.mfaRequired.title': 'Administrator MFA Required',
+  'auth.mfaRequired.description':
+    'Your account has the Admin role, but multi-factor authentication has not been verified for this session (mfa_verified: false). Per §16.1, all Admin access requires MFA.',
+  'auth.mfaRequired.verifyBtn': 'Complete MFA Verification',
   'auth.sessionExpired.title': 'Session Expired (401)',
   'auth.sessionExpired.description':
     'Your OIDC session has expired or been invalidated. Please sign in again to continue.',
