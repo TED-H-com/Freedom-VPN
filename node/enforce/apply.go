@@ -29,7 +29,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		return ApplyResult{}, err
 	}
-	resets := DetectResets(previous, state.Counters)
+	resets := meterResets(previous, state)
 	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
 		// The kernel comment is the memory of class minors. Recomputing from
 		// scratch could move a member when another member is added or removed
@@ -150,9 +150,35 @@ func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, error) 
 		if err != nil {
 			return st, err
 		}
-		st.Devices[ifc] = TCDev{RootHTB: view.RootHTB, Leaves: view.Leaves}
+		classRaw, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", ifc)
+		if err != nil {
+			if !missingQdisc(err) {
+				return st, err
+			}
+			classRaw = nil
+		}
+		if len(strings.TrimSpace(string(classRaw))) > 0 {
+			view, err = ParseClassJSON(classRaw, view)
+			if err != nil {
+				return st, err
+			}
+		}
+		st.Devices[ifc] = TCDev{RootHTB: view.RootHTB, Leaves: view.Leaves, Classes: childClassMinors(view)}
 	}
 	return st, nil
+}
+
+// meterResets is DetectResets, except when the table, the forward chain, or
+// the generation marker was cleared. Flush keeps named counter values, so the
+// whole previous set is one meter epoch (§10.7).
+func meterResets(previous map[string]CounterValue, state State) []Reset {
+	if len(previous) == 0 {
+		return nil
+	}
+	if !state.Table || !state.hasChain("forward") || state.Generation == 0 {
+		return externalMeterReset(previous, state.Counters)
+	}
+	return DetectResets(previous, state.Counters)
 }
 
 func readQoS(ctx context.Context, ex Executor, m Model) (map[string][2][]byte, error) {
