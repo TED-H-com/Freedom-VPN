@@ -32,8 +32,9 @@ type Commands struct {
 	Retention time.Duration
 }
 type commandState struct {
-	tx     pgx.Tx
-	result *db.IdempotencyResult
+	tx           pgx.Tx
+	result       *db.IdempotencyResult
+	agentReceipt bool
 }
 type commandKey struct{}
 
@@ -52,7 +53,7 @@ func SetResult(ctx context.Context, r db.IdempotencyResult) error {
 	if !ok {
 		return errors.New("command transaction unavailable")
 	}
-	if r.ResponseStatus < 200 || r.ResponseStatus >= 300 || (r.ResponseStatus == 202 && r.OperationID == nil) {
+	if r.ResponseStatus < 200 || r.ResponseStatus >= 300 || (r.ResponseStatus == 202 && r.OperationID == nil && !s.agentReceipt) || (r.ResourceID == nil && r.OperationID == nil) {
 		return errors.New("command result must reference an accepted success")
 	}
 	if s.result != nil {
@@ -143,7 +144,7 @@ func (c *Commands) middleware(handlers *Composite) gen.StrictMiddlewareFunc {
 				if !record.New {
 					return nil
 				}
-				state := &commandState{tx: tx}
+				state := &commandState{tx: tx, agentReceipt: p.Role == auth.Agent && (operationID == "SubmitObservation" || operationID == "SubmitUpdateResult")}
 				commandCtx := context.WithValue(ctx, commandKey{}, state)
 				response, e = next(commandCtx, w, r, request)
 				if e != nil {

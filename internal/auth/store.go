@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -44,8 +45,11 @@ func (s PostgresStore) ConsumeFlow(ctx context.Context, state, browser string) (
 	return f, e
 }
 func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string, absolute time.Duration, request uuid.UUID) (p Principal, err error) {
-	if i.Subject == "" || i.Issuer == "" || i.ClientScope == "" || token == "" || (i.Role != Admin && i.Role != Member) {
+	if strings.TrimSpace(i.Subject) == "" || strings.TrimSpace(i.Issuer) == "" || strings.TrimSpace(i.ClientScope) == "" || token == "" || (i.Role != Admin && i.Role != Member) {
 		return p, errors.New("invalid login identity")
+	}
+	if i.Role == Admin {
+		return s.loginAdmin(ctx, i, token, old, absolute, request)
 	}
 	p = Principal{Role: i.Role, DisplayLabel: i.Label, MFAVerified: i.MFA, AuthenticatedAt: i.AuthTime}
 	err = db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
@@ -77,7 +81,7 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 			return apierr.New(apierr.Forbidden, "Account is closed.")
 		}
 		if old != "" {
-			if _, e = tx.Exec(ctx, `DELETE FROM browser_sessions WHERE token_hash=$1`, digest(old)); e != nil {
+			if _, e = tx.Exec(ctx, `DELETE FROM browser_sessions WHERE token_hash=$1 AND role='member'`, digest(old)); e != nil {
 				return e
 			}
 		}
@@ -86,23 +90,48 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 			expires = i.Expires
 		}
 		_, e = tx.Exec(ctx, `INSERT INTO browser_sessions(token_hash,member_id,role,display_label,mfa_verified,authenticated_at,absolute_expires_at,id) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, digest(token), p.ID, p.Role, p.DisplayLabel, p.MFAVerified, p.AuthenticatedAt, expires, uuid.Must(uuid.NewV7()))
-		return e
+		if e != nil {
+			return e
+		}
+		return appendSessionAudit(ctx, tx, p, "session.login", request)
 	})
 	return
 }
 func (s PostgresStore) Session(ctx context.Context, token string, idle time.Duration) (p Principal, err error) {
-	err = s.Pool.QueryRow(ctx, `UPDATE browser_sessions s SET last_seen_at=clock_timestamp() FROM members m WHERE token_hash=$1 AND s.member_id=m.id AND m.status<>'closed' AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING s.member_id,s.role,s.display_label,s.mfa_verified,s.authenticated_at`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.Role, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt)
+	err = s.Pool.QueryRow(ctx, `UPDATE browser_sessions s SET last_seen_at=clock_timestamp() FROM members m WHERE token_hash=$1 AND s.role='member' AND s.member_id=m.id AND m.status<>'closed' AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING s.member_id,s.role,s.display_label,s.mfa_verified,s.authenticated_at`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.Role, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		p.Role = Admin
+		err = s.Pool.QueryRow(ctx, `UPDATE admin_sessions SET last_seen_at=clock_timestamp() WHERE token_hash=$1 AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING admin_id,display_label,mfa_verified,authenticated_at`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt)
+	}
 	return
 }
 func (s PostgresStore) Logout(ctx context.Context, token string) error {
-	_, e := s.Pool.Exec(ctx, `DELETE FROM browser_sessions WHERE token_hash=$1`, digest(token))
-	return e
+	return db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var p Principal
+		e := tx.QueryRow(ctx, `DELETE FROM browser_sessions WHERE token_hash=$1 AND role='member' RETURNING member_id,role`, digest(token)).Scan(&p.ID, &p.Role)
+		if errors.Is(e, pgx.ErrNoRows) {
+			p.Role = Admin
+			e = tx.QueryRow(ctx, `DELETE FROM admin_sessions WHERE token_hash=$1 RETURNING admin_id`, digest(token)).Scan(&p.ID)
+		}
+		if errors.Is(e, pgx.ErrNoRows) {
+			return nil
+		}
+		if e != nil {
+			return e
+		}
+		rid, _ := apierr.RequestIDFromContext(ctx)
+		request, _ := uuid.Parse(rid)
+		return appendSessionAudit(ctx, tx, p, "session.logout", request)
+	})
 }
 
 // Cleanup expires only authentication scratch, never member or audit history.
 func (s PostgresStore) Cleanup(ctx context.Context, idle time.Duration) error {
 	return db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, e := tx.Exec(ctx, `DELETE FROM oidc_login_flows WHERE expires_at<=clock_timestamp()`); e != nil {
+			return e
+		}
+		if _, e := tx.Exec(ctx, `DELETE FROM admin_sessions WHERE absolute_expires_at<=clock_timestamp() OR last_seen_at<=clock_timestamp()-$1::bigint*interval '1 millisecond'`, idle.Milliseconds()); e != nil {
 			return e
 		}
 		_, e := tx.Exec(ctx, `DELETE FROM browser_sessions WHERE absolute_expires_at<=clock_timestamp() OR last_seen_at<=clock_timestamp()-$1::bigint*interval '1 millisecond'`, idle.Milliseconds())
