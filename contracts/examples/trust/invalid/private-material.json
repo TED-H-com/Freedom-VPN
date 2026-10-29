@@ -1,0 +1,24 @@
+{
+  "signatures": [
+    {
+      "algorithm": "ed25519",
+      "key_id": "release-signing-test-2026",
+      "signature_b64": "fkQiB3VrRxbJjwx9gCsRdXSs67MHYjcOnd05eesk1HFtExdim4eu5pmT2RfRMhNUvzeJpw/EZzXQwBV9wypmAQ=="
+    }
+  ],
+  "signed": {
+    "keys": [
+      {
+        "id": "untrusted-test-key",
+        "not_after": "2028-01-01T00:00:00Z",
+        "not_before": "2026-01-01T00:00:00Z",
+        "private": "TEST ONLY - NOT A SECRET",
+        "public": "oR2UYuCeXprbA0th9Izub3VDszljXKJOa6PtcIpcyaI=",
+        "purpose": "release",
+        "state": "active"
+      }
+    ],
+    "kind": "fvpn-release-trust-v1",
+    "revision": "9007199254740993"
+  }
+}

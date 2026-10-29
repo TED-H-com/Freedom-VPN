@@ -208,7 +208,7 @@ func (wr Writer) Write(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	var ae *Error
-	if err == nil || !errors.As(err, &ae) || !ae.Code.Valid() {
+	if err == nil || !errors.As(err, &ae) || !ae.Code.Valid() || byCode[ae.Code].HTTPStatus == 0 {
 		if wr.Logger != nil {
 			ctx := context.Background()
 			if r != nil {

@@ -3,9 +3,14 @@
 //
 //   - openapi.yaml: OpenAPI 3.0.3, the single source of truth for HTTP bodies
 //     (Project Spec §14).
+//
 //   - schemas/*.schema.json: JSON Schema 2020-12 for signed or hashed
 //     documents (release manifest, desired state, serving lease, usage
 //     checkpoint envelopes and the usage event), generated from openapi.yaml.
+//
+//   - schemas/policies: byte-for-byte owner payload schema snapshots.
+//
+//   - schemas/trust: standalone release trust rotation schema (§13.4).
 //
 // See docs/contracts/README.md for conventions.
 package contracts
@@ -15,7 +20,7 @@ import (
 	"io/fs"
 )
 
-//go:embed openapi.yaml schemas/*.schema.json
+//go:embed openapi.yaml schemas
 var files embed.FS
 
 // OpenAPI returns the OpenAPI document.

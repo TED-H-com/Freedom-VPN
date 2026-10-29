@@ -1,0 +1,50 @@
+{
+  "_comment": "TEST ONLY - NOT A SECRET. Deterministic Ed25519 vector; the seed is public test data.",
+  "canonical_signed": "{\"keys\":[{\"id\":\"untrusted-test-key\",\"not_after\":\"2028-01-01T00:00:00Z\",\"not_before\":\"2026-01-01T00:00:00Z\",\"public\":\"oR2UYuCeXprbA0th9Izub3VDszljXKJOa6PtcIpcyaI=\",\"purpose\":\"release\",\"state\":\"active\"}],\"kind\":\"fvpn-release-trust-v1\",\"revision\":\"9007199254740993\"}",
+  "canonical_signed_sha256": "3efd45267eecba6134c7a87a3cc52145923c0f18aa6333af4a07d9c2e0a580c2",
+  "description": "ReleaseUpdate authorized by the OLD release key (§13.4); the previously untrusted test public key becomes authorized only after verification.",
+  "envelope": {
+    "signatures": [
+      {
+        "algorithm": "ed25519",
+        "key_id": "release-signing-test-2026",
+        "signature_b64": "uW1iv41Y404tbEk6RL4TIfGla2ldX09vvsbyH6bHjw+rn2pYrPjRUuzK1hu7F9R1UpmqPyoxnBk6m0kHmfZ2Aw=="
+      }
+    ],
+    "signed": {
+      "keys": [
+        {
+          "id": "untrusted-test-key",
+          "not_after": "2028-01-01T00:00:00Z",
+          "not_before": "2026-01-01T00:00:00Z",
+          "public": "oR2UYuCeXprbA0th9Izub3VDszljXKJOa6PtcIpcyaI=",
+          "purpose": "release",
+          "state": "active"
+        }
+      ],
+      "kind": "fvpn-release-trust-v1",
+      "revision": "9007199254740993"
+    }
+  },
+  "envelope_sha256": "b7d136501d6df199f3db1d9efc50eb1252449b9816999ccd6ccad427b123018c",
+  "key_id": "release-signing-test-2026",
+  "public_key_b64": "g6a/FB1UPLeaO8/pt6KAwedKVPQUBMmtnuic5KUDYik=",
+  "purpose": "release",
+  "seed_hex": "458d9371e32a494b1d76f8b3e2fcc892628c3ca49d344069e7d043e574deedd3",
+  "signature_b64": "uW1iv41Y404tbEk6RL4TIfGla2ldX09vvsbyH6bHjw+rn2pYrPjRUuzK1hu7F9R1UpmqPyoxnBk6m0kHmfZ2Aw==",
+  "signed": {
+    "keys": [
+      {
+        "id": "untrusted-test-key",
+        "not_after": "2028-01-01T00:00:00Z",
+        "not_before": "2026-01-01T00:00:00Z",
+        "public": "oR2UYuCeXprbA0th9Izub3VDszljXKJOa6PtcIpcyaI=",
+        "purpose": "release",
+        "state": "active"
+      }
+    ],
+    "kind": "fvpn-release-trust-v1",
+    "revision": "9007199254740993"
+  },
+  "verify_at": "2026-10-28T15:00:00Z"
+}
