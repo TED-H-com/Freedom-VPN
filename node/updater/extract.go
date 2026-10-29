@@ -47,9 +47,11 @@ type ExtractOptions struct {
 // regular files and directories (D-047). Symlinks, hard links and every other
 // member type are rejected. A directory entry whose cleaned path is "." is
 // the archive root, the entry `tar -C dir -cf … .` writes, not an escape.
-// It rejects absolute paths, ".." escapes, device files and setuid/setgid/sticky
-// modes. It does not follow symlinks and does not execute anything. On error
-// the caller removes dest.
+// Any other "." or ".." segment is rejected before the path is cleaned, so a
+// member such as bin/sub/../fvpn-agent is not rewritten into the tree.
+// It rejects absolute paths, device files and setuid/setgid/sticky modes.
+// It does not follow symlinks and does not execute anything. On error the
+// caller removes dest.
 func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 	if dest == "" {
 		return permanent(apierr.ValidationFailed, "extract destination")
@@ -193,6 +195,27 @@ func safeJoin(dest, name string) (string, error) {
 	slashed := strings.ReplaceAll(name, "\\", "/")
 	if path.IsAbs(slashed) || filepath.IsAbs(name) {
 		return "", permanent(apierr.ValidationFailed, "absolute archive path")
+	}
+	// Release trees never contain "." or ".." segments. The only exception is
+	// a leading "." for the archive root (`./`). Empty segments from a
+	// trailing slash are ignored. path.Clean would otherwise fold
+	// bin/sub/../fvpn-agent into bin/fvpn-agent.
+	rooted := false
+	for _, seg := range strings.Split(slashed, "/") {
+		if seg == "" {
+			continue
+		}
+		if seg == "." {
+			if !rooted {
+				rooted = true
+				continue
+			}
+			return "", permanent(apierr.ValidationFailed, "archive path")
+		}
+		if seg == ".." {
+			return "", permanent(apierr.ValidationFailed, "archive path escapes")
+		}
+		rooted = true
 	}
 	clean := path.Clean(slashed)
 	// "." is the archive root (`./` from `tar -C dir -cf … .`), not an escape.
