@@ -234,6 +234,9 @@ type Application struct {
 // Open validates and merges all domain registrations before any work is claimed.
 // With no explicit domains it uses the production Domains list.
 func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application, error) {
+	if d.Metrics == nil {
+		d.Metrics = prometheus.NewRegistry()
+	}
 	if domains == nil {
 		domains = Domains()
 	}
@@ -273,9 +276,6 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 	c := d.Config
 	if app.shutdown <= 0 {
 		return nil, errors.New("shutdown_seconds required")
-	}
-	if d.Metrics == nil {
-		d.Metrics = prometheus.NewRegistry()
 	}
 	dispatcher, e := New(d.Pool, registry, Config{Concurrency: c.WorkerConcurrency, Attempts: c.WorkerAttempts, Lease: time.Duration(c.WorkerLeaseSeconds) * time.Second, JobTimeout: time.Duration(c.WorkerJobSeconds) * time.Second, Poll: time.Duration(c.WorkerPollSeconds) * time.Second, Backoff: time.Duration(c.WorkerBackoffSeconds) * time.Second, MaxBackoff: time.Duration(c.WorkerBackoffMaxSeconds) * time.Second}, d.Metrics, d.Logger)
 	if e != nil {

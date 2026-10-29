@@ -168,7 +168,10 @@ func TestAPI01_CompositionWorkerContextAndRunnerSupervision(t *testing.T) {
 		t.Fatal(e)
 	}
 	observed := false
-	jobs := worker.Domain{Name: "TEST-context", Build: func(context.Context, worker.Dependencies) (worker.Built, error) {
+	jobs := worker.Domain{Name: "TEST-context", Build: func(_ context.Context, d worker.Dependencies) (worker.Built, error) {
+		if d.Metrics == nil || d.Pool != f.pool || d.Config.WorkerAttempts != f.config.WorkerAttempts {
+			return worker.Built{}, errors.New("incomplete worker build dependencies")
+		}
 		return worker.Built{Context: func(ctx context.Context) context.Context { return context.WithValue(ctx, valueKey{}, "TEST ONLY") }, Jobs: worker.Registry{"TEST.context": func(ctx context.Context, e db.ClaimedEvent) (string, error) {
 			if ctx.Value(valueKey{}) != "TEST ONLY" || e.ID != id {
 				return "", errors.New("missing worker context")
