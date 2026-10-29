@@ -126,8 +126,10 @@ provides original body bytes through `httpapi.RawBody`. There is no
 
 The worker build loads the same required settings and constructs the same domain
 services. It returns `MemberJobs()`, a context decorator calling `WithMembers`,
-and the `RunMemberSchedule` runner. This activates billing inbox/session dispatch,
-reconciliation and device discovery in the actual worker binary. No business
+and the `RunMemberSchedule` runner. This activates billing inbox dispatch,
+reconciliation and device discovery in the actual worker binary. Checkout commits
+its intent, completes provider work after that transaction, and returns synchronous
+201 (D-031); it emits no `billing.session_requested` event. No business
 value is inferred: missing, invalid or unreadable `members_config_file` fails
 startup, as do unavailable required secret files. See
 [member configuration](../members/README.md#configuration).
