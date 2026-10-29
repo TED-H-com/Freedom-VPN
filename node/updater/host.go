@@ -44,6 +44,10 @@ type Config struct {
 	MTLSKey           string      `json:"mtls_key"`
 	MTLSCA            string      `json:"mtls_ca"`
 	AllowLoopback     bool        `json:"allow_loopback"`
+	// AllowedArtifactOrigins exempts exact scheme://host[:port] origins from
+	// the private and CGNAT guard (D-046). Empty keeps the guard. The dev
+	// stack sets this explicitly. It does not allow every private address.
+	AllowedArtifactOrigins []string `json:"allowed_artifact_origins,omitempty"`
 }
 
 // LoadConfig reads a config file. Unknown fields are rejected. Empty layout
@@ -93,6 +97,9 @@ func LoadConfig(path string) (Config, error) {
 	if c.ReleaseTrust == "" || c.DesiredTrust == "" || c.DesiredState == "" || c.MeterCheckpoint == "" {
 		return Config{}, errors.New("updater: release_trust, desired_trust, desired_state and meter_checkpoint are required")
 	}
+	if err := validateOrigins(c.AllowedArtifactOrigins); err != nil {
+		return Config{}, err
+	}
 	return c, nil
 }
 
@@ -114,12 +121,13 @@ func (c Config) Engine() (*Engine, error) {
 	}
 	node := Node{ID: c.NodeID, Incarnation: c.IncarnationID, BootID: c.BootID, Revoked: c.Revoked}
 	gate := FileGate{Path: filepath.Join(c.Layout.Journal, "forwarding.blocked")}
+	origins := append([]string(nil), c.AllowedArtifactOrigins...)
 	var sender ResultSink
 	if c.ResultURL != "" {
-		if err := checkURL(c.ResultURL, c.AllowLoopback); err != nil {
+		if err := checkURLPolicy(c.ResultURL, urlPolicy{AllowLoopback: c.AllowLoopback, AllowedOrigins: origins}); err != nil {
 			return nil, err
 		}
-		sender = HTTPSink{URL: c.ResultURL, Client: client, AllowLoopback: c.AllowLoopback}
+		sender = HTTPSink{URL: c.ResultURL, Client: client, AllowLoopback: c.AllowLoopback, AllowedOrigins: origins}
 	}
 	return &Engine{
 		Layout:       c.Layout,
@@ -134,15 +142,16 @@ func (c Config) Engine() (*Engine, error) {
 			},
 			Gate: gate,
 		},
-		HTTP:          client,
-		Meter:         FileMeter{Path: c.MeterCheckpoint},
-		Services:      CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
-		Health:        NodeChecks{},
-		Gate:          gate,
-		Migrator:      noMigrator{},
-		Sender:        sender,
-		Download:      DefaultDownload(),
-		AllowLoopback: c.AllowLoopback,
+		HTTP:           client,
+		Meter:          FileMeter{Path: c.MeterCheckpoint},
+		Services:       CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
+		Health:         NodeChecks{},
+		Gate:           gate,
+		Migrator:       noMigrator{},
+		Sender:         sender,
+		Download:       DefaultDownload(),
+		AllowLoopback:  c.AllowLoopback,
+		AllowedOrigins: origins,
 	}, nil
 }
 
@@ -388,13 +397,15 @@ func WorkFromEnvelope(raw []byte, trust *envelope.TrustStore, node Node, now tim
 // HTTPSink posts an update result. The contract answers 202. 409 is
 // ACK_CONFLICT. Other statuses stay pending and are retried (§13.10.3).
 type HTTPSink struct {
-	URL           string
-	Client        *http.Client
-	AllowLoopback bool
+	URL            string
+	Client         *http.Client
+	AllowLoopback  bool
+	AllowedOrigins []string
 }
 
 func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, error) {
-	if err := checkURL(s.URL, s.AllowLoopback); err != nil {
+	policy := urlPolicy{AllowLoopback: s.AllowLoopback, AllowedOrigins: s.AllowedOrigins}
+	if err := checkURLPolicy(s.URL, policy); err != nil {
 		return Accepted{}, false, err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.URL, bytes.NewReader(payload))
@@ -411,11 +422,7 @@ func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, e
 			req.Header.Set("Idempotency-Key", id.String())
 		}
 	}
-	client := s.Client
-	if client == nil {
-		client = http.DefaultClient
-	}
-	resp, err := client.Do(req)
+	resp, err := clientWithDial(s.Client, policy).Do(req)
 	if err != nil {
 		return Accepted{}, false, transient(apierr.StoreUnavailable, "result submit")
 	}
