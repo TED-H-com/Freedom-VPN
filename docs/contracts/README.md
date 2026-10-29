@@ -131,18 +131,22 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Other integers** (schema versions, attempts, counts, bps rates) are JSON
   integers with explicit bounds within ±(2^53−1). No floating-point numbers.
 - **Money.** `amount_minor` (int64 minor units) plus ISO 4217 `currency`.
-- **Nullability and presence.** `nullable: true` is allowed only on required
-  members. Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+- **Nullability and presence.** `nullable: true` is allowed on required
+  members and the two optional UpdateTarget policy-evidence members (D-048). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
   `nullable`); its zero value is unspecified and **fails marshaling**. Use
   `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
   for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
+  Optional `UpdateTarget.policy_generation` and `policy_refs` use the same
+  type with `omitzero`: unspecified fields are omitted, while explicit null,
+  zero generation and empty references are preserved. Required members have
+  no omission tag and still fail marshaling when unspecified.
   Both `UpdateResult.recovery_required` and `UpdateJobSummary.recovery_required`
   use `presence.Required[bool]`: `NewRequired(false)` preserves explicit false,
   while omission and null cannot become false. Validate original request bytes
   before decoding into a fresh model; these types do not replace schema checks.
   Plain Go pointers cannot distinguish absence from null. PATCH bodies never
   use null. The codegen config enables nullable types and supplies an import
-  template for the local implementation. [`TestAPI01_NoOptionalNullableFields`,
+  template for the local implementation. [`TestAPI01_OptionalNullableFields`,
   `TestReviewC04_PlanRateLimitPresence`, `TestReviewC06_RecoveryRequiredPresence`]
 - **Request bodies are closed** (`additionalProperties: false`); responses are
   open for forward compatibility. [`TestAPI01_RequestBodiesAreClosed`]
@@ -281,10 +285,19 @@ fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
   `config_generation` actually applied when the result was produced. It must
   not be filled from the job's `generation` or merely the newest received
   desired state. This resolves the updater's previous config-generation alias
-  ambiguity. The field already exists as required on main; this revision
-  preserves that contract and Go value type. `policy_refs` exists on desired
-  state, not on UpdateResult. Making this field optional or adding policy_refs
-  would require a separate explicit contract decision.
+  ambiguity. The field remains required (D-049); persist exactly the reported
+  value. `policy_refs` exists on desired state, not on UpdateResult.
+- **Update target evidence (§13.10.3, §15.4, D-048).** Optional, nullable
+  `UpdateTarget.policy_generation` and `policy_refs` expose the applied
+  desired-state `config_generation` and policy revision references from the
+  accepted result that produced the target's current evidence. Absent or null
+  means no accepted result or unknown history. Readers must never infer zero;
+  servers must never borrow the newest desired state. Explicit `"0"` and `[]`
+  are known values, distinct from unknown evidence. References are unique UUIDs
+  with at most 64 entries; generation is an exact uint64 decimal string.
+  Examples retain the [original omitted shape](../../contracts/examples/valid/UpdateBatch.json),
+  add [reported evidence](../../contracts/examples/valid/UpdateBatch.applied-policy.json)
+  and [unknown evidence](../../contracts/examples/valid/UpdateBatch.unknown-policy.json).
 - **Serving lease (§16.3).** `lease_id`, node and incarnation,
   `authorization_generation`, `config_generation`, `issued_at` (signed server
   time), `expires_at` (node lease end), `max_offline_seconds` (recommended
@@ -342,7 +355,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
    `components/responses` for every error status.
 3. Add schemas under `components/schemas` following the conventions above.
    Request bodies get `additionalProperties: false`; nullable members must be
-   required. New error codes go into `pkg/apierr` (status, retryable, section)
+   required unless explicitly approved (D-048). New error codes go into `pkg/apierr` (status, retryable, section)
    and the `ErrorCode` enum together.
 4. Add at least one valid and one invalid example for each new request body,
    and a valid example for each new response body; add the reason of each

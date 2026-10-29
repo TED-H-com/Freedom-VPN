@@ -4620,7 +4620,13 @@ type UpdateTarget struct {
 	NodeId           openapi_types.UUID        `json:"node_id"`
 	NodeName         nullable.Nullable[string] `json:"node_name"`
 	OnlineAtSnapshot bool                      `json:"online_at_snapshot"`
-	Retryable        bool                      `json:"retryable"`
+
+	// PolicyGeneration Applied desired-state config_generation reported by the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. The uint64 upper bound is enforced by decstr.
+	PolicyGeneration nullable.Nullable[decstr.U64] `json:"policy_generation,omitzero"`
+
+	// PolicyRefs Applied policy revision references for the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. An explicit empty array means known evidence with no policy references.
+	PolicyRefs nullable.Nullable[[]openapi_types.UUID] `json:"policy_refs,omitzero"`
+	Retryable  bool                                    `json:"retryable"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`

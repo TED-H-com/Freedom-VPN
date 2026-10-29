@@ -16,7 +16,9 @@ var (
 
 // Nullable represents an unspecified member, explicit null, or a value. Its
 // zero value is unspecified and fails marshaling; null must be explicit.
-// Do not use pointers or omitempty with this required-member type.
+// Required members must not use pointers or omission tags. Optional nullable
+// members use omitzero to omit the unspecified zero value while preserving null
+// and explicit values; omitempty alone cannot omit this struct.
 type Nullable[T any] struct {
 	value     T
 	specified bool

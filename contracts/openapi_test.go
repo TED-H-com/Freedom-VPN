@@ -554,10 +554,9 @@ func TestUPD04_EnumsMatchSpec(t *testing.T) {
 	}
 }
 
-// TestAPI01_NoOptionalNullableFields forbids properties that are both
-// optional and nullable: the contract permits null only on required members.
+// TestAPI01_OptionalNullableFields permits only the D-048 evidence exception.
 // Generated presence types distinguish missing from explicit null in Go.
-func TestAPI01_NoOptionalNullableFields(t *testing.T) {
+func TestAPI01_OptionalNullableFields(t *testing.T) {
 	walkSchemas(t, func(v schemaVisit) {
 		req := map[string]bool{}
 		for _, r := range v.s.Required {
@@ -565,6 +564,9 @@ func TestAPI01_NoOptionalNullableFields(t *testing.T) {
 		}
 		for name, p := range v.s.Properties {
 			if p.Value != nil && p.Value.Nullable && !req[name] {
+				if v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs") {
+					continue
+				}
 				t.Errorf("%s/%s: nullable members must be required", v.path, name)
 			}
 		}
