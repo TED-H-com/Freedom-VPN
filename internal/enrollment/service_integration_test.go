@@ -189,6 +189,14 @@ func TestAT06_IdempotentCreationLostResponseAndRace(t *testing.T) {
 	}
 	scanSecrets(t, f, []string{*first.Token, *racing.Token, base64.StdEncoding.EncodeToString(privateDER)})
 	assertNoPrivateDER(t, f, privateDER)
+	// Stored public recovery remains available after the issuing key retires.
+	if _, err = f.vault.Rotate(ctx, signing.NodeCA, 24*time.Hour, time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	retry, err = f.s.Enroll(ctx, *first.Token, r)
+	if err != nil || retry.Response != original.Response {
+		t.Fatal("replay unnecessarily requires CA signing", err)
+	}
 }
 
 func TestAT06_ExpiryRevocationAndTransactionalRollback(t *testing.T) {

@@ -333,18 +333,37 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 	// Read the reserved ID to prepare a certificate without external calls in a
 	// transaction. All authorization and bindings are rechecked under row locks.
 	var nodeID uuid.UUID
-	if err = s.pool.QueryRow(ctx, `SELECT node_id FROM node_enrollments WHERE token_hash=$1`, hash).Scan(&nodeID); errors.Is(err, pgx.ErrNoRows) {
+	var initialState string
+	var initialExpired bool
+	var initialFingerprint []byte
+	var initialRequest, initialIncarnation *uuid.UUID
+	if err = s.pool.QueryRow(ctx, `SELECT node_id,state,expiry<=clock_timestamp(),public_key_fingerprint,request_id,incarnation_id FROM node_enrollments WHERE token_hash=$1`, hash).Scan(&nodeID, &initialState, &initialExpired, &initialFingerprint, &initialRequest, &initialIncarnation); errors.Is(err, pgx.ErrNoRows) {
 		return out, apierr.New(apierr.EnrollmentTokenInvalid, "Invalid enrollment token.")
 	} else if err != nil {
 		return out, safe(err)
+	}
+	if initialState == "revoked" {
+		return out, apierr.New(apierr.EnrollmentTokenRevoked, "Enrollment revoked.")
+	}
+	if initialExpired || initialState == "expired" {
+		return out, apierr.New(apierr.EnrollmentTokenExpired, "Enrollment expired.")
+	}
+	if initialState == "consumed" && (!bytes.Equal(initialFingerprint, fp) || initialRequest == nil || *initialRequest != r.EnrollmentRequestId || initialIncarnation == nil || *initialIncarnation != r.NodeIncarnationId) {
+		return out, apierr.New(apierr.EnrollmentKeyMismatch, "Enrollment binding does not match.")
 	}
 	id := pki.NodeIdentity{NodeID: nodeID, IncarnationID: r.NodeIncarnationId}
 	if err = s.auth.CheckFence(ctx, id); err != nil {
 		return out, err
 	}
-	issued, err := s.ca.Issue(ctx, id, r.CsrPem)
-	if err != nil {
-		return out, safe(err)
+	// Public recovery of a committed response does not require an available
+	// signing key. A first-use race may prepare an unused certificate, but only
+	// the row-lock winner persists and returns one.
+	var issued pki.Issued
+	if initialState == "pending" {
+		issued, err = s.ca.Issue(ctx, id, r.CsrPem)
+		if err != nil {
+			return out, safe(err)
+		}
 	}
 	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = EnrollResult{}
