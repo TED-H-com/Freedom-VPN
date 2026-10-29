@@ -352,6 +352,13 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		}
 		return api.Operation{}, err
 	}
+	// §14.1: pgx may decode timestamptz in the process's local timezone.
+	op.CreatedAt = op.CreatedAt.UTC()
+	op.UpdatedAt = op.UpdatedAt.UTC()
+	if completedAt != nil {
+		utc := completedAt.UTC()
+		completedAt = &utc
+	}
 	op.CompletedAt = presence.FromPointer(completedAt)
 	op.ResourceVersion.SetNull()
 	op.DesiredGeneration.SetNull()
@@ -436,9 +443,9 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		obsAt := presence.NewNullNullable[time.Time]()
 		if item.step.ObservedAt != nil && !item.step.ObservedAt.IsZero() {
 			obsAt = presence.NewNullableWithValue(item.step.ObservedAt.UTC())
-		} else if !item.step.UpdatedAt.IsZero() {
-			obsAt = presence.NewNullableWithValue(item.step.UpdatedAt.UTC())
 		}
+		// §5.2: creating or updating a pending step is not observation evidence.
+		// Preserve null until a worker records observed_at, as the core reader does.
 		stepOut := api.OperationStep{
 			Name:       item.name,
 			Required:   item.step.Required,
