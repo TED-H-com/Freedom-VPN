@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
@@ -79,7 +80,7 @@ func mutation(r *http.Request) bool {
 }
 func commandNeeded(r *http.Request) bool {
 	p, _ := auth.FromContext(r.Context())
-	return mutation(r) && (p.Role == auth.Admin || p.Role == auth.Member || r.Header.Get("Idempotency-Key") != "")
+	return mutation(r) && (p.Role == auth.Admin || p.Role == auth.Member || (p.Role == auth.Agent || r.URL.Path == "/api/v1/agent/enroll") && r.Header.Get("Idempotency-Key") != "")
 }
 func requireCommandBoundary(next gen.StrictHandlerFunc, _ string) gen.StrictHandlerFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request, request any) (any, error) {
@@ -124,10 +125,15 @@ func (c *Commands) middleware(handlers *Composite) gen.StrictMiddlewareFunc {
 			}
 			kh := sha256.Sum256([]byte(key.String()))
 			p, _ := auth.FromContext(ctx)
+			principalScope := p.Scope()
+			if p.Role == "" {
+				credential := sha256.Sum256([]byte(r.Header.Get("Authorization")))
+				principalScope = "enrollment:" + fmt.Sprintf("%x", credential)
+			}
 			var record db.IdempotencyRecord
 			err = db.InTx(ctx, c.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 				var e error
-				record, e = db.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: p.Scope(), Method: r.Method, Route: m.scope, KeyHash: kh[:], RequestHash: hash[:]}, c.Retention)
+				record, e = db.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: principalScope, Method: r.Method, Route: m.scope, KeyHash: kh[:], RequestHash: hash[:]}, c.Retention)
 				if e != nil {
 					return e
 				}
@@ -152,7 +158,11 @@ func (c *Commands) middleware(handlers *Composite) gen.StrictMiddlewareFunc {
 				return nil, err
 			}
 			if !record.New {
-				return replay.Replay(ctx, operationID, record)
+				response, err := replay.Replay(ctx, operationID, record)
+				if err != nil {
+					return nil, err
+				}
+				return sanitizeReplay(operationID, response)
 			}
 			return response, nil
 		}
@@ -183,4 +193,30 @@ func NotModified(w http.ResponseWriter, r *http.Request, etag string) bool {
 		}
 	}
 	return false
+}
+
+// Cleanup deletes expired references, never resources, operations or audit rows.
+func (c *Commands) Cleanup(ctx context.Context) error {
+	_, e := c.Pool.Exec(ctx, `DELETE FROM idempotency_requests WHERE expiry<=clock_timestamp()`)
+	return e
+}
+
+func sanitizeReplay(operationID string, response any) (any, error) {
+	if operationID != "CreateEnrollment" {
+		return response, nil
+	}
+	switch v := response.(type) {
+	case gen.CreateEnrollment201JSONResponse:
+		v.Body.SecretAvailable = false
+		v.Body.Token = nil
+		return v, nil
+	case *gen.CreateEnrollment201JSONResponse:
+		if v != nil {
+			copy := *v
+			copy.Body.SecretAvailable = false
+			copy.Body.Token = nil
+			return copy, nil
+		}
+	}
+	return nil, errors.New("invalid enrollment replay response")
 }

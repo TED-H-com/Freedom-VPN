@@ -35,7 +35,7 @@ type PostgresStore struct{ Pool *pgxpool.Pool }
 
 func digest(s string) []byte { h := sha256.Sum256([]byte(s)); return h[:] }
 func (s PostgresStore) SaveFlow(ctx context.Context, f Flow) error {
-	_, e := s.Pool.Exec(ctx, `INSERT INTO oidc_login_flows(state_hash,browser_hash,nonce,verifier,expires_at) VALUES($1,$2,$3,$4,$5)`, digest(f.State), digest(f.Browser), f.Nonce, f.Verifier, f.Expires)
+	_, e := s.Pool.Exec(ctx, `INSERT INTO oidc_login_flows(state_hash,browser_hash,nonce,verifier,expires_at,id) VALUES($1,$2,$3,$4,$5,$6)`, digest(f.State), digest(f.Browser), f.Nonce, f.Verifier, f.Expires, uuid.Must(uuid.NewV7()))
 	return e
 }
 func (s PostgresStore) ConsumeFlow(ctx context.Context, state, browser string) (Flow, error) {
@@ -85,7 +85,7 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 		if i.Expires.Before(expires) {
 			expires = i.Expires
 		}
-		_, e = tx.Exec(ctx, `INSERT INTO browser_sessions(token_hash,member_id,role,display_label,mfa_verified,authenticated_at,absolute_expires_at) VALUES($1,$2,$3,$4,$5,$6,$7)`, digest(token), p.ID, p.Role, p.DisplayLabel, p.MFAVerified, p.AuthenticatedAt, expires)
+		_, e = tx.Exec(ctx, `INSERT INTO browser_sessions(token_hash,member_id,role,display_label,mfa_verified,authenticated_at,absolute_expires_at,id) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, digest(token), p.ID, p.Role, p.DisplayLabel, p.MFAVerified, p.AuthenticatedAt, expires, uuid.Must(uuid.NewV7()))
 		return e
 	})
 	return

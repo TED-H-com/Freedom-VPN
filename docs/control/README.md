@@ -1,0 +1,100 @@
+# Control framework
+
+The public HTTPS listener serves browser sessions, Admin and Member commands,
+enrollment and provider webhooks. A separate TLS 1.3 listener verifies client
+certificates for ordinary Agent traffic. `internal/auth.AgentAuthenticator` then
+checks the current database identity and revocation state (§16.1). The binary
+fails closed until the PKI task supplies this verifier; it never trusts
+`X-Node-ID`, `X-Client-Cert` or forwarding headers.
+
+`contracts/openapi.yaml` remains the source of all 40 API operations. oapi-codegen
+v2.8.1 generates the standard-library strict server and embedded specification.
+Generated aliases reuse `pkg/api`, and a small local generator creates partial
+handler composition. `make -f mk/control.mk control-drift` checks all three outputs.
+See the [generator documentation](https://github.com/oapi-codegen/oapi-codegen/blob/main/README.md)
+for its strict-server model. Runtime validation also uses the existing
+kin-openapi dependency because generated binding alone does not enforce all
+required fields, enums, limits or `additionalProperties: false`.
+
+The currently implemented domain reads are Admin/Member operations and Admin
+audit events. Other operations return HTTP 501 after security and input checks.
+The contract has no NOT_IMPLEMENTED code or 501 response: this fallback uses
+`apierr.Write` with the existing INTERNAL_ERROR envelope and a fixed safe message,
+while the HTTP status is 501. No contract or shared error-code changes are made.
+Domain handlers must not construct error response objects: return `*apierr.Error`
+for safe errors, or an ordinary error for a generic 500.
+
+## Request boundary
+
+Order: central UUID v7 and isolated client trace context → buffered panic recovery
+and security headers → contract route/listener classification → session or machine
+authentication → role/MFA checks → per-principal rate and concurrency buckets →
+Origin/CSRF and recent admin authentication → required key/If-Match headers →
+body limit → strict JSON syntax and schema validation → machine identity consistency
+→ generated strict binding → command transaction/replay → domain handler.
+
+Access logs contain only central request ID, normalized route template, status
+and duration. They exclude every request/response header, URL/query, body, panic
+value and internal error text. Client tracing is available separately through
+`httpapi.ClientTrace`; domains must never log it as trusted metadata. Errors use
+`pkg/apierr.Write`. The response buffer discards partial output on panic. Responses
+are bounded to 32 MiB; APIs here have no streaming endpoints. All API and auth
+responses use `Cache-Control: no-store`; HSTS, nosniff, frame denial, restrictive
+CSP and no-referrer headers apply. Portal static assets need their own web server.
+
+Browser writes require exact configured Origin plus a session-bound CSRF token.
+All administrator writes require recent authentication; this intentionally applies
+the high-impact rule conservatively (§16.1). Unknown fields in allowlisted write
+schemas fail before domain code. Semantic domain constraints listed in
+`docs/contracts/README.md` remain each owning service's responsibility.
+
+Rate buckets and concurrency gates are separate for browser, agent control,
+heartbeat, lease and usage traffic; anonymous enrollment/webhooks have another
+bucket. Auth routes are additionally bounded per direct peer address. Limits are
+per process, with a bounded principal map; deployment replicas multiply capacity.
+If horizontally scaling, budget limits across replicas or add a shared limiter.
+A saturated limiter returns 429 with `Retry-After`, never acknowledges work.
+
+## Configuration and startup
+
+`fvpn-control -config control.json [-migrate-on-start]` reads strict JSON and then
+`FVPN_<UPPERCASE_JSON_FIELD>` overrides. Lists and rate buckets use JSON values in
+the environment; durations are integer seconds. The defaults and complete typed
+setting list are in `internal/config/config.go`. `docs/control/config.example.json`
+contains only deployment placeholders. Database DSN and optional OIDC client
+secret are read from files; TLS key material is loaded from its file. Effective
+configuration redacts file paths and OIDC settings and never includes contents.
+Do not put DSNs or secret contents directly in configuration/environment values.
+
+Use a DDL-capable connection only for explicit migrations; use a least-privileged
+runtime identity otherwise. Apply embedded migrations before either process starts.
+The five-digit migration `00100_control.sql` adds session/login-flow tables,
+operation metadata, delivery evidence and dead-letter state. Periodic control
+cleanup deletes expired login/session/idempotency scratch only; it never removes
+member, operation, billing or audit history. Audit retention remains the database
+retention policy (recommended 180 days); service-log rotation should enforce the
+recommended seven days (§16.4).
+
+Public TLS and agent mTLS use the configured certificate/key. The agent CA is
+separate configured trust. `/healthz` indicates the process can respond; `/readyz`
+pings PostgreSQL. Agent health probes also need a valid client certificate. Signals
+stop acceptance and drain requests under a bounded shutdown timeout. Read-header,
+read, write and keepalive deadlines are startup settings. Startup logs intentionally
+omit underlying provider/driver/TLS error strings, which can contain credentials.
+
+No latency/SLA, fleet enforcement timing, real device or arm64 runtime claims are
+made. Both architectures are cross-compiled; §16.5 targets require a separate
+recorded load/device evaluation.
+
+## Checks
+
+```sh
+make -f mk/control.mk control-verify
+make -f mk/control.mk control-test-integration
+make go-lint
+```
+
+Integration tests use `internal/db/dbtest`, require `FVPN_TEST_DATABASE_URL`, and
+create/drop only random isolated databases. Make recipes use disk scratch under
+`.agent/tmp` and remove it on exit. Unit tests use local httptest providers and
+need no external network, root or Docker.

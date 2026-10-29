@@ -184,7 +184,7 @@ type Options struct {
 // New validates the immutable contract once; security metadata comes from tags,
 // security requirements and x-fvpn-auth, including enrollment's explicit exception.
 func New(c *Composite, o Options) (http.Handler, error) {
-	doc, e := gen.GetSwagger()
+	doc, e := gen.GetSpec()
 	if e != nil {
 		return nil, e
 	}
@@ -201,7 +201,14 @@ func New(c *Composite, o Options) (http.Handler, error) {
 	if o.Commands != nil {
 		mids = append(mids, o.Commands.middleware(c))
 	} else {
-		mids = append(mids, requireCommandBoundary)
+		mids = append(mids, func(next gen.StrictHandlerFunc, operationID string) gen.StrictHandlerFunc {
+			return func(ctx context.Context, w http.ResponseWriter, r *http.Request, request any) (any, error) {
+				if c.owner(operationID) == nil {
+					return nil, errNotImplemented
+				}
+				return requireCommandBoundary(next, operationID)(ctx, w, r, request)
+			}
+		})
 	}
 	strict := gen.NewStrictHandlerWithOptions(c, mids, gen.StrictHTTPServerOptions{RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, _ error) {
 		apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Malformed request."))
@@ -300,11 +307,22 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				return
 			}
 		}
+		if mutation(r) && (p.Role == auth.Admin || p.Role == auth.Member) || r.Header.Get("Idempotency-Key") != "" {
+			values := r.Header.Values("Idempotency-Key")
+			_, err := uuid.Parse(r.Header.Get("Idempotency-Key"))
+			if err != nil || len(values) != 1 {
+				apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "UUID Idempotency-Key is required."))
+				return
+			}
+		}
 		for _, par := range op.Parameters {
 			if par.Value != nil && par.Value.In == "header" && par.Value.Name == "If-Match" && par.Value.Required && r.Header.Get("If-Match") == "" {
 				apierr.Write(w, r, apierr.New(apierr.PreconditionRequired, "If-Match is required."))
 				return
 			}
+		}
+		if r.Body == nil {
+			r.Body = http.NoBody
 		}
 		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, bodyLimit))
 		if e != nil {
@@ -346,7 +364,11 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		// resource must never replay the first resource's command (§14.5).
 		m.scope = r.Method + " " + route.Path
 		for _, name := range parameterNames(route.Path) {
-			m.scope += "|" + name + "=" + params[name]
+			value := params[name]
+			if id, err := uuid.Parse(value); err == nil {
+				value = id.String()
+			}
+			m.scope += "|" + name + "=" + value
 		}
 		r.Body = io.NopCloser(bytes.NewReader(raw))
 		handler.ServeHTTP(w, r)
@@ -357,7 +379,19 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 	u := *r.URL
 	clone.URL = &u
 	clone.URL.Path = strings.TrimPrefix(r.URL.Path, "/api/v1")
-	return router.FindRoute(clone)
+	route, params, err := router.FindRoute(clone)
+	if err == nil {
+		return route, params, nil
+	}
+	// The legacy router allocates RouteError values and cannot classify method
+	// mismatches on parameterized paths. Probe only the fixed HTTP method set.
+	for _, method := range []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"} {
+		clone.Method = method
+		if _, _, e := router.FindRoute(clone); e == nil {
+			return nil, nil, routers.ErrMethodNotAllowed
+		}
+	}
+	return nil, nil, err
 }
 func parameterNames(path string) []string {
 	var names []string
@@ -390,11 +424,19 @@ func matchingIdentity(v any, p auth.Principal) bool {
 	switch x := v.(type) {
 	case map[string]any:
 		for k, v := range x {
-			if k == "node_id" && v != p.NodeID.String() {
-				return false
-			}
-			if (k == "node_incarnation_id" || k == "incarnation_id") && v != p.IncarnationID.String() {
-				return false
+			if k == "node_id" || k == "node_incarnation_id" || k == "incarnation_id" {
+				text, ok := v.(string)
+				if !ok {
+					return false
+				}
+				id, e := uuid.Parse(text)
+				expected := p.IncarnationID
+				if k == "node_id" {
+					expected = p.NodeID
+				}
+				if e != nil || id != expected {
+					return false
+				}
 			}
 			if !matchingIdentity(v, p) {
 				return false
@@ -408,4 +450,29 @@ func matchingIdentity(v any, p auth.Principal) bool {
 		}
 	}
 	return true
+}
+
+// BrowserRoutes bounds login discovery/token work and session bootstrap. The key
+// is the direct peer address; untrusted proxy forwarding headers are ignored.
+func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
+	lim := &limiter{entries: map[string]bucketState{}, max: c.MaxRatePrincipals}
+	gate := make(chan struct{}, c.MaxConcurrent)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		host, _, _ := net.SplitHostPort(r.RemoteAddr)
+		if d := lim.allow(host, c.AnonymousRate); d > 0 {
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login request rate exceeded.").WithRetryAfter(d))
+			return
+		}
+		select {
+		case gate <- struct{}{}:
+			defer func() { <-gate }()
+		default:
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login concurrency exceeded."))
+			return
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, c.BrowserBodyBytes)
+		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.WriteTimeoutSeconds)*time.Second)
+		defer cancel()
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

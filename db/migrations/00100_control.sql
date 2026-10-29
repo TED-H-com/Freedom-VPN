@@ -1,7 +1,8 @@
 -- +goose Up
 -- §16.1: opaque browser credentials are stored only as SHA-256 hashes.
 CREATE TABLE browser_sessions (
- token_hash BYTEA PRIMARY KEY CHECK(octet_length(token_hash)=32),
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ token_hash BYTEA NOT NULL UNIQUE CHECK(octet_length(token_hash)=32),
  member_id UUID NOT NULL REFERENCES members,
  role TEXT NOT NULL CHECK(role IN ('admin','member')),
  display_label TEXT NOT NULL, mfa_verified BOOLEAN NOT NULL,
@@ -13,7 +14,8 @@ CREATE TABLE browser_sessions (
 );
 CREATE INDEX browser_sessions_expiry_idx ON browser_sessions(absolute_expires_at);
 CREATE TABLE oidc_login_flows (
- state_hash BYTEA PRIMARY KEY CHECK(octet_length(state_hash)=32),
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ state_hash BYTEA NOT NULL UNIQUE CHECK(octet_length(state_hash)=32),
  browser_hash BYTEA NOT NULL CHECK(octet_length(browser_hash)=32),
  nonce TEXT NOT NULL, verifier TEXT NOT NULL,
  expires_at TIMESTAMPTZ NOT NULL CHECK(isfinite(expires_at))
@@ -30,4 +32,8 @@ CREATE INDEX audit_events_request_idx ON audit_events(request_id,occurred_at DES
 -- ClaimOutbox excludes infinity without confusing a dead letter with delivery.
 ALTER TABLE outbox_events ADD COLUMN dead_lettered_at TIMESTAMPTZ;
 ALTER TABLE outbox_events ADD COLUMN last_error_code TEXT;
+ALTER TABLE outbox_events ADD COLUMN delivery_receipt TEXT;
 CREATE INDEX outbox_events_dead_letter_idx ON outbox_events(dead_lettered_at) WHERE dead_lettered_at IS NOT NULL;
+
+COMMENT ON TABLE browser_sessions IS 'Project Spec §16.1; opaque server-side sessions with idle and absolute expiry.';
+COMMENT ON TABLE oidc_login_flows IS 'Project Spec §16.1; one-use browser-bound OIDC state, nonce and PKCE verifier.';
