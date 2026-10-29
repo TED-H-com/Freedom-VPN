@@ -520,3 +520,26 @@ func TestMEM03_LostAuthorizationWrite(t *testing.T) {
 		t.Fatal("lost revocation retry wrote again")
 	}
 }
+
+func TestMEM03_BlockedUserCanStillBeRevoked(t *testing.T) {
+	f, c := newFake(t)
+	ctx := context.Background()
+	g, e := c.EnsurePaidGroup(ctx, "TEST-plan")
+	require(t, e)
+	require(t, c.ApplyDeviceAuthorization(ctx, testDevice(), []string{g}))
+	f.objects["users"]["TEST-user"]["is_blocked"] = true
+	if e = c.ApplyDeviceAuthorization(ctx, testDevice(), []string{g}); !IsKind(e, Conflict) {
+		t.Fatal("blocked user granted access")
+	}
+	wrong := testDevice()
+	wrong.MemberID = "TEST-other-member"
+	if e = c.ApplyDeviceAuthorization(ctx, wrong, nil); !IsKind(e, Conflict) {
+		t.Fatal("foreign device binding accepted")
+	}
+	require(t, c.ApplyDeviceAuthorization(ctx, testDevice(), nil))
+	if len(ids(f.objects["groups"][g]["peers"])) != 0 {
+		t.Fatal("blocked user retained paid access")
+	}
+	delete(f.objects["users"], "TEST-user")
+	require(t, c.ApplyDeviceAuthorization(ctx, testDevice(), nil))
+}

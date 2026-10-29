@@ -121,9 +121,9 @@ Final fresh-stack integration output (identifiers and secrets were never printed
     integration_test.go:239: Authorization removal and exit withdrawal each removed client route
     integration_test.go:265: Lost POST response reconciled by stable name and fresh GET; one route remains; observed state matches upstream
     integration_test.go:271: DNS/ops API read-back: two resolver addresses; paid-group distribution; TCP/UDP 53 and explicit admin port only (resolver service not tested)
---- PASS: TestAT08_LiveAdapterReadBack (5.49s)
+--- PASS: TestAT08_LiveAdapterReadBack (5.50s)
 PASS
-ok  	github.com/TED-H-com/Freedom-VPN/internal/netbird	7.565s
+ok  	github.com/TED-H-com/Freedom-VPN/internal/netbird	7.578s
 ```
 
 ## Requirement / acceptance boundary

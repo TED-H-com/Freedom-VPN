@@ -223,6 +223,25 @@ func (c *Client) ApplyDeviceAuthorization(ctx context.Context, d MemberDevice, p
 		return e
 	}
 	defer unlock()
+	// Revocation must remain possible after the upstream user is blocked,
+	// deleted, or acquires an unsafe auto-group. A confirmed immutable device
+	// binding is sufficient to REMOVE access, never to grant it (§9.4).
+	if len(paidGroupIDs) == 0 {
+		binding, known, err := c.store.Get(ctx, c.deployment, "peers", "device:"+d.DeviceID)
+		if err != nil {
+			return err
+		}
+		if known {
+			h, err := hash([]string{d.MemberID, d.UserID, d.DeviceID})
+			if err != nil {
+				return err
+			}
+			if binding.ExternalID != d.PeerID || binding.DesiredHash != h {
+				return failure(Conflict)
+			}
+			return c.authorize(ctx, binding.ExternalID, nil)
+		}
+	}
 	if _, e = c.ensureMember(ctx, d); e != nil {
 		return e
 	}
@@ -261,6 +280,17 @@ func (c *Client) authorize(ctx context.Context, peer string, wanted []string) er
 			if request["resources"] == nil {
 				request["resources"] = []any{}
 			}
+			wh, err := hash(projection("groups", request))
+			if err != nil {
+				return err
+			}
+			previous, err := hash(projection("groups", g))
+			if err != nil {
+				return err
+			}
+			if wh == previous {
+				continue
+			}
 			// This group already exists; don't invent another binding key for it.
 			if e = c.call(ctx, "PUT", endpoint("groups", id), request, &object{}); e != nil {
 				return e
@@ -269,8 +299,10 @@ func (c *Client) authorize(ctx context.Context, peer string, wanted []string) er
 			if e != nil {
 				return e
 			}
-			wh, _ := hash(projection("groups", request))
-			oh, _ := hash(projection("groups", read))
+			oh, err := hash(projection("groups", read))
+			if err != nil {
+				return err
+			}
 			if wh != oh {
 				return failure(Unconfirmed)
 			}
