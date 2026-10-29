@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/x509"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"log/slog"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -108,8 +108,8 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 			return e
 		}
 		var keyID *string
-		var expired bool
-		e := tx.QueryRow(ctx, `SELECT operation_id,external_key_id,encryption_key_id,ciphertext,expires_at,expires_at<=clock_timestamp() FROM node_bootstrap_secrets WHERE incarnation_id=$1 FOR UPDATE`, id.IncarnationID).Scan(&op, &out.ExternalKeyID, &keyID, &sealed.Ciphertext, &out.ExpiresAt, &expired)
+		var expired, delivered bool
+		e := tx.QueryRow(ctx, `SELECT operation_id,external_key_id,encryption_key_id,ciphertext,expires_at,expires_at<=clock_timestamp(),delivered_at IS NOT NULL FROM node_bootstrap_secrets WHERE incarnation_id=$1 FOR UPDATE`, id.IncarnationID).Scan(&op, &out.ExternalKeyID, &keyID, &sealed.Ciphertext, &out.ExpiresAt, &expired, &delivered)
 		if errors.Is(e, pgx.ErrNoRows) {
 			unavailable = apierr.BootstrapNotReady
 			return nil
@@ -119,7 +119,7 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 		}
 		if keyID == nil {
 			unavailable = apierr.BootstrapConsumed
-			if expired {
+			if expired && !delivered {
 				unavailable = apierr.BootstrapExpired
 			}
 			return nil

@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
@@ -20,9 +24,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type purposeSigner struct {
@@ -53,7 +54,8 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		var current uuid.UUID
 		var lifecycle string
 		var generationText string
-		e := tx.QueryRow(ctx, `SELECT n.lifecycle_state,n.current_incarnation_id,n.desired_config_generation::text,e.publication_intent FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n`, node).Scan(&lifecycle, &current, &generationText, &publication)
+		var capacity []byte
+		e := tx.QueryRow(ctx, `SELECT n.lifecycle_state,n.current_incarnation_id,n.desired_config_generation::text,e.publication_intent,n.capacity FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n`, node).Scan(&lifecycle, &current, &generationText, &publication, &capacity)
 		if e != nil {
 			return e
 		}
@@ -70,21 +72,22 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		if e != nil {
 			return e
 		}
-		snap, e := desiredstate.NewDBPolicyReader(tx).ReadPolicySnapshot(ctx, node, time.Now().UTC())
-		if e != nil {
-			return e
-		}
 		if len(r.Config.DNSResolverIPv4) == 0 {
 			return apierr.New(apierr.DependencyUnavailable, "Node DNS configuration required.")
 		}
-		snap.DNSResolverIPv4 = append([]string(nil), r.Config.DNSResolverIPv4...)
+		snap := desiredstate.PolicySnapshot{AuthorizationGeneration: 1, FairUseGeneration: 1, DNSGeneration: 1, DNSResolverIPv4: append([]string(nil), r.Config.DNSResolverIPv4...), DNSResolverIPv6: []string{}, ServingReleaseIDs: []uuid.UUID{}, AccountingPeriod: desiredstate.DefaultAccountingPeriod(time.Now().UTC())}
 		if e = tx.QueryRow(ctx, `SELECT active_revision_id FROM policy_definitions WHERE type='release_support' AND active_revision_id IS NOT NULL ORDER BY id LIMIT 1`).Scan(&snap.SupportedReleasePolicyID); e != nil {
 			return apierr.New(apierr.DependencyUnavailable, "Release support policy required.")
 		}
-		// Never infer serving authorization from a desired release fallback.
-		if e = tx.QueryRow(ctx, `SELECT coalesce(array_agg(id),'{}'::uuid[]) FROM unnest((SELECT supported_release_ids FROM fleet_config)) id WHERE NOT id=ANY((SELECT revoked_release_ids FROM fleet_config)::uuid[])`).Scan(&snap.ServingReleaseIDs); e != nil {
+		snap.PolicyRefs = []uuid.UUID{snap.SupportedReleasePolicyID}
+		if e = tx.QueryRow(ctx, `SELECT desired_release_id FROM nodes WHERE id=$1`, node).Scan(&snap.DesiredReleaseID); e != nil {
 			return e
 		}
+		// Only an explicit serving allowlist authorizes a release (§13.2).
+		if e = tx.QueryRow(ctx, `SELECT coalesce(array_agg(id),'{}'::uuid[]) FROM unnest((SELECT supported_release_ids FROM fleet_config WHERE supported_release_policy='allowlist')) id WHERE NOT id=ANY((SELECT revoked_release_ids FROM fleet_config)::uuid[])`).Scan(&snap.ServingReleaseIDs); e != nil {
+			return e
+		}
+
 		if work != nil {
 			snap.UpdateIntent = &work.Intent
 		}
@@ -99,7 +102,20 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 			if json.Unmarshal(raw, &cached) == nil && cached.Signed.ExpiresAt.After(time.Now().Add(time.Duration(r.Config.DesiredStateSeconds)*time.Second/2)) && cached.Signed.ConfigGeneration.String() == generationText && cached.Signed.PublicationIntent == publication && cached.Signed.Update.IsNull() {
 				a, _ := canonjson.Marshal(cached.Signed.ServingReleaseIds)
 				b, _ := canonjson.Marshal(snap.ServingReleaseIDs)
-				if string(a) == string(b) {
+				dnsA, _ := canonjson.Marshal(cached.Signed.Dns.ResolverIpv4)
+				dnsB, _ := canonjson.Marshal(snap.DNSResolverIPv4)
+				cachedCap, _ := canonjson.Marshal(cached.Signed.NodeCapacity)
+				var wantedCap any
+				if len(capacity) > 0 {
+					_ = json.Unmarshal(capacity, &wantedCap)
+				}
+				currentCap, _ := canonjson.Marshal(wantedCap)
+				trust, trustErr := r.Provider.TrustBundle(ctx)
+				verifyErr := trustErr
+				if trustErr == nil {
+					_, _, verifyErr = envelope.Verify(raw, trust, envelope.PurposeDesiredState, time.Now())
+				}
+				if string(a) == string(b) && string(dnsA) == string(dnsB) && string(cachedCap) == string(currentCap) && cached.Signed.SupportedReleasePolicyId == snap.SupportedReleasePolicyID && trustErr == nil && verifyErr == nil {
 					out = desiredstate.CompiledDesiredState{Envelope: cached, ETag: tag, Generation: uint64(cached.Signed.ConfigGeneration)}
 					return nil
 				}

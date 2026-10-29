@@ -7,10 +7,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -140,7 +140,7 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 				out.OperationID = &op
 				out.Status = 202
 				state = "pending"
-				_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id) VALUES($1,'release.verify',$2,'release',$3)`, op, c.ActorID.String(), id)
+				_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id) VALUES($1,'release.register',$2,'release',$3,$4)`, op, c.ActorID.String(), id, commandtx.RequestID(ctx))
 				if e != nil {
 					return e
 				}

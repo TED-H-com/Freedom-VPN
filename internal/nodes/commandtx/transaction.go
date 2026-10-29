@@ -4,12 +4,14 @@ package commandtx
 
 import (
 	"context"
+	"time"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
 )
 
 type key struct{}
@@ -73,4 +75,16 @@ func checkClaim(ctx context.Context, tx pgx.Tx) error {
 		return db.ErrLeaseLost
 	}
 	return e
+}
+
+// RequestID retains the framework's trusted central request ID. Background
+// callers receive a new tracing ID, never an identifier from external headers.
+func RequestID(ctx context.Context) uuid.UUID {
+	value, ok := apierr.RequestIDFromContext(ctx)
+	if ok {
+		if id, e := uuid.Parse(value); e == nil {
+			return id
+		}
+	}
+	return uuid.Must(uuid.NewV7())
 }

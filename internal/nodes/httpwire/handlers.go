@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
+	"net/http"
+	"strings"
+	"sync"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
@@ -20,10 +25,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
-	"net/http"
-	"strings"
-	"sync"
 )
 
 type Handlers struct {
@@ -261,12 +262,23 @@ func (h *Handlers) RetireNode(ctx context.Context, r gen.RetireNodeRequestObject
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
-	op, _, e := h.Runtime.Nodes.RetireNode(ctx, nodes.RetireNodeParams{NodeID: r.NodeId, Principal: principal(ctx).Scope(), IdempotencyKey: r.Params.IdempotencyKey, IfMatch: r.Params.IfMatch, RequestID: requestID(ctx), Reason: "Operator retired node"})
+	v, e := nodes.ParseIfMatch(r.Params.IfMatch)
 	if e != nil {
 		return nil, e
 	}
-	e = result(ctx, "node", r.NodeId, 202, &op.OperationId)
-	return gen.RetireNode202JSONResponse{OperationAcceptedJSONResponse: operations.Accepted(op, auth.Admin)}, e
+	version, e := decstr.Parse(v)
+	if e != nil {
+		return nil, e
+	}
+	out, e := h.Runtime.Enrollment.RetireNode(ctx, adminCommand(ctx, r.Params.IdempotencyKey), r.NodeId, &version, "Operator retired node")
+	if e != nil {
+		return nil, e
+	}
+	if e = result(ctx, "node", r.NodeId, 202, &out.OperationID); e != nil {
+		return nil, e
+	}
+	op, e := h.operation(ctx, out.OperationID)
+	return gen.RetireNode202JSONResponse{OperationAcceptedJSONResponse: op}, e
 }
 func (h *Handlers) SubmitObservation(ctx context.Context, r gen.SubmitObservationRequestObject) (gen.SubmitObservationResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
@@ -353,8 +365,6 @@ func (h *Handlers) SubmitUpdateResult(ctx context.Context, r gen.SubmitUpdateRes
 
 // Compile-time checks catch accidental non-matching generated method signatures.
 var _ httpapi.ReplayHandler = (*Handlers)(nil)
-var _ = json.Unmarshal
-var _ = presence.NewNullNullable[string]
 
 func (h *Handlers) Replay(ctx context.Context, name string, ref db.IdempotencyRecord) (any, error) {
 	if e := h.ready(ctx); e != nil {

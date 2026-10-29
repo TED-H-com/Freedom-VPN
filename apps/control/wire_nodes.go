@@ -2,14 +2,15 @@ package control
 
 import (
 	"context"
-	"github.com/TED-H-com/Freedom-VPN/internal/config"
-	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func nodeHandlers(pool *pgxpool.Pool, log *slog.Logger) *httpwire.Handlers {

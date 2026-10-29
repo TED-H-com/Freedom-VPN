@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net/netip"
 	"os"
 )
 
@@ -60,6 +61,12 @@ func (c Nodes) Validate() error {
 	}
 	if c.RenewalOverlapSeconds < 0 || c.RenewalOverlapSeconds >= c.CertificateSeconds {
 		return errors.New("invalid renewal overlap")
+	}
+	for _, ip := range c.DNSResolverIPv4 {
+		a, e := netip.ParseAddr(ip)
+		if e != nil || !a.Is4() {
+			return errors.New("invalid node IPv4 resolver")
+		}
 	}
 	return nil
 }

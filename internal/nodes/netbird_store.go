@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"strings"
+	"time"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"strings"
-	"time"
 )
 
 // NetBirdBindings persists adapter identities in the existing external_bindings

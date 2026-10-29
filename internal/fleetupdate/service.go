@@ -6,10 +6,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -155,7 +155,7 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 		if e != nil {
 			return e
 		}
-		_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,desired_generation) SELECT $1,'fleet.update',$2,'update_batch',$3,generation FROM fleet_config`, op, c.ActorID.String(), batch)
+		_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,desired_generation,request_id) SELECT $1,'update_batch.create',$2,'update_batch',$3,generation,$4 FROM fleet_config`, op, c.ActorID.String(), batch, commandtx.RequestID(ctx))
 		if e != nil {
 			return e
 		}

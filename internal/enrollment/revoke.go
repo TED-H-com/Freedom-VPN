@@ -5,10 +5,10 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -23,7 +23,13 @@ type RevocationResult struct {
 	ResourceVersion decstr.U64
 }
 
-func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, expected *decstr.U64, reason string) (out RevocationResult, err error) {
+func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, expected *decstr.U64, reason string) (RevocationResult, error) {
+	return s.revokeNode(ctx, cmd, node, expected, reason, false)
+}
+func (s *Service) RetireNode(ctx context.Context, cmd Command, node uuid.UUID, expected *decstr.U64, reason string) (RevocationResult, error) {
+	return s.revokeNode(ctx, cmd, node, expected, reason, true)
+}
+func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, expected *decstr.U64, reason string, retire bool) (out RevocationResult, err error) {
 	if expected == nil {
 		return out, apierr.New(apierr.PreconditionRequired, "If-Match required.")
 	}
@@ -35,7 +41,11 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		Reason  string     `json:"reason"`
 	}{*expected, reason}
 	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		record, e := begin(ctx, tx, cmd, "/api/v1/admin/nodes/"+node.String()+"/revoke", body)
+		path := "/api/v1/admin/nodes/" + node.String()
+		if !retire {
+			path += "/revoke"
+		}
+		record, e := begin(ctx, tx, cmd, path, body)
 		if e != nil {
 			return e
 		}
@@ -59,7 +69,7 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if out.ResourceVersion != *expected {
 			return apierr.New(apierr.ResourceVersionConflict, "Node version changed.").WithDetail("current_resource_version", version)
 		}
-		if state == "revoked" || state == "retired" {
+		if state == "retired" || state == "revoked" && !retire {
 			return apierr.New(apierr.StateConflict, "Node already revoked or retired.")
 		}
 		// This is a local, durable revocation journal, not a remote KMS call.
@@ -70,7 +80,16 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 				return e
 			}
 		}
-		if _, e = tx.Exec(ctx, `UPDATE nodes SET lifecycle_state='revoked',resource_version=resource_version+1 WHERE id=$1`, node); e != nil {
+		state = "revoked"
+		kind := "node.revoke"
+		if retire {
+			state = "retired"
+			kind = "node.retire"
+		}
+		if _, e = tx.Exec(ctx, `UPDATE nodes SET lifecycle_state=$2,retired_at=CASE WHEN $2='retired' THEN clock_timestamp() ELSE retired_at END,desired_config_generation=desired_config_generation+1,resource_version=resource_version+1 WHERE id=$1`, node, state); e != nil {
+			return e
+		}
+		if _, e = tx.Exec(ctx, `UPDATE exits SET publication_intent='disabled',resource_version=resource_version+1 WHERE node_id=$1`, node); e != nil {
 			return e
 		}
 		if _, e = tx.Exec(ctx, `UPDATE node_incarnations SET revoked_at=coalesce(revoked_at,clock_timestamp()) WHERE node_id=$1`, node); e != nil {
@@ -93,7 +112,7 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if e != nil {
 			return e
 		}
-		if _, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,steps) VALUES($1,'node.revoke',$2,'node',$3,'{"route_withdrawal":{"required":true,"status":"pending"},"peer_withdrawal":{"required":true,"status":"pending"}}')`, out.OperationID, cmd.Principal, node); e != nil {
+		if _, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,$4,$2,'node',$3,$5,'{"route_withdrawal":{"required":true,"status":"pending"},"peer_withdrawal":{"required":true,"status":"pending"}}')`, out.OperationID, cmd.Principal, node, kind, commandtx.RequestID(ctx)); e != nil {
 			return e
 		}
 		for _, event := range []string{"node.routes.withdraw", "node.peer.withdraw"} {
@@ -108,7 +127,11 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if e = complete(ctx, tx, record, "node", node, 202, &out.OperationID); e != nil {
 			return e
 		}
-		return auditReason(ctx, tx, cmd.Principal, "node.revoked", node, &out.OperationID, reason)
+		action := "node.revoked"
+		if retire {
+			action = "node.retired"
+		}
+		return auditReason(ctx, tx, cmd.Principal, action, node, &out.OperationID, reason)
 	})
 	if err != nil {
 		return RevocationResult{}, safe(err)

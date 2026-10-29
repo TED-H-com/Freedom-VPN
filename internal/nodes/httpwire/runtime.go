@@ -5,7 +5,12 @@ import (
 	"context"
 	"encoding/pem"
 	"errors"
+	"log/slog"
+	"os"
+	"time"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
@@ -13,11 +18,10 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
-	"os"
-	"time"
 )
 
 type Runtime struct {
@@ -68,6 +72,7 @@ func Open(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) (*Runtime, 
 	if e != nil {
 		return nil, e
 	}
+	validator = validator.WithCurrentTrust(func() (*envelope.TrustStore, error) { return provider.TrustBundle(context.Background()) })
 	rel := &releases.Service{Pool: pool, Validator: validator, VerifyArtifacts: true}
 	fleet, e := fleetupdate.New(pool, rel, fleetupdate.Config{AuthorizationTTL: time.Duration(c.AuthorizationSeconds) * time.Second, OnlineWindow: time.Duration(c.OnlineSeconds) * time.Second, StuckWindow: time.Duration(c.StuckSeconds) * time.Second})
 	if e != nil {
@@ -75,7 +80,17 @@ func Open(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) (*Runtime, 
 	}
 	r := &Runtime{Pool: pool, PKI: identity, Enrollment: enroll, Releases: rel, Fleet: fleet, Provider: provider, Config: c}
 	r.Nodes = nodes.NewService(pool, nodes.WithVersionObserver(func(ctx context.Context, tx pgx.Tx, report api.ObservationReport) error {
-		return fleet.ObserveReportTx(ctx, tx, fleetupdate.Identity{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId}, report)
+		if e := fleet.ObserveReportTx(ctx, tx, fleetupdate.Identity{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId}, report); e != nil {
+			return e
+		}
+		if _, e := report.Netbird.PeerId.Get(); e == nil {
+			payload, e := canonjson.Marshal(map[string]any{"schema_version": 1, "report_id": report.ReportId})
+			if e != nil {
+				return e
+			}
+			return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: report.NodeIncarnationId, AggregateType: "node-incarnation", AggregateVersion: "1", EventType: "node.peer.observe", SchemaVersion: 1, Payload: payload})
+		}
+		return nil
 	}))
 	return r, nil
 }

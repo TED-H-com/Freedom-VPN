@@ -13,13 +13,13 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"log/slog"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -113,14 +113,29 @@ func safe(err error) error {
 	return apierr.New(apierr.DependencyUnavailable, "Enrollment operation unavailable.")
 }
 func audit(ctx context.Context, tx pgx.Tx, actor, action string, id uuid.UUID, op *uuid.UUID) error {
-	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: "service", Action: action, Resource: id.String(), OperationID: op, SchemaVersion: 1, Before: []byte(`{}`), After: []byte(`{}`), Result: "accepted"})
+	return auditReason(ctx, tx, actor, action, id, op, "")
 }
 func auditReason(ctx context.Context, tx pgx.Tx, actor, action string, id uuid.UUID, op *uuid.UUID, reason string) error {
 	after, err := canonjson.Marshal(map[string]string{"reason": reason})
 	if err != nil {
 		return err
 	}
-	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: "admin", Action: action, Resource: id.String(), OperationID: op, SchemaVersion: 1, Before: []byte(`{}`), After: after, Result: "accepted"})
+	kind := "enrollment"
+	if strings.HasPrefix(action, "node.") {
+		kind = "node"
+	}
+	if strings.HasPrefix(action, "bootstrap.") {
+		kind = "node_incarnation"
+	}
+	actorType := "admin"
+	if strings.HasPrefix(actor, "node:") {
+		actorType = "agent"
+		actor = strings.TrimPrefix(actor, "node:")
+	} else {
+		actor = strings.TrimPrefix(actor, "admin:")
+	}
+	request := commandtx.RequestID(ctx)
+	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor, ActorType: actorType, Action: action, Resource: kind + ":" + id.String(), OperationID: op, RequestID: &request, SchemaVersion: 1, Before: []byte(`{}`), After: after, Result: "accepted"})
 }
 func (s *Service) log(ctx context.Context, event string, id uuid.UUID) {
 	if s.cfg.Logger != nil {
@@ -465,7 +480,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 			if e != nil {
 				return e
 			}
-			if _, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,steps) VALUES($1,'node.provision',$2,'node',$3,'{"netbird_setup":{"required":true,"status":"pending"},"peer_readback":{"required":true,"status":"pending"},"node_policy":{"required":true,"status":"pending"}}')`, out.OperationID, "node:"+nodeID.String(), nodeID); e != nil {
+			if _, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,'node.provision',$2,'node',$3,$4,'{"netbird_setup":{"required":true,"status":"pending"},"peer_readback":{"required":true,"status":"pending"},"node_policy":{"required":true,"status":"pending"}}')`, out.OperationID, "node:"+nodeID.String(), nodeID, commandtx.RequestID(ctx)); e != nil {
 				return e
 			}
 			if _, e = tx.Exec(ctx, `UPDATE node_enrollments SET state='consumed',request_id=$2,public_key_fingerprint=$3,consumed_at=clock_timestamp(),incarnation_id=$4,request_hash=$5,certificate_id=$6,operation_id=$7 WHERE id=$1`, enrollmentID, r.EnrollmentRequestId, fp, r.NodeIncarnationId, requestHash, storedCert, out.OperationID); e != nil {

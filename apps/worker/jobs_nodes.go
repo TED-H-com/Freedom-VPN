@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"time"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
@@ -18,8 +21,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"os"
-	"time"
 )
 
 // NodeJobs is injectable for composition and tests. External calls all go through
@@ -80,6 +81,66 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher) R
 		})
 		return "bootstrap:" + p.IncarnationID.String(), e
 	})
+	jobs.Register("node.peer.observe", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		if nb == nil {
+			return "", errors.New("NetBird adapter required")
+		}
+		var payload struct {
+			ReportID uuid.UUID `json:"report_id"`
+		}
+		if e := json.Unmarshal(event.Payload, &payload); e != nil {
+			return "", e
+		}
+		var raw []byte
+		var op uuid.UUID
+		e := r.Pool.QueryRow(ctx, `SELECT o.report_payload,e.operation_id FROM node_observations o JOIN node_enrollments e ON e.incarnation_id=o.incarnation_id JOIN nodes n ON n.id=o.node_id JOIN node_incarnations i ON i.id=o.incarnation_id WHERE o.incarnation_id=$1 AND o.report_id=$2 AND n.current_incarnation_id=i.id AND n.lifecycle_state='registered' AND i.revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=i.id AND x.mapping_frozen)`, event.AggregateID, payload.ReportID).Scan(&raw, &op)
+		if e != nil {
+			return "", e
+		}
+		var report api.ObservationReport
+		if e = json.Unmarshal(raw, &report); e != nil {
+			return "", e
+		}
+		peerID, e := report.Netbird.PeerId.Get()
+		if e != nil {
+			return "", e
+		}
+		peer, e := nb.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: report.NodeId.String(), IncarnationID: report.NodeIncarnationId.String(), PeerID: peerID})
+		if e != nil {
+			return "", e
+		}
+		ctx = commandtx.WithClaim(ctx, event)
+		e = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			var active bool
+			if e := tx.QueryRow(ctx, `SELECT current_incarnation_id=$2 AND lifecycle_state='registered' AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=$2 AND x.mapping_frozen) FROM nodes WHERE id=$1 FOR UPDATE`, report.NodeId, report.NodeIncarnationId).Scan(&active); e != nil {
+				return e
+			}
+			if !active {
+				return errors.New("identity changed during read-back")
+			}
+			if e := r.PKI.CheckFence(ctx, pki.NodeIdentity{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId}); e != nil {
+				return e
+			}
+			if _, e := tx.Exec(ctx, `UPDATE node_incarnations SET deployment_id=$2,peer_id=$3 WHERE id=$1 AND revoked_at IS NULL`, report.NodeIncarnationId, r.Config.NetBirdDeployment, peer.ID); e != nil {
+				return e
+			}
+			if e := stepSucceeded(ctx, tx, op, "peer_readback", "observation:"+payload.ReportID.String()); e != nil {
+				return e
+			}
+			var ready bool
+			if e := tx.QueryRow(ctx, `SELECT safety_status='passed' AND applied_config_generation>0 AND applied_config_generation>=desired_config_generation AND last_observed_at=$2 FROM nodes WHERE id=$1`, report.NodeId, report.ObservedAt).Scan(&ready); e != nil {
+				return e
+			}
+			if ready && report.ProvisioningState == api.ProvisioningStateReady {
+				if _, e := tx.Exec(ctx, `UPDATE nodes SET provisioning_state='ready',resource_version=resource_version+1 WHERE id=$1`, report.NodeId); e != nil {
+					return e
+				}
+				return stepSucceeded(ctx, tx, op, "node_policy", "observation:"+payload.ReportID.String())
+			}
+			return nil
+		})
+		return "observation:" + payload.ReportID.String(), e
+	})
 	withdraw := func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var p struct {
 			NodeID        uuid.UUID  `json:"node_id"`
@@ -102,6 +163,19 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher) R
 		step := "route_withdrawal"
 		if event.EventType == "node.peer.withdraw" {
 			step = "peer_withdrawal"
+			keyRows, e := r.Pool.Query(ctx, `SELECT e.operation_id FROM node_enrollments e JOIN node_incarnations i ON i.id=e.incarnation_id WHERE e.node_id=$1 AND i.revoked_at IS NOT NULL`, p.NodeID)
+			if e != nil {
+				return "", e
+			}
+			keys, e := pgx.CollectRows(keyRows, pgx.RowTo[uuid.UUID])
+			if e != nil {
+				return "", e
+			}
+			for _, key := range keys {
+				if e = nb.RevokeNodeSetupKey(ctx, key.String()); e != nil {
+					return "", e
+				}
+			}
 			rows, e := r.Pool.Query(ctx, `SELECT id,peer_id FROM node_incarnations WHERE node_id=$1 AND revoked_at IS NOT NULL`, p.NodeID)
 			if e != nil {
 				return "", e
@@ -200,7 +274,7 @@ func scheduleNodeReconcile(ctx context.Context, tx pgx.Tx, event db.ClaimedEvent
 // node job opens a bounded connection pool from the same secret-file setting.
 func nodeJobs() Registry {
 	out := Registry{}
-	for _, name := range []string{"release.verify", "node.provision.requested", "node.routes.withdraw", "node.peer.withdraw", "node.reconcile", "fleet.update_created", "fleet.first_sync_created", "fleet.update_retry", "fleet.release_support_changed", "node.updated"} {
+	for _, name := range []string{"release.verify", "node.provision.requested", "node.peer.observe", "node.routes.withdraw", "node.peer.withdraw", "node.reconcile", "fleet.update_created", "fleet.first_sync_created", "fleet.update_retry", "fleet.release_support_changed", "node.updated"} {
 		out.Register(name, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 			dsn, e := config.ReadSecret(os.Getenv("FVPN_DATABASE_URL_FILE"))
 			if e != nil {

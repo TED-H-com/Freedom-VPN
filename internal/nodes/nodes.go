@@ -7,12 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -248,7 +248,10 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 	detail.Region.SetNull()
 	detail.Notes.SetNull()
 	detail.Capacity.SetNull()
-	detail.Update.SetNull()
+	detail.Update, err = updateSummary(ctx, q, nodeID)
+	if err != nil {
+		return api.NodeDetail{}, "", err
+	}
 	detail.ExitId = presence.FromPointer(exitID)
 	if displayName != nil && *displayName != "" {
 		detail.Name = presence.FromPointer(displayName)
@@ -593,6 +596,13 @@ func (s *Service) ListNodes(ctx context.Context, p ListNodesParams) (api.NodeLis
 		}
 	}
 
+	for i := range items {
+		var e error
+		items[i].Update, e = updateSummary(ctx, s.pool, items[i].NodeId)
+		if e != nil {
+			return api.NodeList{}, e
+		}
+	}
 	return api.NodeList{
 		Items:      items,
 		NextCursor: presence.FromPointer(nextCursor),

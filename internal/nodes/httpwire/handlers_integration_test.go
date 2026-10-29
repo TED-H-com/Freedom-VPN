@@ -8,23 +8,35 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
+	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/migrations"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
+	"github.com/TED-H-com/Freedom-VPN/internal/releases"
+	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
+	"github.com/jackc/pgx/v5"
 )
 
 type fixture struct {
@@ -46,7 +58,7 @@ func setup(t *testing.T) *fixture {
 	if e != nil {
 		t.Fatal(e)
 	}
-	runtime := &httpwire.Runtime{Pool: pool, PKI: identity, Enrollment: en, Nodes: nodes.NewService(pool)}
+	runtime := &httpwire.Runtime{Pool: pool, PKI: identity, Enrollment: en, Nodes: nodes.NewService(pool), Provider: vault}
 	f := &fixture{t: t, r: runtime, p: auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: true, AuthenticatedAt: time.Now(), CSRFToken: "test-csrf"}}
 	handlers, e := httpapi.Compose(&httpwire.Handlers{Runtime: runtime})
 	if e != nil {
@@ -211,5 +223,317 @@ func TestAT28_HTTPBootstrapExactlyOnce(t *testing.T) {
 	var erased bool
 	if e := f.r.Pool.QueryRow(ctx, `SELECT ciphertext IS NULL FROM node_bootstrap_secrets WHERE incarnation_id=$1`, out.NodeIncarnationId).Scan(&erased); e != nil || !erased {
 		t.Fatal("ciphertext retained", e)
+	}
+}
+
+func TestAT23_AT24_AT26_HTTPBatchSnapshotAndResultEvidence(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	rf := releasetest.New(t)
+	f.r.Releases = &releases.Service{Pool: f.r.Pool, Validator: rf.Validator}
+	fleet, e := fleetupdate.New(f.r.Pool, f.r.Releases, fleetupdate.Config{AuthorizationTTL: time.Hour, OnlineWindow: time.Minute, StuckWindow: time.Minute})
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.r.Fleet = fleet
+	f.r.Nodes = nodes.NewService(f.r.Pool, nodes.WithVersionObserver(func(ctx context.Context, tx pgx.Tx, r api.ObservationReport) error {
+		return fleet.ObserveReportTx(ctx, tx, fleetupdate.Identity{NodeID: r.NodeId, IncarnationID: r.NodeIncarnationId}, r)
+	}))
+	var registration api.ReleaseRegisterRequest
+	if e = json.Unmarshal(rf.Request(t, rf.Manifest), &registration); e != nil {
+		t.Fatal(e)
+	}
+	decode[api.Release](t, f.call("POST", "/api/v1/admin/releases", registration, nil, map[string]string{"Idempotency-Key": uuid.NewString()}), 201)
+	support := api.ReleaseSupportPayload{ApprovedReleaseIds: []uuid.UUID{rf.Manifest.ReleaseId}, RevokedReleaseIds: []uuid.UUID{}}
+	support.MinimumServingVersion.ServingReleaseIds = support.ApprovedReleaseIds
+	if e = db.InTx(ctx, f.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		return f.r.Releases.ApplySupportTx(ctx, tx, f.p.ID, support, "TEST ONLY support")
+	}); e != nil {
+		t.Fatal(e)
+	}
+	c := f.create(nil)
+	_, enrolled, cert := f.enroll(c)
+	pending := f.create(nil)
+	var g string
+	if e = f.r.Pool.QueryRow(ctx, `SELECT generation::text FROM fleet_config`).Scan(&g); e != nil {
+		t.Fatal(e)
+	}
+	generation, e := decstr.Parse(g)
+	if e != nil {
+		t.Fatal(e)
+	}
+	req := api.UpdateBatchCreateRequest{ReleaseId: rf.Manifest.ReleaseId, Scope: "all_nodes", ExpectedGeneration: generation, SetFleetDefault: true, Reason: "TEST ONLY fleet update"}
+	key := uuid.NewString()
+	batch := decode[api.UpdateBatchAccepted](t, f.call("POST", "/api/v1/admin/update-batches", req, nil, map[string]string{"Idempotency-Key": key}), 202)
+	replay := decode[api.UpdateBatchAccepted](t, f.call("POST", "/api/v1/admin/update-batches", req, nil, map[string]string{"Idempotency-Key": key}), 202)
+	if replay.BatchId != batch.BatchId || batch.TargetCount != 2 {
+		t.Fatal("snapshot/replay changed")
+	}
+	req.Reason = "TEST ONLY changed"
+	if w := f.call("POST", "/api/v1/admin/update-batches", req, nil, map[string]string{"Idempotency-Key": key}); w.Code != 409 {
+		t.Fatalf("idempotency conflict %d", w.Code)
+	}
+	later := f.create(nil)
+	_, after, afterCert := f.enroll(later)
+	_ = afterCert
+	_, bound, boundCert := f.enroll(pending)
+	_ = boundCert
+	work, e := fleet.NodeUpdateIntent(ctx, fleetupdate.Identity{NodeID: enrolled.NodeId, IncarnationID: enrolled.NodeIncarnationId})
+	if e != nil || work == nil {
+		t.Fatal(e)
+	}
+	if _, e = fleet.NodeUpdateIntent(ctx, fleetupdate.Identity{NodeID: bound.NodeId, IncarnationID: bound.NodeIncarnationId}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = fleet.NodeUpdateIntent(ctx, fleetupdate.Identity{NodeID: after.NodeId, IncarnationID: after.NodeIncarnationId}); e != nil {
+		t.Fatal(e)
+	}
+	view := decode[api.UpdateBatch](t, f.call("GET", "/api/v1/admin/update-batches/"+batch.BatchId.String(), nil, nil, nil), 200)
+	if view.TargetCount != 2 || len(view.Targets) != 2 {
+		t.Fatal("snapshot enlarged")
+	}
+	raw, e := os.ReadFile("../../../contracts/examples/valid/UpdateResult.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var result api.UpdateResult
+	if e = json.Unmarshal(raw, &result); e != nil {
+		t.Fatal(e)
+	}
+	intent := work.Intent
+	result.ResultId = uuid.New()
+	result.NodeId = intent.NodeId
+	result.IncarnationId = intent.IncarnationId
+	result.BatchId = intent.BatchId
+	result.TargetId = intent.TargetId
+	result.JobId = intent.JobId
+	result.Attempt = intent.Attempt
+	result.Generation = intent.Generation
+	result.RequestedReleaseId = intent.ReleaseId
+	result.CurrentReleaseId.Set(intent.ReleaseId)
+	result.PreviousReleaseId.SetNull()
+	result.ManifestSha256 = intent.ManifestSha256
+	result.State = "already_current"
+	result.PublicationIntent = intent.PublicationIntent
+	result.MemberForwardingEnabled = false
+	result.StartedAt = time.Now().UTC()
+	result.FinishedAt.Set(time.Now().UTC())
+	result.RecoveryRequired = presence.NewRequired(false)
+	hash := func() {
+		b, e := json.Marshal(result)
+		if e != nil {
+			t.Fatal(e)
+		}
+		result.PayloadHash, e = canonjson.HashHex(b, "payload_hash")
+		if e != nil {
+			t.Fatal(e)
+		}
+	}
+	hash()
+	ack := decode[api.UpdateResultAck](t, f.call("POST", "/api/v1/agent/update-results", result, cert, nil), 202)
+	again := decode[api.UpdateResultAck](t, f.call("POST", "/api/v1/agent/update-results", result, cert, nil), 202)
+	if !ack.ReceivedAt.Equal(again.ReceivedAt) {
+		t.Fatal("result receipt changed")
+	}
+	result.BootId = uuid.New()
+	hash()
+	if w := f.call("POST", "/api/v1/agent/update-results", result, cert, nil); w.Code != 409 || !strings.Contains(w.Body.String(), "ACK_CONFLICT") {
+		t.Fatalf("result conflict %d %s", w.Code, w.Body.String())
+	}
+	raw, e = os.ReadFile("../../../contracts/examples/valid/ObservationReport.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var report api.ObservationReport
+	if e = json.Unmarshal(raw, &report); e != nil {
+		t.Fatal(e)
+	}
+	report.NodeId = enrolled.NodeId
+	report.NodeIncarnationId = enrolled.NodeIncarnationId
+	report.ReportId = uuid.New()
+	report.ObservedAt = time.Now().UTC()
+	report.CurrentReleaseId.Set(intent.ReleaseId)
+	report.LastGoodReleaseId.Set(intent.ReleaseId)
+	report.Update.JobId.Set(intent.JobId)
+	report.Update.Generation.Set(intent.Generation)
+	report.MemberForwardingEnabled = false
+	report.Netbird.PeerId.SetNull()
+	report.Lease.LeaseId.SetNull()
+	observed := decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), 202)
+	duplicate := decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), 202)
+	if !observed.ReceivedAt.Equal(duplicate.ReceivedAt) {
+		t.Fatal("observation dedupe")
+	}
+	evidence, e := fleet.Evidence(ctx, mustValue(t, intent.TargetId))
+	if e != nil || evidence.Unconfirmed || evidence.NeedsAttention {
+		t.Fatalf("not confirmed: %+v %v", evidence, e)
+	}
+	view = decode[api.UpdateBatch](t, f.call("GET", "/api/v1/admin/update-batches/"+batch.BatchId.String(), nil, nil, nil), 200)
+	for _, target := range view.Targets {
+		if target.NodeId == enrolled.NodeId && (target.Unconfirmed != evidence.Unconfirmed || target.NeedsAttention != evidence.NeedsAttention) {
+			t.Fatal("mapping drift")
+		}
+	}
+	report.SafetyStatus = "failed"
+	if w := f.call("POST", "/api/v1/agent/observations", report, cert, nil); w.Code != 409 {
+		t.Fatalf("observation conflict %d %s", w.Code, w.Body.String())
+	}
+}
+func mustValue[T any](t *testing.T, v interface{ Get() (T, error) }) T {
+	t.Helper()
+	x, e := v.Get()
+	if e != nil {
+		t.Fatal(e)
+	}
+	return x
+}
+
+func TestAT29_HTTPSignedLeaseWindowAndReplay(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	vault := f.r.Provider.(*signing.FileProvider)
+	if _, e := vault.Rotate(ctx, signing.Lease, 48*time.Hour, time.Hour); e != nil {
+		t.Fatal(e)
+	}
+	_, enrolled, cert := f.enroll(f.create(nil))
+	r := api.LeaseRenewalRequest{RenewalRequestId: uuid.New(), NodeId: enrolled.NodeId, NodeIncarnationId: enrolled.NodeIncarnationId, CurrentLeaseId: presence.NewNullNullable[uuid.UUID](), AppliedConfigGeneration: presence.NewNullNullable[decstr.U64]()}
+	a := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", r, cert, nil), 200)
+	b := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", r, cert, nil), 200)
+	if a.Signed.LeaseId != b.Signed.LeaseId || !a.Signed.ExpiresAt.Equal(b.Signed.ExpiresAt) || a.Signed.ExpiresAt.Sub(a.Signed.IssuedAt) != 24*time.Hour || len(a.Signed.Members) != 0 {
+		t.Fatal("lease replay or deadline changed")
+	}
+	trust, e := vault.TrustBundle(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	raw, e := json.Marshal(a)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, _, e = envelope.Verify(raw, trust, envelope.PurposeLease, time.Now()); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.r.Pool.Exec(ctx, `UPDATE fleet_config SET max_offline_lease_seconds=2,resource_version=resource_version+1`); e != nil {
+		t.Fatal(e)
+	}
+	r.RenewalRequestId = uuid.New()
+	r.CurrentLeaseId.Set(a.Signed.LeaseId)
+	bounded := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", r, cert, nil), 200)
+	if bounded.Signed.ExpiresAt.Sub(bounded.Signed.IssuedAt) != 2*time.Second {
+		t.Fatal("lease maximum ignored")
+	}
+	if _, e = f.r.Pool.Exec(ctx, `UPDATE node_certificates SET usable_until=clock_timestamp()-interval '1 second' WHERE incarnation_id=$1`, enrolled.NodeIncarnationId); e != nil {
+		t.Fatal(e)
+	}
+	if w := f.call("POST", "/api/v1/agent/lease-renewals", r, cert, map[string]string{"X-Node-ID": enrolled.NodeId.String()}); w.Code != 403 {
+		t.Fatalf("expired certificate reached handler %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAPI01_HTTPControlDesiredStateSignatureAndETag(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	vault := f.r.Provider.(*signing.FileProvider)
+	if _, e := vault.Rotate(ctx, signing.DesiredState, 48*time.Hour, time.Hour); e != nil {
+		t.Fatal(e)
+	}
+	rf := releasetest.New(t)
+	f.r.Releases = &releases.Service{Pool: f.r.Pool, Validator: rf.Validator}
+	var e error
+	f.r.Fleet, e = fleetupdate.New(f.r.Pool, f.r.Releases, fleetupdate.Config{AuthorizationTTL: time.Hour, OnlineWindow: time.Minute, StuckWindow: time.Minute})
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.r.Config.DesiredStateSeconds = 3600
+	f.r.Config.DNSResolverIPv4 = []string{"100.64.0.53"}
+	definition, revision := uuid.New(), uuid.New()
+	e = db.InTx(ctx, f.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if _, e := tx.Exec(ctx, `INSERT INTO policy_definitions(id,type,code) VALUES($1,'release_support','TEST ONLY empty support')`, definition); e != nil {
+			return e
+		}
+		hash, _ := canonjson.Hash([]byte(`{}`))
+		if _, e := tx.Exec(ctx, `INSERT INTO policy_revisions(id,definition_id,type,revision,schema_version,payload,payload_hash,signing_key_ref,created_by) VALUES($1,$2,'release_support',1,1,'{}',$3,'TEST ONLY key','TEST ONLY actor')`, revision, definition, hash[:]); e != nil {
+			return e
+		}
+		_, e := tx.Exec(ctx, `UPDATE policy_definitions SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, definition, revision)
+		return e
+	})
+	if e != nil {
+		t.Fatal(e)
+	}
+	_, enrolled, cert := f.enroll(f.create(nil))
+	w := f.call("GET", "/api/v1/agent/desired-state", nil, cert, map[string]string{"X-Node-ID": uuid.NewString()})
+	env := decode[api.DesiredStateEnvelope](t, w, 200)
+	if env.Signed.NodeId != enrolled.NodeId || len(env.Signed.DeviceBindings) != 0 || len(env.Signed.MemberRatePolicies) != 0 || len(env.Signed.ServingReleaseIds) != 0 {
+		t.Fatal("staging grants or spoofed identity")
+	}
+	trust, e := vault.TrustBundle(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, _, e = envelope.Verify(w.Body.Bytes(), trust, envelope.PurposeDesiredState, time.Now()); e != nil {
+		t.Fatal(e)
+	}
+	cached := f.call("GET", "/api/v1/agent/desired-state", nil, cert, map[string]string{"If-None-Match": w.Header().Get("ETag")})
+	if cached.Code != 304 {
+		t.Fatalf("cache %d %s", cached.Code, cached.Body.String())
+	}
+}
+
+func TestENR02_HTTPCertificateRenewalAndIdentityChecks(t *testing.T) {
+	f := setup(t)
+	_, enrolled, old := f.enroll(f.create(nil))
+	_, csr := pkitest.CSR(t)
+	r := api.CertificateRenewRequest{NodeId: enrolled.NodeId, NodeIncarnationId: enrolled.NodeIncarnationId, RenewalRequestId: uuid.New(), CsrPem: csr}
+	key := uuid.NewString()
+	headers := map[string]string{"Idempotency-Key": key, "X-Node-ID": uuid.NewString()}
+	a := decode[api.CertificateRenewResponse](t, f.call("POST", "/api/v1/agent/certificates/renew", r, old, headers), 201)
+	b := decode[api.CertificateRenewResponse](t, f.call("POST", "/api/v1/agent/certificates/renew", r, old, headers), 201)
+	if a.CertificateSerial != b.CertificateSerial || a.CertificateSerial == enrolled.CertificateSerial {
+		t.Fatal("certificate renewal replay changed identity")
+	}
+	fresh := pkitest.Certificate(t, a.CertificatePem)
+	if _, e := f.r.PKI.AuthenticateAgent(context.Background(), fresh); e != nil {
+		t.Fatal(e)
+	}
+	r.NodeId = uuid.New()
+	if w := f.call("POST", "/api/v1/agent/certificates/renew", r, fresh, nil); w.Code != 403 {
+		t.Fatalf("body identity accepted: %d %s", w.Code, w.Body.String())
+	}
+	if _, e := f.r.Pool.Exec(context.Background(), `UPDATE node_certificates SET usable_until=clock_timestamp()-interval '1 second' WHERE incarnation_id=$1 AND serial=$2`, enrolled.NodeIncarnationId, enrolled.CertificateSerial); e != nil {
+		t.Fatal(e)
+	}
+	if w := f.call("POST", "/api/v1/agent/bootstrap", nil, old, headers); w.Code != 403 {
+		t.Fatalf("expired overlap accepted: %d %s", w.Code, w.Body.String())
+	}
+	if w := f.call("POST", "/api/v1/agent/bootstrap", nil, fresh, nil); w.Code != 409 {
+		t.Fatalf("new certificate rejected: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAT07_HTTPRetireAndPreconditions(t *testing.T) {
+	f := setup(t)
+	_, enrolled, cert := f.enroll(f.create(nil))
+	path := "/api/v1/admin/nodes/" + enrolled.NodeId.String()
+	for _, test := range []struct {
+		tag    string
+		status int
+	}{{"", 428}, {`"0"`, 412}} {
+		w := f.call("DELETE", path, nil, nil, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": test.tag})
+		if w.Code != test.status {
+			t.Fatalf("precondition %d want %d: %s", w.Code, test.status, w.Body.String())
+		}
+	}
+	detail := f.call("GET", path, nil, nil, nil)
+	w := f.call("DELETE", path, nil, nil, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": detail.Header().Get("ETag")})
+	if w.Code != 202 {
+		t.Fatalf("retire %d %s", w.Code, w.Body.String())
+	}
+	if w := f.call("POST", "/api/v1/agent/bootstrap", nil, cert, nil); w.Code != 403 {
+		t.Fatalf("retired identity accepted: %d", w.Code)
+	}
+	w = f.call("POST", "/api/v1/admin/enrollments", api.EnrollmentCreateRequest{Delivery: "installer", NodeId: &enrolled.NodeId}, nil, map[string]string{"Idempotency-Key": uuid.NewString()})
+	if w.Code != 409 || !strings.Contains(w.Body.String(), "NODE_RETIRED") {
+		t.Fatalf("retired reinstall: %d %s", w.Code, w.Body.String())
 	}
 }
