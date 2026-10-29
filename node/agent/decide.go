@@ -162,12 +162,11 @@ func Decide(in Input) Decision {
 	d.Checks = checks(in, at, releaseOK, bindingOK, qosOK, leaseOK && d.Serve)
 	d.Safety = safetyOf(d)
 	d.Provisioning = provisioningOf(in)
-	// ISOLATION_BASELINE_MISSING is the enforce reason (§8.2). It is not a
-	// member of the ErrorCode enum, so the check uses HEALTH_CHECK_FAILED and
-	// the message carries the specific reason.
+	// ISOLATION_BASELINE_MISSING is report-only (§8.2, revision 3). It is
+	// carried on the observation and is not an HTTP response.
 	if !in.BaselineOK {
 		d.Errors = append(d.Errors, api.NodeError{
-			Code: api.ErrorCodeHEALTHCHECKFAILED, Message: "ISOLATION_BASELINE_MISSING",
+			Code: api.ErrorCodeISOLATIONBASELINEMISSING, Message: "ISOLATION_BASELINE_MISSING",
 			ObservedAt: at, Stage: "isolation",
 		})
 	}
@@ -195,7 +194,7 @@ func Decide(in Input) Decision {
 func checks(in Input, at time.Time, releaseOK, bindingOK, qosOK, leaseOK bool) []api.NodeCheck {
 	return []api.NodeCheck{
 		chk(api.NodeCheckNameDnsPolicy, in.DesiredOK, api.ErrorCodeAUTHORIZATIONEXPIRED, at),
-		chk(api.NodeCheckNameInternetOnly, in.BaselineOK, api.ErrorCodeHEALTHCHECKFAILED, at),
+		chk(api.NodeCheckNameInternetOnly, in.BaselineOK, api.ErrorCodeISOLATIONBASELINEMISSING, at),
 		chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at),
 		chk(api.NodeCheckNameMeterPath, in.Backend == "kernel" && !in.MeterFailed, api.ErrorCodeMETERPATHINVALID, at),
 		chk(api.NodeCheckNamePolicySignature, in.DesiredOK, api.ErrorCodeSIGNATUREINVALID, at),

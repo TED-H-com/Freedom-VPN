@@ -14,7 +14,7 @@ Each event in the batch is the stored canonical payload, embedded unchanged. The
 
 A 200 applies `ApplyACK`: contiguous `accepted` and `duplicate` results move into the archive, `blocked_seq` and `conflict` or `rejected` stop the prefix, and a later sequence is not archived while an earlier one is unconfirmed. A 503, including a frozen ledger, does not move the ACK. A 429 waits at least `Retry-After` (delta-seconds or HTTP-date) and does not move the ACK. A 422 or 403 keeps the events.
 
-A 409 `LEDGER_EPOCH_MISMATCH`, or a 200 whose `ledger_epoch` is not the verified one, fetches the checkpoint and does not apply that batch's ACK. A 409 `USAGE_EVENT_CONFLICT` sets `blocked_seq` to the first sequence in the batch and keeps the payload. The contract path for a hash conflict is the per-event `conflict` status on 200 (`USAGE_EVENT_CONFLICT`).
+A 409 `LEDGER_EPOCH_MISMATCH`, or a 200 whose `ledger_epoch` is not the verified one, fetches the checkpoint and does not apply that batch's ACK. A 409 `USAGE_EVENT_CONFLICT` sets `blocked_seq` to the first sequence in the batch and keeps the payload. The contract path for a hash conflict is the per-event `conflict` status on 200 (`USAGE_EVENT_CONFLICT`). Fake control's default is that 200 form. `SetUsageConflict` keeps the whole-request 409 path for the regression test. The uploader accepts both.
 
 Failures back off from 1 second, doubling, capped at 5 minutes, with ±20% jitter when `Config.Rand` is set. Those timings are engineering defaults; the spec does not set them.
 
