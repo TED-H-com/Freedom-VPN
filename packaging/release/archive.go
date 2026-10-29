@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/klauspost/compress/zstd"
@@ -29,7 +30,8 @@ func zstdOptions() []zstd.EOption {
 // PackageDir writes a reproducible tar.zst of dir to out. Entry order,
 // owners and mtimes are fixed: paths sort lexicographically, uid and gid are
 // 0, uname and gname are root, and every mtime is the given UTC time.
-// Symlinks, devices and irregular files are refused rather than archived.
+// Symlinks, hard links, devices and irregular files are refused rather than
+// archived. A release tree contains only regular files and directories (D-047).
 func PackageDir(dir, out string, mtime time.Time) error {
 	if mtime.IsZero() {
 		mtime = time.Unix(0, 0).UTC()
@@ -110,6 +112,11 @@ func collect(dir string) ([]entry, error) {
 			return fmt.Errorf("release: %s is not a regular file or directory", rel)
 		case !mode.IsDir() && !mode.IsRegular():
 			return fmt.Errorf("release: %s is not a regular file or directory", rel)
+		}
+		if mode.IsRegular() {
+			if st, ok := info.Sys().(*syscall.Stat_t); ok && st.Nlink > 1 {
+				return fmt.Errorf("release: %s is a hard link; release trees contain regular files and directories only", rel)
+			}
 		}
 		out = append(out, entry{rel: filepath.ToSlash(rel), info: info})
 		return nil

@@ -67,10 +67,13 @@ func (e *Engine) signedRevokedIDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // rollbackIfRevoked treats a currently installed release named by the
-// persisted signed set as unhealthy. It restores the newest retained
-// release that is not revoked. When none exists, member forwarding stays
-// off with recovery_required and the revoked release does not pass the
-// gate. An empty signed set does nothing, which is today's behaviour.
+// persisted signed set as unhealthy. Member forwarding stops immediately.
+// A job whose intent release is not revoked is the rescue: the gate stays
+// closed and the job still downloads, installs and health-checks that
+// release. Serving resumes only through those post-switch checks. When
+// there is no job, or the intent release is itself revoked, the newest
+// non-revoked retained release is restored, or the node stays in
+// recovery_required. An empty signed set does nothing.
 func (e *Engine) rollbackIfRevoked(ctx context.Context, c claimed) error {
 	signed, err := e.signedRevokedIDs(ctx)
 	if err != nil || len(signed) == 0 {
@@ -83,6 +86,9 @@ func (e *Engine) rollbackIfRevoked(ctx context.Context, c claimed) error {
 	cur, err := uuid.Parse(p.CurrentRelease)
 	if err != nil || !containsID(signed, cur) {
 		return nil
+	}
+	if intentRescues(c, cur) {
+		return e.holdIfRevoked(ctx)
 	}
 	target, code := e.pickRollback(ctx, c, p.CurrentRelease, nil)
 	if target == "" {
@@ -123,8 +129,19 @@ func (e *Engine) blockRevoked(ctx context.Context, c claimed, code apierr.Code) 
 	return ErrMembersBlocked
 }
 
+// intentRescues reports whether this job installs a release other than the
+// revoked current one, and that release is not itself revoked. acceptDesired
+// has already merged the signed set into c.Revoked.
+func intentRescues(c claimed, cur uuid.UUID) bool {
+	if c.Intent.JobId == uuid.Nil || c.Intent.ReleaseId == uuid.Nil || c.Intent.ReleaseId == cur {
+		return false
+	}
+	return !containsID(c.Revoked, c.Intent.ReleaseId)
+}
+
 // holdIfRevoked blocks forwarding when boot recovery finds a signed-revoked
-// release still current. It does not clear a revocation (§17.2).
+// release still current. It does not clear a revocation (§17.2) and it does
+// not fail an in-flight rescue job.
 func (e *Engine) holdIfRevoked(ctx context.Context) error {
 	signed, err := e.signedRevokedIDs(ctx)
 	if err != nil || len(signed) == 0 {

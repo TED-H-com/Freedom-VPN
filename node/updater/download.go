@@ -34,6 +34,11 @@ const downloadChunk = 32 * 1024
 // again, then re-verified. It is not a network retry.
 var errContentChanged = errors.New("updater: download content changed")
 
+// errETagRestart discards a partial whose stored ETag does not match a 206
+// and fetches the representation again from byte zero. One restart stays
+// inside the attempt so ContentRetries 0 can still accept the following body.
+var errETagRestart = errors.New("updater: etag restart")
+
 type partialMeta struct {
 	URL  string `json:"url"`
 	Hash string `json:"hash"`
@@ -50,12 +55,16 @@ func (m hashMode) String() string {
 }
 
 // download fetches dest with resume. A partial file is valid only for the
-// same URL, content hash and mode. A 200 after a range request, a mismatched
-// Content-Range, or a hash mismatch discards the partial and downloads the
+// same URL, content hash and mode. A 206 whose ETag differs from the stored
+// partial discards that partial and restarts from byte zero inside the
+// attempt. A 200 response to a Range request is the full representation
+// (RFC 9110 §13.1.5) and is kept; it is not ARTIFACT_INVALID and costs at
+// most one content retry when the body does not match. A mismatched
+// Content-Range or a hash mismatch discards the partial and downloads the
 // whole file again, bounded by ContentRetries (§13.4). Permanent hash and
 // size failures are returned without further attempts.
 func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode hashMode, size, maxBytes int64, poll func() error) error {
-	if err := checkURL(rawURL, e.AllowLoopback); err != nil {
+	if err := checkURLPolicy(rawURL, e.urlPolicy()); err != nil {
 		return err
 	}
 	if e.Faults.DiskFullDownload {
@@ -150,6 +159,22 @@ func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode h
 }
 
 func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, want string, mode hashMode, size, maxBytes int64, poll func() error) error {
+	var restarts int
+	for {
+		err := e.downloadAttempt(ctx, rawURL, partial, metaPath, want, mode, size, maxBytes, poll)
+		if !errors.Is(err, errETagRestart) {
+			return err
+		}
+		restarts++
+		if restarts > 1 {
+			_ = os.Remove(partial)
+			_ = os.Remove(metaPath)
+			return errContentChanged
+		}
+	}
+}
+
+func (e *Engine) downloadAttempt(ctx context.Context, rawURL, partial, metaPath, want string, mode hashMode, size, maxBytes int64, poll func() error) error {
 	meta, _ := readMeta(metaPath)
 	if meta.URL != "" && (meta.URL != rawURL || meta.Hash != want || meta.Mode != mode.String() || (size > 0 && meta.Size > 0 && meta.Size != size)) {
 		return errContentChanged
@@ -193,10 +218,11 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 	}
 	switch resp.StatusCode {
 	case http.StatusOK:
+		// A 200 answer to a Range request is the full representation. Restart
+		// from byte zero with this body instead of failing the resume.
 		if offset > 0 {
-			return errContentChanged
+			offset = 0
 		}
-		offset = 0
 		_ = os.Remove(partial)
 		if ceiling > 0 && resp.ContentLength > ceiling {
 			return permanent(apierr.SizeMismatch, "content length")
@@ -221,8 +247,14 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 		if ceiling > 0 && resp.ContentLength > ceiling {
 			return permanent(apierr.SizeMismatch, "content length")
 		}
+		gotETag := resp.Header.Get("ETag")
+		if meta.ETag != "" && gotETag != "" && gotETag != meta.ETag {
+			_ = os.Remove(partial)
+			_ = os.Remove(metaPath)
+			return errETagRestart
+		}
 		if meta.ETag == "" {
-			meta.ETag = resp.Header.Get("ETag")
+			meta.ETag = gotETag
 		}
 		if err := writePartialMeta(metaPath, meta); err != nil {
 			return err

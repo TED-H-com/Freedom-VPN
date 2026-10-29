@@ -158,27 +158,60 @@ func intsContain(xs []int, v int) bool {
 	return false
 }
 
+// urlPolicy is the artifact, manifest and result URL guard (D-034f, D-046).
+// AllowedOrigins lists exact scheme://host[:port] origins. A matching origin
+// is exempt from the private and CGNAT checks only. The default is empty,
+// so the guard stands. allow_loopback still permits loopback and nothing else.
+type urlPolicy struct {
+	AllowLoopback  bool
+	AllowedOrigins []string
+}
+
+// lookupIPs resolves a host. Tests replace it to prove the dial is pinned.
+var lookupIPs = func(ctx context.Context, host string) ([]net.IP, error) {
+	found, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]net.IP, 0, len(found))
+	for _, one := range found {
+		out = append(out, one.IP)
+	}
+	return out, nil
+}
+
+// dialContextFn opens the connection to the already-checked address.
+var dialContextFn = func(ctx context.Context, network, addr string) (net.Conn, error) {
+	d := &net.Dialer{Timeout: 30 * time.Second}
+	return d.DialContext(ctx, network, addr)
+}
+
 // checkURL allows https URLs and, only when allowLoopback is set, http to
 // a loopback address for tests. Loopback, link-local, multicast, unspecified,
 // private, CGNAT (100.64.0.0/10) and metadata hosts are refused (§16.2,
 // D-034f). The same address check runs again on every address DialContext
 // resolves, so a public name that answers with a private address is refused.
 func checkURL(raw string, allowLoopback bool) error {
+	return checkURLPolicy(raw, urlPolicy{AllowLoopback: allowLoopback})
+}
+
+func checkURLPolicy(raw string, policy urlPolicy) error {
 	u, err := url.Parse(raw)
 	if err != nil || u.Host == "" || u.User != nil {
 		return permanent(apierr.SignatureInvalid, "artifact url")
 	}
 	host := strings.ToLower(u.Hostname())
-	if host == "metadata.google.internal" || host == "metadata.internal" {
+	if isMetadataHost(host) {
 		return permanent(apierr.SignatureInvalid, "artifact url host")
 	}
+	allowPrivate := originAllowed(u, policy.AllowedOrigins)
 	if ip := net.ParseIP(host); ip != nil {
-		if err := rejectIP(ip, allowLoopback); err != nil {
+		if err := rejectIP(ip, policy.AllowLoopback, allowPrivate); err != nil {
 			return err
 		}
 	}
 	if u.Scheme != "https" {
-		if allowLoopback && u.Scheme == "http" && isLoopbackName(host) {
+		if policy.AllowLoopback && u.Scheme == "http" && isLoopbackName(host) {
 			return nil
 		}
 		return permanent(apierr.SignatureInvalid, "artifact url scheme")
@@ -186,7 +219,7 @@ func checkURL(raw string, allowLoopback bool) error {
 	return nil
 }
 
-func rejectIP(ip net.IP, allowLoopback bool) error {
+func rejectIP(ip net.IP, allowLoopback, allowPrivate bool) error {
 	if ip == nil {
 		return permanent(apierr.SignatureInvalid, "artifact url address")
 	}
@@ -196,7 +229,10 @@ func rejectIP(ip net.IP, allowLoopback bool) error {
 		}
 		return permanent(apierr.SignatureInvalid, "artifact url loopback")
 	}
-	if ip.IsPrivate() || isCGNAT(ip) || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+	if !allowPrivate && (ip.IsPrivate() || isCGNAT(ip)) {
+		return permanent(apierr.SignatureInvalid, "artifact url address")
+	}
+	if ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
 		return permanent(apierr.SignatureInvalid, "artifact url address")
 	}
 	return nil
@@ -215,6 +251,13 @@ func isCGNAT(ip net.IP) bool {
 // otherwise forbidden address before it connects (D-034f). allowLoopback
 // permits a loopback destination and nothing else.
 func dialChecked(ctx context.Context, network, addr string, allowLoopback bool) (net.Conn, error) {
+	return dialPolicy(ctx, network, addr, urlPolicy{AllowLoopback: allowLoopback})
+}
+
+// dialPolicy resolves addr, applies urlPolicy, and connects to the first
+// resolved address. An allowlisted origin skips only the private and CGNAT
+// checks, and the dial stays pinned to that resolution (D-046).
+func dialPolicy(ctx context.Context, network, addr string, policy urlPolicy) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, permanent(apierr.SignatureInvalid, "artifact url address")
@@ -223,24 +266,94 @@ func dialChecked(ctx context.Context, network, addr string, allowLoopback bool) 
 	if ip := net.ParseIP(host); ip != nil {
 		ips = []net.IP{ip}
 	} else {
-		found, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+		found, err := lookupIPs(ctx, host)
 		if err != nil {
 			return nil, err
 		}
 		if len(found) == 0 {
 			return nil, permanent(apierr.SignatureInvalid, "artifact url address")
 		}
-		for _, one := range found {
-			ips = append(ips, one.IP)
-		}
+		ips = found
 	}
+	allowPrivate := hostPortAllowed(host, port, policy.AllowedOrigins)
 	for _, ip := range ips {
-		if err := rejectIP(ip, allowLoopback); err != nil {
+		if err := rejectIP(ip, policy.AllowLoopback, allowPrivate); err != nil {
 			return nil, err
 		}
 	}
-	d := &net.Dialer{Timeout: 30 * time.Second}
-	return d.DialContext(ctx, network, net.JoinHostPort(ips[0].String(), port))
+	return dialContextFn(ctx, network, net.JoinHostPort(ips[0].String(), port))
+}
+
+func isMetadataHost(host string) bool {
+	return host == "metadata.google.internal" || host == "metadata.internal"
+}
+
+// validateOrigins rejects an allowed_artifact_origins entry that is not an
+// exact scheme://host[:port] with no user, path, query or fragment.
+func validateOrigins(list []string) error {
+	for _, raw := range list {
+		u, err := url.Parse(raw)
+		if err != nil || !exactOrigin(u) || isMetadataHost(strings.ToLower(u.Hostname())) {
+			return errors.New("updater: allowed_artifact_origins entry must be scheme://host[:port]")
+		}
+	}
+	return nil
+}
+
+func exactOrigin(u *url.URL) bool {
+	if u == nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" {
+		return false
+	}
+	return u.Scheme == "https" || u.Scheme == "http"
+}
+
+// originAllowed reports whether u's scheme://host[:port] equals one entry.
+// Comparison is case-insensitive. An explicit port is part of the match;
+// a missing port does not equal :443 or :80.
+func originAllowed(u *url.URL, origins []string) bool {
+	if u == nil {
+		return false
+	}
+	got := strings.ToLower(u.Scheme) + "://" + strings.ToLower(u.Host)
+	for _, raw := range origins {
+		one, err := url.Parse(strings.TrimSpace(raw))
+		if err != nil || one.Host == "" {
+			continue
+		}
+		if strings.ToLower(one.Scheme)+"://"+strings.ToLower(one.Host) == got {
+			return true
+		}
+	}
+	return false
+}
+
+// hostPortAllowed matches a dial address to an allowlisted origin. An entry
+// without a port uses the scheme default (443 for https, 80 for http) because
+// DialContext sees that port even when the URL omitted it.
+func hostPortAllowed(host, port string, origins []string) bool {
+	host = strings.ToLower(host)
+	for _, raw := range origins {
+		u, err := url.Parse(strings.TrimSpace(raw))
+		if err != nil || u.Host == "" {
+			continue
+		}
+		if strings.ToLower(u.Hostname()) != host {
+			continue
+		}
+		want := u.Port()
+		if want == "" {
+			switch strings.ToLower(u.Scheme) {
+			case "https":
+				want = "443"
+			case "http":
+				want = "80"
+			}
+		}
+		if want == port {
+			return true
+		}
+	}
+	return false
 }
 
 func isLoopbackName(host string) bool {
