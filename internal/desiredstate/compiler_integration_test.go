@@ -9,11 +9,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/fup"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -858,4 +861,237 @@ func nullableValue[T any](t *testing.T, n interface{ Get() (T, error) }) T {
 		t.Fatal(err)
 	}
 	return v
+}
+
+func TestCompiler_ThreeFUPTiersAndNodeCapacityMatchesFUPBuilder(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 29, 17, 0, 0, 0, time.UTC)
+
+	grpID := uuid.New()
+	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-tiers', 'grp-tiers')`, grpID); err != nil {
+		t.Fatalf("insert group: %v", err)
+	}
+
+	// Node capacity (60 Mbps down / 30 Mbps up) is below Member 1's plan rate (200M / 100M).
+	capDown := int64(60_000_000)
+	capUp := int64(30_000_000)
+	nodeCap := &api.NodeCapacity{
+		DownBps:          capDown,
+		UpBps:            capUp,
+		MemberDownBpsCap: presence.NewNullableWithValue(capDown),
+		MemberUpBpsCap:   presence.NewNullableWithValue(capUp),
+	}
+	pubNodeID, _, _, _ := seedCompilerTestNode(t, ctx, pool, grpID, api.PublicationIntentPublished, nodeCap)
+	unpubNodeID, _, _, _ := seedCompilerTestNode(t, ctx, pool, grpID, api.PublicationIntentUnpublished, nodeCap)
+
+	// Activate an enforce-mode fair_use policy revision.
+	fupDefID := uuid.New()
+	fupRevID := uuid.New()
+	fupPayload := `{"mode":"enforce","effective_at":"2026-10-01T00:00:00Z"}`
+	fupSum := sha256.Sum256([]byte(fupPayload))
+	if _, err := pool.Exec(ctx, `INSERT INTO policy_definitions (id, type, code, generation) VALUES ($1, 'fair_use', 'fup-tiers', 3)`, fupDefID); err != nil {
+		t.Fatalf("insert fair_use def: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO policy_revisions (id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by)
+		VALUES ($1, $2, 'fair_use', 3, 1, $3::jsonb, $4, 'key-1', 'admin')`,
+		fupRevID, fupDefID, fupPayload, fupSum[:]); err != nil {
+		t.Fatalf("insert fair_use rev: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE policy_definitions SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`, fupDefID, fupRevID); err != nil {
+		t.Fatalf("activate fair_use def: %v", err)
+	}
+
+	seedPlan := func(code string, downBps, upBps int64) uuid.UUID {
+		planID := uuid.New()
+		planRevID := uuid.New()
+		payload := fmt.Sprintf(`{"rate_limit":{"down_bps":%d,"up_bps":%d}}`, downBps, upBps)
+		if _, err := pool.Exec(ctx, `INSERT INTO plans (id, code) VALUES ($1, $2)`, planID, code); err != nil {
+			t.Fatalf("insert plan %s: %v", code, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO plan_revisions (id, plan_id, revision, device_limit, exit_group_ids, schema_version, payload)
+			VALUES ($1, $2, 1, 3, $3, 1, $4::jsonb)`,
+			planRevID, planID, []uuid.UUID{grpID}, payload); err != nil {
+			t.Fatalf("insert plan_revision %s: %v", code, err)
+		}
+		return planRevID
+	}
+
+	plan200M := seedPlan("plan-200m", 200_000_000, 100_000_000)
+	plan100M := seedPlan("plan-100m", 100_000_000, 50_000_000)
+
+	validFrom := now.Add(-24 * time.Hour).UTC()
+	validUntil := now.Add(14 * 24 * time.Hour).UTC()
+
+	type memberCase struct {
+		name       string
+		planRevID  uuid.UUID
+		planDown   int64
+		planUp     int64
+		tierIndex  int
+		tierDown   int64
+		tierUp     int64
+		priority   int
+		reason     api.MemberRatePolicyReason
+		state      string
+		generation uint64
+		ip         string
+		memberID   uuid.UUID
+	}
+	cases := []memberCase{
+		{
+			name:       "tier0_normal_capped_by_node_capacity",
+			planRevID:  plan200M,
+			planDown:   200_000_000,
+			planUp:     100_000_000,
+			tierIndex:  0,
+			tierDown:   200_000_000,
+			tierUp:     100_000_000,
+			priority:   1,
+			reason:     api.MemberRatePolicyReasonNormal,
+			state:      "normal",
+			generation: 2,
+			ip:         "100.64.0.71",
+		},
+		{
+			name:       "tier1_fair_use_tier",
+			planRevID:  plan100M,
+			planDown:   100_000_000,
+			planUp:     50_000_000,
+			tierIndex:  1,
+			tierDown:   40_000_000,
+			tierUp:     20_000_000,
+			priority:   3,
+			reason:     api.MemberRatePolicyReasonFairUseTier,
+			state:      "adjusted",
+			generation: 5,
+			ip:         "100.64.0.72",
+		},
+		{
+			name:       "tier2_fair_use_tier",
+			planRevID:  plan100M,
+			planDown:   100_000_000,
+			planUp:     50_000_000,
+			tierIndex:  2,
+			tierDown:   10_000_000,
+			tierUp:     5_000_000,
+			priority:   5,
+			reason:     api.MemberRatePolicyReasonFairUseTier,
+			state:      "adjusted",
+			generation: 8,
+			ip:         "100.64.0.73",
+		},
+	}
+
+	for i := range cases {
+		tc := &cases[i]
+		tc.memberID = uuid.New()
+		devID := uuid.New()
+		if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, $2, $2, 'active')`, tc.memberID, tc.name+"@example.com"); err != nil {
+			t.Fatalf("insert member %s: %v", tc.name, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO entitlements (
+				member_id, revision, state, plan_revision_id, device_limit,
+				valid_from, effective_service_end, admin_suspended, projection
+			) VALUES (
+				$1, 1, 'active', $2, 3,
+				$3, $4, false, jsonb_build_object('exit_group_ids', to_jsonb(ARRAY[$5::text]))
+			)`, tc.memberID, tc.planRevID, validFrom, validUntil, grpID.String()); err != nil {
+			t.Fatalf("insert entitlement %s: %v", tc.name, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO member_devices (id, member_id, deployment_id, peer_id, status, authorized_at)
+			VALUES ($1, $2, 'nb-main', $3, 'authorized', $4)`, devID, tc.memberID, "peer-"+devID.String()[:8], validFrom); err != nil {
+			t.Fatalf("insert device %s: %v", tc.name, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO device_bindings (device_id, member_id, overlay_scope, overlay_ip, binding_revision, valid_from, valid_until, peer_ref)
+			VALUES ($1, $2, 'overlay-main', $3, 1, $4, $5, $6)`,
+			devID, tc.memberID, tc.ip, validFrom, validUntil, "peer-"+devID.String()[:8]); err != nil {
+			t.Fatalf("insert binding %s: %v", tc.name, err)
+		}
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO fup_member_states (
+				member_id, period_id, period_start, period_end, policy_revision_id,
+				mode, would_apply_tier_index, would_apply_down_bps, would_apply_up_bps,
+				would_apply_priority, would_apply_reason,
+				enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps,
+				enforced_priority, enforced_reason, generation, aggregate_as_of
+			) VALUES (
+				$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+				'enforce', $3, $4, $5,
+				$6, $7,
+				$8, $3, $4, $5,
+				$6, $7, $9, $10
+			)`,
+			tc.memberID, fupRevID,
+			tc.tierIndex, tc.tierDown, tc.tierUp,
+			tc.priority, string(tc.reason),
+			tc.state, tc.generation, now); err != nil {
+			t.Fatalf("insert fup state %s: %v", tc.name, err)
+		}
+	}
+
+	signer, _ := testDesiredStateSignerAndTrustStore(t, now)
+	compiler := NewCompiler(
+		pool,
+		signer,
+		WithClock(func() time.Time { return now }),
+		WithDNSResolvers([]string{"192.0.2.53"}, []string{"2001:db8::53"}),
+	)
+
+	// 1. Published node produces member rate policies identical to fup.BuildNodeMemberRatePolicy.
+	pubRes, err := compiler.Compile(ctx, pubNodeID)
+	if err != nil {
+		t.Fatalf("Compile(published): %v", err)
+	}
+	gotByMember := map[uuid.UUID]api.MemberRatePolicy{}
+	for _, mp := range pubRes.Envelope.Signed.MemberRatePolicies {
+		gotByMember[mp.MemberId] = mp
+	}
+	if len(gotByMember) != len(cases) {
+		t.Fatalf("len(MemberRatePolicies) = %d, want %d", len(gotByMember), len(cases))
+	}
+
+	nodeCapPair := &api.RatePair{DownBps: capDown, UpBps: capUp}
+	for _, tc := range cases {
+		td := tc.tierDown
+		tu := tc.tierUp
+		prio := tc.priority
+		rsn := tc.reason
+		eval := &fup.EvaluationResult{
+			MemberID:          tc.memberID,
+			PeriodID:          "2026-10",
+			Mode:              api.FairUsePayloadModeEnforce,
+			Generation:        nodes.ParseU64(tc.generation),
+			EnforcedTierIndex: tc.tierIndex,
+			EnforcedDownBps:   &td,
+			EnforcedUpBps:     &tu,
+			EnforcedPriority:  &prio,
+			EnforcedReason:    &rsn,
+			ValidFrom:         validFrom,
+			ValidUntil:        validUntil,
+		}
+		want := fup.BuildNodeMemberRatePolicy(eval, &api.RatePair{DownBps: tc.planDown, UpBps: tc.planUp}, nodeCapPair)
+		got, ok := gotByMember[tc.memberID]
+		if !ok {
+			t.Fatalf("missing MemberRatePolicy for %s (%s)", tc.name, tc.memberID)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("%s MemberRatePolicy mismatch:\n got = %+v\nwant = %+v", tc.name, got, want)
+		}
+	}
+
+	// 2. Unpublished node produces zero member rate policies and zero device bindings.
+	unpubRes, err := compiler.Compile(ctx, unpubNodeID)
+	if err != nil {
+		t.Fatalf("Compile(unpublished): %v", err)
+	}
+	if len(unpubRes.Envelope.Signed.MemberRatePolicies) != 0 || len(unpubRes.Envelope.Signed.DeviceBindings) != 0 {
+		t.Fatalf("unpublished node produced %d rate policies and %d bindings, want 0 and 0",
+			len(unpubRes.Envelope.Signed.MemberRatePolicies), len(unpubRes.Envelope.Signed.DeviceBindings))
+	}
 }

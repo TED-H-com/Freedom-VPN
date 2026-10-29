@@ -22,10 +22,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// SystemActorID is the canonical D-029 singleton used by nodes and members
-// workers. It is an internal identity, never supplied by request JSON.
-const SystemActorID = "00000000-0000-0000-0000-000000000003"
-
 const FleetID = "00000000-0000-0000-0000-000000000001"
 
 type Service struct {

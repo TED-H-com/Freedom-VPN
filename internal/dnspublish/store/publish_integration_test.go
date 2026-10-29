@@ -14,7 +14,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
-	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/google/uuid"
@@ -308,7 +307,7 @@ func assertDNSAudit(t *testing.T, ctx context.Context, pool *pgxpool.Pool, defID
 	for _, id := range revisions {
 		revisionsSeen[id] = true
 	}
-	systemID := uuid.MustParse(releases.SystemActorID)
+	systemID := audit.SystemActor.ID
 	seen := map[string]map[api.ResourceType]int{}
 	dnsRows := 0
 	for _, ev := range page.Items {

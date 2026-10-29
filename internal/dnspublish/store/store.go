@@ -12,17 +12,12 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
-	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-// systemActorID is the D-029 singleton (releases.SystemActorID). Node operations
-// use the same process identity. It is not the actor string "system".
-var systemActorID = uuid.MustParse(releases.SystemActorID)
 
 const (
 	statusActive     = "active"
@@ -493,7 +488,7 @@ func writeAudit(ctx context.Context, tx pgx.Tx, operationID string, defID, revID
 		{Type: api.ResourceTypePolicyRevision, Id: revID},
 	} {
 		event, err := audit.NewEvent(audit.Entry{
-			Actor:       audit.Actor{Type: api.AuditEventActorTypeSystem, ID: systemActorID},
+			Actor:       audit.SystemActor,
 			Action:      action,
 			Resource:    resource,
 			Result:      result,

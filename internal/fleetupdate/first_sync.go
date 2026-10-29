@@ -7,15 +7,14 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
-	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
-// Reserved system actor for internal snapshots, never taken from request JSON.
-const firstSyncActor = releases.SystemActorID
+// Internal snapshot identity, also used by the fleet schema fixtures.
+var firstSyncActor = audit.SystemActor.ID.String()
 
 // firstSync preserves §13.1's original all_nodes denominator. A separate system
 // batch supplies the same sealed target and composite identity FK as admin work.
@@ -43,7 +42,7 @@ func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid
 		return e
 	}
 	event, e := audit.NewEvent(audit.Entry{
-		Actor: audit.Actor{Type: api.AuditEventActorTypeSystem, ID: uuid.MustParse(firstSyncActor)}, Action: "update_batch.first_sync",
+		Actor: audit.SystemActor, Action: "update_batch.first_sync",
 		Resource: api.ResourceRef{Type: api.ResourceTypeUpdateBatch, Id: batch}, Result: api.AuditEventResultSucceeded,
 		OperationID: &op, RequestID: &requestID,
 		After: map[string]any{"node_id": n.id, "release_id": release}, Fields: []string{"node_id", "release_id"},
