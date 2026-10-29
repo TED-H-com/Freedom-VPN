@@ -422,6 +422,22 @@ func TestReviewF09_JobProgressAndFrozenResult(t *testing.T) {
 	exec(t, p, `UPDATE update_jobs SET state='failed' WHERE attempt=2`)
 	reviewReject(t, p, `UPDATE update_jobs SET observed_evidence='{"changed":true}' WHERE attempt=2`)
 	reviewReject(t, p, `UPDATE update_jobs SET state='queued' WHERE attempt=2`)
+	// already_current is a terminal no-download outcome. Only the scheduling
+	// states may enter it; a direct terminal INSERT is also supported.
+	for i, state := range []string{"queued", "waiting_online", "downloading", "verifying", "applying", "checking", "already_current"} {
+		t.Run("already_current from "+state, func(t *testing.T) {
+			job := uuid.New()
+			exec(t, p, `INSERT INTO update_jobs(id,target_id,attempt,execution_incarnation_id,generation,state) VALUES($1,$2,$3,$4,1,$5)`, job, f.target, i+3, f.inc, state)
+			if state != "queued" && state != "waiting_online" && state != "already_current" {
+				reviewReject(t, p, `UPDATE update_jobs SET state='already_current' WHERE id=$1`, job)
+				return
+			}
+			exec(t, p, `UPDATE update_jobs SET state='already_current' WHERE id=$1`, job)
+			reviewReject(t, p, `UPDATE update_jobs SET state='queued' WHERE id=$1`, job)
+			reviewReject(t, p, `UPDATE update_jobs SET state='succeeded',actual_release_id=$2,result_id=gen_random_uuid(),result_hash=decode(repeat('06',32),'hex'),completed_at=now(),observed_evidence='{"healthy":true}' WHERE id=$1`, job, f.release)
+			reviewReject(t, p, `UPDATE update_jobs SET observed_evidence='{"changed":true}' WHERE id=$1`, job)
+		})
+	}
 }
 
 func TestReviewF10_OperationEvidenceAndLifecycle(t *testing.T) {

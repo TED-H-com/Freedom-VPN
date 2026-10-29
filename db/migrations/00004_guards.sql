@@ -143,6 +143,7 @@ BEGIN
  END IF;
  IF NEW.state IS DISTINCT FROM OLD.state AND (
     (OLD.state IN ('queued','waiting_online') AND NEW.state IN ('queued','waiting_online'))
+    OR (OLD.state IN ('queued','waiting_online') AND NEW.state='already_current')
     OR array_position(phases,NEW.state)>array_position(phases,OLD.state)
     OR (OLD.state=ANY(phases) AND NEW.state IN ('succeeded','failed','superseded_incarnation','cancelled_revoked','cancelled_retired'))
     OR (OLD.state IN ('queued','waiting_online','downloading','verifying') AND NEW.state='superseded')

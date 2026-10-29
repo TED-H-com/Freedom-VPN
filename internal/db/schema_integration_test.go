@@ -5,13 +5,18 @@ package db_test
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/TED-H-com/Freedom-VPN/db/migrations"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/google/uuid"
@@ -88,6 +93,32 @@ func seed(t *testing.T, p *pgxpool.Pool) fixture {
 	return f
 }
 
+// Derive expectations from the embedded source so later migration waves are
+// checked automatically, including ordering and missing/pending versions.
+func embeddedMigrationVersions(t *testing.T) []int64 {
+	t.Helper()
+	names, err := fs.Glob(migrations.FS, "*.sql")
+	if err != nil || len(names) == 0 {
+		t.Fatalf("embedded migration files: %v (%d files)", err, len(names))
+	}
+	versions := make([]int64, 0, len(names))
+	for _, name := range names {
+		prefix, _, ok := strings.Cut(name, "_")
+		version, err := strconv.ParseInt(prefix, 10, 64)
+		if !ok || err != nil || version <= 0 {
+			t.Fatalf("invalid embedded migration name %q", name)
+		}
+		versions = append(versions, version)
+	}
+	slices.Sort(versions)
+	for i := 1; i < len(versions); i++ {
+		if versions[i] == versions[i-1] {
+			t.Fatalf("duplicate embedded migration version %d", versions[i])
+		}
+	}
+	return versions
+}
+
 func Test15_5_Migrations(t *testing.T) {
 	p := dbtest.NewUnmigrated(t)
 	var wg sync.WaitGroup
@@ -105,13 +136,14 @@ func Test15_5_Migrations(t *testing.T) {
 	if err := db.Migrate(context.Background(), p); err != nil {
 		t.Fatal(err)
 	}
+	expected := embeddedMigrationVersions(t)
 	status, err := db.MigrationStatus(context.Background(), p)
-	if err != nil || len(status) != 5 {
-		t.Fatalf("status count=%d error=%v", len(status), err)
+	if err != nil || len(status) != len(expected) {
+		t.Fatalf("status count=%d want=%d error=%v", len(status), len(expected), err)
 	}
-	for _, s := range status {
-		if string(s.State) != "applied" {
-			t.Fatalf("not applied: %+v", s)
+	for i, s := range status {
+		if s.Source.Version != expected[i] || string(s.State) != "applied" {
+			t.Fatalf("status[%d]=%+v want version=%d applied", i, s, expected[i])
 		}
 	}
 }
@@ -227,7 +259,7 @@ func TestUPD_UpdateTargetAndJobUnique(t *testing.T) {
 }
 
 // §15.5: the operator CLI still applies an empty schema, is idempotent, and
-// reports all five embedded migrations. All subprocess scratch inherits the
+// reports every embedded migration. All subprocess scratch inherits the
 // integration runner's disk TMPDIR; credentials are passed only in environment.
 func Test15_5_MigrateCLI(t *testing.T) {
 	p := dbtest.NewUnmigrated(t)
@@ -251,9 +283,13 @@ func Test15_5_MigrateCLI(t *testing.T) {
 			t.Fatalf("unexpected up output: %s", output)
 		}
 	}
-	expected := "00001 applied\n00002 applied\n00003 applied\n00004 applied\n00005 applied\n"
-	if output := run("status"); output != expected {
+	versions := embeddedMigrationVersions(t)
+	var expected strings.Builder
+	for _, version := range versions {
+		fmt.Fprintf(&expected, "%05d applied\n", version)
+	}
+	if output := run("status"); output != expected.String() {
 		t.Fatalf("unexpected status: %s", output)
 	}
-	t.Log("CLI: empty up, repeated up and five applied migration statuses verified")
+	t.Logf("CLI: empty up, repeated up and all %d embedded migration statuses verified", len(versions))
 }

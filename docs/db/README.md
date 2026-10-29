@@ -242,7 +242,11 @@ Jobs may move forward through queued/waiting_online → downloading → verifyin
 applying → checking; queued and waiting_online may exchange while scheduling.
 Progress reports may skip phases. An active job may finish succeeded/failed or
 be cancelled/superseded_incarnation; superseded is allowed only before applying,
-and rolled_back only from applying/checking. Terminal state or a recorded result
+and rolled_back only from applying/checking. queued/waiting_online may instead
+finish already_current when the node already reports the target release and no
+download is needed; the service verifies that observation. already_current is
+also allowed at INSERT and is terminal. Later progress phases cannot enter it.
+Terminal state or a recorded result
 freezes state, actual/last-good release, completed_at, error, schema version and
 observed_evidence. Result ID/hash cannot change once set. last_result_at and
 last_observed_at may advance; retries of an identical result remain valid.
@@ -251,6 +255,24 @@ Historical subscriptions, grants, certificates, observations, inbox events,
 exits, bindings and incarnations cannot be deleted/truncated. Non-null revoked_at,
 closed_at and retired_at (and grant revocation_reason) cannot be cleared or
 rewritten. Certificate renewal and grant correction create new evidence rows.
+
+## Invariants service code must respect
+
+1. Every UPDATE of members, plans, subscriptions, member_devices, nodes, exits, policy_definitions or fleet_config must strictly increase resource_version, even a metadata/no-op update. NetBird user binding revisions may not decrease.
+2. Usage receipt INSERT cannot commit a nonzero record_count without all samples or a raw usage_event_payloads row in the same transaction. Incomplete-event/checkpoint commits now fail. Checkpoint writes require exact max_seen and highest contiguous values even on a new epoch; checkpoint DELETE/TRUNCATE is rejected.
+3. All committed idempotency rows require response_status and resource_id or operation_id. BeginIdempotent alone can no longer commit. CompleteIdempotent cannot overwrite any previously set resource/type/operation/status, including in_progress rows.
+4. New all_nodes batches must include every eligible node, exclude revoked/retired nodes and copy current_incarnation_id exactly (including NULL). Create the batch before querying nodes; its trigger acquires a SHARE lock on nodes until commit. Snapshot membership remains same-transaction only.
+5. New serving leases require a registered node, its current unrevoked incarnation, and the configured duration cap. Insert serving_lease_members in the lease creation transaction; members must be active with matching, unsuspended entitlement and bounded deadlines. Existing-lease later additions are rejected.
+6. Authorized device INSERT/UPDATE now locks/rechecks member and entitlement, current validity, suspension, quota and device tombstones. Prepare an active member and current entitlement before authorization, and use member→entitlement lock order.
+7. INSERT operations with status=succeeded/failed/partially_succeeded/superseded is rejected for normal writers. Start pending/running, then transition. Success requires at least one required step; optional succeeded steps need evidence. Succeeded/superseded operations cannot change; all operations reject DELETE/TRUNCATE.
+8. Jobs cannot regress through phases or edit terminal/result evidence. Retry a failed attempt as a new attempt, not by resetting the same job. Store any additional late result evidence without rewriting a frozen terminal result. DELETE/TRUNCATE is rejected. already_current is a terminal no-download outcome, allowed from queued/waiting_online or at INSERT only.
+9. Use target_state to cancel a target without an execution incarnation. Cancelled targets cannot return active or acquire/change execution binding. Both job cancellation states are accepted.
+10. usage_rollups DELETE/TRUNCATE is rejected outside authorized retention. Raw payload purge no longer removes mixed-generation, reconciling or gap-covered events. Projection UPDATE still works.
+11. Device/assignment intervals reject infinities; device binding end cannot exclude an already-committed usage sample. Sample writes and endpoint shortening serialize on the binding.
+12. Billing subscription references must belong to the billing member. Subscription member/provider/external subscription/customer identity, certificate contents, grant source/interval/reason/creator, webhook source/body/hash and node observation evidence are immutable.
+13. Non-null revocation/closure/retirement timestamps and grant revocation reason cannot be cleared or changed. Historical subscriptions, grants, certificates, observations, inbox events, exits, bindings and incarnations reject DELETE/TRUNCATE. retention_config cannot be removed.
+14. Outbox enqueue rejects zero aggregate UUID or blank aggregate/event types; audit append requires nonblank actor/type/action/resource/result. Grants require nonblank reason/creator/revocation reason; grace periods require nonblank reason. Claims are returned ordered by availability and ID.
+15. Logical restore and future immutable backfills require their distinct owner-plus-SET LOCAL exemptions. The ordinary application role cannot activate them. Coordinate singleton and cyclic-pointer staging for data-only restore.
 
 ## Migrations and compatibility
 
