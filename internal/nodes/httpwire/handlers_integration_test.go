@@ -446,6 +446,7 @@ func TestAPI01_HTTPControlDesiredStateSignatureAndETag(t *testing.T) {
 	}
 	f.r.Config.DesiredStateSeconds = 3600
 	f.r.Config.DNSResolverIPv4 = []string{"100.64.0.53"}
+	f.r.Config.DNSResolverIPv6 = []string{"2001:db8::53"}
 	definition, revision := uuid.New(), uuid.New()
 	e = db.InTx(ctx, f.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, e := tx.Exec(ctx, `INSERT INTO policy_definitions(id,type,code) VALUES($1,'release_support','TEST ONLY empty support')`, definition); e != nil {
@@ -467,6 +468,9 @@ func TestAPI01_HTTPControlDesiredStateSignatureAndETag(t *testing.T) {
 	if env.Signed.NodeId != enrolled.NodeId || len(env.Signed.DeviceBindings) != 0 || len(env.Signed.MemberRatePolicies) != 0 || len(env.Signed.ServingReleaseIds) != 0 {
 		t.Fatal("staging grants or spoofed identity")
 	}
+	if len(env.Signed.Dns.ResolverIpv4) != 1 || env.Signed.Dns.ResolverIpv4[0] != "100.64.0.53" || len(env.Signed.Dns.ResolverIpv6) != 1 || env.Signed.Dns.ResolverIpv6[0] != "2001:db8::53" {
+		t.Fatal("configured DNS resolvers missing from signed state")
+	}
 	trust, e := vault.TrustBundle(ctx)
 	if e != nil {
 		t.Fatal(e)
@@ -478,6 +482,25 @@ func TestAPI01_HTTPControlDesiredStateSignatureAndETag(t *testing.T) {
 	if cached.Code != 304 {
 		t.Fatalf("cache %d %s", cached.Code, cached.Body.String())
 	}
+	// Deployment changes must invalidate a cached envelope even when no policy
+	// revision or node resource version changed (§8.1, §12.2).
+	for _, ipv6 := range []bool{true, false} {
+		if ipv6 {
+			f.r.Config.DNSResolverIPv6 = []string{"2001:db8::54"}
+		} else {
+			f.r.Config.DNSResolverIPv4 = []string{"100.64.0.54"}
+		}
+		changed := f.call("GET", "/api/v1/agent/desired-state", nil, cert, map[string]string{"If-None-Match": w.Header().Get("ETag")})
+		next := decode[api.DesiredStateEnvelope](t, changed, 200)
+		if next.Signed.Dns.ResolverIpv4[0] != f.r.Config.DNSResolverIPv4[0] || next.Signed.Dns.ResolverIpv6[0] != f.r.Config.DNSResolverIPv6[0] || changed.Header().Get("ETag") == w.Header().Get("ETag") {
+			t.Fatal("DNS change reused stale desired state")
+		}
+		if _, _, e = envelope.Verify(changed.Body.Bytes(), trust, envelope.PurposeDesiredState, time.Now()); e != nil {
+			t.Fatal(e)
+		}
+		w = changed
+	}
+
 }
 
 func TestENR02_HTTPCertificateRenewalAndIdentityChecks(t *testing.T) {

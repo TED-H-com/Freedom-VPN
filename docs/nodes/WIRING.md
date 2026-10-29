@@ -132,7 +132,7 @@ is not a production HSM or independent anti-rollback appliance.
 | `authorization_seconds`, `online_seconds`, `stuck_seconds` | Explicit fleet authorization/online/watchdog windows. |
 | `reconcile_seconds`, `fetch_seconds`, `desired_state_seconds` | Explicit reconciliation, HTTP fetch and desired-envelope durations. |
 | `release_origins` | Exact HTTPS origins for immutable manifests/artifacts. |
-| `dns_resolver_ipv4` | Configured node DNS service addresses, with no invented production fallback. |
+| `dns_resolver_ipv4`, `dns_resolver_ipv6` | Fleet-wide designated resolver address arrays, validated by family; at least one address across the two arrays is required. No production default. |
 | `netbird_url`, `netbird_deployment`, `netbird_token_file` | Adapter `/api` HTTPS URL, deployment scope and bearer-token file. |
 
 A complete **TEST ONLY** configuration shape follows. Provision the vault, CA
@@ -158,11 +158,19 @@ production settings.
   "desired_state_seconds": 600,
   "release_origins": ["https://releases.example.invalid"],
   "dns_resolver_ipv4": ["100.64.0.53"],
+  "dns_resolver_ipv6": ["2001:db8::53"],
   "netbird_url": "https://netbird.example.invalid/api",
   "netbird_deployment": "test-deployment",
   "netbird_token_file": "/etc/fvpn-control/netbird-token"
 }
 ```
+
+Resolver addresses come only from this deployment configuration, never a policy
+revision payload. The node compiler receives them through
+`desiredstate.WithDNSResolvers(ipv4, ipv6)` (see [README §6](README.md#6-desired-state-and-lease-decisions-follow-up-2)).
+Both families participate in desired-envelope cache validation; changing either
+invalidates the stored ETag. These are fleet-wide settings, with no per-node
+override. A single-family deployment may omit the other array.
 
 The fleet's `max_offline_lease_seconds` remains authoritative, default 86400.
 Release trust is independently pinned in the vault and reloaded at each manifest
@@ -196,3 +204,14 @@ environment in domain builds), immediate/coalesced reconciliation seeding and
 cancellation. A subprocess test runs both actual binaries with the production
 member and node domains registered, enrolls over TLS, consumes bootstrap over
 mTLS once, observes durable scheduled work and verifies clean SIGTERM shutdown.
+
+D-039 limits domain integration tests to core plus the domains under test; only
+composition and binary tests use the production `Domains()` list. Shared helper
+`internal/nodes/nodestest.New(t, nodestest.NetBird{})` writes a strict **TEST ONLY**
+configuration, ephemeral CA/vault and synthetic token under the test's private
+disk temporary directory. Its default NetBird URL points at a local TLS fake that
+rejects unexpected calls. Tests that exercise adapter requests pass their own
+local TLS fake URL, deployment and token file and configure trust for it. The
+returned `Path` supplies `NodesConfigFile`; `Nodes.CACertificateFile` supplies the
+agent listener CA. The helper has no dependency on either application, changes
+no environment variables, and adds no production defaults.

@@ -30,6 +30,7 @@ type Nodes struct {
 	NetBirdDeployment     string   `json:"netbird_deployment"`
 	NetBirdTokenFile      string   `json:"netbird_token_file"`
 	DNSResolverIPv4       []string `json:"dns_resolver_ipv4"`
+	DNSResolverIPv6       []string `json:"dns_resolver_ipv6"`
 	ReleaseOrigins        []string `json:"release_origins"`
 }
 
@@ -67,10 +68,19 @@ func (c Nodes) Validate() error {
 	if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.Path != "/api" || u.RawQuery != "" || u.Fragment != "" || c.NetBirdDeployment == "" || c.NetBirdTokenFile == "" {
 		return errors.New("node NetBird settings required")
 	}
+	if len(c.DNSResolverIPv4)+len(c.DNSResolverIPv6) == 0 {
+		return errors.New("node DNS resolvers required")
+	}
 	for _, ip := range c.DNSResolverIPv4 {
 		a, e := netip.ParseAddr(ip)
 		if e != nil || !a.Is4() {
 			return errors.New("invalid node IPv4 resolver")
+		}
+	}
+	for _, ip := range c.DNSResolverIPv6 {
+		a, e := netip.ParseAddr(ip)
+		if e != nil || !a.Is6() || a.Is4In6() || a.Zone() != "" {
+			return errors.New("invalid node IPv6 resolver")
 		}
 	}
 	return nil

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -72,10 +73,10 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		if e != nil {
 			return e
 		}
-		if len(r.Config.DNSResolverIPv4) == 0 {
+		if len(r.Config.DNSResolverIPv4)+len(r.Config.DNSResolverIPv6) == 0 {
 			return apierr.New(apierr.DependencyUnavailable, "Node DNS configuration required.")
 		}
-		snap := desiredstate.PolicySnapshot{AuthorizationGeneration: 1, FairUseGeneration: 1, DNSGeneration: 1, DNSResolverIPv4: append([]string(nil), r.Config.DNSResolverIPv4...), DNSResolverIPv6: []string{}, ServingReleaseIDs: []uuid.UUID{}, AccountingPeriod: desiredstate.DefaultAccountingPeriod(time.Now().UTC())}
+		snap := desiredstate.PolicySnapshot{AuthorizationGeneration: 1, FairUseGeneration: 1, DNSGeneration: 1, ServingReleaseIDs: []uuid.UUID{}, AccountingPeriod: desiredstate.DefaultAccountingPeriod(time.Now().UTC())}
 		if e = tx.QueryRow(ctx, `SELECT active_revision_id FROM policy_definitions WHERE type='release_support' AND active_revision_id IS NOT NULL ORDER BY id LIMIT 1`).Scan(&snap.SupportedReleasePolicyID); e != nil {
 			return apierr.New(apierr.DependencyUnavailable, "Release support policy required.")
 		}
@@ -102,8 +103,6 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 			if json.Unmarshal(raw, &cached) == nil && cached.Signed.ExpiresAt.After(time.Now().Add(time.Duration(r.Config.DesiredStateSeconds)*time.Second/2)) && cached.Signed.ConfigGeneration.String() == generationText && cached.Signed.PublicationIntent == publication && cached.Signed.Update.IsNull() {
 				a, _ := canonjson.Marshal(cached.Signed.ServingReleaseIds)
 				b, _ := canonjson.Marshal(snap.ServingReleaseIDs)
-				dnsA, _ := canonjson.Marshal(cached.Signed.Dns.ResolverIpv4)
-				dnsB, _ := canonjson.Marshal(snap.DNSResolverIPv4)
 				cachedCap, _ := canonjson.Marshal(cached.Signed.NodeCapacity)
 				var wantedCap any
 				if len(capacity) > 0 {
@@ -115,13 +114,13 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 				if trustErr == nil {
 					_, _, verifyErr = envelope.Verify(raw, trust, envelope.PurposeDesiredState, time.Now())
 				}
-				if string(a) == string(b) && string(dnsA) == string(dnsB) && string(cachedCap) == string(currentCap) && cached.Signed.SupportedReleasePolicyId == snap.SupportedReleasePolicyID && trustErr == nil && verifyErr == nil {
+				if string(a) == string(b) && slices.Equal(cached.Signed.Dns.ResolverIpv4, r.Config.DNSResolverIPv4) && slices.Equal(cached.Signed.Dns.ResolverIpv6, r.Config.DNSResolverIPv6) && string(cachedCap) == string(currentCap) && cached.Signed.SupportedReleasePolicyId == snap.SupportedReleasePolicyID && trustErr == nil && verifyErr == nil {
 					out = desiredstate.CompiledDesiredState{Envelope: cached, ETag: tag, Generation: uint64(cached.Signed.ConfigGeneration)}
 					return nil
 				}
 			}
 		}
-		compiler := desiredstate.NewCompiler(r.Pool, purposeSigner{r.Provider, envelope.PurposeDesiredState}, desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds)*time.Second), desiredstate.WithPolicyReader(policySnapshot{snap}))
+		compiler := desiredstate.NewCompiler(r.Pool, purposeSigner{r.Provider, envelope.PurposeDesiredState}, desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds)*time.Second), desiredstate.WithPolicyReader(policySnapshot{snap}), desiredstate.WithDNSResolvers(r.Config.DNSResolverIPv4, r.Config.DNSResolverIPv6))
 		out, e = compiler.CompileTx(ctx, tx, node)
 		return e
 	})

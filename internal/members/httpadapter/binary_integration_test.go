@@ -31,6 +31,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
 )
 
 type synchronizedBuffer struct {
@@ -81,6 +82,8 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	c := testTLSConfig(t, config.Defaults())
 	c.DatabaseURLFile = write("database-url", []byte(dsn))
 	c.MembersConfigFile = write("members.json", raw)
+	nodes := nodestest.New(t, nodestest.NetBird{URL: members.NetBirdURL, Deployment: members.NetBirdDeployment, TokenFile: members.NetBirdTokenFile})
+	c.NodesConfigFile, c.AgentCAFile = nodes.Path, nodes.Nodes.CACertificateFile
 	c.PublicAddress = availableAddress(t)
 	c.MetricsAddress = availableAddress(t)
 	c.ShutdownSeconds = 3

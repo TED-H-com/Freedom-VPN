@@ -29,9 +29,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
-	"github.com/TED-H-com/Freedom-VPN/internal/pki"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
-	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -82,28 +81,11 @@ func jsonFixture(t *testing.T, dir, name string, value any) string {
 func domainConfig(t *testing.T) (config.Config, config.Nodes) {
 	t.Helper()
 	dir := t.TempDir()
-	ctx := t.Context()
-	vaultPath := filepath.Join(dir, "vault")
-	vault, e := signing.InitializeFileProvider(vaultPath)
-	if e != nil {
-		t.Fatal(e)
-	}
-	key, e := vault.Rotate(ctx, signing.NodeCA, 48*time.Hour, time.Hour)
-	if e != nil {
-		t.Fatal(e)
-	}
-	if _, e = vault.Rotate(ctx, signing.BootstrapSecret, 48*time.Hour, time.Hour); e != nil {
-		t.Fatal(e)
-	}
-	der, e := pki.CreateDevCA(ctx, vault, key, 48*time.Hour)
-	if e != nil {
-		t.Fatal(e)
-	}
-	caPath := writeFixture(t, dir, "node-ca.pem", pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}))
-	n := config.Nodes{ProviderDirectory: vaultPath, CACertificateFile: caPath, CAKeyID: key, CertificateSeconds: 86400, RenewalOverlapSeconds: 300, BootstrapSeconds: 60, InstallerSeconds: 900, PreinstalledSeconds: 604800, AuthorizationSeconds: 300, OnlineSeconds: 180, StuckSeconds: 600, ReconcileSeconds: 1, FetchSeconds: 10, DesiredStateSeconds: 600, ReleaseOrigins: []string{"https://releases.example.invalid"}, DNSResolverIPv4: []string{"100.64.0.53"}, NetBirdURL: "https://netbird.example.invalid/api", NetBirdDeployment: "TEST ONLY", NetBirdTokenFile: writeFixture(t, dir, "netbird-token", []byte("TEST ONLY synthetic token"))}
+	fixture := nodestest.New(t, nodestest.NetBird{})
+	n := fixture.Nodes
 	c := config.Defaults()
-	c.NodesConfigFile = jsonFixture(t, dir, "nodes.json", n)
-	c.AgentCAFile = caPath
+	c.NodesConfigFile = fixture.Path
+	c.AgentCAFile = n.CACertificateFile
 	c.PublicAddress = "127.0.0.1:0"
 	c.AgentAddress = "127.0.0.1:0"
 	c.MetricsAddress = "127.0.0.1:0"
@@ -128,11 +110,18 @@ func domainConfig(t *testing.T) (config.Config, config.Nodes) {
 }
 func TestAPI01_NodeDomainsRequireExplicitSettings(t *testing.T) {
 	c, w := nodeDomains(t)
-	good, _ := domainConfig(t)
+	good, n := domainConfig(t)
 	// A domain may not fall back to process environment when Dependencies disagrees.
 	t.Setenv("FVPN_NODES_CONFIG_FILE", good.NodesConfigFile)
 	invalid := writeFixture(t, t.TempDir(), "invalid.json", []byte(`{"unrecognized":true}`))
-	for _, path := range []string{"", filepath.Join(t.TempDir(), "missing.json"), invalid} {
+	paths := []string{"", filepath.Join(t.TempDir(), "missing.json"), invalid}
+	for _, resolver := range []struct{ v4, v6 []string }{
+		{}, {v4: []string{"2001:db8::53"}}, {v6: []string{"192.0.2.53"}}, {v6: []string{"fe80::1%eth0"}},
+	} {
+		n.DNSResolverIPv4, n.DNSResolverIPv6 = resolver.v4, resolver.v6
+		paths = append(paths, jsonFixture(t, t.TempDir(), "bad-dns.json", n))
+	}
+	for _, path := range paths {
 		cfg := config.Defaults()
 		cfg.NodesConfigFile = path
 		_, ce := c.Build(t.Context(), control.Dependencies{Config: cfg})
