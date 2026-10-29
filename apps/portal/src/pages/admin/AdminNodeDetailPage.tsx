@@ -7,20 +7,20 @@ import {
   deriveNodeSummaryPhrase,
   type OperationResource,
 } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { ConflictDialog } from '../../components/common/ConflictDialog';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n, type TranslationKey } from '../../i18n';
 import { formatBpsMbps } from '../../lib/decimal';
-import { PRIMARY_NODE_ID } from '../../mocks/data';
 
 export function AdminNodeDetailPage(): React.ReactElement {
-  const { nodeId = PRIMARY_NODE_ID } = useParams<{ nodeId: string }>();
-  const { t, locale } = useI18n();
+  const { nodeId = '' } = useParams<{ nodeId: string }>();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
 
   const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
   const [conflictError, setConflictError] = useState<ApiError | null>(null);
-  const [actionError, setActionError] = useState<ApiError | null>(null);
+  const [actionError, setActionError] = useState<unknown>(null);
   const [savedNotice, setSavedNotice] = useState(false);
 
   const [name, setName] = useState('');
@@ -28,11 +28,13 @@ export function AdminNodeDetailPage(): React.ReactElement {
   const [groups, setGroups] = useState('');
   const [upBps, setUpBps] = useState('');
   const [downBps, setDownBps] = useState('');
+  const [clearCapacity, setClearCapacity] = useState(false);
   const [notes, setNotes] = useState('');
 
   const nodeQuery = useQuery({
     queryKey: ['admin', 'node', nodeId],
     queryFn: () => apiClient.getNode(nodeId),
+    enabled: Boolean(nodeId),
   });
 
   const node = nodeQuery.data?.data;
@@ -45,9 +47,18 @@ export function AdminNodeDetailPage(): React.ReactElement {
       setGroups(node.member_group_ids.join(', '));
       setUpBps(String(node.capacity?.up_bps ?? 1000000000));
       setDownBps(String(node.capacity?.down_bps ?? 1000000000));
+      setClearCapacity(false);
       setNotes(node.notes ?? '');
     }
   }, [node]);
+
+  if (nodeQuery.error) {
+    return (
+      <div data-testid="admin-node-detail-page">
+        <ApiErrorAlert error={nodeQuery.error} testId="node-detail-error" />
+      </div>
+    );
+  }
 
   if (nodeQuery.isLoading || !node) {
     return (
@@ -68,9 +79,29 @@ export function AdminNodeDetailPage(): React.ReactElement {
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 412) setConflictError(err);
-        else setActionError(err);
+      if (err instanceof ApiError && err.status === 412) {
+        setConflictError(err);
+      } else {
+        setActionError(err);
+      }
+    }
+  };
+
+  const handleUnpublish = async () => {
+    setActionError(null);
+    try {
+      const op = await apiClient.unpublishNode(
+        node.node_id,
+        etag ?? undefined,
+        `unpublish:${node.node_id}:${node.resource_version}`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 412) {
+        setConflictError(err);
+      } else {
+        setActionError(err);
       }
     }
   };
@@ -86,9 +117,10 @@ export function AdminNodeDetailPage(): React.ReactElement {
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 412) setConflictError(err);
-        else setActionError(err);
+      if (err instanceof ApiError && err.status === 412) {
+        setConflictError(err);
+      } else {
+        setActionError(err);
       }
     }
   };
@@ -105,9 +137,29 @@ export function AdminNodeDetailPage(): React.ReactElement {
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 412) setConflictError(err);
-        else setActionError(err);
+      if (err instanceof ApiError && err.status === 412) {
+        setConflictError(err);
+      } else {
+        setActionError(err);
+      }
+    }
+  };
+
+  const handleRetire = async () => {
+    setActionError(null);
+    try {
+      const op = await apiClient.retireNode(
+        node.node_id,
+        etag ?? undefined,
+        `retire:${node.node_id}:${node.resource_version}`,
+      );
+      setActiveOp(op);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 412) {
+        setConflictError(err);
+      } else {
+        setActionError(err);
       }
     }
   };
@@ -120,33 +172,42 @@ export function AdminNodeDetailPage(): React.ReactElement {
       const parsedDown = Number.parseInt(downBps.trim(), 10);
       await apiClient.updateNode(
         node.node_id,
-        {
-          name,
-          region,
-          member_group_ids: groups
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean),
-          capacity: {
-            up_bps: Number.isNaN(parsedUp) ? -1 : parsedUp,
-            down_bps: Number.isNaN(parsedDown) ? -1 : parsedDown,
-            member_up_bps_cap: node.capacity?.member_up_bps_cap ?? null,
-            member_down_bps_cap: node.capacity?.member_down_bps_cap ?? null,
-          },
-          notes,
-        },
+        clearCapacity
+          ? {
+              name,
+              region,
+              member_group_ids: groups
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean),
+              clear_capacity: true,
+              notes,
+            }
+          : {
+              name,
+              region,
+              member_group_ids: groups
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean),
+              capacity: {
+                up_bps: Number.isNaN(parsedUp) ? -1 : parsedUp,
+                down_bps: Number.isNaN(parsedDown) ? -1 : parsedDown,
+                member_up_bps_cap: node.capacity?.member_up_bps_cap ?? null,
+                member_down_bps_cap: node.capacity?.member_down_bps_cap ?? null,
+              },
+              notes,
+            },
         overrideEtag ?? etag ?? undefined,
-        `patch:${node.node_id}:${overrideEtag ?? etag ?? 'none'}`,
+        `patch:${node.node_id}:${overrideEtag ?? etag ?? 'none'}:${Date.now()}`,
       );
       setSavedNotice(true);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 412) {
-          setConflictError(err);
-        } else {
-          setActionError(err);
-        }
+      if (err instanceof ApiError && err.status === 412) {
+        setConflictError(err);
+      } else {
+        setActionError(err);
       }
     }
   };
@@ -207,12 +268,7 @@ export function AdminNodeDetailPage(): React.ReactElement {
         </div>
       )}
 
-      {actionError && (
-        <div className="alert alert-danger" role="alert" data-testid="node-action-error">
-          <strong>{actionError.code}</strong>: {actionError.messageForLocale(locale)} (
-          <span className="mono">{actionError.requestId}</span>)
-        </div>
-      )}
+      <ApiErrorAlert error={actionError} testId="node-action-error" />
 
       {/* Desired vs Observed comparison (§18.1, §18.3) */}
       <section className="card" data-testid="desired-vs-observed-section">
@@ -324,6 +380,15 @@ export function AdminNodeDetailPage(): React.ReactElement {
           <button
             type="button"
             className="btn btn-secondary"
+            data-testid="unpublish-node-btn"
+            onClick={() => void handleUnpublish()}
+            disabled={isRevokedOrRetired}
+          >
+            {t('admin.nodeDetail.pubActions.unpublishBtn')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
             data-testid="disable-node-btn"
             onClick={() => void handleDisable()}
             disabled={isRevokedOrRetired}
@@ -351,15 +416,26 @@ export function AdminNodeDetailPage(): React.ReactElement {
           >
             {t('admin.nodeDetail.pubActions.revokeDistinctNote')}
           </p>
-          <button
-            type="button"
-            className="btn btn-danger"
-            data-testid="revoke-node-identity-btn"
-            onClick={() => void handleRevoke()}
-            disabled={isRevokedOrRetired}
-          >
-            {t('admin.nodeDetail.pubActions.revokeBtn')}
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn-danger"
+              data-testid="revoke-node-identity-btn"
+              onClick={() => void handleRevoke()}
+              disabled={isRevokedOrRetired}
+            >
+              {t('admin.nodeDetail.pubActions.revokeBtn')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              data-testid="retire-node-btn"
+              onClick={() => void handleRetire()}
+              disabled={node.lifecycle_state === 'retired'}
+            >
+              {t('admin.nodeDetail.pubActions.retireBtn')}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -410,6 +486,7 @@ export function AdminNodeDetailPage(): React.ReactElement {
                 id="edit-node-up"
                 className="mono"
                 value={upBps}
+                disabled={clearCapacity}
                 onChange={(e) => setUpBps(e.target.value)}
               />
             </div>
@@ -421,6 +498,7 @@ export function AdminNodeDetailPage(): React.ReactElement {
                 id="edit-node-down"
                 className="mono"
                 value={downBps}
+                disabled={clearCapacity}
                 onChange={(e) => setDownBps(e.target.value)}
               />
             </div>
@@ -434,6 +512,18 @@ export function AdminNodeDetailPage(): React.ReactElement {
                 onChange={(e) => setNotes(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                data-testid="clear-capacity-checkbox"
+                checked={clearCapacity}
+                onChange={(e) => setClearCapacity(e.target.checked)}
+              />
+              {t('admin.nodeDetail.editForm.clearCapacity')}
+            </label>
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>

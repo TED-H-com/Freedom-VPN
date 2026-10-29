@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, deriveMemberServiceReason } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
+import { formatLocaleWithUtc } from '../../lib/datetime';
 
 export function MemberServicePage(): React.ReactElement {
   const { t, locale } = useI18n();
@@ -18,6 +20,14 @@ export function MemberServicePage(): React.ReactElement {
     queryKey: ['member', 'usage', persona],
     queryFn: () => apiClient.getMemberUsage(),
   });
+
+  if (selfQuery.error) {
+    return (
+      <div data-testid="member-service-page">
+        <ApiErrorAlert error={selfQuery.error} testId="member-service-error" />
+      </div>
+    );
+  }
 
   if (selfQuery.isLoading || !selfQuery.data) {
     return (
@@ -34,6 +44,8 @@ export function MemberServicePage(): React.ReactElement {
     ent.state === 'active' ||
     ent.state === 'cancel_at_period_end' ||
     ent.state === 'past_due';
+  const isClosed =
+    ent.state === 'closed' || me.next_actions.includes('contact_support');
   const isFupAdjusted = usage?.fair_use.state === 'adjusted';
   const resetAt = me.fair_use_reset_at ?? usage?.fair_use.resets_at ?? '-';
   const planName =
@@ -56,7 +68,9 @@ export function MemberServicePage(): React.ReactElement {
           className={`badge ${
             ent.state === 'active'
               ? 'badge-success'
-              : ent.state === 'suspended' || ent.state === 'expired'
+              : ent.state === 'suspended' ||
+                  ent.state === 'expired' ||
+                  ent.state === 'closed'
                 ? 'badge-danger'
                 : 'badge-warning'
           }`}
@@ -65,6 +79,16 @@ export function MemberServicePage(): React.ReactElement {
           {ent.state}
         </span>
       </div>
+
+      {isClosed && (
+        <div
+          className="alert alert-danger"
+          role="alert"
+          data-testid="member-account-closed-banner"
+        >
+          {t('member.service.closedBanner')}
+        </div>
+      )}
 
       {/* Exact required FUP throttling phrase (§11.6, §18.4) */}
       {isFupAdjusted && (
@@ -77,6 +101,10 @@ export function MemberServicePage(): React.ReactElement {
             resetAt,
           })}
         </div>
+      )}
+
+      {usageQuery.error && (
+        <ApiErrorAlert error={usageQuery.error} testId="member-service-usage-error" />
       )}
 
       <div className="stat-grid">
@@ -110,20 +138,23 @@ export function MemberServicePage(): React.ReactElement {
           <span className="stat-label">{t('member.service.effectiveEndLabel')}</span>
           <span
             className="stat-value mono"
-            style={{ fontSize: '1.1rem' }}
+            style={{ fontSize: '1.05rem' }}
             data-testid="member-effective-end"
           >
-            {ent.effective_service_end ?? 'None'}
+            {ent.effective_service_end
+              ? formatLocaleWithUtc(ent.effective_service_end, locale)
+              : 'None'}
           </span>
           <span className="stat-subtext mono">
-            {t('member.service.paidThroughLabel')}: {ent.paid_through ?? 'None'}
+            {t('member.service.paidThroughLabel')}:{' '}
+            {ent.paid_through ? formatLocaleWithUtc(ent.paid_through, locale) : 'None'}
           </span>
         </div>
 
         <div className="stat-card">
           <span className="stat-label">{t('member.service.nextResetLabel')}</span>
-          <span className="stat-value mono" style={{ fontSize: '1.1rem' }}>
-            {resetAt}
+          <span className="stat-value mono" style={{ fontSize: '1.05rem' }}>
+            {resetAt !== '-' ? formatLocaleWithUtc(resetAt, locale) : '-'}
           </span>
           <span className="stat-subtext">
             {usage?.fair_use.tier_name

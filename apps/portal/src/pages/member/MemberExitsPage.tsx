@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n } from '../../i18n';
 
 export function MemberExitsPage(): React.ReactElement {
@@ -29,6 +30,8 @@ export function MemberExitsPage(): React.ReactElement {
       >
         {t('member.exits.manualSelectionNotice')}
       </div>
+
+      <ApiErrorAlert error={exitsQuery.error} testId="member-exits-error" />
 
       <div className="card">
         <div className="table-wrapper">

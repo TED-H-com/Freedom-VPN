@@ -1,8 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useSession } from '../../context/SessionContext';
+import { useSession, type MockPersona } from '../../context/SessionContext';
 import { useI18n, type Locale } from '../../i18n';
-import type { MockPersona } from '../../mocks/data';
 
 export function AppLayout(): React.ReactElement {
   const { t, locale, setLocale } = useI18n();
@@ -58,7 +57,9 @@ export function AppLayout(): React.ReactElement {
         </div>
 
         <div className="top-bar-controls">
-          {import.meta.env.VITE_API_MOCK === '1' && (
+          {!import.meta.env.PROD &&
+            (import.meta.env.VITE_API_MOCK === '1' ||
+              import.meta.env.MODE === 'test') && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <label htmlFor="persona-select" style={{ fontSize: '0.8rem' }}>
                 {t('app.mockSwitcher.label')}

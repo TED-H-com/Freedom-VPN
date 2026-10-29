@@ -1,8 +1,10 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, deriveUsageQualitySummary } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
+import { formatLocaleWithUtc } from '../../lib/datetime';
 import { formatBpsMbps, formatBytesDual } from '../../lib/decimal';
 
 export function MemberUsagePage(): React.ReactElement {
@@ -13,6 +15,22 @@ export function MemberUsagePage(): React.ReactElement {
     queryKey: ['member', 'usage', persona],
     queryFn: () => apiClient.getMemberUsage(),
   });
+
+  if (usageQuery.error) {
+    return (
+      <div data-testid="member-usage-page">
+        <div className="page-header">
+          <div>
+            <h1>{t('member.usage.title')}</h1>
+          </div>
+        </div>
+        <div className="alert alert-info" role="note" data-testid="honest-metering-banner">
+          {t('member.usage.honestyBanner')}
+        </div>
+        <ApiErrorAlert error={usageQuery.error} testId="member-usage-error" />
+      </div>
+    );
+  }
 
   if (usageQuery.isLoading || !usageQuery.data) {
     return (
@@ -40,7 +58,11 @@ export function MemberUsagePage(): React.ReactElement {
           </p>
         </div>
         <span className="badge badge-neutral mono" data-testid="usage-as-of-badge">
-          {t('member.usage.asOfLabel', { asOf: u.aggregate_as_of ?? '-' })}
+          {t('member.usage.asOfLabel', {
+            asOf: u.aggregate_as_of
+              ? formatLocaleWithUtc(u.aggregate_as_of, locale)
+              : '-',
+          })}
         </span>
       </div>
 
@@ -128,7 +150,11 @@ export function MemberUsagePage(): React.ReactElement {
             })}
           </span>
           <span className="stat-subtext mono">
-            {t('member.usage.nextResetLabel', { resetAt: u.fair_use.resets_at ?? '-' })}
+            {t('member.usage.nextResetLabel', {
+              resetAt: u.fair_use.resets_at
+                ? formatLocaleWithUtc(u.fair_use.resets_at, locale)
+                : '-',
+            })}
           </span>
         </div>
       </div>

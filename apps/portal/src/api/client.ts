@@ -16,6 +16,7 @@ import {
   logoutAuthSession,
   readCsrfToken,
   type AuthSession,
+  type SessionRole,
 } from './auth';
 import { ApiError, parseApiError } from './errors';
 import type {
@@ -397,12 +398,12 @@ export class FreedomVpnApiClient {
 
   // --- Browser Auth Session Routes (outside /api/v1, defined in ./auth) ---
 
-  getSession(): Promise<AuthSession> {
-    return getAuthSession(this.fetchImpl, this.authBaseUrl);
+  getSession(role?: SessionRole): Promise<AuthSession> {
+    return getAuthSession(this.fetchImpl, this.authBaseUrl, role);
   }
 
-  logout(): Promise<void> {
-    return logoutAuthSession(this.fetchImpl, this.authBaseUrl);
+  logout(role?: SessionRole): Promise<void> {
+    return logoutAuthSession(this.fetchImpl, this.authBaseUrl, role);
   }
 
   // --- Admin Nodes & Enrollments (typed via @contracts/schema operations) ---
@@ -498,6 +499,20 @@ export class FreedomVpnApiClient {
     return this.setNodePublication(
       nodeId,
       { publication_intent: 'disabled', reason },
+      ifMatch,
+      actionId,
+    );
+  }
+
+  unpublishNode(
+    nodeId: string,
+    ifMatch?: string,
+    actionId?: string,
+    reason = 'Unpublish node from member service',
+  ): Promise<OperationResource> {
+    return this.setNodePublication(
+      nodeId,
+      { publication_intent: 'unpublished', reason },
       ifMatch,
       actionId,
     );

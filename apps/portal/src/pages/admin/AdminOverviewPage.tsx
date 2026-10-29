@@ -2,8 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, buildAdminOverviewViewModel } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n } from '../../i18n';
-import { PRIMARY_BATCH_ID } from '../../mocks/data';
+
+const MOCK_FALLBACK_BATCH_ID =
+  !import.meta.env.PROD &&
+  (import.meta.env.VITE_API_MOCK === '1' || import.meta.env.MODE === 'test')
+    ? '85ef720a-31a0-4250-90d2-4b92c58695bc'
+    : null;
 
 export function AdminOverviewPage(): React.ReactElement {
   const { t } = useI18n();
@@ -16,9 +22,21 @@ export function AdminOverviewPage(): React.ReactElement {
     queryFn: () => apiClient.listMembers(),
   });
   const batchQuery = useQuery({
-    queryKey: ['admin', 'update-batch', PRIMARY_BATCH_ID],
-    queryFn: () => apiClient.getUpdateBatch(PRIMARY_BATCH_ID),
+    queryKey: ['admin', 'update-batch', MOCK_FALLBACK_BATCH_ID],
+    queryFn: () => apiClient.getUpdateBatch(MOCK_FALLBACK_BATCH_ID!),
+    enabled: Boolean(MOCK_FALLBACK_BATCH_ID),
   });
+
+  if (nodesQuery.error || membersQuery.error) {
+    return (
+      <div data-testid="admin-overview-page">
+        <ApiErrorAlert
+          error={nodesQuery.error ?? membersQuery.error}
+          testId="admin-overview-error"
+        />
+      </div>
+    );
+  }
 
   if (
     nodesQuery.isLoading ||

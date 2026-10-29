@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiClient, ApiError, type EnrollmentCreateResponse } from '../../api';
+import { apiClient, type EnrollmentCreateResponse } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n } from '../../i18n';
 
 export function AdminAddNodePage(): React.ReactElement {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
+  const [delivery, setDelivery] = useState<'preinstalled' | 'installer'>('preinstalled');
+  const [reinstallNodeId, setReinstallNodeId] = useState('');
   const [name, setName] = useState('Taichung Edge 01');
   const [region, setRegion] = useState('tw-taichung');
   const [groups, setGroups] = useState('63575bae-2d23-45c0-ae11-ba6bb9ace34a');
@@ -15,17 +18,18 @@ export function AdminAddNodePage(): React.ReactElement {
   const [createdEnrollment, setCreatedEnrollment] =
     useState<EnrollmentCreateResponse | null>(null);
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setCopied(false);
     try {
-      const hours = Number(expiresHours) || 168;
+      const hours = Number(expiresHours) || (delivery === 'installer' ? 0.25 : 168);
       const clampedSeconds = Math.min(604800, Math.max(60, Math.round(hours * 3600)));
       const response = await apiClient.createEnrollment({
-        delivery: 'preinstalled',
+        node_id: reinstallNodeId.trim() || undefined,
+        delivery,
         expires_in_seconds: clampedSeconds,
         name: name.trim() || undefined,
         region: region.trim() || undefined,
@@ -37,9 +41,7 @@ export function AdminAddNodePage(): React.ReactElement {
       });
       setCreatedEnrollment(response);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err);
-      }
+      setError(err);
     }
   };
 
@@ -64,11 +66,7 @@ export function AdminAddNodePage(): React.ReactElement {
         </div>
       </div>
 
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          <strong>{error.code}</strong>: {error.messageForLocale(locale)}
-        </div>
-      )}
+      <ApiErrorAlert error={error} testId="create-enrollment-error" />
 
       {createdEnrollment && (
         <section
@@ -127,6 +125,41 @@ export function AdminAddNodePage(): React.ReactElement {
         <form onSubmit={(e) => void handleSubmit(e)}>
           <div className="form-grid">
             <div className="form-group">
+              <label htmlFor="enr-delivery">{t('admin.enrollment.form.delivery')}</label>
+              <select
+                id="enr-delivery"
+                data-testid="enr-delivery-select"
+                value={delivery}
+                onChange={(e) => {
+                  const next = e.target.value as 'preinstalled' | 'installer';
+                  setDelivery(next);
+                  setExpiresHours(next === 'installer' ? 0.25 : 168);
+                }}
+              >
+                <option value="preinstalled">
+                  {t('admin.enrollment.form.deliveryPreinstalled')}
+                </option>
+                <option value="installer">
+                  {t('admin.enrollment.form.deliveryInstaller')}
+                </option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="enr-reinstall-node-id">
+                {t('admin.enrollment.form.reinstallNodeId')}
+              </label>
+              <input
+                id="enr-reinstall-node-id"
+                data-testid="enr-reinstall-node-id-input"
+                className="mono"
+                value={reinstallNodeId}
+                placeholder="Optional UUID for existing node reinstall"
+                onChange={(e) => setReinstallNodeId(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
               <label htmlFor="enr-name">{t('admin.enrollment.form.name')}</label>
               <input
                 id="enr-name"
@@ -160,7 +193,8 @@ export function AdminAddNodePage(): React.ReactElement {
               <input
                 id="enr-expires"
                 type="number"
-                min={1}
+                step="0.25"
+                min={0.25}
                 max={168}
                 value={expiresHours}
                 onChange={(e) => setExpiresHours(Number(e.target.value))}
