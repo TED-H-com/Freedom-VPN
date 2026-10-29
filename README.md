@@ -20,6 +20,7 @@ Freedom VPN is a member-based, multi-region VPN platform for a small paid commun
 - Roadmap and task board: [docs/ROADMAP.md](docs/ROADMAP.md)
 - API contract conventions and endpoint table: [docs/contracts/README.md](docs/contracts/README.md)
 - Database foundation: [docs/db/README.md](docs/db/README.md)
+- Deployment, operations, calibration and member guides: [docs/handover/README.md](docs/handover/README.md)
 
 ## Repository layout
 
