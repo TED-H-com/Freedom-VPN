@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"debug/buildinfo"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -54,19 +55,21 @@ type step struct {
 	At       string `json:"at"`
 }
 type buildInfo struct {
-	Source   string            `json:"source_commit"`
-	Dirty    bool              `json:"source_dirty"`
-	Images   map[string]string `json:"image_digests"`
-	Binaries map[string]string `json:"binary_sha256"`
+	Source    string                       `json:"source_commit"`
+	Dirty     bool                         `json:"source_dirty"`
+	Images    map[string]string            `json:"image_digests"`
+	Binaries  map[string]string            `json:"binary_sha256"`
+	BinaryVCS map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
 	e2e.Record
-	Build           buildInfo `json:"build"`
-	PolicyRevision  string    `json:"policy_revision"`
-	NodeIncarnation string    `json:"node_incarnation"`
-	Steps           []step    `json:"steps"`
-	Blockers        []string  `json:"blockers"`
-	Operator        string    `json:"operator_status,omitempty"`
+	Build            buildInfo         `json:"build"`
+	PolicyRevision   string            `json:"policy_revision"`
+	PolicyReferences map[string]string `json:"active_policy_revisions"`
+	NodeIncarnation  string            `json:"node_incarnation"`
+	Steps            []step            `json:"steps"`
+	Blockers         []string          `json:"blockers"`
+	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
 	t                                        *testing.T
@@ -166,7 +169,7 @@ func (l *live) open() {
 		l.t.Fatal("lab DB unavailable")
 	}
 	l.t.Cleanup(l.pool.Close)
-	l.build = buildInfo{Images: map[string]string{}, Binaries: map[string]string{}}
+	l.build = buildInfo{Images: map[string]string{}, Binaries: map[string]string{}, BinaryVCS: map[string]map[string]string{}}
 	out, err := l.command("git", "rev-parse", "HEAD")
 	if err != nil {
 		l.t.Fatal("git commit missing")
@@ -186,6 +189,16 @@ func (l *live) open() {
 		if err == nil {
 			sum := sha256.Sum256(raw)
 			l.build.Binaries[name] = hex.EncodeToString(sum[:])
+			info, err := buildinfo.ReadFile(filepath.Join(l.root, ".agent/e2e-build", name))
+			if err == nil {
+				settings := map[string]string{"go_version": info.GoVersion}
+				for _, setting := range info.Settings {
+					if strings.HasPrefix(setting.Key, "vcs.") {
+						settings[setting.Key] = setting.Value
+					}
+				}
+				l.build.BinaryVCS[name] = settings
+			}
 		}
 	}
 }
@@ -336,9 +349,22 @@ func (r *record) check(name, expected, actual, command string, ok bool) {
 }
 func (r *record) block(reason string) {
 	r.Blockers = append(r.Blockers, reason)
-	r.Status = e2e.StatusBlocked
+	if r.Status != e2e.StatusFail {
+		r.Status = e2e.StatusBlocked
+	}
 }
 func (l *live) write(r *record) {
+	r.PolicyReferences = map[string]string{}
+	rows, err := l.pool.Query(l.ctx, `SELECT type,active_revision_id::text FROM policy_definitions WHERE active_revision_id IS NOT NULL ORDER BY type`)
+	if err == nil {
+		for rows.Next() {
+			var kind, id string
+			if rows.Scan(&kind, &id) == nil {
+				r.PolicyReferences[kind] = id
+			}
+		}
+		rows.Close()
+	}
 	r.NodeIncarnation = "unavailable"
 	r.PolicyRevision = "unavailable"
 	if l.node != uuid.Nil {

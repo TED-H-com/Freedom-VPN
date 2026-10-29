@@ -71,6 +71,8 @@ func (l *live) dnsRules(r *record) {
 			r.check("DNS activation", "202 pending external apply", detail(act), "POST /admin/policies/{id}/activate", act.status == 202)
 		}
 	}
+	documents := l.count(`SELECT count(*) FROM dns_resolver_documents`)
+	r.check("compiled DNS documents", "observe central publication separately from resolver apply", fmt.Sprintf("stored_documents=%d", documents), "SELECT count dns_resolver_documents", true)
 	var status struct {
 		UserRules []string `json:"user_rules"`
 	}

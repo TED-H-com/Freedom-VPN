@@ -61,6 +61,12 @@ func (l *live) devices(r *record) {
 		r.block("member entrypoint key handoff unavailable")
 		return
 	}
+	host, hostErr := l.docker("inspect", "--format", "{{.Config.Hostname}}", l.name("member"))
+	if hostErr != nil {
+		r.block("member hostname readback unavailable")
+		return
+	}
+	hostname := strings.TrimSpace(string(host))
 	var userPresent bool
 	ready := l.wait(90*time.Second, func() bool {
 		got := l.nb("GET", "/peers", nil)
@@ -69,9 +75,9 @@ func (l *live) devices(r *record) {
 			User             string `json:"user_id"`
 		}
 		_ = json.Unmarshal(got.body, &peers)
-		// Native member container hostname is fixed by the assigned stack.
+		// Match the actual container hostname, never a guessed name or overlay IP.
 		for _, p := range peers {
-			if strings.Contains(p.Name, "member") {
+			if p.Name == hostname {
 				l.machinePeer = p.ID
 				userPresent = p.User != ""
 				return true
@@ -146,10 +152,15 @@ func (l *live) payment(r *record) {
 	forged := l.api(l.c, "GET", "/billing/return?success=true&paid=true&session_id=TEST_ONLY_forged", nil, nil)
 	after := l.count(`SELECT count(*) FROM subscriptions WHERE member_id=$1`, l.c.member)
 	r.check("forged success return", "no subscription created", fmt.Sprintf("return_HTTP=%d; before=%d; after=%d", forged.status, before, after), "GET forged billing return; SELECT member subscriptions", before == 0 && after == 0)
+	if forged.status == 404 {
+		r.block("The running control origin returns 404 for /billing/return; no rendered Portal return page is served. No-rights side effect is observed, but the frontend-return journey is unavailable.")
+	}
 	badID := "evt_TEST_ONLY_bad_" + l.run
 	bad := l.webhook(badID, "invoice.paid", false)
 	badRows := l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1`, badID)
 	r.check("invalid signature", "401, no inbox row", fmt.Sprintf("%s; inbox_rows=%d", detail(bad), badRows), "POST exact webhook bytes with invalid Stripe-Signature", bad.status == 401 && badRows == 0)
+	var revBefore string
+	_ = l.pool.QueryRow(l.ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, l.c.member).Scan(&revBefore)
 	id := "evt_TEST_ONLY_replay_" + l.run
 	accepted := 0
 	for range 10 {
@@ -175,6 +186,9 @@ func (l *live) payment(r *record) {
 	// The authoritative GET must work before a delivered event can mean paid.
 	snapshot := l.request(nil, "GET", "https://api.stripe.com/v1/subscriptions/sub_TEST_ONLY_"+l.run, nil, map[string]string{"Authorization": "Bearer " + l.secret("stripe.key")})
 	r.check("authoritative provider precondition", "record snapshot availability", detail(snapshot), "GET controlled payment provider /v1/subscriptions/{id}", snapshot.status != 0)
+	var revAfter string
+	_ = l.pool.QueryRow(l.ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, l.c.member).Scan(&revAfter)
+	r.check("pending entitlement revision", "unreconciled deliveries do not extend interval", fmt.Sprintf("before=%s; after=%s", revBefore, revAfter), "SELECT entitlements.revision before/after webhook sequence", revBefore == revAfter)
 	state := l.entitlementState(l.c)
 	r.check("unreconciled event cannot grant", "pending member has no live entitlement", state, "GET /member/me; SELECT effective entitlement", state == "pending_payment" || state == "expired" || state == "none")
 	if snapshot.status == 404 {

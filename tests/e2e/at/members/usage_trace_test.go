@@ -50,8 +50,8 @@ func (l *live) usageTrace(r *record) {
 		Results []struct {
 			Status string `json:"status"`
 			Error  *struct {
-				Code    string         `json:"code"`
-				Details map[string]any `json:"details"`
+				Code   string           `json:"code"`
+				Fields []api.FieldError `json:"fields"`
 			} `json:"error"`
 		} `json:"results"`
 	}
@@ -60,7 +60,7 @@ func (l *live) usageTrace(r *record) {
 	known := false
 	for _, result := range body.Results {
 		if result.Error != nil && result.Error.Code == "VALIDATION_FAILED" {
-			raw, _ := json.Marshal(result.Error.Details)
+			raw, _ := json.Marshal(result.Error.Fields)
 			known = bytes.Contains(raw, []byte("binding_not_found"))
 		}
 	}
