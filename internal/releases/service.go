@@ -159,6 +159,10 @@ func (s *Service) Register(ctx context.Context, c Command, raw []byte) (Registra
 		}
 		return db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "release", ResourceID: &out.ReleaseID, OperationID: out.OperationID, ResponseStatus: out.Status})
 	})
+	var constraint *db.ConstraintError
+	if errors.As(e, &constraint) && constraint.Constraint == "releases_version_key" {
+		return Registration{}, apierr.New(apierr.StateConflict, "Product version already belongs to an immutable release")
+	}
 	return out, e
 }
 

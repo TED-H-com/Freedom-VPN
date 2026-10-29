@@ -66,6 +66,24 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 		if e != nil {
 			return e
 		}
+		// Bind the latest unexecuted enrolling target once, then create attempt 1.
+		if n.job == nil && n.target != nil {
+			var release uuid.UUID
+			e = tx.QueryRow(ctx, `UPDATE update_targets t SET execution_incarnation_id=$2 FROM update_batches b
+ WHERE t.id=$1 AND t.batch_id=b.id AND t.target_state='active' AND t.target_generation=$3::numeric
+ AND t.execution_incarnation_id IS NULL AND (t.incarnation_at_snapshot IS NULL OR t.incarnation_at_snapshot=$2)
+ RETURNING b.target_release_id`, n.target, i.IncarnationID, n.generation.String()).Scan(&release)
+			if e == nil {
+				n.online = true
+				if e = s.newJob(ctx, tx, n, n.target, release, n.generation, 1); e != nil {
+					return e
+				}
+				n, e = s.readNode(ctx, tx, i.NodeID)
+			}
+			if e != nil && !errors.Is(e, pgx.ErrNoRows) {
+				return e
+			}
+		}
 		var current job
 		if n.job != nil {
 			current, e = readJob(ctx, tx, *n.job)
@@ -94,7 +112,7 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 				return e
 			}
 			n.online = true
-			if e = s.newJob(ctx, tx, n, nil, *desired, gen, 1); e != nil {
+			if e = s.firstSync(ctx, tx, n, *desired, gen); e != nil {
 				return e
 			}
 			n, e = s.readNode(ctx, tx, i.NodeID)
@@ -125,18 +143,6 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 		}
 		if terminal(current.state) {
 			return recomputeAll(ctx, tx)
-		}
-		if current.incarnation == nil {
-			if current.target != nil {
-				_, e = tx.Exec(ctx, `UPDATE update_targets SET execution_incarnation_id=$2 WHERE id=$1 AND execution_incarnation_id IS NULL`, current.target, i.IncarnationID)
-				if e != nil {
-					return e
-				}
-			}
-			_, e = tx.Exec(ctx, `UPDATE update_jobs SET execution_incarnation_id=$2 WHERE id=$1 AND execution_incarnation_id IS NULL`, current.id, i.IncarnationID)
-			if e != nil {
-				return e
-			}
 		}
 		manifest, hash, url, e := s.releases.Eligible(ctx, tx, current.releaseID)
 		if e != nil {

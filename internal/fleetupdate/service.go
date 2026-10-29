@@ -43,7 +43,7 @@ type node struct {
 	generation                       decstr.U64
 	current, lastGood                *uuid.UUID
 	online                           bool
-	job                              *uuid.UUID
+	job, target                      *uuid.UUID
 	observedGeneration               decstr.U64
 	observedAt                       *time.Time
 }
@@ -57,8 +57,8 @@ func (s *Service) readNode(ctx context.Context, tx pgx.Tx, id uuid.UUID) (node, 
 	var generation, observed string
 	e := tx.QueryRow(ctx, `SELECT n.current_incarnation_id,n.lifecycle_state,coalesce(x.publication_intent,'unpublished'),coalesce(i.os,''),coalesce(i.arch,''),n.update_generation::text,n.current_release_id,n.last_good_release_id,
  coalesce((SELECT o.control_status='online' AND o.received_at>clock_timestamp()-$2::bigint*interval '1 millisecond' FROM node_observations o WHERE o.node_id=n.id AND o.incarnation_id=n.current_incarnation_id ORDER BY o.received_at DESC LIMIT 1),false)
- OR coalesce(s.observation_incarnation_id=n.current_incarnation_id AND s.received_at>clock_timestamp()-$2::bigint*interval '1 millisecond',false),s.current_job_id,coalesce(s.observed_update_generation,0)::text,s.last_observed_at
- FROM nodes n LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN node_incarnations i ON i.id=n.current_incarnation_id LEFT JOIN fleet_node_state s ON s.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n`, id, s.config.OnlineWindow.Milliseconds()).Scan(&n.incarnation, &n.lifecycle, &n.publication, &n.os, &n.arch, &generation, &n.current, &n.lastGood, &n.online, &n.job, &observed, &n.observedAt)
+ OR coalesce(s.observation_incarnation_id=n.current_incarnation_id AND s.received_at>clock_timestamp()-$2::bigint*interval '1 millisecond',false),s.current_job_id,s.current_target_id,coalesce(s.observed_update_generation,0)::text,s.last_observed_at
+ FROM nodes n LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN node_incarnations i ON i.id=n.current_incarnation_id LEFT JOIN fleet_node_state s ON s.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n`, id, s.config.OnlineWindow.Milliseconds()).Scan(&n.incarnation, &n.lifecycle, &n.publication, &n.os, &n.arch, &generation, &n.current, &n.lastGood, &n.online, &n.job, &n.target, &observed, &n.observedAt)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return n, apierr.New(apierr.ResourceNotFound, "Node does not exist")
 	}
@@ -123,6 +123,10 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 			return apierr.New(apierr.StateConflict, "Fleet generation changed")
 		}
 		if _, _, _, e = s.releases.Eligible(ctx, tx, r.ReleaseId); e != nil {
+			return e
+		}
+		// Take the base snapshot lock before reading the population (§15.5.6).
+		if _, e = tx.Exec(ctx, `LOCK TABLE nodes IN SHARE MODE`); e != nil {
 			return e
 		}
 		rows, e := tx.Query(ctx, `SELECT id FROM nodes WHERE lifecycle_state NOT IN ('revoked','retired') ORDER BY id FOR UPDATE`)
@@ -197,20 +201,29 @@ func (s *Service) newJob(ctx context.Context, tx pgx.Tx, n node, target *uuid.UU
 	if e != nil {
 		return e
 	}
+	if target == nil {
+		return errors.New("every job requires a sealed snapshot target")
+	}
 	state := "queued"
-	if !n.online || n.incarnation == nil {
+	if !n.online {
 		state = "waiting_online"
 	}
-	job := uuid.Must(uuid.NewV7())
-	_, e = tx.Exec(ctx, `INSERT INTO update_jobs(id,target_id,node_id,release_id,attempt,execution_incarnation_id,generation,state) VALUES($1,$2,$3,$4,$5,$6,$7::numeric,$8)`, job, target, n.id, release, attempt, n.incarnation, generation.String(), state)
-	if e != nil {
-		return e
+	// §13.1 / AT24: an enrolling target reserves its generation, but a job
+	// is only created once authentication supplies its immutable incarnation.
+	var job *uuid.UUID
+	if n.incarnation != nil {
+		id := uuid.Must(uuid.NewV7())
+		job = &id
+		_, e = tx.Exec(ctx, `INSERT INTO update_jobs(id,target_id,node_id,release_id,attempt,execution_incarnation_id,generation,state) VALUES($1,$2,$3,$4,$5,$6,$7::numeric,$8)`, job, target, n.id, release, attempt, n.incarnation, generation.String(), state)
+		if e != nil {
+			return e
+		}
 	}
 	_, e = tx.Exec(ctx, `UPDATE nodes SET update_generation=$2::numeric,desired_release_id=$3,resource_version=resource_version+1 WHERE id=$1`, n.id, generation.String(), release)
 	if e != nil {
 		return e
 	}
-	_, e = tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,current_job_id) VALUES($1,$2) ON CONFLICT(node_id) DO UPDATE SET current_job_id=excluded.current_job_id`, n.id, job)
+	_, e = tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,current_job_id,current_target_id) VALUES($1,$2,$3) ON CONFLICT(node_id) DO UPDATE SET current_job_id=excluded.current_job_id,current_target_id=excluded.current_target_id`, n.id, job, target)
 	return e
 }
 func notify(ctx context.Context, tx pgx.Tx, id uuid.UUID, event string) error {

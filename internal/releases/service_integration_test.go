@@ -66,8 +66,16 @@ func TestUPD02_RegisterImmutableAndVerify(t *testing.T) {
 	if e != nil || len(list.Items) != 1 || list.Items[0].VerificationState != "verified" {
 		t.Fatal(list, e)
 	}
-	// product_version remains display-only; a different release ID may reuse it.
+	// D-013 / §15.3: one display version names exactly one immutable release.
 	f.Manifest.ReleaseId = uuid.Must(uuid.NewV7())
+	_, e = s.Register(ctx, releasetest.Command(), f.Request(t, f.Manifest))
+	if !errors.Is(e, apierr.New(apierr.StateConflict, "")) {
+		t.Fatal("same version different release", e)
+	}
+	if apierr.StateConflict.HTTPStatus() != 409 {
+		t.Fatal("version conflict must be HTTP 409")
+	}
+	f.Manifest.ProductVersion = "1.2.0-test"
 	got2, e := s.Register(ctx, releasetest.Command(), f.Request(t, f.Manifest))
 	if e != nil {
 		t.Fatal(e)

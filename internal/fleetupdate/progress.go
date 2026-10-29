@@ -61,8 +61,16 @@ func CountStates(states []string) (api.UpdateBatchCounts, api.UpdateBatchState, 
 	}
 	return c, "completed", nil
 }
+
+// An unbound enrolling target still counts exactly once (§13.12). A newer
+// desired generation supersedes it even though it has no execution job yet.
+const targetStateSQL = `CASE WHEN t.target_state<>'active' THEN t.target_state
+ WHEN j.id IS NOT NULL THEN j.state
+ WHEN t.target_generation<n.update_generation THEN 'superseded'
+ ELSE 'waiting_online' END`
+
 func batchCounts(ctx context.Context, tx pgx.Tx, id uuid.UUID) (api.UpdateBatchCounts, api.UpdateBatchState, error) {
-	rows, e := tx.Query(ctx, `SELECT j.state FROM update_targets t JOIN LATERAL (SELECT state FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1`, id)
+	rows, e := tx.Query(ctx, `SELECT `+targetStateSQL+` FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN LATERAL (SELECT id,state FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1`, id)
 	if e != nil {
 		return api.UpdateBatchCounts{}, "", e
 	}
@@ -75,7 +83,7 @@ func batchCounts(ctx context.Context, tx pgx.Tx, id uuid.UUID) (api.UpdateBatchC
 		return api.UpdateBatchCounts{}, "", e
 	}
 	if len(states) != count {
-		return api.UpdateBatchCounts{}, "", errors.New("batch snapshot lacks a target job")
+		return api.UpdateBatchCounts{}, "", errors.New("batch snapshot target count changed")
 	}
 	return CountStates(states)
 }
@@ -152,8 +160,8 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
 		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
- j.id,j.attempt,j.state,j.error_code,j.stage,j.started_at,j.completed_at,j.recovery_required
- FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=n.id JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
+ `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false)
+ FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
 		}
@@ -161,8 +169,9 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		for rows.Next() {
 			var t api.UpdateTarget
 			var j api.UpdateJobSummary
+			var jobID *uuid.UUID
 			var gen string
-			if e = rows.Scan(&t.TargetId, &t.NodeId, &t.IncarnationAtSnapshot, &t.ExecutionIncarnationId, &gen, &t.OnlineAtSnapshot, &t.CurrentReleaseId, &t.LastObservedAt, &t.LastResultAt, &j.JobId, &j.Attempt, &j.State, &j.ErrorCode, &j.Stage, &j.StartedAt, &j.FinishedAt, &j.RecoveryRequired); e != nil {
+			if e = rows.Scan(&t.TargetId, &t.NodeId, &t.IncarnationAtSnapshot, &t.ExecutionIncarnationId, &gen, &t.OnlineAtSnapshot, &t.CurrentReleaseId, &t.LastObservedAt, &t.LastResultAt, &t.State, &jobID, &j.Attempt, &j.State, &j.ErrorCode, &j.Stage, &j.StartedAt, &j.FinishedAt, &j.RecoveryRequired); e != nil {
 				return e
 			}
 			if len(b.Targets) == limit {
@@ -179,9 +188,11 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			utcTime(j.StartedAt)
 			utcTime(j.FinishedAt)
 			t.Attempts = j.Attempt
-			t.State = j.State
-			t.CurrentJob = &j
-			t.Retryable = retryable(string(j.State), j.ErrorCode) && j.Attempt < 1000
+			if jobID != nil {
+				j.JobId = *jobID
+				t.CurrentJob = &j
+			}
+			t.Retryable = retryable(string(t.State), j.ErrorCode) && j.Attempt < 1000
 			b.Targets = append(b.Targets, t)
 		}
 		return rows.Err()
@@ -197,7 +208,7 @@ type TargetEvidence struct {
 
 func (s *Service) Evidence(ctx context.Context, target uuid.UUID) (TargetEvidence, error) {
 	var e TargetEvidence
-	err := s.pool.QueryRow(ctx, `SELECT j.needs_attention,s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false),j.last_result_at,s.last_observed_at FROM update_targets t LEFT JOIN fleet_node_state s ON s.node_id=t.node_id JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.id=$1`, target).Scan(&e.NeedsAttention, &e.Unconfirmed, &e.LastResultAt, &e.LastObservedAt)
+	err := s.pool.QueryRow(ctx, `SELECT coalesce(j.needs_attention,false),s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false),j.last_result_at,s.last_observed_at FROM update_targets t LEFT JOIN fleet_node_state s ON s.node_id=t.node_id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.id=$1`, target).Scan(&e.NeedsAttention, &e.Unconfirmed, &e.LastResultAt, &e.LastObservedAt)
 	return e, err
 }
 

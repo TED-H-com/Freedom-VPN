@@ -203,7 +203,14 @@ func canAdvance(from, to string) bool {
 	if terminal(from) {
 		return false
 	}
-	if terminal(to) {
+	switch to {
+	case "already_current":
+		return from == "queued" || from == "waiting_online"
+	case "rolled_back":
+		return from == "applying" || from == "checking"
+	case "superseded":
+		return from == "queued" || from == "waiting_online" || from == "downloading" || from == "verifying"
+	case "succeeded", "failed", "superseded_incarnation", "cancelled_revoked", "cancelled_retired":
 		return true
 	}
 	rank := map[string]int{"queued": 0, "waiting_online": 0, "downloading": 1, "verifying": 2, "applying": 3, "checking": 4}

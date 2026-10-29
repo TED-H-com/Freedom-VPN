@@ -24,7 +24,11 @@ The generated HTTP types remain the wire contract.
    only its release ID, manifest hash and error code enter
    `release_registration_rejections`, with `eligible=false`. Untrusted manifests
    do not become registered releases. A different body for an existing release ID
-   returns `STATE_CONFLICT`. Product version is display-only and may repeat.
+   returns `STATE_CONFLICT`. Under decision D-013 (§15.3), each product version
+   also belongs to exactly one immutable release: a second release ID with the
+   same `product_version` returns 409 `STATE_CONFLICT`. The base
+   `releases.version` UNIQUE constraint remains in force. Product versions are
+   display labels, never an ordering or authorization rule.
 6. With `Service.VerifyArtifacts=true`, registration creates a pending operation
    and `release.verify` outbox event, returns 202, and remains ineligible.
    `VerifyRelease` streams every artifact through a size limit and SHA-256 check
@@ -54,14 +58,23 @@ lexical comparison of product versions participates in authorization (§13.2).
 `api.UpdateBatchCreateRequest`. Under a fleet row lock, one transaction checks
 idempotency, expected fleet generation and eligibility; snapshots all existing
 nodes except revoked/retired; allocates monotonically increasing per-node
-update generations and attempt 1 jobs; changes the fleet default; and writes an
+update generations and attempt 1 jobs for bound identities; changes the fleet default; and writes an
 operation, audit, outbox event and progress projection. Any failure rolls back
 all of these. A stale generation returns 409 `STATE_CONFLICT`.
 
 The snapshot includes offline, unpublished, disabled and enrolling nodes. Missing
-incarnations remain null until first authenticated intent retrieval binds them
-once. The snapshot's original incarnation is never changed. `update_targets`
-retain the database's sealed-transaction membership and immutable count guards.
+execution incarnations remain null until first authenticated intent retrieval binds
+these targets once and creates attempt 1. Before binding, an enrolling target has
+no job, `attempts=0`, `current_job=null`, and counts as waiting_online. Its reserved
+generation still supersedes older work. A newer batch supersedes an unbound older
+target without creating a phantom execution job. The snapshot's original
+incarnation is never changed. Jobs retain the base NOT NULL target and execution
+incarnation, composite FK, forward-phase and frozen-terminal-evidence guards.
+
+Creation takes the base SHARE lock on `nodes` before reading the population, so
+concurrent insertion, enrollment or lifecycle changes cannot evade membership.
+The base deferred `all_nodes` count and membership validator is unchanged, and
+snapshot membership is still sealed in its creation transaction.
 
 `NodeUpdateIntent` returns `Work{Intent api.UpdateIntent, Artifact
 api.ManifestArtifact}` for an mTLS `Identity`. Only `Intent` belongs in the
@@ -74,12 +87,23 @@ Queued/downloading/verifying jobs become superseded when a newer target appears.
 Applying/checking jobs finish first while the desired pointer already names the
 newest job. A reinstall gets independent first-sync work with a higher generation;
 old incarnation work cannot be transferred. Nodes created after the snapshot
-also get independent jobs (`batch_id=null`, `target_id=null`) from the fleet
-default and never enlarge an existing batch.
+also get the fleet default in a separate one-node system batch with
+`reason='first_sync'`. Intent/result batch and target IDs identify that actual
+system snapshot; they are non-null. This never enlarges an earlier admin batch
+or changes the fleet default/generation.
 
-The lifecycle trigger cancels unfinished jobs immediately in the node owner's
-revocation/retirement transaction. Snapshot identities and accepted result history
-remain. Revoked identities cannot obtain more work or submit control results.
+Internally, system batches use `scope='first_sync'`, a reserved system actor and
+`first_sync_node_id`. A database CHECK requires exactly one target, that actor
+and reason; a deferred guard requires exactly the named eligible node with its
+current bound incarnation. The base snapshot-insert and SHARE-lock guards also
+apply. This narrowly extends the base batch scope; public create requests still
+accept only `all_nodes`, whose full-population validator remains mandatory.
+
+The fleet lifecycle trigger cancels unfinished jobs and sets their target
+`target_state` in the node owner's revocation/retirement transaction. It also
+cancels the current unbound enrolling target. The base guards allow these states
+but do not themselves initiate cancellation. Already-terminal targets, snapshot
+identities and accepted result evidence remain unchanged. Revoked identities cannot obtain more work or submit control results.
 No update code writes `exits.publication_intent`.
 
 `Retry` accepts the generated retry request and authenticated command. It creates
@@ -106,7 +130,7 @@ response; 202 is acceptance, never completion.
 | Rolled back to unsupported/revoked release | `MINIMUM_VERSION_VIOLATION`, persist recovery attention; forwarding stays forbidden |
 | Rolled back without compatible, approved, trusted manifest and healthy checks | Reject; never count rollback as target success |
 | Older applying/checking job finishes | Finish that job's ledger, ACK as history, leave newest pointer/generation intact |
-| Superseded/terminal job reports late, or progress goes backwards | Append history; preserve terminal ledger/current pointer |
+| Superseded/terminal job reports late, progress goes backwards, already_current arrives after download began, or rollback arrives before applying | Append history; preserve terminal ledger/current pointer |
 | Current terminal result, no heartbeat since authorization | May update observed release if the stored observed generation is not newer |
 | Heartbeat already arrived after authorization | Save result and ACK; await a new heartbeat for the current-version observation |
 | Report claims forwarding while disabled, disruptive, unsupported or recovery-required | `NODE_NOT_SERVICEABLE`; never rewrite publication intent |
@@ -127,7 +151,9 @@ one offline node rolls back and the other is revoked: succeeded=3,
 already_current=1, rolled_back=1, cancelled=1; total six and
 completed_with_exceptions. Four targets achieved the requested release.
 
-Each target contributes its latest attempt exactly once. The HTTP contract folds
+Each target contributes exactly once: its cancelled disposition, otherwise its
+latest attempt, or waiting_online/superseded if it has no job yet. Unbound targets
+are included in cursor pages, timestamps and the same fixed denominator. The HTTP contract folds
 cancelled_revoked/cancelled_retired into `cancelled`, and superseded_incarnation
 into `superseded`; target rows preserve the exact reason. Any waiting_online
 bucket takes display precedence over running work. All-terminal snapshots are
@@ -173,6 +199,7 @@ unknown journal/job IDs with durable audit evidence before resuming automatic wo
 - Configure `AuthorizationTTL`, `OnlineWindow`, `StuckWindow` and fetch timeout
   explicitly. No production value is invented for §21 pending measurements.
 - Transactions touching both areas should lock fleet_config before node rows.
+  Snapshot creation takes the `nodes` SHARE lock before reading its members.
   The shared `db.InTx` retries deadlocks/serialization errors with bounded jitter.
   Services perform no external calls inside request transactions.
 - Handlers render errors with `pkg/apierr.Write`; these packages contain no HTTP
@@ -186,3 +213,17 @@ no such pointer, so the release list returns null for that optional provenance.
 The initial implementation serializes fleet mutations and scans batches during
 reconciliation; measure production fleet volume before replacing this with
 incremental projections.
+
+## Database guard compatibility
+
+Migration 00160 extends the base schema rather than replacing its job state or
+identity guards. Derived job `node_id` and `release_id` are backfilled, populated
+from their target on insert and protected by an additional immutable-fields
+trigger. The base job target/incarnation/generation composite FK remains intact.
+
+The additive result/retry tables and current-job pointer validate job references
+with immediate constraint triggers using `FOR KEY SHARE`. Base jobs cannot be
+deleted, truncated or change identity, so these references cannot become
+orphaned. This preserves the base truncate guard's SQLSTATE 23514; an inbound FK
+would cause PostgreSQL's earlier SQLSTATE 0A000 check to mask that guard. No base
+FK, NOT NULL, state transition or terminal evidence restriction is removed.

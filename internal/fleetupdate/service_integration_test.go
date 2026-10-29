@@ -46,6 +46,7 @@ func newLab(t *testing.T) *lab {
 		t.Fatal(e)
 	}
 	f.Manifest.ReleaseId = uuid.Must(uuid.NewV7())
+	f.Manifest.ProductVersion = "1.2.0-test"
 	f.Manifest.Rollback.AllowedReleaseIds = []uuid.UUID{l.old}
 	l.new = f.Manifest.ReleaseId
 	if _, e = r.Register(l.ctx, releasetest.Command(), f.Request(t, f.Manifest)); e != nil {
@@ -84,7 +85,7 @@ func (l *lab) node(arch, pub, lifecycle string, online bool) Identity {
 		if e != nil {
 			l.t.Fatal(e)
 		}
-		_, e = l.s.pool.Exec(l.ctx, `UPDATE nodes SET current_incarnation_id=$2 WHERE id=$1`, i.NodeID, i.IncarnationID)
+		_, e = l.s.pool.Exec(l.ctx, `UPDATE nodes SET resource_version=resource_version+1,current_incarnation_id=$2 WHERE id=$1`, i.NodeID, i.IncarnationID)
 		if e != nil {
 			l.t.Fatal(e)
 		}
@@ -105,7 +106,7 @@ func (l *lab) enroll(i Identity, arch string) Identity {
 	if e != nil {
 		l.t.Fatal(e)
 	}
-	_, e = l.s.pool.Exec(l.ctx, `UPDATE nodes SET current_incarnation_id=$2,lifecycle_state='registered' WHERE id=$1`, i.NodeID, i.IncarnationID)
+	_, e = l.s.pool.Exec(l.ctx, `UPDATE nodes SET resource_version=resource_version+1,current_incarnation_id=$2,lifecycle_state='registered' WHERE id=$1`, i.NodeID, i.IncarnationID)
 	if e != nil {
 		l.t.Fatal(e)
 	}
@@ -228,6 +229,19 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	offline := l.node("amd64", "published", "registered", false)
 	enrolling := l.node("arm64", "unpublished", "enrolling", false)
 	b := l.batch(l.new)
+	if l.scalar(`SELECT count(*) FROM update_jobs WHERE node_id=$1`, enrolling.NodeID) != 0 {
+		t.Fatal("enrolling target must not have a job before incarnation binding")
+	}
+	unbound := l.get(b.BatchId)
+	for _, target := range unbound.Targets {
+		if target.NodeId == enrolling.NodeID && (target.CurrentJob != nil || target.Attempts != 0 || target.State != "waiting_online") {
+			t.Fatal(target)
+		}
+	}
+	raw, _ := json.Marshal(unbound)
+	if e := l.s.releases.Validator.ValidateBody("UpdateBatch", raw); e != nil {
+		t.Fatal(e)
+	}
 	w := l.intent(offline)
 	if w.Intent.BatchId == nil || *w.Intent.BatchId != b.BatchId {
 		t.Fatal(w)
@@ -242,8 +256,18 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	l.report(enrolling, w, "already_current")
 	after := l.node("arm64", "disabled", "registered", true)
 	first := l.intent(after)
-	if first.Intent.BatchId != nil || first.Intent.TargetId != nil || first.Intent.ReleaseId != l.new {
+	if first.Intent.BatchId == nil || *first.Intent.BatchId == b.BatchId || first.Intent.TargetId == nil || first.Intent.ReleaseId != l.new {
 		t.Fatal(first)
+	}
+	if again := l.intent(after); again.Intent.JobId != first.Intent.JobId || *again.Intent.BatchId != *first.Intent.BatchId {
+		t.Fatal("first-sync retry created duplicate work")
+	}
+	firstBatch := l.get(*first.Intent.BatchId)
+	if firstBatch.TargetCount != 1 || firstBatch.Reason != "first_sync" || firstBatch.Targets[0].NodeId != after.NodeID {
+		t.Fatal(firstBatch)
+	}
+	if l.scalar(`SELECT count(*) FROM update_jobs WHERE target_id IS NULL OR execution_incarnation_id IS NULL`) != 0 {
+		t.Fatal("unbound execution job")
 	}
 	l.report(after, first, "succeeded")
 	got := l.get(b.BatchId)
@@ -262,7 +286,7 @@ func TestAT24_OfflineEnrollmentAndFirstSync(t *testing.T) {
 	}
 	replacement := l.enroll(Identity{NodeID: enrolling.NodeID}, "arm64")
 	next := l.intent(replacement)
-	if next.Intent.TargetId != nil || next.Intent.Generation <= w.Intent.Generation {
+	if next.Intent.TargetId == nil || *next.Intent.TargetId == *w.Intent.TargetId || next.Intent.Generation <= w.Intent.Generation {
 		t.Fatal(next)
 	}
 	if _, e = l.s.SubmitResult(l.ctx, enrolling, payload(t, result(w, "succeeded"))); !errors.Is(e, apierr.New(apierr.IncarnationMismatch, "")) {
@@ -368,6 +392,7 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	if e != nil || !v.ReleaseServiceable || *v.CurrentReleaseID == *v.DesiredReleaseID {
 		t.Fatal(v, e)
 	}
+	l.report(i, w, "applying")
 	rollback := result(w, "rolled_back")
 	rollback.CurrentReleaseId = &l.old
 	code := api.ErrorCode("HEALTH_CHECK_FAILED")
@@ -382,6 +407,7 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	if e != nil || v.ReleaseServiceable {
 		t.Fatal(v, e)
 	}
+	l.report(i, w, "applying")
 	rollback = result(w, "rolled_back")
 	rollback.CurrentReleaseId = &l.old
 	rollback.ErrorCode = &code
@@ -449,7 +475,7 @@ func TestUPD05_RetryCancellationWatchdogAndAtomicity(t *testing.T) {
 	if got.TargetCount != 1 || got.Counts.Applying != 1 {
 		t.Fatal(got)
 	}
-	if _, e = l.s.pool.Exec(l.ctx, `UPDATE nodes SET lifecycle_state='revoked' WHERE id=$1`, i.NodeID); e != nil {
+	if _, e = l.s.pool.Exec(l.ctx, `UPDATE nodes SET resource_version=resource_version+1,lifecycle_state='revoked' WHERE id=$1`, i.NodeID); e != nil {
 		t.Fatal(e)
 	}
 	got = l.get(b.BatchId)

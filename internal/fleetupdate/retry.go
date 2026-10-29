@@ -54,15 +54,19 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 		if _, _, _, e = s.releases.Eligible(ctx, tx, release); e != nil {
 			return e
 		}
-		rows, e := tx.Query(ctx, `SELECT t.id,j.id FROM update_targets t JOIN LATERAL (SELECT id FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 ORDER BY t.id`, batch)
+		rows, e := tx.Query(ctx, `SELECT t.id,j.id,t.target_state FROM update_targets t LEFT JOIN LATERAL (SELECT id FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 ORDER BY t.id`, batch)
 		if e != nil {
 			return e
 		}
-		type pair struct{ target, job uuid.UUID }
+		type pair struct {
+			target uuid.UUID
+			job    *uuid.UUID
+			state  string
+		}
 		var all []pair
 		for rows.Next() {
 			var p pair
-			if e = rows.Scan(&p.target, &p.job); e != nil {
+			if e = rows.Scan(&p.target, &p.job, &p.state); e != nil {
 				rows.Close()
 				return e
 			}
@@ -84,7 +88,13 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 				continue
 			}
 			found[p.target] = true
-			j, e := readJob(ctx, tx, p.job)
+			if p.job == nil || p.state != "active" {
+				if r.TargetIds != nil {
+					return apierr.New(apierr.StateConflict, "Selected target has no retryable job")
+				}
+				continue
+			}
+			j, e := readJob(ctx, tx, *p.job)
 			if e != nil {
 				return e
 			}
