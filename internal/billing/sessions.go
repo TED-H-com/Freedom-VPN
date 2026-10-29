@@ -232,6 +232,12 @@ func (s *Service) FulfillSession(ctx context.Context, id uuid.UUID) (retErr erro
 		if tag.RowsAffected() != 1 {
 			return db.ErrLeaseLost
 		}
+		// Record completion only after the provider result is durably stored.
+		// Cached replays return above, so each session has one completion audit.
+		actor := entitlement.Actor{ID: uuid.MustParse("00000000-0000-0000-0000-000000000003"), Role: string(api.AuditEventActorTypeSystem)}
+		if err = entitlement.Audit(ctx, tx, actor, "billing."+kind+"_completed", api.ResourceTypeCheckoutSession, id, nil, map[string]any{"session_id": id, "state": "succeeded", "expires_at": hosted.ExpiresAt}); err != nil {
+			return err
+		}
 		if operation == nil {
 			return nil
 		}
