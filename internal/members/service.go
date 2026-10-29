@@ -277,12 +277,10 @@ func (s *Service) Patch(ctx context.Context, c entitlement.Command, id uuid.UUID
 		if p.AdminSuspended != nil {
 			changes["admin_suspended"] = *p.AdminSuspended
 			if *p.AdminSuspended {
-				changes["status"] = "suspended"
 				changes["suspension_reason"] = *p.SuspensionReason
 				changes["suspended_at"] = s.Entitlements.Time()
 				changes["suspended_by"] = c.Actor.ID
 			} else {
-				changes["status"] = "pending_payment"
 				changes["suspension_reason"] = nil
 				changes["suspended_at"] = nil
 				changes["suspended_by"] = nil
@@ -301,15 +299,15 @@ func (s *Service) Patch(ctx context.Context, c entitlement.Command, id uuid.UUID
 			}
 			result.Revision = projection.Revision
 			if projection.Changed {
-				kind := "member.update"
+				kind := api.OperationKindMemberUpdate
 				if p.AdminSuspended != nil {
 					if *p.AdminSuspended {
-						kind = "member.suspend"
+						kind = api.OperationKindMemberSuspend
 					} else {
-						kind = "member.unsuspend"
+						kind = api.OperationKindMemberUnsuspend
 					}
 				}
-				op, e := entitlement.Operation(ctx, tx, c.Actor, kind, "member", id, projection.Revision)
+				op, e := entitlement.Operation(ctx, tx, c.Actor, kind, api.ResourceTypeMember, id, projection.Revision)
 				if e != nil {
 					return e
 				}
@@ -326,10 +324,10 @@ func (s *Service) Patch(ctx context.Context, c entitlement.Command, id uuid.UUID
 				}
 			}
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "member.patch", id, map[string]any{"admin_suspended": m.AdminSuspended, "resource_version": m.ResourceVersion}, p); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "member.patch", api.ResourceTypeMember, id, map[string]any{"admin_suspended": m.AdminSuspended, "resource_version": m.ResourceVersion}, p); err != nil {
 			return err
 		}
-		return entitlement.Complete(ctx, tx, record, "member", id, result.OperationID, status)
+		return entitlement.Complete(ctx, tx, record, api.ResourceTypeMember, id, result.OperationID, status)
 	})
 	return result, err
 }
@@ -379,16 +377,16 @@ func (s *Service) Close(ctx context.Context, c entitlement.Command, id uuid.UUID
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.update", "member", id, p.Revision)
+		op, err := entitlement.Operation(ctx, tx, c.Actor, api.OperationKindMemberUpdate, api.ResourceTypeMember, id, p.Revision)
 		if err != nil {
 			return err
 		}
 		result.OperationID = &op
 		result.Revision = p.Revision
-		if err = entitlement.Audit(ctx, tx, c.Actor, "member.close", id, nil, map[string]any{"reason": reason, "state": "closed"}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "member.close", api.ResourceTypeMember, id, nil, map[string]any{"reason": reason, "state": "closed"}); err != nil {
 			return err
 		}
-		return entitlement.Complete(ctx, tx, record, "member", id, &op, 202)
+		return entitlement.Complete(ctx, tx, record, api.ResourceTypeMember, id, &op, 202)
 	})
 	return result, err
 }
@@ -461,18 +459,18 @@ func (s *Service) Grant(ctx context.Context, c entitlement.Command, id uuid.UUID
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.grant", "member", id, p.Revision)
+		op, err := entitlement.Operation(ctx, tx, c.Actor, api.OperationKindMemberGrant, api.ResourceTypeEntitlementGrant, gid, p.Revision)
 		if err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "member.grant", id, nil, map[string]any{"grant_id": gid, "source": g.Source, "reason": g.Reason, "valid_until": g.ValidUntil.UTC()}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "member.grant", api.ResourceTypeEntitlementGrant, gid, nil, map[string]any{"grant_id": gid, "source": g.Source, "reason": g.Reason, "valid_until": g.ValidUntil.UTC()}); err != nil {
 			return err
 		}
 		if _, err = tx.Exec(ctx, `UPDATE entitlement_grants SET operation_id=$2 WHERE id=$1`, gid, op); err != nil {
 			return err
 		}
 		result = Change{ResourceID: gid, OperationID: &op, Revision: p.Revision}
-		return entitlement.Complete(ctx, tx, record, "grant", gid, &op, 202)
+		return entitlement.Complete(ctx, tx, record, api.ResourceTypeEntitlementGrant, gid, &op, 202)
 	})
 	return result, err
 }
@@ -508,13 +506,13 @@ func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member
 		if err != nil {
 			return err
 		}
-		op, err := entitlement.Operation(ctx, tx, c.Actor, "member.grant", "member", member, p.Revision)
+		op, err := entitlement.Operation(ctx, tx, c.Actor, api.OperationKindMemberGrant, api.ResourceTypeEntitlementGrant, grant, p.Revision)
 		if err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "grant.revoke", member, nil, map[string]any{"grant_id": grant, "reason": reason}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "grant.revoke", api.ResourceTypeEntitlementGrant, grant, nil, map[string]any{"grant_id": grant, "reason": reason}); err != nil {
 			return err
 		}
-		return entitlement.Complete(ctx, tx, record, "grant", grant, &op, 202)
+		return entitlement.Complete(ctx, tx, record, api.ResourceTypeEntitlementGrant, grant, &op, 202)
 	})
 }

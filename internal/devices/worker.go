@@ -18,7 +18,7 @@ import (
 // SyncDevice uses a session advisory lock, NOT a transaction, across external
 // calls. It reads current desired state rather than replaying an obsolete event.
 // Success means read-back evidence matches both device and entitlement versions.
-func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
+func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	if s.Adapter == nil {
 		return entitlement.ErrInvalid
 	}
@@ -50,6 +50,14 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return db.MapError(err)
 	}
+	defer func() {
+		if retErr == nil {
+			return
+		}
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = pgx.BeginFunc(cleanup, conn, func(tx pgx.Tx) error { return failOperations(cleanup, tx, api.ResourceTypeMemberDevice, id, version) })
+	}()
 	var r entitlement.Result
 	if err = json.Unmarshal(raw, &r); err != nil {
 		return err
@@ -109,7 +117,7 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) error {
 		if e != nil {
 			return e
 		}
-		return observeOperations(ctx, tx, "device", id, version, evidence, s.Entitlements.Time())
+		return observeOperations(ctx, tx, api.ResourceTypeMemberDevice, id, version, evidence, s.Entitlements.Time())
 	})
 	if err != nil {
 		return err
@@ -134,7 +142,19 @@ func sameGroups(a, b []uuid.UUID) bool {
 
 // SyncMember handles member.entitlement_changed, including suspension, expiry,
 // and closure; device statuses remain distinct from temporary entitlement loss.
-func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) error {
+func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) (retErr error) {
+	var initial decstr.U64
+	if err := s.Pool.QueryRow(ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, member).Scan(&initial); err != nil {
+		return db.MapError(err)
+	}
+	defer func() {
+		if retErr == nil {
+			return
+		}
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = db.InTx(cleanup, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return failOperations(cleanup, tx, api.ResourceTypeMember, member, initial) })
+	}()
 	rows, err := s.Pool.Query(ctx, `SELECT id FROM member_devices WHERE member_id=$1 ORDER BY id`, member)
 	if err != nil {
 		return err
@@ -179,14 +199,14 @@ func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) error {
 		if e != nil {
 			return e
 		}
-		return observeOperations(ctx, tx, "member", member, revision, evidence, s.Entitlements.Time())
+		return observeOperations(ctx, tx, api.ResourceTypeMember, member, revision, evidence, s.Entitlements.Time())
 	})
 }
 
 // Preserve an immutable audit evidence row before transitioning the operation.
 // A successful NetBird step never fabricates the separate node enforcement ACK.
-func observeOperations(ctx context.Context, tx pgx.Tx, resource string, id uuid.UUID, revision decstr.U64, evidence []byte, now time.Time) error {
-	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE resource_type=$1 AND resource_id=$2 AND desired_generation=$3::numeric AND status IN ('pending','running') AND steps->'netbird'->>'status' IN ('pending','running') AND (kind<>'member.grant' OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, entitlement.ResourceType(resource), id, revision.String(), now)
+func observeOperations(ctx context.Context, tx pgx.Tx, resource api.ResourceType, id uuid.UUID, revision decstr.U64, evidence []byte, now time.Time) error {
+	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE ((resource_type=$1 AND resource_id=$2) OR ($1='member' AND resource_type='entitlement_grant' AND resource_id IN (SELECT id FROM entitlement_grants WHERE member_id=$2))) AND desired_generation=$3::numeric AND status IN ('pending','running','failed','partially_succeeded') AND steps->'netbird'->>'status' IN ('pending','running','failed') AND (kind<>'member.grant' OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, string(resource), id, revision.String(), now)
 	if err != nil {
 		return err
 	}
@@ -208,11 +228,47 @@ func observeOperations(ctx context.Context, tx pgx.Tx, resource string, id uuid.
 	if err != nil {
 		return err
 	}
-	if err = db.AppendAudit(ctx, tx, db.AuditEvent{ID: evidenceID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: "system", Action: "netbird.observed", Resource: entitlement.ResourceType(resource) + ":" + id.String(), SchemaVersion: 1, Before: []byte(`{}`), After: evidence, Result: "succeeded"}); err != nil {
+	if err = db.AppendAudit(ctx, tx, db.AuditEvent{ID: evidenceID, Actor: "00000000-0000-0000-0000-000000000003", ActorType: string(api.AuditEventActorTypeSystem), Action: "netbird.observed", Resource: string(resource) + ":" + id.String(), SchemaVersion: 1, Before: []byte(`{}`), After: evidence, Result: string(api.AuditEventResultSucceeded)}); err != nil {
 		return err
 	}
 	for _, op := range ids {
-		if err = operations.Transition(ctx, tx, op, "netbird", api.OperationStepStatusSucceeded, &operations.Evidence{Reference: "audit_event:" + evidenceID.String(), ObservedAt: now}, nil, nil); err != nil {
+		var failed bool
+		if err = tx.QueryRow(ctx, `SELECT steps->'netbird'->>'status'='failed' FROM operations WHERE id=$1`, op).Scan(&failed); err != nil {
+			return err
+		}
+		if failed {
+			if err = entitlement.TransitionOperation(ctx, tx, op, "netbird", api.OperationStepStatusRunning, nil); err != nil {
+				return err
+			}
+		}
+		if err = entitlement.TransitionOperation(ctx, tx, op, "netbird", api.OperationStepStatusSucceeded, &operations.Evidence{Reference: "audit_event:" + evidenceID.String(), ObservedAt: now}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func failOperations(ctx context.Context, tx pgx.Tx, resource api.ResourceType, id uuid.UUID, revision decstr.U64) error {
+	rows, err := tx.Query(ctx, `SELECT id FROM operations WHERE ((resource_type=$1 AND resource_id=$2) OR ($1='member' AND resource_type=$4 AND resource_id IN (SELECT id FROM entitlement_grants WHERE member_id=$2))) AND desired_generation=$3::numeric AND status IN ('pending','running','partially_succeeded') AND steps->'netbird'->>'status' IN ('pending','running') ORDER BY id FOR UPDATE`, resource, id, revision.String(), api.ResourceTypeEntitlementGrant)
+	if err != nil {
+		return err
+	}
+	var ids []uuid.UUID
+	for rows.Next() {
+		var op uuid.UUID
+		if err = rows.Scan(&op); err != nil {
+			rows.Close()
+			return err
+		}
+		ids = append(ids, op)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return err
+	}
+	for _, op := range ids {
+		if err = entitlement.TransitionOperation(ctx, tx, op, "netbird", api.OperationStepStatusFailed, nil); err != nil {
 			return err
 		}
 	}

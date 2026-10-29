@@ -10,9 +10,9 @@ If PostgreSQL is restored from a backup or point-in-time snapshot taken at $T_{\
 - **Within a single `ledger_epoch`**, a node's ACK watermark (`highest_contiguous_seq`) is strictly non-decreasing (`usage_checkpoints_monotonic` trigger in `00004_guards.sql`).
 - **Across a snapshot restore**, nodes might hold ACK watermarks from the lost window $[T_{\text{snap}}, T_{\text{incident}}]$ or might already have pruned spool entries below their old ACK watermark.
 - Rotating to a new **`ledger_epoch`** with an Ed25519-signed recovery record authorizes nodes to reset their upload cursor to the restored database's committed watermark, replay retained local spool entries through normal deduplication, and explicitly report any pruned ranges via `replay_unavailable`.
-- **Signing Purposes (Wave 2 vs. Wave 3 PKI Wiring)**:
-  - In Wave 2, both the `ledger_epoch` recovery record (`BeginRecovery` / `usage_recovery_records`) and the signed stream checkpoint (`GetCheckpoint` / `UsageCheckpointEnvelope`) use `envelope.PurposeRecovery` (`"recovery"`).
-  - In Wave 3, when the PKI signing provider is wired with the contract revision, the `ledger_epoch` recovery record will use the new `ledger-epoch` purpose that the contract revision adds, while checkpoint envelopes keep `recovery`.
+- **Signing Purposes (`§16.2`, `§17.3`)**:
+  - The `ledger_epoch` recovery record (`BeginRecovery` / `usage_recovery_records`) is signed with `envelope.PurposeLedgerEpoch` (`"ledger-epoch"`) by a dedicated central-only signer (`NewLedgerEpochSigner`) whose key is never included in node trust bundles.
+  - The signed stream checkpoint (`GetCheckpoint` / `UsageCheckpointEnvelope`) is signed with `envelope.PurposeRecovery` (`"recovery"`) by `NewRecoverySigner`.
 
 ---
 
@@ -35,7 +35,7 @@ rec, err := usageSvc.BeginRecovery(ctx, "Restored PostgreSQL from 02:00Z snapsho
 2. Scans every active `(node_id, incarnation_id)` stream and recomputes `highest_contiguous_seq`, `max_seen_seq`, and `missing_ranges` strictly from the committed `usage_events` rows present in the restored database.
 3. Updates `usage_checkpoints` to `ledger_epoch = new_epoch` with the recomputed watermarks.
 4. Marks all existing `usage_rollups` rows with `reconciliation_in_progress = TRUE` so member and admin queries clearly indicate that post-restore replay is underway (`§17.3`).
-5. Signs the `RecoveryRecord` (`ledger_epoch`, `previous_ledger_epoch`, `reason`, `triggered_by`, `stream_count`, `created_at`) with the `recovery` Ed25519 key (`pkg/envelope`) and stores the signed envelope in `usage_recovery_records`.
+5. Signs the `RecoverySignedPayload` (`recovery_id`, `previous_ledger_epoch`, `new_ledger_epoch`, `restored_to`, `affected_since`, `reason`, `actor`, `stream_count`, `created_at`) with the `ledger-epoch` Ed25519 key (`envelope.PurposeLedgerEpoch`) and stores the signed envelope in `usage_recovery_records`.
 6. Transitions `usage_ledger_state.mode` to `'reconciling'` (and subsequently allows nodes to fetch checkpoints and replay batches under `new_epoch`).
 
 ### Step 3: Node Checkpoint Synchronization (`GetCheckpoint`)

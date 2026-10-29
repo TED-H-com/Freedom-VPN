@@ -1,0 +1,16 @@
+[Unit]
+Description=Freedom VPN update recovery
+# §13.5: the updater journal is recovered before any member data service.
+Before=fvpn-agent.service fvpn-watchdog.service fvpn-netbird.service
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Exit 2 means members stay blocked. That is a successful recovery, not a unit failure.
+SuccessExitStatus=0 2
+ExecStart=/opt/vpn-node/current/fvpn-updater recover -config /etc/vpn-node/updater.json
+
+[Install]
+WantedBy=multi-user.target

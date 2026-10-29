@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -20,11 +21,10 @@ import (
 
 // Default policy constants and recommended defaults (§5, §8.1, §14.7).
 const (
-	DefaultSafetyProfile        = "internet-only-v1"
-	DefaultDNSResolverIPv4      = "100.64.0.53"
-	DefaultLeaseRenewalEndpoint = "/api/v1/agent/lease-renewals"
-	DefaultEnvelopeTTL          = 24 * time.Hour
-	DefaultPlanRateBps          = int64(100_000_000) // TEST ONLY default when plan payload omits rate
+	DefaultSafetyProfile           = "internet-only-v1"
+	TestOnlyDefaultDNSResolverIPv4 = "100.64.0.53" // TEST ONLY default for FakePolicyReader
+	DefaultLeaseRenewalEndpoint    = "/api/v1/agent/lease-renewals"
+	DefaultEnvelopeTTL             = 24 * time.Hour
 )
 
 // DefaultSupportedReleasePolicyUUID is used when no release_support policy revision is active yet.
@@ -101,6 +101,7 @@ type MemberEntitlement struct {
 	GroupIDs            []uuid.UUID
 	Suspended           bool
 	ClampedUntil        *time.Time
+	OverrideValidUntil  *time.Time
 	ValidFrom           time.Time
 	EffectiveServiceEnd time.Time
 	PlanDownBps         int64
@@ -110,6 +111,7 @@ type MemberEntitlement struct {
 	TierIndex           int
 	Priority            int
 	FairUsePolicyGen    uint64
+	HasFairUseGen       bool
 	Mode                api.MemberRatePolicyMode
 	Reason              api.MemberRatePolicyReason
 	Bindings            []MemberDeviceBinding
@@ -222,7 +224,7 @@ func NewFakePolicyReader(snap PolicySnapshot) *FakePolicyReader {
 		snap.DNSGeneration = 1
 	}
 	if len(snap.DNSResolverIPv4) == 0 {
-		snap.DNSResolverIPv4 = []string{DefaultDNSResolverIPv4}
+		snap.DNSResolverIPv4 = []string{TestOnlyDefaultDNSResolverIPv4}
 	}
 	if snap.SupportedReleasePolicyID == uuid.Nil {
 		snap.SupportedReleasePolicyID = DefaultSupportedReleasePolicyUUID
@@ -281,15 +283,45 @@ func NewDBEntitlementReader(q nodes.Querier) *DBEntitlementReader {
 	return &DBEntitlementReader{q: q}
 }
 
-// ListEntitledMembersForGroups queries PostgreSQL for members assigned to groupIDs and their active device bindings.
+// ListEntitledMembersForGroups queries PostgreSQL for members assigned to groupIDs,
+// their plan rate limits, their per-period fair-use state, and their active device bindings (§9.2, §10.2, §11.2).
 func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, groupIDs []uuid.UUID, asOf time.Time) ([]MemberEntitlement, error) {
 	if len(groupIDs) == 0 {
 		return nil, nil
 	}
 	asOf = asOf.UTC()
+	period := DefaultAccountingPeriod(asOf)
+
+	defaultFUPMode := api.MemberRatePolicyModeEnforce
+	var (
+		activeFUPGenStr  string
+		activeFUPPayload []byte
+	)
+	err := r.q.QueryRow(ctx, `
+		SELECT greatest(pd.generation, pr.revision)::text, pr.payload
+		FROM policy_definitions pd
+		JOIN policy_revisions pr ON pr.id = pd.active_revision_id
+		WHERE pd.type = 'fair_use' AND pd.active_revision_id IS NOT NULL
+		ORDER BY pd.id ASC
+		LIMIT 1`).Scan(&activeFUPGenStr, &activeFUPPayload)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return nil, err
+	}
+	if err == nil && len(activeFUPPayload) > 0 {
+		var fupPol struct {
+			Mode        string     `json:"mode"`
+			EffectiveAt *time.Time `json:"effective_at"`
+		}
+		if json.Unmarshal(activeFUPPayload, &fupPol) == nil {
+			if fupPol.Mode == string(api.FairUsePayloadModeShadow) ||
+				(fupPol.EffectiveAt != nil && !fupPol.EffectiveAt.IsZero() && asOf.Before(fupPol.EffectiveAt.UTC())) {
+				defaultFUPMode = api.MemberRatePolicyModeShadow
+			}
+		}
+	}
 
 	const memberQuery = `
-		SELECT DISTINCT
+		SELECT DISTINCT ON (m.id)
 			m.id,
 			m.status,
 			(m.admin_suspended OR e.admin_suspended) AS is_suspended,
@@ -299,15 +331,19 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 		FROM members m
 		JOIN entitlements e ON e.member_id = m.id
 		LEFT JOIN subscriptions sub ON sub.member_id = m.id AND sub.is_active = true
-		LEFT JOIN plan_revisions pr ON pr.id = sub.plan_revision_id
-		JOIN assignments a ON a.group_id = ANY($1)
+		LEFT JOIN assignments a ON a.group_id = ANY($1)
 			AND a.valid_from <= $2
 			AND (a.valid_until IS NULL OR a.valid_until > $2)
-			AND (a.member_id = m.id OR (sub.plan_revision_id IS NOT NULL AND a.plan_revision_id = sub.plan_revision_id))
+			AND (
+				a.member_id = m.id
+				OR (coalesce(e.plan_revision_id, sub.plan_revision_id) IS NOT NULL AND a.plan_revision_id = coalesce(e.plan_revision_id, sub.plan_revision_id))
+			)
+		LEFT JOIN plan_revisions pr ON pr.id = coalesce(e.plan_revision_id, sub.plan_revision_id, a.plan_revision_id)
 		WHERE m.status IN ('active', 'suspended')
 		  AND e.valid_from IS NOT NULL
 		  AND e.effective_service_end IS NOT NULL
-		ORDER BY m.id ASC`
+		  AND (a.id IS NOT NULL OR (pr.id IS NOT NULL AND pr.exit_group_ids && $1))
+		ORDER BY m.id ASC, (pr.id IS NULL) ASC`
 
 	rows, err := r.q.Query(ctx, memberQuery, groupIDs, asOf)
 	if err != nil {
@@ -336,14 +372,13 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 			continue
 		}
 
-		planDown := DefaultPlanRateBps
-		planUp := DefaultPlanRateBps
+		var planDown, planUp int64
 		prio := 1
 		if len(planPayload) > 0 {
 			var parsed struct {
 				DownBps   int64 `json:"down_bps"`
 				UpBps     int64 `json:"up_bps"`
-				Priority  int   `json:"priority"`
+				Priority  *int  `json:"priority"`
 				RateLimit *struct {
 					DownBps int64 `json:"down_bps"`
 					UpBps   int64 `json:"up_bps"`
@@ -360,8 +395,8 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 				} else if parsed.RateLimit != nil && parsed.RateLimit.UpBps > 0 {
 					planUp = parsed.RateLimit.UpBps
 				}
-				if parsed.Priority >= 0 && parsed.Priority <= 7 {
-					prio = parsed.Priority
+				if parsed.Priority != nil && *parsed.Priority >= 0 && *parsed.Priority <= 7 {
+					prio = *parsed.Priority
 				}
 			}
 		}
@@ -384,11 +419,13 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 			EffectiveServiceEnd: serviceEnd.UTC(),
 			PlanDownBps:         planDown,
 			PlanUpBps:           planUp,
-			FairUseTierDownBps:  planDown,
-			FairUseTierUpBps:    planUp,
+			FairUseTierDownBps:  0,
+			FairUseTierUpBps:    0,
+			TierIndex:           0,
 			Priority:            prio,
-			FairUsePolicyGen:    1,
-			Mode:                api.MemberRatePolicyModeEnforce,
+			FairUsePolicyGen:    0,
+			HasFairUseGen:       false,
+			Mode:                defaultFUPMode,
 			Reason:              api.MemberRatePolicyReasonNormal,
 		}
 		memberIdx[memberID] = len(members)
@@ -403,6 +440,116 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 	if len(memberIDs) == 0 {
 		return nil, nil
 	}
+
+	const fupQuery = `
+		SELECT
+			fms.member_id,
+			fms.mode,
+			fms.enforced_tier_index,
+			fms.enforced_down_bps,
+			fms.enforced_up_bps,
+			fms.enforced_priority,
+			fms.enforced_reason,
+			fms.generation::text,
+			fms.override_valid_until,
+			coalesce(pr.payload, '{}'::jsonb)
+		FROM fup_member_states fms
+		LEFT JOIN policy_revisions pr ON pr.id = fms.policy_revision_id
+		WHERE fms.member_id = ANY($1)
+		  AND fms.period_id = $2
+		ORDER BY fms.member_id ASC`
+
+	fupRows, err := r.q.Query(ctx, fupQuery, memberIDs, period.PeriodId)
+	if err != nil {
+		return nil, err
+	}
+	defer fupRows.Close()
+
+	for fupRows.Next() {
+		var (
+			memberID            uuid.UUID
+			modeStr             string
+			enforcedTierIdx     int
+			enforcedDownBps     *int64
+			enforcedUpBps       *int64
+			enforcedPrio        *int
+			enforcedReason      *string
+			genStr              string
+			overrideValidUntil  *time.Time
+			policyRevPayloadRaw []byte
+		)
+		if err := fupRows.Scan(
+			&memberID,
+			&modeStr,
+			&enforcedTierIdx,
+			&enforcedDownBps,
+			&enforcedUpBps,
+			&enforcedPrio,
+			&enforcedReason,
+			&genStr,
+			&overrideValidUntil,
+			&policyRevPayloadRaw,
+		); err != nil {
+			return nil, err
+		}
+		idx, ok := memberIdx[memberID]
+		if !ok {
+			continue
+		}
+		gen, _ := strconv.ParseUint(genStr, 10, 64)
+		members[idx].FairUsePolicyGen = gen
+		members[idx].HasFairUseGen = true
+
+		isShadow := modeStr == string(api.MemberRatePolicyModeShadow)
+		if !isShadow && len(policyRevPayloadRaw) > 0 {
+			var revPol struct {
+				Mode        string     `json:"mode"`
+				EffectiveAt *time.Time `json:"effective_at"`
+			}
+			if json.Unmarshal(policyRevPayloadRaw, &revPol) == nil {
+				if revPol.Mode == string(api.FairUsePayloadModeShadow) ||
+					(revPol.EffectiveAt != nil && !revPol.EffectiveAt.IsZero() && asOf.Before(revPol.EffectiveAt.UTC())) {
+					isShadow = true
+				}
+			}
+		}
+
+		if isShadow {
+			// §11.2, §11.5: Shadow mode or before effective_at compiles mode=shadow with null tier rate.
+			members[idx].Mode = api.MemberRatePolicyModeShadow
+			members[idx].FairUseTierDownBps = 0
+			members[idx].FairUseTierUpBps = 0
+			members[idx].TierIndex = 0
+			members[idx].Reason = api.MemberRatePolicyReasonNormal
+		} else {
+			members[idx].Mode = api.MemberRatePolicyModeEnforce
+			members[idx].TierIndex = enforcedTierIdx
+			if enforcedDownBps != nil && *enforcedDownBps > 0 {
+				members[idx].FairUseTierDownBps = *enforcedDownBps
+			} else {
+				members[idx].FairUseTierDownBps = 0
+			}
+			if enforcedUpBps != nil && *enforcedUpBps > 0 {
+				members[idx].FairUseTierUpBps = *enforcedUpBps
+			} else {
+				members[idx].FairUseTierUpBps = 0
+			}
+			if enforcedPrio != nil && *enforcedPrio >= 0 && *enforcedPrio <= 7 {
+				members[idx].Priority = *enforcedPrio
+			}
+			if enforcedReason != nil && *enforcedReason != "" {
+				members[idx].Reason = api.MemberRatePolicyReason(*enforcedReason)
+			}
+			if overrideValidUntil != nil {
+				u := overrideValidUntil.UTC()
+				members[idx].OverrideValidUntil = &u
+			}
+		}
+	}
+	if err := fupRows.Err(); err != nil {
+		return nil, err
+	}
+	fupRows.Close()
 
 	const bindingQuery = `
 		SELECT
@@ -487,7 +634,7 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 		AuthorizationGeneration:  1,
 		FairUseGeneration:        1,
 		DNSGeneration:            1,
-		DNSResolverIPv4:          []string{DefaultDNSResolverIPv4},
+		DNSResolverIPv4:          []string{},
 		DNSResolverIPv6:          []string{},
 		SupportedReleasePolicyID: DefaultSupportedReleasePolicyUUID,
 		ServingReleaseIDs:        []uuid.UUID{},
@@ -502,20 +649,18 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 		SELECT desired_release_id, supported_release_ids
 		FROM fleet_config
 		LIMIT 1`).Scan(&desiredRelUUID, &supportedRelIDs)
-	if err != nil && err != pgx.ErrNoRows {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return PolicySnapshot{}, err
 	}
 
 	// Check node-specific desired_release_id override first.
 	var nodeDesiredRel *uuid.UUID
-	if err := r.q.QueryRow(ctx, `SELECT desired_release_id FROM nodes WHERE id = $1`, nodeID).Scan(&nodeDesiredRel); err == nil && nodeDesiredRel != nil {
-		desiredRelUUID = nodeDesiredRel
+	err = r.q.QueryRow(ctx, `SELECT desired_release_id FROM nodes WHERE id = $1`, nodeID).Scan(&nodeDesiredRel)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return PolicySnapshot{}, err
 	}
-	if desiredRelUUID == nil {
-		var rid uuid.UUID
-		if err := r.q.QueryRow(ctx, `SELECT id FROM releases WHERE state = 'approved' ORDER BY release_sequence DESC LIMIT 1`).Scan(&rid); err == nil {
-			desiredRelUUID = &rid
-		}
+	if nodeDesiredRel != nil {
+		desiredRelUUID = nodeDesiredRel
 	}
 	if desiredRelUUID != nil {
 		snap.DesiredReleaseID = desiredRelUUID
@@ -552,23 +697,15 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 		gen, _ := strconv.ParseUint(genStr, 10, 64)
 		snap.PolicyRefs = append(snap.PolicyRefs, revID)
 		switch pType {
-		case "fair_use":
+		case string(api.PolicyTypeFairUse):
 			if gen > snap.FairUseGeneration {
 				snap.FairUseGeneration = gen
 			}
-		case "dns_block":
+		case string(api.PolicyTypeDnsProfile):
 			if gen > snap.DNSGeneration {
 				snap.DNSGeneration = gen
 			}
-			var dnsPayload struct {
-				ResolverIPv4 []string `json:"resolver_ipv4"`
-				ResolverIPv6 []string `json:"resolver_ipv6"`
-			}
-			if json.Unmarshal(payload, &dnsPayload) == nil && len(dnsPayload.ResolverIPv4) > 0 {
-				snap.DNSResolverIPv4 = dnsPayload.ResolverIPv4
-				snap.DNSResolverIPv6 = dnsPayload.ResolverIPv6
-			}
-		case "release_support":
+		case string(api.PolicyTypeReleaseSupport):
 			snap.SupportedReleasePolicyID = revID
 			var relPol api.ReleaseSupportPayload
 			if json.Unmarshal(payload, &relPol) == nil && len(relPol.MinimumServingVersion.ServingReleaseIds) > 0 {
