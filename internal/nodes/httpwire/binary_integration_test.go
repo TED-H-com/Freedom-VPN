@@ -222,7 +222,7 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	token, e := runtime.Enrollment.CreateEnrollment(t.Context(), enrollment.Command{Principal: "TEST ONLY admin", Key: uuid.New()}, api.EnrollmentCreateRequest{Delivery: "installer"})
+	token, e := runtime.Enrollment.CreateEnrollment(t.Context(), enrollment.Command{Principal: "admin:" + uuid.NewString(), Key: uuid.New()}, api.EnrollmentCreateRequest{Delivery: "installer"})
 	if e != nil {
 		t.Fatal(e)
 	}

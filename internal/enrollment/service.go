@@ -139,7 +139,16 @@ func appendDomainAudit(ctx context.Context, tx pgx.Tx, actor auth.Principal, act
 		actorID, actorType = actor.NodeID, api.AuditEventActorTypeNode
 	}
 	request := commandtx.RequestID(ctx)
-	return audit.Append(ctx, tx, db.AuditEvent{Actor: actorID.String(), ActorType: string(actorType), Action: action, Resource: string(resource.Type) + ":" + resource.Id.String(), OperationID: op, RequestID: &request, Result: string(api.AuditEventResultSucceeded)}, nil, map[string]any{"reason": reason}, "reason")
+	event, err := audit.NewEvent(audit.Entry{
+		Actor: audit.Actor{Type: actorType, ID: actorID}, Action: action,
+		Resource: resource, Result: api.AuditEventResultSucceeded,
+		OperationID: op, RequestID: &request,
+		After: map[string]any{"reason": reason}, Fields: []string{"reason"},
+	})
+	if err != nil {
+		return err
+	}
+	return audit.AppendEvent(ctx, tx, event)
 }
 func (s *Service) log(ctx context.Context, event string, id uuid.UUID) {
 	if s.cfg.Logger != nil {
