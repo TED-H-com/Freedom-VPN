@@ -112,10 +112,11 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if e = tx.QueryRow(ctx, `SELECT supported_release_ids,revoked_release_ids FROM fleet_config`).Scan(&serving, &revoked); e != nil {
 			return e
 		}
+		currentJob := n.job != nil && *n.job == j.id && j.generation == n.generation
 		recovery := r.RecoveryRequired || n.lastGood != nil && slices.Contains(revoked, *n.lastGood) || r.CurrentReleaseId != nil && slices.Contains(revoked, *r.CurrentReleaseId)
 		if r.State == "rolled_back" {
 			if r.CurrentReleaseId == nil || !slices.Contains(serving, *r.CurrentReleaseId) || slices.Contains(revoked, *r.CurrentReleaseId) {
-				_, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=true WHERE node_id=$1`, i.NodeID)
+				_, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=true WHERE node_id=$1 AND $2`, i.NodeID, currentJob)
 				if e != nil {
 					return e
 				}
@@ -167,7 +168,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 				}
 			}
 		}
-		if recovery {
+		if recovery && !history {
 			if _, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=true WHERE node_id=$1`, i.NodeID); e != nil {
 				return e
 			}

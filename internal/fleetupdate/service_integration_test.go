@@ -337,6 +337,16 @@ func TestAT26_IdempotencyConcurrencyAndLateResults(t *testing.T) {
 	}
 	l.report(queued, qNew, "succeeded")
 	l.report(applying, aNew, "succeeded")
+	lateFailure := result(qOld, "failed")
+	lateFailure.RecoveryRequired = true
+	if _, e = l.s.SubmitResult(l.ctx, queued, payload(t, lateFailure)); e != nil {
+		t.Fatal(e)
+	}
+	view, e := l.s.NodeVersionView(l.ctx, queued.NodeID)
+	if e != nil || view.RecoveryRequired {
+		t.Fatal("old result changed current recovery state", view, e)
+	}
+
 	old := l.get(oldBatch)
 	if old.Counts.Superseded != 1 || old.Counts.Succeeded != 1 {
 		t.Fatal(old.Counts)
