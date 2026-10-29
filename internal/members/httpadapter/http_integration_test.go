@@ -24,16 +24,15 @@ func (f *fixture) checkout(s browserSession) (uuid.UUID, string) {
 	key := uuid.NewString()
 	body := fmt.Sprintf(`{"plan_id":%q,"return_url":"https://portal.example.invalid/billing/return"}`, f.plan)
 	w := f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
-	requireStatus(f.t, w, 202)
-	op := decode[api.Operation](f.t, w)
-	if op.Status != "pending" || op.RequestId == uuid.Nil {
-		f.t.Fatal("unobserved checkout or missing request ID", op.Status)
+	requireStatus(f.t, w, 201)
+	first := decode[api.CheckoutSession](f.t, w)
+	if first.CheckoutUrl == "" {
+		f.t.Fatal("missing synchronous checkout URL")
 	}
-	f.drain()
 	w = f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
 	requireStatus(f.t, w, 201)
 	session := decode[api.CheckoutSession](f.t, w)
-	if session.CheckoutUrl == "" {
+	if session.CheckoutUrl == "" || session != first {
 		f.t.Fatal("missing hosted checkout")
 	}
 	return session.CheckoutSessionId, key
@@ -226,8 +225,8 @@ func TestAT02_DeviceLimitRevokeOwnershipReadbackHTTP(t *testing.T) {
 	}
 	w = f.call(member, "GET", "/api/v1/member/operations/"+op.OperationId.String(), "", nil)
 	requireStatus(t, w, 200)
-	if decode[api.Operation](t, w).Status != "pending" {
-		t.Fatal("failed readback completed operation")
+	if failure := decode[api.Operation](t, w); failure.Status != api.OperationStatusFailed || failure.Error.IsNull() {
+		t.Fatal("failed readback did not expose operation failure")
 	}
 	f.netbird.mu.Lock()
 	f.netbird.stale = false

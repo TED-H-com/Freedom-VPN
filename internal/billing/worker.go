@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"slices"
 	"time"
 
@@ -290,7 +291,7 @@ func (s *Service) syncSubscription(ctx context.Context, id, inbox uuid.UUID) err
 		if err != nil {
 			return err
 		}
-		return entitlement.Audit(ctx, tx, entitlement.Actor{ID: member, Role: "system"}, "billing.reconciled", member, nil, map[string]any{"subscription_id": id, "inbox_event_id": inbox, "entitlement_revision": projection.Revision, "anomalies": append([]string{}, anomalies...)})
+		return entitlement.Audit(ctx, tx, entitlement.Actor{ID: member, Role: string(api.AuditEventActorTypeSystem)}, "billing.reconciled", api.ResourceTypeMember, member, nil, map[string]any{"subscription_id": id, "inbox_event_id": inbox, "entitlement_revision": projection.Revision, "anomalies": append([]string{}, anomalies...)})
 	})
 	if errors.Is(err, ErrAnomaly) {
 		return s.anomaly(ctx, id, "IMMUTABLE_BILLING_FACT_CONFLICT", err)

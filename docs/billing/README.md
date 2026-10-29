@@ -165,3 +165,12 @@ network changes are used. No container is required when the shared test DSN exis
 
 No real payment or NetBird credentials are needed for the fake-provider tests.
 See [SANDBOX.md](SANDBOX.md) for provider configuration and current Stripe sources.
+
+
+D-029–D-031 review integration: see [member composition](../members/README.md)
+for the shared serving readers, reserved assignments table, typed operation/audit
+resources, and synchronous checkout. `Checkout` completes provider work before
+returning its populated URL; HTTP uses `ReserveCheckout` inside its transaction
+and `CompleteSession` only after commit. Migration 00121 adds the effect state
+for durable failed reservations. Provider errors are persisted only as fixed
+safe codes/messages; same-key retries preserve the provider idempotency key.
