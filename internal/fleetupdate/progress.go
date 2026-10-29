@@ -112,24 +112,11 @@ func recomputeAll(ctx context.Context, tx pgx.Tx) error {
 			return e
 		}
 		var op uuid.UUID
-		var status string
-		if e = tx.QueryRow(ctx, `SELECT o.id,o.status FROM operations o JOIN update_batches b ON b.operation_id=o.id WHERE b.id=$1`, id).Scan(&op, &status); e != nil {
+		if e = tx.QueryRow(ctx, `SELECT operation_id FROM update_batches WHERE id=$1`, id).Scan(&op); e != nil {
 			return e
 		}
-		if status == "pending" || ((status == "failed" || status == "partially_succeeded") && state != "completed" && state != "completed_with_exceptions") {
-			if _, e = tx.Exec(ctx, `UPDATE operations SET status='running',completed_at=NULL WHERE id=$1`, op); e != nil {
-				return e
-			}
-		}
-		if state == "completed" || state == "completed_with_exceptions" {
-			next := "succeeded"
-			if state == "completed_with_exceptions" {
-				next = "partially_succeeded"
-			}
-			_, e = tx.Exec(ctx, `UPDATE operations SET status=$2,completed_at=clock_timestamp(),steps='{"targets":{"required":true,"status":"succeeded","observed_ref":"batch"}}',observed_refs=jsonb_build_object('batch',$3::jsonb) WHERE id=$1 AND status='running'`, op, next, raw)
-			if e != nil {
-				return e
-			}
+		if e = projectOperation(ctx, tx, op, "targets", state); e != nil {
+			return e
 		}
 	}
 	return recomputeRetries(ctx, tx)
@@ -162,9 +149,9 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.CreatedAt = b.CreatedAt.UTC()
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
-		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
+		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,x.display_name,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
  `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`
- FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
+ FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
 		}
@@ -178,7 +165,8 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			var stage *api.UpdateStage
 			var recoveryRequired bool
 			var gen string
-			if e = rows.Scan(&t.TargetId, &t.NodeId, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed); e != nil {
+			var nodeName *string
+			if e = rows.Scan(&t.TargetId, &t.NodeId, &nodeName, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed); e != nil {
 				return e
 			}
 			if len(b.Targets) == limit {
@@ -199,7 +187,7 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			t.CurrentReleaseId = presence.FromPointer(currentRelease)
 			t.LastObservedAt = presence.FromPointer(lastObserved)
 			t.LastResultAt = presence.FromPointer(lastResult)
-			t.NodeName.SetNull()
+			t.NodeName = presence.FromPointer(nodeName)
 			t.CurrentJob.SetNull()
 			j.ErrorCode = presence.FromPointer(errorCode)
 			j.Stage = presence.FromPointer(stage)
@@ -233,11 +221,27 @@ const unconfirmedSQL = `j.id IS NULL OR j.issued_at IS NULL OR s.last_observed_a
 type TargetEvidence struct {
 	NeedsAttention, Unconfirmed  bool
 	LastResultAt, LastObservedAt *time.Time
+	// Applied configuration evidence is independent of the update generation.
+	// The generated UpdateTarget currently has no fields for this projection.
+	PolicyGeneration *decstr.U64
+	PolicyRefs       []uuid.UUID
 }
 
 func (s *Service) Evidence(ctx context.Context, target uuid.UUID) (TargetEvidence, error) {
 	var e TargetEvidence
-	err := s.pool.QueryRow(ctx, `SELECT `+needsAttentionSQL+`,`+unconfirmedSQL+`,j.last_result_at,s.last_observed_at FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=t.node_id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true WHERE t.id=$1`, target).Scan(&e.NeedsAttention, &e.Unconfirmed, &e.LastResultAt, &e.LastObservedAt)
+	var policyGeneration *string
+	err := s.pool.QueryRow(ctx, `SELECT `+needsAttentionSQL+`,`+unconfirmedSQL+`,j.last_result_at,s.last_observed_at,r.policy_generation::text,r.policy_refs
+ FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN fleet_node_state s ON s.node_id=t.node_id
+ LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true
+ LEFT JOIN update_results r ON r.result_id=(j.observed_evidence->>'result_id')::uuid
+ WHERE t.id=$1`, target).Scan(&e.NeedsAttention, &e.Unconfirmed, &e.LastResultAt, &e.LastObservedAt, &policyGeneration, &e.PolicyRefs)
+	if err == nil && policyGeneration != nil {
+		generation, parseErr := decstr.Parse(*policyGeneration)
+		if parseErr != nil {
+			return e, parseErr
+		}
+		e.PolicyGeneration = &generation
+	}
 	return e, err
 }
 
@@ -287,25 +291,11 @@ func recomputeRetries(ctx context.Context, tx pgx.Tx) error {
 		if e != nil {
 			return e
 		}
-		counts, state, e := CountStates(states)
+		_, state, e := CountStates(states)
 		if e != nil {
 			return e
 		}
-		if _, e = tx.Exec(ctx, `UPDATE operations SET status='running' WHERE id=$1 AND status='pending'`, id); e != nil {
-			return e
-		}
-		if state != "completed" && state != "completed_with_exceptions" {
-			continue
-		}
-		status := "succeeded"
-		if state == "completed_with_exceptions" {
-			status = "partially_succeeded"
-		}
-		raw, e := json.Marshal(counts)
-		if e != nil {
-			return e
-		}
-		if _, e = tx.Exec(ctx, `UPDATE operations SET status=$2,completed_at=clock_timestamp(),steps='{"attempts":{"required":true,"status":"succeeded","observed_ref":"attempts"}}',observed_refs=jsonb_build_object('attempts',$3::jsonb) WHERE id=$1 AND status='running'`, id, status, raw); e != nil {
+		if e = projectOperation(ctx, tx, id, "attempts", state); e != nil {
 			return e
 		}
 	}

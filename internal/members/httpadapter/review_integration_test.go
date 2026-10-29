@@ -83,9 +83,15 @@ func TestBILL03_D031SynchronousCheckoutFailureAndRetry(t *testing.T) {
 	if state != "failed" || code != "DEPENDENCY_UNAVAILABLE" || stepCode != code || message != "External dependency is unavailable." {
 		t.Fatal(state, code, message, stepCode)
 	}
+	if f.count(`SELECT count(*) FROM audit_events WHERE action='billing.checkout_completed'`) != 0 {
+		t.Fatal("failed provider call recorded completion")
+	}
 	observed, e := (operations.Store{Pool: p}).Get(t.Context(), op, auth.Principal{Role: auth.Member, ID: s.id})
 	if e != nil || observed.Status != api.OperationStatusFailed || observed.Error.IsNull() {
 		t.Fatal(observed, e)
+	}
+	if !observed.Kind.Valid() || observed.Kind != api.OperationKindCheckoutCreate || !observed.Resource.Type.Valid() || observed.Resource.Type != api.ResourceTypeCheckoutSession || observed.Resource.Id != session {
+		t.Fatal(observed)
 	}
 	w = f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
 	requireStatus(t, w, 201)
@@ -112,4 +118,8 @@ func TestBILL03_D031SynchronousCheckoutFailureAndRetry(t *testing.T) {
 	if f.count(`SELECT count(*) FROM operations WHERE error_code IS NOT NULL OR error_message IS NOT NULL`) != 0 {
 		t.Fatal("recovered operation kept stale error")
 	}
+	if f.count(`SELECT count(*) FROM audit_events WHERE action='billing.checkout_completed'`) != 1 {
+		t.Fatal("checkout retries duplicated or omitted completion audit")
+	}
+	readMemberAudit(t, f)
 }

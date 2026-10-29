@@ -490,16 +490,6 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, body)
 }
 
-func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
-	if _, _, ok := s.requireIdentity(w, r); !ok {
-		return
-	}
-	_, _ = io.Copy(io.Discard, io.LimitReader(r.Body, canonjson.MaxBytes))
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(`{"results":[],"highest_contiguous_seq":"0","blocked_seq":null}`))
-}
-
 func hexEncode(b []byte) string {
 	const hexdigits = "0123456789abcdef"
 	out := make([]byte, len(b)*2)

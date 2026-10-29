@@ -451,4 +451,35 @@ func TestBatchPreservesDecimalPayload(t *testing.T) {
 	}
 }
 
+func TestRestoreSchedulesAndClears(t *testing.T) {
+	ctx := context.Background()
+	s := seed(t, 0, usagestore.Options{})
+	tr := &fakeTR{
+		postFn: func(string, []byte) (int, []byte, time.Duration, error) {
+			return 500, nil, 0, nil
+		},
+		getFn: func() (int, []byte, error) {
+			return 503, []byte("no"), nil
+		},
+	}
+	u := newUp(t, s, tr, (&sleeper{}).Sleep)
+	if err := u.Restore(ctx); err == nil {
+		t.Fatal("503 restore succeeded")
+	}
+	if !u.NeedsRestore() {
+		t.Fatal("failed restore did not ask for another")
+	}
+	tr.getFn = func() (int, []byte, error) { return 404, nil, nil }
+	if err := u.Restore(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if u.NeedsRestore() {
+		t.Fatal("404 left a restore pending")
+	}
+	h, err := s.Head(ctx)
+	if err != nil || h.LedgerEpoch != uuid.Nil {
+		t.Fatalf("404 stored an epoch: %+v %v", h, err)
+	}
+}
+
 func strPtr(s string) *string { return &s }
