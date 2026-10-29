@@ -65,7 +65,7 @@ The node generates an ECDSA P-256 key (mode 0600) and a CSR with an empty subjec
 
 Envelopes are verified with `pkg/envelope` and the node trust bundle (`envelope.ParseNodeTrustStoreJSON`). The node id, incarnation, generation, and half-open validity window `[issued_at, expires_at)` must match. A bad signature, the wrong node, or an older generation does not replace the accepted state. A 304 does not move the lease, the ETag, or any deadline; the same step may still renew a lease that is actually due.
 
-On a verification or render failure the agent reports the reason and keeps member forwarding off. `ISOLATION_BASELINE_MISSING` is an enforce reason and is not an `ErrorCode`. The observation check uses `HEALTH_CHECK_FAILED` and the message is the literal `ISOLATION_BASELINE_MISSING`. `METER_PATH_INVALID` is a real error code. `netbird_backend` must be `kernel`; `userspace` and `unknown` keep forwarding off.
+On a verification or render failure the agent reports the reason and keeps member forwarding off. `ISOLATION_BASELINE_MISSING` is a report-only `ErrorCode` (revision 3, HTTP status none). The observation uses that code, stage `isolation`, and the message `ISOLATION_BASELINE_MISSING`. It is never written as an HTTP response. `HEALTH_CHECK_FAILED` stays for a health check that is not one of the specific codes. `METER_PATH_INVALID` is a real error code. `netbird_backend` must be `kernel`; `userspace` and `unknown` keep forwarding off.
 
 The agent translates the accepted document into an `enforce.Model`, then calls `enforce.Apply`. QoS class minors (`QoS.Assignments`) are stored so a restart does not renumber classes. The node lock is tried three times, 50 ms apart, around a serving apply. If it is busy the apply is skipped and `UPDATE_BUSY` is reported. A busy lock does not install the baseline when members are already being served. When the decision is already not to serve, the baseline is installed even if the lock is busy.
 
@@ -126,6 +126,8 @@ Sampling starts only after a successful apply that admits forwarding. `meter.New
 
 Stop and hand-off (§13.6 step 8) are `Barrier`, then the fail-closed baseline, then `FinalSample`. That sequence runs when forwarding is withdrawn (a failed gate, a failed apply, or a revoked identity) and when the process stops. A successful apply after that calls `ResumeSampling` (step 11). A clean close reason `final_sample` makes the next epoch `after_final_sample`, which checkpoints the counters as they are and does not recount them. `ErrNoEpoch` and a short wall-clock hold are not warnings.
 
+After every serving apply, and on every sample, the agent holds the current nft `State` and calls `enforce.DetectMeterResets`. The meter package itself only compares counter values (`DetectResets`). A table, forward chain, or generation marker cleared outside the agent is reported as `METER_EPOCH_CHANGE` (report-only, not an HTTP status) when a usage counter was live. The agent then opens one epoch through the meter's existing sample switch, records a `counter_discontinuity` gap, and the serving apply installs the ruleset again. A counter that is zero in both snapshots is idle and does not open an epoch. The agent's own baseline, including the final sample, is not an external reset. A value drop the meter can already see is still `METER_EPOCH_CHANGE`, once per incident, and is not nudged a second time.
+
 Ledger-epoch restore is `usageupload.Restore`: `GET /api/v1/agent/usage-checkpoint`, then `ApplyCheckpoint`, which verifies the `recovery` signature with the node trust store. The agent calls it at startup and whenever `NeedsRestore` is set. A lower watermark is accepted only for a verified new epoch. The agent does not check the signature itself. A failed restore does not by itself block forwarding. Upload continues while member forwarding is stopped.
 
 ## Interfaces for the updater
@@ -185,7 +187,7 @@ Updater:
 - Data health `unknown` is not a forwarding gate.
 - Lab exempt prefixes require `test_mode`.
 - A bootstrap secret lost after HTTP 200 and before the 0600 write is unrecoverable.
-- `ISOLATION_BASELINE_MISSING` is carried in `NodeError.Message` with code `HEALTH_CHECK_FAILED`.
+- `ISOLATION_BASELINE_MISSING` and `METER_EPOCH_CHANGE` are report-only observation codes. `HEALTH_CHECK_FAILED` is not used as their stand-in.
 - `host_reserve_bps` missing or zero exits 64 before the kernel or the network. A zero that still reaches `Decide` fails closed and is not replaced.
 - Usage caps do not reuse `METER_PATH_INVALID`. A clean hand-off does not recount admission bytes.
 

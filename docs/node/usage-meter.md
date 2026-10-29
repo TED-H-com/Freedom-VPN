@@ -1,6 +1,6 @@
 # Usage meter
 
-`node/internal/meter` turns `forward_admission_v1` named counters into usage events (§10.1, §10.5, §10.7, §10.9, §13.6 steps 8 and 11). It does not install nftables and it does not change forwarding. The agent owns the data path and calls `Health` to decide whether members may forward.
+`node/internal/meter` turns `forward_admission_v1` named counters into usage events (§10.1, §10.5, §10.7, §10.9, §13.6 steps 8 and 11). It does not install nftables and it does not change forwarding. The agent owns the data path and calls `Health` to decide whether members may forward. The meter calls `enforce.DetectResets` (values only). The agent, when it holds a `State`, calls `enforce.DetectMeterResets` for a table, forward chain, or generation marker cleared outside the process.
 
 Usage is the inner IPv4 total length admitted at the forward hook, as exposed by the `node/enforce` counters (D-019). Bytes later dropped by HTB are not subtracted. DNS counters (`dns_service_v1`, names `nu_` / `nd_`) and diagnostic counters are not member usage.
 
