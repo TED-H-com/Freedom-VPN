@@ -138,7 +138,8 @@ The test runner currently executes only `dbtest` component models.
 3. Build the existing CLI and operate only on the protected copy config:
 
    ```sh
-   go build -o .agent/secops/fvpn-usage-admin ./internal/usage/cmd/fvpn-usage-admin
+   python3 tests/e2e/at/secops/diskexec.py go build \
+     -o .agent/secops/fvpn-usage-admin ./internal/usage/cmd/fvpn-usage-admin
    .agent/secops/fvpn-usage-admin -config .agent/secops/restore/control.json \
      freeze -actor "$RECOVERY_ACTOR_UUID" -reason 'TEST ONLY isolated restore'
    .agent/secops/fvpn-usage-admin -config .agent/secops/restore/control.json \

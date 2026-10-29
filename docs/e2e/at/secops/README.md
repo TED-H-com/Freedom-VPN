@@ -48,3 +48,7 @@ retains previous snapshots. [Operator runs](operator-runs.md) describe the exact
 remaining procedures and expected evidence. A component restore model is not a
 DB/WAL restore, a fake enforcer is not a stopped flow, and cross-compilation is
 not physical arm64 execution (§19.1, §19.2).
+
+[validation.json](validation.json) records final root/area checks, the reverified
+probe revision and its two architecture digests. The earlier acceptance snapshot
+retains its own exact source revision and build digests.

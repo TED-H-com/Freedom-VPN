@@ -1,0 +1,1311 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-29T23:18:27Z",
+  "source_revision": "0b8739cf4184d7871dfb34e59a878ad02c495683",
+  "probe_source_sha256": "82d02501c8fdf85bf27870efaa6d01ec259909a9f3ec9d74ed836bd6ddd7b8e2",
+  "scope": "Final supporting probe verification. AT28\u2013AT32 remain blocked; acceptance snapshot provenance is preserved in ATxx.json.",
+  "checks": [
+    {
+      "name": "root-lint",
+      "command": "GOFLAGS=-p=2 GOMAXPROCS=2 make go-lint",
+      "exit_code": 0,
+      "output_tail": [],
+      "scan_findings": []
+    },
+    {
+      "name": "e2e-vet",
+      "command": "GOFLAGS=-p=2 GOMAXPROCS=2 python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e ./tests/...",
+      "exit_code": 0,
+      "output_tail": [],
+      "scan_findings": []
+    },
+    {
+      "name": "module-tests",
+      "command": "GOFLAGS=-p=2 GOMAXPROCS=2 python3 tests/e2e/at/secops/diskexec.py go test -p 1 -parallel 2 ./...",
+      "exit_code": 0,
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/decstr\t0.002s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/envelope\t0.006s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t0.002s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment\t[no test files]",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare\t0.006s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t0.002s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t[no test files]",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t[no test files]"
+      ],
+      "scan_findings": []
+    },
+    {
+      "name": "area-checks",
+      "command": "GOFLAGS=-p=2 GOMAXPROCS=2 make -f mk/at-secops.mk at-secops-lint at-secops-test at-secops-build",
+      "exit_code": 0,
+      "output_tail": [
+        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t2.466s",
+        "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
+        "....",
+        "----------------------------------------------------------------------",
+        "Ran 4 tests in 0.000s",
+        "",
+        "OK",
+        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+      ],
+      "scan_findings": []
+    }
+  ],
+  "probes": {
+    "command": "GOFLAGS=-p=2 GOMAXPROCS=2 python3 tests/e2e/at/secops/diskexec.py go test -json -tags e2e,integration -p 1 -parallel 2 -count=1 ./tests/e2e/at/secops",
+    "exit_code": 0,
+    "scan_findings": [],
+    "status": "passed",
+    "required_tests": [
+      "TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs",
+      "TestAT28_AllContractRoleBoundaries",
+      "TestAT28_TransportSecretCanaries",
+      "TestAT29_IndependentWatchdogFailureMatrix",
+      "TestAT29_EarliestFiniteServiceDeadline",
+      "TestAT32_UnifiedNodeContractSurface"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestAT28_AllContractRoleBoundaries",
+        "result": "pass",
+        "elapsed_seconds": 2.34
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ActivatePolicyRevision",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ActivatePolicyRevision/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ActivatePolicyRevision/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ActivatePolicyRevision/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ActivatePolicyRevision/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ActivatePolicyRevision/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ConsumeAgentBootstrap",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ConsumeAgentBootstrap/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ConsumeAgentBootstrap/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ConsumeAgentBootstrap/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ConsumeAgentBootstrap/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateBillingPortalSession",
+        "result": "pass",
+        "elapsed_seconds": 0.04
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateBillingPortalSession/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateBillingPortalSession/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateBillingPortalSession/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateBillingPortalSession/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateCheckoutSession",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateCheckoutSession/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateCheckoutSession/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateCheckoutSession/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateCheckoutSession/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateEnrollment",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateEnrollment/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateEnrollment/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateEnrollment/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateEnrollment/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateEnrollment/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateMemberGrant",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateMemberGrant/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateMemberGrant/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateMemberGrant/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateMemberGrant/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateMemberGrant/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreatePolicyRevision",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreatePolicyRevision/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreatePolicyRevision/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreatePolicyRevision/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreatePolicyRevision/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreatePolicyRevision/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateUpdateBatch",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateUpdateBatch/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateUpdateBatch/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateUpdateBatch/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateUpdateBatch/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/CreateUpdateBatch/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetAdminOperation",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetAdminOperation/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetAdminOperation/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetAdminOperation/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetAdminOperation/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetAdminOperation/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetDesiredState",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetDesiredState/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetDesiredState/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetDesiredState/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetDesiredState/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetEnrollment",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetEnrollment/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetEnrollment/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetEnrollment/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetEnrollment/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetEnrollment/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMember",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMember/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMember/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMember/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMember/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMember/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberOperation",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberOperation/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberOperation/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberOperation/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberOperation/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberSelf",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberSelf/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberSelf/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberSelf/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberSelf/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberUsage",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberUsage/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberUsage/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberUsage/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetMemberUsage/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetNode",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetNode/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetNode/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetNode/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetNode/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetNode/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUpdateBatch",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUpdateBatch/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUpdateBatch/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUpdateBatch/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUpdateBatch/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUpdateBatch/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUsageCheckpoint",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUsageCheckpoint/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUsageCheckpoint/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUsageCheckpoint/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/GetUsageCheckpoint/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListAuditEvents",
+        "result": "pass",
+        "elapsed_seconds": 0.08
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListAuditEvents/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListAuditEvents/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListAuditEvents/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListAuditEvents/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListAuditEvents/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberDevices",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberDevices/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberDevices/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberDevices/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberDevices/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberExits",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberExits/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberExits/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberExits/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMemberExits/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMembers",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMembers/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMembers/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMembers/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMembers/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListMembers/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListNodes",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListNodes/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListNodes/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListNodes/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListNodes/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListNodes/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListPolicies",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListPolicies/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListPolicies/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListPolicies/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListPolicies/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListPolicies/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListReleases",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListReleases/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListReleases/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListReleases/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListReleases/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/ListReleases/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RegisterRelease",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RegisterRelease/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RegisterRelease/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RegisterRelease/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RegisterRelease/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RegisterRelease/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewAgentCertificate",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewAgentCertificate/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewAgentCertificate/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewAgentCertificate/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewAgentCertificate/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewServingLease",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewServingLease/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewServingLease/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewServingLease/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RenewServingLease/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetireNode",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetireNode/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetireNode/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetireNode/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetireNode/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetireNode/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetryUpdateBatch",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetryUpdateBatch/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetryUpdateBatch/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetryUpdateBatch/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetryUpdateBatch/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RetryUpdateBatch/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeEnrollment",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeEnrollment/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeEnrollment/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeEnrollment/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeEnrollment/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeEnrollment/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeMemberDevice",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeMemberDevice/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeMemberDevice/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeMemberDevice/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeMemberDevice/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeNode",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeNode/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeNode/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeNode/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeNode/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/RevokeNode/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SetNodePublication",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SetNodePublication/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SetNodePublication/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SetNodePublication/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SetNodePublication/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SetNodePublication/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitObservation",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitObservation/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitObservation/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitObservation/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitObservation/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUpdateResult",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUpdateResult/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUpdateResult/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUpdateResult/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUpdateResult/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUsageBatch",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUsageBatch/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUsageBatch/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUsageBatch/wrong_role_admin",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/SubmitUsageBatch/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateMember",
+        "result": "pass",
+        "elapsed_seconds": 0.07
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateMember/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateMember/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateMember/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.02
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateMember/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateMember/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateNode",
+        "result": "pass",
+        "elapsed_seconds": 0.06
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateNode/missing_mfa",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateNode/wrong_listener",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateNode/wrong_role_",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateNode/wrong_role_agent",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_AllContractRoleBoundaries/UpdateNode/wrong_role_member",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs",
+        "result": "pass",
+        "elapsed_seconds": 0.54
+      },
+      {
+        "name": "TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs/expired",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs/node_a",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs/node_b",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs/revoked",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT28_TransportSecretCanaries",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT29_EarliestFiniteServiceDeadline",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_EarliestFiniteServiceDeadline/finite_grace_node_ends_first",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_EarliestFiniteServiceDeadline/finite_grant_offline_cap_first",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_EarliestFiniteServiceDeadline/paid_service_ends_first",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix",
+        "result": "pass",
+        "elapsed_seconds": 0.05
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/agent_crashed",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/boot_changed",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/elapsed_clock_regressed",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/exact_policy_deadline",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/failed_isolation",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/missing_deadline",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/missing_heartbeat",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/missing_kernel_table",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/missing_time_anchor",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/unreadable_kernel_table",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/valid_policy_control_unavailable",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      },
+      {
+        "name": "TestAT29_IndependentWatchdogFailureMatrix/wall_clock_back_one_hour",
+        "result": "pass",
+        "elapsed_seconds": 0
+      },
+      {
+        "name": "TestAT32_UnifiedNodeContractSurface",
+        "result": "pass",
+        "elapsed_seconds": 0.01
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+    }
+  },
+  "builds": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "e5176515c2ee2cc026e468756cca5f8311eb24a963fbb15676ed6fafba24d4f3"
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "9f548f9ac9a007720c9f35eb08df92351203f8a65f980234a6bd64280b65e77b"
+    }
+  ]
+}
