@@ -53,7 +53,7 @@ func runCrashChild() int {
 		fmt.Fprintf(os.Stderr, "scenario json: %v\n", err)
 		return 1
 	}
-	trust, err := envelope.ParseTrustStoreJSON(sc.Trust)
+	trust, err := envelope.ParseNodeTrustStoreJSON(sc.Trust)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "trust: %v\n", err)
 		return 1

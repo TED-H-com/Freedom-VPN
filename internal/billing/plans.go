@@ -7,6 +7,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -55,7 +56,8 @@ type PlanRevision struct {
 // or edits existing subscribers. Default device limit 3 is available via
 // DefaultPlanPayload; HTTP schema still requires an explicit value.
 func DefaultPlanPayload() api.PlanPayload {
-	return api.PlanPayload{DeviceLimit: entitlement.DefaultDeviceLimit}
+	return api.PlanPayload{DeviceLimit: entitlement.DefaultDeviceLimit,
+		RateLimit: presence.NewNullNullable[api.RatePair]()}
 }
 func CreatePlanRevision(ctx context.Context, tx pgx.Tx, planID, revisionID uuid.UUID, code string, p api.PlanPayload) (PlanRevision, error) {
 	out := PlanRevision{ID: revisionID, PlanID: planID, Payload: p}
@@ -65,7 +67,7 @@ func CreatePlanRevision(ctx context.Context, tx pgx.Tx, planID, revisionID uuid.
 	if _, err := CurrencyDigits(p.Price.Currency); err != nil {
 		return out, err
 	}
-	if p.RateLimit != nil && (p.RateLimit.DownBps < 0 || p.RateLimit.UpBps < 0) {
+	if rate, err := p.RateLimit.Get(); err == nil && (rate.DownBps < 0 || rate.UpBps < 0) {
 		return out, ErrPayload
 	}
 	groups := map[uuid.UUID]bool{}

@@ -8,6 +8,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 )
@@ -163,10 +164,13 @@ func (e *Engine) stepStart(ctx context.Context, txn updatejournal.Txn) (updatejo
 	}
 	cp, _ := decodeCheckpoint(txn.Checkpoint)
 	if cp == nil {
-		cp = &api.UpdateUsageCheckpoint{}
+		cp = &api.UpdateUsageCheckpoint{
+			ClosedMeterEpochId: presence.NewNullNullable[uuid.UUID](),
+			NewMeterEpochId:    presence.NewNullNullable[uuid.UUID](),
+		}
 	}
 	if id, err := uuid.Parse(epoch); err == nil {
-		cp.NewMeterEpochId = &id
+		cp.NewMeterEpochId.Set(id)
 	}
 	_ = e.Journal.SetJobPhase(ctx, txn.JobID, txn.Attempt, updatejournal.JobChecking)
 	return e.advance(ctx, txn, updatejournal.StageChecking, updatejournal.StageUpdate{Checkpoint: cp})

@@ -526,8 +526,8 @@ func (e *Engine) beginOrResume(ctx context.Context, c claimed, m api.ReleaseMani
 		return updatejournal.Txn{}, err
 	}
 	mig := ""
-	if m.Compatibility.MigrationId != nil {
-		mig = *m.Compatibility.MigrationId
+	if id, err := m.Compatibility.MigrationId.Get(); err == nil {
+		mig = id
 	}
 	id, err := uuid.NewV7()
 	if err != nil {

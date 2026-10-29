@@ -4,6 +4,7 @@ package gen
 import api "github.com/TED-H-com/Freedom-VPN/pkg/api"
 
 type AccountingPeriod = api.AccountingPeriod
+type AgentBootstrap = api.AgentBootstrap
 type Architecture = api.Architecture
 type AuditEvent = api.AuditEvent
 type AuditEventActorType = api.AuditEventActorType
@@ -248,6 +249,8 @@ type MemberId = api.MemberId
 type NodeId = api.NodeId
 type OperationId = api.OperationId
 type BadRequest = api.BadRequest
+type BootstrapGone = api.BootstrapGone
+type BootstrapNotReady = api.BootstrapNotReady
 type Conflict = api.Conflict
 type Forbidden = api.Forbidden
 type InternalError = api.InternalError
@@ -279,12 +282,14 @@ type RegisterReleaseParams = api.RegisterReleaseParams
 type CreateUpdateBatchParams = api.CreateUpdateBatchParams
 type GetUpdateBatchParams = api.GetUpdateBatchParams
 type RetryUpdateBatchParams = api.RetryUpdateBatchParams
+type ConsumeAgentBootstrapParams = api.ConsumeAgentBootstrapParams
 type RenewAgentCertificateParams = api.RenewAgentCertificateParams
 type GetDesiredStateParams = api.GetDesiredStateParams
 type EnrollNodeParams = api.EnrollNodeParams
 type RenewServingLeaseParams = api.RenewServingLeaseParams
 type SubmitObservationParams = api.SubmitObservationParams
 type SubmitUpdateResultParams = api.SubmitUpdateResultParams
+type SubmitUsageBatchParams = api.SubmitUsageBatchParams
 type CreateBillingPortalSessionParams = api.CreateBillingPortalSessionParams
 type CreateCheckoutSessionParams = api.CreateCheckoutSessionParams
 type ListMemberDevicesParams = api.ListMemberDevicesParams

@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -130,6 +131,7 @@ func (s *Store) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsReques
 }
 func (s *Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api.AuditEventList, err error) {
 	page.Items = []api.AuditEvent{}
+	page.NextCursor.SetNull()
 	limit := 50
 	if p.Limit != nil {
 		limit = *p.Limit
@@ -195,9 +197,12 @@ func (s *Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api
 		var actor, resource string
 		var before, after []byte
 		var occurred pgtype.Timestamptz
-		if e = rows.Scan(&event.AuditEventId, &occurred, &actor, &event.Actor.Type, &event.Action, &resource, &event.RequestId, &event.OperationId, &event.Result, &before, &after); e != nil {
+		var requestID, operationID *uuid.UUID
+		if e = rows.Scan(&event.AuditEventId, &occurred, &actor, &event.Actor.Type, &event.Action, &resource, &requestID, &operationID, &event.Result, &before, &after); e != nil {
 			return page, e
 		}
+		event.RequestId = presence.FromPointer(requestID)
+		event.OperationId = presence.FromPointer(operationID)
 		scanned++
 		last = event
 		lastTime = occurred
@@ -229,7 +234,7 @@ func (s *Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api
 		copy(b[9:25], last.AuditEventId[:])
 		copy(b[25:], hash[:])
 		cursor := base64.RawURLEncoding.EncodeToString(b)
-		page.NextCursor = &cursor
+		page.NextCursor.Set(cursor)
 	}
 	return page, nil
 }
@@ -237,11 +242,14 @@ func (s *Store) List(ctx context.Context, p api.ListAuditEventsParams) (page api
 // decodeEvent validates contract representations without synthesizing identities.
 // The producer must repair malformed values in its own write path.
 func decodeEvent(event *api.AuditEvent, actor, resource string, before, after []byte) string {
+	event.Actor.Id.SetNull()
+	event.Changes.Before.SetNull()
+	event.Changes.After.SetNull()
 	if !event.Actor.Type.Valid() {
 		return "actor_type"
 	}
 	if id, err := uuid.Parse(actor); err == nil {
-		event.Actor.Id = &id
+		event.Actor.Id.Set(id)
 	} else if event.Actor.Type != api.AuditEventActorTypeSystem {
 		return "actor_id"
 	}
@@ -270,9 +278,9 @@ func decodeEvent(event *api.AuditEvent, actor, resource string, before, after []
 		if value != nil {
 			value = redact(value).(map[string]any)
 			if i == 0 {
-				event.Changes.Before = &value
+				event.Changes.Before.Set(value)
 			} else {
-				event.Changes.After = &value
+				event.Changes.After.Set(value)
 			}
 		}
 	}

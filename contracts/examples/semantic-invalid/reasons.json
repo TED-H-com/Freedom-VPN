@@ -1,0 +1,52 @@
+{
+  "ReleaseRegisterRequest.two-amd64.json": {
+    "owner": "release service",
+    "rule": "architectures",
+    "note": "Both amd64 and arm64 must be present, with unique OS/version/architecture tuples (§13.3–§13.4); signatures are valid TEST ONLY signatures."
+  },
+  "UsageEvent.gap-on-complete.json": {
+    "owner": "usage ledger service",
+    "rule": "gap",
+    "note": "gap is present iff quality=gap (§10.5); payload hash is correct."
+  },
+  "UsageEvent.inverted-interval.json": {
+    "owner": "usage ledger service",
+    "rule": "interval",
+    "note": "interval_end must be greater than interval_start (§10.5); payload hash is correct."
+  },
+  "NodePatch.clear-and-capacity.json": {
+    "owner": "node service",
+    "rule": "capacity",
+    "note": "clear_capacity=true excludes capacity (§14.2)."
+  },
+  "PolicyRevisionCreate.fup-nonmonotonic.json": {
+    "owner": "policy service",
+    "rule": "fair_use",
+    "note": "Thresholds must strictly increase (§11.1). All sample rates and thresholds are TEST ONLY."
+  },
+  "PolicyRevisionCreate.approved-not-serving.json": {
+    "owner": "policy service",
+    "rule": "approved",
+    "note": "Approved releases must be a subset of serving releases (§13.2)."
+  },
+  "PolicyRevisionCreate.revoked-overlap.json": {
+    "owner": "policy service",
+    "rule": "revoked",
+    "note": "Revoked releases must be disjoint from serving and approved releases (§13.2)."
+  },
+  "PolicyRevisionCreate.domain-duplicate.json": {
+    "owner": "policy service / DNS compiler",
+    "rule": "domains",
+    "note": "Duplicate semantic domain rules after IDNA normalization are rejected (§12.4)."
+  },
+  "CheckoutSessionRequest.non-allowlisted.json": {
+    "owner": "billing service",
+    "rule": "return_url",
+    "note": "TEST ONLY allowlist: https://portal.example.invalid; this host is absent (§16.2)."
+  },
+  "BillingPortalSessionRequest.non-allowlisted.json": {
+    "owner": "billing service",
+    "rule": "return_url",
+    "note": "TEST ONLY allowlist: https://portal.example.invalid; this host is absent (§16.2)."
+  }
+}

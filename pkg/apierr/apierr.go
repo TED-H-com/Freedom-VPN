@@ -183,14 +183,19 @@ func Write(w http.ResponseWriter, r *http.Request, err error) {
 
 const internalMessage = "Internal error. Quote the request ID when reporting this problem."
 
-// Write renders err as the error envelope.
+// Write renders err as the error envelope, unless a tracked writer has already
+// started a response. Install TrackResponse at the outer handler boundary; an
+// arbitrary net/http.ResponseWriter cannot expose earlier writes.
 //
 // The request ID is taken from the request context (ContextWithRequestID),
 // then from an X-Request-ID header already set on the response, and is
-// generated otherwise. A client-supplied X-Request-ID request header is never
+// generated otherwise (invalid pre-set IDs are replaced). A client-supplied X-Request-ID request header is never
 // used (§14.1). The response always carries X-Request-ID, Cache-Control:
 // no-store and, for 429/503 or when RetryAfter is set, Retry-After.
 func (wr Writer) Write(w http.ResponseWriter, r *http.Request, err error) {
+	if responseWritten(w) {
+		return
+	}
 	reqID := ""
 	if r != nil {
 		reqID, _ = RequestIDFromContext(r.Context())
@@ -198,7 +203,7 @@ func (wr Writer) Write(w http.ResponseWriter, r *http.Request, err error) {
 	if reqID == "" {
 		reqID = w.Header().Get(HeaderRequestID)
 	}
-	if reqID == "" {
+	if _, err := uuid.Parse(reqID); err != nil || len(reqID) != 36 {
 		reqID = newRequestID()
 	}
 

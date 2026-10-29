@@ -211,13 +211,13 @@ func sanitizeReplay(operationID string, response any) (any, error) {
 	switch v := response.(type) {
 	case gen.CreateEnrollment201JSONResponse:
 		v.Body.SecretAvailable = false
-		v.Body.Token = nil
+		v.Body.Token.SetNull()
 		return v, nil
 	case *gen.CreateEnrollment201JSONResponse:
 		if v != nil {
 			copy := *v
 			copy.Body.SecretAvailable = false
-			copy.Body.Token = nil
+			copy.Body.Token.SetNull()
 			return copy, nil
 		}
 	}

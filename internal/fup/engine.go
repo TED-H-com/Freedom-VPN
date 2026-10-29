@@ -15,6 +15,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -741,12 +742,12 @@ func (e *Engine) GetAdminMemberStatus(ctx context.Context, memberID uuid.UUID, p
 		memberStatus = api.FairUseStatus{
 			State:     api.FairUseStatusStateNormal,
 			Applying:  false,
-			AsOf:      &asOf,
-			ResetsAt:  &resetsAt,
-			Rate:      nil,
-			Reason:    nil,
-			TierIndex: nil,
-			TierName:  nil,
+			AsOf:      presence.NewNullableWithValue(asOf),
+			ResetsAt:  presence.NewNullableWithValue(resetsAt),
+			Rate:      presence.NewNullNullable[api.RatePair](),
+			Reason:    presence.NewNullNullable[api.FairUseStatusReason](),
+			TierIndex: presence.NewNullNullable[int](),
+			TierName:  presence.NewNullNullable[api.LocalizedText](),
 		}
 		nodeSyncSummary = "shadow (no enforcement)"
 	} else {
@@ -795,12 +796,12 @@ func (e *Engine) GetAdminMemberStatus(ctx context.Context, memberID uuid.UUID, p
 		memberStatus = api.FairUseStatus{
 			State:     memberState,
 			Applying:  applying,
-			AsOf:      &asOf,
-			ResetsAt:  &resetsAt,
-			Rate:      ratePair,
-			Reason:    memberReason,
-			TierIndex: &tierIdxCopy,
-			TierName:  &tierNameCopy,
+			AsOf:      presence.NewNullableWithValue(asOf),
+			ResetsAt:  presence.NewNullableWithValue(resetsAt),
+			Rate:      presence.FromPointer(ratePair),
+			Reason:    presence.FromPointer(memberReason),
+			TierIndex: presence.NewNullableWithValue(tierIdxCopy),
+			TierName:  presence.NewNullableWithValue(tierNameCopy),
 		}
 	}
 

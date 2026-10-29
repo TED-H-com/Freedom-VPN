@@ -4,6 +4,7 @@ info:
   version: 1.0.0
   description: |
     Contract for the Freedom VPN central control API (Project Spec v1.0, §14).
+    There are 41 endpoints, including the D-015 agent bootstrap extension.
     This document is the single source of truth: Go types (`pkg/api`) and
     TypeScript types (`contracts/ts/schema.d.ts`) are generated from it, and the
     contract tests in `contracts/` validate every example against it.
@@ -136,7 +137,12 @@ paths:
         hash. A retry with the same Idempotency-Key and payload returns the same
         enrollment with `secret_available=false` and `token=null` (§14.5). Creating
         an enrollment is the authorization to join; there is no further manual
-        admission step (ENR01).
+        admission step (ENR01). Optional node_id authorizes reinstallation onto
+        that existing Node (AT07). Its previous incarnation must already be
+        revoked (409 NODE_INCARNATION_ACTIVE otherwise) and the Node must not be
+        retired (409 NODE_RETIRED). Successful enrollment creates a new
+        incarnation and retains Node history; never clear a revoked lifecycle
+        to reuse an old incarnation. Without node_id, reserve a new Node.
       x-fvpn-spec: '§14.2, §6.1, §6.4, §14.5'
       x-fvpn-requirements: [ENR01, ENR03, NODE01]
       security:
@@ -1574,7 +1580,10 @@ paths:
         the same token fails with 409 ENROLLMENT_KEY_MISMATCH (ENR02). A consumed
         token alone can never read the certificate back (§6.2). The NetBird
         bootstrap secret is not in this response; it is delivered later over mTLS
-        (§14.7).
+        via POST /agent/bootstrap (§14.7, D-015). If the enrollment is bound to
+        an existing Node, create a new incarnation only after verifying that the
+        previous incarnation is revoked and the Node is not retired (AT07);
+        otherwise return NODE_INCARNATION_ACTIVE or NODE_RETIRED (409).
       x-fvpn-spec: '§14.4, §6.1, §6.2, §14.7'
       x-fvpn-requirements: [ENR01, ENR02, ENR03, ENR04]
       security:
@@ -1622,6 +1631,60 @@ paths:
           $ref: '#/components/responses/PayloadTooLarge'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /agent/bootstrap:
+    post:
+      operationId: consumeAgentBootstrap
+      tags: [agent]
+      summary: Consume the one-time NetBird bootstrap credential
+      description: |
+        D-015 (§6.4, §14.7): no request body. The verified agent mTLS certificate
+        determines the Node and incarnation; no caller-supplied identity is used.
+        The enrollment worker prepares a one-off NetBird setup key. This endpoint
+        returns 200 once, atomically consuming its delivery. A later request,
+        including one with the same Idempotency-Key, returns 410 BOOTSTRAP_CONSUMED;
+        lost responses do not permit plaintext replay. Before preparation it
+        returns 409 BOOTSTRAP_NOT_READY (retryable=true). After the delivery
+        deadline, an unconsumed delivery returns 410 BOOTSTRAP_EXPIRED
+        (retryable=false). Consumption takes precedence over expiry on retries.
+        All responses use Cache-Control: no-store. Setup keys must never appear
+        in enrollment responses, desired state, logs or audit payloads. The
+        delivery deadline is separate from the enrollment token lifetime and
+        NetBird's native setup-key expiry (§6.4).
+      x-fvpn-spec: '§14.4, §6.4, §14.7, §16.2'
+      x-fvpn-requirements: [ENR02, ENR03, SEC01]
+      security: []
+      x-fvpn-auth: agent-mtls
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKeyOptional'
+      responses:
+        '200':
+          description: One-time bootstrap credential; delivery has been consumed.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control-No-Store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentBootstrap'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/BootstrapNotReady'
+        '410':
+          $ref: '#/components/responses/BootstrapGone'
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
@@ -1807,6 +1870,8 @@ paths:
       x-fvpn-requirements: [MTR01, MTR02, MTR03, MTR04, DATA01]
       security: []
       x-fvpn-auth: agent-mtls
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKeyOptional'
       requestBody:
         required: true
         content:
@@ -2130,9 +2195,11 @@ components:
       in: header
       required: false
       description: |
-        Optional for agent requests: the body carries a natural idempotency ID
+        Optional for agent requests. Most bodies carry a natural idempotency ID
         (enrollment_request_id, renewal_request_id, report_id, result_id,
-        event_seq). When present it must be a UUID and follows §14.5.
+        event_seq). When present it must be a UUID and follows §14.5. Bootstrap
+        has no body and deduplicates by delivery state; it never replays a
+        consumed secret, even with the same key (D-015).
       schema:
         type: string
         format: uuid
@@ -2293,10 +2360,34 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
+    BootstrapNotReady:
+      description: BOOTSTRAP_NOT_READY. Worker has not prepared the delivery; retryable=true with the same request.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control-No-Store'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    BootstrapGone:
+      description: BOOTSTRAP_CONSUMED after delivery, or BOOTSTRAP_EXPIRED after an unconsumed delivery deadline; retryable=false. Plaintext is never replayed.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control-No-Store'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
     Conflict:
       description: |
         IDEMPOTENCY_CONFLICT, STATE_CONFLICT, USAGE_EVENT_CONFLICT, ACK_CONFLICT,
-        LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH or DEVICE_LIMIT_REACHED.
+        LEDGER_EPOCH_MISMATCH, ENROLLMENT_KEY_MISMATCH, DEVICE_LIMIT_REACHED,
+        UPDATE_BUSY, AUTHORIZATION_EXPIRED, STALE_GENERATION, LEASE_EXPIRED,
+        BOOTSTRAP_NOT_READY, NODE_INCARNATION_ACTIVE or NODE_RETIRED.
         Read the current state first; do not change the key to bypass a state
         conflict.
       headers:
@@ -2485,6 +2576,11 @@ components:
         - ENROLLMENT_KEY_MISMATCH
         - LEASE_EXPIRED
         - WEBHOOK_SIGNATURE_INVALID
+        - BOOTSTRAP_CONSUMED
+        - BOOTSTRAP_NOT_READY
+        - BOOTSTRAP_EXPIRED
+        - NODE_INCARNATION_ACTIVE
+        - NODE_RETIRED
 
     # ============================================================ common
     PeriodId:
@@ -3142,6 +3238,10 @@ components:
       required: [delivery]
       additionalProperties: false
       properties:
+        node_id:
+          type: string
+          format: uuid
+          description: Existing Node for authorized reinstallation (AT07). Previous incarnation must already be revoked and Node must not be retired; never clear revoked lifecycle. Omit to reserve a new Node.
         delivery:
           $ref: '#/components/schemas/EnrollmentDelivery'
         expires_in_seconds:
@@ -5065,7 +5165,7 @@ components:
     UpdateTarget:
       type: object
       description: One node of the batch snapshot (§15.4 update_targets). incarnation_at_snapshot is immutable; execution_incarnation_id binds once.
-      required: [target_id, node_id, node_name, incarnation_at_snapshot, execution_incarnation_id, online_at_snapshot, generation, state, attempts, current_job, current_release_id, last_result_at, last_observed_at, retryable]
+      required: [target_id, node_id, node_name, incarnation_at_snapshot, execution_incarnation_id, online_at_snapshot, generation, state, attempts, current_job, current_release_id, last_result_at, last_observed_at, retryable, needs_attention, unconfirmed]
       properties:
         target_id:
           type: string
@@ -5122,6 +5222,12 @@ components:
           nullable: true
         retryable:
           type: boolean
+        needs_attention:
+          type: boolean
+          description: Central side has flagged this target for operator attention.
+        unconfirmed:
+          type: boolean
+          description: The node has not confirmed the last issued job.
     UpdateJobSummary:
       type: object
       required: [job_id, attempt, state, stage, error_code, recovery_required, started_at, finished_at]
@@ -5147,6 +5253,10 @@ components:
           nullable: true
         recovery_required:
           type: boolean
+          x-go-type: nullable.Required[bool]
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/api/presence
+            name: nullable
         started_at:
           type: string
           format: date-time
@@ -5671,6 +5781,27 @@ components:
         next:
           type: string
           enum: [/api/v1/agent/desired-state]
+    AgentBootstrap:
+      type: object
+      description: One-time NetBird setup credential delivered only over agent mTLS (D-015, §6.4). TEST ONLY examples are not usable keys.
+      additionalProperties: false
+      required: [external_key_id, setup_key, expires_at]
+      properties:
+        external_key_id:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Opaque NetBird setup key ID, retained for reconciliation.
+        setup_key:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          description: One-off bootstrap secret; never log, audit or replay it.
+        expires_at:
+          type: string
+          format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          description: UTC expiry of the bootstrap credential. The server also enforces the separate delivery deadline.
     CertificateRenewRequest:
       type: object
       required: [renewal_request_id, node_id, node_incarnation_id, csr_pem]
@@ -6741,6 +6872,10 @@ components:
           nullable: true
         recovery_required:
           type: boolean
+          x-go-type: nullable.Required[bool]
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/api/presence
+            name: nullable
         started_at:
           type: string
           format: date-time
@@ -6921,9 +7056,8 @@ components:
 
     # ============================================================ webhook §9.3
     ProviderWebhookPayload:
-      type: object
-      description: Provider-defined JSON body. Verified and stored byte for byte; not constrained by this contract.
-      additionalProperties: true
+      description: Provider-defined JSON body. Handlers must verify r.Body before any parse; preserve the original bytes for signature verification and the inbox. Never verify a remarshal of this type.
+      x-go-type: json.RawMessage
     WebhookAck:
       type: object
       required: [received, duplicate]

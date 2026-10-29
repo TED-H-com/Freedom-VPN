@@ -9,6 +9,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -60,28 +61,28 @@ func buildResult(in resultInput) (payload []byte, hash string, id uuid.UUID, err
 		Attempt:                 c.Intent.Attempt,
 		BatchId:                 c.Intent.BatchId,
 		BootId:                  c.BootID,
-		CurrentReleaseId:        parseID(in.Current),
-		ErrorCode:               codePtr(in.Code),
-		FinishedAt:              timePtr(finished),
+		CurrentReleaseId:        presence.FromPointer(parseID(in.Current)),
+		ErrorCode:               presence.FromPointer(codePtr(in.Code)),
+		FinishedAt:              presence.FromPointer(timePtr(finished)),
 		Generation:              c.Intent.Generation,
-		Health:                  in.Health,
+		Health:                  presence.FromPointer(in.Health),
 		IncarnationId:           c.Intent.IncarnationId,
 		JobId:                   c.Intent.JobId,
 		ManifestSha256:          c.Intent.ManifestSha256,
 		MemberForwardingEnabled: in.Forwarding,
 		NodeId:                  c.Intent.NodeId,
 		PolicyGeneration:        c.PolicyGeneration,
-		PreviousReleaseId:       parseID(in.Previous),
+		PreviousReleaseId:       presence.FromPointer(parseID(in.Previous)),
 		PublicationIntent:       c.Intent.PublicationIntent,
-		RecoveryRequired:        in.Recovery,
+		RecoveryRequired:        presence.NewRequired(in.Recovery),
 		RequestedReleaseId:      c.Intent.ReleaseId,
 		ResultId:                resultID(c.Intent.JobId.String(), c.Intent.Attempt, in.State),
-		Stage:                   stagePtr(in.Stage),
+		Stage:                   presence.FromPointer(stagePtr(in.Stage)),
 		StartedAt:               started,
 		State:                   in.State,
 		StateSchemaVersion:      schema,
 		TargetId:                c.Intent.TargetId,
-		UsageCheckpoint:         in.Checkpoint,
+		UsageCheckpoint:         presence.FromPointer(in.Checkpoint),
 	}
 	raw, err := json.Marshal(res)
 	if err != nil {
@@ -251,20 +252,22 @@ func checkpointFromUsage(c UsageCheckpoint, newEpoch string) (*api.UpdateUsageCh
 	out := &api.UpdateUsageCheckpoint{
 		LastDurableEventSeq: c.LastDurableEventSeq,
 		CentralAckedThrough: c.CentralAckedThrough,
+		ClosedMeterEpochId:  presence.NewNullNullable[uuid.UUID](),
+		NewMeterEpochId:     presence.NewNullNullable[uuid.UUID](),
 	}
 	if c.ClosedMeterEpochID != "" {
 		id, err := uuid.Parse(c.ClosedMeterEpochID)
 		if err != nil {
 			return nil, permanent(apierr.CheckpointFailed, "closed meter epoch")
 		}
-		out.ClosedMeterEpochId = &id
+		out.ClosedMeterEpochId.Set(id)
 	}
 	if newEpoch != "" {
 		id, err := uuid.Parse(newEpoch)
 		if err != nil {
 			return nil, permanent(apierr.CheckpointFailed, "new meter epoch")
 		}
-		out.NewMeterEpochId = &id
+		out.NewMeterEpochId.Set(id)
 	}
 	return out, nil
 }

@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 40 endpoints of §14.2 to §14.4 | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 41 endpoints (§14.2 to §14.4 plus D-015) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/schema.d.ts`](../../contracts/ts/schema.d.ts) | generated |
@@ -42,7 +42,7 @@ against the exact committed documents.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs40`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs41`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -60,9 +60,19 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Other integers** (schema versions, attempts, counts, bps rates) are JSON
   integers with explicit bounds within ±(2^53−1). No floating-point numbers.
 - **Money.** `amount_minor` (int64 minor units) plus ISO 4217 `currency`.
-- **Nullability.** `nullable: true` is allowed only on required members, so
-  generated Go types never confuse JSON `null` with an absent member. PATCH
-  bodies never use `null`. [`TestAPI01_NoOptionalNullableFields`]
+- **Nullability and presence.** `nullable: true` is allowed only on required
+  members. Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+  `nullable`); its zero value is unspecified and **fails marshaling**. Use
+  `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
+  for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
+  Both `UpdateResult.recovery_required` and `UpdateJobSummary.recovery_required`
+  use `presence.Required[bool]`: `NewRequired(false)` preserves explicit false,
+  while omission and null cannot become false. Validate original request bytes
+  before decoding into a fresh model; these types do not replace schema checks.
+  Plain Go pointers cannot distinguish absence from null. PATCH bodies never
+  use null. The codegen config enables nullable types and supplies an import
+  template for the local implementation. [`TestAPI01_NoOptionalNullableFields`,
+  `TestReviewC04_PlanRateLimitPresence`, `TestReviewC06_RecoveryRequiredPresence`]
 - **Request bodies are closed** (`additionalProperties: false`); responses are
   open for forward compatibility. [`TestAPI01_RequestBodiesAreClosed`]
 - **Errors.** Every 4xx/5xx uses `ErrorEnvelope`; `ErrorCode` lists exactly the
@@ -91,9 +101,57 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   the SHA-256 of the canonical JSON of the whole manifest envelope.
 - **Signatures.** `{"signed": {...}, "signatures": [{"key_id", "algorithm":
   "ed25519", "signature_b64"}]}` over the canonical JSON of `signed`
-  (`pkg/envelope`). Purposes and keys: `release`, `desired-state`, `lease`,
-  `recovery`. The §14.7 and §17.3 examples show a single `signature` object;
+  (`pkg/envelope`). Trust entries must have exactly one purpose; key IDs and
+  public-key bytes must both be unique. Trust JSON rejects duplicate members
+  and trailing data; envelope signatures reject repeated key IDs, including
+  unknown keys. Purposes and keys: `release`, `desired-state`, `lease`,
+  `recovery`, and central-only `ledger-epoch`. Never include a ledger-epoch
+  key in node trust bundles; node checkpoints still use `recovery`. Node bundle
+  loaders must use `NewNodeTrustStore` / `ParseNodeTrustStoreJSON`, which reject
+  central-only keys. General trust-store constructors remain for central use. The §14.7 and §17.3 examples show a single `signature` object;
   this contract uses the uniform envelope instead (AGENTS.md §3).
+
+Canonical JSON input is capped at `canonjson.MaxBytes = 1 << 20` (1 MiB),
+matching the control HTTP body limit; oversized input fails before parsing,
+sorting or hashing. Maximum container nesting is 256. HTTP handlers must also
+bound reads before allocating an entire body (§14.6, §16.2).
+
+Payment handlers must verify **`r.Body` before any parse** (§9.3, §14.4, §16.2).
+`ProviderWebhookPayload` is `json.RawMessage` in Go and `unknown` in TypeScript;
+it is not a parsed provider model. Preserve the original bytes for verification
+and the durable inbox. Even remarshal of RawMessage can compact whitespace or
+escape text; JSON.parse also loses large-integer precision. Do not verify a
+reconstructed body or authorize membership from a return page.
+
+Install `apierr.TrackResponse(w)` at the outer HTTP handler boundary and pass
+that writer through middleware and handlers. `apierr.Write` refuses to append
+an error once its `Written()` state is true, including an implicit 200 or flush.
+An arbitrary unwrapped `net/http.ResponseWriter` does not expose prior writes;
+wrapping it after the response starts cannot recover that information. Use
+`http.ResponseController` for optional writer operations. Invalid pre-set
+response/context request IDs are replaced with central UUIDs (§14.1).
+
+## Service-enforced rules
+
+Schema acceptance is only structural validation. The following owners must
+check these rules before committing state or starting external effects; their
+service tests are outside this contract revision. The examples under
+`contracts/examples/semantic-invalid/` intentionally pass schema validation
+(and have valid hashes/signatures where applicable), but services must reject
+them. `reasons.json` names the owner and rule for each fixture.
+
+| Rule | Owning service | Spec |
+|---|---|---|
+| `gap` is present iff `quality=gap`; `interval_end > interval_start` | usage ledger service | §10.5 |
+| `clear_capacity=true` excludes `capacity` | node service | §14.2 |
+| Fair-use thresholds strictly increase, rates are non-increasing, priority is non-decreasing, every tier is at or above `minimum_rate` in both directions | policy service | §11.1 |
+| Approved releases are a subset of serving releases; revoked releases are disjoint from both | policy service | §13.2 |
+| Artifacts cover amd64 and arm64 for the supported OS/version, with unique OS/version/architecture tuples; `minItems: 2` only checks array length | release service | §13.3, §13.4 |
+| Domain rules are normalized with IDNA, then checked for duplicates and conflicting action/profile/subdomain semantics | policy service / DNS compiler | §12.4 |
+| Checkout and billing portal `return_url` must match the configured allowlist before redirect or provider use; HTTPS alone is insufficient, including loopback, link-local and other internal destinations | billing service | §14.3, §16.2 |
+
+No production allowlist or commercial fair-use values are supplied here. URL
+fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
 
 ## Signed documents designed here
 
@@ -108,7 +166,8 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   time), `expires_at` (node lease end), `max_offline_seconds` (recommended
   default 86400) and per-member `lease_end` with `effective_service_end`.
   `ServingLease` describes the server and node rules: bounds, replay, monotonic
-  deadlines and fail-closed behavior.
+  deadlines and fail-closed behavior. The canonical concrete §16.3 example is
+  [`serving-lease-signing.json`](../../contracts/vectors/serving-lease-signing.json).
 - **Usage checkpoint (§17.3).** The §17.3 fields, signed with a `recovery`
   key; `recovery_record_id` is null when no restore happened in the epoch.
 
@@ -149,7 +208,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the §14 count of 40;
+1. Find the requirement in the spec. New endpoints change the current count of 41 (including D-015);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -213,6 +272,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `POST /member/billing-portal-sessions` | `createBillingPortalSession` | csrfToken + memberSession | 201 | §14.3, §16.2 | MEM01 BILL01 |
 | `GET /member/operations/{operation_id}` | `getMemberOperation` | memberSession | 200 | §14.3, §14.5 | API01 MEM01 |
 | `POST /agent/enroll` | `enrollNode` | enrollmentToken | 200,201 | §14.4, §6.1, §6.2, §14.7 | ENR01 ENR02 ENR03 ENR04 |
+| `POST /agent/bootstrap` | `consumeAgentBootstrap` | Agent mTLS | 200 | §14.4, §6.4, §14.7, §16.2 | ENR02 ENR03 SEC01 |
 | `POST /agent/certificates/renew` | `renewAgentCertificate` | Agent mTLS | 201 | §14.4, §6.4 | SEC01 ENR03 |
 | `GET /agent/desired-state` | `getDesiredState` | Agent mTLS | 200,304 | §14.4, §14.7, §13.10.2 | ISO02 UPD02 UPD04 SEC01 |
 | `POST /agent/observations` | `submitObservation` | Agent mTLS | 202 | §14.4, §5, §15.3 | NODE02 ISO02 SEC01 |
@@ -225,7 +285,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 ## Spec decisions recorded in the contract
 
 - The update batch targets page is part of `GET /admin/update-batches/{batch_id}`
-  (`targets`, `next_cursor`) because §14.2 fixes 40 endpoints; §13.10.4's
+  (`targets`, `next_cursor`) under D-007; the D-015 bootstrap addition makes 41 endpoints. §13.10.4's
   `targets_url` points to that resource.
 - `POST /agent/usage-batches` returns 200 with per-event results: §10.6's 409
   (same key, different hash) and 422 (invalid event) outcomes are reported per
@@ -240,3 +300,36 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
   lexical version comparison (§13.2).
 - Release manifests add `rollback.required_free_bytes`, which the §13.3 table
   requires but the example omits.
+
+- D-007 keeps the additional required members absent from the spec figures:
+  `UpdateResult.stage` and `recovery_required` (§13.10.3); `Operation.resource`,
+  `error`, `request_id`, `updated_at`, `completed_at`, and each `OperationStep`'s
+  `required`, `observed_at`, `error_code`, `message` (§14.8); and
+  `UpdateBatch.operation_id`, `requires_service_restart`, `reason`, `created_by`,
+  `created_at` (§13.10.4). Nullability does not make a member optional.
+  Schema-valid figures are [UpdateResult](../../contracts/examples/valid/UpdateResult.json),
+  [Operation](../../contracts/examples/valid/Operation.json), and
+  [UpdateBatch](../../contracts/examples/valid/UpdateBatch.json); their extra
+  variants demonstrate explicit null, an explicitly non-required step, and an
+  empty target page. Do not copy the shorter prose figures as request bodies.
+- D-016: `device_limit` has no schema default. Tests explicitly send 3;
+  the production limit remains a business decision. Prices, fair-use rates
+  and thresholds in examples are TEST ONLY, not production settings.
+
+- D-015 adds `POST /agent/bootstrap` (agent mTLS, no body, no-store): 200 once
+  with `external_key_id`, `setup_key`, `expires_at`; subsequent calls get
+  410 `BOOTSTRAP_CONSUMED` even with the original idempotency key. Before worker
+  preparation: 409 `BOOTSTRAP_NOT_READY`, retryable true. After the delivery
+  deadline while still unconsumed: 410 `BOOTSTRAP_EXPIRED`, retryable false.
+  Enrollment responses remain secret-free. The enrollment service owns atomic
+  delivery consumption, deadlines, and secret redaction; provider key expiry
+  remains distinct from both delivery and enrollment-token deadlines (§6.4).
+- AT07 reinstallation: optional `EnrollmentCreateRequest.node_id` binds to an
+  existing Node. The enrollment service checks that its previous incarnation
+  is revoked (otherwise 409 `NODE_INCARNATION_ACTIVE`) and it is not retired
+  (409 `NODE_RETIRED`). Successful enrollment creates a new incarnation while
+  retaining Node history, never by clearing revoked lifecycle. Both conflicts
+  are retryable false; ordinary fresh enrollment omits `node_id`.
+- `UpdateTarget.needs_attention` and `unconfirmed` are required booleans:
+  central operator attention and lack of confirmation of the last issued job,
+  respectively. The update service owns these observations.

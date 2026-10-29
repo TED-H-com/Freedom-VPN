@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
@@ -140,8 +141,8 @@ func TestCompiler_MonotonicGenerationRevocationSuspensionGroupFilterAndRates(t *
 	nodeCap := &api.NodeCapacity{
 		DownBps:          1_000_000_000,
 		UpBps:            1_000_000_000,
-		MemberDownBpsCap: &capDown,
-		MemberUpBpsCap:   &capUp,
+		MemberDownBpsCap: presence.NewNullableWithValue(capDown),
+		MemberUpBpsCap:   presence.NewNullableWithValue(capUp),
 	}
 	nodeID, incID, _, relID := seedCompilerTestNode(t, ctx, pool, grpA, api.PublicationIntentPublished, nodeCap)
 
@@ -279,6 +280,9 @@ func TestCompiler_MonotonicGenerationRevocationSuspensionGroupFilterAndRates(t *
 	}
 
 	signed := res1.Envelope.Signed
+	if !signed.Update.IsNull() {
+		t.Fatal("desired-state without an update must sign an explicit null")
+	}
 	if signed.NodeId != nodeID || signed.NodeIncarnationId != incID {
 		t.Errorf("signed identity = (%s, %s), want (%s, %s)", signed.NodeId, signed.NodeIncarnationId, nodeID, incID)
 	}
@@ -325,7 +329,7 @@ func TestCompiler_MonotonicGenerationRevocationSuspensionGroupFilterAndRates(t *
 	for _, mp := range signed.MemberRatePolicies {
 		if mp.MemberId == member1ID {
 			foundPolicy = true
-			if mp.DownBps == nil || *mp.DownBps != 40_000_000 || mp.UpBps == nil || *mp.UpBps != 20_000_000 {
+			if (!mp.DownBps.IsSpecified() || mp.DownBps.IsNull()) || nullableValue(t, mp.DownBps) != 40_000_000 || (!mp.UpBps.IsSpecified() || mp.UpBps.IsNull()) || nullableValue(t, mp.UpBps) != 20_000_000 {
 				t.Errorf("member1 EffectiveRate = (down=%v, up=%v), want (40_000_000, 20_000_000)", mp.DownBps, mp.UpBps)
 			}
 		}
@@ -473,4 +477,13 @@ func TestCompiler_RecompileBatchCoalescesBurst(t *testing.T) {
 	if results[0].Envelope.Signed.NodeId != nodeID || results[0].Generation != 1 {
 		t.Fatalf("RecompileBatch result = %+v, want NodeID=%s Generation=1", results[0], nodeID)
 	}
+}
+
+func nullableValue[T any](t *testing.T, n interface{ Get() (T, error) }) T {
+	t.Helper()
+	v, err := n.Get()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
 }

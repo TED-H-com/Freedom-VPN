@@ -16,7 +16,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
+import { parseStrictJSON, type Json } from "./strict-json.ts";
 
 const vectorsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "vectors");
 const load = (name: string): any => JSON.parse(readFileSync(join(vectorsDir, name), "utf8"));
@@ -71,24 +71,18 @@ function ed25519Verify(pubB64: string, message: string, sigB64: string): boolean
 // ---- canonical JSON vectors
 const cj = load("canonical-json.json");
 for (const c of cj.cases) {
-  const input = Buffer.from(c.input_b64, "base64").toString("utf8");
-  const canon = canonicalize(JSON.parse(input));
+  const input = Buffer.from(c.input_b64, "base64");
+  const canon = canonicalize(parseStrictJSON(input));
   check(canon === c.canonical, `canonical-json ${c.name}`);
   check(sha256hex(Buffer.from(canon, "utf8")) === c.sha256, `canonical-json sha256 ${c.name}`);
 }
-// JSON.parse cannot detect duplicate keys or lone surrogates; a strict
-// parser is required for rejects. Here we only check the classes JSON.parse
-// plus the subset rule can see.
+// Check every reject with an independent lexical parser, including duplicate
+// keys, UTF-8, surrogates, depth and original number spelling.
 for (const r of cj.rejects) {
-  if (!["non_integer", "negative_zero", "integer_range", "syntax"].includes(r.error)) continue;
-  let rejected = false;
-  try {
-    canonicalize(JSON.parse(Buffer.from(r.input_b64, "base64").toString("utf8")));
-    rejected = r.error === "non_integer" && /[.eE]/.test(Buffer.from(r.input_b64, "base64").toString("utf8"));
-  } catch {
-    rejected = true;
-  }
-  check(rejected, `canonical-json reject ${r.name}`);
+  let error = "accepted";
+  try { parseStrictJSON(Buffer.from(r.input_b64, "base64")); }
+  catch (e) { error = (e as Error).message; }
+  check(error === r.error, `canonical-json reject ${r.name}: ${error}`);
 }
 
 // ---- decimal strings

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -41,7 +42,7 @@ func TestUPD_WorkFromEnvelope(t *testing.T) {
 	if _, err := WorkFromEnvelope(raw, trust, other, now, nil); asOp(err) == nil || asOp(err).Code != apierr.IncarnationMismatch {
 		t.Fatalf("node %v", err)
 	}
-	ds.Update = nil
+	ds.Update.SetNull()
 	none, noneTrust := signState(t, ds, envelope.PurposeDesiredState, now)
 	if _, err := WorkFromEnvelope(none, noneTrust, node, now, nil); !errors.Is(err, ErrNoWork) {
 		t.Fatalf("no work %v", err)
@@ -53,6 +54,79 @@ func TestUPD_WorkFromEnvelope(t *testing.T) {
 	raw[len(raw)-2] ^= 0x01
 	if _, err := WorkFromEnvelope(raw, trust, node, now, nil); err == nil {
 		t.Fatal("tampered envelope was accepted")
+	}
+}
+
+// §13.4: no update work must preserve the existing forwarding latch, including
+// the disk reader's historical treatment of an omitted update member.
+func TestUPD_NullAndAbsentUpdateLeaveForwardingUnchanged(t *testing.T) {
+	node := Node{ID: uuid.Must(uuid.NewV7()), Incarnation: uuid.Must(uuid.NewV7())}
+	now := time.Date(2026, 10, 28, 15, 0, 0, 0, time.UTC)
+	ds := sampleDesired(node, uuid.Must(uuid.NewV7()), now)
+	ds.Update.SetNull()
+	raw, err := json.Marshal(ds)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, absent := range []bool{false, true} {
+		var document map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &document); err != nil {
+			t.Fatal(err)
+		}
+		if absent {
+			delete(document, "update")
+		}
+		signed, trust := signState(t, document, envelope.PurposeDesiredState, now)
+		for _, blocked := range []bool{false, true} {
+			dir := t.TempDir()
+			path := filepath.Join(dir, "desired.json")
+			if err := os.WriteFile(path, signed, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			gate := FileGate{Path: filepath.Join(dir, "forwarding.blocked")}
+			if blocked {
+				if err := gate.Block(context.Background()); err != nil {
+					t.Fatal(err)
+				}
+			}
+			source := GuardSource{
+				Inner: FileSource{Path: path, Trust: trust, Node: node, Now: func() time.Time { return now }},
+				Gate:  gate,
+			}
+			if _, err := source.Current(context.Background()); !errors.Is(err, ErrNoWork) {
+				t.Fatalf("absent=%v blocked=%v: %v", absent, blocked, err)
+			}
+			if gate.Blocked() != blocked {
+				t.Fatalf("absent=%v: forwarding latch changed from blocked=%v", absent, blocked)
+			}
+		}
+	}
+}
+
+func TestUPD_NodeBundleRejectsCentralLedgerEpochKey(t *testing.T) {
+	pub, _, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The general central store accepts this key; the updater's bundle must not.
+	trust, err := envelope.NewTrustStore(envelope.TrustedKey{
+		KeyID: "ledger-test", PublicKey: pub, Purposes: []envelope.Purpose{envelope.PurposeLedgerEpoch},
+		NotBefore: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		NotAfter:  time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := json.Marshal(trust)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "trust.json")
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readTrust(path); err == nil {
+		t.Fatal("node bundle accepted a central-only ledger-epoch key")
 	}
 }
 
@@ -245,24 +319,28 @@ func sampleDesired(node Node, rel uuid.UUID, now time.Time) api.DesiredState {
 		Dns:                      api.DnsServiceConfig{ResolverIpv4: []string{}, ResolverIpv6: []string{}},
 		IssuedAt:                 now.Add(-time.Minute),
 		ExpiresAt:                now.Add(time.Hour),
-		Update: &api.UpdateIntent{
+		Update: presence.NewNullableWithValue(api.UpdateIntent{
 			Attempt: 1, AuthorizationValidUntil: now.Add(time.Minute),
 			Generation: decstr.MustParse("4"), IncarnationId: node.Incarnation,
 			IssuedAt: now.Add(-time.Minute), JobId: job,
 			ManifestSha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			ManifestUrl:    "https://releases.example.invalid/m.json",
 			NodeId:         node.ID, PublicationIntent: api.PublicationIntentPublished, ReleaseId: rel,
-		},
+			BatchId:  presence.NewNullNullable[uuid.UUID](),
+			TargetId: presence.NewNullNullable[uuid.UUID](),
+		}),
+		DesiredReleaseId: presence.NewNullNullable[uuid.UUID](),
+		NodeCapacity:     presence.NewNullNullable[api.NodeCapacity](),
 	}
 }
 
-func signState(t *testing.T, ds api.DesiredState, purpose envelope.Purpose, now time.Time) ([]byte, *envelope.TrustStore) {
+func signState(t *testing.T, ds any, purpose envelope.Purpose, now time.Time) ([]byte, *envelope.TrustStore) {
 	t.Helper()
 	pub, priv, err := ed25519.GenerateKey(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	ts, err := envelope.NewTrustStore(envelope.TrustedKey{
+	ts, err := envelope.NewNodeTrustStore(envelope.TrustedKey{
 		KeyID: "desired-test", PublicKey: pub, Purposes: []envelope.Purpose{purpose},
 		NotBefore: now.Add(-24 * time.Hour), NotAfter: now.Add(24 * time.Hour),
 	})
@@ -286,7 +364,7 @@ func writeTrust(t *testing.T, path string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ts, err := envelope.NewTrustStore(envelope.TrustedKey{
+	ts, err := envelope.NewNodeTrustStore(envelope.TrustedKey{
 		KeyID: "release-test", PublicKey: pub, Purposes: []envelope.Purpose{envelope.PurposeRelease},
 		NotBefore: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 		NotAfter:  time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC),

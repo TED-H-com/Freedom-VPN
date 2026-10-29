@@ -5,10 +5,12 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -214,16 +216,16 @@ func TestENR02_EnrollmentReplayStripsSecret(t *testing.T) {
 	token := "TEST ONLY one-time token"
 	response := gen.CreateEnrollment201JSONResponse{}
 	response.Body.SecretAvailable = true
-	response.Body.Token = &token
+	response.Body.Token.Set(token)
 	v, e := sanitizeReplay("CreateEnrollment", response)
 	if e != nil {
 		t.Fatal(e)
 	}
 	safe := v.(gen.CreateEnrollment201JSONResponse)
-	if safe.Body.SecretAvailable || safe.Body.Token != nil {
+	if safe.Body.SecretAvailable || !safe.Body.Token.IsNull() {
 		t.Fatal("secret replayed")
 	}
-	if response.Body.Token == nil {
+	if !response.Body.Token.IsSpecified() || response.Body.Token.IsNull() {
 		t.Fatal("original response mutated")
 	}
 }
@@ -247,4 +249,80 @@ func TestAPI01_RawWebhookAndUnsupportedMethod(t *testing.T) {
 	}
 	r = request("POST", "/api/v1/admin/nodes", "", p)
 	assertStatus(t, h, r, 405)
+}
+
+// D-015: the composition remains transitional, but transport must enforce the
+// secret-delivery route's mTLS, optional idempotency header and empty body.
+func TestAT28_BootstrapTransport(t *testing.T) {
+	p := principal(auth.Agent)
+	h := fixture(t, p, true, nil)
+	for _, tc := range []struct {
+		name, body, key string
+		status          int
+	}{
+		{"without optional key", "", "", 501},
+		{"with optional key", "", uuid.NewString(), 501},
+		{"invalid optional key", "", "invalid", 400},
+		{"object body", "{}", "", 400},
+		{"null body", "null", "", 400},
+		{"whitespace body", " ", "", 400},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request("POST", "/api/v1/agent/bootstrap", tc.body, p)
+			r.Header.Del("Idempotency-Key")
+			if tc.key != "" {
+				r.Header.Set("Idempotency-Key", tc.key)
+			}
+			r.TLS = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{}}}}
+			r.ContentLength = -1 // Also reject bodies without a declared length.
+			w := assertStatus(t, h, r, tc.status)
+			if w.Header().Get("Cache-Control") != "no-store" {
+				t.Fatal("bootstrap response must not be cached")
+			}
+		})
+	}
+	r := request("POST", "/api/v1/agent/bootstrap", "", p)
+	assertStatus(t, h, r, 401)
+	r.TLS = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{}}}}
+	assertStatus(t, fixture(t, p, false, nil), r, 401)
+}
+
+func TestReviewC12_TransportRefusesSecondError(t *testing.T) {
+	h := Transport(nil, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_, _ = w.Write([]byte(`{"accepted":true}`))
+		WriteError(w, r, errNotImplemented)
+		apierr.Write(w, r, errors.New("late middleware error"))
+	}))
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/api/v1/test", nil))
+	if w.Code != http.StatusAccepted || w.Body.String() != `{"accepted":true}` {
+		t.Fatalf("response overwritten or appended: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAPI01_UsageOptionalIdempotencyKey(t *testing.T) {
+	raw, err := os.ReadFile("../../contracts/examples/valid/UsageBatchRequest.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var body gen.UsageBatchRequest
+	if err = json.Unmarshal(raw, &body); err != nil {
+		t.Fatal(err)
+	}
+	p := principal(auth.Agent)
+	p.NodeID, p.IncarnationID = body.NodeId, body.NodeIncarnationId
+	h := fixture(t, p, true, nil)
+	for _, tc := range []struct {
+		key    string
+		status int
+	}{{"", 501}, {uuid.NewString(), 501}, {"invalid", 400}} {
+		r := request("POST", "/api/v1/agent/usage-batches", string(raw), p)
+		r.Header.Del("Idempotency-Key")
+		if tc.key != "" {
+			r.Header.Set("Idempotency-Key", tc.key)
+		}
+		r.TLS = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{}}}}
+		assertStatus(t, h, r, tc.status)
+	}
 }

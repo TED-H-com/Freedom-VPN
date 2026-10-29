@@ -20,6 +20,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -223,13 +224,13 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	res, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
-		LedgerEpoch:       &epoch,
+		LedgerEpoch:       presence.NewNullableWithValue(epoch),
 		Events:            []api.UsageEvent{ev1, ev3},
 	})
 	if err != nil {
 		t.Fatalf("IngestBatch(1, 3): %v", err)
 	}
-	if res.HighestContiguousSeq != 1 || res.MaxSeenSeq != 3 || res.BlockedSeq != nil {
+	if res.HighestContiguousSeq != 1 || res.MaxSeenSeq != 3 || !res.BlockedSeq.IsNull() {
 		t.Fatalf("unexpected watermark after (1, 3): hcs=%d max=%d blocked=%v", res.HighestContiguousSeq, res.MaxSeenSeq, res.BlockedSeq)
 	}
 	if res.Results[0].Status != api.UsageEventResultStatusAccepted || res.Results[1].Status != api.UsageEventResultStatusAccepted {
@@ -252,7 +253,7 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	res, err = env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
-		LedgerEpoch:       &epoch,
+		LedgerEpoch:       presence.NewNullableWithValue(epoch),
 		Events:            []api.UsageEvent{ev1, ev2},
 	})
 	if err != nil {
@@ -291,7 +292,7 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
-		LedgerEpoch:       &epoch,
+		LedgerEpoch:       presence.NewNullableWithValue(epoch),
 		Events:            []api.UsageEvent{ev5Orig},
 	}); err != nil {
 		t.Fatalf("IngestBatch(5): %v", err)
@@ -325,16 +326,16 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	res, err = env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
-		LedgerEpoch:       &epoch,
+		LedgerEpoch:       presence.NewNullableWithValue(epoch),
 		Events:            []api.UsageEvent{ev4BadHash, ev5Conflict, ev6Valid},
 	})
 	if err != nil {
 		t.Fatalf("IngestBatch(4 bad, 5 conflict, 6 valid): %v", err)
 	}
-	if res.Results[0].Status != api.UsageEventResultStatusRejected || res.Results[0].Error == nil || res.Results[0].Error.Code != api.ErrorCodeVALIDATIONFAILED {
+	if res.Results[0].Status != api.UsageEventResultStatusRejected || (!res.Results[0].Error.IsSpecified() || res.Results[0].Error.IsNull()) || nullableValue(res.Results[0].Error).Code != api.ErrorCodeVALIDATIONFAILED {
 		t.Fatalf("event 4 expected rejected VALIDATION_FAILED, got %+v", res.Results[0])
 	}
-	if res.Results[1].Status != api.UsageEventResultStatusConflict || res.Results[1].Error == nil || res.Results[1].Error.Code != api.ErrorCodeUSAGEEVENTCONFLICT {
+	if res.Results[1].Status != api.UsageEventResultStatusConflict || (!res.Results[1].Error.IsSpecified() || res.Results[1].Error.IsNull()) || nullableValue(res.Results[1].Error).Code != api.ErrorCodeUSAGEEVENTCONFLICT {
 		t.Fatalf("event 5 expected conflict USAGE_EVENT_CONFLICT, got %+v", res.Results[1])
 	}
 	if res.Results[2].Status != api.UsageEventResultStatusAccepted {
@@ -343,7 +344,7 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	if res.HighestContiguousSeq != 3 {
 		t.Fatalf("expected hcs=3, got %d", res.HighestContiguousSeq)
 	}
-	if res.BlockedSeq == nil || *res.BlockedSeq != 4 {
+	if (!res.BlockedSeq.IsSpecified() || res.BlockedSeq.IsNull()) || nullableValue(res.BlockedSeq) != 4 {
 		t.Fatalf("expected blocked_seq=4, got %v", res.BlockedSeq)
 	}
 
@@ -374,7 +375,7 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	res, err = env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
-		LedgerEpoch:       &epoch,
+		LedgerEpoch:       presence.NewNullableWithValue(epoch),
 		Events:            []api.UsageEvent{ev4Valid},
 	})
 	if err != nil {
@@ -383,7 +384,7 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	if res.HighestContiguousSeq != 6 || res.MaxSeenSeq != 6 {
 		t.Fatalf("expected hcs=6 max=6 (all durable receipts 1..6 contiguous per F-04), got hcs=%d max=%d", res.HighestContiguousSeq, res.MaxSeenSeq)
 	}
-	if res.BlockedSeq != nil {
+	if !res.BlockedSeq.IsNull() {
 		t.Fatalf("expected blocked_seq=nil once 1..6 are contiguous, got %v", res.BlockedSeq)
 	}
 
@@ -392,7 +393,7 @@ func TestAT15_DedupeOutOfOrderAckAndConflict(t *testing.T) {
 	_, err = env.svc.IngestBatch(ctx, env.identity2, api.UsageBatchRequest{
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
-		LedgerEpoch:       &epoch,
+		LedgerEpoch:       presence.NewNullableWithValue(epoch),
 		Events:            []api.UsageEvent{ev7},
 	})
 	var ae *apierr.Error
@@ -428,7 +429,7 @@ func TestAT16_EventSeqContinuityAndNodeReportedGap(t *testing.T) {
 	lastCP := base.Add(time.Minute)
 	ev2Gap := makeSignedEvent(t, env.identity1, 2, epoch2, base.Add(time.Minute), base.Add(4*time.Minute), api.UsageQualityGap, &api.UsageGap{
 		Reason:           api.UsageGapReasonPowerLoss,
-		LastCheckpointAt: &lastCP,
+		LastCheckpointAt: presence.NewNullableWithValue(lastCP),
 	}, nil)
 	// Seq 3 continues in meter epoch 2 without resetting event_seq to 1.
 	ev3 := makeSignedEvent(t, env.identity1, 3, epoch2, base.Add(4*time.Minute), base.Add(5*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
@@ -446,6 +447,7 @@ func TestAT16_EventSeqContinuityAndNodeReportedGap(t *testing.T) {
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
 		Events:            []api.UsageEvent{ev1, ev2Gap, ev3},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("IngestBatch(1, 2 gap, 3): %v", err)
@@ -524,6 +526,7 @@ func TestAT17_MonthBoundaryLateEventsAndHistoricalBinding(t *testing.T) {
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
 		Events:            []api.UsageEvent{evBoundary, evLateOct, evNegInterval},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("IngestBatch: %v", err)
@@ -589,6 +592,7 @@ func TestAT17_MonthBoundaryLateEventsAndHistoricalBinding(t *testing.T) {
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
 		Events:            []api.UsageEvent{evExpiredBinding},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("IngestBatch(evExpiredBinding): %v", err)
@@ -629,6 +633,7 @@ func TestAT19_MultiNodeAggregationDrillDownAdjustmentsAndRebuild(t *testing.T) {
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
 		Events:            []api.UsageEvent{evNode1},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	}); err != nil {
 		t.Fatalf("IngestBatch node1: %v", err)
 	}
@@ -656,6 +661,7 @@ func TestAT19_MultiNodeAggregationDrillDownAdjustmentsAndRebuild(t *testing.T) {
 		NodeId:            env.node2,
 		NodeIncarnationId: env.inc2,
 		Events:            []api.UsageEvent{evNode2},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	}); err != nil {
 		t.Fatalf("IngestBatch node2: %v", err)
 	}
@@ -782,6 +788,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 		NodeId:            envLive.node1,
 		NodeIncarnationId: envLive.inc1,
 		Events:            nodeArchive[:2],
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	}); err != nil {
 		t.Fatalf("envLive IngestBatch(1..2): %v", err)
 	}
@@ -789,6 +796,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 		NodeId:            envRestored.node1,
 		NodeIncarnationId: envRestored.inc1,
 		Events:            nodeArchive[:2],
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	}); err != nil {
 		t.Fatalf("envRestored IngestBatch(1..2): %v", err)
 	}
@@ -798,6 +806,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 		NodeId:            envLive.node1,
 		NodeIncarnationId: envLive.inc1,
 		Events:            nodeArchive[2:5],
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil || liveRes.HighestContiguousSeq != 5 {
 		t.Fatalf("envLive IngestBatch(3..5): hcs=%d err=%v", liveRes.HighestContiguousSeq, err)
@@ -817,7 +826,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	_, err = envRestored.svc.IngestBatch(ctx, envRestored.identity1, api.UsageBatchRequest{
 		NodeId:            envRestored.node1,
 		NodeIncarnationId: envRestored.inc1,
-		LedgerEpoch:       &oldEpoch,
+		LedgerEpoch:       presence.NewNullableWithValue(oldEpoch),
 		Events:            nodeArchive[2:3],
 	})
 	var ae *apierr.Error
@@ -856,7 +865,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	_, err = envRestored.svc.IngestBatch(ctx, envRestored.identity1, api.UsageBatchRequest{
 		NodeId:            envRestored.node1,
 		NodeIncarnationId: envRestored.inc1,
-		LedgerEpoch:       &oldEpoch,
+		LedgerEpoch:       presence.NewNullableWithValue(oldEpoch),
 		Events:            nodeArchive[2:3],
 	})
 	if !errors.As(err, &ae) || ae.HTTPStatus() != http.StatusConflict || ae.Code != apierr.LedgerEpochMismatch {
@@ -881,7 +890,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	if cpEnv.Signed.HighestContiguousSeq != 2 || cpEnv.Signed.LedgerEpoch != recState.NewLedgerEpoch {
 		t.Fatalf("unexpected checkpoint signed content: %+v", cpEnv.Signed)
 	}
-	if cpEnv.Signed.RecoveryRecordId == nil || *cpEnv.Signed.RecoveryRecordId != recState.RecoveryID {
+	if (!cpEnv.Signed.RecoveryRecordId.IsSpecified() || cpEnv.Signed.RecoveryRecordId.IsNull()) || nullableValue(cpEnv.Signed.RecoveryRecordId) != recState.RecoveryID {
 		t.Fatalf("expected recovery_record_id=%s, got %v", recState.RecoveryID, cpEnv.Signed.RecoveryRecordId)
 	}
 
@@ -890,7 +899,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	replayRes, err := envRestored.svc.IngestBatch(ctx, envRestored.identity1, api.UsageBatchRequest{
 		NodeId:            envRestored.node1,
 		NodeIncarnationId: envRestored.inc1,
-		LedgerEpoch:       &newEpoch,
+		LedgerEpoch:       presence.NewNullableWithValue(newEpoch),
 		Events:            nodeArchive[:3],
 	})
 	if err != nil {
@@ -931,7 +940,7 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	gapRes, err := envRestored.svc.IngestBatch(ctx, envRestored.identity1, api.UsageBatchRequest{
 		NodeId:            envRestored.node1,
 		NodeIncarnationId: envRestored.inc1,
-		LedgerEpoch:       &newEpoch,
+		LedgerEpoch:       presence.NewNullableWithValue(newEpoch),
 		ReplayUnavailable: &unavail,
 		Events:            []api.UsageEvent{ev6},
 	})
@@ -996,6 +1005,7 @@ func TestMTR04_PrecisionAbove2Pow53EndToEnd(t *testing.T) {
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
 		Events:            []api.UsageEvent{ev},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	}); err != nil {
 		t.Fatalf("IngestBatch(>2^53): %v", err)
 	}
@@ -1073,6 +1083,7 @@ func TestMTR03_ConcurrentSameStreamIngest(t *testing.T) {
 				NodeId:            env.node1,
 				NodeIncarnationId: env.inc1,
 				Events:            bCopy,
+				LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 			})
 			errs <- err
 		})
@@ -1137,6 +1148,7 @@ func TestF04_ReplayUnavailableTombstonesAndRetentionPurge(t *testing.T) {
 		NodeId:            env.node1,
 		NodeIncarnationId: env.inc1,
 		Events:            []api.UsageEvent{ev1, ev4},
+		LedgerEpoch:       presence.NewNullNullable[uuid.UUID](),
 	})
 	if err != nil {
 		t.Fatalf("IngestBatch(1, 4): %v", err)
@@ -1220,7 +1232,7 @@ func TestF04_ReplayUnavailableTombstonesAndRetentionPurge(t *testing.T) {
 	if _, err := env.svc.IngestBatch(ctx, env.identity2, api.UsageBatchRequest{
 		NodeId:            env.node2,
 		NodeIncarnationId: env.inc2,
-		LedgerEpoch:       &recState.NewLedgerEpoch,
+		LedgerEpoch:       presence.NewNullableWithValue(recState.NewLedgerEpoch),
 		Events:            []api.UsageEvent{evOld},
 	}); err != nil {
 		t.Fatalf("IngestBatch(evOld on node2): %v", err)

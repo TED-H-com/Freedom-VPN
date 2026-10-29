@@ -8,6 +8,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -165,7 +166,7 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 		if e != nil {
 			return e
 		}
-		out = &Work{Intent: api.UpdateIntent{NodeId: i.NodeID, IncarnationId: i.IncarnationID, BatchId: current.batch, TargetId: current.target, JobId: current.id, Attempt: current.attempt, Generation: current.generation, ReleaseId: current.releaseID, ManifestSha256: hash, ManifestUrl: url, IssuedAt: now, AuthorizationValidUntil: until, PublicationIntent: api.PublicationIntent(n.publication)}, Artifact: *artifact}
+		out = &Work{Intent: api.UpdateIntent{NodeId: i.NodeID, IncarnationId: i.IncarnationID, BatchId: presence.FromPointer(current.batch), TargetId: presence.FromPointer(current.target), JobId: current.id, Attempt: current.attempt, Generation: current.generation, ReleaseId: current.releaseID, ManifestSha256: hash, ManifestUrl: url, IssuedAt: now, AuthorizationValidUntil: until, PublicationIntent: api.PublicationIntent(n.publication)}, Artifact: *artifact}
 		return recomputeAll(ctx, tx)
 	})
 	return out, e

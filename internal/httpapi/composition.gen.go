@@ -318,6 +318,19 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				ConsumeAgentBootstrap(context.Context, gen.ConsumeAgentBootstrapRequestObject) (gen.ConsumeAgentBootstrapResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: ConsumeAgentBootstrap")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				RenewAgentCertificate(context.Context, gen.RenewAgentCertificateRequestObject) (gen.RenewAgentCertificateResponseObject, error)
 			}); ok {
 				n++
@@ -763,6 +776,16 @@ func (c *Composite) RetryUpdateBatch(ctx context.Context, r gen.RetryUpdateBatch
 			RetryUpdateBatch(context.Context, gen.RetryUpdateBatchRequestObject) (gen.RetryUpdateBatchResponseObject, error)
 		}); ok {
 			return h.RetryUpdateBatch(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+func (c *Composite) ConsumeAgentBootstrap(ctx context.Context, r gen.ConsumeAgentBootstrapRequestObject) (gen.ConsumeAgentBootstrapResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			ConsumeAgentBootstrap(context.Context, gen.ConsumeAgentBootstrapRequestObject) (gen.ConsumeAgentBootstrapResponseObject, error)
+		}); ok {
+			return h.ConsumeAgentBootstrap(ctx, r)
 		}
 	}
 	return nil, errNotImplemented
