@@ -60,16 +60,14 @@ CREATE UNIQUE INDEX serving_leases_renewal_request_key
     WHERE renewal_request_id IS NOT NULL;
 
 ALTER TABLE operations
-    ADD COLUMN request_id UUID,
-    ADD COLUMN observed_generation NUMERIC(20, 0) CHECK (observed_generation IS NULL OR (observed_generation >= 0 AND observed_generation <= 18446744073709551615)),
     ADD COLUMN error_code TEXT,
-    ADD COLUMN error_message TEXT,
-    ADD COLUMN resource_version NUMERIC(20, 0) NOT NULL DEFAULT 1 CHECK (resource_version >= 0 AND resource_version <= 18446744073709551615),
-    ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+    ADD COLUMN error_message TEXT;
 
 CREATE TRIGGER operations_touch_updated_at
     BEFORE UPDATE ON operations
-    FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+    FOR EACH ROW
+    WHEN (OLD.status NOT IN ('succeeded', 'superseded'))
+    EXECUTE FUNCTION touch_updated_at();
 
 ALTER TABLE external_bindings
     ADD COLUMN observed_hash BYTEA CHECK (observed_hash IS NULL OR octet_length(observed_hash) = 32),

@@ -7,6 +7,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -291,7 +292,7 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 		SELECT DISTINCT
 			m.id,
 			m.status,
-			e.admin_suspended,
+			(m.admin_suspended OR e.admin_suspended) AS is_suspended,
 			e.valid_from,
 			e.effective_service_end,
 			coalesce(pr.payload, '{}'::jsonb)
@@ -304,6 +305,8 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 			AND (a.valid_until IS NULL OR a.valid_until > $2)
 			AND (a.member_id = m.id OR (sub.plan_revision_id IS NOT NULL AND a.plan_revision_id = sub.plan_revision_id))
 		WHERE m.status IN ('active', 'suspended')
+		  AND e.valid_from IS NOT NULL
+		  AND e.effective_service_end IS NOT NULL
 		ORDER BY m.id ASC`
 
 	rows, err := r.q.Query(ctx, memberQuery, groupIDs, asOf)
@@ -491,11 +494,14 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 		AccountingPeriod:         DefaultAccountingPeriod(asOf),
 	}
 
-	var fupRevID, dnsRevID, relPolRevID, desiredRelUUID *uuid.UUID
+	var (
+		desiredRelUUID  *uuid.UUID
+		supportedRelIDs []uuid.UUID
+	)
 	err := r.q.QueryRow(ctx, `
-		SELECT active_fup_revision_id, active_dns_revision_id, active_release_policy_revision_id, desired_release_id
+		SELECT desired_release_id, supported_release_ids
 		FROM fleet_config
-		LIMIT 1`).Scan(&fupRevID, &dnsRevID, &relPolRevID, &desiredRelUUID)
+		LIMIT 1`).Scan(&desiredRelUUID, &supportedRelIDs)
 	if err != nil && err != pgx.ErrNoRows {
 		return PolicySnapshot{}, err
 	}
@@ -513,23 +519,46 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 	}
 	if desiredRelUUID != nil {
 		snap.DesiredReleaseID = desiredRelUUID
-		snap.ServingReleaseIDs = []uuid.UUID{*desiredRelUUID}
+		if len(supportedRelIDs) > 0 {
+			snap.ServingReleaseIDs = append([]uuid.UUID(nil), supportedRelIDs...)
+		} else {
+			snap.ServingReleaseIDs = []uuid.UUID{*desiredRelUUID}
+		}
+	} else if len(supportedRelIDs) > 0 {
+		snap.ServingReleaseIDs = append([]uuid.UUID(nil), supportedRelIDs...)
 	}
 
-	if fupRevID != nil {
-		snap.PolicyRefs = append(snap.PolicyRefs, *fupRevID)
-		var rev uint64
-		if err := r.q.QueryRow(ctx, `SELECT revision FROM policy_revisions WHERE id = $1`, *fupRevID).Scan(&rev); err == nil && rev > 0 {
-			snap.FairUseGeneration = rev
-		}
+	pRows, err := r.q.Query(ctx, `
+		SELECT pd.type, pd.active_revision_id, greatest(pd.generation, pr.revision)::text, pr.payload
+		FROM policy_definitions pd
+		JOIN policy_revisions pr ON pr.id = pd.active_revision_id
+		WHERE pd.active_revision_id IS NOT NULL
+		ORDER BY pd.type ASC, pd.id ASC`)
+	if err != nil {
+		return PolicySnapshot{}, err
 	}
-	if dnsRevID != nil {
-		snap.PolicyRefs = append(snap.PolicyRefs, *dnsRevID)
-		var rev uint64
-		var payload []byte
-		if err := r.q.QueryRow(ctx, `SELECT revision, payload FROM policy_revisions WHERE id = $1`, *dnsRevID).Scan(&rev, &payload); err == nil {
-			if rev > 0 {
-				snap.DNSGeneration = rev
+	defer pRows.Close()
+
+	for pRows.Next() {
+		var (
+			pType   string
+			revID   uuid.UUID
+			genStr  string
+			payload []byte
+		)
+		if err := pRows.Scan(&pType, &revID, &genStr, &payload); err != nil {
+			return PolicySnapshot{}, err
+		}
+		gen, _ := strconv.ParseUint(genStr, 10, 64)
+		snap.PolicyRefs = append(snap.PolicyRefs, revID)
+		switch pType {
+		case "fair_use":
+			if gen > snap.FairUseGeneration {
+				snap.FairUseGeneration = gen
+			}
+		case "dns_block":
+			if gen > snap.DNSGeneration {
+				snap.DNSGeneration = gen
 			}
 			var dnsPayload struct {
 				ResolverIPv4 []string `json:"resolver_ipv4"`
@@ -539,18 +568,16 @@ func (r *DBPolicyReader) ReadPolicySnapshot(ctx context.Context, nodeID uuid.UUI
 				snap.DNSResolverIPv4 = dnsPayload.ResolverIPv4
 				snap.DNSResolverIPv6 = dnsPayload.ResolverIPv6
 			}
-		}
-	}
-	if relPolRevID != nil {
-		snap.PolicyRefs = append(snap.PolicyRefs, *relPolRevID)
-		snap.SupportedReleasePolicyID = *relPolRevID
-		var payload []byte
-		if err := r.q.QueryRow(ctx, `SELECT payload FROM policy_revisions WHERE id = $1`, *relPolRevID).Scan(&payload); err == nil {
+		case "release_support":
+			snap.SupportedReleasePolicyID = revID
 			var relPol api.ReleaseSupportPayload
 			if json.Unmarshal(payload, &relPol) == nil && len(relPol.MinimumServingVersion.ServingReleaseIds) > 0 {
 				snap.ServingReleaseIDs = relPol.MinimumServingVersion.ServingReleaseIds
 			}
 		}
+	}
+	if err := pRows.Err(); err != nil {
+		return PolicySnapshot{}, err
 	}
 
 	return snap, nil

@@ -212,7 +212,7 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		refsBytes   []byte
 		errCode     *string
 		errMsg      *string
-		resVer      string
+		resVer      *string
 	)
 	err := q.QueryRow(ctx, sqlQuery, opID).Scan(
 		&op.OperationId, &kind, &resType, &resID,
@@ -232,8 +232,10 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		Type: api.ResourceType(resType),
 	}
 	op.Status = api.OperationStatus(status)
-	if v, err := decstr.Parse(resVer); err == nil {
-		op.ResourceVersion = &v
+	if resVer != nil {
+		if v, err := decstr.Parse(*resVer); err == nil {
+			op.ResourceVersion = &v
+		}
 	}
 	if desiredGen != nil {
 		if v, err := decstr.Parse(*desiredGen); err == nil {

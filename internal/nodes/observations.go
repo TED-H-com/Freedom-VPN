@@ -238,7 +238,8 @@ func (s *Service) SubmitObservation(
 				UPDATE nodes
 				SET
 					control_status = 'online',
-					last_seen_at = greatest(coalesce(last_seen_at, $2), $2)
+					last_seen_at = greatest(coalesce(last_seen_at, $2), $2),
+					resource_version = resource_version + 1
 				WHERE id = $1`, authNodeID, receivedAt); err != nil {
 				return err
 			}
@@ -465,7 +466,7 @@ func advanceNodeOperationsOnObservation(
 				    observed_generation = $2::numeric,
 				    steps = $3::jsonb,
 				    observed_refs = $4::jsonb,
-				    resource_version = resource_version + 1
+				    resource_version = coalesce(resource_version, 0) + 1
 				WHERE id = $1`, op.id, obsGenStr, stepsJSON, refsJSON); err != nil {
 				return err
 			}
@@ -476,7 +477,7 @@ func advanceNodeOperationsOnObservation(
 				SET observed_generation = $2::numeric,
 				    steps = $3::jsonb,
 				    observed_refs = $4::jsonb,
-				    resource_version = resource_version + 1
+				    resource_version = coalesce(resource_version, 0) + 1
 				WHERE id = $1`, op.id, obsGenStr, stepsJSON, refsJSON); err != nil {
 				return err
 			}
@@ -489,7 +490,7 @@ func advanceNodeOperationsOnObservation(
 				    completed_at = $2,
 				    error_code = NULL,
 				    error_message = NULL,
-				    resource_version = resource_version + 1
+				    resource_version = coalesce(resource_version, 0) + 1
 				WHERE id = $1`, op.id, now); err != nil {
 				return err
 			}

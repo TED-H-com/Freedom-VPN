@@ -100,7 +100,7 @@ func seedCompilerTestNode(
 		)`, incID, nodeID, fp[:], "peer-"+nodeID.String()[:8]); err != nil {
 		t.Fatalf("insert incarnation: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1 WHERE id = $2`, incID, nodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1, resource_version = resource_version + 1 WHERE id = $2`, incID, nodeID); err != nil {
 		t.Fatalf("update current_incarnation_id: %v", err)
 	}
 	if _, err := pool.Exec(ctx, `
@@ -419,7 +419,7 @@ func TestCompiler_ReSignETag304AndIdentityMismatch(t *testing.T) {
 	}
 
 	// 5. Revoked node -> 403 IDENTITY_REVOKED.
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET lifecycle_state = 'revoked' WHERE id = $1`, nodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET lifecycle_state = 'revoked', resource_version = resource_version + 1 WHERE id = $1`, nodeID); err != nil {
 		t.Fatalf("revoke node: %v", err)
 	}
 	_, err = compiler.GetDesiredState(ctx, nodeID, incID, "")

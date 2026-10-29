@@ -699,7 +699,7 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 			    observed_generation = $3::numeric,
 			    error_code = NULL,
 			    error_message = NULL,
-			    resource_version = resource_version + 1
+			    resource_version = coalesce(resource_version, 0) + 1
 			WHERE id = $1`, opID, now, appliedGenStr); err != nil {
 			return err
 		}
@@ -829,7 +829,7 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 				    observed_generation = $3::numeric,
 				    error_code = NULL,
 				    error_message = NULL,
-				    resource_version = resource_version + 1
+				    resource_version = coalesce(resource_version, 0) + 1
 				WHERE id = $1`, opID, now, appliedGenStr); err != nil {
 				return err
 			}
@@ -860,7 +860,7 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 			    steps = $2::jsonb,
 			    error_code = $3,
 			    error_message = $4,
-			    resource_version = resource_version + 1
+			    resource_version = coalesce(resource_version, 0) + 1
 			WHERE id = $1`,
 			opID, newStepsJSON, string(apierr.DependencyUnavailable), "central NetBird route withdrawn; node agent withdrawal unconfirmed")
 		return err
@@ -1066,7 +1066,7 @@ func (s *Service) markStepSucceeded(ctx context.Context, opID uuid.UUID, stepNam
 				SET status = 'running',
 				    steps = $2::jsonb,
 				    observed_refs = $3::jsonb,
-				    resource_version = resource_version + 1
+				    resource_version = coalesce(resource_version, 0) + 1
 				WHERE id = $1`, opID, stepsJSON, refsJSON)
 			return err
 		}
@@ -1074,7 +1074,7 @@ func (s *Service) markStepSucceeded(ctx context.Context, opID uuid.UUID, stepNam
 			UPDATE operations
 			SET steps = $2::jsonb,
 			    observed_refs = $3::jsonb,
-			    resource_version = resource_version + 1
+			    resource_version = coalesce(resource_version, 0) + 1
 			WHERE id = $1`, opID, stepsJSON, refsJSON)
 		return err
 	})
@@ -1118,7 +1118,8 @@ func (s *Service) failPublishStep(
 		if status != string(api.OperationStatusRunning) && status != string(api.OperationStatusFailed) {
 			if _, err := tx.Exec(ctx, `
 				UPDATE operations
-				SET status = 'running'
+				SET status = 'running',
+				    resource_version = coalesce(resource_version, 0) + 1
 				WHERE id = $1`, opID); err != nil {
 				return err
 			}
@@ -1129,7 +1130,7 @@ func (s *Service) failPublishStep(
 			    steps = $2::jsonb,
 			    error_code = $3,
 			    error_message = $4,
-			    resource_version = resource_version + 1
+			    resource_version = coalesce(resource_version, 0) + 1
 			WHERE id = $1`, opID, stepsJSON, errCode, errMsg); err != nil {
 			return err
 		}

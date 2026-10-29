@@ -112,7 +112,7 @@ func (DBEntitlementReader) ListLeaseEntitlementsForGroups(ctx context.Context, q
 		SELECT DISTINCT
 			m.id,
 			e.revision::text,
-			(m.status <> 'active' OR e.admin_suspended) AS is_suspended,
+			(m.status <> 'active' OR m.admin_suspended OR e.admin_suspended) AS is_suspended,
 			e.valid_from,
 			e.effective_service_end
 		FROM members m
@@ -122,6 +122,8 @@ func (DBEntitlementReader) ListLeaseEntitlementsForGroups(ctx context.Context, q
 			AND a.valid_from <= $2
 			AND (a.valid_until IS NULL OR a.valid_until > $2)
 			AND (a.member_id = m.id OR (sub.plan_revision_id IS NOT NULL AND a.plan_revision_id = sub.plan_revision_id))
+		WHERE e.valid_from IS NOT NULL
+		  AND e.effective_service_end IS NOT NULL
 		ORDER BY m.id ASC`
 
 	rows, err := q.Query(ctx, sqlQuery, groupIDs, asOf)
@@ -308,6 +310,9 @@ func (s *Service) Renew(
 		if lifecycleState == string(api.LifecycleStateRevoked) || lifecycleState == string(api.LifecycleStateRetired) {
 			return apierr.Newf(apierr.IdentityRevoked, "node %s is %s", authNodeID, lifecycleState)
 		}
+		if lifecycleState != string(api.LifecycleStateRegistered) {
+			return apierr.Newf(apierr.NodeNotServiceable, "node %s is not registered (state=%s)", authNodeID, lifecycleState)
+		}
 
 		var (
 			incNodeID uuid.UUID
@@ -435,9 +440,6 @@ func (s *Service) Renew(
 				}
 
 				rev := m.EntitlementRevision
-				if rev == 0 {
-					rev = 1
-				}
 				if rev > maxAuthGen {
 					maxAuthGen = rev
 				}
@@ -533,13 +535,25 @@ func (s *Service) Renew(
 			return err
 		}
 
-		// Persist serving_lease_members for members present in the entitlements table (§15.3, §16.3).
+		// Persist serving_lease_members for active members with matching, unsuspended entitlements in the same transaction (F-11, §15.3, §16.3).
 		for _, ml := range dbMemberLeases {
-			var hasEntitlement bool
-			if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM entitlements WHERE member_id = $1)`, ml.memberID).Scan(&hasEntitlement); err != nil {
+			var eligible bool
+			if err := tx.QueryRow(ctx, `
+				SELECT EXISTS(
+					SELECT 1
+					FROM members m
+					JOIN entitlements e ON e.member_id = m.id
+					WHERE m.id = $1
+					  AND m.status = 'active'
+					  AND NOT m.admin_suspended
+					  AND NOT e.admin_suspended
+					  AND e.revision = $2::numeric
+					  AND e.valid_from IS NOT NULL
+					  AND e.effective_service_end IS NOT NULL
+				)`, ml.memberID, strconv.FormatUint(ml.revision, 10)).Scan(&eligible); err != nil {
 				return err
 			}
-			if !hasEntitlement {
+			if !eligible {
 				continue
 			}
 			if _, err := tx.Exec(ctx, `

@@ -98,17 +98,8 @@ func seedTestNode(
 	}
 
 	if _, err := pool.Exec(ctx, `
-		UPDATE nodes SET current_incarnation_id = $1 WHERE id = $2`, incID, nodeID); err != nil {
+		UPDATE nodes SET current_incarnation_id = $1, resource_version = resource_version + 1 WHERE id = $2`, incID, nodeID); err != nil {
 		t.Fatalf("set current_incarnation_id: %v", err)
-	}
-
-	if _, err := pool.Exec(ctx, `
-		INSERT INTO node_certificates (
-			incarnation_id, issuer, serial, fingerprint, public_certificate, not_before, not_after
-		) VALUES (
-			$1, 'fvpn-ca', $2, $3, $4, now() - interval '1 hour', now() + interval '30 days'
-		)`, incID, "ser-"+nodeID.String()[:8], certFP[:], []byte("TEST ONLY CERT")); err != nil {
-		t.Fatalf("insert node_certificate: %v", err)
 	}
 
 	if _, err := pool.Exec(ctx, `
@@ -118,6 +109,15 @@ func seedTestNode(
 			$1, $2, now() - interval '5 minutes', now() + interval '10 minutes', 'pending'
 		)`, nodeID, tokenHash[:]); err != nil {
 		t.Fatalf("insert node_enrollment: %v", err)
+	}
+
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO node_certificates (
+			incarnation_id, issuer, serial, fingerprint, public_certificate, not_before, not_after
+		) VALUES (
+			$1, 'fvpn-ca', $2, $3, $4, now() - interval '1 hour', now() + interval '30 days'
+		)`, incID, "ser-"+nodeID.String()[:8], certFP[:], []byte("TEST ONLY CERT")); err != nil {
+		t.Fatalf("insert node_certificate: %v", err)
 	}
 
 	if _, err := pool.Exec(ctx, `
@@ -564,7 +564,7 @@ func TestRevokeAndRetire_TombstonePreservesLedgerAndPendingWithdrawal(t *testing
 	nRetire := seedTestNode(t, ctx, pool, "tw-taipei-retire", "tw-tpe", api.PublicationIntentPublished, "active", api.ControlStatusOffline, relID, grpID)
 
 	// Mark nRetire as having member_forwarding_observed = true (unconfirmed withdrawal) and a usage_events row.
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET member_forwarding_observed = true WHERE id = $1`, nRetire.NodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET member_forwarding_observed = true, resource_version = resource_version + 1 WHERE id = $1`, nRetire.NodeID); err != nil {
 		t.Fatalf("update member_forwarding_observed: %v", err)
 	}
 	usageHash := sha256.Sum256([]byte("usage-event-1"))
@@ -662,7 +662,7 @@ func TestAT32_CentralEnrollConfigureObserveLifecycle(t *testing.T) {
 		VALUES ($1, $2, $3, 'nb-main', 'peer-at32', 'ubuntu', '24.04', 'amd64')`, incID, nodeID, fp[:]); err != nil {
 		t.Fatalf("insert incarnation: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1 WHERE id = $2`, incID, nodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1, resource_version = resource_version + 1 WHERE id = $2`, incID, nodeID); err != nil {
 		t.Fatalf("update current_incarnation_id: %v", err)
 	}
 	if _, err := pool.Exec(ctx, `

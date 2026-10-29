@@ -79,7 +79,7 @@ func seedLeaseTestNode(
 		)`, incID, nodeID, fp[:], "peer-"+nodeID.String()[:8]); err != nil {
 		t.Fatalf("insert incarnation: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1 WHERE id = $2`, incID, nodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1, resource_version = resource_version + 1 WHERE id = $2`, incID, nodeID); err != nil {
 		t.Fatalf("update current_incarnation_id: %v", err)
 	}
 	if _, err := pool.Exec(ctx, `
@@ -101,7 +101,7 @@ func seedLeaseTestNode(
 func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 	pool := dbtest.New(t)
 	ctx := context.Background()
-	now := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Truncate(time.Second)
 
 	grpID := uuid.New()
 	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-at29', 'grp-at29')`, grpID); err != nil {
@@ -128,7 +128,7 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 		}
 		if _, err := pool.Exec(ctx, `
 			INSERT INTO entitlements (member_id, revision, device_limit, valid_from, effective_service_end, admin_suspended, computed_at)
-			VALUES ($1, $2, 3, $3, $4, $5, $6)`, mid, rev, validFrom, end, suspended, now.Add(-1*time.Hour)); err != nil {
+			VALUES ($1, $2, 3, $3, $4, false, $5)`, mid, rev, validFrom, end, now.Add(-1*time.Hour)); err != nil {
 			t.Fatalf("insert entitlement %s: %v", email, err)
 		}
 		if _, err := pool.Exec(ctx, `
@@ -141,6 +141,11 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 			INSERT INTO member_devices (id, member_id, deployment_id, peer_id, name, status, authorized_at)
 			VALUES ($1, $2, 'nb-main', $3, 'laptop', 'authorized', $4)`, devID, mid, "peer-"+mid.String()[:8], validFrom); err != nil {
 			t.Fatalf("insert device %s: %v", email, err)
+		}
+		if suspended {
+			if _, err := pool.Exec(ctx, `UPDATE entitlements SET admin_suspended = true WHERE member_id = $1`, mid); err != nil {
+				t.Fatalf("suspend entitlement %s: %v", email, err)
+			}
 		}
 	}
 
@@ -193,6 +198,12 @@ func TestAT29_LeaseMathReplayAndEntitlementImmutability(t *testing.T) {
 		default:
 			t.Errorf("unexpected member %s in lease grants", m.MemberId)
 		}
+	}
+
+	// Verify serving_lease_members rows were persisted in the same transaction (F-11).
+	var leaseMembersCount int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM serving_lease_members WHERE lease_id = $1`, env1.Signed.LeaseId).Scan(&leaseMembersCount); err != nil || leaseMembersCount != 2 {
+		t.Fatalf("serving_lease_members count = %d (err=%v), want 2", leaseMembersCount, err)
 	}
 
 	// Verify entitlements table rows were NOT modified by lease issuance (§16.3).
@@ -287,7 +298,7 @@ func TestLeases_UnpublishedDisabledAndRevokedNode(t *testing.T) {
 	}
 
 	// 4. Revoked node -> 403 IDENTITY_REVOKED.
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET lifecycle_state = 'revoked' WHERE id = $1`, unpubNodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET lifecycle_state = 'revoked', resource_version = resource_version + 1 WHERE id = $1`, unpubNodeID); err != nil {
 		t.Fatalf("revoke node: %v", err)
 	}
 	_, err = svc.Renew(ctx, unpubNodeID, unpubIncID, api.LeaseRenewalRequest{

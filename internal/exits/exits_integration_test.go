@@ -94,7 +94,7 @@ func seedExitTestNode(
 		)`, incID, nodeID, fp[:], "peer-"+nodeID.String()[:8]); err != nil {
 		t.Fatalf("insert incarnation: %v", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1 WHERE id = $2`, incID, nodeID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE nodes SET current_incarnation_id = $1, resource_version = resource_version + 1 WHERE id = $2`, incID, nodeID); err != nil {
 		t.Fatalf("update current_incarnation_id: %v", err)
 	}
 	if _, err := pool.Exec(ctx, `
@@ -285,7 +285,7 @@ func TestAT13_UnpublishAndDisableWhenNodeOffline(t *testing.T) {
 	})
 	if _, err := pool.Exec(ctx, `
 		UPDATE nodes
-		SET control_status = 'offline', member_forwarding_observed = true
+		SET control_status = 'offline', member_forwarding_observed = true, resource_version = resource_version + 1
 		WHERE id = $1`, nodeID); err != nil {
 		t.Fatalf("mark node offline: %v", err)
 	}
