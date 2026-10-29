@@ -71,8 +71,8 @@ Short windows. `FVPN_NETLAB_FULL=1` is the §11.7 window (30 s warm-up, 120 s, t
 | AT11 | Native IPv6 to global `2001:db8:203::10`, ULA, `2001:db8::10` and `fe80::10` timed out. IPv4-mapped targets were unreachable. Raw IPv6 was sent and both target captures stayed empty. `ctv6` rose by 7. |
 | AT14 / MTR01 / MTR02 | Upload and download deviation 0.0000 against the inner IP length, for UDP and TCP. DNS, denies and host-originated traffic did not move `forward_admission_v1`. A counter reset was reported as `METER_EPOCH_CHANGE`. |
 | AT18 / FUP02 | Two devices of one member shared one 20 Mbit class at ratio 1.000 on upload, download and both at once. Two members on a 20 Mbit parent: 0.500 and 0.500, sum 1.000. Drops 0. Class minor survived a rate change (`1:2dc5`, `1:2dc6`). |
-| AT10 / AT13 | 100 regenerations, one LAN interface add/remove, revoke stopped the live flow in 1.689 s and removed its conntrack entry, `kill -9` of the apply process left generation 2100 in place, then the boot baseline denied every member. Deny-loop hits 0. Target captures empty. |
-| AT29 | Forwarding stopped 8.745 s after the short service end, with the apply process already gone. It stayed denied, then resumed only after generation 30. Clock step skipped. |
+| AT10 / AT13 | 100 regenerations, one LAN interface add/remove, revoke stopped the live flow in 1.639 s and removed its conntrack entry, `kill -9` of the apply process left generation 2100 in place, then the boot baseline denied every member. Deny-loop hits 0. Target captures empty. |
+| AT29 | Forwarding stopped 8.747 s after the short service end, with the apply process already gone. It stayed denied, then resumed only after generation 30. Clock step skipped. |
 | NetBird | Inner accept-all did not bypass member, LAN, metadata or rogue denies. Masquerade to `192.0.2.34` was dropped as an unknown source (`ctunku`) and `meter-path` returned `METER_PATH_INVALID`. Marks preserved. |
 
 ### AT14 byte identity (§10.3, §10.7)
@@ -82,7 +82,7 @@ Reference is `tcpdump -v` on the member tunnel device `fv-wg0`, summing IPv4 tot
 | Flow | nft upload | inner upload | nft download | inner download | deviation |
 |---|---:|---:|---:|---:|---:|
 | UDP 400 × 1200 payload | 491200 | 491200 | 491200 | 491200 | 0 |
-| TCP 80 × 1000 payload | 84948 | 84948 | 84324 | 84324 | 0 |
+| TCP 80 × 1000 payload | 83700 | 83700 | 84168 | 84168 | 0 |
 
 `491200 = 400 × 1228` (20 byte IPv4 header + 8 byte UDP header + 1200 payload). The same blast on `fv-wg0` link stats was `505600 = 400 × 1264`. The extra 36 bytes per datagram are WireGuard ciphertext overhead (4 bytes of pad-to-16, 16 byte header, 16 byte tag), not usage. Underlay `fv-a1u` TX was 522400, strictly above the inner length, and is not usage. Member `netdev` egress and `inet` output both miss some 52-byte TCP ACKs on this kernel, so they are not a valid inner reference. The 2% bar was not loosened.
 
@@ -94,18 +94,24 @@ Measured on `tc -s class` bytes during the steady window, which is the shaper, n
 
 | Window | Ratio of R or C | Drops | CPU |
 |---|---:|---:|---:|
-| Shared upload (a1+a2) | 1.000 (20.00 Mbit) | 0 | 6.0% |
-| Shared download | 1.000 (20.00 Mbit) | 0 | 4.8% |
-| Shared both, each direction | 1.000 / 1.000 (20.01 Mbit) | 0 | — |
-| Contention, 8 flows vs 1 flow | 0.500 and 0.500, sum 1.000 | 0 | 4.0% |
+| Shared upload (a1+a2) | 1.000 (20.00 Mbit) | 0 | 1.3% |
+| Shared download | 1.000 (20.00 Mbit) | 0 | 1.4% |
+| Shared both, each direction | 1.000 / 1.000 (20.00 Mbit) | 0 | — |
+| Contention, 8 flows vs 1 flow | 0.500 and 0.500, sum 1.000 | 0 | 1.4% |
 
-The parent ceil is what caps the two members. Host class `1:fffe` stayed at 0.00 Mbit on the shared upload window. After a rate change the same minors remained and the class byte counter did not go backwards (177945462 bytes kept).
+The parent ceil is what caps the two members. Host class `1:fffe` stayed at 0.00 Mbit on the shared upload window. After a rate change the same minors remained and the class byte counter did not go backwards (177972051 bytes kept).
 
 ### AT29 (§16.3)
 
-Service end was 8 s and the offline lease was 1 h. The apply process exited. Forwarding still worked at +1 s and was denied at 8.745 s, which is the kernel set timeout and not a userspace delete. A new model at generation 30 resumed it.
+Service end was 8 s and the offline lease was 1 h. The apply process exited. Forwarding still worked at +1 s and was denied at 8.747 s, which is the kernel set timeout and not a userspace delete. A new model at generation 30 resumed it.
 
 `unshare --time` creates a new time-namespace inode, and `date -s` inside that child still moves the container clock. The test compares the inodes, records `clock_step=skipped`, and does not call `date -s`. nft timeouts follow jiffies, so a wall-clock step would not have been the enforcement mechanism anyway.
+
+## Decisions
+
+- D-019: usage is the inner IPv4 total length admitted at the forward hook (§10.2). Bytes later dropped by HTB are not subtracted. "Delivered bytes" is not a ledger rule. The lab counters are the meter definition for the node agent.
+- Clock-step expiry (§16.3) stays under 待實測. The kernel set-timeout evidence is accepted for Gate G2. This lab does not call `date -s` and does not change the host clock.
+- §11.7 production windows remain a recommended starting point. The short window is what CI runs.
 
 ## 待實測
 

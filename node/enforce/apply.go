@@ -212,6 +212,11 @@ func Samples(m Model, counters map[string]CounterValue) ([]Sample, error) {
 	}
 	var out []Sample
 	for name, val := range counters {
+		if diagnosticNamespace(name) {
+			// Drops and baseline hits stay in diagnostic_v1. They are not
+			// device samples and must not enter the usage ledger (§10.1).
+			continue
+		}
 		id, dir, ns, ok := parseDeviceCounter(name)
 		if !ok {
 			continue

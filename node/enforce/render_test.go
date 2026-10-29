@@ -306,6 +306,7 @@ func TestSamples_Namespaces(t *testing.T) {
 	counters := map[string]CounterValue{
 		usageCounter(dirUpload, id):    {Packets: 2, Bytes: 200},
 		usageCounter(dirDNSUpload, id): {Packets: 1, Bytes: 70},
+		counterDenied:                  {Packets: 9, Bytes: 500},
 	}
 	got, err := Samples(m, counters)
 	if err != nil {
@@ -313,6 +314,11 @@ func TestSamples_Namespaces(t *testing.T) {
 	}
 	if len(got) != 2 {
 		t.Fatalf("%+v", got)
+	}
+	for _, s := range got {
+		if s.Namespace == DiagnosticNamespace {
+			t.Fatalf("diagnostic counter entered samples: %+v", s)
+		}
 	}
 	for _, s := range got {
 		if s.Direction == dirUpload && s.Namespace != MeteringVersion {

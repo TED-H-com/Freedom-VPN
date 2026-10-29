@@ -1,8 +1,8 @@
 AT00 handshakes=4 forward=1 baseline=1
-AT10 regens=100 revoke_stop=1.689s deny_loops=9 hits=0 baseline_forwarding=off
+AT10 regens=100 revoke_stop=1.639s deny_loops=9 hits=0 baseline_forwarding=off
 AT11 ctv6_delta=7 targets_empty=1 mode=block
-AT12 deny_diag=17 dns_upload=271 a1_upload=5758 admitted=3
+AT12 deny_diag=17 dns_upload=271 a1_upload=5898 admitted=3
 AT14 udp_up_dev=0.0000 udp_down_dev=0.0000 tcp_up_dev=0.0000 tcp_down_dev=0.0000 dns_separate=1 reset_reported=1
 AT18 qos windows passed R=20Mbit
-AT29 stop_after=8.745s resume=1
+AT29 stop_after=8.747s resume=1
 NetBird inner_accept_blocked=1 masquerade_fail_closed=1 marks=mark_pre=5 mark_post=5 preserved=1
