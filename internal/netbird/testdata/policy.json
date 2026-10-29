@@ -1,0 +1,35 @@
+{
+  "_fixture": "TEST ONLY - NOT A SECRET; recorded NetBird CE 0.82.0, identifiers/addresses/metadata replaced",
+  "description": "TEST ONLY description",
+  "enabled": true,
+  "id": "TEST-ID-9",
+  "name": "TEST ONLY name",
+  "rules": [
+    {
+      "action": "accept",
+      "bidirectional": true,
+      "description": "TEST ONLY description",
+      "destinations": [
+        {
+          "id": "TEST-ID-10",
+          "name": "TEST ONLY name",
+          "peers_count": 1,
+          "resources_count": 0
+        }
+      ],
+      "enabled": true,
+      "id": "TEST-ID-9",
+      "name": "TEST ONLY name",
+      "protocol": "icmp",
+      "sources": [
+        {
+          "id": "TEST-ID-1",
+          "name": "TEST ONLY name",
+          "peers_count": 1,
+          "resources_count": 0
+        }
+      ]
+    }
+  ],
+  "source_posture_checks": []
+}
