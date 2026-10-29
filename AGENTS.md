@@ -35,7 +35,7 @@ This file binds every contributor, human or AI agent. Read it completely before 
 
 ## 3. Technology baseline (decided)
 
-- **Go 1.27**, single module `github.com/TED-H-com/Freedom-VPN` at the repo root, `CGO_ENABLED=0`, `GOTOOLCHAIN=local`. Every Go binary must cross-compile for `linux/amd64` and `linux/arm64`.
+- **Go 1.27.3**, single module `github.com/TED-H-com/Freedom-VPN` at the repo root, `CGO_ENABLED=0`, `GOTOOLCHAIN=local`. Every Go binary must cross-compile for `linux/amd64` and `linux/arm64`.
 - **Central services** are a modular monolith: `fvpn-control` and `fvpn-worker` share `internal/` packages. No microservices, no Kubernetes.
 - **PostgreSQL 17** through `github.com/jackc/pgx/v5`. Migrations are SQL files in `db/migrations`, run by `github.com/pressly/goose/v3` from an embedded FS. No ORM.
 - **Node targets:** Ubuntu 24.04 LTS on amd64 and arm64. Local durable state uses SQLite in WAL mode through `modernc.org/sqlite` (pure Go). The data plane uses kernel nftables (atomic `nft -f` transactions), `tc` HTB with fq_codel, the kernel WireGuard path and a pinned NetBird client.

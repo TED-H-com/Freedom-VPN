@@ -37,7 +37,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: "1.27.3"
 
       - name: Lint & Vet
         run: make -f mk/dns.mk dns-lint
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: "1.27.3"
 
       - name: Start Dev AdGuard Home Stack
         run: make -f mk/dns.mk dns-up
