@@ -55,7 +55,7 @@ func setup(t *testing.T) fixture {
 	return fixture{pool, s, auth, ca, vault, logs}
 }
 func command() enrollment.Command {
-	return enrollment.Command{Principal: "test-admin", Key: uuid.New()}
+	return enrollment.Command{Principal: "admin:" + uuid.NewString(), Key: uuid.New()}
 }
 func create(t *testing.T, f fixture) api.EnrollmentCreated {
 	t.Helper()

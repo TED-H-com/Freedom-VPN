@@ -9,6 +9,8 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -30,6 +32,7 @@ func (s *Service) RetireNode(ctx context.Context, cmd Command, node uuid.UUID, e
 	return s.revokeNode(ctx, cmd, node, expected, reason, true)
 }
 func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, expected *decstr.U64, reason string, retire bool) (out RevocationResult, err error) {
+	ctx = requestContext(ctx)
 	if expected == nil {
 		return out, apierr.New(apierr.PreconditionRequired, "If-Match required.")
 	}
@@ -81,10 +84,10 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 			}
 		}
 		state = "revoked"
-		kind := "node.revoke"
+		kind := api.OperationKindNodeRevoke
 		if retire {
 			state = "retired"
-			kind = "node.retire"
+			kind = api.OperationKindNodeRetire
 		}
 		if _, e = tx.Exec(ctx, `UPDATE nodes SET lifecycle_state=$2,retired_at=CASE WHEN $2='retired' THEN clock_timestamp() ELSE retired_at END,desired_config_generation=desired_config_generation+1,resource_version=resource_version+1 WHERE id=$1`, node, state); e != nil {
 			return e
@@ -104,15 +107,18 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if _, e = tx.Exec(ctx, `UPDATE node_bootstrap_secrets SET ciphertext=NULL,encryption_key_id=NULL,erased_at=coalesce(erased_at,clock_timestamp()) WHERE incarnation_id IN (SELECT id FROM node_incarnations WHERE node_id=$1)`, node); e != nil {
 			return e
 		}
-		out.OperationID, e = uuid.NewV7()
-		if e != nil {
-			return e
-		}
 		out.ResourceVersion, e = out.ResourceVersion.Add(1)
 		if e != nil {
 			return e
 		}
-		if _, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id,steps) VALUES($1,$4,$2,'node',$3,$5,'{"route_withdrawal":{"required":true,"status":"pending"},"peer_withdrawal":{"required":true,"status":"pending"}}')`, out.OperationID, cmd.Principal, node, kind, commandtx.RequestID(ctx)); e != nil {
+		actor, e := adminPrincipal(cmd.Principal)
+		if e != nil {
+			return e
+		}
+		out.OperationID, e = operations.Create(ctx, tx, operations.CreateRequest{Kind: kind, Principal: actor, Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: node}, RequestID: commandtx.RequestID(ctx), ResourceVersion: &out.ResourceVersion, Steps: map[string]operations.Step{
+			"route_withdrawal": {Required: true}, "peer_withdrawal": {Required: true},
+		}})
+		if e != nil {
 			return e
 		}
 		for _, event := range []string{"node.routes.withdraw", "node.peer.withdraw"} {
@@ -124,14 +130,14 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 				return e
 			}
 		}
-		if e = complete(ctx, tx, record, "node", node, 202, &out.OperationID); e != nil {
+		if e = complete(ctx, tx, record, api.ResourceTypeNode, node, 202, &out.OperationID); e != nil {
 			return e
 		}
 		action := "node.revoked"
 		if retire {
 			action = "node.retired"
 		}
-		return auditReason(ctx, tx, cmd.Principal, action, node, &out.OperationID, reason)
+		return appendDomainAudit(ctx, tx, actor, action, api.ResourceRef{Type: api.ResourceTypeNode, Id: node}, &out.OperationID, reason)
 	})
 	if err != nil {
 		return RevocationResult{}, safe(err)

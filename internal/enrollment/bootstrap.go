@@ -7,10 +7,12 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -75,7 +77,7 @@ func (s *Service) StoreBootstrap(ctx context.Context, id pki.NodeIdentity, opera
 			return e
 		}
 		var valid bool
-		e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM node_enrollments e JOIN operations o ON o.id=e.operation_id WHERE e.node_id=$1 AND e.incarnation_id=$2 AND e.operation_id=$3 AND o.status IN ('pending','running') AND o.kind='node.provision') AND $4::timestamptz>clock_timestamp() AND $4::timestamptz<=clock_timestamp()+$5::bigint*interval '1 millisecond'`, id.NodeID, id.IncarnationID, operation, expires, s.cfg.BootstrapValidity.Milliseconds()).Scan(&valid)
+		e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM node_enrollments e JOIN operations o ON o.id=e.operation_id WHERE e.node_id=$1 AND e.incarnation_id=$2 AND e.operation_id=$3 AND o.status IN ('pending','running') AND o.kind=$6) AND $4::timestamptz>clock_timestamp() AND $4::timestamptz<=clock_timestamp()+$5::bigint*interval '1 millisecond'`, id.NodeID, id.IncarnationID, operation, expires, s.cfg.BootstrapValidity.Milliseconds(), api.OperationKindNodeEnroll).Scan(&valid)
 		if e != nil {
 			return e
 		}
@@ -93,6 +95,7 @@ func (s *Service) StoreBootstrap(ctx context.Context, id pki.NodeIdentity, opera
 // A lost delivery response cannot be replayed; reconcile the existing external
 // setup key/peer through the worker, never automatically create a second key.
 func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (out BootstrapDelivery, err error) {
+	ctx = requestContext(ctx)
 	id, err := s.auth.Authenticate(ctx, cert)
 	if err != nil {
 		return out, err
@@ -133,7 +136,7 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 			unavailable = apierr.BootstrapExpired
 			return nil
 		}
-		return audit(ctx, tx, "node:"+id.NodeID.String(), "bootstrap.claimed", id.IncarnationID, &op)
+		return appendDomainAudit(ctx, tx, auth.Principal{Role: auth.Agent, NodeID: id.NodeID, IncarnationID: id.IncarnationID}, "bootstrap.claimed", api.ResourceRef{Type: api.ResourceTypeNode, Id: id.NodeID}, &op, "")
 	})
 	if err != nil {
 		return BootstrapDelivery{}, safe(err)
