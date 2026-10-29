@@ -123,7 +123,7 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Large integers.** Bytes, sequence numbers, generations, revisions and
   resource versions are decimal strings: `type: string`,
   `pattern: '^(0|[1-9][0-9]*)$'` (`'^[1-9][0-9]*$'` where zero is invalid,
-  such as `event_seq`), `maxLength: 20`, `x-go-type: decstr.U64`,
+  such as `event_seq` and `DomainRule.revision`), `maxLength: 20`, `x-go-type: decstr.U64`,
   `x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}`.
   Any field named `*_bytes`, `*_seq`, `*generation`, `*revision` or
   `resource_version` must follow it. TypeScript code holds them as strings and
@@ -131,18 +131,22 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Other integers** (schema versions, attempts, counts, bps rates) are JSON
   integers with explicit bounds within ±(2^53−1). No floating-point numbers.
 - **Money.** `amount_minor` (int64 minor units) plus ISO 4217 `currency`.
-- **Nullability and presence.** `nullable: true` is allowed only on required
-  members. Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+- **Nullability and presence.** `nullable: true` is allowed on required
+  members and the two optional UpdateTarget policy-evidence members (D-048). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
   `nullable`); its zero value is unspecified and **fails marshaling**. Use
   `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
   for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
+  Optional `UpdateTarget.policy_generation` and `policy_refs` use the same
+  type with `omitzero`: unspecified fields are omitted, while explicit null,
+  zero generation and empty references are preserved. Required members have
+  no omission tag and still fail marshaling when unspecified.
   Both `UpdateResult.recovery_required` and `UpdateJobSummary.recovery_required`
   use `presence.Required[bool]`: `NewRequired(false)` preserves explicit false,
   while omission and null cannot become false. Validate original request bytes
   before decoding into a fresh model; these types do not replace schema checks.
   Plain Go pointers cannot distinguish absence from null. PATCH bodies never
   use null. The codegen config enables nullable types and supplies an import
-  template for the local implementation. [`TestAPI01_NoOptionalNullableFields`,
+  template for the local implementation. [`TestAPI01_OptionalNullableFields`,
   `TestReviewC04_PlanRateLimitPresence`, `TestReviewC06_RecoveryRequiredPresence`]
 - **Request bodies are closed** (`additionalProperties: false`); responses are
   open for forward compatibility. [`TestAPI01_RequestBodiesAreClosed`]
@@ -258,6 +262,7 @@ them. `reasons.json` names the owner and rule for each fixture.
 | Fair-use thresholds strictly increase, rates are non-increasing, priority is non-decreasing, every tier is at or above `minimum_rate` in both directions | policy service | §11.1 |
 | Approved releases are a subset of serving releases; revoked releases are disjoint from both | policy service | §13.2 |
 | Artifacts cover amd64 and arm64 for the supported OS/version, with unique OS/version/architecture tuples; `minItems: 2` only checks array length | release service | §13.3, §13.4 |
+| Domain rule revisions start at 1; HTTP rejects `"0"` via `^[1-9][0-9]*$` and retains `maxLength: 20`. The uint64 upper bound `18446744073709551615` is enforced by `decstr`; the HTTP pattern alone does not enforce that numeric limit. The owner payload schema also caps positive uint64 revisions. | policy service / `decstr` | §12.4, §14.2 |
 | Domain rules are normalized with IDNA, then checked for duplicates and conflicting action/profile/subdomain semantics | policy service / DNS compiler | §12.4 |
 | Checkout and billing portal `return_url` must match the configured allowlist before redirect or provider use; HTTPS alone is insufficient, including loopback, link-local and other internal destinations | billing service | §14.3, §16.2 |
 
@@ -281,10 +286,19 @@ fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
   `config_generation` actually applied when the result was produced. It must
   not be filled from the job's `generation` or merely the newest received
   desired state. This resolves the updater's previous config-generation alias
-  ambiguity. The field already exists as required on main; this revision
-  preserves that contract and Go value type. `policy_refs` exists on desired
-  state, not on UpdateResult. Making this field optional or adding policy_refs
-  would require a separate explicit contract decision.
+  ambiguity. The field remains required (D-049); persist exactly the reported
+  value. `policy_refs` exists on desired state, not on UpdateResult.
+- **Update target evidence (§13.10.3, §15.4, D-048).** Optional, nullable
+  `UpdateTarget.policy_generation` and `policy_refs` expose the applied
+  desired-state `config_generation` and policy revision references from the
+  accepted result that produced the target's current evidence. Absent or null
+  means no accepted result or unknown history. Readers must never infer zero;
+  servers must never borrow the newest desired state. Explicit `"0"` and `[]`
+  are known values, distinct from unknown evidence. References are unique UUIDs
+  with at most 64 entries; generation is an exact uint64 decimal string.
+  Examples retain the [original omitted shape](../../contracts/examples/valid/UpdateBatch.json),
+  add [reported evidence](../../contracts/examples/valid/UpdateBatch.applied-policy.json)
+  and [unknown evidence](../../contracts/examples/valid/UpdateBatch.unknown-policy.json).
 - **Serving lease (§16.3).** `lease_id`, node and incarnation,
   `authorization_generation`, `config_generation`, `issued_at` (signed server
   time), `expires_at` (node lease end), `max_offline_seconds` (recommended
@@ -342,7 +356,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
    `components/responses` for every error status.
 3. Add schemas under `components/schemas` following the conventions above.
    Request bodies get `additionalProperties: false`; nullable members must be
-   required. New error codes go into `pkg/apierr` (status, retryable, section)
+   required unless explicitly approved (D-048). New error codes go into `pkg/apierr` (status, retryable, section)
    and the `ErrorCode` enum together.
 4. Add at least one valid and one invalid example for each new request body,
    and a valid example for each new response body; add the reason of each

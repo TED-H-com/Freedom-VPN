@@ -1,0 +1,59 @@
+{
+  "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+  "operation_id": "12935300-f2e5-469e-97ff-23ea87af63e8",
+  "release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+  "state": "waiting",
+  "target_count": 5,
+  "counts": {
+    "queued": 0,
+    "waiting_online": 1,
+    "downloading": 0,
+    "verifying": 0,
+    "applying": 0,
+    "checking": 0,
+    "succeeded": 4,
+    "already_current": 0,
+    "failed": 0,
+    "rolled_back": 0,
+    "superseded": 0,
+    "cancelled": 0
+  },
+  "requires_service_restart": true,
+  "reason": "發布已核准的節點程式版本 1.1.0",
+  "created_by": "6a7d5389-5347-41a4-9cd7-768e07072254",
+  "created_at": "2026-10-28T14:05:00Z",
+  "updated_at": "2026-10-28T14:07:00Z",
+  "targets_url": "/api/v1/admin/update-batches/85ef720a-31a0-4250-90d2-4b92c58695bc",
+  "targets": [
+    {
+      "target_id": "7648dcdb-c82e-4611-8608-06895697e0a9",
+      "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+      "node_name": "Tokyo 1",
+      "incarnation_at_snapshot": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+      "execution_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+      "online_at_snapshot": true,
+      "generation": "7",
+      "state": "succeeded",
+      "attempts": 1,
+      "current_job": {
+        "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+        "attempt": 1,
+        "state": "succeeded",
+        "stage": "report",
+        "error_code": null,
+        "recovery_required": false,
+        "started_at": "2026-10-28T14:06:00Z",
+        "finished_at": "2026-10-28T14:06:45Z"
+      },
+      "current_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+      "last_result_at": "2026-10-28T14:06:46Z",
+      "last_observed_at": "2026-10-28T14:07:00Z",
+      "retryable": false,
+      "needs_attention": false,
+      "unconfirmed": false,
+      "policy_generation": null,
+      "policy_refs": null
+    }
+  ],
+  "next_cursor": "b2Zmc2V0OjE"
+}
