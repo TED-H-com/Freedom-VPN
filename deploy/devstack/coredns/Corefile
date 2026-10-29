@@ -1,0 +1,9 @@
+example.invalid:53 {
+    file /etc/coredns/example.invalid.zone
+}
+
+.:53 {
+    template ANY ANY {
+        rcode NXDOMAIN
+    }
+}
