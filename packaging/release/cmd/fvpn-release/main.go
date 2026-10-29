@@ -150,7 +150,7 @@ func cmdVerify(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	ts, err := envelope.ParseTrustStoreJSON(trustRaw)
+	ts, err := envelope.ParseNodeTrustStoreJSON(trustRaw)
 	if err != nil {
 		return err
 	}

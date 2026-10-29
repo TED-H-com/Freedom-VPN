@@ -5,8 +5,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/netip"
 	"net/url"
@@ -69,6 +71,9 @@ const (
 	// DefaultMaxSourceRules is the default maximum number of parsed rules in a
 	// single list source.
 	DefaultMaxSourceRules = 500_000
+
+	// DefaultFetchTimeout is the default timeout for external source HTTPS fetches.
+	DefaultFetchTimeout = 15 * time.Second
 )
 
 // SourceQualityMetrics tracks parse and smoke-test quality metrics for a list
@@ -188,25 +193,49 @@ func (s ListSource) ValidateMetadata() error {
 }
 
 var blockedSSRFPrefixes = []netip.Prefix{
-	netip.MustParsePrefix("0.0.0.0/8"),
-	netip.MustParsePrefix("10.0.0.0/8"),
-	netip.MustParsePrefix("100.64.0.0/10"),
-	netip.MustParsePrefix("127.0.0.0/8"),
-	netip.MustParsePrefix("169.254.0.0/16"),
-	netip.MustParsePrefix("172.16.0.0/12"),
-	netip.MustParsePrefix("192.0.0.0/24"),
-	netip.MustParsePrefix("192.168.0.0/16"),
-	netip.MustParsePrefix("224.0.0.0/4"),
-	netip.MustParsePrefix("240.0.0.0/4"),
-	netip.MustParsePrefix("::/128"),
-	netip.MustParsePrefix("::1/128"),
-	netip.MustParsePrefix("fc00::/7"),
-	netip.MustParsePrefix("fe80::/10"),
-	netip.MustParsePrefix("ff00::/8"),
+	netip.MustParsePrefix("0.0.0.0/8"),       // Unspecified / current network
+	netip.MustParsePrefix("10.0.0.0/8"),      // RFC1918 private
+	netip.MustParsePrefix("100.64.0.0/10"),   // CGNAT / overlay
+	netip.MustParsePrefix("127.0.0.0/8"),     // Loopback
+	netip.MustParsePrefix("169.254.0.0/16"),  // Link-local / cloud metadata
+	netip.MustParsePrefix("172.16.0.0/12"),   // RFC1918 private
+	netip.MustParsePrefix("192.0.0.0/24"),    // IETF protocol assignments
+	netip.MustParsePrefix("192.0.2.0/24"),    // TEST-NET-1 documentation
+	netip.MustParsePrefix("192.168.0.0/16"),  // RFC1918 private
+	netip.MustParsePrefix("198.18.0.0/15"),   // Benchmarking
+	netip.MustParsePrefix("198.51.100.0/24"), // TEST-NET-2 documentation
+	netip.MustParsePrefix("203.0.113.0/24"),  // TEST-NET-3 documentation
+	netip.MustParsePrefix("224.0.0.0/4"),     // IPv4 multicast
+	netip.MustParsePrefix("240.0.0.0/4"),     // Reserved / broadcast
+	netip.MustParsePrefix("::/128"),          // IPv6 unspecified
+	netip.MustParsePrefix("::1/128"),         // IPv6 loopback
+	netip.MustParsePrefix("64:ff9b::/96"),    // NAT64
+	netip.MustParsePrefix("2001::/32"),       // Teredo
+	netip.MustParsePrefix("2001:db8::/32"),   // IPv6 documentation
+	netip.MustParsePrefix("2002::/16"),       // 6to4
+	netip.MustParsePrefix("fc00::/7"),        // IPv6 ULA
+	netip.MustParsePrefix("fe80::/10"),       // IPv6 link-local
+	netip.MustParsePrefix("ff00::/8"),        // IPv6 multicast
+}
+
+func isBlockedSSRFAddr(ip netip.Addr) (netip.Prefix, bool) {
+	ip = ip.Unmap()
+	if !ip.IsValid() {
+		return netip.Prefix{}, true
+	}
+	for _, pfx := range blockedSSRFPrefixes {
+		if pfx.Contains(ip) {
+			return pfx, true
+		}
+	}
+	if !ip.IsGlobalUnicast() || ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+		return netip.PrefixFrom(ip, ip.BitLen()), true
+	}
+	return netip.Prefix{}, false
 }
 
 // ValidateSourceURL ensures a feed URL is a fixed HTTPS URL and prevents SSRF
-// to internal, loopback, link-local, overlay, or cloud metadata addresses (§12.3, §16.2).
+// to internal, loopback, link-local, overlay, documentation, or cloud metadata addresses (§12.3, §16.2).
 func ValidateSourceURL(rawURL string) error {
 	if strings.TrimSpace(rawURL) == "" {
 		return &ValidationError{
@@ -252,15 +281,12 @@ func ValidateSourceURL(rawURL string) error {
 		}
 	}
 	if addr, err := netip.ParseAddr(host); err == nil {
-		addr = addr.Unmap()
-		for _, pfx := range blockedSSRFPrefixes {
-			if pfx.Contains(addr) {
-				return &ValidationError{
-					Code:    ErrCodeSourceInvalidURL,
-					Field:   "url",
-					Input:   rawURL,
-					Message: fmt.Sprintf("source URL host %q is in forbidden internal/metadata IP range %s", host, pfx),
-				}
+		if pfx, blocked := isBlockedSSRFAddr(addr); blocked {
+			return &ValidationError{
+				Code:    ErrCodeSourceInvalidURL,
+				Field:   "url",
+				Input:   rawURL,
+				Message: fmt.Sprintf("source URL host %q is in forbidden internal/metadata IP range %s", host, pfx),
 			}
 		}
 		return &ValidationError{
@@ -552,19 +578,170 @@ func ParseAdBlockDomainSubset(r io.Reader, opts ParseOptions) (ParseResult, erro
 	return ParseSourceList(r, SourceFormatAdBlock, opts)
 }
 
+// LookupNetIPFunc resolves hostnames to IP addresses during SSRF-safe dialing.
+type LookupNetIPFunc func(ctx context.Context, network, host string) ([]netip.Addr, error)
+
+// DialContextFunc establishes a network connection to a verified IP:port address.
+type DialContextFunc func(ctx context.Context, network, address string) (net.Conn, error)
+
+func makeSSRFDialContext(timeout time.Duration, lookupIP LookupNetIPFunc, dial DialContextFunc) DialContextFunc {
+	if timeout <= 0 {
+		timeout = DefaultFetchTimeout
+	}
+	if lookupIP == nil {
+		lookupIP = net.DefaultResolver.LookupNetIP
+	}
+	if dial == nil {
+		dial = (&net.Dialer{Timeout: timeout}).DialContext
+	}
+	return func(ctx context.Context, network, address string) (net.Conn, error) {
+		host, port, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, err
+		}
+		ips, err := lookupIP(ctx, "ip", host)
+		if err != nil || len(ips) == 0 {
+			return nil, &ValidationError{
+				Code:    ErrCodeSourceInvalidURL,
+				Field:   "url",
+				Input:   host,
+				Message: "source DNS lookup failed",
+				Cause:   err,
+			}
+		}
+		for _, ip := range ips {
+			if pfx, blocked := isBlockedSSRFAddr(ip); blocked {
+				return nil, &ValidationError{
+					Code:    ErrCodeSourceInvalidURL,
+					Field:   "url",
+					Input:   host,
+					Message: fmt.Sprintf("source DNS resolved %q to blocked nonpublic address %s (prefix %s)", host, ip.Unmap(), pfx),
+				}
+			}
+		}
+		return dial(ctx, network, net.JoinHostPort(ips[0].Unmap().String(), port))
+	}
+}
+
+func refuseSourceRedirect(req *http.Request, _ []*http.Request) error {
+	target := ""
+	if req != nil && req.URL != nil {
+		target = req.URL.String()
+	}
+	return &ValidationError{
+		Code:    ErrCodeSourceInvalidURL,
+		Field:   "url",
+		Input:   target,
+		Message: "source redirects are forbidden",
+	}
+}
+
+// NewSourceHTTPClient constructs a dedicated SSRF-safe HTTP client for fetching
+// external threat feeds (§12.3, §16.2), mirroring internal/releases.NewHTTPSFetcher:
+//   - never uses host environment proxy settings;
+//   - CheckRedirect refuses every HTTP redirect;
+//   - Transport.DialContext resolves via net.DefaultResolver.LookupNetIP (or lookupIP seam),
+//     rejects any address in blockedSSRFPrefixes (loopback, RFC1918, CGNAT 100.64/10,
+//     link-local, multicast, unspecified, ULA, documentation), and dials the verified IP.
+func NewSourceHTTPClient(timeout time.Duration, lookupIP LookupNetIPFunc, dial DialContextFunc) *http.Client {
+	if timeout <= 0 {
+		timeout = DefaultFetchTimeout
+	}
+	tr := &http.Transport{
+		TLSHandshakeTimeout:   timeout,
+		ResponseHeaderTimeout: timeout,
+		DisableKeepAlives:     true,
+		DialContext:           makeSSRFDialContext(timeout, lookupIP, dial),
+	}
+	return &http.Client{
+		Transport:     tr,
+		Timeout:       timeout,
+		CheckRedirect: refuseSourceRedirect,
+	}
+}
+
 // SourceRegistry manages registered threat and category feeds and guarantees
 // last-good retention when fetches or parses fail (§12.3, §12.5).
 type SourceRegistry struct {
-	mu      sync.RWMutex
-	sources map[string]ListSource
+	mu       sync.RWMutex
+	sources  map[string]ListSource
+	client   *http.Client
+	lookupIP LookupNetIPFunc
+	dial     DialContextFunc
 }
 
-// NewDefaultSourceRegistry returns a new SourceRegistry with no real external
-// feed enabled by default because commercial feed licensing is 待決策 (§12.3).
+// SourceStore is an alias for SourceRegistry.
+type SourceStore = SourceRegistry
+
+// NewDefaultSourceRegistry returns a new SourceRegistry with a dedicated SSRF-safe
+// HTTP client and no real external feed enabled by default because commercial feed
+// licensing is 待決策 (§12.3).
 func NewDefaultSourceRegistry() *SourceRegistry {
 	return &SourceRegistry{
 		sources: make(map[string]ListSource),
+		client:  NewSourceHTTPClient(DefaultFetchTimeout, nil, nil),
 	}
+}
+
+// NewDefaultSourceStore is an alias for NewDefaultSourceRegistry.
+func NewDefaultSourceStore() *SourceStore {
+	return NewDefaultSourceRegistry()
+}
+
+// SetLookupNetIP overrides the DNS resolver function used by the registry's
+// dedicated HTTP client (for deterministic unit testing without real DNS).
+func (sr *SourceRegistry) SetLookupNetIP(fn LookupNetIPFunc) {
+	sr.mu.Lock()
+	defer sr.mu.Unlock()
+	sr.lookupIP = fn
+	sr.client = NewSourceHTTPClient(DefaultFetchTimeout, sr.lookupIP, sr.dial)
+}
+
+// SetDialContext overrides the underlying network dialer used after IP verification
+// by the registry's dedicated HTTP client (for deterministic unit testing).
+func (sr *SourceRegistry) SetDialContext(fn DialContextFunc) {
+	sr.mu.Lock()
+	defer sr.mu.Unlock()
+	sr.dial = fn
+	sr.client = NewSourceHTTPClient(DefaultFetchTimeout, sr.lookupIP, sr.dial)
+}
+
+func (sr *SourceRegistry) httpClient(override *http.Client) *http.Client {
+	sr.mu.RLock()
+	lookupIP := sr.lookupIP
+	dial := sr.dial
+	dedicated := sr.client
+	sr.mu.RUnlock()
+
+	if override == nil {
+		if dedicated != nil {
+			return dedicated
+		}
+		return NewSourceHTTPClient(DefaultFetchTimeout, lookupIP, dial)
+	}
+
+	timeout := override.Timeout
+	if timeout <= 0 {
+		timeout = DefaultFetchTimeout
+	}
+	var tr *http.Transport
+	if baseTr, ok := override.Transport.(*http.Transport); ok && baseTr != nil {
+		tr = baseTr.Clone()
+	} else {
+		tr = &http.Transport{
+			TLSHandshakeTimeout:   timeout,
+			ResponseHeaderTimeout: timeout,
+		}
+	}
+	tr.Proxy = nil
+	tr.DisableKeepAlives = true
+	tr.DialContext = makeSSRFDialContext(timeout, lookupIP, dial)
+
+	c := *override
+	c.Timeout = timeout
+	c.Transport = tr
+	c.CheckRedirect = refuseSourceRedirect
+	return &c
 }
 
 // Register adds or updates a ListSource definition in the registry.
@@ -753,15 +930,17 @@ func (sr *SourceRegistry) FetchAndUpdate(
 	if err := ValidateSourceURL(src.URL); err != nil {
 		return err
 	}
-	if client == nil {
-		client = &http.Client{Timeout: 15 * time.Second}
-	}
+	httpCli := sr.httpClient(client)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, src.URL, nil)
 	if err != nil {
 		return fmt.Errorf("create request for source %q: %w", sourceID, err)
 	}
-	resp, err := client.Do(req)
+	resp, err := httpCli.Do(req)
 	if err != nil {
+		var ve *ValidationError
+		if errors.As(err, &ve) {
+			return ve
+		}
 		return fmt.Errorf("fetch source %q: %w", sourceID, err)
 	}
 	defer resp.Body.Close()

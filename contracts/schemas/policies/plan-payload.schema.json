@@ -1,0 +1,153 @@
+{
+  "$comment": "Derived from contracts/openapi.yaml component PlanPayload (§14.2). Candidate for promotion to contracts/schemas/.",
+  "$defs": {
+    "LocalizedText": {
+      "additionalProperties": false,
+      "description": "Display text in Traditional Chinese (`zh-TW`) and English (`en`).",
+      "properties": {
+        "en": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "zh-TW": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "zh-TW"
+      ],
+      "title": "LocalizedText",
+      "type": "object"
+    },
+    "PlanPrice": {
+      "additionalProperties": false,
+      "description": "TEST ONLY in v1 until pricing and payment provider decisions are made (§18.2).",
+      "properties": {
+        "amount_minor": {
+          "description": "Integer minor units (cents or TWD integer units).",
+          "format": "int64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "billing_interval": {
+          "enum": [
+            "month",
+            "year"
+          ],
+          "type": "string"
+        },
+        "currency": {
+          "description": "ISO 4217 three-letter code.",
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        },
+        "provider": {
+          "description": "Opaque payment provider identifier (`TEST ONLY` until decided).",
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "provider_price_ref": {
+          "description": "External price/plan identifier at the payment provider.",
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount_minor",
+        "currency",
+        "billing_interval",
+        "provider",
+        "provider_price_ref"
+      ],
+      "title": "PlanPrice",
+      "type": "object"
+    },
+    "RatePair": {
+      "additionalProperties": false,
+      "properties": {
+        "down_bps": {
+          "description": "Bits per second, Internet to member.",
+          "format": "int64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "up_bps": {
+          "description": "Bits per second, member to Internet.",
+          "format": "int64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "down_bps",
+        "up_bps"
+      ],
+      "title": "RatePair",
+      "type": "object"
+    }
+  },
+  "$id": "urn:fvpn:contracts:schema:plan-payload:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Subscription plan revision payload (§14.2, §15.2).",
+  "properties": {
+    "device_limit": {
+      "description": "Default 3 (§7.4).",
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "display_name": {
+      "$ref": "#/$defs/LocalizedText"
+    },
+    "dns_profile_revision_id": {
+      "description": "Active or specific `dns_profile` policy revision for this plan.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "exit_group_ids": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "fair_use_revision_id": {
+      "description": "Active or specific `fair_use` policy revision for this plan.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "price": {
+      "$ref": "#/$defs/PlanPrice"
+    },
+    "rate_limit": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RatePair"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "display_name",
+    "device_limit",
+    "exit_group_ids",
+    "price",
+    "rate_limit",
+    "fair_use_revision_id",
+    "dns_profile_revision_id"
+  ],
+  "title": "PlanPayload",
+  "type": "object"
+}

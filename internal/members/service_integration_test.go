@@ -5,9 +5,12 @@ package members
 import (
 	"context"
 	"errors"
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -130,6 +133,21 @@ func TestAT04_FiniteFutureGrantActivationRevokeAndAudit(t *testing.T) {
 	if err != nil || !active.Entitlement.Allows(now) {
 		t.Fatal(active, err)
 	}
+	op, err := (operations.Store{Pool: pool}).Get(ctx, *change.OperationID, auth.Principal{Role: auth.Admin, ID: actor.ID})
+	if err != nil || op.Kind != api.OperationKindMemberGrant || op.Resource.Type != api.ResourceTypeEntitlementGrant || op.Resource.Id != change.ResourceID {
+		t.Fatal(op, err)
+	}
+	flag := false
+	for range 2 {
+		c.Key = uuid.New()
+		if _, err = s.Patch(ctx, c, member, &active.ResourceVersion, api.MemberPatch{AdminSuspended: &flag}); err != nil {
+			t.Fatal(err)
+		}
+		active, err = s.Get(ctx, actor, member)
+		if err != nil || active.Status != "active" || active.Entitlement.State != "active" {
+			t.Fatal(active, err)
+		}
+	}
 	var desired decstr.U64
 	if err = pool.QueryRow(ctx, `SELECT desired_generation::text FROM operations WHERE id=$1`, change.OperationID).Scan(&desired); err != nil || desired != active.Entitlement.Revision {
 		t.Fatal(desired, err)
@@ -146,6 +164,18 @@ func TestAT04_FiniteFutureGrantActivationRevokeAndAudit(t *testing.T) {
 	c.Key = uuid.New()
 	if _, err = s.Grant(ctx, c, member, request); !errors.Is(err, entitlement.ErrInvalid) {
 		t.Fatal("far future grant accepted", err)
+	}
+	auditStore := audit.Store{Pool: pool}
+	page, err := auditStore.List(ctx, api.ListAuditEventsParams{})
+	if err != nil || auditStore.AnomalyCount() != 0 {
+		t.Fatal(page, err)
+	}
+	for _, event := range page.Items {
+		if event.Action == "member.grant" || event.Action == "grant.revoke" {
+			if event.Resource.Type != api.ResourceTypeEntitlementGrant || event.Resource.Id != change.ResourceID {
+				t.Fatal(event)
+			}
+		}
 	}
 	var n int
 	if err = pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action IN ('member.grant','grant.revoke')`).Scan(&n); err != nil || n != 2 {

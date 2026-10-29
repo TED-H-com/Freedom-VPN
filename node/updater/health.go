@@ -2,6 +2,9 @@ package updater
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"os"
 	"time"
 
@@ -16,9 +19,10 @@ const (
 )
 
 // NodeChecks is the stock health adapter used when the agent has not
-// supplied one. Process and persistent-data checks compare tree hashes.
-// Isolation, DNS and the tunnel probe fail closed: a config file cannot
-// mark them passed (§13.9).
+// supplied one. Process checks compare the release tree. Persistent data
+// checks the identity directory and the immutable pointers and state-schema
+// record, not the mutable state directory (D-034c). Isolation, DNS and the
+// tunnel probe fail closed: a config file cannot mark them passed (§13.9).
 type NodeChecks struct{}
 
 func (NodeChecks) Processes(_ context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
@@ -33,15 +37,20 @@ func (NodeChecks) Processes(_ context.Context, v ReleaseView) (api.HealthCheckSt
 }
 
 func (NodeChecks) PersistentData(_ context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
-	if v.ExpectedIdentity == "" || v.ExpectedState == "" {
+	if v.ExpectedIdentity == "" {
 		return api.HealthCheckStatusFailed, nil
 	}
 	id, err := fsutil.TreeHash(v.IdentityDir)
 	if err != nil || id != v.ExpectedIdentity {
 		return api.HealthCheckStatusFailed, nil
 	}
-	st, err := fsutil.TreeHash(v.StateDir)
-	if err != nil || st != v.ExpectedState {
+	// Callers that do not supply the immutable record are not asking for the
+	// pointers check. The mutable state directory is never hashed (D-034c).
+	if v.ImmutableRecord == "" {
+		return api.HealthCheckStatusPassed, nil
+	}
+	b, err := os.ReadFile(v.ImmutableRecord)
+	if err != nil || v.ExpectedState == "" || digestBytes(b) != v.ExpectedState {
 		return api.HealthCheckStatusFailed, nil
 	}
 	return api.HealthCheckStatusPassed, nil
@@ -90,7 +99,7 @@ func (e *Engine) runHealth(ctx context.Context, v ReleaseView) (api.UpdateHealth
 	return h, healthPassed(h)
 }
 
-func (e *Engine) evalLastGood(ctx context.Context, id string, c claimed) RollbackInput {
+func (e *Engine) evalLastGood(ctx context.Context, id string, c claimed, candidate *api.ReleaseManifest) RollbackInput {
 	var in RollbackInput
 	if id == "" {
 		return in
@@ -108,28 +117,70 @@ func (e *Engine) evalLastGood(ctx context.Context, id string, c claimed) Rollbac
 	if perr == nil {
 		in.InServingSet = containsID(c.Serving, uid)
 		in.Revoked = containsID(c.Revoked, uid)
+		// A non-empty allow list is a fail-closed intersection with the
+		// serving set (D-034e). An empty list adds no extra restriction.
+		if candidate != nil && len(candidate.Rollback.AllowedReleaseIds) > 0 && !containsID(candidate.Rollback.AllowedReleaseIds, uid) {
+			in.InServingSet = false
+		}
 	}
 	cur, serr := e.Journal.StateSchema(ctx)
 	// Schema 0 means no migration has been recorded. A migrated schema is
-	// readable when it still equals last_good, or when this transaction
-	// was allowed to migrate because the manifest promised readability.
+	// readable only when it still equals last_good. The candidate manifest
+	// must not override that.
 	in.SchemaReadable = serr == nil && (cur == 0 || cur == rel.StateSchemaTo)
 	return in
 }
 
-func (e *Engine) snapshotPersistent() error {
+// snapshotIdentity records the identity tree hash. It is taken after
+// migration and before services start, and is not refreshed on rollback.
+func (e *Engine) snapshotIdentity() error {
 	idHash, err := fsutil.TreeHash(e.Layout.Identity)
 	if err != nil {
 		return err
 	}
-	stHash, err := fsutil.TreeHash(e.Layout.State)
+	return fsutil.WriteFileAtomic(e.Layout.Journal+"/identity.snap", []byte(idHash), 0o600)
+}
+
+// snapshotPointers records the pointers and the state-schema marker. The
+// mutable state directory is not part of the record (D-034c).
+func (e *Engine) snapshotPointers(ctx context.Context) error {
+	body, err := e.immutableBody(ctx)
 	if err != nil {
 		return err
 	}
-	if err := fsutil.WriteFileAtomic(e.Layout.Journal+"/identity.snap", []byte(idHash), 0o600); err != nil {
+	if err := fsutil.WriteFileAtomic(e.Layout.Journal+"/immutable.record", body, 0o600); err != nil {
 		return err
 	}
-	return fsutil.WriteFileAtomic(e.Layout.Journal+"/state.snap", []byte(stHash), 0o600)
+	return fsutil.WriteFileAtomic(e.Layout.Journal+"/immutable.snap", []byte(digestBytes(body)), 0o600)
+}
+
+func (e *Engine) immutableBody(ctx context.Context) ([]byte, error) {
+	p, err := e.Journal.Pointers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	schema, err := e.Journal.StateSchema(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(fmt.Sprintf("current=%s\nlast_good=%s\nschema=%d\n", p.CurrentRelease, p.LastGood, schema)), nil
+}
+
+func (e *Engine) writeImmutableLive(ctx context.Context) (string, error) {
+	body, err := e.immutableBody(ctx)
+	if err != nil {
+		return "", err
+	}
+	path := e.Layout.Journal + "/immutable.live"
+	if err := fsutil.WriteFileAtomic(path, body, 0o600); err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
+func digestBytes(b []byte) string {
+	sum := sha256.Sum256(b)
+	return hex.EncodeToString(sum[:])
 }
 
 func (e *Engine) readSnap(name string) string {
@@ -141,6 +192,7 @@ func (e *Engine) readSnap(name string) string {
 }
 
 func (e *Engine) viewFor(ctx context.Context, releaseID string, manifest *api.ReleaseManifest) ReleaseView {
+	live, _ := e.writeImmutableLive(ctx)
 	return ReleaseView{
 		ReleaseID:        releaseID,
 		Dir:              e.Layout.releaseDir(releaseID),
@@ -148,7 +200,8 @@ func (e *Engine) viewFor(ctx context.Context, releaseID string, manifest *api.Re
 		IdentityDir:      e.Layout.Identity,
 		StateDir:         e.Layout.State,
 		ExpectedIdentity: e.readSnap("identity.snap"),
-		ExpectedState:    e.readSnap("state.snap"),
+		ExpectedState:    e.readSnap("immutable.snap"),
+		ImmutableRecord:  live,
 		ExpectedTree:     e.treeOf(ctx, releaseID),
 	}
 }

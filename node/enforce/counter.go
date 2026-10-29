@@ -73,7 +73,9 @@ func diagnosticNamespace(name string) bool {
 }
 
 // DetectResets compares absolute readings. A drop or a missing counter is a
-// meter-epoch change, never a negative delta (§10.5, §10.7).
+// meter-epoch change. A counter that is zero in both snapshots is idle: a
+// delete and recreate between two zero readings lost no bytes a value
+// comparison can see (§10.5, §10.7, D-041).
 func DetectResets(previous, current map[string]CounterValue) []Reset {
 	if len(previous) == 0 {
 		return nil
@@ -96,6 +98,24 @@ func DetectResets(previous, current map[string]CounterValue) []Reset {
 				Detail: fmt.Sprintf("counter went backwards (packets %d -> %d, bytes %d -> %d)", prev.Packets, cur.Packets, prev.Bytes, cur.Bytes),
 			})
 		}
+	}
+	sortResets(out)
+	return out
+}
+
+// externalMeterReset reports every previous counter when the table, the
+// forward chain, or the generation marker was cleared outside the agent.
+// Named counters survive `nft flush` and can keep their old values, so a
+// value comparison alone misses the epoch change (§10.7).
+func externalMeterReset(previous, current map[string]CounterValue) []Reset {
+	out := make([]Reset, 0, len(previous))
+	for name, prev := range previous {
+		cur := current[name]
+		out = append(out, Reset{
+			Name: name, Previous: prev.Bytes, Current: cur.Bytes,
+			Reason: ReasonMeterEpoch,
+			Detail: "ruleset was reset outside the agent (table, forward chain, or generation)",
+		})
 	}
 	sortResets(out)
 	return out

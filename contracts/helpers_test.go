@@ -3,8 +3,8 @@ package contracts
 import (
 	"context"
 	"encoding/json"
+	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -75,35 +75,37 @@ func jsonSchemas(t *testing.T) map[string]*jsonschema.Schema {
 		c := jsonschema.NewCompiler()
 		c.DefaultDraft(jsonschema.Draft2020)
 		c.AssertFormat()
-		entries, err := os.ReadDir("schemas")
-		if err != nil {
-			jsErr = err
+		ids := map[string]string{}
+		jsErr = fs.WalkDir(Schemas(), ".", func(path string, e fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if e.IsDir() {
+				return nil
+			}
+			f, err := Schemas().Open(path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			doc, err := jsonschema.UnmarshalJSON(f)
+			if err != nil {
+				return err
+			}
+			id := doc.(map[string]any)["$id"].(string)
+			ids[path] = id
+			return c.AddResource(id, doc)
+		})
+		if jsErr != nil {
 			return
 		}
-		for _, e := range entries {
-			f, err := os.Open(filepath.Join("schemas", e.Name()))
+		for file, id := range ids {
+			s, err := c.Compile(id)
 			if err != nil {
 				jsErr = err
 				return
 			}
-			doc, err := jsonschema.UnmarshalJSON(f)
-			f.Close()
-			if err != nil {
-				jsErr = err
-				return
-			}
-			if err := c.AddResource(SchemaID(e.Name()), doc); err != nil {
-				jsErr = err
-				return
-			}
-		}
-		for _, e := range entries {
-			s, err := c.Compile(SchemaID(e.Name()))
-			if err != nil {
-				jsErr = err
-				return
-			}
-			jsSchemas[e.Name()] = s
+			jsSchemas[file] = s
 		}
 	})
 	if jsErr != nil {

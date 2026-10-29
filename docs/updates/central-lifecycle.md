@@ -194,8 +194,8 @@ unknown journal/job IDs with durable audit evidence before resuming automatic wo
   applying/checking phase exceeds `Config.StuckWindow`. It never guesses failure
   or success for stuck jobs.
 - `Evidence(targetID)` exposes needs_attention, unconfirmed, last_result_at and
-  last_observed_at. `UpdateTarget` already has both timestamps; the first two
-  booleans need a contract-owner addition before HTTP/UI exposure.
+  last_observed_at. `UpdateTarget` already has both timestamps; both booleans are now exposed by the current contract and share one evidence
+  predicate with batch mapping.
 - Configure `AuthorizationTTL`, `OnlineWindow`, `StuckWindow` and fetch timeout
   explicitly. No production value is invented for §21 pending measurements.
 - Transactions touching both areas should lock fleet_config before node rows.
@@ -227,3 +227,9 @@ deleted, truncated or change identity, so these references cannot become
 orphaned. This preserves the base truncate guard's SQLSTATE 23514; an inbound FK
 would cause PostgreSQL's earlier SQLSTATE 0A000 check to mask that guard. No base
 FK, NOT NULL, state transition or terminal evidence restriction is removed.
+
+
+HTTP and worker composition, including the receipt-transaction framework gaps,
+is documented in [node wiring](../nodes/WIRING.md). The response mapping and
+`Evidence` now share attention/confirmation predicates; `NodeVersionView` uses
+the same confirmation predicate. Observations preserve central receipt time.

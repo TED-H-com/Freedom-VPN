@@ -40,6 +40,13 @@ type RuleView struct {
 	SetsMark bool
 	Offload  bool
 	Prios    []uint32
+	// Parsed match expressions. Verification uses these, not the raw JSON
+	// text, so a comment cannot impersonate an interface or a set (§8.2).
+	IIF           []string
+	OIF           []string
+	NegSets       []string
+	CTEstablished bool
+	SNAT          string
 }
 
 // ParseRuleset reads `nft -j list table inet fvpn`. Numbers above 2^53 stay
@@ -173,11 +180,12 @@ func ParseState(raw []byte) (State, error) {
 		return State{}, err
 	}
 	st := State{
-		Table:    true,
-		Chains:   map[string]bool{},
-		Sets:     map[string]bool{},
-		Counters: rs.Counters,
-		Classes:  rs.Classes,
+		Table:      true,
+		Chains:     map[string]bool{},
+		Sets:       map[string]bool{},
+		Counters:   rs.Counters,
+		Classes:    rs.Classes,
+		Generation: forwardGeneration(rs.Chains["forward"].Rules),
 	}
 	for name, ch := range rs.Chains {
 		if ch.Hook != "" || ch.Type != "" || len(ch.Rules) > 0 {
@@ -228,6 +236,43 @@ func classAssignments(comment string) map[uuid.UUID]uint16 {
 	return out
 }
 
+func forwardGeneration(rules []RuleView) uint64 {
+	var max uint64
+	seen := false
+	for _, rule := range rules {
+		n, ok := parseGeneration(rule.Comment)
+		if !ok {
+			continue
+		}
+		if !seen || n > max {
+			max = n
+			seen = true
+		}
+	}
+	return max
+}
+
+func parseGeneration(comment string) (uint64, bool) {
+	const key = "fvpn_generation="
+	i := strings.Index(comment, key)
+	if i < 0 {
+		return 0, false
+	}
+	rest := comment[i+len(key):]
+	j := 0
+	for j < len(rest) && rest[j] >= '0' && rest[j] <= '9' {
+		j++
+	}
+	if j == 0 {
+		return 0, false
+	}
+	n, err := strconv.ParseUint(rest[:j], 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	return n, true
+}
+
 func hasKey(obj map[string]json.RawMessage, key string) bool {
 	_, ok := obj[key]
 	return ok
@@ -276,6 +321,12 @@ func walkExpr(v any, rv *RuleView) {
 		if m, ok := t["mangle"]; ok {
 			noteMangle(m, rv)
 		}
+		if match, ok := t["match"]; ok {
+			noteMatch(match, rv)
+		}
+		if snat, ok := t["snat"]; ok {
+			noteSNAT(snat, rv)
+		}
 		if meta, ok := t["meta"].(map[string]any); ok {
 			noteMeta(meta, t, rv)
 		}
@@ -323,6 +374,94 @@ func noteMangle(v any, rv *RuleView) {
 			rv.Prios = append(rv.Prios, uint32(n))
 		}
 	}
+}
+
+func noteMatch(v any, rv *RuleView) {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return
+	}
+	op, _ := m["op"].(string)
+	left, _ := m["left"].(map[string]any)
+	right := m["right"]
+	if meta, ok := left["meta"].(map[string]any); ok {
+		key, _ := meta["key"].(string)
+		if name, ok := right.(string); ok && name != "" {
+			switch key {
+			case "iifname":
+				rv.IIF = append(rv.IIF, name)
+			case "oifname":
+				rv.OIF = append(rv.OIF, name)
+			}
+		}
+	}
+	if payload, ok := left["payload"].(map[string]any); ok {
+		field, _ := payload["field"].(string)
+		if (field == "saddr" || field == "daddr") && op == "!=" {
+			if name, ok := matchSet(right); ok {
+				rv.NegSets = append(rv.NegSets, name)
+			}
+		}
+	}
+	if ct, ok := left["ct"].(map[string]any); ok && ct["key"] == "state" && mentionsEstablished(right) {
+		rv.CTEstablished = true
+	}
+}
+
+func noteSNAT(v any, rv *RuleView) {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return
+	}
+	if addr, ok := m["addr"].(string); ok && addr != "" {
+		rv.SNAT = addr
+	}
+}
+
+func matchSet(right any) (string, bool) {
+	switch t := right.(type) {
+	case string:
+		if strings.HasPrefix(t, "@") && len(t) > 1 {
+			return t[1:], true
+		}
+	case map[string]any:
+		switch set := t["set"].(type) {
+		case string:
+			if set != "" {
+				return strings.TrimPrefix(set, "@"), true
+			}
+		case []any:
+			for _, item := range set {
+				if name, ok := matchSet(item); ok {
+					return name, true
+				}
+				if s, ok := item.(string); ok && s != "" && !strings.Contains(s, ".") {
+					return strings.TrimPrefix(s, "@"), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func mentionsEstablished(v any) bool {
+	switch t := v.(type) {
+	case string:
+		return t == "established"
+	case []any:
+		for _, child := range t {
+			if mentionsEstablished(child) {
+				return true
+			}
+		}
+	case map[string]any:
+		for _, child := range t {
+			if mentionsEstablished(child) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func noteMeta(meta map[string]any, parent map[string]any, rv *RuleView) {

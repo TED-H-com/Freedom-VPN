@@ -189,8 +189,12 @@ func (h Handlers) GetMemberSelf(ctx context.Context, _ gen.GetMemberSelfRequestO
 	out := api.MemberSelf{MemberId: m.ID, DisplayName: nullableText(m.DisplayName), Email: email(m.Email), Entitlement: e, Subscription: subscription(m), FairUseResetAt: presence.NewNullNullable[time.Time](), NextActions: []api.NextAction{}}
 	out.Limits.AuthorizedDeviceCount = m.AuthorizedDevices
 	out.Limits.DeviceLimit = e.DeviceLimit
-	if m.Entitlement != nil && m.Entitlement.Allows(s.Members.Entitlements.Time()) {
-		err = h.Pool.QueryRow(ctx, `SELECT count(DISTINCT e.id) FROM exits e JOIN exit_groups eg ON eg.exit_id=e.id JOIN nodes n ON n.id=e.node_id WHERE eg.group_id=ANY($1) AND e.publication_intent='published' AND n.lifecycle_state='registered'`, m.Entitlement.ExitGroups).Scan(&out.Limits.ExitCount)
+	groups, err := entitlement.ServingExitGroups(ctx, h.Pool, m.ID, s.Members.Entitlements.Time())
+	if err != nil {
+		return nil, err
+	}
+	if m.Entitlement != nil && len(groups) > 0 {
+		err = h.Pool.QueryRow(ctx, `SELECT count(DISTINCT e.id) FROM exits e JOIN exit_groups eg ON eg.exit_id=e.id JOIN nodes n ON n.id=e.node_id WHERE eg.group_id=ANY($1) AND e.publication_intent='published' AND n.lifecycle_state='registered'`, groups).Scan(&out.Limits.ExitCount)
 		if err != nil {
 			return nil, err
 		}

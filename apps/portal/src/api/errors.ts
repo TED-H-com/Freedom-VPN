@@ -99,6 +99,10 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
     'zh-TW': '系統發生內部錯誤，請附上請求追蹤碼 (request_id) 聯繫管理員。',
     en: 'An internal error occurred. Please contact support with the request_id.',
   },
+  NOT_IMPLEMENTED: {
+    'zh-TW': '此操作尚未實作。',
+    en: 'This operation is not implemented.',
+  },
   DEPENDENCY_UNAVAILABLE: {
     'zh-TW': '外部相依服務暫時無法連線，系統將稍後重試。',
     en: 'An external dependency is temporarily unavailable. Please retry shortly.',
@@ -134,6 +138,10 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
   SIZE_MISMATCH: {
     'zh-TW': '套件檔案大小與 Manifest 宣告不符。',
     en: 'Artifact byte size does not match the manifest declaration.',
+  },
+  ARTIFACT_INVALID: {
+    'zh-TW': '更新套件格式或內容不安全，已拒絕安裝。',
+    en: 'The release archive is malformed or unsafe; installation was refused.',
   },
   DISK_SPACE_LOW: {
     'zh-TW': '節點磁碟可用空間不足，無法下載並保留最後良好版本 (last_good)。',
@@ -210,6 +218,14 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
   METER_PATH_INVALID: {
     'zh-TW': '節點計量鏈路異常，已依 Fail-Closed 停止會員轉送。',
     en: 'Node metering path is invalid; member forwarding disabled (fail-closed).',
+  },
+  ISOLATION_BASELINE_MISSING: {
+    'zh-TW': '節點缺少隔離基線，已停止會員轉送。',
+    en: 'The isolation baseline is missing; member forwarding is disabled.',
+  },
+  METER_EPOCH_CHANGE: {
+    'zh-TW': '節點計量世代已變更，用量事件序號持續遞增。',
+    en: 'The meter epoch changed; usage event sequencing continues.',
   },
   DEVICE_LIMIT_REACHED: {
     'zh-TW': '已達方案允許的裝置上限（預設 3 台），請先撤銷舊裝置後再重試。',

@@ -402,7 +402,7 @@ func TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets(t *testing.T) {
 	expectCode(t, err, apierr.Unauthenticated)
 	_, _, _, otherCert := enroll(t, f)
 	_, err = f.s.TakeBootstrap(ctx, otherCert)
-	expectCode(t, err, apierr.StateConflict)
+	expectCode(t, err, apierr.BootstrapNotReady)
 	scanSecrets(t, f, []string{nullableValue(c.Token), secret})
 	var wg sync.WaitGroup
 	results := make(chan error, 2)
@@ -418,7 +418,7 @@ func TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets(t *testing.T) {
 		if e == nil {
 			winners++
 		} else {
-			expectCode(t, e, apierr.StateConflict)
+			expectCode(t, e, apierr.BootstrapConsumed)
 		}
 	}
 	if winners != 1 {
@@ -438,7 +438,7 @@ func TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = f.s.TakeBootstrap(ctx, cert)
-	expectCode(t, err, apierr.StateConflict)
+	expectCode(t, err, apierr.BootstrapConsumed)
 	err = f.s.StoreBootstrap(ctx, id, out.OperationID, "different-test-key", secret, expiry)
 	expectCode(t, err, apierr.StateConflict)
 	scanSecrets(t, f, []string{nullableValue(c.Token), secret})
@@ -460,7 +460,7 @@ func TestENR02_BootstrapExpiryAndConflictFreeze(t *testing.T) {
 	}
 	exec(t, f, `INSERT INTO node_bootstrap_secrets(incarnation_id,operation_id,external_key_id,encryption_key_id,ciphertext,expires_at) VALUES($1,$2,'external-expiry-test',$3,$4,clock_timestamp()-interval '1 second')`, id.IncarnationID, out.OperationID, sealed.KeyID, sealed.Ciphertext)
 	_, err = f.s.TakeBootstrap(ctx, cert)
-	expectCode(t, err, apierr.StateConflict)
+	expectCode(t, err, apierr.BootstrapExpired)
 	var erased bool
 	if err = f.pool.QueryRow(ctx, `SELECT ciphertext IS NULL FROM node_bootstrap_secrets WHERE incarnation_id=$1`, id.IncarnationID).Scan(&erased); err != nil || !erased {
 		t.Fatal("expired ciphertext retained", err)

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 )
@@ -56,6 +58,9 @@ type Engine struct {
 	AllowLoopback bool
 	Faults        Faults
 	Log           *slog.Logger
+	// lockHeld is true while this process already owns the update lock.
+	// Flush and Retain run from inside Run and must not take it again.
+	lockHeld bool
 }
 
 // Close closes the journal when this engine opened it.
@@ -73,29 +78,51 @@ func (e *Engine) Run(ctx context.Context) error {
 	if err := e.open(ctx); err != nil {
 		return err
 	}
-	blocked := false
-	if err := e.Recover(ctx); err != nil {
-		if !errors.Is(err, ErrMembersBlocked) {
-			return err
-		}
-		blocked = true
-	}
-	for i := 0; i < 8; i++ {
-		again, err := e.runOnce(ctx)
-		if err != nil {
-			return err
-		}
-		if !again {
-			if blocked {
-				if on, _ := e.Journal.BlocksForwarding(ctx); on {
-					return ErrMembersBlocked
-				}
+	return e.withLock(ctx, func() error {
+		blocked := false
+		if err := e.Recover(ctx); err != nil {
+			if !errors.Is(err, ErrMembersBlocked) {
+				return err
 			}
-			return nil
+			blocked = true
 		}
-		blocked = false
+		for i := 0; i < 8; i++ {
+			again, err := e.runOnce(ctx)
+			if err != nil {
+				return err
+			}
+			if !again {
+				if blocked {
+					if on, _ := e.Journal.BlocksForwarding(ctx); on {
+						return ErrMembersBlocked
+					}
+				}
+				return nil
+			}
+			blocked = false
+		}
+		return permanent(apierr.StaleGeneration, "too many superseded generations")
+	})
+}
+
+// withLock acquires the node update lock before any journaled update work
+// other than opening the database. A caller that already holds it, such as
+// Flush during seal, runs fn directly (D-034d).
+func (e *Engine) withLock(ctx context.Context, fn func() error) error {
+	if e.lockHeld {
+		return fn()
 	}
-	return permanent(apierr.StaleGeneration, "too many superseded generations")
+	lk, err := nodelock.Acquire(ctx, e.Layout.Lock, 5, 20*time.Millisecond)
+	if err != nil {
+		if errors.Is(err, nodelock.ErrBusy) {
+			return transient(apierr.UpdateBusy, "lock")
+		}
+		return err
+	}
+	defer lk.Release()
+	e.lockHeld = true
+	defer func() { e.lockHeld = false }()
+	return fn()
 }
 
 // Recover finishes an applying or checking transaction before member
@@ -104,6 +131,10 @@ func (e *Engine) Recover(ctx context.Context) error {
 	if err := e.open(ctx); err != nil {
 		return err
 	}
+	return e.withLock(ctx, func() error { return e.recoverLocked(ctx) })
+}
+
+func (e *Engine) recoverLocked(ctx context.Context) error {
 	txn, err := e.Journal.ActiveTxn(ctx)
 	if err == nil {
 		if err := e.continueTxn(ctx, txn); err != nil {
@@ -237,17 +268,6 @@ func (e *Engine) runOnce(ctx context.Context) (bool, error) {
 	if err := e.catchNewer(ctx, c); err != nil {
 		return e.afterPrepareErr(ctx, stored, c, err, api.UpdateStagePrepare)
 	}
-	lk, err := nodelock.Acquire(ctx, e.Layout.Lock, 5, 20*time.Millisecond)
-	if err != nil {
-		if errors.Is(err, nodelock.ErrBusy) {
-			return false, transient(apierr.UpdateBusy, "lock")
-		}
-		return false, err
-	}
-	defer lk.Release()
-	if err := e.catchNewer(ctx, c); err != nil {
-		return e.afterPrepareErr(ctx, stored, c, err, api.UpdateStagePrepare)
-	}
 	if err := e.setPhase(ctx, stored, updatejournal.JobApplying); err != nil {
 		return false, err
 	}
@@ -339,6 +359,16 @@ func (e *Engine) maybeAlreadyCurrent(ctx context.Context, c claimed, job updatej
 	if p.CurrentRelease != c.Intent.ReleaseId.String() {
 		return false, nil
 	}
+	rec, err := e.Journal.GateRecord(ctx)
+	if err != nil {
+		return false, err
+	}
+	blocked, _ := e.Journal.BlocksForwarding(ctx)
+	// Same release id is not "already current" when the pointers disagree,
+	// forwarding is held, or the last terminal outcome failed (D-034b).
+	if p.CurrentRelease == "" || p.CurrentRelease != p.LastGood || blocked || terminalBlocksAlready(rec.TerminalOutcome) {
+		return false, nil
+	}
 	if link, _ := e.Layout.currentID(); link != "" && link != p.CurrentRelease {
 		return false, nil
 	}
@@ -355,6 +385,9 @@ func (e *Engine) maybeAlreadyCurrent(ctx context.Context, c claimed, job updatej
 		if op := asOp(err); op != nil {
 			code = op.Code
 		}
+		if berr := e.noteBlocked(ctx, c, updatejournal.OutcomeFailed); berr != nil {
+			return true, berr
+		}
 		return e.failRecorded(ctx, job, c, code, api.UpdateStagePreflight, err)
 	}
 	schema, _ := e.Journal.StateSchema(ctx)
@@ -363,14 +396,20 @@ func (e *Engine) maybeAlreadyCurrent(ctx context.Context, c claimed, job updatej
 		if op := asOp(err); op != nil {
 			code = op.Code
 		}
+		if berr := e.noteBlocked(ctx, c, updatejournal.OutcomeFailed); berr != nil {
+			return true, berr
+		}
 		return e.failRecorded(ctx, job, c, code, api.UpdateStagePreflight, err)
 	}
 	if !containsID(c.Serving, c.Intent.ReleaseId) {
 		// The release is already current, but it is not allowed to serve.
 		// Record the failure and return it. Do not restart services (§13.9).
+		if berr := e.noteBlocked(ctx, c, updatejournal.OutcomeFailed); berr != nil {
+			return true, berr
+		}
 		return e.failRecorded(ctx, job, c, apierr.MinimumVersionViolation, api.UpdateStagePreflight, nil)
 	}
-	enabled, err := e.enforce(ctx, p.CurrentRelease, c)
+	enabled, err := e.enforce(ctx, p.CurrentRelease, c, updatejournal.OutcomeAlreadyCurrent)
 	if err != nil {
 		return true, err
 	}
@@ -388,10 +427,38 @@ func (e *Engine) maybeAlreadyCurrent(ctx context.Context, c claimed, job updatej
 	return true, nil
 }
 
+func terminalBlocksAlready(outcome string) bool {
+	switch outcome {
+	case updatejournal.OutcomeFailed, updatejournal.OutcomeRolledBack, updatejournal.OutcomeRecoveryRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+func (e *Engine) noteBlocked(ctx context.Context, c claimed, outcome string) error {
+	if e.Journal != nil {
+		if err := e.Journal.SetGate(ctx, updatejournal.GateRecord{
+			PublicationIntent: string(c.Intent.PublicationIntent),
+			ForwardingBlocked: true,
+			TerminalOutcome:   outcome,
+		}); err != nil {
+			return err
+		}
+	}
+	if e.Gate == nil {
+		return nil
+	}
+	if err := e.Gate.Block(ctx); err != nil {
+		return wrapCode(apierr.UpdateBusy, err, true)
+	}
+	return nil
+}
+
 func (e *Engine) fetchManifest(ctx context.Context, c claimed) ([]byte, api.ReleaseManifest, error) {
 	dest := filepath.Join(e.Layout.Staging, "manifest-"+strings.ToLower(c.Intent.ManifestSha256)+".json")
 	poll := func() error { return e.catchNewer(ctx, c) }
-	if err := e.download(ctx, c.Intent.ManifestUrl, dest, strings.ToLower(c.Intent.ManifestSha256), hashCanonical, 0, poll); err != nil {
+	if err := e.download(ctx, c.Intent.ManifestUrl, dest, strings.ToLower(c.Intent.ManifestSha256), hashCanonical, 0, canonjson.MaxBytes, poll); err != nil {
 		return nil, api.ReleaseManifest{}, err
 	}
 	b, err := os.ReadFile(dest)
@@ -433,13 +500,16 @@ func (e *Engine) verifyRelease(ctx context.Context, c claimed, m api.ReleaseMani
 	if err := e.ensureSpace(e.Layout.Releases, need); err != nil {
 		return art, err
 	}
+	if err := e.ensureSpace(e.Layout.Staging, art.SizeBytes.Uint64()); err != nil {
+		return art, err
+	}
 	return art, nil
 }
 
 func (e *Engine) fetchArtifact(ctx context.Context, c claimed, art api.ManifestArtifact) (string, error) {
 	dest := filepath.Join(e.Layout.Staging, art.Sha256+".tar.zst")
 	poll := func() error { return e.catchNewer(ctx, c) }
-	if err := e.download(ctx, art.Url, dest, art.Sha256, hashRaw, int64(art.SizeBytes.Uint64()), poll); err != nil {
+	if err := e.download(ctx, art.Url, dest, art.Sha256, hashRaw, int64(art.SizeBytes.Uint64()), int64(art.SizeBytes.Uint64()), poll); err != nil {
 		return "", err
 	}
 	st, err := os.Stat(dest)
@@ -470,6 +540,11 @@ func (e *Engine) installTree(ctx context.Context, c claimed, m api.ReleaseManife
 	}
 	if id == p.CurrentRelease || id == p.LastGood {
 		return permanent(apierr.SignatureInvalid, "refusing to replace a retained release tree")
+	}
+	for _, persistent := range e.Layout.PersistentDirs() {
+		if pathsOverlap(dir, persistent) {
+			return permanent(apierr.ValidationFailed, "release directory overlaps persistent state")
+		}
 	}
 	if err := os.RemoveAll(dir); err != nil {
 		return err
@@ -513,9 +588,6 @@ func (e *Engine) beginOrResume(ctx context.Context, c claimed, m api.ReleaseMani
 		return txn, nil
 	} else if !errors.Is(err, updatejournal.ErrNotFound) {
 		return updatejournal.Txn{}, err
-	}
-	if err := e.snapshotPersistent(); err != nil {
-		return updatejournal.Txn{}, wrapCode(apierr.CheckpointFailed, err, true)
 	}
 	p, err := e.Journal.Pointers(ctx)
 	if err != nil {
@@ -685,36 +757,53 @@ func (e *Engine) ensureReported(ctx context.Context) error {
 }
 
 func (e *Engine) reapplyPublication(ctx context.Context) error {
-	txn, err := e.Journal.LastTxn(ctx)
-	if errors.Is(err, updatejournal.ErrNotFound) {
+	if e.Gate == nil {
 		return nil
 	}
+	rec, err := e.Journal.GateRecord(ctx)
 	if err != nil {
+		_ = e.Gate.Block(ctx)
 		return err
 	}
-	job, err := e.Journal.GetJob(ctx, txn.JobID, txn.Attempt)
-	if err != nil {
+	if !rec.Present {
 		return nil
 	}
-	c, err := decodeClaimed(job.IntentJSON)
-	if err != nil {
-		return err
+	// failed is the blocking terminal state (there is no StageFailed).
+	// recovery_required and an explicit blocked bit stay blocked. A stale
+	// transaction is not consulted (D-034b).
+	block := rec.ForwardingBlocked || rec.TerminalOutcome == updatejournal.OutcomeRecoveryRequired || rec.TerminalOutcome == updatejournal.OutcomeFailed
+	if block || rec.PublicationIntent != string(api.PublicationIntentPublished) {
+		if err := e.Gate.Block(ctx); err != nil {
+			return wrapCode(apierr.UpdateBusy, err, true)
+		}
+		return nil
 	}
-	p, err := e.Journal.Pointers(ctx)
-	if err != nil {
-		return err
+	if err := e.Gate.Unblock(ctx); err != nil {
+		return wrapCode(apierr.StartFailed, err, true)
 	}
-	_, err = e.enforce(ctx, p.CurrentRelease, c)
-	return err
+	return nil
 }
 
-func (e *Engine) enforce(ctx context.Context, releaseID string, c claimed) (bool, error) {
+func (e *Engine) enforce(ctx context.Context, releaseID string, c claimed, outcome string) (bool, error) {
 	if e.Gate == nil {
 		return false, errors.New("updater: no forwarding gate")
+	}
+	if outcome == updatejournal.OutcomeRecoveryRequired || outcome == updatejournal.OutcomeFailed {
+		if err := e.noteBlocked(ctx, c, outcome); err != nil {
+			return false, err
+		}
+		return false, nil
 	}
 	id, _ := uuid.Parse(releaseID)
 	allow := c.Intent.PublicationIntent == api.PublicationIntentPublished &&
 		releaseID != "" && containsID(c.Serving, id) && !containsID(c.Revoked, id)
+	if err := e.Journal.SetGate(ctx, updatejournal.GateRecord{
+		PublicationIntent: string(c.Intent.PublicationIntent),
+		ForwardingBlocked: !allow,
+		TerminalOutcome:   outcome,
+	}); err != nil {
+		return false, err
+	}
 	if !allow {
 		if err := e.Gate.Block(ctx); err != nil {
 			return false, wrapCode(apierr.UpdateBusy, err, true)
@@ -843,6 +932,21 @@ func (e *Engine) httpClient() *http.Client {
 		base = http.DefaultClient
 	}
 	clone := *base
+	var tr *http.Transport
+	switch t := base.Transport.(type) {
+	case *http.Transport:
+		tr = t.Clone()
+	case nil:
+		if def, ok := http.DefaultTransport.(*http.Transport); ok {
+			tr = def.Clone()
+		}
+	}
+	if tr != nil {
+		tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return dialChecked(ctx, network, addr, e.AllowLoopback)
+		}
+		clone.Transport = tr
+	}
 	inner := base.CheckRedirect
 	clone.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		if len(via) >= 3 {

@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -30,7 +31,7 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 	if e = s.releases.Validator.ValidateBody("UpdateBatchRetryRequest", raw); e != nil {
 		return out, e
 	}
-	e = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = RetryAccepted{}
 		rec, e := releases.Begin(ctx, tx, c, "/api/v1/admin/update-batches/"+batch.String()+"/retry", raw)
 		if e != nil {
@@ -127,7 +128,7 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 		}
 		op := uuid.Must(uuid.NewV7())
 		out = RetryAccepted{OperationID: op, TargetCount: len(candidates)}
-		_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id) VALUES($1,'fleet.update_retry',$2,'update_batch',$3)`, op, c.ActorID.String(), batch)
+		_, e = tx.Exec(ctx, `INSERT INTO operations(id,kind,principal,resource_type,resource_id,request_id) VALUES($1,'update_batch.retry',$2,'update_batch',$3,$4)`, op, c.ActorID.String(), batch, commandtx.RequestID(ctx))
 		if e != nil {
 			return e
 		}
@@ -149,7 +150,7 @@ func (s *Service) Retry(ctx context.Context, c releases.Command, batch uuid.UUID
 		if e = recomputeAll(ctx, tx); e != nil {
 			return e
 		}
-		return db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "update_batch", ResourceID: &batch, OperationID: &op, ResponseStatus: 202})
+		return commandtx.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{ResourceType: "update_batch", ResourceID: &batch, OperationID: &op, ResponseStatus: 202})
 	})
 	return out, e
 }

@@ -26,11 +26,11 @@ func TestAPI01_ConcurrentHTTPReplayAndRealSessionRateLimit(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			w := f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
-			if w.Code != 202 {
+			if w.Code != 201 {
 				t.Errorf("concurrent command HTTP %d", w.Code)
 				return
 			}
-			ids <- decode[api.Operation](t, w).OperationId
+			ids <- decode[api.CheckoutSession](t, w).CheckoutSessionId
 		}()
 	}
 	wg.Wait()
