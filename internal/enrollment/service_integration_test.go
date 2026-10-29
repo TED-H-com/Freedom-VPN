@@ -261,11 +261,11 @@ func TestAT28_AuthenticationRenewalAndPermanentRevocation(t *testing.T) {
 	if id.NodeID != c.Enrollment.NodeId || id.IncarnationID != r.NodeIncarnationId {
 		t.Fatal("wrong identity")
 	}
-	exec(t, f, `UPDATE nodes SET current_incarnation_id=NULL WHERE id=$1`, id.NodeID)
+	exec(t, f, `UPDATE nodes SET current_incarnation_id=NULL,resource_version=resource_version+1 WHERE id=$1`, id.NodeID)
 	_, err = f.auth.Authenticate(ctx, cert)
 	expectCode(t, err, apierr.IdentityRevoked)
-	exec(t, f, `UPDATE nodes SET current_incarnation_id=$2 WHERE id=$1`, id.NodeID, id.IncarnationID)
-	exec(t, f, `UPDATE exits SET publication_intent='disabled' WHERE node_id=$1`, id.NodeID)
+	exec(t, f, `UPDATE nodes SET current_incarnation_id=$2,resource_version=resource_version+1 WHERE id=$1`, id.NodeID, id.IncarnationID)
+	exec(t, f, `UPDATE exits SET publication_intent='disabled',resource_version=resource_version+1 WHERE node_id=$1`, id.NodeID)
 	if _, err = f.auth.Authenticate(ctx, cert); err != nil {
 		t.Fatal("disabled node lost control access", err)
 	}
@@ -324,7 +324,7 @@ func TestAT28_AuthenticationRenewalAndPermanentRevocation(t *testing.T) {
 	if _, err = f.auth.Authenticate(ctx, current); err != nil {
 		t.Fatal("failed precondition revoked identity", err)
 	}
-	version := decstr.U64(2)
+	version := decstr.U64(4) // Enrollment plus the two active-incarnation fixture updates.
 	cmd := command()
 	revoked, err := f.s.RevokeNode(ctx, cmd, id.NodeID, &version, "test")
 	if err != nil {
@@ -343,7 +343,7 @@ func TestAT28_AuthenticationRenewalAndPermanentRevocation(t *testing.T) {
 	if count(t, f, "outbox_events") != 3 || count(t, f, "operations") != 2 {
 		t.Fatal("revocation work missing or duplicated")
 	}
-	if _, err = f.pool.Exec(ctx, `UPDATE nodes SET lifecycle_state='registered' WHERE id=$1`, id.NodeID); err == nil {
+	if _, err = f.pool.Exec(ctx, `UPDATE nodes SET lifecycle_state='registered',resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err == nil {
 		t.Fatal("terminal node revived")
 	}
 	if _, err = f.pool.Exec(ctx, `UPDATE node_certificates SET revoked_at=NULL WHERE incarnation_id=$1`, id.IncarnationID); err == nil {

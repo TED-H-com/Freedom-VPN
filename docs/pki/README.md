@@ -132,6 +132,14 @@ unknown properties and enroll explicitly excludes secrets. Do not call
 `TakeBootstrap` from a GET adapter until the orchestrator chooses a contract
 extension; premature consumption could discard an undeliverable secret.
 
+The base `node_incarnations_identity` trigger in
+`db/migrations/00005_evidence_and_deadlines.sql` calls `immutable_fields` for
+`deployment_id` and `peer_id` (among other identity fields). It rejects even
+their first NULL→value UPDATE. This currently blocks recording a newly joined
+NetBird peer on an existing `node_incarnations` row. The database owner must
+decide whether to allow that one-time binding; this service does not drop the
+trigger, use a migration exemption, or bypass it through another write path.
+
 `pkg/envelope.Purpose.Valid` currently omits `ledger-epoch`. Its distinct central
 signer can create envelopes, but the shared trust-store parser cannot represent
 that purpose. The orchestrator must add it before connecting a ledger-epoch
@@ -152,7 +160,8 @@ make go-lint go-test
 ```
 
 Integration tests require `FVPN_TEST_DATABASE_URL`; `dbtest` creates and drops
-isolated databases. All test scratch is disk-backed under `.agent/tmp`, never
+isolated databases. `pki-test-integration` runs without cached test results.
+All test scratch is disk-backed under `.agent/tmp`, never
 tmpfs. `pki-build` cross-compiles both amd64 and arm64. No external network,
 NetBird instance, root access or container is needed for unit tests.
 

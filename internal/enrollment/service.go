@@ -72,7 +72,8 @@ type Command struct {
 }
 
 func begin(ctx context.Context, tx pgx.Tx, cmd Command, route string, body any) (db.IdempotencyRecord, error) {
-	if cmd.Principal == "" || cmd.Key == uuid.Nil {
+	// F-15: reject invalid audit actors before any irreversible journal write.
+	if !validIdentifier(cmd.Principal) || cmd.Key == uuid.Nil {
 		return db.IdempotencyRecord{}, apierr.New(apierr.ValidationFailed, "Principal and Idempotency-Key required.")
 	}
 	raw, err := canonjson.Marshal(body)
@@ -82,6 +83,10 @@ func begin(ctx context.Context, tx pgx.Tx, cmd Command, route string, body any) 
 	hash := sha256.Sum256(raw)
 	key := sha256.Sum256([]byte(cmd.Key.String()))
 	return db.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: cmd.Principal, Method: "POST", Route: route, KeyHash: key[:], RequestHash: hash[:]}, 0)
+}
+
+func validIdentifier(value string) bool {
+	return utf8.ValidString(value) && strings.TrimSpace(value) != "" && !strings.ContainsRune(value, 0)
 }
 func complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, kind string, id uuid.UUID, status int, operation *uuid.UUID) error {
 	return db.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: kind, ResourceID: &id, ResponseStatus: status, OperationID: operation})

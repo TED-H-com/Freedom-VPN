@@ -125,7 +125,7 @@ func (s *Service) RevokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 // incompatible activity is evidence requiring operator reconciliation (§6.2).
 // Returns whether mapping updates are allowed. It does not grant forwarding.
 func (s *Service) ObserveEndpoint(ctx context.Context, cert *x509.Certificate, endpoint string, activeWindow time.Duration) (allowed bool, err error) {
-	if endpoint == "" || len(endpoint) > 1024 || activeWindow <= 0 {
+	if !validIdentifier(endpoint) || len(endpoint) > 1024 || activeWindow <= 0 {
 		return false, apierr.New(apierr.ValidationFailed, "Endpoint observation invalid.")
 	}
 	id, err := s.auth.Authenticate(ctx, cert)

@@ -34,7 +34,7 @@ func bootstrapAAD(id pki.NodeIdentity, operation uuid.UUID, external string, exp
 // with the same operation/external ID are inert, including after delivery. A
 // different external key is a conflict, never an invitation to duplicate it.
 func (s *Service) StoreBootstrap(ctx context.Context, id pki.NodeIdentity, operation uuid.UUID, external, secret string, expires time.Time) error {
-	if operation == uuid.Nil || external == "" || len(external) > 512 || secret == "" || len(secret) > 8192 {
+	if operation == uuid.Nil || !validIdentifier(external) || len(external) > 512 || secret == "" || len(secret) > 8192 {
 		return apierr.New(apierr.ValidationFailed, "Invalid bootstrap result.")
 	}
 	if err := s.auth.CheckFence(ctx, id); err != nil {
