@@ -157,9 +157,10 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 	nodeID := uuid.UUID(created.Enrollment.NodeId)
 	rec.Observations = append(rec.Observations, Observation{Name: "node_id", Detail: nodeID.String()})
 
-	wait, cancel := context.WithTimeout(ctx, 4*time.Minute)
-	defer cancel()
-	if !waitUntil(wait, time.Second, func() bool { return r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/status.json") == "enrolled" }) {
+	enrollWait, enrollCancel := context.WithTimeout(ctx, 4*time.Minute)
+	enrolled := waitUntil(enrollWait, time.Second, func() bool { return r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/status.json") == "enrolled" })
+	enrollCancel()
+	if !enrolled {
 		rec.Observations = append(rec.Observations, Observation{Name: "stage", Detail: r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/status.json")})
 		r.record(rec)
 		return uuid.Nil
@@ -169,9 +170,12 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 		r.record(rec)
 		return nodeID
 	}
-	if !waitUntil(wait, time.Second, func() bool {
+	keyWait, keyCancel := context.WithTimeout(ctx, 2*time.Minute)
+	keyReady := waitUntil(keyWait, time.Second, func() bool {
 		return r.lab.fileNonEmpty(nodeContainer, "/var/lib/vpn-node/identity/setup.key")
-	}) {
+	})
+	keyCancel()
+	if !keyReady {
 		rec.Observations = append(rec.Observations, Observation{Name: "setup_key", Detail: "absent"})
 		r.record(rec)
 		return nodeID
@@ -188,9 +192,12 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 		r.record(rec)
 		return nodeID
 	}
-	if !waitUntil(wait, 2*time.Second, func() bool {
+	nbWait, nbCancel := context.WithTimeout(ctx, 3*time.Minute)
+	nbUp := waitUntil(nbWait, 2*time.Second, func() bool {
 		return r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/netbird.json") == "netbird_up"
-	}) {
+	})
+	nbCancel()
+	if !nbUp {
 		rec.Observations = append(rec.Observations, Observation{Name: "netbird", Detail: r.lab.stage(nodeContainer, "/var/lib/vpn-node/e2e/netbird.json")})
 		r.record(rec)
 		return nodeID
