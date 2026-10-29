@@ -206,7 +206,10 @@ func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) (retErr erro
 // Preserve an immutable audit evidence row before transitioning the operation.
 // A successful NetBird step never fabricates the separate node enforcement ACK.
 func observeOperations(ctx context.Context, tx pgx.Tx, resource api.ResourceType, id uuid.UUID, revision decstr.U64, evidence []byte, now time.Time) error {
-	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE ((resource_type=$1 AND resource_id=$2) OR ($1='member' AND resource_type='entitlement_grant' AND resource_id IN (SELECT id FROM entitlement_grants WHERE member_id=$2))) AND desired_generation=$3::numeric AND status IN ('pending','running','failed','partially_succeeded') AND steps->'netbird'->>'status' IN ('pending','running','failed') AND (kind<>'member.grant' OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, string(resource), id, revision.String(), now)
+	if !resource.Valid() {
+		return entitlement.ErrInvalid
+	}
+	rows, err := tx.Query(ctx, `SELECT o.id FROM operations o WHERE ((resource_type=$1 AND resource_id=$2) OR ($1=$5 AND resource_type=$6 AND resource_id IN (SELECT id FROM entitlement_grants WHERE member_id=$2))) AND desired_generation=$3::numeric AND status IN ('pending','running','failed','partially_succeeded') AND steps->'netbird'->>'status' IN ('pending','running','failed') AND (kind<>$7 OR NOT EXISTS(SELECT 1 FROM entitlement_grants g WHERE g.operation_id=o.id AND g.valid_from>$4)) ORDER BY o.id FOR UPDATE`, resource, id, revision.String(), now, api.ResourceTypeMember, api.ResourceTypeEntitlementGrant, api.OperationKindMemberGrant)
 	if err != nil {
 		return err
 	}
@@ -249,7 +252,10 @@ func observeOperations(ctx context.Context, tx pgx.Tx, resource api.ResourceType
 }
 
 func failOperations(ctx context.Context, tx pgx.Tx, resource api.ResourceType, id uuid.UUID, revision decstr.U64) error {
-	rows, err := tx.Query(ctx, `SELECT id FROM operations WHERE ((resource_type=$1 AND resource_id=$2) OR ($1='member' AND resource_type=$4 AND resource_id IN (SELECT id FROM entitlement_grants WHERE member_id=$2))) AND desired_generation=$3::numeric AND status IN ('pending','running','partially_succeeded') AND steps->'netbird'->>'status' IN ('pending','running') ORDER BY id FOR UPDATE`, resource, id, revision.String(), api.ResourceTypeEntitlementGrant)
+	if !resource.Valid() {
+		return entitlement.ErrInvalid
+	}
+	rows, err := tx.Query(ctx, `SELECT id FROM operations WHERE ((resource_type=$1 AND resource_id=$2) OR ($1=$5 AND resource_type=$4 AND resource_id IN (SELECT id FROM entitlement_grants WHERE member_id=$2))) AND desired_generation=$3::numeric AND status IN ('pending','running','partially_succeeded') AND steps->'netbird'->>'status' IN ('pending','running') ORDER BY id FOR UPDATE`, resource, id, revision.String(), api.ResourceTypeEntitlementGrant, api.ResourceTypeMember)
 	if err != nil {
 		return err
 	}

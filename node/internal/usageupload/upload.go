@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -92,6 +94,31 @@ type Uploader struct {
 
 	bo       time.Duration
 	lastSend time.Time
+
+	mu    sync.Mutex
+	needs bool
+}
+
+// NeedsRestore reports that a checkpoint fetch is still required. The agent
+// calls Restore when this is true. A successful Restore or a 404 (nothing
+// published yet) clears it. Verification stays in the store.
+func (u *Uploader) NeedsRestore() bool {
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	return u.needs
+}
+
+func (u *Uploader) noteRestore(needed bool) {
+	u.mu.Lock()
+	u.needs = needed
+	u.mu.Unlock()
+}
+
+// Restore fetches the signed usage checkpoint and applies it. The agent
+// calls this at startup and whenever NeedsRestore is true. A 404 means the
+// center has not published a checkpoint; the ledger epoch stays null.
+func (u *Uploader) Restore(ctx context.Context) error {
+	return u.fetchCheckpoint(ctx)
 }
 
 // New validates the config. It does not dial the network.
@@ -359,14 +386,22 @@ func (u *Uploader) block(ctx context.Context, seq uint64) error {
 func (u *Uploader) fetchCheckpoint(ctx context.Context) error {
 	status, body, err := u.tr.GetUsageCheckpoint(ctx)
 	if err != nil {
+		u.noteRestore(true)
 		return err
 	}
-	if status != 200 {
+	if status == http.StatusNotFound {
+		u.noteRestore(false)
+		return nil
+	}
+	if status != http.StatusOK {
+		u.noteRestore(true)
 		return fmt.Errorf("usageupload: checkpoint status %d", status)
 	}
 	if err := u.store.ApplyCheckpoint(ctx, body, u.now()); err != nil {
+		u.noteRestore(true)
 		return err
 	}
+	u.noteRestore(false)
 	u.log.Info("usage checkpoint applied")
 	return nil
 }
