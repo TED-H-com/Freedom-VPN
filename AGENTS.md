@@ -73,7 +73,7 @@ This file binds every contributor, human or AI agent. Read it completely before 
 - Name tests after the spec ID they prove, for example `TestAT15_ContiguousAck` or `TestMTR03_DuplicateSameHash`.
 - Golden files live in `testdata/` next to the test, or in `contracts/vectors/` when several languages share them.
 - Frontend checks run inside `apps/portal`: `npm ci`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
-- Each area defines its targets in `mk/<area>.mk`, usable alone with `make -f mk/<area>.mk <target>`. The root `Makefile` includes `mk/*.mk`.
+- Each area defines its targets in `mk/<area>.mk`. Every target name starts with `<area>-` (for example `contracts-verify`), so included files never collide. Each file works alone (`make -f mk/<area>.mk <area>-test`) and when the root `Makefile` includes `mk/*.mk`. To join the root aggregates, append to `BUILD_TARGETS`, `TEST_TARGETS`, `LINT_TARGETS` or `VERIFY_TARGETS` with `+=`. Recipes run from the repository root and must not assume any other area's file is present.
 
 ## 6. Multi-agent protocol
 
