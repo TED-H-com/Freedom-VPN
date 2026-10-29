@@ -13,6 +13,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// Internal snapshot identity, also used by the fleet schema fixtures.
+var firstSyncActor = audit.SystemActor.ID.String()
+
 // firstSync preserves §13.1's original all_nodes denominator. A separate system
 // batch supplies the same sealed target and composite identity FK as admin work.
 func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid.UUID, generation decstr.U64) error {
@@ -29,7 +32,7 @@ func (s *Service) firstSync(ctx context.Context, tx pgx.Tx, n node, release uuid
 		return e
 	}
 	if _, e := tx.Exec(ctx, `INSERT INTO update_batches(id,operation_id,target_release_id,scope,created_by,target_count,generation,reason,online_at_snapshot,first_sync_node_id)
- SELECT $1,$2,$3,'first_sync',$4,1,generation,'first_sync',1,$5 FROM fleet_config`, batch, op, release, audit.SystemActor.ID.String(), n.id); e != nil {
+ SELECT $1,$2,$3,'first_sync',$4,1,generation,'first_sync',1,$5 FROM fleet_config`, batch, op, release, firstSyncActor, n.id); e != nil {
 		return e
 	}
 	if _, e := tx.Exec(ctx, `INSERT INTO update_targets(id,batch_id,node_id,incarnation_at_snapshot,execution_incarnation_id,target_generation,online_at_snapshot) VALUES($1,$2,$3,$4,$4,$5::numeric,true)`, target, batch, n.id, n.incarnation, generation.String()); e != nil {
