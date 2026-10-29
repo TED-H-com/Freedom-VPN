@@ -42,7 +42,7 @@ func (s *Service) NodeVersionView(ctx context.Context, nodeID uuid.UUID) (Versio
  coalesce(n.current_release_id=ANY(f.supported_release_ids) AND NOT n.current_release_id=ANY(f.revoked_release_ids),false),
  coalesce(s.recovery_required,false) OR coalesce(n.last_good_release_id=ANY(f.revoked_release_ids),false),
  s.last_observed_at,j.last_result_at,coalesce(s.observed_update_generation,0)::text,
- s.last_observed_at IS NULL OR j.last_result_at>s.received_at
+ s.last_observed_at IS NULL OR coalesce(j.last_result_at>s.received_at,false)
  FROM nodes n CROSS JOIN fleet_config f LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN update_jobs j ON j.id=s.current_job_id WHERE n.id=$1`, nodeID).Scan(&v.CurrentReleaseID, &v.DesiredReleaseID, &v.LastGoodReleaseID, &v.ReleaseServiceable, &v.RecoveryRequired, &v.LastObservedAt, &v.LastResultAt, &generation, &v.Unconfirmed)
 	if e != nil {
 		return v, e

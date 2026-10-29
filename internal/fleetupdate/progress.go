@@ -106,7 +106,7 @@ func recomputeAll(ctx context.Context, tx pgx.Tx) error {
 		if e = tx.QueryRow(ctx, `SELECT o.id,o.status FROM operations o JOIN update_batches b ON b.operation_id=o.id WHERE b.id=$1`, id).Scan(&op, &status); e != nil {
 			return e
 		}
-		if status == "pending" || status == "failed" || status == "partially_succeeded" {
+		if status == "pending" || ((status == "failed" || status == "partially_succeeded") && state != "completed" && state != "completed_with_exceptions") {
 			if _, e = tx.Exec(ctx, `UPDATE operations SET status='running',completed_at=NULL WHERE id=$1`, op); e != nil {
 				return e
 			}
@@ -122,7 +122,7 @@ func recomputeAll(ctx context.Context, tx pgx.Tx) error {
 			}
 		}
 	}
-	return nil
+	return recomputeRetries(ctx, tx)
 }
 
 func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, limit int) (api.UpdateBatch, error) {
@@ -148,6 +148,8 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		if e != nil {
 			return e
 		}
+		b.CreatedAt = b.CreatedAt.UTC()
+		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
 		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
  j.id,j.attempt,j.state,j.error_code,j.stage,j.started_at,j.completed_at,j.recovery_required
@@ -172,6 +174,10 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			if e != nil {
 				return e
 			}
+			utcTime(t.LastResultAt)
+			utcTime(t.LastObservedAt)
+			utcTime(j.StartedAt)
+			utcTime(j.FinishedAt)
 			t.Attempts = j.Attempt
 			t.State = j.State
 			t.CurrentJob = &j
@@ -215,4 +221,53 @@ func (s *Service) Reconcile(ctx context.Context) error {
 }
 func retryable(state string, code *api.ErrorCode) bool {
 	return state == "failed" && code != nil && apierr.Code(*code).DefaultRetryable()
+}
+
+func utcTime(t *time.Time) {
+	if t != nil {
+		*t = t.UTC()
+	}
+}
+
+func recomputeRetries(ctx context.Context, tx pgx.Tx) error {
+	rows, e := tx.Query(ctx, `SELECT DISTINCT o.id FROM operations o JOIN update_retry_jobs r ON r.operation_id=o.id WHERE o.status IN ('pending','running') ORDER BY o.id`)
+	if e != nil {
+		return e
+	}
+	ids, e := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if e != nil {
+		return e
+	}
+	for _, id := range ids {
+		rows, e := tx.Query(ctx, `SELECT j.state FROM update_retry_jobs r JOIN update_jobs j ON j.id=r.job_id WHERE r.operation_id=$1`, id)
+		if e != nil {
+			return e
+		}
+		states, e := pgx.CollectRows(rows, pgx.RowTo[string])
+		if e != nil {
+			return e
+		}
+		counts, state, e := CountStates(states)
+		if e != nil {
+			return e
+		}
+		if _, e = tx.Exec(ctx, `UPDATE operations SET status='running' WHERE id=$1 AND status='pending'`, id); e != nil {
+			return e
+		}
+		if state != "completed" && state != "completed_with_exceptions" {
+			continue
+		}
+		status := "succeeded"
+		if state == "completed_with_exceptions" {
+			status = "partially_succeeded"
+		}
+		raw, e := json.Marshal(counts)
+		if e != nil {
+			return e
+		}
+		if _, e = tx.Exec(ctx, `UPDATE operations SET status=$2,completed_at=clock_timestamp(),steps='{"attempts":{"required":true,"status":"succeeded","observed_ref":"attempts"}}',observed_refs=jsonb_build_object('attempts',$3::jsonb) WHERE id=$1 AND status='running'`, id, status, raw); e != nil {
+			return e
+		}
+	}
+	return nil
 }

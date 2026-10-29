@@ -88,7 +88,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if time.Now().After(*j.validUntil) && !isTerminal && j.state != "applying" && j.state != "checking" {
 			return apierr.New(apierr.AuthorizationExpired, "Refresh the expired update authorization")
 		}
-		if r.StartedAt.After(*j.validUntil) {
+		if !r.StartedAt.Before(*j.validUntil) || r.StartedAt.Before(*j.issued) {
 			return apierr.New(apierr.AuthorizationExpired, "Transaction started after authorization expired")
 		}
 		if isTerminal && (r.CurrentReleaseId == nil || r.Health == nil || r.FinishedAt == nil || r.FinishedAt.Before(r.StartedAt)) {
@@ -112,7 +112,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if e = tx.QueryRow(ctx, `SELECT supported_release_ids,revoked_release_ids FROM fleet_config`).Scan(&serving, &revoked); e != nil {
 			return e
 		}
-		recovery := r.RecoveryRequired || n.lastGood != nil && slices.Contains(revoked, *n.lastGood)
+		recovery := r.RecoveryRequired || n.lastGood != nil && slices.Contains(revoked, *n.lastGood) || r.CurrentReleaseId != nil && slices.Contains(revoked, *r.CurrentReleaseId)
 		if r.State == "rolled_back" {
 			if r.CurrentReleaseId == nil || !slices.Contains(serving, *r.CurrentReleaseId) || slices.Contains(revoked, *r.CurrentReleaseId) {
 				_, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=true WHERE node_id=$1`, i.NodeID)
@@ -121,6 +121,13 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 				}
 				rejection = apierr.New(apierr.MinimumVersionViolation, "Rollback release may not serve")
 				return releases.Audit(ctx, tx, i.NodeID.String(), "agent", "update_result.rollback_refused", j.id.String(), nil, map[string]any{"recovery_required": true})
+			}
+			rollbackManifest, _, _, e := s.releases.Eligible(ctx, tx, *r.CurrentReleaseId)
+			if e != nil {
+				return e
+			}
+			if r.StateSchemaVersion != rollbackManifest.Signed.Compatibility.StateSchemaTo {
+				return apierr.New(apierr.SchemaIncompatible, "Rollback state schema differs from the active release")
 			}
 			if !manifest.Signed.Rollback.StateReadableByPrevious || !slices.Contains(manifest.Signed.Rollback.AllowedReleaseIds, *r.CurrentReleaseId) || *r.CurrentReleaseId == j.releaseID || !healthy(r.Health) {
 				return apierr.New(apierr.SchemaIncompatible, "Rollback lacks allowed release and health evidence")

@@ -159,7 +159,7 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 			return e
 		}
 		for _, n := range nodes {
-			gen, e := n.generation.Add(1)
+			gen, e := max(n.generation, n.observedGeneration).Add(1)
 			if e != nil {
 				return e
 			}
@@ -223,6 +223,7 @@ func accepted(ctx context.Context, tx pgx.Tx, id uuid.UUID) (api.UpdateBatchAcce
 	if e != nil {
 		return a, e
 	}
+	a.CreatedAt = a.CreatedAt.UTC()
 	a.FleetGeneration, e = decstr.Parse(gen)
 	a.FleetDefaultReleaseId = a.ReleaseId
 	a.OfflineAtSnapshot = a.TargetCount - a.OnlineAtSnapshot

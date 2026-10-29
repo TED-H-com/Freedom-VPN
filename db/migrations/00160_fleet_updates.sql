@@ -112,3 +112,10 @@ BEGIN
 END $$;
 -- +goose StatementEnd
 CREATE TRIGGER update_jobs_derive BEFORE INSERT ON update_jobs FOR EACH ROW EXECUTE FUNCTION derive_fleet_job();
+COMMENT ON TABLE release_verifications IS 'Project Spec §13.3–4: verification state independent of immutable release content.';
+COMMENT ON TABLE release_registration_rejections IS 'Project Spec §13.4: rejected registration hashes are permanently ineligible.';
+COMMENT ON TABLE fleet_node_state IS 'Project Spec §13.8, §17.4: desired job pointer and ordered actual-version observation.';
+COMMENT ON TABLE update_results IS 'Project Spec §13.10.3: append-only result inbox and original ACK.';
+COMMENT ON TABLE update_result_conflicts IS 'Project Spec §13.11: conflicting result hashes retained without replacing accepted evidence.';
+COMMENT ON TABLE update_batch_progress IS 'Project Spec §13.12: rebuildable mutually exclusive progress counts.';
+COMMENT ON TABLE update_retry_jobs IS 'Project Spec §13.12: retry operation evidence references its exact attempts.';

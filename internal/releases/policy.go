@@ -152,6 +152,13 @@ func (s *Service) List(ctx context.Context, cursor string, limit int) (api.Relea
 			r.ManifestCreatedAt = m.Signed.CreatedAt
 			r.ProductVersion = m.Signed.ProductVersion
 			r.ReleaseSequence = m.Signed.ReleaseSequence
+			if r.VerificationState == "pending" {
+				r.VerificationState = "verifying"
+			}
+			if r.VerificationState == "failed" {
+				r.VerificationState = "rejected"
+			}
+			r.RegisteredAt = r.RegisteredAt.UTC()
 			r.Architectures = []api.Architecture{}
 			for _, a := range r.Artifacts {
 				if !slices.Contains(r.Architectures, a.Architecture) {
