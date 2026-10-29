@@ -1,0 +1,242 @@
+{
+  "BillingPortalSessionRequest.customer-field.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "additionalProperties",
+    "note": "The customer is never taken from the body (§14.3)."
+  },
+  "CertificateRenewRequest.missing-csr.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "required",
+    "note": "A new CSR is required."
+  },
+  "CheckoutSessionRequest.http-return.json": {
+    "kind": "schema",
+    "pointer": "/return_url",
+    "keyword": "pattern",
+    "note": "Return URLs are HTTPS and allowlisted."
+  },
+  "EnrollRequest.token-in-body.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "additionalProperties",
+    "note": "The token is only sent in the Authorization header (§14.7)."
+  },
+  "EnrollRequest.unsupported-arch.json": {
+    "kind": "schema",
+    "pointer": "/platform/arch",
+    "keyword": "enum",
+    "note": "Only amd64 and arm64 (§3.2)."
+  },
+  "EnrollmentCreateRequest.bad-delivery.json": {
+    "kind": "schema",
+    "pointer": "/delivery",
+    "keyword": "enum",
+    "note": "Unknown delivery type."
+  },
+  "EnrollmentCreateRequest.lifetime-too-long.json": {
+    "kind": "schema",
+    "pointer": "/expires_in_seconds",
+    "keyword": "maximum",
+    "note": "Tokens are short-lived."
+  },
+  "EnrollmentCreated.short-token.json": {
+    "kind": "schema",
+    "pointer": "/token",
+    "keyword": "pattern",
+    "note": "Tokens have at least 256 bits of entropy."
+  },
+  "ErrorEnvelope.missing-request-id.json": {
+    "kind": "schema",
+    "pointer": "/error",
+    "keyword": "required",
+    "note": "Every error carries the central request_id."
+  },
+  "ErrorEnvelope.unknown-code.json": {
+    "kind": "schema",
+    "pointer": "/error/code",
+    "keyword": "enum",
+    "note": "Only codes from pkg/apierr are allowed."
+  },
+  "GrantCreateRequest.missing-valid-until.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "required",
+    "note": "Grants must be finite (§9.2)."
+  },
+  "LeaseRenewalRequest.leading-zero.json": {
+    "kind": "schema",
+    "pointer": "/applied_config_generation",
+    "keyword": "pattern",
+    "note": "No redundant leading zeros (§10.4)."
+  },
+  "MemberDetail.refund-is-not-a-state.json": {
+    "kind": "schema",
+    "pointer": "/entitlement/state",
+    "keyword": "enum",
+    "note": "Refunds are billing events, not entitlement states (§9.2)."
+  },
+  "MemberPatch.unknown-field.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "additionalProperties",
+    "note": "Billing facts cannot be edited through PATCH."
+  },
+  "MemberUsage.float-bytes.json": {
+    "kind": "schema",
+    "pointer": "/totals/total_bytes",
+    "keyword": "type",
+    "note": "Bytes never pass through a float (§10.4)."
+  },
+  "NodeDetail.numeric-resource-version.json": {
+    "kind": "schema",
+    "pointer": "/resource_version",
+    "keyword": "type",
+    "note": "resource_version is a decimal string (§14.1)."
+  },
+  "NodePatch.empty.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "minProperties",
+    "note": "An empty patch is rejected."
+  },
+  "NodePatch.unknown-field.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "additionalProperties",
+    "note": "Only allowlisted fields can be patched; publication uses its own endpoint."
+  },
+  "ObservationReport.negative-seq.json": {
+    "kind": "schema",
+    "pointer": "/usage/last_durable_event_seq",
+    "keyword": "pattern",
+    "note": "Sequence numbers are unsigned decimal strings."
+  },
+  "Operation.not-a-status.json": {
+    "kind": "schema",
+    "pointer": "/status",
+    "keyword": "enum",
+    "note": "`completed` is not an operation status; 202 is never shown as completed."
+  },
+  "Operation.offset-time.json": {
+    "kind": "schema",
+    "pointer": "/created_at",
+    "keyword": "pattern",
+    "note": "Times are UTC RFC 3339 with Z (§14.1)."
+  },
+  "PolicyActivateRequest.bad-uuid.json": {
+    "kind": "schema",
+    "pointer": "/revision_id",
+    "keyword": "format",
+    "note": "IDs are UUIDs."
+  },
+  "PolicyRevisionCreate.domain-rule-not-canonical.json": {
+    "kind": "schema",
+    "pointer": "/payload/rules/0/domain",
+    "keyword": "pattern",
+    "note": "Domains are stored lowercase without the trailing root dot."
+  },
+  "PolicyRevisionCreate.domain-rule-url.json": {
+    "kind": "schema",
+    "pointer": "/payload/rules/0/domain",
+    "keyword": "pattern",
+    "note": "Domain rules accept names only; no scheme, path or port (§12.4)."
+  },
+  "PolicyRevisionCreate.fair-use-numeric-threshold.json": {
+    "kind": "schema",
+    "pointer": "/payload/tiers/1/threshold_bytes",
+    "keyword": "type",
+    "note": "threshold_bytes is a decimal string."
+  },
+  "PolicyRevisionCreate.release-support-empty-serving.json": {
+    "kind": "schema",
+    "pointer": "/payload/minimum_serving_version/serving_release_ids",
+    "keyword": "minItems",
+    "note": "At least one release must be allowed to serve."
+  },
+  "PolicyRevisionCreate.type-payload-mismatch.json": {
+    "kind": "schema",
+    "pointer": "/payload",
+    "keyword": "required",
+    "note": "The payload must match the schema selected by `type`."
+  },
+  "PublicationRequest.bad-intent.json": {
+    "kind": "schema",
+    "pointer": "/publication_intent",
+    "keyword": "enum",
+    "note": "Only unpublished, published and disabled."
+  },
+  "ReasonRequest.empty-reason.json": {
+    "kind": "schema",
+    "pointer": "/reason",
+    "keyword": "minLength",
+    "note": "A reason is mandatory for audited commands."
+  },
+  "ReleaseRegisterRequest.http-url.json": {
+    "kind": "schema",
+    "pointer": "/manifest_url",
+    "keyword": "pattern",
+    "note": "Release locations must be HTTPS in an allowlisted store."
+  },
+  "ReleaseRegisterRequest.single-architecture.json": {
+    "kind": "schema",
+    "pointer": "/manifest/signed/artifacts",
+    "keyword": "minItems",
+    "note": "Both architectures are required (§13.4)."
+  },
+  "UpdateBatch.missing-count.json": {
+    "kind": "schema",
+    "pointer": "/counts",
+    "keyword": "required",
+    "note": "Every count is present so the sum equals target_count."
+  },
+  "UpdateBatchCreateRequest.no-fleet-default.json": {
+    "kind": "schema",
+    "pointer": "/set_fleet_default",
+    "keyword": "enum",
+    "note": "all_nodes always sets the fleet default (§13.10.1)."
+  },
+  "UpdateBatchCreateRequest.numeric-generation.json": {
+    "kind": "schema",
+    "pointer": "/expected_generation",
+    "keyword": "type",
+    "note": "Generations are decimal strings."
+  },
+  "UpdateBatchCreateRequest.subset-scope.json": {
+    "kind": "schema",
+    "pointer": "/scope",
+    "keyword": "enum",
+    "note": "scope is always all_nodes (§13.1)."
+  },
+  "UpdateBatchRetryRequest.empty-targets.json": {
+    "kind": "schema",
+    "pointer": "/target_ids",
+    "keyword": "minItems",
+    "note": "Omit target_ids to retry all; an empty list is ambiguous."
+  },
+  "UsageBatchRequest.empty.json": {
+    "kind": "schema",
+    "pointer": "/events",
+    "keyword": "minItems",
+    "note": "A batch carries at least one event."
+  },
+  "UsageBatchResult.numeric-ack.json": {
+    "kind": "schema",
+    "pointer": "/highest_contiguous_seq",
+    "keyword": "type",
+    "note": "ACK watermarks are decimal strings."
+  },
+  "UsageEvent.seq-zero.json": {
+    "kind": "schema",
+    "pointer": "/event_seq",
+    "keyword": "pattern",
+    "note": "event_seq starts at 1 (§10.5)."
+  },
+  "UsageEvent.unknown-quality.json": {
+    "kind": "schema",
+    "pointer": "/quality",
+    "keyword": "enum",
+    "note": "quality is complete, gap or boundary_estimated."
+  }
+}

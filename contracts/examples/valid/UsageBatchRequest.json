@@ -1,0 +1,54 @@
+{
+  "events": [
+    {
+      "event_seq": "1234",
+      "interval_end": "2026-10-28T14:00:10Z",
+      "interval_start": "2026-10-28T14:00:00Z",
+      "meter_epoch_id": "b91a511c-0af5-48af-85cb-eb69c4a0070c",
+      "metering_version": "forward_admission_v1",
+      "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+      "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+      "payload_sha256": "27f5775980082d8355caccc9b08aeca47bf53779f7fa3be0b7942f2d0866d1f9",
+      "quality": "complete",
+      "records": [
+        {
+          "binding_revision": "42",
+          "device_id": "2df6c7df-e7e8-4bd4-9f2c-a5836dd0d8ea",
+          "download_bytes": "987654",
+          "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+          "period_id": "2026-10",
+          "upload_bytes": "123456"
+        },
+        {
+          "binding_revision": "43",
+          "device_id": "de484d49-0949-45b1-b38a-40709eb79a7c",
+          "download_bytes": "0",
+          "member_id": "4e8ca24f-b523-45ef-a782-068cc1c9f809",
+          "period_id": "2026-10",
+          "upload_bytes": "9007199254740993"
+        }
+      ],
+      "schema_version": 1
+    },
+    {
+      "event_seq": "1235",
+      "gap": {
+        "last_checkpoint_at": "2026-10-28T14:00:10Z",
+        "reason": "power_loss"
+      },
+      "interval_end": "2026-10-28T14:03:40Z",
+      "interval_start": "2026-10-28T14:00:10Z",
+      "meter_epoch_id": "909f68b7-a5b4-44da-afd5-e1683e42c6fd",
+      "metering_version": "forward_admission_v1",
+      "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+      "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+      "payload_sha256": "a1ec624e9b797d3cf83f7f7e63895be442b7a90ff02e1470c9ee3819dfc772b9",
+      "quality": "gap",
+      "records": [],
+      "schema_version": 1
+    }
+  ],
+  "ledger_epoch": "7612b7d9-1e70-4390-b86b-7c3456e4df27",
+  "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+  "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0"
+}

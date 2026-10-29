@@ -1,0 +1,165 @@
+{
+  "$comment": "Generated from contracts/openapi.yaml component ServingLeaseEnvelope (§16.3) by contracts/internal/cmd/contractsgen. DO NOT EDIT.",
+  "$defs": {
+    "MemberLease": {
+      "additionalProperties": false,
+      "properties": {
+        "effective_service_end": {
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "entitlement_revision": {
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "lease_end": {
+          "description": "member_lease_end.",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "member_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "member_id",
+        "entitlement_revision",
+        "effective_service_end",
+        "lease_end"
+      ],
+      "title": "MemberLease",
+      "type": "object"
+    },
+    "ServingLease": {
+      "additionalProperties": false,
+      "description": "Finite serving lease for one node incarnation (§16.3, §9.2, §15.3).\n\nServer rules: `expires_at` (node_lease_end) is at most `issued_at +\nmax_offline_seconds`. For each member, `lease_end` (member_lease_end) =\nmin(issued_at + max_offline_seconds, effective_service_end, expires_at).\nMembers whose effective_service_end is not after issued_at, or who are\nsuspended, are omitted. A lease never extends any entitlement deadline.\n\nNode rules: verify the envelope, node and incarnation. Keep the highest\naccepted issued_at and reject older leases. Compute local deadlines from\nelapsed monotonic time, anchored conservatively at the moment the renewal\nrequest was sent: deadline = t_sent + (lease_end - issued_at). Replaying a\nknown lease_id never restarts its time; reboot, lost time anchor or clock\nanomalies keep member forwarding off until a new lease is applied. The\nforwarding deadline is min(effective_service_end, member lease_end),\nenforced per packet by kernel timeouts before any broad\nestablished/related accept.\n",
+      "properties": {
+        "authorization_generation": {
+          "description": "Authorization policy generation the member list was computed from.",
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "config_generation": {
+          "description": "Desired-state generation the lease belongs to.",
+          "maxLength": 20,
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "type": "string"
+        },
+        "expires_at": {
+          "description": "node_lease_end.",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "issued_at": {
+          "description": "Signed server time.",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+          "type": "string"
+        },
+        "lease_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "max_offline_seconds": {
+          "default": 86400,
+          "description": "configured_max_offline_lease; recommended default 24 hours (§16.3).",
+          "maximum": 86400,
+          "minimum": 60,
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/$defs/MemberLease"
+          },
+          "maxItems": 10000,
+          "type": "array"
+        },
+        "node_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "node_incarnation_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "schema_version": {
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "lease_id",
+        "node_id",
+        "node_incarnation_id",
+        "authorization_generation",
+        "config_generation",
+        "issued_at",
+        "expires_at",
+        "max_offline_seconds",
+        "members"
+      ],
+      "title": "ServingLease",
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "description": "One Ed25519 signature over the RFC 8785 canonical JSON of the envelope's\n`signed` object (§13.3, §16.2, `pkg/envelope`). Verifiers reject unknown\nalgorithms, ignore unknown key_ids, and require at least one valid\nsignature by a key trusted for the document's purpose.\n",
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "ed25519"
+          ],
+          "type": "string"
+        },
+        "key_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+          "type": "string"
+        },
+        "signature_b64": {
+          "description": "Standard padded base64 of the 64-byte signature.",
+          "pattern": "^[A-Za-z0-9+/]{86}==$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id",
+        "algorithm",
+        "signature_b64"
+      ],
+      "title": "Signature",
+      "type": "object"
+    }
+  },
+  "$id": "urn:fvpn:contracts:schema:serving-lease-envelope:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Signed serving lease (§16.3), signed with a `lease` purpose key. Renewal\nnever edits paid_through, grants, grace or suspension.\n",
+  "properties": {
+    "signatures": {
+      "items": {
+        "$ref": "#/$defs/Signature"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "type": "array"
+    },
+    "signed": {
+      "$ref": "#/$defs/ServingLease"
+    }
+  },
+  "required": [
+    "signed",
+    "signatures"
+  ],
+  "title": "ServingLeaseEnvelope",
+  "type": "object"
+}
