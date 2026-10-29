@@ -34,10 +34,23 @@ type Node struct {
 // Work is one verified update job plus the serving policy that was current
 // when the job was accepted (§13.2, §13.10.2).
 type Work struct {
-	Intent           api.UpdateIntent `json:"intent"`
-	Serving          []uuid.UUID      `json:"serving"`
-	Revoked          []uuid.UUID      `json:"revoked"`
-	PolicyGeneration decstr.U64       `json:"policy_generation"`
+	Intent  api.UpdateIntent `json:"intent"`
+	Serving []uuid.UUID      `json:"serving"`
+	// Revoked is the unsigned release-support list supplied by the agent.
+	// A legacy envelope, which omits signed revoked_release_ids, uses only
+	// this list plus whatever signed ids were already persisted.
+	Revoked []uuid.UUID `json:"revoked"`
+	// SignedRevoked is the signed revoked_release_ids member. Nil means the
+	// member was absent. A non-nil empty slice is a signed empty set: it
+	// adds nothing and does not clear the persisted set (§13.4).
+	SignedRevoked *[]uuid.UUID `json:"signed_revoked,omitempty"`
+	// PolicyGeneration is the desired-state config_generation of this
+	// envelope. It is not the update job generation (D-043).
+	PolicyGeneration decstr.U64 `json:"policy_generation"`
+	// PolicyKnown is true when PolicyGeneration was taken from a verified
+	// desired state, including generation 0. A zero generation without this
+	// flag is not applied and is not reported.
+	PolicyKnown bool `json:"policy_known,omitempty"`
 }
 
 // Source supplies the latest verified desired state. The agent may pass it
