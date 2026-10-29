@@ -31,7 +31,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w0-bootstrap: repositories, contract, spec | WP01 | done |
 | w1-contracts: OpenAPI, schemas, vectors, shared leaf packages | WP03 | done (#4) |
 | w1-db: PostgreSQL schema, DB foundation, CI | WP03 | done (#1) |
-| w1-netlab: G2 isolation, metering and shaping lab | WP02, WP05, WP07 | follow-up 1 (lint, root make wiring, D-019 meter definition) |
+| w1-netlab: G2 isolation, metering and shaping lab | WP02, WP05, WP07 | done (#16) |
 | w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | done (#6), G1 open |
 | w1-portal: Admin and Member portal on a mock API | WP10 | done (#2) |
 | w1-deps-bump: current pgx, goose and transitive module pins | WP03 | done (#3) |
@@ -43,13 +43,13 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core: HTTP framework, auth, idempotency, ETag, operations, audit, worker | WP04, WP09 | done (#13) |
 | w2-pki-enroll: node CA, enrollment, CSR issuance, revocation, signing service | WP04 | done (#11) |
 | w2-members-billing: members, entitlement, devices, billing adapter and webhooks | WP06 | done (#9) |
-| w2-nodes-desiredstate: node registry, desired state compiler, serving leases, exits | WP04, WP05 | in progress |
+| w2-nodes-desiredstate: node registry, desired state compiler, serving leases, exits | WP04, WP05 | done (#17) |
 | w2-usage-central: usage ledger ingest, checkpoints, projection, rollups | WP07 | done (#15) |
 | w2-policies-fup: plan, fair-use, DNS and release-support policies, FUP tiers | WP07, WP08 | done (#12) |
 | w2-fleet-update: releases, manifests, update batches, serving-version policy | WP09 | done (#10) |
 | w2-updater: node updater, update journal, release packaging | WP09 | delivered; follow-up 1 (decisions, nodelock move, root make wiring) |
-| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after w1-netlab) |
-| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after w1-netlab) |
+| w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | queued (after contracts-r2 consumer adaptation) |
+| w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | queued (after contracts-r2 consumer adaptation) |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
