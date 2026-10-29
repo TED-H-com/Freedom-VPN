@@ -123,6 +123,9 @@ type Page struct {
 
 // List sorts on immutable UUIDs; the base64 cursor is versioned and opaque.
 func (s *Service) List(ctx context.Context, actor entitlement.Actor, cursor string, limit int) (Page, error) {
+	return s.ListFiltered(ctx, actor, cursor, limit, "")
+}
+func (s *Service) ListFiltered(ctx context.Context, actor entitlement.Actor, cursor string, limit int, state string) (Page, error) {
 	out := Page{Items: []Member{}}
 	if err := actor.Admin(); err != nil {
 		return out, err
@@ -130,18 +133,18 @@ func (s *Service) List(ctx context.Context, actor entitlement.Actor, cursor stri
 	if limit == 0 {
 		limit = 50
 	}
-	if limit < 1 || limit > 100 {
+	if limit < 1 || limit > 100 || state != "" && !api.EntitlementState(state).Valid() {
 		return out, entitlement.ErrInvalid
 	}
 	after := uuid.Nil
 	if cursor != "" {
 		raw, err := base64.RawURLEncoding.DecodeString(cursor)
-		if err != nil || len(raw) != 17 || raw[0] != 1 {
+		if err != nil || len(raw) < 17 || raw[0] != 1 || string(raw[17:]) != state {
 			return out, entitlement.ErrInvalid
 		}
-		copy(after[:], raw[1:])
+		copy(after[:], raw[1:17])
 	}
-	rows, err := s.Pool.Query(ctx, `SELECT `+columns+` FROM members m WHERE m.id>$1 ORDER BY m.id LIMIT $2`, after, limit+1)
+	rows, err := s.Pool.Query(ctx, `SELECT `+columns+` FROM members m WHERE m.id>$1 AND ($3='' OR coalesce((SELECT state FROM entitlements WHERE member_id=m.id),m.status)=$3) ORDER BY m.id LIMIT $2`, after, limit+1, state)
 	if err != nil {
 		return out, err
 	}
@@ -159,7 +162,7 @@ func (s *Service) List(ctx context.Context, actor entitlement.Actor, cursor stri
 	if len(out.Items) > limit {
 		out.Items = out.Items[:limit]
 		id := out.Items[limit-1].ID
-		out.NextCursor = base64.RawURLEncoding.EncodeToString(append([]byte{1}, id[:]...))
+		out.NextCursor = base64.RawURLEncoding.EncodeToString(append(append([]byte{1}, id[:]...), []byte(state)...))
 	}
 
 	rows.Close()
@@ -233,7 +236,7 @@ func (s *Service) Patch(ctx context.Context, c entitlement.Command, id uuid.UUID
 	if err := validatePatch(p); err != nil {
 		return result, err
 	}
-	err := db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "PATCH", "/admin/members/"+id.String(), p)
 		if err != nil {
 			return err
@@ -341,7 +344,7 @@ func (s *Service) Close(ctx context.Context, c entitlement.Command, id uuid.UUID
 	if !entitlement.Reason(reason, 500) {
 		return result, entitlement.ErrInvalid
 	}
-	err := db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "POST", "member.close/"+id.String(), map[string]string{"reason": reason})
 		if err != nil {
 			return err
@@ -397,7 +400,7 @@ func (s *Service) Grant(ctx context.Context, c entitlement.Command, id uuid.UUID
 	if !g.Source.Valid() || !entitlement.Reason(g.Reason, 500) {
 		return result, entitlement.ErrInvalid
 	}
-	err := db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "POST", "/admin/members/"+id.String()+"/grants", g)
 		if err != nil {
 			return err
@@ -482,7 +485,7 @@ func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member
 	if !entitlement.Reason(reason, 500) {
 		return entitlement.ErrInvalid
 	}
-	return db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	return c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "POST", "grant.revoke/"+grant.String(), map[string]any{"member_id": member, "reason": reason})
 		if err != nil || !record.New {
 			return err
