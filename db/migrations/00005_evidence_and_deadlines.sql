@@ -100,3 +100,23 @@ CREATE TRIGGER device_bindings_identity BEFORE UPDATE ON device_bindings FOR EAC
 CREATE TRIGGER node_incarnations_identity BEFORE UPDATE ON node_incarnations FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','node_id','public_key_fingerprint','deployment_id','peer_id','created_at');
 CREATE TRIGGER identity_bindings_identity BEFORE UPDATE ON identity_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','issuer','client_scope','subject');
 CREATE TRIGGER netbird_user_bindings_identity BEFORE UPDATE ON netbird_user_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','deployment_id','external_user_id','identity_binding_id');
+
+-- §13.8: a known snapshot incarnation cannot be replaced by a reinstallation.
+ALTER TABLE update_targets ADD CONSTRAINT update_targets_snapshot_execution_check
+ CHECK(incarnation_at_snapshot IS NULL OR execution_incarnation_id IS NULL OR incarnation_at_snapshot=execution_incarnation_id);
+
+-- §2, §10.6: persist the historical binding, never reinterpret by current IP.
+-- +goose StatementBegin
+CREATE FUNCTION check_sample_binding() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE binding device_bindings; records INTEGER;
+BEGIN
+ SELECT * INTO STRICT binding FROM device_bindings WHERE device_id=NEW.device_id AND binding_revision=NEW.binding_revision FOR SHARE;
+ IF NEW.member_id <> binding.member_id OR NEW.interval_start < binding.valid_from OR NEW.interval_end > binding.valid_until THEN
+  RAISE EXCEPTION 'sample falls outside historical binding' USING ERRCODE='23514';
+ END IF;
+ SELECT record_count INTO STRICT records FROM usage_events WHERE id=NEW.event_id;
+ IF NEW.record_index >= records THEN RAISE EXCEPTION 'sample index exceeds envelope record count' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+-- +goose StatementEnd
+CREATE TRIGGER usage_samples_binding BEFORE INSERT ON usage_samples FOR EACH ROW EXECUTE FUNCTION check_sample_binding();

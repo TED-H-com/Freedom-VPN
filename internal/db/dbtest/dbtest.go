@@ -47,6 +47,7 @@ func newDatabase(t testing.TB, migrate bool) *pgxpool.Pool {
 		admin.Close()
 		t.Fatal("create isolated database failed")
 	}
+	t.Logf("isolated database: %s", name)
 	var pool *pgxpool.Pool
 	t.Cleanup(func() {
 		if pool != nil {

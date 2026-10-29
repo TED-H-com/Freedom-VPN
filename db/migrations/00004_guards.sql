@@ -174,12 +174,21 @@ BEGIN
  previous := current_setting('fvpn.retention_purge',true);
  PERFORM set_config('fvpn.retention_purge','on',true);
  IF target='usage_event_payloads' THEN
-  -- Every raw record needs at least one projection receipt before discarding its payload.
-  -- The domain projector remains responsible for all applicable periods/generations.
+  -- Every record needs a complete interval covered by receipts and rollups in
+  -- one projection generation/granularity. A single side of a month split is
+  -- insufficient. The projector validates the allocation itself (§10.9).
   DELETE FROM public.usage_event_payloads p WHERE p.created_at < cutoff
    AND EXISTS(SELECT 1 FROM public.usage_events e WHERE e.id=p.event_id
     AND e.record_count=(SELECT count(*) FROM public.usage_samples s WHERE s.event_id=e.id)
-    AND NOT EXISTS(SELECT 1 FROM public.usage_samples s WHERE s.event_id=e.id AND NOT EXISTS(SELECT 1 FROM public.projection_receipts r WHERE r.sample_id=s.id)));
+    AND NOT EXISTS(
+     SELECT 1 FROM public.usage_samples s WHERE s.event_id=e.id AND NOT EXISTS(
+      SELECT 1 FROM public.projection_receipts r JOIN public.usage_rollups u
+       ON u.member_id=s.member_id AND u.period=r.period AND u.projection_generation=r.generation AND u.metering_version=s.metering_version
+      WHERE r.sample_id=s.id
+      GROUP BY r.projection_name,r.generation,u.granularity
+      HAVING range_agg(tstzrange(u.period_start,u.period_end,'[)')) @> tstzrange(s.interval_start,s.interval_end,'[)')
+     )
+    ));
  ELSE
   EXECUTE format('DELETE FROM public.%I WHERE %I < $1',target,column_name) USING cutoff;
  END IF;

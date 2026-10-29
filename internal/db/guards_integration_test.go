@@ -4,7 +4,9 @@ package db_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -122,6 +124,7 @@ func Test15_1_AppendOnlyAndAuditedPurge(t *testing.T) {
 	exec(t, p, `INSERT INTO billing_records(member_id,provider,record_type,external_reference,amount_minor,currency,service_start,service_end,source_event_id) VALUES($1,'test','invoice','test',1,'USD','2026-01-01Z','2026-02-01Z',$2)`, f.member, f.inbox)
 	exec(t, p, `INSERT INTO usage_adjustments(member_id,period,original_event_id,upload_bytes,download_bytes,reason,actor) VALUES($1,'2026-01',$2,-1,0,'correction','test')`, f.member, f.event)
 	exec(t, p, `INSERT INTO projection_receipts(sample_id,projection_name,generation,period) VALUES($1,'monthly',1,'2026-01')`, f.sample)
+	exec(t, p, `INSERT INTO usage_rollups(member_id,period,granularity,projection_generation,metering_version,upload_bytes,download_bytes,last_observed_at,aggregate_as_of,period_start,period_end) VALUES($1,'2026-01','month',1,'test-meter',1,2,now(),now(),'2026-01-01Z','2026-02-01Z')`, f.member)
 	exec(t, p, `INSERT INTO usage_event_payloads(event_id,payload,created_at) VALUES($1,'\x01',now()-interval '40 days')`, f.event)
 	for _, table := range []string{"audit_events", "billing_records", "usage_adjustments", "usage_events", "usage_samples", "projection_receipts", "usage_event_payloads"} {
 		for _, q := range []string{"UPDATE " + table + " SET id=id", "DELETE FROM " + table} {
@@ -296,4 +299,153 @@ func Test15_3_EnrollmentBindingOnce(t *testing.T) {
 	sqlError(t, err, "23514", "")
 	_, err = p.Exec(context.Background(), `UPDATE node_enrollments SET expiry=expiry+interval '1 day'`)
 	sqlError(t, err, "23514", "")
+}
+
+func Test16_4_PurgeSettingCannotGrantAuthority(t *testing.T) {
+	p := dbtest.New(t)
+	var super bool
+	if err := p.QueryRow(context.Background(), `SELECT rolsuper FROM pg_roles WHERE rolname=current_user`).Scan(&super); err != nil {
+		t.Fatal(err)
+	}
+	if !super {
+		t.Skip("role impersonation test requires superuser test admin; no cluster roles are created")
+	}
+	exec(t, p, `INSERT INTO audit_events(actor,actor_type,action,resource,result,occurred_at) VALUES('test','admin','test','test','succeeded',now()-interval '200 days')`)
+	// Built-in role; grants are on this isolated database's objects only.
+	exec(t, p, `GRANT DELETE ON audit_events TO pg_read_all_data`)
+	tx, err := p.Begin(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tx.Exec(context.Background(), `SET LOCAL ROLE pg_read_all_data`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tx.Exec(context.Background(), `SET LOCAL fvpn.retention_purge='on'`); err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(context.Background(), `DELETE FROM audit_events`)
+	sqlError(t, err, "23514", "")
+	_ = tx.Rollback(context.Background())
+	tx, err = p.Begin(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tx.Exec(context.Background(), `SET LOCAL ROLE pg_read_all_data`); err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(context.Background(), `SELECT purge_retained('audit_events',now()-interval '181 days','test')`)
+	sqlError(t, err, "42501", "")
+	_ = tx.Rollback(context.Background())
+}
+
+func TestMTR03_UsageEventKeyUnique(t *testing.T) {
+	p := dbtest.New(t)
+	f := seed(t, p)
+	for _, hash := range []string{"06", "07"} {
+		_, err := p.Exec(context.Background(), `INSERT INTO usage_events(node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,1,1,decode(repeat($3,32),'hex'),1)`, f.node, f.inc, hash)
+		sqlError(t, err, "23505", "usage_events_stream_key")
+	}
+	var hash string
+	if err := p.QueryRow(context.Background(), `SELECT encode(payload_hash,'hex') FROM usage_events WHERE id=$1`, f.event).Scan(&hash); err != nil || hash != strings.Repeat("06", 32) {
+		t.Fatalf("original receipt changed: %s %v", hash, err)
+	}
+}
+
+func Test15_4_ProjectionReceiptsAtomicIncrement(t *testing.T) {
+	p := dbtest.New(t)
+	f := seed(t, p)
+	ctx := context.Background()
+	exec(t, p, `INSERT INTO usage_rollups(member_id,period,granularity,projection_generation,metering_version,upload_bytes,download_bytes,last_observed_at,aggregate_as_of,period_start,period_end) VALUES($1,'2026-01','month',1,'test',0,0,now(),now(),'2026-01-01Z','2026-02-01Z')`, f.member)
+	apply := func(tx pgx.Tx) error {
+		tag, err := tx.Exec(ctx, `INSERT INTO projection_receipts(sample_id,projection_name,generation,period) VALUES($1,'monthly',1,'2026-01') ON CONFLICT DO NOTHING`, f.sample)
+		if err != nil || tag.RowsAffected() == 0 {
+			return err
+		}
+		_, err = tx.Exec(ctx, `UPDATE usage_rollups SET upload_bytes=upload_bytes+18446744073709551615,download_bytes=download_bytes+9007199254740993 WHERE member_id=$1 AND projection_generation=1`, f.member)
+		return err
+	}
+	abort := errors.New("test rollback")
+	if err := db.InTx(ctx, p, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := apply(tx); err != nil {
+			return err
+		}
+		return abort
+	}); !errors.Is(err, abort) {
+		t.Fatal(err)
+	}
+	for range 2 {
+		if err := db.InTx(ctx, p, db.TxOptions{}, apply); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var total string
+	if err := p.QueryRow(ctx, `SELECT total_bytes::text FROM usage_rollups`).Scan(&total); err != nil || total != "18455751272964292608" {
+		t.Fatalf("total=%s err=%v", total, err)
+	}
+}
+
+func TestMTR03_HistoricalBindingAndRecordCount(t *testing.T) {
+	p := dbtest.New(t)
+	f := seed(t, p)
+	var event uuid.UUID
+	if err := p.QueryRow(context.Background(), `INSERT INTO usage_events(node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,2,1,decode(repeat('01',32),'hex'),1) RETURNING id`, f.node, f.inc).Scan(&event); err != nil {
+		t.Fatal(err)
+	}
+	q := `INSERT INTO usage_samples(event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,$3,$4,1,gen_random_uuid(),$5,$6,0,0,'test',1,'trusted')`
+	_, err := p.Exec(context.Background(), q, event, 0, f.member, f.device, "2025-12-31Z", "2026-01-02Z")
+	sqlError(t, err, "23514", "")
+	_, err = p.Exec(context.Background(), q, event, 1, f.member, f.device, "2026-01-01Z", "2026-01-02Z")
+	sqlError(t, err, "23514", "")
+	exec(t, p, q, event, 0, f.member, f.device, "2026-01-01Z", "2026-01-02Z")
+}
+
+func Test16_4_PayloadPurgeRequiresWholeProjection(t *testing.T) {
+	p := dbtest.New(t)
+	f := seed(t, p)
+	ctx := context.Background()
+	event, sample := uuid.New(), uuid.New()
+	exec(t, p, `INSERT INTO usage_events(id,node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,$3,2,1,decode(repeat('01',32),'hex'),1)`, event, f.node, f.inc)
+	exec(t, p, `INSERT INTO usage_samples(id,event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,0,$3,$4,1,gen_random_uuid(),'2026-01-31Z','2026-02-02Z',2,0,'test-meter',1,'trusted')`, sample, event, f.member, f.device)
+	exec(t, p, `INSERT INTO usage_event_payloads(event_id,payload,created_at) VALUES($1,'\x01',now()-interval '40 days')`, event)
+	receipt := `INSERT INTO projection_receipts(sample_id,projection_name,generation,period) VALUES($1,'monthly',$2,$3)`
+	rollup := `INSERT INTO usage_rollups(member_id,period,granularity,projection_generation,metering_version,upload_bytes,download_bytes,last_observed_at,aggregate_as_of,period_start,period_end) VALUES($1,$2,'month',$3,'test-meter',1,0,now(),now(),$4,$5)`
+	checkPurge := func(want int) {
+		t.Helper()
+		var n int
+		if err := p.QueryRow(ctx, `SELECT purge_retained('usage_event_payloads',now()-interval '36 days','projection test')`).Scan(&n); err != nil || n != want {
+			t.Fatalf("purged %d want %d: %v", n, want, err)
+		}
+	}
+	exec(t, p, receipt, sample, "1", "2026-01")
+	exec(t, p, rollup, f.member, "2026-01", "1", "2026-01-01Z", "2026-02-01Z")
+	checkPurge(0)
+	exec(t, p, receipt, sample, "2", "2026-02")
+	exec(t, p, rollup, f.member, "2026-02", "2", "2026-02-01Z", "2026-03-01Z")
+	checkPurge(0)
+	exec(t, p, receipt, sample, "1", "2026-02")
+	exec(t, p, rollup, f.member, "2026-02", "1", "2026-02-01Z", "2026-03-01Z")
+	checkPurge(1)
+}
+
+func Test15_4_PayloadAndUpdateResultUnique(t *testing.T) {
+	p := dbtest.New(t)
+	f := seed(t, p)
+	exec(t, p, `INSERT INTO usage_event_payloads(event_id,payload) VALUES($1,'\x01')`, f.event)
+	_, err := p.Exec(context.Background(), `INSERT INTO usage_event_payloads(event_id,payload) VALUES($1,'\x02')`, f.event)
+	sqlError(t, err, "23505", "usage_event_payloads_event_id_key")
+	exec(t, p, `UPDATE update_targets SET execution_incarnation_id=$1 WHERE id=$2`, f.inc, f.target)
+	result := uuid.New()
+	exec(t, p, `INSERT INTO update_jobs(target_id,attempt,execution_incarnation_id,generation,result_id,result_hash) VALUES($1,1,$2,1,$3,decode(repeat('01',32),'hex'))`, f.target, f.inc, result)
+	_, err = p.Exec(context.Background(), `INSERT INTO update_jobs(target_id,attempt,execution_incarnation_id,generation,result_id,result_hash) VALUES($1,2,$2,1,$3,decode(repeat('01',32),'hex'))`, f.target, f.inc, result)
+	sqlError(t, err, "23505", "update_jobs_result_id_key")
+}
+
+func TestUPD_SnapshotIncarnationCannotChange(t *testing.T) {
+	p := dbtest.New(t)
+	f := seed(t, p)
+	exec(t, p, `UPDATE node_incarnations SET revoked_at=now() WHERE id=$1`, f.inc)
+	replacement := uuid.New()
+	exec(t, p, `INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,os,arch) VALUES($1,$2,decode(repeat('09',32),'hex'),'ubuntu','amd64')`, replacement, f.node)
+	_, err := p.Exec(context.Background(), `UPDATE update_targets SET execution_incarnation_id=$1 WHERE id=$2`, replacement, f.target)
+	sqlError(t, err, "23514", "update_targets_snapshot_execution_check")
 }
