@@ -2,12 +2,12 @@ package control
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,6 +24,7 @@ import (
 	usagepkg "github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 func usage() Domain {
@@ -74,7 +75,10 @@ func NewUsageDomain(uCfg *config.UsageConfig, pCfg *config.PoliciesConfig, signe
 			if err != nil {
 				return Built{}, err
 			}
-			return Built{Handlers: []any{h}}, nil
+			return Built{
+				Handlers: []any{h},
+				Runners:  []func(context.Context) error{h.RunCleanup},
+			}, nil
 		},
 	}
 }
@@ -89,9 +93,6 @@ type UsageHandler struct {
 	service   *usagepkg.Service
 	fupEngine *fup.Engine
 	fupWorker *fup.Worker
-
-	mu            sync.RWMutex
-	replayResults map[string][]api.UsageEventResult
 }
 
 // NewUsageHandler constructs a UsageHandler from explicit configuration.
@@ -143,19 +144,18 @@ func NewUsageHandler(
 	fupWorker := fup.NewWorker(engine)
 
 	return &UsageHandler{
-		pool:          pool,
-		logger:        logger,
-		service:       svc,
-		fupEngine:     engine,
-		fupWorker:     fupWorker,
-		replayResults: make(map[string][]api.UsageEventResult),
+		pool:      pool,
+		logger:    logger,
+		service:   svc,
+		fupEngine: engine,
+		fupWorker: fupWorker,
 	}, nil
 }
 
 // Service returns the underlying usage.Service.
 func (h *UsageHandler) Service() *usagepkg.Service { return h.service }
 
-// SubmitUsageBatch handles POST /api/v1/agent/usage-batches (§10.6, §14.3).
+// SubmitUsageBatch handles POST /api/v1/agent/usage-batches (§10.6, §14.3, §14.5).
 // Node identity comes strictly from the verified mTLS principal in context.
 // Data is committed to PostgreSQL before ACK; frozen ledger returns 503.
 func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBatchRequestObject) (gen.SubmitUsageBatchResponseObject, error) {
@@ -165,6 +165,37 @@ func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBa
 	}
 	if r.Body == nil {
 		return nil, apierr.New(apierr.MalformedRequest, "Request body is required.")
+	}
+
+	tx, hasTx := httpapi.Transaction(ctx)
+	var (
+		recordID uuid.UUID
+		expiry   time.Time
+	)
+	if hasTx == nil {
+		var err error
+		if r.Params.IdempotencyKey != nil {
+			key := uuid.UUID(*r.Params.IdempotencyKey)
+			kh := sha256.Sum256([]byte(key.String()))
+			err = tx.QueryRow(ctx, `
+				SELECT id, expiry
+				FROM idempotency_requests
+				WHERE principal = $1 AND method = 'POST' AND key_hash = $2 AND expiry > clock_timestamp()
+				FOR UPDATE
+			`, p.Scope(), kh[:]).Scan(&recordID, &expiry)
+		} else {
+			err = tx.QueryRow(ctx, `
+				SELECT id, expiry
+				FROM idempotency_requests
+				WHERE principal = $1 AND method = 'POST' AND state = 'in_progress' AND expiry > clock_timestamp()
+				ORDER BY created_at DESC
+				LIMIT 1
+				FOR UPDATE
+			`, p.Scope()).Scan(&recordID, &expiry)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("usage: lookup idempotency record for replay persistence: %w", err)
+		}
 	}
 
 	res, err := h.service.IngestBatch(ctx, usagepkg.NodeIdentity{
@@ -178,7 +209,17 @@ func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBa
 	// Notify coalesced FUP evaluation for members with newly accepted usage samples.
 	h.notifyFairUseOnAcceptedEvents(ctx, r.Body.Events, res.Results)
 
-	if _, txErr := httpapi.Transaction(ctx); txErr == nil {
+	if hasTx == nil {
+		rawBody, err := canonjson.Marshal(res.UsageBatchResult)
+		if err != nil {
+			return nil, fmt.Errorf("usage: marshal canonical replay body: %w", err)
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO usage_batch_replays (id, node_id, incarnation_id, response_body, expiry)
+			VALUES ($1, $2, $3, $4, $5)
+		`, recordID, p.NodeID, p.IncarnationID, rawBody, expiry); err != nil {
+			return nil, fmt.Errorf("usage: persist batch replay %s: %w", recordID, err)
+		}
 		nodeID := p.NodeID
 		if err := httpapi.SetResult(ctx, db.IdempotencyResult{
 			ResourceType:   "node",
@@ -186,12 +227,6 @@ func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBa
 			ResponseStatus: 200,
 		}); err != nil {
 			return nil, err
-		}
-		if r.Params.IdempotencyKey != nil {
-			key := uuid.UUID(*r.Params.IdempotencyKey).String()
-			h.mu.Lock()
-			h.replayResults[p.Scope()+":"+key] = res.UsageBatchResult.Results
-			h.mu.Unlock()
 		}
 	}
 
@@ -259,8 +294,8 @@ func (h *UsageHandler) GetMemberUsage(ctx context.Context, r gen.GetMemberUsageR
 	}, nil
 }
 
-// Replay handles idempotent retries for SubmitUsageBatch when an optional Idempotency-Key header was supplied (§14.5).
-func (h *UsageHandler) Replay(ctx context.Context, operationID string, _ db.IdempotencyRecord) (any, error) {
+// Replay handles idempotent retries for SubmitUsageBatch when an optional Idempotency-Key header was supplied (§14.5, §17.3).
+func (h *UsageHandler) Replay(ctx context.Context, operationID string, ref db.IdempotencyRecord) (any, error) {
 	if operationID != "SubmitUsageBatch" {
 		return nil, fmt.Errorf("usage: unsupported replay operation %q", operationID)
 	}
@@ -268,17 +303,73 @@ func (h *UsageHandler) Replay(ctx context.Context, operationID string, _ db.Idem
 	if p.Role != auth.Agent || p.NodeID == uuid.Nil || p.IncarnationID == uuid.Nil {
 		return nil, apierr.New(apierr.Unauthenticated, "Authenticated node mTLS identity required.")
 	}
+	if ref.ID == uuid.Nil {
+		return nil, fmt.Errorf("usage: missing idempotency record ID for replay")
+	}
+	if h.pool == nil {
+		return nil, apierr.New(apierr.DependencyUnavailable, "usage ledger database unavailable")
+	}
 
-	wm, err := h.service.GetStreamWatermark(ctx, usagepkg.NodeIdentity{
-		NodeID:            p.NodeID,
-		NodeIncarnationID: p.IncarnationID,
-	})
+	var (
+		storedNodeID uuid.UUID
+		storedIncID  uuid.UUID
+		rawBody      []byte
+	)
+	err := h.pool.QueryRow(ctx, `
+		SELECT node_id, incarnation_id, response_body
+		FROM usage_batch_replays
+		WHERE id = $1 AND expiry > clock_timestamp()
+	`, ref.ID).Scan(&storedNodeID, &storedIncID, &rawBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("usage: load batch replay %s: %w", ref.ID, err)
+	}
+	if storedNodeID != p.NodeID || storedIncID != p.IncarnationID {
+		return nil, apierr.New(apierr.Forbidden, "Node mTLS identity does not match idempotency record owner.")
+	}
+
+	var body api.UsageBatchResult
+	if err := json.Unmarshal(rawBody, &body); err != nil {
+		return nil, fmt.Errorf("usage: decode batch replay %s: %w", ref.ID, err)
 	}
 	return gen.SubmitUsageBatch200JSONResponse{
-		Body: wm,
+		Body: body,
 	}, nil
+}
+
+// CleanupReplays deletes expired usage_batch_replays rows and any rows whose
+// idempotency_requests record has been removed (§14.5).
+func (h *UsageHandler) CleanupReplays(ctx context.Context) error {
+	if h == nil || h.pool == nil {
+		return nil
+	}
+	_, err := h.pool.Exec(ctx, `
+		DELETE FROM usage_batch_replays
+		WHERE expiry <= clock_timestamp()
+		   OR NOT EXISTS (SELECT 1 FROM idempotency_requests r WHERE r.id = usage_batch_replays.id)
+	`)
+	return err
+}
+
+// RunCleanup periodically purges expired usage_batch_replays rows until ctx is canceled.
+func (h *UsageHandler) RunCleanup(ctx context.Context) error {
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			probe, cancel := context.WithTimeout(ctx, 10*time.Second)
+			err := h.CleanupReplays(probe)
+			cancel()
+			if ctx.Err() != nil {
+				return nil
+			}
+			if err != nil && h.logger != nil {
+				h.logger.Warn("usage batch replay cleanup failed", "error_code", "CLEANUP_FAILED")
+			}
+		}
+	}
 }
 
 // GetMemberUsageSummary returns the compact api.MemberUsageSummary for member detail/list views.

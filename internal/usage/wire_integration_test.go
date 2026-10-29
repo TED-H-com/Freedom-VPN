@@ -3,6 +3,7 @@
 package usage_test
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -15,12 +16,16 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"github.com/pressly/goose/v3"
 
 	"github.com/TED-H-com/Freedom-VPN/apps/control"
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
+	"github.com/TED-H-com/Freedom-VPN/db/migrations"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest"
@@ -29,6 +34,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
@@ -302,6 +308,17 @@ func TestAT14_AT15_AT16_AT17_AT19_HTTPUsageIngestBoundarySplitAndDrillDown(t *te
 	w1Replay := st.doAgent(t, http.MethodPost, "/api/v1/agent/usage-batches", string(req1Bytes), idemBatch1)
 	if w1Replay.Code != http.StatusOK {
 		t.Fatalf("batch 1 replay status=%d body=%s", w1Replay.Code, w1Replay.Body.String())
+	}
+	c1, err := canonjson.Canonicalize(w1.Body.Bytes())
+	if err != nil {
+		t.Fatalf("canonjson w1: %v", err)
+	}
+	c1Replay, err := canonjson.Canonicalize(w1Replay.Body.Bytes())
+	if err != nil {
+		t.Fatalf("canonjson w1Replay: %v", err)
+	}
+	if !bytes.Equal(c1, c1Replay) {
+		t.Fatalf("expected byte-identical canonical replay body:\nfirst=%s\nreplay=%s", c1, c1Replay)
 	}
 	diffReqBytes, _ := json.Marshal(api.UsageBatchRequest{
 		NodeId:            openapi_types.UUID(st.node1),
@@ -737,5 +754,302 @@ func TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination(t *testing
 	}
 	if !foundPurge || !foundBeginRecovery {
 		t.Fatalf("expected retention.purge (%v) and usage_ledger.begin_recovery (%v) in paginated audit events", foundPurge, foundBeginRecovery)
+	}
+}
+
+func TestUsageBatchIdempotentReplayDurableAcrossRestartAndCleanup(t *testing.T) {
+	st := newUsageHTTPStack(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	id1 := usage.NodeIdentity{NodeID: st.node1, NodeIncarnationID: st.inc1}
+	id2 := usage.NodeIdentity{NodeID: st.node2, NodeIncarnationID: st.inc2}
+	base := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
+
+	ev1 := makeSignedEvent(t, id1, 1, meterEpoch, base, base.Add(5*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        st.memberA,
+			DeviceId:        st.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     1024,
+			DownloadBytes:   2048,
+		},
+	})
+	ev3 := makeSignedEvent(t, id1, 3, meterEpoch, base.Add(10*time.Minute), base.Add(15*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        st.memberA,
+			DeviceId:        st.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     512,
+			DownloadBytes:   1536,
+		},
+	})
+
+	idemKey := uuid.NewString()
+	req1Bytes, err := json.Marshal(api.UsageBatchRequest{
+		NodeId:            openapi_types.UUID(st.node1),
+		NodeIncarnationId: openapi_types.UUID(st.inc1),
+		LedgerEpoch:       presence.NewNullNullable[openapi_types.UUID](),
+		Events:            []api.UsageEvent{ev1, ev3},
+	})
+	if err != nil {
+		t.Fatalf("marshal req1: %v", err)
+	}
+
+	// 1. First keyed submit returns N=2 results.
+	w1 := st.doAgent(t, http.MethodPost, "/api/v1/agent/usage-batches", string(req1Bytes), idemKey)
+	if w1.Code != http.StatusOK {
+		t.Fatalf("first submit status=%d body=%s", w1.Code, w1.Body.String())
+	}
+	var res1 api.UsageBatchResult
+	if err := json.Unmarshal(w1.Body.Bytes(), &res1); err != nil {
+		t.Fatalf("unmarshal res1: %v", err)
+	}
+	if len(res1.Results) != 2 || res1.Results[0].Status != api.UsageEventResultStatusAccepted || res1.Results[1].Status != api.UsageEventResultStatusAccepted {
+		t.Fatalf("expected 2 accepted results, got %+v", res1.Results)
+	}
+	if res1.HighestContiguousSeq != decstr.U64(1) {
+		t.Fatalf("expected highest_contiguous_seq=1, got %s", res1.HighestContiguousSeq)
+	}
+	canon1, err := canonjson.Canonicalize(w1.Body.Bytes())
+	if err != nil {
+		t.Fatalf("Canonicalize(w1): %v", err)
+	}
+
+	var eventsBefore, samplesBefore int
+	if err := st.pool.QueryRow(ctx, `SELECT count(*) FROM usage_events`).Scan(&eventsBefore); err != nil {
+		t.Fatalf("count usage_events: %v", err)
+	}
+	if err := st.pool.QueryRow(ctx, `SELECT count(*) FROM usage_samples`).Scan(&samplesBefore); err != nil {
+		t.Fatalf("count usage_samples: %v", err)
+	}
+	if eventsBefore != 2 || samplesBefore != 2 {
+		t.Fatalf("expected 2 usage_events and 2 usage_samples, got events=%d samples=%d", eventsBefore, samplesBefore)
+	}
+
+	// 2. Construct a fresh UsageHandler and fresh HTTP server instance (simulated restart)
+	// using D-039 fixtures (usagetest.New(t), policiestest.New(t)) against the same PostgreSQL pool.
+	uFix2 := usagetest.New(t)
+	pFix2 := policiestest.New(t)
+	freshUH, err := control.NewUsageHandler(st.pool, nil, uFix2.Usage, pFix2.Policies, nil)
+	if err != nil {
+		t.Fatalf("NewUsageHandler (restart): %v", err)
+	}
+
+	c2 := config.Defaults()
+	c2.PublicOrigin = "https://portal.example.invalid"
+	c2.BrowserRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	c2.AgentRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	c2.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	c2.PoliciesConfigFile = pFix2.Path
+	c2.UsageConfigFile = uFix2.Path
+	restartedHandlers, err := httpapi.Compose(freshUH)
+	if err != nil {
+		t.Fatalf("httpapi.Compose(freshUH): %v", err)
+	}
+	var currentAgentP = st.agentP
+	restartedAgentAPI, err := httpapi.New(restartedHandlers, httpapi.Options{
+		Config:        c2,
+		AgentListener: true,
+		Agents: auth.AgentAuthenticatorFunc(func(context.Context, *x509.Certificate) (auth.Principal, error) {
+			return currentAgentP, nil
+		}),
+		Commands: &httpapi.Commands{Pool: st.pool, Retention: time.Hour},
+	})
+	if err != nil {
+		t.Fatalf("httpapi.New(restarted): %v", err)
+	}
+	restartedTransport := httpapi.Transport(nil, restartedAgentAPI)
+
+	doRestartedAgent := func(body, key string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest(http.MethodPost, "/api/v1/agent/usage-batches", strings.NewReader(body))
+		r.TLS = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{}}}}
+		r.Header.Set("Content-Type", "application/json")
+		if key != "" {
+			r.Header.Set("Idempotency-Key", key)
+		}
+		w := httptest.NewRecorder()
+		restartedTransport.ServeHTTP(w, r)
+		return w
+	}
+
+	// Replay the same key and body against the fresh UsageHandler instance.
+	w2 := doRestartedAgent(string(req1Bytes), idemKey)
+	if w2.Code != http.StatusOK {
+		t.Fatalf("restarted replay status=%d body=%s", w2.Code, w2.Body.String())
+	}
+	canon2, err := canonjson.Canonicalize(w2.Body.Bytes())
+	if err != nil {
+		t.Fatalf("Canonicalize(w2): %v", err)
+	}
+	if !bytes.Equal(canon1, canon2) {
+		t.Fatalf("replayed body across restart is not byte-identical:\nfirst =%s\nreplay=%s", canon1, canon2)
+	}
+	var res2 api.UsageBatchResult
+	if err := json.Unmarshal(w2.Body.Bytes(), &res2); err != nil {
+		t.Fatalf("unmarshal res2: %v", err)
+	}
+	if len(res2.Results) != 2 || res2.Results[0].EventSeq != decstr.U64(1) || res2.Results[1].EventSeq != decstr.U64(3) {
+		t.Fatalf("expected 2 results in order on replay, got %+v", res2.Results)
+	}
+	var eventsAfter, samplesAfter int
+	if err := st.pool.QueryRow(ctx, `SELECT count(*) FROM usage_events`).Scan(&eventsAfter); err != nil {
+		t.Fatalf("count usage_events after replay: %v", err)
+	}
+	if err := st.pool.QueryRow(ctx, `SELECT count(*) FROM usage_samples`).Scan(&samplesAfter); err != nil {
+		t.Fatalf("count usage_samples after replay: %v", err)
+	}
+	if eventsAfter != eventsBefore || samplesAfter != samplesBefore {
+		t.Fatalf("ledger row count changed on replay: before=(%d,%d) after=(%d,%d)", eventsBefore, samplesBefore, eventsAfter, samplesAfter)
+	}
+
+	// Adapted reproduction of UsageHandlerReplayReturnsEmptyResultsSlice:
+	// Direct call to freshUH.Replay with the persisted db.IdempotencyRecord.ID returns all 2 results,
+	// and rejects a mismatched node principal with 403 FORBIDDEN.
+	var node1RecID uuid.UUID
+	if err := st.pool.QueryRow(ctx, `SELECT id FROM idempotency_requests WHERE principal = $1`, st.agentP.Scope()).Scan(&node1RecID); err != nil {
+		t.Fatalf("select node1 idempotency record ID: %v", err)
+	}
+	agentCtx1 := auth.WithPrincipal(ctx, st.agentP)
+	directReplay, err := freshUH.Replay(agentCtx1, "SubmitUsageBatch", db.IdempotencyRecord{ID: node1RecID})
+	if err != nil {
+		t.Fatalf("direct freshUH.Replay: %v", err)
+	}
+	directCanon, err := canonjson.Marshal(directReplay)
+	if err != nil {
+		t.Fatalf("canonjson directReplay: %v", err)
+	}
+	// Note: gen.SubmitUsageBatch200JSONResponse has field Body, whereas HTTP response encodes Body.
+	if !strings.Contains(string(directCanon), `"event_seq":"1"`) || !strings.Contains(string(directCanon), `"event_seq":"3"`) {
+		t.Fatalf("direct Replay missing event results: %s", directCanon)
+	}
+	agentCtx2 := auth.WithPrincipal(ctx, auth.Principal{Role: auth.Agent, NodeID: st.node2, IncarnationID: st.inc2})
+	if _, err := freshUH.Replay(agentCtx2, "SubmitUsageBatch", db.IdempotencyRecord{ID: node1RecID}); err == nil {
+		t.Fatalf("expected error when node2 principal attempts to replay node1's record ID")
+	}
+
+	// 3. Same key with a different body -> 409 IDEMPOTENCY_CONFLICT from the framework.
+	diffBytes, _ := json.Marshal(api.UsageBatchRequest{
+		NodeId:            openapi_types.UUID(st.node1),
+		NodeIncarnationId: openapi_types.UUID(st.inc1),
+		LedgerEpoch:       presence.NewNullNullable[openapi_types.UUID](),
+		Events:            []api.UsageEvent{ev1},
+	})
+	wConflict := doRestartedAgent(string(diffBytes), idemKey)
+	if wConflict.Code != http.StatusConflict || !strings.Contains(wConflict.Body.String(), "IDEMPOTENCY_CONFLICT") {
+		t.Fatalf("expected 409 IDEMPOTENCY_CONFLICT, got status=%d body=%s", wConflict.Code, wConflict.Body.String())
+	}
+
+	// 4. Different node incarnation (node2, inc2) presenting the exact same Idempotency-Key gets its own record,
+	// never node1's results.
+	currentAgentP = auth.Principal{Role: auth.Agent, NodeID: st.node2, IncarnationID: st.inc2}
+	evNode2 := makeSignedEvent(t, id2, 1, uuid.New(), base, base.Add(5*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        st.memberA,
+			DeviceId:        st.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     4096,
+			DownloadBytes:   8192,
+		},
+	})
+	reqNode2Bytes, _ := json.Marshal(api.UsageBatchRequest{
+		NodeId:            openapi_types.UUID(st.node2),
+		NodeIncarnationId: openapi_types.UUID(st.inc2),
+		LedgerEpoch:       presence.NewNullNullable[openapi_types.UUID](),
+		Events:            []api.UsageEvent{evNode2},
+	})
+	wNode2First := doRestartedAgent(string(reqNode2Bytes), idemKey)
+	if wNode2First.Code != http.StatusOK {
+		t.Fatalf("node2 first submit with same key status=%d body=%s", wNode2First.Code, wNode2First.Body.String())
+	}
+	var resNode2 api.UsageBatchResult
+	if err := json.Unmarshal(wNode2First.Body.Bytes(), &resNode2); err != nil {
+		t.Fatalf("unmarshal resNode2: %v", err)
+	}
+	if uuid.UUID(resNode2.NodeId) != st.node2 || uuid.UUID(resNode2.NodeIncarnationId) != st.inc2 || len(resNode2.Results) != 1 {
+		t.Fatalf("unexpected node2 result: %+v", resNode2)
+	}
+	wNode2Replay := doRestartedAgent(string(reqNode2Bytes), idemKey)
+	if wNode2Replay.Code != http.StatusOK {
+		t.Fatalf("node2 replay status=%d body=%s", wNode2Replay.Code, wNode2Replay.Body.String())
+	}
+	cNode2First, _ := canonjson.Canonicalize(wNode2First.Body.Bytes())
+	cNode2Replay, _ := canonjson.Canonicalize(wNode2Replay.Body.Bytes())
+	if !bytes.Equal(cNode2First, cNode2Replay) {
+		t.Fatalf("node2 replay mismatch:\nfirst =%s\nreplay=%s", cNode2First, cNode2Replay)
+	}
+
+	// 5. Missing replay row for a completed record is an internal error (500 INTERNAL_ERROR), not an empty result.
+	// Delete node2's row from usage_batch_replays while leaving its idempotency_requests row intact.
+	var node2RecID uuid.UUID
+	if err := st.pool.QueryRow(ctx, `SELECT id FROM idempotency_requests WHERE principal = $1`, currentAgentP.Scope()).Scan(&node2RecID); err != nil {
+		t.Fatalf("select node2 idempotency record ID: %v", err)
+	}
+	mustExec(t, st.pool, `DELETE FROM usage_batch_replays WHERE id = $1`, node2RecID)
+	wMissing := doRestartedAgent(string(reqNode2Bytes), idemKey)
+	if wMissing.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500 INTERNAL_ERROR when replay row is missing for completed record, got status=%d body=%s", wMissing.Code, wMissing.Body.String())
+	}
+
+	// 6. Expired record -> replay row gone after cleanup.
+	mustExec(t, st.pool, `
+		UPDATE idempotency_requests
+		SET created_at = clock_timestamp() - interval '2 hours',
+		    expiry     = clock_timestamp() - interval '1 hour'
+		WHERE id = $1
+	`, node1RecID)
+	mustExec(t, st.pool, `
+		UPDATE usage_batch_replays
+		SET created_at = clock_timestamp() - interval '2 hours',
+		    expiry     = clock_timestamp() - interval '1 hour'
+		WHERE id = $1
+	`, node1RecID)
+
+	if err := (&httpapi.Commands{Pool: st.pool}).Cleanup(ctx); err != nil {
+		t.Fatalf("Commands.Cleanup: %v", err)
+	}
+	if err := freshUH.CleanupReplays(ctx); err != nil {
+		t.Fatalf("freshUH.CleanupReplays: %v", err)
+	}
+
+	var remainingReplays int
+	if err := st.pool.QueryRow(ctx, `SELECT count(*) FROM usage_batch_replays WHERE id = $1`, node1RecID).Scan(&remainingReplays); err != nil {
+		t.Fatalf("count remaining usage_batch_replays: %v", err)
+	}
+	if remainingReplays != 0 {
+		t.Fatalf("expected expired replay row to be deleted after cleanup, got %d", remainingReplays)
+	}
+}
+
+func TestMigration00131_UsageBatchReplayGooseUpDownRoundTrip(t *testing.T) {
+	pool := dbtest.NewUnmigrated(t)
+	ctx := context.Background()
+	sqlDB := stdlib.OpenDBFromPool(pool)
+	defer sqlDB.Close()
+
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, migrations.FS)
+	if err != nil {
+		t.Fatalf("goose.NewProvider: %v", err)
+	}
+	if _, err := provider.UpTo(ctx, 131); err != nil {
+		t.Fatalf("UpTo(131): %v", err)
+	}
+	var exists bool
+	if err := pool.QueryRow(ctx, `SELECT to_regclass('public.usage_batch_replays') IS NOT NULL`).Scan(&exists); err != nil || !exists {
+		t.Fatalf("expected usage_batch_replays to exist after UpTo(131): exists=%v err=%v", exists, err)
+	}
+	if _, err := provider.DownTo(ctx, 130); err != nil {
+		t.Fatalf("DownTo(130): %v", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT to_regclass('public.usage_batch_replays') IS NOT NULL`).Scan(&exists); err != nil || exists {
+		t.Fatalf("expected usage_batch_replays to be dropped after DownTo(130): exists=%v err=%v", exists, err)
+	}
+	if _, err := provider.Up(ctx); err != nil {
+		t.Fatalf("Up(all): %v", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT to_regclass('public.usage_batch_replays') IS NOT NULL`).Scan(&exists); err != nil || !exists {
+		t.Fatalf("expected usage_batch_replays to exist after Up(all): exists=%v err=%v", exists, err)
 	}
 }
