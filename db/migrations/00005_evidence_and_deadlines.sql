@@ -112,7 +112,21 @@ CREATE TRIGGER members_identity BEFORE UPDATE ON members FOR EACH ROW EXECUTE FU
 CREATE TRIGGER nodes_identity BEFORE UPDATE ON nodes FOR EACH ROW EXECUTE FUNCTION immutable_fields('id');
 CREATE TRIGGER member_devices_identity BEFORE UPDATE ON member_devices FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','deployment_id','peer_id');
 CREATE TRIGGER device_bindings_identity BEFORE UPDATE ON device_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','device_id','member_id','overlay_scope','overlay_ip','binding_revision','valid_from','peer_ref');
-CREATE TRIGGER node_incarnations_identity BEFORE UPDATE ON node_incarnations FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','node_id','public_key_fingerprint','deployment_id','peer_id','created_at');
+CREATE TRIGGER node_incarnations_identity BEFORE UPDATE ON node_incarnations FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','node_id','public_key_fingerprint','created_at');
+-- §6.2, §7.2: enrollment can precede external peer read-back. Bind both IDs
+-- once; retries may preserve the same pair, but cannot clear or reassign it.
+-- The both-or-neither CHECK, composite uniqueness and revocation trigger remain.
+-- +goose StatementBegin
+CREATE FUNCTION guard_incarnation_binding() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF OLD.deployment_id IS NOT NULL AND
+    (NEW.deployment_id,NEW.peer_id) IS DISTINCT FROM (OLD.deployment_id,OLD.peer_id) THEN
+  RAISE EXCEPTION 'immutable incarnation peer binding' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
+-- +goose StatementEnd
+CREATE TRIGGER node_incarnations_binding BEFORE UPDATE ON node_incarnations FOR EACH ROW EXECUTE FUNCTION guard_incarnation_binding();
 CREATE TRIGGER identity_bindings_identity BEFORE UPDATE ON identity_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','issuer','client_scope','subject');
 CREATE TRIGGER netbird_user_bindings_identity BEFORE UPDATE ON netbird_user_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','deployment_id','external_user_id','identity_binding_id');
 

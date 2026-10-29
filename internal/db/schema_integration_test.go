@@ -262,7 +262,28 @@ func TestUPD_UpdateTargetAndJobUnique(t *testing.T) {
 // reports every embedded migration. All subprocess scratch inherits the
 // integration runner's disk TMPDIR; credentials are passed only in environment.
 func Test15_5_MigrateCLI(t *testing.T) {
-	p := dbtest.NewUnmigrated(t)
+	p, dsn := dbtest.NewUnmigratedWithDSN(t)
+	admin, err := db.Open(t.Context(), os.Getenv("FVPN_TEST_DATABASE_URL"), db.OpenOptions{MaxConns: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Close()
+	assertAdminClean := func() {
+		t.Helper()
+		var clean bool
+		if err := admin.QueryRow(t.Context(), `SELECT to_regclass('public.goose_db_version') IS NULL
+ AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname='public')`).Scan(&clean); err != nil || !clean {
+			t.Fatalf("shared admin database must have no public tables: clean=%t err=%v", clean, err)
+		}
+	}
+	assertAdminClean()
+	// Also check after an unexpected CLI failure, before closing the admin pool.
+	defer assertAdminClean()
+	var name string
+	if err := p.QueryRow(t.Context(), `SELECT current_database()`).Scan(&name); err != nil {
+		t.Fatal(err)
+	}
+	identity := fmt.Sprintf("current_database=%q\n", name)
 	binary := filepath.Join(t.TempDir(), "fvpn-migrate")
 	build := osexec.CommandContext(t.Context(), "go", "build", "-o", binary, "./cmd/fvpn-migrate")
 	if output, err := build.CombinedOutput(); err != nil {
@@ -271,12 +292,15 @@ func Test15_5_MigrateCLI(t *testing.T) {
 	run := func(arg string) string {
 		t.Helper()
 		cmd := osexec.CommandContext(t.Context(), binary, arg)
-		cmd.Env = append(os.Environ(), "FVPN_DATABASE_URL="+p.Config().ConnConfig.ConnString())
+		cmd.Env = append(os.Environ(), "FVPN_DATABASE_URL="+dsn)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Fatalf("migration CLI %s: %v\n%s", arg, err, output)
 		}
-		return string(output)
+		if !strings.HasPrefix(string(output), identity) {
+			t.Fatalf("CLI did not report the isolated current_database: %s", output)
+		}
+		return strings.TrimPrefix(string(output), identity)
 	}
 	for range 2 {
 		if output := run("up"); strings.TrimSpace(output) != "migrations applied" {
@@ -291,5 +315,7 @@ func Test15_5_MigrateCLI(t *testing.T) {
 	if output := run("status"); output != expected.String() {
 		t.Fatalf("unexpected status: %s", output)
 	}
+	reviewCount(t, p, `SELECT count(*) FROM goose_db_version WHERE is_applied AND version_id > 0`, len(versions))
+	t.Log("CLI current_database matched isolated database; shared admin has no public tables")
 	t.Logf("CLI: empty up, repeated up and all %d embedded migration statuses verified", len(versions))
 }
