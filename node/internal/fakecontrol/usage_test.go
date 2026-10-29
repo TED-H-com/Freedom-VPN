@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
@@ -61,15 +62,43 @@ func TestUsageContiguousAndConflict(t *testing.T) {
 		t.Fatal(rec.Body.String())
 	}
 
-	// A different hash for sequence 1 conflicts and does not replace it.
+	// A different hash for sequence 1 is a per-event conflict on 200.
+	// A later sequence in the same batch is not stored past the hole.
 	bad := usageEvent(t, 1, "other")
-	rec = postUsage(t, s, node, inc, batchBody(t, nil, node, inc, bad))
-	if rec.Code != http.StatusConflict || !bytes.Contains(rec.Body.Bytes(), []byte("USAGE_EVENT_CONFLICT")) {
+	later := usageEvent(t, 5, "e")
+	rec = postUsage(t, s, node, inc, batchBody(t, nil, node, inc, bad, later))
+	if rec.Code != http.StatusOK {
 		t.Fatalf("conflict %d %s", rec.Code, rec.Body.String())
+	}
+	var conflicted api.UsageBatchResult
+	if err := json.Unmarshal(rec.Body.Bytes(), &conflicted); err != nil {
+		t.Fatalf("conflict body: %v %s", err, rec.Body.String())
+	}
+	blocked, err := conflicted.BlockedSeq.Get()
+	if err != nil || blocked.String() != "1" || conflicted.HighestContiguousSeq.String() != "2" {
+		t.Fatalf("blocked %+v highest %s err %v", conflicted.BlockedSeq, conflicted.HighestContiguousSeq, err)
+	}
+	if len(conflicted.Results) != 2 || conflicted.Results[0].Status != api.UsageEventResultStatusConflict || conflicted.Results[1].Status != api.UsageEventResultStatusRejected {
+		t.Fatalf("results %+v", conflicted.Results)
+	}
+	cerr, err := conflicted.Results[0].Error.Get()
+	if err != nil || cerr.Code != api.ErrorCodeUSAGEEVENTCONFLICT || cerr.Message == "" {
+		t.Fatalf("conflict error %+v %v", cerr, err)
 	}
 	view := s.UsageReport()
 	if len(view.Nodes) != 1 || view.Nodes[0].Highest != 2 || view.Nodes[0].Events != 3 {
 		t.Fatalf("ledger changed after conflict: %+v", view)
+	}
+
+	// The whole-request 409 path stays behind the knob and stores nothing.
+	s.SetUsageConflict(1)
+	rec = postUsage(t, s, node, inc, batchBody(t, nil, node, inc, later))
+	if rec.Code != http.StatusConflict || !bytes.Contains(rec.Body.Bytes(), []byte("USAGE_EVENT_CONFLICT")) {
+		t.Fatalf("409 knob %d %s", rec.Code, rec.Body.String())
+	}
+	view = s.UsageReport()
+	if len(view.Nodes) != 1 || view.Nodes[0].Highest != 2 || view.Nodes[0].Events != 3 {
+		t.Fatalf("409 knob stored the batch: %+v", view)
 	}
 
 	s.SetUsageUnavailable(1)
