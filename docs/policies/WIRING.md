@@ -51,7 +51,6 @@ Loaded via `config.PoliciesFromConfig(d.Config)` or `config.LoadPolicies(path)` 
 | JSON Field / Setting Name | Type | Default | Description |
 |---|---|---|---|
 | `fup_mode` | `"" \| "shadow" \| "enforce"` | `""` (uses active `fair_use` policy revision's `mode`) | Optional operator override for Fair-Use evaluation mode (`shadow` vs. `enforce`, §11.2). |
-| `policies_signing_key_ref` | `string` | `"central-policy-key"` | Default key reference recorded on `policy_revisions.signing_key_ref` when not explicitly supplied. |
-| `fup_coalesce_seconds` | `int` (`1..3600`) | `5` (`5s`) | Coalescing window for `fup.Worker` member evaluation sweeps. |
-| `fup_batch_size` | `int` (`1..10000`) | `256` | Maximum member batch size per coalesced Fair-Use sweep. |
-| `upstream_dns` | `[]string` (IP literals) | `["1.1.1.1", "9.9.9.9"]` | Upstream DNS resolver literals embedded when compiling `dns_profile` bundles. |
+| `fup_sweep_seconds` | `int` (`1..86400`) | `60` | Coalescing / sweep interval in seconds for `fup.Worker` member evaluation sweeps. |
+| `fup_batch_size` | `int` (`1..10000`) | `64` | Maximum member batch size per coalesced Fair-Use sweep. |
+| `dns_upstream_profile` | `string` (non-empty) | `"cloudflare"` | Upstream DNS resolver profile name used by policy compilation. |

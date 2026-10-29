@@ -77,7 +77,7 @@ func WithPolicies(ctx context.Context, s *PoliciesServices) context.Context {
 
 // PoliciesFromContext retrieves the PoliciesServices attached to the worker context.
 func PoliciesFromContext(ctx context.Context) *PoliciesServices {
-	s, _ := ctx.Value(policiesContextKey{}).( *PoliciesServices)
+	s, _ := ctx.Value(policiesContextKey{}).(*PoliciesServices)
 	return s
 }
 
