@@ -1,0 +1,36 @@
+{
+  "id": "member-traffic",
+  "title": "Member device and exit traffic",
+  "spec": [
+    "§8",
+    "§19 AT12"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "member_id_present",
+      "detail": "true"
+    },
+    {
+      "name": "grant",
+      "detail": "422 VALIDATION_FAILED"
+    },
+    {
+      "name": "member_netbird",
+      "detail": "setup key HTTP 422"
+    },
+    {
+      "name": "devices",
+      "detail": "200"
+    },
+    {
+      "name": "checkout",
+      "detail": "404 RESOURCE_NOT_FOUND"
+    },
+    {
+      "name": "traffic",
+      "detail": "not claimed; no authorized device path produced a flow"
+    }
+  ],
+  "at": "2026-10-29T22:07:42Z"
+}

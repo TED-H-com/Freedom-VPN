@@ -1,0 +1,10 @@
+FROM netbirdio/netbird:0.82.0@sha256:eca5b274c635bfbb04ec6724a0712d1146190dd450eea199eeb83916fdd94965 AS nb
+FROM ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates iproute2 nftables wget \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=nb /usr/local/bin/netbird /usr/local/bin/netbird
+COPY fvpn-agent fvpn-watchdog fvpn-updater entrypoint-node.sh entrypoint-member.sh /usr/local/bin/
+RUN chmod 755 /usr/local/bin/fvpn-agent /usr/local/bin/fvpn-watchdog /usr/local/bin/fvpn-updater \
+    /usr/local/bin/netbird /usr/local/bin/entrypoint-node.sh /usr/local/bin/entrypoint-member.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint-node.sh"]

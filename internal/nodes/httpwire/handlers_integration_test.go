@@ -324,7 +324,18 @@ func TestAT23_AT24_AT26_HTTPBatchSnapshotAndResultEvidence(t *testing.T) {
 		}
 	}
 	hash()
-	ack := decode[api.UpdateResultAck](t, f.call("POST", "/api/v1/agent/update-results", result, cert, nil), 202)
+	resultKey := map[string]string{"Idempotency-Key": uuid.NewString()}
+	firstResult := f.call("POST", "/api/v1/agent/update-results", result, cert, resultKey)
+	ack := decode[api.UpdateResultAck](t, firstResult, 202)
+	keyedResult := f.call("POST", "/api/v1/agent/update-results", result, cert, resultKey)
+	decode[api.UpdateResultAck](t, keyedResult, 202)
+	if !bytes.Equal(firstResult.Body.Bytes(), keyedResult.Body.Bytes()) {
+		t.Fatal("keyed result replay changed receipt")
+	}
+	var resultRows int
+	if e = f.r.Pool.QueryRow(ctx, `SELECT count(*) FROM update_results WHERE result_id=$1`, result.ResultId).Scan(&resultRows); e != nil || resultRows != 1 {
+		t.Fatal("keyed result replay wrote another row", resultRows, e)
+	}
 	again := decode[api.UpdateResultAck](t, f.call("POST", "/api/v1/agent/update-results", result, cert, nil), 202)
 	if !ack.ReceivedAt.Equal(again.ReceivedAt) {
 		t.Fatal("result receipt changed")
@@ -353,7 +364,18 @@ func TestAT23_AT24_AT26_HTTPBatchSnapshotAndResultEvidence(t *testing.T) {
 	report.MemberForwardingEnabled = false
 	report.Netbird.PeerId.SetNull()
 	report.Lease.LeaseId.SetNull()
-	observed := decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), 202)
+	observationKey := map[string]string{"Idempotency-Key": uuid.NewString()}
+	firstObservation := f.call("POST", "/api/v1/agent/observations", report, cert, observationKey)
+	observed := decode[api.ObservationAccepted](t, firstObservation, 202)
+	keyedObservation := f.call("POST", "/api/v1/agent/observations", report, cert, observationKey)
+	decode[api.ObservationAccepted](t, keyedObservation, 202)
+	if !bytes.Equal(firstObservation.Body.Bytes(), keyedObservation.Body.Bytes()) {
+		t.Fatal("keyed observation replay changed receipt")
+	}
+	var observationRows int
+	if e = f.r.Pool.QueryRow(ctx, `SELECT count(*) FROM node_observations WHERE report_id=$1`, report.ReportId).Scan(&observationRows); e != nil || observationRows != 1 {
+		t.Fatal("keyed observation replay wrote another row", observationRows, e)
+	}
 	duplicate := decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), 202)
 	if !observed.ReceivedAt.Equal(duplicate.ReceivedAt) {
 		t.Fatal("observation dedupe")
@@ -391,7 +413,18 @@ func TestAT29_HTTPSignedLeaseWindowAndReplay(t *testing.T) {
 	}
 	_, enrolled, cert := f.enroll(f.create(nil))
 	r := api.LeaseRenewalRequest{RenewalRequestId: uuid.New(), NodeId: enrolled.NodeId, NodeIncarnationId: enrolled.NodeIncarnationId, CurrentLeaseId: presence.NewNullNullable[uuid.UUID](), AppliedConfigGeneration: presence.NewNullNullable[decstr.U64]()}
-	a := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", r, cert, nil), 200)
+	key := map[string]string{"Idempotency-Key": uuid.NewString()}
+	first := f.call("POST", "/api/v1/agent/lease-renewals", r, cert, key)
+	a := decode[api.ServingLeaseEnvelope](t, first, 200)
+	replayed := f.call("POST", "/api/v1/agent/lease-renewals", r, cert, key)
+	decode[api.ServingLeaseEnvelope](t, replayed, 200)
+	if !bytes.Equal(first.Body.Bytes(), replayed.Body.Bytes()) {
+		t.Fatal("keyed lease replay changed envelope or signature")
+	}
+	var leaseRows int
+	if e := f.r.Pool.QueryRow(ctx, `SELECT count(*) FROM serving_leases WHERE renewal_request_id=$1`, r.RenewalRequestId).Scan(&leaseRows); e != nil || leaseRows != 1 {
+		t.Fatal("keyed lease replay wrote another row", leaseRows, e)
+	}
 	b := decode[api.ServingLeaseEnvelope](t, f.call("POST", "/api/v1/agent/lease-renewals", r, cert, nil), 200)
 	if a.Signed.LeaseId != b.Signed.LeaseId || !a.Signed.ExpiresAt.Equal(b.Signed.ExpiresAt) || a.Signed.ExpiresAt.Sub(a.Signed.IssuedAt) != 24*time.Hour || len(a.Signed.Members) != 0 {
 		t.Fatal("lease replay or deadline changed")

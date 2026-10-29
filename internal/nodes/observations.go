@@ -28,6 +28,11 @@ const (
 	DefaultOfflineTimeout    = 180 * time.Second
 )
 
+// SubmitObservationTx joins observation ingestion to the caller's command transaction (§14.5).
+func (s *Service) SubmitObservationTx(ctx context.Context, tx pgx.Tx, nodeID, incarnationID uuid.UUID, report api.ObservationReport) (api.ObservationAccepted, error) {
+	return s.SubmitObservation(commandtx.WithTransaction(ctx, tx), nodeID, incarnationID, report)
+}
+
 // SubmitObservation ingests an agent observation report (`POST /agent/observations`, §5.1, §14.4, §15.3).
 //
 // Invariants enforced:
