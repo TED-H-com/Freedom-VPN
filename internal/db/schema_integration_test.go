@@ -16,7 +16,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func exec(t *testing.T, p *pgxpool.Pool, sql string, args ...any) {
+func exec(t *testing.T, p interface {
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+}, sql string, args ...any) {
 	t.Helper()
 	if _, err := p.Exec(context.Background(), sql, args...); err != nil {
 		t.Fatalf("SQL failed: %v\n%s", err, sql)
@@ -36,40 +38,49 @@ type fixture struct{ member, identity, plan, revision, sub, inbox, device, bindi
 
 func seed(t *testing.T, p *pgxpool.Pool) fixture {
 	t.Helper()
+	tx, err := p.Begin(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(context.Background())
 	f := fixture{}
 	for _, id := range []*uuid.UUID{&f.member, &f.identity, &f.plan, &f.revision, &f.sub, &f.inbox, &f.device, &f.binding, &f.group, &f.node, &f.inc, &f.release, &f.policyDef, &f.policy, &f.exit, &f.event, &f.sample, &f.op, &f.batch, &f.target, &f.lease} {
 		*id = uuid.New()
 	}
-	exec(t, p, `INSERT INTO members(id) VALUES($1)`, f.member)
-	exec(t, p, `INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','subject','verified-claim','verified-link',now())`, f.identity, f.member)
-	exec(t, p, `INSERT INTO plans(id,code) VALUES($1,'test-plan')`, f.plan)
-	exec(t, p, `INSERT INTO plan_revisions(id,plan_id,revision,device_limit,schema_version,payload) VALUES($1,$2,1,2,1,'{}')`, f.revision, f.plan)
-	exec(t, p, `INSERT INTO subscriptions(id,member_id,provider,external_subscription_id,external_customer_id,plan_revision_id,provider_status,is_active) VALUES($1,$2,'test-provider','sub','customer',$3,'active',true)`, f.sub, f.member, f.revision)
-	exec(t, p, `INSERT INTO inbox_events(id,source,external_event_id,payload_hash,encrypted_payload) VALUES($1,'test-provider','event',decode(repeat('01',32),'hex'),'\x01')`, f.inbox)
-	exec(t, p, `INSERT INTO member_devices(id,member_id,deployment_id,peer_id) VALUES($1,$2,'test-deployment','peer')`, f.device, f.member)
-	exec(t, p, `INSERT INTO device_bindings(id,device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref) VALUES($1,$2,$3,'overlay','100.64.0.1',1,'2026-01-01Z','2027-01-01Z','peer')`, f.binding, f.device, f.member)
-	exec(t, p, `INSERT INTO member_groups(id,code,name) VALUES($1,'test-group','Test group')`, f.group)
-	exec(t, p, `INSERT INTO releases(id,version,release_sequence,manifest_schema_version,manifest,manifest_hash,signature,signing_key_ref,component_versions) VALUES($1,'TEST ONLY',1,1,'{}',decode(repeat('02',32),'hex'),decode(repeat('03',64),'hex'),'test-key','{}')`, f.release)
-	exec(t, p, `INSERT INTO nodes(id) VALUES($1)`, f.node)
-	exec(t, p, `INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,deployment_id,peer_id,os,arch) VALUES($1,$2,decode(repeat('04',32),'hex'),'test-deployment','node-peer','ubuntu','amd64')`, f.inc, f.node)
-	exec(t, p, `INSERT INTO exits(id,node_id,display_name,region) VALUES($1,$2,'test','test-region')`, f.exit, f.node)
-	exec(t, p, `INSERT INTO policy_definitions(id,type,code) VALUES($1,'fup','test')`, f.policyDef)
-	exec(t, p, `INSERT INTO policy_revisions(id,definition_id,type,revision,schema_version,payload,payload_hash,signing_key_ref,created_by) VALUES($1,$2,'fup',1,1,'{}',decode(repeat('05',32),'hex'),'test-key','test-actor')`, f.policy, f.policyDef)
-	exec(t, p, `INSERT INTO usage_events(id,node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,$3,1,1,decode(repeat('06',32),'hex'),1)`, f.event, f.node, f.inc)
-	exec(t, p, `INSERT INTO usage_samples(id,event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,0,$3,$4,1,gen_random_uuid(),'2026-01-01Z','2026-01-02Z',1,2,'test-meter',1,'trusted')`, f.sample, f.event, f.member, f.device)
-	exec(t, p, `INSERT INTO operations(id,kind,principal,resource_type) VALUES($1,'test','test-actor','node')`, f.op)
-	err := db.InTx(context.Background(), p, db.TxOptions{}, func(tx pgx.Tx) error {
+	exec(t, tx, `INSERT INTO members(id,status) VALUES($1,'active')`, f.member)
+	exec(t, tx, `INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','subject','verified-claim','verified-link',now())`, f.identity, f.member)
+	exec(t, tx, `INSERT INTO plans(id,code) VALUES($1,'test-plan')`, f.plan)
+	exec(t, tx, `INSERT INTO plan_revisions(id,plan_id,revision,device_limit,schema_version,payload) VALUES($1,$2,1,2,1,'{}')`, f.revision, f.plan)
+	exec(t, tx, `INSERT INTO subscriptions(id,member_id,provider,external_subscription_id,external_customer_id,plan_revision_id,provider_status,is_active) VALUES($1,$2,'test-provider','sub','customer',$3,'active',true)`, f.sub, f.member, f.revision)
+	exec(t, tx, `INSERT INTO inbox_events(id,source,external_event_id,payload_hash,encrypted_payload) VALUES($1,'test-provider','event',decode(repeat('01',32),'hex'),'\x01')`, f.inbox)
+	exec(t, tx, `INSERT INTO member_devices(id,member_id,deployment_id,peer_id) VALUES($1,$2,'test-deployment','peer')`, f.device, f.member)
+	exec(t, tx, `INSERT INTO device_bindings(id,device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref) VALUES($1,$2,$3,'overlay','100.64.0.1',1,'2026-01-01Z','2027-01-01Z','peer')`, f.binding, f.device, f.member)
+	exec(t, tx, `INSERT INTO member_groups(id,code,name) VALUES($1,'test-group','Test group')`, f.group)
+	exec(t, tx, `INSERT INTO releases(id,version,release_sequence,manifest_schema_version,manifest,manifest_hash,signature,signing_key_ref,component_versions) VALUES($1,'TEST ONLY',1,1,'{}',decode(repeat('02',32),'hex'),decode(repeat('03',64),'hex'),'test-key','{}')`, f.release)
+	exec(t, tx, `INSERT INTO nodes(id) VALUES($1)`, f.node)
+	exec(t, tx, `INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,deployment_id,peer_id,os,arch) VALUES($1,$2,decode(repeat('04',32),'hex'),'test-deployment','node-peer','ubuntu','amd64')`, f.inc, f.node)
+	exec(t, tx, `UPDATE nodes SET lifecycle_state='registered',current_incarnation_id=$1,resource_version=resource_version+1 WHERE id=$2`, f.inc, f.node)
+	exec(t, tx, `INSERT INTO exits(id,node_id,display_name,region) VALUES($1,$2,'test','test-region')`, f.exit, f.node)
+	exec(t, tx, `INSERT INTO policy_definitions(id,type,code) VALUES($1,'fup','test')`, f.policyDef)
+	exec(t, tx, `INSERT INTO policy_revisions(id,definition_id,type,revision,schema_version,payload,payload_hash,signing_key_ref,created_by) VALUES($1,$2,'fup',1,1,'{}',decode(repeat('05',32),'hex'),'test-key','test-actor')`, f.policy, f.policyDef)
+	exec(t, tx, `INSERT INTO usage_events(id,node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,$3,1,1,decode(repeat('06',32),'hex'),1)`, f.event, f.node, f.inc)
+	exec(t, tx, `INSERT INTO usage_samples(id,event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,$2,0,$3,$4,1,gen_random_uuid(),'2026-01-01Z','2026-01-02Z',1,2,'test-meter',1,'trusted')`, f.sample, f.event, f.member, f.device)
+	exec(t, tx, `INSERT INTO operations(id,kind,principal,resource_type) VALUES($1,'test','test-actor','node')`, f.op)
+	err = func(tx pgx.Tx) error {
 		if _, err := tx.Exec(context.Background(), `INSERT INTO update_batches(id,operation_id,target_release_id,scope,created_by,target_count,generation) VALUES($1,$2,$3,'all_nodes','test-actor',1,1)`, f.batch, f.op, f.release); err != nil {
 			return err
 		}
 		_, err := tx.Exec(context.Background(), `INSERT INTO update_targets(id,batch_id,node_id,incarnation_at_snapshot,target_generation) VALUES($1,$2,$3,$4,1)`, f.target, f.batch, f.node, f.inc)
 		return err
-	})
+	}(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	exec(t, p, `INSERT INTO entitlements(member_id,revision,device_limit,valid_from,effective_service_end) VALUES($1,1,2,'2026-01-01Z','2027-01-01Z')`, f.member)
-	exec(t, p, `INSERT INTO serving_leases(id,node_id,incarnation_id,policy_generation,issued_at,expires_at,key_id,payload_hash) VALUES($1,$2,$3,1,'2026-01-01Z','2026-01-02Z','test-key',decode(repeat('07',32),'hex'))`, f.lease, f.node, f.inc)
+	exec(t, tx, `INSERT INTO entitlements(member_id,revision,device_limit,valid_from,effective_service_end) VALUES($1,1,2,'2026-01-01Z','2027-01-01Z')`, f.member)
+	exec(t, tx, `INSERT INTO serving_leases(id,node_id,incarnation_id,policy_generation,issued_at,expires_at,key_id,payload_hash) VALUES($1,$2,$3,1,'2026-01-01Z','2026-01-02Z','test-key',decode(repeat('07',32),'hex'))`, f.lease, f.node, f.inc)
+	if err := tx.Commit(context.Background()); err != nil {
+		t.Fatal(err)
+	}
 	return f
 }
 
@@ -157,12 +168,12 @@ func Test15_2_UniqueRules(t *testing.T) {
 		{"event stream", "", `INSERT INTO usage_events(node_id,incarnation_id,event_seq,schema_version,payload_hash,record_count) VALUES($1,$2,1,1,decode(repeat('10',32),'hex'),0)`, "usage_events_stream_key", []any{f.node, f.inc}},
 		{"sample record", "", `INSERT INTO usage_samples(event_id,record_index,member_id,device_id,binding_revision,meter_epoch_id,interval_start,interval_end,upload_bytes,download_bytes,metering_version,monotonic_elapsed_ns,clock_quality) VALUES($1,0,$2,$3,1,gen_random_uuid(),'2026-01-01Z','2026-01-02Z',0,0,'test',1,'trusted')`, "usage_samples_record_key", []any{f.event, f.member, f.device}},
 		{"projection receipt", `INSERT INTO projection_receipts(sample_id,projection_name,generation,period) VALUES($1,'monthly',1,'2026-01')`, `INSERT INTO projection_receipts(sample_id,projection_name,generation,period) VALUES($1,'monthly',1,'2026-01')`, "projection_receipts_projection_key", []any{f.sample}},
-		{"checkpoint stream", `INSERT INTO usage_checkpoints(node_id,incarnation_id,ledger_epoch) VALUES($1,$2,gen_random_uuid())`, `INSERT INTO usage_checkpoints(node_id,incarnation_id,ledger_epoch) VALUES($1,$2,gen_random_uuid())`, "usage_checkpoints_stream_key", []any{f.node, f.inc}},
+		{"checkpoint stream", `INSERT INTO usage_checkpoints(node_id,incarnation_id,highest_contiguous_seq,max_seen_seq,ledger_epoch) VALUES($1,$2,1,1,gen_random_uuid())`, `INSERT INTO usage_checkpoints(node_id,incarnation_id,highest_contiguous_seq,max_seen_seq,ledger_epoch) VALUES($1,$2,1,1,gen_random_uuid())`, "usage_checkpoints_stream_key", []any{f.node, f.inc}},
 		{"rollup period", `INSERT INTO usage_rollups(member_id,period,granularity,projection_generation,metering_version,upload_bytes,download_bytes,last_observed_at,aggregate_as_of,period_start,period_end) VALUES($1,'2026-01','month',1,'test',0,0,now(),now(),'2026-01-01Z','2026-02-01Z')`, `INSERT INTO usage_rollups(member_id,period,granularity,projection_generation,metering_version,upload_bytes,download_bytes,last_observed_at,aggregate_as_of,period_start,period_end) VALUES($1,'2026-01','month',1,'test',0,0,now(),now(),'2026-01-01Z','2026-02-01Z')`, "usage_rollups_period_key", []any{f.member}},
 		{"release version", "", `INSERT INTO releases(version,release_sequence,manifest_schema_version,manifest,manifest_hash,signature,signing_key_ref,component_versions) VALUES('TEST ONLY',1,1,'{}',decode(repeat('11',32),'hex'),decode(repeat('12',64),'hex'),'test','{}')`, "releases_version_key", nil},
 		{"artifact platform", `INSERT INTO artifacts(release_id,platform,arch,digest,size_bytes,installed_size_bytes,storage_ref) VALUES($1,'ubuntu-24.04','amd64',decode(repeat('13',32),'hex'),1,1,'https://releases.example.invalid/test')`, `INSERT INTO artifacts(release_id,platform,arch,digest,size_bytes,installed_size_bytes,storage_ref) VALUES($1,'ubuntu-24.04','amd64',decode(repeat('13',32),'hex'),1,1,'https://releases.example.invalid/test')`, "artifacts_platform_key", []any{f.release}},
 		{"inbox event", "", `INSERT INTO inbox_events(source,external_event_id,payload_hash,encrypted_payload) VALUES('test-provider','event',decode(repeat('14',32),'hex'),'\x01')`, "inbox_events_external_key", nil},
-		{"idempotency scope", `INSERT INTO idempotency_requests(principal,method,route,key_hash,request_hash,expiry) VALUES('test','POST','/test',decode(repeat('15',32),'hex'),decode(repeat('16',32),'hex'),now()+interval '7 days')`, `INSERT INTO idempotency_requests(principal,method,route,key_hash,request_hash,expiry) VALUES('test','POST','/test',decode(repeat('15',32),'hex'),decode(repeat('16',32),'hex'),now()+interval '7 days')`, "idempotency_requests_scope_key", nil},
+		{"idempotency scope", `INSERT INTO idempotency_requests(principal,method,route,key_hash,request_hash,resource_id,response_status,expiry) VALUES('test','POST','/test',decode(repeat('15',32),'hex'),decode(repeat('16',32),'hex'),gen_random_uuid(),201,now()+interval '7 days')`, `INSERT INTO idempotency_requests(principal,method,route,key_hash,request_hash,resource_id,response_status,expiry) VALUES('test','POST','/test',decode(repeat('15',32),'hex'),decode(repeat('16',32),'hex'),gen_random_uuid(),201,now()+interval '7 days')`, "idempotency_requests_scope_key", nil},
 	}
 	for _, r := range rules {
 		t.Run(r.name, func(t *testing.T) {
@@ -201,7 +212,7 @@ func TestUPD_UpdateTargetAndJobUnique(t *testing.T) {
 		if err := tx.QueryRow(context.Background(), `INSERT INTO update_batches(operation_id,target_release_id,scope,created_by,target_count,generation) VALUES($1,$2,'all_nodes','test',1,2) RETURNING id`, op, f.release).Scan(&b); err != nil {
 			return err
 		}
-		q := `INSERT INTO update_targets(batch_id,node_id,target_generation) VALUES($1,$2,2)`
+		q := `INSERT INTO update_targets(batch_id,node_id,incarnation_at_snapshot,target_generation) VALUES($1,$2,(SELECT current_incarnation_id FROM nodes WHERE id=$2),2)`
 		if _, err := tx.Exec(context.Background(), q, b, f.node); err != nil {
 			return err
 		}

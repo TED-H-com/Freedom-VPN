@@ -100,6 +100,7 @@ CREATE TABLE update_batches (
 CREATE TABLE update_targets (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), batch_id UUID NOT NULL REFERENCES update_batches,
  node_id UUID NOT NULL REFERENCES nodes, incarnation_at_snapshot UUID, execution_incarnation_id UUID,
+ target_state TEXT NOT NULL DEFAULT 'active' CHECK(target_state IN ('active','cancelled_revoked','cancelled_retired')),
  target_generation NUMERIC(20,0) CHECK (target_generation >= 0 AND target_generation <= 18446744073709551615) NOT NULL,
  FOREIGN KEY(node_id,incarnation_at_snapshot) REFERENCES node_incarnations(node_id,id),
  FOREIGN KEY(node_id,execution_incarnation_id) REFERENCES node_incarnations(node_id,id),
@@ -109,7 +110,7 @@ CREATE TABLE update_targets (
 CREATE TABLE update_jobs (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), target_id UUID NOT NULL REFERENCES update_targets,
  attempt INTEGER NOT NULL CHECK(attempt > 0), execution_incarnation_id UUID NOT NULL, generation NUMERIC(20,0) CHECK (generation >= 0 AND generation <= 18446744073709551615) NOT NULL,
- state TEXT NOT NULL DEFAULT 'queued' CHECK(state IN ('queued','waiting_online','downloading','verifying','applying','checking','succeeded','failed','rolled_back','superseded','superseded_incarnation')),
+ state TEXT NOT NULL DEFAULT 'queued' CHECK(state IN ('queued','waiting_online','downloading','verifying','applying','checking','succeeded','failed','rolled_back','superseded','superseded_incarnation','cancelled_revoked','cancelled_retired')),
  actual_release_id UUID REFERENCES releases, last_good_release_id UUID REFERENCES releases,
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(), started_at TIMESTAMPTZ, completed_at TIMESTAMPTZ,
  last_result_at TIMESTAMPTZ, last_observed_at TIMESTAMPTZ,
