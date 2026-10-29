@@ -403,6 +403,10 @@ func TestAT28_BootstrapOnceOverAuthenticatedPathAndNoSecrets(t *testing.T) {
 	_, _, _, otherCert := enroll(t, f)
 	_, err = f.s.TakeBootstrap(ctx, otherCert)
 	expectCode(t, err, apierr.BootstrapNotReady)
+	var notReady *apierr.Error
+	if !errors.As(err, &notReady) || notReady.Code.HTTPStatus() != 409 || !notReady.IsRetryable() {
+		t.Fatal("bootstrap readiness must be retryable HTTP 409", err)
+	}
 	scanSecrets(t, f, []string{nullableValue(c.Token), secret})
 	var wg sync.WaitGroup
 	results := make(chan error, 2)
@@ -459,11 +463,16 @@ func TestENR02_BootstrapExpiryAndConflictFreeze(t *testing.T) {
 		t.Fatal(err)
 	}
 	exec(t, f, `INSERT INTO node_bootstrap_secrets(incarnation_id,operation_id,external_key_id,encryption_key_id,ciphertext,expires_at) VALUES($1,$2,'external-expiry-test',$3,$4,clock_timestamp()-interval '1 second')`, id.IncarnationID, out.OperationID, sealed.KeyID, sealed.Ciphertext)
-	_, err = f.s.TakeBootstrap(ctx, cert)
-	expectCode(t, err, apierr.BootstrapExpired)
-	var erased bool
-	if err = f.pool.QueryRow(ctx, `SELECT ciphertext IS NULL FROM node_bootstrap_secrets WHERE incarnation_id=$1`, id.IncarnationID).Scan(&erased); err != nil || !erased {
-		t.Fatal("expired ciphertext retained", err)
+	for range 2 {
+		delivery, err := f.s.TakeBootstrap(ctx, cert)
+		expectCode(t, err, apierr.BootstrapExpired)
+		if delivery.SetupKey != "" {
+			t.Fatal("expired secret delivered")
+		}
+		var expiredOnly bool
+		if err = f.pool.QueryRow(ctx, `SELECT ciphertext IS NULL AND encryption_key_id IS NULL AND erased_at IS NOT NULL AND delivered_at IS NULL FROM node_bootstrap_secrets WHERE incarnation_id=$1`, id.IncarnationID).Scan(&expiredOnly); err != nil || !expiredOnly {
+			t.Fatal("expiry must erase without marking delivery", err)
+		}
 	}
 	allowed, err := f.s.ObserveEndpoint(ctx, cert, "endpoint-domain-a", time.Minute)
 	if err != nil || !allowed {

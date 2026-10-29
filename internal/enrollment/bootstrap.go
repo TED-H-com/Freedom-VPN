@@ -149,10 +149,8 @@ func (s *Service) TakeBootstrap(ctx context.Context, cert *x509.Certificate) (ou
 	if err != nil {
 		return BootstrapDelivery{}, safe(err)
 	}
-	if !time.Now().Before(out.ExpiresAt) {
-		clear(plain)
-		return BootstrapDelivery{}, apierr.New(apierr.BootstrapExpired, "Bootstrap delivery expired.")
-	}
+	// §6.4 / D-015: the locked database verdict is authoritative. Expiry
+	// during decryption must not turn an already committed delivery into 410.
 	out.SetupKey = string(plain)
 	clear(plain)
 	out.ExpiresAt = out.ExpiresAt.UTC()
