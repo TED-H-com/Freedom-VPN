@@ -54,9 +54,12 @@ type UsageCheckpoint struct {
 	NewMeterEpochID     string     `json:"new_meter_epoch_id"`
 }
 
-// Meter is the metering barrier. FinalSample and OpenEpoch are idempotent
-// while member forwarding stays blocked: a crash that repeats the call must
-// not invent bytes or burn a second event sequence (§10.7, §13.7).
+// Meter is the metering barrier. FinalSample is idempotent while member
+// forwarding stays blocked: a crash that repeats the call must not invent
+// bytes or burn a second event sequence (§10.7, §13.7). OpenEpoch may return
+// a new id; the updater stores the first id in the journal note epoch-<txn>
+// and does not call OpenEpoch again for that transaction. The meter must not
+// write the id into the mutable state directory (D-034c).
 type Meter interface {
 	FinalSample(ctx context.Context) (UsageCheckpoint, error)
 	OpenEpoch(ctx context.Context) (newEpochID string, err error)
@@ -92,8 +95,13 @@ type ReleaseView struct {
 	IdentityDir      string
 	StateDir         string
 	ExpectedIdentity string
-	ExpectedState    string
-	ExpectedTree     string
+	// ExpectedState is the SHA-256 of the immutable pointers and state-schema
+	// snapshot, not a hash of the mutable state directory (D-034c).
+	ExpectedState string
+	// ImmutableRecord is the live encoding of that snapshot. Empty means the
+	// caller is not asking for the pointers check.
+	ImmutableRecord string
+	ExpectedTree    string
 }
 
 // HealthChecks are the five §13.9 layers. A status other than passed, or a

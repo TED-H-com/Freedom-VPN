@@ -458,14 +458,20 @@ func (f *netbirdFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // and strict composition are identical to the binary's Servers path.
 func (f *fixture) compose(c config.Config) {
 	f.t.Helper()
-	domains := control.Domains()
-	for i := range domains {
-		if domains[i].Name == "members" {
-			domains[i].Build = func(_ context.Context, d control.Dependencies) (control.Built, error) {
-				return control.Built{Handlers: []any{httpadapter.Handlers{Pool: d.Pool, Services: &f.services.HTTP}}, Middleware: httpadapter.RequestContext}, nil
-			}
+	// D-039: member integration tests compose only core and the member domain.
+	// Select core explicitly because the production constructor is private.
+	var domains []control.Domain
+	for _, domain := range control.Domains() {
+		if domain.Name == "control-core" {
+			domains = append(domains, domain)
 		}
 	}
+	if len(domains) != 1 {
+		f.t.Fatal("control core domain missing or duplicated")
+	}
+	domains = append(domains, control.Domain{Name: "members", Build: func(_ context.Context, d control.Dependencies) (control.Built, error) {
+		return control.Built{Handlers: []any{httpadapter.Handlers{Pool: d.Pool, Services: &f.services.HTTP}}, Middleware: httpadapter.RequestContext}, nil
+	}})
 	app, e := control.Servers(f.t.Context(), control.Dependencies{Config: c, Pool: f.pool, Browser: f.browser, Logger: slog.New(slog.NewTextHandler(&f.logs, nil))}, domains...)
 	if e != nil {
 		f.t.Fatal(e)

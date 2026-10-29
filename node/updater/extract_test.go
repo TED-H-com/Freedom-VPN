@@ -86,17 +86,16 @@ func TestUPD_ExtractRejectsHostilePaths(t *testing.T) {
 	}
 }
 
-func TestUPD_ExtractAllowsRelativeSymlink(t *testing.T) {
+func TestUPD_ExtractRejectsRelativeSymlink(t *testing.T) {
 	dest := filepath.Join(t.TempDir(), "rel")
 	err := ExtractArchive(packTar(t, []tarMember{
 		{name: "bin/tool", body: "tool", mode: 0o755},
 		{name: "bin/link", typ: tar.TypeSymlink, link: "tool"},
 	}), dest, ExtractOptions{MaxBytes: 1 << 20})
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Fatal("relative symlink was extracted")
 	}
-	got, err := os.Readlink(filepath.Join(dest, "bin/link"))
-	if err != nil || got != "tool" {
-		t.Fatalf("link %q err %v", got, err)
+	if _, statErr := os.Lstat(filepath.Join(dest, "bin/link")); !os.IsNotExist(statErr) {
+		t.Fatalf("symlink left behind: %v", statErr)
 	}
 }

@@ -54,7 +54,7 @@ func (m hashMode) String() string {
 // Content-Range, or a hash mismatch discards the partial and downloads the
 // whole file again, bounded by ContentRetries (§13.4). Permanent hash and
 // size failures are returned without further attempts.
-func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode hashMode, size int64, poll func() error) error {
+func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode hashMode, size, maxBytes int64, poll func() error) error {
 	if err := checkURL(rawURL, e.AllowLoopback); err != nil {
 		return err
 	}
@@ -68,6 +68,9 @@ func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode h
 		return nil
 	}
 
+	if mode == hashCanonical && (maxBytes <= 0 || maxBytes > canonjson.MaxBytes) {
+		maxBytes = canonjson.MaxBytes
+	}
 	cfg := e.Download.normalize()
 	partial := dest + ".partial"
 	metaPath := partial + ".meta"
@@ -82,7 +85,7 @@ func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode h
 				return err
 			}
 		}
-		err := e.downloadOnce(ctx, rawURL, partial, metaPath, want, mode, size, poll)
+		err := e.downloadOnce(ctx, rawURL, partial, metaPath, want, mode, size, maxBytes, poll)
 		if err == nil {
 			ok, herr := fileMatches(partial, want, mode, size)
 			if herr != nil {
@@ -146,7 +149,7 @@ func (e *Engine) download(ctx context.Context, rawURL, dest, want string, mode h
 	}
 }
 
-func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, want string, mode hashMode, size int64, poll func() error) error {
+func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, want string, mode hashMode, size, maxBytes int64, poll func() error) error {
 	meta, _ := readMeta(metaPath)
 	if meta.URL != "" && (meta.URL != rawURL || meta.Hash != want || meta.Mode != mode.String() || (size > 0 && meta.Size > 0 && meta.Size != size)) {
 		return errContentChanged
@@ -184,6 +187,10 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 	}
 	defer resp.Body.Close()
 
+	ceiling := maxBytes
+	if ceiling <= 0 {
+		ceiling = size
+	}
 	switch resp.StatusCode {
 	case http.StatusOK:
 		if offset > 0 {
@@ -191,6 +198,18 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 		}
 		offset = 0
 		_ = os.Remove(partial)
+		if ceiling > 0 && resp.ContentLength > ceiling {
+			return permanent(apierr.SizeMismatch, "content length")
+		}
+		// Record the validator before any body byte. An interrupted body
+		// must still resume with If-Range (D-034f).
+		meta = partialMeta{URL: rawURL, Hash: want, Mode: mode.String(), ETag: resp.Header.Get("ETag"), Size: size}
+		if resp.ContentLength >= 0 {
+			meta.Size = resp.ContentLength
+		}
+		if err := writePartialMeta(metaPath, meta); err != nil {
+			return err
+		}
 	case http.StatusPartialContent:
 		start, _, total, ok := parseContentRange(resp.Header.Get("Content-Range"))
 		if !ok || start != offset {
@@ -198,6 +217,15 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 		}
 		if size > 0 && total >= 0 && total != size {
 			return errContentChanged
+		}
+		if ceiling > 0 && resp.ContentLength > ceiling {
+			return permanent(apierr.SizeMismatch, "content length")
+		}
+		if meta.ETag == "" {
+			meta.ETag = resp.Header.Get("ETag")
+		}
+		if err := writePartialMeta(metaPath, meta); err != nil {
+			return err
 		}
 	case http.StatusRequestedRangeNotSatisfiable:
 		return errContentChanged
@@ -237,6 +265,9 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 			if size > 0 && written+int64(n) > size {
 				return permanent(apierr.SizeMismatch, "artifact longer than manifest")
 			}
+			if ceiling > 0 && written+int64(n) > ceiling {
+				return permanent(apierr.SizeMismatch, "download cap")
+			}
 			if _, werr := f.Write(buf[:n]); werr != nil {
 				if fsutil.IsNoSpace(werr) {
 					return transient(apierr.DiskSpaceLow, "download")
@@ -254,23 +285,31 @@ func (e *Engine) downloadOnce(ctx context.Context, rawURL, partial, metaPath, wa
 		}
 	}
 	if size > 0 && written != size {
-		// Short body: keep the partial so a later range request can resume,
-		// unless the server claimed this was the whole object (200).
-		if resp.StatusCode == http.StatusOK {
+		// Short body: keep the partial and the meta so a later range request
+		// can resume with If-Range.
+		return io.ErrUnexpectedEOF
+	}
+	if resp.ContentLength >= 0 {
+		wantWritten := resp.ContentLength
+		if resp.StatusCode == http.StatusPartialContent {
+			wantWritten = offset + resp.ContentLength
+		}
+		if written != wantWritten {
 			return io.ErrUnexpectedEOF
 		}
-		return io.ErrUnexpectedEOF
 	}
 	if err := f.Sync(); err != nil {
 		return err
 	}
-	etag := resp.Header.Get("ETag")
-	meta = partialMeta{URL: rawURL, Hash: want, Mode: mode.String(), ETag: etag, Size: size}
-	raw, err := json.Marshal(meta)
+	return nil
+}
+
+func writePartialMeta(path string, m partialMeta) error {
+	raw, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
-	return fsutil.WriteFileAtomic(metaPath, raw, 0o600)
+	return fsutil.WriteFileAtomic(path, raw, 0o600)
 }
 
 func fileMatches(path, want string, mode hashMode, size int64) (bool, error) {

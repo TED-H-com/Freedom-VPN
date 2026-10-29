@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
@@ -140,6 +139,7 @@ func (c Config) Engine() (*Engine, error) {
 		Services:      CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
 		Health:        NodeChecks{},
 		Gate:          gate,
+		Migrator:      noMigrator{},
 		Sender:        sender,
 		Download:      DefaultDownload(),
 		AllowLoopback: c.AllowLoopback,
@@ -207,9 +207,27 @@ func (g FileGate) Blocked() bool {
 	return err == nil
 }
 
+// noMigrator refuses a schema change. Config.Engine installs it so a release
+// that needs a migration fails before services stop when no migrator was
+// supplied (D-034c).
+type noMigrator struct{}
+
+func (noMigrator) Migrate(context.Context, int, int, string, string) error {
+	return permanent(apierr.MigrationFailed, "no state migrator configured")
+}
+
+func (e *Engine) migrationUnsupported() bool {
+	if e.Migrator == nil {
+		return true
+	}
+	_, ok := e.Migrator.(noMigrator)
+	return ok
+}
+
 // FileMeter reads a metering barrier the meter process wrote. It does not
-// invent sequence numbers. OpenEpoch remembers the new epoch beside the
-// checkpoint so a crash repeats the same id (§10.7, §13.7).
+// invent sequence numbers. OpenEpoch returns a new id and writes nothing:
+// the per-transaction journal note is the idempotency record, and it is
+// removed when the transaction completes (D-034c).
 type FileMeter struct {
 	Path string
 }
@@ -230,21 +248,8 @@ func (m FileMeter) FinalSample(context.Context) (UsageCheckpoint, error) {
 }
 
 func (m FileMeter) OpenEpoch(context.Context) (string, error) {
-	side := m.Path + ".epoch"
-	if b, err := os.ReadFile(side); err == nil {
-		id := strings.TrimSpace(string(b))
-		if _, perr := uuid.Parse(id); perr == nil {
-			return id, nil
-		}
-	}
 	id, err := uuid.NewV7()
 	if err != nil {
-		return "", err
-	}
-	if err := os.MkdirAll(filepath.Dir(side), 0o700); err != nil {
-		return "", err
-	}
-	if err := fsutil.WriteFileAtomic(side, []byte(id.String()), 0o600); err != nil {
 		return "", err
 	}
 	return id.String(), nil

@@ -20,7 +20,7 @@ func main() {
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
 		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|version>")
-		return 2
+		return 64
 	}
 	switch args[0] {
 	case "version", "-h", "--help", "help":
@@ -34,7 +34,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return command(args[0], args[1:], stderr)
 	default:
 		fmt.Fprintf(stderr, "fvpn-updater: unknown command %q\n", args[0])
-		return 2
+		return 64
 	}
 }
 
@@ -43,11 +43,11 @@ func command(name string, args []string, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	cfgPath := fs.String("config", "", "updater config JSON (paths only, no keys)")
 	if err := fs.Parse(args); err != nil {
-		return 2
+		return 64
 	}
 	if *cfgPath == "" {
 		fmt.Fprintln(stderr, "fvpn-updater: -config is required")
-		return 2
+		return 64
 	}
 	cfg, err := updater.LoadConfig(*cfgPath)
 	if err != nil {

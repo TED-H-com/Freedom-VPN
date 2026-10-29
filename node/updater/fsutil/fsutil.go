@@ -158,7 +158,8 @@ func randHex(n int) string {
 // TreeHash is the SHA-256 of a sorted inventory of root. The digest covers
 // relative paths, permission bits and file bytes, so a rollback can prove
 // the tree still matches the release that was installed (§13.5, §13.9).
-// Symlinks contribute their target string and are not followed.
+// A symlink is an error. Release trees contain regular files and directories
+// only (D-034a). The current pointer is a symlink outside the release tree.
 func TreeHash(root string) (string, error) {
 	var lines []string
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
@@ -180,11 +181,7 @@ func TreeHash(root string) (string, error) {
 		perm := info.Mode().Perm()
 		switch {
 		case info.Mode()&os.ModeSymlink != 0:
-			tgt, err := os.Readlink(path)
-			if err != nil {
-				return err
-			}
-			lines = append(lines, fmt.Sprintf("l %04o %s %s", perm, rel, tgt))
+			return fmt.Errorf("fsutil: %s is a symlink", rel)
 		case info.IsDir():
 			lines = append(lines, fmt.Sprintf("d %04o %s", perm, rel))
 		case info.Mode().IsRegular():
