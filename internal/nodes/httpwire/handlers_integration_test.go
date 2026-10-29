@@ -24,6 +24,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
@@ -59,7 +60,7 @@ func setup(t *testing.T) *fixture {
 	}
 	runtime := &httpwire.Runtime{Pool: pool, PKI: identity, Enrollment: en, Nodes: nodes.NewService(pool), Provider: vault}
 	f := &fixture{t: t, r: runtime, p: auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: true, AuthenticatedAt: time.Now(), CSRFToken: "test-csrf"}}
-	handlers, e := httpapi.Compose(&httpwire.Handlers{Runtime: runtime})
+	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
 	if e != nil {
 		t.Fatal(e)
 	}

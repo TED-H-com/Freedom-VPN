@@ -1,8 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useSession } from '../../context/SessionContext';
+import { useSession, type MockPersona } from '../../context/SessionContext';
 import { useI18n, type Locale } from '../../i18n';
-import type { MockPersona } from '../../mocks/data';
 
 export function AppLayout(): React.ReactElement {
   const { t, locale, setLocale } = useI18n();
@@ -58,52 +57,56 @@ export function AppLayout(): React.ReactElement {
         </div>
 
         <div className="top-bar-controls">
-          {import.meta.env.VITE_API_MOCK === '1' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <label htmlFor="persona-select" style={{ fontSize: '0.8rem' }}>
-                {t('app.mockSwitcher.label')}
-              </label>
-              <select
-                id="persona-select"
-                data-testid="persona-switcher"
-                value={persona}
-                onChange={(e) => void handlePersonaChange(e)}
-                style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-              >
-                <option value="admin">{t('app.mockSwitcher.admin')}</option>
-                <option value="admin_no_mfa">{t('app.mockSwitcher.adminNoMfa')}</option>
-                <option value="anonymous">{t('app.mockSwitcher.anonymous')}</option>
-                <option value="member_active">
-                  {t('app.mockSwitcher.memberActive')}
-                </option>
-                <option value="member_throttled">
-                  {t('app.mockSwitcher.memberThrottled')}
-                </option>
-                <option value="member_pending">
-                  {t('app.mockSwitcher.memberPending')}
-                </option>
-                <option value="member_cancel_at_period_end">
-                  {t('app.mockSwitcher.memberCancelEnd')}
-                </option>
-                <option value="member_grace">{t('app.mockSwitcher.memberGrace')}</option>
-                <option value="member_expired">
-                  {t('app.mockSwitcher.memberExpired')}
-                </option>
-                <option value="member_suspended">
-                  {t('app.mockSwitcher.memberSuspended')}
-                </option>
-              </select>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-testid="simulate-401-btn"
-                onClick={simulateSessionExpired}
-                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-              >
-                {t('app.mockSwitcher.trigger401')}
-              </button>
-            </div>
-          )}
+          {!import.meta.env.PROD &&
+            (import.meta.env.VITE_API_MOCK === '1' ||
+              import.meta.env.MODE === 'test') && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <label htmlFor="persona-select" style={{ fontSize: '0.8rem' }}>
+                  {t('app.mockSwitcher.label')}
+                </label>
+                <select
+                  id="persona-select"
+                  data-testid="persona-switcher"
+                  value={persona}
+                  onChange={(e) => void handlePersonaChange(e)}
+                  style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                >
+                  <option value="admin">{t('app.mockSwitcher.admin')}</option>
+                  <option value="admin_no_mfa">{t('app.mockSwitcher.adminNoMfa')}</option>
+                  <option value="anonymous">{t('app.mockSwitcher.anonymous')}</option>
+                  <option value="member_active">
+                    {t('app.mockSwitcher.memberActive')}
+                  </option>
+                  <option value="member_throttled">
+                    {t('app.mockSwitcher.memberThrottled')}
+                  </option>
+                  <option value="member_pending">
+                    {t('app.mockSwitcher.memberPending')}
+                  </option>
+                  <option value="member_cancel_at_period_end">
+                    {t('app.mockSwitcher.memberCancelEnd')}
+                  </option>
+                  <option value="member_grace">
+                    {t('app.mockSwitcher.memberGrace')}
+                  </option>
+                  <option value="member_expired">
+                    {t('app.mockSwitcher.memberExpired')}
+                  </option>
+                  <option value="member_suspended">
+                    {t('app.mockSwitcher.memberSuspended')}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-testid="simulate-401-btn"
+                  onClick={simulateSessionExpired}
+                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                >
+                  {t('app.mockSwitcher.trigger401')}
+                </button>
+              </div>
+            )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <label htmlFor="locale-select" style={{ fontSize: '0.8rem' }}>

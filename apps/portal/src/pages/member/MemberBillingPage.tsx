@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, deriveMemberServiceReason } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
+import { formatLocaleWithUtc } from '../../lib/datetime';
 
 export function MemberBillingPage(): React.ReactElement {
   const { t, locale } = useI18n();
@@ -11,11 +13,41 @@ export function MemberBillingPage(): React.ReactElement {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<unknown>(null);
+  const [checkoutActionId, setCheckoutActionId] = useState<string>(
+    () => `checkout-${Date.now()}`,
+  );
+
+  const isCheckoutReturnParam = searchParams.get('checkout') === 'return';
 
   const selfQuery = useQuery({
     queryKey: ['member', 'me', persona],
     queryFn: () => apiClient.getMemberSelf(),
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const state = data?.entitlement.state;
+      const waitingConfirm =
+        isCheckoutReturnParam ||
+        Boolean(data?.next_actions.includes('wait_for_payment_confirmation'));
+      if (
+        waitingConfirm &&
+        state &&
+        state !== 'active' &&
+        state !== 'cancel_at_period_end'
+      ) {
+        return 1000;
+      }
+      return false;
+    },
   });
+
+  if (selfQuery.error) {
+    return (
+      <div data-testid="member-billing-page">
+        <ApiErrorAlert error={selfQuery.error} testId="member-billing-error" />
+      </div>
+    );
+  }
 
   if (selfQuery.isLoading || !selfQuery.data) {
     return (
@@ -27,20 +59,32 @@ export function MemberBillingPage(): React.ReactElement {
 
   const me = selfQuery.data;
   const ent = me.entitlement;
-  const isCheckoutReturn = searchParams.get('checkout') === 'return';
+  const isCheckoutReturn =
+    isCheckoutReturnParam || me.next_actions.includes('wait_for_payment_confirmation');
   const showPendingConfirm =
     isCheckoutReturn && ent.state !== 'active' && ent.state !== 'cancel_at_period_end';
 
   const handleCheckout = async () => {
-    const res = await apiClient.createCheckoutSession();
-    if ('checkout_url' in res) {
-      setRedirectUrl(res.checkout_url);
+    setActionError(null);
+    try {
+      const res = await apiClient.createCheckoutSession(undefined, checkoutActionId);
+      if ('checkout_url' in res) {
+        setRedirectUrl(res.checkout_url);
+        setCheckoutActionId(`checkout-${Date.now()}`);
+      }
+    } catch (err) {
+      setActionError(err);
     }
   };
 
   const handlePortal = async () => {
-    const res = await apiClient.createBillingPortalSession();
-    setRedirectUrl(res.portal_url);
+    setActionError(null);
+    try {
+      const res = await apiClient.createBillingPortalSession();
+      setRedirectUrl(res.portal_url);
+    } catch (err) {
+      setActionError(err);
+    }
   };
 
   const handleSimulateReturn = () => {
@@ -80,6 +124,8 @@ export function MemberBillingPage(): React.ReactElement {
         {t('member.billing.noCardNotice')}
       </div>
 
+      <ApiErrorAlert error={actionError} testId="billing-action-error" />
+
       {/* AT03: Checkout return redirect without verified webhook shows "確認中" */}
       {showPendingConfirm && (
         <div
@@ -101,9 +147,14 @@ export function MemberBillingPage(): React.ReactElement {
           data-testid="hosted-redirect-banner"
         >
           Hosted Provider Session Ready:{' '}
-          <span className="mono" data-testid="hosted-redirect-url">
+          <a
+            href={redirectUrl}
+            className="mono"
+            data-testid="hosted-redirect-url"
+            style={{ fontWeight: 600 }}
+          >
             {redirectUrl}
-          </span>
+          </a>
         </div>
       )}
 
@@ -115,11 +166,17 @@ export function MemberBillingPage(): React.ReactElement {
           </div>
           <div>
             <dt style={{ fontWeight: 600 }}>{t('member.service.paidThroughLabel')}</dt>
-            <dd className="mono">{ent.paid_through ?? 'None'}</dd>
+            <dd className="mono">
+              {ent.paid_through ? formatLocaleWithUtc(ent.paid_through, locale) : 'None'}
+            </dd>
           </div>
           <div>
             <dt style={{ fontWeight: 600 }}>{t('member.service.effectiveEndLabel')}</dt>
-            <dd className="mono">{ent.effective_service_end ?? 'None'}</dd>
+            <dd className="mono">
+              {ent.effective_service_end
+                ? formatLocaleWithUtc(ent.effective_service_end, locale)
+                : 'None'}
+            </dd>
           </div>
           <div>
             <dt style={{ fontWeight: 600 }}>{t('member.service.reasonLabel')}</dt>
