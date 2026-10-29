@@ -44,9 +44,12 @@ type Config struct {
 	MTLSKey           string      `json:"mtls_key"`
 	MTLSCA            string      `json:"mtls_ca"`
 	AllowLoopback     bool        `json:"allow_loopback"`
-	// AllowedArtifactOrigins exempts exact scheme://host[:port] origins from
-	// the private and CGNAT guard (D-046). Empty keeps the guard. The dev
-	// stack sets this explicitly. It does not allow every private address.
+	// AllowedArtifactOrigins exempts listed origins from the private and CGNAT
+	// guard (D-046). An entry matches a URL when the scheme, host and
+	// effective port are equal. The effective port of a URL or entry without
+	// an explicit port is the scheme default: 443 for https and 80 for http.
+	// Empty keeps the guard. The dev stack sets this explicitly. It does not
+	// allow every private address.
 	AllowedArtifactOrigins []string `json:"allowed_artifact_origins,omitempty"`
 }
 

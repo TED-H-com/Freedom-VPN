@@ -11,15 +11,18 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -636,5 +639,243 @@ func TestAudit_D029Conformance_NodesDesiredStateLeasesExits(t *testing.T) {
 		if !seenActions[wantAct] {
 			t.Errorf("missing expected audit action %q in audit.Store.List results", wantAct)
 		}
+	}
+}
+
+func TestSetPublicationTx_CallerTransactionRollbackWrapperAndStaleIfMatch(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 29, 19, 0, 0, 0, time.UTC)
+
+	nodesSvc := nodes.NewService(pool, nodes.WithClock(func() time.Time { return now }))
+	compiler := testExitsCompiler(t, pool, func() time.Time { return now })
+	nb := NewFakeNetBirdAdapter()
+	exitsSvc := NewService(pool, compiler, nb, WithClock(func() time.Time { return now }))
+
+	nodeID, _, exitID, _, _ := seedExitTestNode(t, ctx, pool, api.PublicationIntentUnpublished, "absent")
+	adminUUID := uuid.New()
+	reqID := uuid.New()
+
+	initialDetail, etag1, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode(initial): %v", err)
+	}
+	if initialDetail.ConfigGeneration.Desired != 1 || initialDetail.ResourceVersion != 2 {
+		t.Fatalf("initial (desiredGen=%s, resourceVer=%s), want (1, 2)", initialDetail.ConfigGeneration.Desired, initialDetail.ResourceVersion)
+	}
+
+	// 1. Calling SetPublicationTx inside a caller transaction that rolls back leaves no rows or state changes.
+	txRollback, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("pool.Begin(rollback): %v", err)
+	}
+	rbOp, rbETag, err := exitsSvc.SetPublicationTx(ctx, txRollback, SetPublicationParams{
+		NodeID:    nodeID,
+		Principal: adminUUID.String(),
+		IfMatch:   etag1,
+		RequestID: &reqID,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentPublished,
+			Reason:            "publish in rolled-back caller tx",
+		},
+	})
+	if err != nil {
+		_ = txRollback.Rollback(ctx)
+		t.Fatalf("SetPublicationTx(rollback tx): %v", err)
+	}
+	if rbOp.Kind != api.OperationKindNodePublish || rbETag != `"3"` {
+		_ = txRollback.Rollback(ctx)
+		t.Fatalf("SetPublicationTx(rollback tx) = (kind=%s, etag=%s), want (node.publish, \"3\")", rbOp.Kind, rbETag)
+	}
+	if err := txRollback.Rollback(ctx); err != nil {
+		t.Fatalf("txRollback.Rollback: %v", err)
+	}
+
+	var opCount, outboxCount, auditCount int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM operations WHERE resource_id = $1`, nodeID).Scan(&opCount); err != nil || opCount != 0 {
+		t.Fatalf("after rollback operations count = %d (err=%v), want 0", opCount, err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE aggregate_id = $1`, nodeID).Scan(&outboxCount); err != nil || outboxCount != 0 {
+		t.Fatalf("after rollback outbox_events count = %d (err=%v), want 0", outboxCount, err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events`).Scan(&auditCount); err != nil || auditCount != 0 {
+		t.Fatalf("after rollback audit_events count = %d (err=%v), want 0", auditCount, err)
+	}
+	afterRollbackDetail, afterRollbackETag, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode(after rollback): %v", err)
+	}
+	if afterRollbackETag != etag1 || afterRollbackDetail.PublicationIntent != api.PublicationIntentUnpublished || afterRollbackDetail.ConfigGeneration.Desired != 1 {
+		t.Fatalf("after rollback node = (etag=%s, intent=%s, gen=%s), want (%s, unpublished, 1)",
+			afterRollbackETag, afterRollbackDetail.PublicationIntent, afterRollbackDetail.ConfigGeneration.Desired, etag1)
+	}
+
+	// 2. Stale If-Match fails under the row lock with 412 RESOURCE_VERSION_CONFLICT.
+	err = db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		_, _, txErr := exitsSvc.SetPublicationTx(ctx, tx, SetPublicationParams{
+			NodeID:    nodeID,
+			Principal: adminUUID.String(),
+			IfMatch:   `"999"`,
+			RequestID: &reqID,
+			Request: api.PublicationRequest{
+				PublicationIntent: api.PublicationIntentPublished,
+				Reason:            "stale if-match test",
+			},
+		})
+		return txErr
+	})
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.Code != apierr.ResourceVersionConflict || ae.HTTPStatus() != 412 {
+		t.Fatalf("SetPublicationTx(stale If-Match) err = %v, want 412 RESOURCE_VERSION_CONFLICT", err)
+	}
+
+	// 3. SetPublicationTx for `published` inside a committed caller transaction (with caller-owned idempotency row).
+	var pubOp api.Operation
+	var etag2 string
+	callerIdemKey := sha256.Sum256([]byte("caller-idem-key-1"))
+	callerReqHash := sha256.Sum256([]byte("caller-req-hash-1"))
+	err = db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		rec, bErr := db.BeginIdempotent(ctx, tx, db.IdempotencyScope{
+			Principal:   "admin:" + adminUUID.String(),
+			Method:      "PUT",
+			Route:       "/api/v1/admin/nodes/" + nodeID.String() + "/publication",
+			KeyHash:     callerIdemKey[:],
+			RequestHash: callerReqHash[:],
+		}, 0)
+		if bErr != nil {
+			return bErr
+		}
+		var txErr error
+		pubOp, etag2, txErr = exitsSvc.SetPublicationTx(ctx, tx, SetPublicationParams{
+			NodeID:    nodeID,
+			Principal: adminUUID.String(),
+			IfMatch:   etag1,
+			RequestID: &reqID,
+			Request: api.PublicationRequest{
+				PublicationIntent: api.PublicationIntentPublished,
+				Reason:            "publish in committed caller tx",
+			},
+		})
+		if txErr != nil {
+			return txErr
+		}
+		nodeIDCopy := nodeID
+		return db.CompleteIdempotent(ctx, tx, rec.ID, db.IdempotencyResult{
+			OperationID:    &pubOp.OperationId,
+			ResourceType:   "node",
+			ResourceID:     &nodeIDCopy,
+			ResponseStatus: 202,
+		})
+	})
+	if err != nil {
+		t.Fatalf("SetPublicationTx(published committed): %v", err)
+	}
+	if pubOp.Kind != api.OperationKindNodePublish || pubOp.Status != api.OperationStatusPending || etag2 != `"3"` {
+		t.Fatalf("SetPublicationTx(published) = (kind=%s, status=%s, etag=%s), want (node.publish, pending, \"3\")",
+			pubOp.Kind, pubOp.Status, etag2)
+	}
+	if gen, gErr := pubOp.DesiredGeneration.Get(); gErr != nil || gen != 2 {
+		t.Fatalf("pubOp.DesiredGeneration = (%v, %v), want 2", gen, gErr)
+	}
+	wantSteps := map[string]bool{
+		nodes.StepAgentPolicy:          false,
+		nodes.StepNetBirdRouteReadback: false,
+		nodes.StepDataPathProbe:        false,
+	}
+	for _, st := range pubOp.Steps {
+		if _, ok := wantSteps[st.Name]; ok && st.Required && st.Status == api.OperationStepStatusPending {
+			wantSteps[st.Name] = true
+		}
+	}
+	for name, seen := range wantSteps {
+		if !seen {
+			t.Fatalf("missing required pending step %q on node.publish operation: %+v", name, pubOp.Steps)
+		}
+	}
+
+	afterPubDetail, _, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode(after publish): %v", err)
+	}
+	if afterPubDetail.PublicationIntent != api.PublicationIntentPublished || afterPubDetail.ConfigGeneration.Desired != 2 || afterPubDetail.ResourceVersion != 3 {
+		t.Fatalf("after publish node = (intent=%s, desiredGen=%s, ver=%s), want (published, 2, 3)",
+			afterPubDetail.PublicationIntent, afterPubDetail.ConfigGeneration.Desired, afterPubDetail.ResourceVersion)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE aggregate_id = $1 AND event_type = $2`, nodeID, desiredstate.EventNodePublicationChanged).Scan(&outboxCount); err != nil || outboxCount != 1 {
+		t.Fatalf("outbox_events count = %d (err=%v), want 1", outboxCount, err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE resource = $1 AND action = 'node.publish'`, "exit:"+exitID.String()).Scan(&auditCount); err != nil || auditCount != 1 {
+		t.Fatalf("audit_events count = %d (err=%v), want 1", auditCount, err)
+	}
+
+	// 4. Wrapper SetPublication still behaves as before for unpublished and disabled (including idempotent replay).
+	unpubKey := uuid.New()
+	unpubOp, etag3, err := exitsSvc.SetPublication(ctx, SetPublicationParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: unpubKey,
+		IfMatch:        etag2,
+		RequestID:      &reqID,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentUnpublished,
+			Reason:            "unpublish via wrapper",
+		},
+	})
+	if err != nil {
+		t.Fatalf("SetPublication(unpublished): %v", err)
+	}
+	if unpubOp.Kind != api.OperationKindNodeUnpublish || etag3 != `"4"` {
+		t.Fatalf("SetPublication(unpublished) = (kind=%s, etag=%s), want (node.unpublish, \"4\")", unpubOp.Kind, etag3)
+	}
+	replayOp, replayETag, err := exitsSvc.SetPublication(ctx, SetPublicationParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: unpubKey,
+		IfMatch:        etag2,
+		RequestID:      &reqID,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentUnpublished,
+			Reason:            "unpublish via wrapper",
+		},
+	})
+	if err != nil || replayOp.OperationId != unpubOp.OperationId || replayETag != etag3 {
+		t.Fatalf("SetPublication(unpublished replay) = (%+v, %s, %v), want op=%s etag=%s", replayOp, replayETag, err, unpubOp.OperationId, etag3)
+	}
+
+	disOp, etag4, err := exitsSvc.SetPublication(ctx, SetPublicationParams{
+		NodeID:         nodeID,
+		Principal:      adminUUID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        etag3,
+		RequestID:      &reqID,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentDisabled,
+			Reason:            "disable via wrapper",
+		},
+	})
+	if err != nil {
+		t.Fatalf("SetPublication(disabled): %v", err)
+	}
+	if disOp.Kind != api.OperationKindNodeDisable || etag4 != `"5"` {
+		t.Fatalf("SetPublication(disabled) = (kind=%s, etag=%s), want (node.disable, \"5\")", disOp.Kind, etag4)
+	}
+
+	afterDisDetail, _, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode(after disable): %v", err)
+	}
+	if afterDisDetail.PublicationIntent != api.PublicationIntentDisabled || afterDisDetail.ConfigGeneration.Desired != 4 || afterDisDetail.ResourceVersion != 5 {
+		t.Fatalf("after disable node = (intent=%s, desiredGen=%s, ver=%s), want (disabled, 4, 5)",
+			afterDisDetail.PublicationIntent, afterDisDetail.ConfigGeneration.Desired, afterDisDetail.ResourceVersion)
+	}
+
+	limit := 100
+	auditStore := &audit.Store{Pool: pool}
+	listed, err := auditStore.List(ctx, api.ListAuditEventsParams{Limit: &limit})
+	if err != nil {
+		t.Fatalf("audit.Store.List: %v", err)
+	}
+	if auditStore.AnomalyCount() != 0 || len(listed.Items) != 3 {
+		t.Fatalf("audit.Store.List len=%d anomalies=%d, want len=3 anomalies=0", len(listed.Items), auditStore.AnomalyCount())
 	}
 }

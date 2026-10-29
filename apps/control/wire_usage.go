@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -168,34 +167,9 @@ func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBa
 	}
 
 	tx, hasTx := httpapi.Transaction(ctx)
-	var (
-		recordID uuid.UUID
-		expiry   time.Time
-	)
-	if hasTx == nil {
-		var err error
-		if r.Params.IdempotencyKey != nil {
-			key := uuid.UUID(*r.Params.IdempotencyKey)
-			kh := sha256.Sum256([]byte(key.String()))
-			err = tx.QueryRow(ctx, `
-				SELECT id, expiry
-				FROM idempotency_requests
-				WHERE principal = $1 AND method = 'POST' AND key_hash = $2 AND expiry > clock_timestamp()
-				FOR UPDATE
-			`, p.Scope(), kh[:]).Scan(&recordID, &expiry)
-		} else {
-			err = tx.QueryRow(ctx, `
-				SELECT id, expiry
-				FROM idempotency_requests
-				WHERE principal = $1 AND method = 'POST' AND state = 'in_progress' AND expiry > clock_timestamp()
-				ORDER BY created_at DESC
-				LIMIT 1
-				FOR UPDATE
-			`, p.Scope()).Scan(&recordID, &expiry)
-		}
-		if err != nil {
-			return nil, fmt.Errorf("usage: lookup idempotency record for replay persistence: %w", err)
-		}
+	record, hasRecord := httpapi.CommandRecord(ctx)
+	if hasTx == nil && !hasRecord {
+		return nil, errors.New("usage: command record unavailable for replay persistence")
 	}
 
 	res, err := h.service.IngestBatch(ctx, usagepkg.NodeIdentity{
@@ -217,8 +191,8 @@ func (h *UsageHandler) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBa
 		if _, err := tx.Exec(ctx, `
 			INSERT INTO usage_batch_replays (id, node_id, incarnation_id, response_body, expiry)
 			VALUES ($1, $2, $3, $4, $5)
-		`, recordID, p.NodeID, p.IncarnationID, rawBody, expiry); err != nil {
-			return nil, fmt.Errorf("usage: persist batch replay %s: %w", recordID, err)
+		`, record.ID, p.NodeID, p.IncarnationID, rawBody, record.Expiry); err != nil {
+			return nil, fmt.Errorf("usage: persist batch replay %s: %w", record.ID, err)
 		}
 		nodeID := p.NodeID
 		if err := httpapi.SetResult(ctx, db.IdempotencyResult{

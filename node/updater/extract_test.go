@@ -138,6 +138,38 @@ func TestUPD_ExtractExactInstalledSize(t *testing.T) {
 	}
 }
 
+func TestUPD_ExtractRejectsInternalDotDot(t *testing.T) {
+	dest := filepath.Join(t.TempDir(), "out")
+	err := ExtractArchive(packTar(t, []tarMember{
+		{name: "bin/sub/../fvpn-agent", body: "agent", mode: 0o755},
+	}), dest, ExtractOptions{MaxBytes: 1024})
+	if err == nil {
+		t.Fatal("internal .. was extracted")
+	}
+	if _, statErr := os.Stat(filepath.Join(dest, "bin", "fvpn-agent")); !os.IsNotExist(statErr) {
+		t.Fatalf("cleaned member exists: %v", statErr)
+	}
+	err = ExtractArchive(packTar(t, []tarMember{
+		{name: "bin/./x", body: "x"},
+	}), dest, ExtractOptions{MaxBytes: 1024})
+	if err == nil {
+		t.Fatal("internal . was extracted")
+	}
+}
+
+func TestUPD_ExtractAcceptsDotSlashFile(t *testing.T) {
+	dest := filepath.Join(t.TempDir(), "out")
+	err := ExtractArchive(packTar(t, []tarMember{
+		{name: "./bin/x", body: "ok", mode: 0o644},
+	}), dest, ExtractOptions{MaxBytes: 1024})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(fileBytes(t, filepath.Join(dest, "bin", "x"))); got != "ok" {
+		t.Fatalf("body %q", got)
+	}
+}
+
 func TestUPD_ExtractAcceptsDotRoot(t *testing.T) {
 	raw := packTar(t, []tarMember{
 		{name: "./", typ: tar.TypeDir, mode: 0o755},

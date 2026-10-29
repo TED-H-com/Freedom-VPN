@@ -5,8 +5,10 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -28,8 +30,9 @@ import (
 )
 
 type commandFixture struct {
-	pool  *pgxpool.Pool
-	calls atomic.Int32
+	pool   *pgxpool.Pool
+	calls  atomic.Int32
+	record atomic.Pointer[db.IdempotencyRecord]
 }
 
 func (f *commandFixture) UpdateNode(ctx context.Context, r gen.UpdateNodeRequestObject) (gen.UpdateNodeResponseObject, error) {
@@ -37,6 +40,11 @@ func (f *commandFixture) UpdateNode(ctx context.Context, r gen.UpdateNodeRequest
 	if e != nil {
 		return nil, e
 	}
+	record, ok := CommandRecord(ctx)
+	if !ok {
+		return nil, errors.New("command record unavailable")
+	}
+	f.record.Store(&record)
 	if e = CheckIfMatch(r.Params.IfMatch, 7); e != nil {
 		return nil, e
 	}
@@ -79,6 +87,9 @@ func (f *commandFixture) UpdateNode(ctx context.Context, r gen.UpdateNodeRequest
 	}, p.Role)}, nil
 }
 func (f *commandFixture) Replay(ctx context.Context, _ string, r db.IdempotencyRecord) (any, error) {
+	if _, ok := CommandRecord(ctx); ok {
+		return nil, errors.New("replay unexpectedly has an active command record")
+	}
 	p, _ := auth.FromContext(ctx)
 	op, e := (operations.Store{Pool: f.pool}).Get(ctx, *r.OperationID, p)
 	if e != nil {
@@ -142,6 +153,24 @@ func TestAPI01_IdempotencyReplayConflictConcurrentExpiry(t *testing.T) {
 	if f.calls.Load() != 1 {
 		t.Fatal("duplicate mutation", f.calls.Load())
 	}
+	checkRecord := func() db.IdempotencyRecord {
+		t.Helper()
+		record := f.record.Load()
+		if record == nil || !record.New || record.ID == uuid.Nil || record.State != "in_progress" {
+			t.Fatalf("missing active reservation: %+v", record)
+		}
+		var stored db.IdempotencyRecord
+		var route string
+		if e := pool.QueryRow(t.Context(), `SELECT id,created_at,expiry,route FROM idempotency_requests WHERE id=$1`, record.ID).Scan(&stored.ID, &stored.CreatedAt, &stored.Expiry, &route); e != nil {
+			t.Fatal(e)
+		}
+		routeSuffix := "|node_id=" + strings.TrimPrefix(path, "/api/v1/admin/nodes/")
+		if stored.ID != record.ID || !stored.CreatedAt.Equal(record.CreatedAt) || !stored.Expiry.Equal(record.Expiry) || !strings.HasSuffix(route, routeSuffix) {
+			t.Fatalf("accessor differs from scoped reservation: got %+v, stored %+v, route %q", *record, stored, route)
+		}
+		return *record
+	}
+	firstRecord := checkRecord()
 	if w := invoke(`{ "name" : "new" }`); w.Code != 202 {
 		t.Fatal(w.Code, w.Body.String())
 	}
@@ -165,6 +194,10 @@ func TestAPI01_IdempotencyReplayConflictConcurrentExpiry(t *testing.T) {
 	if w.Code != 202 || f.calls.Load() != 2 {
 		t.Fatal("expiry", w.Code, w.Body.String(), f.calls.Load())
 	}
+	renewedRecord := checkRecord()
+	if renewedRecord.ID == firstRecord.ID || !renewedRecord.Expiry.After(firstRecord.Expiry) {
+		t.Fatal("expired reservation reused", firstRecord, renewedRecord)
+	}
 	r := request("PATCH", path, `{"name":"conflict"}`, p)
 	r.Header.Set("If-Match", `"6"`)
 	assertStatus(t, h, r, 412)
@@ -184,6 +217,15 @@ func TestAPI01_IdempotencyReplayConflictConcurrentExpiry(t *testing.T) {
 	var incomplete, completed int
 	if e = pool.QueryRow(t.Context(), `SELECT count(*) FILTER (WHERE state<>'completed' OR response_status IS NULL OR (resource_id IS NULL AND operation_id IS NULL)),count(*) FROM idempotency_requests`).Scan(&incomplete, &completed); e != nil || incomplete != 0 || completed != 1 {
 		t.Fatal("command reservations must commit complete; failed commands must roll back", incomplete, completed, e)
+	}
+	// Same principal, method and key on a different resource must expose that
+	// route's reservation, not the record found by an incomplete scope lookup.
+	path = "/api/v1/admin/nodes/" + uuid.NewString()
+	if w := invoke(`{"name":"new"}`); w.Code != 202 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	if otherRecord := checkRecord(); otherRecord.ID == renewedRecord.ID {
+		t.Fatal("different route reused command record", otherRecord)
 	}
 }
 

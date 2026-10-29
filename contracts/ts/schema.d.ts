@@ -2028,7 +2028,7 @@ export interface components {
             action: "block" | "allow";
             /** @description Reason code, for example `admin_rule` or `false_positive`. */
             reason: string;
-            /** @description Revision of this rule. */
+            /** @description Positive uint64 decimal-string revision of this rule, starting at 1 (§12.4, §14.2). Zero is invalid; the upper bound 18446744073709551615 is enforced by decstr. */
             revision: string;
         };
         /**
@@ -2330,6 +2330,10 @@ export interface components {
              * @description Last observed actual release (not the requested one).
              */
             current_release_id: string | null;
+            /** @description Applied desired-state config_generation reported by the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. The uint64 upper bound is enforced by decstr. */
+            policy_generation?: string | null;
+            /** @description Applied policy revision references for the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. An explicit empty array means known evidence with no policy references. */
+            policy_refs?: string[] | null;
             /** Format: date-time */
             last_result_at: string | null;
             /** Format: date-time */

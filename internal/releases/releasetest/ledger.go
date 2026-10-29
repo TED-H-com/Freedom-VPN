@@ -138,7 +138,7 @@ func assertWriter(t testing.TB, ctx context.Context, pool *pgxpool.Pool, event a
 	if event.Actor.Type != wantActor || event.Resource.Type != wantResource || event.Result != wantResult {
 		t.Fatalf("writer metadata: %+v", event)
 	}
-	if wantActor == api.AuditEventActorTypeSystem && actor != uuid.MustParse(releases.SystemActorID) {
+	if wantActor == api.AuditEventActorTypeSystem && actor != audit.SystemActor.ID {
 		t.Fatalf("wrong system identity: %s", actor)
 	}
 	for field := range after {

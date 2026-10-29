@@ -11,17 +11,15 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
+	"github.com/TED-H-com/Freedom-VPN/internal/exits"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
-	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
-	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
-	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -176,77 +174,28 @@ func (h *Handlers) SetNodePublication(ctx context.Context, r gen.SetNodePublicat
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
-	if r.Body.PublicationIntent == api.PublicationIntentPublished {
-		// SetPublication still opens its own transaction. Its owner must add a
-		// caller-transaction seam before publication can commit atomically (§14.5).
-		return nil, apierr.New(apierr.DependencyUnavailable, "Publication transaction support is unavailable.")
-	}
 	tx, e := httpapi.Transaction(ctx)
 	if e != nil {
 		return nil, e
 	}
-	var op uuid.UUID
+	// §5.2/§14.5: the caller owns idempotency and the commit. The Tx path
+	// uses only the transaction and clock; compilation and NetBird run later.
+	svc := exits.NewService(h.Runtime.Pool, nil, nil)
+	var op api.Operation
 	e = commandtx.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(_ pgx.Tx) error {
-		var rvText, genText string
-		var exit uuid.UUID
-		var old api.PublicationIntent
-		e := tx.QueryRow(ctx, `SELECT n.resource_version::text,n.desired_config_generation::text,e.id,e.publication_intent FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1 FOR UPDATE OF n,e`, r.NodeId).Scan(&rvText, &genText, &exit, &old)
-		if e != nil {
-			return e
-		}
-		rv, e := decstr.Parse(rvText)
-		if e != nil {
-			return e
-		}
-		if e = httpapi.CheckIfMatch(r.Params.IfMatch, rv); e != nil {
-			return e
-		}
-		gen, e := decstr.Parse(genText)
-		if e != nil {
-			return e
-		}
-		gen, e = gen.Add(1)
-		if e != nil {
-			return e
-		}
-		rv, e = rv.Add(1)
-		if e != nil {
-			return e
-		}
-		if _, e = tx.Exec(ctx, `UPDATE nodes SET desired_config_generation=$2,resource_version=$3 WHERE id=$1`, r.NodeId, gen.String(), rv.String()); e != nil {
-			return e
-		}
-		if _, e = tx.Exec(ctx, `UPDATE exits SET publication_intent=$2,resource_version=resource_version+1 WHERE id=$1`, exit, r.Body.PublicationIntent); e != nil {
-			return e
-		}
-		kind := api.OperationKindNodeUnpublish
-		if r.Body.PublicationIntent == api.PublicationIntentDisabled {
-			kind = api.OperationKindNodeDisable
-		}
-		rid := requestID(ctx)
-		if rid == nil {
-			return errors.New("missing request ID")
-		}
-		op, e = operations.Create(ctx, tx, operations.CreateRequest{Kind: kind, Principal: principal(ctx), Resource: api.ResourceRef{Type: "node", Id: r.NodeId}, RequestID: *rid, ResourceVersion: &rv, DesiredGeneration: &gen, Steps: map[string]operations.Step{"agent_policy": {Required: true}, "route_withdrawal": {Required: true}}})
-		if e != nil {
-			return e
-		}
-		payload, e := canonjson.Marshal(map[string]any{"schema_version": 1, "node_id": r.NodeId, "operation_id": op})
-		if e != nil {
-			return e
-		}
-		if e = db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: r.NodeId, AggregateType: "node", AggregateVersion: rv.String(), EventType: "node.routes.withdraw", SchemaVersion: 1, Payload: payload}); e != nil {
-			return e
-		}
-		after, _ := canonjson.Marshal(map[string]any{"publication_intent": r.Body.PublicationIntent, "reason": r.Body.Reason})
-		return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: principal(ctx).ID.String(), ActorType: "admin", Action: string(kind), Resource: "node:" + r.NodeId.String(), OperationID: &op, RequestID: rid, SchemaVersion: 1, Before: []byte(`{}`), After: after, Result: "accepted"})
+		var err error
+		op, _, err = svc.SetPublicationTx(ctx, tx, exits.SetPublicationParams{
+			NodeID: r.NodeId, Principal: principal(ctx).Scope(), IfMatch: r.Params.IfMatch,
+			RequestID: requestID(ctx), Request: *r.Body,
+		})
+		return err
 	})
 	if e != nil {
 		return nil, e
 	}
-	if e = result(ctx, "node", r.NodeId, 202, &op); e != nil {
+	if e = result(ctx, "node", r.NodeId, 202, &op.OperationId); e != nil {
 		return nil, e
 	}
-	accepted, e := h.operation(ctx, op)
+	accepted, e := h.operation(ctx, op.OperationId)
 	return gen.SetNodePublication202JSONResponse{OperationAcceptedJSONResponse: accepted}, e
 }

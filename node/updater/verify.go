@@ -256,7 +256,9 @@ func dialChecked(ctx context.Context, network, addr string, allowLoopback bool) 
 
 // dialPolicy resolves addr, applies urlPolicy, and connects to the first
 // resolved address. An allowlisted origin skips only the private and CGNAT
-// checks, and the dial stays pinned to that resolution (D-046).
+// checks when the request scheme, host and effective port match that entry,
+// and the dial stays pinned to that resolution (D-046). The scheme comes
+// from the request context. A missing scheme does not match.
 func dialPolicy(ctx context.Context, network, addr string, policy urlPolicy) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -275,7 +277,7 @@ func dialPolicy(ctx context.Context, network, addr string, policy urlPolicy) (ne
 		}
 		ips = found
 	}
-	allowPrivate := hostPortAllowed(host, port, policy.AllowedOrigins)
+	allowPrivate := hostPortAllowed(dialSchemeFrom(ctx), host, port, policy.AllowedOrigins)
 	for _, ip := range ips {
 		if err := rejectIP(ip, policy.AllowLoopback, allowPrivate); err != nil {
 			return nil, err
@@ -293,67 +295,102 @@ func isMetadataHost(host string) bool {
 func validateOrigins(list []string) error {
 	for _, raw := range list {
 		u, err := url.Parse(raw)
-		if err != nil || !exactOrigin(u) || isMetadataHost(strings.ToLower(u.Hostname())) {
+		if err != nil || !exactOrigin(raw) || isMetadataHost(strings.ToLower(u.Hostname())) {
 			return errors.New("updater: allowed_artifact_origins entry must be scheme://host[:port]")
 		}
 	}
 	return nil
 }
 
-func exactOrigin(u *url.URL) bool {
-	if u == nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" {
+// exactOrigin reports whether raw is scheme://host[:port] with no user, path,
+// query or fragment. url.Parse leaves RawQuery empty when ForceQuery is set
+// by a trailing "?", and it leaves Fragment empty for a bare trailing "#",
+// so both are rejected from the raw string as well as from the parsed URL.
+func exactOrigin(raw string) bool {
+	if strings.ContainsAny(raw, "?#") {
+		return false
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u == nil || u.ForceQuery || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" {
 		return false
 	}
 	return u.Scheme == "https" || u.Scheme == "http"
 }
 
-// originAllowed reports whether u's scheme://host[:port] equals one entry.
-// Comparison is case-insensitive. An explicit port is part of the match;
-// a missing port does not equal :443 or :80.
-func originAllowed(u *url.URL, origins []string) bool {
-	if u == nil {
+// effectivePort is the port of a URL or allowlist entry. A missing port is
+// the scheme default: 443 for https and 80 for http.
+func effectivePort(scheme, port string) string {
+	if port != "" {
+		return port
+	}
+	switch strings.ToLower(scheme) {
+	case "https":
+		return "443"
+	case "http":
+		return "80"
+	default:
+		return ""
+	}
+}
+
+// originsMatch reports whether one entry matches scheme, host and effective
+// port. Comparison is case-insensitive. An empty scheme does not match.
+func originsMatch(scheme, host, port string, origins []string) bool {
+	scheme = strings.ToLower(scheme)
+	host = strings.ToLower(host)
+	port = effectivePort(scheme, port)
+	if scheme == "" || host == "" || port == "" {
 		return false
 	}
-	got := strings.ToLower(u.Scheme) + "://" + strings.ToLower(u.Host)
 	for _, raw := range origins {
-		one, err := url.Parse(strings.TrimSpace(raw))
-		if err != nil || one.Host == "" {
+		u, err := url.Parse(strings.TrimSpace(raw))
+		if err != nil || u.Host == "" {
 			continue
 		}
-		if strings.ToLower(one.Scheme)+"://"+strings.ToLower(one.Host) == got {
+		entryScheme := strings.ToLower(u.Scheme)
+		if entryScheme != scheme || strings.ToLower(u.Hostname()) != host {
+			continue
+		}
+		if effectivePort(entryScheme, u.Port()) == port {
 			return true
 		}
 	}
 	return false
 }
 
-// hostPortAllowed matches a dial address to an allowlisted origin. An entry
-// without a port uses the scheme default (443 for https, 80 for http) because
-// DialContext sees that port even when the URL omitted it.
-func hostPortAllowed(host, port string, origins []string) bool {
-	host = strings.ToLower(host)
-	for _, raw := range origins {
-		u, err := url.Parse(strings.TrimSpace(raw))
-		if err != nil || u.Host == "" {
-			continue
-		}
-		if strings.ToLower(u.Hostname()) != host {
-			continue
-		}
-		want := u.Port()
-		if want == "" {
-			switch strings.ToLower(u.Scheme) {
-			case "https":
-				want = "443"
-			case "http":
-				want = "80"
-			}
-		}
-		if want == port {
-			return true
-		}
+// originAllowed reports whether one entry matches u. An entry matches when
+// the scheme, host and effective port are equal. The effective port of a URL
+// or entry without an explicit port is the scheme default: 443 for https and
+// 80 for http.
+func originAllowed(u *url.URL, origins []string) bool {
+	if u == nil {
+		return false
 	}
-	return false
+	return originsMatch(u.Scheme, u.Hostname(), u.Port(), origins)
+}
+
+// hostPortAllowed applies the same scheme, host and effective-port rule to a
+// dial address. port is the port DialContext was given. scheme comes from the
+// request; an empty scheme does not match.
+func hostPortAllowed(scheme, host, port string, origins []string) bool {
+	return originsMatch(scheme, host, port, origins)
+}
+
+type dialSchemeKey struct{}
+
+func withDialScheme(ctx context.Context, scheme string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return context.WithValue(ctx, dialSchemeKey{}, scheme)
+}
+
+func dialSchemeFrom(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	scheme, _ := ctx.Value(dialSchemeKey{}).(string)
+	return scheme
 }
 
 func isLoopbackName(host string) bool {
