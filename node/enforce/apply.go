@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/netip"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 // ApplyResult is what the agent keeps after a successful render.
@@ -28,6 +30,16 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		return ApplyResult{}, err
 	}
 	resets := DetectResets(previous, state.Counters)
+	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
+		// The kernel comment is the memory of class minors. Recomputing from
+		// scratch could move a member when another member is added or removed
+		// (§11.4).
+		copied := make(map[uuid.UUID]uint16, len(state.Classes))
+		for id, minor := range state.Classes {
+			copied[id] = minor
+		}
+		m.QoS.Assignments = copied
+	}
 	plan, err := Render(m, state, tcState)
 	if err != nil {
 		return ApplyResult{}, err

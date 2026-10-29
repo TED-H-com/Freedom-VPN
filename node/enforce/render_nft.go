@@ -82,7 +82,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 
 	in := m.Datapath.MemberIngress
 	up := m.Datapath.Uplink
-	comment := fmt.Sprintf("fvpn_generation=%d fvpn_metering=%s", m.Generation, MeteringVersion)
+	comment := fmt.Sprintf("fvpn_generation=%d fvpn_metering=%s fvpn_class=%s", m.Generation, MeteringVersion, formatClasses(assignments))
 	// Unreachable marker so the generation is visible without accepting traffic.
 	rule(&b, "forward", fmt.Sprintf("ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment %q", comment))
 
@@ -258,6 +258,19 @@ func addrList(a []netip.Addr) string {
 		parts[i] = x.String()
 	}
 	return strings.Join(parts, ", ")
+}
+
+func formatClasses(assignments map[uuid.UUID]uint16) string {
+	ids := make([]uuid.UUID, 0, len(assignments))
+	for id := range assignments {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i].String() < ids[j].String() })
+	parts := make([]string, len(ids))
+	for i, id := range ids {
+		parts[i] = fmt.Sprintf("%s:%x", id, assignments[id])
+	}
+	return strings.Join(parts, ",")
 }
 
 func sortedKeys(m map[string]bool) []string {

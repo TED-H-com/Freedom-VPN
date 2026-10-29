@@ -1,5 +1,7 @@
 package enforce
 
+import "github.com/google/uuid"
+
 // State is the part of table inet fvpn that a render must not recreate.
 // Named counters are the important part: flushing them would look like a
 // meter reset (§10.7).
@@ -8,6 +10,9 @@ type State struct {
 	Chains   map[string]bool
 	Sets     map[string]bool
 	Counters map[string]CounterValue
+	// Classes are member minors read back from the generation comment so a
+	// later render does not move a member (§11.4).
+	Classes map[uuid.UUID]uint16
 }
 
 func (s State) hasChain(name string) bool { return s.Chains[name] }

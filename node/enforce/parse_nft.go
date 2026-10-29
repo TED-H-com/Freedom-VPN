@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 // Ruleset is the part of an nft -j listing that verification inspects.
@@ -14,6 +16,7 @@ type Ruleset struct {
 	Counters   map[string]CounterValue
 	Sets       map[string]bool
 	Flowtables []string
+	Classes    map[uuid.UUID]uint16
 	Raw        string
 }
 
@@ -109,6 +112,14 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			if err := inspectExpr(head.Expr, &rv); err != nil {
 				return Ruleset{}, err
 			}
+			if classes := classAssignments(head.Comment); len(classes) > 0 {
+				if rs.Classes == nil {
+					rs.Classes = map[uuid.UUID]uint16{}
+				}
+				for id, minor := range classes {
+					rs.Classes[id] = minor
+				}
+			}
 			ch := rs.Chains[head.Chain]
 			ch.Name = head.Chain
 			ch.Rules = append(ch.Rules, rv)
@@ -166,6 +177,7 @@ func ParseState(raw []byte) (State, error) {
 		Chains:   map[string]bool{},
 		Sets:     map[string]bool{},
 		Counters: rs.Counters,
+		Classes:  rs.Classes,
 	}
 	for name, ch := range rs.Chains {
 		if ch.Hook != "" || ch.Type != "" || len(ch.Rules) > 0 {
@@ -176,6 +188,42 @@ func ParseState(raw []byte) (State, error) {
 		st.Sets[name] = true
 	}
 	return st, nil
+}
+
+// classAssignments reads "fvpn_class=<uuid>:<minorhex>,..." from a rule comment.
+func classAssignments(comment string) map[uuid.UUID]uint16 {
+	const key = "fvpn_class="
+	i := strings.Index(comment, key)
+	if i < 0 {
+		return nil
+	}
+	rest := comment[i+len(key):]
+	if sp := strings.IndexAny(rest, " \t"); sp >= 0 {
+		rest = rest[:sp]
+	}
+	if rest == "" {
+		return nil
+	}
+	out := map[uuid.UUID]uint16{}
+	for _, part := range strings.Split(rest, ",") {
+		idPart, minorPart, ok := strings.Cut(part, ":")
+		if !ok {
+			continue
+		}
+		id, err := uuid.Parse(idPart)
+		if err != nil {
+			continue
+		}
+		n, err := strconv.ParseUint(minorPart, 16, 16)
+		if err != nil || n == 0 {
+			continue
+		}
+		out[id] = uint16(n)
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }
 
 func hasKey(obj map[string]json.RawMessage, key string) bool {

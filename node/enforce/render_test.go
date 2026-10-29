@@ -327,6 +327,48 @@ func TestSamples_Namespaces(t *testing.T) {
 	}
 }
 
+func TestRender_KeepsStoredClassMinor(t *testing.T) {
+	m := smallModel()
+	m.QoS.Assignments = map[uuid.UUID]uint16{memberA: 0x20}
+	plan, err := Render(m, State{}, TCState{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if plan.Assignments[memberA] != 0x20 {
+		t.Fatalf("minor %x", plan.Assignments[memberA])
+	}
+	if !strings.Contains(plan.TC, "classid 1:20 ") || !strings.Contains(plan.NFT, memberA.String()+":20") {
+		t.Fatalf("stored minor was not rendered:\n%s\n%s", plan.NFT, plan.TC)
+	}
+}
+
+func TestApply_ReusesKernelClass(t *testing.T) {
+	m := smallModel()
+	comment := "fvpn_generation=2 fvpn_metering=" + MeteringVersion + " fvpn_class=" + memberA.String() + ":20"
+	listing := []byte(`{"nftables":[{"rule":{"table":"fvpn","chain":"forward","comment":"` + comment + `","expr":[]}}]}`)
+	f := &fakeExec{}
+	f.handler = func(name string, args []string) ([]byte, error) {
+		key := name + " " + strings.Join(args, " ")
+		if strings.Contains(key, "nft -j list") {
+			return listing, nil
+		}
+		if strings.Contains(key, "tc -j qdisc") || strings.Contains(key, "tc -j class") {
+			return []byte(`[]`), nil
+		}
+		if strings.Contains(key, "qdisc del") {
+			return nil, &CmdError{Cmd: key, Err: fmt.Errorf("exit"), Out: "No such file or directory"}
+		}
+		return nil, fmt.Errorf("unexpected %s", key)
+	}
+	_, err := Apply(context.Background(), f, m, nil)
+	if err == nil {
+		t.Fatal("expected verify to reject the stub listing")
+	}
+	if len(f.tc) == 0 || !strings.Contains(f.tc[0], "classid 1:20 ") {
+		t.Fatalf("tc did not reuse the kernel minor: %v", f.tc)
+	}
+}
+
 func TestDeadline_Earliest(t *testing.T) {
 	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	lease := MemberLease{
