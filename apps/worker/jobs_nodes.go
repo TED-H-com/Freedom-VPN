@@ -11,6 +11,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
 	"github.com/TED-H-com/Freedom-VPN/internal/exits"
+	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	nodelib "github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
@@ -27,6 +28,10 @@ import (
 // NodeJobs is injectable for composition and tests. External calls all go through
 // the NetBird adapter; it verifies remote state before returning success.
 func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, publicationAdapter ...exits.NetBirdAdapter) Registry {
+	return nodeJobs(r, nb, fetch, attempts, r.DesiredStateCompiler(), publicationAdapter...)
+}
+
+func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
 	var publication exits.NetBirdAdapter = httpwire.NewPublicationAdapter(r, nb)
 	if len(publicationAdapter) > 1 {
@@ -35,7 +40,7 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 	if len(publicationAdapter) == 1 {
 		publication = publicationAdapter[0]
 	}
-	pub := exits.NewService(r.Pool, r.DesiredStateCompiler(), publication)
+	pub := exits.NewService(r.Pool, compiler, publication)
 	jobs.Register(desiredstate.EventNodePublicationChanged, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var payload struct {
 			OperationID uuid.UUID `json:"operation_id"`
@@ -354,7 +359,14 @@ func nodes() Domain {
 		if err != nil {
 			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
 		}
-		return Built{Jobs: NodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts), Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}}, nil
+		compiler := runtime.DesiredStateCompiler()
+		return Built{
+			Jobs: nodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts, compiler),
+			// D-026: all decorators run before member/device jobs, independent
+			// of domain build order. Share the configured signer, TTL and DNS.
+			Context: func(ctx context.Context) context.Context { return membersruntime.WithCompiler(ctx, compiler) },
+			Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }},
+		}, nil
 	}}
 }
 
