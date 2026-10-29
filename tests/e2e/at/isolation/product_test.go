@@ -166,6 +166,11 @@ func (s *stack) prove(ctx context.Context, t *testing.T) productObs {
 	key := uuid.NewString()
 	first, err := publishOnce(ctx, admin, s.public, out.nodeID, etag, key)
 	out.notes = append(out.notes, Observation{Name: "publication_put", Detail: httpDetail(first, err)})
+	checks := failedChecks(first.Body)
+	if checks != "" {
+		out.notes = append(out.notes, Observation{Name: "failed_checks", Detail: checks})
+		out.notes = append(out.notes, Observation{Name: "publication_error_body", Detail: string(first.Body)})
+	}
 	if err != nil {
 		out.stop = "publication transport"
 		return out
@@ -174,6 +179,9 @@ func (s *stack) prove(ctx context.Context, t *testing.T) productObs {
 	out.idempotentStatus = httpDetail(second, err)
 	if first.Status != 202 {
 		out.stop = "PUT publication " + httpDetail(first, nil)
+		if checks != "" {
+			out.stop += " failed_checks=" + checks
+		}
 		out.publication = string(node.PublicationObserved)
 		out.forward = s.forwardChain()
 		return out

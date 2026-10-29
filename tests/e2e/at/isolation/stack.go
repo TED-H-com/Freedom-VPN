@@ -262,6 +262,27 @@ func errorCode(body []byte) string {
 	return env.Error.Code
 }
 
+// failedChecks returns the verbatim details.failed_checks JSON from a
+// NODE_NOT_SERVICEABLE body (internal/nodes/transitions.go CheckPublishable).
+func failedChecks(body []byte) string {
+	if i := bytes.IndexByte(body, '{'); i > 0 {
+		body = body[i:]
+	}
+	var env struct {
+		Error struct {
+			Details map[string]json.RawMessage `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &env) != nil || env.Error.Details == nil {
+		return ""
+	}
+	raw, ok := env.Error.Details["failed_checks"]
+	if !ok {
+		return ""
+	}
+	return strings.TrimSpace(string(raw))
+}
+
 func (s *stack) docker(container string, args ...string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
