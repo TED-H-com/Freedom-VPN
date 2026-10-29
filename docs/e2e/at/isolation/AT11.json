@@ -1,0 +1,185 @@
+{
+  "id": "AT11",
+  "title": "IPv6, metadata and special addresses",
+  "spec": [
+    "§19 AT11",
+    "ISO01",
+    "ISO03"
+  ],
+  "status": "blocked",
+  "at": "2026-10-29T23:41:36Z",
+  "build": "c1ac4393f6c206783f06034d73f2915d675bd917",
+  "image_digests": [
+    "fvpn-w4-isolation-node:local sha256:9488a1ad13f7fe053b78c0e797c3943fd7124a1aff3d1a6ad443d57135b3f6e7",
+    "fvpn-w4-isolation-control:local sha256:99506184d9312156f2dfe5143806e103e668598cb2852ffa9aa0b235e680b44d",
+    "fvpn-w4-isolation-worker:local sha256:daf907d1298b50e7442b648d0da2498de1f1257f1a46d44a9b5a47bf650eb2d8",
+    "fvpn-w4-at-isolation:lab absent"
+  ],
+  "policy_revision": "1",
+  "node_incarnation": "01a18a0a-2e35-7bae-8a02-7e9a3a44d8aa",
+  "expected": "The selected IPv6 mode either routes or blocks. ULA, link-local, loopback, metadata and IPv4-mapped addresses are unreachable. There is no unverified bypass (§19 AT11, ISO01, ISO03).",
+  "actual": "PUT publication 422 NODE_NOT_SERVICEABLE ipv6=member has no global ipv6 address; the dev stack lab network is ipv4",
+  "commands": [
+    "FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 make -f mk/e2e.mk e2e-up",
+    "FVPN_E2E=1 FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 go test -tags e2e -count=1 -timeout 25m -p 1 -parallel 1 ./tests/e2e/at/isolation",
+    "FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-test"
+  ],
+  "observations": [
+    {
+      "name": "node_id",
+      "detail": "01a18a0a-2a5e-72ed-a531-3892fa367ad2"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "absent"
+    },
+    {
+      "name": "operation_kind",
+      "detail": "-"
+    },
+    {
+      "name": "operation_status",
+      "detail": "-"
+    },
+    {
+      "name": "operation_steps",
+      "detail": "-"
+    },
+    {
+      "name": "operation_error",
+      "detail": "-"
+    },
+    {
+      "name": "idempotent_put",
+      "detail": "422 NODE_NOT_SERVICEABLE"
+    },
+    {
+      "name": "device_bindings",
+      "detail": "0"
+    },
+    {
+      "name": "resolver_ipv4",
+      "detail": "1"
+    },
+    {
+      "name": "safety_status",
+      "detail": "failed"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "applying"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "data_health",
+      "detail": "unknown"
+    },
+    {
+      "name": "forward_policy",
+      "detail": "drop"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "0"
+    },
+    {
+      "name": "forward_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "0"
+    },
+    {
+      "name": "forward_excerpt",
+      "detail": "type filter hook forward priority mangle; policy drop; | oifname \"fvnb0\" ct state established,related counter packets 0 bytes 0 accept | iifname \"fvnb0\" counter packets 0 bytes 0 accept | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | iifname \"fvmb0\" counter name \"ctbase\" drop | oifname \"fvmb0\" counter name \"ctbase\" drop | iifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop | oifname \"fvmb0\" meta nfproto ipv6 coun"
+    },
+    {
+      "name": "member_routes",
+      "detail": "-"
+    },
+    {
+      "name": "stack_targets",
+      "detail": "containers=fvpn-w4-isolation-node,fvpn-w4-isolation-member,fvpn-w4-isolation-worker,fvpn-w4-isolation-control,fvpn-w4-isolation-gateway,fvpn-w4-isolation-adguard,fvpn-w4-isolation-origin,fvpn-w4-isolation-postgres,fvpn-w4-isolation-coredns,fvpn-w4-isolation-netbird,fvpn-w4-isolation-idp,fvpn-w4-isolation-payment lab_prefix=172.28.33 origin_ip=192.0.6.10 node_dummy=192.0.2.20"
+    },
+    {
+      "name": "exit_probes",
+      "detail": "-"
+    },
+    {
+      "name": "ipv6",
+      "detail": "member has no global ipv6 address; the dev stack lab network is ipv4"
+    },
+    {
+      "name": "members",
+      "detail": "1 member container"
+    },
+    {
+      "name": "agent_sigkill",
+      "detail": "-"
+    },
+    {
+      "name": "netbird_restart",
+      "detail": "-"
+    },
+    {
+      "name": "node_reboot",
+      "detail": "-"
+    },
+    {
+      "name": "updater_switch",
+      "detail": "-"
+    },
+    {
+      "name": "mechanism_lab",
+      "detail": "lab-AT10 pass; lab-AT11 pass; lab-AT12 fail; lab-AT13 pass"
+    },
+    {
+      "name": "operator_platforms",
+      "detail": "needs operator run; see operator-run.md"
+    },
+    {
+      "name": "token_length",
+      "detail": "52"
+    },
+    {
+      "name": "setup_key_persisted",
+      "detail": "true"
+    },
+    {
+      "name": "netbird",
+      "detail": "netbird_up"
+    },
+    {
+      "name": "desired_publication_intent",
+      "detail": "unpublished"
+    },
+    {
+      "name": "authorization_generation",
+      "detail": "1"
+    },
+    {
+      "name": "dns_generation",
+      "detail": "0"
+    },
+    {
+      "name": "lifecycle",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent_before",
+      "detail": "unpublished"
+    },
+    {
+      "name": "etag_present",
+      "detail": "true"
+    },
+    {
+      "name": "publication_put",
+      "detail": "422 NODE_NOT_SERVICEABLE"
+    }
+  ]
+}
