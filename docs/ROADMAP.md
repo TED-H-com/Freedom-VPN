@@ -55,13 +55,20 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | in progress |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
 | w3-toolchain: Go 1.27.3 in go.mod and every CI pin | WP01 | done (#19) |
-| r2-control-review: adversarial review of the merged control plane (read-only) | WP04, WP06 | in progress |
-| r2-updater-review: adversarial review of updater, enforcement and packaging (read-only) | WP05, WP09 | in progress |
+| r2-control-review: adversarial review of the merged control plane (read-only) | WP04, WP06 | done (7 blockers, 7 majors, 2 minors → owner follow-ups) |
+| r2-updater-review: adversarial review of updater, enforcement and packaging (read-only) | WP05, WP09 | done (4 blockers, 9 majors, 3 minors → owner follow-ups) |
 | r2-ledger-review: adversarial review of ledger, desired state, policies and DNS (read-only) | WP05, WP07, WP08 | done (1 blocker, 9 majors → owner follow-ups) |
-| w3-wire-members: members, devices, entitlements, billing behind control and worker; NetBird devices adapter | WP06 | in progress |
+| w3-wire-members: members, devices, entitlements, billing behind control and worker; NetBird devices adapter; composition seam (D-026) | WP06 | done (#22) |
 | w3-wire-nodes: PKI authenticator, enrollment and bootstrap, desired state, leases, observations, exits, releases, update batches | WP04, WP05, WP09 | in progress |
 | w3-wire-policies-usage: policies and Fair-Use operations, fup worker, usage mount with PKI signer, audit reader | WP07, WP08 | in progress |
 | w3-dns-publish: DNS policy compiler, node applier with evidence, lab scenario | WP08 | in progress |
+| w3-wire-nodes follow-up 1: adopt the composition seam | WP04, WP05, WP09 | in progress |
+| w3-dns-publish follow-up 1: adopt the worker seam, split document types from the store | WP08 | in progress |
+| w2-members-billing follow-up 1: review fixes (operations and audit conformance, exit-group eligibility reader, synchronous checkout, patch status) | WP06 | in progress |
+| w2-control-core follow-up 1: review fixes (conformance helpers, role cookies, limiter split, agent receipts) | WP04 | in progress |
+| w2-updater follow-up 1: review fixes (symlink escape, forwarding gate, persistent-data check, nodelock, downloads) | WP09 | in progress |
+| w1-netlab follow-up 1: review fixes (HTB class cleanup, deadline fail-closed, reset detection, IPv4 validation, evidence dir) | WP02, WP05 | in progress |
+| w1-dnspolicy follow-up 1: compiled bundle round-trip, source fetch SSRF | WP08 | in progress |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | queued (after the wire tasks) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | queued (after agent-core and the wire tasks) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
