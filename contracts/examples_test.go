@@ -170,6 +170,9 @@ func kinErrors(err error) []string {
 			// kin-openapi reports a missing member at the member's own
 			// pointer and an unknown member under "properties".
 			p, kw := se.JSONPointer(), se.SchemaField
+			if kw == "nullable" {
+				kw = "type" // JSON Schema expresses nullability as a type.
+			}
 			if kw == "required" && len(p) > 0 {
 				p = p[:len(p)-1]
 			}

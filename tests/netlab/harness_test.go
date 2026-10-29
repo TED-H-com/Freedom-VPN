@@ -125,12 +125,26 @@ func publicLeak(s string) bool {
 	return strings.Contains(s, "/home"+"/") || strings.Contains(s, "PRIVATE KEY")
 }
 
+// evidenceRoot is the test's temporary directory unless the caller sets
+// FVPN_NETLAB_EVIDENCE_DIR. The make target that refreshes docs/poc/G2-evidence
+// sets that variable. A normal lab run must not dirty the tracked tree.
+func evidenceRoot(t *testing.T) string {
+	t.Helper()
+	if dir := os.Getenv("FVPN_NETLAB_EVIDENCE_DIR"); dir != "" {
+		if !filepath.IsAbs(dir) {
+			dir = filepath.Join(repoRoot(), dir)
+		}
+		return dir
+	}
+	return t.TempDir()
+}
+
 func save(t *testing.T, name, body string) {
 	t.Helper()
 	if publicLeak(body) {
 		t.Fatalf("evidence %s failed public hygiene", name)
 	}
-	dir := filepath.Join(repoRoot(), "docs", "poc", "G2-evidence", t.Name())
+	dir := filepath.Join(evidenceRoot(t), t.Name())
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -141,7 +155,13 @@ func save(t *testing.T, name, body string) {
 
 func noteSummary(line string) {
 	fmt.Printf("SUMMARY %s\n", line)
-	dir := filepath.Join(repoRoot(), "docs", "poc", "G2-evidence")
+	dir := os.Getenv("FVPN_NETLAB_EVIDENCE_DIR")
+	if dir == "" {
+		return
+	}
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(repoRoot(), dir)
+	}
 	_ = os.MkdirAll(dir, 0o755)
 	f, err := os.OpenFile(filepath.Join(dir, "SUMMARY.txt"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {

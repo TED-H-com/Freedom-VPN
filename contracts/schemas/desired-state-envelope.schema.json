@@ -119,6 +119,15 @@
         "publication_intent": {
           "$ref": "#/$defs/PublicationIntent"
         },
+        "revoked_release_ids": {
+          "description": "Releases barred from installation and serving (§13.4, D-034).\nA node must refuse to install and must stop serving any listed release.\nAbsent and empty both mean no additional revocations; neither widens\nthe serving/allowed release intersections enforced by the updater.\n",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
         "safety_profile": {
           "description": "Fixed isolation baseline profile, for example `internet-only-v1`. No policy can relax it.",
           "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",

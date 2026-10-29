@@ -9,18 +9,19 @@ import (
 // ForwardingDeadline is the earliest instant a member may still be forwarded
 // (§16.3). A zero time and ok=false means a required input is missing.
 func ForwardingDeadline(lease MemberLease) (time.Time, bool) {
-	if lease.MemberID == uuid.Nil || lease.EffectiveServiceEnd.IsZero() || lease.NodeLeaseEnd.IsZero() {
+	// Every input is required. A zero signed time or a non-positive offline
+	// cap must not fall open to the later service or node end (§16.3).
+	if lease.MemberID == uuid.Nil || lease.EffectiveServiceEnd.IsZero() || lease.NodeLeaseEnd.IsZero() ||
+		lease.SignedServerTime.IsZero() || lease.MaxOfflineSeconds == 0 {
 		return time.Time{}, false
 	}
 	end := lease.EffectiveServiceEnd
 	if lease.NodeLeaseEnd.Before(end) {
 		end = lease.NodeLeaseEnd
 	}
-	if lease.MaxOfflineSeconds > 0 && !lease.SignedServerTime.IsZero() {
-		offline := lease.SignedServerTime.Add(time.Duration(lease.MaxOfflineSeconds) * time.Second)
-		if offline.Before(end) {
-			end = offline
-		}
+	offline := lease.SignedServerTime.Add(time.Duration(lease.MaxOfflineSeconds) * time.Second)
+	if offline.Before(end) {
+		end = offline
 	}
 	return end, true
 }

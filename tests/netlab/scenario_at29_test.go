@@ -7,9 +7,66 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 )
 
 func TestAT29_LeaseTimeout(t *testing.T) {
+	t.Run("offline_cap_is_earliest", func(t *testing.T) {
+		now := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+		lease := enforce.MemberLease{
+			MemberID:            memberA,
+			EffectiveServiceEnd: now.Add(48 * time.Hour),
+			NodeLeaseEnd:        now.Add(24 * time.Hour),
+			SignedServerTime:    now,
+			MaxOfflineSeconds:   30,
+		}
+		dl, ok := enforce.ForwardingDeadline(lease)
+		if !ok || !dl.Equal(now.Add(30*time.Second)) {
+			t.Fatalf("deadline %s ok %v, want the offline cap", dl, ok)
+		}
+		lease.SignedServerTime = time.Time{}
+		if _, ok := enforce.ForwardingDeadline(lease); ok {
+			t.Fatal("zero SignedServerTime was accepted")
+		}
+		lease.SignedServerTime = now
+		lease.MaxOfflineSeconds = 0
+		if _, ok := enforce.ForwardingDeadline(lease); ok {
+			t.Fatal("MaxOfflineSeconds 0 was accepted")
+		}
+	})
+	t.Run("timeout_ceil_clamps_backward_clock", func(t *testing.T) {
+		// The clock step is only in this process. Do not call date -s.
+		// Bindings stay valid at the earlier Now, so the device is still
+		// admitted and the ceil is what keeps the kernel timeout from growing.
+		now := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+		back := now.Add(-2 * time.Hour)
+		m := functionalModel(back, 29)
+		for i := range m.Leases {
+			m.Leases[i].TimeoutCeilSeconds = 45
+			m.Leases[i].EffectiveServiceEnd = now.Add(2 * time.Hour)
+			m.Leases[i].NodeLeaseEnd = now.Add(2 * time.Hour)
+			m.Leases[i].SignedServerTime = now
+			m.Leases[i].MaxOfflineSeconds = 7200
+		}
+		m.Now = back
+		plan, err := enforce.Render(m, enforce.State{}, enforce.TCState{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(plan.NFT, "timeout 7200s") || strings.Contains(plan.NFT, "timeout 3600s") {
+			t.Fatal("backward clock extended the kernel timeout")
+		}
+		if !strings.Contains(plan.NFT, "timeout 45s") {
+			t.Fatalf("ceil was not applied:\n%s", plan.NFT)
+		}
+	})
+	t.Run("kernel_set_timeout", func(t *testing.T) {
+		at29KernelTimeout(t)
+	})
+}
+
+func at29KernelTimeout(t *testing.T) {
 	skipLab(t)
 	flushConntrack(t)
 	now := time.Now().UTC()

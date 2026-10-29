@@ -153,10 +153,41 @@ func (j *Journal) Advance(ctx context.Context, txnID string, to Stage, u StageUp
 	if _, err := tx.ExecContext(ctx, `INSERT INTO txn_events(txn_id, seq, stage, at, detail) VALUES(?, ?, ?, ?, ?)`, txnID, seq, string(to), now, u.Detail); err != nil {
 		return Txn{}, err
 	}
+	if err := persistAdvanceGate(ctx, tx, to); err != nil {
+		return Txn{}, err
+	}
 	if err := tx.Commit(); err != nil {
 		return Txn{}, err
 	}
 	return j.GetTxn(ctx, txnID)
+}
+
+// persistAdvanceGate records the forwarding bit in the same transaction as
+// the stage change. Publication intent is left for the engine, which knows
+// the desired state. A non-terminal stage only raises the blocked bit.
+func persistAdvanceGate(ctx context.Context, tx *sql.Tx, to Stage) error {
+	switch to {
+	case StageRecoveryRequired:
+		if err := setMeta(ctx, tx, metaForwardingBlocked, "1"); err != nil {
+			return err
+		}
+		return setMeta(ctx, tx, metaTerminalOutcome, OutcomeRecoveryRequired)
+	case StageLocallySucceeded:
+		if err := setMeta(ctx, tx, metaForwardingBlocked, "0"); err != nil {
+			return err
+		}
+		return setMeta(ctx, tx, metaTerminalOutcome, OutcomeSucceeded)
+	case StageRolledBack:
+		if err := setMeta(ctx, tx, metaForwardingBlocked, "0"); err != nil {
+			return err
+		}
+		return setMeta(ctx, tx, metaTerminalOutcome, OutcomeRolledBack)
+	default:
+		if !to.Terminal() {
+			return setMeta(ctx, tx, metaForwardingBlocked, "1")
+		}
+	}
+	return nil
 }
 
 // RecordHealth stores a health report without a stage change.
@@ -246,23 +277,27 @@ func (j *Journal) TxnEvents(ctx context.Context, id string) ([]TxnEvent, error) 
 }
 
 // BlocksForwarding reports whether the journal requires member forwarding to
-// stay off: a transaction is applying or checking (§13.5), or the latest
-// transaction ended in recovery_required (§13.9 step 4). The agent consults
-// this at start before it enables member forwarding; it is fail closed: any
-// read error is reported as blocking.
+// stay off. An active transaction blocks. Otherwise the decision is the
+// persisted gate record, not an older transaction (D-034b). recovery_required
+// and a failed terminal outcome stay blocked. rolled_back does not, by
+// itself, keep members off. Any read error is blocking.
 func (j *Journal) BlocksForwarding(ctx context.Context) (bool, string) {
-	t, err := j.LastTxn(ctx)
-	if errors.Is(err, ErrNotFound) {
-		return false, ""
+	t, err := j.ActiveTxn(ctx)
+	if err == nil {
+		return true, "update transaction " + string(t.Stage.Phase())
 	}
+	if !errors.Is(err, ErrNotFound) {
+		return true, "update journal unreadable"
+	}
+	g, err := j.GateRecord(ctx)
 	if err != nil {
 		return true, "update journal unreadable"
 	}
-	switch {
-	case !t.Stage.Terminal():
-		return true, "update transaction " + string(t.Stage.Phase())
-	case t.Stage == StageRecoveryRequired:
+	if g.TerminalOutcome == OutcomeRecoveryRequired {
 		return true, "update recovery_required"
+	}
+	if g.ForwardingBlocked || g.TerminalOutcome == OutcomeFailed {
+		return true, "update forwarding blocked"
 	}
 	return false, ""
 }

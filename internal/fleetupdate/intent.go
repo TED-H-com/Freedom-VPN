@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -49,7 +50,7 @@ type Work struct {
 
 func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, error) {
 	var out *Work
-	e := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	e := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		out = nil
 		if e := s.lock(ctx, tx); e != nil {
 			return e

@@ -6,10 +6,12 @@ package nodelock
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -20,14 +22,22 @@ const DefaultPath = "/var/lib/vpn-node/update.lock"
 // ErrBusy means another process holds the lock (UPDATE_BUSY, §13.11).
 var ErrBusy = errors.New("UPDATE_BUSY: node update lock is held by another process")
 
-// Lock is a held exclusive flock. The zero value is not usable.
+// Lock is a held exclusive flock. The descriptor stays open until Release.
 type Lock struct {
 	f *os.File
 }
 
-// TryAcquire takes the lock without blocking. It returns ErrBusy when the
-// lock is held elsewhere. The lock is released by Release or when the process
-// exits, so a crashed holder never wedges the node.
+// holder is the metadata written only after flock succeeds (D-034d).
+type holder struct {
+	PID    int    `json:"pid"`
+	BootID string `json:"boot_id"`
+}
+
+// TryAcquire takes LOCK_EX|LOCK_NB before it writes holder metadata. It
+// returns ErrBusy when the lock is held elsewhere and does not remove the
+// file. A crashed holder is released by the kernel when its descriptor
+// closes. Stale detection compares the recorded boot id and pid; a stale
+// record does not justify deleting a file another process still has locked.
 func TryAcquire(path string) (*Lock, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return nil, err
@@ -37,13 +47,76 @@ func TryAcquire(path string) (*Lock, error) {
 		return nil, err
 	}
 	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		_ = f.Close()
 		if errors.Is(err, syscall.EWOULDBLOCK) {
+			h, ok := readHolder(f)
+			_ = f.Close()
+			if ok && holderStale(h, readBootID()) {
+				// The record is stale, but flock is still held. Do not unlink.
+				return nil, fmt.Errorf("%w", ErrBusy)
+			}
 			return nil, ErrBusy
 		}
+		_ = f.Close()
 		return nil, fmt.Errorf("flock: %w", err)
 	}
+	if err := writeHolder(f); err != nil {
+		_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+		_ = f.Close()
+		return nil, err
+	}
 	return &Lock{f: f}, nil
+}
+
+func readBootID() string {
+	b, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
+}
+
+func readHolder(f *os.File) (holder, bool) {
+	st, err := f.Stat()
+	if err != nil || st.Size() == 0 || st.Size() > 1<<20 {
+		return holder{}, false
+	}
+	buf := make([]byte, st.Size())
+	n, err := f.ReadAt(buf, 0)
+	if err != nil || n == 0 {
+		return holder{}, false
+	}
+	var h holder
+	if json.Unmarshal(buf[:n], &h) != nil {
+		return holder{}, false
+	}
+	return h, true
+}
+
+func writeHolder(f *os.File) error {
+	raw, err := json.Marshal(holder{PID: os.Getpid(), BootID: readBootID()})
+	if err != nil {
+		return err
+	}
+	if err := f.Truncate(0); err != nil {
+		return err
+	}
+	if _, err := f.WriteAt(raw, 0); err != nil {
+		return err
+	}
+	return f.Sync()
+}
+
+// holderStale reports whether a recorded holder cannot still be this boot's
+// live process. A different boot id is stale even when the pid number has
+// been reused. A dead pid is stale on the same boot.
+func holderStale(h holder, boot string) bool {
+	if h.BootID != boot {
+		return true
+	}
+	if h.PID <= 0 {
+		return true
+	}
+	return syscall.Kill(h.PID, 0) != nil
 }
 
 // Acquire retries TryAcquire with a fixed interval until attempts run out or

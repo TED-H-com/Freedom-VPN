@@ -48,25 +48,26 @@ type fileSpec struct {
 }
 
 type world struct {
-	t      *testing.T
-	root   string
-	layout Layout
-	node   Node
-	src    *memSource
-	gate   *fakeGate
-	svc    *fakeSvc
-	meter  *fakeMeter
-	health *fakeHealth
-	mig    *fakeMig
-	eng    *Engine
-	key    release.SigningKey
-	trust  *envelope.TrustStore
-	srv    *httpServer
-	files  map[string]fileSpec
-	hits   map[string]int
-	mu     sync.Mutex
-	onGet  func(r *http.Request)
-	now    time.Time
+	t             *testing.T
+	root          string
+	layout        Layout
+	node          Node
+	src           *memSource
+	gate          *fakeGate
+	svc           *fakeSvc
+	meter         *fakeMeter
+	health        *fakeHealth
+	mig           *fakeMig
+	eng           *Engine
+	key           release.SigningKey
+	trust         *envelope.TrustStore
+	srv           *httpServer
+	files         map[string]fileSpec
+	hits          map[string]int
+	mu            sync.Mutex
+	onGet         func(r *http.Request)
+	now           time.Time
+	rollbackAllow []uuid.UUID
 }
 
 type httpServer struct {
@@ -190,7 +191,7 @@ func (w *world) makeRelease(marker string, schemaTo int, from []int) builtRel {
 			MigrationId:            presence.NewNullNullable[string](),
 		},
 		Rollback: api.ManifestRollback{
-			AllowedReleaseIds: []uuid.UUID{}, StateReadableByPrevious: true,
+			AllowedReleaseIds: append([]uuid.UUID{}, w.rollbackAllow...), StateReadableByPrevious: true,
 			RequiredFreeBytes: decstr.MustParse("4096"), HealthProfile: "vpn-node-standard-v1",
 		},
 		Evidence: release.EvidenceInput{
