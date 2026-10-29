@@ -42,6 +42,12 @@ func TestUPD_VersionAtLeastNumeric(t *testing.T) {
 	if versionAtLeast("1.9.0", "1.10.0") || versionAtLeast("", "1.0.0") || versionAtLeast("1.0.0", "") {
 		t.Fatal("expected rejection")
 	}
+	if versionAtLeast("1.0.0-alpha.1", "1.0.0") || versionAtLeast("1.0.0-alpha", "1.0.0-alpha.1") {
+		t.Fatal("pre-release ordered above a release or a longer pre-release")
+	}
+	if !versionAtLeast("1.0.0", "1.0.0-alpha.1") || !versionAtLeast("1.0.0-rc.1", "1.0.0-alpha.1") || !versionAtLeast("1.0.0+build", "1.0.0") {
+		t.Fatal("pre-release ordering")
+	}
 }
 
 func TestUPD_SelectArtifact(t *testing.T) {
