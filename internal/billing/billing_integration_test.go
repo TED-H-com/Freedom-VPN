@@ -460,3 +460,47 @@ func TestAT04_KeepFullRefundPolicyAndConflictingInvoiceAnomaly(t *testing.T) {
 		t.Fatal(anomalies, err)
 	}
 }
+
+func TestENT01_ProviderTrialDoesNotBypassFiniteGrantPolicy(t *testing.T) {
+	f := setup(t)
+	f.subscription.Status = "trialing"
+	f.invoice.AmountMinor = 0
+	f.fake.SetState(f.subscription, []Invoice{f.invoice})
+	f.deliver(t, Event{ID: "provider-trial", Type: "invoice.paid", SubscriptionID: f.subscription.ID})
+	p := f.projection(t)
+	if p.Allows(f.now) || p.State != "pending_payment" {
+		t.Fatal("provider trial granted service without a reasoned grant", p)
+	}
+	var kind string
+	if err := f.s.Pool.QueryRow(context.Background(), `SELECT record_type FROM billing_records WHERE external_reference=$1`, f.invoice.ID).Scan(&kind); err != nil || kind != "trial_invoice" {
+		t.Fatal(kind, err)
+	}
+}
+
+func TestSEC02_RefundMetadataMinimizedBeforeEncryption(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	raw := []byte(`{"id":"card-metadata-refund","type":"charge.refunded","customer_id":"test-customer","payment_method_details":{"type":"card","card":{"last4":"TEST ONLY","brand":"test"}}}`)
+	inserted, err := f.s.Ingest(ctx, raw, f.fake.Sign(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var encrypted, hash []byte
+	if err = f.s.Pool.QueryRow(ctx, `SELECT encrypted_payload,payload_hash FROM inbox_events WHERE id=$1`, inserted.ID).Scan(&encrypted, &hash); err != nil {
+		t.Fatal(err)
+	}
+	payload, err := f.s.Vault.Open(encrypted, aad("fake", "card-metadata-refund"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(payload, []byte("payment_method_details")) || bytes.Contains(payload, []byte("last4")) || bytes.Contains(payload, []byte("\"brand\"")) {
+		t.Fatal("card metadata persisted")
+	}
+	expected, _ := payloadHash(raw)
+	if !bytes.Equal(hash, expected) {
+		t.Fatal("authenticated raw digest lost")
+	}
+	if _, err = f.s.ProcessOne(ctx); err != nil {
+		t.Fatal("minimized refund could not be processed", err)
+	}
+}

@@ -36,8 +36,9 @@ append-only billing records retain invoices/refunds and the grace reason.
 3. Device events reference `device_bindings` for overlay scope, IP and interval.
    Binding revision is independent of device resource version. IP ownership is
    open until revoke; PostgreSQL infinity on a binding is historical ownership,
-   **never** an entitlement or lease deadline. Empty ownership intervals support
-   authorization followed by revocation at the same timestamp.
+   **never** an entitlement or lease deadline. All intervals remain strictly positive. Revocation at the exact authorization
+   timestamp closes the binding at the next PostgreSQL microsecond tick; the
+   revoked device status immediately denies forwarding independently.
 4. `pending_payment`, `past_due`, `expired`, `suspended`, `closed`, absent plans,
    null intervals and intervals outside the current time deny forwarding.
    `active`, `cancel_at_period_end`, and `grace` still require the full deadline

@@ -170,7 +170,11 @@ func (s *Service) syncSubscription(ctx context.Context, id, inbox uuid.UUID) err
 		// delivery IDs or the generic seven-day command retention (§9.3, AT03).
 		for _, invoice := range invoices {
 			if invoice.Status == "paid" {
-				if err := s.record(ctx, tx, member, id, inbox, "paid_invoice", invoice.ID, invoice.ID, invoice.AmountMinor, invoice.Currency, invoice.Period); err != nil {
+				recordType := "paid_invoice"
+				if sub.Status == "trialing" && invoice.AmountMinor == 0 {
+					recordType = "trial_invoice"
+				}
+				if err := s.record(ctx, tx, member, id, inbox, recordType, invoice.ID, invoice.ID, invoice.AmountMinor, invoice.Currency, invoice.Period); err != nil {
 					return err
 				}
 			}
@@ -296,7 +300,7 @@ func validateInvoices(invoices []Invoice, sub Subscription) error {
 	seen := map[string]bool{}
 	refunds := map[string]bool{}
 	for _, i := range invoices {
-		if !validExternal(i.ID) || seen[i.ID] || i.SubscriptionID != sub.ID || i.CustomerID != sub.CustomerID || i.AmountMinor < 0 || i.AmountMinor > canonjson.MaxSafeInteger || !entitlement.ValidPeriod(i.Period.Start, i.Period.End, 0) {
+		if !validExternal(i.ID) || seen[i.ID] || i.SubscriptionID != sub.ID || i.CustomerID != sub.CustomerID || i.AmountMinor < 0 || i.AmountMinor > canonjson.MaxSafeInteger || !entitlement.ValidPeriod(i.Period.Start, i.Period.End, 366*24*time.Hour) || !slices.Contains([]string{"paid", "open", "draft", "void", "uncollectible"}, i.Status) {
 			return ErrPayload
 		}
 		seen[i.ID] = true
@@ -355,7 +359,7 @@ func (s *Service) Reconcile(ctx context.Context, run uuid.UUID, after uuid.UUID,
 		if e != nil {
 			return after, n, e
 		}
-		if _, e = s.insertInbox(ctx, event, raw); e != nil {
+		if _, e = s.insertInbox(ctx, event, raw, raw); e != nil {
 			return after, n, e
 		}
 		after = v.id

@@ -107,19 +107,6 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 	if err != nil {
 		return out, err
 	}
-	// Keep the coarse account status and ETag consistent with the separate,
-	// more detailed entitlement state. Manual suspension remains an input.
-	status := result.State
-	switch status {
-	case "grace", "cancel_at_period_end":
-		status = "active"
-	case "past_due":
-		status = "expired"
-	}
-	if _, err = tx.Exec(ctx, `UPDATE members SET status=$2,resource_version=resource_version+1 WHERE id=$1 AND status<>$2`, memberID, status); err != nil {
-		return out, err
-	}
-
 	raw, err := canonjson.Marshal(result)
 	if err != nil {
 		return out, err
@@ -140,6 +127,19 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 			return Projection{Result: result, MemberID: memberID, Revision: version, ComputedAt: computed}, s.schedule(ctx, tx, memberID, in)
 		}
 	}
+	// Keep the coarse account status and ETag consistent with the separate,
+	// more detailed entitlement state. Manual suspension remains an input.
+	status := result.State
+	switch status {
+	case "grace", "cancel_at_period_end":
+		status = "active"
+	case "past_due":
+		status = "expired"
+	}
+	if _, err = tx.Exec(ctx, `UPDATE members SET status=$2,resource_version=resource_version+1 WHERE id=$1`, memberID, status); err != nil {
+		return out, err
+	}
+
 	version, err = version.Add(1)
 	if err != nil {
 		return out, err

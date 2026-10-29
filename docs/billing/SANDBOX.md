@@ -71,10 +71,11 @@ future. Synchronize the control host's clock. Never disable timestamp checking.
 
 Provider response bodies, request URLs and authentication headers are never
 included in returned errors. The worker stores sanitized subscription references,
-periods and amounts; raw authenticated webhook bodies are encrypted at rest.
-Unexpected card/secret-bearing fields are rejected before persistence. Configure
-provider data minimization accordingly and treat rejected events as an operator
-alert; reconciliation remains available for current payment state.
+periods and amounts; authenticated webhook payloads are encrypted at rest after card/payment-method
+metadata is removed. The digest still covers the original raw bytes verified by
+the signature. Unexpected full card inputs or credentials are rejected before
+persistence. Configure provider data minimization accordingly and treat rejected
+events as an operator alert; reconciliation remains available for current state.
 
 Real Stripe sandbox and native-client/NetBird runs are **待實測** because credentials
 and the central adapter are not available in this task. `httptest` exercises the

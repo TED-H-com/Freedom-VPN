@@ -20,7 +20,7 @@ ALTER TABLE entitlements ADD CONSTRAINT entitlements_nullable_interval CHECK(
 CREATE INDEX entitlements_transition_idx ON entitlements(next_transition_at) WHERE next_transition_at IS NOT NULL;
 CREATE TABLE entitlement_history (
  id UUID PRIMARY KEY, member_id UUID NOT NULL REFERENCES members,
- revision NUMERIC(20,0) NOT NULL CHECK(revision BETWEEN 1 AND 18446744073709551615),
+ revision NUMERIC(20,0) NOT NULL CHECK(revision >= 0 AND revision <= 18446744073709551615) CHECK(revision > 0),
  projection JSONB NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), UNIQUE(member_id,revision)
 );
 CREATE TRIGGER entitlement_history_immutable BEFORE UPDATE OR DELETE ON entitlement_history FOR EACH ROW EXECUTE FUNCTION immutable_row();
@@ -54,13 +54,11 @@ CREATE TABLE billing_sessions (
 COMMENT ON TABLE billing_sessions IS '§14.3, §14.5: durable session intent; hosted URLs encrypted and never grant entitlement.';
 ALTER TABLE member_devices ADD COLUMN platform TEXT NOT NULL DEFAULT 'unknown',
  ADD COLUMN last_seen_at TIMESTAMPTZ, ADD COLUMN observed_authorized BOOLEAN NOT NULL DEFAULT false,
- ADD COLUMN observed_at TIMESTAMPTZ, ADD COLUMN observed_version NUMERIC(20,0) NOT NULL DEFAULT 0,
- ADD COLUMN observed_entitlement_revision NUMERIC(20,0) NOT NULL DEFAULT 0;
+ ADD COLUMN observed_at TIMESTAMPTZ, ADD COLUMN observed_version NUMERIC(20,0) NOT NULL DEFAULT 0 CHECK(observed_version >= 0 AND observed_version <= 18446744073709551615),
+ ADD COLUMN observed_entitlement_revision NUMERIC(20,0) NOT NULL DEFAULT 0 CHECK(observed_entitlement_revision >= 0 AND observed_entitlement_revision <= 18446744073709551615);
 -- IP ownership is a historical fact, not an entitlement lease. Infinity here
 -- means an open binding until explicit revocation, never infinite VPN access.
--- Zero-duration intervals are permitted for authorize/revoke at the same instant.
-ALTER TABLE device_bindings DROP CONSTRAINT device_bindings_check;
-ALTER TABLE device_bindings ADD CONSTRAINT device_bindings_interval CHECK(valid_from<=valid_until);
+
 
 -- §16.3: nullable pending projections must not weaken the existing lease guard.
 -- Keep legacy finite projections compatible while denying absent rights and

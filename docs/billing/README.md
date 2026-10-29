@@ -14,7 +14,7 @@ projection, immutable history, audit and exactly one policy event only when the
 result changed. The caller owns the transaction. All source writers use the
 same member lock. Member status is the coarse projection (`active` includes
 period-end cancellation/grace); the detailed state remains in `entitlements`.
-Status changes increment the member ETag version. Time-only changes are processed
+Every changed entitlement projection increments the member ETag version. Time-only changes are processed
 by `Store.Sweep` using persisted `next_transition_at` deadlines.
 
 | Input / transition | Result and service behavior |
@@ -37,7 +37,8 @@ Overlapping or adjacent periods of the same plan may form a continuous service
 interval. Disconnected future periods never bridge a gap. Different simultaneously
 active plan revisions are rejected as ambiguous rather than combined into wider
 rights. A grant with no current plan needs an explicit `plan_revision_id`.
-There is no automatic trial from a provider's `trialing` status. Trial entitlement
+There is no automatic trial from a provider's `trialing` status; zero-value
+trial invoices are recorded as `trial_invoice` and do not create paid entitlement. Trial entitlement
 requires a finite reasoned grant. Existing authorized devices continue to count
 against the limit while their member is suspended or expired; device revocation
 releases a slot immediately in the local transaction.
@@ -53,14 +54,15 @@ rights. Changing limits requires reviewing already issued grants/grace periods.
 ## Payment pipeline and recovery
 
 1. Verify the provider signature over the exact raw body before parsing or
-   persisting anything. Reject unexpected card/payment-method/secret-bearing
-   payload fields. Configure only the required event types and do not expand
-   payment methods into webhooks.
-2. Encrypt authenticated raw bytes with AES-256-GCM. The encrypted envelope has
+   persisting anything. Remove card/payment-method metadata before storage; reject unexpected full
+   card inputs or credentials. Configure only the required event types and do not
+   expand payment methods into webhooks.
+2. Encrypt the authenticated, minimized payload with AES-256-GCM. Raw bytes
+   are retained unchanged when no card metadata needs removal. The encrypted envelope has
    a key ID, random nonce and ciphertext; provider/event identity is authenticated
    associated data. `UNIQUE(source,external_event_id)` is the durable dedupe key.
    Only return 2xx after the insert commits. A conflicting body under the same
-   event ID fails with idempotency conflict. The raw-byte digest uses a canonical
+   event ID fails with idempotency conflict. The digest always covers the original authenticated raw bytes through a canonical
    JSON base64 envelope, accommodating provider decimals without float parsing.
 3. `ProcessOne` claims pending/failed work with a recoverable lease, then fetches
    the provider's **current** subscription and invoice/refund state. Webhook event

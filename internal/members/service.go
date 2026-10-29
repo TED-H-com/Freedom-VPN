@@ -55,6 +55,8 @@ type Grant struct {
 	Source, Reason        string
 	PlanRevisionID        *uuid.UUID
 	ValidFrom, ValidUntil time.Time
+	CreatedBy             string
+	CreatedAt             time.Time
 	RevokedAt             *time.Time
 }
 
@@ -92,14 +94,14 @@ func (s *Service) Get(ctx context.Context, actor entitlement.Actor, id uuid.UUID
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		return m, err
 	}
-	rows, err := s.Pool.Query(ctx, `SELECT id,source,reason,plan_revision_id,valid_from,valid_until,revoked_at FROM entitlement_grants WHERE member_id=$1 ORDER BY created_at DESC,id DESC LIMIT 200`, id)
+	rows, err := s.Pool.Query(ctx, `SELECT id,source,reason,plan_revision_id,valid_from,valid_until,revoked_at,created_by,created_at FROM entitlement_grants WHERE member_id=$1 ORDER BY created_at DESC,id DESC LIMIT 200`, id)
 	if err != nil {
 		return m, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var g Grant
-		if err = rows.Scan(&g.ID, &g.Source, &g.Reason, &g.PlanRevisionID, &g.ValidFrom, &g.ValidUntil, &g.RevokedAt); err != nil {
+		if err = rows.Scan(&g.ID, &g.Source, &g.Reason, &g.PlanRevisionID, &g.ValidFrom, &g.ValidUntil, &g.RevokedAt, &g.CreatedBy, &g.CreatedAt); err != nil {
 			return m, err
 		}
 		m.Grants = append(m.Grants, g)
@@ -362,7 +364,7 @@ func (s *Service) Close(ctx context.Context, c entitlement.Command, id uuid.UUID
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, `UPDATE device_bindings SET valid_until=greatest(valid_from,$2) WHERE member_id=$1 AND valid_until>$2`, id, now)
+		_, err = tx.Exec(ctx, `UPDATE device_bindings SET valid_until=greatest(valid_from+interval '1 microsecond',$2) WHERE member_id=$1 AND valid_until>$2`, id, now)
 		if err != nil {
 			return err
 		}

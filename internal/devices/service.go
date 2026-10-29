@@ -309,7 +309,7 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, `UPDATE device_bindings SET valid_until=greatest(valid_from,$2) WHERE device_id=$1 AND valid_until>$2`, id, now)
+		_, err = tx.Exec(ctx, `UPDATE device_bindings SET valid_until=greatest(valid_from+interval '1 microsecond',$2) WHERE device_id=$1 AND valid_until>$2`, id, now)
 		if err != nil {
 			return err
 		}

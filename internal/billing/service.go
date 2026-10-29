@@ -41,8 +41,8 @@ type IngestResult struct {
 	Duplicate bool
 }
 
-// Ingest returns success only after the authenticated raw body is encrypted and
-// durably committed. Map ErrSignature to contract 401 WEBHOOK_SIGNATURE_INVALID in pkg/apierr at the HTTP boundary.
+// Ingest returns success only after the authenticated, minimized payload is
+// encrypted and durably committed. Map ErrSignature to contract 401 WEBHOOK_SIGNATURE_INVALID in pkg/apierr at the HTTP boundary.
 func (s *Service) Ingest(ctx context.Context, raw []byte, signature string) (IngestResult, error) {
 	var out IngestResult
 	if len(raw) == 0 || len(raw) > s.Config.MaxWebhookBytes {
@@ -51,10 +51,13 @@ func (s *Service) Ingest(ctx context.Context, raw []byte, signature string) (Ing
 	if err := s.Provider.VerifyWebhook(raw, signature, s.Entitlements.Time()); err != nil {
 		return out, ErrSignature
 	}
-	// Hosted payment methods remain at the provider. Unexpected card payloads
-	// are rejected, including encrypted persistence, rather than silently retained.
-	if !safePayload(raw) {
-		return out, ErrPayload
+
+	// Signature verification precedes minimization. Standard Stripe charge
+	// notifications include card metadata without expansion; remove it before
+	// encrypted persistence while retaining the digest of authenticated bytes.
+	minimized, err := minimizePayload(raw)
+	if err != nil {
+		return out, err
 	}
 	event, err := s.Provider.ParseEvent(raw)
 	if err != nil {
@@ -63,48 +66,81 @@ func (s *Service) Ingest(ctx context.Context, raw []byte, signature string) (Ing
 	if !validExternal(event.ID) || event.Type == "" {
 		return out, ErrPayload
 	}
-	return s.insertInbox(ctx, event, raw)
+	return s.insertInbox(ctx, event, minimized, raw)
 }
-func safePayload(raw []byte) bool {
+
+// minimizePayload retains the exact bytes if no sensitive fields occur. Card
+// metadata is removed; unexpected credentials or full card inputs are rejected.
+func minimizePayload(raw []byte) ([]byte, error) {
 	var value any
 	dec := json.NewDecoder(strings.NewReader(string(raw)))
 	dec.UseNumber()
 	if dec.Decode(&value) != nil {
-		return false
+		return nil, ErrPayload
 	}
-	var safe func(any) bool
-	safe = func(v any) bool {
+	changed := false
+	var scrub func(any) (any, error)
+	scrub = func(v any) (any, error) {
 		switch x := v.(type) {
 		case map[string]any:
 			for k, v := range x {
 				switch strings.ToLower(k) {
-				case "card", "card_number", "cvc", "cvv", "pan", "payment_method_details", "webhook_secret", "api_key", "authorization":
+				case "card_number", "cvc", "cvv", "pan", "webhook_secret", "api_key", "authorization":
 					if v != nil {
-						return false
+						return nil, ErrPayload
 					}
 				}
-				if !safe(v) {
-					return false
+				child, err := scrub(v)
+				if err != nil {
+					return nil, err
 				}
+				x[k] = child
+				switch strings.ToLower(k) {
+				case "card", "payment_method_details", "last4", "fingerprint":
+					if card, ok := v.(map[string]any); ok && card["number"] != nil {
+						return nil, ErrPayload
+					}
+					delete(x, k)
+					changed = true
+				}
+			}
+			if x["object"] == "card" {
+				if x["number"] != nil {
+					return nil, ErrPayload
+				}
+				changed = true
+				return nil, nil
 			}
 		case []any:
-			for _, v := range x {
-				if !safe(v) {
-					return false
+			for i, v := range x {
+				child, err := scrub(v)
+				if err != nil {
+					return nil, err
 				}
+				x[i] = child
 			}
 		}
-		return true
+		return v, nil
 	}
-	return safe(value)
+	if _, err := scrub(value); err != nil {
+		return nil, err
+	}
+	if !changed {
+		return raw, nil
+	}
+	minimized, err := json.Marshal(value)
+	if err != nil {
+		return nil, ErrPayload
+	}
+	return minimized, nil
 }
-func (s *Service) insertInbox(ctx context.Context, event Event, raw []byte) (IngestResult, error) {
+func (s *Service) insertInbox(ctx context.Context, event Event, raw, digestSource []byte) (IngestResult, error) {
 	out := IngestResult{}
 	id, err := uuid.NewV7()
 	if err != nil {
 		return out, err
 	}
-	hash, err := payloadHash(raw)
+	hash, err := payloadHash(digestSource)
 	if err != nil {
 		return out, ErrPayload
 	}
