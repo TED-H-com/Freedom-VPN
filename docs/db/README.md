@@ -28,7 +28,17 @@ go run ./internal/db/cmd/fvpn-migrate status
 
 `dbtest.New(t)` creates, migrates and cleans up a database in `t.Cleanup`, even
 when a test fails. `dbtest.NewUnmigrated(t)` provides the same lifecycle for
-concurrent bootstrap tests. With the test variable unset, tagged tests skip with
+concurrent bootstrap tests. **CLI tests must use `dbtest` isolated DSNs**:
+`dbtest.NewUnmigratedWithDSN(t)` returns the pool and a subprocess-safe URL.
+The helper parses the admin URL, replaces only its database path, preserves all
+query parameters and rejects any database override that escapes isolation.
+Supply a `postgres://` or `postgresql://` URL, not a keyword/value DSN.
+Never mutate a pgx config and call `ConnString()` to reconstruct a DSN: that
+method retains the original URL. The CLI prints a quoted `current_database`
+line for both `up` and `status`; the CLI regression checks that identity, the
+isolated migration versions, and the absence of public tables (including
+`goose_db_version`) in the admin database before and after running it.
+With the test variable unset, tagged tests skip with
 a clear prerequisite message; ordinary `go test ./...` never opens a database.
 Tests never create roles, modify the shared admin database, or start containers.
 Make targets put TMPDIR/GOTMPDIR in a unique disk directory under `.agent/tmp/`
@@ -113,7 +123,7 @@ numeric/hash/JSON checks.
 | member_groups | U(code), U(name). | §15.2 L1624 |
 | assignments | Exactly one of member_id/plan_revision_id; group FK; valid interval; separate partial exclusion constraints prevent overlapping member/group and plan-revision/group assignments. Adjacent intervals are allowed. | §15.2 L1624 |
 | nodes | Lifecycle/provisioning allowlists; current incarnation composite FK ensures same node; separate desired/applied config and current/desired/last_good release references; monotonic generations/version; immutable ID; no deletion. | §5; §15.3 L1634 |
-| node_incarnations | `node_incarnations_active_key`: partial U(node_id) WHERE revoked_at IS NULL; U(public_key_fingerprint), `node_incarnations_peer_key`: U(deployment_id,peer_id); peer fields both absent/present; architecture allowlist; immutable node/key/peer identity. | §15.3 L1635 |
+| node_incarnations | `node_incarnations_active_key`: partial U(node_id) WHERE revoked_at IS NULL; U(public_key_fingerprint), `node_incarnations_peer_key`: U(deployment_id,peer_id); peer fields both absent/present; architecture allowlist; immutable node/key identity; deployment/peer pair binds once from NULL, then cannot change or clear; revocation stays irreversible. | §15.3 L1635 |
 | node_enrollments | U(token_hash); finite created_at..expiry; state allowlist; consumed requires key and timestamp. Token/node/expiry identity cannot change; non-null public key, consumption and revocation timestamps cannot be rewritten. Request ID is a tracing reference. | §15.3 L1636; §15.5.1 |
 | node_certificates | `node_certificates_serial_key`: U(issuer,serial); incarnation FK; finite not_before..not_after; only public certificate bytes and metadata, never a private key. Controlled overlapping renewals are allowed. | §15.3 L1637 |
 | exits | U(node_id); intent and observed allowlists; sole authoritative publication_intent; independent resource version. | §5.2; §15.3 L1638 |
@@ -278,7 +288,7 @@ rewritten. Certificate renewal and grant correction create new evidence rows.
 
 SQL files are five-digit, increasing, goose `Up`-only migrations embedded by
 `db/migrations`. Do not add Down migrations. Migrations 00001–00005 were corrected
-in place for F-01–F-15 while all databases are disposable development/test
+in place for F-01–F-16 and the CLI/retention audit follow-up while all databases are disposable development/test
 instances. **Migrations become append-only the moment the orchestrator announces
 the first deployed environment.** After that point, append a new migration;
 never edit deployed history. The goose Provider has instance-local
@@ -382,7 +392,18 @@ triggers and are outside this privilege boundary.
 search_path. EXECUTE is revoked from PUBLIC. It allows only audit_events,
 usage_event_payloads and usage_rollups, checks a finite cutoff against the
 configured minimum age, deletes eligible rows and appends an audit event with
-session actor, target, cutoff, count and reason **in the same transaction**.
+system actor, typed resource, target, configuration snapshot, cutoff, count and
+reason **in the same transaction**. `actor_type` is `system`; `actor` retains
+`session_user` as local executor evidence and the HTTP system actor ID is null.
+`resource` stores JSON for `ResourceRef` with type `fleet_config` and singleton
+UUID `00000000-0000-0000-0000-000000000001`: the current contract has no
+`retention_config` resource type. The action/result are `retention.purge` and
+`succeeded`. `after_diff` carries `table`, decimal-string `fleet_generation`
+and `deleted_rows`, the full `retention_config` snapshot (including its UUID),
+`cutoff`, redacted `reason` and `schema_version`. Fleet generation is context,
+not a retention-policy or projection generation; retention_config has no
+generation column. Readers decode the resource JSON and expose the diffs as
+`changes.before`/`changes.after`.
 A rollback undoes both. The local `fvpn.retention_purge` setting is a trigger
 signal, not authorization: the trigger also checks the executing role against
 the function owner. Only the SECURITY DEFINER purge function enables this flag
@@ -472,14 +493,14 @@ material, immutable artifacts, configuration and deletion policies.
 ## Review fixes
 
 Each finding has an integration regression named TestReviewF01 through
-TestReviewF15. The tests use isolated databases and cover the rejected proof and
+TestReviewF16. The tests use isolated databases and cover the rejected proof and
 valid writes. Privilege probes use a built-in role without creating cluster roles.
 
 | Finding | Enforced by |
 |---|---|
 | F-01 cancellation | update_jobs_state_check; update_targets_target_state_check; update_targets_snapshot / guard_update_target() |
-| F-02 rollup deletion | usage_rollups_delete_guard; usage_rollups_no_truncate; purge_retained() |
-| F-03 complete projection before purge | purge_retained(): one projection name/generation/granularity across all records, excluding reconciliation and gap |
+| F-02 rollup deletion and audit | usage_rollups_delete_guard; usage_rollups_no_truncate; purge_retained(); audit rows validate against the OpenAPI AuditEvent schema |
+| F-03 complete projection before purge | purge_retained(): one projection name/generation/granularity across all records, excluding reconciliation and gap; typed audit evidence for zero-row and successful purges |
 | F-04 recoverable exact ACK | usage_checkpoints_keep; usage_checkpoints_receipts; deferred usage_events_contents |
 | F-05 device quota/suspension | member_devices_authorization / check_device_authorization(); shared member→entitlement lock recipes |
 | F-06 stable idempotency | CompleteIdempotent field matching; BeginIdempotent expiry recheck; deferred idempotency_requests_reference |
@@ -492,6 +513,27 @@ valid writes. Privilege probes use a built-in role without creating cluster role
 | F-13 identity/tombstones | billing_records_subscription_member_fk; subscriptions_member_key; *_identity, *_keep, *_revoked, members_closed, member_devices_revoked and nodes_retired triggers |
 | F-14 versions | *_version / monotonic_fields(); netbird_user_bindings_revision |
 | F-15 primitive inputs/order | ClaimOutbox ordered SELECT; EnqueueOutbox/AppendAudit validation; nonblank CHECKs on grants and subscription grace |
+| F-16 one-time incarnation binding | base 00005 node_incarnations_binding / guard_incarnation_binding(); existing pair CHECK, node_incarnations_peer_key and node_incarnations_revoked remain |
+
+The CLI isolation follow-up is covered by `Test15_5_MigrateCLI` and
+`dbtest.Test15_5_IsolatedDSN`. The admin URL is never serialized from a config
+whose Database field was mutated. All dbtest pool creation now starts with the
+isolated URL, so later serialization also stays isolated.
+
+The retention audit follow-up uses the closest supported singleton resource,
+`fleet_config`, as detailed above. F-02/F-03 check contract serialization and
+preserved evidence without weakening age or projection-completeness gates.
+
+F-16 changes the guard in base migration `00005`; no later/domain migration is
+changed. Enrollment may insert an unbound incarnation, then the NetBird worker
+sets `deployment_id` and `peer_id` together after external read-back (§6.2,
+§7.2). Identical retries are harmless; clearing either ID, changing either ID or
+reusing the pair on another incarnation fails. Another deployment may use the
+same peer ID. A late first binding on a revoked incarnation may record external
+evidence but cannot change its revocation timestamp or restore eligibility.
+The dedicated binding guard has no migration/restore UPDATE bypass; historical
+restore may INSERT the original binding (§17.2). Core identity fields retain
+their existing reviewed migration exemption.
 
 The three administrative flags have separate scopes: fvpn.retention_purge is
 managed inside purge_retained, fvpn.restore permits historical INSERT replay,

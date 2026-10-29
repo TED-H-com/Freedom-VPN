@@ -248,7 +248,7 @@ BEGIN
 END $$;
 CREATE FUNCTION purge_retained(target TEXT, cutoff TIMESTAMPTZ, reason TEXT) RETURNS BIGINT
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
-DECLARE n BIGINT; earliest TIMESTAMPTZ; column_name TEXT; policy public.retention_config; previous TEXT;
+DECLARE n BIGINT; earliest TIMESTAMPTZ; column_name TEXT; policy public.retention_config; fleet public.fleet_config; previous TEXT;
 BEGIN
  IF reason IS NULL OR length(trim(reason))=0 OR cutoff IS NULL OR NOT isfinite(cutoff) THEN
   RAISE EXCEPTION 'finite cutoff and reason required' USING ERRCODE='22023';
@@ -291,8 +291,13 @@ BEGIN
  END IF;
  GET DIAGNOSTICS n=ROW_COUNT;
  PERFORM set_config('fvpn.retention_purge',coalesce(previous,''),true);
+ -- §15.4, §16.4: use the contract's fleet_config ResourceRef; retention_config
+ -- is not a ResourceType. Preserve the exact retention settings in the diff.
+ SELECT * INTO STRICT fleet FROM public.fleet_config WHERE id='00000000-0000-0000-0000-000000000001' FOR SHARE;
  INSERT INTO public.audit_events(actor,actor_type,action,resource,after_diff,result)
- VALUES(session_user,'retention','retention.purge',target,jsonb_build_object('schema_version',1,'cutoff',cutoff,'deleted_rows',n,'reason',reason),'succeeded');
+ VALUES(session_user,'system','retention.purge',jsonb_build_object('type','fleet_config','id',fleet.id)::text,
+  jsonb_build_object('schema_version',1,'table',target,'fleet_generation',fleet.generation::text,
+   'retention_config',to_jsonb(policy),'cutoff',cutoff,'deleted_rows',n::text,'reason',reason),'succeeded');
  RETURN n;
 END $$;
 REVOKE ALL ON FUNCTION purge_retained(TEXT,TIMESTAMPTZ,TEXT) FROM PUBLIC;
