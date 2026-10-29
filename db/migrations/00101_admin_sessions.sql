@@ -22,3 +22,5 @@ CREATE TABLE admin_sessions (
  CHECK(isfinite(absolute_expires_at) AND created_at < absolute_expires_at)
 );
 CREATE INDEX admin_sessions_expiry_idx ON admin_sessions(absolute_expires_at);
+COMMENT ON TABLE admin_identities IS 'Project Spec §16.1; scoped OIDC administrator identities isolated from VPN membership (D-032).';
+COMMENT ON TABLE admin_sessions IS 'Project Spec §16.1; opaque administrator sessions with IdP MFA and idle/absolute expiry (D-032).';
