@@ -28,10 +28,11 @@ import (
 
 // testEnv holds seeded entities and a configured usage.Service for integration tests.
 type testEnv struct {
-	pool       *pgxpool.Pool
-	svc        *usage.Service
-	trustStore *envelope.TrustStore
-	now        time.Time
+	pool            *pgxpool.Pool
+	svc             *usage.Service
+	trustStore      *envelope.TrustStore
+	epochTrustStore *envelope.TrustStore
+	now             time.Time
 
 	memberA uuid.UUID
 	memberB uuid.UUID
@@ -69,26 +70,45 @@ func setupTestEnv(t *testing.T) *testEnv {
 		t.Fatalf("NewTrustStore: %v", err)
 	}
 
+	epochPub, epochPriv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatalf("generate ledger-epoch ed25519 key: %v", err)
+	}
+	const epochKeyID = "test-ledger-epoch-key-1"
+	epochSigner := usage.NewLedgerEpochSigner(epochKeyID, epochPriv)
+	epochTS, err := envelope.NewTrustStore(envelope.TrustedKey{
+		KeyID:     epochKeyID,
+		PublicKey: epochPub,
+		Purposes:  []envelope.Purpose{envelope.PurposeLedgerEpoch},
+		NotBefore: now.Add(-24 * time.Hour),
+		NotAfter:  now.Add(24 * time.Hour),
+	})
+	if err != nil {
+		t.Fatalf("NewTrustStore(epoch): %v", err)
+	}
+
 	env := &testEnv{
-		pool:       pool,
-		trustStore: ts,
-		now:        now,
-		memberA:    uuid.New(),
-		memberB:    uuid.New(),
-		deviceA:    uuid.New(),
-		deviceB:    uuid.New(),
-		node1:      uuid.New(),
-		inc1:       uuid.New(),
-		node2:      uuid.New(),
-		inc2:       uuid.New(),
+		pool:            pool,
+		trustStore:      ts,
+		epochTrustStore: epochTS,
+		now:             now,
+		memberA:         uuid.New(),
+		memberB:         uuid.New(),
+		deviceA:         uuid.New(),
+		deviceB:         uuid.New(),
+		node1:           uuid.New(),
+		inc1:            uuid.New(),
+		node2:           uuid.New(),
+		inc2:            uuid.New(),
 	}
 	env.identity1 = usage.NodeIdentity{NodeID: env.node1, NodeIncarnationID: env.inc1}
 	env.identity2 = usage.NodeIdentity{NodeID: env.node2, NodeIncarnationID: env.inc2}
 
 	svc, err := usage.NewService(usage.Config{
-		Pool:   pool,
-		Signer: signer,
-		Clock:  func() time.Time { return env.now },
+		Pool:              pool,
+		Signer:            signer,
+		LedgerEpochSigner: epochSigner,
+		Clock:             func() time.Time { return env.now },
 	})
 	if err != nil {
 		t.Fatalf("NewService: %v", err)
@@ -848,6 +868,20 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	if recState.NewLedgerEpoch == oldEpoch || recState.Mode != usage.LedgerModeReconciling {
 		t.Fatalf("unexpected RecoveryState: %+v", recState)
 	}
+	rawRecEnv, err := recState.SignedRecord.MarshalCanonical()
+	if err != nil {
+		t.Fatalf("marshal signed recovery record: %v", err)
+	}
+	verifiedRec, _, err := usage.VerifyRecoveryRecord(rawRecEnv, envRestored.epochTrustStore, envRestored.now)
+	if err != nil {
+		t.Fatalf("VerifyRecoveryRecord under ledger-epoch purpose failed: %v", err)
+	}
+	if verifiedRec.NewLedgerEpoch != recState.NewLedgerEpoch || verifiedRec.PreviousLedgerEpoch != oldEpoch {
+		t.Fatalf("unexpected verified recovery record payload: %+v", verifiedRec)
+	}
+	if _, _, err := envelope.Verify(rawRecEnv, envRestored.trustStore, envelope.PurposeRecovery, envRestored.now); err == nil {
+		t.Fatalf("expected recovery record verification against node recovery trust bundle to fail")
+	}
 
 	// Verify rollups are marked reconciliation_in_progress = true.
 	uDuringRec, err := envRestored.svc.GetMemberUsage(ctx, usage.MemberUsageQuery{
@@ -1157,21 +1191,44 @@ func TestF04_ReplayUnavailableTombstonesAndRetentionPurge(t *testing.T) {
 		t.Fatalf("expected hcs=1 max=4, got hcs=%d max=%d", res.HighestContiguousSeq, res.MaxSeenSeq)
 	}
 
-	// 2. Record replay_unavailable for [2, 3]: inserts 0-byte tombstones (record_count = 0,
-	// 0 usage_samples rows, 0 usage_event_payloads rows) and advances checkpoint to hcs=4, max=4.
-	// This proves 0-byte tombstones satisfy F-04's check_usage_event_contents and check_usage_checkpoint triggers.
+	// 2. Decision D-027: In normal mode, replay_unavailable must be rejected with 409 STATE_CONFLICT.
 	state, err := env.svc.GetLedgerState(ctx)
 	if err != nil {
 		t.Fatalf("GetLedgerState: %v", err)
 	}
-	if err := env.svc.RecordReplayUnavailable(ctx, env.identity1, state.LedgerEpoch, []api.ReplayUnavailableRange{
+	err = env.svc.RecordReplayUnavailable(ctx, env.identity1, state.LedgerEpoch, []api.ReplayUnavailableRange{
+		{
+			StartSeq: 2,
+			EndSeq:   3,
+			Reason:   api.ReplayUnavailableRangeReasonRetentionExpired,
+		},
+	})
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.HTTPStatus() != http.StatusConflict || ae.Code != apierr.StateConflict {
+		t.Fatalf("expected 409 STATE_CONFLICT for replay_unavailable in normal mode, got %v", err)
+	}
+
+	// Enter recovery (reconciling mode) and record replay_unavailable for [2, 3]:
+	// inserts 0-byte tombstones (record_count = 0, 0 usage_samples rows, 0 usage_event_payloads rows)
+	// and advances checkpoint to hcs=4, max=4.
+	// This proves 0-byte tombstones satisfy F-04's check_usage_event_contents and check_usage_checkpoint triggers.
+	rec1, err := env.svc.BeginRecovery(ctx, usage.RecoveryRequest{
+		RestoredTo:    env.now,
+		AffectedSince: base,
+		Reason:        "Enter reconciling mode for replay_unavailable",
+		Actor:         "ops-admin",
+	})
+	if err != nil {
+		t.Fatalf("BeginRecovery(1): %v", err)
+	}
+	if err := env.svc.RecordReplayUnavailable(ctx, env.identity1, rec1.NewLedgerEpoch, []api.ReplayUnavailableRange{
 		{
 			StartSeq: 2,
 			EndSeq:   3,
 			Reason:   api.ReplayUnavailableRangeReasonRetentionExpired,
 		},
 	}); err != nil {
-		t.Fatalf("RecordReplayUnavailable([2, 3]): %v", err)
+		t.Fatalf("RecordReplayUnavailable([2, 3]) in reconciling mode: %v", err)
 	}
 
 	var tombstoneCount, tombstoneSamples, tombstonePayloads int
@@ -1289,14 +1346,30 @@ func TestMTR03_CheckpointInitRaceDeterministic(t *testing.T) {
 			DownloadBytes:   400,
 		},
 	})
+	ev3 := makeSignedEvent(t, env.identity1, 3, meterEpoch, base.Add(2*time.Minute), base.Add(3*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     500,
+			DownloadBytes:   600,
+		},
+	})
 
-	// Deterministically reproduce the fresh-stream checkpoint init race:
-	// 1. Slow worker (ingesting ev2) sees pgx.ErrNoRows on the initial selectCheckpointForUpdateInTx.
-	// 2. Fast worker (ingesting ev1) creates the checkpoint row and commits ev1 (seq=1).
-	// 3. Slow worker acquires node_incarnations; if it fails to re-check selectCheckpointForUpdateInTx
-	//    and instead computes watermark (1, 1) while fast worker commits a second event (or while ev1
-	//    was committed between watermark read and INSERT), its BEFORE INSERT check_usage_checkpoint
-	//    trigger fails with SQLSTATE 23514.
+	// Deterministically reproduce the fresh-stream checkpoint init race (D-024):
+	// 1. Slow worker (ingesting ev2) sees pgx.ErrNoRows on the initial selectCheckpointForUpdateInTx
+	//    and pauses at AfterInitialMiss.
+	// 2. While slow worker is paused at AfterInitialMiss, fast worker 1 (ingesting ev1) creates the
+	//    checkpoint row (1, 1) and commits ev1 (seq=1).
+	// 3. Slow worker is released and acquires node_incarnations.
+	//    - With the post-#21 re-check of selectCheckpointForUpdateInTx: slow worker finds and locks
+	//      the existing checkpoint row (1, 1), skips BeforeInsert, commits ev2 (seq=2), and the
+	//      stream checkpoint immediately reaches highest_contiguous_seq=2, max_seen_seq=2 with no backfill.
+	//    - Without the re-check (pre-#21): slow worker computes watermark (1, 1) from usage_events and
+	//      enters BeforeInsert, where fast worker 2 (ingesting ev3 via the fast path) commits seq=3 and
+	//      advances max_seen_seq to 3; slow worker's BEFORE INSERT check_usage_checkpoint trigger then
+	//      fails with SQLSTATE 23514.
 	initialMissEntered := make(chan struct{})
 	releaseInitialMiss := make(chan struct{})
 	var missOnce, insertOnce sync.Once
@@ -1310,15 +1383,12 @@ func TestMTR03_CheckpointInitRaceDeterministic(t *testing.T) {
 		},
 		BeforeInsert: func() {
 			insertOnce.Do(func() {
-				// If the slow path reaches INSERT after another transaction already created the
-				// checkpoint row, a concurrent fast-path event commit changes usage_events
-				// before BEFORE INSERT check_usage_checkpoint runs.
 				if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
 					NodeId:            env.node1,
 					NodeIncarnationId: env.inc1,
-					Events:            []api.UsageEvent{ev1},
+					Events:            []api.UsageEvent{ev3},
 				}); err != nil {
-					t.Errorf("concurrent fast-path IngestBatch(ev1) failed: %v", err)
+					t.Errorf("concurrent fast-path IngestBatch(ev3) in BeforeInsert failed: %v", err)
 				}
 			})
 		},
@@ -1335,9 +1405,14 @@ func TestMTR03_CheckpointInitRaceDeterministic(t *testing.T) {
 	}()
 
 	<-initialMissEntered
-	// Create the stream checkpoint row via GetCheckpoint (or an initial event) while slow worker is paused after initial miss.
-	if _, err := env.svc.GetCheckpoint(ctx, env.identity1); err != nil {
-		t.Fatalf("GetCheckpoint to initialize stream: %v", err)
+	// While ev2 is paused after its initial checkpoint miss, ingest ev1 so that ev1 creates
+	// and commits the stream's usage_checkpoints row (1, 1) and usage_events row (seq=1).
+	if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{ev1},
+	}); err != nil {
+		t.Fatalf("IngestBatch(ev1) during AfterInitialMiss: %v", err)
 	}
 	close(releaseInitialMiss)
 
@@ -1349,22 +1424,355 @@ func TestMTR03_CheckpointInitRaceDeterministic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetCheckpoint after race: %v", err)
 	}
-	// If BeforeInsert was skipped (because slow worker re-checked selectCheckpointForUpdateInTx and
-	// locked the existing checkpoint row), ingest ev1 now so both ev1 and ev2 are present.
-	if cpEnv.Signed.HighestContiguousSeq == 0 {
-		if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
-			NodeId:            env.node1,
-			NodeIncarnationId: env.inc1,
-			Events:            []api.UsageEvent{ev1},
-		}); err != nil {
-			t.Fatalf("IngestBatch(ev1): %v", err)
-		}
-		cpEnv, err = env.svc.GetCheckpoint(ctx, env.identity1)
-		if err != nil {
-			t.Fatalf("GetCheckpoint final: %v", err)
-		}
-	}
 	if cpEnv.Signed.HighestContiguousSeq != 2 || cpEnv.Signed.MaxSeenSeq != 2 {
-		t.Fatalf("expected hcs=2 max=2, got hcs=%d max=%d", cpEnv.Signed.HighestContiguousSeq, cpEnv.Signed.MaxSeenSeq)
+		t.Fatalf("expected hcs=2 max=2 directly after ev1+ev2 race, got hcs=%d max=%d", cpEnv.Signed.HighestContiguousSeq, cpEnv.Signed.MaxSeenSeq)
+	}
+}
+
+func Test17_3_FreezeFencesInFlightIngest(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)
+
+	ev := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     10,
+			DownloadBytes:   20,
+		},
+	})
+
+	var freezeErr error
+	traced := usage.WithCheckpointInitTrace(ctx, &usage.CheckpointInitTrace{
+		AfterInitialMiss: func() {
+			freezeErr = env.svc.FreezeIngest(ctx, "ops-admin", "fence in-flight ingest")
+		},
+	})
+
+	_, err := env.svc.IngestBatch(traced, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{ev},
+	})
+	if freezeErr != nil {
+		t.Fatalf("FreezeIngest during checkpoint init: %v", freezeErr)
+	}
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.Code != apierr.DependencyUnavailable {
+		t.Fatalf("expected 503 DEPENDENCY_UNAVAILABLE when frozen mid-ingest, got %v", err)
+	}
+	var eventCount int
+	if err := env.pool.QueryRow(ctx, `SELECT count(*) FROM usage_events WHERE node_id = $1`, env.node1).Scan(&eventCount); err != nil {
+		t.Fatalf("count usage_events: %v", err)
+	}
+	if eventCount != 0 {
+		t.Fatalf("expected 0 committed usage_events after mid-ingest freeze, got %d", eventCount)
+	}
+}
+
+func TestAT16_GapEventDoesNotFlagUnrelatedMembers(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)
+
+	gap := &api.UsageGap{
+		LastCheckpointAt: presence.NewNullNullable[time.Time](),
+		Reason:           api.UsageGapReasonPowerLoss,
+	}
+	ev := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityGap, gap, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     0,
+			DownloadBytes:   0,
+		},
+	})
+	res, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{ev},
+	})
+	if err != nil {
+		t.Fatalf("IngestBatch(gap): %v", err)
+	}
+	if res.Results[0].Status != api.UsageEventResultStatusAccepted {
+		t.Fatalf("expected gap event accepted, got %s", res.Results[0].Status)
+	}
+
+	// Member A was listed on the gap event -> has gap=true.
+	totA, err := env.svc.GetMemberPeriodTotal(ctx, env.memberA, "2026-10")
+	if err != nil {
+		t.Fatalf("GetMemberPeriodTotal(memberA): %v", err)
+	}
+	if !totA.Gap {
+		t.Fatalf("expected memberA Gap=true")
+	}
+
+	// Member B has an overlapping device binding in the database, but node1 never saw memberB ->
+	// must NOT have a zero-byte rollup row or Gap=true.
+	var rollupCountB int
+	if err := env.pool.QueryRow(ctx, `SELECT count(*) FROM usage_rollups WHERE member_id = $1`, env.memberB).Scan(&rollupCountB); err != nil {
+		t.Fatalf("count memberB rollups: %v", err)
+	}
+	if rollupCountB != 0 {
+		t.Fatalf("expected 0 rollup rows for unrelated memberB, got %d", rollupCountB)
+	}
+	totB, err := env.svc.GetMemberPeriodTotal(ctx, env.memberB, "2026-10")
+	if err != nil {
+		t.Fatalf("GetMemberPeriodTotal(memberB): %v", err)
+	}
+	if totB.Gap {
+		t.Fatalf("expected unrelated memberB Gap=false, got true")
+	}
+}
+
+func Test17_3_ReplayUnavailableModeAndMemberScoping(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)
+
+	// Member A has usage on node1 only; node2 has never seen member A.
+	ev := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     100,
+			DownloadBytes:   50,
+		},
+	})
+	if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{ev},
+	}); err != nil {
+		t.Fatalf("seed memberA on node1: %v", err)
+	}
+
+	state, err := env.svc.GetLedgerState(ctx)
+	if err != nil {
+		t.Fatalf("GetLedgerState: %v", err)
+	}
+	ranges := []api.ReplayUnavailableRange{{
+		StartSeq: 1,
+		EndSeq:   1,
+		Reason:   api.ReplayUnavailableRangeReasonLocalDataLost,
+	}}
+
+	// 1. Decision D-027: In normal mode, IngestBatch with replay_unavailable is rejected with 409 STATE_CONFLICT.
+	_, err = env.svc.IngestBatch(ctx, env.identity2, api.UsageBatchRequest{
+		NodeId:            env.node2,
+		NodeIncarnationId: env.inc2,
+		LedgerEpoch:       presence.NewNullableWithValue(state.LedgerEpoch),
+		ReplayUnavailable: &ranges,
+	})
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.HTTPStatus() != http.StatusConflict || ae.Code != apierr.StateConflict {
+		t.Fatalf("expected 409 STATE_CONFLICT for replay_unavailable in normal mode, got %v", err)
+	}
+	var tombstones int
+	if err := env.pool.QueryRow(ctx, `SELECT count(*) FROM usage_events WHERE node_id = $1`, env.node2).Scan(&tombstones); err != nil {
+		t.Fatalf("count node2 events: %v", err)
+	}
+	if tombstones != 0 {
+		t.Fatalf("expected 0 tombstones stored after rejected normal-mode replay_unavailable, got %d", tombstones)
+	}
+
+	// 2. Enter reconciling mode; node2 reports replay_unavailable. Because memberA never used node2,
+	// memberA's rollup and period total must NOT be flagged with gap=true.
+	rec, err := env.svc.BeginRecovery(ctx, usage.RecoveryRequest{
+		RestoredTo:    env.now,
+		AffectedSince: base,
+		Reason:        "Test replay_unavailable member scoping",
+		Actor:         "ops-admin",
+	})
+	if err != nil {
+		t.Fatalf("BeginRecovery: %v", err)
+	}
+	res, err := env.svc.IngestBatch(ctx, env.identity2, api.UsageBatchRequest{
+		NodeId:            env.node2,
+		NodeIncarnationId: env.inc2,
+		LedgerEpoch:       presence.NewNullableWithValue(rec.NewLedgerEpoch),
+		ReplayUnavailable: &ranges,
+	})
+	if err != nil {
+		t.Fatalf("IngestBatch(replay_unavailable in reconciling mode): %v", err)
+	}
+	if res.HighestContiguousSeq != 1 {
+		t.Fatalf("expected node2 hcs=1 after replay_unavailable in reconciling mode, got %s", res.HighestContiguousSeq)
+	}
+
+	totA, err := env.svc.GetMemberPeriodTotal(ctx, env.memberA, "2026-10")
+	if err != nil {
+		t.Fatalf("GetMemberPeriodTotal(memberA): %v", err)
+	}
+	if totA.Gap {
+		t.Fatalf("memberA Gap=true after node2 replay_unavailable; memberA never used node2")
+	}
+}
+
+func TestMTR04_Uint64OverflowFailsClosedOnRead(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)
+
+	// 1. Ingest a single sample at math.MaxUint64 for memberB, then add a positive adjustment of +1:
+	// reading memberB's period total must fail closed with decstr.ErrOverflow and usage_uint64_overflow.
+	evB := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberB,
+			DeviceId:        env.deviceB,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     decstr.U64(^uint64(0)),
+			DownloadBytes:   0,
+		},
+	})
+	if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{evB},
+	}); err != nil {
+		t.Fatalf("IngestBatch(evB max uint64): %v", err)
+	}
+	// Exact MaxUint64 without overflow succeeds and returns 18446744073709551615.
+	totBExact, err := env.svc.GetMemberPeriodTotal(ctx, env.memberB, "2026-10")
+	if err != nil {
+		t.Fatalf("GetMemberPeriodTotal(memberB exact MaxUint64): %v", err)
+	}
+	if totBExact.UploadBytes != decstr.U64(^uint64(0)) {
+		t.Fatalf("expected exact MaxUint64 upload_bytes, got %s", totBExact.UploadBytes)
+	}
+	if _, err := env.svc.CreateAdjustment(ctx, usage.AdjustmentCreate{
+		MemberID:      env.memberB,
+		Period:        "2026-10",
+		UploadBytes:   1,
+		DownloadBytes: 0,
+		Reason:        "push adjusted upload total above uint64",
+		Actor:         "ops-admin",
+	}); err != nil {
+		t.Fatalf("CreateAdjustment(+1): %v", err)
+	}
+	_, err = env.svc.GetMemberPeriodTotal(ctx, env.memberB, "2026-10")
+	if !errors.Is(err, decstr.ErrOverflow) {
+		t.Fatalf("expected errors.Is(err, decstr.ErrOverflow) on adjusted overflow, got %v", err)
+	}
+	var ae *apierr.Error
+	if !errors.As(err, &ae) || ae.Code != apierr.InternalError || ae.Details["detail_code"] != usage.ErrCodeUint64Overflow {
+		t.Fatalf("expected InternalError with detail_code=%s, got %+v", usage.ErrCodeUint64Overflow, err)
+	}
+
+	// 2. Two samples of math.MaxUint64 for memberA accumulate in NUMERIC(40,0) on ingest,
+	// and fail closed with decstr.ErrOverflow and usage_uint64_overflow on read.
+	evA1 := makeSignedEvent(t, env.identity1, 2, meterEpoch, base.Add(time.Minute), base.Add(2*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     decstr.U64(^uint64(0)),
+			DownloadBytes:   0,
+		},
+	})
+	evA2 := makeSignedEvent(t, env.identity1, 3, meterEpoch, base.Add(2*time.Minute), base.Add(3*time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{
+		{
+			MemberId:        env.memberA,
+			DeviceId:        env.deviceA,
+			BindingRevision: 1,
+			PeriodId:        "2026-10",
+			UploadBytes:     decstr.U64(^uint64(0)),
+			DownloadBytes:   0,
+		},
+	})
+	if _, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{evA1, evA2},
+	}); err != nil {
+		t.Fatalf("IngestBatch(evA1, evA2): %v", err)
+	}
+	_, err = env.svc.GetMemberPeriodTotal(ctx, env.memberA, "2026-10")
+	if !errors.Is(err, decstr.ErrOverflow) {
+		t.Fatalf("expected errors.Is(err, decstr.ErrOverflow) on rollup sum overflow, got %v", err)
+	}
+	if !errors.As(err, &ae) || ae.Code != apierr.InternalError || ae.Details["detail_code"] != usage.ErrCodeUint64Overflow {
+		t.Fatalf("expected InternalError with detail_code=%s, got %+v", usage.ErrCodeUint64Overflow, err)
+	}
+}
+
+func Test17_3_LedgerEpochSigningPurposeSeparation(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+
+	// A service configured only with a recovery-purpose signer must reject BeginRecovery
+	// because recovery keys are not authorized for envelope.PurposeLedgerEpoch.
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatalf("generate ed25519 key: %v", err)
+	}
+	_ = pub
+	recoveryOnlySvc, err := usage.NewService(usage.Config{
+		Pool:   env.pool,
+		Signer: usage.NewRecoverySigner("recovery-only-key", priv),
+		Clock:  func() time.Time { return env.now },
+	})
+	if err != nil {
+		t.Fatalf("NewService(recoveryOnly): %v", err)
+	}
+	if _, err := recoveryOnlySvc.BeginRecovery(ctx, usage.RecoveryRequest{
+		Reason: "attempt epoch rotation with recovery-only signer",
+		Actor:  "ops-admin",
+	}); err == nil {
+		t.Fatalf("expected BeginRecovery to fail when only a recovery-purpose signer is configured")
+	}
+
+	// With LedgerEpochSigner configured on env.svc, BeginRecovery succeeds and signs under PurposeLedgerEpoch.
+	rec, err := env.svc.BeginRecovery(ctx, usage.RecoveryRequest{
+		Reason: "authorized epoch rotation with ledger-epoch signer",
+		Actor:  "ops-admin",
+	})
+	if err != nil {
+		t.Fatalf("BeginRecovery with LedgerEpochSigner: %v", err)
+	}
+	raw, err := rec.SignedRecord.MarshalCanonical()
+	if err != nil {
+		t.Fatalf("MarshalCanonical: %v", err)
+	}
+	payload, keyID, err := usage.VerifyRecoveryRecord(raw, env.epochTrustStore, env.now)
+	if err != nil {
+		t.Fatalf("VerifyRecoveryRecord: %v", err)
+	}
+	if keyID != "test-ledger-epoch-key-1" || payload.NewLedgerEpoch != rec.NewLedgerEpoch {
+		t.Fatalf("unexpected verified payload=%+v keyID=%s", payload, keyID)
+	}
+}
+
+func Test10_6_EmptyCompleteEventAdvancesACK(t *testing.T) {
+	env := setupTestEnv(t)
+	ctx := context.Background()
+	meterEpoch := uuid.New()
+	base := time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)
+
+	ev := makeSignedEvent(t, env.identity1, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{})
+	res, err := env.svc.IngestBatch(ctx, env.identity1, api.UsageBatchRequest{
+		NodeId:            env.node1,
+		NodeIncarnationId: env.inc1,
+		Events:            []api.UsageEvent{ev},
+	})
+	if err != nil {
+		t.Fatalf("IngestBatch(empty complete event): %v", err)
+	}
+	if res.Results[0].Status != api.UsageEventResultStatusAccepted || res.HighestContiguousSeq != 1 {
+		t.Fatalf("expected empty complete event accepted with hcs=1, got status=%s hcs=%s", res.Results[0].Status, res.HighestContiguousSeq)
 	}
 }

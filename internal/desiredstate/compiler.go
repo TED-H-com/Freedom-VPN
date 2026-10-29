@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -39,12 +40,14 @@ const (
 
 // Compiler compiles, signs, persists, and serves per-node desired-state envelopes (§5, §14.4, §14.7).
 type Compiler struct {
-	pool         *pgxpool.Pool
-	signer       Signer
-	entitlements EntitlementReader
-	policies     PolicyReader
-	now          func() time.Time
-	envelopeTTL  time.Duration
+	pool            *pgxpool.Pool
+	signer          Signer
+	entitlements    EntitlementReader
+	policies        PolicyReader
+	now             func() time.Time
+	envelopeTTL     time.Duration
+	dnsResolverIPv4 []string
+	dnsResolverIPv6 []string
 }
 
 // Option configures a Compiler.
@@ -86,6 +89,17 @@ func WithPolicyReader(r PolicyReader) Option {
 	}
 }
 
+// WithDNSResolvers configures the deployment DNS resolver addresses stamped into compiled
+// desired-state documents (§8.1, §12.2). Resolver addresses are deployment configuration
+// supplied at construction (or later a published resolver document from w3-dns-publish),
+// never read from dns_profile payloads and with no production default.
+func WithDNSResolvers(ipv4, ipv6 []string) Option {
+	return func(c *Compiler) {
+		c.dnsResolverIPv4 = append([]string(nil), ipv4...)
+		c.dnsResolverIPv6 = append([]string(nil), ipv6...)
+	}
+}
+
 // NewCompiler constructs a desired-state Compiler.
 func NewCompiler(pool *pgxpool.Pool, signer Signer, opts ...Option) *Compiler {
 	c := &Compiler{
@@ -104,11 +118,18 @@ func NewCompiler(pool *pgxpool.Pool, signer Signer, opts ...Option) *Compiler {
 	return c
 }
 
+// OmittedMember records a member omitted from a compiled desired state due to a data error (such as missing plan rate).
+type OmittedMember struct {
+	MemberID uuid.UUID
+	Reason   string
+}
+
 // CompiledDesiredState holds a compiled and signed DesiredStateEnvelope together with its HTTP ETag.
 type CompiledDesiredState struct {
-	Envelope   api.DesiredStateEnvelope
-	ETag       string
-	Generation uint64
+	Envelope       api.DesiredStateEnvelope
+	ETag           string
+	Generation     uint64
+	OmittedMembers []OmittedMember
 }
 
 // Compile compiles a new monotonically increasing config_generation for nodeID,
@@ -242,8 +263,12 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 	if snap.AccountingPeriod.PeriodId == "" {
 		snap.AccountingPeriod = DefaultAccountingPeriod(issuedAt)
 	}
-	if len(snap.DNSResolverIPv4) == 0 {
-		snap.DNSResolverIPv4 = []string{DefaultDNSResolverIPv4}
+	if len(c.dnsResolverIPv4) > 0 || len(c.dnsResolverIPv6) > 0 {
+		snap.DNSResolverIPv4 = append([]string(nil), c.dnsResolverIPv4...)
+		snap.DNSResolverIPv6 = append([]string(nil), c.dnsResolverIPv6...)
+	}
+	if snap.DNSResolverIPv4 == nil {
+		snap.DNSResolverIPv4 = []string{}
 	}
 	if snap.DNSResolverIPv6 == nil {
 		snap.DNSResolverIPv6 = []string{}
@@ -272,6 +297,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 
 	deviceBindings := []api.DeviceBinding{}
 	memberRatePolicies := []api.MemberRatePolicy{}
+	var omittedMembers []OmittedMember
 	var maxBindingRev uint64
 
 	// Only include member forwarding bindings when the exit's publication_intent is published
@@ -286,6 +312,21 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		})
 
 		for _, m := range entitled {
+			// A plan without a rate is a data error: omit the member from the compiled state
+			// and record the reason in the compile result and log (§11.2).
+			if m.PlanDownBps <= 0 || m.PlanUpBps <= 0 {
+				omittedMembers = append(omittedMembers, OmittedMember{
+					MemberID: m.MemberID,
+					Reason:   "plan_missing_rate",
+				})
+				slog.WarnContext(ctx, "desiredstate: omitting member with missing plan rate",
+					"node_id", nodeID,
+					"member_id", m.MemberID,
+					"reason", "plan_missing_rate",
+				)
+				continue
+			}
+
 			validFrom := m.ValidFrom.UTC()
 			if validFrom.IsZero() {
 				validFrom = snap.AccountingPeriod.PeriodStart
@@ -301,6 +342,29 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 					validUntil = clamped
 				}
 			}
+			rateValidUntil := validUntil
+			if m.OverrideValidUntil != nil && m.OverrideValidUntil.UTC().Before(rateValidUntil) {
+				rateValidUntil = m.OverrideValidUntil.UTC()
+			}
+
+			mode := m.Mode
+			if mode == "" {
+				mode = api.MemberRatePolicyModeEnforce
+			}
+			reason := m.Reason
+			if reason == "" {
+				reason = api.MemberRatePolicyReasonNormal
+			}
+			tierIndex := m.TierIndex
+			tierDown := m.FairUseTierDownBps
+			tierUp := m.FairUseTierUpBps
+			if mode == api.MemberRatePolicyModeShadow {
+				// Shadow mode has null tier rate; only plan_rate and node_member_rate_cap apply (§11.2, §11.5).
+				tierDown = 0
+				tierUp = 0
+				tierIndex = 0
+				reason = api.MemberRatePolicyReasonNormal
+			}
 
 			// §11.2 step 3: effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap)
 			var downCap, upCap *int64
@@ -312,8 +376,8 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 					upCap = &v
 				}
 			}
-			effDown := ComputeEffectiveRateBps(m.PlanDownBps, m.FairUseTierDownBps, downCap)
-			effUp := ComputeEffectiveRateBps(m.PlanUpBps, m.FairUseTierUpBps, upCap)
+			effDown := ComputeEffectiveRateBps(m.PlanDownBps, tierDown, downCap)
+			effUp := ComputeEffectiveRateBps(m.PlanUpBps, tierUp, upCap)
 
 			prio := m.Priority
 			if prio < 0 {
@@ -322,16 +386,8 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				prio = 7
 			}
 			fupGen := m.FairUsePolicyGen
-			if fupGen == 0 {
+			if !m.HasFairUseGen && fupGen == 0 {
 				fupGen = snap.FairUseGeneration
-			}
-			mode := m.Mode
-			if mode == "" {
-				mode = api.MemberRatePolicyModeEnforce
-			}
-			reason := m.Reason
-			if reason == "" {
-				reason = api.MemberRatePolicyReasonNormal
 			}
 
 			memberRatePolicies = append(memberRatePolicies, api.MemberRatePolicy{
@@ -340,12 +396,12 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 				PeriodId:   snap.AccountingPeriod.PeriodId,
 				Mode:       mode,
 				Reason:     reason,
-				TierIndex:  m.TierIndex,
+				TierIndex:  tierIndex,
 				DownBps:    presence.NewNullableWithValue(effDown),
 				UpBps:      presence.NewNullableWithValue(effUp),
 				Priority:   prio,
 				ValidFrom:  validFrom,
-				ValidUntil: validUntil,
+				ValidUntil: rateValidUntil,
 			})
 
 			bindings := append([]MemberDeviceBinding(nil), m.Bindings...)
@@ -435,7 +491,11 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 	releaseUUID := desiredReleaseUUID
 	if releaseUUID == nil && snap.DesiredReleaseID != nil {
 		var rid uuid.UUID
-		if err := tx.QueryRow(ctx, `SELECT id FROM releases WHERE id = $1`, *snap.DesiredReleaseID).Scan(&rid); err == nil {
+		err := tx.QueryRow(ctx, `SELECT id FROM releases WHERE id = $1`, *snap.DesiredReleaseID).Scan(&rid)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return CompiledDesiredState{}, err
+		}
+		if err == nil {
 			releaseUUID = &rid
 		}
 	}
@@ -492,9 +552,10 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 	}
 
 	return CompiledDesiredState{
-		Envelope:   dsEnv,
-		ETag:       etag,
-		Generation: nextGen,
+		Envelope:       dsEnv,
+		ETag:           etag,
+		Generation:     nextGen,
+		OmittedMembers: omittedMembers,
 	}, nil
 }
 
@@ -508,17 +569,41 @@ func (c *Compiler) ReSign(ctx context.Context, nodeID uuid.UUID) (CompiledDesire
 	var out CompiledDesiredState
 	err := db.InTx(ctx, c.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var (
-			incarnationID *uuid.UUID
-			envBytes      []byte
-			prevIssuedAt  time.Time
+			lifecycleState string
+			incarnationID  *uuid.UUID
+			incRevokedAt   *time.Time
 		)
 		err := tx.QueryRow(ctx, `
-			SELECT n.current_incarnation_id, dse.envelope, dse.issued_at
+			SELECT n.lifecycle_state, n.current_incarnation_id, inc.revoked_at
 			FROM nodes n
-			JOIN desired_state_envelopes dse
-			  ON dse.node_id = n.id AND dse.incarnation_id = n.current_incarnation_id
+			LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
 			WHERE n.id = $1
-			FOR UPDATE OF n, dse`, nodeID).Scan(&incarnationID, &envBytes, &prevIssuedAt)
+			FOR UPDATE OF n`, nodeID).Scan(&lifecycleState, &incarnationID, &incRevokedAt)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return apierr.Newf(apierr.ResourceNotFound, "node %s not found", nodeID)
+			}
+			return err
+		}
+		if lifecycleState == string(api.LifecycleStateRevoked) || lifecycleState == string(api.LifecycleStateRetired) {
+			return apierr.Newf(apierr.IdentityRevoked, "node %s is %s", nodeID, lifecycleState)
+		}
+		if incarnationID == nil || *incarnationID == uuid.Nil {
+			return apierr.Newf(apierr.StateConflict, "node %s has no active incarnation", nodeID)
+		}
+		if incRevokedAt != nil {
+			return apierr.New(apierr.IdentityRevoked, "node incarnation has been revoked")
+		}
+
+		var (
+			envBytes     []byte
+			prevIssuedAt time.Time
+		)
+		err = tx.QueryRow(ctx, `
+			SELECT envelope, issued_at
+			FROM desired_state_envelopes
+			WHERE node_id = $1 AND incarnation_id = $2
+			FOR UPDATE`, nodeID, *incarnationID).Scan(&envBytes, &prevIssuedAt)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				out, err = c.CompileTx(ctx, tx, nodeID)
@@ -877,10 +962,10 @@ func (c *Compiler) findNodesForGroups(ctx context.Context, groupIDs []uuid.UUID)
 
 // ComputeEffectiveRateBps computes effective_rate = min(plan_rate, fair_use_tier_rate, node_member_rate_cap) (§11.2 step 3).
 func ComputeEffectiveRateBps(planRate, fupTierRate int64, nodeMemberCap *int64) int64 {
-	eff := planRate
-	if eff <= 0 {
-		eff = DefaultPlanRateBps
+	if planRate <= 0 {
+		return 0
 	}
+	eff := planRate
 	if fupTierRate > 0 && fupTierRate < eff {
 		eff = fupTierRate
 	}

@@ -1,0 +1,15 @@
+[Unit]
+Description=Freedom VPN node watchdog
+# The watchdog does not talk to the control plane. It fail-closes when the
+# agent heartbeat is stale (§16.3). It still waits for update recovery so it
+# does not race the updater's own forwarding latch.
+After=fvpn-updater-recover.service
+
+[Service]
+Type=simple
+ExecStart=/opt/vpn-node/current/fvpn-watchdog run -config /etc/vpn-node/agent.json
+Restart=on-failure
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

@@ -88,8 +88,9 @@ Before compilation or publication, `ValidateDraft(profile)` verifies:
 
 ### 4.1 Single-Resolver Publish (`AdGuardAdapter.Publish`)
 
-1. **Bundle Integrity & Syntax Check**:
-   - Recomputes the SHA-256 of `BundleBytes` and validates every rendered AdGuard rule line (`ValidateAdGuardRuleSyntax`) **before** making any network calls.
+1. **Bundle Integrity, Canonical JSON Round-Trip & Syntax Check**:
+   - `CompileBundle` produces `CompiledBytes` and `SHA256` using RFC 8785 canonical JSON (`pkg/canonjson.Marshal`). `CompiledBundle.UnmarshalJSON` deterministically reconstructs `CompiledBytes` via `canonjson.Marshal` when loaded from `dns_compiled_bundles.bundle`.
+   - `VerifyBundle` recomputes the SHA-256 of `CompiledBytes` and validates every rendered AdGuard rule line (`ValidateAdGuardRuleSyntax`) **before** making any network calls.
 2. **Idempotency Check**:
    - Reads the resolver's currently applied revision marker (`! fvpn-bundle-revision: <rev>`). If it already matches `bundle.Revision` and passes smoke tests, returns immediately with ` NoOp = true`.
 3. **Snapshot & Apply**:
