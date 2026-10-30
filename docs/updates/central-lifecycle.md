@@ -170,6 +170,11 @@ invent a progress report, loosen a database guard, or publish an intermediate
 batch state. Rejected evidence, superseded jobs and frozen terminal jobs never
 enter this transition.
 
+An ACK already stored as history before this correction remains immutable on
+replay. It does not repair that older queued target retroactively. Start a fresh
+batch to exercise the corrected producer path; do not edit a sealed result or
+rewrite its original receipt.
+
 `testdata/at26-direct-rollback.json` in the fleetupdate package is the unchanged
 AT26 producer capture, including passing restored checks and failed candidate
 tunnel probe. The regression rebinds only job/release identity and authorization
