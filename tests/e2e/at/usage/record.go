@@ -56,6 +56,7 @@ type MechanismCheck struct {
 // Record is the §19.1 acceptance evidence structure written to docs/e2e/at/usage/AT<NN>.json.
 type Record struct {
 	ID              string            `json:"id"`
+	RunID           string            `json:"run_id,omitempty"`
 	Title           string            `json:"title"`
 	Spec            string            `json:"spec"`
 	Requirements    []string          `json:"requirements"`
@@ -74,17 +75,19 @@ type Record struct {
 }
 
 var (
-	rePEMBlock   = regexp.MustCompile(`(?s)-----BEGIN [A-Z0-9 ]*PRIVATE ` + `KEY-----.*?-----END [A-Z0-9 ]*PRIVATE ` + `KEY-----`)
-	reAuthHeader = regexp.MustCompile(`(?i)(Authorization:\s*(?:Bearer|Token)\s+)[^\s"']+`)
-	reJSONSecret = regexp.MustCompile(`(?i)("(?:setup_key|enrollment_` + `token|webhook_secret|client_secret|password|private_key|secret)"\s*:\s*")[^"]+(")`)
-	reQueryToken = regexp.MustCompile(`(?i)((?:token|secret|password|setup_key)=)[^&\s"']+`)
-	reHomePath   = regexp.MustCompile(`/ho` + `me/[^\s"':]+`)
-	reSkLive     = regexp.MustCompile(`sk_` + `live_[A-Za-z0-9_]+`)
-	reGitHubPat  = regexp.MustCompile(`gh[po]_[A-Za-z0-9_]+`)
+	rePEMBlock     = regexp.MustCompile(`(?s)-----BEGIN [A-Z0-9 ]*PRIVATE ` + `KEY-----.*?-----END [A-Z0-9 ]*PRIVATE ` + `KEY-----`)
+	reAuthHeader   = regexp.MustCompile(`(?i)(Authorization:\s*(?:Bearer|Token)\s+)[^\s"']+`)
+	reJSONSecret   = regexp.MustCompile(`(?i)("(?:setup_key|enrollment_` + `token|webhook_secret|client_secret|password|private_key|secret)"\s*:\s*")[^"]+(")`)
+	reQueryToken   = regexp.MustCompile(`(?i)((?:token|secret|password|setup_key)=)[^&\s"']+`)
+	reHomePath     = regexp.MustCompile(`/ho` + `me/[^\s"':]+`)
+	reSkLive       = regexp.MustCompile(`sk_` + `live_[A-Za-z0-9_]+`)
+	reGitHubPat    = regexp.MustCompile(`gh[po]_[A-Za-z0-9_]+`)
+	reLabOriginIP  = regexp.MustCompile(`\b192\.0\.[3-9]\.`)
+	reDockerBridge = regexp.MustCompile(`\b172\.(?:1[6-9]|2[0-9]|3[0-1])\.[0-9]+\.`)
 )
 
 // Redact removes private keys, bearer/setup/enrollment tokens, webhook secrets,
-// passwords, and host home paths before writing evidence (§4, §8, SEC02).
+// passwords, host home paths, and non-RFC5737 lab bridge IPs before writing evidence (§4, §8, SEC02).
 func Redact(s string, extraSecrets ...string) string {
 	out := s
 	for _, sec := range extraSecrets {
@@ -100,6 +103,8 @@ func Redact(s string, extraSecrets ...string) string {
 	out = reHomePath.ReplaceAllString(out, "$REPO")
 	out = reSkLive.ReplaceAllString(out, "[REDACTED]")
 	out = reGitHubPat.ReplaceAllString(out, "[REDACTED]")
+	out = reLabOriginIP.ReplaceAllString(out, "198.51.100.")
+	out = reDockerBridge.ReplaceAllString(out, "192.0.2.")
 	return out
 }
 
@@ -251,6 +256,9 @@ func renderMarkdown(r Record) string {
 	fmt.Fprintf(&b, "# %s: %s\n\n", r.ID, r.Title)
 	fmt.Fprintf(&b, "| Field | Value |\n|---|---|\n")
 	fmt.Fprintf(&b, "| **Case ID** | `%s` |\n", r.ID)
+	if r.RunID != "" {
+		fmt.Fprintf(&b, "| **Run ID** | `%s` |\n", r.RunID)
+	}
 	fmt.Fprintf(&b, "| **Spec Reference** | `%s` |\n", r.Spec)
 	fmt.Fprintf(&b, "| **Requirements** | `%s` |\n", strings.Join(r.Requirements, ", "))
 	fmt.Fprintf(&b, "| **Status** | `%s` |\n", r.Status)
