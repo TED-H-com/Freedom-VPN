@@ -298,7 +298,7 @@ var updateResultRolledBack = `{
   "stage": "check",
   "requested_release_id": "` + idReleaseR42 + `",
   "current_release_id": "` + idReleaseR41 + `",
-  "previous_release_id": "` + idReleaseR41 + `",
+  "previous_release_id": "` + idReleaseR42 + `",
   "manifest_sha256": "%MANIFEST_SHA256%",
   "policy_generation": "18",
   "state_schema_version": 1,
@@ -308,7 +308,8 @@ var updateResultRolledBack = `{
     "central_acked_through": "12049",
     "new_meter_epoch_id": "` + idMeterEpoch15 + `"
   },
-  "health": {"processes": "passed", "identity_and_state": "passed", "internet_only": "passed", "dns_policy": "passed", "tunnel_probe": "failed"},
+  "health": {"processes": "passed", "identity_and_state": "passed", "internet_only": "passed", "dns_policy": "passed", "tunnel_probe": "passed"},
+  "candidate_health": {"processes": "passed", "identity_and_state": "passed", "internet_only": "passed", "dns_policy": "passed", "tunnel_probe": "failed"},
   "publication_intent": "published",
   "member_forwarding_enabled": true,
   "error_code": "HEALTH_CHECK_FAILED",
