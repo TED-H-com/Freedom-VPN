@@ -3,7 +3,7 @@
     "kind": "schema",
     "pointer": "",
     "keyword": "additionalProperties",
-    "note": "The customer is never taken from the body (§14.3)."
+    "note": "The customer is never taken from the body (\u00a714.3)."
   },
   "CertificateRenewRequest.missing-csr.json": {
     "kind": "schema",
@@ -21,13 +21,13 @@
     "kind": "schema",
     "pointer": "",
     "keyword": "additionalProperties",
-    "note": "The token is only sent in the Authorization header (§14.7)."
+    "note": "The token is only sent in the Authorization header (\u00a714.7)."
   },
   "EnrollRequest.unsupported-arch.json": {
     "kind": "schema",
     "pointer": "/platform/arch",
     "keyword": "enum",
-    "note": "Only amd64 and arm64 (§3.2)."
+    "note": "Only amd64 and arm64 (\u00a73.2)."
   },
   "EnrollmentCreateRequest.bad-delivery.json": {
     "kind": "schema",
@@ -63,19 +63,19 @@
     "kind": "schema",
     "pointer": "",
     "keyword": "required",
-    "note": "Grants must be finite (§9.2)."
+    "note": "Grants must be finite (\u00a79.2)."
   },
   "LeaseRenewalRequest.leading-zero.json": {
     "kind": "schema",
     "pointer": "/applied_config_generation",
     "keyword": "pattern",
-    "note": "No redundant leading zeros (§10.4)."
+    "note": "No redundant leading zeros (\u00a710.4)."
   },
   "MemberDetail.refund-is-not-a-state.json": {
     "kind": "schema",
     "pointer": "/entitlement/state",
     "keyword": "enum",
-    "note": "Refunds are billing events, not entitlement states (§9.2)."
+    "note": "Refunds are billing events, not entitlement states (\u00a79.2)."
   },
   "MemberPatch.unknown-field.json": {
     "kind": "schema",
@@ -87,13 +87,13 @@
     "kind": "schema",
     "pointer": "/totals/total_bytes",
     "keyword": "type",
-    "note": "Bytes never pass through a float (§10.4)."
+    "note": "Bytes never pass through a float (\u00a710.4)."
   },
   "NodeDetail.numeric-resource-version.json": {
     "kind": "schema",
     "pointer": "/resource_version",
     "keyword": "type",
-    "note": "resource_version is a decimal string (§14.1)."
+    "note": "resource_version is a decimal string (\u00a714.1)."
   },
   "NodePatch.empty.json": {
     "kind": "schema",
@@ -123,7 +123,7 @@
     "kind": "schema",
     "pointer": "/created_at",
     "keyword": "pattern",
-    "note": "Times are UTC RFC 3339 with Z (§14.1)."
+    "note": "Times are UTC RFC 3339 with Z (\u00a714.1)."
   },
   "PolicyActivateRequest.bad-uuid.json": {
     "kind": "schema",
@@ -141,7 +141,7 @@
     "kind": "schema",
     "pointer": "/payload/rules/0/domain",
     "keyword": "pattern",
-    "note": "Domain rules accept names only; no scheme, path or port (§12.4)."
+    "note": "Domain rules accept names only; no scheme, path or port (\u00a712.4)."
   },
   "PolicyRevisionCreate.fair-use-numeric-threshold.json": {
     "kind": "schema",
@@ -183,7 +183,7 @@
     "kind": "schema",
     "pointer": "/manifest/signed/artifacts",
     "keyword": "minItems",
-    "note": "The artifacts array needs at least two items. This length check does not prove architecture coverage; the release service enforces both amd64 and arm64 (§13.4)."
+    "note": "The artifacts array needs at least two items. This length check does not prove architecture coverage; the release service enforces both amd64 and arm64 (\u00a713.4)."
   },
   "UpdateBatch.missing-count.json": {
     "kind": "schema",
@@ -195,7 +195,7 @@
     "kind": "schema",
     "pointer": "/set_fleet_default",
     "keyword": "enum",
-    "note": "all_nodes always sets the fleet default (§13.10.1)."
+    "note": "all_nodes always sets the fleet default (\u00a713.10.1)."
   },
   "UpdateBatchCreateRequest.numeric-generation.json": {
     "kind": "schema",
@@ -207,7 +207,7 @@
     "kind": "schema",
     "pointer": "/scope",
     "keyword": "enum",
-    "note": "scope is always all_nodes (§13.1)."
+    "note": "scope is always all_nodes (\u00a713.1)."
   },
   "UpdateBatchRetryRequest.empty-targets.json": {
     "kind": "schema",
@@ -231,7 +231,7 @@
     "kind": "schema",
     "pointer": "/event_seq",
     "keyword": "pattern",
-    "note": "event_seq starts at 1 (§10.5)."
+    "note": "event_seq starts at 1 (\u00a710.5)."
   },
   "UsageEvent.unknown-quality.json": {
     "kind": "schema",
@@ -291,6 +291,42 @@
     "kind": "schema",
     "pointer": "/payload/rules/0/revision",
     "keyword": "pattern",
-    "note": "Domain rule revisions start at 1 (§12.4, §14.2); zero is rejected at the HTTP boundary, matching the owner schema and ReasonDNSInvalidRevision."
+    "note": "Domain rule revisions start at 1 (\u00a712.4, \u00a714.2); zero is rejected at the HTTP boundary, matching the owner schema and ReasonDNSInvalidRevision."
+  },
+  "MemberGroupCreate.uppercase-code.json": {
+    "kind": "schema",
+    "pointer": "/code",
+    "keyword": "pattern",
+    "note": "Group codes are lowercase (D-057)."
+  },
+  "PublicationRequest.duplicate-groups.json": {
+    "kind": "schema",
+    "pointer": "/group_ids",
+    "keyword": "uniqueItems",
+    "note": "Replacement membership contains unique UUIDs (D-057)."
+  },
+  "ResolverDocumentRef.too-large.json": {
+    "kind": "schema",
+    "pointer": "/size_bytes",
+    "keyword": "maximum",
+    "note": "A resolver document is at most 1 MiB (D-056)."
+  },
+  "NodeCheck.detail-too-long.json": {
+    "kind": "schema",
+    "pointer": "/detail",
+    "keyword": "maxLength",
+    "note": "Operator diagnostics are bounded and sanitized (D-058)."
+  },
+  "ThreatFeedStatus.message-too-long.json": {
+    "kind": "schema",
+    "pointer": "/last_error_message",
+    "keyword": "maxLength",
+    "note": "Only bounded safe messages may be exposed (D-058)."
+  },
+  "ThreatFeedPayload.interval-too-short.json": {
+    "kind": "schema",
+    "pointer": "/update_interval_seconds",
+    "keyword": "minimum",
+    "note": "Minimum per-source refresh interval is 300 seconds (D-054)."
   }
 }

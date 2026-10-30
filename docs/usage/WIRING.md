@@ -48,7 +48,7 @@ Wave 3 removes the transitional `501 Not Implemented` fallback for all three usa
 
 ## 4. Operator CLI & Admin Operations (`internal/usage/cmd/fvpn-usage-admin`)
 
-Because backup restore/recovery (`FreezeIngest`, `BeginRecovery`, `CompleteRecovery`), admin drill-down (`GetMemberDrillDown`), and ledger adjustments (`CreateAdjustment`) are operator/maintenance workflows outside the 41-endpoint HTTP contract, they are exposed both on `usage.Service` and through the operator CLI `go run ./internal/usage/cmd/fvpn-usage-admin`:
+Because backup restore/recovery (`FreezeIngest`, `BeginRecovery`, `CompleteRecovery`), admin drill-down (`GetMemberDrillDown`), and ledger adjustments (`CreateAdjustment`) are operator/maintenance workflows outside the 44-endpoint HTTP contract, they are exposed both on `usage.Service` and through the operator CLI `go run ./internal/usage/cmd/fvpn-usage-admin`:
 
 | Subcommand | Service Method | Audit Action & Resource | Description |
 |---|---|---|---|

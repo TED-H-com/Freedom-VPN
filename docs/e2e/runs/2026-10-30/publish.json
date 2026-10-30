@@ -13,7 +13,7 @@
     },
     {
       "name": "stored_rows",
-      "detail": "{\"node\": {\"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"applying\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"tunnel_probe\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"peer_observe_events\": 0}"
+      "detail": "{\"node\": {\"peer_id\": \"dbhvi0n8k4c000b7i5eg\", \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}, {\"name\": \"tunnel_probe\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:55:39.288463922Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 2}"
     },
     {
       "name": "control_status",
@@ -29,7 +29,7 @@
     },
     {
       "name": "provisioning_state",
-      "detail": "applying"
+      "detail": "ready"
     },
     {
       "name": "lifecycle_state",
@@ -93,14 +93,146 @@
     },
     {
       "name": "put",
-      "detail": "422 NODE_NOT_SERVICEABLE"
+      "detail": "202"
     },
     {
-      "name": "put_error",
-      "detail": "NODE_NOT_SERVICEABLE node does not satisfy serving baseline requirements {\"failed_checks\":[\"provisioning_state=applying (want ready)\"]}"
+      "name": "operation_id",
+      "detail": "efb6c4aa-f32a-454b-ae06-78d7f9c2d612"
+    },
+    {
+      "name": "operation_status",
+      "detail": "running"
+    },
+    {
+      "name": "operation_kind",
+      "detail": "node.publish"
+    },
+    {
+      "name": "step_agent_policy",
+      "detail": "succeeded"
+    },
+    {
+      "name": "step_data_path_probe",
+      "detail": "succeeded"
+    },
+    {
+      "name": "step_netbird_route_readback",
+      "detail": "failed DEPENDENCY_UNAVAILABLE Step failed; quote the operation ID."
+    },
+    {
+      "name": "node_after",
+      "detail": "200"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "passed"
+    },
+    {
+      "name": "data_health",
+      "detail": "healthy"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "published"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "error"
+    },
+    {
+      "name": "config_desired",
+      "detail": "3"
+    },
+    {
+      "name": "config_applied",
+      "detail": "3"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "passed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "passed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "passed"
+    },
+    {
+      "name": "desired_publication_intent",
+      "detail": "published"
+    },
+    {
+      "name": "desired_generation",
+      "detail": "3"
+    },
+    {
+      "name": "member_rate_policies",
+      "detail": "0"
+    },
+    {
+      "name": "device_bindings",
+      "detail": "0"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "0"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "0"
+    },
+    {
+      "name": "note",
+      "detail": "publication did not succeed: agent_policy NODE_NOT_SERVICEABLE Step failed; quote the operation ID."
+    },
+    {
+      "name": "owner",
+      "detail": "w3-wire-nodes: publication operation and production peer projection"
     }
   ],
-  "at": "2026-10-30T01:11:41Z",
-  "run_id": "6bf270e4-abb1-43ff-93eb-18d282fc7c2a",
-  "source_commit": "5477de091f449047193fdc9114cfca4ced5b36e6"
+  "at": "2026-10-30T01:59:41Z",
+  "run_id": "5852f09a-30e8-45bc-8983-b5f212e33640",
+  "source_commit": "5eb716e1a36ced17b8013646c9282c92746c81da"
 }

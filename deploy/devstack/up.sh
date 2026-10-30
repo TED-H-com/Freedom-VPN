@@ -69,11 +69,11 @@ tag() {
     fi
     docker tag "$digest" "$name"
 }
-tag "postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f" "$PREFIX-postgres:17"
-tag "nginx@sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce" "$PREFIX-nginx:1.30.0"
-tag "coredns/coredns@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97" "$PREFIX-coredns:1.12.0"
-tag "adguard/adguardhome@sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02" "$PREFIX-adguard:v0.107.59"
-tag "netbirdio/netbird-server@sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c" "$PREFIX-netbird:0.82.0"
+tag "postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f" "fvpn-devstack-postgres:17"
+tag "nginx@sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce" "fvpn-devstack-nginx:1.30.0"
+tag "coredns/coredns@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97" "fvpn-devstack-coredns:1.12.0"
+tag "adguard/adguardhome@sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02" "fvpn-devstack-adguard:v0.107.59"
+tag "netbirdio/netbird-server@sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c" "fvpn-devstack-netbird:0.82.0"
 
 build_one() {
     pkg=$1
@@ -99,7 +99,10 @@ service_image() {
     mkdir -p "$ctx"
     cp "$bin" "$ctx/service"
     cp "$ROOT/deploy/devstack/Dockerfile.service" "$ctx/Dockerfile"
-    docker build -t "$PREFIX-$name:local" "$ctx"
+    docker build --iidfile "$ctx/image.id" -t "fvpn-devstack-$name:local" "$ctx"
+    # Pin this run to the built image even if another worktree moves :local.
+    image_var=FVPN_E2E_IMAGE_$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]')
+    export "$image_var=$(cat "$ctx/image.id")"
 }
 service_image idp "$ROOT/.agent/e2e-build/fvpn-e2e-idp"
 service_image payment "$ROOT/.agent/e2e-build/fvpn-e2e-payment"
@@ -111,9 +114,10 @@ ctx=$ROOT/.agent/e2e-build/ctx-node
 rm -rf "$ctx"
 mkdir -p "$ctx"
 cp "$ROOT/.agent/e2e-build/fvpn-agent" "$ROOT/.agent/e2e-build/fvpn-watchdog" "$ROOT/.agent/e2e-build/fvpn-updater" "$ctx/"
-cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-member.sh" "$ctx/"
+cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-member.sh" "$ROOT/deploy/devstack/agent-service.sh" "$ctx/"
 cp "$ROOT/deploy/devstack/Dockerfile.node" "$ctx/Dockerfile"
-docker build -t "$PREFIX-node:local" "$ctx"
+docker build --iidfile "$ctx/image.id" -t fvpn-devstack-node:local "$ctx"
+export FVPN_E2E_IMAGE_NODE=$(cat "$ctx/image.id")
 
 $COMPOSE up -d postgres idp payment origin netbird gateway coredns adguard
 

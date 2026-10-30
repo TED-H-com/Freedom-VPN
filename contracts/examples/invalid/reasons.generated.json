@@ -23,6 +23,16 @@
     "keyword": "type",
     "note": "Revocations must be a unique UUID array when present."
   },
+  "DesiredStateEnvelope.probe-target-tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "Changing a signed resolver reference or probe target must invalidate the envelope signature."
+  },
+  "DesiredStateEnvelope.resolver-digest-tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "Changing a signed resolver reference or probe target must invalidate the envelope signature."
+  },
   "DesiredStateEnvelope.revocations-tampered.json": {
     "kind": "signature",
     "code": "SIGNATURE_INVALID",
