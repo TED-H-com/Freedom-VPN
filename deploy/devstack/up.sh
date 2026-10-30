@@ -89,6 +89,7 @@ build_one ./node/watchdog/cmd/fvpn-watchdog
 build_one ./node/updater/cmd/fvpn-updater
 build_one ./tests/e2e/cmd/fvpn-e2e-idp
 build_one ./tests/e2e/cmd/fvpn-e2e-payment
+build_one ./tests/e2e/cmd/fvpn-e2e-nodeconfig
 build_one ./tests/e2e/cmd/fvpn-e2e-origin
 build_one ./tests/e2e/cmd/fvpn-e2e-nbbootstrap
 
@@ -114,7 +115,7 @@ service_image worker "$ROOT/.agent/e2e-build/fvpn-worker"
 ctx=$ROOT/.agent/e2e-build/ctx-node
 rm -rf "$ctx"
 mkdir -p "$ctx"
-cp "$ROOT/.agent/e2e-build/fvpn-agent" "$ROOT/.agent/e2e-build/fvpn-watchdog" "$ROOT/.agent/e2e-build/fvpn-updater" "$ctx/"
+cp "$ROOT/.agent/e2e-build/fvpn-agent" "$ROOT/.agent/e2e-build/fvpn-watchdog" "$ROOT/.agent/e2e-build/fvpn-updater" "$ROOT/.agent/e2e-build/fvpn-e2e-nodeconfig" "$ctx/"
 cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-member.sh" "$ROOT/deploy/devstack/agent-service.sh" "$ctx/"
 cp "$ROOT/deploy/devstack/Dockerfile.node" "$ctx/Dockerfile"
 docker build --iidfile "$ctx/image.id" -t fvpn-devstack-node:local "$ctx"

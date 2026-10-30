@@ -77,8 +77,9 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 	}
 	noteNode(&rec, detail.Body)
 	etag := detail.Header.Get("ETag")
+	rec.Observations = append(rec.Observations, Observation{Name: "request", Detail: `{"publication_intent":"published","group_ids":["` + r.groupID.String() + `"],"reason":"e2e acceptance publish"}; If-Match=` + etag})
 	put, err := admin.call(ctx, "PUT", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String()+"/publication", api.PublicationRequest{
-		PublicationIntent: api.PublicationIntentPublished, Reason: "e2e acceptance publish",
+		GroupIds: &[]uuid.UUID{r.groupID}, PublicationIntent: api.PublicationIntentPublished, Reason: "e2e acceptance publish",
 	}, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": etag})
 	rec.Observations = append(rec.Observations, Observation{Name: "put", Detail: httpDetail(put, err)})
 	if err != nil {

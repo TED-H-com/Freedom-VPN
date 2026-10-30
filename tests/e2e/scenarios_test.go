@@ -89,6 +89,7 @@ type runner struct {
 	usageRevision  decstr.U64
 	usageFrom      time.Time
 	usageUntil     time.Time
+	flowCounted    bool
 	usageReady     bool
 	usageSentStart time.Time
 	usageSentEnd   time.Time
@@ -320,7 +321,7 @@ func (r *runner) desired(ctx context.Context) {
 func (r *runner) forwarding(view forwardView) {
 	status := StatusBlocked
 	detail := "forward chain policy is " + emptyDash(view.Policy) + ", generation " + itoa(view.Generation) + ", with " + itoa(view.MemberAccept) + " member accept rules; AT10 is not claimed"
-	if view.MemberAccept > 0 && view.Generation >= 1 {
+	if view.MemberAccept > 0 && view.Generation >= 1 && r.flowCounted {
 		status = StatusPass
 		detail = "forward chain generation is " + itoa(view.Generation) + " with member accept rules"
 	}
@@ -379,7 +380,12 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		PlanId: openapi_types.UUID(planForCheckout), ReturnUrl: "https://portal.example.invalid:8443/billing/return",
 	}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	rec.Observations = append(rec.Observations, Observation{Name: "checkout", Detail: httpDetail(checkout, err)})
-	rec.Observations = append(rec.Observations, Observation{Name: "traffic", Detail: "not claimed; no flow was counted"})
+	if r.usageReady {
+		r.flowCounted = r.countedFlow(ctx, recPathNote(&rec))
+		if r.flowCounted {
+			rec.Status = StatusPass
+		}
+	}
 	r.record(rec)
 	r.usage(ctx, member)
 }
@@ -405,31 +411,22 @@ func (r *runner) usage(ctx context.Context, member *session) {
 		r.record(rec)
 		return
 	}
-	same, firstStatus, secondStatus, accepted, outcome := r.replayUsageBatch(member.memberID)
-	if !r.usageSentStart.IsZero() {
-		rec.Observations = append(rec.Observations, Observation{Name: "interval_start", Detail: r.usageSentStart.UTC().Format(time.RFC3339)})
-		rec.Observations = append(rec.Observations, Observation{Name: "interval_end", Detail: r.usageSentEnd.UTC().Format(time.RFC3339)})
+	if !r.flowCounted {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "No positive counted flow; no synthetic sample is submitted."})
+		r.record(rec)
+		return
 	}
-	rec.Observations = append(rec.Observations, Observation{Name: "batch_status", Detail: firstStatus})
-	rec.Observations = append(rec.Observations, Observation{Name: "replay_status", Detail: secondStatus})
-	rec.Observations = append(rec.Observations, Observation{Name: "replay_results_equal", Detail: boolText(same)})
-	rec.Observations = append(rec.Observations, Observation{Name: "batch_outcome", Detail: emptyDash(outcome)})
-	again, againErr := member.call(ctx, "GET", r.lab.public+"/api/v1/member/usage", nil, nil)
-	total := memberUsageTotal(again.Body)
-	rec.Observations = append(rec.Observations, Observation{Name: "member_usage_after_batch", Detail: httpDetail(again, againErr)})
-	rec.Observations = append(rec.Observations, Observation{Name: "member_total_bytes", Detail: emptyDash(total)})
-	exact := again.Status == 200 && total == "3000"
-	rec.Observations = append(rec.Observations, Observation{Name: "exact_bytes", Detail: boolText(exact)})
-	switch {
-	case resp.Status == 200 && same && exact && accepted:
+	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
+	defer cancel()
+	var total string
+	arrived := waitUntil(wait, 2*time.Second, func() bool {
+		again, e := member.call(wait, "GET", r.lab.public+"/api/v1/member/usage", nil, nil)
+		total = memberUsageTotal(again.Body)
+		return e == nil && again.Status == 200 && total != "" && total != "0"
+	})
+	rec.Observations = append(rec.Observations, Observation{Name: "member_total_bytes", Detail: total}, Observation{Name: "source", Detail: "real agent sampler after controlled-origin admission; no harness usage batch"})
+	if arrived {
 		rec.Status = StatusPass
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "replay returned the same results and the member total matches the uploaded bytes"})
-	case firstStatus == "not-sent":
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: emptyDash(outcome)})
-	case resp.Status == 200 && same:
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "member usage is served and the idempotent replay returned the same results; exact byte totals were not claimed"})
-	default:
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "usage replay did not show the same results"})
 	}
 	r.record(rec)
 }
@@ -598,6 +595,11 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 
 func (r *runner) controlStop(ctx context.Context) {
 	rec := Record{ID: "lease-expiry", Title: "Control stop leaves forwarding off", Spec: []string{"§5", "§19 AT29"}, Status: StatusBlocked}
+	if !r.flowCounted || !r.countedFlow(ctx, recPathNote(&rec)) {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "No positive counted flow before fault; control stop is not injected."})
+		r.record(rec)
+		return
+	}
 	before := r.lab.forwardChain()
 	cmd := exec.Command("docker", "stop", "-t", "20", r.lab.control)
 	if err := cmd.Run(); err != nil {
@@ -606,7 +608,9 @@ func (r *runner) controlStop(ctx context.Context) {
 		r.record(rec)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	waitExpiry, cancelExpiry := context.WithTimeout(ctx, 11*time.Minute)
+	waitUntil(waitExpiry, 2*time.Second, func() bool { return r.lab.forwardChain().MemberAccept == 0 })
+	cancelExpiry()
 	after := r.lab.forwardChain()
 	rec.Observations = append(rec.Observations, Observation{Name: "table_before", Detail: boolText(before.Present)})
 	rec.Observations = append(rec.Observations, Observation{Name: "policy_before", Detail: emptyDash(before.Policy)})

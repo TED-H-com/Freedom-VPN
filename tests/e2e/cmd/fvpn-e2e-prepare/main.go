@@ -286,7 +286,7 @@ func run(state string, reset bool, lay layout) error {
 	if err := writeJSON(filepath.Join(state, "config", "usage.json"), usageCfg); err != nil {
 		return err
 	}
-	if err := writeAgentConfigs(state); err != nil {
+	if err := writeAgentConfigs(state, lay.OriginPrefix); err != nil {
 		return err
 	}
 	if err := writeNetBird(state); err != nil {
@@ -354,18 +354,18 @@ FVPN_E2E_PORT_POSTGRES=%d
 	return writeSecret(filepath.Join(state, "render", "compose.env"), []byte(body))
 }
 
-func writeAgentConfigs(state string) error {
+func writeAgentConfigs(state, originPrefix string) error {
 	base := map[string]any{
 		"state_dir": "/var/lib/vpn-node/state", "identity_dir": "/var/lib/vpn-node/identity",
 		"journal_dir": "/var/lib/vpn-node/update-journal", "lock_path": "/var/lib/vpn-node/update.lock",
 		"server_ca_file": "/etc/vpn-node/ca.pem", "trust_bundle": "/etc/vpn-node/trust.json",
-		"datapath":      map[string]string{"member_ingress": "fvmb0", "uplink": "fvup0", "snat": "192.0.2.20"},
+		"datapath":      map[string]string{"member_ingress": "fvmb0", "uplink": "fvup0", "snat": originPrefix + ".20"},
 		"agent_release": "0.1.0",
 		// TEST ONLY rate. The agent requires the field and has no product default (D-034).
 		"host_reserve_bps": 1000000, "netbird_backend": "kernel",
 		"heartbeat_seconds": 5, "poll_seconds": 5, "watchdog_stale_seconds": 30, "watchdog_interval_seconds": 5,
 		"boot_id_file": "/etc/vpn-node/boot-id", "test_mode": true,
-		"updater_recover": "/usr/local/bin/fvpn-updater", "updater_config": "/var/lib/vpn-node/e2e/updater.json",
+		"updater_recover": "/usr/local/bin/fvpn-updater", "updater_config": "/etc/vpn-node/updater-recover.json",
 	}
 	enroll := cloneMap(base)
 	enroll["control_url"] = "https://portal.example.invalid:8443"

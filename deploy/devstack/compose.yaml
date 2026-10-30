@@ -320,7 +320,8 @@ services:
     networks:
       lab:
         ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.40
-      origin: {}
+      origin:
+        ipv4_address: ${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20
     restart: "no"
 
   member:
