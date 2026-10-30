@@ -2,7 +2,7 @@
 
 - **Branch:** `r11-d064-review` (commit `8f1a49cfd0404db0a97b09aa75f43e6e22e1540c`, `.agent/REVIEW.md` blob `03d299fbfe14a85c756462b202ca08149de2f3c1`, SHA-256 `975bbd9da3faf7f340210ff1ec25254a111e85084e2b3fd165c82d6b5ed89fa9`)
 - **Date:** 2026-10-30 (`2026-10-30 03:52:41 -0400`)
-- **Reviewing model:** `agy/gemini-4-argon-high` (commit `8f1a49c` `Agent:` trailer: `grok/grok-4.7`)
+- **Reviewing model:** `grok/grok-4.7` (recorded in commit `8f1a49c` `Agent:` trailer; not stated in `.agent/REVIEW.md` body)
 - **Decision / scope reviewed:** Follow-ups merged in PRs `#146`–`#151`: `node/agent` (`D-064` probe exception, `D-061` resolver credentials, lease renewal in the generation-apply step), `node/updater` (`D-063` `probe_peer`), `node/enforce` (probe exception sets and chains), `internal/nodes` / `internal/exits` (`SECOPS-11` zero-binding publication), `internal/fleetupdate` (observation authority), and `internal/dnspolicy` (`D-061`).
 - **Adopted proof files on `main`:**
   - [`node/agent/review_r11_d064_test.go`](../../node/agent/review_r11_d064_test.go) (adopted in `#162`, alongside [`node/agent/followup11_test.go`](../../node/agent/followup11_test.go))
