@@ -125,6 +125,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-usage: acceptance tests for usage metering, fair use and billing against the lab | WP10 | harness merged (#80): AT14–AT19 blocked on the serving baseline and on exit-group bootstrap (no admin path creates member groups or attaches exits; D-057 in contracts revision 5) |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
+| w4-ops-backups: central PostgreSQL backups — pgBackRest WAL archiving, base backups, point-in-time restore drill in CI, post-restore checklist and runbook (SECOPS-05, AT30) | WP12 | done (#86) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
