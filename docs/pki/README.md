@@ -121,9 +121,11 @@ staging group; no real group/account identifier is embedded here.
    successful until setup/peer/policy required steps have real evidence.
    Call `ExpireBootstrap` periodically. `TakeBootstrap` requires the TLS
    certificate and commits erasure before returning plaintext.
-7. Route/peer withdrawal workers consume `node.routes.withdraw` and
-   `node.peer.withdraw`, reconcile by operation/node/incarnation and read back
-   removal. `RevokeNode` returns a pending operation, never external completion.
+7. Revocation and retirement enqueue one `node.publication_changed` event for
+   the exits executor, with standard withdrawal steps plus required
+   `netbird_identity_cleanup`. The worker confirms route removal, setup-key
+   revocation and peer deletion before finalizing; an offline agent remains
+   unconfirmed. `RevokeNode` returns a pending operation, never external completion.
 
 The D-015 `POST /agent/bootstrap` contract now carries authenticated one-time
 setup delivery. Reinstall accepts an existing `node_id` only after the current
