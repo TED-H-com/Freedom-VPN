@@ -10,18 +10,26 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // StartSecondExit creates one more real node and its independent resolver,
 // identity/state directories and durable network namespace on the existing lab
 // bridges. Call after PrepareServingBaseline, then EnrollAt(..., "node2").
 // It does not publish the exit or infer serviceability. e2e-down removes it.
-func (s *Stack) StartSecondExit(ctx context.Context) error {
-	base := filepath.Join(s.lab.state, "node2")
+func (s *Stack) StartSecondExit(ctx context.Context) error { return s.startSecondExit(ctx, false) }
+func (s *Stack) startSecondExit(ctx context.Context, clone bool) error {
+	slot := "node2"
+	lastOctet := ".22"
+	if clone {
+		slot = "node-clone"
+		lastOctet = ".23"
+	}
+	base := filepath.Join(s.lab.state, slot)
 	if err := os.Mkdir(base, 0700); err != nil {
 		return fmt.Errorf("second node requires a fresh slot: %w", err)
 	}
-	for _, dir := range []string{"etc", "var/e2e", "adguard/conf", "adguard/work"} {
+	for _, dir := range []string{"etc", "var/e2e", "adguard/conf", "adguard/work", "netbird", "opt"} {
 		if err := os.MkdirAll(filepath.Join(base, dir), 0700); err != nil {
 			return err
 		}
@@ -32,13 +40,27 @@ func (s *Stack) StartSecondExit(ctx context.Context) error {
 		}
 		return nil
 	}
+	if clone {
+		if err := run("stop", "-t", "20", s.lab.node); err != nil {
+			return err
+		}
+		defer func() {
+			resume, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+			defer cancel()
+			_ = exec.CommandContext(resume, "docker", "start", s.lab.node).Run()
+		}()
+	}
 	if err := run("cp", s.lab.node+":/etc/vpn-node/.", filepath.Join(base, "etc")); err != nil {
 		return err
 	}
-	// Clone configuration and public trust, never the node's durable identity.
+	// Clean second exits copy configuration/public trust; the explicit fault
+	// fixture below also snapshots durable identity while the source is stopped.
 	// The entrypoint generates a fresh boot id/recovery config after enrollment.
 	for _, file := range []string{"boot-id", "updater-recover.json"} {
 		_ = os.Remove(filepath.Join(base, "etc", file))
+	}
+	if !clone {
+		_ = os.Remove(filepath.Join(base, "etc", "machine-id"))
 	}
 	prefix := s.lab.originIP[:strings.LastIndex(s.lab.originIP, ".")]
 	for _, file := range []string{"agent-enroll.json", "agent-run.json"} {
@@ -55,7 +77,7 @@ func (s *Stack) StartSecondExit(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("datapath missing")
 		}
-		dp["snat"] = prefix + ".22"
+		dp["snat"] = prefix + lastOctet
 		raw, err = json.MarshalIndent(cfg, "", "  ")
 		if err != nil {
 			return err
@@ -75,16 +97,42 @@ func (s *Stack) StartSecondExit(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	name := s.lab.prefix + "-node2"
+	name := s.lab.prefix + "-" + slot
 	ns := name + "-netns"
 	if err = run("run", "-d", "--name", ns, "--hostname", name, "--network", s.lab.prefix, "--entrypoint", "sleep", strings.TrimSpace(string(image)), "infinity"); err != nil {
 		return err
 	}
-	if err = run("network", "connect", "--ip", prefix+".22", s.lab.prefix+"-origin", ns); err != nil {
+	if err = run("network", "connect", "--ip", prefix+lastOctet, s.lab.prefix+"-origin", ns); err != nil {
 		return err
 	}
 	if err = run("run", "-d", "--name", name+"-adguard", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "adguard/conf")+",dst=/opt/adguardhome/conf", "--mount", "type=bind,src="+filepath.Join(base, "adguard/work")+",dst=/opt/adguardhome/work", strings.TrimSpace(string(dnsImage)), "--no-check-update", "--no-permcheck", "-c", "/opt/adguardhome/conf/AdGuardHome.yaml", "-w", "/opt/adguardhome/work"); err != nil {
 		return err
 	}
-	return run("run", "-d", "--name", name, "--privileged", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "etc")+",dst=/etc/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "var")+",dst=/var/lib/vpn-node", strings.TrimSpace(string(image)))
+	if clone {
+		// Source is stopped and target has not booted. Pipe archives directly into
+		// the private target mounts; never print/store an archive in evidence.
+		for _, copy := range []struct{ source, target string }{{"/var/lib/vpn-node/.", "var"}, {"/etc/netbird/.", "netbird"}, {"/opt/vpn-node/.", "opt"}} {
+			read := exec.CommandContext(ctx, "docker", "cp", s.lab.node+":"+copy.source, "-")
+			write := exec.CommandContext(ctx, "docker", "run", "--rm", "-i", "--name", name+"-copy", "--network", "none", "--mount", "type=bind,src="+filepath.Join(base, copy.target)+",dst=/copy", "--entrypoint", "tar", strings.TrimSpace(string(image)), "-xf", "-", "-C", "/copy")
+			pipe, err := read.StdoutPipe()
+			if err != nil {
+				return err
+			}
+			write.Stdin = pipe
+			if err = read.Start(); err != nil {
+				return err
+			}
+			we := write.Run()
+			_ = pipe.Close()
+			re := read.Wait()
+			if we != nil || re != nil {
+				return fmt.Errorf("private clone copy failed")
+			}
+		}
+		// Runtime trigger/PID files are not cloned actions; identity and ledgers are.
+		for _, file := range []string{"updater.json", "pause-agent", "agent.pid"} {
+			_ = os.Remove(filepath.Join(base, "var/e2e", file))
+		}
+	}
+	return run("run", "-d", "--name", name, "--privileged", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "etc")+",dst=/etc/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "var")+",dst=/var/lib/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "netbird")+",dst=/etc/netbird", "--mount", "type=bind,src="+filepath.Join(base, "opt")+",dst=/opt/vpn-node", strings.TrimSpace(string(image)))
 }

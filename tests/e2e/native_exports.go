@@ -5,12 +5,14 @@ package e2e
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -27,8 +29,21 @@ type NativePeer struct {
 	Authorized      bool
 	DeviceID        uuid.UUID
 	LogScan         NativeLogScan
+	Stream          NativeStreamResult
+}
+
+// NativeStreamResult is a final pre-delete inventory, never file contents.
+// Result is scanned, missing, error or not_started; Error is a fixed safe class.
+type NativeStreamResult struct {
+	Stream  string        `json:"stream"`
+	Result  string        `json:"result"`
+	Scan    NativeLogScan `json:"scan"`
+	Error   string        `json:"error,omitempty"`
+	Deleted bool          `json:"deleted"`
 }
 type NativeScale struct {
+	Streams []NativeStreamResult `json:"streams"` // at most 20*3 final records
+
 	Users                  int
 	Peers                  int
 	IdentityMatches        int
@@ -41,7 +56,7 @@ type NativeScale struct {
 // JoinNativeMember drives the real device flow on an existing prefixed peer.
 // Each peer must have its own NetBird state, socket and network namespace.
 func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, subject, container, peerName string) (out NativePeer, err error) {
-	out = NativePeer{Container: container}
+	out = NativePeer{Container: container, Stream: NativeStreamResult{Stream: container + "/protected-device-flow", Result: "not_started"}}
 	if !strings.HasPrefix(container, s.lab.prefix+"-member") {
 		return out, fmt.Errorf("member container outside stack")
 	}
@@ -66,8 +81,27 @@ func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, sub
 	}
 	logPath := "/var/lib/vpn-node/e2e/netbird-up.log"
 	defer func() {
-		out.LogScan, _ = s.ScanNativeJoinLog(ctx, container)
-		_, _ = s.lab.docker(container, "rm", "-f", logPath)
+		scanCtx, cancelScan := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+		defer cancelScan()
+		var scanErr error
+		out.LogScan, scanErr = s.ScanNativeJoinLog(scanCtx, container)
+		out.Stream.Scan = out.LogScan
+		out.Stream.Result = "scanned"
+		if scanErr != nil {
+			out.Stream.Result = "error"
+			out.Stream.Error = "protected_scan_failed"
+			err = errors.Join(err, fmt.Errorf("protected native scan failed"))
+		} else if !out.LogScan.Present {
+			out.Stream.Result = "missing"
+			out.Stream.Error = "protected_stream_missing"
+			err = errors.Join(err, fmt.Errorf("protected native stream missing"))
+		}
+		deletion := exec.CommandContext(scanCtx, "docker", "exec", container, "rm", "-f", logPath).Run()
+		out.Stream.Deleted = deletion == nil
+		if deletion != nil {
+			out.Stream.Error = "protected_delete_failed"
+			err = errors.Join(err, fmt.Errorf("protected native stream deletion failed"))
+		}
 	}()
 	if _, err = s.lab.docker(container, "touch", "/var/lib/vpn-node/e2e/user-auth"); err != nil {
 		return out, err
@@ -184,9 +218,12 @@ kill -` + signal + ` "$pid"`
 
 // ScaleNativeMembers is the SECOPS-10 hook. 20x3 is supported by the hook;
 // callers choose the execution budget and must use a plan allowing three devices.
-// Each native peer and subject is distinct; the return contains only counts.
+// Each native peer and subject is distinct; final inventories contain no values.
 func (s *Stack) ScaleNativeMembers(ctx context.Context, admin BrowserSession, plan uuid.UUID, namespace string, users, peers int, refresh ...func(context.Context) (BrowserSession, error)) (NativeScale, error) {
 	var out NativeScale
+	defer func() {
+		sort.Slice(out.Streams, func(i, j int) bool { return out.Streams[i].Stream < out.Streams[j].Stream })
+	}()
 	if len(refresh) > 1 {
 		return out, fmt.Errorf("at most one admin refresh callback")
 	}
@@ -232,7 +269,7 @@ func (s *Stack) ScaleNativeMembers(ctx context.Context, admin BrowserSession, pl
 			go func() {
 				container, e := s.StartNativePeer(ctx, name)
 				if e != nil {
-					joinedPeers <- joined{err: e}
+					joinedPeers <- joined{peer: NativePeer{Stream: NativeStreamResult{Stream: name + "/protected-device-flow", Result: "not_started", Error: "peer_start_failed"}}, err: e}
 					return
 				}
 				peer, e := s.JoinNativeMember(ctx, member, subject, container, container)
@@ -244,6 +281,7 @@ func (s *Stack) ScaleNativeMembers(ctx context.Context, admin BrowserSession, pl
 			result := <-joinedPeers
 			peer := result.peer
 			out.Peers++
+			out.Streams = append(out.Streams, peer.Stream)
 			if peer.LogScan.Present {
 				out.ScannedLogs++
 			}

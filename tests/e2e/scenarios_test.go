@@ -97,6 +97,7 @@ type runner struct {
 	trafficOwner string
 	usageReady   bool
 	probePeer    map[string]any
+	probe        *UpdaterProbe
 	updateOwner  string
 }
 
