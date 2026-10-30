@@ -2,6 +2,8 @@
 
 This guide defines the routine operational runbooks for Freedom VPN administrators (`§6`–`§15`, `§17`–`§18`).
 
+For API examples, use the admin role cookie and obtain `ADMIN_CSRF_TOKEN` from `GET /auth/session?role=admin`; authenticated mutations also require the exact configured Origin ([control authentication](../control/AUTH.md)).
+
 All administrative browser sessions require OIDC authentication with MFA (`amr: ["mfa"]` or configured `acr`) via `/auth/login?role=admin` (`§9.1`, `§16.1`). High-risk mutations (`POST /api/v1/admin/nodes/{node_id}/revoke`, `DELETE /api/v1/admin/nodes/{node_id}`, `POST /api/v1/admin/update-batches`, `POST /api/v1/admin/policies/{definition_id}/activate`) additionally require recent authentication within `recent_auth_seconds` (`900s`, `403 RECENT_AUTH_REQUIRED` if stale) and explicit confirmation in the Admin Portal (`§9.1`, `§16.1`, `§18.1`).
 
 ---
@@ -124,7 +126,7 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
 
 ### 2.3 OpenAPI Contract Inventory (`44` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
 
-`contracts/openapi.yaml` (OpenAPI `1.2.0`, revision 6) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
+`contracts/openapi.yaml` (OpenAPI `1.3.0`, revision 7) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
 - **Member Groups (`GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, `D-057`, `D-059`)**:
   `CreateAdminGroup` writes an immutable `member_groups` row (unique `code` and `name`), records a typed `group.create` audit event on `member_group:<id>`, and stores the idempotent `201 MemberGroup` receipt in one transaction (`replay` returns the original `201` body). `ListAdminGroups` orders by `code`, supports exact `code` filtering and cursor pagination, and counts every attached exit in `exit_count` (including unpublished or offline exits).
 - **Authenticated Resolver Document Delivery (`GET /api/v1/agent/resolver-documents/{document_id}`, `D-056`)**:
@@ -156,6 +158,7 @@ First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the respo
 curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -188,6 +191,7 @@ Exit publication controls whether member devices route traffic through the node 
 curl -fsS -X PUT "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/publication" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -200,6 +204,8 @@ curl -fsS -X PUT "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/pub
   }'
 ```
 Poll the returned operation and node detail; completion requires `status == "succeeded"` and `publication_observed == "active"`. A failed operation needs investigation, not indefinite polling.
+
+If publication returns `422 NODE_NOT_SERVICEABLE` before creating an operation, inspect readiness and baseline checks first. The [security-ops follow-up 3 publication record](../e2e/at/secops/publication.md) hit this earlier gate (`applying`, failed safety/DNS), so it did not measure the live `member_forwarding_unconfirmed` path.
 
 **Publication stuck on `member_forwarding_unconfirmed` (SECOPS-11):** `data_path_probe` fails with `NODE_NOT_SERVICEABLE` unless the current incarnation's selected observation satisfies `PublicationForwardingEvidence`. Check the following in node detail and the node's current report:
 
@@ -229,6 +235,7 @@ Node detail also includes typed `dns_policy_evidence` from the selected current-
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/revoke" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -248,6 +255,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/re
    curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/releases" \
      -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
      -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+     -H "Origin: https://vpn.example.com" \
      -H "Idempotency-Key: $(uuidgen)" \
      -H "Content-Type: application/json" \
      -d "{
@@ -266,6 +274,7 @@ In v1, fleet updates use `scope: "all_nodes"` and `set_fleet_default: true` (`§
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d "{
@@ -305,7 +314,7 @@ The agent's required observation `update` object contains `generation`, `job_id`
 
 ### 4.5 Reading a Rolled-Back Update and Result Rejections (D-062)
 
-1. Read `/admin/updates` target detail and the accepted result. For `rolled_back`, `current_release_id` names the restored release, `previous_release_id` the candidate, `health` describes the restored release and `error_code` retains the candidate failure. `candidate_health` describes the failed candidate separately; explicit `null` means rollback began before candidate checks. The portal presents both profiles and the null case. An empty manifest rollback allowlist adds no restriction, while a nonempty list must include the restored release; serving, trust, revocation and schema checks still apply.
+1. Read `/admin/updates` target detail and the accepted result. For `rolled_back`, `current_release_id` names the restored release, `previous_release_id` the candidate, `health` describes the restored release and `error_code` retains the candidate failure. `candidate_health` describes the failed candidate separately; explicit `null` means rollback began before candidate checks. The portal can present both profiles and the null case when supplied. Contract revision 7 adds optional nullable `previous_release_id`, `health` and `candidate_health` to `UpdateTarget`, sourced only from its latest current accepted result, never history. On this checkout the central target mapper does not yet populate them; absent/null target evidence is not proof that candidate checks never ran. Use the local journal and retained result evidence while that projection is pending. An empty manifest rollback allowlist adds no restriction, while a nonempty list must include the restored release; serving, trust, revocation and schema checks still apply.
 2. On the node, read the journal without starting an update:
    ```bash
    /opt/vpn-node/current/fvpn-updater status -config /etc/vpn-node/updater.json
@@ -315,13 +324,16 @@ The agent's required observation `update` object contains `generation`, `job_id`
 4. The updater retains 409 as `conflict` and other permanent 4xx (except 429) as `rejected`, stops resending those rows, and allows later results through. `last_rejection` contains bounded HTTP/API/local codes. Transport failures, 5xx and 429 remain pending; 429 honors `Retry-After` across restarts. After correcting connectivity, `fvpn-updater flush -config /etc/vpn-node/updater.json` can send pending results; successful flush alone does not mean every result was accepted.
 5. If `recovery_required` is true or rollback fails, retain the fail-closed latch and follow [node recovery](../updates/node-updater.md); investigate locally or revoke and re-enroll if recovery cannot restore a supported release. Do not remove the latch to claim success.
 
-**Recorded acceptance boundary:** [updates follow-up 2](../e2e/at/updates/requests.md) passes AT23/AT24/AT25/AT27, but AT26 restores last-good locally and receives `accepted_as_history=true` while the target remains `queued` with `needs_attention=false`. Treat this combination as the recorded central transition blocker, preserve the result/ACK and escalate to the update owners; do not infer success from an empty outbox or clear attention flag. Physical arm64 and published member traffic remain separate acceptance work.
+**Direct terminal result and acceptance boundary:** Central now accepts a validated current-job terminal result directly from `queued`; no earlier progress result is required. A direct rollback closes the job/target as `rolled_back` with attention, restored-release identity and the candidate failure. An equal/newer heartbeat can still make `applied_to_current_observation=false` without making the result history. A later matching observation clears `unconfirmed`. Old ACKs already stored as history remain immutable: use a fresh batch to exercise the corrected path, not a rewritten result ([central lifecycle](../updates/central-lifecycle.md)).
+
+The dated [updates follow-up 2 record](../e2e/at/updates/requests.md) passes AT23/AT24/AT25/AT27 but records AT26 as blocked: local restoration succeeded while the then-current service returned `accepted_as_history=true` and left the target queued. The merged direct-transition fix has component regression coverage; that historical acceptance verdict still requires a fresh live rerun. Physical arm64 and published member traffic remain separate acceptance work.
 
 Retrying failed/rolled-back targets in a batch (`UpdateBatchRetryRequest`) `[Verified on dev/test stack]`:
 ```bash
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches/${BATCH_ID}/retry" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d "{
@@ -448,6 +460,7 @@ Suspending a member (`"admin_suspended": true`) requests withdrawal of member fo
 curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID}" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -469,6 +482,7 @@ Manual entitlement grants (`GrantCreateRequest`) require a `source` (`admin_gran
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID}/grants" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
   -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d '{
@@ -478,7 +492,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID
     "reason": "7-day courtesy access while billing issue is resolved"
   }'
 ```
-*(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 44-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or member access can be withdrawn immediately via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
+*(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 44-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or asynchronous withdrawal can be requested via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
 
 ### 7.3 Identity Continuity, Client Rotation and Duplicate Pre-Check (D-052)
 
@@ -503,6 +517,8 @@ The requested browser role now lives in `oidc_login_flows.role` (`admin` or `mem
 ### 7.4 Login Limiting (D-060)
 
 `control.json:login_rate` defaults to `burst: 40`, `per_second: 1` for direct-peer-address buckets; login/callback and session/logout use separate buckets. `login_subject_per_minute` defaults to `10` after verified authentication. Zero values are rejected at startup. HTTP `429 RATE_LIMITED` includes `Retry-After`; clients should wait that delay before retrying. Investigate `fvpn_control_rate_limited_total{class,limiter}` and shared-NAT demand using [control authentication](../control/AUTH.md#login-burst-and-per-subject-rate-limiters-d-060) and its [config example](../control/config.example.json).
+
+The [dated D-060 limiter run](../e2e/at/secops/limiter.md) authenticated 20/20 members from one address; it observed `Retry-After: 4` for the eleventh completion of one subject and `Retry-After: 1` for the forty-first address request. Those are measured responses, not fixed delay settings. The same run recorded a lab landing-page HTTP 500 after successful authentication; session completion did not prove portal rendering ([SECOPS-14](../e2e/at/secops/requests.md)).
 
 ---
 

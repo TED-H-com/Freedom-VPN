@@ -220,7 +220,7 @@
     },
     {
       "id": "DOC14",
-      "status": "open",
+      "status": "resolved",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
@@ -231,7 +231,9 @@
       "evidence": [
         "contracts/openapi.yaml",
         "docs/handover/member-guide.md"
-      ]
+      ],
+      "resolved_in": "docs/handover/member-guide.md Part II 2.2; tests/handover/handover_test.go TestHandover_OpenAPIClaims",
+      "resolution": "Guide now states OpenAPI 1.3.0 from info.version on the handover review base; parsed contract still has 44 operations. The test requires the current version and checks stated versions/counts. Historical source revisions and hashes below are retained."
     }
   ],
   "unified_model_review": [
@@ -363,5 +365,38 @@
     ],
     "physical_acceptance": "needs operator run",
     "conclusion": "New text continues to qualify unmeasured forwarding, platform and propagation behavior; native authorization is observed here. Contract version reference is stale; no full serving, client platform, or UI-render acceptance is claimed."
+  },
+  "handover_follow_up_3": {
+    "reviewed_at": "2026-10-30T05:20:20.920146Z",
+    "source_revision": "d28ec914b74d54354c88c78cbde667659f69a229",
+    "method": "Read merged PR bodies #108-#133 and verify operator/member claims against source files at the review base; compare DOC01-DOC13 statuses with secops requests.md; resolve DOC14 with a contract-parsing handover check.",
+    "findings_rechecked": 14,
+    "unresolved_documentation_findings": 0,
+    "contract_version": "1.3.0",
+    "operation_count": 44,
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "91143c1f1a23ceac9a2b9fb63bd20f5c8cb220ebaf6f95b6880f2d5e626a84b3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "832617e3700f11cbb5c3f3a5d26056ce7a3c8c692ae2b2601e9c5e6ac3f4e978"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "8161ad10e3df6396ab40d77765ae67b025b244d2709386652ab96467e31ca4c2"
+      },
+      {
+        "path": "tests/handover/handover_test.go",
+        "sha256": "4d14ec532d160b29523ed0a4c22d0e0843952f6c8863de814ab79ef05c886fcb"
+      },
+      {
+        "path": "docs/e2e/at/secops/requests.md",
+        "sha256": "ceb503e59c40f3712fda8279435960594e60ebbea9d0c673d10798a65bc44910"
+      }
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "DOC01-DOC13 remain resolved and DOC14 is corrected. The member guide retains platform, forwarding and propagation qualifications. Typed DNS evidence is admin-only. This documentation review makes no new serving, platform, UI or physical acceptance claim."
   }
 }

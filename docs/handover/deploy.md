@@ -646,6 +646,8 @@ In the Admin Portal (`/admin/nodes`) or via API, issue an `installer` token (def
 ```bash
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/enrollments" \
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d '{
