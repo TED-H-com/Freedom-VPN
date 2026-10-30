@@ -430,8 +430,8 @@ It validates the stored bytes against the issued reference (ID, profile revision
 policy generation, SHA-256 and size), requires canonical JSON of at most 1 MiB,
 and writes those bytes without HTML escaping or a trailing newline. Responses
 set `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0` in the
-strict response. The core Transport currently overwrites the latter with
-`no-store`; its exact-route exception is a separate pending owner request.
+strict response. The core Transport preserves that cache policy for this exact
+GET 200 route; errors retain `no-store`.
 `RecordIssuedResolverDocumentTx` records a typed, metadata-only issuance audit
 after confirming the reference exists in the persisted signed envelope; a lookup
 joins that record to immutable desired-state history and checks the current
@@ -456,7 +456,7 @@ still requires retained proof; purged or absent historical proof returns 404.
 The production integration test issues a desired state, verifies its signature,
 fetches exactly the stored normalized canonical document and checks its digest
 ETag, rejects another node, allows the previous generation, and rejects generation
-minus two. The independent core cache-header exception remains its owner's work.
+minus two. The production test also verifies the core cache-header exception.
 
 ## D-055 adversarial read-back and withdrawal
 

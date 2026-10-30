@@ -155,6 +155,6 @@ func TestReviewD056_EvidenceIsReportedWithoutIssuanceCheck(t *testing.T) {
 	// The passing check would also be inconsistent with a non-applied outcome; this body is applied with 33 feeds.
 	tooMany := f.call("POST", "/api/v1/agent/observations", report, cert, map[string]string{"Idempotency-Key": uuid.NewString()})
 	if tooMany.Code != http.StatusUnprocessableEntity {
-		t.Fatalf("TODO(review): 33 feed evidence was stored: %d %s", tooMany.Code, tooMany.Body.String())
+		t.Fatalf("33 feed evidence was stored: %d %s", tooMany.Code, tooMany.Body.String())
 	}
 }
