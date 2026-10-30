@@ -4,15 +4,15 @@ Tampered artifact fails closed
 
 Status: pass
 
-Run: 5852f09a-30e8-45bc-8983-b5f212e33640
+Run: 5de03570-0436-477d-9847-6f6984432bd8
 
-Source: 5eb716e1a36ced17b8013646c9282c92746c81da
+Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
 
 Spec: §13.4, §19 AT25, §19 AT27
 
 - batch: 202
-- fleet_generation: 2
-- target_count: 1
+- fleet_generation: 3
+- target_count: 3
 - desired_contains_release: true
 - running_candidate_executable: false
 - exit_code: 1
@@ -28,4 +28,3 @@ Spec: §13.4, §19 AT25, §19 AT27
 - result_last_error: -
 - journal_excerpt: fvpn-updater: updater: HASH_MISMATCH: artifact
 - note: tampered bytes were rejected
-

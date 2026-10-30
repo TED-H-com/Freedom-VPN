@@ -217,7 +217,8 @@ release ID and both candidates are in the serving allowlist. The shared
 `PrepareServingBaseline` helper creates and activates that non-empty policy
 through the API; no empty policy or fleet array is written in SQL. `update-bad`
 flips one byte in the uploaded real archive after verification, preserving
-its length.
+its length. SBOM, notice and source-download documents are TEST ONLY
+placeholders, not production release compliance evidence.
 
 The node's lab service manager stops the boot agent and starts
 `<installed-release>/bin/fvpn-agent` with that release's identity/config. A
@@ -291,36 +292,41 @@ claim full AT22. No feed is fetched from the public Internet.
 
 ## Latest complete run — 2026-10-30
 
-Run `5852f09a-30e8-45bc-8983-b5f212e33640`, source `5eb716e1a36ced17b8013646c9282c92746c81da` (main through PR #84):
-all fifteen scenarios completed in 419.47 seconds, with **9 pass, 6 blocked,
-0 fail**. Go test exited 1 and `make e2e-test` exited 2 because blocked records
-keep the acceptance gate non-zero. Every dated record belongs to this run.
+Run `5de03570-0436-477d-9847-6f6984432bd8`, source `a7a712aab8a67fcc33514a9ac76cb877a90c8143` (task branch based on main through #89):
+all twenty scenarios finished in 328.797 seconds, with **12 pass, 8 blocked,
+0 fail**. Go test exited 1 and `make e2e-test` exited 2. Every dated record is
+from this complete run. [Repeatability and checks](followup6-verification.md)
+record three earlier fresh stacks and the final dependency gate.
 
-- The stored node now reports `ready`, `passed`, `healthy`, desired/applied
-  generation `1`, and a peer bound through production discovery (D-055).
-  Publication advances from the prior HTTP 422 gate to HTTP 202. Its
-  `agent_policy` and `data_path_probe` steps succeed, but
-  `netbird_route_readback` fails `DEPENDENCY_UNAVAILABLE`; the operation stays
-  `running` and `publication_observed=error`. The stored `exit_group_count=0`
-  identifies the D-057 input gap, owned by contracts revision 5 and central
-  exit wiring (`w3-wire-nodes`).
-- Member identity/device/binding row counts move from zero to one each.
-  `GET /member/devices` returns 200 with one authorized device and
-  `same_subject=true`. There is still no desired-state binding for this exit,
-  no counted flow, and no usage batch. Publication/group inputs block the
-  member-traffic, forwarding, usage and lease-expiry acceptance claims.
-- `update-good` runs the installed `1.0.1` agent, answers the D-053 challenge
-  with NetBird `0.82.0`, passes all five health checks and reaches
-  `locally_succeeded`. `update-bad` rejects the distinct, single-byte-tampered
-  archive with `HASH_MISMATCH`; it never runs that candidate or records success.
-  Rollback and physical arm64 execution remain unclaimed. SBOM, notice and
-  source-download documents are TEST ONLY placeholders, not production release
-  compliance evidence.
-- `threat-feed-central` passes bootstrap, normalized resolver publication and
-  wrong-pin failure with retained prior content. `threat-feed-node` remains
-  blocked on D-056, owned by contracts revision 5 and node delivery/application
-  (`w2-agent-core`). No Internet feed or seeded projector row is involved.
+- Physical PITR passed: full backup 3271 ms,
+  restore 4085 ms, total
+  8828 ms. The isolated restored copy retained only
+  the pre-target API-created enrollment (`1|0|f|off`); the primary retained both.
+- The built Portal return rendered in Chromium with pending confirmation and
+  no API error. Control metrics returned HTTP 200 on configured loopback HTTP
+  `127.0.0.1:9091`; no control address override or listener defect was found.
+- The reusable helper verified three real signed releases and activated a
+  non-empty support policy through APIs. The fresh node was
+  `ready`, safety `passed`, data health
+  `healthy`, applied/desired generation
+  `1/1`,
+  with a production-bound peer ID. Both update cases passed.
+- `GET /admin/groups` returned **501 NOT_IMPLEMENTED**, blocking an API-created
+  plan, live paid-period reconciliation and the D-057 forwarding continuation.
+  Publication returned 202 but route readback failed `DEPENDENCY_UNAVAILABLE`
+  with `exit_group_count=0`. Owner: `w3-wire-nodes`
+  follow-up 11. No plan, group, readiness or publication row was fabricated.
+- Payment hooks passed production-adapter unit tests for linked paid invoice
+  truth, cancellation, partial/full refunds and signed events. **A live paid
+  interval has not yet been reconciled**: this is a remaining B4 validation
+  gap, not a claimed pass from a webhook receipt.
+- Central feed bootstrap, wrong-pin rejection and retained last-good passed.
+  Resolver delivery, actual member flow, real flow metering and lease expiry
+  remain blocked on the serving/delivery prerequisite. The additional source
+  flavours, second exit/resolver, controlled CNAME/HTTPS/SVCB/rebinding zones,
+  forced direct/relay, mobile/desktop platforms and physical arm64 remain
+  operator work.
 
-`e2e-lint`, root `go-lint`, `go vet -tags e2e ./tests/...`, and the requested
-unit tests all exit 0. The lab is torn down after this run; shared neutral
-build-cache images remain for other harnesses.
+The requested final fetch found no wire-nodes follow-up 11 on `origin/main`
+(`5a22aa9`), so the conditional merge and Part B were not performed. Newer agent
+and feed implementations present upstream are not claimed as tested here.
