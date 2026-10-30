@@ -36,7 +36,7 @@ VERIFY_TARGETS += contracts-verify
 contracts-generate:
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run ./contracts/internal/cmd/contractsgen
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run $(CONTRACTS_OAPI_CODEGEN) -config contracts/codegen/oapi-codegen.yaml contracts/openapi.yaml
-	$(CONTRACTS_NPX) $(CONTRACTS_OPENAPI_TS) contracts/openapi.yaml -o contracts/ts/schema.d.ts
+	$(CONTRACTS_NPX) $(CONTRACTS_OPENAPI_TS) contracts/openapi.yaml -o contracts/ts/openapi.d.ts
 
 contracts-verify:
 	@$(MAKE) --no-print-directory -f mk/contracts.mk contracts-lint contracts-build contracts-drift contracts-typecheck contracts-test contracts-cover
@@ -50,8 +50,8 @@ contracts-drift:
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run $(CONTRACTS_OAPI_CODEGEN) -config "$$tmp/oapi-codegen.yaml" contracts/openapi.yaml; \
 	diff -u pkg/api/api.gen.go "$$tmp/api.gen.go"; \
 	echo "contracts: checking contracts/ts drift"; \
-	$(CONTRACTS_NPX) $(CONTRACTS_OPENAPI_TS) contracts/openapi.yaml -o "$$tmp/schema.d.ts" >/dev/null; \
-	diff -u contracts/ts/schema.d.ts "$$tmp/schema.d.ts"; \
+	$(CONTRACTS_NPX) $(CONTRACTS_OPENAPI_TS) contracts/openapi.yaml -o "$$tmp/openapi.d.ts" >/dev/null; \
+	diff -u contracts/ts/openapi.d.ts "$$tmp/openapi.d.ts"; \
 	echo "contracts: generated files are up to date"
 
 contracts-lint:
@@ -62,7 +62,7 @@ contracts-lint:
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run $(CONTRACTS_STATICCHECK) $(CONTRACTS_GO_PKGS)
 
 contracts-typecheck:
-	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict contracts/ts/schema.d.ts
+	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict contracts/ts/openapi.d.ts
 	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict --target es2022 contracts/ts/strict-json.ts
 
 contracts-test:

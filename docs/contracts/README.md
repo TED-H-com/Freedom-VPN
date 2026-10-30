@@ -9,10 +9,10 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 41 endpoints (§14.2 to §14.4 plus D-015) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 44 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
-| TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/schema.d.ts`](../../contracts/ts/schema.d.ts) | generated |
+| TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
 | Valid and invalid examples | [`contracts/examples/`](../../contracts/examples) | hand-written plus generated signed/hashed ones |
 | Cross-language vectors | [`contracts/vectors/`](../../contracts/vectors) ([README](../../contracts/vectors/README.md)) | generated from TEST ONLY seeds |
 | Policy payload snapshots | [`contracts/schemas/policies/`](../../contracts/schemas/policies) | byte-for-byte copies of owner schemas |
@@ -72,11 +72,11 @@ validation semantics. Known differences requiring owner reconciliation:
 | plan / fair_use | Rate integers and plan price lack the safe-integer maximum 9007199254740991; canonicalization and service validation remain mandatory |
 | plan | Exit groups cap 64 vs 100; provider is length-bounded free text vs a code pattern; price ref cap 256 vs 255. Its device-limit description says default 3, while D-016 leaves the production choice pending |
 | dns_profile | Both revision-reference arrays cap 32 vs 50 |
-| domain_rule_set | Rules cap 10000 vs 100000; revision starts at 1 vs structurally allowing 0; reason is free text vs a code pattern; profile_id has explicit 1–64 length bounds |
+| domain_rule_set | Rules cap 10000 vs 100000; revision starts at 1 in both (D-048/D-049 revision 4); reason is free text vs a code pattern; profile_id has explicit 1–64 length bounds |
 | threat_feed | Provider cap 128 vs 100; license/source URLs cap 512 vs 2048; commercial-use evidence cap 500 vs 1000; categories cap 8 |
 | release_support | Approved/serving IDs cap 64 vs 1000; revoked IDs cap 256 vs 1000 |
 
-No copied schema is silently repaired. Cross-field rules in the service table
+Revision 5 synchronizes only the D-058 threat-feed interval default/optionality into both copies; attribution remains nullable. Other copied-schema differences are not silently repaired. Cross-field rules in the service table
 below still apply, as do decimal uint64 bounds and original-byte canonical JSON
 validation before signing or hashing (§14.1).
 
@@ -113,7 +113,7 @@ malformed public key, and missing revocation timestamp.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs41`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs44`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -125,7 +125,7 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   `pattern: '^(0|[1-9][0-9]*)$'` (`'^[1-9][0-9]*$'` where zero is invalid,
   such as `event_seq` and `DomainRule.revision`), `maxLength: 20`, `x-go-type: decstr.U64`,
   `x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}`.
-  Any field named `*_bytes`, `*_seq`, `*generation`, `*revision` or
+  D-056 explicitly bounds `ResolverDocumentRef.size_bytes` to the JSON integer range 1–1048576; it is the only byte-length exception. Any other field named `*_bytes`, `*_seq`, `*generation`, `*revision` or
   `resource_version` must follow it. TypeScript code holds them as strings and
   converts with `BigInt`, never `Number`. [`TestMTR03_DecimalStringConvention`]
 - **Other integers** (schema versions, attempts, counts, bps rates) are JSON
@@ -233,7 +233,7 @@ legacy codes retain their existing HTTP statuses (including DISK_SPACE_LOW
 ## Browser role selector (D-032)
 
 `GET /auth/session` and `POST /auth/logout` are existing browser routes outside
-`/api/v1` and outside the 41-endpoint API. Their query parameter is recorded in
+`/api/v1` and outside the 44-endpoint API. Their query parameter is recorded in
 `openapi.yaml` under `x-fvpn-browser-auth`:
 
 | Parameter | Type | Presence | Cookies |
@@ -246,6 +246,104 @@ does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
 
+## Revision 5
+
+API version **1.1.0** has **44 operations**. Existing valid examples and signing
+vectors remain valid; new examples cover populated and null members. The
+canonical TypeScript output is now `contracts/ts/openapi.d.ts`;
+`schema.d.ts` re-exports it to preserve existing imports.
+
+| Decision | Contract surface | Owning follow-up |
+|---|---|---|
+| D-056 | `DnsServiceConfig.resolver_document`, `ResolverDocumentRef`, `GET /agent/resolver-documents/{document_id}` | Nodes wiring owner (`w3-wire-nodes` follow-up), DNS publishing owner |
+| D-056 | `ObservationReport.dns_policy_evidence`, `DnsPolicyEvidence`, `DnsFeedEvidence` | Agent and DNS applier owners; nodes observation wiring owner |
+| D-057 | `GET /admin/groups`, `POST /admin/groups`, `MemberGroup`, `MemberGroupCreate`, `MemberGroupList` | Nodes wiring owner (`w3-wire-nodes` follow-up) |
+| D-057 | `PublicationRequest.group_ids`, `NodeDetail.group_ids`, `PlanPayload.exit_group_ids` description | Nodes publication and policies owners; portal owner |
+| D-058(a) | `DesiredState.egress_probe`, `EgressProbe`, `EgressProbeTarget` | Desired-state and agent owners |
+| D-058(b) | `NodeCheck.detail` | Agent diagnostic and portal owners |
+| D-058(c) | `PolicyDefinition.threat_feed_status`, `ThreatFeedStatus` | DNS feed/policy read and portal owners |
+| D-058(d) | Optional `ThreatFeedPayload.update_interval_seconds`, default 21600; nullable attribution | Policy validation, persistence and feed scheduler owners |
+| D-058(e) | Version 1.1.0, 44 operations, regenerated Go/TS and signed-state schemas/vectors | Contracts owner (this revision) |
+
+The three new server methods deliberately use the composition fallback through
+`apierr.Write`: **501 NOT_IMPLEMENTED**, retryable false, until the named wiring
+follow-up implements them. They must not ship as stubs in a release. Existing
+producers do not populate the new optional fields in this contract revision.
+
+### Resolver delivery and evidence (D-056)
+
+1. Verify the desired-state envelope and its node/incarnation, expiry and
+   generation before using `dns.resolver_document` (§14.7).
+2. A non-null reference binds `document_id`, `profile_revision_id`, **policy**
+   `generation`, `content_sha256`, and `size_bytes`. Generation is the one that
+   compiled the resolver document, not the desired-state config generation.
+   Absent/null means no profile: apply only the designated resolvers.
+3. Fetch `/api/v1/agent/resolver-documents/{document_id}` using node mTLS. The
+   server authorizes only documents referenced by desired state **issued to
+   this node**, in its current or immediately previous config generation.
+   Missing/unissued documents both return 404 **NOT_FOUND**, retryable false.
+   This additive code preserves the existing `RESOURCE_NOT_FOUND` used elsewhere.
+4. The 200 body is the stored RFC 8785 document bytes, without an envelope,
+   re-encoding, HTML escaping or trailing newline. Headers are
+   `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0`.
+   Bound the read to 1 MiB, verify exact byte length and SHA-256 against the
+   signed reference, then validate and call `node/dns.Apply`. A mismatch fails
+   `dns_policy` and must never partially apply. The pinned strict-server template
+   preserves these bytes; `json.RawMessage` alone would not preserve an Encoder's
+   HTML escaping or appended newline.
+5. Report optional/nullable `dns_policy_evidence` against the document actually
+   applied. `generation` and `content_sha256` must come from that document,
+   never a newer desired state. `applied_at` is nullable; unknown is not zero.
+   Only `outcome=applied` with successful read-back is success; `partial`,
+   `failed`, and `not_run` do not pass the check. Feeds contain only code, hash
+   and rule count, at most 32 with unique codes. They never contain entries or
+   queries. Absent/null evidence means no report, not successful enforcement.
+
+The compiler's concrete document type lives in `internal/dnspublish` (generation
+is stored beside the canonical bytes). The applier currently calls its evidence
+members `policy_generation` and `document_hash`; the adapter maps these to
+`generation` and `content_sha256`, adds the issued document ID, and translates
+verified/apply results into the outcome and nullable time/error. This mapping is
+an owner follow-up; existing producer fields are not renamed.
+
+### Groups, diagnostics and feed status
+
+Groups are immutable member groups (§15.2–§15.3). Discover them with the cursor
+page and exact `code` filter, or create with `Idempotency-Key` and administrator
+CSRF protection. Code and name are unique (409); `exit_count` counts attached
+exits regardless of availability. Renaming means creating another group.
+`PublicationRequest.group_ids` absent preserves membership, `[]` clears it, and
+a supplied list atomically replaces membership together with intent under the
+exit's same `If-Match`. Unknown IDs return 422 with a field detail. The admin
+node detail exposes membership; `MemberExit` is unchanged.
+
+A non-null signed `egress_probe` overrides the local `egress_probe_target`.
+Absent/null retains existing local-or-skip behavior. Targets are 1–4 unique
+TCP endpoints with IP literals; omitted `timeout_ms` means 2000 ms. This does
+not authorize forwarding or relax isolation. Probe identity, team-controlled
+destinations and exact temporary exceptions remain mandatory (§13.9).
+
+`NodeCheck.detail` and feed status messages are limited to 500 characters and
+must be sanitized before reporting: no secrets, subjects, tokens, raw member
+addresses, feed entries, query names, credential-bearing URLs or raw bodies.
+Threat-feed status is available only for `type=threat_feed` and describes its
+active revision. Bootstrap-empty uses null last-good fields/age. Failed refresh
+retains last-good content and increments failures; age remains a decimal string.
+The approved hash is the approved snapshot, not proof of applied feed content.
+Compare it and last-good hash with the actual per-node feed evidence, never
+present desired as applied. Internal lowercase refresh reasons must be mapped
+to public `ErrorCode`; no internal reason is copied directly into that enum.
+
+The per-source feed interval is optional, default **21600 seconds**, within
+300–604800; effective cadence is `max(product cadence, source interval)` (D-054).
+OpenAPI defaults are annotations, not runtime initialization. The generated Go
+field retains `int` with `omitempty` for source compatibility; owners must
+materialize 21600 before validating/persisting/scheduling an omitted interval.
+Explicit zero is rejected at the HTTP boundary. `attribution: null` remains
+valid in the generated type and both payload schemas. The current lower-level
+`dnspolicy.ValidateSource` still rejects blank attribution notes after policy
+conversion; resolving that behavior is a policy/DNS owner follow-up.
+
 ## Service-enforced rules
 
 Schema acceptance is only structural validation. The following owners must
@@ -257,6 +355,13 @@ them. `reasons.json` names the owner and rule for each fixture.
 
 | Rule | Owning service | Spec |
 |---|---|---|
+| Resolver fetch is limited to documents actually issued to this node at current/previous config generation; return identical NOT_FOUND for unknown/unissued IDs | nodes wiring / desired-state issuer | §14.7, D-056 |
+| Resolver bytes remain immutable/canonical; signed digest, length, profile and policy generation bind them; verify before apply, no partial apply on mismatch | DNS publisher / agent / DNS applier | §12.3–§12.4, D-056 |
+| Evidence binds the actual applied document and unique feed codes; only applied with read-back may pass dns_policy; unknown never becomes zero | agent / nodes observation service | §14.7, D-056 |
+| Group code/name uniqueness; publication membership and intent replace atomically under the exit version; every referenced group exists, with field errors for unknown IDs | nodes publication / policy service | §5.2, §15.2–§15.3, D-057 |
+| Signed probe overrides local config; authenticate dedicated probe identity, control destinations and exact temporary isolation exceptions; apply omitted 2000 ms timeout | desired-state / agent service | §8.1, §13.9, D-058 |
+| Diagnostic messages are sanitized; threat_feed_status only for threat_feed, active revision only, safe internal-error mapping, null bootstrap history, age derived from last success | node agent / DNS feed / policy read services | §12.3, SEC02, D-058 |
+| Materialize omitted source interval as 21600 then use max(product cadence, source interval); nullable attribution must survive policy-to-source conversion | policy service / DNS feed scheduler | §12.3, D-054, D-058 |
 | `gap` is present iff `quality=gap`; `interval_end > interval_start` | usage ledger service | §10.5 |
 | `clear_capacity=true` excludes `capacity` | node service | §14.2 |
 | Fair-use thresholds strictly increase, rates are non-increasing, priority is non-decreasing, every tier is at or above `minimum_rate` in both directions | policy service | §11.1 |
@@ -277,6 +382,10 @@ fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
   `node_capacity`, `dns` resolvers (ISO04) and the current `update` intent
   (§13.10.2), so the node gets the policy content it enforces, not only
   replaceable references (§14.7).
+  Optional, nullable `dns.resolver_document` binds separately fetched canonical
+  bytes; optional, nullable `egress_probe` binds the TCP probe destinations
+  (D-056, D-058). Both are covered by the desired-state signature and the
+  new resolver/probe vector; older vectors remain unchanged.
   Optional `revoked_release_ids` is a unique UUID array signed with the rest of
   the object (D-034). Absent and empty mean no additional revocations. A node
   must refuse installation and stop serving any listed release. This never
@@ -346,7 +455,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the current count of 41 (including D-015);
+1. Find the requirement in the spec. New endpoints change the current count of 44 (including D-015);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -420,10 +529,22 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `POST /agent/lease-renewals` | `renewServingLease` | Agent mTLS | 200 | §14.4, §16.3, §9.2 | ENT01 ENT02 ISO02 SEC01 |
 | `POST /webhooks/{provider}` | `receiveProviderWebhook` | providerWebhookSignature | 200,202 | §14.4, §9.3 | BILL01 BILL03 |
 
+| `GET /agent/resolver-documents/{document_id}` | `getResolverDocument` | Agent mTLS | 200 | §14.4, §14.7, §12.3, D-056 | DNS01 DNS03 SEC01 |
+| `GET /admin/groups` | `listAdminGroups` | Admin | 200 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
+| `POST /admin/groups` | `createAdminGroup` | Admin | 201 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
+
 ## Spec decisions recorded in the contract
 
+- **D-056:** deliver resolver content separately using a signed reference and
+  node-scoped mTLS fetch; preserve exact bytes and report document-bound evidence.
+- **D-057:** add immutable member-group list/create; no PATCH/DELETE. Rename by
+  creating another group. Publication atomically replaces optional membership.
+- **D-058:** sign probe configuration, expose bounded diagnostic/feed metadata,
+  and default optional source refresh cadence to 21600 seconds. Version 1.1.0
+  has 44 operations. Spec prose amendments remain pending authorization.
+
 - The update batch targets page is part of `GET /admin/update-batches/{batch_id}`
-  (`targets`, `next_cursor`) under D-007; the D-015 bootstrap addition makes 41 endpoints. §13.10.4's
+  (`targets`, `next_cursor`) under D-007; D-015 adds bootstrap and D-056/D-057 add resolver delivery and groups, making 44 endpoints. §13.10.4's
   `targets_url` points to that resource.
 - `POST /agent/usage-batches` returns 200 with per-event results: §10.6's 409
   (same key, different hash) and 422 (invalid event) outcomes are reported per

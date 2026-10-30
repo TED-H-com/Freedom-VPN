@@ -7,3 +7,7 @@ generate:
   models: false
 compatibility:
   always-prefix-enum-values: true
+
+output-options:
+  user-templates:
+    strict/strict-interface.tmpl: contracts/codegen/strict-interface.tmpl
