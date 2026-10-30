@@ -100,6 +100,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater follow-up 3: review re-run regressions (revoked-current rescue path, artifact origin allowlist D-046, extract caps and ./ root D-047, resume semantics, nodelock start time) | WP09 | done (#47) |
 | r2-updater-review confirmation: R-01..R-05 against main after updater follow-up 3 (read-only) | WP09 | done (5/5 closed; 2 minor → updater follow-up 4) |
 | w2-updater follow-up 4: reject internal `..` segments at extract, one origin-allowlist rule for IP literals and DNS names, ForceQuery/`#` entries | WP09 | done (#54) |
+| w2-updater follow-up 5: challenge-bound health attestation from the candidate agent for isolation, DNS and tunnel checks (D-053); first health report retained in the journal | WP09 | done (#78) |
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
 | r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | done (16/16 closed; 2 wiring findings → nodes httpwire follow-up 3, usage replay follow-up 3) |
 | w3-wire-nodes follow-up 3: real wiring behind the httpwire 503 gates (member policies in desired state, keyed agent receipts, transactional lease renewal) | WP04, WP05 | done (#49; publish gate remains until the exits seam lands) |
