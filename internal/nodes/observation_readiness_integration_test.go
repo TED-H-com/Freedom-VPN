@@ -675,3 +675,248 @@ func TestReadiness_PreservedAcrossConcurrentDesiredGenerationAdvance(t *testing.
 	_ = context.Background
 	_ = json.Marshal
 }
+
+func TestD067_AwaitingMemberGrantsReadModelAndOperationProjection(t *testing.T) {
+	r, _, report := nodestest.BaselineObservation(t, "../../contracts/examples/valid/ObservationReport.awaiting-member-grants.json")
+	ctx := t.Context()
+
+	// Restore the awaiting_member_grants example posture on the enrolled node's baseline report.
+	leaseID := uuid.New()
+	report.ProvisioningState = api.ProvisioningStateReady
+	report.SafetyStatus = api.SafetyStatusPassed
+	report.DataHealth = api.DataHealthHealthy
+	report.MemberForwardingEnabled = false
+	report.ForwardingBlockReasons = []api.ForwardingBlockReason{api.ForwardingBlockReasonAwaitingMemberGrants}
+	report.Lease.LeaseId.Set(leaseID)
+	report.Lease.ExpiresAt.Set(report.ObservedAt.Add(3 * time.Minute))
+	report.Checks = nil
+	for _, name := range []api.NodeCheckName{
+		api.NodeCheckNameInternetOnly,
+		api.NodeCheckNameMeterPath,
+		api.NodeCheckNameTunnelProbe,
+		api.NodeCheckNameLease,
+		api.NodeCheckNameQos,
+		api.NodeCheckNameSourceBinding,
+	} {
+		status := api.HealthCheckStatusNotRun
+		if name == api.NodeCheckNameInternetOnly || name == api.NodeCheckNameLease {
+			status = api.HealthCheckStatusPassed
+		}
+		ch := api.NodeCheck{Name: name, Status: status, ObservedAt: report.ObservedAt}
+		ch.ErrorCode.SetNull()
+		report.Checks = append(report.Checks, ch)
+	}
+
+	// 1. Unknown block reason fails closed with 422 VALIDATION_FAILED.
+	badReport := report
+	badReport.ReportId = uuid.New()
+	badReport.ForwardingBlockReasons = []api.ForwardingBlockReason{api.ForwardingBlockReason("invalid_block_reason")}
+	if _, err := r.Nodes.SubmitObservation(ctx, badReport.NodeId, badReport.NodeIncarnationId, badReport); err == nil {
+		t.Fatal("expected invalid forwarding_block_reason to be rejected")
+	}
+
+	// 2. awaiting_member_grants is accepted and projected as healthy and provisional (not expired),
+	// with member_forwarding_observed=false and publication state unchanged.
+	if _, err := r.Nodes.SubmitObservation(ctx, report.NodeId, report.NodeIncarnationId, report); err != nil {
+		t.Fatalf("SubmitObservation awaiting_member_grants: %v", err)
+	}
+
+	detail, _, err := r.Nodes.GetNode(ctx, report.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode: %v", err)
+	}
+	if detail.ProvisioningState != api.ProvisioningStateReady {
+		t.Fatalf("ProvisioningState = %q, want ready", detail.ProvisioningState)
+	}
+	if detail.SafetyStatus != api.SafetyStatusPassed {
+		t.Fatalf("SafetyStatus = %q, want passed (not expired)", detail.SafetyStatus)
+	}
+	if detail.DataHealth != api.DataHealthHealthy {
+		t.Fatalf("DataHealth = %q, want healthy", detail.DataHealth)
+	}
+	fwd, err := detail.MemberForwardingObserved.Get()
+	if err != nil || fwd {
+		t.Fatalf("MemberForwardingObserved = (%v, %v), want (false, nil)", fwd, err)
+	}
+	if detail.PublicationIntent != api.PublicationIntentUnpublished || detail.PublicationObserved != api.PublicationObservedAbsent {
+		t.Fatalf("publication = (%q, %q), want (unpublished, absent)", detail.PublicationIntent, detail.PublicationObserved)
+	}
+
+	list, err := r.Nodes.ListNodes(ctx, nodes.ListNodesParams{})
+	if err != nil || len(list.Items) != 1 {
+		t.Fatalf("ListNodes: items=%d err=%v", len(list.Items), err)
+	}
+	item := list.Items[0]
+	if item.SafetyStatus != api.SafetyStatusPassed || item.DataHealth != api.DataHealthHealthy || item.ProvisioningState != api.ProvisioningStateReady {
+		t.Fatalf("ListNodes summary = (%s, %s, %s), want (passed, healthy, ready)", item.SafetyStatus, item.DataHealth, item.ProvisioningState)
+	}
+	itemFwd, err := item.MemberForwardingObserved.Get()
+	if err != nil || itemFwd {
+		t.Fatalf("ListNodes MemberForwardingObserved = (%v, %v), want (false, nil)", itemFwd, err)
+	}
+
+	// Verify node_observations.report_payload retains forwarding_block_reasons: ["awaiting_member_grants"]
+	// and lease.member_grant_count == 0.
+	var storedPayload []byte
+	if err := r.Pool.QueryRow(ctx, `SELECT report_payload FROM node_observations WHERE report_id = $1`, report.ReportId).Scan(&storedPayload); err != nil {
+		t.Fatalf("query node_observations.report_payload: %v", err)
+	}
+	var storedReport api.ObservationReport
+	if err := json.Unmarshal(storedPayload, &storedReport); err != nil {
+		t.Fatalf("unmarshal stored report_payload: %v", err)
+	}
+	if len(storedReport.ForwardingBlockReasons) != 1 || storedReport.ForwardingBlockReasons[0] != api.ForwardingBlockReasonAwaitingMemberGrants {
+		t.Fatalf("stored ForwardingBlockReasons = %v, want [awaiting_member_grants]", storedReport.ForwardingBlockReasons)
+	}
+	if storedLeaseID, err := storedReport.Lease.LeaseId.Get(); err != nil || storedLeaseID != leaseID {
+		t.Fatalf("stored Lease.LeaseId = (%v, %v), want %v", storedLeaseID, err, leaseID)
+	}
+
+	// 3. Verify operation completion and publication gate behavior under awaiting_member_grants:
+	// Publish the node with a member group, grant a member, and authorize a device so bindings are desired.
+	now := report.ObservedAt.UTC()
+	adminID := uuid.New()
+	var grp api.MemberGroup
+	if err := db.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var gErr error
+		grp, gErr = r.Nodes.CreateGroupTx(ctx, tx, "admin:"+adminID.String(), nil, api.MemberGroupCreate{
+			Code: "grp-d067",
+			Name: "D067 Group",
+		})
+		return gErr
+	}); err != nil {
+		t.Fatalf("CreateGroupTx: %v", err)
+	}
+
+	compiler := r.DesiredStateCompiler()
+	exitsSvc := exits.NewService(r.Pool, compiler, nil, exits.WithClock(func() time.Time { return now }))
+	_, etag, err := r.Nodes.GetNode(ctx, report.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode for publish: %v", err)
+	}
+	groupIDs := []uuid.UUID{grp.GroupId}
+	pubOp, _, err := exitsSvc.SetPublication(ctx, exits.SetPublicationParams{
+		NodeID:         report.NodeId,
+		Principal:      "admin:" + adminID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        etag,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentPublished,
+			Reason:            "TEST ONLY D-067 publish",
+			GroupIds:          &groupIDs,
+		},
+	})
+	if err != nil {
+		t.Fatalf("SetPublication: %v", err)
+	}
+
+	memberID := uuid.New()
+	identityID := uuid.New()
+	planID := uuid.New()
+	planRevID := uuid.New()
+	if _, err := r.Pool.Exec(ctx, `INSERT INTO members (id, status) VALUES ($1, 'active')`, memberID); err != nil {
+		t.Fatalf("insert member: %v", err)
+	}
+	if _, err := r.Pool.Exec(ctx, `INSERT INTO identity_bindings (id, member_id, issuer, client_scope, subject, stable_claim_ref, binding_method, verified_at) VALUES ($1, $2, 'https://id.example.invalid', 'portal', 'TEST ONLY d067 user', 'sub', 'oidc', $3)`, identityID, memberID, now); err != nil {
+		t.Fatalf("insert identity_binding: %v", err)
+	}
+	if _, err := r.Pool.Exec(ctx, `INSERT INTO netbird_user_bindings (id, member_id, deployment_id, external_user_id, identity_binding_id, mapping_proof, revision, verified_at) VALUES ($1, $2, $3, 'TEST ONLY d067 user', $4, 'shared_issuer_public_subject:https://id.example.invalid', 1, $5)`, uuid.New(), memberID, r.Config.NetBirdDeployment, identityID, now); err != nil {
+		t.Fatalf("insert netbird_user_binding: %v", err)
+	}
+	if _, err := r.Pool.Exec(ctx, `INSERT INTO plans (id, code) VALUES ($1, 'plan-d067')`, planID); err != nil {
+		t.Fatalf("insert plan: %v", err)
+	}
+	if _, err := r.Pool.Exec(ctx, `INSERT INTO plan_revisions (id, plan_id, revision, device_limit, exit_group_ids, schema_version, payload) VALUES ($1, $2, 1, 3, $3, 1, '{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, planRevID, planID, []uuid.UUID{grp.GroupId}); err != nil {
+		t.Fatalf("insert plan_revision: %v", err)
+	}
+
+	entStore, err := entitlement.NewStore(entitlement.TestConfig())
+	if err != nil {
+		t.Fatalf("entitlement.NewStore: %v", err)
+	}
+	entStore.Now = func() time.Time { return now }
+	membersSvc := &members.Service{Pool: r.Pool, Entitlements: entStore}
+	devicesSvc := &devices.Service{Pool: r.Pool, Entitlements: entStore}
+
+	validFrom := now.Add(-time.Hour)
+	validUntil := now.Add(12 * time.Hour)
+	if _, err := membersSvc.Grant(ctx, entitlement.Command{
+		Actor: entitlement.Actor{Role: "admin", ID: adminID, RequestID: uuid.New()},
+		Key:   uuid.New(),
+	}, memberID, api.GrantCreateRequest{
+		Source:         api.GrantSourceAdminGrant,
+		ValidFrom:      &validFrom,
+		ValidUntil:     validUntil,
+		Reason:         "TEST ONLY D-067 grant",
+		PlanRevisionId: &planRevID,
+	}); err != nil {
+		t.Fatalf("members.Grant: %v", err)
+	}
+	devOut, err := devicesSvc.AuthorizeDevice(ctx, entitlement.Command{
+		Actor: entitlement.Actor{Role: "system", ID: uuid.New(), RequestID: uuid.New()},
+		Key:   uuid.New(),
+	}, devices.Peer{
+		DeploymentID:   r.Config.NetBirdDeployment,
+		ID:             "TEST ONLY d067 peer",
+		ExternalUserID: "TEST ONLY d067 user",
+		OverlayScope:   "TEST ONLY",
+		OverlayIP:      netip.MustParseAddr("100.64.0.77"),
+		Platform:       "linux",
+	})
+	if err != nil || devOut.OperationID == nil {
+		t.Fatalf("AuthorizeDevice: %v", err)
+	}
+	if err := db.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var auditID uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT id FROM audit_events LIMIT 1`).Scan(&auditID); err != nil {
+			return err
+		}
+		return entitlement.TransitionOperation(ctx, tx, *devOut.OperationID, "netbird", api.OperationStepStatusSucceeded, &operations.Evidence{
+			Reference:  "audit_event:" + auditID.String(),
+			ObservedAt: now,
+		})
+	}); err != nil {
+		t.Fatalf("TransitionOperation netbird: %v", err)
+	}
+
+	comp, err := compiler.Compile(ctx, report.NodeId)
+	if err != nil {
+		t.Fatalf("Compile: %v", err)
+	}
+	report.ReportId = uuid.New()
+	report.ObservedAt = now.Add(time.Second)
+	report.AppliedConfigGeneration.Set(comp.Envelope.Signed.ConfigGeneration)
+	for i := range report.Checks {
+		report.Checks[i].ObservedAt = report.ObservedAt
+	}
+	if _, err := r.Nodes.SubmitObservation(ctx, report.NodeId, report.NodeIncarnationId, report); err != nil {
+		t.Fatalf("SubmitObservation post-compile awaiting_member_grants: %v", err)
+	}
+
+	// Verify node.publish operation: agent_policy succeeded, data_path_probe remains pending (forwarding_disabled).
+	pubOpAfter, err := r.Nodes.GetOperation(ctx, pubOp.OperationId)
+	if err != nil {
+		t.Fatalf("GetOperation publish: %v", err)
+	}
+	var gotAgentPolicy, gotDataProbe api.OperationStepStatus
+	for _, st := range pubOpAfter.Steps {
+		switch st.Name {
+		case nodes.StepAgentPolicy:
+			gotAgentPolicy = st.Status
+		case nodes.StepDataPathProbe:
+			gotDataProbe = st.Status
+		}
+	}
+	if gotAgentPolicy != api.OperationStepStatusSucceeded || gotDataProbe != api.OperationStepStatusPending {
+		t.Fatalf("publish steps under awaiting_member_grants = (agent_policy=%s, data_path_probe=%s), want (succeeded, pending)", gotAgentPolicy, gotDataProbe)
+	}
+
+	// Verify member_device operation (follow-up 18): nodes step advances to succeeded because node applied generation with passed safety.
+	devOpAfter, err := r.Nodes.GetOperation(ctx, *devOut.OperationID)
+	if err != nil {
+		t.Fatalf("GetOperation authorize_device: %v", err)
+	}
+	if devOpAfter.Status != api.OperationStatusSucceeded {
+		t.Fatalf("authorize_device operation status under awaiting_member_grants = %s, want succeeded (steps=%+v)", devOpAfter.Status, devOpAfter.Steps)
+	}
+}
