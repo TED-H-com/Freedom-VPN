@@ -27,3 +27,33 @@ func TestSEC02_TypedAuditConstruction(t *testing.T) {
 		t.Fatal("zero event accepted")
 	}
 }
+
+// D-059 / §15.2, §16.4: groups have their own audit resource; the generated
+// enum is the allowlist for both typed NewEvent and legacy Append callers.
+func TestAPI01_MemberGroupAuditResource(t *testing.T) {
+	groupID := uuid.New()
+	entry := Entry{
+		Actor:    Actor{Type: api.AuditEventActorTypeAdmin, ID: uuid.New()},
+		Action:   "group.create",
+		Resource: api.ResourceRef{Type: api.ResourceTypeMemberGroup, Id: groupID},
+		Result:   api.AuditEventResultSucceeded,
+		After:    map[string]any{"code": "standard", "name": "Standard exits"},
+		Fields:   []string{"code", "name"},
+	}
+	event, err := NewEvent(entry)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if event.row.Resource != "member_group:"+groupID.String() || event.row.Action != "group.create" || event.row.Result != "succeeded" {
+		t.Fatalf("incorrect group audit metadata: %+v", event.row)
+	}
+	if event.row.OperationID != nil {
+		t.Fatal("synchronous group creation acquired an operation")
+	}
+	for _, unknown := range []api.ResourceType{"group", "member_groups", "unknown"} {
+		entry.Resource.Type = unknown
+		if _, err := NewEvent(entry); err == nil {
+			t.Fatalf("unapproved resource %q accepted", unknown)
+		}
+	}
+}

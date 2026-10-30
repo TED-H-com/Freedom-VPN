@@ -1731,6 +1731,7 @@ const (
 	ResourceTypeFleetConfig      ResourceType = "fleet_config"
 	ResourceTypeMember           ResourceType = "member"
 	ResourceTypeMemberDevice     ResourceType = "member_device"
+	ResourceTypeMemberGroup      ResourceType = "member_group"
 	ResourceTypeNode             ResourceType = "node"
 	ResourceTypePolicyDefinition ResourceType = "policy_definition"
 	ResourceTypePolicyRevision   ResourceType = "policy_revision"
@@ -1757,6 +1758,8 @@ func (e ResourceType) Valid() bool {
 	case ResourceTypeMember:
 		return true
 	case ResourceTypeMemberDevice:
+		return true
+	case ResourceTypeMemberGroup:
 		return true
 	case ResourceTypeNode:
 		return true

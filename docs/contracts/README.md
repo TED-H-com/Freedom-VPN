@@ -246,6 +246,20 @@ does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
 
+## Revision 5.1
+
+API version **1.1.1** adds `ResourceType.member_group` (D-059, §15.2, §16.4)
+for immutable member-group audit events such as `group.create`. The endpoint
+count remains **44** and the endpoint table is unchanged. No OperationKind is
+added: group creation returns synchronous 201.
+
+[The valid AuditEvent example](../../contracts/examples/valid/AuditEvent.group-create.json)
+uses `resource: {"type": "member_group", "id": "<uuid>"}` on the wire;
+`internal/audit.NewEvent` stores it as `member_group:<uuid>`. Its existing
+validation uses the regenerated `ResourceType.Valid()` and continues to reject
+unknown resource types. The group handler owner can now use
+`api.ResourceTypeMemberGroup` without a nearest-match resource type.
+
 ## Revision 5
 
 API version **1.1.0** has **44 operations**. Existing valid examples and signing

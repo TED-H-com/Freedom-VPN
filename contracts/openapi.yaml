@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Freedom VPN Control API
-  version: 1.1.0
+  version: 1.1.1
   description: |
     Contract for the Freedom VPN central control API (Project Spec v1.0, §14).
     There are 44 endpoints, including D-015 bootstrap and D-056/D-057 delivery/groups.
@@ -2800,7 +2800,7 @@ components:
     ResourceType:
       type: string
       description: Kinds of resources referenced by operations and audit events.
-      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config, admin_identity]
+      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config, admin_identity, member_group]
     ResourceRef:
       type: object
       required: [type, id]

@@ -991,7 +991,7 @@ export interface components {
          * @description Kinds of resources referenced by operations and audit events.
          * @enum {string}
          */
-        ResourceType: "node" | "enrollment" | "exit" | "member" | "member_device" | "entitlement_grant" | "policy_definition" | "policy_revision" | "release" | "update_batch" | "update_target" | "checkout_session" | "fleet_config" | "admin_identity";
+        ResourceType: "node" | "enrollment" | "exit" | "member" | "member_device" | "entitlement_grant" | "policy_definition" | "policy_revision" | "release" | "update_batch" | "update_target" | "checkout_session" | "fleet_config" | "admin_identity" | "member_group";
         ResourceRef: {
             type: components["schemas"]["ResourceType"];
             /** Format: uuid */
