@@ -81,7 +81,7 @@ All administrative browser sessions require OIDC authentication with MFA (`amr: 
 
 ---
 
-## 2. How to Read Operations, Audit Events, and OpenAPI 1.1.1 Contract Status (`§14.4`, `§14.5`, `§15.3`, `D-029`, `D-056`, `D-057`, `D-059`)
+## 2. How to Read Operations, Audit Events, and OpenAPI Contract Status (`§14.4`, `§14.5`, `§15.3`, `D-029`, `D-056`, `D-057`, `D-059`)
 
 ### 2.1 Asynchronous Operations (`GET /api/v1/admin/operations/{operation_id}`, `GET /api/v1/member/operations/{operation_id}`)
 
@@ -97,10 +97,12 @@ Side-effecting commands that touch external systems (NetBird, AdGuard Home, node
 - **Database Guard (`F-01`, `00005_evidence_and_deadlines.sql`)**:
   An operation row in `operations` cannot transition to `status = 'succeeded'` unless its JSONB `steps` array and `observed_refs` array are non-empty and every step with `required = true` has `status = 'succeeded'` and a non-empty `observed` evidence object (read-back proof from NetBird, AdGuard Home, or node observation).
 
+The admin operation view exposes only bounded step failure causes, including `member_forwarding_unconfirmed`, `desired_state_unavailable`, the publication/read-back vocabulary, and `publish_rejected:<400..599>`. Other stored messages, and every member operation view, use `Step failed; quote the operation ID.`; a generic message is not evidence that no internal cause was recorded. See [control operations](../control/OPERATIONS.md) and `internal/operations/operations.go` for the allowlist.
+
 Inspecting an operation via API `[Verified on dev/test stack]`:
 ```bash
 curl -fsS "https://vpn.example.com:8443/api/v1/admin/operations/${OPERATION_ID}" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}"
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}"
 ```
 
 ### 2.2 Audit Events (`GET /api/v1/admin/audit-events`)
@@ -117,26 +119,29 @@ Every administrative, member, agent, or system mutation appends an immutable row
 Querying audit events filtered by resource and action `[Verified on dev/test stack]`:
 ```bash
 curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:0196ed00-0000-7000-8000-000000000301&limit=20" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}"
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}"
 ```
 
-### 2.3 OpenAPI 1.1.1 Contract Inventory (`44` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
+### 2.3 OpenAPI Contract Inventory (`44` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
 
-`contracts/openapi.yaml` (`version: 1.1.1`, Revisions 5 and 5.1) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
+`contracts/openapi.yaml` (OpenAPI `1.2.0`, revision 6) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
 - **Member Groups (`GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, `D-057`, `D-059`)**:
   `CreateAdminGroup` writes an immutable `member_groups` row (unique `code` and `name`), records a typed `group.create` audit event on `member_group:<id>`, and stores the idempotent `201 MemberGroup` receipt in one transaction (`replay` returns the original `201` body). `ListAdminGroups` orders by `code`, supports exact `code` filtering and cursor pagination, and counts every attached exit in `exit_count` (including unpublished or offline exits).
 - **Authenticated Resolver Document Delivery (`GET /api/v1/agent/resolver-documents/{document_id}`, `D-056`)**:
-  `GetResolverDocument` authorizes the mTLS-authenticated node's current incarnation and current or immediately previous desired-state generation before consulting `nodes.ResolverDocumentSource` (`store.NewDocumentReader(pool)`). Unknown and unissued document IDs both return `404 NOT_FOUND`. Validated responses stream the exact canonical RFC 8785 JSON bytes (`<= 1 MiB`) with `ETag: "sha256:<hex>"`. *(See `docs/nodes/WIRING.md` §Resolver documents, group membership and observations for the current desired-state compiler input-hook boundary.)*
+  `GetResolverDocument` authorizes the mTLS-authenticated node's current incarnation and current or immediately previous desired-state generation before consulting `nodes.ResolverDocumentSource` (`store.NewDocumentReader(pool)`). Unknown and unissued document IDs both return `404 NOT_FOUND`. Validated responses stream the exact canonical RFC 8785 JSON bytes (`<= 1 MiB`) with `ETag: "sha256:<hex>"`. See §5.1 below and [node wiring](../nodes/WIRING.md) for signed issuance and periodic reconciliation.
 
 ---
 
 ## 3. Enrolling, Classifying, Publishing, Revoking, and Retiring Nodes (`§6`, `§7`, `§14.5`, `D-055`–`D-058`, `D-061`)
+
+Portal pointers: `/admin/groups` lists and creates member groups; `/admin/nodes/{node_id}` shows attached groups and submits replacement attachments with publication under `If-Match`. Its checks table shows sanitized `NodeCheck.detail`. `/admin/policies/dns` shows threat-feed refresh status and the revision cadence. [Portal README](../portal/README.md) and [portal operations](../portal/OPERATIONS.md) remain authoritative for portal behavior; group IDs/codes are admin-only.
 
 ### 3.1 Enrolling a New Node or Reinstalling an Existing Node (`POST /api/v1/admin/enrollments`)
 
 - **New Node**: Omit `node_id`. Set `delivery: "installer"` (default 15-minute TTL / `900s`) or `"preinstalled"` (default 7-day TTL / `604800s`), plus optional `name`, `region`, `notes`, and `member_group_ids`.
 - **Bootstrap & One-Off NetBird Correlation Group (`D-055`, `docs/nodes/WIRING.md`)**:
   When the enrolled node calls `POST /api/v1/agent/bootstrap` over mTLS, central (`node.provision.requested`) creates a single-use NetBird setup key (`usage_limit=1`, non-ephemeral) whose `auto_groups` contain `fvpn-unpublished-nodes` and a dedicated empty per-enrollment correlation group (`fvpn-enroll-peer-<hash>`). The worker's `node.peer.discover` handler (`DiscoverNodePeer`) correlates the unique non-ephemeral, userless peer in that correlation group without hostname, address, or timing inference, records `node:<node>:<incarnation>` in `external_bindings`, detaches and deletes the temporary correlation group with read-back, and commits `peer_readback`.
+- **Discovery conflicts and withdrawal**: `correlation_unavailable_revoke_and_re_enroll` means the attempt has lost safe correlation; revoke that attempt and re-enroll. Never infer a peer from its hostname or IP. Revocation reads back deletion of the uniquely correlated peer even before discovery records `peer_id`; ambiguous membership fails closed and leaves evidence for investigation. See [node wiring](../nodes/WIRING.md#d-055-adversarial-read-back-and-withdrawal).
 - **Reinstalling an Existing Node (`§6.2`, `00111_pki_reinstall.sql`, `AT07`)**:
   1. First **revoke** the node's current incarnation (`POST /api/v1/admin/nodes/{node_id}/revoke`) so no active incarnation remains (`409 NODE_INCARNATION_ACTIVE` is returned if an incarnation is still active; `409 NODE_RETIRED` if the node was permanently retired).
   2. Call `POST /api/v1/admin/enrollments` with `"node_id": "<existing_node_uuid>"` and `"delivery": "installer"`.
@@ -149,7 +154,8 @@ First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the respo
 `[Verified on dev/test stack]`
 ```bash
 curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -173,14 +179,15 @@ curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}" 
 
 Exit publication controls whether member devices route traffic through the node (`§5.2`, `§7.3`, `D-057`, `docs/nodes/WIRING.md`):
 - `"published"`: Creates/enables the NetBird exit route (`0.0.0.0/0`) and `member-to-exit` policy for the exit's attached `exit_groups` (`group_ids` / `member_group_ids`), and sets `publication_intent: "published"` in the node's signed desired state. Requires the node to have a valid incarnation, `provisioning_state = "ready"`, an approved serving release (`409 MINIMUM_VERSION_VIOLATION` or `409 STATE_CONFLICT` otherwise), and non-empty `exit_groups` so `netbird_route_readback` can complete.
-  - **Atomic group attachment (`D-057`, `exits.SetPublicationTx`):** `PublicationRequest.group_ids` is persisted atomically under the node/exit locks and `If-Match` alongside the publication intent, single generation/version advance, operation, outbox event, and `exit:<uuid>` audit row. Omitting `group_ids` preserves existing membership, `[]` clears it, and a non-empty array replaces it (`422` with `/group_ids` detail if any group UUID is unknown). `NodeDetail` exposes the sorted membership in both `group_ids` and `member_group_ids`.
+  - **Atomic group attachment (`D-057`, `exits.SetPublicationTx`):** `PublicationRequest.group_ids` is persisted atomically under the node/exit locks and `If-Match` alongside the publication intent, single generation/version advance, operation, outbox event, and `exit:<uuid>` audit row. Omitting `group_ids` preserves existing membership, `[]` clears it, and a non-empty array replaces it (`422` with `/group_ids` detail if any group UUID is unknown). `NodeDetail` exposes the sorted membership in both `group_ids` and `member_group_ids`. A group disappearing after validation also returns `422 VALIDATION_FAILED`, detail path `/group_ids`, message `unknown group`; the entire membership/publication transaction rolls back. Refresh the groups and node ETag before correcting and resubmitting.
 - `"disabled"`: Temporarily removes the node from member exit routing (`node.disable`) while keeping the node enrolled and online for diagnostics or updates.
 - `"unpublished"`: Withdraws the exit publication (`node.unpublish`).
 
 `[Verified on dev/test stack]`
 ```bash
 curl -fsS -X PUT "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/publication" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -192,13 +199,23 @@ curl -fsS -X PUT "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/pub
     "reason": "Exit readiness checks verified"
   }'
 ```
-Always poll the returned `Operation` (`GET /api/v1/admin/operations/{operation_id}`) until `status == "succeeded"` and `publication_observed == "active"`.
+Poll the returned operation and node detail; completion requires `status == "succeeded"` and `publication_observed == "active"`. A failed operation needs investigation, not indefinite polling.
+
+**Publication stuck on `member_forwarding_unconfirmed` (SECOPS-11):** `data_path_probe` fails with `NODE_NOT_SERVICEABLE` unless the current incarnation's selected observation satisfies `PublicationForwardingEvidence`. Check the following in node detail and the node's current report:
+
+1. The agent reports `member_forwarding_enabled: true`, `provisioning_state: ready`, and a nonzero `applied_config_generation` at least as new as the operation's requested generation.
+2. `lease.lease_id` is a nonzero UUID, `lease.expires_at` is still in the future, `tunnel_probe`, `lease`, `qos`, and `source_binding` all pass, `data_health` is `healthy`, and `safety_status` is `passed`.
+3. Investigate failing checks, missing/current device bindings, the serving lease, capacity and resolver apply; a healthy baseline or connected tunnel alone cannot complete publication. Confirm `netbird_route_readback` separately and retain the operation ID and bounded cause when escalating.
+
+The publication gate is agent evidence that forwarding is armed, not a traffic measurement. Confirm real admitted traffic separately before claiming service availability. [Node runtime checks](../node/README.md) and [node wiring](../nodes/WIRING.md) explain the gates; the dated [forwarding record](../e2e/runs/2026-10-30/forwarding.json) remains blocked on serving prerequisites.
 
 ### 3.4 Node Egress Probe & Sanitized Check Details (`D-058a`, `D-058b`, `node/agent/probe.go`)
 
 Each node's observation report (`POST /api/v1/agent/observations`) includes three required checks (`internet_only`, `dns_policy`, `tunnel_probe`):
 - **Signed `egress_probe` precedence (`D-058a`)**: When `DesiredState.egress_probe` is non-null on an in-force desired state (`1..4` TCP IP-literal targets, `timeout_ms` `100..10000` default `2000` ms), `fvpn-agent` dials every listed target and ignores the local `/etc/vpn-node/agent.json:egress_probe_target`. If a signed `egress_probe` is structurally invalid, `tunnel_probe` fails closed (`status: "failed"`, `data_health: "degraded"`) without falling back to the local target. When `DesiredState.egress_probe` is null or absent, the agent dials `egress_probe_target` if configured.
 - **Sanitized `NodeCheck.detail` (`D-058b`)**: `NodeCheck.detail` is bounded to `1..500` single-line printable ASCII characters and sanitized on both agent and central ingest so URLs, tokens, secret keys, file paths, SQL, and stack traces never enter `node_observations` or the Admin Portal. For `tunnel_probe`, `detail` reports `"Egress probe used the signed targets."`, `"Egress probe used the local target."`, `"Egress probe used no extra target."`, or `"Signed egress probe was rejected."`.
+
+Node detail also includes typed `dns_policy_evidence` from the selected current-incarnation observation. The admin node page labels it as node-reported and shows document ID, digest, generation, outcome, applied time, error code and per-feed evidence. `null` means not reported; neither a newer desired policy nor successful document delivery is substituted as proof of apply. Members see the explanation at `/member/dns-protection`; support must inspect the admin evidence for them.
 
 ### 3.5 Revoking (`POST .../revoke`) vs. Retiring (`DELETE /api/v1/admin/nodes/{node_id}`)
 
@@ -210,7 +227,8 @@ Each node's observation report (`POST /api/v1/agent/observations`) includes thre
 `[Verified on dev/test stack]`
 ```bash
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/revoke" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -228,7 +246,8 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/re
    `[Verified on dev/test stack]`
    ```bash
    curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/releases" \
-     -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+     -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+     -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
      -H "Idempotency-Key: $(uuidgen)" \
      -H "Content-Type: application/json" \
      -d "{
@@ -245,7 +264,8 @@ In v1, fleet updates use `scope: "all_nodes"` and `set_fleet_default: true` (`§
 `[Verified on dev/test stack]`
 ```bash
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d "{
@@ -265,10 +285,12 @@ When `fvpn-updater` executes a signed `UpdateIntent`:
 2. **Switch & `D-053` Challenge-Response Health Attestation**:
    - Atomically switches `/opt/vpn-node/current` to `releases/<target_release_id>`, writes `/var/lib/vpn-node/update-journal/health-challenge.json` with a random 64-hex `nonce`, `release_id`, `issued_at`, and `expires_at` (`HealthChallengeTTL = 45s`), and restarts `fvpn-agent`.
    - Polls `/var/lib/vpn-node/update-journal/health-attest.json` every `250ms` for up to `30s` (`HealthAttestWait = 30s`) across up to `8` check attempts (`CheckInterval = 2s`).
-   - All five health checks (`agent_process`, `control_channel`, `nftables_baseline`, `netbird_client`, `dns_resolver_path`) must report `"passed"`, `release_id` and `nonce` must match the challenge, `netbird_version` must equal `compatibility.pinned_netbird_version` (`0.82.0`), and `policy_generation` must be a valid decimal string (`> 0` when published).
+   - All five `UpdateHealth` checks (`processes`, `identity_and_state`, `internet_only`, `dns_policy`, `tunnel_probe`) must report `"passed"`. The attestation must match the live challenge, release, transaction, node, incarnation and boot IDs, its nonce and validity window; observed agent and NetBird versions must match the manifest components. See [health attestation](../updates/node-health-attestation.md) for the exact file contract.
 3. **Automatic Rollback & Fail-Closed Latch (`AT26`, `UPD03`–`UPD05`)**:
    - If health attestation fails, `fvpn-updater` rolls `/opt/vpn-node/current` back to `last_good_release_id` (up to `3` attempts, `RollbackInterval = 1s`) **only** if `last_good_release_id` is still in `serving_release_ids`, not in `revoked_release_ids`, and passes its own fresh `D-053` challenge-response health attestation (`status: "rolled_back"`, exit code `1`).
    - If no valid rollback target exists or rollback health attestation fails, `fvpn-updater` writes `/var/lib/vpn-node/update-journal/forwarding.blocked`, forces the fail-closed `inet fvpn` baseline (blocking all member forwarding while keeping control/SSH up), and records `status: "failed"`, `recovery_required: true`, `error_code: "ROLLBACK_FAILED"` (exit code `2`).
+
+**Bounded synthetic probes (§13.9, D-063):** A health challenge may name a dedicated synthetic peer and exact IPv4 `/32` source/destination sockets. The agent can temporarily install that exception in serving or fail-closed rules, expiring at the earlier of the challenge deadline and 300 seconds and removing it after the probe. Member peers/addresses and unsafe destinations are refused; `probe_up`/`probe_down` counters are excluded from member usage. The watchdog baseline has no exception. The current updater challenge issuer still omits `probe`, so this support does not establish that ordinary updates exercise it. See [node runtime](../node/README.md#health-attestation-d-053).
 
 ### 4.4 Monitoring Targets and Handling `needs_attention` & `unconfirmed` (`GET /api/v1/admin/update-batches/{batch_id}`)
 
@@ -276,13 +298,30 @@ When `fvpn-updater` executes a signed `UpdateIntent`:
 
 | Flag / State | Meaning | Operator Action |
 |---|---|---|
-| **`unconfirmed: true`** | The node was dispatched an update intent (`queued` / `dispatched` / `running`), or its heartbeat shows the new release, **but** central has not yet received a signed/authenticated `POST /api/v1/agent/update-results` receipt confirming terminal completion and `policy_generation` (`D-043`). | 1. Check if the node is online (`GET /api/v1/admin/nodes/{node_id}`).<br>2. If the node completed the update while central was unreachable, `fvpn-agent` / `fvpn-updater flush` will automatically re-submit the journaled result from `/var/lib/vpn-node/update-journal` on its next poll.<br>3. On the node, you can trigger immediate result delivery with `/opt/vpn-node/current/fvpn-updater flush -config /etc/vpn-node/updater.json`. |
-| **`needs_attention: true`** | Set when any of the following holds:<br>• Target state is `failed`, `rolled_back`, or `recovery_required`<br>• Target reported `recovery_required: true` in its `UpdateResult`<br>• Target has been in a non-terminal state longer than `nodes.json:stuck_seconds` (`900s`) without progress. | 1. Inspect `last_error_code`, `stage`, and `recovery_required` on the target.<br>2. **Transient failure** (`ARTIFACT_FETCH_FAILED`, `DISK_SPACE_LOW` after freeing disk, `AUTHORIZATION_EXPIRED`, `UPDATE_BUSY`): Retry via `POST /api/v1/admin/update-batches/{batch_id}/retry` (increments `attempt` and issues a fresh `authorization_expires_at`).<br>3. **`rolled_back`**: Node automatically rolled back to `last_good_release_id` and restored member forwarding if `last_good` is still in `serving_release_ids` (`AT26`). Inspect binary/health-check logs before retrying.<br>4. **`recovery_required: true`** (rollback also failed or current release was revoked with no valid rollback target): Node has fail-closed member forwarding (`forwarding.blocked` latch set, exit code `2`). Log into the host or reinstall the node via `POST /api/v1/admin/nodes/{node_id}/revoke` + `POST /api/v1/admin/enrollments` (`node_id` set). |
+| **`unconfirmed: true`** | Central lacks a sufficiently recent observation for this job's exact generation and execution incarnation (or the job has not been issued). A null or newer generation cannot confirm this job. Even a successful result can remain unconfirmed. | Compare `last_result_at`, `last_observed_at`, the current job and the node's `update` object. Check the agent's observation delivery and local journal. Flushing a result alone does not supply the required observation. |
+| **`needs_attention: true`** | Failed, rolled-back or blocked job; stored attention flag (including applying/checking beyond configured `nodes.json:stuck_seconds`); or `already_current` inconsistent with the observed release. | Inspect target `error_code`, `stage`, `recovery_required`, result evidence and local status. Fix the cause before using the batch retry endpoint. A flag is not a substitute for reading the result and current node health. |
+
+The agent's required observation `update` object contains `generation`, `job_id`, `stage`, and `state`, read afresh from `updater_journal` on every report with a one-second maximum snapshot deadline. A null generation means no available update state (empty, missing, unreadable, unsupported or timed-out journal), never generation zero; it neither completes nor demotes a target. While a generation is present, top-level `current_release_id` and `last_good_release_id` come from journal pointers. Local success maps to `report` / `succeeded`, rollback to `report` / `rolled_back`, and recovery-required to `rollback` / `failed`. Local progress does not prove central acceptance. See [agent observations](../node/README.md#observations).
+
+### 4.5 Reading a Rolled-Back Update and Result Rejections (D-062)
+
+1. Read `/admin/updates` target detail and the accepted result. For `rolled_back`, `current_release_id` names the restored release, `previous_release_id` the candidate, `health` describes the restored release and `error_code` retains the candidate failure. `candidate_health` describes the failed candidate separately; explicit `null` means rollback began before candidate checks. The portal presents both profiles and the null case. An empty manifest rollback allowlist adds no restriction, while a nonempty list must include the restored release; serving, trust, revocation and schema checks still apply.
+2. On the node, read the journal without starting an update:
+   ```bash
+   /opt/vpn-node/current/fvpn-updater status -config /etc/vpn-node/updater.json
+   ```
+   Alternatively use `status -journal /var/lib/vpn-node/update-journal/journal.db` (file, not directory; do not combine with `-config`). Inspect `candidate_health`, `candidate_health_json`, `health`, `journal_stage`, `recovery_required`, `last_result_state` and `last_rejection`. The snapshot is local durable evidence, not central completion. Restoration of a healthy binary alone does not prove member forwarding resumed; recheck publication, lease and serving checks.
+3. Compare local result delivery with central target state. A valid pre-health failure can carry `health: null`; when accepted it becomes failed with `needs_attention=true`. A job-bound rejected result has immutable rejection-receipt semantics in the fleet-update domain: same ID/hash replays the rejection; changed bytes conflict. Rejection is not accepted target evidence. The current HTTP wrapper still rolls back returned errors, so durable rejection replay over HTTP remains an integration gap ([central lifecycle](../updates/central-lifecycle.md#terminal-evidence-and-receipts-d-062)). Do not rewrite journal payloads or result IDs manually.
+4. The updater retains 409 as `conflict` and other permanent 4xx (except 429) as `rejected`, stops resending those rows, and allows later results through. `last_rejection` contains bounded HTTP/API/local codes. Transport failures, 5xx and 429 remain pending; 429 honors `Retry-After` across restarts. After correcting connectivity, `fvpn-updater flush -config /etc/vpn-node/updater.json` can send pending results; successful flush alone does not mean every result was accepted.
+5. If `recovery_required` is true or rollback fails, retain the fail-closed latch and follow [node recovery](../updates/node-updater.md); investigate locally or revoke and re-enroll if recovery cannot restore a supported release. Do not remove the latch to claim success.
+
+**Recorded acceptance boundary:** [updates follow-up 2](../e2e/at/updates/requests.md) passes AT23/AT24/AT25/AT27, but AT26 restores last-good locally and receives `accepted_as_history=true` while the target remains `queued` with `needs_attention=false`. Treat this combination as the recorded central transition blocker, preserve the result/ACK and escalate to the update owners; do not infer success from an empty outbox or clear attention flag. Physical arm64 and published member traffic remain separate acceptance work.
 
 Retrying failed/rolled-back targets in a batch (`UpdateBatchRetryRequest`) `[Verified on dev/test stack]`:
 ```bash
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches/${BATCH_ID}/retry" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d "{
@@ -297,16 +336,23 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches/${BA
 
 ### 5.1 How Threat Feeds and Resolver Documents Are Published and Delivered
 
+Threat-feed `attribution: null` (or omission) is accepted. A non-null blank or whitespace-only note is rejected in source validation, policy validation (`/payload/attribution`, `schema_invalid`) and before worker fetch; null does not bypass source URL, host, port or size checks. See [contract conventions](../contracts/README.md) and `internal/dnspolicy/sources.go`.
+
 1. **Threat-Feed Refresh (`dns.feed.refresh`, `00181_dns_feed_contents.sql`, `00182_dns_feed_review.sql`, `D-054`)**:
    - Activating a `threat_feed` policy revision enqueues `dns.feed.refresh` in `outbox_events` and requires both `desired_state_compile` and `dns_feed_refresh` steps (`observed_refs.dns_feed_content`) on the `policy.activate` operation (`00182_dns_feed_review.sql`).
    - `fvpn-worker` fetches `source_url` over HTTPS (`NewSourceHTTPClient` with SSRF protection rejecting loopback, RFC1918, CGNAT `100.64.0.0/10`, link-local, multicast, ULA, and documentation literals, and refusing redirects), verifies the exact SHA-256 against the revision's pinned `content_sha256` on bootstrap, normalizes domains via IDNA, enforces the removal guard (`feed_max_removal_percent`, default `50%`) and addition cap (`MaxAdditionPercent = 100%`), and writes immutable entries to `dns_feed_contents` and status to `dns_feed_refresh_state` (fenced by `activation_generation` and `last_receipt`).
    - `GET /api/v1/admin/policies?type=threat_feed` exposes `PolicyDefinition.threat_feed_status` (`D-058c`) with `approved_content_sha256`, `last_good_content_sha256`, `rule_count`, `last_attempt_status` (`never`, `success`, `failed`), `consecutive_failures`, `next_due_at`, and bounded `last_error_code`.
 2. **Resolver Document Compilation (`dns.publish`, `00180_dns_publish.sql`, `00182_dns_feed_review.sql`, `D-056`)**:
    - Activating a `dns_profile` requires both `desired_state_compile` and `dns_document` steps (`observed_refs.dns_document`). `fvpn-worker` compiles a deterministic canonical JSON `resolver_document` (`kind = "resolver_document"`, `schema_version = 1`), stores it in `dns_resolver_documents`, and advances `dns_publication_heads` (`dns_profile_feeds_eligible` ensures all referenced threat-feed revisions remain active and within `[valid_from, valid_until)`).
+   - The desired-state compiler includes the eligible resolver reference before hashing/signing and records issuance in the same transaction. `node.resolver_documents.reconcile` delivers changed references for the one active fleet DNS profile to current registered nodes, including unpublished nodes, without another publication command. Its schedule is bounded by `min(nodes.json:reconcile_seconds, 60)` seconds, subject to dispatcher/dependency success, not an apply SLA. Equal references cause no generation/ETag churn; unavailable documents retain last-good, while ambiguous profiles or invalid documents fail closed ([node wiring](../nodes/WIRING.md)).
 3. **Node Delivery, Verification & Local AdGuard Home Credentials (`node/agent/resolver.go`, `node/dns`, `D-056`, `D-061`, `docs/node/README.md`, `docs/nodes/WIRING.md`)**:
-   - `GetResolverDocument` (`GET /api/v1/agent/resolver-documents/{document_id}`) authorizes the mTLS-authenticated node's current incarnation and current/previous desired-state generation via `RecordIssuedResolverDocumentTx` and streams the canonical RFC 8785 bytes (`ETag: "sha256:<hex>"`). *(See `docs/nodes/WIRING.md` §Resolver documents, group membership and observations for the current desired-state compiler input-hook boundary.)*
+   - `GetResolverDocument` (`GET /api/v1/agent/resolver-documents/{document_id}`) authorizes the mTLS-authenticated node's current incarnation and current/previous desired-state generation via `RecordIssuedResolverDocumentTx` and streams the canonical RFC 8785 bytes (`ETag: "sha256:<hex>"`). See §5.1 below and [node wiring](../nodes/WIRING.md) for signed issuance and periodic reconciliation.
    - On the exit node (`D-061`, `docs/node/README.md`), `agent.json` configures `dns.resolvers[]` (`1..8` host-local AdGuard Home targets with IP-literal `admin_url` and `dns_addr`) and `dns.resolver_credentials_file` (an absolute path to a `root`-owned mode `0600` JSON file `{"username","password"}`). `fvpn-agent run` loads `resolver_credentials_file` at startup and reloads it on `SIGHUP` without stopping; wrong file mode/owner refuses the check (`FORBIDDEN`, detail `"Resolver credentials are not usable."`) without logging the secret or URL.
    - `fvpn-agent` verifies the exact byte length (`size_bytes`) and SHA-256 (`content_sha256`) before parsing, applies the policy to all configured AdGuard Home instances via `node/dns.Applier` (with automatic rollback on partial failure), and reports `ObservationReport.dns_policy_evidence` (`outcome`: `applied`, `failed`, `partial`, or `not_run`, plus `feeds[]` evidence).
+
+The agent's `dns_policy` check passes only after the exact document ID and digest in the in-force desired state have been applied. A revoked/expired policy cannot be attested as passed from desired state alone; missing resolver application support reports `not_run` / `DEPENDENCY_UNAVAILABLE` (see [node runtime](../node/README.md)).
+
+**Redirecting AdGuard admin listener:** The node's resolver admin client refuses every HTTP redirect, including same-host port changes. An AdGuard admin origin behind an HTTP→HTTPS redirect makes policy apply fail with an error such as `HTTP 307 from GET /control/dns_info`. Configure `dns.resolvers[].admin_url` to the final permitted origin directly, with usable TLS trust if HTTPS, then restart the agent for the configuration change. Credential-only changes can use `SIGHUP`. The client omits the redirect location and credentials from errors; the agent exposes `failed` / `VALIDATION_FAILED` / `Resolver policy was not applied.` rather than the raw origin (`node/dns/client.go`, `node/agent/resolver.go`).
 
 ### 5.2 Troubleshooting `dns.feed.refresh_failed` (`docs/dns/FEEDS.md`)
 
@@ -394,13 +440,14 @@ Raw `usage_events` and `usage_samples` are immutable (`F-02`). If a member requi
 
 ### 7.1 Suspending and Reactivating a Member (`PATCH /api/v1/admin/members/{member_id}`)
 
-Suspending a member (`"admin_suspended": true`) immediately revokes member forwarding across all exit nodes and withdraws access from all of the member's NetBird peers via an asynchronous `member.suspend` operation (`AT04`, `docs/members/README.md`). Payment webhooks never auto-unsuspend an admin-suspended member (`§9.3`).
+Suspending a member (`"admin_suspended": true`) requests withdrawal of member forwarding across all exit nodes and withdraws access from all of the member's NetBird peers via an asynchronous `member.suspend` operation (`AT04`, `docs/members/README.md`). Payment webhooks never auto-unsuspend an admin-suspended member (`§9.3`).
 
 `[Verified on dev/test stack]`
 ```bash
 # Fetch current member ETag first via GET /api/v1/admin/members/${MEMBER_ID}
 curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID}" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "If-Match: \"${ETAG}\"" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -411,6 +458,8 @@ curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_I
 ```
 To reactivate, send `"admin_suspended": false` and `"suspension_reason": ""` with the new `If-Match` ETag (`member.unsuspend` operation).
 
+Plan downgrades keep the oldest authorizations (`authorized_at`, then device ID); excess devices become `pending` and are withdrawn. Loss of entitlement withdraws access; restoration readmits only previously authorized, non-revoked devices with verified mappings within the current quota. Removed exit groups trigger policy withdrawal on previously serving nodes too. Inspect `device.authorize` denial audits for the bounded reasons `device_limit_reached`, `entitlement_inactive` or `identity_unmapped`; denials create no operation. See [members operations](../members/README.md#quota-withdrawals-and-finite-binding-history).
+
 ### 7.2 Issuing Finite Entitlement Grants (`POST /api/v1/admin/members/{member_id}/grants`)
 
 Manual entitlement grants (`GrantCreateRequest`) require a `source` (`admin_grant`, `compensation`, `trial`, or `migration`), a `reason`, and a finite `[valid_from, valid_until)` interval bounded by `members.json:grant_max_seconds` (`F-05` rejects unbounded grants):
@@ -418,7 +467,8 @@ Manual entitlement grants (`GrantCreateRequest`) require a `source` (`admin_gran
 `[Verified on dev/test stack]`
 ```bash
 curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID}/grants" \
-  -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d '{
@@ -429,6 +479,30 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID
   }'
 ```
 *(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 44-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or member access can be withdrawn immediately via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
+
+### 7.3 Identity Continuity, Client Rotation and Duplicate Pre-Check (D-052)
+
+One member is identified by canonical `(issuer, subject)`, independent of the portal client ID. Canonical issuer configuration uses lowercase scheme/host, no default port or trailing slash, and no query/fragment. Control and worker must use the same shared issuer and public subjects. A portal client-scope rotation reuses the existing member/binding and refreshes verification, appending `identity_binding.proof_updated` with binding ID and fixed reason only. On this schema `client_scope` remains immutable, so login falls back to refreshing `verified_at`; repeated logins from the rotated client can repeat the proof audit. It does not create another member or authorize linking by email. See [auth](../control/AUTH.md) and [members](../members/README.md).
+
+Before applying forward migrations to an existing deployment, run this read-only, count-only pre-check:
+
+```sql
+SELECT count(*) AS duplicate_identity_groups
+FROM (
+  SELECT issuer, subject
+  FROM identity_bindings
+  GROUP BY issuer, subject
+  HAVING count(*) > 1
+) AS conflicts;
+```
+
+The issuer/subject uniqueness migration locks and repeats this check; any duplicate group aborts it with SQLSTATE `23505` and only the group count. The pre-check does not replace the migration's locked check. If nonzero, stop the upgrade and have the identity owner investigate historical bindings and their dependent members, devices, grants and billing/audit history in an authorized private maintenance session. A duplicate login fails closed with `403 FORBIDDEN`. There is no merge tool or automatic merge by design: obtain a reviewed data-remediation plan from the member/control owners, preserve identity/history, then rerun the count and migrations after resolving the ambiguity. Do not delete arbitrary bindings, guess from email, bypass the unique constraint, or put raw subjects/issuers into tickets or logs.
+
+The requested browser role now lives in `oidc_login_flows.role` (`admin` or `member`). The role migration backfills legacy verifier prefixes; the reader accepts that legacy format for one release so in-flight logins can complete. A requested admin role still requires the configured admin claim and MFA. Do not manually edit login-flow verifiers ([auth](../control/AUTH.md)).
+
+### 7.4 Login Limiting (D-060)
+
+`control.json:login_rate` defaults to `burst: 40`, `per_second: 1` for direct-peer-address buckets; login/callback and session/logout use separate buckets. `login_subject_per_minute` defaults to `10` after verified authentication. Zero values are rejected at startup. HTTP `429 RATE_LIMITED` includes `Retry-After`; clients should wait that delay before retrying. Investigate `fvpn_control_rate_limited_total{class,limiter}` and shared-NAT demand using [control authentication](../control/AUTH.md#login-burst-and-per-subject-rate-limiters-d-060) and its [config example](../control/config.example.json).
 
 ---
 
