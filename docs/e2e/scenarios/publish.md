@@ -14,8 +14,8 @@ is not active publication.
 The [publish record](../runs/2026-10-30/publish.md) contains exact HTTP status,
 stored node/observation values, peer presence, exit-group count and operation
 steps. The [catalogue record](../runs/2026-10-30/serving-catalogue.md) probes the
-group API. `501 NOT_IMPLEMENTED` blocks Part B on `w3-wire-nodes` follow-up 11.
-Do not work around it with an `exit_groups` or published-exit insert.
+group API. The earlier 501 blocker is cleared. No `exit_groups` or
+published-exit insert is used.
 
 ## Follow-up 7
 

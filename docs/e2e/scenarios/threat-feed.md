@@ -3,7 +3,8 @@
 `threat-feed-central` approves and fetches a deterministic ten-entry hosts feed
 from the isolated TLS origin, verifies normalized content and resolver-document
 digests, and rejects a wrong-pin revision with last-good retention, an audit and
-worker metrics. It reactivates the good feed afterward: a profile pinned to an
+worker metrics. It reactivates the good feed afterward and polls the active
+revision and profile eligibility before node delivery. A profile pinned to an
 inactive feed is intentionally ineligible for node delivery.
 
 `threat-feed-node` uses D-061 exactly as declared in `node/agent/dnsconfig.go`:

@@ -46,8 +46,9 @@ provider.
 5. Poll the product projection, not just webhook HTTP 202. The scenario checks
    a reconciled subscription with the exact paid interval, one immutable paid
    invoice and an active entitlement. A partial refund retains that interval;
-   cancellation is projected; a full refund removes it under the lab's explicit
-   `revoke_original_period` setting. Duplicate deliveries must not duplicate
+   cancellation is projected; a full refund removes effective service under the
+   lab's explicit `revoke_original_period` setting while retaining paid invoice
+   history. Duplicate deliveries must not duplicate
    invoices/refunds. Each phase has a 90-second bound.
 
 The provider serves subscription detail/list, paid invoice/list and line

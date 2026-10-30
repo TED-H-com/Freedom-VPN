@@ -15,11 +15,10 @@ expires.
 
 See [member traffic](../runs/2026-10-30/member-traffic.md),
 [forwarding](../runs/2026-10-30/forwarding.md) and
-[lease expiry](../runs/2026-10-30/lease-expiry.md). Until D-057's group/publication
-API is available, these remain blocked on `w3-wire-nodes` follow-up 11; the lab
-must not claim them from a synthetic published row. Resolver enforcement also
-requires the D-056 central-to-agent delivery path; a central feed document is
-not an on-node ACK.
+[lease expiry](../runs/2026-10-30/lease-expiry.md). The D-057 group/publication
+prerequisite now passes. The current lease-refresh blocker is described below.
+Resolver enforcement separately requires an issued D-056 document reference;
+a central feed document is not an on-node ACK.
 
 ## Follow-up 7
 

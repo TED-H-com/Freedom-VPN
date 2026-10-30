@@ -7,14 +7,98 @@
     "§19 AT03",
     "§19 AT04"
   ],
-  "status": "blocked",
+  "status": "pass",
   "observations": [
     {
-      "name": "owner",
-      "detail": "D-057: GET /admin/groups 501 NOT_IMPLEMENTED; owner w3-wire-nodes follow-up 11; payment live reconciliation awaits API-created plan"
+      "name": "checkout",
+      "detail": "201"
+    },
+    {
+      "name": "hook_snapshot",
+      "detail": "200"
+    },
+    {
+      "name": "hook_event",
+      "detail": "200"
+    },
+    {
+      "name": "webhook_checkout.session.completed",
+      "detail": "202"
+    },
+    {
+      "name": "webhook_checkout.session.completed",
+      "detail": "202"
+    },
+    {
+      "name": "stored_rows_refund_0",
+      "detail": "{\"anomalies\": [], \"paid_from\": \"2026-10-30T04:16:29+00:00\", \"paid_through\": \"2026-10-30T05:17:29+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"entitlement_state\": \"active\", \"paid_invoice_count\": 1, \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T05:17:29+00:00\"}"
+    },
+    {
+      "name": "first_full_paid_period_reconciled",
+      "detail": "true"
+    },
+    {
+      "name": "refund_semantics",
+      "detail": "Paid invoice facts remain; a full refund revokes effective service rather than erasing history."
+    },
+    {
+      "name": "period_start",
+      "detail": "2026-10-30T04:16:29Z"
+    },
+    {
+      "name": "period_end",
+      "detail": "2026-10-30T05:17:29Z"
+    },
+    {
+      "name": "hook_snapshot",
+      "detail": "200"
+    },
+    {
+      "name": "hook_event",
+      "detail": "200"
+    },
+    {
+      "name": "webhook_customer.subscription.updated",
+      "detail": "202"
+    },
+    {
+      "name": "webhook_customer.subscription.updated",
+      "detail": "202"
+    },
+    {
+      "name": "stored_rows_refund_250",
+      "detail": "{\"anomalies\": [], \"paid_from\": \"2026-10-30T04:16:29+00:00\", \"paid_through\": \"2026-10-30T05:17:29+00:00\", \"refund_total\": 250, \"last_reconciled\": true, \"provider_status\": \"active\", \"entitlement_state\": \"cancel_at_period_end\", \"paid_invoice_count\": 1, \"cancel_at_period_end\": true, \"effective_service_end\": \"2026-10-30T05:17:29+00:00\"}"
+    },
+    {
+      "name": "hook_snapshot",
+      "detail": "200"
+    },
+    {
+      "name": "hook_event",
+      "detail": "200"
+    },
+    {
+      "name": "webhook_charge.refunded",
+      "detail": "202"
+    },
+    {
+      "name": "webhook_charge.refunded",
+      "detail": "202"
+    },
+    {
+      "name": "stored_rows_refund_1000",
+      "detail": "{\"anomalies\": [], \"paid_from\": \"2026-10-30T04:16:29+00:00\", \"paid_through\": \"2026-10-30T05:17:29+00:00\", \"refund_total\": 1000, \"last_reconciled\": true, \"provider_status\": \"canceled\", \"entitlement_state\": \"expired\", \"paid_invoice_count\": 1, \"cancel_at_period_end\": true, \"effective_service_end\": null}"
+    },
+    {
+      "name": "invoice_rows_after_duplicate_deliveries",
+      "detail": "1"
+    },
+    {
+      "name": "immutable_refund_rows",
+      "detail": "2"
     }
   ],
-  "at": "2026-10-30T03:07:27Z",
-  "run_id": "5de03570-0436-477d-9847-6f6984432bd8",
-  "source_commit": "a7a712aab8a67fcc33514a9ac76cb877a90c8143"
+  "at": "2026-10-30T04:17:32Z",
+  "run_id": "dc2f6353-89ec-434c-bc68-567066d9fe51",
+  "source_commit": "b15ff057cd5e91e227477de6a09d977931fa62d8"
 }

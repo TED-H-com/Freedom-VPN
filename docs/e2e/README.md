@@ -161,6 +161,7 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `publish` | `PUT /admin/nodes/{id}/publication`, then poll the operation | §5.2, §14.2 |
 | `forwarding` | forward-chain generation and `fvmb0` member accept rules | §5, §19 AT10 |
 | `member-traffic` | API-created plan, grant, same-subject embedded-IdP join and device poll | §8, §19 AT12 |
+| `native-scale-hook` | two distinct native users with two authorized peers each | SECOPS-10 smoke |
 | `usage` | `GET /member/usage` and real agent samples after a positive counted flow | §10, §19 AT14, AT15 |
 | `release-register` | real packages, registration, verification and API-activated support policy | §13.2–§13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
