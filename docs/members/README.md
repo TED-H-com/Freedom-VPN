@@ -238,6 +238,57 @@ records enforcement evidence. Neither a successful PUT nor policy compilation
 is reported as complete device enforcement. Native clients, actual gateway
 traffic, direct/relay behavior and convergence timing remain unmeasured.
 
+### Restored authorization does not re-grant (D-076)
+
+A row restored from an older backup is not a confirmed current entitlement
+(§17.4). `SyncDevice` fences a device when all of the following hold: central
+status is still `authorized`, `device_authorization_observations.observed_authorized`
+is true, the preflight `ObservePeer` shows the peer withdrawn (not authorized,
+or in none of the granted exit groups), and central has no newer
+`member.device_revoke` operation and no newer `device.revoke` audit for that
+device. A second `ObservePeer` in the same sync must still show the peer
+withdrawn. The sync then forces the peer to stay withdrawn, completes without
+error, and records the decision once.
+
+The durable mark is `device_authorization_fences` (migration
+`00188_device_authorization_fences.sql`), not the observation bit and not an
+audit row alone. The observation is updated to the withdrawn read-back so
+member sync can finish; the fence row is what stops the next sync from
+granting. A later sync does not write the audit again. Devices that were never
+observed authorized are first-time grants and are authorized as before.
+`revoked` and `closed` devices stay withdrawn and are not labeled as an
+external withdrawal. A newer `device.revoke` audit whose status is `revoked`,
+or a newer `member.device_revoke` operation, while the device row is still
+`authorized`, writes the same fence row and leaves the peer withdrawn, without
+`device.authorization.external_withdrawal`. That keeps a later sync from
+treating the withdrawn read-back as a fresh grant. A quota withdrawal
+(`device.revoke` with status `pending`) does not fence a device that central
+has since authorized again.
+Entitlement restoration does not delete a fence row.
+
+The audit action is `device.authorization.external_withdrawal` on
+`member_device:<device_id>`. The diff carries `peer_id`, `observed_groups`,
+`member_id` and `reason=external_withdrawal`. It has no provider subject, token
+or secret. Operators read it with the existing audit filters
+`resource_type=member_device` and `resource_id=<device_id>`. While
+`usage_ledger_state.mode` is `frozen` or `reconciling`, that same decision is
+logged as `device authorization unconfirmed during ledger restore` (device,
+member, peer, ledger mode) and counted in
+`fvpn_device_restore_fence_decisions_total` on the worker registry.
+
+Re-authorization is the existing `AuthorizeDevice` command, operation kind
+`member.device_authorize`, for a `system` or `admin` actor and a new
+idempotency key. It deletes the fence, marks the stored read-back unconfirmed,
+and enqueues `device.authorized` so the next sync grants. Discovery uses that
+same command through `ObserveAndAuthorize`. Replaying the original idempotency
+key does not clear the fence. A member's HTTP device route is
+`DELETE /member/devices/{device_id}` (revoke) only. `MemberDevice` has no field
+that means this fence: after the read-back is withdrawn, `GET /member/devices`
+shows `pending`, which is also the state of a device that has never been
+confirmed. Revision 12 needs a read-only `authorization_unconfirmed` boolean on
+`MemberDevice`, and an admin re-authorize operation if operators are not meant
+to call the member-principal `member.device_authorize` command directly.
+
 ## Events and maintenance
 
 The central dispatcher owns global claims, leases, completion, jittered backoff

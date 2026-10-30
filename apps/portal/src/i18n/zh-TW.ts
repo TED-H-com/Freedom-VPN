@@ -668,6 +668,20 @@ export const zhTW = {
     '欄位驗證失敗 (422 VALIDATION_FAILED — reason)：變更原因為必填且長度須介於 1 至 500 字元。',
   'admin.settings.fieldErrorGeneric':
     '欄位驗證失敗 (422 VALIDATION_FAILED)：請確認 max_offline_lease_seconds (60–86400) 與必填原因 (1–500 字元)。',
+
+  // Follow-up 14: Provisional Lease Waiting Copy (D-067, D-071) & Identity Conflict (D-072)
+  'admin.nodeDetail.provisionalLease.waitingCopy':
+    '等待會員授權；節點會自動續租（最長 60 秒）',
+  'admin.nodeDetail.provisionalLease.waitingStatus': '等待中 (waiting)',
+  'admin.nodeDetail.leaseExpired.failureCopy':
+    '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
+  'admin.nodeDetail.identityConflict.none': '無身分映射衝突 (no identity conflict)',
+  'admin.nodeDetail.identityConflict.frozenBadge': '身分映射已凍結',
+  'admin.nodeDetail.identityConflict.countLabel': '衝突次數 (conflict_count)：{count}',
+  'admin.nodeDetail.identityConflict.lastAtLabel':
+    '最近衝突時間 (last_conflict_at)：{time}',
+  'admin.nodeDetail.identityConflict.resolutionText':
+    '請撤銷此節點並重新註冊；系統不會自動解除凍結',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;

@@ -12,4 +12,9 @@
 //
 // The default path is /var/lib/vpn-node/state/usage.db (AGENTS.md §4). Tests
 // pass a temporary path.
+//
+// ReadSnapshot is a separate read-only connection. It does not migrate, it
+// does not take the node update lock, and one deferred read transaction
+// covers the whole view so an in-flight ACK is either fully visible or not
+// visible at all (§10.6).
 package usagestore
