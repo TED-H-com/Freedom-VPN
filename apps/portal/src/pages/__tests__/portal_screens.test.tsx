@@ -19,6 +19,8 @@ import {
   SECONDARY_GROUP_ID,
 } from '../../mocks/data';
 import {
+  setMockNodeIdentityConflict,
+  setMockNodeLeaseState,
   setMockPersona,
   setMockRolledBackCandidateHealth,
   type MockPersona,
@@ -790,5 +792,158 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     expect(screen.getByTestId('audit-table')).toHaveTextContent('fleet_config.update');
     expect(screen.getByTestId('audit-table')).toHaveTextContent('1800');
     expect(screen.getByTestId('audit-table')).toHaveTextContent('3600');
+  });
+
+  it('TestD072_AdminNodeDetail_IdentityConflictThreeStatesAndRevokeLink', async () => {
+    const user = userEvent.setup();
+
+    // 1. {mapping_frozen: false, conflict_count: 0} -> quiet "no identity conflict" line in zh-TW and en
+    renderAt(`/admin/nodes/${PRIMARY_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.getByTestId('node-identity-conflict-section')).toBeInTheDocument();
+    expect(screen.getByTestId('node-identity-conflict-none')).toHaveTextContent(
+      '無身分映射衝突 (no identity conflict)',
+    );
+    expect(screen.queryByTestId('node-identity-conflict-frozen-badge')).toBeNull();
+
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('node-identity-conflict-none')).toHaveTextContent(
+      'No identity conflict',
+    );
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'zh-TW');
+
+    // 2. {mapping_frozen: true, conflict_count: 2, last_conflict_at: '2026-10-30T18:00:00Z'} -> prominent badge, count, locale timestamp, resolution text linking to existing revoke button
+    const { container } = renderAt(`/admin/nodes/${SAFETY_FAILED_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.getByTestId('node-identity-conflict-frozen-badge')).toHaveTextContent(
+      '身分映射已凍結',
+    );
+    expect(screen.getByTestId('node-identity-conflict-count')).toHaveTextContent('2');
+    expect(screen.getByTestId('node-identity-conflict-last-at')).toHaveTextContent(
+      '2026-10-30T18:00:00Z',
+    );
+    const revokeLink = screen.getByTestId('node-identity-conflict-revoke-link');
+    expect(revokeLink).toHaveTextContent('請撤銷此節點並重新註冊；系統不會自動解除凍結');
+    expect(revokeLink).toHaveAttribute('href', '#revoke-node-identity-btn');
+    const revokeBtn = screen.getByTestId('revoke-node-identity-btn');
+    expect(revokeBtn).toHaveAttribute('id', 'revoke-node-identity-btn');
+    // Never show unfreeze button or endpoint hashes/addresses
+    expect(container.innerHTML).not.toContain('endpoint_hash');
+    expect(screen.queryByRole('button', { name: /unfreeze|解除凍結/i })).toBeNull();
+
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('node-identity-conflict-frozen-badge')).toHaveTextContent(
+      'Identity mapping frozen',
+    );
+    expect(screen.getByTestId('node-identity-conflict-count')).toHaveTextContent(
+      'Conflict count (conflict_count): 2',
+    );
+    expect(screen.getByTestId('node-identity-conflict-last-at')).toHaveTextContent(
+      '2026-10-30T18:00:00Z',
+    );
+    expect(screen.getByTestId('node-identity-conflict-revoke-link')).toHaveTextContent(
+      'Revoke this node and enrol it again; there is no automatic unfreeze',
+    );
+    await assertAccessible(container);
+
+    // 3. null or absent -> nothing rendered (no placeholder text)
+    renderAt(`/admin/nodes/${OFFLINE_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('node-identity-conflict-section')).toBeNull();
+    expect(screen.queryByTestId('node-identity-conflict-none')).toBeNull();
+    expect(screen.queryByTestId('node-identity-conflict-frozen-badge')).toBeNull();
+
+    setMockNodeIdentityConflict(OFFLINE_NODE_ID, undefined);
+    renderAt(`/admin/nodes/${OFFLINE_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('node-identity-conflict-section')).toBeNull();
+  });
+
+  it('TestD067_D071_AdminNodeDetail_ProvisionalLeaseAwaitingMemberGrantsWaitingCopyVsLeaseExpiredFailureCopy', async () => {
+    const user = userEvent.setup();
+
+    // 1. Provisional lease waiting state: awaiting_member_grants + lease/qos/source_binding carrying AWAITING_MEMBER_GRANTS
+    setMockNodeLeaseState(PRIMARY_NODE_ID, 'awaiting_member_grants');
+    renderAt(`/admin/nodes/${PRIMARY_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+
+    // Renders as waiting state, not failure, in zh-TW
+    expect(
+      screen.getByTestId('node-provisional-lease-waiting-banner'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('node-provisional-lease-waiting-copy')).toHaveTextContent(
+      '等待會員授權；節點會自動續租（最長 60 秒）',
+    );
+    expect(
+      screen.getByTestId('forwarding-block-reason-awaiting_member_grants'),
+    ).toHaveTextContent('等待會員授權；節點會自動續租（最長 60 秒）');
+    expect(
+      screen.getByTestId('forwarding-block-reason-awaiting_member_grants'),
+    ).toHaveClass('badge-warning');
+    expect(screen.queryByTestId('node-lease-expired-failure-banner')).toBeNull();
+
+    for (const checkName of ['lease', 'qos', 'source_binding'] as const) {
+      const statusBadge = screen.getByTestId(`node-check-status-${checkName}`);
+      expect(statusBadge).toHaveClass('badge-warning');
+      expect(statusBadge).not.toHaveClass('badge-danger');
+      expect(statusBadge).toHaveTextContent('等待中 (waiting)');
+      expect(statusBadge).not.toHaveTextContent('failed');
+      expect(screen.getByTestId(`node-check-error-code-${checkName}`)).toHaveTextContent(
+        'AWAITING_MEMBER_GRANTS',
+      );
+      expect(screen.getByTestId(`node-check-detail-${checkName}`)).toHaveTextContent(
+        '等待會員授權；節點會自動續租（最長 60 秒）',
+      );
+    }
+    expect(screen.getByTestId('node-latest-error-badge')).toHaveClass('badge-warning');
+    expect(screen.getByTestId('node-latest-error-summary')).toHaveTextContent(
+      '等待會員授權；節點會自動續租（最長 60 秒）',
+    );
+
+    // Switch to English and verify en waiting copy
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('node-provisional-lease-waiting-copy')).toHaveTextContent(
+      'Waiting for member grants; the node renews automatically (within 60 s)',
+    );
+    for (const checkName of ['lease', 'qos', 'source_binding'] as const) {
+      const statusBadge = screen.getByTestId(`node-check-status-${checkName}`);
+      expect(statusBadge).toHaveClass('badge-warning');
+      expect(statusBadge).toHaveTextContent('waiting');
+      expect(screen.getByTestId(`node-check-detail-${checkName}`)).toHaveTextContent(
+        'Waiting for member grants; the node renews automatically (within 60 s)',
+      );
+    }
+    expect(screen.getByTestId('node-latest-error-summary')).toHaveTextContent(
+      'Waiting for member grants; the node renews automatically (within 60 s)',
+    );
+
+    // 2. lease_expired / LEASE_EXPIRED keeps its failure copy in both languages
+    setMockNodeLeaseState(PRIMARY_NODE_ID, 'lease_expired');
+    renderAt(`/admin/nodes/${PRIMARY_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('node-provisional-lease-waiting-banner')).toBeNull();
+    expect(screen.getByTestId('node-lease-expired-failure-banner')).toBeInTheDocument();
+    expect(screen.getByTestId('node-lease-expired-failure-copy')).toHaveTextContent(
+      'Node serving lease has expired; member forwarding has stopped.',
+    );
+    for (const checkName of ['lease', 'qos', 'source_binding'] as const) {
+      const statusBadge = screen.getByTestId(`node-check-status-${checkName}`);
+      expect(statusBadge).toHaveClass('badge-danger');
+      expect(statusBadge).toHaveTextContent('failed');
+      expect(screen.getByTestId(`node-check-error-code-${checkName}`)).toHaveTextContent(
+        'LEASE_EXPIRED',
+      );
+      expect(screen.getByTestId(`node-check-detail-${checkName}`)).toHaveTextContent(
+        'Node serving lease has expired; member forwarding has stopped.',
+      );
+    }
+
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'zh-TW');
+    expect(screen.getByTestId('node-lease-expired-failure-copy')).toHaveTextContent(
+      '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
+    );
+    expect(screen.getByTestId('node-check-detail-lease')).toHaveTextContent(
+      '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
+    );
   });
 });
