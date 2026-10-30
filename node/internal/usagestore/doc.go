@@ -17,4 +17,8 @@
 // does not take the node update lock, and one deferred read transaction
 // covers the whole view so an in-flight ACK is either fully visible or not
 // visible at all (§10.6).
+//
+// OutboxStatus is also a read. It reports the persisted stream and does not
+// evaluate or store the forwarding gate. Ledger epoch stays null until a
+// verified checkpoint (§17.3).
 package usagestore
