@@ -164,6 +164,24 @@ func (s *Stack) StartNativePeer(ctx context.Context, name string) (string, error
 	return container, nil
 }
 
+// PauseNativeControl freezes only the native client's NetBird userspace service.
+// Kernel WireGuard and installed routes remain. Always resume with pause=false;
+// callers must prove a counted flow while paused before testing revocation.
+func (s *Stack) PauseNativeControl(ctx context.Context, container string, pause bool) error {
+	if container != s.lab.member && !strings.HasPrefix(container, s.lab.prefix+"-member-") {
+		return fmt.Errorf("native control container outside stack")
+	}
+	signal := "CONT"
+	if pause {
+		signal = "STOP"
+	}
+	command := `read pid < /var/lib/vpn-node/e2e/netbird-service.pid
+case "$pid" in ''|*[!0-9]*) exit 1;; esac
+test "$(readlink /proc/$pid/exe)" = /usr/local/bin/netbird || exit 1
+kill -` + signal + ` "$pid"`
+	return exec.CommandContext(ctx, "docker", "exec", container, "sh", "-c", command).Run()
+}
+
 // ScaleNativeMembers is the SECOPS-10 hook. 20x3 is supported by the hook;
 // callers choose the execution budget and must use a plan allowing three devices.
 // Each native peer and subject is distinct; the return contains only counts.

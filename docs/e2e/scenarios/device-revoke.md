@@ -5,6 +5,15 @@ to one real member. Both must have product-authorized device projections,
 signed desired-state bindings, an explicitly selected published exit, controlled
 origin receipts and increasing named admission counters.
 
+For follow-up 11, `Stack.PauseNativeControl` sends SIGSTOP to the revoked
+client's NetBird userspace service after its route and kernel WireGuard session
+are established. A further counted origin request must succeed **while paused**
+before DELETE. The exit's agent and watchdog keep running. This deliberately
+stale client cannot consume the route withdrawal; no key, route, source binding
+or product enforcement is fabricated. Cleanup always sends SIGCONT. If this
+transport cannot stay live, the record names that missing lab primitive instead
+of claiming an ingress drop.
+
 The runner issues `DELETE /api/v1/member/devices/{id}` with the member session
 and an idempotency key. HTTP 202 starts the check. It waits at most 90 seconds
 for removal from signed bindings and a newer serving generation, then reads the
@@ -39,3 +48,29 @@ were not captured.
 
 See [the current record](../runs/2026-10-30/device-revoke.md) and
 [follow-up 10 verification](../followup10-verification.md).
+
+## Follow-up 11: stale route retained, ingress primitive still missing
+
+Run `76f0725c-2264-4021-a553-60f6c921e32b` confirms
+`paused_client_counted=true` after SIGSTOP. DELETE returned 202 and the exit
+projected generation 8, ready/passed, with the same agent PID. The stale client
+still routed `192.0.3.10 dev fvnb0 table netbird`, but the post-apply node capture
+reported `0 packets captured`; `ctunku` stayed `0 → 0`. Revoked admission bytes
+froze at `5262 → 5262`, conntrack was empty and origin receipt zero. Sibling
+and replacement flows were counted; SIGCONT cleanup succeeded.
+
+A later read-only NetBird inventory during that same run reported
+`usesKernelInterface=true` and no peer for the revoked address at the exit.
+This supports upstream transport withdrawal; it does not establish the precise
+removal time. Keeping the client's kernel route alone cannot guarantee packets
+arrive at the exit after the remote peer disappears. No node-rule defect is
+inferred from zero node ingress. DELETE-to-first-node-drop is **not observed**.
+
+Missing primitive: a controlled tunnel-ingress traffic path that remains usable
+at the node after NetBird removes the revoked peer, while the real agent keeps
+applying signed state. It must attribute post-DELETE packets to the old device
+source and measure `fvmb0` ingress plus named drop/admission counters, without
+restoring a revoked peer/group/binding or altering product enforcement.
+**Owner: w3-devstack-e2e with w1-netlab for the isolated ingress fixture.**
+The current native pause hook supplies the stale client only; it does not supply
+that independent node-side ingress path. This strict assertion remains blocked.

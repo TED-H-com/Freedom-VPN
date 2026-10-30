@@ -26,7 +26,21 @@ func (r *runner) selectExit(ctx context.Context, note func(string, string)) bool
 	// intentionally leaves default routes unselected on this pinned client.
 	re := regexp.MustCompile(`ID: (fvpn-exit-[a-z0-9]+)\s+Network: 0\.0\.0\.0/0`)
 	matches := re.FindAllStringSubmatch(string(before), -1)
-	if len(matches) != 1 {
+	discovery, cancelDiscovery := context.WithTimeout(ctx, 60*time.Second)
+	started := time.Now()
+	available := waitUntil(discovery, time.Second, func() bool {
+		if len(matches) > 0 {
+			return true
+		}
+		out, err := r.lab.docker(r.lab.member, "netbird", "networks", "list")
+		if err == nil {
+			matches = re.FindAllStringSubmatch(string(out), -1)
+		}
+		return len(matches) > 0
+	})
+	cancelDiscovery()
+	note("exit_discovery_seconds", fmt.Sprintf("%.3f", time.Since(started).Seconds()))
+	if !available || len(matches) != 1 {
 		note("exit_selection", "expected exactly one API-published exit")
 		return false
 	}

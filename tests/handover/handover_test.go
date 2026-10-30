@@ -4,6 +4,9 @@
 package handover_test
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -38,6 +41,7 @@ var ownedDocs = []string{
 	"docs/reviews/r9-d062-review.md",
 	"docs/reviews/r10-d063-review.md",
 	"docs/reviews/r11-d064-review.md",
+	"docs/reviews/r12-enforce-limits-review.md",
 }
 
 var repoPathPrefixes = []string{
@@ -608,6 +612,7 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r9-d062-review.md",
 		"r10-d063-review.md",
 		"r11-d064-review.md",
+		"r12-enforce-limits-review.md",
 	}
 
 	var gotFiles []string
@@ -698,4 +703,161 @@ func splitMarkdownRow(line string) []string {
 		out[i] = strings.TrimSpace(p)
 	}
 	return out
+}
+
+func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	memberGuide := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	var zhStatusLine, enStatusLine string
+	for _, line := range strings.Split(memberGuide, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "- **實測狀態（`DOC15`") {
+			zhStatusLine = trimmed
+		}
+		if strings.HasPrefix(trimmed, "- **Measurement status (`DOC15`") {
+			enStatusLine = trimmed
+		}
+	}
+	if zhStatusLine == "" {
+		t.Fatal("docs/handover/member-guide.md: missing zh-TW DOC15 measurement status paragraph")
+	}
+	if enStatusLine == "" {
+		t.Fatal("docs/handover/member-guide.md: missing en DOC15 measurement status paragraph")
+	}
+
+	requiredMemberLinks := []string{
+		"../e2e/at/secops/counted-flow.json",
+		"../e2e/at/secops/post-revoke.json",
+		"../e2e/at/secops/deadlines.json",
+		"../e2e/at/secops/capacity.json",
+		"../e2e/runs/2026-10-30/followup10-run3/device-revoke.md",
+		"../e2e/requests.md",
+		"StartSecondExit",
+		"grace_seconds",
+		"clock_settime",
+	}
+	for _, link := range requiredMemberLinks {
+		if !strings.Contains(zhStatusLine, link) {
+			t.Errorf("docs/handover/member-guide.md zh-TW DOC15 paragraph missing %q", link)
+		}
+		if !strings.Contains(enStatusLine, link) {
+			t.Errorf("docs/handover/member-guide.md en DOC15 paragraph missing %q", link)
+		}
+	}
+	if !strings.Contains(zhStatusLine, "歷史快照") {
+		t.Error("docs/handover/member-guide.md zh-TW DOC15 paragraph must attribute earlier blocked records as historical")
+	}
+	if !strings.Contains(enStatusLine, "historical records") || !strings.Contains(enStatusLine, "do not represent current `main` status") {
+		t.Error("docs/handover/member-guide.md en DOC15 paragraph must attribute earlier blocked records as historical")
+	}
+
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"contract revision 8 (#164)",
+		"#164", "#165", "#166", "#167", "#168", "#169", "#170", "#171", "#172", "#174",
+		"ISOLATION_POLICY_INVALID",
+		"GENERATION_MISMATCH",
+		"HOOK_PRIORITY_MISMATCH",
+		"COUNTER_ORDER_INVALID",
+		"FLOWTABLE_BYPASS",
+		"DEVICE_CLASS_MISSING",
+		"QOS_CLASS_MISSING",
+		"MARK_SEMANTICS_VIOLATED",
+		"PROBE_UNBOUNDED",
+		"conntrack delete pending; serving ruleset verified",
+		"pending_revocations",
+		"effectiveJob",
+		"probe_omitted",
+		"DisallowUnknownFields",
+		"checkLargeJSONDocument",
+		"trusted_proxies",
+		"ParseTrustedProxies",
+		"StartSecondExit",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 6 claim %q", token)
+		}
+	}
+
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"r.RemoteAddr",
+		"trusted_proxies",
+		"ParseTrustedProxies",
+		"trusting the world lets any peer choose its bucket",
+		"#174",
+		"conntrack delete pending; serving ruleset verified",
+		"pending_revocations",
+		"ExtraDeniedV4",
+		"probe_omitted",
+		"DisallowUnknownFields",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 6 claim %q", token)
+		}
+	}
+
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"probe_omitted",
+		"DisallowUnknownFields",
+		"checkLargeJSONDocument",
+		"anonClass",
+		"trusted_proxies",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 6 claim %q", token)
+		}
+	}
+
+	r12 := readOwnedDoc(t, root, "docs/reviews/r12-enforce-limits-review.md")
+	for _, token := range []string{
+		"844b59a32124ca6ada6939ef81dd406aebce2b51",
+		"d5a2bed55ef0cc81c9d6f48b76ddf501ba5e6f47",
+		"9c67e4b9eafffc312ead24e9bf023702285ee4f36a95423e2f8b5a488ad4a7b6",
+		"agy/gemini-4-argon-high",
+		"#167",
+		"#168",
+		"#169",
+		"#171",
+		"#172",
+		"#174",
+	} {
+		if !strings.Contains(r12, token) {
+			t.Errorf("docs/reviews/r12-enforce-limits-review.md missing expected provenance/closing token %q", token)
+		}
+	}
+
+	var scopeReview struct {
+		FollowUp6         map[string]any `json:"follow_up_6"`
+		HandoverFollowUp6 struct {
+			ReviewedDocuments []struct {
+				Path   string `json:"path"`
+				SHA256 string `json:"sha256"`
+			} `json:"reviewed_documents"`
+		} `json:"handover_follow_up_6"`
+	}
+	rawScope := readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")
+	if err := json.Unmarshal([]byte(rawScope), &scopeReview); err != nil {
+		t.Fatalf("unmarshal docs/e2e/at/secops/scope-review.json: %v", err)
+	}
+	if len(scopeReview.FollowUp6) == 0 {
+		t.Error("docs/e2e/at/secops/scope-review.json missing follow_up_6 entry")
+	}
+	if len(scopeReview.HandoverFollowUp6.ReviewedDocuments) != 7 {
+		t.Fatalf("docs/e2e/at/secops/scope-review.json handover_follow_up_6.reviewed_documents count = %d, want 7", len(scopeReview.HandoverFollowUp6.ReviewedDocuments))
+	}
+	for _, entry := range scopeReview.HandoverFollowUp6.ReviewedDocuments {
+		raw, err := os.ReadFile(filepath.Join(root, entry.Path))
+		if err != nil {
+			t.Errorf("read %s: %v", entry.Path, err)
+			continue
+		}
+		sum := sha256.Sum256(raw)
+		got := hex.EncodeToString(sum[:])
+		if got != entry.SHA256 {
+			t.Errorf("docs/e2e/at/secops/scope-review.json handover_follow_up_6 sha256 for %s = %s, want %s", entry.Path, entry.SHA256, got)
+		}
+	}
 }

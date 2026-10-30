@@ -14,7 +14,7 @@ listeners, routing, response tracking and request IDs. All command handlers reus
 `httpapi.Transaction`, set durable resource references, and implement replay.
 Standalone service callers retain their existing transaction/idempotency APIs.
 
-Node-domain tests compose only core operations and node handlers (D-039).
+Node-domain tests compose only core operations/audit and node handlers (D-039).
 Their unregistered member routes do not describe the production binary:
 `apps/control/handlers.go` also registers `members()` and `usage()`.
 `wire_members.go` installs `httpadapter.Handlers.GetMemberSelf` and
@@ -27,6 +27,7 @@ The following transitional 501 handlers are removed:
 
 | Operation | Behavior |
 |---|---|
+| `getFleetConfig`, `updateFleetConfig` | Admin fleet lease ceiling: GET with strong ETag; PUT with If-Match/idempotency returns 200 and commits one `fleet_config.update` audit, with no asynchronous operation. Existing leases retain their signed value. |
 | `createEnrollment`, `getEnrollment`, `revokeEnrollment` | Issue a hash-only token, read its state, revoke unused tokens. Replayed creation never returns plaintext. |
 | `enrollNode` | CSR proof, durable incarnation/certificate/provisioning operation; same proof returns the original certificate. |
 | `consumeAgentBootstrap` | Authenticated single delivery: 409 not ready, one 200, then 410 consumed; expired undelivered material returns 410 expired. |
@@ -42,6 +43,21 @@ The following transitional 501 handlers are removed:
 | `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
 | `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
 | `submitUpdateResult` | Durable 202 ACK; identical result replays, changed payload returns 409 ACK_CONFLICT with retained conflict evidence. |
+
+Fleet configuration uses the same `nodes()` handler registration and generated
+admin-session/CSRF boundary. Its command transaction locks the singleton before
+checking `If-Match`, changes only the lease ceiling and resource metadata, then
+commits the audit and idempotency reference together. The audit ID is the command
+reservation ID; allowlisted `changes.after` also retains the original version and
+timestamp so a replay never substitutes a later fleet value. Keep audit retention
+at least as long as command retention (defaults: 180 days and 7 days); a missing
+receipt fails closed. Both audit snapshots include the maximum even on an
+accepted same-value write. No operation or outbox event is needed for this local
+200 response. See [the admin resource semantics](README.md#admin-fleet-configuration-d-065-145-163).
+If the singleton is absent, GET returns the issuer's 86400-second default with
+version `0` and `updated_at` at the Unix epoch, without writing. A subsequent PUT
+with `If-Match: "0"` creates it with the table's fail-closed release defaults and
+returns version `1`; an existing row normally starts at version `1`.
 
 Agent keys now join the same command transaction as their domain writes (§14.5).
 The transactional entry points delegate to the existing implementations rather

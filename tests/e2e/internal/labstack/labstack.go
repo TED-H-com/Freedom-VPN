@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type NodeTelemetry = e2e.NodeTelemetry
+type NodeTelemetrySample = e2e.NodeTelemetrySample
 type NativeLogScan = e2e.NativeLogScan
 type NativePeer = e2e.NativePeer
 type NativeScale = e2e.NativeScale

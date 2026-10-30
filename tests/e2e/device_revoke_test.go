@@ -21,7 +21,7 @@ func (r *runner) deviceRevoke(ctx context.Context) {
 	rec := Record{ID: "device-revoke", Title: "Revoke one native device while its sibling keeps forwarding", Spec: []string{"§8", "§10", "§19 AT02", "F3-02"}, Status: StatusBlocked}
 	defer func() { r.record(rec) }()
 	note := recPathNote(&rec)
-	note("owner", "w3-devstack-e2e: revoked native route may withdraw before node ingress proof; no product defect is inferred")
+	note("owner", "w3-devstack-e2e: controlled stale-client transport and post-revoke ingress measurement")
 	if !r.flowCounted {
 		note("gate", "positive member flow prerequisite absent")
 		return
@@ -55,12 +55,32 @@ func (r *runner) deviceRevoke(ctx context.Context) {
 		note("gate", "two counted flows not established")
 		return
 	}
+	if err := s.PauseNativeControl(ctx, container, true); err != nil {
+		note("gate", "cannot pause native NetBird control service")
+		return
+	}
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err := s.PauseNativeControl(cleanup, container, false)
+		note("client_control_resumed", boolText(err == nil))
+		if err != nil {
+			rec.Status = StatusFail
+		}
+	}()
+	note("client_control_paused", "SIGSTOP of native NetBird service only; kernel WireGuard/routes remain; exit agent continues")
+	pausedFlow := second.tracedFetch(ctx, label("paused_before"))
+	note("paused_client_counted", boolText(pausedFlow))
+	if !pausedFlow {
+		note("gate", "paused native service cannot retain positive transport; missing stale-client kernel path, owner w3-devstack-e2e")
+		return
+	}
 	pid, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/agent.pid")
 	beforeGen := r.lab.forwardChain().Generation
 	ct, _ := r.lab.docker(r.lab.node, "sh", "-c", "command -v conntrack")
 	note("conntrack_executable", strings.TrimSpace(string(ct)))
-	// Keep native requests in flight across DELETE. The product can withdraw
-	// the route before enforcement sees another packet; never restore it.
+	// Keep native requests in flight across DELETE on the deliberately stale
+	// kernel transport. Never restore a revoked route or alter node enforcement.
 	transitionCtx, stopTransition := context.WithTimeout(ctx, 30*time.Second)
 	defer stopTransition()
 	transition := exec.CommandContext(transitionCtx, "docker", "exec", container, "timeout", "25", "sh", "-c", `i=0; while [ "$i" -lt 100 ]; do wget --timeout=1 --tries=1 --ca-certificate=/etc/vpn-node/ca.pem -qO /dev/null https://releases.example.invalid/healthz || true; i=$((i+1)); sleep 0.1; done`)
@@ -93,7 +113,7 @@ func (r *runner) deviceRevoke(ctx context.Context) {
 	note("transition_ctunku_before", fmt.Sprint(transitionState.Counters["ctunku"].Packets))
 	note("transition_ctunku_after", fmt.Sprint(transitionEnd.Counters["ctunku"].Packets))
 	routeAfter, _ := r.lab.docker(container, "ip", "route", "get", r.originIP())
-	networksAfter, _ := r.lab.docker(container, "netbird", "networks", "list")
+	networksAfter := []byte("not queried: native userspace is deliberately paused")
 	note("revoked_route_after", strings.TrimSpace(string(routeAfter)))
 	note("revoked_networks_after", strings.TrimSpace(string(networksAfter)))
 	if !applied {

@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "follow_up": 5,
+  "recorded_at": "2026-10-30T09:53:42.082819Z",
+  "application_source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+  "checks": [
+    {
+      "name": "root-lint",
+      "command": [
+        "python3",
+        "tests/e2e/at/secops/diskexec.py",
+        "make",
+        "go-lint"
+      ],
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "e2e-vet",
+      "command": [
+        "python3",
+        "tests/e2e/at/secops/diskexec.py",
+        "go",
+        "vet",
+        "-tags",
+        "e2e",
+        "./tests/..."
+      ],
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "area",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-secops.mk",
+        "at-secops-lint",
+        "at-secops-test",
+        "at-secops-build"
+      ],
+      "exit_code": 0,
+      "output_tail": [
+        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t2.900s",
+        "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
+        "........",
+        "----------------------------------------------------------------------",
+        "Ran 8 tests in 0.002s",
+        "",
+        "OK",
+        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+      ]
+    },
+    {
+      "name": "owner-fixture",
+      "command": [
+        "python3",
+        "tests/e2e/at/secops/diskexec.py",
+        "go",
+        "test",
+        "-tags",
+        "e2e,integration",
+        "-p",
+        "1",
+        "-parallel",
+        "2",
+        "-count=1",
+        "-run",
+        "^TestSECOPS11_RecordedBaselineDoesNotProveServing$",
+        "./internal/nodes"
+      ],
+      "exit_code": 0,
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/internal/nodes\t0.007s"
+      ]
+    },
+    {
+      "name": "doc14",
+      "command": [
+        "python3",
+        "tests/e2e/at/secops/diskexec.py",
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestHandover_OpenAPIClaims$",
+        "./tests/handover"
+      ],
+      "exit_code": 0,
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.019s"
+      ]
+    }
+  ],
+  "final_probe_source_sha256": "a0df68eb19ba7b1207955fae81d94ff793edc1dc058ee1c19965877b5eab1eea",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "final acceptance test binary compilation, distinct from executed live probe",
+      "sha256": "5152f0bef1a071f63a3765fb05917e2785d965b74081b20707317bfb2b195523"
+    },
+    {
+      "arch": "arm64",
+      "kind": "final acceptance test binary compilation, distinct from executed live probe",
+      "sha256": "5ef241666d3f6ccb5f290462b4b0cb5972ff55d693b217de6c6cf20c48ca6540"
+    }
+  ],
+  "components_record": "components.json",
+  "live_record": "followup5-run.json",
+  "live_target_exit_code": 2,
+  "live_target_scope": "Live Go probe passes; full acceptance target deliberately exits 2 for documented remaining gates. Two control-loss cycles use the separately invoked worker guard recorded in fault-injection.json; the reusable target now starts that guard itself.",
+  "harness_scripts": [
+    {
+      "path": "tests/e2e/at/secops/cohort_probe.py",
+      "sha256": "7e94c561664b60f8000ca523e97f2062feae8dd775a8f60f8ff95c8647f6ca9b",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/diskexec.py",
+      "sha256": "c2a54c85c8f818474fba871d853c25647463a07febcb9b4dcca095158d7b1bab",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/fault_guard.py",
+      "sha256": "d1628135f816b1891fbbbf36cd932dad8f2a26c54091df621394310beb7be36f",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/followup4_records.py",
+      "sha256": "6214bfe4ea26880afa45b69de3b0ff032df101cd22e978982170506ecc4bf166",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/followup5_records.py",
+      "sha256": "6ae124968a934e03f9bb0034571a4ad5a69270bc2e2f37d828e3d8e50f046021",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/followup5_run.py",
+      "sha256": "2d3862743d7398144a19a25e3b861bf154d2139a57f7d759f23e1a1c969e8119",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/native_diagnostics.py",
+      "sha256": "3cc19e31f24fc2276269f44942e1def5f859310b688e45ce7aa142e3a6f22565",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/pitr.py",
+      "sha256": "4fe5133c9baeb2759197b83547ed248e7efeed25b9e80f8f21643fbf267a70d0",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/pitr_compatibility.py",
+      "sha256": "944bada42f4e4fbedbf03b2ecb3953f504ea7ec083e6e7ad06f7bf51388e1c61",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/run.py",
+      "sha256": "91d6e0ef34b37e5f510cd585994e07b0a8e9d3ba2aaec940ad7e1ff408350cf5",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/scale_run.py",
+      "sha256": "d0a0bf6f75fdbdd813a5a4c2778d0fa502a7836ccc23f3a1602074e79c2f32c8",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    },
+    {
+      "path": "tests/e2e/at/secops/test_run.py",
+      "sha256": "9cbf62f96dc6e4175d919e4bd1e10ba5b074ad8cc818cd9a60b1da176b574c8f",
+      "scope": "final reviewed source, distinct from the runtime guard digest in fault-injection.json"
+    }
+  ],
+  "evidence_json_parse": "passed",
+  "cleanup": "cleanup.json",
+  "evidence_consistency": "passed: counted gates, all body triplets, both guarded finite cutoffs/recovery, source-end immutability, post-revoke, 6000 reads and ledger/checkpoint/sample counts"
+}
