@@ -622,6 +622,7 @@ function createFakeNetBirdServer(tlsOptions) {
       }
 
       const reply = {
+        ...(kind === 'setup-keys' && req.method === 'PUT' ? bucket.get(id) || {} : {}),
         ...(templates[kind] || {}),
         ...bodyObj,
         id,
@@ -650,6 +651,18 @@ function createFakeNetBirdServer(tlsOptions) {
           })),
         }));
       } else if (kind === 'setup-keys') {
+        if (req.method === 'POST') {
+          reply.used_times = 1;
+          reply.revoked = false;
+          reply.state = 'overused';
+          for (const gid of extractIds(reply.auto_groups)) {
+            const grp = objects.groups.get(gid);
+            if (grp) {
+              grp.peers = [{ id: 'nb-peer-node-1', name: 'tw-tpe-01' }];
+              grp.peers_count = 1;
+            }
+          }
+        }
         reply.key = `nb-setup-secret-${serial}`;
         reply.expires = new Date(Date.now() + 86400_000).toISOString();
       }
@@ -1145,11 +1158,6 @@ async function enrollLiveNode(
   const clientCertPem = enrolled.certificate_pem;
   const incarnationId = enrolled.node_incarnation_id;
 
-  await pool.query(
-    `UPDATE node_incarnations SET deployment_id = 'nb-dev', peer_id = 'nb-peer-node-1' WHERE id = $1`,
-    [incarnationId],
-  );
-
   const bootId = crypto.randomUUID();
   const ledgerEpoch = crypto.randomUUID();
   const meterEpochId = crypto.randomUUID();
@@ -1542,26 +1550,63 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
   );
 }
 
+const NODE_AFFECTING_OUTBOX_EVENTS = [
+  'device.authorized',
+  'device.revoked',
+  'member.entitlement_changed',
+  'member.suspended',
+  'policy.activated',
+  'node.peer.observe',
+  'node.peer.discover',
+  'node.provision.requested',
+  'node.publication_changed',
+  'node.updated',
+  'fleet.update_created',
+  'fleet.first_sync_created',
+  'fleet.update_retry',
+  'fleet.release_support_changed',
+];
+
+async function drainNodeAffectingOutbox(pool, label = 'outbox') {
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    const outboxRes = await pool.query(
+      `SELECT EXISTS(
+         SELECT 1 FROM outbox_events
+         WHERE delivered_at IS NULL
+           AND dead_lettered_at IS NULL
+           AND event_type = ANY($1::text[])
+       ) AS has_undelivered`,
+      [NODE_AFFECTING_OUTBOX_EVENTS],
+    );
+    if (!outboxRes.rows[0]?.has_undelivered) {
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Timed out draining node-affecting outbox events on ${label}`);
+}
+
 async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
   const deadline = Date.now() + 15_000;
   let lastRow = null;
   while (Date.now() < deadline) {
-    const genRes = await pool.query(
-      `SELECT greatest(desired_config_generation, 1)::text AS target_gen FROM nodes WHERE id = $1`,
-      [liveNode.nodeId],
-    );
-    const targetGen = genRes.rows[0]?.target_gen || '1';
-    await liveNode.submitObservation(targetGen);
-
     const res = await pool.query(
       `SELECT
          desired_config_generation::text AS desired_config_generation,
          applied_config_generation::text AS applied_config_generation,
+         greatest(desired_config_generation, 1)::text AS target_gen,
          provisioning_state,
          safety_status,
          control_status,
          data_health,
-         (applied_config_generation >= desired_config_generation) AS gen_caught_up
+         (applied_config_generation >= desired_config_generation) AS gen_caught_up,
+         EXISTS(
+           SELECT 1 FROM outbox_events
+           WHERE delivered_at IS NULL
+             AND dead_lettered_at IS NULL
+             AND event_type = 'node.peer.observe'
+         ) AS has_pending_observe
        FROM nodes
        WHERE id = $1`,
       [liveNode.nodeId],
@@ -1572,9 +1617,13 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
       lastRow.provisioning_state === 'ready' &&
       lastRow.safety_status === 'passed' &&
       lastRow.control_status === 'online' &&
-      lastRow.gen_caught_up === true
+      lastRow.gen_caught_up === true &&
+      !lastRow.has_pending_observe
     ) {
       return lastRow;
+    }
+    if (!lastRow?.has_pending_observe || !lastRow?.gen_caught_up) {
+      await liveNode.submitObservation(lastRow?.target_gen || '1');
     }
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -1587,24 +1636,24 @@ async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
   const deadline = Date.now() + 15_000;
   let lastRow = null;
   while (Date.now() < deadline) {
-    const genRes = await pool.query(
-      `SELECT greatest(desired_config_generation, 1)::text AS target_gen FROM nodes WHERE id = $1`,
-      [liveNode.nodeId],
-    );
-    const targetGen = genRes.rows[0]?.target_gen || '1';
-    await liveNode.submitObservation(targetGen);
-
     const res = await pool.query(
       `SELECT
          desired_config_generation::text AS desired_config_generation,
          applied_config_generation::text AS applied_config_generation,
+         greatest(desired_config_generation, 1)::text AS target_gen,
          provisioning_state,
          safety_status,
          control_status,
          data_health,
          current_release_id,
          last_good_release_id,
-         (applied_config_generation >= desired_config_generation) AS gen_caught_up
+         (applied_config_generation >= desired_config_generation) AS gen_caught_up,
+         EXISTS(
+           SELECT 1 FROM outbox_events
+           WHERE delivered_at IS NULL
+             AND dead_lettered_at IS NULL
+             AND event_type = 'node.peer.observe'
+         ) AS has_pending_observe
        FROM nodes
        WHERE id = $1`,
       [liveNode.nodeId],
@@ -1617,9 +1666,18 @@ async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
       lastRow.control_status === 'online' &&
       lastRow.gen_caught_up === true &&
       lastRow.current_release_id === RELEASE_110_ID &&
-      lastRow.last_good_release_id === RELEASE_110_ID
+      lastRow.last_good_release_id === RELEASE_110_ID &&
+      !lastRow.has_pending_observe
     ) {
       return lastRow;
+    }
+    if (
+      !lastRow?.has_pending_observe ||
+      !lastRow?.gen_caught_up ||
+      lastRow?.current_release_id !== RELEASE_110_ID ||
+      lastRow?.last_good_release_id !== RELEASE_110_ID
+    ) {
+      await liveNode.submitObservation(lastRow?.target_gen || '1');
     }
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -2512,21 +2570,32 @@ async function main() {
         const stateRes = await pool.query(
           `SELECT
              greatest(n.desired_config_generation, 1)::text AS desired_gen,
-             (n.applied_config_generation < n.desired_config_generation
-              OR n.provisioning_state <> 'ready'
+             (n.applied_config_generation < n.desired_config_generation) AS gen_behind,
+             (n.provisioning_state <> 'ready'
               OR n.control_status <> 'online'
-              OR n.safety_status <> 'passed') AS node_needs_obs,
+              OR n.safety_status <> 'passed') AS state_not_ready,
              EXISTS(
                SELECT 1 FROM operations
                WHERE kind IN ('node.publish', 'node.unpublish', 'node.disable')
                  AND status IN ('pending', 'running', 'partially_succeeded')
-             ) AS has_pending
+             ) AS has_pending_op,
+             EXISTS(
+               SELECT 1 FROM outbox_events
+               WHERE delivered_at IS NULL
+                 AND dead_lettered_at IS NULL
+                 AND event_type = 'node.peer.observe'
+             ) AS has_pending_observe
            FROM nodes n
            WHERE n.id = $1`,
           [liveNode.nodeId],
         );
         const row = stateRes.rows[0];
-        if (row && (row.node_needs_obs || row.has_pending)) {
+        if (
+          row &&
+          !holdNodeObservations &&
+          (row.gen_behind ||
+            (!row.has_pending_observe && (row.state_not_ready || row.has_pending_op)))
+        ) {
           await liveNode.submitObservation(row.desired_gen || '1');
         }
       } catch {
@@ -2718,26 +2787,12 @@ async function main() {
                 const parsed = JSON.parse(body || '{}');
                 if (parsed.hold) {
                   holdNodeObservations = true;
-                  const drainDeadline = Date.now() + 2_000;
-                  while (Date.now() < drainDeadline) {
-                    const outboxRes = await pool.query(
-                      `SELECT EXISTS(
-                         SELECT 1 FROM outbox_events
-                         WHERE delivered_at IS NULL
-                           AND event_type IN (
-                             'device.authorized',
-                             'device.revoked',
-                             'member.entitlement_changed',
-                             'member.suspended'
-                           )
-                       ) AS has_undelivered`,
-                    );
-                    if (!outboxRes.rows[0]?.has_undelivered) {
-                      break;
-                    }
-                    await new Promise((r) => setTimeout(r, 50));
+                  while (heartbeatInFlight) {
+                    await new Promise((r) => setTimeout(r, 25));
                   }
+                  await drainNodeAffectingOutbox(pool, 'hold-node-observations-pre');
                   await pollLiveNodeReady(pool, liveNode, 'hold-node-observations');
+                  await drainNodeAffectingOutbox(pool, 'hold-node-observations-post');
                 } else {
                   holdNodeObservations = false;
                 }
