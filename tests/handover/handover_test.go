@@ -42,6 +42,7 @@ var ownedDocs = []string{
 	"docs/reviews/r10-d063-review.md",
 	"docs/reviews/r11-d064-review.md",
 	"docs/reviews/r12-enforce-limits-review.md",
+	"docs/reviews/r13-r12-fixes-review.md",
 }
 
 var repoPathPrefixes = []string{
@@ -369,6 +370,7 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"fvpn-backup":                 "backup-systemd-unit-prefix",
 		"fvpn-postgres-entrypoint":    "backup-postgres-entrypoint-script",
 		"fvpn-oidc":                   "devstack-oidc-container-name",
+		"fvpn-nb-login":               "devstack-netbird-login-temp-log-prefix (/var/run/fvpn-nb-login-*.log)",
 	}
 
 	tokenRE := regexp.MustCompile(`\b(fvpn-[a-z0-9-]+)(\.service)?\b`)
@@ -613,6 +615,7 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r10-d063-review.md",
 		"r11-d064-review.md",
 		"r12-enforce-limits-review.md",
+		"r13-r12-fixes-review.md",
 	}
 
 	var gotFiles []string
@@ -859,5 +862,160 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 		if got != entry.SHA256 {
 			t.Errorf("docs/e2e/at/secops/scope-review.json handover_follow_up_6 sha256 for %s = %s, want %s", entry.Path, entry.SHA256, got)
 		}
+	}
+}
+
+func TestHandover_Followup7Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Parse contracts/openapi.yaml for operation count (46) and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
+	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read contracts/openapi.yaml: %v", err)
+	}
+	var spec struct {
+		Paths      map[string]map[string]any `yaml:"paths"`
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]struct {
+					Minimum int `yaml:"minimum"`
+					Maximum int `yaml:"maximum"`
+				} `yaml:"properties"`
+			} `yaml:"schemas"`
+		} `yaml:"components"`
+	}
+	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
+		t.Fatalf("parse contracts/openapi.yaml: %v", err)
+	}
+	opCount := 0
+	for _, path := range spec.Paths {
+		for method := range path {
+			if slices.Contains([]string{"get", "put", "post", "delete", "patch", "options", "head", "trace"}, method) {
+				opCount++
+			}
+		}
+	}
+	if opCount != 46 {
+		t.Fatalf("contracts/openapi.yaml operation count = %d, want 46", opCount)
+	}
+	if _, ok := spec.Paths["/admin/fleet-config"]; !ok {
+		t.Fatal("contracts/openapi.yaml missing /admin/fleet-config path")
+	}
+	fcProp := spec.Components.Schemas["FleetConfigUpdate"].Properties["max_offline_lease_seconds"]
+	if fcProp.Minimum != 60 || fcProp.Maximum != 86400 {
+		t.Fatalf("FleetConfigUpdate.max_offline_lease_seconds bounds = %d..%d, want 60..86400", fcProp.Minimum, fcProp.Maximum)
+	}
+
+	// 2. Verify operator-guide.md fleet-config section, all 46 wired operations, and PR #173..#182 catch-up claims.
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"all 46 HTTP operations are wired in `apps/control` on `main`",
+		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
+		"D-065",
+		"/api/v1/admin/fleet-config",
+		"max_offline_lease_seconds",
+		"default_max_offline_lease_seconds",
+		"`60`–`86400`",
+		"min(120 s, window/2)",
+		"900 s",
+		"428 PRECONDITION_REQUIRED",
+		"412 RESOURCE_VERSION_CONFLICT",
+		"409 IDEMPOTENCY_CONFLICT",
+		"422 VALIDATION_FAILED",
+		"fleet_config.update",
+		"fleet_config:00000000-0000-0000-0000-000000000001",
+		"TestD065_FleetConfigHTTPReadWrite",
+		"TestD065_AT29_FleetConfigOnlyChangesNewLeases",
+		"TestD065_FleetConfigReleaseWriterInterleaving",
+		"TestD065_FleetConfigMissingRowUsesIssuerDefault",
+		"w4-enroll",
+		"12000",
+		"66000",
+		"F5-01",
+		"F6-02",
+		"docs/updates/central-lifecycle.md",
+		"shared development host, not candidate hardware",
+		"904.360 s",
+		"300.386 s",
+		"ScaleNativeMembers",
+		"D-066",
+		"gateway-principals",
+		"-grace-seconds",
+		"PauseNativeControl",
+		"StartNodeTelemetry",
+		"TestMTR03_RunSkipsBusySampleWithoutLosingCounters",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 7 token %q", token)
+		}
+	}
+
+	// 3. Verify deploy.md and calibration.md fleet-config and devstack follow-up 11 claims.
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"D-065",
+		"#176",
+		"#179",
+		"#182",
+		"/api/v1/admin/fleet-config",
+		"max_offline_lease_seconds",
+		"default_max_offline_lease_seconds",
+		"`60`–`86400`",
+		"min(120 s, window/2)",
+		"fleet_config.update",
+		"428 PRECONDITION_REQUIRED",
+		"412 RESOURCE_VERSION_CONFLICT",
+		"409 IDEMPOTENCY_CONFLICT",
+		"422 VALIDATION_FAILED",
+		"TestD065_AT29_FleetConfigOnlyChangesNewLeases",
+		"gateway-principals",
+		"-grace-seconds",
+		"FVPN_E2E_GRACE_SECONDS",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 7 token %q", token)
+		}
+	}
+
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"D-065",
+		"#176",
+		"#179",
+		"#178",
+		"#182",
+		"/api/v1/admin/fleet-config",
+		"max_offline_lease_seconds",
+		"`60`–`86400` seconds",
+		"min(120 s, window/2)",
+		"fleet_config.update",
+		"TestD065_AT29_FleetConfigOnlyChangesNewLeases",
+		"shared development host, not candidate hardware",
+		"StartNodeTelemetry",
+		"-grace-seconds",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 7 token %q", token)
+		}
+	}
+
+	// 4. Verify r13-r12-fixes-review.md archive provenance and README.md row.
+	r13 := readOwnedDoc(t, root, "docs/reviews/r13-r12-fixes-review.md")
+	for _, token := range []string{
+		"12496fd0d057632919d8f1153b92a9a660fdc520",
+		"e66393db6a16b7ce94472564e526a7254720114a",
+		"13bc71172ff626baded35dee6993448ca6d0df842e08c1bd766f8085e3f13134",
+		"agy/gemini-4-argon-high",
+		"H-1", "H-2", "H-3", "H-4",
+		"M-1", "M-2", "M-3", "M-4", "M-5",
+		"L-1", "L-2", "L-3",
+	} {
+		if !strings.Contains(r13, token) {
+			t.Errorf("docs/reviews/r13-r12-fixes-review.md missing expected provenance/finding token %q", token)
+		}
+	}
+	reviewsREADME := readOwnedDoc(t, root, "docs/reviews/README.md")
+	if !strings.Contains(reviewsREADME, "r13-r12-fixes-review.md") || !strings.Contains(reviewsREADME, "12496fd") {
+		t.Error("docs/reviews/README.md missing r13-r12-fixes-review archive entry")
 	}
 }
