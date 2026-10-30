@@ -126,7 +126,7 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
 
 ### 2.3 OpenAPI Contract Inventory (`44` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
 
-`contracts/openapi.yaml` (OpenAPI `1.3.0`, revision 7) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
+`contracts/openapi.yaml` (OpenAPI `1.4.0`, revision 8) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
 - **Member Groups (`GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, `D-057`, `D-059`)**:
   `CreateAdminGroup` writes an immutable `member_groups` row (unique `code` and `name`), records a typed `group.create` audit event on `member_group:<id>`, and stores the idempotent `201 MemberGroup` receipt in one transaction (`replay` returns the original `201` body). `ListAdminGroups` orders by `code`, supports exact `code` filtering and cursor pagination, and counts every attached exit in `exit_count` (including unpublished or offline exits).
 - **Authenticated Resolver Document Delivery (`GET /api/v1/agent/resolver-documents/{document_id}`, `D-056`)**:

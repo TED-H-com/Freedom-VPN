@@ -1,6 +1,6 @@
 {
   "started_at": "2026-10-30T07:21:00Z",
-  "scope": "20 native users \u00d7 3 peers; no serving node or capacity claim",
+  "scope": "20 native users × 3 peers; no serving node or capacity claim",
   "node_incarnation": null,
   "inventory_before": {
     "containers": {
@@ -632,5 +632,11 @@
     }
   ],
   "diagnostics": "native-diagnostics.json",
-  "cohort_snapshot": "native-cohort.json"
+  "cohort_snapshot": "native-cohort.json",
+  "follow_up_5": {
+    "new_20x3_run": false,
+    "reason": "devstack follow-up 10 absent from measured main 446b6b0",
+    "new_counted_subset": "capacity.json",
+    "historical_full_admission_record": "followup4-native-scale.json"
+  }
 }

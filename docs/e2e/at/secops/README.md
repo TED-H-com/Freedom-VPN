@@ -1,74 +1,68 @@
 # Wave 4 security and operations acceptance
 
-Follow-up 4 uses the shared dev stack on `w4-secops` / port base `30000`.
+Follow-up 5 measured main `446b6b0` (#162), using only `w4-secops` / port base
+`30000`. Run `86e6106a-1be1-4003-9b0f-35a30e9cda12` took place on a shared dev
+host, **not candidate hardware**. [Dependencies](dependencies.json) list the
+merged roadmap entries and the absent devstack follow-up 10.
 
 ```sh
-make -f mk/at-secops.mk at-secops-followup4
+make -f mk/at-secops.mk at-secops-followup5
 ```
 
-The runner refuses an occupied namespace, creates fresh TEST ONLY state, runs
-live probes, removes its runtime objects, and runs supporting suites with
-`-p 1 -parallel 2`. Exit 2 preserves blocked acceptance; inspect individual
-results rather than treating that exit as a pass. No application, contract,
-migration or shared lab source is changed.
+The target refuses an occupied namespace and tears down its own objects. It
+exits 2 while full acceptance has remaining gates; the live Go probe and all
+25 supporting suites passed. The deadline worker guard is now started by the
+target; this recorded run invoked the same guard alongside it before the faults.
 
-| Case | Evidence | Scope |
-|---|---|---|
-| AT28 | [record](AT28.json), [live](live.json), [limits](limiter.json) | Role/session/PKI/CSRF/ownership and secret scanning; new usage-size refusal is retained as a failure |
-| AT29 | [record](AT29.json), [publication](publication.json) | Publication refusal/success and real readiness; deadline faults require a counted serving flow |
-| AT30 | [record](AT30.json), [PITR](pitr.json) | Historical physical restore and synthetic replay; full node archive/external reconciliation remains blocked |
-| AT31 | [record](AT31.json), [limits](limiter.json), [dependencies](dependencies.json) | Corrected D-060 classes, 20-user login, actual native-peer admission; no capacity certification without counted traffic |
-| AT32 | [record](AT32.json), [review](scope-review.json) | DOC01–DOC14 resolved; platform/source/hardware rows remain needs operator run |
+| Case | Full status | Measured subset | Remaining gates |
+|---|---|---|---|
+| [AT28](AT28.json) | blocked | Usage 8 MiB and all other class cap triplets pass; duplicate retries leave one row; 20/20 login | Complete resource/log matrix; SECOPS-16 exhaustion recheck |
+| [AT29](AT29.json) | blocked | Selected counted flow; paid agent-crash cutoff; grant kernel deadline with agent/watchdog stopped; valid-policy recovery | Finite grace input, short node-lease input, established TCP/UDP, guest clock rollback |
+| [AT30](AT30.json) | blocked | Original physical PITR/synthetic replay retained, no new restore | Real node archive and independent provider/peer reconciliation |
+| [AT31](AT31.json) | blocked | 20 readers and 2 counted devices, fixed five-minute window; real ledger/policy/usage observations | 60-device gateway budget, two nodes, forced relay/UDP, usable node resource telemetry, candidate hardware |
+| [AT32](AT32.json) | blocked | Prior DOC01–14 fixes retained; DOC15 requests historical attribution of obsolete blockers | Three physical origins and native platform/hardware operator rows |
 
-D-050: groups, domain rules, DNS/plan/fair-use policy revisions, activation and
-finite grants use admin APIs. The DNS fixture blocks `blocked.example.invalid`
-so resolver smoke probes remain within the controlled lab; an empty profile's
-fallback `example.com` cannot pass this lab's NXDOMAIN-only public zone.
-`e2e.PrepareServingBaseline` supplies signed binaries/support policy. Native
-peers use the exported `StartNativePeer` / `JoinNativeMember` hooks and production
-discovery. **No live SQL fixture writes remain.** Isolated PKI component identity
-rows remain separate from serving evidence.
+[Counted-flow proof](counted-flow.json) follows the required order: select the
+single API-created `fvpn-exit-...`, route through `fvnb0`, verify HTTPS 200 and
+an authenticated origin receipt from node SNAT, then check the exact device's
+admission bytes. The first probe added **1,066 upload / 1,513 download bytes**.
+Extra peers use the controlled IP in the origin certificate's SAN because they
+do not inherit Compose hostname aliases. TLS verification stays enabled; no
+route, group, policy or projected row is manufactured.
 
-The publication negative uses a genuine ready baseline with capacity unset,
-then records the failed operation step. The capacity command supplies TEST ONLY
-200 Mbit/s parent limits and 100 Mbit/s member caps. A retrying operation may
-recover after that input changes; its earlier failed step is not relabeled as a
-terminal failed operation. The zero-binding positive is checked against the
-actual signed document. Neither publication outcome proves a member flow.
+[Capacity](capacity.json) records 6,000 successful portal reads, zero wrong
+member responses, p50/p95/p99 **13.442 / 23.074 / 368.457 ms**, and 300 successful
+HTTPS requests from each native device. Admission deltas were
+**310,512 / 456,974** and **307,780 / 453,957** upload/download bytes, including
+protocol overhead and diagnostic policy probes. Policy ACKs took **6.013 s**
+and **1.007 s**; latest sampled usage was API-visible within an observed
+**4.371 s upper bound**. The node ledger had ACK62/max-seen62, 62 receipts and
+123 declared/actual samples. The first member's total also includes the
+separately labeled 300-byte synthetic node-B event. These numbers do not certify
+throughput or the unrun full profile in [load-profile.json](load-profile.json).
 
-[Limiter evidence](limiter.json) records exact thresholds, refusal codes,
-Retry-After, class/limiter counters and body boundaries. The observation burst
-uses invalid `{}` bodies to reach schema refusal without inventing agent
-telemetry. Lease requests and usage events use valid product identities. A
-single real admitted binding supports the synthetic usage event and duplicate
-checks; that does not prove kernel sampling. IPv6 /64 behavior is component
-verified; the live connection uses assigned IPv4 loopback ports.
+There are 100 resource snapshots. Central-service CPU, memory and block IO are
+retained; all node Docker samples returned 0B/0B memory and zero CPU/IO, which
+is **unavailable telemetry**, not a zero-resource node. See [dev host](dev-host.json).
 
-The [Follow-up 3 records](followup3-limiter.json) retain the resolved login
-measurement and old assumptions. #145 corrected route classification; #141
-introduced shared IPv6 /64 keys. [Attempt history](followup4-attempts.json)
-retains two interrupted harness runs before the final fixture was ready.
-Private subprocess logs remain mode 0600; the dev-stack startup subprocess uses
-umask 022 so copied public CoreDNS files remain readable by its non-root process.
+[Deadlines](deadlines.json) retain 66 timestamped HTTPS attempts, signed bounds,
+monotonic heartbeat values, kernel timeout sets and recovery ACKs. Paid service
+ended at 09:41:05Z; the last successful post-fault attempt started at 09:40:53.171Z
+before watchdog closure. Grant service ended at 09:44:33Z; the last success
+started at 09:44:31.763Z with the watchdog stopped. No attempt starting after
+either end succeeded. The [worker guard](fault-injection.json) prevented central
+reconciliation from being the cause of withdrawal. Original paid/grant ends
+remained unchanged; only new finite grants and applied policy restored traffic.
 
-[PITR](pitr.json), its source images/timestamps and [Follow-up 3 compatibility
-check](pitr-compatibility.json) remain historical. Follow-up 4 makes no new
-physical restore or current-schema compatibility assertion. The full `at-secops`
-target includes physical PITR; `at-secops-pitr` runs it independently on a fresh
-own-prefix stack. It never restores the live source or shared admin database.
+[Post-revoke](post-revoke.json) records generation **22**, forwarding enabled,
+empty block reasons, and a counted second-member flow after the first device's
+202 revoke. The revoked device no longer advertised the exit. This resolves
+the measured F3-02 coherence half after #153/#159/#162.
 
-[Secret scanning](secret-scan.json) inventories all source and extra native-peer
-container streams, produced node/member logs and audit rows. Raw bodies,
-credentials and backup data stay private. [Requests](requests.md) name the
-remaining owners and exact prerequisites; [operator procedures](operator-runs.md)
-remain unrun. JSON records retain build/image digests, policy/incarnation, UTC,
-commands and expected/actual results. Supporting tests do not promote a blocked
-full case to passed.
-
-The isolated `at-secops-native-scale` recheck admitted 50 devices and stopped at
-native login attempt 51. [Gateway diagnostics](native-diagnostics.json) identify
-the configured 256-connection budget; [cohort evidence](native-cohort.json)
-records 50 current bindings. This is a lab precondition failure, not a measured
-candidate-hardware capacity number. The gateway also logged one transient
-device-flow query value; the public scan reports only its category/count.
-See SECOPS-10 and SECOPS-16. No 60-device success is claimed.
+[Limiter](limiter.json) retires SECOPS-15 on measured cap−1/cap/cap+1 results.
+[Attempt history](followup5-attempts.json) preserves the first complete run and
+its extra-peer hostname failure. [Requests](requests.md), [scope review](scope-review.json),
+[secret scan](secret-scan.json), [validation](validation.json) and
+[operator procedures](operator-runs.md) retain qualifications and exact owners.
+All live mutations use product APIs or exported lab/process hooks (D-050);
+projected tables are read-only. No application, lab or migration source changed.
