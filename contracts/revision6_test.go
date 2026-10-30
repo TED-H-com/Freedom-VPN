@@ -11,7 +11,6 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
@@ -55,23 +54,16 @@ func TestAPI01_Revision6VersionAndDecisions(t *testing.T) {
 	}
 }
 
-// The nodes handler still projects evidence beside NodeDetail. The generated
-// member must accept that JSON without renaming or dropping a reported field.
+// GetNode200JSONResponse encodes NodeDetail. The generated dns_policy_evidence
+// member must keep a reported value and an explicit null without renaming or
+// dropping a field. The test encodes that member directly, so it stays green
+// when the additive nodes wrapper is removed.
 func TestDNS03_NodeDetailEvidenceDecodesHandlerJSON(t *testing.T) {
-	src := string(readFile(t, "../internal/nodes/httpwire/node_detail.go"))
-	const projection = "DNSPolicyEvidence presence.Nullable[api.DnsPolicyEvidence] `json:\"dns_policy_evidence\"`"
-	if !strings.Contains(src, projection) || !strings.Contains(src, "json.NewEncoder(w).Encode(r.body)") {
-		t.Fatal("handler projection changed; update the compatibility test")
-	}
 	var detail api.NodeDetail
 	readJSON(t, "examples/valid/NodeDetail.json", &detail)
 	var evidence api.DnsPolicyEvidence
 	readJSON(t, "examples/valid/DnsPolicyEvidence.json", &evidence)
-	type handlerBody struct {
-		api.NodeDetail
-		DNSPolicyEvidence presence.Nullable[api.DnsPolicyEvidence] `json:"dns_policy_evidence"`
-	}
-	encode := func(body handlerBody) []byte {
+	encode := func(body api.NodeDetail) []byte {
 		t.Helper()
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(body); err != nil {
@@ -79,8 +71,8 @@ func TestDNS03_NodeDetailEvidenceDecodesHandlerJSON(t *testing.T) {
 		}
 		return buf.Bytes()
 	}
-	populated := handlerBody{NodeDetail: detail}
-	populated.DNSPolicyEvidence.Set(evidence)
+	populated := detail
+	populated.DnsPolicyEvidence.Set(evidence)
 	raw := encode(populated)
 	if err := validateComponent(t, "NodeDetail", raw); err != nil {
 		t.Fatal(err)
@@ -105,8 +97,8 @@ func TestDNS03_NodeDetailEvidenceDecodesHandlerJSON(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(reported, evidence) {
 		t.Fatalf("generated type did not keep reported evidence: %v", err)
 	}
-	empty := handlerBody{NodeDetail: detail}
-	empty.DNSPolicyEvidence.SetNull()
+	empty := detail
+	empty.DnsPolicyEvidence.SetNull()
 	raw = encode(empty)
 	if err := validateComponent(t, "NodeDetail", raw); err != nil {
 		t.Fatal(err)
