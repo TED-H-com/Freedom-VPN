@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -262,6 +263,14 @@ func requireAttest(t *testing.T, r *rig, ch healthattest.Challenge) healthattest
 	}
 	if reason := healthattest.Validate(ch, att, r.clock.Wall(), ch.Components); reason != "" {
 		t.Fatalf("validate %s", reason)
+	}
+	chJSON, err := json.Marshal(ch)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrapped, err := ValidateHealthAnswer(chJSON, readFile(t, path), r.clock.Wall(), ch.Components.NodeAgent, ch.Components.Netbird, ch.Components.NodeUpdater, ch.Components.Enforcement)
+	if err != nil || wrapped != "" {
+		t.Fatalf("wrapper %q %v", wrapped, err)
 	}
 	if !att.GeneratedAt.After(ch.IssuedAt) || !att.GeneratedAt.Before(ch.ExpiresAt) {
 		t.Fatalf("generated %s issued %s expires %s", att.GeneratedAt, ch.IssuedAt, ch.ExpiresAt)

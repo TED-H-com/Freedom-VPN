@@ -2,14 +2,68 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
+
+// IssueHealthChallenge builds a challenge with healthattest.Issue and
+// returns its JSON. The netlab module cannot import the internal package.
+// The caller writes the bytes as health-challenge.json, mode 0600.
+func IssueHealthChallenge(txnID, releaseID, nodeID, incarnationID, bootID string, now time.Time, ttl time.Duration, nodeAgent, netbird, updater, enforcement string) ([]byte, error) {
+	ch, err := healthattest.Issue(healthattest.Input{
+		TxnID:         txnID,
+		ReleaseID:     releaseID,
+		NodeID:        nodeID,
+		IncarnationID: incarnationID,
+		BootID:        bootID,
+		Now:           now,
+		TTL:           ttl,
+		Components: healthattest.Components{
+			NodeAgent:   nodeAgent,
+			Netbird:     netbird,
+			NodeUpdater: updater,
+			Enforcement: enforcement,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	body, err := json.Marshal(ch)
+	if err != nil {
+		return nil, err
+	}
+	return append(body, '\n'), nil
+}
+
+// ValidateHealthAnswer is healthattest.Validate for a challenge and an
+// attestation already encoded as JSON. The netlab module lives outside
+// node/ and cannot import node/internal/healthattest. manifest versions
+// are the release's node_agent, netbird, node_updater and enforcement
+// strings. An empty reason means the binding held. A non-nil error means
+// the JSON itself could not be read.
+func ValidateHealthAnswer(challenge, attestation []byte, now time.Time, nodeAgent, netbird, updater, enforcement string) (string, error) {
+	var ch healthattest.Challenge
+	if err := json.Unmarshal(challenge, &ch); err != nil {
+		return "", err
+	}
+	var att healthattest.Attestation
+	if err := json.Unmarshal(attestation, &att); err != nil {
+		return "", err
+	}
+	return string(healthattest.Validate(ch, att, now, healthattest.Components{
+		NodeAgent:   nodeAgent,
+		Netbird:     netbird,
+		NodeUpdater: updater,
+		Enforcement: enforcement,
+	})), nil
+}
 
 // evaluate runs the data-path probe and Decide. A live matching challenge
 // whose probe is not strictly newer than issued_at is probed once more
@@ -67,9 +121,9 @@ func (e *Engine) answerHealth(ctx context.Context) {
 		}
 		refreshed = true
 	}
-	// A fresh probe keeps the decision this step already computed, which is
-	// the result enforce just applied. Decide only when that result is
-	// missing or the probe had to be run again. Neither path calls enforce.
+	// A fresh probe keeps the decision this step already computed. Decide
+	// only when that result is missing or the probe had to be run again.
+	// Answering does not call enforce and does not change publication.
 	if _, has := decisionStatus(e.decision, api.NodeCheckNameTunnelProbe); refreshed || !has {
 		e.decision = Decide(e.input())
 	}
