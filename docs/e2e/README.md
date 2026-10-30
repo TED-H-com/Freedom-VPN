@@ -2,8 +2,8 @@
 
 This stack is an end-to-end run of a node built from the repository against a
 control plane built from the repository (§3, §5–§8, §10, §13, §17, §19). It is
-a lab. Prices, the host reserve, and the release-support row it inserts are
-TEST ONLY.
+a lab. Prices, the host reserve and policy inputs are TEST ONLY.
+Shared setup calls and probe commands are documented in [RUN.md](RUN.md).
 
 ## Parameters
 
@@ -42,7 +42,7 @@ The harness dials `127.0.0.1` at these ports and keeps the TLS name
 
 | Port | Offset | Container | Default |
 |---|---:|---:|---:|
-| control public | 443 | 8443 | 18443 |
+| Portal + control public (gateway) | 443 | 8443 | 18443 |
 | agent mTLS | 1443 | 9443 | 19443 |
 | IdP | 444 | 443 | 18444 |
 | release origin | 445 | 443 | 18445 |
@@ -149,14 +149,19 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | Evidence id | What the run drives | Spec |
 |---|---|---|
 | `stack-health` | control `/readyz`, IdP, origin, Postgres | §3, §17 |
+| `control-metrics` | bounded in-container HTTP probe of loopback metrics | §17.1 |
+| `backup` | archive check, physical full backup and isolated PITR readback | §17.2, §17.3, AT30 groundwork |
+| `serving-catalogue` | member group, Fair-Use and plan through APIs | §9, §14.2 |
+| `portal-billing-return` | built Portal return route in Chromium | §18.4, AT03 groundwork |
+| `billing` | linked provider snapshots, event replay, paid interval, cancellation and refunds | §9.2, §9.3, AT03/AT04 groundwork |
 | `admin-login` | OIDC authorization code with MFA; the member session is inside `member-traffic` | §14.2 |
 | `enroll-bootstrap` | installer token, bootstrap consumed once, NetBird join | §6, §19 AT06 |
 | `desired-state` | signed desired-state file on the node | §5, §8 |
 | `publish` | `PUT /admin/nodes/{id}/publication`, then poll the operation | §5.2, §14.2 |
 | `forwarding` | forward-chain generation and `fvmb0` member accept rules | §5, §19 AT10 |
-| `member-traffic` | seeded plan, grant, same-subject embedded-IdP join, device poll, checkout | §8, §19 AT12 |
+| `member-traffic` | API-created plan, grant, same-subject embedded-IdP join and device poll | §8, §19 AT12 |
 | `usage` | `GET /member/usage` and one idempotent usage-batch replay of a projected binding | §10, §19 AT14, AT15 |
-| `release-register` | `fvpn-release` package, register, verify | §13.3, §13.4 |
+| `release-register` | real packages, registration, verification and API-activated support policy | §13.2–§13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
 | `lease-expiry` | stop control and read the forward chain again | §5, §19 AT29 |
 | `threat-feed-central` | approved bootstrap, wrong-pin rejection, audit, worker metrics, resolver document | §12.3, §12.5, §19 AT22 groundwork |
@@ -173,7 +178,7 @@ member total matches the uploaded bytes.
 Each scenario writes `docs/e2e/runs/<UTC date>/<id>.json` and a short `.md`
 summary. Every record in one run carries the same `run_id` and `source_commit`;
 the timestamp `at` is the scenario's write time. Replace a dated set only after
-all fifteen scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
+all scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
 reached a gap and recorded the response; it is not a pass. Observations are
 names and short details. Tokens, setup keys, passwords, DSNs, and home paths
 are redacted. Raw portal subjects and NetBird user ids are also redacted;
@@ -208,7 +213,9 @@ Distinct artifact digests prevent the tamper target from reusing the good
 candidate’s verified download cache. Each manifest is signed, registered and
 verified. `release-register` records the SHA-256 of both each canonical manifest
 envelope (the registered digest) and its `signed` object. Product version and runtime `agent_release` match; the boot
-release ID and both candidates are in the serving allowlist. `update-bad`
+release ID and both candidates are in the serving allowlist. The shared
+`PrepareServingBaseline` helper creates and activates that non-empty policy
+through the API; no empty policy or fleet array is written in SQL. `update-bad`
 flips one byte in the uploaded real archive after verification, preserving
 its length.
 
@@ -230,7 +237,7 @@ revision with a wrong pin must fail bootstrap with `content_mismatch` and a
 stays null, while the prior approved content and resolver generation remain.
 The document digest and normalized embedded rules are checked without
 recording DNS queries. On-node feed delivery remains separately blocked on
-D-056 (contracts revision 5 and node application); the central result does not
+D-056 (wire-nodes follow-up 11 delivery and node application); the central result does not
 claim full AT22. No feed is fetched from the public Internet.
 
 ## Known limits
@@ -243,11 +250,16 @@ claim full AT22. No feed is fetched from the public Internet.
 - Artifact and feed fetchers reject private, loopback, overlay and documentation
   addresses. The origin uses `192.0.<3+slot>.10` on an isolated bridge without
   masquerading; no product SSRF allowance or public traffic is introduced.
-- The lab seeds catalogue inputs: a plan revision and exit group, a fake Stripe
-  price, and the release-support allowlist. Both approved and supported arrays
-  contain the registered boot and candidate IDs. D-050 remains binding: the
-  harness does not write member identity/device projections, node readiness,
-  publication, feed state, or resolver generation rows.
+- Group, plan and release-support inputs use the product APIs. Both approved
+  and supported release arrays contain the verified boot and candidate IDs.
+  D-050 remains binding: the harness does not write identity/device projections,
+  node readiness, publication, feed state or resolver generations. If group
+  creation is unavailable, plan creation and live paid-period reconciliation
+  remain blocked; no SQL catalogue substitute is used.
+- Payment snapshot/event hooks and the built Portal are available to the
+  harness owners; see [billing](scenarios/billing.md). Webhook acceptance alone
+  never clears a payment gate. Physical PITR is available through the adopted
+  backup image and dedicated repository; full AT30 recovery belongs to at-secops.
 - Production D-052 identity mapping and D-055 node peer discovery are now in
   the tested main tree. The lab uses their writers and reports their observed
   rows; it no longer treats those implementations as absent. A matching
@@ -267,8 +279,8 @@ claim full AT22. No feed is fetched from the public Internet.
   blocked and never becomes a synthetic success. No successful rollback is
   claimed without a restorable last-good release and its health evidence.
 - Feed central publication is tested separately from node delivery. The latter
-  remains blocked on D-056, owned by contracts revision 5 and the node delivery
-  implementation. The fixture's 300-second source cadence and 60-second
+  remains blocked on D-056, owned by wire-nodes follow-up 11 delivery and the
+  node application implementation. The fixture's 300-second source cadence and 60-second
   blocked TTL are TEST ONLY settings, not new production defaults.
 - The separate portal driver retains the four fixture deviations listed above.
   Those rows are not used by this acceptance runner and cannot clear its gates.

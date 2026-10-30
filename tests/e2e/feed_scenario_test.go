@@ -20,7 +20,7 @@ import (
 func (r *runner) threatFeed(ctx context.Context, admin *session) {
 	rec := Record{ID: "threat-feed-central", Title: "Approved feed bootstrap, wrong pin and resolver publication", Spec: []string{"§12.3", "§12.5", "§19 AT22"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
-	r.record(Record{ID: "threat-feed-node", Title: "Feed delivery and enforcement on the node", Spec: []string{"§12.5", "§19 AT22"}, Status: StatusBlocked, Observations: []Observation{{Name: "owner", Detail: "D-056: contracts revision 5 owner, followed by node delivery/application (w2-agent-core). Central resolver publication alone does not prove on-node enforcement."}}})
+	r.record(Record{ID: "threat-feed-node", Title: "Feed delivery and enforcement on the node", Spec: []string{"§12.5", "§19 AT22"}, Status: StatusBlocked, Observations: []Observation{{Name: "owner", Detail: "D-056: w3-wire-nodes follow-up 11 must deliver signed resolver references and credentials; w2-agent-core supplies application/readback. Central resolver publication alone does not prove on-node enforcement."}}})
 	note := recPathNote(&rec)
 	var fixture struct {
 		SHA   string `json:"content_sha256"`

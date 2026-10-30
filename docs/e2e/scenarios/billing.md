@@ -5,7 +5,7 @@ harnesses map that hostname to their assigned payment port and trust `ca.pem`.
 Stripe-compatible reads require `Authorization: Bearer <stripe.key>`.
 Mutation hooks instead require `X-E2E-Secret: <payment.secret>`. Both secrets
 are generated under the prepared state directory; never record either.
-All responses disable caching. CI does not contact Stripe or another public
+Hook and provider responses disable caching. CI does not contact Stripe or another public
 provider.
 
 1. Create and activate a valid plan through the policy API, with an existing

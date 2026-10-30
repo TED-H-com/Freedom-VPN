@@ -104,9 +104,9 @@ func (r *runner) record(rec Record) {
 	if rec.Status == StatusBlocked {
 		owners := map[string]string{
 			"publish":        "w3-wire-nodes: publication operation and production peer projection",
-			"member-traffic": "w3-wire-members: device admission; w3-wire-nodes: exit publication",
-			"forwarding":     "w2-agent-core and w3-wire-nodes: applied serving policy",
-			"usage":          "w3-wire-usage: exact usage acceptance after a serving binding exists",
+			"member-traffic": "w3-wire-nodes follow-up 11: D-057 group/plan/publication prerequisite; then native device admission",
+			"forwarding":     "w3-wire-nodes follow-up 11 and w2-agent-core: applied serving policy",
+			"usage":          "w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance",
 			"update-good":    "w4-node-updater and w2-agent-core: D-053 live candidate health",
 			"update-bad":     "w4-node-updater: tampered artifact rejection and recovery",
 			"lease-expiry":   "w2-agent-core: AT29 needs active forwarding before control loss",
