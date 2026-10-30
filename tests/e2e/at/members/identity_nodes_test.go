@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/members/issuer"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -110,7 +111,9 @@ func (l *live) identity(r *record) {
 	r.check("member self read", "200", detail(me), "GET /member/me", me.status == 200)
 	l.nativePeer = l.native(r, l.a, "member")
 	id := l.awaitDevice(l.nativePeer)
-	mapped := l.count(`SELECT count(*) FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id WHERE n.member_id=$1 AND n.external_user_id=i.subject AND i.subject=$2 AND i.issuer='https://netbird.example.invalid/oauth2' AND n.mapping_proof='shared_issuer_public_subject:https://netbird.example.invalid/oauth2'`, l.a.member, l.a.cred.ID)
+	canonicalIssuer, canonicalErr := issuer.Canonical("https://netbird.example.invalid/oauth2/")
+	r.check("canonical shared issuer", "one production canonical form", fmt.Sprintf("canonicalized=%t", canonicalErr == nil), "issuer.Canonical", canonicalErr == nil)
+	mapped := l.count(`SELECT count(*) FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id WHERE n.member_id=$1 AND n.external_user_id=i.subject AND i.subject=$2 AND i.issuer=$3 AND n.mapping_proof='shared_issuer_public_subject:'||$3`, l.a.member, l.a.cred.ID, canonicalIssuer)
 	bindings := l.count(`SELECT count(*) FROM device_bindings WHERE member_id=$1 AND valid_from<=clock_timestamp() AND valid_until>clock_timestamp()`, l.a.member)
 	r.check("cross-client production identity proof", "dashboard/CLI share public subject; verified mapping and finite device binding", fmt.Sprintf("verified_mappings=%d; device_projected=%t; live_bindings=%d", mapped, id != uuid.Nil, bindings), "shared idplogin helper; native CLI device flow; read product D-052 mapping and D-050 device projections", mapped == 1 && id != uuid.Nil && bindings == 1)
 	if id == uuid.Nil {
@@ -126,6 +129,8 @@ func (l *live) identity(r *record) {
 	before := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1`, l.a.member)
 	r.check("native device precondition", "observe real member device count", fmt.Sprintf("member_A_devices=%d", before), "SELECT count(*) FROM member_devices WHERE member_id=A", true)
 	l.forwardingGate(r)
+	l.traceForwarding(r, "member", id)
+	r.block("AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately.")
 }
 func (l *live) nodeMutation(method, suffix string, body any) response {
 	path := "/api/v1/admin/nodes/" + l.node.String()
@@ -161,15 +166,16 @@ func (l *live) publication(r *record) {
 	b := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupB)
 	r.check("A-only publication readback", "one A attachment, zero B; NetBird routes readable", fmt.Sprintf("A=%d; B=%d; routes=%d; HTTP=%d", a, b, len(list), routes.status), "read exit_groups; GET NetBird /api/routes", a == 1 && b == 0 && routes.status == 200)
 	l.forwardingGate(r)
+	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
+	l.traceForwarding(r, "member-b1", uuid.Nil)
 	l.publicationCommand(r, "published", []uuid.UUID{l.groupB})
 	regroup := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupB)
 	r.check("regroup projection", "group B attached", fmt.Sprintf("B=%d", regroup), "PUT group_ids=[B]; read product attachment", regroup == 1)
 	l.publicationCommand(r, "disabled", []uuid.UUID{l.groupB})
+	l.traceForwarding(r, "member-b1", uuid.Nil)
 	_, err := l.docker("restart", l.name("node"))
-	// D-061 lab sidecar shares the node network namespace. Reattach after restart.
-	_, dnsRestart := l.docker("restart", l.name("adguard"))
-	r.check("resolver sidecar namespace restored", "restart succeeds", fmt.Sprintf("restart_ok=%t", dnsRestart == nil), "docker restart fvpn-w4-members-adguard after node restart", dnsRestart == nil)
 	r.check("node restart", "restart succeeds", fmt.Sprintf("restart_ok=%t", err == nil), "docker restart fvpn-w4-members-node", err == nil)
+	l.restartReadback(r)
 	intent, observed := l.publicationState()
 	r.check("disabled persists", "disabled intent after node restart", fmt.Sprintf("intent=%s; observed=%s", intent, observed), "read publication after reconnect/restart", intent == "disabled")
 	// Restore the API intent for independent DNS checks; no lease is forged.
@@ -179,6 +185,7 @@ func (l *live) exits(r *record) {
 	n := l.count(`SELECT count(*) FROM nodes WHERE current_incarnation_id IS NOT NULL`)
 	out, err := l.inside("member", "netbird", "routes", "list")
 	r.check("exit inventory", "record active node count and client routes", fmt.Sprintf("enrolled_nodes=%d; routes_command_ok=%t; route_output_bytes=%d", n, err == nil, len(out)), "SELECT enrolled nodes; docker exec member netbird routes list", n >= 1)
-	r.block(inheritedLeaseGate)
-	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the inherited positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
+	l.forwardingGate(r)
+	l.routeReadback(r)
+	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the observed positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
 }

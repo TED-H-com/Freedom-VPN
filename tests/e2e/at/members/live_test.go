@@ -64,7 +64,8 @@ type buildInfo struct {
 	BinaryVCS map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
-	Complete bool `json:"complete"`
+	Complete   bool                    `json:"complete"`
+	Forwarding []forwardingObservation `json:"forwarding,omitempty"`
 	e2e.Record
 	ReleaseDigests   map[string]string `json:"release_digests,omitempty"`
 	FollowupBuild    *buildInfo        `json:"followup_build,omitempty"`
@@ -118,7 +119,7 @@ func TestATMembers_Live(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Minute)
 	defer cancel()
-	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
+	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
 	l.open()
 	var err error
@@ -194,7 +195,7 @@ func (l *live) open() {
 	l.build.Source = strings.TrimSpace(string(out))
 	out, _ = l.command("git", "status", "--porcelain")
 	l.build.Dirty = len(out) > 0
-	for _, s := range []string{"control", "worker", "node", "member", "postgres", "idp", "netbird", "gateway", "payment", "origin", "adguard", "coredns"} {
+	for _, s := range []string{"control", "worker", "node", "node-netns", "member", "postgres", "idp", "netbird", "gateway", "payment", "origin", "adguard", "coredns"} {
 		out, err = l.docker("inspect", "--format", "{{.Image}}", l.name(s))
 		if err != nil {
 			l.t.Fatalf("assigned container %s unavailable", s)
@@ -253,7 +254,7 @@ func (l *live) request(b *browser, method, endpoint string, body any, headers ma
 	select {
 	case <-l.ctx.Done():
 		return response{code: "CANCELLED"}
-	case <-time.After(600 * time.Millisecond):
+	case <-time.After(requestSpacing(endpoint)):
 	}
 	var raw []byte
 	var err error
@@ -357,7 +358,7 @@ func (l *live) wait(timeout time.Duration, fn func() bool) bool {
 func (l *live) newRecord(id string) record {
 	for _, c := range catalogue() {
 		if c.id == id {
-			r := record{Record: e2e.Record{ID: id, Title: c.title, Spec: []string{"§19.1", "§19 " + id, c.requirements}, Status: e2e.StatusPass, At: time.Now().UTC().Format(time.RFC3339)}, Build: l.build, Steps: []step{}, Blockers: []string{}}
+			r := record{Record: e2e.Record{RunID: l.run, SourceCommit: l.build.Source, ID: id, Title: c.title, Spec: []string{"§19.1", "§19 " + id, c.requirements}, Status: e2e.StatusPass, At: time.Now().UTC().Format(time.RFC3339)}, Build: l.build, Steps: []step{}, Blockers: []string{}}
 			if c.operator {
 				r.Operator = "needs operator run"
 			}
@@ -449,3 +450,11 @@ func (l *live) write(r *record) {
 	}
 }
 func detail(r response) string { return fmt.Sprintf("HTTP %d %s", r.status, r.code) }
+
+// D-060: each paced probe is asserted once; never retry a rate-limited webhook.
+func requestSpacing(endpoint string) time.Duration {
+	if strings.Contains(endpoint, "/webhooks/") || strings.Contains(endpoint, "/agent/") {
+		return 2 * time.Second
+	}
+	return 600 * time.Millisecond
+}

@@ -24,6 +24,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	switch os.Args[1] {
+	case "transfer":
+		transfer()
+	case "observe":
+		observe()
 	case "dns":
 		if len(os.Args) != 6 || (os.Args[2] != "127.0.0.1:53" && os.Args[2] != "172.28.31.40:53" && os.Args[2] != "172.28.31.54:53") {
 			os.Exit(2)

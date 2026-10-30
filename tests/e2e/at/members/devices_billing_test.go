@@ -5,9 +5,6 @@ package members
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -147,7 +144,9 @@ func (l *live) payment(r *record) {
 	paidRev := l.revision(l.c)
 	accepted := 1
 	for range 9 {
-		if l.sendEvent(paid).status == 202 {
+		reply := l.sendEvent(paid)
+		r.check("paced paid replay", "202 once; no rate-limit retry", detail(reply), "wait 2 seconds; POST identical provider bytes once", reply.status == 202)
+		if reply.status == 202 {
 			accepted++
 		}
 	}
@@ -157,25 +156,16 @@ func (l *live) payment(r *record) {
 	l.paidReadback(r, p, "active", 0)
 	l.write(r)
 	l.paymentOrders(r)
-	r.block(inheritedLeaseGate)
+	peer := l.native(r, l.c, "member-paid")
+	device := l.awaitDevice(peer)
+	if device == uuid.Nil {
+		r.block("Paid native device admission did not converge")
+	} else {
+		l.forwardingGate(r)
+		l.traceForwarding(r, "member-paid", device)
+	}
 }
 
-// AT03: the hook supports paid/updated, but not created/failed events. Reuse its
-// real checkout-bound object and sign these two documented event INPUTS with the
-// generated TEST ONLY key. Authoritative truth still comes exclusively from the
-// provider hook. This never inserts an invoice/subscription/entitlement fixture.
-func (l *live) orderingEvent(template paymentEvent, kind string) paymentEvent {
-	var v map[string]any
-	_ = json.Unmarshal([]byte(template.Body), &v)
-	v["type"] = kind
-	v["id"] = "evt_TEST_ONLY_" + uuid.NewString()
-	raw, _ := json.Marshal(v)
-	stamp := fmt.Sprint(time.Now().Unix())
-	mac := hmac.New(sha256.New, []byte(l.secret("webhook.secret")))
-	_, _ = mac.Write([]byte(stamp + "."))
-	_, _ = mac.Write(raw)
-	return paymentEvent{string(raw), "t=" + stamp + ",v1=" + hex.EncodeToString(mac.Sum(nil))}
-}
 func (l *live) paymentOrders(r *record) {
 	orders := [][3]string{{"created", "paid", "failed"}, {"created", "failed", "paid"}, {"paid", "created", "failed"}, {"paid", "failed", "created"}, {"failed", "created", "paid"}, {"failed", "paid", "created"}}
 	for i, order := range orders {
@@ -185,8 +175,9 @@ func (l *live) paymentOrders(r *record) {
 			return
 		}
 		invoice := l.event(r, p, "invoice.paid")
-		subscription := l.event(r, p, "customer.subscription.updated")
-		events := map[string]paymentEvent{"created": l.orderingEvent(subscription, "customer.subscription.created"), "paid": invoice, "failed": l.orderingEvent(invoice, "invoice.payment_failed")}
+		created := l.event(r, p, "customer.subscription.created")
+		failed := l.event(r, p, "invoice.payment_failed")
+		events := map[string]paymentEvent{"created": created, "paid": invoice, "failed": failed}
 		delivered, processed := 0, 0
 		for _, kind := range order {
 			if l.sendEvent(events[kind]).status == 202 {
@@ -198,7 +189,7 @@ func (l *live) paymentOrders(r *record) {
 		}
 		good := l.paidReadback(r, p, "active", 0)
 		rows := l.count(`SELECT count(*) FROM billing_records WHERE member_id=$1 AND record_type='paid_invoice'`, b.member)
-		r.check("delivery order "+strings.Join(order[:], "/"), "each event processed against same authoritative paid truth; one exact interval", fmt.Sprintf("delivered=%d; processed=%d; invoices=%d; period_matches=%t", delivered, processed, rows, good), "fresh checkout/subject per order; provider event templates; signed created/failed event inputs; read paid interval", delivered == 3 && processed == 3 && rows == 1 && good)
+		r.check("delivery order "+strings.Join(order[:], "/"), "each event processed against same authoritative paid truth; one exact interval", fmt.Sprintf("delivered=%d; processed=%d; invoices=%d; period_matches=%t", delivered, processed, rows, good), "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval", delivered == 3 && processed == 3 && rows == 1 && good)
 		l.write(r)
 	}
 }
@@ -261,6 +252,6 @@ func (l *live) entitlements(r *record) {
 		screen := l.api(suspended, "GET", "/api/v1/member/me", nil, nil)
 		r.check("member screen state", "200; admin_suspended true despite paid interval", fmt.Sprintf("HTTP=%d; suspended=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after successful paid reconciliation", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
 	}
-	r.block(inheritedLeaseGate)
+	r.block("Full gateway/withdrawal acceptance requires a positive counted member transfer; see this run AT01/AT02 forwarding observations. Control projections alone do not prove forwarding.")
 	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts.")
 }
