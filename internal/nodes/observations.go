@@ -476,6 +476,7 @@ func advanceNodeOperationsOnObservation(
 					step.ObservedAt = &now
 					step.ErrorCode = nil
 					step.ErrorMessage = nil
+					step.Reason = ""
 					step.UpdatedAt = now
 					steps[StepAgentPolicy] = step
 					refs[StepAgentPolicy] = fmt.Sprintf("report:%s:gen:%d:safety:passed", report.ReportId, appliedGen)
@@ -483,15 +484,24 @@ func advanceNodeOperationsOnObservation(
 				}
 			}
 			if step, ok := steps[StepDataPathProbe]; ok && step.Required && step.Status != string(api.OperationStepStatusSucceeded) {
+				publicationConfirmed := true
+				if op.kind == OpKindPublish {
+					cause, err := PublicationDataPathFailure(ctx, tx, report, desiredGen, now)
+					if err != nil {
+						return err
+					}
+					publicationConfirmed = effectiveForwarding && cause == ""
+				}
 				if steps[StepAgentPolicy].Status == string(api.OperationStepStatusSucceeded) &&
 					checkStatus[api.NodeCheckNameTunnelProbe] == api.HealthCheckStatusPassed &&
 					effectiveHealth == api.DataHealthHealthy &&
-					(op.kind != OpKindPublish || effectiveForwarding && PublicationForwardingEvidence(report, now)) {
+					publicationConfirmed {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepDataPathProbe
 					step.ObservedAt = &now
 					step.ErrorCode = nil
 					step.ErrorMessage = nil
+					step.Reason = ""
 					step.UpdatedAt = now
 					steps[StepDataPathProbe] = step
 					refs[StepDataPathProbe] = fmt.Sprintf("report:%s:tunnel_probe:passed", report.ReportId)
@@ -508,6 +518,7 @@ func advanceNodeOperationsOnObservation(
 					step.ObservedAt = &now
 					step.ErrorCode = nil
 					step.ErrorMessage = nil
+					step.Reason = ""
 					step.UpdatedAt = now
 					steps[StepAgentPolicy] = step
 					refs[StepAgentPolicy] = fmt.Sprintf("report:%s:gen:%d:forwarding:false", report.ReportId, appliedGen)
