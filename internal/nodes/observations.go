@@ -245,6 +245,8 @@ func (s *Service) SubmitObservation(
 			// safety_status='passed' may preserve provisioning_state='ready' when central
 			// concurrently advances desired_config_generation; a second stale report
 			// below desired_config_generation downgrades provisioning_state to 'applying'.
+			// The one-shot grace mark lives on node_incarnations.stale_generation_grace_at,
+			// never in audit_events (D-075).
 			var acknowledged, bound bool
 			if err := tx.QueryRow(ctx, `
 				SELECT
@@ -253,14 +255,7 @@ func (s *Service) SubmitObservation(
 						OR (
 							n.provisioning_state = 'ready'
 							AND $2::numeric >= n.applied_config_generation
-							AND NOT coalesce((
-								SELECT (ae.after_diff->>'stale_generation_grace')::boolean
-								FROM audit_events ae
-								WHERE ae.resource = 'node:' || n.id::text
-								  AND ae.action = 'node.observation_applied'
-								ORDER BY ae.occurred_at DESC, ae.id DESC
-								LIMIT 1
-							), false)
+							AND i.stale_generation_grace_at IS NULL
 						)
 					),
 					$2::numeric > 0 AND $2::numeric < n.desired_config_generation AND n.provisioning_state = 'ready',
@@ -314,6 +309,20 @@ func (s *Service) SubmitObservation(
 				checksArrayJSON,
 				errorsArrayJSON, mappingFrozen,
 			); err != nil {
+				return err
+			}
+
+			var graceAt *time.Time
+			if staleGenerationGrace && provisioning == api.ProvisioningStateReady {
+				ts := observedAt.UTC()
+				graceAt = &ts
+			}
+			if _, err := tx.Exec(ctx, `
+				UPDATE node_incarnations
+				SET stale_generation_grace_at = $2
+				WHERE id = $1
+				  AND stale_generation_grace_at IS DISTINCT FROM $2
+			`, authIncarnationID, graceAt); err != nil {
 				return err
 			}
 
