@@ -36,6 +36,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -120,7 +121,7 @@ func (p *liveProbe) open() {
 	if !roots.AppendCertsFromPEM(ca) {
 		p.t.Fatal("lab TLS CA invalid")
 	}
-	dial := map[string]int{"portal.example.invalid:8443": 30443, "agent.example.invalid:9443": 31443, "idp.example.invalid:443": 30444}
+	dial := map[string]int{"portal.example.invalid:8443": 30443, "agent.example.invalid:9443": 31443, "idp.example.invalid:443": 30444, "netbird.example.invalid:443": stack.Ports["gateway"]}
 	p.tr = &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots}, DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
 		port, ok := dial[address]
 		if !ok {
@@ -213,12 +214,16 @@ func (p *liveProbe) check(name string, r liveReply, status int, code string) {
 }
 func (p *liveProbe) login(subject, role string) *liveSession {
 	s := &liveSession{client: p.client()}
-	r := p.call(s, "POST", "https://idp.example.invalid/e2e/assume", map[string]string{"subject": subject, "role": role, "name": "TEST ONLY " + role}, map[string]string{"X-E2E-Secret": p.secret("assume.secret")})
-	if r.status != 204 {
-		p.t.Fatal("IdP assume failed")
+	s.client.Timeout = 30 * time.Second
+	s.client.CheckRedirect = idplogin.RedirectLimit(20)
+	cred, err := idplogin.CredFor(p.t.Context(), s.client, "https://netbird.example.invalid/api", p.secret("netbird.token"), p.state, subject)
+	if err != nil {
+		p.t.Fatal("lab user unavailable")
 	}
-	_ = p.call(s, "GET", "/auth/login?role="+role, nil, nil)
-	r = p.call(s, "GET", "/auth/session?role="+role, nil, nil)
+	if idplogin.PortalLogin(p.t.Context(), s.client, livePublic, cred.Email, cred.Password) != nil {
+		p.t.Fatal("IdP login failed")
+	}
+	r := p.call(s, "GET", "/auth/session?role="+role, nil, nil)
 	var v struct {
 		Authenticated bool   `json:"authenticated"`
 		Role          string `json:"role"`

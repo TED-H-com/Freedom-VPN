@@ -310,6 +310,7 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		return
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "member_id_present", Detail: boolText(member.memberID != "")})
+	portalSub := r.notePortalSubject(ctx, member.memberID, recPathNote(&rec))
 	if err := r.seedPlan(ctx); err != nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "plan", Detail: "seed failed"})
 	} else {
@@ -327,7 +328,8 @@ func (r *runner) member(ctx context.Context, admin *session) {
 	if err != nil || grant.Status < 200 || grant.Status >= 300 {
 		rec.Observations = append(rec.Observations, Observation{Name: "grant_body", Detail: clipText(string(grant.Body), 180)})
 	}
-	r.memberNetBird(ctx, member, recPathNote(&rec))
+	r.memberNetBird(ctx, member, portalSub, recPathNote(&rec))
+	r.noteProjection(ctx, member.memberID, recPathNote(&rec))
 	planForCheckout := r.planID
 	if planForCheckout == uuid.Nil {
 		planForCheckout = uuid.New()

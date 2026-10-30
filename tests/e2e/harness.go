@@ -26,6 +26,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -153,33 +154,23 @@ func (l *lab) login(ctx context.Context, subject, role string) (*session, error)
 	if err != nil {
 		return nil, err
 	}
-	assume, err := l.secret("assume.secret")
+	s.http.CheckRedirect = idplogin.RedirectLimit(20)
+	token, err := l.secret("netbird.token")
 	if err != nil {
 		return nil, err
 	}
-	body, _ := json.Marshal(map[string]string{"subject": subject, "role": role, "name": role})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, l.idp+"/e2e/assume", bytes.NewReader(body))
+	cred, err := idplogin.CredFor(ctx, s.http, l.netbird+"/api", token, l.state, subject)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-E2E-Secret", assume)
+	if err := idplogin.PortalLogin(ctx, s.http, l.public, cred.Email, cred.Password); err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, l.public+"/auth/session", nil)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := s.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusNoContent {
-		return nil, fmt.Errorf("assume HTTP %d", resp.StatusCode)
-	}
-	resp, err = s.http.Get(l.public + "/auth/login")
-	if err != nil {
-		return nil, err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
-	resp, err = s.http.Get(l.public + "/auth/session")
 	if err != nil {
 		return nil, err
 	}
@@ -270,6 +261,33 @@ func (l *lab) db(ctx context.Context) (*pgx.Conn, error) {
 		return nil, errors.New("postgres connection failed")
 	}
 	return conn, nil
+}
+
+func (l *lab) bindingSubject(ctx context.Context, memberID string) (issuer, subject string, err error) {
+	conn, err := l.db(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	defer conn.Close(ctx)
+	err = conn.QueryRow(ctx, `SELECT issuer, subject FROM identity_bindings WHERE member_id = $1::uuid`, memberID).Scan(&issuer, &subject)
+	return issuer, subject, err
+}
+
+func (l *lab) projectionCounts(ctx context.Context, memberID string) (users, devices, bindings int, external string, err error) {
+	conn, err := l.db(ctx)
+	if err != nil {
+		return 0, 0, 0, "", err
+	}
+	defer conn.Close(ctx)
+	err = conn.QueryRow(ctx, `SELECT
+		(SELECT count(*) FROM netbird_user_bindings WHERE member_id = $1::uuid),
+		(SELECT count(*) FROM member_devices WHERE member_id = $1::uuid),
+		(SELECT count(*) FROM device_bindings WHERE member_id = $1::uuid)`, memberID).Scan(&users, &devices, &bindings)
+	if err != nil {
+		return 0, 0, 0, "", err
+	}
+	_ = conn.QueryRow(ctx, `SELECT external_user_id FROM netbird_user_bindings WHERE member_id = $1::uuid LIMIT 1`, memberID).Scan(&external)
+	return users, devices, bindings, external, nil
 }
 
 func (l *lab) docker(container string, args ...string) ([]byte, error) {

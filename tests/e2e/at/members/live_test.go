@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -281,16 +282,15 @@ func commandHeaders() map[string]string {
 }
 func (l *live) login(subject, role string) *browser {
 	jar, _ := cookiejar.New(nil)
-	b := &browser{client: &http.Client{Transport: l.transport, Jar: jar, Timeout: 20 * time.Second}}
-	r := l.request(b, "POST", "https://idp.example.invalid/e2e/assume", map[string]string{"Subject": subject, "Role": role, "Name": "TEST ONLY"}, map[string]string{"X-E2E-Secret": l.secret("assume.secret")})
-	if r.status != 204 {
-		l.t.Fatal("test IdP assume unavailable")
+	b := &browser{client: &http.Client{Transport: l.transport, Jar: jar, Timeout: 30 * time.Second, CheckRedirect: idplogin.RedirectLimit(20)}}
+	cred, err := idplogin.CredFor(l.ctx, b.client, "https://netbird.example.invalid/api", l.secret("netbird.token"), l.state, subject)
+	if err != nil {
+		l.t.Fatal("lab user unavailable")
 	}
-	r = l.api(b, "GET", "/auth/login?role="+role, nil, nil)
-	if r.status == 0 {
+	if idplogin.PortalLogin(l.ctx, b.client, "https://portal.example.invalid:8443", cred.Email, cred.Password) != nil {
 		l.t.Fatal("browser redirect transport")
 	}
-	r = l.api(b, "GET", "/auth/session", nil, nil)
+	r := l.api(b, "GET", "/auth/session", nil, nil)
 	var s struct {
 		Authenticated bool   `json:"authenticated"`
 		Role          string `json:"role"`

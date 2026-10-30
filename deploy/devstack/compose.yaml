@@ -76,6 +76,18 @@ services:
       - portal-e2e
       - -redirect
       - https://portal.example.invalid:8443/auth/callback
+      - -http-addr
+      - :8081
+      - -dex-upstream
+      - http://netbird:8080
+      - -embed-issuer
+      - https://netbird.example.invalid/oauth2
+      - -portal-client-id
+      - netbird-dashboard
+      - -admin-email
+      - admin@example.invalid
+      - -admin-name
+      - E2E Admin
     ports:
       - "127.0.0.1:${FVPN_E2E_PORT_IDP:-18444}:443"
     volumes:

@@ -22,6 +22,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -83,6 +84,7 @@ func openLab() (*lab, error) {
 		"portal.example.invalid:8443":  fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["control"]),
 		"agent.example.invalid:9443":   fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["agent"]),
 		"idp.example.invalid:443":      fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["idp"]),
+		"netbird.example.invalid:443":  fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["gateway"]),
 		"releases.example.invalid:443": fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["origin"]),
 	}
 	tr := &http.Transport{
@@ -149,34 +151,23 @@ func (l *lab) login(ctx context.Context, subject, role string) (*session, error)
 	if err != nil {
 		return nil, err
 	}
-	s := &session{http: &http.Client{Transport: l.tr, Jar: jar, Timeout: 30 * time.Second}}
-	assume, err := l.secret("assume.secret")
+	s := &session{http: &http.Client{Transport: l.tr, Jar: jar, Timeout: 30 * time.Second, CheckRedirect: idplogin.RedirectLimit(20)}}
+	token, err := l.secret("netbird.token")
 	if err != nil {
 		return nil, err
 	}
-	body, _ := json.Marshal(map[string]string{"subject": subject, "role": role, "name": role})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, l.idp+"/e2e/assume", bytes.NewReader(body))
+	cred, err := idplogin.CredFor(ctx, s.http, "https://netbird.example.invalid/api", token, l.state, subject)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-E2E-Secret", assume)
+	if err := idplogin.PortalLogin(ctx, s.http, l.public, cred.Email, cred.Password); err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, l.public+"/auth/session", nil)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := s.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusNoContent {
-		return nil, fmt.Errorf("assume http %d", resp.StatusCode)
-	}
-	resp, err = s.http.Get(l.public + "/auth/login")
-	if err != nil {
-		return nil, err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
-	resp, err = s.http.Get(l.public + "/auth/session")
 	if err != nil {
 		return nil, err
 	}

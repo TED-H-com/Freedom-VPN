@@ -381,12 +381,23 @@ func bootstrap(client *http.Client, api, state string) error {
 	return ensureMemberUser(client, api, ownerToken, nb)
 }
 
-// ensureMemberUser creates one ordinary embedded-IdP user for the lab member
-// peer. The password is the server's generated secret and stays in the state
-// directory. A setup-key peer has no user id, so devices.discover skips it.
+// ensureMemberUser creates two ordinary embedded-IdP users. The acceptance
+// member signs in as the first. The second is addressable by the harness
+// key e2e-member-b. Passwords stay in the state directory.
 func ensureMemberUser(client *http.Client, api, ownerToken, nb string) error {
-	const email = "e2e-member@example.invalid"
-	const name = "e2e-member"
+	users := []struct{ email, name, file string }{
+		{"e2e-member@example.invalid", "e2e-member", "member-user.json"},
+		{"e2e-member-b@example.invalid", "e2e-member-b", "member-user-b.json"},
+	}
+	for _, user := range users {
+		if err := ensurePasswordUser(client, api, ownerToken, nb, user.email, user.name, user.file); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ensurePasswordUser(client *http.Client, api, ownerToken, nb, email, name, file string) error {
 	raw, err := call(client, http.MethodGet, api+"/users", ownerToken, nil)
 	if err != nil {
 		return err
@@ -403,7 +414,7 @@ func ensureMemberUser(client *http.Client, api, ownerToken, nb string) error {
 	if json.Unmarshal(raw, &users) != nil {
 		return fmt.Errorf("users")
 	}
-	path := filepath.Join(nb, "member-user.json")
+	path := filepath.Join(nb, file)
 	found := ""
 	for _, u := range users {
 		if u.Email != email && u.Name != name {

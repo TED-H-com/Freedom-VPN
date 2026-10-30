@@ -1,14 +1,19 @@
-// Command fvpn-e2e-idp is the lab OIDC issuer for browser login (§14.2).
-// An operator selects the next subject with POST /e2e/assume. The endpoint
-// refuses callers that do not present the per-run secret, so a published
-// IdP cannot mint an administrator by itself.
+// Command fvpn-e2e-idp is the lab helper for browser login (§14.2).
+//
+// POST /e2e/assume stores one identity per caller. The ticket is the
+// e2e_login cookie and the X-E2E-Ticket header. Authorize reads that
+// ticket and does not keep a process-wide next subject (SECOPS-06).
+//
+// When -dex-upstream is set, POST /oauth2/token and GET /oauth2/keys adapt
+// the embedded Dex issuer for the portal client. Dex stays the
+// authorization server. The adapter re-signs only the portal ID token,
+// keeps iss and sub, and adds TEST ONLY roles and amr. Every other grant,
+// including the CLI device-code grant, is proxied unchanged.
 package main
 
 import (
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/subtle"
 	"crypto/tls"
 	"encoding/base64"
@@ -16,7 +21,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"math/big"
 	"net/http"
 	"os"
 	"strings"
@@ -25,17 +29,28 @@ import (
 )
 
 func main() {
-	addr := flag.String("addr", ":443", "listen address")
+	addr := flag.String("addr", ":443", "TLS listen address")
+	httpAddr := flag.String("http-addr", "", "optional plain HTTP listen address")
 	cert := flag.String("cert", "", "TLS certificate")
 	key := flag.String("key", "", "TLS private key")
 	secretFile := flag.String("assume-secret-file", "", "per-run assume secret")
-	issuer := flag.String("issuer", "https://idp.example.invalid", "issuer URL")
-	clientID := flag.String("client-id", "portal-e2e", "expected client id")
+	issuer := flag.String("issuer", "https://idp.example.invalid", "standalone issuer URL")
+	clientID := flag.String("client-id", "portal-e2e", "standalone client id")
 	clientSecretFile := flag.String("client-secret-file", "", "OIDC client secret")
-	redirect := flag.String("redirect", "https://portal.example.invalid:8443/auth/callback", "allowed redirect")
+	redirect := flag.String("redirect", "https://portal.example.invalid:8443/auth/callback", "portal redirect")
+	dexUpstream := flag.String("dex-upstream", "", "embedded Dex base URL, for example http://netbird:8080")
+	embedIssuer := flag.String("embed-issuer", "", "embedded issuer string copied onto portal ID tokens")
+	portalClient := flag.String("portal-client-id", "", "public client id the portal uses")
+	dexHost := flag.String("dex-host", "netbird.example.invalid", "Host header for Dex upstream requests")
+	adminEmail := flag.String("admin-email", "admin@example.invalid", "profile value that receives the admin role")
+	adminName := flag.String("admin-name", "E2E Admin", "profile name that receives the admin role")
 	flag.Parse()
 	if *cert == "" || *key == "" || *secretFile == "" || *clientSecretFile == "" {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-idp: cert, key and secret files are required")
+		os.Exit(2)
+	}
+	if *dexUpstream != "" && (*embedIssuer == "" || *portalClient == "") {
+		fmt.Fprintln(os.Stderr, "fvpn-e2e-idp: dex upstream requires embed issuer and portal client id")
 		os.Exit(2)
 	}
 	assume, err := readTrim(*secretFile)
@@ -55,24 +70,29 @@ func main() {
 	}
 	s := &server{
 		issuer: *issuer, clientID: *clientID, clientSecret: clientSecret, redirect: *redirect,
-		assume: assume, key: signer, kid: "e2e-1",
+		assume: assume, key: signer, kid: "e2e-1", portalKid: "e2e-portal",
+		dexUpstream: strings.TrimRight(*dexUpstream, "/"), embedIssuer: *embedIssuer,
+		portalClient: *portalClient, dexHost: *dexHost, adminEmail: *adminEmail, adminName: *adminName,
+		dexClient: &http.Client{Timeout: 10 * time.Second},
 	}
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok\n"))
-	})
-	mux.HandleFunc("GET /.well-known/openid-configuration", s.discovery)
-	mux.HandleFunc("GET /jwks", s.jwks)
-	mux.HandleFunc("GET /authorize", s.authorize)
-	mux.HandleFunc("POST /token", s.token)
-	mux.HandleFunc("POST /e2e/assume", s.assumeNext)
-	srv := &http.Server{
-		Addr: *addr, Handler: mux,
+	tlsSrv := &http.Server{
+		Addr: *addr, Handler: s.routes(),
 		TLSConfig:         &tls.Config{MinVersion: tls.VersionTLS12},
-		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 20 * time.Second,
 	}
-	if err := srv.ListenAndServeTLS(*cert, *key); err != nil {
+	if *httpAddr != "" {
+		plain := &http.Server{
+			Addr: *httpAddr, Handler: s.routes(),
+			ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 20 * time.Second,
+		}
+		go func() {
+			if err := plain.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				fmt.Fprintln(os.Stderr, "fvpn-e2e-idp: http listener stopped")
+				os.Exit(1)
+			}
+		}()
+	}
+	if err := tlsSrv.ListenAndServeTLS(*cert, *key); err != nil {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-idp: stopped")
 		os.Exit(1)
 	}
@@ -99,10 +119,36 @@ type server struct {
 	clientSecret string
 	redirect     string
 	assume       string
-	next         *identity
+	sessions     map[string]identity
 	codes        map[string]authCode
 	key          *rsa.PrivateKey
 	kid          string
+	portalKid    string
+	dexUpstream  string
+	embedIssuer  string
+	portalClient string
+	dexHost      string
+	adminEmail   string
+	adminName    string
+	dexClient    *http.Client
+}
+
+func (s *server) routes() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok\n"))
+	})
+	mux.HandleFunc("GET /.well-known/openid-configuration", s.discovery)
+	mux.HandleFunc("GET /jwks", s.jwks)
+	mux.HandleFunc("GET /authorize", s.authorize)
+	mux.HandleFunc("POST /token", s.token)
+	mux.HandleFunc("POST /e2e/assume", s.assumeNext)
+	if s.dexUpstream != "" {
+		mux.HandleFunc("POST /oauth2/token", s.oauthToken)
+		mux.HandleFunc("GET /oauth2/keys", s.oauthKeys)
+	}
+	return mux
 }
 
 func (s *server) discovery(w http.ResponseWriter, _ *http.Request) {
@@ -122,12 +168,7 @@ func (s *server) discovery(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *server) jwks(w http.ResponseWriter, _ *http.Request) {
-	pub := s.key.PublicKey
-	writeJSON(w, http.StatusOK, map[string]any{"keys": []map[string]string{{
-		"kty": "RSA", "use": "sig", "alg": "RS256", "kid": s.kid,
-		"n": base64.RawURLEncoding.EncodeToString(pub.N.Bytes()),
-		"e": base64.RawURLEncoding.EncodeToString(big.NewInt(int64(pub.E)).Bytes()),
-	}}})
+	writeJSON(w, http.StatusOK, map[string]any{"keys": []any{s.publicJWK(s.kid)}})
 }
 
 func (s *server) assumeNext(w http.ResponseWriter, r *http.Request) {
@@ -143,9 +184,28 @@ func (s *server) assumeNext(w http.ResponseWriter, r *http.Request) {
 	if body.Name == "" {
 		body.Name = body.Role
 	}
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		http.Error(w, "unavailable\n", http.StatusServiceUnavailable)
+		return
+	}
+	ticket := base64.RawURLEncoding.EncodeToString(raw)
 	s.mu.Lock()
-	s.next = &body
+	if s.sessions == nil {
+		s.sessions = map[string]identity{}
+	}
+	if len(s.sessions) >= 256 {
+		s.mu.Unlock()
+		http.Error(w, "too many pending logins\n", http.StatusTooManyRequests)
+		return
+	}
+	s.sessions[ticket] = body
 	s.mu.Unlock()
+	http.SetCookie(w, &http.Cookie{
+		Name: "e2e_login", Value: ticket, Path: "/",
+		HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode,
+	})
+	w.Header().Set("X-E2E-Ticket", ticket)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -155,11 +215,17 @@ func (s *server) authorize(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request\n", http.StatusBadRequest)
 		return
 	}
+	ticket := r.Header.Get("X-E2E-Ticket")
+	if c, err := r.Cookie("e2e_login"); err == nil && c.Value != "" && ticket == "" {
+		ticket = c.Value
+	}
 	s.mu.Lock()
-	who := s.next
-	s.next = nil
+	who, ok := s.sessions[ticket]
+	if ok {
+		delete(s.sessions, ticket)
+	}
 	s.mu.Unlock()
-	if who == nil {
+	if !ok {
 		http.Error(w, "no subject assumed\n", http.StatusBadRequest)
 		return
 	}
@@ -173,7 +239,7 @@ func (s *server) authorize(w http.ResponseWriter, r *http.Request) {
 	if s.codes == nil {
 		s.codes = map[string]authCode{}
 	}
-	s.codes[code] = authCode{identity: *who, Nonce: q.Get("nonce"), Challenge: q.Get("code_challenge"), RedirectURI: q.Get("redirect_uri"), Expires: time.Now().Add(5 * time.Minute)}
+	s.codes[code] = authCode{identity: who, Nonce: q.Get("nonce"), Challenge: q.Get("code_challenge"), RedirectURI: q.Get("redirect_uri"), Expires: time.Now().Add(5 * time.Minute)}
 	s.mu.Unlock()
 	http.Redirect(w, r, s.redirect+"?code="+code+"&state="+q.Get("state"), http.StatusFound)
 }
@@ -198,13 +264,12 @@ func (s *server) token(w http.ResponseWriter, r *http.Request) {
 		delete(s.codes, code)
 	}
 	s.mu.Unlock()
-	sum := sha256.Sum256([]byte(r.PostForm.Get("code_verifier")))
-	challenge := base64.RawURLEncoding.EncodeToString(sum[:])
-	if !found || time.Now().After(item.Expires) || subtle.ConstantTimeCompare([]byte(challenge), []byte(item.Challenge)) != 1 || r.PostForm.Get("redirect_uri") != item.RedirectURI {
+	sum := sha256Sum(r.PostForm.Get("code_verifier"))
+	if !found || time.Now().After(item.Expires) || subtle.ConstantTimeCompare([]byte(sum), []byte(item.Challenge)) != 1 || r.PostForm.Get("redirect_uri") != item.RedirectURI {
 		http.Error(w, "invalid grant\n", http.StatusBadRequest)
 		return
 	}
-	token, err := s.idToken(item)
+	token, err := s.standaloneToken(item)
 	if err != nil {
 		http.Error(w, "unavailable\n", http.StatusServiceUnavailable)
 		return
@@ -219,31 +284,17 @@ func (s *server) token(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *server) idToken(item authCode) (string, error) {
+func (s *server) standaloneToken(item authCode) (string, error) {
 	now := time.Now().UTC()
 	roles := []string{"member"}
 	if item.Role == "admin" {
 		roles = []string{"admin"}
 	}
-	header, err := json.Marshal(map[string]string{"alg": "RS256", "typ": "JWT", "kid": s.kid})
-	if err != nil {
-		return "", err
-	}
-	claims, err := json.Marshal(map[string]any{
+	return signRS256(s.key, s.kid, map[string]any{
 		"iss": s.issuer, "sub": item.Subject, "aud": s.clientID,
 		"iat": now.Unix(), "exp": now.Add(10 * time.Minute).Unix(), "auth_time": now.Unix(),
 		"nonce": item.Nonce, "amr": []string{"mfa"}, "roles": roles, "name": item.Name,
 	})
-	if err != nil {
-		return "", err
-	}
-	signingInput := base64.RawURLEncoding.EncodeToString(header) + "." + base64.RawURLEncoding.EncodeToString(claims)
-	sum := sha256.Sum256([]byte(signingInput))
-	sig, err := rsa.SignPKCS1v15(rand.Reader, s.key, crypto.SHA256, sum[:])
-	if err != nil {
-		return "", err
-	}
-	return signingInput + "." + base64.RawURLEncoding.EncodeToString(sig), nil
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

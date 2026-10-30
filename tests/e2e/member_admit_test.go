@@ -16,15 +16,16 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // memberNetBird joins the lab member as a native NetBird user. It does not
 // insert member_devices, device_bindings, or netbird_user_bindings.
-func (r *runner) memberNetBird(ctx context.Context, member *session, note func(name, detail string)) {
+func (r *runner) memberNetBird(ctx context.Context, member *session, portalSub string, note func(name, detail string)) {
 	r.usageReady = false
-	note("join", "embedded IdP user")
+	note("join", "embedded IdP user, same subject as the portal session")
 	trigger := filepath.Join(r.lab.state, "member", "var", "e2e", "user-auth")
 	if err := os.MkdirAll(filepath.Dir(trigger), 0o755); err != nil {
 		note("member_netbird", "trigger directory")
@@ -72,7 +73,10 @@ func (r *runner) memberNetBird(ctx context.Context, member *session, note func(n
 		return r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json") == "netbird_up"
 	})
 	note("member_netbird", emptyDash(r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json")))
-	withUser, total, peerNote := r.netbirdUserPeers(ctx)
+	withUser, total, peerIDs, peerNote := r.netbirdUserPeers(ctx)
+	note("netbird_user_id", emptyDash(cred.ID))
+	note("peer_user_id", emptyDash(peerIDs))
+	note("same_subject", boolText(portalSub != "" && (portalSub == cred.ID || containsCSV(peerIDs, portalSub))))
 	note("peers_with_user", itoa(withUser))
 	note("peer_total", itoa(total))
 	if peerNote != "" {
@@ -104,7 +108,7 @@ func (r *runner) submitDeviceLogin(ctx context.Context, flowURL string, cred mem
 		note("member_netbird", "cookie jar")
 		return
 	}
-	client := &http.Client{Transport: r.lab.transport, Jar: jar, Timeout: 20 * time.Second}
+	client := &http.Client{Transport: r.lab.transport, Jar: jar, Timeout: 20 * time.Second, CheckRedirect: idplogin.RedirectLimit(20)}
 	loginCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	status, loginErr := completeDeviceLogin(loginCtx, client, flowURL, cred.Email, cred.Password)
@@ -117,6 +121,7 @@ func (r *runner) submitDeviceLogin(ctx context.Context, flowURL string, cred mem
 }
 
 type memberUserFile struct {
+	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -133,39 +138,86 @@ func readMemberUser(path string) (memberUserFile, error) {
 	return cred, nil
 }
 
-func (r *runner) netbirdUserPeers(ctx context.Context) (withUser, total int, note string) {
+func (r *runner) notePortalSubject(ctx context.Context, memberID string, note func(string, string)) string {
+	issuer, subject, err := r.lab.bindingSubject(ctx, memberID)
+	if err != nil || subject == "" {
+		note("portal_sub", "unavailable")
+		return ""
+	}
+	note("portal_issuer", issuer)
+	note("portal_sub", subject)
+	return subject
+}
+
+func (r *runner) noteProjection(ctx context.Context, memberID string, note func(string, string)) {
+	users, devices, bindings, external, err := r.lab.projectionCounts(ctx, memberID)
+	if err != nil {
+		note("projection", "unavailable")
+		return
+	}
+	note("netbird_user_bindings", itoa(users))
+	note("member_devices", itoa(devices))
+	note("device_bindings", itoa(bindings))
+	if users == 0 {
+		note("projection", "writer not yet merged")
+		return
+	}
+	note("projection", "external_user_id "+external)
+}
+
+func containsCSV(list, item string) bool {
+	if item == "" || list == "" {
+		return false
+	}
+	for _, part := range strings.Split(list, ",") {
+		if part == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *runner) netbirdUserPeers(ctx context.Context) (withUser, total int, userIDs, note string) {
 	token, err := r.lab.secret("netbird.token")
 	if err != nil {
-		return 0, 0, "token unavailable"
+		return 0, 0, "", "token unavailable"
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.lab.netbird+"/api/peers", nil)
 	if err != nil {
-		return 0, 0, "request"
+		return 0, 0, "", "request"
 	}
 	req.Header.Set("Authorization", "Token "+token)
 	client := &http.Client{Transport: r.lab.transport, Timeout: 20 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, 0, "unreachable"
+		return 0, 0, "", "unreachable"
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil || resp.StatusCode != 200 {
-		return 0, 0, "HTTP " + itoa(resp.StatusCode)
+		return 0, 0, "", "HTTP " + itoa(resp.StatusCode)
 	}
 	var peers []struct {
 		UserID string `json:"user_id"`
 	}
 	if json.Unmarshal(raw, &peers) != nil {
-		return 0, 0, "decode"
+		return 0, 0, "", "decode"
 	}
+	seen := map[string]bool{}
+	var ids []string
 	for _, peer := range peers {
 		total++
-		if strings.TrimSpace(peer.UserID) != "" {
-			withUser++
+		id := strings.TrimSpace(peer.UserID)
+		if id == "" {
+			continue
+		}
+		withUser++
+		if !seen[id] {
+			seen[id] = true
+			ids = append(ids, id)
 		}
 	}
-	return withUser, total, ""
+	return withUser, total, strings.Join(ids, ","), ""
 }
 
 func (r *runner) awaitMemberBinding(ctx context.Context, member *session, note func(string, string)) {

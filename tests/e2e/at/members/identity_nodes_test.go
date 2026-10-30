@@ -125,7 +125,7 @@ func (l *live) identity(r *record) {
 	other := l.request(nil, "GET", "https://idp.example.invalid/authorize?client_id=netbird-native&redirect_uri=https%3A%2F%2Fnetbird.example.invalid%2Fcallback&response_type=code&scope=openid&state=acceptance", nil, nil)
 	r.check("second OAuth client precondition", "record actual response", detail(other), "GET test IdP /authorize with native client_id", other.status != 0)
 	if other.status != 302 {
-		r.block("Test IdP rejects the native OAuth client (" + detail(other) + "); only Portal login is available. Two-client stable-subject mapping and a native user peer cannot be proved.")
+		r.block("Test IdP probe is not the portal client (" + detail(other) + "). Portal and CLI share the embedded issuer; this response does not prove those two static clients.")
 	}
 	logout := l.api(again, "POST", "/auth/logout", nil, nil)
 	session := l.api(again, "GET", "/auth/session", nil, nil)
