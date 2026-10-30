@@ -114,17 +114,12 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	// Admission already drops an address that left allowed_v4, before any
 	// established or related accept. A conntrack failure here must not
-	// replace the verified ruleset with the baseline. The caller passes
-	// Revoke again on the next Apply, which retries the delete (§8.2).
+	// replace the verified ruleset with the baseline. Counters and samples
+	// are taken from the verified listing before the deletes, so a failure
+	// still reports the generation that stayed installed. Every revoke
+	// address is attempted. The caller passes Revoke again on the next Apply,
+	// which retries whatever is still pending (§8.2).
 	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true}
-	for i, addr := range m.Revoke {
-		if err := deleteConntrack(ctx, ex, addr); err != nil {
-			if conntrackCommandFailed(err) {
-				return verified, &ConntrackDeleteError{Pending: len(m.Revoke) - i, err: err}
-			}
-			return verified, err
-		}
-	}
 	rs, err := ParseRuleset(raw)
 	if err != nil {
 		return ApplyResult{Verified: true}, err
@@ -135,6 +130,29 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	verified.Counters = rs.Counters
 	verified.Samples = samples
+	var cmdErrs []error
+	var other error
+	pending := 0
+	for _, addr := range m.Revoke {
+		err := deleteConntrack(ctx, ex, addr)
+		if err == nil {
+			continue
+		}
+		pending++
+		if conntrackCommandFailed(err) {
+			cmdErrs = append(cmdErrs, err)
+			continue
+		}
+		if other == nil {
+			other = err
+		}
+	}
+	if len(cmdErrs) > 0 {
+		return verified, &ConntrackDeleteError{Pending: pending, err: errors.Join(cmdErrs...)}
+	}
+	if other != nil {
+		return verified, other
+	}
 	return verified, nil
 }
 
@@ -329,7 +347,12 @@ func Samples(m Model, counters map[string]CounterValue) ([]Sample, error) {
 		if !ok {
 			continue
 		}
-		b := byID[id.String()]
+		b, ok := byID[id.String()]
+		if !ok || b.MemberID == uuid.Nil || b.BindingRevision == 0 {
+			// A removed device's last reading is already in plan.Finals.
+			// The named counter stays in the kernel (§10.7).
+			continue
+		}
 		out = append(out, Sample{
 			DeviceID:        id,
 			MemberID:        b.MemberID,

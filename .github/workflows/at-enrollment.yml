@@ -1,0 +1,46 @@
+name: at-enrollment
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+
+jobs:
+  lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: lint acceptance driver
+        run: make -f mk/at-enrollment.mk at-enrollment-lint
+
+  stack:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: AT06-AT07
+        run: make -f mk/at-enrollment.mk at-enrollment
+      - name: preserve acceptance records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: at-enrollment-evidence
+          path: docs/e2e/at/enrollment/
+      - name: tear down
+        if: always()
+        run: FVPN_E2E_PREFIX=w4-enroll FVPN_E2E_PORT_BASE=66000 make -f mk/e2e.mk e2e-down
