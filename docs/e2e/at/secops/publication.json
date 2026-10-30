@@ -1,140 +1,29 @@
 {
   "schema_version": 1,
-  "run_started_at": "2026-10-30T06:49:14Z",
-  "run_finished_at": "2026-10-30T07:10:35Z",
-  "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
-  "probe_source_sha256": "a4cba1800eedd63667ba6ad2fc25f3c9beaf241f5bd805e2a24bfa6c24f404d2",
-  "build_digests": [
-    {
-      "arch": "amd64",
-      "kind": "acceptance_test_binary",
-      "sha256": "fabfd3fc2a8f1ca836cd0b2a558641e462abe8764cc8e55b8f7d1e2ebe620355",
-      "command": [
-        "go",
-        "test",
-        "-c",
-        "-tags",
-        "e2e,integration",
-        "-o",
-        "<disk-scratch>/secops-amd64.test",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T07:10:02Z",
-      "finished_at": "2026-10-30T07:10:02Z",
-      "elapsed_seconds": 0.565,
-      "exit_code": 0,
-      "scan": {
-        "stream": "build-amd64",
-        "bytes": 0,
-        "findings": []
-      }
-    },
-    {
-      "arch": "arm64",
-      "kind": "acceptance_test_binary",
-      "sha256": "411e156413f84571e911cc1392bc244f65097fad86f4d0024f7d3c7750dba058",
-      "command": [
-        "go",
-        "test",
-        "-c",
-        "-tags",
-        "e2e,integration",
-        "-o",
-        "<disk-scratch>/secops-arm64.test",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T07:10:02Z",
-      "finished_at": "2026-10-30T07:10:03Z",
-      "elapsed_seconds": 0.816,
-      "exit_code": 0,
-      "scan": {
-        "stream": "build-arm64",
-        "bytes": 0,
-        "findings": []
-      }
-    },
-    {
-      "name": "fvpn-agent",
-      "arch": "amd64",
-      "sha256": "63edcdc3bddf776c0339a2abd15c887dd78884b981623cf6b2d655837c8653f2",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-control",
-      "arch": "amd64",
-      "sha256": "2b154dc0ed4d6660f6442adc31ee98fb41d8197402efeb2bbd6f06e05c37688b",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-idp",
-      "arch": "amd64",
-      "sha256": "2870689df549ec1fc4a0e45aea31c02a63de12639dd6a45c9fe92dec303ab00c",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-nbbootstrap",
-      "arch": "amd64",
-      "sha256": "47204de0fe0fed434f949eea5e80b1b4520dacbf05042d21ec543efd7f401b15",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-nodeconfig",
-      "arch": "amd64",
-      "sha256": "0c46ddde8307089ac13830ce14216c4c622f62eb958b2b144f34004fe1583260",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-origin",
-      "arch": "amd64",
-      "sha256": "494bfb4c6091274599949a2b40dd82b77b5d9c4e89ece925c29ab5aa187c9128",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-payment",
-      "arch": "amd64",
-      "sha256": "2f68952576b77fb478fa49357e51a3c0469a48d2f223a327758829ea94f65b78",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-prepare",
-      "arch": "amd64",
-      "sha256": "ab75bd85ca372afa1de472738d2ff04472f4cca32819217dc84b4917ac13bf9f",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-updater",
-      "arch": "amd64",
-      "sha256": "3eb93fcd6a80641b7ae4206445fa192b89c5ce214456c6c3559b62388ad5b566",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-watchdog",
-      "arch": "amd64",
-      "sha256": "9bc41ae23435391df06bd267e22e6ba64d2a4a8114f5e3ec9d41f8ab9b46f448",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-worker",
-      "arch": "amd64",
-      "sha256": "1bd5aeaed7d7cf079a5f41a4af06bfde38e660bd02db994af80af45231d56fc5",
-      "kind": "lab_build_binary"
-    }
-  ],
+  "follow_up": 5,
+  "run_id": "86e6106a-1be1-4003-9b0f-35a30e9cda12",
+  "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+  "probe_source_sha256": "bb9e726e4997f6f59fbbb4d6ac2b007c75aa30ab1cf0fc65c4bb795d6df5ac52",
+  "started_at": "2026-10-30T09:26:55.383432456Z",
+  "finished_at": "2026-10-30T09:45:27.565293215Z",
+  "policy_revision": "1",
+  "node_incarnation": "01a18c23-076a-79fb-af87-c28a9ac798a0",
+  "secondary_node_incarnation": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
   "image_digests": [
     {
-      "image_id": "sha256:a680945078c4343b63f36902000807cd0ab61f0d5fb112a35b675710aaae769b",
+      "image_id": "sha256:bb6608e4f6f966c410892a7f8bc7f023a3ec2d35ac48c4ea6089e64f91062c66",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:263ebda4d921cb783a2a5eb2cfe887b1ca8137de4b8e3c80bdc5679e8f7e4d6d",
+      "image_id": "sha256:54b557988efb2328e10fdd6945d53b7a23f111e634fd2cb5025c20af94633929",
       "service": "idp"
     },
     {
-      "image_id": "sha256:7cc5e6683541e475eafd2abc1ff2b3c25d41f7f7d8f09c152513b6f00812d22e",
+      "image_id": "sha256:9a761831f273a26f3ae8f58a8d565bde09f62267e90bd0380132e29a5d5b1618",
       "service": "payment"
     },
     {
-      "image_id": "sha256:2a097fd81544c6228c0c5370d99b0f84c768285ac21e805b920981020f721f6d",
+      "image_id": "sha256:457fd978be9cc245b5e57c25a0a7d30bf11522e2df2901d25debb7b5c49eb1dd",
       "service": "origin"
     },
     {
@@ -154,1249 +43,254 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:e5310d1b54ae0bf3fdabac32f783a7c3fccc8d351d1fb4177720c190506df1a7",
+      "image_id": "sha256:7f15d6df60d770b59512b00ca98fa888bbae9d795bff04a395f8ac9f27c4d57f",
       "service": "control"
     },
     {
-      "image_id": "sha256:274e7c37268cfaddfad906d9b3b2895757d3835fd13fe419a876c58ca8f3da96",
+      "image_id": "sha256:fb3d6639726f7e1160b9145c4a132cfe945aa3d89211cb986056cd0150daff38",
       "service": "worker"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
       "service": "node-netns"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
       "service": "node"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
       "service": "member"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u16-p3"
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-grant"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u16-p2"
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-paid"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u16-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u15-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u15-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u15-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u14-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u14-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u14-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u13-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u13-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u13-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u12-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u12-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u12-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u11-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u11-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u11-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u10-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u10-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u10-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u09-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u09-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u09-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u08-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u08-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u08-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u07-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u07-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u07-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u06-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u06-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u06-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u05-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u05-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u05-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u04-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u04-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u04-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u03-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u03-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u03-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u02-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u02-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u02-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u01-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u01-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u01-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u00-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u00-p2"
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-counted-b"
     }
   ],
-  "policy_revision": "1",
-  "node_incarnation": "01a18b93-00a7-70c8-9b9b-625644c11271",
-  "stack": {
-    "status": "running-stack-observed",
-    "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
-    "inventory_before": {
-      "containers": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "networks": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "volumes": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "images": {
-        "exit_code": 0,
-        "count": 0
-      }
+  "build_digests": [
+    {
+      "name": "fvpn-agent",
+      "sha256": "e58ce507f6e8cc6e90c1614daad37d62ac394bb2264615b780d1417cf4213f58",
+      "kind": "prepared application binary"
     },
-    "up": {
-      "command": [
-        "make",
-        "-f",
-        "mk/e2e.mk",
-        "e2e-up"
-      ],
-      "started_at": "2026-10-30T06:49:14Z",
-      "finished_at": "2026-10-30T06:49:36Z",
-      "elapsed_seconds": 21.672,
-      "exit_code": 0,
-      "scan": {
-        "stream": "e2e-up",
-        "bytes": 19841,
-        "findings": []
-      }
+    {
+      "name": "fvpn-control",
+      "sha256": "ef97948f8d9bc326163f7b407c067d8a67f279215aa5ef2d232d61133d11a132",
+      "kind": "prepared application binary"
     },
-    "live_probe": {
-      "command": [
-        "go",
-        "test",
-        "-json",
-        "-tags",
-        "e2e,integration",
-        "-p",
-        "1",
-        "-parallel",
-        "2",
-        "-count=1",
-        "-timeout",
-        "55m",
-        "-run",
-        "^TestAT28_AT31_Followup4$",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T06:49:36Z",
-      "finished_at": "2026-10-30T07:09:17Z",
-      "elapsed_seconds": 1181.085,
-      "exit_code": 1,
-      "scan": {
-        "stream": "live-probe",
-        "bytes": 9097,
-        "findings": []
-      },
-      "status": "failed",
-      "required_tests": [
-        "TestAT28_AT31_Followup4"
-      ],
-      "missing": [],
-      "skipped": [],
-      "tests": [
-        {
-          "name": "TestAT28_AT31_Followup4",
-          "result": "fail",
-          "elapsed_seconds": 1180.64
-        }
-      ],
-      "package_results": {
-        "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "fail"
-      }
+    {
+      "name": "fvpn-e2e-idp",
+      "sha256": "b079831f2ba6448fafca64d19005f39117e9dac44fd4378981c0fcdbfa94a2c2",
+      "kind": "prepared application binary"
     },
-    "isolated_restore": {
-      "status": "historical record preserved",
-      "compatibility": "historical; no new compatibility assertion in Follow-up 4",
-      "new_restore_executed": false
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "sha256": "171dd8f5b28adfee27eaef82417e810480c5a241f9dff085df02f34832c6e469",
+      "kind": "prepared application binary"
     },
-    "down": {
-      "command": [
-        "make",
-        "-f",
-        "mk/e2e.mk",
-        "e2e-down"
-      ],
-      "started_at": "2026-10-30T07:09:17Z",
-      "finished_at": "2026-10-30T07:10:02Z",
-      "elapsed_seconds": 45.076,
-      "exit_code": 0,
-      "scan": {
-        "stream": "e2e-down",
-        "bytes": 3056,
-        "findings": []
-      }
+    {
+      "name": "fvpn-e2e-nodeconfig",
+      "sha256": "f5cf21b2018e7e8135dbbdaa571bf69ee23604faa4d6435adebfcb462661cdd9",
+      "kind": "prepared application binary"
     },
-    "inventory_after": {
-      "containers": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "networks": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "volumes": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "images": {
-        "exit_code": 0,
-        "count": 0
-      }
+    {
+      "name": "fvpn-e2e-origin",
+      "sha256": "2f5e7744dc3abe4883f6265a1255a1c2734556f1c1398a7138459249309ceb43",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "sha256": "825a8f62213dcaeae59cacf2ecd760d5216f1b8fea4fae8103ad896cfe21d0af",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "sha256": "d8a04949a3a789311e0c7c3896a333c91f89537ae6b92e8651d1d35989ad42ad",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "sha256": "96825f58bc15c94f77d9e7000152c5545146818e3ba7533b6d2f4d6c24880c02",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "sha256": "c1ff8ce46603a0458e905e26de6c9c4e63539faf42f0cbe14c9e6700bf0d6b61",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "sha256": "47a86133875571c8da3455a7b83a2797a2cc4d84347dc4875521c5b18243d6e7",
+      "kind": "prepared application binary"
     }
-  },
-  "id": "SECOPS-11",
-  "follow_up": 4,
-  "status": "passed",
-  "negative_status": "passed",
-  "positive_status": "passed",
-  "expected": "Unarmed real agent fails data_path_probe with member_forwarding_unconfirmed inside an operation; issued published generation with zero bindings succeeds after #148",
-  "actual": {
-    "without_capacity": {
-      "counted_flow": false,
-      "flow_probe": {
-        "admitted_bytes_delta": "0",
-        "after_bytes": {},
-        "before_bytes": {},
-        "command": [
-          "docker",
-          "exec",
-          "fvpn-w4-secops-member",
-          "wget",
-          "--timeout=3",
-          "--tries=1",
-          "--ca-certificate=/etc/vpn-node/ca.pem",
-          "-q",
-          "-O",
-          "/dev/null",
-          "https://releases.example.invalid/healthz"
-        ],
-        "counted_flow": false,
-        "counter_reads_ok": true,
-        "device_counter_count": 0,
-        "networks_read_ok": false,
-        "no_native_networks": false,
-        "node_serving": false,
-        "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
-        "request_succeeded": false
-      },
-      "node_after_publication": {
-        "config_generation": {
-          "applied": "3",
-          "desired": "3"
-        },
-        "data_health": "healthy",
-        "observed_publication": "error",
-        "provisioning": "ready",
-        "publication": "published"
-      },
-      "observed_lease_generation": {
-        "applied_generation": "3",
-        "desired_generation": "3",
-        "expires_at": "2026-10-31T06:51:05.148045Z",
-        "issued_at": "2026-10-30T06:51:05.148045Z",
-        "lease_generation": "3",
-        "matches_applied": true,
-        "read_ok": true,
-        "source": "lease ID from current immutable agent observation"
-      },
-      "publication_negative": {
-        "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
-        "owner_fix": "wire-nodes follow-up 12 / PR #109",
-        "passed": false
-      },
-      "publication_observation_after": {
-        "applied_config_generation": "3",
-        "available": true,
-        "checks": [
-          {
-            "error_code": null,
-            "name": "dns_policy",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "internet_only",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "lease",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "meter_path",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "policy_signature",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "qos",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "release_supported",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "source_binding",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "storage",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "tunnel_probe",
-            "status": "passed"
-          }
-        ],
-        "data_health": "healthy",
-        "forwarding_evidence_satisfied": false,
-        "lease": {
-          "expires_at": "2026-10-31T06:51:05.148045932Z",
-          "lease_id": "e09ad4be-8d61-4902-a02f-6b6d37dedf22"
-        },
-        "member_forwarding_enabled": false,
-        "observed_at": "2026-10-30T06:52:31.20673725Z",
-        "provisioning_state": "ready",
-        "report_id": "01a18b94-dc66-7b47-8aa5-3c1c68e3511e",
-        "safety_status": "passed"
-      },
-      "publication_observation_before": {
-        "applied_config_generation": "1",
-        "available": true,
-        "checks": [
-          {
-            "error_code": null,
-            "name": "dns_policy",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "internet_only",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "lease",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "meter_path",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "policy_signature",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "qos",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "release_supported",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "source_binding",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "storage",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "tunnel_probe",
-            "status": "passed"
-          }
-        ],
-        "data_health": "healthy",
-        "forwarding_evidence_satisfied": false,
-        "lease": {
-          "expires_at": "2026-10-31T06:50:29.536053961Z",
-          "lease_id": "c97faa7a-b005-4e1c-85b6-a8fb91ae652f"
-        },
-        "member_forwarding_enabled": false,
-        "observed_at": "2026-10-30T06:51:00.069869211Z",
-        "provisioning_state": "ready",
-        "report_id": "01a18b93-7865-7d48-b6cf-e7522958afbc",
-        "safety_status": "passed"
-      },
-      "publication_operation": {
-        "operation_id": "f2d000d2-3b2d-437c-8b2e-3c63def3c52c",
-        "status": "running",
-        "steps": [
-          {
-            "error_code": null,
-            "message": null,
-            "name": "agent_policy",
-            "observed_at": "2026-10-30T06:52:27.627702225Z",
-            "required": true,
-            "status": "succeeded"
-          },
-          {
-            "error_code": "NODE_NOT_SERVICEABLE",
-            "message": "member_forwarding_unconfirmed",
-            "name": "data_path_probe",
-            "observed_at": null,
-            "required": true,
-            "status": "failed"
-          },
-          {
-            "error_code": null,
-            "message": null,
-            "name": "netbird_route_readback",
-            "observed_at": "2026-10-30T06:52:27.627702225Z",
-            "required": true,
-            "status": "succeeded"
-          }
-        ]
-      },
-      "publication_request": {
-        "code": "",
-        "status": 202
-      },
-      "serving_checks": [
-        {
-          "error_code": null,
-          "name": "dns_policy",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "internet_only",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "lease",
-          "status": "not_run"
-        },
-        {
-          "error_code": null,
-          "name": "meter_path",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "policy_signature",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "qos",
-          "status": "not_run"
-        },
-        {
-          "error_code": null,
-          "name": "release_supported",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "source_binding",
-          "status": "not_run"
-        },
-        {
-          "error_code": null,
-          "name": "storage",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "tunnel_probe",
-          "status": "passed"
-        }
-      ],
-      "signed_device_bindings": 0,
-      "signed_generation": "3",
-      "signed_input_read_ok": true,
-      "signed_publication_intent": "published",
-      "utc": "2026-10-30T06:52:34.597045276Z",
-      "watchdog_state": {
-        "baseline_ok": "1",
-        "generation": "3",
-        "mono_ns": "698190416217795",
-        "policy_expires_mono_ns": "0",
-        "reason": "safety_check_failed",
-        "serving": "0",
-        "wall_unix_ns": "1793343151219396732"
-      }
-    },
-    "empty_bindings": {
-      "counted_flow": false,
-      "flow_probe": {
-        "admitted_bytes_delta": "0",
-        "after_bytes": {},
-        "before_bytes": {},
-        "command": [
-          "docker",
-          "exec",
-          "fvpn-w4-secops-member",
-          "wget",
-          "--timeout=3",
-          "--tries=1",
-          "--ca-certificate=/etc/vpn-node/ca.pem",
-          "-q",
-          "-O",
-          "/dev/null",
-          "https://releases.example.invalid/healthz"
-        ],
-        "counted_flow": false,
-        "counter_reads_ok": true,
-        "device_counter_count": 0,
-        "networks_read_ok": false,
-        "no_native_networks": false,
-        "node_serving": true,
-        "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
-        "request_succeeded": false
-      },
-      "node_after_publication": {
-        "config_generation": {
-          "applied": "6",
-          "desired": "6"
-        },
-        "data_health": "healthy",
-        "observed_publication": "active",
-        "provisioning": "ready",
-        "publication": "published"
-      },
-      "observed_lease_generation": {
-        "applied_generation": "6",
-        "desired_generation": "6",
-        "expires_at": "2026-10-31T06:52:51.575602Z",
-        "issued_at": "2026-10-30T06:52:51.575602Z",
-        "lease_generation": "6",
-        "matches_applied": true,
-        "read_ok": true,
-        "source": "lease ID from current immutable agent observation"
-      },
-      "publication_negative": {
-        "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
-        "owner_fix": "wire-nodes follow-up 12 / PR #109",
-        "passed": false
-      },
-      "publication_observation_after": {
-        "applied_config_generation": "6",
-        "available": true,
-        "checks": [
-          {
-            "error_code": null,
-            "name": "dns_policy",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "internet_only",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "lease",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "meter_path",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "policy_signature",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "qos",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "release_supported",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "source_binding",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "storage",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "tunnel_probe",
-            "status": "passed"
-          }
-        ],
-        "data_health": "healthy",
-        "forwarding_evidence_satisfied": false,
-        "lease": {
-          "expires_at": "2026-10-31T06:52:51.575602846Z",
-          "lease_id": "aad78289-7f45-4146-8f44-94ff5de96553"
-        },
-        "member_forwarding_enabled": true,
-        "observed_at": "2026-10-30T06:53:06.817552841Z",
-        "provisioning_state": "ready",
-        "report_id": "01a18b95-6781-7876-849c-8a9b11e39d8e",
-        "safety_status": "passed"
-      },
-      "publication_observation_before": {
-        "applied_config_generation": "4",
-        "available": true,
-        "checks": [
-          {
-            "error_code": null,
-            "name": "dns_policy",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "internet_only",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "lease",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "meter_path",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "policy_signature",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "qos",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "release_supported",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "source_binding",
-            "status": "not_run"
-          },
-          {
-            "error_code": null,
-            "name": "storage",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "tunnel_probe",
-            "status": "passed"
-          }
-        ],
-        "data_health": "healthy",
-        "forwarding_evidence_satisfied": false,
-        "lease": {
-          "expires_at": "2026-10-31T06:52:36.28967649Z",
-          "lease_id": "54ba6a03-6b68-4904-8d62-f3bbb8909bb7"
-        },
-        "member_forwarding_enabled": true,
-        "observed_at": "2026-10-30T06:52:36.346977685Z",
-        "provisioning_state": "ready",
-        "report_id": "01a18b94-f07a-7ef4-8c77-c0192196b406",
-        "safety_status": "passed"
-      },
-      "publication_operation": {
-        "operation_id": "4de6dc7e-9df2-411b-a17f-177f9b03d891",
-        "status": "succeeded",
-        "steps": [
-          {
-            "error_code": null,
-            "message": null,
-            "name": "agent_policy",
-            "observed_at": "2026-10-30T06:53:11.78489812Z",
-            "required": true,
-            "status": "succeeded"
-          },
-          {
-            "error_code": null,
-            "message": null,
-            "name": "data_path_probe",
-            "observed_at": "2026-10-30T06:53:11.78489812Z",
-            "required": true,
-            "status": "succeeded"
-          },
-          {
-            "error_code": null,
-            "message": null,
-            "name": "netbird_route_readback",
-            "observed_at": "2026-10-30T06:53:11.78489812Z",
-            "required": true,
-            "status": "succeeded"
-          }
-        ]
-      },
-      "publication_request": {
-        "code": "",
-        "status": 202
-      },
-      "serving_checks": [
-        {
-          "error_code": null,
-          "name": "dns_policy",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "internet_only",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "lease",
-          "status": "not_run"
-        },
-        {
-          "error_code": null,
-          "name": "meter_path",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "policy_signature",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "qos",
-          "status": "not_run"
-        },
-        {
-          "error_code": null,
-          "name": "release_supported",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "source_binding",
-          "status": "not_run"
-        },
-        {
-          "error_code": null,
-          "name": "storage",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "tunnel_probe",
-          "status": "passed"
-        }
-      ],
-      "signed_device_bindings": 0,
-      "signed_generation": "6",
-      "signed_input_read_ok": true,
-      "signed_publication_intent": "published",
-      "utc": "2026-10-30T06:53:16.026049471Z",
-      "watchdog_state": {
-        "baseline_ok": "1",
-        "generation": "6",
-        "mono_ns": "698231091765343",
-        "policy_expires_mono_ns": "784610771037345",
-        "reason": "serving",
-        "serving": "1",
-        "wall_unix_ns": "1793343191894944036"
-      }
-    },
-    "with_device": {
-      "counted_flow": false,
-      "flow_probe": {
-        "admitted_bytes_delta": "0",
-        "after_bytes": {
-          "d_01a18b95d54a766393199d3721404c75": "0",
-          "u_01a18b95d54a766393199d3721404c75": "0"
-        },
-        "before_bytes": {
-          "d_01a18b95d54a766393199d3721404c75": "0",
-          "u_01a18b95d54a766393199d3721404c75": "0"
-        },
-        "command": [
-          "docker",
-          "exec",
-          "fvpn-w4-secops-member",
-          "wget",
-          "--timeout=3",
-          "--tries=1",
-          "--ca-certificate=/etc/vpn-node/ca.pem",
-          "-q",
-          "-O",
-          "/dev/null",
-          "https://releases.example.invalid/healthz"
-        ],
-        "counted_flow": false,
-        "counter_reads_ok": true,
-        "device_counter_count": 2,
-        "networks_read_ok": true,
-        "no_native_networks": false,
-        "node_serving": true,
-        "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
-        "request_succeeded": false
-      },
-      "node_after_publication": {
-        "config_generation": {
-          "applied": "9",
-          "desired": "9"
-        },
-        "data_health": "healthy",
-        "observed_publication": "active",
-        "provisioning": "ready",
-        "publication": "published"
-      },
-      "observed_lease_generation": {
-        "applied_generation": "9",
-        "desired_generation": "9",
-        "expires_at": "2026-10-31T06:54:18.429038Z",
-        "issued_at": "2026-10-30T06:54:18.429038Z",
-        "lease_generation": "9",
-        "matches_applied": true,
-        "read_ok": true,
-        "source": "lease ID from current immutable agent observation"
-      },
-      "publication_negative": {
-        "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
-        "owner_fix": "wire-nodes follow-up 12 / PR #109",
-        "passed": false
-      },
-      "publication_observation_after": {
-        "applied_config_generation": "9",
-        "available": true,
-        "checks": [
-          {
-            "error_code": null,
-            "name": "dns_policy",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "internet_only",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "lease",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "meter_path",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "policy_signature",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "qos",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "release_supported",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "source_binding",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "storage",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "tunnel_probe",
-            "status": "passed"
-          }
-        ],
-        "data_health": "healthy",
-        "forwarding_evidence_satisfied": true,
-        "lease": {
-          "expires_at": "2026-10-31T06:54:18.429038954Z",
-          "lease_id": "bf4ec513-ea2d-4cc1-84b8-db60ba88c78e"
-        },
-        "member_forwarding_enabled": true,
-        "observed_at": "2026-10-30T06:54:38.787793334Z",
-        "provisioning_state": "ready",
-        "report_id": "01a18b96-cec3-7c24-acf0-4d1f030f729f",
-        "safety_status": "passed"
-      },
-      "publication_observation_before": {
-        "applied_config_generation": "7",
-        "available": true,
-        "checks": [
-          {
-            "error_code": null,
-            "name": "dns_policy",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "internet_only",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "lease",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "meter_path",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "policy_signature",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "qos",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "release_supported",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "source_binding",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "storage",
-            "status": "passed"
-          },
-          {
-            "error_code": null,
-            "name": "tunnel_probe",
-            "status": "passed"
-          }
-        ],
-        "data_health": "healthy",
-        "forwarding_evidence_satisfied": true,
-        "lease": {
-          "expires_at": "2026-10-31T06:53:37.246792607Z",
-          "lease_id": "60cab85c-9d9c-41c0-bc1e-a527de0557c1"
-        },
-        "member_forwarding_enabled": true,
-        "observed_at": "2026-10-30T06:54:08.228139922Z",
-        "provisioning_state": "ready",
-        "report_id": "01a18b96-5764-7228-a304-23a8119354f0",
-        "safety_status": "passed"
-      },
-      "publication_operation": {
-        "operation_id": "19d124f2-04eb-4463-8809-dc190a6a7a46",
-        "status": "succeeded",
-        "steps": [
-          {
-            "error_code": null,
-            "message": null,
-            "name": "agent_policy",
-            "observed_at": "2026-10-30T06:54:45.215536224Z",
-            "required": true,
-            "status": "succeeded"
-          },
-          {
-            "error_code": null,
-            "message": null,
-            "name": "data_path_probe",
-            "observed_at": "2026-10-30T06:54:45.215536224Z",
-            "required": true,
-            "status": "succeeded"
-          },
-          {
-            "error_code": null,
-            "message": null,
-            "name": "netbird_route_readback",
-            "observed_at": "2026-10-30T06:54:45.215536224Z",
-            "required": true,
-            "status": "succeeded"
-          }
-        ]
-      },
-      "publication_request": {
-        "code": "",
-        "status": 202
-      },
-      "serving_checks": [
-        {
-          "error_code": null,
-          "name": "dns_policy",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "internet_only",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "lease",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "meter_path",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "policy_signature",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "qos",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "release_supported",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "source_binding",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "storage",
-          "status": "passed"
-        },
-        {
-          "error_code": null,
-          "name": "tunnel_probe",
-          "status": "passed"
-        }
-      ],
-      "signed_device_bindings": 1,
-      "signed_generation": "9",
-      "signed_input_read_ok": true,
-      "signed_publication_intent": "published",
-      "utc": "2026-10-30T06:54:48.875931422Z",
-      "watchdog_state": {
-        "baseline_ok": "1",
-        "generation": "9",
-        "mono_ns": "698323058779243",
-        "policy_expires_mono_ns": "701661193313542",
-        "reason": "serving",
-        "serving": "1",
-        "wall_unix_ns": "1793343283861958069"
-      }
-    }
-  },
-  "counted_flow": false,
-  "publication_is_not_traffic_proof": true,
-  "negative_scope": "Operation step refusal at the unarmed snapshot; does not assert a terminal operation failure. Later capacity input may let its retry succeed.",
+  ],
   "commands": [
-    [
-      "go",
-      "test",
-      "-json",
-      "-tags",
-      "e2e,integration",
-      "-p",
-      "1",
-      "-parallel",
-      "2",
-      "-count=1",
-      "-timeout",
-      "55m",
-      "-run",
-      "^TestAT28_AT31_Followup4$",
-      "./tests/e2e/at/secops"
-    ]
-  ]
+    "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/at-secops.mk at-secops-followup5"
+  ],
+  "hardware": "shared development host; not candidate hardware",
+  "id": "SECOPS-11",
+  "status": "historical halves retained; current populated serving probe",
+  "history": "followup4-publication.json",
+  "actual": {
+    "publication_request": {
+      "code": "",
+      "status": 202
+    },
+    "publication_operation": {
+      "operation_id": "a6da9ce4-5aa7-487b-aded-1fff3166a769",
+      "status": "succeeded",
+      "steps": [
+        {
+          "error_code": null,
+          "message": null,
+          "name": "agent_policy",
+          "observed_at": "2026-10-30T09:29:37.512868684Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "data_path_probe",
+          "observed_at": "2026-10-30T09:29:37.512868684Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "netbird_route_readback",
+          "observed_at": "2026-10-30T09:29:37.512868684Z",
+          "required": true,
+          "status": "succeeded"
+        }
+      ]
+    },
+    "publication_observation_after": {
+      "applied_config_generation": "8",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": true,
+      "lease": {
+        "expires_at": "2026-10-31T09:29:15.015078778Z",
+        "lease_id": "7c168ab7-fade-4891-bd2a-9e65039a3658"
+      },
+      "member_forwarding_enabled": true,
+      "observed_at": "2026-10-30T09:29:25.228044973Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18c24-81ec-70b7-a59d-5f9635690491",
+      "safety_status": "passed"
+    },
+    "node_after_publication": {
+      "config_generation": {
+        "applied": "8",
+        "desired": "8"
+      },
+      "data_health": "healthy",
+      "observed_publication": "active",
+      "provisioning": "ready",
+      "publication": "published"
+    },
+    "selected_exit_flow": {
+      "admitted_bytes_delta": {
+        "download": "1513",
+        "upload": "1066"
+      },
+      "after_bytes": {
+        "download": "1513",
+        "generation": "8",
+        "upload": "1066"
+      },
+      "before_bytes": {
+        "download": "0",
+        "generation": "8",
+        "upload": "0"
+      },
+      "counted": true,
+      "counter_reads_ok": true,
+      "http_200": true,
+      "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Not Selected",
+      "network_list_ok": true,
+      "order": [
+        "select advertised exit",
+        "route dev fvnb0",
+        "HTTPS 200",
+        "authenticated node-SNAT receipt",
+        "exact-device byte delta"
+      ],
+      "origin_authenticated": true,
+      "origin_node_snat": true,
+      "origin_probe_matches": true,
+      "origin_requests": 1,
+      "peer": {
+        "container_role": "member",
+        "device_id": "01a18c23-ce6c-7865-af78-3752cc919443"
+      },
+      "route_device": "fvnb0",
+      "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.167.98 uid 0 \n    cache",
+      "selection_ok": true,
+      "selection_output": "Networks selected successfully.",
+      "utc": "2026-10-30T09:29:42.42115563Z"
+    }
+  }
 }

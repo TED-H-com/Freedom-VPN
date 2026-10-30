@@ -787,5 +787,11 @@
     "restore_objects_remaining": 0,
     "primary_health_after": "healthy"
   },
-  "previous_attempts": "pitr-attempts.json"
+  "previous_attempts": "pitr-attempts.json",
+  "follow_up_5": {
+    "reviewed_at": "2026-10-30T10:09:25Z",
+    "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+    "new_restore": false,
+    "note": "No new physical restore in this follow-up. Original PITR subset remains historical; full native archive/provider/peer reconciliation is still blocked."
+  }
 }

@@ -231,6 +231,42 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
     'zh-TW': '節點計量世代已變更，用量事件序號持續遞增。',
     en: 'The meter epoch changed; usage event sequencing continues.',
   },
+  ISOLATION_POLICY_INVALID: {
+    'zh-TW': '節點隔離允許或拒絕規則與期望政策不符。',
+    en: 'The node allow/deny isolation policy does not match the expected ruleset.',
+  },
+  GENERATION_MISMATCH: {
+    'zh-TW': '核心規則集世代與期望世代不一致。',
+    en: 'The kernel ruleset does not match the requested generation.',
+  },
+  HOOK_PRIORITY_MISMATCH: {
+    'zh-TW': '基礎鏈的掛載點 (hook) 或優先順序發生偏移。',
+    en: 'A base chain hook or priority has drifted from the expected baseline.',
+  },
+  COUNTER_ORDER_INVALID: {
+    'zh-TW': '規則順序允許流量在租約檢查或裝置計數器前被放行。',
+    en: 'An accept rule can bypass the lease check or per-device counters.',
+  },
+  FLOWTABLE_BYPASS: {
+    'zh-TW': 'Flowtable 或硬體卸載可能繞過流量計數器。',
+    en: 'A flowtable or offload rule could bypass the accounting counters.',
+  },
+  DEVICE_CLASS_MISSING: {
+    'zh-TW': '裝置綁定缺少對應的流量計數器或分類規則。',
+    en: 'A device binding is missing its accounting counter or traffic class.',
+  },
+  QOS_CLASS_MISSING: {
+    'zh-TW': 'HTB 父類別或會員流量控制類別缺失或設定不符。',
+    en: 'The HTB parent class or a member QoS class is missing or misconfigured.',
+  },
+  MARK_SEMANTICS_VIOLATED: {
+    'zh-TW': '規則違反封包標記規範，改寫了保留的 skb 或 conntrack mark。',
+    en: 'A rule writes to reserved skb mark or conntrack mark ranges.',
+  },
+  PROBE_UNBOUNDED: {
+    'zh-TW': '探測例外集合元素缺少核心逾時設定，可能超過健康檢查期間。',
+    en: 'A synthetic-probe set element has no kernel timeout and would outlive the health check.',
+  },
   DEVICE_LIMIT_REACHED: {
     'zh-TW': '已達方案允許的裝置上限（預設 3 台），請先撤銷舊裝置後再重試。',
     en: 'Device limit reached for your plan (default 3). Revoke an existing device first.',

@@ -161,7 +161,7 @@ func (p *liveProbe) open() {
 	if !roots.AppendCertsFromPEM(ca) {
 		p.t.Fatal("lab TLS CA invalid")
 	}
-	dial := map[string]int{"portal.example.invalid:8443": 30443, "agent.example.invalid:9443": 31443, "idp.example.invalid:443": 30444, "netbird.example.invalid:443": stack.Ports["gateway"]}
+	dial := map[string]int{"portal.example.invalid:8443": 30443, "agent.example.invalid:9443": 31443, "idp.example.invalid:443": 30444, "netbird.example.invalid:443": stack.Ports["gateway"], "releases.example.invalid:443": stack.Ports["origin"], "api.stripe.com:443": stack.Ports["payment"]}
 	p.tr = &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots}, DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
 		port, ok := dial[address]
 		if !ok {

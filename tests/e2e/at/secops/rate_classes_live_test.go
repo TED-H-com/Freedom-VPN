@@ -129,7 +129,7 @@ func (p *liveProbe) rateClasses(node *liveSession, b api.EnrollResponse, members
 	})
 	out["usage_acknowledgements"] = results
 	sizes := []map[string]any{}
-	for _, n := range []int{1 << 20, (1 << 20) + 1, 8 << 20, (8 << 20) + 1} {
+	for _, n := range []int{(8 << 20) - 1, 8 << 20, (8 << 20) + 1} {
 		time.Sleep(time.Second)
 		padded := append(append([]byte{}, raw...), bytes.Repeat([]byte(" "), n-len(raw))...)
 		r := p.call(node, "POST", liveAgent+"/api/v1/agent/usage-batches", padded, map[string]string{"Idempotency-Key": ""})

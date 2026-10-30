@@ -1,29 +1,38 @@
 {
   "schema_version": 1,
-  "follow_up": 4,
-  "checked_at": "2026-10-30T07:45:51.232255Z",
-  "local_source_revision": "9b17127c888f94191d759617c99fe1225078a092",
-  "initial_source_revision": "4299123",
-  "at_start": {
-    "wire_nodes_followup_15_found": false
+  "follow_up": 5,
+  "checked_at": "2026-10-30T09:34:30.156033Z",
+  "local_source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+  "initial_source_revision": "5c58d32",
+  "before_final_live_run": {
+    "agent_followup_11": {
+      "merged": true,
+      "pr": 162
+    },
+    "devstack_followup_10": {
+      "merged": false,
+      "last_checked": "origin/main remained 446b6b0 before the final fresh run"
+    }
   },
-  "before_publication": {
-    "wire_nodes_followup_15_found": true,
-    "merged_pr": 148,
-    "fast_forward_performed": true
+  "measured_main_roadmap_prs": {
+    "devstack_followup_9": 153,
+    "control_followup_16": 161,
+    "agent_followup_11": 162,
+    "wire_nodes_followup_16": 160,
+    "fleet_update_followup_7": 155,
+    "netlab_followup_5": 156,
+    "netlab_followup_6": 159,
+    "updater_followup_10": 154,
+    "handover_followup_4": 157
   },
   "commands": [
     "git fetch origin",
-    "git log --oneline origin/main --grep='w3-wire-nodes follow-up 15'",
-    "git merge --ff-only origin/main",
-    "git fetch origin; git log --oneline origin/main --grep='w3-wire-nodes follow-up 15'"
+    "git log --oneline origin/main",
+    "git merge --ff-only origin/main"
   ],
-  "decision": "#148 arrived during initial inspection; fast-forwarded this task branch before any live run. All application observations remain pinned to 9b17127; no merge during a live run.",
+  "decision": "Stopped setup-only initial attempt when #162 appeared; measured only #162 on fresh instances. No live run spans a source merge. Final gate recheck found no devstack follow-up 10.",
   "history": [
-    {
-      "follow_up": 3,
-      "record": "followup3-dependencies.json"
-    }
+    "followup4-dependencies.json"
   ],
   "requests": {
     "SECOPS-03": {
@@ -45,27 +54,27 @@
       "evidence": "limiter.json"
     },
     "SECOPS-07": {
-      "status": "DOC01\u2013DOC14 resolved",
+      "status": "DOC01–DOC14 resolved",
       "merged_prs": [
         138
       ],
       "evidence": "scope-review.json"
     },
     "SECOPS-09": {
-      "status": "persistent recovery resolved; counted-flow gate remains on devstack follow-up 9",
+      "status": "resolved selected counted flow; remaining AT29 faults scoped separately",
       "merged_prs": [
-        118,
-        143,
-        146
+        153,
+        162
       ],
-      "evidence": "AT29.json"
+      "evidence": "counted-flow.json"
     },
     "SECOPS-10": {
-      "status": "blocked: isolated 50/60 admitted, login 51 fails at configured nginx 256-connection budget; hook supports multiple peers",
+      "status": "open: devstack follow-up 10 absent; historical 50/60 unchanged, current counted subset explicitly smaller",
       "merged_prs": [
-        143
+        143,
+        153
       ],
-      "evidence": "native-scale.json"
+      "evidence": "capacity.json"
     },
     "SECOPS-11": {
       "status": "resolved live unarmed step refusal and successful zero-binding published generation; not traffic proof",
@@ -99,18 +108,45 @@
       "evidence": "limiter.json"
     },
     "SECOPS-15": {
-      "status": "new blocked: 8 MiB usage allowance conflicts with 1 MiB whole-body canonicalization",
+      "status": "resolved measured cap−1/cap/cap+1 usage and all other class boundaries after #161",
       "merged_prs": [
-        145
+        161
       ],
       "evidence": "limiter.json"
     },
     "SECOPS-16": {
-      "status": "new observed: gateway error contains transient device-flow query value; counts only published",
+      "status": "open: no exhaustion re-measure without devstack follow-up 10; historical device-flow-query finding retained",
       "merged_prs": [
         143
       ],
-      "evidence": "native-diagnostics.json"
+      "evidence": "followup4-secret-scan.json"
+    },
+    "SECOPS-04": {
+      "status": "paid watchdog and grant kernel repeated-HTTPS subsets passed, original ends unchanged and recovery counted; remaining grace/node-lease/transport/guest hooks blocked",
+      "merged_prs": [
+        153,
+        162
+      ],
+      "evidence": "deadlines.json"
+    },
+    "F3-02": {
+      "status": "resolved measured generation 22, forwarding true, no block reasons, second member still counted after revoke",
+      "merged_prs": [
+        153,
+        156,
+        159,
+        162
+      ],
+      "evidence": "post-revoke.json"
+    },
+    "DOC15": {
+      "status": "open: historical attribution requested for obsolete missing lease/conntrack wording",
+      "merged_prs": [
+        153,
+        157,
+        162
+      ],
+      "evidence": "scope-review.json"
     }
   }
 }
