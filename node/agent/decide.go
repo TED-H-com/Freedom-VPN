@@ -50,6 +50,12 @@ type Input struct {
 	UsageDisk bool
 	// UsagePersist is a usage sample that could not be stored.
 	UsagePersist bool
+	// ProbeRan is false until the data-path probe has finished once.
+	// Unknown data health is only that state (§5). ProbeCheck and
+	// ProbeHealth are the result of that run (§13.9).
+	ProbeRan    bool
+	ProbeCheck  api.HealthCheckStatus
+	ProbeHealth api.DataHealth
 }
 
 // Decision is the forwarding choice for one step (§14.7, §16.3).
@@ -63,6 +69,11 @@ type Decision struct {
 	Provisioning  api.ProvisioningState
 	Publication   api.PublicationIntent
 	PolicyExpires time.Duration
+	// Applied is the desired generation the baseline (or a serving apply)
+	// may acknowledge. Zero means this step does not acknowledge one.
+	Applied uint64
+	// DataHealth is the probe result. Unknown only before the first run.
+	DataHealth api.DataHealth
 }
 
 // Decide chooses member forwarding. IPv6 is always block: desired state has
@@ -110,8 +121,13 @@ func Decide(in Input) Decision {
 		add(api.ForwardingBlockReasonSafetyCheckFailed)
 	}
 	pub := api.PublicationIntentUnpublished
-	var releaseOK, bindingOK, qosOK, leaseOK bool
-	bindingOK = true
+	published := false
+	var releaseOK bool
+	releaseChecked := false
+	if in.Desired != nil {
+		pub = in.Desired.PublicationIntent
+		published = pub == api.PublicationIntentPublished
+	}
 	if in.Desired == nil || !in.DesiredOK {
 		if in.DesiredExpired {
 			add(api.ForwardingBlockReasonPolicyExpired)
@@ -119,49 +135,80 @@ func Decide(in Input) Decision {
 			add(api.ForwardingBlockReasonPolicyMissing)
 		}
 	} else {
-		pub = in.Desired.PublicationIntent
-		if pub != api.PublicationIntentPublished {
+		if !published {
 			add(api.ForwardingBlockReasonNotPublished)
 		}
-		releaseOK = in.ReleaseID != uuid.Nil && containsID(in.Desired.ServingReleaseIds, in.ReleaseID)
-		if !releaseOK {
-			add(api.ForwardingBlockReasonReleaseNotSupported)
+		// An empty serving-release list passes, matching CheckPublishable.
+		// A non-empty list still has to contain this release.
+		releaseChecked = true
+		if len(in.Desired.ServingReleaseIds) == 0 {
+			releaseOK = true
+		} else {
+			releaseOK = in.ReleaseID != uuid.Nil && containsID(in.Desired.ServingReleaseIds, in.ReleaseID)
+			if !releaseOK {
+				add(api.ForwardingBlockReasonReleaseNotSupported)
+			}
 		}
 	}
-	if !in.LeaseFresh || in.Lease == nil || in.LeaseMonoSent <= 0 {
+	leaseOK := in.LeaseFresh && in.Lease != nil && in.LeaseMonoSent > 0
+	if !leaseOK {
 		add(api.ForwardingBlockReasonLeaseExpired)
-	} else {
-		leaseOK = true
 	}
 
 	d := Decision{Publication: pub, Reasons: reasons}
 	model, expires, qerr := buildModel(in)
+	bindingOK := true
+	qosOK := false
 	if qerr != nil {
 		qosOK = false
 		bindingOK = false
-		add(api.ForwardingBlockReasonSafetyCheckFailed)
-		d.Errors = append(d.Errors, api.NodeError{
-			Code: api.ErrorCodeVALIDATIONFAILED, Message: "safety policy could not be rendered",
-			ObservedAt: at, Stage: "qos",
-		})
+		// QoS is a serving check. It blocks forwarding when publication
+		// is the thing we would serve, and it does not fail baseline
+		// safety while the node is unpublished or disabled.
+		if published && in.DesiredOK {
+			add(api.ForwardingBlockReasonSafetyCheckFailed)
+			d.Errors = append(d.Errors, api.NodeError{
+				Code: api.ErrorCodeVALIDATIONFAILED, Message: "safety policy could not be rendered",
+				ObservedAt: at, Stage: "qos",
+			})
+		}
 	} else if leaseOK && in.DesiredOK {
 		qosOK = true
 		if len(in.Desired.DeviceBindings) > 0 && len(model.Bindings) == 0 {
 			add(api.ForwardingBlockReasonLeaseExpired)
 			leaseOK = false
+			bindingOK = false
+			qosOK = false
 		}
+	}
+	probePassed := in.ProbeRan && in.ProbeCheck == api.HealthCheckStatusPassed
+	if !probePassed {
+		add(api.ForwardingBlockReasonSafetyCheckFailed)
+	}
+	if in.ProbeRan && in.ProbeCheck == api.HealthCheckStatusFailed {
+		d.Errors = append(d.Errors, api.NodeError{
+			Code: api.ErrorCodeHEALTHCHECKFAILED, Message: "tunnel_probe",
+			ObservedAt: at, Stage: "probe",
+		})
 	}
 	d.Reasons = reasons
 	d.Model = model
 	d.PolicyExpires = expires
 	d.Serve = len(d.Reasons) == 0
 	if !d.Serve {
+		// The serving model is dropped. The engine still installs the
+		// fail-closed baseline and may acknowledge the generation.
 		d.Model = enforce.Model{}
 		d.PolicyExpires = 0
 	}
-	d.Checks = checks(in, at, releaseOK, bindingOK, qosOK, leaseOK && d.Serve)
-	d.Safety = safetyOf(d)
-	d.Provisioning = provisioningOf(in)
+	if in.Desired != nil && in.DesiredOK && in.BaselineOK && in.Enrolled && !in.Revoked && !in.BootstrapLost {
+		d.Applied = uint64(in.Desired.ConfigGeneration)
+	}
+	evaluateServing := in.Desired != nil && published && in.DesiredOK && len(in.Desired.DeviceBindings) > 0
+	d.Checks = checks(in, at, releaseOK, releaseChecked, bindingOK, qosOK, leaseOK, evaluateServing)
+	d.Safety = safetyOf(in, releaseChecked, releaseOK)
+	d.DataHealth = dataHealthOf(in)
+	d.Provisioning = provisioningOf(in, d.Applied > 0)
 	// ISOLATION_BASELINE_MISSING is report-only (§8.2, revision 3). It is
 	// carried on the observation and is not an HTTP response.
 	if !in.BaselineOK {
@@ -191,21 +238,53 @@ func Decide(in Input) Decision {
 	return d
 }
 
-func checks(in Input, at time.Time, releaseOK, bindingOK, qosOK, leaseOK bool) []api.NodeCheck {
+func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK, leaseOK, evaluateServing bool) []api.NodeCheck {
+	lease := notRun(api.NodeCheckNameLease, at)
+	qos := notRun(api.NodeCheckNameQos, at)
+	bind := notRun(api.NodeCheckNameSourceBinding, at)
+	if evaluateServing {
+		lease = chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at)
+		qos = chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at)
+		bind = chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at)
+	}
+	release := notRun(api.NodeCheckNameReleaseSupported, at)
+	if releaseChecked {
+		release = chk(api.NodeCheckNameReleaseSupported, releaseOK, api.ErrorCodeMINIMUMVERSIONVIOLATION, at)
+	} else if in.Desired == nil || !in.DesiredExpired {
+		release = chk(api.NodeCheckNameReleaseSupported, false, api.ErrorCodeMINIMUMVERSIONVIOLATION, at)
+	}
 	return []api.NodeCheck{
 		chk(api.NodeCheckNameDnsPolicy, in.DesiredOK, api.ErrorCodeAUTHORIZATIONEXPIRED, at),
 		chk(api.NodeCheckNameInternetOnly, in.BaselineOK, api.ErrorCodeISOLATIONBASELINEMISSING, at),
-		chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at),
+		lease,
 		chk(api.NodeCheckNameMeterPath, in.Backend == "kernel" && !in.MeterFailed, api.ErrorCodeMETERPATHINVALID, at),
 		chk(api.NodeCheckNamePolicySignature, in.DesiredOK, api.ErrorCodeSIGNATUREINVALID, at),
-		chk(api.NodeCheckNameQos, qosOK && in.DesiredOK, api.ErrorCodeVALIDATIONFAILED, at),
-		chk(api.NodeCheckNameReleaseSupported, releaseOK, api.ErrorCodeMINIMUMVERSIONVIOLATION, at),
-		chk(api.NodeCheckNameSourceBinding, bindingOK, api.ErrorCodeVALIDATIONFAILED, at),
+		qos,
+		release,
+		bind,
 		chk(api.NodeCheckNameStorage, in.StorageOK && !in.UsagePersist && !in.UsageDisk, api.ErrorCodeSTOREUNAVAILABLE, at),
-		{
-			Name: api.NodeCheckNameTunnelProbe, Status: api.HealthCheckStatusNotRun,
-			ObservedAt: at, ErrorCode: presence.NewNullNullable[api.ErrorCode](),
-		},
+		tunnelCheck(in, at),
+	}
+}
+
+func notRun(name api.NodeCheckName, at time.Time) api.NodeCheck {
+	return api.NodeCheck{
+		Name: name, Status: api.HealthCheckStatusNotRun, ObservedAt: at,
+		ErrorCode: presence.NewNullNullable[api.ErrorCode](),
+	}
+}
+
+func tunnelCheck(in Input, at time.Time) api.NodeCheck {
+	if !in.ProbeRan {
+		return notRun(api.NodeCheckNameTunnelProbe, at)
+	}
+	switch in.ProbeCheck {
+	case api.HealthCheckStatusPassed:
+		return chk(api.NodeCheckNameTunnelProbe, true, api.ErrorCodeHEALTHCHECKFAILED, at)
+	case api.HealthCheckStatusFailed:
+		return chk(api.NodeCheckNameTunnelProbe, false, api.ErrorCodeHEALTHCHECKFAILED, at)
+	default:
+		return notRun(api.NodeCheckNameTunnelProbe, at)
 	}
 }
 
@@ -222,31 +301,58 @@ func chk(name api.NodeCheckName, ok bool, code api.ErrorCode, at time.Time) api.
 	}
 }
 
-func safetyOf(d Decision) api.SafetyStatus {
-	if d.Serve {
-		return api.SafetyStatusPassed
+// safetyOf is the isolation and policy baseline (§5). It does not look at
+// d.Serve. Lease, QoS and source binding are serving checks: they never
+// turn this to failed while the node is unpublished or disabled. Expired
+// is only a passed policy or lease deadline while publication is published.
+func safetyOf(in Input, releaseChecked, releaseOK bool) api.SafetyStatus {
+	published := in.Desired != nil && in.Desired.PublicationIntent == api.PublicationIntentPublished
+	policyDeadline := in.Desired != nil && in.DesiredExpired
+	leaseDeadline := !in.LeaseFresh || in.Lease == nil || in.LeaseMonoSent <= 0
+
+	hard := !in.BaselineOK || !in.StorageOK || in.UsagePersist || in.UsageDisk ||
+		in.Backend != "kernel" || in.MeterFailed
+	if releaseChecked && !releaseOK {
+		hard = true
 	}
-	for _, r := range d.Reasons {
-		if r == api.ForwardingBlockReasonPolicyExpired || r == api.ForwardingBlockReasonLeaseExpired {
-			return api.SafetyStatusExpired
-		}
+	// A published document whose only problem is the deadline is expired,
+	// not a failed signature. A missing document is a failed baseline.
+	if in.Desired == nil || (!in.DesiredOK && !(published && policyDeadline)) {
+		hard = true
 	}
-	for _, r := range d.Reasons {
-		if r == api.ForwardingBlockReasonSafetyCheckFailed || r == api.ForwardingBlockReasonMeterPathInvalid {
-			return api.SafetyStatusFailed
-		}
+	if in.ProbeRan && in.ProbeCheck == api.HealthCheckStatusFailed {
+		hard = true
 	}
-	return api.SafetyStatusUnknown
+	if hard {
+		return api.SafetyStatusFailed
+	}
+	if published && (policyDeadline || leaseDeadline) {
+		return api.SafetyStatusExpired
+	}
+	if !in.ProbeRan || in.ProbeCheck != api.HealthCheckStatusPassed {
+		return api.SafetyStatusUnknown
+	}
+	return api.SafetyStatusPassed
 }
 
-func provisioningOf(in Input) api.ProvisioningState {
+func dataHealthOf(in Input) api.DataHealth {
+	if !in.ProbeRan || !in.ProbeHealth.Valid() {
+		return api.DataHealthUnknown
+	}
+	return in.ProbeHealth
+}
+
+func provisioningOf(in Input, acked bool) api.ProvisioningState {
 	if in.Revoked || in.BootstrapLost {
 		return api.ProvisioningStateFailed
 	}
 	if !in.Enrolled {
 		return api.ProvisioningStatePending
 	}
-	return api.ProvisioningStateReady
+	if acked {
+		return api.ProvisioningStateReady
+	}
+	return api.ProvisioningStateApplying
 }
 
 func containsID(ids []uuid.UUID, id uuid.UUID) bool {
