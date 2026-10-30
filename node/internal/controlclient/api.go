@@ -21,6 +21,10 @@ const (
 	pathRenew     = "/api/v1/agent/certificates/renew"
 	pathBootstrap = "/api/v1/agent/bootstrap"
 	pathUsage     = "/api/v1/agent/usage-batches"
+	// pathResolver is the prefix for GET /agent/resolver-documents/{document_id}.
+	// The body is the stored RFC 8785 bytes. Callers verify length and SHA-256
+	// before they parse or apply (D-056).
+	pathResolver = "/api/v1/agent/resolver-documents/"
 )
 
 // Enroll posts the enrollment request. token is the enrollment secret and is
@@ -148,6 +152,25 @@ func (c *Client) Bootstrap(ctx context.Context, idem uuid.UUID) (api.AgentBootst
 		return out, fmt.Errorf("controlclient: bootstrap response: %w", err)
 	}
 	return out, nil
+}
+
+// ResolverDocument fetches the canonical resolver document for id. The
+// returned bytes are the response body, not a re-encoded JSON value. A 404
+// is a StatusError whose Code is NOT_FOUND. The read is capped at 1 MiB.
+func (c *Client) ResolverDocument(ctx context.Context, id uuid.UUID) ([]byte, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("controlclient: empty document id")
+	}
+	httpReq, err := c.jsonReq(ctx, http.MethodGet, pathResolver+id.String(), nil, uuid.Nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.Do(ctx, ClassOther, httpReq)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return readLimited(resp.Body)
 }
 
 // Usage posts a prepared usage batch on the usage budget and returns the

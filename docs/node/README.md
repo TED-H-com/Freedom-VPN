@@ -18,7 +18,7 @@ fvpn-watchdog version
 
 The enrollment token is read from the file, or from stdin when the path is `-`. It is never taken from argv or the environment, including `FVPN_ENROLLMENT_TOKEN`. After a successful enrollment the file is overwritten with zeros, synced, and removed. A failed enrollment leaves the file in place. A second `enroll` does not mint another key or incarnation (AT06, AT07).
 
-`agent.json` holds paths and ids. It never holds a token, a private key, or a setup key. The agent rejects unknown fields. The watchdog ignores unknown fields so both programs can share one file.
+`agent.json` holds paths and ids. It never holds a token, a private key, a setup key, or a resolver password. The password lives in `dns.resolver_credentials_file`. The agent rejects unknown fields. The watchdog ignores unknown fields so both programs can share one file.
 
 ## Boot order (§8.2, §13.5, §16.3)
 
@@ -108,7 +108,7 @@ Heartbeats default to 10 seconds. Observation reports default to 30 seconds (§1
 
 Each step runs one probe before `Decide`. The probe does not change `publication_intent`, does not install a member allow, and does not open member traffic. A control-plane HTTP failure is not this probe. `control_url` is not a probe target.
 
-Unpublished, the probe reads NetBird overlay reachability: `netbird status --json` (argv, no shell, 2 second limit). Management connected, and either at least one relay available or `relays.total` of 0, is a success (`tunnel_probe` `passed`, `data_health` `healthy`). Management connected with relays configured but none available is `degraded` and the check still `passed`. A status that cannot be read, or management disconnected, is `failed` for both the check and `data_health`. When `egress_probe_target` is set (`host:port`), the probe dials that TCP address only after management is connected. A miss is `degraded` and the check `failed`. Desired state has no signed field for this target yet, so the name lives in `agent.json` until the contract grows one.
+Unpublished, the probe reads NetBird overlay reachability: `netbird status --json` (argv, no shell, 2 second limit). Management connected, and either at least one relay available or `relays.total` of 0, is a success (`tunnel_probe` `passed`, `data_health` `healthy`). Management connected with relays configured but none available is `degraded` and the check still `passed`. A status that cannot be read, or management disconnected, is `failed` for both the check and `data_health`. When `egress_probe_target` is set (`host:port`), the probe dials that TCP address only after management is connected. A miss is `degraded` and the check `failed`. A non-null signed `egress_probe` replaces that local target: the probe dials exactly those TCP endpoints, an omitted `timeout_ms` is 2000 ms, and `egress_probe_target` is ignored. Absent or null keeps the local target, or skips the leg when the local target is empty. The `tunnel_probe` check `detail` records which source was used. The health attestation reason stays the short overlay token (`overlay_up`, `overlay_partial`, or `overlay_down`).
 
 Once publication is `published`, the same overlay and egress legs run, and both datapath interfaces (`member_ingress` and `uplink`) must exist. Missing interfaces are `degraded` and the check `failed`, so forwarding stays off. That is the member forwarding path this process can see without an nft exception. A dedicated authenticated test peer with a source, destination, and port allowlist (§13.9) is not installed here. `node/enforce` owns that exception. The lab has no NetBird daemon. It sets `netbird_status_file` to a fixture. `test_mode` does not skip the probe. The registered profile (retries and the stable window) is still 待實測. The agent runs the probe once per step.
 
@@ -118,7 +118,7 @@ The updater writes `health-challenge.json` in `journal_dir`, the same directory 
 
 The three statuses are this step's own `internet_only`, `dns_policy`, and `tunnel_probe` results, including when publication is `unpublished` or `disabled`. The probe is the data-path probe above, with `Published` false unless the intent is `published`, so member interfaces are not required and member forwarding stays closed. Reasons are short fixed strings (`baseline held`, `policy in force`, or the probe token `overlay_up`, `overlay_partial`, or `overlay_down`). They do not carry DNS names, URLs, or peer lists.
 
-The agent answers only after two freshness checks. The probe's wall time must be strictly after `issued_at`, and desired state must already have been evaluated: a document loaded from the store, or one sync attempt (a 304 and a transport error both count). A missing document before that first attempt is not answered. A placeholder `not_run` or a DNS failure written in that gap would end the updater's wait, because a file that validates is accepted immediately. `generated_at` is this process's wall clock and must fall strictly inside `(issued_at, expires_at)`. An expired challenge, a challenge that is not yet valid, or a consumed challenge is not answered. The same nonce and the same results are not rewritten. A new nonce, a changed result, or a missing file is a new rename, including after a process restart, so an attestation that was already on disk when the challenge appeared is replaced. A write error is logged and does not fail the step. A missing challenge does not fail the start.
+The agent answers only when the probe's wall time is strictly after `issued_at` and a verified desired document is in force. A document loaded from the store counts only when its signature, node, incarnation, and validity window all succeed; the stored ETag is kept only in that case. A sync counts when the control plane returns a response and the body verifies. `If-None-Match` is omitted while no verified document is held, so an envelope that expired while the process was stopped cannot come back as `304`. A transport error with no document in hand writes nothing. A placeholder `not_run` or a DNS failure written in that gap would end the updater's wait, because a file that validates is accepted immediately. The updater keeps polling until its deadline, and that deadline is the fail-closed bound. A verified document that later fails a check, including one that has left its validity window, is written as that result. `generated_at` is this process's wall clock and must fall strictly inside `(issued_at, expires_at)`. An expired challenge, a challenge that is not yet valid, or a consumed challenge is not answered. The same nonce and the same results are not rewritten. A new nonce, a changed result, or a missing file is a new rename, including after a process restart, so an attestation that was already on disk when the challenge appeared is replaced. A write error is logged and does not fail the step. A missing challenge does not fail the start.
 
 Timing follows the updater constants. They are code defaults, the updater config cannot change them, and they are 待實測, not a verified SLO. `HealthAttestWait` is 30s per check attempt. `HealthAttestPoll` is 250ms. `HealthChallengeTTL` is 45s, so `expires_at` is `issued_at` plus 45s. The answer has to land inside both the 45s lifetime and the 30s wait. `Run` answers on boot when a stored desired document is already in force, then runs the first step, and both of those happen before the poll sleep. After that the step interval is the minimum of `heartbeat_seconds` and `poll_seconds`. Both default to 10s, which is inside the 30s wait. The lab sets both to 1s. The 8-attempt cap and the 3-rollback cap are unchanged. The attempt that crosses the cap does not issue a candidate challenge.
 
@@ -178,7 +178,9 @@ Updater:
 | `host_reserve_bps` | yes | Host rate reserve in bit/s. Missing or zero exits 64. Production value is 待實測 and is set by the operator |
 | `netbird_backend` | yes for forwarding | `kernel`, `userspace` or `unknown`. Only `kernel` may forward |
 | `netbird_status_file` | no | Lab seam. A NetBird `status --json` document read instead of the CLI. Empty runs `netbird status --json` |
-| `egress_probe_target` | no | `host:port` for the data-path probe. Empty skips that leg. Desired state cannot name it yet |
+| `egress_probe_target` | no | `host:port` for the data-path probe when desired state has no signed `egress_probe`. Empty skips that leg |
+| `dns.resolvers[]` | no | Host-local AdGuard targets, at most 8. Each has `admin_url` (`http` or `https`, IP literal, explicit port, no user, query, or path) and `dns_addr` (`host:port` of the DNS listener). `dns.New` requires both. Loopback is allowed. A link-local or private address is allowed only when it is assigned on a host interface. Optional `id` is a short token |
+| `dns.resolver_credentials_file` | with `dns.resolvers` | Absolute path of a root-owned mode `0600` JSON file `{"username","password"}`, one pair for every resolver. Loaded at process start and again on `SIGHUP` during `run`. A wrong mode or owner refuses the check with a fixed detail and does not log the secret or the URL |
 | `state_dir`, `identity_dir`, `journal_dir`, `lock_path`, `heartbeat_path` | no | Defaults under `/var/lib/vpn-node` and `/run/vpn-node`. Usage ledger is `state_dir/usage.db` |
 | `release_id` | no | Local release UUID. Empty blocks forwarding as an unknown release |
 | `test_mode`, `test_exempt_v4` | no | Exempt prefixes apply only when `test_mode` is true |
@@ -202,11 +204,19 @@ Updater:
   "netbird_backend": "kernel",
   "host_reserve_bps": 1000000,
   "updater_recover": "/opt/vpn-node/current/fvpn-updater",
-  "updater_config": "/etc/vpn-node/updater.json"
+  "updater_config": "/etc/vpn-node/updater.json",
+  "dns": {
+    "resolvers": [
+      {"id": "local", "admin_url": "http://127.0.0.1:8080", "dns_addr": "127.0.0.1:53"}
+    ],
+    "resolver_credentials_file": "/etc/vpn-node/resolver-credentials.json"
+  }
 }
 ```
 
 `agent_release` must be a pinned version. `latest` is rejected. Prices and fair-use thresholds are not in this file. `host_reserve_bps` is required and must be greater than zero. The number in the example is not a measured reserve. The production value is 待實測 and must be set by the operator. The only TEST ONLY value lives in the lab configuration.
+
+`dns` is optional. Leave it out and a referenced resolver document still fails closed: outcome `not_run`, `DEPENDENCY_UNAVAILABLE`, detail "Resolver policy did not run.", and no AdGuard client. When `dns` is present, both `resolvers` and `resolver_credentials_file` are required. The credential file is not inline in `agent.json`. `fvpn-agent run` reloads that file on `SIGHUP` and does not stop. A file that is not a regular mode `0600` owned by uid 0 is not used. The next referenced document then fails `dns_policy` with `FORBIDDEN` and the detail "Resolver credentials are not usable." A desired state that does not name a document does not fail `dns_policy` for that file. `fvpn-agent step` and `enroll` load the file once at start.
 
 ## Decisions
 
@@ -221,7 +231,8 @@ Updater:
 - `ISOLATION_BASELINE_MISSING` and `METER_EPOCH_CHANGE` are report-only observation codes. `HEALTH_CHECK_FAILED` is not used as their stand-in.
 - `host_reserve_bps` missing or zero exits 64 before the kernel or the network. A zero that still reaches `Decide` fails closed and is not replaced.
 - Usage caps do not reuse `METER_PATH_INVALID`. A clean hand-off does not recount admission bytes.
-- A health attestation reports the checks this process just ran. It does not open member forwarding, does not change publication intent, and is ignored when the challenge names another release, boot, incarnation, or node. The watchdog does not answer it.
+- A health attestation reports the checks this process just ran. It does not open member forwarding, does not change publication intent, and is ignored when the challenge names another release, boot, incarnation, or node. The watchdog does not answer it. Nothing is written until a verified desired document is in force. A transport error before that document is not an answer.
+- Resolver admin URLs and the DNS listen address are host-local. The credential file is root-owned mode `0600` and is loaded at start and on `SIGHUP`. The URL and the password are not written to logs, observations, or check detail.
 
 ## 待實測
 

@@ -8,9 +8,9 @@ This document provides the repeatable backup, point-in-time restore (PITR), and 
 
 | Subsystem | RPO Target | RTO Target | Architectural Guarantee |
 |---|---|---|---|
-| **Central PostgreSQL 17** (Members, Entitlements, Nodes, Policies, Audit) | `≤ 15 minutes` | `≤ 2 hours` | Continuous WAL archiving (`archive_timeout = 300s`) + daily base backups. |
-| **Usage Ledger (`usage_events`, `usage_checkpoints`, `usage_rollups`)** | **Effective RPO `0`** (within node 30-day archive)<br>`≤ 15 minutes` (if node archive also lost) | `≤ 2 hours` (ingest resumes; reconciliation runs asynchronously) | Nodes retain ACKed events for `30 days` (`§10.5`). Rotating `ledger_epoch` forces nodes to verify a signed checkpoint and replay post-snapshot events without double-counting (`AT30`). |
-| **NetBird Management Store** | `≤ 15 minutes` | `≤ 2 hours` | Reconciled from central desired state (`internal/netbird/reconcile.go`) after restore. |
+| **Central PostgreSQL 17** (Members, Entitlements, Nodes, Policies, Audit) | `≤ 15 minutes` | `≤ 4 hours` (service target; unmeasured here) | Continuous WAL archiving (`archive_timeout = 300s`) + daily base backups. |
+| **Usage Ledger (`usage_events`, `usage_checkpoints`, `usage_rollups`)** | **Effective RPO `0`** (within node 30-day archive)<br>`≤ 15 minutes` (if node archive also lost) | `≤ 4 hours` (service target; unmeasured here) (ingest resumes; reconciliation runs asynchronously) | Nodes retain ACKed events for `30 days` (`§10.5`). Rotating `ledger_epoch` forces nodes to verify a signed checkpoint and replay post-snapshot events without double-counting (`AT30`). |
+| **NetBird Management Store** | `≤ 15 minutes` | `≤ 4 hours` (service target; unmeasured here) | Reconciled from central desired state (`internal/netbird/reconcile.go`) after restore. |
 | **Signing Vault (`/var/lib/fvpn/vault`) & PKI Revocations** | **`0` (Zero Loss)** | Immediate | Stored outside PostgreSQL snapshots (`§16.2`, `§17.2`). Never overwritten by a database rollback. |
 
 ---
@@ -28,19 +28,21 @@ On `2026-10-29`, the Wave 4 AT30 point-in-time restore and reconciliation drill 
    - Database snapshot (`restored_to = 2026-10-29T18:02:00Z`) contained only `event_seq = 1..2` (`3,000` upload bytes, `6,000` download bytes, `highest_contiguous_seq = 2`, epoch `1f7b1c2a-48b1-4ab2-a75a-b125bec8e0ba`).
    - Events `3..5` were ACKed prior to the simulated central DB loss. On the node, `event_seq = 3` remained in the local SQLite archive, while `event_seq = 4..5` simulated local retention expiry (`retention_expired`), followed by new post-restore traffic `event_seq = 6` (`6,000` upload bytes, `12,000` download bytes).
 
-### 2.2 Measured RPO and RTO Summary
+### 2.2 Local Fixture Measurements (Service RTO Unmeasured)
 
 | Metric | Spec Target (`§17.2`) | Wave 4 Measured Value | Result |
 |---|---|---|---|
 | **Snapshot Window Lag (Raw DB RPO before node replay)** | `≤ 15 minutes` | `3 minutes` (`18:02:00Z` snapshot vs `18:05:00Z` pre-crash watermark) | **PASS** |
 | **Effective Usage Ledger RPO (Retained node archive `seq 1..3`)** | `0 bytes lost / 0 double-counted` | **`0 bytes lost / 0 bytes double-counted`** (`seq 1..2` deduplicated, `seq 3` replayed and accepted) | **PASS** |
 | **Unrecoverable Node Range (`seq 4..5`) Handling** | Honest `gap=true` (`0` invented bytes) | **`gap=true`**, `2` zero-byte `replay_unavailable` tombstones recorded, `0` fabricated bytes | **PASS** |
-| **Database Schema + Snapshot Restore Time** | Part of `≤ 2 hours` RTO | `342 ms` (isolated PostgreSQL 17 schema + state load) | **PASS** |
-| **Ledger Freeze -> Epoch Rotation -> Node Replay -> Complete Recovery (Service RTO)** | `≤ 2 hours` | **`64 ms`** (`406 ms` total drill wall-clock including migrations) | **PASS** |
+| **Local schema + snapshot restore command duration** | Local command only | `342 ms` (isolated PostgreSQL 17 schema + state load) | Local duration only |
+| **Local ledger recovery fixture duration** | Local fixture only | **`64 ms`** (`406 ms` local fixture including migrations) | Local duration only |
+
+These millisecond durations exclude rebuilding secrets, service settings, external reconciliation and user probes. They do not establish the 4-hour service RTO in §17.2. The physical PITR evidence is [the backup drill record](../ops/backups/drill-2026-10-29.md).
 
 ### 2.3 Recorded Drill Timeline & Verified Command Outputs
 
-- **`2026-10-29T22:23:20.006Z` — Verify migrations on restored target (`fvpn-migrate status`)** `[Verified on dev/test stack]`:
+- **Migration inventory (20 applied through `00181`, verified by the physical drill) — Verify migrations on restored target (`fvpn-migrate status`)** `[Verified on dev/test stack]`:
   ```text
   current_database="fvpn_w4_handover_drill"
   00001 applied
@@ -62,6 +64,7 @@ On `2026-10-29`, the Wave 4 AT30 point-in-time restore and reconciliation drill 
   00160 applied
   00161 applied
   00180 applied
+  00181 applied
   ```
 
 - **`2026-10-29T22:23:20.348Z` — Step 1: Freeze usage ingestion (`fvpn-usage-admin freeze`)** `[Verified on dev/test stack]`:
@@ -200,10 +203,14 @@ Execute every step in order during a real disaster recovery event or scheduled q
 - [ ] **2.1 Restore PostgreSQL 17 to the Target Point in Time (`restored_to`)**:
   - **Physical PITR (`pgBackRest`, recommended)** `[production only]`:
     ```bash
-    systemctl stop postgresql
-    pgbackrest --stanza=fvpn --type=time "--target=2026-10-29 18:02:00+00" --target-action=promote restore
-    systemctl start postgresql
+    # Run as the backup OS account with the documented repository environment.
+    # Use a new empty path on disk; keep the primary and its pg1-path unchanged.
+    /usr/local/lib/fvpn/backup/restore-pitr.sh \
+      --stanza fvpn --target-time "2026-10-29T18:02:00Z" \
+      --primary-dir /var/lib/postgresql/17/main \
+      --target-dir /var/lib/postgresql/17/restore-candidate
     ```
+    Start the candidate with an isolated configuration/socket and no public listener, or use `verify.sh --host-repo --primary-host` for a `--network none` copy. Check migrations and the read-only checklist against the candidate. Only after validating that copy, preserve the old cluster and explicitly switch the service configuration to the candidate; do not overwrite the old data. Steps 2.2 onward use the checked candidate's connection configuration.
   - **Logical Restore (`pg_restore`)** (`docs/db/README.md`, `F-02`–`F-04`):
     Append-only guards block `DELETE`/`TRUNCATE` on `audit_events`, `usage_events`, `usage_samples`, `usage_checkpoints`, and `usage_rollups` unless the session runs as schema owner (`fvpn_migrator`) with `SET LOCAL fvpn.restore = 'on'` inside the restore transaction `[production only]`:
     ```bash
@@ -254,10 +261,10 @@ A point-in-time database restore may roll back webhook receipts (`billing_events
 - [ ] **4.1 Verify Automatic Billing Reconciliation (`billing.reconcile`)**:
   `fvpn-worker` runs the `billing.reconcile` loop every `reconcile_seconds` (`900s` in production config). To trigger or verify reconciliation immediately:
   1. Replay unacknowledged webhook events from the Stripe Dashboard (`Developers -> Webhooks -> Send/Resend`) covering `[restored_to - 1h, now]`. Webhook handling is idempotent by `provider_event_id` and never creates duplicate charges (`BILL01`).
-  2. Inspect `billing_subscriptions`, `entitlements`, and `members` for any subscription updated during the RPO window:
+  2. Inspect `subscriptions`, `entitlements`, and `members` for any subscription updated during the RPO window:
      ```sql
-     SELECT id, member_id, provider_subscription_id, status, current_period_end, updated_at
-     FROM billing_subscriptions
+     SELECT id, member_id, external_subscription_id, provider_status, paid_through, updated_at
+     FROM subscriptions
      ORDER BY updated_at DESC LIMIT 50;
      ```
 - [ ] **4.2 Re-apply Post-Snapshot Admin Suspensions or Manual Grants (`§9.2`, `§9.3`, `§17.4`)**:
@@ -275,16 +282,19 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
   - Any published exit node whose NetBird route or policy drifted is re-converged.
   Verify zero stuck operations in the Admin Portal (`/admin/operations?state=failed`) or via SQL:
   ```sql
-  SELECT id, kind, state, target_resource, error_code, updated_at
+  SELECT id, kind, status, resource_type, resource_id, error_code, created_at
   FROM operations
-  WHERE state IN ('pending', 'running', 'failed', 'partially_succeeded')
-  ORDER BY updated_at DESC;
+  WHERE status IN ('pending', 'running', 'failed', 'partially_succeeded')
+  ORDER BY created_at DESC;
   ```
 - [ ] **5.3 Verify AdGuard Home DNS Policy Convergence (`dns.publish`)**:
-  Confirm that all AdGuard Home resolvers report the active `domain_rule_set` and `dns_profile` generations in `dns_resolver_states`:
+  Inspect published heads and their immutable resolver documents; confirm applied state separately by resolver read-back:
   ```sql
-  SELECT resolver_id, applied_generation, last_success_at, last_error_code
-  FROM dns_resolver_states;
+  SELECT h.definition_id, h.profile_revision_id, h.policy_generation,
+         h.status, h.document_sha256, d.created_at
+  FROM dns_publication_heads h
+  JOIN dns_resolver_documents d ON d.profile_revision_id = h.profile_revision_id
+                               AND d.policy_generation = h.policy_generation;
   ```
 
 ### Phase 6: Node Usage Replay and Complete Recovery (`§10.8`, `§17.3 Steps 7–10`)
@@ -296,7 +306,7 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
   3. Reports any purged sequence ranges in `replay_unavailable` (accepted only while `mode = 'reconciling'`, `D-027`), which inserts zero-byte tombstones and sets `gap = TRUE` on affected member rollups.
   Check stream convergence in PostgreSQL:
   ```sql
-  SELECT node_id, incarnation_id, ledger_epoch, highest_contiguous_seq, max_seen_seq, missing_ranges, updated_at
+  SELECT node_id, incarnation_id, ledger_epoch, highest_contiguous_seq, max_seen_seq, updated_at
   FROM usage_checkpoints
   ORDER BY updated_at DESC;
   ```
@@ -309,3 +319,38 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
     --actor "${ADMIN_ACTOR_UUID}"
   ```
   This marks the `usage_recovery_records` entry `completed`, clears `reconciliation_in_progress` on `usage_rollups` (preserving `gap = TRUE` where `replay_unavailable` occurred), and sets `usage_ledger_state.mode = 'normal'`.
+
+---
+
+## 7. Automated Docker PITR Drill Names (`tests/backup`, `FVPN_BACKUP_DRILL_PREFIX`)
+
+`TestAT30_BackupPITRDrill` (`go test -tags integration ./tests/backup/`, also `make -f mk/backup.mk backup-drill`) builds a PostgreSQL 17 + pgBackRest image and runs the primary, the isolated restore, and `verify.sh` on one Docker prefix. Concurrent drills must not share that prefix. The repository-wide integration gate and a second local run can execute at the same time.
+
+Set `FVPN_BACKUP_DRILL_PREFIX` to choose the prefix. The value must match `fvpn-w4-ops-backups-<lowercase-run-id>`: the family name, then one or more hyphen-separated segments of lowercase letters and digits, at most 63 characters. `.github/workflows/backup.yml` sets `fvpn-w4-ops-backups-gha<run_id>-<run_attempt>`.
+
+When the variable is unset, the test draws 4 bytes from `crypto/rand` and uses `fvpn-w4-ops-backups-` plus those bytes as 8 lowercase hex digits.
+
+The test creates and deletes only objects owned by that prefix (the name equals the prefix, or starts with the prefix plus `-`). It registers the cleanup with `t.Cleanup`, so a failure removes the same set. It does not remove the bare family, a neighboring run, or `fvpn-pg`.
+
+| Object | Name |
+|---|---|
+| Image tag | `<prefix>-postgres:17` |
+| Primary container | `<prefix>-primary` |
+| Primary volume | `<prefix>-primary-pgdata` |
+| Repository volume | `<prefix>-repo` |
+| Restore container | `<prefix>-restore` |
+| Restore volume | `<prefix>-restore-pgdata` |
+| `verify.sh` prefix | `<prefix>-verify` |
+| Network name reserved for cleanup | `<prefix>-net` |
+
+The primary and the restore container join Docker's built-in `none` network (`--network none`, zero published host ports). `<prefix>-net` is not created. Cleanup still removes a network of that name if one was left behind.
+
+Stale objects from a killed drill are not removed by the next random-prefix run. Remove the whole `fvpn-w4-ops-backups-*` family, and only that family, with:
+
+```bash
+make -f mk/backup.mk backup-drill-clean
+```
+
+Do not run `backup-drill-clean` while a drill is still using a `fvpn-w4-ops-backups-*` prefix. The test never calls that target.
+
+Evidence is written only with `FVPN_BACKUP_DRILL_RECORD=1`; normal integration runs do not change `docs/`. CI exposes this only as the manual `workflow_dispatch.record_evidence` input. Archive ages and local command durations are reported separately; service RTO remains unmeasured.

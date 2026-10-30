@@ -3,11 +3,13 @@ package healthattest
 import (
 	"strings"
 	"time"
-	"unicode"
-	"unicode/utf8"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
+
+// MaxClockSkew tolerates timestamp rounding between the two local processes.
+// The challenge's strict issue/expiry bounds still apply.
+const MaxClockSkew = 2 * time.Second
 
 // Validate accepts an attestation only when it is bound to challenge, its
 // clock falls inside the challenge window, and the attested agent and
@@ -51,6 +53,9 @@ func Validate(challenge Challenge, attestation Attestation, now time.Time, manif
 	}
 	if !attestation.GeneratedAt.Before(challenge.ExpiresAt) || !now.Before(challenge.ExpiresAt) {
 		return ReasonExpired
+	}
+	if attestation.GeneratedAt.After(now.Add(MaxClockSkew)) {
+		return ReasonGeneratedInFuture
 	}
 	if !attestation.Published.Valid() {
 		return ReasonBadPublication
@@ -124,13 +129,19 @@ func uuidShape(s string) bool {
 }
 
 func checkReason(s string) Reason {
-	if !utf8.ValidString(s) || len(s) > MaxReasonBytes {
+	if len(s) > MaxReasonBytes {
 		return ReasonBadReason
 	}
-	for _, r := range s {
-		if r != ' ' && (unicode.IsControl(r) || r == '\u007f') {
-			return ReasonBadReason
-		}
+	// An allowlist, not a character filter: even an ASCII token can contain
+	// member data. Keep the producer's fixed reasons and the original D-053
+	// contract examples; unknown reasons never reach the journal (SEC02).
+	switch s {
+	case "", "baseline held", "baseline missing", "policy loaded",
+		"policy in force", "policy not in force", "not run", "probe not run",
+		"overlay up", "probe failed", "overlay_up", "overlay_down", "overlay_partial",
+		"probe reached the lab endpoint", "probe skipped", "probe refused":
+		return ""
+	default:
+		return ReasonBadReason
 	}
-	return ""
 }

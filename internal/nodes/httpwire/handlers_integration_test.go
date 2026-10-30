@@ -59,6 +59,12 @@ func setup(t *testing.T) *fixture {
 		t.Fatal(e)
 	}
 	runtime := &httpwire.Runtime{Pool: pool, PKI: identity, Enrollment: en, Nodes: nodes.NewService(pool), Provider: vault}
+	return setupRuntime(t, runtime)
+}
+
+func setupRuntime(t *testing.T, runtime *httpwire.Runtime) *fixture {
+	t.Helper()
+	pool, identity := runtime.Pool, runtime.PKI
 	f := &fixture{t: t, r: runtime, p: auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: true, AuthenticatedAt: time.Now(), CSRFToken: "test-csrf"}}
 	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
 	if e != nil {

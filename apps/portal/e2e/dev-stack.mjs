@@ -7,10 +7,18 @@
  * 2. Generates ephemeral TLS certificates, mTLS node CA, and FileProvider vault.
  * 3. Runs local HTTPS mock OIDC provider, fake NetBird management API, and fake Stripe API + HTTPS CONNECT proxy.
  * 4. Builds and launches real `fvpn-control -migrate-on-start` and `fvpn-worker` binaries.
- * 5. Enrolls a live node via `/api/v1/agent/enroll` and runs an mTLS agent observation loop so
- *    multi-step operations (`netbird` + `nodes`) reach `succeeded` through real control/worker code.
+ * 5. Enrolls a live node via `/api/v1/agent/enroll`, drives fleet updates via
+ *    `POST /api/v1/admin/update-batches` -> `GET /api/v1/agent/desired-state` ->
+ *    `POST /api/v1/agent/update-results` -> `POST /api/v1/agent/observations`, and runs an mTLS
+ *    agent observation loop so multi-step operations reach `succeeded` through real control/worker code.
  * 6. Serves the built Portal frontend on `PORTAL_DEV_PORT` (default 4173) and proxies `/api/v1` and `/auth`
  *    to `fvpn-control`.
+ *
+ * Remaining D-050 fixture deviations (until the dev stack has a second fake agent reporter):
+ * - `exits` publication state seed (`publication_intent = 'published'`, `publication_observed = 'active'`)
+ *   on the enrolled node and secondary fixture exit.
+ * - `SEEDED_NODE_2_ID` offline secondary fixture node (`nodes`, `node_incarnations`, `exits`)
+ *   representing a second fleet target (`waiting_online`, `unconfirmed`, `policy_generation = null`).
  */
 
 import { spawn, execFileSync } from 'node:child_process';
@@ -48,7 +56,6 @@ const PLAN_ID = 'b4fe029a-ecbf-4b1a-9ee7-de399791ae6e';
 const PLAN_REVISION_ID = '0195f100-0000-7000-8000-000000000101';
 const EXIT_GROUP_ID = '11111111-1111-4111-8111-111111111111';
 const RELEASE_110_ID = RELEASE_VECTOR.envelope.signed.release_id; // 6d2797d0-b9a5-4724-96af-9b3039d351b1
-const SEEDED_BATCH_ID = '85ef720a-31a0-4250-90d2-4b92c58695bc';
 const SEEDED_NODE_2_ID = '0195f100-0000-7000-8000-000000000202';
 const SEEDED_NODE_2_INC_ID = '0195f100-0000-7000-8000-000000000203';
 
@@ -615,6 +622,7 @@ function createFakeNetBirdServer(tlsOptions) {
       }
 
       const reply = {
+        ...(kind === 'setup-keys' && req.method === 'PUT' ? bucket.get(id) || {} : {}),
         ...(templates[kind] || {}),
         ...bodyObj,
         id,
@@ -643,6 +651,18 @@ function createFakeNetBirdServer(tlsOptions) {
           })),
         }));
       } else if (kind === 'setup-keys') {
+        if (req.method === 'POST') {
+          reply.used_times = 1;
+          reply.revoked = false;
+          reply.state = 'overused';
+          for (const gid of extractIds(reply.auto_groups)) {
+            const grp = objects.groups.get(gid);
+            if (grp) {
+              grp.peers = [{ id: 'nb-peer-node-1', name: 'tw-tpe-01' }];
+              grp.peers_count = 1;
+            }
+          }
+        }
         reply.key = `nb-setup-secret-${serial}`;
         reply.expires = new Date(Date.now() + 86400_000).toISOString();
       }
@@ -1138,15 +1158,42 @@ async function enrollLiveNode(
   const clientCertPem = enrolled.certificate_pem;
   const incarnationId = enrolled.node_incarnation_id;
 
-  await pool.query(
-    `UPDATE node_incarnations SET deployment_id = 'nb-dev', peer_id = 'nb-peer-node-1' WHERE id = $1`,
-    [incarnationId],
-  );
-
   const bootId = crypto.randomUUID();
   const ledgerEpoch = crypto.randomUUID();
   const meterEpochId = crypto.randomUUID();
   let lastObservedMs = 0;
+  let currentReleaseId = null;
+  let lastGoodReleaseId = null;
+  let activeUpdateObs = {
+    job_id: null,
+    generation: '0',
+    state: null,
+    stage: null,
+  };
+
+  function canonicalizeJson(val) {
+    if (val === null || typeof val !== 'object') {
+      return JSON.stringify(val);
+    }
+    if (Array.isArray(val)) {
+      return `[${val.map((item) => canonicalizeJson(item)).join(',')}]`;
+    }
+    const keys = Object.keys(val).sort();
+    const entries = [];
+    for (const k of keys) {
+      if (val[k] !== undefined) {
+        entries.push(`${JSON.stringify(k)}:${canonicalizeJson(val[k])}`);
+      }
+    }
+    return `{${entries.join(',')}}`;
+  }
+
+  function computeUpdateResultPayloadHash(bodyWithoutHash) {
+    return crypto
+      .createHash('sha256')
+      .update(Buffer.from(canonicalizeJson(bodyWithoutHash), 'utf8'))
+      .digest('hex');
+  }
 
   async function submitObservation(appliedGen = '1') {
     const nowMs = Math.max(Date.now(), lastObservedMs + 1);
@@ -1159,8 +1206,8 @@ async function enrollLiveNode(
       boot_id: bootId,
       observed_at: nowIso,
       agent_version: '1.1.0',
-      current_release_id: RELEASE_110_ID,
-      last_good_release_id: RELEASE_110_ID,
+      current_release_id: currentReleaseId,
+      last_good_release_id: lastGoodReleaseId,
       applied_config_generation: String(appliedGen),
       applied_policy_refs: {
         authorization_generation: '1',
@@ -1193,12 +1240,7 @@ async function enrollLiveNode(
         oldest_unacked_at: null,
         acked_archive_bytes: '4096',
       },
-      update: {
-        job_id: null,
-        generation: '1',
-        state: null,
-        stage: null,
-      },
+      update: activeUpdateObs,
       checks: [
         {
           name: 'internet_only',
@@ -1236,12 +1278,101 @@ async function enrollLiveNode(
     }
   }
 
+  async function fetchDesiredState() {
+    const res = await httpsRequest(`${agentBaseUrl}/api/v1/agent/desired-state`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      ca: caPem,
+      cert: clientCertPem,
+      key: nodeKeyPem,
+    });
+    if (res.status !== 200) {
+      throw new Error(
+        `GET /api/v1/agent/desired-state failed (${res.status}): ${res.text}`,
+      );
+    }
+    return JSON.parse(res.text);
+  }
+
+  async function submitUpdateResult(intent, compiledConfigGen) {
+    const issuedMs = new Date(intent.issued_at).getTime();
+    const startedIso = new Date(issuedMs + 1000).toISOString();
+    const finishedIso = new Date(issuedMs + 2000).toISOString();
+    const resultBodyWithoutHash = {
+      result_id: crypto.randomUUID(),
+      node_id: nodeId,
+      incarnation_id: incarnationId,
+      boot_id: bootId,
+      batch_id: intent.batch_id,
+      target_id: intent.target_id,
+      job_id: intent.job_id,
+      attempt: intent.attempt ?? 1,
+      generation: String(intent.generation),
+      state: 'succeeded',
+      stage: null,
+      requested_release_id: intent.release_id,
+      previous_release_id: null,
+      current_release_id: intent.release_id,
+      manifest_sha256: intent.manifest_sha256,
+      publication_intent: intent.publication_intent ?? 'published',
+      member_forwarding_enabled: true,
+      recovery_required: false,
+      error_code: null,
+      started_at: startedIso,
+      finished_at: finishedIso,
+      state_schema_version: 1,
+      policy_generation: String(compiledConfigGen),
+      health: {
+        processes: 'passed',
+        identity_and_state: 'passed',
+        internet_only: 'passed',
+        dns_policy: 'passed',
+        tunnel_probe: 'passed',
+      },
+      usage_checkpoint: {
+        last_durable_event_seq: '10',
+        central_acked_through: '9',
+        closed_meter_epoch_id: null,
+        new_meter_epoch_id: null,
+      },
+    };
+    const payloadHash = computeUpdateResultPayloadHash(resultBodyWithoutHash);
+    const resultBody = {
+      ...resultBodyWithoutHash,
+      payload_hash: payloadHash,
+    };
+    const res = await httpsRequest(`${agentBaseUrl}/api/v1/agent/update-results`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resultBody),
+      ca: caPem,
+      cert: clientCertPem,
+      key: nodeKeyPem,
+    });
+    if (res.status !== 200 && res.status !== 202) {
+      throw new Error(
+        `POST /api/v1/agent/update-results failed (${res.status}): ${res.text}`,
+      );
+    }
+    currentReleaseId = intent.release_id;
+    lastGoodReleaseId = intent.release_id;
+    activeUpdateObs = {
+      job_id: intent.job_id,
+      generation: String(intent.generation),
+      state: 'succeeded',
+      stage: null,
+    };
+    return JSON.parse(res.text);
+  }
+
   return {
     nodeId,
     incarnationId,
     clientCertPem,
     nodeKeyPem,
     submitObservation,
+    fetchDesiredState,
+    submitUpdateResult,
   };
 }
 
@@ -1419,28 +1550,110 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
   );
 }
 
-async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
+const NODE_AFFECTING_OUTBOX_EVENTS = [
+  'device.authorized',
+  'device.revoked',
+  'member.entitlement_changed',
+  'member.suspended',
+  'policy.activated',
+  'node.peer.observe',
+  'node.peer.discover',
+  'node.provision.requested',
+  'node.publication_changed',
+  'node.updated',
+  'fleet.update_created',
+  'fleet.first_sync_created',
+  'fleet.update_retry',
+  'fleet.release_support_changed',
+];
+
+async function drainNodeAffectingOutbox(pool, label = 'outbox') {
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    const outboxRes = await pool.query(
+      `SELECT EXISTS(
+         SELECT 1 FROM outbox_events
+         WHERE delivered_at IS NULL
+           AND dead_lettered_at IS NULL
+           AND event_type = ANY($1::text[])
+       ) AS has_undelivered`,
+      [NODE_AFFECTING_OUTBOX_EVENTS],
+    );
+    if (!outboxRes.rows[0]?.has_undelivered) {
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Timed out draining node-affecting outbox events on ${label}`);
+}
+
+async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
   const deadline = Date.now() + 15_000;
   let lastRow = null;
   while (Date.now() < deadline) {
-    const genRes = await pool.query(
-      `SELECT greatest(desired_config_generation, 1)::text AS target_gen FROM nodes WHERE id = $1`,
-      [liveNode.nodeId],
-    );
-    const targetGen = genRes.rows[0]?.target_gen || '1';
-    await liveNode.submitObservation(targetGen);
-
     const res = await pool.query(
       `SELECT
          desired_config_generation::text AS desired_config_generation,
          applied_config_generation::text AS applied_config_generation,
+         greatest(desired_config_generation, 1)::text AS target_gen,
+         provisioning_state,
+         safety_status,
+         control_status,
+         data_health,
+         (applied_config_generation >= desired_config_generation) AS gen_caught_up,
+         EXISTS(
+           SELECT 1 FROM outbox_events
+           WHERE delivered_at IS NULL
+             AND dead_lettered_at IS NULL
+             AND event_type = 'node.peer.observe'
+         ) AS has_pending_observe
+       FROM nodes
+       WHERE id = $1`,
+      [liveNode.nodeId],
+    );
+    lastRow = res.rows[0] || null;
+    if (
+      lastRow &&
+      lastRow.provisioning_state === 'ready' &&
+      lastRow.safety_status === 'passed' &&
+      lastRow.control_status === 'online' &&
+      lastRow.gen_caught_up === true &&
+      !lastRow.has_pending_observe
+    ) {
+      return lastRow;
+    }
+    if (!lastRow?.has_pending_observe || !lastRow?.gen_caught_up) {
+      await liveNode.submitObservation(lastRow?.target_gen || '1');
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(
+    `Timed out waiting for live node online projection on ${label} (${liveNode.nodeId}); last=${JSON.stringify(lastRow)}`,
+  );
+}
+
+async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
+  const deadline = Date.now() + 15_000;
+  let lastRow = null;
+  while (Date.now() < deadline) {
+    const res = await pool.query(
+      `SELECT
+         desired_config_generation::text AS desired_config_generation,
+         applied_config_generation::text AS applied_config_generation,
+         greatest(desired_config_generation, 1)::text AS target_gen,
          provisioning_state,
          safety_status,
          control_status,
          data_health,
          current_release_id,
          last_good_release_id,
-         (applied_config_generation >= desired_config_generation) AS gen_caught_up
+         (applied_config_generation >= desired_config_generation) AS gen_caught_up,
+         EXISTS(
+           SELECT 1 FROM outbox_events
+           WHERE delivered_at IS NULL
+             AND dead_lettered_at IS NULL
+             AND event_type = 'node.peer.observe'
+         ) AS has_pending_observe
        FROM nodes
        WHERE id = $1`,
       [liveNode.nodeId],
@@ -1453,9 +1666,18 @@ async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
       lastRow.control_status === 'online' &&
       lastRow.gen_caught_up === true &&
       lastRow.current_release_id === RELEASE_110_ID &&
-      lastRow.last_good_release_id === RELEASE_110_ID
+      lastRow.last_good_release_id === RELEASE_110_ID &&
+      !lastRow.has_pending_observe
     ) {
       return lastRow;
+    }
+    if (
+      !lastRow?.has_pending_observe ||
+      !lastRow?.gen_caught_up ||
+      lastRow?.current_release_id !== RELEASE_110_ID ||
+      lastRow?.last_good_release_id !== RELEASE_110_ID
+    ) {
+      await liveNode.submitObservation(lastRow?.target_gen || '1');
     }
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -1777,19 +1999,12 @@ async function seedDatabase(
   });
 
   await runSeedStep('seed-node-and-exit-fixtures', async () => {
-    // Missing product path: PATCH /api/v1/admin/nodes/{node_id} does not accept desired_release_id,
-    // and POST /api/v1/admin/update-batches creates a new all_nodes batch with queued jobs that would
-    // supersede the AT23/AT24 fixture batch (SEEDED_BATCH_ID).
-    await pool.query(
-      `UPDATE nodes SET desired_release_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-      [enrolledNodeId, RELEASE_110_ID],
-    );
-    await pollLiveNodeReady(pool, liveNode, 'seed-node-and-exit-fixtures');
-
+    // Deviation (D-050): exits publication state is seeded directly until a fake agent/route projector drives it.
     await pool.query(
       `UPDATE exits SET publication_intent = 'published', publication_observed = 'active', resource_version = resource_version + 1 WHERE node_id = $1`,
       [enrolledNodeId],
     );
+    await pollLiveNodeOnline(pool, liveNode, 'seed-node-and-exit-fixtures');
 
     await pool.query(
       `INSERT INTO usage_rollups(id, member_id, period, granularity, projection_generation, metering_version, upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end, estimated, gap, reconciliation_in_progress)
@@ -1798,11 +2013,12 @@ async function seedDatabase(
       [crypto.randomUUID(), defaultMemberId, currentMonth, monthStart, monthEnd],
     );
 
+    // Deviation (D-050): SEEDED_NODE_2_ID is an offline secondary fixture node without a second fake agent reporter.
     await pool.query(
-      `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, desired_release_id, current_release_id, last_good_release_id, control_status, data_health, safety_status, last_seen_at, last_observed_at)
-       VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', $2, $2, $2, 'online', 'healthy', 'passed', clock_timestamp(), clock_timestamp())
+      `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, control_status, data_health, safety_status)
+       VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', 'offline', 'degraded', 'passed')
        ON CONFLICT (id) DO NOTHING`,
-      [SEEDED_NODE_2_ID, RELEASE_110_ID],
+      [SEEDED_NODE_2_ID],
     );
     await pool.query(
       `INSERT INTO node_incarnations(id, node_id, public_key_fingerprint, deployment_id, peer_id, os, arch, os_version)
@@ -1820,104 +2036,107 @@ async function seedDatabase(
        ON CONFLICT (node_id) DO NOTHING`,
       [crypto.randomUUID(), SEEDED_NODE_2_ID],
     );
+  });
 
-    const enrolledIncRes = await pool.query(
-      `SELECT current_incarnation_id FROM nodes WHERE id = $1`,
-      [enrolledNodeId],
-    );
-    const enrolledIncId = enrolledIncRes.rows[0].current_incarnation_id;
-
-    const batchOpId = '0195f100-0000-7000-8000-000000000601';
-    await pool.query(
-      `INSERT INTO operations(id, kind, principal, resource_type, resource_id, desired_generation, status, steps, observed_refs)
-       VALUES ($1, 'update.batch_create', $2, 'update_batch', $3, 1, 'running',
-               '{"snapshot":{"required":true,"status":"succeeded"},"targets":{"required":true,"status":"running"}}'::jsonb,
-               '{"snapshot":"update_batch:85ef720a-31a0-4250-90d2-4b92c58695bc"}'::jsonb)
-       ON CONFLICT (id) DO NOTHING`,
-      [batchOpId, `admin:${adminId}`, SEEDED_BATCH_ID],
-    );
-
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      await client.query(
-        `INSERT INTO update_batches(id, operation_id, target_release_id, scope, created_by, target_count, generation, reason, online_at_snapshot)
-         VALUES ($1, $2, $3, 'all_nodes', $4, 2, 1, 'Scheduled fleet rollout to 1.1.0', 2)`,
-        [SEEDED_BATCH_ID, batchOpId, RELEASE_110_ID, adminId],
+  await runSeedStep('create-update-batch-and-report-result-via-api', async () => {
+    const relRes = await httpsRequest(`${controlBaseUrl}/api/v1/admin/releases`, {
+      method: 'GET',
+      headers: {
+        Cookie: adminAuth.sessionCookie,
+        Accept: 'application/json',
+      },
+      ca: caPem,
+    });
+    if (relRes.status !== 200) {
+      throw new Error(
+        `GET /api/v1/admin/releases failed (${relRes.status}): ${relRes.text}`,
       );
-      const target1Id = '0195f100-0000-7000-8000-000000000611';
-      const target2Id = '0195f100-0000-7000-8000-000000000612';
-      await client.query(
-        `INSERT INTO update_targets(id, batch_id, node_id, incarnation_at_snapshot, execution_incarnation_id, target_state, target_generation, online_at_snapshot)
-         VALUES ($1, $2, $3, $4, $4, 'active', 1, true),
-                ($5, $2, $6, $7, $7, 'active', 1, true)`,
-        [
-          target1Id,
-          SEEDED_BATCH_ID,
-          enrolledNodeId,
-          enrolledIncId,
-          target2Id,
-          SEEDED_NODE_2_ID,
-          SEEDED_NODE_2_INC_ID,
-        ],
-      );
-
-      const job1Id = '0195f100-0000-7000-8000-000000000621';
-      const job2Id = '0195f100-0000-7000-8000-000000000622';
-      const res1Id = '0195f100-0000-7000-8000-000000000631';
-      const res2Id = '0195f100-0000-7000-8000-000000000632';
-      const res1Hash = crypto.randomBytes(32);
-
-      await client.query(
-        `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, actual_release_id, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, last_observed_at, result_id, result_hash, stage, needs_attention, recovery_required, observed_evidence)
-         VALUES ($1, $2, $3, $4, 1, $5, 1, 'succeeded', $4, $4, clock_timestamp() - interval '6 minutes', clock_timestamp() - interval '5 minutes', clock_timestamp() - interval '4 minutes', clock_timestamp() - interval '1 minute', clock_timestamp() - interval '1 minute', clock_timestamp(), $6, $7, 'checking', false, false, '{"result_id":"0195f100-0000-7000-8000-000000000631"}'::jsonb)`,
-        [
-          job1Id,
-          target1Id,
-          enrolledNodeId,
-          RELEASE_110_ID,
-          enrolledIncId,
-          res1Id,
-          res1Hash,
-        ],
-      );
-
-      await client.query(
-        `INSERT INTO update_results(result_id, job_id, node_id, incarnation_id, payload_hash, payload, ack, policy_refs)
-         VALUES ($1, $2, $3, $4, $5, '{"policy_generation":"2"}'::jsonb, '{"status":"accepted"}'::jsonb, ARRAY['0195f100-0000-7000-8000-000000000401'::uuid, '0195f100-0000-7000-8000-000000000403'::uuid])`,
-        [res1Id, job1Id, enrolledNodeId, enrolledIncId, res1Hash],
-      );
-
-      await client.query(
-        `INSERT INTO fleet_node_state(node_id, current_job_id, current_target_id)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (node_id) DO UPDATE
-         SET current_job_id = EXCLUDED.current_job_id,
-             current_target_id = EXCLUDED.current_target_id`,
-        [enrolledNodeId, job1Id, target1Id],
-      );
-
-      await client.query(
-        `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, result_id, result_hash, error_code, stage, needs_attention, recovery_required, observed_evidence)
-         VALUES ($1, $2, $3, $4, 1, $5, 1, 'failed', $4, clock_timestamp() - interval '6 minutes', clock_timestamp() - interval '5 minutes', clock_timestamp() - interval '4 minutes', clock_timestamp() - interval '2 minutes', clock_timestamp() - interval '2 minutes', $6, $7, 'HEALTHCHECK_FAILED', 'checking', true, false, '{"result_id":"0195f100-0000-7000-8000-000000000632"}'::jsonb)`,
-        [
-          job2Id,
-          target2Id,
-          SEEDED_NODE_2_ID,
-          RELEASE_110_ID,
-          SEEDED_NODE_2_INC_ID,
-          res2Id,
-          crypto.randomBytes(32),
-        ],
-      );
-
-      await client.query('COMMIT');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
     }
+    const relData = JSON.parse(relRes.text);
+    const expectedFleetGen = String(relData.fleet?.generation ?? '0');
+
+    const batchRes = await httpsRequest(`${controlBaseUrl}/api/v1/admin/update-batches`, {
+      method: 'POST',
+      headers: {
+        Cookie: adminAuth.sessionCookie,
+        'X-CSRF-Token': adminAuth.csrfToken,
+        Origin: 'https://portal.example.invalid',
+        'Idempotency-Key': crypto.randomUUID(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        release_id: RELEASE_110_ID,
+        scope: 'all_nodes',
+        expected_generation: expectedFleetGen,
+        set_fleet_default: true,
+        reason: 'Scheduled fleet rollout to 1.1.0',
+      }),
+      ca: caPem,
+    });
+    if (batchRes.status !== 202) {
+      throw new Error(
+        `POST /api/v1/admin/update-batches failed (${batchRes.status}): ${batchRes.text}`,
+      );
+    }
+    const createdBatch = JSON.parse(batchRes.text);
+    const batchId = createdBatch.batch_id;
+
+    const desiredEnvelope = await liveNode.fetchDesiredState();
+    const updateIntent = desiredEnvelope?.signed?.update;
+    const compiledConfigGen = String(desiredEnvelope?.signed?.config_generation ?? '1');
+    if (!updateIntent || !updateIntent.job_id) {
+      throw new Error(
+        `Expected update intent from GET /api/v1/agent/desired-state; got ${JSON.stringify(desiredEnvelope?.signed)}`,
+      );
+    }
+
+    await liveNode.submitUpdateResult(updateIntent, compiledConfigGen);
+    await new Promise((r) => setTimeout(r, 10));
+    await pollLiveNodeReady(pool, liveNode, 'post-update-result-observation');
+
+    const pollDeadline = Date.now() + 15_000;
+    let lastBatch = null;
+    while (Date.now() < pollDeadline) {
+      const getBatchRes = await httpsRequest(
+        `${controlBaseUrl}/api/v1/admin/update-batches/${batchId}`,
+        {
+          method: 'GET',
+          headers: {
+            Cookie: adminAuth.sessionCookie,
+            Accept: 'application/json',
+          },
+          ca: caPem,
+        },
+      );
+      if (getBatchRes.status === 200) {
+        lastBatch = JSON.parse(getBatchRes.text);
+        const liveTarget = (lastBatch.targets || []).find(
+          (t) => t.node_id === enrolledNodeId,
+        );
+        const offlineTarget = (lastBatch.targets || []).find(
+          (t) => t.node_id === SEEDED_NODE_2_ID,
+        );
+        if (
+          liveTarget &&
+          liveTarget.state === 'succeeded' &&
+          liveTarget.unconfirmed === false &&
+          liveTarget.policy_generation === compiledConfigGen &&
+          Array.isArray(liveTarget.policy_refs) &&
+          liveTarget.policy_refs.includes('0195f100-0000-7000-8000-000000000401') &&
+          offlineTarget &&
+          offlineTarget.state === 'waiting_online' &&
+          offlineTarget.unconfirmed === true &&
+          offlineTarget.policy_generation === null &&
+          offlineTarget.policy_refs === null
+        ) {
+          return lastBatch;
+        }
+      }
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    throw new Error(
+      `Timed out waiting for update batch ${batchId} target projections; last=${JSON.stringify(lastBatch)}`,
+    );
   });
 }
 
@@ -2351,21 +2570,32 @@ async function main() {
         const stateRes = await pool.query(
           `SELECT
              greatest(n.desired_config_generation, 1)::text AS desired_gen,
-             (n.applied_config_generation < n.desired_config_generation
-              OR n.provisioning_state <> 'ready'
+             (n.applied_config_generation < n.desired_config_generation) AS gen_behind,
+             (n.provisioning_state <> 'ready'
               OR n.control_status <> 'online'
-              OR n.safety_status <> 'passed') AS node_needs_obs,
+              OR n.safety_status <> 'passed') AS state_not_ready,
              EXISTS(
                SELECT 1 FROM operations
                WHERE kind IN ('node.publish', 'node.unpublish', 'node.disable')
                  AND status IN ('pending', 'running', 'partially_succeeded')
-             ) AS has_pending
+             ) AS has_pending_op,
+             EXISTS(
+               SELECT 1 FROM outbox_events
+               WHERE delivered_at IS NULL
+                 AND dead_lettered_at IS NULL
+                 AND event_type = 'node.peer.observe'
+             ) AS has_pending_observe
            FROM nodes n
            WHERE n.id = $1`,
           [liveNode.nodeId],
         );
         const row = stateRes.rows[0];
-        if (row && (row.node_needs_obs || row.has_pending)) {
+        if (
+          row &&
+          !holdNodeObservations &&
+          (row.gen_behind ||
+            (!row.has_pending_observe && (row.state_not_ready || row.has_pending_op)))
+        ) {
           await liveNode.submitObservation(row.desired_gen || '1');
         }
       } catch {
@@ -2557,26 +2787,12 @@ async function main() {
                 const parsed = JSON.parse(body || '{}');
                 if (parsed.hold) {
                   holdNodeObservations = true;
-                  const drainDeadline = Date.now() + 2_000;
-                  while (Date.now() < drainDeadline) {
-                    const outboxRes = await pool.query(
-                      `SELECT EXISTS(
-                         SELECT 1 FROM outbox_events
-                         WHERE delivered_at IS NULL
-                           AND event_type IN (
-                             'device.authorized',
-                             'device.revoked',
-                             'member.entitlement_changed',
-                             'member.suspended'
-                           )
-                       ) AS has_undelivered`,
-                    );
-                    if (!outboxRes.rows[0]?.has_undelivered) {
-                      break;
-                    }
-                    await new Promise((r) => setTimeout(r, 50));
+                  while (heartbeatInFlight) {
+                    await new Promise((r) => setTimeout(r, 25));
                   }
+                  await drainNodeAffectingOutbox(pool, 'hold-node-observations-pre');
                   await pollLiveNodeReady(pool, liveNode, 'hold-node-observations');
+                  await drainNodeAffectingOutbox(pool, 'hold-node-observations-post');
                 } else {
                   holdNodeObservations = false;
                 }

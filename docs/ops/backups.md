@@ -10,9 +10,9 @@ This runbook specifies the production and lab backup architecture, continuous WA
 |---|---|---|
 | **Database Engine** | PostgreSQL 17 (`postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f`) | Drop-in image built from [`deploy/backup/postgres/Dockerfile`](../../deploy/backup/postgres/Dockerfile) (`§3.1`, `§15.4`). |
 | **Backup Engine** | **pgBackRest `2.60.0`** (`2.60.0-1.pgdg13+1`) | Physical full + differential base backups and continuous WAL archiving (`§17.2`). Logical `pg_dump` is an auxiliary export only, never the primary recovery path. |
-| **Central Database RPO Target** | **`<= 15 minutes`** (`900s`) | Enforced via `archive_mode = on` and `archive_timeout = 300s` (`§16.5`, `§17.2`). |
+| **Central Database RPO Target** | **`<= 15 minutes`** (`900s`) | Requires healthy archiving and measured repository WAL age; configured with `archive_mode = on` and `archive_timeout = 300s` (`§16.5`, `§17.2`). |
 | **Usage Ledger Effective RPO** | **`0` bytes lost / `0` double-counted** (within node retention window) | Exit nodes retain acknowledged usage events in a dedicated SQLite archive (`>= 72 hours` spec minimum, `30 days` default) and replay after `ledger_epoch` rotation (`§10.5`, `§16.4`, `§17.3`, `AT30`). |
-| **Central Service RTO Target** | **`<= 2 hours`** (`docs/handover/restore-drill.md`; `<= 4 hours` ceiling in `§16.5`/`§17.2`) | Covers physical DB/WAL restore, migration check, checklist inspection, ledger freeze/epoch rotation, replay, and provider/NetBird reconciliation. |
+| **Central Service RTO Target** | **`<= 4 hours`** (`§16.5`/`§17.2`; unmeasured by this local drill) | Covers physical DB/WAL restore, migration check, checklist inspection, ledger freeze/epoch rotation, replay, and provider/NetBird reconciliation. |
 | **Signing Vault (`/var/lib/fvpn/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |
 
 ---
@@ -31,7 +31,7 @@ archive_command = 'pgbackrest --stanza=fvpn archive-push %p'
 max_wal_senders = 5
 ```
 
-- **Production**: `archive_timeout = 300s` (5 minutes) guarantees that even during low-traffic periods, PostgreSQL forces a WAL segment switch at least every 5 minutes so continuous WAL archiving satisfies the `<= 15 minutes` RPO target (`§17.2`).
+- **Production**: `archive_timeout = 300s` (5 minutes) forces segment switches when WAL activity occurs; repository availability and archive-age monitoring are still required for the `<= 15 minutes` RPO target (`§17.2`).
 - **Lab / CI Override (`TEST ONLY`)**: Containerized lab and drill environments may set `FVPN_PG_ARCHIVE_TIMEOUT=10s` on `deploy/backup/postgres/Dockerfile` to bound idle archive lag during automated tests.
 - **Isolated Verification Containers**: When `restore-pitr.sh` launches an isolated verification container (`--network none`), it sets `FVPN_PG_ISOLATED_RESTORE=1` and mounts the backup repository read-only (`:ro`). The entrypoint writes `archive_mode = off` inside the verification container so promotion to a new timeline never pushes WAL segments back to the primary repository.
 
@@ -40,6 +40,8 @@ max_wal_senders = 5
 See [`deploy/backup/pgbackrest.conf.example`](../../deploy/backup/pgbackrest.conf.example) for the complete reference file:
 - **Production Profile (`repo1-type=s3`)**: Archives to an off-host S3-compatible object store (`repo1-s3-verify-tls=y`, `repo1-cipher-type=aes-256-cbc`, `compress-type=zst`).
 - **Lab Profile (`repo1-type=posix`)**: Archives to a mounted Docker volume at `/var/lib/pgbackrest` for local devstack and CI PITR drills.
+
+Production installs Profile A from `deploy/backup/pgbackrest.conf.example` as `/etc/pgbackrest/pgbackrest.conf` (0640, root:postgres). The image-generated POSIX config uses full-count=7 and diff-count=7 and is only the lab default; it is not the production retention policy.
 
 ### 2.3 Least-Privilege Database Roles (`docs/handover/deploy.md §3.2`, `docs/db/README.md`)
 
@@ -65,19 +67,22 @@ Install the systemd service and timer units from [`deploy/backup/systemd/`](../.
 Enable the timers in production:
 ```bash
 install -d -m 0755 /usr/local/lib/fvpn/backup
-install -m 0755 deploy/backup/backup.sh deploy/backup/restore-pitr.sh deploy/backup/verify.sh /usr/local/lib/fvpn/backup/
-install -m 0644 deploy/backup/post-restore-checklist.sql /usr/local/lib/fvpn/backup/
+install -m 0755 deploy/backup/backup.sh deploy/backup/restore-pitr.sh deploy/backup/verify.sh deploy/backup/repo-copy.py /usr/local/lib/fvpn/backup/
+install -m 0644 deploy/backup/archive-state.sql deploy/backup/post-restore-checklist.sql /usr/local/lib/fvpn/backup/
 cp deploy/backup/systemd/fvpn-backup-*.service deploy/backup/systemd/fvpn-backup-*.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now fvpn-backup-full.timer fvpn-backup-diff.timer fvpn-backup-verify.timer
 ```
 
+The host needs Python 3, pgBackRest 2.60.0, PostgreSQL client tools, Docker, the built backup image and `/usr/local/bin/fvpn-migrate`. The verify unit requires the secrets file and a nonempty `PGBACKREST_REPO1_CIPHER_PASS`. `--host-repo --primary-host --db-user postgres` reads primary archive state via host psql and copies repo 1 using the same host pgBackRest configuration/environment as `backup.sh`. Raw encrypted objects are staged under `/var/lib/fvpn/backup-verify` on disk, preserving repository modification times, then checked and restored in a network-none container. Allow space for the retained repository plus the restored database. Missing/changed objects or expiry during copying fail verification; rerun with a fresh copy. Cleanup removes only that run's scratch. This full-copy path can be expensive; measure it on the production repository before adopting an RTO. Repository `PGBACKREST_REPO1_*` environment variables are forwarded by name; the explicit staged mount selects POSIX path/type for recovery.
+
 ### 3.2 Retention & Post-Restore Data Minimization (`§16.4`, `§17.2`)
 
 - **Backup Retention (`pgbackrest.conf`)**:
   - `repo1-retention-full-type=time`
-  - `repo1-retention-full=35` (retains full base backups and continuous WAL archives covering 35 days, aligned with `retention_config.raw_usage_days = 35` in `§16.4`).
-  - `repo1-retention-diff=14` (retains 14 days of differential backups).
+  - `repo1-retention-full=35` (35-day minimum recovery window; an older full is retained until another full covers the window).
+  - `repo1-retention-diff=14` (retains a count of 14 differential backups).
+  - Leave `repo1-retention-archive` unset: WAL follows the retained fulls. Time retention keeps the only full and can exceed 35 days to preserve a recoverable base. See [pgBackRest retention semantics](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type).
 - **Re-applying Retention & Anonymization After Restore (`§16.4`)**:
   Restoring an earlier backup can re-introduce raw usage payloads, rollups, or audit rows whose retention cutoff has already passed, or personal metadata (`email`, `display_name`) for accounts closed during the recovery window. Before returning the restored cluster to normal service, run the authorized retention purge (`SELECT purge_retained(...)` as `fvpn_retention` after projection reconciliation completes) and re-apply account closure/anonymization actions recorded after the restore point.
 
@@ -96,7 +101,7 @@ systemctl enable --now fvpn-backup-full.timer fvpn-backup-diff.timer fvpn-backup
 
 ## 5. Monitoring & Alerting Signals (`§16.5`, `§17.2`)
 
-Operators and monitoring collectors watch three primary signals to guarantee the `<= 15 minutes` RPO target:
+Operators and monitoring collectors watch these signals to assess the `<= 15 minutes` RPO target:
 
 ### 5.1 WAL Archive Lag & Failed Archive Pushes (`pg_stat_archiver`)
 
@@ -109,9 +114,10 @@ SELECT
     failed_count,
     last_failed_wal,
     last_failed_time,
-    EXTRACT(EPOCH FROM (clock_timestamp() - COALESCE(last_archived_time, clock_timestamp())))::bigint AS archive_lag_seconds
+    EXTRACT(EPOCH FROM (clock_timestamp() - last_archived_time))::bigint AS archive_lag_seconds
 FROM pg_stat_archiver;
 ```
+- **Unknown state**: NULL `last_archived_time`, disabled archiving, missing repository WAL, or an inaccessible repository is a failure, never zero lag.
 - **Warning threshold**: `archive_lag_seconds > 360` (6 minutes, i.e., `archive_timeout = 300s` + 60s grace) or `failed_count` increasing.
 - **Critical threshold (RPO breach risk)**: `archive_lag_seconds > 600` (10 minutes; approaches the 15-minute RPO bound).
 
@@ -124,6 +130,7 @@ deploy/backup/backup.sh --stanza fvpn info
 Monitor inside the JSON output:
 - `.[0].status.code`: Must equal `0` (`"ok"`). Any non-zero code indicates a missing stanza or broken archive stream.
 - `.[0].backup[-1].timestamp.stop`: Unix epoch timestamp of the most recent successful backup. Alert if `now - stop > 93600` (26 hours, indicating a missed daily backup).
+- Separately select `backup[] | select(.type == "full")` and alert if the newest full is absent or older than 8 days (`691200s`, weekly schedule plus grace). A fresh differential must not silence this full-backup alert.
 - `.[0].archive[-1].max`: Latest archived WAL segment in the repository.
 
 ### 5.3 Log Lines Watched by Operators
@@ -134,7 +141,7 @@ Monitor inside the JSON output:
   - Success pattern: `INFO: archive-push command end: completed successfully` / `INFO: backup command end: completed successfully`
   - Failure pattern: `ERROR: [` (followed by pgBackRest numeric error code `[025]`–`[125]`).
 - **Daily Verification Service (`journalctl -u fvpn-backup-verify.service`)**:
-  - Success pattern: `status=PASS` with `migrations_pending=0` and `rpo_ms` / `rto_ms`.
+  - Success pattern: `status=PASS` with `migrations_pending=0` and `archiver_lag_ms`, `repository_archive_lag_ms` and `local_restore_verify_ms`.
 
 ---
 
@@ -306,28 +313,21 @@ The full physical backup, WAL switch, and isolated PITR restore drill is automat
 make -f mk/backup.mk backup-lint backup-test backup-drill
 ```
 
-What `backup-drill` proves on every run:
-1. Builds `deploy/backup/postgres/Dockerfile` (`PostgreSQL 17` + `pgBackRest 2.60.0`) and starts primary container `fvpn-w4-ops-backups-primary` with `archive_mode=on` and repo volume `fvpn-w4-ops-backups-repo`.
+What `backup-drill` proves on every run. Container, volume, network, and image-tag names come from `FVPN_BACKUP_DRILL_PREFIX` when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`, otherwise from `fvpn-w4-ops-backups-` plus 8 lowercase hex digits (`docs/handover/restore-drill.md`). The test removes only that prefix.
+1. Builds `deploy/backup/postgres/Dockerfile` (`PostgreSQL 17` + `pgBackRest 2.60.0`) and starts primary container `<prefix>-primary` with `archive_mode=on` and repo volume `<prefix>-repo`.
 2. Applies all forward migrations via `fvpn-migrate up`.
 3. Creates drill-only table `_backup_drill` (never touching product tables, `D-050`) and commits Marker `A`.
-4. Runs `deploy/backup/backup.sh --container fvpn-w4-ops-backups-primary full` to take a physical full base backup.
-5. Records `targetTimestamp` (UTC) and `targetLSN`, commits Marker `B`, and forces a WAL switch (`backup.sh wal-switch`).
+4. Runs `deploy/backup/backup.sh --container <prefix>-primary full` to take a physical full base backup.
+5. Commits Marker `M` after the backup stop, then records `targetTimestamp` (UTC) and `targetLSN`, commits Marker `B`, and forces a WAL switch (`backup.sh wal-switch`).
 6. Verifies that `restore-pitr.sh` **refuses** to overwrite the live primary container (`live_primary_overwrite_refused = true`).
-7. Runs `deploy/backup/restore-pitr.sh --target-time <targetTimestamp>` into an isolated container `fvpn-w4-ops-backups-restore` (`--network none`, `0` host ports).
-8. Asserts Marker `A` is present and Marker `B` is absent in the restored database.
+7. Runs `deploy/backup/restore-pitr.sh --target-time <targetTimestamp>` into an isolated container `<prefix>-restore` (`--network none`, `0` host ports).
+8. Asserts the restored set is exactly `{A, M}` and separately that Marker `B` is absent in the restored database.
 9. Asserts `fvpn-migrate status` reports all migrations `applied` (`0` pending).
-10. Executes `deploy/backup/post-restore-checklist.sql` and `deploy/backup/verify.sh`.
-11. Writes the measured RPO/RTO and backup set SHA-256 digests to [`docs/ops/backups/drill-2026-10-29.json`](backups/drill-2026-10-29.json) and [`docs/ops/backups/drill-2026-10-29.md`](backups/drill-2026-10-29.md), then removes all `fvpn-w4-ops-backups-*` Docker resources.
+10. Executes `deploy/backup/post-restore-checklist.sql` and `deploy/backup/verify.sh` (verify prefix `<prefix>-verify`).
+11. Only when `FVPN_BACKUP_DRILL_RECORD=1`, writes the archive ages, local command durations and backup set SHA-256 digests to [`docs/ops/backups/drill-2026-10-29.json`](backups/drill-2026-10-29.json) and [`docs/ops/backups/drill-2026-10-29.md`](backups/drill-2026-10-29.md), then removes Docker objects owned by `<prefix>`. Stale `fvpn-w4-ops-backups-*` objects are removed only by `make -f mk/backup.mk backup-drill-clean`, which the test does not call.
 
-### Latest Drill Summary (`drill-2026-10-29`)
+### Latest Drill Evidence (`drill-2026-10-29`)
 
-| Metric | Spec / Handover Target (`§17.2`) | Measured Value (`drill-2026-10-29`) | Status |
-|---|---|---|---|
-| **Continuous WAL Archive Lag (RPO)** | `<= 15 minutes` (`900 s`) | **`277 ms`** (`0.277 s`) | **PASS** |
-| **Physical PITR Restore + Promotion (Database RTO)** | `<= 2 hours` (`7200 s`) | **`3551 ms`** (`3.551 s`) | **PASS** |
-| **Full Throwaway Verification (`verify.sh`)** | `<= 2 hours` (`7200 s`) | **`3931 ms`** (`3.931 s`) | **PASS** |
-| **Total End-to-End Automated Drill Duration** | `<= 10 minutes` CI budget | **`15070 ms`** (`15.070 s`) | **PASS** |
-| **Restored Markers (`_backup_drill`)** | `A` present, `B` absent | `A` (`marker_a_present=true`, `marker_b_absent=true`) | **PASS** |
-| **Restored Schema Migrations (`fvpn-migrate status`)** | `20 applied`, `0 pending` | `20 applied`, `0 pending` | **PASS** |
-| **Isolated Restore Network & Published Ports** | `--network none`, `0` ports | `network=none`, `published_ports=0` | **PASS** |
+See [the generated evidence](backups/drill-2026-10-29.md) for archive ages and local restore-command durations. `wal_switch_to_archive_ms` is a stopwatch, not archive lag. The repository age uses the newest WAL object's modification time in the repository used for restore; it is an archive-freshness observation, not a decoded commit timestamp. Both it and `pg_stat_archiver.last_archived_time` must be known and no older than 15 minutes; unknown or stale state fails verification. These local POSIX measurements do not establish the 4-hour service RTO or production off-host RPO. A separate service drill must include secrets, settings, reconciliation and user probes.
 
+Evidence writes are opt-in: ordinary tests write nothing under `docs/`. Set `FVPN_BACKUP_DRILL_RECORD=1` (optionally `FVPN_BACKUP_DRILL_DATE` and `FVPN_BACKUP_DRILL_OUTPUT_DIR`) for a reviewed record. CI enables this only via the manual `workflow_dispatch.record_evidence` input, never on pull requests. Run `make -f mk/backup.mk backup-review-proof` for the adversarial controls.

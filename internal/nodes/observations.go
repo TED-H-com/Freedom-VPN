@@ -57,6 +57,9 @@ func (s *Service) SubmitObservation(
 	if report.ReportId == uuid.Nil {
 		return api.ObservationAccepted{}, apierr.New(apierr.MalformedRequest, "report_id is required")
 	}
+	if err := validateDNSPolicyEvidence(report); err != nil {
+		return api.ObservationAccepted{}, err
+	}
 
 	canonBytes, err := canonjson.Marshal(report)
 	if err != nil {
@@ -154,6 +157,9 @@ func (s *Service) SubmitObservation(
 			}
 			if code, err := ch.ErrorCode.Get(); err == nil {
 				entry["error_code"] = string(code)
+			}
+			if ch.Detail != nil {
+				entry["detail"] = *ch.Detail
 			}
 			checksMap[string(ch.Name)] = entry
 		}

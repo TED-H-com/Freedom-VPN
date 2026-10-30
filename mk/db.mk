@@ -5,7 +5,7 @@ LINT_TARGETS += db-lint
 TEST_TARGETS += db-test
 VERIFY_TARGETS += db-test
 
-.PHONY: db-up db-down db-migrate db-test db-lint
+.PHONY: db-up db-down db-migrate db-test db-test-sweep db-lint
 
 db-up:
 	docker compose -f deploy/dev/postgres/compose.yaml up -d --wait
@@ -16,8 +16,13 @@ db-down:
 db-migrate:
 	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run ./internal/db/cmd/fvpn-migrate up
 
+# Once per test process, drop idle fvpn_t* databases older than one hour.
+# Does not set FVPN_TEST_DB_SWEEP_LEGACY.
 db-test:
-	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration ./internal/db/... ./db/...
+	@$(db-with-disk-tmp) FVPN_TEST_DB_SWEEP=1 GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration ./internal/db/... ./db/...
+
+db-test-sweep:
+	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run ./internal/db/cmd/fvpn-db-sweep
 
 # Match the whole-module go-lint gate, including its pinned staticcheck.
 db-lint:

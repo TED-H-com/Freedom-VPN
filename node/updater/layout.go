@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 )
 
@@ -38,6 +39,10 @@ func DefaultLayout() Layout {
 // Ensure creates the directories. Identity, state, journal and staging are
 // mode 0700; the releases directory is 0755.
 func (l Layout) Ensure() error {
+	// Validate before creating any child paths under a pre-existing journal.
+	if err := healthattest.CheckDir(l.Journal); err != nil && !os.IsNotExist(err) {
+		return err
+	}
 	dirs := []struct {
 		path string
 		mode os.FileMode
@@ -61,7 +66,7 @@ func (l Layout) Ensure() error {
 			return err
 		}
 	}
-	return nil
+	return healthattest.CheckDir(l.Journal)
 }
 
 func (l Layout) releaseDir(id string) string {

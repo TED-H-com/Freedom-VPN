@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -27,6 +28,10 @@ func TestUPD_RevokedCurrentRollsBack(t *testing.T) {
 	cur := w.makeRelease("cur", 1, []int{1})
 	w.keep(older)
 	w.seed(cur)
+	touchPersistent(t, w.layout)
+	useAttest(w, func(ch healthattest.Challenge) (healthattest.Attestation, bool) {
+		return goodAttest(ch, api.PublicationIntentPublished), true
+	})
 	work := w.work(cur, "7", api.PublicationIntentPublished)
 	work.Serving = []uuid.UUID{older.id, cur.id}
 	work.PolicyGeneration = decstr.MustParse("18")

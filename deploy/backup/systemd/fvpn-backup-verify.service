@@ -10,7 +10,10 @@ Requires=docker.service
 Type=oneshot
 User=root
 Group=root
-EnvironmentFile=-/etc/fvpn/secrets/pgbackrest-repo.env
-ExecStart=/usr/local/lib/fvpn/backup/verify.sh --stanza fvpn --repo-volume /var/lib/pgbackrest --migrate-bin /usr/local/bin/fvpn-migrate
+EnvironmentFile=/etc/fvpn/secrets/pgbackrest-repo.env
+ExecStartPre=/bin/sh -c 'test -n "$PGBACKREST_REPO1_CIPHER_PASS"'
+ExecStart=/usr/local/lib/fvpn/backup/verify.sh --stanza fvpn --host-repo --primary-host --db-user postgres --migrate-bin /usr/local/bin/fvpn-migrate
 NoNewPrivileges=true
-PrivateTmp=true
+Environment=FVPN_BACKUP_SCRATCH_ROOT=/var/lib/fvpn/backup-verify
+# Disk storage visible to Docker bind mounts; never PrivateTmp or tmpfs.
+PrivateTmp=false

@@ -9,8 +9,10 @@ import (
 	"net/netip"
 	"os"
 	"os/exec"
+	"os/signal"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -46,6 +48,10 @@ type Options struct {
 	Trust       *envelope.TrustStore
 	// Prober runs the data-path probe. Nil uses NetBird status.
 	Prober Prober
+	// DNS applies a verified resolver document. Nil fails a referenced
+	// document closed and does not open an AdGuard client. *dns.Applier
+	// is the production implementation; tests pass a fake.
+	DNS DNSApplier
 }
 
 // Engine is one agent process (§5, §16.3). It is not safe for concurrent Step.
@@ -126,9 +132,24 @@ type Engine struct {
 	// until that rename.
 	healthNonce string
 	healthSig   string
-	// desiredSynced is set after one desired-state sync attempt, including a
-	// 304 or an error. A missing document before that attempt is not answered.
+	// desiredSynced is set when a verified document was loaded, or when this
+	// process received a desired-state response (200, 304, or revocation).
+	// A transport error with no document does not set it. A health answer
+	// also requires desired != nil, so a body that fails verification
+	// writes nothing.
 	desiredSynced bool
+	dnsApply      DNSApplier
+	// dnsPinned is set when the caller passed Options.DNS. Reload leaves it.
+	dnsPinned bool
+	// dnsCredDetail is set when configured credentials cannot be used.
+	// It is a fixed sentence and never contains a path, URL, or secret.
+	dnsCredDetail string
+	dnsDocument   bool
+	dnsFailed     bool
+	dnsCode       api.ErrorCode
+	dnsDetail     string
+	dnsEv         *api.DnsPolicyEvidence
+	probeSource   string
 }
 
 // Start opens the store, the trust bundle and the control client.
@@ -172,7 +193,7 @@ func Start(opt Options) (*Engine, error) {
 		cfg: opt.Config, store: store, client: opt.Client, plane: opt.Plane,
 		clock: opt.Clock, bootID: boot, trust: trust, hooks: opt.Hooks,
 		log: opt.Log, meterSource: opt.MeterSource, ownStore: ownStore, storageOK: true,
-		prober: opt.Prober,
+		prober: opt.Prober, dnsApply: opt.DNS, dnsPinned: opt.DNS != nil,
 	}
 	if e.client == nil {
 		pool := x509.NewCertPool()
@@ -199,6 +220,9 @@ func Start(opt Options) (*Engine, error) {
 	if err := e.loadIdentity(context.Background()); err != nil {
 		_ = e.Close()
 		return nil, err
+	}
+	if !e.dnsPinned {
+		e.reloadResolvers()
 	}
 	return e, nil
 }
@@ -310,9 +334,9 @@ func (e *Engine) Boot(ctx context.Context) error {
 	e.latch()
 	e.ensureUsage(ctx)
 	e.beat()
-	// A stored desired document can be answered at start. A missing document
-	// before the first sync is not a DNS result yet: a binding failure would
-	// end the updater's wait before Step corrects it.
+	// A stored document that is still inside its validity window can be
+	// answered at start. A missing document, or one that expired while the
+	// process was stopped, is not a DNS result yet.
 	e.answerHealthOnBoot(ctx)
 	return nil
 }
@@ -330,17 +354,37 @@ func (e *Engine) Run(ctx context.Context) error {
 	if interval <= 0 {
 		interval = time.Second
 	}
+	// SIGHUP reloads resolver credentials between steps. It does not stop
+	// the process. SIGINT and SIGTERM still cancel ctx.
+	hup := make(chan os.Signal, 1)
+	signal.Notify(hup, syscall.SIGHUP)
+	defer signal.Stop(hup)
 	for {
 		if err := e.Step(ctx); err != nil && ctx.Err() != nil {
 			return ctx.Err()
 		}
-		t := time.NewTimer(interval)
+		if signaled(hup) {
+			e.reloadResolvers()
+		}
+		timer := time.NewTimer(interval)
 		select {
 		case <-ctx.Done():
-			t.Stop()
+			timer.Stop()
 			return ctx.Err()
-		case <-t.C:
+		case <-hup:
+			timer.Stop()
+			e.reloadResolvers()
+		case <-timer.C:
 		}
+	}
+}
+
+func signaled(ch <-chan os.Signal) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+		return false
 	}
 }
 
@@ -407,16 +451,30 @@ func (e *Engine) Step(ctx context.Context) error {
 }
 
 func (e *Engine) loadRuntime(ctx context.Context) error {
+	if a, ok, err := e.store.Anchor(ctx); err != nil {
+		return err
+	} else if ok && a.Trusted && a.BootID == e.bootID {
+		e.anchor = timeanchor.Anchor{BootID: a.BootID, Server: a.Server, Mono: a.Mono, Wall: a.Wall, Trusted: true}
+	}
 	if d, ok, err := e.store.Desired(ctx); err != nil {
 		return err
 	} else if ok {
-		e.desiredETag = d.ETag
+		// The applied generation stays even when the envelope is rejected,
+		// so ack and anti-rollback are not lost. The ETag is kept only
+		// after the signature and the validity window both succeed. An
+		// envelope that expired while the process was stopped must not
+		// leave a stale validator for the next sync.
 		if d.HasApplied {
 			e.appliedGen = d.Applied
 		}
-		now := e.clock.Wall()
-		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && ds.NodeId == e.nodeID && ds.NodeIncarnationId == e.incID {
+		now, accept := e.verifyTime()
+		if !accept {
+			now = e.clock.Wall()
+		}
+		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && desiredInForce(ds, e.nodeID, e.incID, now) {
 			e.desired = &ds
+			e.desiredETag = d.ETag
+			e.desiredSynced = true
 			if err := writeAtomic(e.cfg.DesiredStatePath, d.Envelope, 0o644); err != nil {
 				e.log.Warn("desired state file", "err", err.Error())
 			}
@@ -431,11 +489,6 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 		e.leaseMono = l.MonoSent
 		e.leaseBoot = l.BootID
 		e.highestIssued = l.HighestIssuedAt
-	}
-	if a, ok, err := e.store.Anchor(ctx); err != nil {
-		return err
-	} else if ok && a.Trusted && a.BootID == e.bootID {
-		e.anchor = timeanchor.Anchor{BootID: a.BootID, Server: a.Server, Mono: a.Mono, Wall: a.Wall, Trusted: true}
 	}
 	var err error
 	if e.assignments, err = e.store.QoS(ctx); err != nil {
@@ -477,6 +530,8 @@ func (e *Engine) input() Input {
 		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
 		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
+		ProbeSource: e.probeSource,
+		DNSDocument: e.dnsDocument, DNSFailed: e.dnsFailed, DNSCode: e.dnsCode, DNSDetail: e.dnsDetail,
 	}
 }
 
@@ -487,9 +542,13 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		p = nb
 	}
 	published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
+	targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
+	e.probeSource = probeSourceDetail(source, bad)
 	e.lastProbe = p.Probe(ctx, ProbeRequest{
 		Published: published,
-		Egress:    e.cfg.EgressProbeTarget,
+		Targets:   targets,
+		Timeout:   timeout,
+		Rejected:  bad,
 		Ingress:   e.cfg.Datapath.MemberIngress,
 		Uplink:    e.cfg.Datapath.Uplink,
 	})

@@ -686,6 +686,10 @@ func (s *Store) buildAndValidateDNSProfileTx(ctx context.Context, tx pgx.Tx, bun
 			)
 		}
 		var tf api.ThreatFeedPayload
+		rawPayload, err = dnspolicy.MaterializeFeedDefaults(rawPayload)
+		if err != nil {
+			return nil, nil, err
+		}
 		if err := json.Unmarshal(rawPayload, &tf); err != nil {
 			return nil, nil, err
 		}
@@ -701,7 +705,10 @@ func (s *Store) buildAndValidateDNSProfileTx(ctx context.Context, tx pgx.Tx, bun
 		}
 		seenFeedCodes[tf.FeedCode] = uid
 
-		attr, _ := tf.Attribution.Get()
+		var attr *string
+		if value, err := tf.Attribution.Get(); err == nil {
+			attr = &value
+		}
 		var srcFormat dnspolicy.SourceFormat
 		switch tf.Format {
 		case api.ThreatFeedPayloadFormatDomainList:
@@ -1260,7 +1267,7 @@ func getRevisionTx(ctx context.Context, tx pgx.Tx, revisionID uuid.UUID) (*Revis
 func (s *Store) GetDefinition(ctx context.Context, definitionID uuid.UUID) (*api.PolicyDefinition, error) {
 	var out *api.PolicyDefinition
 	err := s.runInTx(ctx, db.TxOptions{TxOptions: pgx.TxOptions{AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx, _ bool) error {
-		def, err := getDefinitionTx(ctx, tx, definitionID)
+		def, err := getDefinitionTx(ctx, tx, definitionID, s.now())
 		if err != nil {
 			return err
 		}
@@ -1344,7 +1351,7 @@ func (s *Store) ListDefinitions(ctx context.Context, filter ListDefinitionsFilte
 
 		items := make([]api.PolicyDefinition, 0, len(ids))
 		for _, id := range ids {
-			def, err := getDefinitionTx(ctx, tx, id)
+			def, err := getDefinitionTx(ctx, tx, id, s.now())
 			if err != nil {
 				return err
 			}
@@ -1362,7 +1369,7 @@ func (s *Store) ListDefinitions(ctx context.Context, filter ListDefinitionsFilte
 	return &out, nil
 }
 
-func getDefinitionTx(ctx context.Context, tx pgx.Tx, definitionID uuid.UUID) (api.PolicyDefinition, error) {
+func getDefinitionTx(ctx context.Context, tx pgx.Tx, definitionID uuid.UUID, now time.Time) (api.PolicyDefinition, error) {
 	var def api.PolicyDefinition
 	var defID uuid.UUID
 	var defType, defCode, genStr, verStr string
@@ -1451,6 +1458,14 @@ func getDefinitionTx(ctx context.Context, tx pgx.Tx, definitionID uuid.UUID) (ap
 		ResourceVersion:  ver,
 		CreatedAt:        createdAt.UTC(),
 		UpdatedAt:        updatedAt.UTC(),
+		ThreatFeedStatus: presence.NewNullNullable[api.ThreatFeedStatus](),
+	}
+	if def.Type == api.PolicyTypeThreatFeed && activeRevID != nil {
+		status, err := feedStatusTx(ctx, tx, *activeRevID, now)
+		if err != nil {
+			return api.PolicyDefinition{}, err
+		}
+		def.ThreatFeedStatus.Set(status)
 	}
 	return def, nil
 }

@@ -90,12 +90,16 @@ func (e *Engine) rollbackIfRevoked(ctx context.Context, c claimed) error {
 	if intentRescues(c, cur) {
 		return e.holdIfRevoked(ctx)
 	}
-	target, code := e.pickRollback(ctx, c, p.CurrentRelease, nil)
+	prev := p.CurrentRelease
+	if err := e.holdIfRevoked(ctx); err != nil {
+		return err
+	}
+	target, code := e.pickRollback(ctx, c, prev, nil)
 	if target == "" {
-		return e.blockRevoked(ctx, c, code)
+		return e.blockRevoked(ctx, c, prev, code)
 	}
 	if err := e.restoreRelease(ctx, target); err != nil {
-		return e.blockRevoked(ctx, c, apierr.RollbackFailed)
+		return e.blockRevoked(ctx, c, prev, apierr.RollbackFailed)
 	}
 	if e.Gate != nil {
 		if _, err := e.enforce(ctx, target, c, updatejournal.OutcomeRolledBack); err != nil {
@@ -105,7 +109,7 @@ func (e *Engine) rollbackIfRevoked(ctx context.Context, c claimed) error {
 	return nil
 }
 
-func (e *Engine) blockRevoked(ctx context.Context, c claimed, code apierr.Code) error {
+func (e *Engine) blockRevoked(ctx context.Context, c claimed, prev string, code apierr.Code) error {
 	if code == "" {
 		code = apierr.ReleaseNotApproved
 	}
@@ -118,7 +122,7 @@ func (e *Engine) blockRevoked(ctx context.Context, c claimed, code apierr.Code) 
 		started := c.Intent.IssuedAt
 		in := resultInput{
 			Claimed: c, State: api.UpdateResultStateFailed, Stage: api.UpdateStageRollback,
-			Code: code, Current: p.CurrentRelease, Previous: p.CurrentRelease,
+			Code: code, Current: p.CurrentRelease, Previous: prev,
 			Recovery: true, Started: started, Finished: started,
 			Schema: schemaAtLeast1(schemaOr(schema, e.Platform.StateSchema)),
 		}
@@ -236,6 +240,13 @@ func (e *Engine) pickRollback(ctx context.Context, c claimed, exclude string, ca
 // have passed. last_good moves only when the restored release is healthy,
 // so a revoked release is not left as the rollback target.
 func (e *Engine) restoreRelease(ctx context.Context, id string) error {
+	if e.Services == nil {
+		return permanent(apierr.RollbackFailed, "no services")
+	}
+	// Stop the revoked process before changing current or issuing a challenge.
+	if err := e.Services.Stop(ctx); err != nil {
+		return permanent(apierr.RollbackFailed, "stop revoked release")
+	}
 	rel, err := e.Layout.relativeRelease(id)
 	if err != nil {
 		return permanent(apierr.RollbackFailed, "release path")
@@ -249,26 +260,42 @@ func (e *Engine) restoreRelease(ctx context.Context, id string) error {
 	if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{CurrentRelease: id}); err != nil {
 		return err
 	}
-	if e.Services != nil {
-		_ = e.Services.Stop(ctx)
-		if err := e.Services.Start(ctx, e.Layout.releaseDir(id)); err != nil {
-			return permanent(apierr.StartFailed, "rollback")
-		}
-	}
 	if err := e.snapshotIdentity(); err != nil {
 		return err
 	}
 	if err := e.snapshotPointers(ctx); err != nil {
 		return err
 	}
+	idTxn, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+	// Revocation recovery has no apply transaction; never reuse its binding.
+	if err := e.issueChallenge(ctx, updatejournal.Txn{TxnID: idTxn.String()}, id, "rollback"); err != nil {
+		return permanent(apierr.RollbackFailed, "rollback challenge")
+	}
+	defer e.consumeChallenge()
+	verified := false
+	defer func() {
+		if !verified {
+			// Keep current naming the selected tree, but stop an unverified
+			// process even if the caller's health context was canceled.
+			_ = e.Services.Stop(context.WithoutCancel(ctx))
+		}
+	}()
+	if err := e.Services.Start(ctx, e.Layout.releaseDir(id)); err != nil {
+		return permanent(apierr.StartFailed, "rollback")
+	}
 	_, ok := e.runHealth(ctx, e.viewFor(ctx, id, e.manifestOf(ctx, id)))
+	e.consumeChallenge()
 	if !ok {
 		return permanent(apierr.RollbackFailed, "restored release")
 	}
 	if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{LastGood: id}); err != nil {
 		return err
 	}
-	return e.snapshotPointers(ctx)
+	verified = true
+	return nil
 }
 
 func unionUUIDs(a, b []uuid.UUID) []uuid.UUID {
