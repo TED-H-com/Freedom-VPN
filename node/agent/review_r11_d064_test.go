@@ -116,7 +116,7 @@ func TestReviewR11_SameUIDChallengeOpensProbeHole(t *testing.T) {
 	}}
 	// RFC1918 source, four destinations the render does not deny, plus DNS to
 	// a resolver inside 10.0.0.0/8. TxnID is one this process minted.
-	p := reviewProbe("10.9.8.7/32", "1.1.1.1/32", "8.8.8.8/32", "192.88.99.1/32", "192.31.196.1/32")
+	p := reviewProbe("10.9.8.7/32", "1.1.1.1/32", "8.8.8.8/32", "192.52.193.1/32", "192.31.196.1/32")
 	if !probePeerOK("peer-a1") {
 		t.Fatal("probePeerOK rejected a member peer id shape")
 	}
@@ -171,7 +171,7 @@ func TestReviewR11_SameUIDChallengeOpensProbeHole(t *testing.T) {
 		len(installed.Probe.Destinations) == 4 &&
 		installed.Probe.ResolverDNS &&
 		strings.Contains(script, "10.9.8.7 timeout") &&
-		strings.Contains(script, "192.88.99.1") &&
+		strings.Contains(script, "192.52.193.1") &&
 		strings.Contains(script, "1.1.1.1") &&
 		strings.Contains(script, "8.8.8.8") &&
 		strings.Contains(script, "192.31.196.1") &&
@@ -243,6 +243,32 @@ func TestReviewR11_ProbePeerCollidesOnlyWithCurrentDocument(t *testing.T) {
 	if ok {
 		t.Fatal("node-local destination on a non-admin port passed the agent check")
 	}
+
+	t.Run("6to4_relay", func(t *testing.T) {
+		r := newRig(t)
+		r.srv.SetPublication(api.PublicationIntentUnpublished)
+		enrollBoot(t, r)
+		stepOK(t, r)
+		holdUpdateLock(t, r)
+		// Parser fixtures only: SpecDeniedV4 is authoritative even when
+		// the list also contains an allowed destination and the lock is held.
+		relay := labProbe()
+		relay.Destinations = append(relay.Destinations, healthattest.ChallengeProbeDest{
+			AddrV4: "192.88.99.1/32", Proto: "tcp", Port: 443,
+		})
+		ch := probeChallenge(t, r, relay, 0)
+		before := len(r.plane.calls)
+		if _, ok := r.eng.challengeProbe(ch, r.eng.trustedNow()); ok {
+			t.Fatal("6to4 relay destination passed the agent check")
+		}
+		if clear, installed := r.eng.installProbeException(context.Background(), ch); installed {
+			clear()
+			t.Fatal("6to4 relay destination was installed")
+		}
+		if len(r.plane.calls) != before {
+			t.Fatal("refused 6to4 relay challenge touched the plane")
+		}
+	})
 }
 
 func TestReviewR11_TrustedNowInstallsWhenWallRefusesAnswer(t *testing.T) {
