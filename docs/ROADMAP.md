@@ -54,6 +54,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater: node updater, update journal, release packaging | WP09 | done (#18) |
 | w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | done (#25) |
 | w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | done (#24) |
+| w2-usage-agent follow-up 1: read-only `fvpn-agent usage snapshot [-json]` of the local ledger (epochs, sequences, ACK watermark, per-event canonical hashes); torn-free single read transaction, byte-identical repeats, exit codes 2/3/4/5; AT07 withheld-ACK restart proof; lab contract `UsageLedgerSnapshot` for ENR-05 | WP07 | done (#225) |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
 | w3-toolchain: Go 1.27.3 in go.mod and every CI pin | WP01 | done (#19) |
 | r2-control-review: adversarial review of the merged control plane (read-only) | WP04, WP06 | done (7 blockers, 7 majors, 2 minors → owner follow-ups) |
@@ -116,6 +117,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-agent-core follow-up 16 | provisional grant-less lease reports `awaiting_member_grants` (never `lease_expired`/`LEASE_EXPIRED` while in force); lease check detail kept, error_code null until revision 11 (D-071) | done (#198) |
 | w2-agent-core follow-up 17 | pending conntrack revocations are exactly `ConntrackDeleteError.Failed` (other addresses retired), retried on the next Apply, restart-safe; attempt bound and fail-closed shape unchanged | done (#202) |
 | w2-agent-core follow-up 18 | revision 11 adopted: the D-067 provisional lease reports AWAITING_MEMBER_GRANTS on the lease/qos/source_binding checks with one errors[] entry (stage lease), safety passed, renewal schedule unchanged, four negatives re-proven; r14 M-1: a nil-identity migrated address reassigned to another device is queued for conntrack -D and kept pending until the delete succeeds; central tolerance verified read-only | done (#216) |
+| w2-agent-core follow-up 19 | SECOPS-19 — observation reports carry the live UsageOutboxStatus from the open store (bounded 2 s read, zero shape or last good value when unavailable, never changes safety/provisioning/forwarding); fakecontrol end-to-end + restart invariance | done (#226) |
 | w1-deps-bump follow-up 1: golang.org/x/crypto GO-2026-5932 | WP01 | done (no change: GO-2026-5932 is the unused x/crypto/openpgp packages, no fixed release exists, govulncheck symbol scan clean) |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | done (#56; all screens on live endpoints, Playwright e2e against real control/worker in CI, dev stack seeds inputs and awaits product projection per D-050) |
 | w3-portal-live follow-up 3: dev-stack node readiness through the agent observation path (fixes main Portal CI after #62) | WP10 | done (#67) |

@@ -27,3 +27,7 @@ The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it 
 ## Fault injection
 
 `Config.Hook` may fail at `upload.build` (body is built, not yet remembered), `upload.post` (before the request) and `upload.apply` (before the ACK or the conflict block is written).
+
+## Reading the local ledger
+
+`fvpn-agent usage snapshot` is the read-only view of this outbox and its watermark. The field list, exit codes and the lab contract `UsageLedgerSnapshot` (this command's `-json`) are in `docs/node/usage-store.md`. The command does not upload and does not apply an ACK. A 503 from the center leaves the snapshot byte-identical, including `payload_sha256` of the bytes this package resends.
