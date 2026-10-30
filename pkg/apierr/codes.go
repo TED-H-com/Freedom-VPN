@@ -33,6 +33,7 @@ const (
 	Forbidden               Code = "FORBIDDEN"
 	CSRFTokenInvalid        Code = "CSRF_TOKEN_INVALID"
 	ResourceNotFound        Code = "RESOURCE_NOT_FOUND"
+	NotFound                Code = "NOT_FOUND"
 	MethodNotAllowed        Code = "METHOD_NOT_ALLOWED"
 	IdempotencyConflict     Code = "IDEMPOTENCY_CONFLICT"
 	StateConflict           Code = "STATE_CONFLICT"
@@ -107,6 +108,7 @@ var specs = []Spec{
 	{Forbidden, http.StatusForbidden, false, "§14.6", false, "Authenticated principal is not allowed to perform this action; also mTLS identity mismatch (§10.6, §14.4)."},
 	{CSRFTokenInvalid, http.StatusForbidden, false, "§16.1", false, "Missing or mismatched CSRF token on a state-changing browser request."},
 	{ResourceNotFound, http.StatusNotFound, false, "§14.6", false, "Resource does not exist or does not belong to the caller; never reveals other members' resources (§14.3)."},
+	{NotFound, http.StatusNotFound, false, "§12.3, D-056", false, "Resolver document does not exist or was not issued to this node; never reveals another node's documents."},
 	{MethodNotAllowed, http.StatusMethodNotAllowed, false, "§14.1", false, "HTTP method not supported on this path."},
 	{IdempotencyConflict, http.StatusConflict, false, "§14.5", false, "Idempotency-Key reused with a different request payload."},
 	{StateConflict, http.StatusConflict, false, "§14.6", false, "Request conflicts with current resource state, or expected_generation does not match (§14.5)."},
