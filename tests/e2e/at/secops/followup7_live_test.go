@@ -89,7 +89,15 @@ func TestAT28_AT31_Followup7(t *testing.T) {
 
 func (p *liveProbe) capacityInput(admin *liveSession, node uuid.UUID) {
 	path := "/api/v1/admin/nodes/" + node.String()
-	before := p.call(admin, "GET", path, nil, nil)
+	var before liveReply
+	var view api.NodeDetail
+	for deadline := time.Now().Add(90 * time.Second); time.Now().Before(deadline); {
+		before = p.call(admin, "GET", path, nil, nil)
+		if before.status == 200 && json.Unmarshal(before.body, &view) == nil && view.ProvisioningState == api.ProvisioningStateReady {
+			break
+		}
+		time.Sleep(2 * time.Second)
+	}
 	p.check("finite capacity", p.call(admin, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": before.header.Get("ETag")}), 202, "")
 	time.Sleep(12 * time.Second)
 }
@@ -115,7 +123,7 @@ func (p *liveProbe) protectedArtifacts(stack *labstack.Stack, peers []flowPeer) 
 	p.metadata["protected_login_artifacts"] = map[string]any{"classification": "D-066 protected transient credential artifact, separate from readable files/logs/captures", "pre_delete_source": "native_scale.peer_observations[].transient_log_scan (JoinNativeMember)", "post_delete": rows, "bulk_helper_per_stream": "blocked on w3-devstack-e2e follow-up 12; NativeScale currently exposes aggregate totals only"}
 }
 func (p *liveProbe) proxyPrincipals(stack *labstack.Stack, admin *liveSession) {
-	out := map[string]any{"status": "blocked", "class": "anonymous", "source": "actual distinct container TCP peers; exact trusted gateway /32; forged XFF documentation values"}
+	out := map[string]any{"status": "blocked", "class": "anonymous", "limiter": "address", "source": "actual distinct container TCP peers; exact trusted gateway /32; forged XFF documentation values"}
 	p.metadata["trusted_proxy"] = out
 	raw, _ := os.ReadFile(filepath.Join(p.state, "stack.json"))
 	var cfg struct {
@@ -124,6 +132,12 @@ func (p *liveProbe) proxyPrincipals(stack *labstack.Stack, admin *liveSession) {
 	if json.Unmarshal(raw, &cfg) != nil {
 		return
 	}
+	ctrlRaw, _ := os.ReadFile(filepath.Join(p.state, "config/control.json"))
+	var ctrlCfg struct {
+		TrustedProxies []string `json:"trusted_proxies"`
+	}
+	_ = json.Unmarshal(ctrlRaw, &ctrlCfg)
+	out["trusted_proxies"] = ctrlCfg.TrustedProxies
 	containers := []string{}
 	for _, name := range []string{"proxy-a", "proxy-b"} {
 		c, e := stack.StartNativePeer(p.t.Context(), name)
@@ -154,20 +168,36 @@ func (p *liveProbe) proxyPrincipals(stack *labstack.Stack, admin *liveSession) {
 		}
 		return rows
 	}
+	statuses := func(rows []map[string]any) []int {
+		seq := make([]int, 0, len(rows))
+		for _, r := range rows {
+			if s, ok := r["status"].(float64); ok {
+				seq = append(seq, int(s))
+			}
+		}
+		return seq
+	}
 	gateway := cfg.LabPrefix + ".21:8443"
 	direct := cfg.LabPrefix + ".30:8443"
 	out["source_b_enroll"] = burst(1, gateway, 1, false, true)
 	out["metrics_before"] = p.classMetrics()
 	a := burst(0, gateway, 120, false, false)
 	b := burst(1, gateway, 1, false, true)
+	aGatewayForged := burst(0, gateway, 5, true, false)
 	out["gateway_a"] = a
+	out["gateway_a_status_sequence"] = statuses(a)
 	out["gateway_b_replay"] = b
+	out["gateway_b_status_sequence"] = statuses(b)
+	out["gateway_a_forged_xff"] = aGatewayForged
+	out["gateway_a_forged_xff_status_sequence"] = statuses(aGatewayForged)
 	out["metrics_after_gateway"] = p.classMetrics()
 	time.Sleep(6 * time.Second)
 	forged := burst(0, direct, 120, true, false)
 	other := burst(1, direct, 1, true, true)
 	out["untrusted_direct_a_rotating_xff"] = forged
+	out["untrusted_direct_a_status_sequence"] = statuses(forged)
 	out["untrusted_direct_b_replay"] = other
+	out["untrusted_direct_b_status_sequence"] = statuses(other)
 	out["metrics_after_direct"] = p.classMetrics()
 	limited := func(rows []map[string]any) bool {
 		for _, r := range rows {
@@ -177,7 +207,7 @@ func (p *liveProbe) proxyPrincipals(stack *labstack.Stack, admin *liveSession) {
 		}
 		return false
 	}
-	if limited(a) && limited(forged) && len(b) == 1 && b[0]["status"] == float64(200) && len(other) == 1 && other[0]["status"] == float64(200) {
+	if limited(a) && limited(aGatewayForged) && limited(forged) && len(b) == 1 && b[0]["status"] == float64(200) && len(other) == 1 && other[0]["status"] == float64(200) {
 		out["status"] = "passed"
 	}
 }

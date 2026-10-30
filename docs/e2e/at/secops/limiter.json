@@ -1,27 +1,19 @@
 {
   "schema_version": 1,
-  "follow_up": 6,
-  "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
-  "started_at": "2026-10-30T17:03:09Z",
-  "finished_at": "2026-10-30T17:28:30Z",
-  "hardware": "shared development host, not candidate hardware",
+  "follow_up": 7,
+  "started_at": "2026-10-30T19:23:34Z",
+  "finished_at": "2026-10-30T19:59:27Z",
+  "source_revision": "443cbb0d787e3b4a6ef9daf33bb060e4d89932bf",
+  "application_base": "fb3ea32",
+  "run_id": "ab96acac-8713-485a-9c29-88f20110e2e5",
+  "driver_run_id": "f54627cd-eb5f-4d42-a7d9-e916cc0e5127",
+  "hardware": "shared development host; not candidate hardware",
   "commands": [
     [
-      "go",
-      "test",
-      "-json",
-      "-tags",
-      "e2e,integration",
-      "-p",
-      "1",
-      "-parallel",
-      "2",
-      "-count=1",
-      "-timeout",
-      "50m",
-      "-run",
-      "^TestAT28_AT31_Followup6$",
-      "./tests/e2e/at/secops"
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
     ],
     [
       "go",
@@ -35,636 +27,2881 @@
       "2",
       "-count=1",
       "-timeout",
-      "50m",
+      "65m",
       "-run",
-      "^TestAT28_AT31_Followup6$",
+      "^TestAT28_AT31_Followup7$",
       "./tests/e2e/at/secops"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
     ]
   ],
-  "runs": {
-    "profile": {
-      "run_id": "89054df3-0973-4448-9065-5f1266d0558b",
-      "started_at": "2026-10-30T17:03:40.947704857Z",
-      "finished_at": "2026-10-30T17:19:41.891010532Z",
-      "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
-      "probe_source_sha256": "d83cdbffbf8eee7833280a3f8f75dd445e8eb522d29eb466d8462bc541100394",
-      "policy_revision": "01a18dc4-6636-7311-96df-429b3ea651d8",
-      "node_incarnation": null,
-      "image_digests": [
-        {
-          "image_id": "sha256:666b159242219e77b2d7ab4d606254c2529dc9f9ba310eebda8fdb28e19822e5",
-          "service": "postgres"
-        },
-        {
-          "image_id": "sha256:355f0de1b0b2f7b9d675391fa173e9e320be2241e4de5187a7401c6ffc35fecb",
-          "service": "idp"
-        },
-        {
-          "image_id": "sha256:eaaff387083a80f2eb638ec8e90d3b6f3676b9490529e70f24e68dbf990c8814",
-          "service": "payment"
-        },
-        {
-          "image_id": "sha256:17bc1751939087ba90ce400acaa4564a2a02eeaea448e2d8a4b2fb174534ad66",
-          "service": "origin"
-        },
-        {
-          "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-          "service": "netbird"
-        },
-        {
-          "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-          "service": "gateway"
-        },
-        {
-          "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
-          "service": "coredns"
-        },
-        {
-          "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-          "service": "adguard"
-        },
-        {
-          "image_id": "sha256:13e9ad3c8c6bfab02d0e114c81ecf5cc130647495abd016997a648150fa81251",
-          "service": "control"
-        },
-        {
-          "image_id": "sha256:f85ba9a01c94dab0f2fd63dc6813c8adfc2a2912cbd2415a66ca64afad1aed37",
-          "service": "worker"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "node-netns"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "node"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u19-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u19-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u19-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u18-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u18-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u18-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u17-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u17-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u17-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u16-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u16-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u16-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u15-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u15-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u15-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u14-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u14-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u14-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u13-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u13-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u13-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u12-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u12-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u12-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u11-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u11-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u11-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u10-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u10-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u10-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u09-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u09-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u09-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u08-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u08-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u08-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u07-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u07-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u07-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u06-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u06-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u06-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u05-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u05-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u05-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u04-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u04-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u04-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u03-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u03-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u03-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u02-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u02-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u02-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u01-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u01-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u01-p1"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u00-p3"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u00-p2"
-        },
-        {
-          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
-          "service": "member-secops-u00-p1"
-        }
-      ]
-    },
-    "helper": {
-      "run_id": "6bfaca25-e5a6-4fcb-8dfa-ad1e918cb546",
-      "started_at": "2026-10-30T17:20:58.987373081Z",
-      "finished_at": "2026-10-30T17:27:37.768373964Z",
-      "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
-      "probe_source_sha256": "9d3b4f4bcf9bec21f3726b75720f9cc6dac8bd4d35535158524ee5ea11b7ce24",
-      "policy_revision": "01a18dd4-3d60-7904-afbd-5c76ccfde003",
-      "node_incarnation": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-      "image_digests": [
-        {
-          "image_id": "sha256:7ec95f1bb6c481f02fcab076f80abef730b34cc3eed20c1905b63f5f727eaee1",
-          "service": "postgres"
-        },
-        {
-          "image_id": "sha256:574a3c32b652071a679f0e31d5523732409936bdf18e6c58294456c2be560cf1",
-          "service": "idp"
-        },
-        {
-          "image_id": "sha256:36eaa67b92da3d5b03cfad80d9ac52f83f182c69b29c3665b41f3e67f3d5e43b",
-          "service": "payment"
-        },
-        {
-          "image_id": "sha256:25a9cf9d880adb64e84d5c60ebc3516972ac281be050c21a87ac9647562da6cf",
-          "service": "origin"
-        },
-        {
-          "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-          "service": "netbird"
-        },
-        {
-          "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-          "service": "gateway"
-        },
-        {
-          "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
-          "service": "coredns"
-        },
-        {
-          "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-          "service": "adguard"
-        },
-        {
-          "image_id": "sha256:35bac72bf3dfa4ad402641b63b963764e66cf68fcdedd0a86176666ff4f3271e",
-          "service": "control"
-        },
-        {
-          "image_id": "sha256:2cd25e7ca47028387cc647a27c9cfca717f48b3db087a7239b5eb858f8291b34",
-          "service": "worker"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "node-netns"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "node"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u20-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u20-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u20-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u19-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u19-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u19-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u18-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u18-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u18-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u17-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u17-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u17-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u16-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u16-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u16-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u15-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u15-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u15-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u14-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u14-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u14-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u13-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u13-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u13-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u12-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u12-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u12-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u11-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u11-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u11-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u10-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u10-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u10-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u09-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u09-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u09-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u08-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u08-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u08-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u07-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u07-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u07-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u06-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u06-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u06-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u05-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u05-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u05-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u04-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u04-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u04-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u03-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u03-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u03-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u02-p3"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u02-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u02-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u01-p1"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u01-p2"
-        },
-        {
-          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
-          "service": "member-secops6-u01-p3"
-        }
-      ]
-    }
-  },
-  "build_digests": [
+  "probe_source_sha256": "f830695290e94d999b7d9f05cdd15fc52bd84c2c5f0b09ff79e112d9b9929f60",
+  "policy_revision": "01a18e45-2ef2-7928-8842-cb727eb863fd",
+  "node_incarnation": "31098d68-decf-4cde-b6ae-097ad69f6267",
+  "agent_node_incarnation": "01a18e45-58f2-7a9c-8449-6c8ced14c767",
+  "image_digests": [
     {
-      "arch": "amd64",
-      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
-      "sha256": "d6ff489ab36ccb649597bbd2fdd38195d5bc1ed51dbf80a78693577261773213"
+      "image_id": "sha256:e9f2c7cff1cd68b0bfa7ac4548335f197d88a37d39fc5acd0d0f543f94f89816",
+      "service": "postgres"
     },
     {
-      "arch": "arm64",
-      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
-      "sha256": "7d05ae15973b4ce8ba8dea8657b66dc21955cebd8353f79ff9fb97e3665deb67"
+      "image_id": "sha256:c49e52563fec70dad7363818558012aa4502871835218f53c0440d966983dd67",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:f26d3b2473cddd221c0cf40ea42307eb407d0f8ae80f391c741c13e17aabe34c",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:2363ab8a61ab529a5bdb3ec1d82a6363614d7ebfe6dab4efffbdda7e4c69afd1",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:29656c46da670df3d48cf04182c3ef85c46cd9d344d3f7a6fb3c197943adcfc8",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:97d2f24fde2ddacf88ed52ffdb9d842387a9996e766d5d4037cb5d48d1a19600",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node2-netns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "node2-adguard"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-lease"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-grant"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-paid"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-proxy-b"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-proxy-a"
     }
   ],
-  "id": "AT28-f17",
-  "status": "passed",
-  "expected": "Anonymous saturation leaves admin and certified lease unaffected; usage cap remains 8 MiB and duplicate row count one",
+  "build_digests": [
+    {
+      "name": "amd64.test",
+      "sha256": "9a563f3bf75858a1c9abf334908ef8d23ea2ec714aa1d39a430b18ba2348c592"
+    },
+    {
+      "name": "proxyprobe",
+      "sha256": "a9109d38c54602b0e23cb033f5979caa3ccfa730ed42da9d7cd7267da9368bed"
+    },
+    {
+      "name": "arm64.test",
+      "sha256": "38e022e0f268db063915895a36ce1574938184d81da33228f631231851f25e65"
+    }
+  ],
+  "previous_run": "history/follow-up-6/",
+  "projector_owned_rows_written": [],
+  "expected": "Anonymous address A429 / address B enrollment replay200 through one trusted gateway; direct forged XFF cannot evade A429; admin and certified lease unaffected; 8 MiB unchanged",
   "actual": {
+    "trusted_proxy": {
+      "class": "anonymous",
+      "gateway_a": [
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 2.641,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.70046519Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.281,
+          "index": 2,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.703187388Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.045,
+          "index": 3,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.704502332Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.017,
+          "index": 4,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.705565048Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.835,
+          "index": 5,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.706597646Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.669,
+          "index": 6,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.707447882Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.666,
+          "index": 7,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.708127127Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.693,
+          "index": 8,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.708809461Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.096,
+          "index": 9,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.709520792Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.01,
+          "index": 10,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.710637589Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.951,
+          "index": 11,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.711661928Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.91,
+          "index": 12,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.712627361Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.913,
+          "index": 13,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.713550536Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.23,
+          "index": 14,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.714477965Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.467,
+          "index": 15,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.715721891Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.015,
+          "index": 16,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.717205903Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.914,
+          "index": 17,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.718235688Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.957,
+          "index": 18,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.719174533Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.717,
+          "index": 19,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.720145887Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.681,
+          "index": 20,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.720875809Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.709,
+          "index": 21,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.721570545Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.655,
+          "index": 22,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.722292924Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.707,
+          "index": 23,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.722959828Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.709,
+          "index": 24,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.723678104Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.651,
+          "index": 25,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.724399042Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.634,
+          "index": 26,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.725058296Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.609,
+          "index": 27,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.725704856Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.652,
+          "index": 28,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.726322373Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.704,
+          "index": 29,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.726986624Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.685,
+          "index": 30,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.727701128Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.683,
+          "index": 31,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.728399102Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.689,
+          "index": 32,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.729091592Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.656,
+          "index": 33,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.729788288Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.661,
+          "index": 34,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.730463032Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.618,
+          "index": 35,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.73113563Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.685,
+          "index": 36,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.731767092Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.66,
+          "index": 37,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.732458225Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.643,
+          "index": 38,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.733134653Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.632,
+          "index": 39,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.733790813Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.636,
+          "index": 40,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.734433141Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.62,
+          "index": 41,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.735080849Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 42,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.735712932Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.62,
+          "index": 43,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.736323344Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.624,
+          "index": 44,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.736958475Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.585,
+          "index": 45,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.737590542Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.63,
+          "index": 46,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.73819425Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.596,
+          "index": 47,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.738831658Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.625,
+          "index": 48,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.739438709Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.635,
+          "index": 49,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.740078329Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.622,
+          "index": 50,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.740725881Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.628,
+          "index": 51,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.741360126Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.613,
+          "index": 52,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.741999804Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.616,
+          "index": 53,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.742617583Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.611,
+          "index": 54,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.743245174Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.631,
+          "index": 55,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.743868232Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.619,
+          "index": 56,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.74450721Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.621,
+          "index": 57,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.745132139Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.82,
+          "index": 58,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.745770267Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.693,
+          "index": 59,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.746623187Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.603,
+          "index": 60,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.747323495Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.622,
+          "index": 61,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.747938599Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.588,
+          "index": 62,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.748571583Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.596,
+          "index": 63,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.749166265Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.572,
+          "index": 64,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.749767277Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.562,
+          "index": 65,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.750343423Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.589,
+          "index": 66,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.750910007Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.583,
+          "index": 67,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.751510567Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.594,
+          "index": 68,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.752105516Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 69,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.752707884Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.61,
+          "index": 70,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.753324807Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.633,
+          "index": 71,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.753947772Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.57,
+          "index": 72,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.754588025Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.585,
+          "index": 73,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.755165371Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.588,
+          "index": 74,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.755759297Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.598,
+          "index": 75,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.756366888Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.577,
+          "index": 76,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.756974918Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.677,
+          "index": 77,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.757557529Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.618,
+          "index": 78,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.758240849Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.59,
+          "index": 79,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.758871883Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.586,
+          "index": 80,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.759468076Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.59,
+          "index": 81,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.760067815Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.655,
+          "index": 82,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.760664451Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.586,
+          "index": 83,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.761337417Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.606,
+          "index": 84,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.761936942Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.579,
+          "index": 85,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.762548093Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.566,
+          "index": 86,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.763131133Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.597,
+          "index": 87,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.763706939Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.591,
+          "index": 88,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.764310523Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 89,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.764907084Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.606,
+          "index": 90,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.765531646Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.593,
+          "index": 91,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.766146865Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.7,
+          "index": 92,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.76675181Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.611,
+          "index": 93,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.767459682Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.6,
+          "index": 94,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.768075078Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.571,
+          "index": 95,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.768679091Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.631,
+          "index": 96,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.769262503Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.623,
+          "index": 97,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.769913991Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.587,
+          "index": 98,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.770561737Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.666,
+          "index": 99,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.77115541Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.729,
+          "index": 100,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.771837155Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.594,
+          "index": 101,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.772576639Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.68,
+          "index": 102,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.773175996Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.64,
+          "index": 103,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.773873802Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.637,
+          "index": 104,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.774526119Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.601,
+          "index": 105,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.775169424Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.623,
+          "index": 106,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.77577464Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 107,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.776409328Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.657,
+          "index": 108,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.777023366Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.648,
+          "index": 109,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.777693161Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.587,
+          "index": 110,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.778352338Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.624,
+          "index": 111,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.778945497Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.618,
+          "index": 112,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.779576686Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.584,
+          "index": 113,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.780202262Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.629,
+          "index": 114,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.780802088Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.606,
+          "index": 115,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.781444454Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.652,
+          "index": 116,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.782055261Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.651,
+          "index": 117,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.782714607Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.587,
+          "index": 118,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.783377796Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.043,
+          "index": 119,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.78396938Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.925,
+          "index": 120,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.785034824Z"
+        }
+      ],
+      "gateway_a_forged_xff": [
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 2.494,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.862597357Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.25,
+          "index": 2,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.865200755Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.12,
+          "index": 3,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.866483467Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.058,
+          "index": 4,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.867624657Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.738,
+          "index": 5,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.868696384Z"
+        }
+      ],
+      "gateway_a_forged_xff_status_sequence": [
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "gateway_a_status_sequence": [
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "gateway_b_replay": [
+        {
+          "code": "",
+          "elapsed_ms": 5.63,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T19:24:21.817219531Z"
+        }
+      ],
+      "gateway_b_status_sequence": [
+        200
+      ],
+      "limiter": "address",
+      "metrics_after_direct": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 225
+      },
+      "metrics_after_gateway": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 115
+      },
+      "metrics_before": {},
+      "source": "actual distinct container TCP peers; exact trusted gateway /32; forged XFF documentation values",
+      "source_b_enroll": [
+        {
+          "code": "",
+          "elapsed_ms": 7.894,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 201,
+          "utc": "2026-10-30T19:24:21.620131822Z"
+        }
+      ],
+      "status": "passed",
+      "trusted_proxies": null,
+      "untrusted_direct_a_rotating_xff": [
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.481,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.957641987Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.176,
+          "index": 2,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959206349Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.119,
+          "index": 3,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.95940628Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.07,
+          "index": 4,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959538318Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.063,
+          "index": 5,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959615982Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.055,
+          "index": 6,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959685275Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.128,
+          "index": 7,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959745967Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.112,
+          "index": 8,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959894099Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.129,
+          "index": 9,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.960037093Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.164,
+          "index": 10,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.960189004Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.157,
+          "index": 11,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96036666Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.172,
+          "index": 12,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960557991Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.106,
+          "index": 13,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960744818Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.112,
+          "index": 14,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960863857Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.292,
+          "index": 15,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960990473Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.121,
+          "index": 16,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961300522Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.102,
+          "index": 17,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961436378Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.126,
+          "index": 18,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961554372Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.091,
+          "index": 19,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961695972Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.06,
+          "index": 20,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961799703Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.067,
+          "index": 21,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961867338Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.057,
+          "index": 22,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961943Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.083,
+          "index": 23,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962004788Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.059,
+          "index": 24,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962091381Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.089,
+          "index": 25,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962160975Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.059,
+          "index": 26,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962263582Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.062,
+          "index": 27,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962327221Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.073,
+          "index": 28,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96239554Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 29,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962477593Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.064,
+          "index": 30,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962524726Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.039,
+          "index": 31,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962592154Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.058,
+          "index": 32,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.9626343Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 33,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962699426Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.048,
+          "index": 34,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962744554Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.063,
+          "index": 35,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96280553Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 36,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962873965Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.047,
+          "index": 37,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962925888Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 38,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962979214Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.063,
+          "index": 39,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963039762Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 40,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963107956Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.05,
+          "index": 41,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963152198Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.046,
+          "index": 42,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963211321Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.048,
+          "index": 43,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963265848Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.047,
+          "index": 44,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963321461Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 45,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963371645Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.05,
+          "index": 46,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963416473Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.044,
+          "index": 47,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96346988Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 48,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963522622Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.058,
+          "index": 49,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963570187Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 50,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963631781Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 51,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.9636654Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.048,
+          "index": 52,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963711083Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 53,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963764021Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 54,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963802115Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 55,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963841129Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 56,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963879156Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 57,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96392521Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 58,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963962314Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 59,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963999051Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 60,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964038395Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.05,
+          "index": 61,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964076512Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 62,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964130001Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.088,
+          "index": 63,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964175759Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.033,
+          "index": 64,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964268206Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 65,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964306441Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.04,
+          "index": 66,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964352833Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.044,
+          "index": 67,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964397754Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 68,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964445419Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.046,
+          "index": 69,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964485149Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 70,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96453459Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.053,
+          "index": 71,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964575442Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 72,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964632095Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 73,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964669747Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 74,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964708381Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 75,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964747051Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 76,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964789339Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 77,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964839214Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.03,
+          "index": 78,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964874431Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 79,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964907286Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 80,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964947631Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.029,
+          "index": 81,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964992919Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 82,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965027019Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 83,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965064256Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 84,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965104387Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.029,
+          "index": 85,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.9651393Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 86,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965172779Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.04,
+          "index": 87,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965219521Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 88,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965263008Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.033,
+          "index": 89,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965308595Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.03,
+          "index": 90,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965347638Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.037,
+          "index": 91,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965380791Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 92,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965421129Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 93,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965455802Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 94,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965502018Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.064,
+          "index": 95,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965549479Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.028,
+          "index": 96,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965616928Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.03,
+          "index": 97,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965647919Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 98,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965681997Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.053,
+          "index": 99,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965718737Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.063,
+          "index": 100,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965775445Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.037,
+          "index": 101,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965845394Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.064,
+          "index": 102,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965886584Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 103,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965955448Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.033,
+          "index": 104,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965993805Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 105,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966034679Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.046,
+          "index": 106,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966074287Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 107,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966122907Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.029,
+          "index": 108,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96615638Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 109,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966192512Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.057,
+          "index": 110,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966239789Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.055,
+          "index": 111,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966308798Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.058,
+          "index": 112,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966369446Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 113,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966436481Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 114,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966490223Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.06,
+          "index": 115,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966529527Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 116,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966594198Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.04,
+          "index": 117,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966638696Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.039,
+          "index": 118,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966681989Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 119,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966728858Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 120,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966775177Z"
+        }
+      ],
+      "untrusted_direct_a_status_sequence": [
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "untrusted_direct_b_replay": [
+        {
+          "code": "",
+          "elapsed_ms": 3.728,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T19:24:27.997209591Z"
+        }
+      ],
+      "untrusted_direct_b_status_sequence": [
+        200
+      ]
+    },
     "anonymous_isolation": {
       "checks": [
         {
@@ -673,7 +2910,7 @@
           "after_anonymous_requests": 0,
           "lease_code": "",
           "lease_status": 200,
-          "utc": "2026-10-30T17:26:57.585105222Z"
+          "utc": "2026-10-30T19:48:18.166248594Z"
         },
         {
           "admin_code": "",
@@ -681,7 +2918,7 @@
           "after_anonymous_requests": 40,
           "lease_code": "",
           "lease_status": 200,
-          "utc": "2026-10-30T17:26:57.664188966Z"
+          "utc": "2026-10-30T19:48:18.242393782Z"
         },
         {
           "admin_code": "",
@@ -689,7 +2926,7 @@
           "after_anonymous_requests": 80,
           "lease_code": "",
           "lease_status": 200,
-          "utc": "2026-10-30T17:26:57.706964796Z"
+          "utc": "2026-10-30T19:48:18.279879906Z"
         },
         {
           "admin_code": "",
@@ -697,15 +2934,17 @@
           "after_anonymous_requests": 120,
           "lease_code": "",
           "lease_status": 200,
-          "utc": "2026-10-30T17:26:57.748486565Z"
+          "utc": "2026-10-30T19:48:18.317809865Z"
         }
       ],
-      "elapsed_seconds": 0.121802574,
+      "elapsed_seconds": 0.110357852,
       "expected": "anonymous429 while admin200 and certified lease200",
       "metrics_after": {
-        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335
       },
-      "metrics_before": {},
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 225
+      },
       "requests": [
         {
           "code": "WEBHOOK_SIGNATURE_INVALID",
@@ -1434,19 +3673,19 @@
     "rate_classes": {
       "anonymous_shared": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.01277235,
+        "elapsed_seconds": 0.009256014,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 113,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 338,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 112,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 337,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -1457,95 +3696,95 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:28.206518219Z"
+            "utc": "2026-10-30T19:48:48.769077587Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 2,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:28.207587552Z"
+            "utc": "2026-10-30T19:48:48.770098211Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:28.208724684Z"
+            "utc": "2026-10-30T19:48:48.770840388Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 4,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:28.209912017Z"
+            "utc": "2026-10-30T19:48:48.771557965Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:28.211041767Z"
+            "utc": "2026-10-30T19:48:48.772237153Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 6,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:28.212156936Z"
+            "utc": "2026-10-30T19:48:48.772919401Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 7,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:28.213267667Z"
+            "utc": "2026-10-30T19:48:48.773587058Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 8,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:28.214424226Z"
+            "utc": "2026-10-30T19:48:48.774300984Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 9,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:28.215492147Z"
+            "utc": "2026-10-30T19:48:48.774968962Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 10,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:28.216685676Z"
+            "utc": "2026-10-30T19:48:48.775624445Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T17:27:28.217631797Z"
+            "utc": "2026-10-30T19:48:48.776453006Z"
           }
         ]
       },
       "enrollment": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.011960117,
+        "elapsed_seconds": 0.010728967,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 111,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 336,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -1556,94 +3795,94 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.019214514Z"
+            "utc": "2026-10-30T19:48:36.591549504Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 2,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.020210366Z"
+            "utc": "2026-10-30T19:48:36.59295688Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.021191268Z"
+            "utc": "2026-10-30T19:48:36.593901246Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 4,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.022088736Z"
+            "utc": "2026-10-30T19:48:36.594898217Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.022990759Z"
+            "utc": "2026-10-30T19:48:36.595661465Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 6,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.02387572Z"
+            "utc": "2026-10-30T19:48:36.596297162Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 7,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.025170257Z"
+            "utc": "2026-10-30T19:48:36.597066918Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 8,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.026118385Z"
+            "utc": "2026-10-30T19:48:36.597707406Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 9,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.027164347Z"
+            "utc": "2026-10-30T19:48:36.598410501Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 10,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:16.028250126Z"
+            "utc": "2026-10-30T19:48:36.599043719Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T17:27:16.029405045Z"
+            "utc": "2026-10-30T19:48:36.599872279Z"
           }
         ]
       },
       "heartbeat": {
         "actual_first_rejection": 6,
-        "elapsed_seconds": 0.003893528,
+        "elapsed_seconds": 0.003646374,
         "expected_first_rejection": 6,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335
         },
         "passed": true,
         "requests": [
@@ -1652,42 +3891,42 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:03.835709107Z"
+            "utc": "2026-10-30T19:48:24.407055654Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 2,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:03.836799984Z"
+            "utc": "2026-10-30T19:48:24.407618162Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:03.837222986Z"
+            "utc": "2026-10-30T19:48:24.407996793Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 4,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:03.837576826Z"
+            "utc": "2026-10-30T19:48:24.408358394Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T17:27:03.837909237Z"
+            "utc": "2026-10-30T19:48:24.408697363Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 6,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T17:27:03.838260707Z"
+            "utc": "2026-10-30T19:48:24.409014144Z"
           }
         ]
       },
@@ -1699,19 +3938,19 @@
       },
       "lease": {
         "actual_first_rejection": 6,
-        "elapsed_seconds": 0.015594199,
+        "elapsed_seconds": 0.007476278,
         "expected_first_rejection": 6,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
         },
         "passed": true,
@@ -1721,42 +3960,42 @@
             "index": 1,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:09.927825435Z"
+            "utc": "2026-10-30T19:48:30.498245087Z"
           },
           {
             "code": "",
             "index": 2,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:09.929557397Z"
+            "utc": "2026-10-30T19:48:30.499495338Z"
           },
           {
             "code": "",
             "index": 3,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:09.930937708Z"
+            "utc": "2026-10-30T19:48:30.5006266Z"
           },
           {
             "code": "",
             "index": 4,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:09.932015515Z"
+            "utc": "2026-10-30T19:48:30.501745951Z"
           },
           {
             "code": "",
             "index": 5,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:09.933046171Z"
+            "utc": "2026-10-30T19:48:30.502602511Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 6,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T17:27:09.933302411Z"
+            "utc": "2026-10-30T19:48:30.50290336Z"
           }
         ]
       },
@@ -1772,20 +4011,20 @@
       "source": "one host transport address; node B certificate; real agent uses node A identity",
       "usage": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.246030256,
+        "elapsed_seconds": 0.031319603,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 113,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 338,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 113,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 338,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -1796,77 +4035,77 @@
             "index": 1,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.532488746Z"
+            "utc": "2026-10-30T19:48:54.881006588Z"
           },
           {
             "code": "",
             "index": 2,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.536679877Z"
+            "utc": "2026-10-30T19:48:54.883616308Z"
           },
           {
             "code": "",
             "index": 3,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.540092063Z"
+            "utc": "2026-10-30T19:48:54.886035704Z"
           },
           {
             "code": "",
             "index": 4,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.542536172Z"
+            "utc": "2026-10-30T19:48:54.888291492Z"
           },
           {
             "code": "",
             "index": 5,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.545498052Z"
+            "utc": "2026-10-30T19:48:54.890767658Z"
           },
           {
             "code": "",
             "index": 6,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.548782493Z"
+            "utc": "2026-10-30T19:48:54.893178322Z"
           },
           {
             "code": "",
             "index": 7,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.55157893Z"
+            "utc": "2026-10-30T19:48:54.895215904Z"
           },
           {
             "code": "",
             "index": 8,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.554967522Z"
+            "utc": "2026-10-30T19:48:54.897810637Z"
           },
           {
             "code": "",
             "index": 9,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.557939991Z"
+            "utc": "2026-10-30T19:48:54.899891682Z"
           },
           {
             "code": "",
             "index": 10,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T17:27:34.561335286Z"
+            "utc": "2026-10-30T19:48:54.903281404Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T17:27:34.561690377Z"
+            "utc": "2026-10-30T19:48:54.903912423Z"
           }
         ]
       },
@@ -1874,10 +4113,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.317434698Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.873842096Z",
           "results": [
             {
               "error": null,
@@ -1889,10 +4128,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.534027024Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.881688005Z",
           "results": [
             {
               "error": null,
@@ -1904,10 +4143,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.537314723Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.884159245Z",
           "results": [
             {
               "error": null,
@@ -1919,10 +4158,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.540465818Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.886425263Z",
           "results": [
             {
               "error": null,
@@ -1934,10 +4173,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.542954264Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.888701963Z",
           "results": [
             {
               "error": null,
@@ -1949,10 +4188,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.546075074Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.891093919Z",
           "results": [
             {
               "error": null,
@@ -1964,10 +4203,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.549162211Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.893631457Z",
           "results": [
             {
               "error": null,
@@ -1979,10 +4218,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.551958407Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.89558897Z",
           "results": [
             {
               "error": null,
@@ -1994,10 +4233,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.55542832Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.8981288Z",
           "results": [
             {
               "error": null,
@@ -2009,10 +4248,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
-          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
-          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
-          "received_at": "2026-10-30T17:27:34.558345997Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.900240559Z",
           "results": [
             {
               "error": null,
@@ -2053,19 +4292,19 @@
       ],
       "webhook": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.01335715,
+        "elapsed_seconds": 0.00985951,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 112,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 337,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 111,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 336,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -2076,85 +4315,81 @@
             "index": 1,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.105977697Z"
+            "utc": "2026-10-30T19:48:42.67652601Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 2,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.107440093Z"
+            "utc": "2026-10-30T19:48:42.677713688Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 3,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.108379849Z"
+            "utc": "2026-10-30T19:48:42.678772816Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 4,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.109683936Z"
+            "utc": "2026-10-30T19:48:42.679584701Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 5,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.110684767Z"
+            "utc": "2026-10-30T19:48:42.680388889Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 6,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.11185831Z"
+            "utc": "2026-10-30T19:48:42.681119371Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 7,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.112963626Z"
+            "utc": "2026-10-30T19:48:42.681840288Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 8,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.114067984Z"
+            "utc": "2026-10-30T19:48:42.682522388Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 9,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.115622582Z"
+            "utc": "2026-10-30T19:48:42.683190168Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 10,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T17:27:22.116732742Z"
+            "utc": "2026-10-30T19:48:42.683906641Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T17:27:22.117450349Z"
+            "utc": "2026-10-30T19:48:42.684594551Z"
           }
         ]
       }
-    },
-    "trusted_proxy": {
-      "owner": "w2-control-core follow-up 18",
-      "reason": "not merged on measured source; no principal claim from forwarded headers",
-      "status": "blocked"
     }
-  }
+  },
+  "status": "passed"
 }

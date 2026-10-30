@@ -683,10 +683,12 @@ func (p *liveProbe) finish() {
 	p.metadata["security_matrix_complete"] = p.securityComplete
 	p.metadata["projector_owned_rows_written"] = []string{}
 	p.metadata["go_test_failed"] = p.t.Failed()
-	for _, file := range []string{"key.pem", "setup.key"} {
-		raw, er := p.docker("node", "cat", "/var/lib/vpn-node/identity/"+file)
-		if er == nil {
-			p.secrets = append(p.secrets, bytes.TrimSpace(raw))
+	for _, nodeSvc := range []string{"node", "node2"} {
+		for _, file := range []string{"key.pem", "setup.key"} {
+			raw, er := p.docker(nodeSvc, "cat", "/var/lib/vpn-node/identity/"+file)
+			if er == nil {
+				p.secrets = append(p.secrets, bytes.TrimSpace(raw))
+			}
 		}
 	}
 	services := []string{"postgres", "idp", "payment", "origin", "netbird", "gateway", "coredns", "adguard", "control", "worker", "node-netns", "node", "member"}

@@ -4,7 +4,9 @@ package secops
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -23,19 +25,55 @@ func (p *liveProbe) fleetMaximum(seconds int) map[string]any {
 	admin := p.login("e2e-admin", "admin")
 	path := "/api/v1/admin/fleet-config"
 	before := p.call(admin, "GET", path, nil, nil)
-	key := uuid.NewString()
 	body := map[string]any{"max_offline_lease_seconds": seconds, "reason": "TEST ONLY AT29 finite lease; restore default on exit"}
+	missingIfMatch := p.call(admin, "PUT", path, body, map[string]string{"Idempotency-Key": uuid.NewString()})
+	staleIfMatch := p.call(admin, "PUT", path, body, map[string]string{"If-Match": `"0"`, "Idempotency-Key": uuid.NewString()})
+	key := uuid.NewString()
 	changed := p.call(admin, "PUT", path, body, map[string]string{"If-Match": before.header.Get("ETag"), "Idempotency-Key": key})
 	replay := p.call(admin, "PUT", path, body, map[string]string{"If-Match": before.header.Get("ETag"), "Idempotency-Key": key})
 	after := p.call(admin, "GET", path, nil, nil)
 	var value map[string]any
 	_ = json.Unmarshal(after.body, &value)
-	return map[string]any{"utc": time.Now().UTC(), "requested_seconds": seconds, "get_status": before.status, "etag_before": before.header.Get("ETag"), "put_status": changed.status, "code": changed.code, "etag_after": changed.header.Get("ETag"), "replay_status": replay.status, "replay_equal": bytes.Equal(changed.body, replay.body), "readback": value}
+	auditResp := p.call(admin, "GET", "/api/v1/admin/audit-events?resource_type=fleet_config&resource_id=00000000-0000-0000-0000-000000000001", nil, nil)
+	var auditList struct {
+		Items []map[string]any `json:"items"`
+	}
+	_ = json.Unmarshal(auditResp.body, &auditList)
+	var latestAudit map[string]any
+	if len(auditList.Items) > 0 {
+		latestAudit = auditList.Items[0]
+	}
+	return map[string]any{
+		"utc":                     time.Now().UTC(),
+		"requested_seconds":       seconds,
+		"get_status":              before.status,
+		"etag_before":             before.header.Get("ETag"),
+		"missing_if_match_status": missingIfMatch.status,
+		"missing_if_match_code":   missingIfMatch.code,
+		"stale_if_match_status":   staleIfMatch.status,
+		"stale_if_match_code":     staleIfMatch.code,
+		"put_status":              changed.status,
+		"code":                    changed.code,
+		"etag_after":              changed.header.Get("ETag"),
+		"replay_status":           replay.status,
+		"replay_equal":            bytes.Equal(changed.body, replay.body),
+		"readback":                value,
+		"latest_audit_event":      latestAudit,
+	}
 }
 func (p *liveProbe) deadlineMatrix(node uuid.UUID, stack *labstack.Stack) {
 	out := map[string]any{"status": "partial", "wall_clock_rollback": map[string]any{"status": "needs operator run", "owner": "operator / w3-devstack-e2e", "missing_export": "disposable-guest wall-clock rollback; container shares the host clock"}, "transport_scope": map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "missing_export": "persistent established TCP and authenticated member UDP echo traffic; probe-only UDP/4443 is not a member transport"}}
 	p.metadata["deadline_matrix"] = out
+	readLease := func() json.RawMessage {
+		var raw []byte
+		if p.db.QueryRow(p.t.Context(), `SELECT jsonb_build_object('lease_id',id,'issued_at',issued_at,'expires_at',expires_at,'duration_seconds',extract(epoch from (expires_at-issued_at))::int,'max_offline_seconds',envelope->'signed'->'max_offline_seconds') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, node).Scan(&raw) != nil {
+			return nil
+		}
+		return json.RawMessage(raw)
+	}
+	out["lease_before_put60"] = readLease()
 	out["fleet_set_60"] = p.fleetMaximum(60)
+	out["lease_immediately_after_put60"] = readLease()
 	defer func() { out["fleet_restore_86400"] = p.fleetMaximum(86400) }()
 	raw, _ := os.ReadFile(filepath.Join(p.state, "config/members.json"))
 	var cfg struct {
@@ -43,7 +81,11 @@ func (p *liveProbe) deadlineMatrix(node uuid.UUID, stack *labstack.Stack) {
 		Reason string `json:"grace_reason"`
 	}
 	_ = json.Unmarshal(raw, &cfg)
-	out["prepared_grace"] = map[string]any{"seconds": cfg.Grace, "reason_present": cfg.Reason != "", "prepare_only": true}
+	startedAt := func(svc string) string {
+		b, _ := exec.CommandContext(p.t.Context(), "docker", "inspect", "--format", "{{.State.StartedAt}}", livePrefix+svc).Output()
+		return strings.TrimSpace(string(b))
+	}
+	out["prepared_grace"] = map[string]any{"seconds": cfg.Grace, "reason_present": cfg.Reason != "", "config_sha256": fmt.Sprintf("%x", sha256.Sum256(raw)), "control_started_at": startedAt("control"), "worker_started_at": startedAt("worker"), "prepare_only": true}
 	// The fake provider must express past_due before a finite grace can project.
 	grace := p.login("secops-deadline-grace", "member")
 	graceEnd := time.Now().UTC().Add(3 * time.Minute).Truncate(time.Second)
@@ -56,7 +98,7 @@ func (p *liveProbe) deadlineMatrix(node uuid.UUID, stack *labstack.Stack) {
 		admin := p.login("e2e-admin", "admin")
 		subject := "secops-deadline-" + kind
 		m := p.login(subject, "member")
-		serviceEnd := time.Now().UTC().Add(160 * time.Second).Truncate(time.Second)
+		serviceEnd := time.Now().UTC().Add(115 * time.Second).Truncate(time.Second)
 		if kind == "lease" {
 			serviceEnd = time.Now().UTC().Add(20 * time.Minute).Truncate(time.Second)
 		}
@@ -89,7 +131,7 @@ func (p *liveProbe) deadlineMatrix(node uuid.UUID, stack *labstack.Stack) {
 			continue
 		}
 		if kind != "lease" {
-			for time.Until(serviceEnd) > 35*time.Second {
+			for time.Until(serviceEnd) > 24*time.Second {
 				time.Sleep(time.Second)
 			}
 		}

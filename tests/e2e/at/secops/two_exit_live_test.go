@@ -39,9 +39,11 @@ func (p *liveProbe) twoExitTraffic(stack *labstack.Stack, primary uuid.UUID, pee
 	}
 	out["node_id"] = second.NodeID
 	out["incarnation_id"] = second.IncarnationID
+	primaryInc := p.metadata["agent_node_incarnation"]
 	p.capacityInput(admin, second.NodeID)
 	p.serving(admin, second.NodeID)
 	out["publication_operation"] = p.metadata["publication_operation"]
+	p.metadata["agent_node_incarnation"] = primaryInc
 	out["observation"] = p.publicationObservation(second.NodeID)
 	chosen := ""
 	for until := time.Now().Add(45 * time.Second); time.Now().Before(until); {
@@ -64,7 +66,18 @@ func (p *liveProbe) twoExitTraffic(stack *labstack.Stack, primary uuid.UUID, pee
 	pair[0].ExitID = old[0][1]
 	pair[1].ExitID = chosen
 	pair[1].NodeService = "node2"
-	proofs := []map[string]any{p.selectedFlow(pair[0]), p.selectedFlow(pair[1])}
+	awaitCounted := func(peer flowPeer) map[string]any {
+		var r map[string]any
+		for until := time.Now().Add(45 * time.Second); time.Now().Before(until); {
+			r = p.selectedFlow(peer)
+			if r["counted"] == true {
+				break
+			}
+			time.Sleep(2 * time.Second)
+		}
+		return r
+	}
+	proofs := []map[string]any{awaitCounted(pair[0]), awaitCounted(pair[1])}
 	out["initial_flows"] = proofs
 	if proofs[0]["counted"] != true || proofs[1]["counted"] != true {
 		out["blocker"] = "two actual exits did not both produce counted flow"

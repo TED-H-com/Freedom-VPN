@@ -1,7 +1,7 @@
-# AT29-deadline-subsets: blocked
+# deadlines — Follow-up 7
 
-Established TCP/UDP and new flows stop at the earliest finite deadline despite control loss, agent/watchdog failure and clock rollback; only a fresh verified policy restores forwarding.
+Status: **blocked** for the stated scope.
 
-Finite paid/grant repeated-HTTPS fault subsets only; inspect each actual status. Grace, short node lease, established TCP/UDP and guest clock rollback remain distinct.
+D-065 short signed lease, earliest service/lease cutoff, finite grace and new-policy recovery; restore86400
 
-[JSON evidence](deadlines.json), source `446b6b0f643586d48859236664800df8c2d1ef64`, run `86e6106a-1be1-4003-9b0f-35a30e9cda12`.
+[Exact measured records](deadlines.json), [summary](summary.md), [remaining requests](requests.md).
