@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { AppRoutes } from '../../App';
+import { apiClient } from '../../api';
 import { SessionProvider } from '../../context/SessionContext';
 import { I18nProvider } from '../../i18n';
 import {
@@ -669,5 +670,125 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     expect(screen.getByTestId('target-detail-candidate-health-null')).toHaveTextContent(
       /尚未回報|Not yet reported/,
     );
+  });
+
+  it('TestD065_AdminSettings_FleetConfigUpdateSub900Warning412Conflict422FieldErrorAndAudit', async () => {
+    const user = userEvent.setup();
+    const { container } = renderAt('/admin/settings', 'admin');
+
+    expect(await screen.findByTestId('admin-settings-page')).toBeInTheDocument();
+    await assertAccessible(container);
+
+    // 1. Shows current max_offline_lease_seconds, default 86400, updated_at, resource_version, and §16.3 copy
+    expect(screen.getByTestId('fleet-config-current-seconds')).toHaveTextContent(
+      '86400 s',
+    );
+    expect(screen.getByTestId('fleet-config-default-seconds')).toHaveTextContent(
+      '86400 s',
+    );
+    expect(screen.getByTestId('fleet-config-resource-version')).toHaveTextContent('1');
+    expect(screen.getByTestId('fleet-config-etag')).toHaveTextContent('ETag: "1"');
+    expect(screen.getByTestId('fleet-config-semantics-copy')).toHaveTextContent('86400');
+
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('fleet-config-semantics-copy')).toHaveTextContent(
+      'applies only to serving leases issued or renewed after the change',
+    );
+    expect(screen.getByTestId('fleet-config-semantics-copy')).toHaveTextContent(
+      'Already issued leases keep their existing value until renewal',
+    );
+    expect(screen.getByTestId('fleet-config-semantics-copy')).toHaveTextContent(
+      '86400 seconds (24 hours) is the §16.3 ceiling, not a recommendation',
+    );
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'zh-TW');
+
+    // 2. Typing < 900 s shows sub-900 warning visibly without blocking submission
+    expect(screen.queryByTestId('fleet-config-sub-900-warning')).toBeNull();
+    const secondsInput = screen.getByTestId('fleet-config-lease-seconds-input');
+    const reasonInput = screen.getByTestId('fleet-config-reason-input');
+
+    await user.clear(secondsInput);
+    await user.type(secondsInput, '600');
+    expect(screen.getByTestId('fleet-config-sub-900-warning')).toBeInTheDocument();
+    expect(screen.getByTestId('fleet-config-submit-btn')).not.toBeDisabled();
+
+    // 3. 422 VALIDATION_FAILED out of range (< 60) shows as a field error
+    await user.clear(secondsInput);
+    await user.type(secondsInput, '30');
+    await user.clear(reasonInput);
+    await user.type(reasonInput, 'Test out of range');
+    await user.click(screen.getByTestId('fleet-config-submit-btn'));
+    expect(await screen.findByTestId('fleet-config-field-error')).toHaveTextContent(
+      'max_offline_lease_seconds',
+    );
+    expect(screen.getByTestId('fleet-config-seconds-field-error')).toBeInTheDocument();
+
+    // 3b. 428 PRECONDITION_REQUIRED (missing If-Match) and 409 IDEMPOTENCY_CONFLICT (reused key with different payload) map through existing error map
+    await expect(
+      apiClient.updateFleetConfig(
+        { max_offline_lease_seconds: 3600, reason: 'Missing If-Match' },
+        null,
+        'missing-if-match-action',
+      ),
+    ).rejects.toMatchObject({
+      status: 428,
+      code: 'PRECONDITION_REQUIRED',
+    });
+
+    // 4. Update to 3600 with reason succeeds (200), updates ETag to "2", and links to /admin/audit?resource_type=fleet_config
+    await user.clear(secondsInput);
+    await user.type(secondsInput, '3600');
+    await user.clear(reasonInput);
+    await user.type(reasonInput, 'Shorten new leases for the AT29 lab.');
+    await user.click(screen.getByTestId('fleet-config-submit-btn'));
+
+    expect(await screen.findByTestId('fleet-config-saved-banner')).toHaveTextContent(
+      '3600',
+    );
+    expect(screen.getByTestId('fleet-config-current-seconds')).toHaveTextContent(
+      '3600 s',
+    );
+    expect(screen.getByTestId('fleet-config-etag')).toHaveTextContent('ETag: "2"');
+
+    // 5. Concurrent update advances server resource_version to "3"; submitting the page form with stale ETag "2" triggers 412 with current_resource_version: "3"
+    await apiClient.updateFleetConfig(
+      { max_offline_lease_seconds: 1800, reason: 'Concurrent operator update' },
+      '"2"',
+      'concurrent-op-action',
+    );
+    await user.clear(secondsInput);
+    await user.type(secondsInput, '7200');
+    await user.clear(reasonInput);
+    await user.type(reasonInput, 'Stale ETag submission');
+    await user.click(screen.getByTestId('fleet-config-submit-btn'));
+
+    expect(await screen.findByTestId('fleet-config-conflict-banner')).toBeInTheDocument();
+    expect(screen.getByTestId('fleet-config-conflict-version')).toHaveTextContent('3');
+    expect(screen.getByTestId('conflict-dialog')).toBeInTheDocument();
+
+    // Reload from conflict dialog loads 1800 and ETag "3"
+    await user.click(screen.getByTestId('conflict-reload-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('fleet-config-current-seconds')).toHaveTextContent(
+        '1800 s',
+      );
+      expect(screen.getByTestId('fleet-config-etag')).toHaveTextContent('ETag: "3"');
+    });
+
+    // 6. Save 3600 again and click the audit link to verify /admin/audit filtered to fleet_config shows fleet_config.update with before/after values
+    await user.clear(secondsInput);
+    await user.type(secondsInput, '3600');
+    await user.clear(reasonInput);
+    await user.type(reasonInput, 'Restore 3600 after reload');
+    await user.click(screen.getByTestId('fleet-config-submit-btn'));
+    const auditLink = await screen.findByTestId('fleet-config-audit-link');
+    expect(auditLink).toHaveAttribute('href', '/admin/audit?resource_type=fleet_config');
+    await user.click(auditLink);
+
+    expect(await screen.findByTestId('admin-audit-page')).toBeInTheDocument();
+    expect(screen.getByTestId('audit-resource-filter')).toHaveValue('fleet_config');
+    expect(screen.getByTestId('audit-table')).toHaveTextContent('fleet_config.update');
+    expect(screen.getByTestId('audit-table')).toHaveTextContent('1800');
+    expect(screen.getByTestId('audit-table')).toHaveTextContent('3600');
   });
 });

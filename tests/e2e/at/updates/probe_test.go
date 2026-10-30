@@ -59,7 +59,7 @@ func (s *updatesFollowup) beginProbeCapture(id string) *updateProbeCapture {
 	}
 	// The root-owned journal is intentionally unreadable to the host user.
 	// Stream read-only snapshots inside our node; never chmod or copy identity.
-	p.readerStop = filepath.Join(s.r.lab.state, "node", "var", "e2e", "updates-probe-reader-stop")
+	p.readerStop = filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e", "updates-probe-reader-stop")
 	_ = os.Remove(p.readerStop)
 	p.reader = exec.CommandContext(s.ctx, "docker", "exec", s.r.lab.node, "sh", "-c", `
  i=0

@@ -1,0 +1,1641 @@
+{
+  "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c",
+  "started_at": "2026-10-30T18:07:10Z",
+  "finished_at": "2026-10-30T18:09:56Z",
+  "source": {
+    "commit": "8a3964e5bdbc397cc5322c58acce9c91d36ab357",
+    "tree_sha256": "0fef194960b8f9f7ef98d22e30ae086e182781c5c29222ccc4b1df7f30cd385e",
+    "dirty": false,
+    "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"
+  },
+  "prefix": "w4-enroll",
+  "port_base": 12000,
+  "image_digests": {
+    "control": "sha256:14d606b2a2dabee749832f603179662161ebb9bf7804466817fe552ef9401592",
+    "worker": "sha256:057f3531233dc26c2bb6006ddba4f99c30f08fc166f128b76ecdf1c1ea8437b7",
+    "node": "sha256:228645164949bf932fb43eab692855229dad9755f63b27e7703df67c6a81398b"
+  },
+  "image_evidence": "immutable running container image IDs",
+  "commands": [
+    {
+      "name": "fresh_teardown",
+      "started_at": "2026-10-30T18:07:10Z",
+      "finished_at": "2026-10-30T18:07:10Z",
+      "exit_code": 0
+    },
+    {
+      "name": "fresh_startup",
+      "started_at": "2026-10-30T18:07:11Z",
+      "finished_at": "2026-10-30T18:07:43Z",
+      "exit_code": 0
+    },
+    {
+      "name": "compile_probe",
+      "started_at": "2026-10-30T18:07:43Z",
+      "finished_at": "2026-10-30T18:07:44Z",
+      "exit_code": 0
+    },
+    {
+      "name": "live_probe",
+      "started_at": "2026-10-30T18:07:44Z",
+      "finished_at": "2026-10-30T18:09:13Z",
+      "exit_code": 0
+    },
+    {
+      "name": "final_teardown",
+      "started_at": "2026-10-30T18:09:13Z",
+      "finished_at": "2026-10-30T18:09:56Z",
+      "exit_code": 0
+    }
+  ],
+  "test_binary_sha256": "be16c1df64fddac681bd581257512fd2f5a283ddf0eda49bcc9a1296b493cdd2",
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "images": 0
+  },
+  "id": "AT06",
+  "status": "blocked",
+  "actual": "{'api_hash_matches': False, 'field': 'changes.after.token_hash', 'operation': 'listAuditEvents', 'owner': 'pki-enroll', 'request': 'ENR-02', 'resource_id': '01a18dff-1633-7ee4-a0c8-57652881a146'}",
+  "requirements": [
+    "ENR01",
+    "ENR02",
+    "SEC01"
+  ],
+  "spec": [
+    "§19 AT06",
+    "§6.1",
+    "§6.2",
+    "§6.3",
+    "§6.4"
+  ],
+  "checks": [
+    {
+      "at": "AT06",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T18:07:43Z"
+    },
+    {
+      "at": "AT06",
+      "name": "serving_baseline",
+      "status": "pass",
+      "detail": {
+        "release_digests": {
+          "artifact_sha256_0.1.0_amd64": "6ca42b2ef4e45bed0c052ed5e09fdd0f2a2194c33cb145bff1cf78df84539cc5",
+          "artifact_sha256_0.1.0_arm64": "0d46338545d74c66bebadfcc0f7332bdb4909e81dd6e313b62929160dc80e914",
+          "manifest_sha256_0.1.0": "476be6ac7b8394d9f052bac1116b8cfcf3afa98bed92b9f53c9ac666b363f7df",
+          "signed_manifest_sha256_0.1.0": "4f7c92a8dc4904cb4352dfa42c7f0fb48e3f26c167f4b10f891518d0729ea11a"
+        },
+        "support_revision": "01a18dff-1601-7612-aa88-9f2a6a866cbe"
+      },
+      "observed_at": "2026-10-30T18:07:47.249809882Z"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "pass",
+      "detail": {
+        "csr_self_signed": true,
+        "incarnation_id": "658afaf6-d9e7-4bd0-aedf-72b713c22868",
+        "proof_input_sha256": "8241d87eef0702cb9b5821401adbc9d07168cda124bb21488dddca9a4eb30d83",
+        "request_sha256": "ac0bb7cfe7c32a68a2c56ac036f29dc5bfc7fae6382ac2b774aa211f12bd1200",
+        "spki_sha256": "0311496f1a2c555410b30280518ac81d066d32dbae3178b8ac2d07de127d7b4a"
+      },
+      "observed_at": "2026-10-30T18:07:47.250113227Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_replay",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 201,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.254082501Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_no_store_replay",
+      "status": "pass",
+      "detail": "no-store",
+      "observed_at": "2026-10-30T18:07:47.254157099Z"
+    },
+    {
+      "at": "AT06",
+      "name": "response_dropped",
+      "status": "pass",
+      "detail": {
+        "client_received_response": false,
+        "observer_http_status": 201,
+        "request_sha256": "ac0bb7cfe7c32a68a2c56ac036f29dc5bfc7fae6382ac2b774aa211f12bd1200"
+      },
+      "observed_at": "2026-10-30T18:07:47.259199106Z"
+    },
+    {
+      "at": "AT06",
+      "name": "same_holder_retry",
+      "status": "pass",
+      "detail": {
+        "certificate_sha256": "da234b23a5bdba667c4cd20b5a3fb6082828fd8cdb5db7f3e8f2bbebad71ed19",
+        "identical_request_sha256": "ac0bb7cfe7c32a68a2c56ac036f29dc5bfc7fae6382ac2b774aa211f12bd1200",
+        "incarnation_id": "658afaf6-d9e7-4bd0-aedf-72b713c22868",
+        "node_id": "01a18dff-1633-7ee5-bccc-86d5edb5b844",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T18:07:47.261807219Z"
+    },
+    {
+      "at": "AT06",
+      "name": "retry_no_store",
+      "status": "pass",
+      "detail": "no-store",
+      "observed_at": "2026-10-30T18:07:47.261881968Z"
+    },
+    {
+      "at": "AT06",
+      "name": "consumed_binding",
+      "status": "pass",
+      "detail": {
+        "bound_spki_sha256": "0311496f1a2c555410b30280518ac81d066d32dbae3178b8ac2d07de127d7b4a",
+        "incarnation_id": "658afaf6-d9e7-4bd0-aedf-72b713c22868",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        },
+        "state": "consumed"
+      },
+      "observed_at": "2026-10-30T18:07:47.263605863Z"
+    },
+    {
+      "at": "AT06",
+      "name": "one_node",
+      "status": "pass",
+      "detail": {
+        "node_count": 1,
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T18:07:47.266048205Z"
+    },
+    {
+      "at": "AT06",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "658afaf6-d9e7-4bd0-aedf-72b713c22868",
+        "node_id": "01a18dff-1633-7ee5-bccc-86d5edb5b844",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T18:07:47.268609021Z"
+    },
+    {
+      "at": "AT06",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "658afaf6-d9e7-4bd0-aedf-72b713c22868",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18dff-1633-7ee5-bccc-86d5edb5b844",
+        "operation": "getNode",
+        "peer_bound": false
+      },
+      "observed_at": "2026-10-30T18:07:47.268702332Z"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.270623725Z"
+    },
+    {
+      "at": "AT06",
+      "name": "enrollment_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "enrollment.consumed",
+          "after_fields": [
+            "reason"
+          ],
+          "audit_event_id": "01a18dff-163a-713e-a89b-a3e164680df2",
+          "before_fields": [
+            "reason"
+          ],
+          "operation_id": "01a18dff-1638-77e0-b4e3-704531b89a6f",
+          "request_id": "01a18dff-1637-7111-abd7-327e55a4cd8d",
+          "resource": {
+            "id": "01a18dff-1633-7ee4-a0c8-57652881a146",
+            "type": "enrollment"
+          },
+          "result": "succeeded"
+        },
+        {
+          "action": "enrollment.created",
+          "after_fields": [
+            "reason"
+          ],
+          "audit_event_id": "01a18dff-1634-7cda-a823-dd0e5db4755a",
+          "before_fields": [
+            "reason"
+          ],
+          "operation_id": null,
+          "request_id": "01a18dff-1632-7dc1-ab5c-ac580839187a",
+          "resource": {
+            "id": "01a18dff-1633-7ee4-a0c8-57652881a146",
+            "type": "enrollment"
+          },
+          "result": "succeeded"
+        }
+      ],
+      "observed_at": "2026-10-30T18:07:47.270738978Z"
+    },
+    {
+      "at": "AT06",
+      "name": "single_consumption_audit",
+      "status": "pass",
+      "detail": {
+        "consumed_events": 1,
+        "resource_id": "01a18dff-1633-7ee4-a0c8-57652881a146"
+      },
+      "observed_at": "2026-10-30T18:07:47.270821212Z"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_token_hash",
+      "status": "blocked",
+      "detail": {
+        "api_hash_matches": false,
+        "field": "changes.after.token_hash",
+        "operation": "listAuditEvents",
+        "owner": "pki-enroll",
+        "request": "ENR-02",
+        "resource_id": "01a18dff-1633-7ee4-a0c8-57652881a146"
+      },
+      "observed_at": "2026-10-30T18:07:47.270890048Z"
+    },
+    {
+      "at": "AT06",
+      "name": "token_only",
+      "status": "pass",
+      "detail": {
+        "error_code": "VALIDATION_FAILED",
+        "http_status": 422,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.272559997Z"
+    },
+    {
+      "at": "AT06",
+      "name": "invalid_proof",
+      "status": "pass",
+      "detail": {
+        "error_code": "VALIDATION_FAILED",
+        "http_status": 422,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.27420352Z"
+    },
+    {
+      "at": "AT06",
+      "name": "bootstrap_requires_mtls",
+      "status": "pass",
+      "detail": {
+        "response": {
+          "error_code": "",
+          "http_status": 0,
+          "transport_error": true
+        },
+        "tls_certificate_required": true
+      },
+      "observed_at": "2026-10-30T18:07:47.275613096Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_race",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 201,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.27929702Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_no_store_race",
+      "status": "pass",
+      "detail": "no-store",
+      "observed_at": "2026-10-30T18:07:47.279440464Z"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "pass",
+      "detail": {
+        "csr_self_signed": true,
+        "incarnation_id": "274685b7-140f-4d5d-967f-1cc76e735411",
+        "proof_input_sha256": "5aac57e23449092e62d1cfa58b8b3219685d02317ce3554943049670ce81a9d8",
+        "request_sha256": "1fe13feaf6ed46e9e1d850484c9e80103d70c988a12e64e6bd809e4282294b46",
+        "spki_sha256": "756457d39c4df7c0ca274fff8eec70c39283272892107b7682081dee80defacf"
+      },
+      "observed_at": "2026-10-30T18:07:47.279757429Z"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "pass",
+      "detail": {
+        "csr_self_signed": true,
+        "incarnation_id": "2b77d2eb-d676-4518-a259-732b9c8fd51e",
+        "proof_input_sha256": "27419f49884f25ab9e45afbbdef0036f994c0cfe29dff2d1cc912c9f51d71f21",
+        "request_sha256": "f7a8df2b32879c539eb048e9600a8b0d66484532cc23a0ed2c3cf836dc1ec63e",
+        "spki_sha256": "cb48e4d13bf16aee05944a0a5c4f11d5e6acd0b80faec8e9dd825210974881c1"
+      },
+      "observed_at": "2026-10-30T18:07:47.28000277Z"
+    },
+    {
+      "at": "AT06",
+      "name": "different_key_race",
+      "status": "pass",
+      "detail": [
+        {
+          "error_code": "ENROLLMENT_KEY_MISMATCH",
+          "http_status": 409,
+          "transport_error": false
+        },
+        {
+          "error_code": "",
+          "http_status": 201,
+          "transport_error": false
+        }
+      ],
+      "observed_at": "2026-10-30T18:07:47.286947855Z"
+    },
+    {
+      "at": "AT06",
+      "name": "race_winner_identity",
+      "status": "pass",
+      "detail": {
+        "incarnation_id": "2b77d2eb-d676-4518-a259-732b9c8fd51e",
+        "node_id": "01a18dff-164d-7e6f-9fc8-5fe71e9d4185"
+      },
+      "observed_at": "2026-10-30T18:07:47.287155195Z"
+    },
+    {
+      "at": "AT06",
+      "name": "consumed_binding",
+      "status": "pass",
+      "detail": {
+        "bound_spki_sha256": "cb48e4d13bf16aee05944a0a5c4f11d5e6acd0b80faec8e9dd825210974881c1",
+        "incarnation_id": "2b77d2eb-d676-4518-a259-732b9c8fd51e",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        },
+        "state": "consumed"
+      },
+      "observed_at": "2026-10-30T18:07:47.290577321Z"
+    },
+    {
+      "at": "AT06",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "2b77d2eb-d676-4518-a259-732b9c8fd51e",
+        "node_id": "01a18dff-164d-7e6f-9fc8-5fe71e9d4185",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T18:07:47.294095382Z"
+    },
+    {
+      "at": "AT06",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "2b77d2eb-d676-4518-a259-732b9c8fd51e",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18dff-164d-7e6f-9fc8-5fe71e9d4185",
+        "operation": "getNode",
+        "peer_bound": false
+      },
+      "observed_at": "2026-10-30T18:07:47.294294416Z"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.297282732Z"
+    },
+    {
+      "at": "AT06",
+      "name": "enrollment_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "enrollment.consumed",
+          "after_fields": [
+            "reason"
+          ],
+          "audit_event_id": "01a18dff-1654-701a-9cbd-432de06299a8",
+          "before_fields": [
+            "reason"
+          ],
+          "operation_id": "01a18dff-1652-7d58-af02-263912514c64",
+          "request_id": "01a18dff-1651-71d1-8927-9e4d36a11d20",
+          "resource": {
+            "id": "01a18dff-164d-7e6e-8e87-a25b7ec82532",
+            "type": "enrollment"
+          },
+          "result": "succeeded"
+        },
+        {
+          "action": "enrollment.created",
+          "after_fields": [
+            "reason"
+          ],
+          "audit_event_id": "01a18dff-164e-74a7-828c-e8df48adefc9",
+          "before_fields": [
+            "reason"
+          ],
+          "operation_id": null,
+          "request_id": "01a18dff-164c-7bd4-b418-a03e7961cfcf",
+          "resource": {
+            "id": "01a18dff-164d-7e6e-8e87-a25b7ec82532",
+            "type": "enrollment"
+          },
+          "result": "succeeded"
+        }
+      ],
+      "observed_at": "2026-10-30T18:07:47.297427124Z"
+    },
+    {
+      "at": "AT06",
+      "name": "single_consumption_audit",
+      "status": "pass",
+      "detail": {
+        "consumed_events": 1,
+        "resource_id": "01a18dff-164d-7e6e-8e87-a25b7ec82532"
+      },
+      "observed_at": "2026-10-30T18:07:47.297534275Z"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_token_hash",
+      "status": "blocked",
+      "detail": {
+        "api_hash_matches": false,
+        "field": "changes.after.token_hash",
+        "operation": "listAuditEvents",
+        "owner": "pki-enroll",
+        "request": "ENR-02",
+        "resource_id": "01a18dff-164d-7e6e-8e87-a25b7ec82532"
+      },
+      "observed_at": "2026-10-30T18:07:47.298148102Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_expiry",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 201,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.303859596Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_no_store_expiry",
+      "status": "pass",
+      "detail": "no-store",
+      "observed_at": "2026-10-30T18:07:47.304041613Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_revocation",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 201,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.309586006Z"
+    },
+    {
+      "at": "AT06",
+      "name": "issue_no_store_revocation",
+      "status": "pass",
+      "detail": "no-store",
+      "observed_at": "2026-10-30T18:07:47.309727212Z"
+    },
+    {
+      "at": "AT06",
+      "name": "revoke_unused",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.313816496Z"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "pass",
+      "detail": {
+        "csr_self_signed": true,
+        "incarnation_id": "2d5f7ff7-7479-493b-8918-adb2d548d905",
+        "proof_input_sha256": "82b73706ace0be24a53121971507110e22faa91ac576fd7d34817d614b1c95c7",
+        "request_sha256": "d6e286f152d794cec6d30a91fe5de5ff3343b28c70052ee635a965764dcc56fe",
+        "spki_sha256": "57a9a655dee8ab6c2b8b676ff8f72e492b4588d75c89807c8d72b9a4c78cdbf7"
+      },
+      "observed_at": "2026-10-30T18:07:47.314303551Z"
+    },
+    {
+      "at": "AT06",
+      "name": "revoked_token",
+      "status": "pass",
+      "detail": {
+        "error_code": "ENROLLMENT_TOKEN_REVOKED",
+        "http_status": 401,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:07:47.315883857Z"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "pass",
+      "detail": {
+        "csr_self_signed": true,
+        "incarnation_id": "d97ea6de-d6fb-4119-9cdd-8a03b0496a28",
+        "proof_input_sha256": "794e603c69d4ca1f9b777149c5ae84986a96d40ea87f2e7ab7dce7f07296c06c",
+        "request_sha256": "9155bd066d20fdb873febfad72647a704b5b68318ce46b9b732ec68ecebb7714",
+        "spki_sha256": "2220931ed3071ca31c796be8415ad85c7b225524e864403b8cacd519c692e666"
+      },
+      "observed_at": "2026-10-30T18:08:48.316408836Z"
+    },
+    {
+      "at": "AT06",
+      "name": "expired_token",
+      "status": "pass",
+      "detail": {
+        "error_code": "ENROLLMENT_TOKEN_EXPIRED",
+        "http_status": 401,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:08:48.319757508Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_control/console",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 20446,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.543060069Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_worker/console",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 5514,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.55458406Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/console",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 0,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.565995053Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/agent.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 321,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.587624773Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/watchdog.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 0,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.610421767Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-service.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3308,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.633022784Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-up.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 10,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.655683176Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/resolver-proxy.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 0,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.677731999Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node2/console",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 0,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.689042695Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node2/agent.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 321,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.712008593Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node2/watchdog.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 0,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.735124446Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node2/netbird-service.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 2009,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.756966704Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node2/netbird-up.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 10,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.777613556Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node2/resolver-proxy.log",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 0,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.798788987Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_current_probe_evidence",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 20040,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.799641735Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/AT06.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 22149,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.800034225Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/AT06.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3320,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.800243259Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/AT07.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 11210,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.800509166Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/AT07.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 1927,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.800701983Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/README.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 391,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.800882185Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/RUN.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 7636,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.801122349Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/api-surface-review.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 4922,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.801378799Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/AT06.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 22149,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.80195015Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/AT06.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3320,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.802201729Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/AT07.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 11210,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.802474505Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/AT07.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 1927,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.802666401Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/RUN.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 127,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.802847883Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/requests.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3266,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.803084649Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/75dbb974-04d2-4e45-a6bd-cfe0d923bd2c/summary.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 502,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.803291986Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/AT06.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 7417,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.803557265Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/AT06.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3178,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.803979977Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/AT07.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 4483,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.804325627Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/AT07.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 1980,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.804499729Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/RUN.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 300,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.804644718Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/requests.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 4441,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.804842293Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/79b89e47-b23f-45f8-a683-28e0557dc1ba/summary.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 572,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.805029281Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/AT06.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 14859,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.806747675Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/AT06.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3179,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.806953734Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/AT07.json",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 8206,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.807256606Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/AT07.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 1981,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.807728531Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/RUN.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 300,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.807903985Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/requests.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 4441,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.808091864Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/history/9db51ea3-d807-449e-a812-cfad739db675/summary.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 572,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.808269907Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/requests.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 3260,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.808461106Z"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_evidence/docs/e2e/at/enrollment/summary.md",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 502,
+        "matches": 0,
+        "needles": 64
+      },
+      "observed_at": "2026-10-30T18:09:13.808655126Z"
+    },
+    {
+      "at": "AT06",
+      "name": "evidence_set_scan",
+      "status": "pass",
+      "detail": {
+        "files_scanned": 30,
+        "read_error": false
+      },
+      "observed_at": "2026-10-30T18:09:13.809109179Z"
+    },
+    {
+      "at": "AT06",
+      "name": "incarnation_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-03 / w3-wire-nodes: getNode.current_incarnation_id is not complete incarnation count/history"
+    },
+    {
+      "at": "AT06",
+      "name": "peer_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-04 / devstack follow-up 12: JoinEnrolledIdentity and EnrollmentPeerInventory are not exported"
+    }
+  ],
+  "prior_checks": [
+    {
+      "at": "AT06",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:15Z",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "response_dropped",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "same_holder_retry",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "one_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "consumed_binding",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "single_consumption_audit",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "incarnation_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-03: admin API exposes current incarnation, not complete incarnation count/history",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "peer_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-04: no documented own-key enrollment join and complete correlated peer readback hook",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_token_hash",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-02: enrollment audit writer exposes reason only; token hash evidence unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "different_key_race",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "race_winner_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "expired_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "revoked_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "token_only",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "invalid_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "bootstrap_requires_mtls",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "retry_no_store",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_control/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_worker/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/agent.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/watchdog.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-service.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-up.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/resolver-proxy.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "response_dropped",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "same_holder_retry",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "one_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "consumed_binding",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "single_consumption_audit",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "incarnation_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-03: admin API exposes current incarnation, not complete incarnation count/history",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "peer_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-04: no documented own-key enrollment join and complete correlated peer readback hook",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_token_hash",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-02: enrollment audit writer exposes reason only; token hash evidence unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "different_key_race",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "race_winner_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "expired_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "revoked_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "token_only",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "invalid_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "bootstrap_requires_mtls",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "retry_no_store",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_control/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_worker/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/agent.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/watchdog.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-service.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-up.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/resolver-proxy.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    }
+  ]
+}

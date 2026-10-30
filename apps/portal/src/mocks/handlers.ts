@@ -6,6 +6,7 @@
 import { http, HttpResponse } from 'msw';
 import type {
   EnrollmentCreateRequest,
+  FleetConfigUpdate,
   GrantCreateRequest,
   MemberGroupCreate,
   MemberPatchRequest,
@@ -1228,6 +1229,162 @@ export const handlers = [
     return HttpResponse.json({
       items,
       next_cursor: null,
+    });
+  }),
+
+  // --- Admin Fleet Configuration (D-065, §16.3) ---
+  http.get('/api/v1/admin/fleet-config', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    return HttpResponse.json(structuredClone(state.fleetConfig), {
+      headers: {
+        ETag: `"${state.fleetConfig.resource_version}"`,
+      },
+    });
+  }),
+
+  http.put('/api/v1/admin/fleet-config', async ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const ifMatch = request.headers.get('If-Match');
+    if (!ifMatch) {
+      return makeErrorResponse(
+        428,
+        'PRECONDITION_REQUIRED',
+        'If-Match header is required.',
+        false,
+        { header: 'If-Match' },
+      );
+    }
+
+    const idemKey = request.headers.get('Idempotency-Key');
+    if (!idemKey) {
+      return makeErrorResponse(
+        400,
+        'MALFORMED_REQUEST',
+        'Idempotency-Key header is required.',
+        false,
+        { header: 'Idempotency-Key' },
+      );
+    }
+
+    const body = (await request.json()) as FleetConfigUpdate;
+    const reasonText = typeof body.reason === 'string' ? body.reason.trim() : '';
+    if (reasonText.length < 1 || reasonText.length > 500) {
+      return makeErrorResponse(
+        422,
+        'VALIDATION_FAILED',
+        'reason must be 1..500 characters',
+        false,
+        { field: 'reason' },
+      );
+    }
+    if (
+      typeof body.max_offline_lease_seconds !== 'number' ||
+      !Number.isInteger(body.max_offline_lease_seconds) ||
+      body.max_offline_lease_seconds < 60 ||
+      body.max_offline_lease_seconds > 86400
+    ) {
+      return makeErrorResponse(
+        422,
+        'VALIDATION_FAILED',
+        'max_offline_lease_seconds must be between 60 and 86400',
+        false,
+        { field: 'max_offline_lease_seconds', min: 60, max: 86400 },
+      );
+    }
+
+    const idemRecordKey = `fleet_config:${idemKey}`;
+    const existingIdem = state.idempotencyRecords[idemRecordKey] as
+      | {
+          status: number;
+          body: {
+            payloadKey: string;
+            config: typeof state.fleetConfig;
+          };
+        }
+      | undefined;
+    const payloadKey = `${body.max_offline_lease_seconds}:${reasonText}`;
+    if (existingIdem) {
+      if (existingIdem.body.payloadKey !== payloadKey) {
+        return makeErrorResponse(
+          409,
+          'IDEMPOTENCY_CONFLICT',
+          'Idempotency-Key was already used with a different request payload.',
+          false,
+        );
+      }
+      return HttpResponse.json(structuredClone(existingIdem.body.config), {
+        status: 200,
+        headers: {
+          ETag: `"${existingIdem.body.config.resource_version}"`,
+        },
+      });
+    }
+
+    if (ifMatch !== `"${state.fleetConfig.resource_version}"`) {
+      return makeErrorResponse(
+        412,
+        'RESOURCE_VERSION_CONFLICT',
+        'Fleet configuration was modified by another request.',
+        false,
+        { current_resource_version: state.fleetConfig.resource_version },
+      );
+    }
+
+    const previousSeconds = state.fleetConfig.max_offline_lease_seconds;
+    const nextVersion = String(BigInt(state.fleetConfig.resource_version) + 1n);
+    const updatedAt = '2026-10-30T16:05:00Z';
+    state.fleetConfig = {
+      max_offline_lease_seconds: body.max_offline_lease_seconds,
+      default_max_offline_lease_seconds: 86400,
+      resource_version: nextVersion,
+      updated_at: updatedAt,
+    };
+
+    state.auditEvents.unshift({
+      audit_event_id: `audit-fleet-config-${nextVersion}`,
+      occurred_at: updatedAt,
+      actor: {
+        type: 'admin',
+        id: '6a7d5389-5347-41a4-9cd7-768e07072254',
+      },
+      action: 'fleet_config.update',
+      resource: {
+        type: 'fleet_config',
+        id: '00000000-0000-0000-0000-000000000001',
+      },
+      request_id: `req-fleet-config-${nextVersion}`,
+      operation_id: null,
+      result: 'succeeded',
+      changes: {
+        before: {
+          max_offline_lease_seconds: previousSeconds,
+        },
+        after: {
+          max_offline_lease_seconds: body.max_offline_lease_seconds,
+          resource_version: nextVersion,
+          updated_at: updatedAt,
+          reason: reasonText,
+        },
+      },
+    });
+
+    state.idempotencyRecords[idemRecordKey] = {
+      status: 200,
+      body: {
+        payloadKey,
+        config: structuredClone(state.fleetConfig),
+      },
+    };
+
+    return HttpResponse.json(structuredClone(state.fleetConfig), {
+      status: 200,
+      headers: {
+        ETag: `"${nextVersion}"`,
+      },
     });
   }),
 

@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -73,7 +74,7 @@ func TestAT06_AT07_Live(t *testing.T) {
 	if os.Getenv("FVPN_E2E") != "1" {
 		t.Skip("requires fresh owned stack through at-enrollment target")
 	}
-	if os.Getenv("FVPN_E2E_PREFIX") != "w4-enroll" || os.Getenv("FVPN_E2E_PORT_BASE") != "66000" {
+	if os.Getenv("FVPN_E2E_PREFIX") != "w4-enroll" || os.Getenv("FVPN_E2E_PORT_BASE") != "12000" {
 		t.Fatal("refusing a stack outside the assigned binding")
 	}
 	path := os.Getenv("FVPN_AT_ENROLLMENT_PROBE")
@@ -106,6 +107,7 @@ func TestAT06_AT07_Live(t *testing.T) {
 	t.Run("AT06", func(t *testing.T) { p.at06(t) })
 	t.Run("AT07", func(t *testing.T) { p.at07(t) })
 	p.scanLogs()
+	p.scanEvidence()
 	for _, c := range p.checks {
 		if c.Status == "fail" {
 			t.Errorf("%s/%s failed; see safe evidence", c.AT, c.Name)
@@ -329,7 +331,23 @@ func (p *probe) current(at string, node, incarnation uuid.UUID) api.NodeDetail {
 	valid := err == nil && r.Status == 200 && json.Unmarshal(r.Body, &detail) == nil
 	inc, incErr := detail.CurrentIncarnationId.Get()
 	p.expect(at, "current_incarnation", valid && incErr == nil && inc == incarnation && detail.NodeId == node, map[string]any{"response": safeResponse(r, err), "node_id": detail.NodeId, "current_incarnation_id": inc})
+	if valid {
+		var fields map[string]json.RawMessage
+		if json.Unmarshal(r.Body, &fields) == nil {
+			peer, peerErr := detail.NetbirdPeerId.Get()
+			p.note(at, "node_api_surface", "pass", map[string]any{"operation": "getNode", "field_names": fieldNames(fields), "node_id": node, "current_incarnation_id": inc, "peer_bound": peerErr == nil && peer != ""})
+		}
+	}
 	return detail
+}
+
+func fieldNames[T any](fields map[string]T) []string {
+	names := make([]string, 0, len(fields))
+	for name := range fields {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }
 
 func (p *probe) audit(token issued) {
@@ -339,23 +357,29 @@ func (p *probe) audit(token issued) {
 		return
 	}
 	consumed, matched := 0, false
+	var observed []map[string]any
 	for _, event := range events.Items {
 		if event.Action == "enrollment.consumed" {
 			consumed++
 		}
 		after, e := event.Changes.After.Get()
+		before, _ := event.Changes.Before.Get()
+		observed = append(observed, map[string]any{"action": event.Action, "result": event.Result,
+			"resource": event.Resource, "audit_event_id": event.AuditEventId, "request_id": event.RequestId,
+			"operation_id": event.OperationId, "before_fields": fieldNames(before), "after_fields": fieldNames(after)})
 		if e == nil {
 			if value, ok := after["token_hash"].(string); ok && value == hash([]byte(token.token)) {
 				matched = true
 			}
 		}
 	}
+	p.note("AT06", "enrollment_audit_fields", "pass", observed)
 	p.expect("AT06", "single_consumption_audit", consumed == 1, map[string]any{"consumed_events": consumed, "resource_id": token.enrollment.EnrollmentId})
 	status := "blocked"
 	if matched {
 		status = "pass"
 	}
-	p.note("AT06", "audit_token_hash", status, map[string]any{"api_hash_matches": matched, "request": "ENR-02", "resource_id": token.enrollment.EnrollmentId})
+	p.note("AT06", "audit_token_hash", status, map[string]any{"api_hash_matches": matched, "request": "ENR-02", "owner": "pki-enroll", "operation": "listAuditEvents", "field": "changes.after.token_hash", "resource_id": token.enrollment.EnrollmentId})
 }
 
 func (p *probe) at07(t *testing.T) {
@@ -375,40 +399,57 @@ func (p *probe) at07(t *testing.T) {
 	}
 	p.current("AT07", first.NodeID, first.IncarnationID)
 	p.current("AT07", second.NodeID, second.IncarnationID)
-	keys := make([]string, 2)
 	images := make([]string, 2)
 	for i, slot := range []string{"node", "node2"} {
-		// Read only the documented PUBLIC cert.pem. Never export key.pem.
-		raw, e := exec.CommandContext(p.ctx, "docker", "exec", "fvpn-w4-enroll-"+slot, "cat", "/var/lib/vpn-node/identity/cert.pem").Output()
-		if e != nil {
-			p.note("AT07", "public_identity", "blocked", "documented public certificate unavailable")
-			return
-		}
-		block, _ := pem.Decode(raw)
-		if block == nil {
-			t.Fatal("public certificate malformed")
-		}
-		cert, e := x509.ParseCertificate(block.Bytes)
-		if e != nil {
-			t.Fatal("public certificate malformed")
-		}
-		identity := []labstack.EnrolledNode{first, second}[i]
-		nodeSAN, incarnationSAN := false, false
-		for _, uri := range cert.URIs {
-			nodeSAN = nodeSAN || uri.String() == "urn:fvpn:node:"+identity.NodeID.String()
-			incarnationSAN = incarnationSAN || uri.String() == "urn:fvpn:incarnation:"+identity.IncarnationID.String()
-		}
-		p.expect("AT07", "certificate_identity_"+slot, nodeSAN && incarnationSAN, map[string]bool{"node_san_matches": nodeSAN, "incarnation_san_matches": incarnationSAN})
-		keys[i] = hash(cert.RawSubjectPublicKeyInfo)
+		// Image provenance only. MachineIdentityFingerprints is the required
+		// devstack export; do not emulate it by reading live identity files.
 		image, e := exec.CommandContext(p.ctx, "docker", "inspect", "--format={{.Image}}", "fvpn-w4-enroll-"+slot).Output()
 		if e != nil {
 			t.Fatal("image digest unavailable")
 		}
 		images[i] = strings.TrimSpace(string(image))
 	}
-	p.expect("AT07", "distinct_first_boot", first.NodeID != second.NodeID && first.IncarnationID != second.IncarnationID && keys[0] != keys[1] && images[0] == images[1] && strings.HasPrefix(images[0], "sha256:"), map[string]any{"node_ids": []uuid.UUID{first.NodeID, second.NodeID}, "incarnation_ids": []uuid.UUID{first.IncarnationID, second.IncarnationID}, "spki_sha256": keys, "image_digests": images})
+	p.expect("AT07", "distinct_api_first_boot", first.NodeID != second.NodeID && first.IncarnationID != second.IncarnationID && images[0] == images[1] && strings.HasPrefix(images[0], "sha256:"), map[string]any{"node_ids": []uuid.UUID{first.NodeID, second.NodeID}, "incarnation_ids": []uuid.UUID{first.IncarnationID, second.IncarnationID}, "image_digests": images})
+	p.nodeAudit(first.NodeID)
+	p.nodeAudit(second.NodeID)
 	// PauseAgent resumes durable identity; it is not an installer rerun or a
 	// usage-ACK hold. No unsupported mutation is substituted here.
+}
+
+func (p *probe) nodeAudit(node uuid.UUID) {
+	r, err := p.call("GET", "/api/v1/admin/audit-events?resource_type=node&resource_id="+node.String()+"&limit=100", nil)
+	var events api.AuditEventList
+	if !p.expect("AT07", "node_audit_read", err == nil && r.Status == 200 && json.Unmarshal(r.Body, &events) == nil && events.NextCursor.IsNull(), safeResponse(r, err)) {
+		return
+	}
+	observed := make([]map[string]any, 0, len(events.Items))
+	for _, event := range events.Items {
+		after, _ := event.Changes.After.Get()
+		before, _ := event.Changes.Before.Get()
+		observed = append(observed, map[string]any{"action": event.Action, "resource": event.Resource,
+			"before_fields": fieldNames(before), "after_fields": fieldNames(after)})
+	}
+	p.note("AT07", "node_audit_fields", "pass", observed)
+}
+
+func (p *probe) scanEvidence() {
+	raw, err := json.Marshal(p.checks)
+	p.scanStream("current_probe_evidence", raw, err)
+	root := filepath.Dir(filepath.Dir(p.stack.StateDir()))
+	count := 0
+	err = filepath.WalkDir(filepath.Join(root, "docs/e2e/at/enrollment"), func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		raw, readErr := os.ReadFile(path)
+		p.scanStream("evidence/"+strings.TrimPrefix(path, root+string(os.PathSeparator)), raw, readErr)
+		count++
+		return readErr
+	})
+	p.expect("AT06", "evidence_set_scan", err == nil && count > 0, map[string]any{"files_scanned": count, "read_error": err != nil})
 }
 
 func (p *probe) scanLogs() {
