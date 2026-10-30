@@ -422,6 +422,13 @@ func (c *Client) DeletePeer(ctx context.Context, bindingKey string) error {
 	if e != nil || !ok {
 		return e
 	}
+	if e = c.deletePeer(ctx, b.ExternalID); e != nil {
+		return e
+	}
+	return c.store.Delete(ctx, c.deployment, "peers", bindingKey)
+}
+
+func (c *Client) deletePeer(ctx context.Context, peer string) error {
 	routes, e := c.list(ctx, "routes")
 	if e != nil {
 		return e
@@ -432,19 +439,19 @@ func (c *Client) DeletePeer(ctx context.Context, bindingKey string) error {
 	}
 	peerGroups := []string{}
 	for _, group := range groups {
-		if slices.Contains(ids(group["peers"]), b.ExternalID) {
+		if slices.Contains(ids(group["peers"]), peer) {
 			peerGroups = append(peerGroups, stringField(group, "id"))
 		}
 	}
 	for _, r := range routes {
-		if stringField(r, "peer") == b.ExternalID || slices.ContainsFunc(ids(r["peer_groups"]), func(id string) bool { return slices.Contains(peerGroups, id) }) {
+		if stringField(r, "peer") == peer || slices.ContainsFunc(ids(r["peer_groups"]), func(id string) bool { return slices.Contains(peerGroups, id) }) {
 			return failure(Conflict)
 		}
 	}
-	if e = c.remove(ctx, "peers", b.ExternalID); e != nil {
+	if e = c.remove(ctx, "peers", peer); e != nil {
 		return e
 	}
-	return c.store.Delete(ctx, c.deployment, "peers", bindingKey)
+	return nil
 }
 func (c *Client) ReadObservedState(ctx context.Context) (ObservedState, error) {
 	s := ObservedState{}
@@ -658,8 +665,8 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 }
 
 // RevokeNodeSetupKey is the explicit recovery path for a lost one-time secret.
-// It does not disconnect enrolled peers (§6.4); use WithdrawExit/DeletePeer for
-// revocation. A replacement uses a NEW authorized enrollment attempt ID.
+// It also deletes a peer proven by this attempt's correlation or retained
+// withdrawal receipt, even before central peer binding (§5.2 / D-055).
 func (c *Client) RevokeNodeSetupKey(ctx context.Context, enrollmentID string) error {
 	if !valid(enrollmentID) {
 		return failure(Invalid)
@@ -688,5 +695,15 @@ func (c *Client) RevokeNodeSetupKey(ctx context.Context, enrollmentID string) er
 			return failure(Unconfirmed)
 		}
 	}
-	return c.removeEnrollmentGroup(ctx, enrollmentID, o)
+	group, err := c.locate(ctx, "groups", enrollmentGroupKey(enrollmentID), stableName("enroll-peer", enrollmentID))
+	if err != nil {
+		return err
+	}
+	if o == nil {
+		if group != nil {
+			return discoveryConflict(reenrollReason)
+		}
+		return nil
+	}
+	return c.removeEnrollmentGroup(ctx, enrollmentID, o, group, "", true)
 }

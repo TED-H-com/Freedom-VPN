@@ -25,12 +25,13 @@ type job struct {
 	issued, validUntil         *time.Time
 	manifestHash               string
 	resultID                   *uuid.UUID
+	attemptRelease             *uuid.UUID
 }
 
 func readJob(ctx context.Context, tx pgx.Tx, id uuid.UUID) (job, error) {
 	var j job
 	var gen string
-	e := tx.QueryRow(ctx, `SELECT j.id,j.node_id,j.release_id,j.target_id,t.batch_id,j.execution_incarnation_id,j.generation::text,j.attempt,j.state,j.issued_at,j.authorization_valid_until,encode(r.manifest_hash,'hex'),j.result_id FROM update_jobs j LEFT JOIN update_targets t ON t.id=j.target_id JOIN releases r ON r.id=j.release_id WHERE j.id=$1 FOR UPDATE OF j`, id).Scan(&j.id, &j.nodeID, &j.releaseID, &j.target, &j.batch, &j.incarnation, &gen, &j.attempt, &j.state, &j.issued, &j.validUntil, &j.manifestHash, &j.resultID)
+	e := tx.QueryRow(ctx, `SELECT j.id,j.node_id,j.release_id,j.target_id,t.batch_id,j.execution_incarnation_id,j.generation::text,j.attempt,j.state,j.issued_at,j.authorization_valid_until,encode(r.manifest_hash,'hex'),j.result_id,(j.observed_evidence->>'attempt_release_id')::uuid FROM update_jobs j LEFT JOIN update_targets t ON t.id=j.target_id JOIN releases r ON r.id=j.release_id WHERE j.id=$1 FOR UPDATE OF j`, id).Scan(&j.id, &j.nodeID, &j.releaseID, &j.target, &j.batch, &j.incarnation, &gen, &j.attempt, &j.state, &j.issued, &j.validUntil, &j.manifestHash, &j.resultID, &j.attemptRelease)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return j, apierr.New(apierr.ResourceNotFound, "Update job does not exist")
 	}
@@ -106,7 +107,7 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 			}
 			// §17.4: an agent ahead of the restored central generation requires an
 			// explicit new batch, never an automatic fleet-default downgrade.
-			if n.observedGeneration > n.generation {
+			if n.observedHighWater > n.generation {
 				return apierr.New(apierr.StaleGeneration, "Agent generation requires restore reconciliation")
 			}
 			gen, e := n.generation.Add(1)
@@ -129,7 +130,7 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 				return e
 			}
 		}
-		if n.observedGeneration > n.generation {
+		if n.observedHighWater > n.generation {
 			return apierr.New(apierr.StaleGeneration, "Agent generation requires restore reconciliation")
 		}
 		// A disruptive older transaction finishes before the newest desired work.
@@ -164,7 +165,7 @@ func (s *Service) NodeUpdateIntent(ctx context.Context, i Identity) (*Work, erro
 		now := time.Now().UTC()
 		until := now.Add(s.config.AuthorizationTTL)
 		var issued time.Time
-		e = tx.QueryRow(ctx, `UPDATE update_jobs SET issued_at=coalesce(issued_at,$2),authorization_valid_until=$3,state=CASE WHEN state='waiting_online' THEN 'queued' ELSE state END WHERE id=$1 RETURNING issued_at,authorization_valid_until`, current.id, now, until).Scan(&issued, &until)
+		e = tx.QueryRow(ctx, `UPDATE update_jobs SET observed_evidence=CASE WHEN issued_at IS NULL THEN observed_evidence||jsonb_build_object('attempt_release_id',$4::uuid) ELSE observed_evidence END,issued_at=coalesce(issued_at,$2),authorization_valid_until=$3,state=CASE WHEN state='waiting_online' THEN 'queued' ELSE state END WHERE id=$1 RETURNING issued_at,authorization_valid_until`, current.id, now, until, n.current).Scan(&issued, &until)
 		if e != nil {
 			return e
 		}

@@ -35,6 +35,7 @@ export const en: Record<TranslationKey, string> = {
   'nav.admin.heading': 'Admin Area (§18.1)',
   'nav.admin.overview': 'Overview',
   'nav.admin.nodes': 'Nodes',
+  'nav.admin.groups': 'Member & Exit Groups',
   'nav.admin.addNode': 'Add Node Enrollment',
   'nav.admin.updates': 'Releases & Fleet Update',
   'nav.admin.members': 'Members',
@@ -565,4 +566,68 @@ export const en: Record<TranslationKey, string> = {
   'admin.policies.createRevisionTitle': 'Create Policy Revision',
   'admin.updates.manifestUrlLabel': 'Manifest URL (Trusted Release Store)',
   'admin.updates.manifestJsonLabel': 'Signed Manifest Envelope JSON',
+
+  // Follow-up 7: Member Groups Admin (D-057), Node Checks & Threat Feed Status (D-058)
+  'admin.groups.title': 'Member & Exit Groups Management (D-057)',
+  'admin.groups.subtitle':
+    'Manage logical member and exit groups (MemberGroup) and attached exit counts. Member-facing views never expose internal group IDs (§18.4, D-057).',
+  'admin.groups.col.code': 'Group Code (code)',
+  'admin.groups.col.name': 'Display Name (name)',
+  'admin.groups.col.groupId': 'Group ID (group_id)',
+  'admin.groups.col.exitCount': 'Attached Exits (exit_count)',
+  'admin.groups.empty': 'No member groups found',
+  'admin.groups.createTitle': 'Create Member Group (POST /api/v1/admin/groups)',
+  'admin.groups.codeLabel':
+    'Group Code (code, lowercase alphanumeric + hyphens, 2–64 chars)',
+  'admin.groups.nameLabel': 'Group Name (name, 1–120 chars)',
+  'admin.groups.createBtn': 'Create Group',
+  'admin.groups.conflictError':
+    'Duplicate group code or name (409 STATE_CONFLICT): please choose a unique code and name.',
+  'admin.groups.validationCodeError':
+    'Invalid group code (422 /code): must be 2–64 lowercase alphanumeric characters or hyphens.',
+  'admin.groups.validationNameError':
+    'Invalid group name (422 /name): must be 1–120 non-empty characters.',
+
+  'admin.nodeDetail.attachedGroups.title': 'Exit Attached Groups (D-057)',
+  'admin.nodeDetail.attachedGroups.none': 'No groups attached',
+  'admin.nodeDetail.attachedGroups.selectLabel':
+    'Select attached groups to replace with publication intent (PUT /publication group_ids, requires If-Match ETag)',
+  'admin.nodeDetail.attachedGroups.simulateConflictBtn':
+    'Simulate Concurrent Publication / Group Conflict (Trigger PUT /publication 412)',
+
+  'admin.nodeDetail.checks.title': 'Node Local Safety & Health Checks (D-058)',
+  'admin.nodeDetail.checks.col.name': 'Check Name (name)',
+  'admin.nodeDetail.checks.col.status': 'Status (status)',
+  'admin.nodeDetail.checks.col.errorCode': 'Error Code (error_code)',
+  'admin.nodeDetail.checks.col.detail': 'Diagnostic Detail (detail, ≤500 chars)',
+  'admin.nodeDetail.checks.col.observedAt': 'Observed At (observed_at)',
+  'admin.nodeDetail.checks.empty': 'No node checks reported yet',
+
+  'admin.dns.threatFeedStatus.title':
+    'Threat Feed Refresh & Last-Good Status (§12.5, D-058)',
+  'admin.dns.threatFeedStatus.bootstrapEmpty':
+    'Bootstrap empty (initial fetch not yet completed, last_result=never)',
+  'admin.dns.threatFeedStatus.lastGood':
+    'Healthy: serving verified last-good content (last_good / last_result=success)',
+  'admin.dns.threatFeedStatus.failingRetainingLastGood':
+    'Refresh failing: retaining and serving verified last-good content (failing — retaining last_good)',
+  'admin.dns.threatFeedStatus.failingNoLastGood':
+    'Refresh failing and no verified last-good content is available (failing — no last_good available)',
+  'admin.dns.threatFeedStatus.col.feedCode': 'Feed Definition (code / name)',
+  'admin.dns.threatFeedStatus.col.state': 'Refresh Status',
+  'admin.dns.threatFeedStatus.col.approvedSha256':
+    'Approved SHA-256 (approved_content_sha256)',
+  'admin.dns.threatFeedStatus.col.lastGoodSha256':
+    'Last-Good SHA-256 / Rules / Age (last_good)',
+  'admin.dns.threatFeedStatus.col.failures':
+    'Consecutive Failures / Last Error (consecutive_failures / last_error)',
+  'admin.dns.threatFeedStatus.col.schedule':
+    'Last Attempt / Next Due (last_attempt_at / next_due_at)',
+
+  'admin.dns.threatFeedForm.updateIntervalLabel':
+    'Feed Refresh Interval Seconds (update_interval_seconds, default 21600, bounds 300–604800)',
+  'admin.dns.threatFeedForm.intervalOutOfRange':
+    'Refresh interval (update_interval_seconds) out of contract bounds: must be between 300 and 604800 seconds.',
+  'admin.dns.threatFeedForm.bypassClientCheckLabel':
+    'Bypass client-side bounds check to test server 422 field validation (Send raw value to server)',
 };

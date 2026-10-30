@@ -76,8 +76,12 @@ func TestID01_ScopedIdentitySessionRotationAndExpiry(t *testing.T) {
 	}
 	identity.ClientScope = "other-client"
 	p, e := store.Login(t.Context(), identity, "other", "", time.Hour, uuid.New())
-	if e != nil || p.ID == id {
-		t.Fatal("cross-client identity merged", e)
+	if e != nil || p.ID != id {
+		t.Fatalf("client_scope rotation created duplicate member: got %v want %v (err=%v)", p.ID, id, e)
+	}
+	var bindings int
+	if e := pool.QueryRow(t.Context(), `SELECT count(*) FROM identity_bindings WHERE issuer=$1 AND subject=$2`, identity.Issuer, identity.Subject).Scan(&bindings); e != nil || bindings != 1 {
+		t.Fatalf("expected 1 identity_binding after client_scope rotation, got %d (err=%v)", bindings, e)
 	}
 	if _, e := pool.Exec(t.Context(), `UPDATE browser_sessions SET created_at=clock_timestamp()-interval '2 hours',absolute_expires_at=clock_timestamp()-interval '1 hour' WHERE token_hash=$1`, digest("other")); e != nil {
 		t.Fatal(e)

@@ -20,6 +20,9 @@ const (
 	counterInput   = "ctin"
 	counterBase    = "ctbase"
 	counterNoDown  = "ctnodn"
+	// Probe counters are diagnostic. They are not device usage (§13.9).
+	counterProbeUp   = "probe_up"
+	counterProbeDown = "probe_down"
 )
 
 func usageCounter(direction string, device uuid.UUID) string {
@@ -65,7 +68,8 @@ func parseDeviceCounter(name string) (device uuid.UUID, direction, namespace str
 func diagnosticNamespace(name string) bool {
 	switch name {
 	case counterV6, counterUnknown, counterUnkDown, counterDenied, counterHost,
-		counterBadDNS, counterInvalid, counterInput, counterBase, counterNoDown:
+		counterBadDNS, counterInvalid, counterInput, counterBase, counterNoDown,
+		counterProbeUp, counterProbeDown:
 		return true
 	default:
 		return false

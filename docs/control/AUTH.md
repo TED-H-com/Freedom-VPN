@@ -4,8 +4,8 @@ These browser routes live outside the `/api/v1` contract:
 
 | Route | Behavior |
 |---|---|
-| `GET /auth/login` | Creates a short-lived, browser-bound PostgreSQL flow; redirects to the configured issuer using Authorization Code, S256 PKCE, state, nonce and `max_age=0`. |
-| `GET /auth/callback` | Consumes the matching one-use state/browser binding, exchanges the code, verifies ID-token signature/issuer/audience/expiry/nonce, resolves identity and rotates the session. Redirects to `/`. |
+| `GET /auth/login` | Creates a short-lived, browser-bound PostgreSQL flow (recording the requested `role=member\|admin`, default `member`); redirects to the configured issuer using Authorization Code, S256 PKCE, state, nonce and `max_age=0`. |
+| `GET /auth/callback` | Consumes the matching one-use state/browser binding, exchanges the code, verifies ID-token signature/issuer/audience/`azp`/expiry/nonce, enforces the per-subject login completion limit, resolves identity for the flow's requested role and rotates the session. Redirects to `/`. |
 | `POST /auth/logout` | Requires the current session, exact Origin and `X-CSRF-Token`; deletes the server session and expires its cookie. Returns 204. |
 | `GET /auth/session` | Returns 200 with `{"authenticated":false}` for absent/expired sessions. Otherwise returns authenticated, role, display_label, mfa_verified and member_id only for members. Returns the CSRF token in `X-CSRF-Token`. |
 
@@ -31,28 +31,75 @@ OIDC callback chooses the role from verified IdP claims and rotates only its rol
 cookie. The old `__Host-fvpn-session` cookie is no longer accepted; sign in again.
 There remains one short-lived login flow cookie per browser.
 
-Identity is `(issuer, client scope, subject)`. Email is neither requested nor used
-for linking. A new identity, pending_payment member and audit event are created
-atomically; a scoped advisory lock prevents concurrent first logins from creating
-duplicate members. Administrators use `admin_identities` and `admin_sessions`
-(migration 00101); admin logins never insert `members` or `identity_bindings`.
-Admin and member identities remain distinct even for the same scoped subject.
-The session role comes solely from the configured ID-token claim. A matching string or string
-array claim grants the Admin role only when configured AMR/ACR MFA evidence is
-present. Missing MFA returns 403. Admin auth_time is required; recent authentication
-is enforced again for writes. Closed accounts cannot log in or use existing
-member sessions. Further account linking is out of scope.
+Identity is canonical `(issuer, subject)` (D-052 F-04). `client_scope` is recorded
+as diagnostic metadata (last OIDC client scope seen) and is never part of identity:
+an existing `identity_bindings` row with a different `client_scope` is reused, its
+`verified_at` (and `client_scope` when mutable) is updated in the same transaction,
+and `identity_binding.proof_updated` (`after: {"identity_binding_id","reason":"proof_updated"}`)
+is appended on the D-029 allowlist without raw subject or issuer fields. Email is
+neither requested nor used for linking. A new identity, `pending_payment` member
+and `member.register` audit event are created atomically only when no `(issuer, subject)`
+binding exists; a canonical `(issuer, subject)` advisory lock plus a savepoint-backed
+insert-or-select retry on unique violation (`identity_bindings_subject_key` or
+`identity_bindings_issuer_subject_key`) prevents concurrent first logins from creating
+duplicate members across schema versions. Administrators use `admin_identities` and
+`admin_sessions` (migration 00101), resolved and updated by canonical `(issuer, subject)`
+under the same rule; admin logins never insert `members` or `identity_bindings`.
+Admin and member identities remain distinct even for the same `(issuer, subject)`.
+`GET /auth/login` accepts an optional `?role=member|admin` query parameter (or
+infers `admin` from `return_to=/admin...`, defaulting to `member`) and binds the
+requested role to the login flow so a dual-role account can sign in as a member
+and create its `members` and `identity_bindings` rows (D-052, F-11). Requesting
+`admin` requires the configured ID-token admin claim (returning 403 `FORBIDDEN`
+when absent), `auth_time`, and configured AMR/ACR MFA evidence (returning 403
+when MFA is missing). Recent authentication is enforced again for admin writes.
+`/auth/callback` also validates the OIDC `azp` (Authorized Party) claim per OIDC
+Core §3.1.3.7 rules 4–5 / RFC 9068 (F-05): whenever `azp` is present or `aud`
+contains more than one audience, `azp` must equal `oidc_client_id`; otherwise the
+callback returns 401 `UNAUTHENTICATED` and records a token-free `session.login`
+denial audit (`reason: "azp_mismatch"`). Closed accounts cannot log in or use
+existing member sessions. Further account linking is out of scope.
 
 Every successful `PostgresStore.Login` (session creation or rotation) appends
-`session.login` in the same transaction. Logout appends `session.logout` with its
-session deletion. Members use `member:<member UUID>`. Administrators use
-`admin_identity:<admin principal UUID>` (revision 3, D-037), referencing the
-administrator's auth-store identity. This rule also applies to administrator
-identity subjects in session-revocation or role-denial audits; never infer the
-subject's identity or role from a cookie name supplied by the browser.
-The actor is the role plus its UUID; no subject, token or display label enters the
-audit diff. The auth package emits only these closed-set, enum-conformant session
-actions through `db.AppendAudit` because the audit HTTP reader imports auth.
+`session.login` in the same transaction. When a login on a shared browser
+replaces an existing session belonging to a different principal (`oldID != newID`),
+`PostgresStore.Login` also appends `session.logout` with `after: {"reason":"superseded"}`
+for the superseded principal in the same transaction (F-11). Logout appends
+`session.logout` with its session deletion. Members use `member:<member UUID>`.
+Administrators use `admin_identity:<admin principal UUID>` (revision 3, D-037),
+referencing the administrator's auth-store identity. This rule also applies to
+administrator identity subjects in session-revocation or role-denial audits;
+never infer the subject's identity or role from a cookie name supplied by the
+browser. The actor is the role plus its UUID; no subject, token or display label
+enters the audit diff. The auth package emits only these closed-set, enum-conformant
+session actions through `db.AppendAudit` because the audit HTTP reader imports auth.
+
+## Login burst and per-subject rate limiters (D-060)
+
+Browser authentication applies two complementary token-bucket limiters that can
+be raised in a lab via `internal/config` (`docs/control/config.example.json`)
+and can never be disabled (startup validation rejects zero burst or zero refill):
+
+1. **Per-source-address limiter (`login_rate`, default `burst: 40`, `per_second: 1` / 60 per minute):**
+   Enforced in `httpapi.BrowserRoutesWithMetrics` before handler execution and
+   keyed on the direct peer IP address (`"login:" + host` for `/auth/login`,
+   `/auth/callback` and `/auth/token`; `"session:" + host` for `/auth/session`
+   and `/auth/logout`, ignoring untrusted forwarding headers). Production members
+   commonly share a single source address behind carrier-grade NAT or enterprise
+   gateways, and one OIDC sign-in takes two requests (`GET /auth/login` plus
+   `GET /auth/callback`); a burst of 40 allows 20 concurrent member sign-ins from
+   one shared address to complete while keeping session bootstrap/logout in a
+   separate per-address bucket.
+2. **Per-subject completion limiter (`login_subject_per_minute`, default `10` per minute):**
+   Enforced in `Browser.callback` after OIDC token verification and keyed on the
+   authenticated scoped subject `(issuer, client_id, sub)`. This bounds repeated
+   login completions by a single account without starving other members who share
+   the same NAT address.
+
+Every HTTP 429 from either limiter includes `Retry-After` and the fixed
+`RATE_LIMITED` error code (`apierr.RateLimited`), and increments
+`fvpn_control_rate_limited_total{class,limiter}` on the control Prometheus
+registry (`class="login"` or `"session"`, `limiter="address"` or `"subject"`).
 
 The production config requires HTTPS issuer/origin. Tests use a local signed-token
 httptest provider with PKCE validation and negative signature, issuer, audience,

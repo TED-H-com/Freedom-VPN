@@ -210,3 +210,12 @@ binds a peer: transient absence retries within the worker budget; conflicts
 freeze the incarnation and retain a safe operation/node/audit reason. Existing
 bootstrap encryption, single delivery and revocation fences remain unchanged.
 See [worker discovery and failure semantics](../nodes/WIRING.md#worker-jobs-and-read-back).
+
+D-055 withdrawal now handles revocation before discovery too: a fresh one-use key
+and a sole non-user, non-ephemeral correlation member permit peer deletion, with
+GET 404 required before the correlation group is discarded. Multiple/unsafe
+members preserve the group and fail with an operator-visible fixed reason.
+After discovery, the durable attempt→peer withdrawal receipt preserves the same
+proof through lost central commits. Revoking only the key is never reported as
+having disconnected an enrolled peer (§5.2). Legacy one-group keys require explicit
+revoke/re-enrollment; their shared staging membership cannot identify one node.

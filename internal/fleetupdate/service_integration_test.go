@@ -34,6 +34,17 @@ type lab struct {
 
 func newLab(t *testing.T, auditActions ...string) *lab {
 	t.Helper()
+	l := newLabState(t)
+	t.Cleanup(func() {
+		releasetest.AssertLedger(t, l.s.pool, l.f.Validator, append(auditActions, "release.register", "release_support.activate")...)
+	})
+	return l
+}
+
+// newLabState is also used by cross-domain tests whose observation audits are
+// outside the release writer allowlist. Domain ledger checks stay in newLab.
+func newLabState(t *testing.T) *lab {
+	t.Helper()
 	pool := dbtest.New(t)
 	f := releasetest.New(t)
 	r := &releases.Service{Pool: pool, Validator: f.Validator}
@@ -54,9 +65,6 @@ func newLab(t *testing.T, auditActions ...string) *lab {
 		t.Fatal(e)
 	}
 	l.support([]uuid.UUID{l.old, l.new}, []uuid.UUID{l.old, l.new}, []uuid.UUID{})
-	t.Cleanup(func() {
-		releasetest.AssertLedger(t, pool, f.Validator, append(auditActions, "release.register", "release_support.activate")...)
-	})
 	return l
 }
 func (l *lab) support(approved, serving, revoked []uuid.UUID) {
@@ -406,6 +414,7 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	l.report(i, w, "applying")
 	rollback := result(w, "rolled_back")
 	rollback.CurrentReleaseId.Set(l.old)
+	rollback.PreviousReleaseId.Set(w.Intent.ReleaseId)
 	code := api.ErrorCode("HEALTH_CHECK_FAILED")
 	rollback.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, rollback)); e != nil {
@@ -421,6 +430,7 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	l.report(i, w, "applying")
 	rollback = result(w, "rolled_back")
 	rollback.CurrentReleaseId.Set(l.old)
+	rollback.PreviousReleaseId.Set(w.Intent.ReleaseId)
 	rollback.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, rollback)); !errors.Is(e, apierr.New(apierr.MinimumVersionViolation, "")) {
 		t.Fatal(e)

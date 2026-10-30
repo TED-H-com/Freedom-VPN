@@ -142,7 +142,11 @@ func TransportWithMetrics(log *slog.Logger, next http.Handler, requests *prometh
 			b.status = 200
 		}
 		if strings.HasPrefix(r.URL.Path, "/auth/") || strings.HasPrefix(r.URL.Path, "/api/v1/") {
-			b.header.Set("Cache-Control", "no-store")
+			if b.status == http.StatusOK && meta.route == "GET /api/v1/agent/resolver-documents/{document_id}" {
+				b.header.Set("Cache-Control", "private, max-age=0")
+			} else {
+				b.header.Set("Cache-Control", "no-store")
+			}
 		}
 		b.header.Set("X-Request-ID", id)
 		b.header.Set("X-Content-Type-Options", "nosniff")
@@ -212,6 +216,7 @@ type Options struct {
 	Agents        auth.AgentAuthenticator
 	AgentListener bool
 	Commands      *Commands
+	RateLimited   *prometheus.CounterVec
 }
 
 // New validates the immutable contract once; security metadata comes from tags,
@@ -293,6 +298,9 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		ingressClass, _, _ := classify(op, o.Config)
 		peer, _, _ := net.SplitHostPort(r.RemoteAddr)
 		if delay := ingress.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
+			if o.RateLimited != nil {
+				o.RateLimited.WithLabelValues(ingressClass, "address").Inc()
+			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
@@ -335,6 +343,13 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			bucket = ingress
 		}
 		if delay := bucket.allow(class+":"+key, bounds); delay > 0 {
+			if o.RateLimited != nil {
+				limiterKind := "subject"
+				if p.Role == "" {
+					limiterKind = "address"
+				}
+				o.RateLimited.WithLabelValues(class, limiterKind).Inc()
+			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
@@ -507,12 +522,29 @@ func matchingIdentity(v any, p auth.Principal) bool {
 // BrowserRoutes bounds login discovery/token work and session bootstrap. The key
 // is the direct peer address; untrusted proxy forwarding headers are ignored.
 func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
+	return BrowserRoutesWithMetrics(c, next, nil)
+}
+
+// BrowserRoutesWithMetrics bounds browser authentication and session routes using
+// Config.LoginRate (D-060) and records HTTP 429s by endpoint class and limiter.
+func BrowserRoutesWithMetrics(c config.Config, next http.Handler, rateLimited *prometheus.CounterVec) http.Handler {
+	rate := c.LoginRate
+	if rate.PerSecond <= 0 || rate.Burst < 1 {
+		rate = config.Defaults().LoginRate
+	}
 	lim := &limiter{entries: map[string]bucketState{}, max: c.MaxRatePrincipals}
 	gate := make(chan struct{}, c.MaxConcurrent)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = apierr.TrackResponse(w)
 		host, _, _ := net.SplitHostPort(r.RemoteAddr)
-		if d := lim.allow(host, c.AnonymousRate); d > 0 {
+		class := "login"
+		if r.URL.Path == "/auth/session" || r.URL.Path == "/auth/logout" {
+			class = "session"
+		}
+		if d := lim.allow(class+":"+host, rate); d > 0 {
+			if rateLimited != nil {
+				rateLimited.WithLabelValues(class, "address").Inc()
+			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login request rate exceeded.").WithRetryAfter(d))
 			return
 		}
@@ -520,6 +552,9 @@ func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 		case gate <- struct{}{}:
 			defer func() { <-gate }()
 		default:
+			if rateLimited != nil {
+				rateLimited.WithLabelValues(class, "address").Inc()
+			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login concurrency exceeded.").WithRetryAfter(time.Second))
 			return
 		}

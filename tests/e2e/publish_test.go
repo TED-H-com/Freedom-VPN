@@ -76,9 +76,22 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 		return
 	}
 	noteNode(&rec, detail.Body)
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	capReply, capErr := admin.call(ctx, "PATCH", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String(), capacity, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": detail.Header.Get("ETag")})
+	rec.Observations = append(rec.Observations, Observation{Name: "capacity_patch", Detail: httpDetail(capReply, capErr)}, Observation{Name: "capacity_input", Detail: `TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model`})
+	if capErr != nil || (capReply.Status != 200 && capReply.Status != 202) {
+		r.record(rec)
+		return
+	}
+	detail, err = admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String(), nil, nil)
+	if err != nil || detail.Status != 200 {
+		r.record(rec)
+		return
+	}
 	etag := detail.Header.Get("ETag")
+	rec.Observations = append(rec.Observations, Observation{Name: "request", Detail: `{"publication_intent":"published","group_ids":["` + r.groupID.String() + `"],"reason":"e2e acceptance publish"}; If-Match=` + etag})
 	put, err := admin.call(ctx, "PUT", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String()+"/publication", api.PublicationRequest{
-		PublicationIntent: api.PublicationIntentPublished, Reason: "e2e acceptance publish",
+		GroupIds: &[]uuid.UUID{r.groupID}, PublicationIntent: api.PublicationIntentPublished, Reason: "e2e acceptance publish",
 	}, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": etag})
 	rec.Observations = append(rec.Observations, Observation{Name: "put", Detail: httpDetail(put, err)})
 	if err != nil {

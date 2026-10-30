@@ -9,15 +9,18 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/oauth2"
 )
 
@@ -29,13 +32,27 @@ type BrowserConfig struct {
 	Issuer, ClientID, ClientSecret, Origin, AdminClaim, AdminValue string
 	MFAAMR, MFAACR                                                 []string
 	Idle, Absolute, LoginTTL, RecentAuth                           time.Duration
+	SubjectPerMinute                                               int
+	MaxRatePrincipals                                              int
+	RateLimited                                                    *prometheus.CounterVec
 }
+
+type subjectState struct {
+	tokens float64
+	last   time.Time
+}
+
 type Browser struct {
-	config   BrowserConfig
-	store    Store
-	oauth    oauth2.Config
-	verifier *oidc.IDTokenVerifier
-	client   *http.Client
+	config        BrowserConfig
+	store         Store
+	oauth         oauth2.Config
+	verifier      *oidc.IDTokenVerifier
+	client        *http.Client
+	mu            sync.Mutex
+	subjectPerMin int
+	maxSubjects   int
+	subjects      map[string]*subjectState
+	rateLimited   *prometheus.CounterVec
 }
 
 func NewBrowser(ctx context.Context, c BrowserConfig, s Store, client *http.Client) (*Browser, error) {
@@ -49,7 +66,103 @@ func NewBrowser(ctx context.Context, c BrowserConfig, s Store, client *http.Clie
 	if e != nil {
 		return nil, errors.New("OIDC discovery failed")
 	}
-	return &Browser{config: c, store: s, client: client, oauth: oauth2.Config{ClientID: c.ClientID, ClientSecret: c.ClientSecret, Endpoint: provider.Endpoint(), RedirectURL: c.Origin + "/auth/callback", Scopes: []string{oidc.ScopeOpenID, "profile"}}, verifier: provider.Verifier(&oidc.Config{ClientID: c.ClientID})}, nil
+	subjectPerMin := c.SubjectPerMinute
+	if subjectPerMin <= 0 {
+		subjectPerMin = 10
+	}
+	maxSubjects := c.MaxRatePrincipals
+	if maxSubjects <= 0 {
+		maxSubjects = 10000
+	}
+	return &Browser{
+		config:        c,
+		store:         s,
+		client:        client,
+		oauth:         oauth2.Config{ClientID: c.ClientID, ClientSecret: c.ClientSecret, Endpoint: provider.Endpoint(), RedirectURL: c.Origin + "/auth/callback", Scopes: []string{oidc.ScopeOpenID, "profile"}},
+		verifier:      provider.Verifier(&oidc.Config{ClientID: c.ClientID}),
+		subjectPerMin: subjectPerMin,
+		maxSubjects:   maxSubjects,
+		subjects:      map[string]*subjectState{},
+		rateLimited:   c.RateLimited,
+	}, nil
+}
+
+// SetRateLimit updates the per-subject login completion limit (D-060) and optional
+// 429 counter metric. Non-positive limits keep the current setting.
+func (b *Browser) SetRateLimit(subjectPerMinute, maxPrincipals int, counter *prometheus.CounterVec) {
+	if b == nil {
+		return
+	}
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if subjectPerMinute > 0 {
+		b.subjectPerMin = subjectPerMinute
+	}
+	if maxPrincipals > 0 {
+		b.maxSubjects = maxPrincipals
+	}
+	if counter != nil {
+		b.rateLimited = counter
+	}
+}
+
+func (b *Browser) allowSubject(key string) time.Duration {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if b.subjectPerMin <= 0 {
+		b.subjectPerMin = 10
+	}
+	if b.maxSubjects <= 0 {
+		b.maxSubjects = 10000
+	}
+	if b.subjects == nil {
+		b.subjects = map[string]*subjectState{}
+	}
+	now := time.Now()
+	perSecond := float64(b.subjectPerMin) / 60.0
+	burst := float64(b.subjectPerMin)
+	st, ok := b.subjects[key]
+	if !ok {
+		if len(b.subjects) >= b.maxSubjects {
+			var oldestKey string
+			var oldest time.Time
+			for k, v := range b.subjects {
+				if now.Sub(v.last) > 10*time.Minute {
+					delete(b.subjects, k)
+					continue
+				}
+				if oldestKey == "" || v.last.Before(oldest) {
+					oldestKey, oldest = k, v.last
+				}
+			}
+			if len(b.subjects) >= b.maxSubjects && oldestKey != "" {
+				delete(b.subjects, oldestKey)
+			}
+		}
+		b.subjects[key] = &subjectState{tokens: burst - 1, last: now}
+		return 0
+	}
+	st.tokens = min(burst, st.tokens+now.Sub(st.last).Seconds()*perSecond)
+	st.last = now
+	if st.tokens >= 1 {
+		st.tokens--
+		return 0
+	}
+	return max(time.Second, time.Duration((1-st.tokens)/perSecond*float64(time.Second)))
+}
+
+func (b *Browser) auditRejection(ctx context.Context, reason string) {
+	slog.WarnContext(ctx, "oidc callback rejected", "reason", reason)
+	auditor, ok := b.store.(loginRejectionAuditor)
+	if !ok {
+		return
+	}
+	rid, _ := apierr.RequestIDFromContext(ctx)
+	requestID, _ := uuid.Parse(rid)
+	if requestID == uuid.Nil {
+		requestID = uuid.Must(uuid.NewV7())
+	}
+	_ = auditor.AuditLoginRejection(ctx, reason, requestID)
 }
 func randomToken() string {
 	b := make([]byte, 32)
@@ -110,7 +223,21 @@ func (b *Browser) Register(m *http.ServeMux) {
 }
 func (b *Browser) login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
-	f := Flow{State: randomToken(), Browser: randomToken(), Nonce: randomToken(), Verifier: oauth2.GenerateVerifier(), Expires: time.Now().UTC().Add(b.config.LoginTTL)}
+	var requestedRole Role
+	if values, explicit := r.URL.Query()["role"]; explicit {
+		if len(values) != 1 || (values[0] != string(Admin) && values[0] != string(Member)) {
+			apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Role must be admin or member."))
+			return
+		}
+		requestedRole = Role(values[0])
+	} else if rt := r.URL.Query().Get("return_to"); rt != "" {
+		if rt == "/admin" || strings.HasPrefix(rt, "/admin/") {
+			requestedRole = Admin
+		} else {
+			requestedRole = Member
+		}
+	}
+	f := Flow{State: randomToken(), Browser: randomToken(), Nonce: randomToken(), Verifier: oauth2.GenerateVerifier(), Role: requestedRole, Expires: time.Now().UTC().Add(b.config.LoginTTL)}
 	if e := b.store.SaveFlow(r.Context(), f); e != nil {
 		apierr.Write(w, r, apierr.New(apierr.DependencyUnavailable, "Login unavailable."))
 		return
@@ -154,6 +281,14 @@ func (b *Browser) callback(w http.ResponseWriter, r *http.Request) {
 		fail()
 		return
 	}
+	if _, hasAzp := claims["azp"]; hasAzp || len(id.Audience) > 1 {
+		var azp string
+		if json.Unmarshal(claims["azp"], &azp) != nil || azp != b.config.ClientID {
+			b.auditRejection(r.Context(), "azp_mismatch")
+			fail()
+			return
+		}
+	}
 	var amr []string
 	var acr, label string
 	var authTime int64
@@ -161,13 +296,23 @@ func (b *Browser) callback(w http.ResponseWriter, r *http.Request) {
 	_ = json.Unmarshal(claims["acr"], &acr)
 	_ = json.Unmarshal(claims["name"], &label)
 	_ = json.Unmarshal(claims["auth_time"], &authTime)
-	role := Member
 	var roles []string
 	var roleString string
 	_ = json.Unmarshal(claims[b.config.AdminClaim], &roles)
 	_ = json.Unmarshal(claims[b.config.AdminClaim], &roleString)
-	if roleString == b.config.AdminValue || slices.Contains(roles, b.config.AdminValue) {
-		role = Admin
+	hasAdminClaim := roleString == b.config.AdminValue || slices.Contains(roles, b.config.AdminValue)
+	hasMemberClaim := roleString == string(Member) || slices.Contains(roles, string(Member))
+	role := f.Role
+	if role == "" {
+		if hasAdminClaim && !hasMemberClaim {
+			role = Admin
+		} else {
+			role = Member
+		}
+	}
+	if role == Admin && !hasAdminClaim {
+		apierr.Write(w, r, apierr.New(apierr.Forbidden, "Administrator role required."))
+		return
 	}
 	mfa := acr != "" && slices.Contains(b.config.MFAACR, acr)
 	for _, a := range amr {
@@ -189,6 +334,16 @@ func (b *Browser) callback(w http.ResponseWriter, r *http.Request) {
 	}
 	if role == Admin && !mfa {
 		apierr.Write(w, r, apierr.New(apierr.Forbidden, "Administrator MFA required."))
+		return
+	}
+	if delay := b.allowSubject(id.Issuer + "\x00" + b.config.ClientID + "\x00" + id.Subject); delay > 0 {
+		b.mu.Lock()
+		counter := b.rateLimited
+		b.mu.Unlock()
+		if counter != nil {
+			counter.WithLabelValues("login", "subject").Inc()
+		}
+		apierr.Write(w, r, apierr.New(apierr.RateLimited, "Rate limit exceeded.").WithRetryAfter(delay))
 		return
 	}
 	if len(label) > 200 {

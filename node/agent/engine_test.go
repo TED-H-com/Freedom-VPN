@@ -88,7 +88,8 @@ func newRig(t *testing.T) *rig {
 	cfg := Config{
 		StateDir: filepath.Join(dir, "state"), IdentityDir: filepath.Join(dir, "identity"),
 		JournalDir: filepath.Join(dir, "journal"), LockPath: filepath.Join(dir, "update.lock"),
-		ControlURL: srv.URL, ServerCAFile: filepath.Join(dir, "ca.pem"), TrustBundle: filepath.Join(dir, "trust.json"),
+		UpdaterJournal: filepath.Join(dir, "journal", "journal.db"),
+		ControlURL:     srv.URL, ServerCAFile: filepath.Join(dir, "ca.pem"), TrustBundle: filepath.Join(dir, "trust.json"),
 		DesiredStatePath: filepath.Join(dir, "state", "desired-state.json"),
 		HeartbeatPath:    filepath.Join(dir, "heartbeat"),
 		Datapath:         DatapathConfig{MemberIngress: "fv-fh", Uplink: "fv-ih", SNAT: "192.0.2.37"},
