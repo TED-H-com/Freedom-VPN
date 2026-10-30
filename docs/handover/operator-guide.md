@@ -124,9 +124,9 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}"
 ```
 
-### 2.3 OpenAPI Contract Inventory (`44` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
+### 2.3 OpenAPI Contract Inventory (`46` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
 
-`contracts/openapi.yaml` (OpenAPI `1.4.0`, revision 8) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
+`contracts/openapi.yaml` (OpenAPI `1.5.0`, revision 9) defines **46 HTTP operations** across `/api/v1`. Forty-four are wired in `apps/control` on `main`. `getFleetConfig` and `updateFleetConfig` (`GET`/`PUT /api/v1/admin/fleet-config`, D-065) are defined and not implemented in this revision:
 - **Member Groups (`GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, `D-057`, `D-059`)**:
   `CreateAdminGroup` writes an immutable `member_groups` row (unique `code` and `name`), records a typed `group.create` audit event on `member_group:<id>`, and stores the idempotent `201 MemberGroup` receipt in one transaction (`replay` returns the original `201` body). `ListAdminGroups` orders by `code`, supports exact `code` filtering and cursor pagination, and counts every attached exit in `exit_count` (including unpublished or offline exits).
 - **Authenticated Resolver Document Delivery (`GET /api/v1/agent/resolver-documents/{document_id}`, `D-056`)**:
@@ -511,7 +511,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID
     "reason": "7-day courtesy access while billing issue is resolved"
   }'
 ```
-*(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 44-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or asynchronous withdrawal can be requested via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
+*(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 46-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or asynchronous withdrawal can be requested via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
 
 ### 7.3 Identity Continuity, Client Rotation and Duplicate Pre-Check (`D-052`, `#134`, `#137`, `#139`, `docs/control/AUTH.md`, `docs/members/README.md`)
 

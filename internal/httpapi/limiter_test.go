@@ -7,13 +7,27 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// setLimiterClock installs now as the token-bucket clock for this test.
+func setLimiterClock(t *testing.T, now func() time.Time) {
+	t.Helper()
+	prev := limiterNow
+	limiterNow = now
+	t.Cleanup(func() { limiterNow = prev })
+}
+
 func TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets(t *testing.T) {
+	// One spent ingress token refills in 1 ms at 1000/s. Advance the limiter
+	// clock by 1µs per request so the sweep stays short of that refill: the
+	// tail is not idle-full, and the original address is not evicted.
+	now := time.Date(2026, 10, 30, 17, 0, 0, 0, time.UTC)
+	setLimiterClock(t, func() time.Time { return now })
 	c := config.Defaults()
 	c.MaxRatePrincipals = 3
 	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
@@ -30,6 +44,7 @@ func TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets(t *testing.T) {
 		t.Fatal(e)
 	}
 	invoke := func(ip string, other bool) *httptest.ResponseRecorder {
+		now = now.Add(time.Microsecond)
 		r := httptest.NewRequest("GET", "/api/v1/admin/nodes", nil)
 		r.RemoteAddr = ip + ":1234"
 		if other {

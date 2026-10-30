@@ -32,8 +32,9 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		return RenderPlan{}, err
 	}
 	host := mergePrefixes(m.HostV4)
-	if m.Probe != nil && m.Datapath.SNAT.Is4() {
-		// The node's SNAT address is host material even when HostV4 omitted it.
+	if m.Datapath.SNAT.Is4() {
+		// The node's SNAT address is host material even when HostV4 omitted it,
+		// with or without a probe exception.
 		host = mergePrefixes(append(host, netip.PrefixFrom(m.Datapath.SNAT, 32)))
 	}
 	probeSec, holdProbe, err := probeSeconds(m, state)

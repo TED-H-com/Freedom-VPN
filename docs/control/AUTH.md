@@ -87,8 +87,21 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
 
 1. **Per-source-address limiter (`login_rate`, default `burst: 40`, `per_second: 1` / 60 per minute):**
    Enforced in `httpapi.BrowserRoutesWithMetrics` before handler execution.
-   The key is only the connection address (`r.RemoteAddr`). Forwarding headers
-   (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) and the source port are ignored.
+   The connection principal is the TCP peer (`r.RemoteAddr`) when
+   `trusted_proxies` is empty, which is the default, and whenever that peer
+   is outside the configured CIDRs. `X-Forwarded-For` is read only after the
+   TCP peer matches a CIDR in `trusted_proxies`. The walk starts at the right,
+   skips entries that are themselves inside a trusted CIDR, and stops at the
+   first remaining address. At most 64 entries are examined. A missing header,
+   or a window of only trusted hops, keeps the TCP peer. A later header line
+   was appended by the next hop and is further to the right than an earlier
+   line. Entries are trimmed. A port suffix (`198.51.100.7:443`) or brackets
+   (`[2001:db8::1]`, `[2001:db8::1]:443`) is parsed as an address. The source
+   port is not part of the key. `X-Real-IP` and RFC 7239 `Forwarded` are not
+   read, including from a trusted peer. `Forwarded` has a structured grammar
+   that is easy to mis-parse into a bucket the client chose; the proxies in
+   this deployment append `X-Forwarded-For`. A trusted proxy that sends only
+   `Forwarded` stays in the TCP peer's bucket.
    IPv4, including an IPv4-mapped IPv6 address, is one bucket per address.
    IPv6 is one bucket per /64 prefix, so one subscriber prefix cannot fill
    `max_rate_principals` (default 10000) with a distinct bucket per /128.
@@ -98,21 +111,36 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
    `/auth/callback`, and any other auth path, including `/auth/token`) use
    `"login:" + key`. `/auth/session` and `/auth/logout` use `"session:" + key`,
    a separate bucket with the same address rule.
-   A connection address that does not parse as IPv4 or IPv6 fails closed with
-   HTTP 429 `RATE_LIMITED` and `Retry-After` of at least one second. That
-   request is not placed in a shared empty-host bucket and does not occupy a
-   principal slot. The same 429 increments
+   A TCP peer or a chosen forwarding entry that does not parse as IPv4 or IPv6
+   fails closed with HTTP 429 `RATE_LIMITED` and `Retry-After` of at least one
+   second. That request is not placed in a shared empty-host bucket and does
+   not occupy a principal slot. An unparseable entry is not replaced by an
+   entry further left. The same 429 increments
    `fvpn_control_rate_limited_total{class,limiter="address"}`.
-   The anonymous class table and each class's ingress table derive that same
-   address key (IPv4 per address, IPv6 per /64). Each table is its own map, so
-   the key inside a table is the connection principal. Login and session routes
-   still share one map and distinguish `login:` and `session:` keys.
+   The anonymous class table and each class's ingress table on the public
+   listener derive that same address key (IPv4 per address, IPv6 per /64).
+   Each table is its own map, so the key inside a table is the connection
+   principal. Login and session routes still share one map and distinguish
+   `login:` and `session:` keys. The agent listener does not read
+   `X-Forwarded-For`, even when its TCP peer is listed in `trusted_proxies`.
+   It must not sit behind an address-rewriting proxy. If it does, client
+   certificates still authenticate the node and ingress keys are the proxy
+   address. mTLS subject keys stay the route class plus the node scope.
+   The login and session token buckets use this principal. The login
+   concurrency gate stays one process-wide gate of `max_concurrent`.
    Production members commonly share a single source address behind
    carrier-grade NAT or enterprise gateways, and one OIDC sign-in takes two
    requests (`GET /auth/login` plus `GET /auth/callback`); a burst of 40 allows
    20 concurrent member sign-ins from one shared IPv4 address, or from one
    IPv6 /64, to complete while keeping session bootstrap and logout in a
-   separate bucket.
+   separate bucket. Behind a trusted proxy that address is the derived client
+   principal, so each distinct client address has its own burst.
+   A proxy that connects from several addresses is several CIDRs in
+   `trusted_proxies` (each address as a /32, or one covering prefix). The
+   shortest accepted prefix is /8 for IPv4 and /32 for IPv6. `0.0.0.0/0`,
+   `::/0`, and any shorter prefix are rejected: trusting the world lets any
+   peer choose its bucket. Write an IPv4 proxy as an IPv4 CIDR. An address
+   that falls inside a trusted CIDR is a hop, so list proxy addresses only.
 2. **Per-subject completion limiter (`login_subject_per_minute`, default `10` per minute):**
    Enforced in `Browser.callback` after OIDC token verification and keyed on the
    authenticated scoped subject `(issuer, client_id, sub)`. This bounds repeated
@@ -131,7 +159,11 @@ class. The counter does not move for a body-size 413 or a JSON 400.
 API ingress is one table per class (`browser`, `agent`, `heartbeat`, `lease`,
 `usage`, `anonymous`), each capped at `max_rate_principals` (default 10,000).
 Enrollment and webhooks also use a separate anonymous class table with the same
-cap. Authenticated subjects use another table, keyed by node or session. On the
+cap. Authenticated subjects use another table, keyed by node or session. That
+subject key does not use `X-Forwarded-For`. On the public listener the
+pre-authentication address is the connection principal above, including a
+client taken from `X-Forwarded-For` when the TCP peer is a configured trusted
+proxy. The agent listener always keys ingress by the TCP peer. On the
 agent listener, machine authentication runs before any insert, so a request
 without a verified client certificate occupies no slot. IPv6 keying stays /64.
 One /48 contains 65,536 /64s and can fill the anonymous ingress table and the

@@ -807,9 +807,23 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 		"nftables": []any{
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "forward", "type": "filter", "hook": "forward", "prio": -150, "policy": "drop"}},
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "comment": fmt.Sprintf("fvpn_generation=%d fvpn_metering=%s", m.Generation, MeteringVersion), "expr": []any{map[string]any{"match": map[string]any{"left": "never", "right": "never"}}}}},
+			// The allow-set drop stays the first drop. TestVerifyServing replaces that one drop.
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
 				map[string]any{"match": map[string]any{"op": "!=", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "saddr"}}, "right": "@allowed_v4"}},
 				map[string]any{"counter": map[string]any{"name": "ctunku"}},
+				map[string]any{"drop": nil},
+			}}},
+			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "daddr"}}, "right": "@resolver_v4"}},
+				map[string]any{"counter": map[string]any{"name": "ctbadns"}},
+				map[string]any{"drop": nil},
+			}}},
+			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "daddr"}}, "right": "@denied_v4"}},
+				map[string]any{"drop": nil},
+			}}},
+			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "daddr"}}, "right": "@host_v4"}},
 				map[string]any{"drop": nil},
 			}}},
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
@@ -818,6 +832,16 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 				map[string]any{"counter": map[string]any{"name": up}},
 				map[string]any{"mangle": map[string]any{"key": map[string]any{"meta": map[string]any{"key": "priority"}}, "value": classid}},
 				map[string]any{"accept": nil},
+			}}},
+			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "!=", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "daddr"}}, "right": "@allowed_v4"}},
+				map[string]any{"counter": map[string]any{"name": "ctunkd"}},
+				map[string]any{"drop": nil},
+			}}},
+			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "!=", "left": map[string]any{"ct": map[string]any{"key": "state"}}, "right": []any{"established", "related"}}},
+				map[string]any{"counter": map[string]any{"name": "ctnodn"}},
+				map[string]any{"drop": nil},
 			}}},
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.Uplink}},
@@ -831,6 +855,10 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 				map[string]any{"match": map[string]any{"left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.MemberIngress}},
 				map[string]any{"drop": nil},
 			}}},
+			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "input", "expr": []any{
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "saddr"}}, "right": "100.64.0.0/10"}},
+				map[string]any{"drop": nil},
+			}}},
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "output", "type": "filter", "hook": "output", "prio": -150, "policy": "accept"}},
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "postrouting", "type": "nat", "hook": "postrouting", "prio": 100, "policy": "accept"}},
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "postrouting", "expr": []any{
@@ -839,6 +867,8 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 			}}},
 			map[string]any{"counter": map[string]any{"family": "inet", "table": "fvpn", "name": up, "packets": 1, "bytes": 100}},
 			map[string]any{"counter": map[string]any{"family": "inet", "table": "fvpn", "name": dn, "packets": 1, "bytes": 100}},
+			map[string]any{"set": map[string]any{"family": "inet", "table": "fvpn", "name": "allowed_v4"}},
+			resolverSetFixture(m),
 		},
 	}
 	raw, err := json.Marshal(doc)

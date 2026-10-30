@@ -851,6 +851,21 @@ func (e FairUseStatusState) Valid() bool {
 	}
 }
 
+// Defines values for FleetConfigDefaultMaxOfflineLeaseSeconds.
+const (
+	FleetConfigDefaultMaxOfflineLeaseSecondsN86400 FleetConfigDefaultMaxOfflineLeaseSeconds = 86400
+)
+
+// Valid indicates whether the value is a known member of the FleetConfigDefaultMaxOfflineLeaseSeconds enum.
+func (e FleetConfigDefaultMaxOfflineLeaseSeconds) Valid() bool {
+	switch e {
+	case FleetConfigDefaultMaxOfflineLeaseSecondsN86400:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ForwardingBlockReason.
 const (
 	ForwardingBlockReasonClockUntrusted         ForwardingBlockReason = "clock_untrusted"
@@ -3233,6 +3248,41 @@ type FieldError struct {
 	Reason string `json:"reason"`
 }
 
+// FleetConfig Singleton fleet configuration (D-065, §16.3). The row id is
+// `00000000-0000-0000-0000-000000000001`. `resource_version` is the strong
+// ETag value without the surrounding quotes.
+type FleetConfig struct {
+	// DefaultMaxOfflineLeaseSeconds Read-only recommended default (§16.3). Always 86400. Not accepted on PUT.
+	DefaultMaxOfflineLeaseSeconds *FleetConfigDefaultMaxOfflineLeaseSeconds `json:"default_max_offline_lease_seconds,omitempty"`
+
+	// MaxOfflineLeaseSeconds Seconds copied onto leases issued or renewed after this value is
+	// stored. Already issued leases keep `max_offline_seconds` until
+	// renewal. 60 is the test-lab floor. 86400 is the §16.3 ceiling
+	// (每次服務租約最長 24 小時), not a recommendation. The portal must warn
+	// when the value is below 900.
+	MaxOfflineLeaseSeconds int `json:"max_offline_lease_seconds"`
+
+	// ResourceVersion Monotonic version of the fleet configuration row. The ETag is `"<resource_version>"`.
+	ResourceVersion decstr.U64 `json:"resource_version"`
+
+	// UpdatedAt Time of the last accepted write.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// FleetConfigDefaultMaxOfflineLeaseSeconds Read-only recommended default (§16.3). Always 86400. Not accepted on PUT.
+type FleetConfigDefaultMaxOfflineLeaseSeconds int
+
+// FleetConfigUpdate Replace `max_offline_lease_seconds` (D-065). `reason` uses the same
+// bounds as the other admin reasons (`ReasonRequest`).
+type FleetConfigUpdate struct {
+	// MaxOfflineLeaseSeconds Next value copied onto leases issued or renewed after this write.
+	// Below 60 or above 86400 is 422 VALIDATION_FAILED.
+	MaxOfflineLeaseSeconds int `json:"max_offline_lease_seconds"`
+
+	// Reason Audited reason for the change.
+	Reason string `json:"reason"`
+}
+
 // FleetReleaseState Fleet target and serving policy (§13.2, §15.4 fleet_config). Target version and minimum serving set are separate (UPD04).
 type FleetReleaseState struct {
 	FleetDefaultReleaseId nullable.Nullable[openapi_types.UUID] `json:"fleet_default_release_id"`
@@ -4494,7 +4544,9 @@ type ServingLease struct {
 	IssuedAt time.Time          `json:"issued_at"`
 	LeaseId  openapi_types.UUID `json:"lease_id"`
 
-	// MaxOfflineSeconds configured_max_offline_lease; recommended default 24 hours (§16.3).
+	// MaxOfflineSeconds Seconds copied from fleet configuration at issuance or renewal (§16.3).
+	// A later `PUT /admin/fleet-config` does not rewrite this field. 86400 is
+	// the ceiling and the recommended default.
 	MaxOfflineSeconds int                       `json:"max_offline_seconds"`
 	Members           []MemberLease             `json:"members"`
 	NodeId            openapi_types.UUID        `json:"node_id"`
@@ -5343,6 +5395,21 @@ type RevokeEnrollmentParams struct {
 	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
 }
 
+// UpdateFleetConfigParams defines parameters for UpdateFleetConfig.
+type UpdateFleetConfigParams struct {
+	// IfMatch Strong ETag of the resource as last read, `"<resource_version>"` (§14.5).
+	// Missing: 428 PRECONDITION_REQUIRED. Mismatch: 412
+	// RESOURCE_VERSION_CONFLICT with details.current_resource_version.
+	IfMatch IfMatch `json:"If-Match"`
+
+	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+	// route and key. Same key and same validated payload return the same resource
+	// or operation; same key and a different payload return 409
+	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+	// header: 400 MALFORMED_REQUEST.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
 // ListAdminGroupsParams defines parameters for ListAdminGroups.
 type ListAdminGroupsParams struct {
 	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
@@ -5700,6 +5767,9 @@ type CreateEnrollmentJSONRequestBody = EnrollmentCreateRequest
 
 // RevokeEnrollmentJSONRequestBody defines body for RevokeEnrollment for application/json ContentType.
 type RevokeEnrollmentJSONRequestBody = ReasonRequest
+
+// UpdateFleetConfigJSONRequestBody defines body for UpdateFleetConfig for application/json ContentType.
+type UpdateFleetConfigJSONRequestBody = FleetConfigUpdate
 
 // CreateAdminGroupJSONRequestBody defines body for CreateAdminGroup for application/json ContentType.
 type CreateAdminGroupJSONRequestBody = MemberGroupCreate

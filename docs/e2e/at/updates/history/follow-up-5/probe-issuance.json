@@ -1,0 +1,267 @@
+{
+  "run_id": "743c186d-5765-43e9-8b40-7839be178e13",
+  "at": "2026-10-30T08:35:19Z",
+  "source_commit": "dd72ed4e43e2be21a852e6741d8caa06a8f6ad48",
+  "scenarios": {
+    "AT23": {
+      "actual_updater_config": {
+        "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+        "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+        "desired_trust": "/etc/vpn-node/trust.json",
+        "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+        "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+        "mtls_ca": "/etc/vpn-node/ca.pem",
+        "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+        "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+        "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+        "platform": {
+          "architecture": "amd64",
+          "control_api_major": 1,
+          "os_id": "ubuntu",
+          "os_version": "24.04",
+          "policy_schema": 1,
+          "state_schema": 1,
+          "updater_version": "1.0.0",
+          "usage_schema": 1
+        },
+        "release_trust": "/etc/vpn-node/trust.json",
+        "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+        "start_command": [
+          "/usr/local/bin/agent-service.sh",
+          "start"
+        ],
+        "stop_command": [
+          "/usr/local/bin/agent-service.sh",
+          "stop"
+        ]
+      },
+      "agent_config_exists": false,
+      "agent_config_path": "/etc/vpn-node/agent.json",
+      "config_load_invalid_probe_peer": false,
+      "configurations_read_in_node": {
+        "/etc/vpn-node/updater-recover.json": {
+          "config": {
+            "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+            "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+            "desired_trust": "/etc/vpn-node/trust.json",
+            "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+            "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+            "mtls_ca": "/etc/vpn-node/ca.pem",
+            "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+            "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+            "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+            "platform": {
+              "os_id": "ubuntu",
+              "os_version": "24.04",
+              "architecture": "amd64",
+              "updater_version": "1.0.0",
+              "control_api_major": 1,
+              "policy_schema": 1,
+              "usage_schema": 1,
+              "state_schema": 1
+            },
+            "release_trust": "/etc/vpn-node/trust.json",
+            "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+            "start_command": [
+              "/usr/local/bin/agent-service.sh",
+              "start"
+            ],
+            "stop_command": [
+              "/usr/local/bin/agent-service.sh",
+              "stop"
+            ]
+          },
+          "readable": true
+        },
+        "/var/lib/vpn-node/e2e/updater.json": {
+          "config": {
+            "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+            "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+            "desired_trust": "/etc/vpn-node/trust.json",
+            "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+            "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+            "mtls_ca": "/etc/vpn-node/ca.pem",
+            "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+            "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+            "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+            "platform": {
+              "architecture": "amd64",
+              "control_api_major": 1,
+              "os_id": "ubuntu",
+              "os_version": "24.04",
+              "policy_schema": 1,
+              "state_schema": 1,
+              "updater_version": "1.0.0",
+              "usage_schema": 1
+            },
+            "release_trust": "/etc/vpn-node/trust.json",
+            "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+            "start_command": [
+              "/usr/local/bin/agent-service.sh",
+              "start"
+            ],
+            "stop_command": [
+              "/usr/local/bin/agent-service.sh",
+              "stop"
+            ]
+          },
+          "readable": true
+        },
+        "/var/lib/vpn-node/e2e/updater.json.done": {
+          "readable": false
+        }
+      },
+      "finding": "no probe peer in lab",
+      "fresh_challenges": [],
+      "has_probe_peer": false,
+      "omission_logs": [],
+      "stderr_readable": true
+    },
+    "AT25": {
+      "actual_updater_config": {
+        "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+        "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+        "desired_trust": "/etc/vpn-node/trust.json",
+        "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+        "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+        "mtls_ca": "/etc/vpn-node/ca.pem",
+        "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+        "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+        "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+        "platform": {
+          "architecture": "amd64",
+          "control_api_major": 1,
+          "os_id": "ubuntu",
+          "os_version": "24.04",
+          "policy_schema": 1,
+          "state_schema": 1,
+          "updater_version": "1.0.0",
+          "usage_schema": 1
+        },
+        "release_trust": "/etc/vpn-node/trust.json",
+        "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+        "start_command": [
+          "/usr/local/bin/agent-service.sh",
+          "start"
+        ],
+        "stop_command": [
+          "/usr/local/bin/agent-service.sh",
+          "stop"
+        ]
+      },
+      "agent_config_exists": false,
+      "agent_config_path": "/etc/vpn-node/agent.json",
+      "challenge_observation": "no fresh challenge during pre-health tampered-archive rejection",
+      "config_load_invalid_probe_peer": false,
+      "configurations_read_in_node": {
+        "/etc/vpn-node/updater-recover.json": {
+          "config": {
+            "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+            "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+            "desired_trust": "/etc/vpn-node/trust.json",
+            "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+            "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+            "mtls_ca": "/etc/vpn-node/ca.pem",
+            "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+            "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+            "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+            "platform": {
+              "os_id": "ubuntu",
+              "os_version": "24.04",
+              "architecture": "amd64",
+              "updater_version": "1.0.0",
+              "control_api_major": 1,
+              "policy_schema": 1,
+              "usage_schema": 1,
+              "state_schema": 1
+            },
+            "release_trust": "/etc/vpn-node/trust.json",
+            "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+            "start_command": [
+              "/usr/local/bin/agent-service.sh",
+              "start"
+            ],
+            "stop_command": [
+              "/usr/local/bin/agent-service.sh",
+              "stop"
+            ]
+          },
+          "readable": true
+        },
+        "/var/lib/vpn-node/e2e/updater.json": {
+          "config": {
+            "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+            "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+            "desired_trust": "/etc/vpn-node/trust.json",
+            "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+            "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+            "mtls_ca": "/etc/vpn-node/ca.pem",
+            "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+            "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+            "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+            "platform": {
+              "architecture": "amd64",
+              "control_api_major": 1,
+              "os_id": "ubuntu",
+              "os_version": "24.04",
+              "policy_schema": 1,
+              "state_schema": 1,
+              "updater_version": "1.0.0",
+              "usage_schema": 1
+            },
+            "release_trust": "/etc/vpn-node/trust.json",
+            "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+            "start_command": [
+              "/usr/local/bin/agent-service.sh",
+              "start"
+            ],
+            "stop_command": [
+              "/usr/local/bin/agent-service.sh",
+              "stop"
+            ]
+          },
+          "readable": true
+        },
+        "/var/lib/vpn-node/e2e/updater.json.done": {
+          "config": {
+            "boot_id": "f953fa3b-8057-44af-94bc-727d704898ef",
+            "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+            "desired_trust": "/etc/vpn-node/trust.json",
+            "incarnation_id": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
+            "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+            "mtls_ca": "/etc/vpn-node/ca.pem",
+            "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+            "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+            "node_id": "01a18bee-f69a-7e8c-8919-a063bf662e91",
+            "platform": {
+              "architecture": "amd64",
+              "control_api_major": 1,
+              "os_id": "ubuntu",
+              "os_version": "24.04",
+              "policy_schema": 1,
+              "state_schema": 1,
+              "updater_version": "1.0.0",
+              "usage_schema": 1
+            },
+            "release_trust": "/etc/vpn-node/trust.json",
+            "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+            "start_command": [
+              "/usr/local/bin/agent-service.sh",
+              "start"
+            ],
+            "stop_command": [
+              "/usr/local/bin/agent-service.sh",
+              "stop"
+            ]
+          },
+          "readable": true
+        }
+      },
+      "finding": "no probe peer in lab",
+      "fresh_challenges": [],
+      "has_probe_peer": false,
+      "omission_logs": [],
+      "stderr_readable": true
+    }
+  }
+}

@@ -38,8 +38,7 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
     await page.getByTestId('start-hosted-checkout-btn').click();
     await expect(page.getByTestId('hosted-redirect-banner')).toBeVisible();
-    const checkoutUrlText = await page.getByTestId('hosted-redirect-url').textContent();
-    expect(checkoutUrlText).toContain(
+    await expect(page.getByTestId('hosted-redirect-url')).toContainText(
       'https://checkout.stripe.example.invalid/pay/cs_test_',
     );
 
@@ -66,6 +65,9 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('member-entitlement-state-badge')).toHaveText('active');
 
     await page.goto('/member/exits');
+    await expect(page.getByTestId('member-exits-page')).toBeVisible();
+    await expect(page.locator('[data-testid^="member-exit-row-"]').first()).toBeVisible();
+    await expect(page.locator('[data-testid^="member-exit-row-"]')).not.toHaveCount(0);
     await expect(page.getByTestId('member-exits-table')).toContainText('tw-tpe');
 
     // 7. Verify billing portal session hand-off on /member/billing
@@ -108,9 +110,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId(`revoke-own-device-${firstDeviceId}`).click();
 
     await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3', {
-      timeout: 15_000,
-    });
+    await expect(page.getByTestId('operation-status-headline')).toHaveText(
+      '已套用（已取得實際觀測確認）',
+    );
+    await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3');
     await expect(page.getByTestId(`device-status-${firstDeviceId}`)).toHaveText(
       'revoked',
     );
@@ -124,14 +127,21 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('suspend-member-btn').click();
 
     await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await expect(page.getByTestId('operation-status-headline')).toHaveText(
+      '已套用（已取得實際觀測確認）',
+    );
     await expect(page.getByTestId('member-detail-entitlement-badge')).toHaveText(
       'suspended',
-      { timeout: 15_000 },
     );
 
-    // 5. Issue a finite entitlement grant on the member and verify 202 operation banner
+    // 5. Issue a finite entitlement grant on the member and verify 202 operation banner and grant row
     await page.getByTestId('create-grant-btn').click();
     await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await expect(page.getByTestId('operation-status-headline')).toBeVisible();
+    const grantRows = page.locator('[data-testid^="admin-grant-row-"]');
+    await expect(grantRows.first()).toBeVisible();
+    await expect(grantRows).not.toHaveCount(0);
+    await expect(grantRows.first()).toContainText('Migration parallel transition grant');
 
     // 6. Restore default seeded active member and verify /member/usage decimal precision (> 2^53) & watermark
     const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
@@ -222,6 +232,8 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
     // 2. Verify token is displayed once in the creation response banner
     await expect(page.getByTestId('one-time-enrollment-banner')).toBeVisible();
+    await expect(page.getByTestId('one-time-token-value')).toBeVisible();
+    await expect(page.getByTestId('one-time-token-value')).toHaveText(/\S{17,}/);
     const rawSecretToken = (
       await page.getByTestId('one-time-token-value').textContent()
     )?.trim();
@@ -526,9 +538,11 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('pub-group-checkbox-asia-premium')).toBeChecked();
     await page.getByTestId('publish-node-btn').click();
     await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await expect(page.getByTestId('operation-status-headline')).toHaveText(
+      '已套用（已取得實際觀測確認）',
+    );
     await expect(page.getByTestId('node-attached-groups')).toContainText(
       'asia-premium (Asia Premium Exits)',
-      { timeout: 15_000 },
     );
     await expect(page.getByTestId('node-attached-groups')).toContainText(
       'standard-exits (Standard Exit Group)',
@@ -561,16 +575,23 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     // 3. Members never see group_id values on member exit views (D-057)
     await page.goto('/member/exits');
     await expect(page.getByTestId('member-exits-page')).toBeVisible();
-    const exitsTextZh = await page.locator('body').textContent();
-    expect(exitsTextZh).not.toContain(standardExitsGroup!.group_id);
-    expect(exitsTextZh).not.toContain(asiaPremiumGroup!.group_id);
-    expect(exitsTextZh).not.toContain('standard-exits');
-    expect(exitsTextZh).not.toContain('asia-premium');
+    const exitRows = page.locator('[data-testid^="member-exit-row-"]');
+    await expect(exitRows.first()).toBeVisible();
+    await expect(exitRows).not.toHaveCount(0);
+    await expect(page.getByTestId('member-exits-table')).toContainText('tw-tpe');
+    await expect(page.locator('body')).not.toContainText(standardExitsGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText(asiaPremiumGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText('standard-exits');
+    await expect(page.locator('body')).not.toContainText('asia-premium');
 
     await page.getByTestId('locale-switcher').selectOption('en');
-    const exitsTextEn = await page.locator('body').textContent();
-    expect(exitsTextEn).not.toContain(standardExitsGroup!.group_id);
-    expect(exitsTextEn).not.toContain(asiaPremiumGroup!.group_id);
+    await expect(page.getByTestId('manual-exit-selection-notice')).toContainText(
+      'NetBird',
+    );
+    await expect(page.locator('body')).not.toContainText(standardExitsGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText(asiaPremiumGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText('standard-exits');
+    await expect(page.locator('body')).not.toContainText('asia-premium');
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
 
     // 4. DNS Policy threat_feed_status and ThreatFeedPayload.update_interval_seconds (D-058) in zh-TW and en
@@ -613,6 +634,8 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('threat-feed-update-interval-input').fill('3600');
     await page.getByTestId('create-extra-policy-revision-btn').click();
     await expect(page.getByTestId('threat-feed-interval-field-error')).toHaveCount(0);
+    await expect(page.getByTestId('dns-api-error')).toHaveCount(0);
+    await expect(page.getByTestId('policy-definitions-table')).toContainText('#2');
   });
 
   test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page }) => {
@@ -633,12 +656,20 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('fup-submit-btn').click();
     await expect(page.getByTestId('fup-validation-passed')).toBeVisible();
     await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await expect(page.getByTestId('operation-status-headline')).toHaveText(
+      '已套用（已取得實際觀測確認）',
+    );
+    await expect(page.getByTestId('op-step-desired_state_compile')).toContainText(
+      'succeeded',
+    );
 
     // 3. Navigate to /admin/audit and verify real audit events recorded by fvpn-control
     await page.goto('/admin/audit');
     await expect(page.getByTestId('admin-audit-page')).toBeVisible();
     await expect(page.getByTestId('audit-table')).toBeVisible();
-    const rowCount = await page.locator('[data-testid^="audit-row-"]').count();
-    expect(rowCount).toBeGreaterThan(0);
+    const auditRows = page.locator('[data-testid^="audit-row-"]');
+    await expect(auditRows.first()).toBeVisible();
+    await expect(auditRows).not.toHaveCount(0);
+    await expect(page.getByTestId('audit-table')).toContainText('policy.activate');
   });
 });

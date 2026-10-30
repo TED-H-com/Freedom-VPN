@@ -57,6 +57,7 @@ type Config struct {
 	AnonymousRate           Bucket   `json:"anonymous_rate"`
 	LoginRate               Bucket   `json:"login_rate"`
 	LoginSubjectPerMinute   int      `json:"login_subject_per_minute"`
+	TrustedProxies          []string `json:"trusted_proxies"`
 	WorkerConcurrency       int      `json:"worker_concurrency"`
 	WorkerLeaseSeconds      int      `json:"worker_lease_seconds"`
 	WorkerJobSeconds        int      `json:"worker_job_seconds"`
@@ -162,6 +163,9 @@ func (c Config) Validate() error {
 	}
 	if c.LoginSubjectPerMinute < 1 || c.LoginSubjectPerMinute > 100000 {
 		return errors.New("invalid rate bucket")
+	}
+	if err := c.validateTrustedProxies(); err != nil {
+		return err
 	}
 	if c.WorkerJobSeconds >= c.WorkerLeaseSeconds || c.WorkerLeaseSeconds > 86400 || c.WorkerBackoffSeconds > c.WorkerBackoffMaxSeconds || c.WorkerBackoffMaxSeconds > 86400 || c.WorkerConcurrency > 1000 || c.SessionIdleSeconds > c.SessionAbsoluteSeconds {
 		return errors.New("inconsistent timeout or worker bounds")

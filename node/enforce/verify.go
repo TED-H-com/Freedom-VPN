@@ -37,6 +37,9 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if err := expectChain(rs, "postrouting", "nat", "postrouting", "accept", HookPrioritySNAT); err != nil {
 		return err
 	}
+	if err := verifyChainSet(rs); err != nil {
+		return err
+	}
 	fwd := rs.Chains["forward"]
 	if !generationComment(fwd, m.Generation) {
 		return checkf(ReasonGenerationMismatch, "forward rules do not carry fvpn_generation=%d", m.Generation)
@@ -44,7 +47,7 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if !strings.Contains(rs.Raw, "fvpn_metering="+MeteringVersion) {
 		return checkf(ReasonMeterPathInvalid, "ruleset is not %s", MeteringVersion)
 	}
-	if err := checkForwardOrder(fwd); err != nil {
+	if err := checkForwardOrder(fwd, m); err != nil {
 		return err
 	}
 	if !rulesetBindsIface(rs, m.Datapath.MemberIngress) {
@@ -79,13 +82,24 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 		}
 	}
 	in := rs.Chains["input"]
-	if !hasDropOnIngress(in, m.Datapath.MemberIngress) {
-		return checkf(ReasonIsolation, "input chain does not drop member ingress %s", m.Datapath.MemberIngress)
+	if err := verifyInputDrops(in, m.Datapath.MemberIngress); err != nil {
+		return err
 	}
 	if err := verifyAllowedSet(rs); err != nil {
 		return err
 	}
+	if err := verifySetFlags(rs); err != nil {
+		return err
+	}
 	if err := verifyProbe(rs, m, false); err != nil {
+		return err
+	}
+	if len(m.Resolvers) > 0 || (m.Probe != nil && m.Probe.ResolverDNS) {
+		if err := verifyResolverSet(rs, m); err != nil {
+			return err
+		}
+	}
+	if err := verifyIsolationDrops(fwd, m); err != nil {
 		return err
 	}
 	return nil
@@ -151,13 +165,17 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	fwd := rs.Chains["forward"]
 	if m.Probe == nil {
 		for _, rule := range fwd.Rules {
-			if rule.Verdict == "accept" {
-				if baseline {
-					return checkf(ReasonIsolationBaselineMissing, "baseline forward chain contains an accept")
-				}
-				if rule.Counter == counterProbeUp || rule.Counter == counterProbeDown {
-					return checkf(ReasonIsolation, "probe accept is present without a probe exception")
-				}
+			if rule.Verdict != "accept" {
+				continue
+			}
+			if rule.Counter == counterProbeUp || rule.Counter == counterProbeDown {
+				return checkf(ReasonIsolation, "probe accept is present without a probe exception")
+			}
+			if baseline {
+				return checkf(ReasonIsolationBaselineMissing, "baseline forward chain contains an accept")
+			}
+			if servingAcceptKind(rule, m) == "" {
+				return checkf(ReasonIsolation, "forward accept is outside the serving model")
 			}
 		}
 		if rs.Tainted[setProbeV4] || rs.Tainted[setProbeDstV4] {
@@ -171,8 +189,10 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	if err := verifyProbeElements(rs, m); err != nil {
 		return err
 	}
-	if err := verifyResolverSet(rs, m); err != nil {
-		return err
+	if m.Probe.ResolverDNS {
+		if err := verifyResolverSet(rs, m); err != nil {
+			return err
+		}
 	}
 	if _, ok := rs.Counters[counterProbeUp]; !ok {
 		return checkf(ReasonIsolation, "missing counter %s", counterProbeUp)
@@ -219,6 +239,12 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 				if probeScopedAccept(rule) {
 					return checkf(ReasonIsolation, "probe source accept is wider than the DNS or tuple exception")
 				}
+				if !baseline && servingAcceptKind(rule, m) != "" {
+					if strings.HasPrefix(rule.Counter, "u_") && memberIdx < 0 {
+						memberIdx = i
+					}
+					break
+				}
 				other++
 				if strings.HasPrefix(rule.Counter, "u_") && memberIdx < 0 {
 					memberIdx = i
@@ -233,8 +259,11 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	if wantDNS > 0 && (dnsTCP != 1 || dnsUDP != 1) {
 		return checkf(ReasonIsolation, "probe DNS accept is not one tcp and one udp port 53")
 	}
-	if baseline && other > 0 {
-		return checkf(ReasonIsolationBaselineMissing, "baseline forward chain contains an accept that is not the probe")
+	if other > 0 {
+		if baseline {
+			return checkf(ReasonIsolationBaselineMissing, "baseline forward chain contains an accept that is not the probe")
+		}
+		return checkf(ReasonIsolation, "forward accept is outside the serving model")
 	}
 	if wantTuple > 0 && (v6Idx < 0 || denyIdx < 0 || hostIdx < 0 || !(v6Idx < tupleIdx && denyIdx < tupleIdx && hostIdx < tupleIdx)) {
 		return checkf(ReasonIsolation, "probe upload accept is not behind the v6, deny, and host drops")
@@ -302,12 +331,10 @@ func exactNames(names []string, want string) bool {
 }
 
 // verifyResolverSet requires @resolver_v4 to be exactly the configured
-// resolver addresses while the probe DNS hole is open. A prefix, a range,
-// or an extra address fails closed. The detail does not name an address.
+// resolver addresses. A prefix, a range, or an extra address fails closed.
+// The detail does not name an address. Callers decide when the hole is open:
+// serving checks it whenever the model lists resolvers, not only for a probe.
 func verifyResolverSet(rs Ruleset, m Model) error {
-	if m.Probe == nil || !m.Probe.ResolverDNS {
-		return nil
-	}
 	if rs.Tainted["resolver_v4"] {
 		return checkf(ReasonIsolation, "resolver_v4 contains a prefix, range, or unknown element")
 	}
@@ -514,6 +541,9 @@ func rejectBypass(rs Ruleset) error {
 			if rule.SetsMark {
 				return checkf(ReasonMark, "rule writes skb mark or conntrack mark")
 			}
+			if rule.DNAT {
+				return checkf(ReasonIsolation, "rule rewrites the destination address")
+			}
 		}
 	}
 	if strings.Contains(rs.Raw, "flush ruleset") {
@@ -552,32 +582,239 @@ func generationComment(ch ChainView, generation uint64) bool {
 	return false
 }
 
-func checkForwardOrder(ch ChainView) error {
-	seenAllowDrop := false
+func checkForwardOrder(ch ChainView, m Model) error {
+	seenUp := false
+	seenDown := false
+	seenNotEst := false
 	for _, rule := range ch.Rules {
-		if rule.Verdict == "drop" && negatesSet(rule, "allowed_v4") {
-			seenAllowDrop = true
+		if rule.Verdict == "drop" && hasName(rule.NegSaddr, "allowed_v4") {
+			seenUp = true
 		}
-		if rule.Verdict == "accept" && rule.CTEstablished && !seenAllowDrop {
-			return checkf(ReasonCounterOrder, "established accept is before the allow-set drop")
+		if rule.Verdict == "drop" && hasName(rule.NegDaddr, "allowed_v4") {
+			seenDown = true
 		}
-		if rule.Verdict == "accept" && rule.Counter == "" {
+		if rule.Verdict == "drop" && rule.CTNotEstablished {
+			seenNotEst = true
+		}
+		if rule.Verdict != "accept" {
+			continue
+		}
+		if rule.Counter == "" {
 			return checkf(ReasonCounterOrder, "accept rule has no named counter")
 		}
+		upload, download := acceptDirections(rule, m)
+		if upload && !seenUp {
+			return checkf(ReasonCounterOrder, "upload accept is before the allow-set drop")
+		}
+		if download && !seenDown {
+			return checkf(ReasonCounterOrder, "download accept is before the allow-set drop")
+		}
+		if strings.HasPrefix(rule.Counter, "d_") && !strings.HasPrefix(rule.Counter, "nd_") && !seenNotEst {
+			return checkf(ReasonCounterOrder, "download accept is before the non-established drop")
+		}
 	}
-	if !seenAllowDrop {
-		return checkf(ReasonCounterOrder, "no drop of sources outside the allow set before accept")
+	if !seenUp || !seenDown {
+		return checkf(ReasonCounterOrder, "allow-set drop is missing for upload or download")
 	}
 	return nil
 }
 
-func negatesSet(rule RuleView, name string) bool {
-	for _, set := range rule.NegSets {
-		if set == name {
+func acceptDirections(rule RuleView, m Model) (upload, download bool) {
+	onMember := hasName(rule.IIF, m.Datapath.MemberIngress)
+	onUplink := hasName(rule.IIF, m.Datapath.Uplink)
+	if !onMember && !onUplink {
+		return true, true
+	}
+	return onMember, onUplink
+}
+
+// servingAcceptKind classifies a forward accept Render emits for a member.
+// Probe accepts are classified separately. Anything else is outside the model.
+func servingAcceptKind(rule RuleView, m Model) string {
+	if rule.Verdict != "accept" || rule.SetsMark || rule.MatchMark || rule.Offload || rule.DNAT || rule.CTEstablished {
+		return ""
+	}
+	if rule.NFProto == "ipv6" || len(rule.Prios) != 1 || len(rule.NegSets) != 0 || len(rule.ConcatSets) != 0 {
+		return ""
+	}
+	in := m.Datapath.MemberIngress
+	up := m.Datapath.Uplink
+	switch {
+	case deviceCounter(rule.Counter, "nu_") && exactNames(rule.IIF, in) && exactNames(rule.OIF, up) &&
+		exactNames(rule.DaddrSets, "resolver_v4") && len(rule.SaddrSets) == 0 &&
+		len(rule.Dports) == 1 && rule.Dports[0] == 53 && len(rule.Sports) == 0 &&
+		len(rule.L4Protos) == 1 && (rule.L4Protos[0] == "tcp" || rule.L4Protos[0] == "udp") &&
+		oneHost(rule.Saddrs) && len(rule.Daddrs) == 0:
+		return "dns-up"
+	case deviceCounter(rule.Counter, "nd_") && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) &&
+		exactNames(rule.SaddrSets, "resolver_v4") && len(rule.DaddrSets) == 0 &&
+		len(rule.Sports) == 1 && rule.Sports[0] == 53 && len(rule.Dports) == 0 &&
+		len(rule.L4Protos) == 1 && (rule.L4Protos[0] == "tcp" || rule.L4Protos[0] == "udp") &&
+		len(rule.Saddrs) == 0 && oneHost(rule.Daddrs):
+		return "dns-down"
+	case deviceCounter(rule.Counter, "u_") && exactNames(rule.IIF, in) && exactNames(rule.OIF, up) &&
+		len(rule.SaddrSets) == 0 && len(rule.DaddrSets) == 0 &&
+		len(rule.Dports) == 0 && len(rule.Sports) == 0 && len(rule.L4Protos) == 0 &&
+		hostOrEmpty(rule.Saddrs) && len(rule.Daddrs) == 0:
+		return "upload"
+	case deviceCounter(rule.Counter, "d_") && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) &&
+		len(rule.SaddrSets) == 0 && len(rule.DaddrSets) == 0 &&
+		len(rule.Dports) == 0 && len(rule.Sports) == 0 && len(rule.L4Protos) == 0 &&
+		len(rule.Saddrs) == 0 && hostOrEmpty(rule.Daddrs):
+		return "download"
+	default:
+		return ""
+	}
+}
+
+func deviceCounter(name, prefix string) bool {
+	if !strings.HasPrefix(name, prefix) {
+		return false
+	}
+	_, err := uuid.Parse(name[len(prefix):])
+	return err == nil
+}
+
+func oneHost(ps []netip.Prefix) bool {
+	return len(ps) == 1 && ps[0].Bits() == 32 && ps[0].Addr().Is4()
+}
+
+func hostOrEmpty(ps []netip.Prefix) bool {
+	if len(ps) == 0 {
+		return true
+	}
+	return oneHost(ps)
+}
+
+// verifyChainSet allows only the base chains Render emits. A regular chain
+// or a nat prerouting hook inside inet fvpn is rejected.
+func verifyChainSet(rs Ruleset) error {
+	allowed := map[string]bool{"forward": true, "input": true, "output": true, "postrouting": true}
+	if len(rs.Chains) != len(allowed) {
+		return checkf(ReasonHookPriority, "ruleset has %d chains, want the four rendered chains", len(rs.Chains))
+	}
+	for name := range rs.Chains {
+		if !allowed[name] {
+			return checkf(ReasonHookPriority, "chain %s is not part of the rendered ruleset", name)
+		}
+	}
+	return nil
+}
+
+// verifySetFlags rejects a flag the renderer does not emit on the sets that
+// must stay host addresses. denied_v4 and host_v4 are interval sets on purpose.
+func verifySetFlags(rs Ruleset) error {
+	allowed := map[string]map[string]bool{
+		"allowed_v4":  {"timeout": true},
+		setProbeV4:    {"timeout": true},
+		setProbeDstV4: {"timeout": true},
+		"resolver_v4": {},
+	}
+	for name, okFlag := range allowed {
+		for _, flag := range rs.SetFlags[name] {
+			if !okFlag[flag] {
+				return checkf(ReasonIsolation, "set %s has a flag the renderer does not emit", name)
+			}
+		}
+	}
+	return nil
+}
+
+var cgnatV4 = netip.MustParsePrefix("100.64.0.0/10")
+
+// verifyInputDrops requires both input drops, and no accept of member-ingress
+// or CGNAT traffic before the later of the two.
+func verifyInputDrops(ch ChainView, ifname string) error {
+	iifIdx, cgnatIdx := -1, -1
+	for i, rule := range ch.Rules {
+		if rule.Verdict == "drop" && hasName(rule.IIF, ifname) && iifIdx < 0 {
+			iifIdx = i
+		}
+		if rule.Verdict == "drop" && coversPrefix(rule.Saddrs, cgnatV4) && cgnatIdx < 0 {
+			cgnatIdx = i
+		}
+	}
+	if iifIdx < 0 {
+		return checkf(ReasonIsolation, "input chain does not drop member ingress %s", ifname)
+	}
+	if cgnatIdx < 0 {
+		return checkf(ReasonIsolation, "input chain does not drop 100.64.0.0/10")
+	}
+	need := iifIdx
+	if cgnatIdx > need {
+		need = cgnatIdx
+	}
+	for i, rule := range ch.Rules {
+		if rule.Verdict != "accept" || i >= need {
+			continue
+		}
+		if hasName(rule.IIF, ifname) || coversPrefix(rule.Saddrs, cgnatV4) || (len(rule.IIF) == 0 && len(rule.Saddrs) == 0) {
+			return checkf(ReasonIsolation, "input accept precedes the member and CGNAT drops")
+		}
+	}
+	return nil
+}
+
+func coversPrefix(got []netip.Prefix, want netip.Prefix) bool {
+	for _, p := range got {
+		if p.Bits() == want.Bits() && p.Addr() == want.Addr() {
 			return true
 		}
 	}
 	return false
+}
+
+// verifyIsolationDrops requires the deny, host, and non-53 resolver drops
+// whenever the model has bindings or resolvers, including when Probe is nil.
+func verifyIsolationDrops(ch ChainView, m Model) error {
+	if len(m.Bindings) == 0 && len(m.Resolvers) == 0 {
+		return nil
+	}
+	denyIdx, hostIdx, resIdx := -1, -1, -1
+	for i, rule := range ch.Rules {
+		if rule.Verdict != "drop" {
+			continue
+		}
+		if hasName(rule.DaddrSets, "denied_v4") && denyIdx < 0 {
+			denyIdx = i
+		}
+		if hasName(rule.DaddrSets, "host_v4") && hostIdx < 0 {
+			hostIdx = i
+		}
+		if hasName(rule.DaddrSets, "resolver_v4") && resIdx < 0 {
+			resIdx = i
+		}
+	}
+	if denyIdx < 0 {
+		return checkf(ReasonIsolation, "forward chain does not drop @denied_v4")
+	}
+	if hostIdx < 0 {
+		return checkf(ReasonIsolation, "forward chain does not drop @host_v4")
+	}
+	if len(m.Resolvers) > 0 || (m.Probe != nil && m.Probe.ResolverDNS) {
+		if resIdx < 0 {
+			return checkf(ReasonIsolation, "forward chain does not drop non-53 resolver traffic")
+		}
+		if resIdx > denyIdx {
+			return checkf(ReasonIsolation, "resolver drop is not before the deny drop")
+		}
+		for i, rule := range ch.Rules {
+			if rule.Verdict != "accept" || i <= resIdx {
+				continue
+			}
+			if strings.HasPrefix(rule.Counter, "nu_") || (rule.Counter == counterProbeUp && hasName(rule.DaddrSets, "resolver_v4")) {
+				return checkf(ReasonIsolation, "DNS accept is not before the resolver drop")
+			}
+		}
+	}
+	for i, rule := range ch.Rules {
+		if rule.Verdict == "accept" && strings.HasPrefix(rule.Counter, "u_") && !strings.HasPrefix(rule.Counter, "nu_") {
+			if i < denyIdx || i < hostIdx {
+				return checkf(ReasonIsolation, "member upload accept is not behind the deny and host drops")
+			}
+		}
+	}
+	return nil
 }
 
 func chainHasOIF(ch ChainView, name string) bool {
