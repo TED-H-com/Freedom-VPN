@@ -260,6 +260,30 @@ func (l *lab) db(ctx context.Context) (*pgx.Conn, error) {
 	return conn, nil
 }
 
+func (l *lab) cat(container, path string) ([]byte, error) {
+	// Container files are root:root mode 0600 on the bind mount, so the host
+	// user cannot read them. docker exec is the readable path (§19.1).
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "docker", "exec", container, "cat", path)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (l *lab) pullFile(container, src, dst string) error {
+	b, err := l.cat(container, src)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(dst, b, 0o644)
+}
+
 func (l *lab) exec(timeout time.Duration, container string, args ...string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()

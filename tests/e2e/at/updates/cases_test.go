@@ -234,7 +234,7 @@ func (s *suite) prepare() {
 	}
 	wait, cancel := context.WithTimeout(s.ctx, 4*time.Minute)
 	ok := waitUntil(wait, time.Second, func() bool {
-		b, err := os.ReadFile(filepath.Join(s.varDir, "e2e", "status.json"))
+		b, err := s.lab.cat(s.lab.node, "/var/lib/vpn-node/e2e/status.json")
 		return err == nil && strings.Contains(string(b), `"enrolled"`)
 	})
 	cancel()
@@ -242,7 +242,7 @@ func (s *suite) prepare() {
 		s.breakf("primary did not enroll")
 		return
 	}
-	ident, err := readIdentity(filepath.Join(s.varDir, "identity", "node.json"))
+	ident, err := s.lab.readNodeIdentity(s.lab.node)
 	if err != nil {
 		s.breakf("identity: %v", err)
 		return

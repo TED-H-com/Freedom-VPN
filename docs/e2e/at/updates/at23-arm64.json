@@ -1,0 +1,38 @@
+{
+  "id": "at23-arm64",
+  "title": "arm64 artifact and operator hardware",
+  "spec": [
+    "§3.2",
+    "§13.4",
+    "§19 AT23",
+    "NODE01"
+  ],
+  "status": "needs_operator_run",
+  "at": "2026-10-30T00:00:16Z",
+  "expected": "arm64 is packaged and manifest-listed. A physical arm64 node and the three join sources need an operator.",
+  "actual": "arm64 updater cross-built; node image in this lab is amd64 only",
+  "git": "433f621cbaf427c3a31fd375899b73591e41d668",
+  "images": "fvpn-w4-updates-node:local bd7f05b30cf7; fvpn-w4-updates-worker:local 2aec0292ecca; fvpn-w4-updates-control:local a16f12ce181e; fvpn-w4-updates-origin:local 54a5efcd9fd3; fvpn-w4-updates-payment:local 0c1a30526707; fvpn-w4-updates-idp:local abc41c5800a0; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
+  "commands": [
+    "GOOS=linux GOARCH=arm64 go build ./node/updater/cmd/fvpn-updater",
+    "see docs/e2e/at/updates/operator-run.md"
+  ],
+  "observations": [
+    {
+      "name": "updater_arm64_sha256",
+      "detail": "5e7c9402aa3794a9cffe33c8e23a6bb36c4ad081e17e27c6c6f3fbbd2ff711f7"
+    },
+    {
+      "name": "emulation",
+      "detail": "Unable to find image 'ubuntu:24.04' locally\n24.04: Pulling from library/ubuntu\ne2d2bb84d022: Pulling fs layer\n2238dc1b4376: Download complete\ne2d2bb84d022: Download complete\ne2d2bb84d022: Pull complet… exit status 255"
+    },
+    {
+      "name": "hardware",
+      "detail": "needs operator run; this host did not execute the arm64 binary"
+    },
+    {
+      "name": "sources",
+      "detail": "preinstalled box, cloud Ubuntu and coordinated third-party Ubuntu are operator-run.md; the lab container is one Ubuntu 24.04 amd64 source"
+    }
+  ]
+}

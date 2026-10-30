@@ -30,11 +30,15 @@ type nodeIdentity struct {
 	Publication string
 }
 
-func readIdentity(path string) (nodeIdentity, error) {
-	b, err := os.ReadFile(path)
+func (l *lab) readNodeIdentity(container string) (nodeIdentity, error) {
+	b, err := l.cat(container, "/var/lib/vpn-node/identity/node.json")
 	if err != nil {
 		return nodeIdentity{}, err
 	}
+	return parseIdentity(b)
+}
+
+func parseIdentity(b []byte) (nodeIdentity, error) {
 	var f struct {
 		NodeID            string `json:"node_id"`
 		NodeIncarnationID string `json:"node_incarnation_id"`
@@ -166,29 +170,27 @@ func (l *lab) runUpdater(ctx context.Context, opt runOpts) (updaterRun, error) {
 	if !out.Finished {
 		return out, nil
 	}
-	body, _ := os.ReadFile(filepath.Join(e2e, "updater-result.json"))
+	body, _ := l.cat(opt.container, "/var/lib/vpn-node/e2e/updater-result.json")
 	var exit struct {
 		Code int `json:"exit_code"`
 	}
 	_ = json.Unmarshal(body, &exit)
 	out.Exit = exit.Code
-	logBody, _ := os.ReadFile(filepath.Join(e2e, "updater.out"))
+	logBody, _ := l.cat(opt.container, "/var/lib/vpn-node/e2e/updater.out")
 	out.Out = clip(string(logBody), 700)
-	out.Journal = readJournal(opt.varDir)
+	out.Journal = l.readJournal(opt.container, opt.varDir)
 	return out, nil
 }
 
-func readJournal(varDir string) journalSnap {
+func (l *lab) readJournal(container, varDir string) journalSnap {
 	var view journalSnap
-	src := filepath.Join(varDir, "update-journal", "journal.db")
-	if _, err := os.Stat(src); err != nil {
+	tmp := filepath.Join(varDir, "e2e", "journal-copy.db")
+	_ = os.Remove(tmp + "-wal")
+	_ = os.Remove(tmp + "-shm")
+	if err := l.pullFile(container, "/var/lib/vpn-node/update-journal/journal.db", tmp); err != nil {
 		return view
 	}
-	tmp := filepath.Join(varDir, "e2e", "journal-copy.db")
-	_ = copyFile(src, tmp)
-	if b, err := os.ReadFile(src + "-wal"); err == nil {
-		_ = os.WriteFile(tmp+"-wal", b, 0o644)
-	}
+	_ = l.pullFile(container, "/var/lib/vpn-node/update-journal/journal.db-wal", tmp+"-wal")
 	db, err := sql.Open("sqlite", "file:"+tmp+"?_pragma=busy_timeout(2000)")
 	if err != nil {
 		return view
@@ -221,16 +223,15 @@ func readJournal(varDir string) journalSnap {
 	return view
 }
 
-func journalForRelease(varDir, releaseID string) journalSnap {
+func (l *lab) journalForRelease(container, varDir, releaseID string) journalSnap {
 	var view journalSnap
-	src := filepath.Join(varDir, "update-journal", "journal.db")
 	tmp := filepath.Join(varDir, "e2e", "journal-copy.db")
-	if err := copyFile(src, tmp); err != nil {
+	_ = os.Remove(tmp + "-wal")
+	_ = os.Remove(tmp + "-shm")
+	if err := l.pullFile(container, "/var/lib/vpn-node/update-journal/journal.db", tmp); err != nil {
 		return view
 	}
-	if b, err := os.ReadFile(src + "-wal"); err == nil {
-		_ = os.WriteFile(tmp+"-wal", b, 0o644)
-	}
+	_ = l.pullFile(container, "/var/lib/vpn-node/update-journal/journal.db-wal", tmp+"-wal")
 	db, err := sql.Open("sqlite", "file:"+tmp+"?_pragma=busy_timeout(2000)")
 	if err != nil {
 		return view
@@ -266,16 +267,8 @@ func journalForRelease(varDir, releaseID string) journalSnap {
 	return view
 }
 
-func copyFile(src, dst string) error {
-	b, err := os.ReadFile(src)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(dst, b, 0o644)
-}
-
-func (l *lab) desiredHas(varDir, releaseID string) bool {
-	b, err := os.ReadFile(filepath.Join(varDir, "state", "desired-state.json"))
+func (l *lab) desiredHas(container, releaseID string) bool {
+	b, err := l.cat(container, "/var/lib/vpn-node/state/desired-state.json")
 	return err == nil && strings.Contains(string(b), releaseID)
 }
 
@@ -285,8 +278,8 @@ type issuedJob struct {
 	Issued, Until                                                                            time.Time
 }
 
-func parseIssued(varDir string) (issuedJob, bool) {
-	b, err := os.ReadFile(filepath.Join(varDir, "state", "desired-state.json"))
+func (l *lab) parseIssued(container string) (issuedJob, bool) {
+	b, err := l.cat(container, "/var/lib/vpn-node/state/desired-state.json")
 	if err != nil {
 		return issuedJob{}, false
 	}
@@ -427,7 +420,7 @@ func (l *lab) postResult(container, varDir string, node nodeIdentity, job issued
 		"--header=Content-Type: application/json",
 		"--post-file=/var/lib/vpn-node/e2e/result.json",
 		l.agent+"/api/v1/agent/update-results")
-	ack, _ := os.ReadFile(filepath.Join(e2e, "result-ack.json"))
+	ack, _ := l.cat(container, "/var/lib/vpn-node/e2e/result-ack.json")
 	status := httpStatus(string(out))
 	if err != nil && status == 0 {
 		return 0, clip(string(out)+" "+string(ack), 400), err
@@ -470,8 +463,8 @@ func (l *lab) releaseTree(container, id string) bool {
 	return err == nil
 }
 
-func (l *lab) identitySHA(varDir string) string {
-	b, err := os.ReadFile(filepath.Join(varDir, "identity", "node.json"))
+func (l *lab) identitySHA(container string) string {
+	b, err := l.cat(container, "/var/lib/vpn-node/identity/node.json")
 	if err != nil {
 		return ""
 	}
@@ -548,8 +541,8 @@ func copyTree(src, dst string) error {
 
 func (a *auxNode) waitEnrolled(ctx context.Context) bool {
 	return waitUntil(ctx, time.Second, func() bool {
-		b, err := os.ReadFile(filepath.Join(a.varDir, "e2e", "status.json"))
-		return err == nil && strings.Contains(string(b), `"enrolled"`)
+		out, err := exec.CommandContext(ctx, "docker", "exec", a.container, "cat", "/var/lib/vpn-node/e2e/status.json").Output()
+		return err == nil && strings.Contains(string(out), `"enrolled"`)
 	})
 }
 

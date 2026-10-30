@@ -1,0 +1,18 @@
+{
+  "id": "at26",
+  "title": "Idempotency, races and stale ACK",
+  "spec": [
+    "§13.8",
+    "§14.5",
+    "§19 AT26",
+    "UPD02",
+    "API01"
+  ],
+  "status": "blocked",
+  "at": "2026-10-30T00:00:16Z",
+  "expected": "One batch per Idempotency-Key. A different body is 409. Unstarted work is superseded. A stale ACK is history and does not overwrite current. A completed safe switch is blocked on health.",
+  "actual": "",
+  "git": "433f621cbaf427c3a31fd375899b73591e41d668",
+  "images": "fvpn-w4-updates-node:local bd7f05b30cf7; fvpn-w4-updates-worker:local 2aec0292ecca; fvpn-w4-updates-control:local a16f12ce181e; fvpn-w4-updates-origin:local 54a5efcd9fd3; fvpn-w4-updates-payment:local 0c1a30526707; fvpn-w4-updates-idp:local abc41c5800a0; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
+  "observations": null
+}

@@ -123,7 +123,7 @@ func (s *suite) enrollAux(admin *session, role, ip string, pause bool) (auxNode,
 	if !ok {
 		return node, fmt.Errorf("%s did not enroll", role)
 	}
-	ident, err := readIdentity(node.varDir + "/identity/node.json")
+	ident, err := s.lab.readNodeIdentity(node.container)
 	if err != nil {
 		return node, err
 	}
@@ -245,13 +245,13 @@ func (s *suite) fleetBatch() {
 func (s *suite) finding() {
 	s.logf("finding")
 	s.cmd("update-good-finding", "fvpn-updater run on the primary node, first install")
-	before := s.lab.identitySHA(s.varDir)
+	before := s.lab.identitySHA(s.lab.node)
 	release := s.rel["old"].ID.String()
 	if s.batch.BatchId != uuid.Nil {
 		release = s.rel["new"].ID.String()
 	}
 	run := s.runRelease(s.lab.node, s.varDir, s.primary, release, "amd64", "", "", "", nil, 4*time.Minute)
-	view := journalForRelease(s.varDir, release)
+	view := s.lab.journalForRelease(s.lab.node, s.varDir, release)
 	if view.ErrorCode == "" {
 		view = run.Journal
 	}
@@ -270,7 +270,7 @@ func (s *suite) finding() {
 	s.obs("update-good-finding", "arm64_sha", s.rel["new"].ARMSHA)
 	s.obs("update-good-finding", "downloaded_amd64", fmt.Sprintf("%t", view.ArtifactSHA == s.rel["new"].AMDSHA && view.ArtifactSHA != ""))
 	s.obs("update-good-finding", "downloaded_arm64", fmt.Sprintf("%t", view.ArtifactSHA == s.rel["new"].ARMSHA && view.ArtifactSHA != ""))
-	s.obs("update-good-finding", "identity_unchanged", fmt.Sprintf("%t", before != "" && before == s.lab.identitySHA(s.varDir)))
+	s.obs("update-good-finding", "identity_unchanged", fmt.Sprintf("%t", before != "" && before == s.lab.identitySHA(s.lab.node)))
 	s.obs("update-good-finding", "forward_chain", s.lab.forwardSummary(s.lab.node))
 	s.obs("update-good-finding", "cited_run", "docs/e2e/runs/2026-10-29/update-good.md 2026-10-29T22:48:08Z")
 	s.obs("at23", "primary_exit", fmt.Sprintf("%d", run.Exit))
@@ -300,18 +300,18 @@ func (s *suite) finding() {
 	s.obs("at23", "success_rule", "locally_succeeded was not observed; AT23 success is not claimed")
 }
 
-func (s *suite) waitRelease(varDir, release string) bool {
+func (s *suite) waitRelease(container, varDir, release string) bool {
 	s.lab.unpause(varDir)
 	wait, cancel := context.WithTimeout(s.ctx, 3*time.Minute)
 	defer cancel()
-	ok := waitUntil(wait, 2*time.Second, func() bool { return s.lab.desiredHas(varDir, release) })
+	ok := waitUntil(wait, 2*time.Second, func() bool { return s.lab.desiredHas(container, release) })
 	_ = s.lab.pause(varDir)
 	time.Sleep(2 * time.Second)
 	return ok
 }
 
 func (s *suite) runRelease(container, varDir string, node nodeIdentity, release, arch, trust, staging, releases string, stop []string, timeout time.Duration) updaterRun {
-	seen := s.waitRelease(varDir, release)
+	seen := s.waitRelease(container, varDir, release)
 	if !seen {
 		s.logf("desired state never contained %s", release)
 	}
@@ -380,7 +380,7 @@ func (s *suite) catchUp() {
 		cancel()
 		s.obs("at24", "enrolling_enrolled", fmt.Sprintf("%t", ok))
 		if ok {
-			ident, err := readIdentity(node.varDir + "/identity/node.json")
+			ident, err := s.lab.readNodeIdentity(node.container)
 			if err == nil {
 				s.enroll.identity = ident
 				_ = s.runRelease(node.container, node.varDir, ident, s.rel["new"].ID.String(), "amd64", "", "", "", nil, 4*time.Minute)
@@ -470,11 +470,11 @@ func (s *suite) staleAck() {
 		s.obs("at26", "stale", "batch was not accepted")
 		return
 	}
-	if !s.waitRelease(s.varDir, s.rel["old"].ID.String()) {
+	if !s.waitRelease(s.lab.node, s.varDir, s.rel["old"].ID.String()) {
 		s.obs("at26", "issued", "desired state did not contain the release; the job was not authorized")
 		return
 	}
-	job, ok := parseIssued(s.varDir)
+	job, ok := s.lab.parseIssued(s.lab.node)
 	if !ok || job.JobID == "" {
 		s.obs("at26", "issued", "update intent absent")
 		return
@@ -523,7 +523,10 @@ func (s *suite) faults() {
 	}, "amd64", "", "", "", nil, 4*time.Minute, "HASH_MISMATCH")
 
 	trustPath := s.varDir + "/e2e/trust-no-release.json"
-	if err := writeTrustWithoutRelease(s.lab.state+"/node/etc/trust.json", trustPath); err != nil {
+	trustRaw, terr := s.lab.cat(s.lab.node, "/etc/vpn-node/trust.json")
+	if terr != nil {
+		s.obs("at25", "trust_strip", terr.Error())
+	} else if err := writeTrustWithoutRelease(trustRaw, trustPath); err != nil {
 		s.obs("at25", "trust_strip", err.Error())
 	} else {
 		s.preSwitch("key", s.rel["old"].ID, nil, "amd64", "/var/lib/vpn-node/e2e/trust-no-release.json", "", "", nil, 4*time.Minute, "KEY_UNTRUSTED")
@@ -562,7 +565,7 @@ func (s *suite) preSwitch(label string, release uuid.UUID, mutate func() error, 
 		}
 	}
 	beforeLink := s.lab.currentLink(s.lab.node)
-	beforeID := s.lab.identitySHA(s.varDir)
+	beforeID := s.lab.identitySHA(s.lab.node)
 	resp, _, err := s.lab.createBatch(s.ctx, admin, release, "at25 "+label, uuid.NewString())
 	if err != nil || resp.Status != 202 {
 		s.obs("at25", label+"_batch", httpDetail(resp, err))
@@ -572,17 +575,13 @@ func (s *suite) preSwitch(label string, release uuid.UUID, mutate func() error, 
 	if !run.Finished {
 		s.lab.stopUpdater(s.lab.node, s.varDir)
 	}
-	view := journalForRelease(s.varDir, release.String())
+	view := s.lab.journalForRelease(s.lab.node, s.varDir, release.String())
 	installed := s.lab.releaseTree(s.lab.node, release.String())
 	s.obs("at25", label, fmt.Sprintf("want=%s error=%s exit=%d installed=%t link_unchanged=%t identity_unchanged=%t out=%s",
-		want, view.ErrorCode, run.Exit, installed, s.lab.currentLink(s.lab.node) == beforeLink, s.lab.identitySHA(s.varDir) == beforeID, clip(run.Out, 180)))
+		want, view.ErrorCode, run.Exit, installed, s.lab.currentLink(s.lab.node) == beforeLink, s.lab.identitySHA(s.lab.node) == beforeID, clip(run.Out, 180)))
 }
 
-func writeTrustWithoutRelease(src, dst string) error {
-	b, err := os.ReadFile(src)
-	if err != nil {
-		return err
-	}
+func writeTrustWithoutRelease(b []byte, dst string) error {
 	var doc struct {
 		Keys []map[string]any `json:"keys"`
 	}
@@ -611,7 +610,7 @@ func writeTrustWithoutRelease(src, dst string) error {
 
 func (s *suite) interrupt() {
 	before := s.lab.currentLink(s.lab.node)
-	beforeID := s.lab.identitySHA(s.varDir)
+	beforeID := s.lab.identitySHA(s.lab.node)
 	script := fmt.Sprintf("nft add table inet atupd && nft add chain inet atupd out '{ type filter hook output priority 0 ; policy accept ; }' && nft add rule inet atupd out ip daddr %s reject", s.lab.originIP)
 	if out, err := s.lab.exec(15*time.Second, s.lab.node, "sh", "-c", script); err != nil {
 		s.obs("at25", "interrupt_nft", clip(string(out), 200)+" "+err.Error())
@@ -631,9 +630,9 @@ func (s *suite) interrupt() {
 	if !run.Finished {
 		s.lab.stopUpdater(s.lab.node, s.varDir)
 	}
-	view := journalForRelease(s.varDir, s.rel["bulky"].ID.String())
+	view := s.lab.journalForRelease(s.lab.node, s.varDir, s.rel["bulky"].ID.String())
 	s.obs("at25", "interrupt", fmt.Sprintf("error=%s exit=%d link_unchanged=%t identity_unchanged=%t installed=%t",
-		view.ErrorCode, run.Exit, s.lab.currentLink(s.lab.node) == before, s.lab.identitySHA(s.varDir) == beforeID, s.lab.releaseTree(s.lab.node, s.rel["bulky"].ID.String())))
+		view.ErrorCode, run.Exit, s.lab.currentLink(s.lab.node) == before, s.lab.identitySHA(s.lab.node) == beforeID, s.lab.releaseTree(s.lab.node, s.rel["bulky"].ID.String())))
 }
 
 func (s *suite) powerLoss() {
@@ -646,11 +645,11 @@ func (s *suite) powerLoss() {
 		s.obs("at25", "power_batch", httpDetail(resp, err))
 		return
 	}
-	if !s.waitRelease(s.varDir, s.rel["old"].ID.String()) {
+	if !s.waitRelease(s.lab.node, s.varDir, s.rel["old"].ID.String()) {
 		s.obs("at25", "power", "desired state was not issued")
 		return
 	}
-	beforeID := s.lab.identitySHA(s.varDir)
+	beforeID := s.lab.identitySHA(s.lab.node)
 	_, err = s.lab.runUpdater(s.ctx, runOpts{
 		container: s.lab.node, varDir: s.varDir, node: s.primary,
 		stop: []string{"/bin/sleep", "45"}, start: []string{"/bin/true"}, timeout: 1 * time.Second,
@@ -660,7 +659,7 @@ func (s *suite) powerLoss() {
 	deadline := time.Now().Add(40 * time.Second)
 	stage := ""
 	for time.Now().Before(deadline) {
-		view := readJournal(s.varDir)
+		view := s.lab.readJournal(s.lab.node, s.varDir)
 		stage = view.Stage
 		if stage == "final_sampled" || stage == "stopped" || stage == "migrated" || stage == "switched" {
 			break
@@ -684,7 +683,7 @@ func (s *suite) powerLoss() {
 		out, err := s.lab.exec(3*time.Minute, s.lab.node, "fvpn-updater", "recover", "-config", "/var/lib/vpn-node/e2e/updater-recover.json")
 		s.obs("at25", "power_recover", clip(string(out), 300)+" "+fmt.Sprint(err))
 	}
-	s.obs("at25", "power_identity_unchanged", fmt.Sprintf("%t", beforeID != "" && beforeID == s.lab.identitySHA(s.varDir)))
+	s.obs("at25", "power_identity_unchanged", fmt.Sprintf("%t", beforeID != "" && beforeID == s.lab.identitySHA(s.lab.node)))
 	s.obs("at25", "power_boot", s.lab.forwardSummary(s.lab.node))
 }
 
