@@ -47,7 +47,7 @@ func TestReview_F04_PolicyActivateOperationUntruthfulOnDNSPublishOrFeedFailureAn
 	if err != nil {
 		t.Fatalf("dnsfeeds.New: %v", err)
 	}
-	pubStore, err := dnspublishstore.NewPublisher(pool, dnspublishstore.Config{Upstreams: []string{"192.0.2.53:53"}})
+	pubStore, err := dnspublishstore.NewPublisher(pool, dnspublishstore.Config{Upstreams: []string{"192.0.2.53:53"}, Clock: func() time.Time { return now }})
 	if err != nil {
 		t.Fatalf("NewPublisher: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestReview_F04_PolicyActivateOperationUntruthfulOnDNSPublishOrFeedFailureAn
 			t.Fatalf("query feed state: %v", err)
 		}
 		if opStatus == "succeeded" && lastErrorCode != "" {
-			t.Errorf("TODO(review) [F-04]: policy.activate operation %s reported status=%q even though threat_feed bootstrap failed with last_error_code=%q",
+			t.Errorf("[F-04]: policy.activate operation %s reported status=%q even though threat_feed bootstrap failed with last_error_code=%q",
 				opID, opStatus, lastErrorCode)
 		}
 	})
@@ -200,12 +200,14 @@ func TestReview_F04_PolicyActivateOperationUntruthfulOnDNSPublishOrFeedFailureAn
 		_ = pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action LIKE 'dns.publish%' AND resource_id = $1`, profRev.RevisionID).Scan(&publishAudits)
 
 		if brokenOpStatus == "succeeded" && publishedDocs == 0 {
-			t.Errorf("TODO(review) [F-04]: policy.activate operation %s for dns_profile reported status=%q even though dns.publish failed and published 0 resolver documents (publish audit count=%d)",
+			t.Errorf("[F-04]: policy.activate operation %s for dns_profile reported status=%q even though dns.publish failed and published 0 resolver documents (publish audit count=%d)",
 				brokenOpID, brokenOpStatus, publishAudits)
 		}
 
 		// 2. Now bootstrap mismatch-feed so the failed dns.publish retry (or a concurrent dns.publish
 		// that finishes after handlePolicyActivated) runs noteOperation after operations.status is already 'succeeded'.
+		// Respect the persisted six-hour cadence before testing recovery.
+		now = now.Add(6 * time.Hour)
 		feedBody = "different-pinned-body.example.com\n"
 		if _, err := feedSvc.Handle(ctx, db.ClaimedEvent{
 			OutboxEvent: db.OutboxEvent{
@@ -225,7 +227,7 @@ func TestReview_F04_PolicyActivateOperationUntruthfulOnDNSPublishOrFeedFailureAn
 			t.Fatalf("query observed_refs: %v", err)
 		}
 		if _, ok := observedRefs["dns_document"]; !ok {
-			t.Errorf("TODO(review) [F-04]: policy.activate operation %s lost observed_refs.dns_document (got observed_refs=%v) because handlePolicyActivated set status='succeeded' before dns.publish ran noteOperation",
+			t.Errorf("[F-04]: policy.activate operation %s lost observed_refs.dns_document (got observed_refs=%v) because handlePolicyActivated set status='succeeded' before dns.publish ran noteOperation",
 				brokenOpID, observedRefs)
 		}
 	})

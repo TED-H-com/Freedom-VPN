@@ -290,7 +290,7 @@ func TestReview_F06_MetricsLastGoodAgePoisonedBySupersededRevision(t *testing.T)
 	}
 
 	if math.IsInf(gotAge, 1) || gotAge != 0 {
-		t.Errorf("TODO(review) [F-06]: fvpn_dns_feed_last_good_age_seconds{feed_code=\"malware-feed\"} = %v after superseded rev1 failed (+Inf) and active rev2 succeeded (0); stale revision entries in m.ages poison the gauge",
+		t.Errorf("[F-06]: fvpn_dns_feed_last_good_age_seconds{feed_code=\"malware-feed\"} = %v after superseded rev1 failed (+Inf) and active rev2 succeeded (0); stale revision entries in m.ages poison the gauge",
 			gotAge)
 	}
 }

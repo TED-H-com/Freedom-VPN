@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
+	dnsoperation "github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -26,10 +28,11 @@ type Options struct {
 	Metrics           *prometheus.Registry
 }
 type Service struct {
-	pool    *pgxpool.Pool
-	opts    Options
-	removal int
-	metrics *feedMetrics
+	pool      *pgxpool.Pool
+	opts      Options
+	removal   int
+	metrics   *feedMetrics
+	observeMu sync.Mutex
 }
 
 func New(pool *pgxpool.Pool, opts Options) (*Service, error) {
@@ -59,10 +62,15 @@ func New(pool *pgxpool.Pool, opts Options) (*Service, error) {
 }
 
 type attempt struct {
-	revision uuid.UUID
-	token    uuid.UUID
-	payload  api.ThreatFeedPayload
-	previous *Content
+	revision   uuid.UUID
+	token      uuid.UUID
+	payload    api.ThreatFeedPayload
+	previous   *Content
+	generation string
+	operation  uuid.UUID
+	started    time.Time
+	receipt    string
+	activation bool
 }
 
 // Handle claims a short durable feed lease, fetches outside any transaction,
@@ -82,6 +90,14 @@ func (s *Service) Handle(ctx context.Context, event db.ClaimedEvent) (string, er
 	if s.pool == nil {
 		return "", errors.New("feed storage required")
 	}
+	var receipt *string
+	err := s.pool.QueryRow(ctx, `SELECT delivery_receipt FROM outbox_events WHERE id=$1 AND event_type='dns.feed.refresh' AND payload->>'revision_id'=$2`, event.ID, body.RevisionID.String()).Scan(&receipt)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return "", err
+	}
+	if receipt != nil {
+		return *receipt, nil
+	}
 	now := s.opts.Clock().UTC()
 	a, err := s.begin(ctx, body.RevisionID, event.ID, now)
 	if err != nil {
@@ -89,6 +105,9 @@ func (s *Service) Handle(ctx context.Context, event db.ClaimedEvent) (string, er
 	}
 	if a == nil {
 		return "dns-feed:unchanged:" + body.RevisionID.String(), nil
+	}
+	if a.receipt != "" {
+		return a.receipt, nil
 	}
 	content, reason := Fetch(ctx, s.opts.Client, a.payload, a.previous, now, s.removal)
 	// A canceled fetch must not leave an unreported half attempt. Lease expiry
@@ -103,15 +122,13 @@ func (s *Service) Handle(ctx context.Context, event db.ClaimedEvent) (string, er
 	if !changed {
 		return "dns-feed:superseded:" + body.RevisionID.String(), nil
 	}
-	{
-		result := reason
-		if result == "" {
-			result = "success"
-		}
-		s.metrics.total.WithLabelValues(a.payload.FeedCode, result).Inc()
-		if content != nil {
-			s.metrics.set(a.revision, a.payload.FeedCode, s.opts.Clock().UTC())
-		}
+	result := reason
+	if result == "" {
+		result = "success"
+	}
+	s.metrics.total.WithLabelValues(a.payload.FeedCode, result).Inc()
+	if err := s.observeAges(ctx); err != nil {
+		return "", err
 	}
 	if reason != "" {
 		return "dns-feed:failed:" + reason + ":" + body.RevisionID.String(), nil
@@ -124,14 +141,19 @@ func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time
 	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		a = nil
 		var raw []byte
-		err := tx.QueryRow(ctx, `SELECT r.payload FROM policy_revisions r JOIN policy_definitions d ON d.active_revision_id=r.id WHERE r.id=$1 AND r.type='threat_feed' FOR SHARE OF d`, rev).Scan(&raw)
+		var generation string
+		var definition uuid.UUID
+		err := tx.QueryRow(ctx, `SELECT r.payload,d.generation::text,d.id FROM policy_revisions r JOIN policy_definitions d ON d.active_revision_id=r.id WHERE r.id=$1 AND r.type='threat_feed' FOR SHARE OF d`, rev).Scan(&raw, &generation, &definition)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil
 		}
 		if err != nil {
 			return err
 		}
-		candidate := &attempt{revision: rev, token: uuid.New()}
+		candidate := &attempt{revision: rev, token: uuid.New(), generation: generation, started: now}
+		if err := tx.QueryRow(ctx, `SELECT id FROM operations WHERE kind='policy.activate' AND resource_id=$1 AND desired_generation=$2::numeric ORDER BY created_at DESC LIMIT 1`, definition, generation).Scan(&candidate.operation); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
 		raw, err = dnspolicy.MaterializeFeedDefaults(raw)
 		if err != nil {
 			return errors.New("invalid stored feed")
@@ -148,16 +170,21 @@ func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time
 		var hash *string
 		var next, until *time.Time
 		var lastEvent *uuid.UUID
-		if err := tx.QueryRow(ctx, `SELECT last_good_content,next_attempt_at,attempt_until,last_event_id FROM dns_feed_refresh_state WHERE feed_revision_id=$1 FOR UPDATE`, rev).Scan(&hash, &next, &until, &lastEvent); err != nil {
+		var activationGeneration string
+		var lastReceipt *string
+		if err := tx.QueryRow(ctx, `SELECT last_good_content,next_attempt_at,attempt_until,last_event_id,activation_generation::text,last_receipt FROM dns_feed_refresh_state WHERE feed_revision_id=$1 FOR UPDATE`, rev).Scan(&hash, &next, &until, &lastEvent, &activationGeneration, &lastReceipt); err != nil {
 			return err
 		}
-		if lastEvent != nil && *lastEvent == event {
+		if lastEvent != nil && *lastEvent == event && lastReceipt != nil {
+			candidate.receipt = *lastReceipt
+			a = candidate
 			return nil
 		}
+		candidate.activation = activationGeneration != generation
 		if until != nil && now.Before(*until) {
 			return errors.New("feed refresh in progress")
 		}
-		if next != nil && now.Before(*next) {
+		if !candidate.activation && next != nil && now.Before(*next) {
 			return nil
 		}
 		if hash != nil {
@@ -177,7 +204,7 @@ func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time
 			}
 			candidate.previous = &previous
 		}
-		_, err = tx.Exec(ctx, `UPDATE dns_feed_refresh_state SET last_attempt_at=$2,attempt_token=$3,attempt_until=$4 WHERE feed_revision_id=$1`, rev, now, candidate.token, now.Add(time.Minute))
+		_, err = tx.Exec(ctx, `UPDATE dns_feed_refresh_state SET attempt_token=$2,attempt_until=$3 WHERE feed_revision_id=$1`, rev, candidate.token, now.Add(time.Minute))
 		if err == nil {
 			a = candidate
 		}
@@ -193,7 +220,7 @@ func (s *Service) finish(ctx context.Context, a *attempt, event db.ClaimedEvent,
 		// Recheck activation under a lock: an in-flight fetch cannot resurrect a
 		// revision replaced while the HTTP request was running.
 		var active bool
-		err := tx.QueryRow(ctx, `SELECT coalesce(active_revision_id=$1,false) FROM policy_definitions WHERE id=(SELECT definition_id FROM policy_revisions WHERE id=$1) FOR SHARE`, a.revision).Scan(&active)
+		err := tx.QueryRow(ctx, `SELECT coalesce(active_revision_id=$1 AND generation=$2::numeric,false) FROM policy_definitions WHERE id=(SELECT definition_id FROM policy_revisions WHERE id=$1) FOR SHARE`, a.revision, a.generation).Scan(&active)
 		if err != nil {
 			return err
 		}
@@ -244,16 +271,47 @@ func (s *Service) finish(ctx context.Context, a *attempt, event db.ClaimedEvent,
 			action, result = "dns.feed.refreshed", api.AuditEventResultSucceeded
 			after = map[string]any{"content_sha256": c.SHA256, "rule_count": len(c.Entries)}
 			fields = []string{"content_sha256", "rule_count"}
-			if err == nil && (a.previous == nil || a.previous.SHA256 != c.SHA256) {
+			if err == nil && (a.activation || a.previous == nil || a.previous.SHA256 != c.SHA256) {
 				// Durable fan-out includes profiles still waiting for their first content.
 				_, err = tx.Exec(ctx, `INSERT INTO outbox_events(aggregate_id,aggregate_type,aggregate_version,event_type,schema_version,payload)
      SELECT d.id,'policy_definition',d.generation,'dns.publish',1,
       jsonb_build_object('type','dns_profile','definition_id',d.id,'revision_id',r.id,'generation',d.generation::text,'action','feed_refresh')
      FROM policy_definitions d JOIN policy_revisions r ON r.id=d.active_revision_id
-     WHERE r.type='dns_profile' AND r.payload->'threat_feed_revision_ids' @> jsonb_build_array($1::text)`, a.revision.String())
+     WHERE r.type='dns_profile' AND EXISTS(SELECT 1 FROM policy_revisions f WHERE f.definition_id=(SELECT definition_id FROM policy_revisions WHERE id=$1::uuid) AND r.payload->'threat_feed_revision_ids' @> jsonb_build_array(f.id::text))`, a.revision.String())
 			}
 		}
 		if err != nil {
+			return err
+		}
+		receipt := "dns-feed:refreshed:" + a.revision.String()
+		var errorCode *api.ErrorCode
+		var reference string
+		if c == nil {
+			receipt = "dns-feed:failed:" + reason + ":" + a.revision.String()
+			code := api.ErrorCodeVALIDATIONFAILED
+			switch reason {
+			case "content_mismatch":
+				code = api.ErrorCodeHASHMISMATCH
+			case "fetch_failed", "read_failed", "http_status":
+				code = api.ErrorCodeDEPENDENCYUNAVAILABLE
+			case "oversize", "content_too_large":
+				code = api.ErrorCodePAYLOADTOOLARGE
+			}
+			errorCode = &code
+		} else {
+			var id uuid.UUID
+			if err := tx.QueryRow(ctx, `SELECT id FROM dns_feed_contents WHERE feed_revision_id=$1 AND content_sha256=$2`, a.revision, c.SHA256).Scan(&id); err != nil {
+				return err
+			}
+			reference = "dns_feed_content:" + id.String()
+		}
+		if _, err := tx.Exec(ctx, `UPDATE dns_feed_refresh_state SET last_attempt_at=$2,activation_generation=$3::numeric,last_receipt=$4 WHERE feed_revision_id=$1`, a.revision, a.started, a.generation, receipt); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(ctx, `UPDATE outbox_events SET delivery_receipt=$2 WHERE id=$1`, event.ID, receipt); err != nil {
+			return err
+		}
+		if err := dnsoperation.Record(ctx, tx, a.operation, dnsoperation.FeedStep, reference, errorCode, now); err != nil {
 			return err
 		}
 		ev, err := audit.NewEvent(audit.Entry{Actor: audit.SystemActor, Action: action, Resource: api.ResourceRef{Type: api.ResourceTypePolicyRevision, Id: a.revision}, Result: result, After: after, Fields: fields})
@@ -280,6 +338,14 @@ func (s *Service) Schedule(ctx context.Context) error {
 		if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(544054)`); err != nil {
 			return err
 		}
+		if _, err := tx.Exec(ctx, `INSERT INTO outbox_events(aggregate_id,aggregate_type,aggregate_version,event_type,schema_version,payload)
+ SELECT d.id,'policy_definition',d.generation,'dns.publish',1,jsonb_build_object('type','dns_profile','definition_id',d.id,'revision_id',r.id,'generation',d.generation::text,'action','feed_lifecycle')
+ FROM policy_definitions d JOIN policy_revisions r ON r.id=d.active_revision_id
+ JOIN dns_publication_heads h ON h.definition_id=d.id AND h.status='active'
+ WHERE r.type='dns_profile' AND NOT dns_profile_feeds_eligible(r.id,$1)
+ AND NOT EXISTS(SELECT 1 FROM outbox_events e WHERE e.event_type='dns.publish' AND e.aggregate_id=d.id AND e.delivered_at IS NULL AND e.dead_lettered_at IS NULL)`, now); err != nil {
+			return err
+		}
 		_, err := tx.Exec(ctx, `INSERT INTO outbox_events(aggregate_id,aggregate_type,aggregate_version,event_type,schema_version,payload)
    SELECT r.id,'policy_revision',d.generation,'dns.feed.refresh',1,jsonb_build_object('revision_id',r.id)
    FROM policy_definitions d JOIN policy_revisions r ON r.id=d.active_revision_id
@@ -296,6 +362,8 @@ func (s *Service) Schedule(ctx context.Context) error {
 }
 
 func (s *Service) observeAges(ctx context.Context) error {
+	s.observeMu.Lock()
+	defer s.observeMu.Unlock()
 	rows, err := s.pool.Query(ctx, `SELECT r.id,r.payload->>'feed_code',s.last_success_at FROM policy_definitions d JOIN policy_revisions r ON r.id=d.active_revision_id LEFT JOIN dns_feed_refresh_state s ON s.feed_revision_id=r.id WHERE r.type='threat_feed'`)
 	if err != nil {
 		return err

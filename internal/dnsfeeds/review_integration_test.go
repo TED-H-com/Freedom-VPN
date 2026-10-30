@@ -110,7 +110,7 @@ func TestReview_F05_SupersededAndExpiredFeedRevisionCompiledIntoActiveProfileAnd
 		t.Fatalf("ActivateRevision profile: %v", err)
 	}
 
-	pub, err := dnspublishstore.NewPublisher(pool, dnspublishstore.Config{Upstreams: []string{"192.0.2.53:53"}})
+	pub, err := dnspublishstore.NewPublisher(pool, dnspublishstore.Config{Upstreams: []string{"192.0.2.53:53"}, Clock: func() time.Time { return now }})
 	if err != nil {
 		t.Fatalf("NewPublisher: %v", err)
 	}
@@ -165,14 +165,14 @@ func TestReview_F05_SupersededAndExpiredFeedRevisionCompiledIntoActiveProfileAnd
 	var publishEventsAfter int
 	_ = pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE event_type='dns.publish'`).Scan(&publishEventsAfter)
 	if publishEventsAfter == publishEventsBefore {
-		t.Errorf("TODO(review) [F-05]: activating and refreshing superseded threat_feed rev2 enqueued 0 dns.publish events for active dns_profile %s (still pinned to superseded rev1)",
+		t.Errorf("[F-05]: activating and refreshing superseded threat_feed rev2 enqueued 0 dns.publish events for active dns_profile %s (still pinned to superseded rev1)",
 			profRev.RevisionID)
 	}
 
 	// 4. Even when the active dns_profile is republished at now+2h (after rev1.ValidUntil expired
 	// and rev1 was superseded by rev2), pub.Handle succeeds and compiles rev1's expired snapshot!
 	if receipt, err := pub.Handle(ctx, publishEventFor(profRev.RevisionID)); err == nil {
-		t.Errorf("TODO(review) [F-05]: dnspublish compiled superseded and expired threat_feed rev1 (valid_until=%s, now=%s) into active dns_profile (receipt=%q) without error",
+		t.Errorf("[F-05]: dnspublish compiled superseded and expired threat_feed rev1 (valid_until=%s, now=%s) into active dns_profile (receipt=%q) without error",
 			payload1.ValidUntil.Format(time.RFC3339), now.Format(time.RFC3339), receipt)
 	}
 
@@ -205,7 +205,7 @@ func TestReview_F05_SupersededAndExpiredFeedRevisionCompiledIntoActiveProfileAnd
 		t.Fatalf("Handle re-activated rev2: %v", err)
 	}
 	if strings.HasPrefix(receipt, "dns-feed:unchanged:") {
-		t.Errorf("TODO(review) [F-05]: explicit re-activation of threat_feed rev2 before next_attempt_at was skipped with receipt=%q instead of verifying/fan-outing",
+		t.Errorf("[F-05]: explicit re-activation of threat_feed rev2 before next_attempt_at was skipped with receipt=%q instead of verifying/fan-outing",
 			receipt)
 	}
 }
@@ -274,7 +274,7 @@ func TestReview_F06_ThreatFeedStatusUnpopulatedAndPrematureLastAttemptAt(t *test
 
 	// 1. Check premature last_attempt_at mutation during in-flight HTTP request.
 	if prematureLastAttemptAt != nil && prematureLastSuccessAt == nil && prematureLastErrorCode == nil {
-		t.Errorf("TODO(review) [F-06]: begin() committed last_attempt_at=%s to dns_feed_refresh_state before HTTP fetch completed (while last_success_at and last_error_code were still nil)",
+		t.Errorf("[F-06]: begin() committed last_attempt_at=%s to dns_feed_refresh_state before HTTP fetch completed (while last_success_at and last_error_code were still nil)",
 			prematureLastAttemptAt.Format(time.RFC3339))
 	}
 
@@ -284,7 +284,7 @@ func TestReview_F06_ThreatFeedStatusUnpopulatedAndPrematureLastAttemptAt(t *test
 		t.Fatalf("GetDefinition: %v", err)
 	}
 	if !def.ThreatFeedStatus.IsSpecified() || def.ThreatFeedStatus.IsNull() {
-		t.Errorf("TODO(review) [F-06]: GetDefinition for active threat_feed returned ThreatFeedStatus specified=%v null=%v; OpenAPI Revision 5 requires threat_feed_status when type=threat_feed and active_revision_id is non-null",
+		t.Errorf("[F-06]: GetDefinition for active threat_feed returned ThreatFeedStatus specified=%v null=%v; OpenAPI Revision 5 requires threat_feed_status when type=threat_feed and active_revision_id is non-null",
 			def.ThreatFeedStatus.IsSpecified(), def.ThreatFeedStatus.IsNull())
 	}
 }

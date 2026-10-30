@@ -28,7 +28,8 @@ type PublishedDocument struct {
 // implements it without requiring publisher configuration. LatestPublished
 // selects the active publication head in one snapshot; GetByID retains access
 // to immutable historical documents for callers authorizing a previously issued
-// reference. Neither method grants a node permission to receive a document.
+// reference while its feed approvals remain active and valid. Neither method
+// grants a node permission to receive a document.
 type DocumentReader interface {
 	LatestPublished(ctx context.Context, profileDefinitionID uuid.UUID) (PublishedDocument, error)
 	GetByID(ctx context.Context, documentID uuid.UUID) (PublishedDocument, error)

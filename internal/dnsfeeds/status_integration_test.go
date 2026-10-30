@@ -105,12 +105,12 @@ func TestD058_StatusProjectionFromRefreshJob(t *testing.T) {
 	if err != nil || a == nil {
 		t.Fatalf("begin: %v", err)
 	}
-	want.LastAttemptAt.Set(now)
-	assertStatus(want)
+	assertStatus(want) // lease start is not yet a completed observation
 	c, reason := Fetch(ctx, client, a.payload, nil, now, 50)
 	if ok, err := s.finish(ctx, a, e, c, reason, now); err != nil || !ok {
 		t.Fatalf("finish: %v", err)
 	}
+	want.LastAttemptAt.Set(now)
 	want.LastResult = api.ThreatFeedStatusLastResultSuccess
 	want.LastGoodContentSha256.Set(payload.ContentSha256)
 	want.LastGoodRuleCount.Set(1)
@@ -146,7 +146,6 @@ func TestD058_StatusProjectionFromRefreshJob(t *testing.T) {
 	if err != nil || a == nil {
 		t.Fatalf("begin recovery: %v", err)
 	}
-	want.LastAttemptAt.Set(now)
 	want.LastGoodAgeSeconds.Set(decstr.U64(30 * 3600))
 	assertStatus(want)
 	c, reason = Fetch(ctx, client, a.payload, a.previous, now, 50)
