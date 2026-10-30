@@ -38,6 +38,12 @@ func TestE2E_Acceptance(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 35*time.Minute)
 	defer cancel()
 	run := &runner{t: t, lab: lab, dir: filepath.Join(lab.root, "docs", "e2e", "runs", time.Now().UTC().Format("2006-01-02"))}
+	run.runID = uuid.NewString()
+	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	run.sourceCommit = strings.TrimSpace(string(commit))
 	defer run.finish()
 
 	run.health(ctx)
@@ -45,12 +51,12 @@ func TestE2E_Acceptance(t *testing.T) {
 	if admin == nil {
 		return
 	}
+	good, bad := run.releases(ctx, admin)
 	nodeID := run.enroll(ctx, admin)
 	run.desired(ctx)
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
-		good, bad := run.releases(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
 		run.revoke(ctx, admin, nodeID)
@@ -64,6 +70,8 @@ type runner struct {
 	lab            *lab
 	dir            string
 	bad            bool
+	runID          string
+	sourceCommit   string
 	nodeID         uuid.UUID
 	incID          uuid.UUID
 	enrolledID     uuid.UUID
@@ -79,6 +87,7 @@ type runner struct {
 }
 
 func (r *runner) record(rec Record) {
+	rec.RunID, rec.SourceCommit = r.runID, r.sourceCommit
 	if rec.Status != StatusPass {
 		r.bad = true
 	}
@@ -273,6 +282,14 @@ func (r *runner) desired(ctx context.Context) {
 	_ = json.Unmarshal(raw, &env)
 	rec.Observations = append(rec.Observations, Observation{Name: "config_generation", Detail: env.Signed.ConfigGeneration})
 	rec.Observations = append(rec.Observations, Observation{Name: "serving_count", Detail: itoa(len(env.Signed.Serving))})
+	config, err := os.ReadFile(filepath.Join(r.lab.state, "node", "etc", "agent-run.json"))
+	var boot struct {
+		ReleaseID string `json:"release_id"`
+	}
+	if err == nil && json.Unmarshal(config, &boot) == nil {
+		rec.Observations = append(rec.Observations, Observation{Name: "boot_release_id", Detail: emptyDash(boot.ReleaseID)})
+		rec.Observations = append(rec.Observations, Observation{Name: "boot_release_supported", Detail: boolText(len(env.Signed.Serving) == 0 || containsCSV(strings.Join(env.Signed.Serving, ","), boot.ReleaseID))})
+	}
 	rec.Observations = append(rec.Observations, Observation{Name: "update_present", Detail: boolText(env.Signed.Update != nil)})
 	r.record(rec)
 }
@@ -310,6 +327,7 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		return
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "member_id_present", Detail: boolText(member.memberID != "")})
+	portalSub := r.notePortalSubject(ctx, member.memberID, recPathNote(&rec))
 	if err := r.seedPlan(ctx); err != nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "plan", Detail: "seed failed"})
 	} else {
@@ -327,7 +345,8 @@ func (r *runner) member(ctx context.Context, admin *session) {
 	if err != nil || grant.Status < 200 || grant.Status >= 300 {
 		rec.Observations = append(rec.Observations, Observation{Name: "grant_body", Detail: clipText(string(grant.Body), 180)})
 	}
-	r.memberNetBird(ctx, member, recPathNote(&rec))
+	r.memberNetBird(ctx, member, portalSub, recPathNote(&rec))
+	r.noteProjection(ctx, member.memberID, recPathNote(&rec))
 	planForCheckout := r.planID
 	if planForCheckout == uuid.Nil {
 		planForCheckout = uuid.New()
@@ -395,8 +414,9 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 	rec := Record{ID: "release-register", Title: "fvpn-release packages registered and verified", Spec: []string{"§13.3", "§13.4"}, Status: StatusFail}
 	var ids []uuid.UUID
 	for i, spec := range []struct{ product, seq, commit, build, byte string }{
-		{"1.0.1", "1", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "e2e-good", "good\n"},
-		{"1.0.2", "2", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "e2e-bad", "bad\n"},
+		{"0.1.0", "1", r.sourceCommit, "e2e-boot", ""},
+		{"1.0.1", "2", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "e2e-good", "good\n"},
+		{"1.0.2", "3", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "e2e-bad", "bad\n"},
 	} {
 		dir := r.t.TempDir()
 		pkg := filepath.Join(dir, "tree")
@@ -410,17 +430,41 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 			r.record(rec)
 			return
 		}
-		if err := release.PackageDir(pkg, filepath.Join(dir, "amd64.tar.zst"), time.Unix(1_700_000_000, 0).UTC()); err != nil {
-			rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "amd64"})
-			r.record(rec)
-			return
+		installed := map[string]string{}
+		for _, arch := range []string{"amd64", "arm64"} {
+			if i == 0 {
+				// TEST ONLY boot release: package the same tree binaries the
+				// node image runs, so its release identity is not an update fixture.
+				for _, name := range []string{"agent", "watchdog", "updater"} {
+					cmd := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Join(pkg, "bin", "fvpn-"+name), "./node/"+name+"/cmd/fvpn-"+name)
+					cmd.Dir = r.lab.root
+					cmd.Env = append(os.Environ(), "GOOS=linux", "GOARCH="+arch, "CGO_ENABLED=0", "GOTOOLCHAIN=local")
+					if err := cmd.Run(); err != nil {
+						rec.Observations = append(rec.Observations, Observation{Name: "boot_build", Detail: arch + " " + name + " failed"})
+						r.record(rec)
+						return
+					}
+				}
+			}
+			var size uint64
+			if err := filepath.Walk(pkg, func(_ string, info os.FileInfo, err error) error {
+				if err == nil && info.Mode().IsRegular() {
+					size += uint64(info.Size())
+				}
+				return err
+			}); err != nil {
+				rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "measure " + arch})
+				r.record(rec)
+				return
+			}
+			installed[arch] = decstr.U64(size).String()
+			if err := release.PackageDir(pkg, filepath.Join(dir, arch+".tar.zst"), time.Unix(1_700_000_000, 0).UTC()); err != nil {
+				rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: arch})
+				r.record(rec)
+				return
+			}
 		}
-		if err := release.PackageDir(pkg, filepath.Join(dir, "arm64.tar.zst"), time.Unix(1_700_000_000, 0).UTC()); err != nil {
-			rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "arm64"})
-			r.record(rec)
-			return
-		}
-		id, canonical, err := r.lab.signedRelease(dir, spec.product, spec.seq, spec.commit, spec.build)
+		id, canonical, err := r.lab.signedRelease(dir, spec.product, spec.seq, spec.commit, spec.build, installed)
 		if err != nil {
 			rec.Observations = append(rec.Observations, Observation{Name: "manifest", Detail: err.Error()})
 			r.record(rec)
@@ -441,6 +485,13 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 		}
 		ids = append(ids, id)
 		if i == 0 {
+			if err := r.lab.setBootRelease(id); err != nil {
+				rec.Observations = append(rec.Observations, Observation{Name: "boot_release", Detail: "config write failed"})
+				r.record(rec)
+				return
+			}
+			rec.Observations = append(rec.Observations, Observation{Name: "boot_release_id", Detail: id.String()})
+		} else if i == 1 {
 			good = id
 		} else {
 			bad = id
@@ -486,7 +537,7 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 			verified = append(verified, id)
 		}
 	}
-	if len(verified) != 2 {
+	if len(verified) != len(ids) {
 		r.record(rec)
 		return uuid.Nil, uuid.Nil
 	}
@@ -551,10 +602,23 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	defer cancel()
 	seen := waitUntil(wait, 2*time.Second, func() bool {
 		b, err := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/state/desired-state.json")
-		return err == nil && bytes.Contains(b, []byte(releaseID.String()))
+		return err == nil && desiredUpdateRelease(b) == releaseID.String()
 	})
 	rec.Observations = append(rec.Observations, Observation{Name: "desired_contains_release", Detail: boolText(seen)})
 	if !seen {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "no signed update instruction for this release within 90s; updater was not invoked"})
+		conn, err := r.lab.db(ctx)
+		if err == nil {
+			defer conn.Close(ctx)
+			var row []byte
+			err = conn.QueryRow(ctx, `SELECT jsonb_build_object('state',j.state,'stage',j.stage,
+				'error_code',j.error_code,'issued_at',j.issued_at,'target_state',t.target_state)
+				FROM update_jobs j JOIN update_targets t ON t.id=j.target_id
+				WHERE t.batch_id=$1 AND t.node_id=$2 ORDER BY j.attempt DESC LIMIT 1`, accepted.BatchId, r.nodeID).Scan(&row)
+			if err == nil {
+				rec.Observations = append(rec.Observations, Observation{Name: "stored_update_job", Detail: string(row)})
+			}
+		}
 		r.record(rec)
 		return
 	}

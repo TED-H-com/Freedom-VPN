@@ -39,16 +39,19 @@ winner/loser positive controls.
 
 ## B3 — second OAuth client (AT01, AT02)
 
-Owner: devstack, `tests/e2e/cmd/fvpn-e2e-idp/main.go: server.authorize/token`,
-`fvpn-e2e-prepare/main.go`. The running IdP returns HTTP 400 for the native
-client; it is configured with only `portal-e2e`. Portal re-login maps correctly,
-but that does not establish cross-client identity.
+Owner: devstack. `netbird-server` 0.82.0 exposes two static Dex clients and
+rejects a third registration. The portal and the CLI share
+`https://netbird.example.invalid/oauth2`. The portal client is
+`netbird-dashboard`; the CLI client is `netbird-cli`. The public `sub` is the
+same for both and is the NetBird user id. See `docs/e2e/README.md`. A probe of
+the test IdP with `client_id=netbird-native` is not the portal path.
 
-Provide two registered clients, native authentication, stable-claim proof and
-multiple real user peers. Document a reusable session/NetBird/DB setup seam;
-the existing shared runner's `lab`, `runner`, `login` and `call` are private.
-No new public device-authorize HTTP endpoint is requested: the acceptance race
-can call the existing service against the real adapter as this suite does.
+Stable-claim proof across those two clients, plus multiple real user peers,
+is still required for AT01. `e2e-member` and `e2e-member-b` exist after
+bootstrap. The acceptance run admits one member container. Document a reusable
+session/NetBird/DB setup seam; the shared runner's `lab`, `runner`, `login`
+and `call` are private. No new public device-authorize HTTP endpoint is
+requested.
 
 ## B4 — authoritative payment and Portal fixtures (AT03, AT04)
 

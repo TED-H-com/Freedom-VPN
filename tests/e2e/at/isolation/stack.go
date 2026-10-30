@@ -23,6 +23,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -161,34 +162,23 @@ func (s *stack) login(ctx context.Context, subject, role string) (*session, erro
 	if err != nil {
 		return nil, err
 	}
-	sess := &session{http: &http.Client{Transport: s.transport, Jar: jar, Timeout: 30 * time.Second}}
-	assume, err := s.secret("assume.secret")
+	sess := &session{http: &http.Client{Transport: s.transport, Jar: jar, Timeout: 30 * time.Second, CheckRedirect: idplogin.RedirectLimit(20)}}
+	token, err := s.secret("netbird.token")
 	if err != nil {
 		return nil, err
 	}
-	body, _ := json.Marshal(map[string]string{"subject": subject, "role": role, "name": role})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.idp+"/e2e/assume", bytes.NewReader(body))
+	cred, err := idplogin.CredFor(ctx, sess.http, "https://netbird.example.invalid/api", token, s.state, subject)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-E2E-Secret", assume)
+	if err := idplogin.PortalLogin(ctx, sess.http, s.public, cred.Email, cred.Password); err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.public+"/auth/session", nil)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := sess.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusNoContent {
-		return nil, fmt.Errorf("assume HTTP %d", resp.StatusCode)
-	}
-	resp, err = sess.http.Get(s.public + "/auth/login")
-	if err != nil {
-		return nil, err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
-	resp, err = sess.http.Get(s.public + "/auth/session")
 	if err != nil {
 		return nil, err
 	}

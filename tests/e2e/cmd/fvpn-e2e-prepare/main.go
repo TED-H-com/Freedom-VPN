@@ -246,7 +246,7 @@ func run(state string, reset bool, lay layout) error {
 		"public_origin":        "https://portal.example.invalid:8443",
 		"tls_certificate_file": "/secrets/tls.crt", "tls_key_file": "/secrets/tls.key",
 		"agent_ca_file": "/secrets/agent-ca.pem", "database_url_file": "/secrets/database.url",
-		"oidc_issuer": "https://idp.example.invalid", "oidc_client_id": "portal-e2e",
+		"oidc_issuer": "https://netbird.example.invalid/oauth2", "oidc_client_id": "netbird-dashboard",
 		"oidc_secret_file": "/secrets/oidc.secret", "admin_claim": "roles", "admin_value": "admin",
 		"mfa_amr": []string{"mfa"}, "recent_auth_seconds": 900,
 		"session_idle_seconds": 1800, "session_absolute_seconds": 43200,
@@ -309,10 +309,11 @@ func run(state string, reset bool, lay layout) error {
 	stack := map[string]any{
 		"public_origin":  "https://portal.example.invalid:8443",
 		"agent_origin":   "https://agent.example.invalid:9443",
-		"idp_issuer":     "https://idp.example.invalid",
+		"idp_issuer":     "https://netbird.example.invalid/oauth2",
 		"netbird_api":    "https://netbird.example.invalid/api",
 		"release_origin": "https://releases.example.invalid",
-		"client_id":      "portal-e2e",
+		"client_id":      "netbird-dashboard",
+		"issuer_layout":  "embedded-dex",
 		"price_id":       "e2e-price",
 		"return_url":     "https://portal.example.invalid:8443/billing/return",
 		"prefix":         "fvpn-" + lay.Prefix,
@@ -389,9 +390,13 @@ func writeNetBird(state string) error {
 		"disableAnonymousMetrics": true, "disableGeoliteUpdate": true,
 		"auth": map[string]any{
 			"issuer": "https://netbird.example.invalid/oauth2",
+			// The all-in-one server copies these onto the static dashboard
+			// client. A third OAuth client cannot be registered. The portal
+			// therefore uses netbird-dashboard.
 			"dashboardRedirectURIs": []string{
 				"https://netbird.example.invalid/nb-auth",
 				"https://netbird.example.invalid/nb-silent-auth",
+				"https://portal.example.invalid:8443/auth/callback",
 			},
 			"cliRedirectURIs": []string{"http://localhost:53000/"},
 		},
