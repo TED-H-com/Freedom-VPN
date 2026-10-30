@@ -18,6 +18,8 @@ import (
 )
 
 func (r *runner) selectExit(ctx context.Context, note func(string, string)) bool {
+	route, _ := r.lab.docker(r.lab.member, "ip", "route", "get", r.originIP())
+	note("member_route_before_selection", strings.TrimSpace(string(route)))
 	before, _ := r.lab.docker(r.lab.member, "netbird", "networks", "list")
 	note("netbird_networks_before_selection", strings.TrimSpace(string(before)))
 	// Select the one product-created exit explicitly: NetBird 'select all'
