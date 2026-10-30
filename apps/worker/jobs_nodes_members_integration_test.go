@@ -106,7 +106,11 @@ func newMemberPolicyFixture(t *testing.T, withSigner bool) *memberPolicyFixture 
 		t.Fatal(err)
 	}
 	f.config.MembersConfigFile = write("members.json", raw)
-	f.services, err = membersruntime.New(f.pool, m, nil)
+	identityDiscovery, err := devices.NewIdentityDiscovery(f.config.OIDCIssuer, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.services, err = membersruntime.New(f.pool, m, identityDiscovery, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,8 +120,8 @@ func newMemberPolicyFixture(t *testing.T, withSigner bool) *memberPolicyFixture 
 	group, plan, revision, incarnation, exit, identity := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	now := time.Now().UTC().Truncate(time.Microsecond)
 	f.sql(`INSERT INTO members(id,status) VALUES($1,'active')`, f.member)
-	f.sql(`INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','TEST ONLY subject','TEST ONLY claim','verified-link',$3)`, identity, f.member, now)
-	f.sql(`INSERT INTO netbird_user_bindings(id,member_id,deployment_id,external_user_id,identity_binding_id,mapping_proof,revision,verified_at) VALUES($1,$2,$3,$4,$5,'TEST ONLY proof',1,$6)`, uuid.New(), f.member, m.NetBirdDeployment, f.peer.peer.ExternalUserID, identity, now)
+	f.sql(`INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','TEST ONLY user','sub','oidc',$3)`, identity, f.member, now)
+	f.sql(`INSERT INTO netbird_user_bindings(id,member_id,deployment_id,external_user_id,identity_binding_id,mapping_proof,revision,verified_at) VALUES($1,$2,$3,$4,$5,'shared_issuer_public_subject:https://id.example.invalid',1,$6)`, uuid.New(), f.member, m.NetBirdDeployment, f.peer.peer.ExternalUserID, identity, now)
 	f.sql(`INSERT INTO member_groups(id,code,name) VALUES($1,'TEST ONLY group','TEST ONLY group')`, group)
 	f.sql(`INSERT INTO plans(id,code) VALUES($1,'TEST ONLY plan')`, plan)
 	f.sql(`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,schema_version,payload) VALUES($1,$2,1,3,$3,1,'{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, revision, plan, []uuid.UUID{group})

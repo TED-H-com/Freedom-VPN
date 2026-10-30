@@ -109,6 +109,14 @@ func (c *Client) EnsureNodePeer(ctx context.Context, n NodePeer) (Peer, error) {
 	defer unlock()
 	return c.ensureNode(ctx, n)
 }
+
+// memberIdentityVerifier lets a durable store prove an old revision-dependent
+// hash belongs to the same immutable identity. A generic store cannot upgrade
+// an unknown hash merely because the provider user ID matches.
+type memberIdentityVerifier interface {
+	VerifyMemberIdentity(context.Context, string, MemberDevice) (bool, error)
+}
+
 func (c *Client) ensureMember(ctx context.Context, d MemberDevice) (Peer, error) {
 	if !valid(d.MemberID, d.DeviceID, d.PeerID, d.UserID, d.IdentityBindingID, d.MappingRevision) {
 		return Peer{}, failure(Invalid)
@@ -146,8 +154,23 @@ func (c *Client) ensureMember(ctx context.Context, d MemberDevice) (Peer, error)
 	if e != nil {
 		return Peer{}, e
 	}
-	if ok && (b.ExternalID != d.UserID || b.DesiredHash != proof) {
-		return Peer{}, failure(Conflict)
+	if ok {
+		if b.ExternalID != d.UserID {
+			return Peer{}, failure(Conflict)
+		}
+		if b.DesiredHash != proof {
+			verifier, available := c.store.(memberIdentityVerifier)
+			if !available {
+				return Peer{}, failure(Conflict)
+			}
+			verified, err := verifier.VerifyMemberIdentity(ctx, c.deployment, d)
+			if err != nil {
+				return Peer{}, err
+			}
+			if !verified {
+				return Peer{}, failure(Conflict)
+			}
+		}
 	}
 	if e = c.bind(ctx, "users", d.MemberID, d.UserID, proof); e != nil {
 		return Peer{}, e
