@@ -1,6 +1,7 @@
 -- +goose Up
 -- D-054 / §12.3: worker projections; never member query data or raw feed bodies.
 CREATE TABLE dns_feed_contents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     feed_revision_id UUID NOT NULL REFERENCES policy_revisions(id),
     content_sha256 TEXT NOT NULL CHECK (content_sha256 ~ '^[0-9a-f]{64}$'),
     size_bytes BIGINT NOT NULL CHECK (size_bytes > 0 AND size_bytes <= 32000000),
@@ -9,8 +10,9 @@ CREATE TABLE dns_feed_contents (
     parse_metrics JSONB NOT NULL CHECK (jsonb_typeof(parse_metrics) = 'object'),
     fetched_at TIMESTAMPTZ NOT NULL,
     kind TEXT NOT NULL CHECK (kind IN ('approved_snapshot', 'refreshed')),
-    PRIMARY KEY (feed_revision_id, content_sha256)
+    UNIQUE (feed_revision_id, content_sha256)
 );
+COMMENT ON TABLE dns_feed_contents IS 'D-054 / §12.3 immutable normalized feed versions, uniquely keyed by revision and SHA-256; never query data.';
 CREATE TRIGGER dns_feed_contents_immutable BEFORE UPDATE OR DELETE ON dns_feed_contents
     FOR EACH ROW EXECUTE FUNCTION immutable_row();
 CREATE TRIGGER dns_feed_contents_no_truncate BEFORE TRUNCATE ON dns_feed_contents
@@ -28,7 +30,7 @@ CREATE TABLE dns_feed_refresh_state (
     last_event_id UUID,
     FOREIGN KEY (feed_revision_id, last_good_content) REFERENCES dns_feed_contents(feed_revision_id, content_sha256)
 );
-COMMENT ON TABLE dns_feed_refresh_state IS 'D-054 operator observations written only by dns.feed.refresh. NULL last_good_content means bootstrap has never passed. Error codes never contain source URLs or domains.';
+COMMENT ON TABLE dns_feed_refresh_state IS 'D-054 / §12.3 operator observations written only by dns.feed.refresh. NULL last_good_content means bootstrap has never passed. Error codes never contain source URLs or domains.';
 
 -- The existing activation outbox remains available to other domains.
 -- +goose StatementBegin
@@ -49,6 +51,8 @@ CREATE TRIGGER outbox_events_dns_feed_refresh AFTER INSERT ON outbox_events
 -- references still identify the profile revision; the head identifies its version.
 ALTER TABLE dns_publication_heads DROP CONSTRAINT dns_publication_heads_profile_revision_id_fkey;
 ALTER TABLE dns_resolver_documents DROP CONSTRAINT dns_resolver_documents_pkey;
-ALTER TABLE dns_resolver_documents ADD PRIMARY KEY (profile_revision_id, policy_generation);
+ALTER TABLE dns_resolver_documents ADD COLUMN id UUID NOT NULL DEFAULT gen_random_uuid();
+ALTER TABLE dns_resolver_documents ADD PRIMARY KEY (id);
+ALTER TABLE dns_resolver_documents ADD UNIQUE (profile_revision_id, policy_generation);
 ALTER TABLE dns_publication_heads ADD FOREIGN KEY (profile_revision_id, policy_generation)
     REFERENCES dns_resolver_documents(profile_revision_id, policy_generation);

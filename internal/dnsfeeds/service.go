@@ -218,7 +218,11 @@ func (s *Service) finish(ctx context.Context, a *attempt, event db.ClaimedEvent,
 			if e != nil {
 				return e
 			}
-			_, err = tx.Exec(ctx, `INSERT INTO dns_feed_contents(feed_revision_id,content_sha256,size_bytes,rule_count,entries,parse_metrics,fetched_at,kind) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING`, a.revision, c.SHA256, c.Size, len(c.Entries), entries, metrics, now, c.Kind)
+			contentID, e := uuid.NewV7()
+			if e != nil {
+				return e
+			}
+			_, err = tx.Exec(ctx, `INSERT INTO dns_feed_contents(feed_revision_id,content_sha256,size_bytes,rule_count,entries,parse_metrics,fetched_at,kind,id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING`, a.revision, c.SHA256, c.Size, len(c.Entries), entries, metrics, now, c.Kind, contentID)
 			if err != nil {
 				return err
 			}

@@ -456,13 +456,17 @@ func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 }
 
 func insertDocument(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, code string, gen decstr.U64, compiled dnspublish.Compiled) error {
+	documentID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
 	tag, err := tx.Exec(ctx, `
 		INSERT INTO dns_resolver_documents (
 			profile_revision_id, definition_id, profile_code, policy_generation,
-			document_sha256, document, canonical_bytes
-		) VALUES ($1, $2, $3, $4::numeric, $5, $6::jsonb, $7)
+            document_sha256, document, canonical_bytes, id
+        ) VALUES ($1, $2, $3, $4::numeric, $5, $6::jsonb, $7, $8)
 		ON CONFLICT (profile_revision_id, policy_generation) DO NOTHING`,
-		revID, defID, code, gen.String(), compiled.Hash, string(compiled.Bytes), compiled.Bytes,
+		revID, defID, code, gen.String(), compiled.Hash, string(compiled.Bytes), compiled.Bytes, documentID,
 	)
 	if err != nil {
 		return fmt.Errorf("store resolver document: %w", err)

@@ -512,7 +512,7 @@ func TestD054_DNS01_MissingLastGoodCannotPublish(t *testing.T) {
 	ps := policies.NewStore(pool)
 	actor := uuid.New()
 	now := time.Now().UTC()
-	feed := api.ThreatFeedPayload{Provider: "TEST ONLY", FeedCode: "missing-feed", LicenseName: "TEST ONLY", LicenseUrl: "https://example.com/license", CommercialUseBasis: "TEST ONLY fixture license", Attribution: presence.NewNullNullable[string](), SourceUrl: "https://example.com/feed", Format: api.ThreatFeedPayloadFormatDomainList, Categories: []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware}, ContentSha256: strings.Repeat("a", 64), MaxSizeBytes: 4096, ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(time.Hour), UpdateIntervalSeconds: 300}
+	feed := api.ThreatFeedPayload{Provider: "TEST ONLY", FeedCode: "missing-feed", LicenseName: "TEST ONLY", LicenseUrl: "https://example.com/license", CommercialUseBasis: "TEST ONLY fixture license", Attribution: presence.NewNullableWithValue("TEST ONLY attribution"), SourceUrl: "https://example.com/feed", Format: api.ThreatFeedPayloadFormatDomainList, Categories: []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware}, ContentSha256: strings.Repeat("a", 64), MaxSizeBytes: 4096, ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(time.Hour), UpdateIntervalSeconds: 300}
 	raw, _ := json.Marshal(feed)
 	code := "missing-feed"
 	rev, err := ps.CreateRevision(ctx, policies.CreateRevisionInput{Code: &code, Type: api.PolicyTypeThreatFeed, SchemaVersion: 1, Payload: raw, Reason: "TEST ONLY", ActorID: actor})
