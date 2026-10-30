@@ -148,6 +148,16 @@ func TestUPD05_ProbeIssuanceSurvivesRestart(t *testing.T) {
 			if cleared {
 				clear()
 			}
+			// A newly observed anchor can move trusted time slightly backward.
+			// Its expiry calculation must not extend the stored original cap.
+			anchor, found, err := r.eng.store.Anchor(context.Background())
+			if err != nil || !found {
+				t.Fatal("missing anchor", err)
+			}
+			anchor.Server = anchor.Server.Add(-time.Second)
+			if err := r.eng.store.SaveAnchor(context.Background(), anchor); err != nil {
+				t.Fatal(err)
+			}
 			r.clock.Advance(80 * time.Second)
 			// A replacement process reads the durable nonce, not the old pointer.
 			// Boot may answer the challenge and clear a re-capped exception.

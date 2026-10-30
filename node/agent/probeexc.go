@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 // Keep this agent-side bound aligned with enforce.ProbeMaxDestinations.
@@ -25,7 +26,7 @@ type probeIssuance struct {
 	Nonce    string        `json:"nonce"`
 	Hash     string        `json:"hash"`
 	IssuedAt time.Time     `json:"issued_at"`
-	Deadline time.Duration `json:"deadline"`
+	Deadline time.Duration `json:"deadline_ns,string"`
 	Cleared  bool          `json:"cleared"`
 }
 
@@ -74,7 +75,10 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 		return nil, false
 	}
 	// Store a nonce-bound digest, never the probe's destination list (SEC02).
-	raw, err := json.Marshal(ch)
+	// Same compares timestamp instants; normalize their JSON spelling too.
+	ch.IssuedAt = ch.IssuedAt.UTC()
+	ch.ExpiresAt = ch.ExpiresAt.UTC()
+	raw, err := canonjson.Marshal(ch)
 	if err != nil {
 		return nil, false
 	}
