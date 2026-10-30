@@ -53,6 +53,13 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 	if key == nil {
 		return Peer{}, failure(NotFound)
 	}
+	key, err = c.get(ctx, "setup-keys", stringField(key, "id"))
+	if err != nil {
+		return Peer{}, err
+	}
+	if stringField(key, "type") != "one-off" || key["usage_limit"] != float64(1) || key["ephemeral"] != false {
+		return Peer{}, discoveryConflict("setup_key_settings_changed")
+	}
 	used, ok := key["used_times"].(float64)
 	revoked, hasRevoked := key["revoked"].(bool)
 	state := stringField(key, "state")
@@ -78,10 +85,17 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 	}
 	var candidates []string
 	if group != nil {
+		group, err = c.get(ctx, "groups", stringField(group, "id"))
+		if err != nil {
+			return Peer{}, err
+		}
 		if err = c.checkEnrollmentGroupIsolation(ctx, stringField(group, "id")); err != nil {
 			return Peer{}, err
 		}
 		candidates = ids(group["peers"])
+		if members, ok := group["peers"].([]any); group["peers"] != nil && (!ok || len(members) != len(candidates) || slices.Contains(candidates, "")) {
+			return Peer{}, failure(Unconfirmed)
+		}
 		if len(candidates) > 1 {
 			return Peer{}, discoveryConflict("multiple_group_peers")
 		}
@@ -92,6 +106,15 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 			return Peer{}, discoveryConflict("group_binding_changed")
 		}
 	} else {
+		if group != nil {
+			shared, ok, err := c.store.Get(ctx, c.deployment, "groups", "unpublished-nodes")
+			if err != nil {
+				return Peer{}, err
+			}
+			if !ok || !slices.Equal(ids(key["auto_groups"]), sorted([]string{shared.ExternalID, stringField(group, "id")})) {
+				return Peer{}, discoveryConflict("setup_key_groups_changed")
+			}
+		}
 		if len(candidates) == 0 {
 			return Peer{}, failure(NotFound)
 		}

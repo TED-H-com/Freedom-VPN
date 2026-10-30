@@ -590,6 +590,13 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 	}
 	result := SetupKey{}
 	if o == nil {
+		g, err := c.get(ctx, "groups", correlation)
+		if err != nil {
+			return result, err
+		}
+		if len(ids(g["peers"])) != 0 {
+			return result, discoveryConflict("new_enrollment_group_not_empty")
+		}
 		e = c.call(ctx, "POST", "/setup-keys", object{"name": name, "type": "one-off", "expires_in": 86400, "auto_groups": groups, "usage_limit": 1, "ephemeral": false, "allow_extra_dns_labels": false}, &o)
 		if e != nil {
 			return result, e

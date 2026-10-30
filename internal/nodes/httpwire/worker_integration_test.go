@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +38,8 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 	_, enrolled, cert := f.enroll(c)
 	ctx := context.Background()
 	var mu sync.Mutex
-	var group, key map[string]any
+	var key map[string]any
+	groups := map[string]map[string]any{}
 	creates, readbacks := 0, 0
 	peerExists := true
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -58,20 +60,35 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 			peerExists = false
 			io.WriteString(w, "{}")
 		case "PUT /api/setup-keys/test-key":
-			key["revoked"] = true
+			var changes map[string]any
+			json.NewDecoder(r.Body).Decode(&changes)
+			for k, v := range changes {
+				key[k] = v
+			}
 			json.NewEncoder(w).Encode(key)
 		case "GET /api/groups":
-			if group == nil {
-				io.WriteString(w, "[]")
-			} else {
-				json.NewEncoder(w).Encode([]any{group})
+			list := []any{}
+			for _, group := range groups {
+				list = append(list, group)
 			}
+			json.NewEncoder(w).Encode(list)
 		case "POST /api/groups":
+			var group map[string]any
 			json.NewDecoder(r.Body).Decode(&group)
-			group["id"] = "test-group"
+			id := fmt.Sprintf("test-group-%d", len(groups)+1)
+			group["id"] = id
+			groups[id] = group
 			json.NewEncoder(w).Encode(group)
-		case "GET /api/groups/test-group":
+		case "GET /api/groups/test-group-1", "GET /api/groups/test-group-2":
+			group := groups[strings.TrimPrefix(r.URL.Path, "/api/groups/")]
+			if group == nil {
+				w.WriteHeader(404)
+				return
+			}
 			json.NewEncoder(w).Encode(group)
+		case "DELETE /api/groups/test-group-2":
+			delete(groups, "test-group-2")
+			io.WriteString(w, "{}")
 		case "GET /api/setup-keys":
 			if key == nil {
 				io.WriteString(w, "[]")
@@ -155,6 +172,11 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 		}
 	}
 	complete(events[0])
+	// Discovery has its own dispatcher tests; this case exercises the existing
+	// reported-peer path and subsequent durable revocation cleanup.
+	if _, err := f.r.Pool.Exec(ctx, `UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type='node.peer.discover'`); err != nil {
+		t.Fatal(err)
+	}
 	// The observation transaction queues read-back; reporting ready cannot bypass it.
 	f.r.Nodes = nodes.NewService(f.r.Pool, nodes.WithVersionObserver(func(ctx context.Context, tx pgx.Tx, report api.ObservationReport) error {
 		raw, e := canonjson.Marshal(map[string]any{"report_id": report.ReportId})
