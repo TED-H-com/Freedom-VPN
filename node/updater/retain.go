@@ -102,5 +102,7 @@ func (e *Engine) retainLocked(ctx context.Context) error {
 			_ = os.Remove(filepath.Join(e.Layout.Staging, name))
 		}
 	}
-	return nil
+	// Drop probe-omission meta for finished apply transactions. An open
+	// transaction and standalone revocation recovery (no txns row) stay.
+	return e.Journal.PruneProbeOmissions(ctx)
 }
