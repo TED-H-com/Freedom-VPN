@@ -419,3 +419,45 @@ read-only query, in addition to each peer's identity and authorization checks.
 Dynamic native peers and the second node namespace use the lab bridge's
 `.128/25` allocation pool. Static services remain below `.128`; a new peer
 cannot take a temporarily stopped control container's address during a fault.
+
+## Stale native client control hook
+
+`stack.PauseNativeControl(ctx, container, true)` stops only the named member
+container's NetBird userspace process, whose PID the entrypoint saves privately.
+Kernel WireGuard and installed routes remain. It does not pause the exit agent,
+watchdog, or the container. Require a fresh counted request **after** pausing;
+then issue the member DELETE through the API and inspect the node's new applied
+generation, ingress capture, `ctunku`, per-device admission counters, origin
+receipt and conntrack. Always defer `PauseNativeControl(..., false)` with a
+bounded cleanup context. A paused CLI cannot answer `netbird networks list`;
+read the kernel route directly instead. This is a controlled stale-client fault,
+not a normal user workflow or a repair of a revoked binding.
+
+## Node resource telemetry (AT31)
+
+With `-tags e2e`, `tests/e2e/internal/labstack` exports `NodeTelemetry` and:
+
+```go
+collect, err := stack.StartNodeTelemetry(ctx, 5*time.Second)
+if err != nil { t.Fatal(err) }
+defer collect() // also stop on an early test exit
+// Run bounded native admission or counted member traffic.
+resources := collect() // stops the sampler and returns all observations
+```
+
+The primary acceptance run collects at five-second cadence during member
+admission/traffic/usage polling and during the 20-user × 3-peer admission run.
+`node_telemetry` sits in those scenario records beside their inventory and flow
+evidence. Samples retain UTC time, cgroup v2 cumulative CPU microseconds,
+`memory.current` bytes, all node-container process FD counts, process count and
+the network namespace's `/proc/sys/net/netfilter/nf_conntrack_count`.
+CPU percentage is a delta over actual sample timestamps, with 100% meaning one
+fully occupied core; the first sample has no percentage. Docker exec is bounded
+per sample. Failed reads increment `errors`, never become fabricated zeros.
+The record includes the full series and configured cadence; scheduling jitter
+is visible in its timestamps. The command reads only inside the owned node
+container and emits no process arguments, FD paths, connection tuples or packet
+contents. Numbers include the small observer overhead; memory includes cgroup
+page cache. These are workload measurements, not an AT31 hardware certification.
+The sampler needs cgroup v2 and readable namespace procfs; it is stopped and
+collected before record writing and teardown.

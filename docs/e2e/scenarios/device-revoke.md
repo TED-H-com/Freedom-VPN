@@ -5,6 +5,15 @@ to one real member. Both must have product-authorized device projections,
 signed desired-state bindings, an explicitly selected published exit, controlled
 origin receipts and increasing named admission counters.
 
+For follow-up 11, `Stack.PauseNativeControl` sends SIGSTOP to the revoked
+client's NetBird userspace service after its route and kernel WireGuard session
+are established. A further counted origin request must succeed **while paused**
+before DELETE. The exit's agent and watchdog keep running. This deliberately
+stale client cannot consume the route withdrawal; no key, route, source binding
+or product enforcement is fabricated. Cleanup always sends SIGCONT. If this
+transport cannot stay live, the record names that missing lab primitive instead
+of claiming an ingress drop.
+
 The runner issues `DELETE /api/v1/member/devices/{id}` with the member session
 and an idempotency key. HTTP 202 starts the check. It waits at most 90 seconds
 for removal from signed bindings and a newer serving generation, then reads the

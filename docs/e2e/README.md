@@ -142,6 +142,7 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | Evidence id | What the run drives | Spec |
 |---|---|---|
 | `stack-health` | control `/readyz`, IdP, origin, Postgres | §3, §17 |
+| `gateway-principals` | distinct browser clients, forged-header refusals, response and metric evidence | §14.2, AT28/AT31 |
 | `control-metrics` | bounded in-container HTTP probe of loopback metrics | §17.1 |
 | `backup` | archive check, physical full backup and isolated PITR readback | §17.2, §17.3, AT30 groundwork |
 | `serving-catalogue` | member group, Fair-Use and plan through APIs | §9, §14.2 |
@@ -343,3 +344,10 @@ on stderr. The controlled `/oauth2/e2e-log-fault` route proxies to a closed
 loopback port and proves a 502 diagnostic without its synthetic query value.
 `JoinNativeMember` scans each protected CLI stream before deletion and returns
 aggregate inventory counts. No matched secret or URI leaves that scan.
+
+The lab gateway appends `X-Forwarded-For`; control trusts only that hop's `/32`.
+An empty trust list collapses gateway clients into one pre-authentication
+connection bucket. The agent mTLS listener remains direct, and nginx
+`worker_connections` is a separate resource limit. See the
+[gateway scenario](scenarios/gateway-principals.md) and
+[finite grace and telemetry hooks](RUN.md).
