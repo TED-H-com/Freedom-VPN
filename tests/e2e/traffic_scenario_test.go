@@ -68,6 +68,8 @@ func (r *runner) admissionBytes() (uint64, bool) {
 
 func (r *runner) noteAdmissionGate(ctx context.Context, admin *session, rec *Record) {
 	note := recPathNote(rec)
+	mode, _ := r.lab.docker(r.lab.node, "stat", "-c", "%u:%a", "/etc/vpn-node/updater-recover.json")
+	note("persistent_boot_recovery_config_owner_mode", strings.TrimSpace(string(mode)))
 	detail, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), nil, nil)
 	note("admin_node", httpDetail(detail, err))
 	if err == nil && detail.Status == 200 {

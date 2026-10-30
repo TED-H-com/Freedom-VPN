@@ -5,7 +5,13 @@
 // drift into copied overlays. Import with -tags e2e.
 package labstack
 
-import "github.com/TED-H-com/Freedom-VPN/tests/e2e"
+import (
+	"context"
+	"net/http"
+
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
+	"github.com/google/uuid"
+)
 
 type NativePeer = e2e.NativePeer
 type NativeScale = e2e.NativeScale
@@ -18,7 +24,13 @@ type ReleaseOptions = e2e.ReleaseOptions
 type BaselineOptions = e2e.BaselineOptions
 type ServingBaseline = e2e.ServingBaseline
 
-var Open = e2e.OpenStack
-var PrepareServingBaseline = e2e.PrepareServingBaseline
-var PrepareServingBaselineWithOptions = e2e.PrepareServingBaselineWithOptions
-var RollbackAllowlist = e2e.RollbackAllowlist
+func Open() (*Stack, error) { return e2e.OpenStack() }
+func PrepareServingBaseline(ctx context.Context, client *http.Client, csrf string, candidates bool) (ServingBaseline, error) {
+	return e2e.PrepareServingBaseline(ctx, client, csrf, candidates)
+}
+func PrepareServingBaselineWithOptions(ctx context.Context, client *http.Client, csrf string, options BaselineOptions) (ServingBaseline, error) {
+	return e2e.PrepareServingBaselineWithOptions(ctx, client, csrf, options)
+}
+func RollbackAllowlist(lastGood uuid.UUID, allowed ...uuid.UUID) []uuid.UUID {
+	return e2e.RollbackAllowlist(lastGood, allowed...)
+}
