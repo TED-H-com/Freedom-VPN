@@ -41,27 +41,27 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
 3. 在 **Management URL** 輸入 `https://netbird.example.com` 並儲存（或於 PowerShell 執行 `netbird up --management-url https://netbird.example.com`）。
 4. 系統會開啟瀏覽器，請使用您的 Freedom VPN OIDC 帳號完成 SSO 登入。
 5. 開啟會員入口網站 `https://vpn.example.com/member/devices` 檢視裝置列表，確認剛登入的 Windows 裝置已自動出現，且狀態由 `pending`（套用中）轉為 **`authorized`（已授權）**（若名額已滿，請先於該頁面撤銷不再使用的舊裝置，`AT02`）。
-6. 在系統列 NetBird 圖示點擊 **Connect**，並於 **Exit Node / Networks** 選單手動勾選欲使用的出口節點（例如 `tw-tpe-01`；所有獨立出口預設關閉自動套用 `skip_auto_apply = true`，必須在客戶端內手動選取，`§7.2`、`§18.4`、`EXIT02`）。
+6. 在系統列 NetBird 圖示點擊 **Connect**，並於 **Exit Node / Networks** 選單手動勾選欲使用的出口節點（例如 `tw-tpe-01`，或於 CLI 執行 `netbird networks select <fvpn-exit-…>`；所有獨立出口預設關閉自動套用 `skip_auto_apply = true`，**裝置僅在手動選取出口後才會透過該出口轉發流量**——在 NetBird `0.82.0` 上 `netbird networks select all` 不會自動選取出口，`§7.2`、`§18.4`、`EXIT02`、[`docs/e2e/RUN.md`](../e2e/RUN.md) § "Native exit selection and traffic trace"）。
 
 #### B. macOS（候選版本 `v0.82.0`，待實測 `AT01`）
 1. 安裝官方候選版 `v0.82.0` macOS 套件並啟動應用程式（首次啟動時請允許 macOS 新增 VPN 設定檔與系統網路延伸模組）。
 2. 點擊頂部選單列（Menu Bar）的 NetBird 圖示 -> **Preferences / Settings** -> **Advanced**。
 3. 將 **Management URL** 設為 `https://netbird.example.com` 並儲存，接著點擊 **Connect** 完成瀏覽器 OIDC 登入。
 4. 前往會員入口網站 `https://vpn.example.com/member/devices` 確認該 macOS 裝置已被中央自動納管且狀態顯示為 **`authorized`（已授權）**。
-5. 於選單列 NetBird 圖示手動選擇出口節點（Exit Node）。
+5. 於選單列 NetBird 圖示手動選擇出口節點（Exit Node，或於終端機執行 `netbird networks select <fvpn-exit-…>`；裝置僅在選取出口後才會透過出口轉發流量）。
 
 #### C. iOS / iPadOS（候選版本 `v0.4.1 build 2` TestFlight，待實測 `AT01`）
 1. 安裝候選版 **NetBird** iOS App（`v0.4.1, build 2`；注意：上游將 `build 2` 標示為 **TestFlight** 版本，尚未斷言 App Store 正式上架狀態，正式發布前須完成 `AT01` 實機確認，`docs/netbird/VERSIONS.md`）。
 2. 開啟 App，前往 **Settings -> Change Server / Server**，輸入 `https://netbird.example.com`（不輸入 setup key）並儲存。
 3. 點擊連線按鈕，於系統彈窗點擊 **Allow（允許新增 VPN 設定）**，並在彈出的瀏覽器視窗完成 OIDC SSO 登入。
 4. 開啟 `https://vpn.example.com/member/devices` 確認您的 iPhone / iPad 已自動列於清單且狀態轉為 **`authorized`（已授權）**。
-5. 回到 NetBird App 的 **Connection -> Exit node** 手動選擇已授權的出口節點。
+5. 回到 NetBird App 的 **Connection -> Exit node** 手動選擇已授權的出口節點（裝置僅在選取出口後才會透過出口轉發流量）。
 
 #### D. Android（候選版本 `v0.6.2`，待實測 `AT01`、`AT21`）
 1. 安裝候選版 **NetBird** Android App（`v0.6.2`）。
 2. 開啟 App，前往 **Settings -> Profiles -> Add**，將 **Management Server** 設為自架網址 `https://netbird.example.com`（不輸入 setup key）並儲存。
 3. 點擊連線按鈕，核准 Android VPN 連線權限並於瀏覽器完成 OIDC SSO 登入。
-4. 前往 `https://vpn.example.com/member/devices` 確認您的 Android 裝置已由中央自動授權且狀態顯示為 **`authorized`（已授權）**，再於 App 內手動選擇出口節點。
+4. 前往 `https://vpn.example.com/member/devices` 確認您的 Android 裝置已由中央自動授權且狀態顯示為 **`authorized`（已授權）**，再於 App 內手動選擇出口節點（裝置僅在選取出口後才會透過出口轉發流量）。
 5. **重要 DNS 設定（`§12.6`、`AT21`）**：Android 的系統「私人 DNS（Private DNS）」預設或開啟時會繞過 VPN 指派的 DNS 解析器。使用本服務之網域防護時，請至 Android **設定 -> 網路和網際網路 -> 私人 DNS（Private DNS）**（實際路徑依手機廠牌與系統版本而異），將其設為 **「關閉（Off）」**（詳見第 6 節說明）。
 
 ---
@@ -118,7 +118,7 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
    - **節點本機 Watchdog 心跳逾時（`§16.3`）**：出口節點上的獨立守護程序 `fvpn-watchdog` 會檢查本機 `fvpn-agent` 的心跳檔案（預設設定 `watchdog_stale_seconds = 30` 秒）。若本機 `fvpn-agent` 卡死或異常退出，`fvpn-watchdog` 會將該節點的 `inet fvpn` 切換回 baseline drop 狀態，停止該節點的會員轉發。
    - **控制面在線時的主動撤權 / 停用（`§16.5`、`AT04`、`AT13`）**：當中央控制服務與出口節點均在線時，管理員停用出口、會員停權或撤銷裝置的**線上政策收斂設計目標以 60 秒為起點**（`§16.5` 非功能目標，並非瞬間生效，亦非離線保證）。
    - **控制面失聯時的離線到期界線（`§16.3`、`AT29`）**：當出口節點與中央控制面失聯時，無法即時收到新發生的撤權通知；節點核心透過 `inet fvpn` 的 `@allowed_v4` timeout 集合強制執行 `min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`（預設最長離線租約上限為 `86,400` 秒 / 24 小時），最早期限到達時由核心自動停止轉發，且不受系統牆鐘回調（clock rollback）延長。
-   - **實測狀態**：上述端到端流量切斷時間仍待驗收。`D-057` 群組掛載已接線，且 [會員驗收 follow-up 3](../e2e/at/members/README.md) 已於容器實驗室證明套用新世代時同步續約（`agent.RenewLease`）與單一 IPv4 `/32` 綁定後之 `forward_admission_v1` 計量轉發（`420 bytes`）；惟撤銷裝置後的在線切斷測試（`AT02`、`AT03`、`AT04`、`AT08`）於 `deploy/devstack` 仍因節點容器缺少 `conntrack` 套件（`node/enforce/apply.go` `deleteConntrack`）而為 `blocked`（[驗收待辦](../e2e/at/members/requests.md)），且已提交的 [2026-10-30 租約到期紀錄](../e2e/runs/2026-10-30/lease-expiry.json) 仍為 `blocked`。程式碼合併不代表計時驗收通過。
+   - **實測狀態**：四平台實機與完整 `AT29` 戰役計時仍待驗收。`D-057` 群組掛載已接線，[會員驗收 follow-up 3](../e2e/at/members/README.md) 與 [devstack follow-up 9（`#153`）](../e2e/followup9-verification.md)（[`docs/e2e/RUN.md`](../e2e/RUN.md) § "Native exit selection and traffic trace"、[`followup9-forwarding-trace.md`](../e2e/followup9-forwarding-trace.md)）已於 `deploy/devstack/Dockerfile.node` 補齊 `conntrack` 與 `tcpdump`，並在會員明確選取出口（`netbird networks select <fvpn-exit-…>`）後通過三輪完整 23 項場景（`23 pass / 0 blocked / 0 fail`，含 `forward_admission_v1` `0 -> 2633 / 2631 bytes`、撤權切斷 `revoke` 與控制面失聯時依簽署期望狀態到期收斂之 [2026-10-30 租約到期紀錄](../e2e/runs/2026-10-30/lease-expiry.json)）。獨立會員驗收套件先前於 `#153` 之前紀錄的 `AT02`、`AT03`、`AT04`、`AT08` 狀態仍載於 [驗收待辦](../e2e/at/members/requests.md)，且四平台原生實機與 24 小時完整 `AT29` 仍為 `needs operator run` / 未實測。
 3. **四平台斷線、睡眠喚醒與換網行為記錄要求（`§7.3`、`§18.5`、`APP01`、`AT01`、`AT09`）**：
    - 各平台客戶端在睡眠/鎖定、切換網路及所選出口被停用時的實際路由行為，須依 `docs/e2e/at/members/OPERATORS.md` 逐平台實測並記錄：
 
@@ -265,7 +265,7 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
 
 ### 2.2 Step 2: Point NetBird to the Management URL, Sign In via SSO, and Verify Automatic Central Authorization (`§7.3`, `§9.4`, `D-052`, `docs/members/README.md`)
 
-> **How Device Authorization and `D-052` Shared-Issuer Public-Subject Discovery Actually Work (`§2 [S36]`, `§7.3`, `§9.4`, `§15.2`, `MEM01`, `MEM02`)**: There is **no** manual authorization button on `/member/devices` and no member device-creation API endpoint in the 44-operation OpenAPI `1.3.0` contract. When you point the official NetBird client's **Management URL** to `https://netbird.example.com` and sign in with the **same OIDC issuer and public subject** used in the Member Portal, `fvpn-worker`'s `devices.discover` handler matches the NetBird user ID to `identity_bindings.subject` under `oidc_issuer` and writes `netbird_user_bindings` (`mapping_proof = "shared_issuer_public_subject:" + oidc_issuer`, excluding service/blocked accounts and failing closed as `identity_unmapped` on pairwise or unknown subjects—never matching by email or display name). Central then checks your active entitlement and `device_limit` quota under a database transaction lock, and dispatches the asynchronous `member.device_authorize` synchronization job to grant exit and DNS permissions. You simply check `https://vpn.example.com/member/devices` (`GET /api/v1/member/devices`) to see your device appear and transition from `pending` to **`authorized`**.
+> **How Device Authorization and `D-052` Shared-Issuer Public-Subject Discovery Actually Work (`§2 [S36]`, `§7.3`, `§9.4`, `§15.2`, `MEM01`, `MEM02`)**: There is **no** manual authorization button on `/member/devices` and no member device-creation API endpoint in the 44-operation OpenAPI `1.4.0` contract. When you point the official NetBird client's **Management URL** to `https://netbird.example.com` and sign in with the **same OIDC issuer and public subject** used in the Member Portal, `fvpn-worker`'s `devices.discover` handler matches the NetBird user ID to `identity_bindings.subject` under `oidc_issuer` and writes `netbird_user_bindings` (`mapping_proof = "shared_issuer_public_subject:" + oidc_issuer`, excluding service/blocked accounts and failing closed as `identity_unmapped` on pairwise or unknown subjects—never matching by email or display name). Central then checks your active entitlement and `device_limit` quota under a database transaction lock, and dispatches the asynchronous `member.device_authorize` synchronization job to grant exit and DNS permissions. You simply check `https://vpn.example.com/member/devices` (`GET /api/v1/member/devices`) to see your device appear and transition from `pending` to **`authorized`**.
 
 Your member identity is the same canonical issuer and subject across a portal OIDC client-ID rotation (`issuer.Canonical` in `internal/members/issuer/issuer.go` trims only literal trailing `/` characters from the escaped URL path and preserves `%2F` / `%2f`, `docs/members/README.md`); the existing member is reused. If identity matching is refused, contact support instead of trying to link a different account by matching its email ([identity rules](../control/AUTH.md)).
 
@@ -274,26 +274,26 @@ Your member identity is the same canonical issuer and subject across a portal OI
 2. Right-click the NetBird tray icon -> **Settings** -> **Advanced**, set **Management URL** to `https://netbird.example.com`, and save (or run `netbird up --management-url https://netbird.example.com` in PowerShell).
 3. Complete the browser OIDC SSO sign-in when prompted.
 4. Open `https://vpn.example.com/member/devices` and confirm your Windows device appears automatically and transitions from `pending` to **`authorized`** (if your device quota is full, revoke an older device on `/member/devices` first, `AT02`).
-5. Click **Connect** in the NetBird tray menu and manually select your desired **Exit Node** (e.g., `tw-tpe-01`; independent exits have `skip_auto_apply = true` and must be selected manually in the client app, `§7.2`, `§18.4`, `EXIT02`).
+5. Click **Connect** in the NetBird tray menu and manually select your desired **Exit Node** (e.g., `tw-tpe-01`, or run `netbird networks select <fvpn-exit-…>` on the CLI; independent exits have `skip_auto_apply = true`, so **a device forwards traffic through an exit only after selecting it**—`netbird networks select all` does not select an exit on NetBird `0.82.0`, `§7.2`, `§18.4`, `EXIT02`, [`docs/e2e/RUN.md`](../e2e/RUN.md) § "Native exit selection and traffic trace").
 
 #### B. macOS (Candidate `v0.82.0`, needs operator run `AT01`)
 1. Install the candidate `v0.82.0` macOS package, launch NetBird, and approve the macOS VPN configuration and system extension prompts.
 2. Click the NetBird menu bar icon -> **Preferences / Settings** -> **Advanced**, set **Management URL** to `https://netbird.example.com`, and click **Connect** to complete OIDC SSO sign-in.
 3. Open `https://vpn.example.com/member/devices` and verify that central device synchronization has transitioned your Mac from `pending` to **`authorized`**.
-4. Manually select an authorized exit node from the NetBird menu bar icon.
+4. Manually select an authorized exit node from the NetBird menu bar icon (or run `netbird networks select <fvpn-exit-…>`; a device forwards through the exit only after selecting it).
 
 #### C. iOS / iPadOS (Candidate `v0.4.1 build 2` TestFlight, needs operator run `AT01`)
 1. Install the candidate **NetBird** iOS client (`v0.4.1, build 2`; note: upstream labels `build 2` as a **TestFlight** release and does not assert App Store availability — verify the exact distribution channel and build during the `AT01` operator run, `docs/netbird/VERSIONS.md`).
 2. Open the app, tap **Settings -> Change Server / Server**, enter `https://netbird.example.com` (do not enter a setup key), and tap **Save**.
 3. Tap the connect button, approve the iOS VPN configuration prompt, and sign in with your OIDC account in the browser sheet.
 4. Open `https://vpn.example.com/member/devices` and confirm your iPhone/iPad is listed and automatically transitions from `pending` to **`authorized`**.
-5. In the NetBird app (`Connection -> Exit node`), manually select an authorized exit node.
+5. In the NetBird app (`Connection -> Exit node`), manually select an authorized exit node (a device forwards through the exit only after selecting it).
 
 #### D. Android (Candidate `v0.6.2`, needs operator run `AT01`, `AT21`)
 1. Install the candidate **NetBird** Android app (`v0.6.2`).
 2. Open **Settings -> Profiles -> Add**, set **Management Server** to Self-hosted `https://netbird.example.com` (no setup key), and save.
 3. Tap Connect, accept the Android VPN permission prompt, and complete OIDC SSO sign-in.
-4. Check `https://vpn.example.com/member/devices` to confirm your Android device is automatically **`authorized`**, then manually select an exit node in the app.
+4. Check `https://vpn.example.com/member/devices` to confirm your Android device is automatically **`authorized`**, then manually select an exit node in the app (a device forwards through the exit only after selecting it).
 5. **Important DNS Step (`§12.6`, `AT21`)**: Android's system "Private DNS" bypasses VPN-assigned DNS resolvers when enabled. To use Freedom VPN's domain filtering, open Android **Settings -> Network & internet -> Private DNS** (exact menu path varies by OEM) and set it to **Off** (see Section 6 below).
 
 ---
@@ -350,7 +350,7 @@ Your member identity is the same canonical issuer and subject across a portal OI
    - **Node-Local Watchdog Staleness (`§16.3`)**: On each exit node, `fvpn-watchdog` monitors the local `fvpn-agent` heartbeat file (configured `watchdog_stale_seconds = 30` seconds by default) and reverts the local `inet fvpn` table to baseline drop if the local agent stalls or crashes.
    - **Online Revocation / Disable (`§16.5`, `AT04`, `AT13`)**: When the control plane and exit node are online, administrative disable, member suspension, or device revocation has a spec design target starting at **60 seconds** (`§16.5` NFR target — not instantaneous, not a 30-second guarantee, and not applicable while a node is offline).
    - **Offline Lease / Service Deadline (`§16.3`, `AT29`)**: When an exit node cannot reach the control plane, it enforces the earliest of `effective_service_end`, `node_lease_end`, and `signed_server_time + max_offline_seconds` (configured default `86,400` seconds / 24 hours) via kernel nftables set timeouts (`@allowed_v4`), independent of wall-clock rollback.
-   - **Measurement status:** End-to-end cutoff timing still requires acceptance. `D-057` group attachment is wired and [members acceptance follow-up 3](../e2e/at/members/README.md) proved counted Linux lab member forwarding (`forward_admission_v1 = 420 bytes`) after lease renewal in the generation-apply step (`agent.RenewLease`) and bare `allowed_ipv4` `/32` admission; however, post-revocation live cutoff checks (`AT02`, `AT03`, `AT04`, `AT08`) in `deploy/devstack` remain `blocked` on the node container image lacking `conntrack` (`node/enforce/apply.go` `deleteConntrack`, [members requests](../e2e/at/members/requests.md)), and the committed [2026-10-30 lease-expiry record](../e2e/runs/2026-10-30/lease-expiry.json) remains `blocked`. Merged code is not a passed timing measurement.
+   - **Measurement status:** Native four-platform and full `AT29` campaign timings still require operator runs. `D-057` group attachment is wired, and in [members acceptance follow-up 3](../e2e/at/members/README.md) and [devstack follow-up 9 (`#153`)](../e2e/followup9-verification.md) ([`docs/e2e/RUN.md`](../e2e/RUN.md) § "Native exit selection and traffic trace", [`followup9-forwarding-trace.md`](../e2e/followup9-forwarding-trace.md)), `deploy/devstack/Dockerfile.node` carries `conntrack` and `tcpdump` and three fresh stacks pass all `23` assembled scenarios (`23 pass / 0 blocked / 0 fail`, including counted member forwarding `0 -> 2633 / 2631 bytes` after explicit `netbird networks select <fvpn-exit-…>`, post-revocation `revoke`, and control-loss withdrawal bounded by the signed desired deadline in [2026-10-30 lease-expiry](../e2e/runs/2026-10-30/lease-expiry.json)). The separate members acceptance suite's earlier `AT02`/`AT03`/`AT04`/`AT08` records in [members requests](../e2e/at/members/requests.md) were captured before `#153` added `conntrack` to `Dockerfile.node`, and native four-platform checks (`AT01`, `AT09`, `AT21`) plus the full 24-hour `AT29` campaign remain `needs operator run` / unmeasured.
 3. **Per-Platform Disconnect, Sleep/Wake, and Network-Switch Matrix (`§7.3`, `§18.5`, `APP01`, `AT01`, `AT09`)**:
    - Per `docs/e2e/at/members/OPERATORS.md`, each platform's disconnect, sleep/lock, and network-switch behavior must be recorded during operator runs:
 

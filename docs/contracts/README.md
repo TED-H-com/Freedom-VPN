@@ -234,6 +234,9 @@ legacy codes retain their existing HTTP statuses (including DISK_SPACE_LOW
 | `ISOLATION_BASELINE_MISSING` | none | false | NodeError / UpdateResult: missing isolation baseline; forwarding off |
 | `METER_EPOCH_CHANGE` | none | false | NodeError / UpdateResult: meter epoch changed; incarnation event sequence continues (§17.3) |
 
+Revision 8 adds the node enforcement verification group to this enum. The twelve
+meanings and where those codes may appear are in [Revision 8](#revision-8).
+
 `LEDGER_MODE_CONFLICT` is not a contract code (D-036).
 
 ## Browser role selector (D-032)
@@ -251,6 +254,43 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 8
+
+API version **1.4.0**. The endpoint count remains **44**. No operation, request
+or response shape changed, and nothing was added to any `required` list. No
+`ErrorCode` value was removed or renamed. Old payloads stay valid.
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| §13.11 | Nine `ErrorCode` values after the existing enforcement codes: `ISOLATION_POLICY_INVALID`, `GENERATION_MISMATCH`, `HOOK_PRIORITY_MISMATCH`, `COUNTER_ORDER_INVALID`, `FLOWTABLE_BYPASS`, `DEVICE_CLASS_MISSING`, `QOS_CLASS_MISSING`, `MARK_SEMANTICS_VIOLATED`, `PROBE_UNBOUNDED` | Node agent heartbeats (`NodeError.code`, serving-check `error_code`); control observation validator |
+
+### Node enforcement verification
+
+These twelve address-free strings are the verification reasons in
+`node/enforce/reason.go` (§13.11). They appear in `NodeError.code` and in the
+serving-check `error_code` of `ObservationReport`. They never appear in
+browser-facing `Error.code`.
+
+The nine codes added in this revision are report-only in `pkg/apierr` (HTTP
+status none, retryable false), the same class as `ISOLATION_BASELINE_MISSING`
+and `METER_EPOCH_CHANGE`. `METER_PATH_INVALID` keeps its existing 422 mapping.
+`apierr.Write` renders a report-only code as HTTP 500 `INTERNAL_ERROR`.
+
+| Code | Meaning |
+|---|---|
+| `METER_PATH_INVALID` | The accounting path is not the one this generation claimed: hook, NAT position, source identity, or a counter that can be skipped (§10.3). |
+| `ISOLATION_BASELINE_MISSING` | Member forwarding is not held at the fail-closed boot ruleset (§8.2, §17.1). |
+| `GENERATION_MISMATCH` | The kernel ruleset is not the requested generation. |
+| `HOOK_PRIORITY_MISMATCH` | A base chain hook or priority drifted (§8.2). |
+| `COUNTER_ORDER_INVALID` | An accept can skip the per-device counters, including an established/related accept placed before the lease check (§10.2, §16.3). |
+| `FLOWTABLE_BYPASS` | A flowtable or offload could bypass the counters (§10.3). |
+| `DEVICE_CLASS_MISSING` | A device binding has no counter or class. |
+| `METER_EPOCH_CHANGE` | A named counter went backwards or disappeared. Callers must open a new meter epoch and must not hide the gap (§10.7). |
+| `QOS_CLASS_MISSING` | The HTB parent or a member class is missing or wrong (§11.4, §11.5). |
+| `MARK_SEMANTICS_VIOLATED` | A rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4). |
+| `ISOLATION_POLICY_INVALID` | The allow/deny policy itself does not match. |
+| `PROBE_UNBOUNDED` | A synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9). |
 
 ## Revision 7
 
