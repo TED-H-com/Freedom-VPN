@@ -276,3 +276,39 @@ claim full AT22. No feed is fetched from the public Internet.
   the earlier follow-up, including its parallel-stack proof; 2026-10-30 holds
   the latest complete run. Records with `blocked` keep the acceptance command
   non-zero and identify the responsible product area.
+
+## Latest complete run — 2026-10-30
+
+Run `5852f09a-30e8-45bc-8983-b5f212e33640`, source `5eb716e1a36ced17b8013646c9282c92746c81da` (main through PR #84):
+all fifteen scenarios completed in 419.47 seconds, with **9 pass, 6 blocked,
+0 fail**. Go test exited 1 and `make e2e-test` exited 2 because blocked records
+keep the acceptance gate non-zero. Every dated record belongs to this run.
+
+- The stored node now reports `ready`, `passed`, `healthy`, desired/applied
+  generation `1`, and a peer bound through production discovery (D-055).
+  Publication advances from the prior HTTP 422 gate to HTTP 202. Its
+  `agent_policy` and `data_path_probe` steps succeed, but
+  `netbird_route_readback` fails `DEPENDENCY_UNAVAILABLE`; the operation stays
+  `running` and `publication_observed=error`. The stored `exit_group_count=0`
+  identifies the D-057 input gap, owned by contracts revision 5 and central
+  exit wiring (`w3-wire-nodes`).
+- Member identity/device/binding row counts move from zero to one each.
+  `GET /member/devices` returns 200 with one authorized device and
+  `same_subject=true`. There is still no desired-state binding for this exit,
+  no counted flow, and no usage batch. Publication/group inputs block the
+  member-traffic, forwarding, usage and lease-expiry acceptance claims.
+- `update-good` runs the installed `1.0.1` agent, answers the D-053 challenge
+  with NetBird `0.82.0`, passes all five health checks and reaches
+  `locally_succeeded`. `update-bad` rejects the distinct, single-byte-tampered
+  archive with `HASH_MISMATCH`; it never runs that candidate or records success.
+  Rollback and physical arm64 execution remain unclaimed. SBOM, notice and
+  source-download documents are TEST ONLY placeholders, not production release
+  compliance evidence.
+- `threat-feed-central` passes bootstrap, normalized resolver publication and
+  wrong-pin failure with retained prior content. `threat-feed-node` remains
+  blocked on D-056, owned by contracts revision 5 and node delivery/application
+  (`w2-agent-core`). No Internet feed or seeded projector row is involved.
+
+`e2e-lint`, root `go-lint`, `go vet -tags e2e ./tests/...`, and the requested
+unit tests all exit 0. The lab is torn down after this run; shared neutral
+build-cache images remain for other harnesses.
