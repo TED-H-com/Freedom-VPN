@@ -97,7 +97,7 @@ func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	}
 	tag, e := tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,observation_seq,observed_update_generation,last_observed_at,received_at,recovery_required) VALUES($1,$2,$3::numeric,$4::numeric,$5,$7,$6)
  ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,observation_seq=excluded.observation_seq,observed_update_generation=excluded.observed_update_generation,last_observed_at=excluded.last_observed_at,received_at=excluded.received_at,recovery_required=excluded.recovery_required
- WHERE fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR (fleet_node_state.observation_seq<excluded.observation_seq AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation)`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery, o.ReceivedAt)
+ WHERE (fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR fleet_node_state.observation_seq<excluded.observation_seq) AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery, o.ReceivedAt)
 	if e != nil {
 		return e
 	}
@@ -141,10 +141,10 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 			return err
 		}
 		_, err = tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,last_observed_at,received_at)
- VALUES($1,$2,$3,$4) ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,
+ VALUES($1,NULL,$2,$3) ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=NULL,
  last_observed_at=excluded.last_observed_at,received_at=excluded.received_at
  WHERE fleet_node_state.received_at IS NULL OR (excluded.received_at>fleet_node_state.received_at
- AND (fleet_node_state.last_observed_at IS NULL OR excluded.last_observed_at>fleet_node_state.last_observed_at))`, i.NodeID, i.IncarnationID, r.ObservedAt, received)
+ AND (fleet_node_state.last_observed_at IS NULL OR excluded.last_observed_at>fleet_node_state.last_observed_at))`, i.NodeID, r.ObservedAt, received)
 		return err
 	}
 	if jobID, err := r.Update.JobId.Get(); err == nil {
@@ -161,7 +161,7 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	var incarnation *uuid.UUID
 	e := tx.QueryRow(ctx, `SELECT observation_seq::text,observed_update_generation::text,last_observed_at,received_at,observation_incarnation_id FROM fleet_node_state WHERE node_id=$1`, i.NodeID).Scan(&seqText, &genText, &lastObserved, &lastReceived, &incarnation)
 	sequence := decstr.U64(1)
-	if e == nil && incarnation != nil && *incarnation == i.IncarnationID {
+	if e == nil && (incarnation == nil || *incarnation == i.IncarnationID) {
 		previous, e := decstr.Parse(genText)
 		if e != nil {
 			return e

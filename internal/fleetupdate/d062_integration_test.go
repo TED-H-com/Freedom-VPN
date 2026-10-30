@@ -278,6 +278,12 @@ func TestD062_NullGenerationNeverConfirmsOrDemotes(t *testing.T) {
 	l.report(i, w, "succeeded")
 	for _, known := range []bool{false, true, false} {
 		d062Observe(t, l, i, w, known)
+		if !known {
+			// Losing current update evidence must not lose the ordering fence.
+			if err := l.s.Observe(l.ctx, i, Observation{Sequence: 100, AppliedUpdateGeneration: 0, CurrentReleaseID: &l.old, LastGoodReleaseID: &l.old, ObservedAt: time.Now().UTC()}); err != nil {
+				t.Fatal(err)
+			}
+		}
 		view, err := l.s.NodeVersionView(l.ctx, i.NodeID)
 		if err != nil {
 			t.Fatal(err)

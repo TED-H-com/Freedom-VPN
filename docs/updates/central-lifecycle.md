@@ -385,10 +385,12 @@ change its denominator or result bucket. A later null receipt also removes
 confirmation without undoing the successful result.
 
 The existing numeric cache is NOT NULL and remains an allocation/ordering
-high-water mark. The nullable projection consults the immutable heartbeat
-`report_payload.update.generation` at the cached receipt, rather than coercing
-null to zero or changing a base schema constraint. `ObserveReportTx` requires that
-complete receipt in the same transaction. Direct `Observe`/`ObserveTx` callers
+high-water mark. A generationless receipt clears the nullable
+observation-incarnation marker, so the projection stays null even after raw
+heartbeat retention. A later generation-bearing observation restores that
+identity only without lowering the high-water mark. This neither coerces null to
+zero nor changes a base schema constraint. `ObserveReportTx` requires the
+immutable receipt in the same transaction. Direct `Observe`/`ObserveTx` callers
 provide an explicit generation; they are not the nullable wire adapter. The
 current contract's update block has generation/job_id/stage/state; actual release
 is still the top-level current_release_id until a contract revision adds the
