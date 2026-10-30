@@ -13,10 +13,12 @@ import type {
   DomainRuleSetPayload,
   DnsProfilePayload,
   FairUsePayload,
+  ForwardingBlockReason,
   LocalizedText,
   MemberListResponse,
   MemberSelf,
   MemberUsageResponse,
+  NodeCheck,
   NodeDetail,
   NodeListResponse,
   NodeSummaryItem,
@@ -31,6 +33,60 @@ import type {
   UpdateResult,
   UpdateTarget,
 } from './types';
+
+export type NodeDetailWithForwardingReasons = NodeDetail & {
+  forwarding_block_reasons?: ForwardingBlockReason[] | null;
+};
+
+export function isProvisionalLeaseWaitingCheck(
+  check: Pick<NodeCheck, 'name' | 'status' | 'error_code'>,
+  forwardingBlockReasons?: readonly ForwardingBlockReason[] | null,
+): boolean {
+  if (check.error_code === 'AWAITING_MEMBER_GRANTS') {
+    return true;
+  }
+  if (
+    forwardingBlockReasons?.includes('awaiting_member_grants') &&
+    (check.name === 'lease' || check.name === 'qos' || check.name === 'source_binding') &&
+    check.status === 'failed' &&
+    check.error_code == null
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isNodeAwaitingMemberGrants(
+  node: NodeDetailWithForwardingReasons,
+): boolean {
+  if (node.forwarding_block_reasons?.includes('awaiting_member_grants')) {
+    return true;
+  }
+  if (
+    node.checks?.some((c) =>
+      isProvisionalLeaseWaitingCheck(c, node.forwarding_block_reasons),
+    )
+  ) {
+    return true;
+  }
+  if (node.recent_errors?.some((e) => e.code === 'AWAITING_MEMBER_GRANTS')) {
+    return true;
+  }
+  return false;
+}
+
+export function isNodeLeaseExpired(node: NodeDetailWithForwardingReasons): boolean {
+  if (node.forwarding_block_reasons?.includes('lease_expired')) {
+    return true;
+  }
+  if (node.checks?.some((c) => c.error_code === 'LEASE_EXPIRED')) {
+    return true;
+  }
+  if (node.recent_errors?.some((e) => e.code === 'LEASE_EXPIRED')) {
+    return true;
+  }
+  return false;
+}
 
 export interface WithEtag<T> {
   data: T;

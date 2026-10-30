@@ -27,6 +27,8 @@ func main() {
 		os.Exit(run(os.Args[2:], false))
 	case "version":
 		fmt.Println("fvpn-agent dev")
+	case "usage":
+		os.Exit(usageCommand(os.Args[2:]))
 	default:
 		usage()
 		os.Exit(2)
@@ -36,6 +38,7 @@ func main() {
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: fvpn-agent enroll -config path -token-file path|-")
 	fmt.Fprintln(os.Stderr, "       fvpn-agent run|step -config path")
+	fmt.Fprintln(os.Stderr, "       fvpn-agent usage snapshot -config path [-json]")
 	fmt.Fprintln(os.Stderr, "       fvpn-agent version")
 }
 

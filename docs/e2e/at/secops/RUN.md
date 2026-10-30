@@ -1,67 +1,24 @@
-# Follow-up 7 run instructions
+# Follow-up 8 run instructions
 
 Run from this worktree with Go 1.27.3 and Docker:
 
 ```sh
 make -f mk/at-secops.mk at-secops-lint at-secops-test at-secops-build
-make -f mk/at-secops.mk at-secops-followup7
+make -f mk/at-secops.mk at-secops-followup8
 make go-lint
-go vet -tags e2e ./tests/...
+go vet ./...
 ```
 
-The live target refuses an occupied namespace. It fixes `FVPN_E2E_PREFIX=w4-secops`,
-`FVPN_E2E_PORT_BASE=30000`, `FVPN_E2E_GRACE_SECONDS=90` and `E2E_RESET=1`, then uses
-the existing `mk/e2e.mk` for fresh preparation/start and unconditional teardown.
-Grace is a prepare-time TEST ONLY option: both control and worker read it at
-startup. It is not live reload. The live test is bounded to 65 minutes.
+`at-secops-followup8` runs `tests/e2e/at/secops/followup8_run.py` in the foreground:
 
-The test first measures two actual container TCP addresses through the one
-trusted gateway. A tiny owned probe runs in those namespaces; credentials are
-passed through protected stdin, and only status/code/Retry-After metadata is
-returned. It saturates anonymous enrollment from A, requires a valid enrollment
-replay HTTP 200 from B, then repeats directly with rotating forged XFF values.
-It creates no routes, groups or policies for the proxy test.
+1. Verifies that zero `fvpn-w4-secops-*` Docker containers, volumes, or networks exist (`inventory_before`).
+2. Brings up a fresh lab stack (`make -f mk/e2e.mk e2e-up` with `FVPN_E2E_PREFIX=w4-secops`, `FVPN_E2E_PORT_BASE=30000`, `E2E_RESET=1`).
+3. Runs `TestAT30_Followup8_LiveRestoreReconcile` (`tests/e2e/at/secops/followup8_live_test.go`):
+   - **Step 1 (`T0`)**: Seeds two paid members (`m1`, `m2`) with native devices on `fvpn-w4-secops-node`, runs counted traffic until usage checkpoints are ACKed (`L0`), captures the node's retained SQLite store (`/var/lib/vpn-node/state/usage.db`), and takes a pgBackRest full backup + records `T0` UTC/LSN via `deploy/backup/backup.sh`.
+   - **Step 2 (`T1`)**: Runs additional counted traffic (`L1 > L0`), applies a subscription cancellation + full refund on `m1` in `fvpn-w4-secops-payment` (`P1`), revokes `m2`'s second device `peerM2D2` (`DELETE /api/v1/member/devices/{id}`), authorizes two new `T0..T1` devices (`peerM3D1` for post-`T0` member `m3` and `peerM2D3` for `T0` member `m2`) (`N1`), and archives WAL (`wal-switch`).
+   - **Step 3 (Restore to `T0`)**: Verifies `restore-pitr.sh` primary-overwrite refusal (exit `2`), runs a **2-minute fail-safe negative** on a restored `T0` database without `freeze`/`begin-recovery` (proving `T0..T1` archived events are skipped while idle and trigger `ErrAckRegress` on new traffic), then restores `T0` cleanly (`post-restore-checklist.sql` `6/6`) and executes the 5-step product restore protocol (`fvpn-usage-admin freeze` → `begin-recovery` → node archive replay → `complete-recovery`), measuring `RTO`.
+   - **Step 4 (Reconciliation Observation)**: Observes `usage_replay` (`L2` vs `L1` and `L0`, `RPO`), `provider_reconciliation` (`Central L2` vs `P1`), and `peer_revocation_reconciliation` (`Central L2` vs `N1`).
+4. Unconditionally tears down all `fvpn-w4-secops-*` containers, volumes, networks, and restore images (`make -f mk/e2e.mk e2e-down` + restore object cleanup) and verifies `inventory_after` is zero.
+5. Renders records via `python3 tests/e2e/at/secops/followup8_records.py`.
 
-The signed serving baseline comes from the exported lab helper. API-created
-plans, grants and publication supply the unchanged sequential 20-user × 3-peer
-native profile. SQL only observes projections. Each counted peer must select a
-product-created exit, route through `fvnb0`, receive HTTPS 200 from the controlled
-origin, match its authenticated node-SNAT receipt and increase both exact-device
-admission counters. The capacity window is fixed at 60 seconds warmup followed
-by 300 seconds measurement: 20 portal readers at 1/s, 60 HTTPS peers at 1/s,
-real agent sampling and two API capacity-policy changes. The exported node
-sampler runs every five seconds during admission and traffic; the full series,
-errors and actual timing jitter are retained. `StartSecondExit` / `EnrollAt`
-supply a subsequent two-exit attempt; no forced-relay result is inferred.
-
-AT29 uses `GET /api/v1/admin/fleet-config`, its strong ETag, and `PUT` with
-`max_offline_lease_seconds=60`, a TEST ONLY reason and UUID Idempotency-Key.
-The same-key replay is observed. A deferred GET/ETag/PUT restores 86400 even if
-a case cannot proceed. Existing leases are never rewritten: the record reads
-the newly issued signed window before faulting. Source payment snapshots and
-finite grants supply service deadlines. A `past_due` source snapshot is attempted
-for grace; a provider refusal is retained as a blocked precondition, never
-replaced with SQL. During control-loss faults the own worker is paused to exclude
-NetBird reconciliation as the cause of cutoff. Cleanup resumes worker, agent
-and watchdog and starts control before restoring the fleet maximum. Repeated
-HTTPS is separate from established TCP/UDP and guest clock rollback.
-
-D-066 separates the native device-flow credential artifact from ordinary logs,
-captures and readable files. The exact `JoinNativeMember` pre-delete scans retain
-count, mode/owner and key-line count; a post-join exported scan proves deletion.
-Ordinary streams require zero canaries. No values or matched lines are public.
-`ScaleNativeMembers` final per-stream attribution remains pending devstack
-follow-up 12; the previous aggregate run is not rewritten as complete coverage.
-
-Records are generated after teardown:
-
-```sh
-PYTHONDONTWRITEBYTECODE=1 python3 tests/e2e/at/secops/followup7_records.py
-```
-
-The target returns 2 while any full acceptance case remains blocked. Inspect the
-Go live-test result independently. Physical candidate hardware, real member
-platforms and guest clock tests remain [operator runs](operator-runs.md). No
-physical PITR rerun is required here: backup sources are unchanged since #165.
-Previous records are preserved with hashes under `history/follow-up-6/`.
-The workflow dependencies are unchanged.
+Previous Follow-up 7 root records are archived with SHA-256 digests under `docs/e2e/at/secops/history/follow-up-7/`.

@@ -3,8 +3,13 @@
 // The agent (a later wave) feeds a typed model. This package turns it into one
 // atomic nftables transaction for table inet fvpn and a tc batch that updates
 // HTB classes in place. It does not flush the host ruleset, write fwmark, or
-// install a flowtable. Verification reads nft -j and tc -j and returns a
-// stable reason when the kernel state does not match the model.
+// install a flowtable, and it never writes any table other than inet fvpn.
+// Verification reads `nft -j list ruleset` and tc -j and returns a stable
+// reason when the kernel state does not match the model. A base chain outside
+// inet fvpn is part of those bytes. Accept, continue, counter, and log are
+// tolerated, because an accept does not stop a later base chain. A statement
+// that can rewrite, mark, offload, queue, or drop member traffic on a hook
+// that traffic crosses fails closed.
 //
 // Metering is forward_admission_v1 (§10.1, §10.2): one named counter per
 // device per direction, incremented only after the lease and isolation checks,

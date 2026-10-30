@@ -37,6 +37,13 @@ var (
 	// ErrNoTrust means a checkpoint arrived and no recovery trust store is
 	// configured. Verification fails closed (§17.3).
 	ErrNoTrust = errors.New("usagestore: no recovery trust store")
+	// ErrAbsent means the usage database file is not there. A snapshot
+	// does not create it.
+	ErrAbsent = errors.New("usagestore: usage store is absent")
+	// ErrLocked means SQLite stayed busy for the whole snapshot wait.
+	ErrLocked = errors.New("usagestore: usage store is locked")
+	// ErrCorrupt means the file is not a readable usage ledger of this schema.
+	ErrCorrupt = errors.New("usagestore: usage store is corrupt")
 )
 
 // Fault steps. A hook that returns an error aborts the surrounding

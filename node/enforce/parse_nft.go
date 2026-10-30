@@ -28,6 +28,52 @@ type Ruleset struct {
 	Flowtables []string
 	Classes    map[uuid.UUID]uint16
 	Raw        string
+	// Foreign is every chain whose family or table is not inet fvpn, in
+	// listing order. VerifyServing fails closed when one of these can change
+	// the packet inet fvpn matches or a verdict inet fvpn already made.
+	// Counters and sets from other tables stay out of Counters and Sets.
+	Foreign []ForeignChain
+	// ForeignFlows is every flowtable outside inet fvpn.
+	ForeignFlows []ForeignFlow
+}
+
+// ForeignChain is one chain outside table inet fvpn.
+type ForeignChain struct {
+	Family  string
+	Table   string
+	Name    string
+	Type    string
+	Hook    string
+	Policy  string
+	Dev     []string
+	Prio    int64
+	HasPrio bool
+	BadDev  bool
+	Rules   []ForeignRule
+}
+
+// ForeignRule is one rule. Stmts are the nft JSON statement keys in order.
+type ForeignRule struct {
+	Stmts []ForeignStmt
+}
+
+// ForeignStmt is one nft statement. Target is set for jump and goto.
+type ForeignStmt struct {
+	Key    string
+	Body   json.RawMessage
+	Target string
+}
+
+// ForeignFlow is a flowtable outside inet fvpn.
+type ForeignFlow struct {
+	Family  string
+	Table   string
+	Name    string
+	Hook    string
+	Dev     []string
+	Prio    int64
+	HasPrio bool
+	BadDev  bool
 }
 
 // ChainView is one base chain in table order.
@@ -101,7 +147,10 @@ type setElement struct {
 	Window  uint32
 }
 
-// ParseRuleset reads `nft -j list table inet fvpn`. Numbers above 2^53 stay
+// ParseRuleset reads an nft -j listing. Apply verifies `nft -j list ruleset`
+// so every table is in the bytes. The inet fvpn model is still keyed by
+// family, table, and name: an ip fvpn chain or a chain in another table is
+// recorded on Foreign and is not merged into Chains. Numbers above 2^53 stay
 // exact because the decoder uses json.Number (§10.4).
 func ParseRuleset(raw []byte) (Ruleset, error) {
 	dec := json.NewDecoder(bytes.NewReader(raw))
@@ -121,101 +170,32 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 		SetFlags: map[string][]string{},
 		Raw:      string(raw),
 	}
-	// Chains are keyed by (family, table, name). A second object with the
-	// same identity is an error. A different family is not merged in: an
-	// `ip fvpn forward` policy must not hide the `inet` chain's policy.
+	// Chains are keyed by (family, table, name). A second inet fvpn object
+	// with the same identity is an error. A different family or table is
+	// not merged in: an `ip fvpn forward` policy must not hide the `inet`
+	// chain's policy, and it is kept on Foreign for VerifyServing.
 	seenChain := map[string]struct{}{}
+	var foreign foreignBuild
 	for _, obj := range doc.Nftables {
 		switch {
 		case hasKey(obj, "flowtable"):
-			rs.Flowtables = append(rs.Flowtables, "flowtable")
+			if err := noteFlowtable(&rs, obj["flowtable"]); err != nil {
+				return Ruleset{}, err
+			}
 		case hasKey(obj, "chain"):
-			var c struct {
-				Family string      `json:"family"`
-				Table  string      `json:"table"`
-				Name   string      `json:"name"`
-				Type   string      `json:"type"`
-				Hook   string      `json:"hook"`
-				Policy string      `json:"policy"`
-				Prio   json.Number `json:"prio"`
-			}
-			if err := json.Unmarshal(obj["chain"], &c); err != nil {
+			if err := noteChain(&rs, &foreign, seenChain, obj["chain"]); err != nil {
 				return Ruleset{}, err
 			}
-			if c.Table != "" && c.Table != TableName {
-				continue
-			}
-			fam := c.Family
-			if fam == "" {
-				fam = TableFamily
-			}
-			if fam != TableFamily {
-				continue
-			}
-			table := c.Table
-			if table == "" {
-				table = TableName
-			}
-			key := fam + "\x00" + table + "\x00" + c.Name
-			if _, dup := seenChain[key]; dup {
-				return Ruleset{}, fmt.Errorf("duplicate chain %s %s %s", fam, table, c.Name)
-			}
-			seenChain[key] = struct{}{}
-			cv := rs.Chains[c.Name]
-			cv.Name = c.Name
-			cv.Type = c.Type
-			cv.Hook = c.Hook
-			cv.Policy = c.Policy
-			if c.Prio != "" {
-				n, err := c.Prio.Int64()
-				if err != nil {
-					return Ruleset{}, fmt.Errorf("chain %s priority: %w", c.Name, err)
-				}
-				cv.Prio = n
-				cv.HasPrio = true
-			}
-			rs.Chains[c.Name] = cv
 		case hasKey(obj, "rule"):
-			var head struct {
-				Family  string          `json:"family"`
-				Table   string          `json:"table"`
-				Chain   string          `json:"chain"`
-				Comment string          `json:"comment"`
-				Expr    json.RawMessage `json:"expr"`
-			}
-			if err := json.Unmarshal(obj["rule"], &head); err != nil {
+			if err := noteRule(&rs, &foreign, obj["rule"]); err != nil {
 				return Ruleset{}, err
 			}
-			if head.Table != "" && head.Table != TableName {
-				continue
-			}
-			fam := head.Family
-			if fam == "" {
-				fam = TableFamily
-			}
-			if fam != TableFamily {
-				continue
-			}
-			rv := RuleView{Comment: head.Comment, Raw: string(head.Expr)}
-			if strings.Contains(rv.Raw, "offload") {
-				rv.Offload = true
-			}
-			if err := inspectExpr(head.Expr, &rv); err != nil {
-				return Ruleset{}, err
-			}
-			if classes := classAssignments(head.Comment); len(classes) > 0 {
-				if rs.Classes == nil {
-					rs.Classes = map[uuid.UUID]uint16{}
-				}
-				for id, minor := range classes {
-					rs.Classes[id] = minor
-				}
-			}
-			ch := rs.Chains[head.Chain]
-			ch.Name = head.Chain
-			ch.Rules = append(ch.Rules, rv)
-			rs.Chains[head.Chain] = ch
 		case hasKey(obj, "counter"):
+			if foreign, err := foreignObject(obj["counter"]); err != nil {
+				return Ruleset{}, err
+			} else if foreign {
+				continue
+			}
 			var c struct {
 				Table   string      `json:"table"`
 				Name    string      `json:"name"`
@@ -224,9 +204,6 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			}
 			if err := json.Unmarshal(obj["counter"], &c); err != nil {
 				return Ruleset{}, err
-			}
-			if c.Table != "" && c.Table != TableName {
-				continue
 			}
 			packets, err := parseUintNumber(c.Packets)
 			if err != nil {
@@ -238,6 +215,11 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			}
 			rs.Counters[c.Name] = CounterValue{Packets: packets, Bytes: byteCount}
 		case hasKey(obj, "set"):
+			if foreign, err := foreignObject(obj["set"]); err != nil {
+				return Ruleset{}, err
+			} else if foreign {
+				continue
+			}
 			var s struct {
 				Table string          `json:"table"`
 				Name  string          `json:"name"`
@@ -246,9 +228,6 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			}
 			if err := json.Unmarshal(obj["set"], &s); err != nil {
 				return Ruleset{}, err
-			}
-			if s.Table != "" && s.Table != TableName {
-				continue
 			}
 			flags, err := parseSetFlags(s.Flags)
 			if err != nil {
@@ -270,10 +249,317 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			}
 		}
 	}
-	if strings.Contains(rs.Raw, "\"flowtable\"") && len(rs.Flowtables) == 0 {
+	rs.Foreign = foreign.done()
+	if strings.Contains(rs.Raw, "\"flowtable\"") && len(rs.Flowtables) == 0 && !foreignExplainsFlowtable(rs) {
 		rs.Flowtables = append(rs.Flowtables, "flowtable")
 	}
 	return rs, nil
+}
+
+// foreignObject reports whether a JSON object lives outside inet fvpn.
+// An empty family or table is inet fvpn, matching a listing of that table alone.
+func foreignObject(raw json.RawMessage) (bool, error) {
+	fam, table, err := objectIdentity(raw)
+	if err != nil {
+		return false, err
+	}
+	return fam != TableFamily || table != TableName, nil
+}
+
+func objectIdentity(raw json.RawMessage) (family, table string, err error) {
+	var head struct {
+		Family string `json:"family"`
+		Table  string `json:"table"`
+	}
+	if len(raw) != 0 {
+		if err = json.Unmarshal(raw, &head); err != nil {
+			return "", "", err
+		}
+	}
+	family = head.Family
+	if family == "" {
+		family = TableFamily
+	}
+	table = head.Table
+	if table == "" {
+		table = TableName
+	}
+	return family, table, nil
+}
+
+type foreignBuild struct {
+	order []string
+	by    map[string]*ForeignChain
+}
+
+func (b *foreignBuild) get(fam, table, name string) *ForeignChain {
+	if b.by == nil {
+		b.by = map[string]*ForeignChain{}
+	}
+	key := fam + "\x00" + table + "\x00" + name
+	if c, ok := b.by[key]; ok {
+		return c
+	}
+	c := &ForeignChain{Family: fam, Table: table, Name: name}
+	b.by[key] = c
+	b.order = append(b.order, key)
+	return c
+}
+
+func (b *foreignBuild) done() []ForeignChain {
+	if len(b.order) == 0 {
+		return nil
+	}
+	out := make([]ForeignChain, 0, len(b.order))
+	for _, key := range b.order {
+		out = append(out, *b.by[key])
+	}
+	return out
+}
+
+func noteFlowtable(rs *Ruleset, raw json.RawMessage) error {
+	fam, table, err := objectIdentity(raw)
+	if err != nil {
+		return err
+	}
+	if fam == TableFamily && table == TableName {
+		rs.Flowtables = append(rs.Flowtables, "flowtable")
+		return nil
+	}
+	var c struct {
+		Name string          `json:"name"`
+		Hook string          `json:"hook"`
+		Prio json.RawMessage `json:"prio"`
+		Dev  json.RawMessage `json:"dev"`
+	}
+	if err := json.Unmarshal(raw, &c); err != nil {
+		return err
+	}
+	ft := ForeignFlow{Family: fam, Table: table, Name: c.Name, Hook: c.Hook}
+	if prio, has, bad := parsePrio(c.Prio); has && !bad {
+		ft.Prio = prio
+		ft.HasPrio = true
+	}
+	devs, badDev := parseDev(c.Dev)
+	ft.Dev = devs
+	ft.BadDev = badDev
+	rs.ForeignFlows = append(rs.ForeignFlows, ft)
+	return nil
+}
+
+func noteChain(rs *Ruleset, foreign *foreignBuild, seen map[string]struct{}, raw json.RawMessage) error {
+	var c struct {
+		Family string          `json:"family"`
+		Table  string          `json:"table"`
+		Name   string          `json:"name"`
+		Type   string          `json:"type"`
+		Hook   string          `json:"hook"`
+		Policy string          `json:"policy"`
+		Prio   json.RawMessage `json:"prio"`
+		Dev    json.RawMessage `json:"dev"`
+	}
+	if err := json.Unmarshal(raw, &c); err != nil {
+		return err
+	}
+	fam := c.Family
+	if fam == "" {
+		fam = TableFamily
+	}
+	table := c.Table
+	if table == "" {
+		table = TableName
+	}
+	if fam != TableFamily || table != TableName {
+		ch := foreign.get(fam, table, c.Name)
+		if c.Type != "" {
+			ch.Type = c.Type
+		}
+		if c.Hook != "" {
+			ch.Hook = c.Hook
+		}
+		if c.Policy != "" {
+			ch.Policy = c.Policy
+		}
+		if prio, has, bad := parsePrio(c.Prio); bad {
+			ch.HasPrio = false
+		} else if has {
+			ch.Prio = prio
+			ch.HasPrio = true
+		}
+		if len(c.Dev) != 0 {
+			devs, badDev := parseDev(c.Dev)
+			ch.Dev = devs
+			ch.BadDev = badDev
+		}
+		return nil
+	}
+	key := fam + "\x00" + table + "\x00" + c.Name
+	if _, dup := seen[key]; dup {
+		return fmt.Errorf("duplicate chain %s %s %s", fam, table, c.Name)
+	}
+	seen[key] = struct{}{}
+	cv := rs.Chains[c.Name]
+	cv.Name = c.Name
+	cv.Type = c.Type
+	cv.Hook = c.Hook
+	cv.Policy = c.Policy
+	if prio, has, bad := parsePrio(c.Prio); bad {
+		return fmt.Errorf("chain %s priority: %s", c.Name, bytes.TrimSpace(c.Prio))
+	} else if has {
+		cv.Prio = prio
+		cv.HasPrio = true
+	}
+	rs.Chains[c.Name] = cv
+	return nil
+}
+
+func noteRule(rs *Ruleset, foreign *foreignBuild, raw json.RawMessage) error {
+	var head struct {
+		Family  string          `json:"family"`
+		Table   string          `json:"table"`
+		Chain   string          `json:"chain"`
+		Comment string          `json:"comment"`
+		Expr    json.RawMessage `json:"expr"`
+	}
+	if err := json.Unmarshal(raw, &head); err != nil {
+		return err
+	}
+	fam := head.Family
+	if fam == "" {
+		fam = TableFamily
+	}
+	table := head.Table
+	if table == "" {
+		table = TableName
+	}
+	if fam != TableFamily || table != TableName {
+		ch := foreign.get(fam, table, head.Chain)
+		ch.Rules = append(ch.Rules, ForeignRule{Stmts: foreignStmts(head.Expr)})
+		return nil
+	}
+	rv := RuleView{Comment: head.Comment, Raw: string(head.Expr)}
+	if strings.Contains(rv.Raw, "offload") {
+		rv.Offload = true
+	}
+	if err := inspectExpr(head.Expr, &rv); err != nil {
+		return err
+	}
+	if classes := classAssignments(head.Comment); len(classes) > 0 {
+		if rs.Classes == nil {
+			rs.Classes = map[uuid.UUID]uint16{}
+		}
+		for id, minor := range classes {
+			rs.Classes[id] = minor
+		}
+	}
+	ch := rs.Chains[head.Chain]
+	ch.Name = head.Chain
+	ch.Rules = append(ch.Rules, rv)
+	rs.Chains[head.Chain] = ch
+	return nil
+}
+
+func foreignStmts(expr json.RawMessage) []ForeignStmt {
+	if len(expr) == 0 || string(bytes.TrimSpace(expr)) == "null" {
+		return nil
+	}
+	var arr []map[string]json.RawMessage
+	dec := json.NewDecoder(bytes.NewReader(expr))
+	dec.UseNumber()
+	if err := dec.Decode(&arr); err != nil {
+		return []ForeignStmt{{Key: "unparsed"}}
+	}
+	out := make([]ForeignStmt, 0, len(arr))
+	for _, obj := range arr {
+		if len(obj) != 1 {
+			out = append(out, ForeignStmt{Key: "unparsed"})
+			continue
+		}
+		var key string
+		var body json.RawMessage
+		for k, v := range obj {
+			key = k
+			body = v
+		}
+		st := ForeignStmt{Key: key, Body: body}
+		if key == "jump" || key == "goto" {
+			st.Target = jumpTarget(body)
+		}
+		out = append(out, st)
+	}
+	return out
+}
+
+func jumpTarget(body json.RawMessage) string {
+	var obj struct {
+		Target string `json:"target"`
+	}
+	if json.Unmarshal(body, &obj) == nil && obj.Target != "" {
+		return obj.Target
+	}
+	var s string
+	if json.Unmarshal(body, &s) == nil {
+		return s
+	}
+	return ""
+}
+
+// parsePrio reads an nft JSON priority. nft emits a number. has is false when
+// the field is absent. bad is true when the field is present and not an integer.
+func parsePrio(raw json.RawMessage) (prio int64, has, bad bool) {
+	if len(raw) == 0 || string(bytes.TrimSpace(raw)) == "null" {
+		return 0, false, false
+	}
+	var num json.Number
+	if err := json.Unmarshal(raw, &num); err == nil {
+		n, err := num.Int64()
+		if err != nil {
+			return 0, false, true
+		}
+		return n, true, false
+	}
+	var s string
+	if err := json.Unmarshal(raw, &s); err == nil {
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return 0, false, true
+		}
+		return n, true, false
+	}
+	return 0, false, true
+}
+
+// parseDev reads an nft device or device list. bad is true when the field is
+// present and is neither a string nor an array of strings.
+func parseDev(raw json.RawMessage) (devs []string, bad bool) {
+	if len(raw) == 0 || string(bytes.TrimSpace(raw)) == "null" {
+		return nil, false
+	}
+	var one string
+	if err := json.Unmarshal(raw, &one); err == nil {
+		return []string{one}, false
+	}
+	var many []string
+	if err := json.Unmarshal(raw, &many); err == nil {
+		return many, false
+	}
+	return nil, true
+}
+
+func foreignExplainsFlowtable(rs Ruleset) bool {
+	if len(rs.ForeignFlows) > 0 {
+		return true
+	}
+	for _, c := range rs.Foreign {
+		for _, rule := range c.Rules {
+			for _, st := range rule.Stmts {
+				if st.Key == "flow" || st.Key == "xt" || bytes.Contains(st.Body, []byte(`"flowtable"`)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // ParseState extracts the objects a later render must preserve.
