@@ -187,3 +187,45 @@ func TestEvaluateObservationEvidence_IsolationApplyError(t *testing.T) {
 		t.Fatal("expected isPendingIsolationApplyError to be false once node failed closed")
 	}
 }
+
+func TestD067_AwaitingMemberGrantsObservationAndPublicationEvidence(t *testing.T) {
+	raw, err := os.ReadFile("../../contracts/examples/valid/ObservationReport.awaiting-member-grants.json")
+	if err != nil {
+		t.Fatalf("read example: %v", err)
+	}
+	var report api.ObservationReport
+	if err := json.Unmarshal(raw, &report); err != nil {
+		t.Fatalf("unmarshal example: %v", err)
+	}
+	if report.MemberForwardingEnabled {
+		t.Fatal("expected member_forwarding_enabled=false on awaiting_member_grants example")
+	}
+	if len(report.ForwardingBlockReasons) != 1 || report.ForwardingBlockReasons[0] != api.ForwardingBlockReasonAwaitingMemberGrants {
+		t.Fatalf("forwarding_block_reasons = %v, want [awaiting_member_grants]", report.ForwardingBlockReasons)
+	}
+	if !report.ForwardingBlockReasons[0].Valid() {
+		t.Fatal("expected awaiting_member_grants to be a valid ForwardingBlockReason")
+	}
+
+	safety, health, forwarding, errs := evaluateObservationEvidence(report)
+	if safety != api.SafetyStatusPassed {
+		t.Fatalf("safety = %q, want passed (provisional node lease, not expired)", safety)
+	}
+	if health != api.DataHealthHealthy {
+		t.Fatalf("health = %q, want healthy", health)
+	}
+	if forwarding {
+		t.Fatalf("forwarding = %v, want false", forwarding)
+	}
+	if len(errs) != 0 {
+		t.Fatalf("errors = %v, want empty", errs)
+	}
+
+	now := report.ObservedAt.UTC()
+	if cause := publicationForwardingFailure(report, now, false); cause != "forwarding_disabled" {
+		t.Fatalf("publicationForwardingFailure = %q, want forwarding_disabled", cause)
+	}
+	if PublicationForwardingEvidence(report, now) {
+		t.Fatal("PublicationForwardingEvidence must be false while awaiting_member_grants has member_forwarding_enabled=false")
+	}
+}

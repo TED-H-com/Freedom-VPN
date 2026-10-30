@@ -819,8 +819,12 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	wasServing := e.expectServing.Load()
 	res, err := e.plane.Apply(ctx, model, prev)
-	pending := err != nil && res.Verified && enforce.IsConntrackDeleteFailure(err)
-	if err != nil && !pending {
+	// A verified conntrack failure keeps serving. Only Failed stays pending.
+	// An empty Failed list is a successful delete and resets the bound.
+	var ctErr *enforce.ConntrackDeleteError
+	verifiedDelete := err != nil && res.Verified && errors.As(err, &ctErr)
+	pending := verifiedDelete && len(ctErr.Failed) > 0
+	if err != nil && !verifiedDelete {
 		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
@@ -839,7 +843,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		if e.conntrackAttempts > maxConntrackDeleteAttempts {
 			e.conntrackAttempts = maxConntrackDeleteAttempts
 		}
-		e.saveRevocations(ctx, pendingAfterFailure(e.pendingRevoke, e.addresses, model.Bindings))
+		e.saveRevocations(ctx, pendingAfterFailure(e.pendingRevoke, e.addresses, model.Bindings, ctErr.Failed))
 		if e.conntrackAttempts >= maxConntrackDeleteAttempts {
 			e.markConntrackBlocked(ctx, conntrackBoundDetail)
 			e.handoff(ctx)

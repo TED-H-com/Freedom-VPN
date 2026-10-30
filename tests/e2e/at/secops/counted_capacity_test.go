@@ -25,7 +25,14 @@ func (p *liveProbe) countedCapacity(admin *liveSession, node uuid.UUID, members 
 	before := map[string]map[string]decstr.U64{}
 	proofs := []map[string]any{}
 	for _, peer := range peers {
-		r := p.selectedFlow(peer)
+		var r map[string]any
+		for until := time.Now().Add(30 * time.Second); time.Now().Before(until); {
+			r = p.selectedFlow(peer)
+			if r["counted"] == true {
+				break
+			}
+			time.Sleep(2 * time.Second)
+		}
 		proofs = append(proofs, r)
 		if r["counted"] != true {
 			out["blocker"] = "at least one cohort peer lacks counted flow"

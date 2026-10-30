@@ -1,0 +1,42 @@
+{
+  "id": "forwarding",
+  "title": "Member forwarding follows a serving lease",
+  "spec": [
+    "§5",
+    "§19 AT10"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "nft_table_present",
+      "detail": "true"
+    },
+    {
+      "name": "forward_policy",
+      "detail": "drop"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "5"
+    },
+    {
+      "name": "baseline_marker",
+      "detail": "false"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "6"
+    },
+    {
+      "name": "forward_excerpt",
+      "detail": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=5 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a18e46-b1a8-7899-9ba3-1abb1ad88d00:115e\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 co"
+    },
+    {
+      "name": "note",
+      "detail": "forward chain generation is 5 with member accept rules"
+    }
+  ],
+  "at": "2026-10-30T19:27:21Z",
+  "run_id": "fa5650f3-d238-496e-b7d4-718ce705fefb",
+  "source_commit": "a36bb84f1dafc7526c021177026b4d558e273cd0"
+}

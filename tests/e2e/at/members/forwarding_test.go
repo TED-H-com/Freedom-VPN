@@ -36,6 +36,7 @@ type forwardingObservation struct {
 	SourceAT            string                     `json:"source_at,omitempty"`
 	ProbeSHA256         string                     `json:"probe_sha256"`
 	At                  string                     `json:"at"`
+	FirstCountedByteAt  string                     `json:"first_counted_byte_at,omitempty"`
 	Member              string                     `json:"member_container_role"`
 	RouteSelected       bool                       `json:"route_selected"`
 	RouteBefore         json.RawMessage            `json:"route_before"`
@@ -184,9 +185,19 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 	if err != nil || !json.Valid(raw) {
 		raw = []byte(`{"origin_receipt":false,"probe_error":true}`)
 	}
+	if device != uuid.Nil {
+		if c := l.counters(device); c.DeviceUpload > o.Before.DeviceUpload && c.DeviceDownload > o.Before.DeviceDownload {
+			l.lastFirstByteAt = time.Now().UTC()
+			o.FirstCountedByteAt = l.lastFirstByteAt.Format(time.RFC3339Nano)
+		}
+	}
 	o.Transfer = raw
 	wg.Wait()
 	o.After = l.counters(device)
+	if device != uuid.Nil && o.FirstCountedByteAt == "" && o.After.DeviceUpload > o.Before.DeviceUpload && o.After.DeviceDownload > o.Before.DeviceDownload {
+		l.lastFirstByteAt = time.Now().UTC()
+		o.FirstCountedByteAt = l.lastFirstByteAt.Format(time.RFC3339Nano)
+	}
 	received := l.request(nil, "GET", "https://releases.example.invalid/e2e/traffic", nil, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
 	var origin struct {
 		ID       string `json:"probe_id"`
