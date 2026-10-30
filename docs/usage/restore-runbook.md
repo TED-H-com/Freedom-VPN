@@ -23,7 +23,7 @@ Before or immediately upon bringing up the restored database, freeze usage inges
 ```go
 err := usageSvc.FreezeIngest(ctx)
 ```
-- Sets `usage_ledger_state.mode = 'frozen'`.
+- Sets `usage_ledger_state.mode = 'frozen'` and appends a `usage_ledger.freeze` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` in `changes.after` (Decision D-051).
 
 ### Step 2: Enter Recovery Mode & Rotate `ledger_epoch` (`BeginRecovery`)
 Invoke `BeginRecovery` with the operator reason and actor ID:
@@ -36,7 +36,7 @@ rec, err := usageSvc.BeginRecovery(ctx, "Restored PostgreSQL from 02:00Z snapsho
 3. Updates `usage_checkpoints` to `ledger_epoch = new_epoch` with the recomputed watermarks.
 4. Marks all existing `usage_rollups` rows with `reconciliation_in_progress = TRUE` so member and admin queries clearly indicate that post-restore replay is underway (`§17.3`).
 5. Signs the `RecoverySignedPayload` (`recovery_id`, `previous_ledger_epoch`, `new_ledger_epoch`, `restored_to`, `affected_since`, `reason`, `actor`, `stream_count`, `created_at`) with the `ledger-epoch` Ed25519 key (`envelope.PurposeLedgerEpoch`) and stores the signed envelope in `usage_recovery_records`.
-6. Transitions `usage_ledger_state.mode` to `'reconciling'` (and subsequently allows nodes to fetch checkpoints and replay batches under `new_epoch`).
+6. Transitions `usage_ledger_state.mode` to `'reconciling'` (and subsequently allows nodes to fetch checkpoints and replay batches under `new_epoch`) and appends a `usage_ledger.begin_recovery` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` and `recovery_id` in `changes.after` (Decision D-051).
 
 ### Step 3: Node Checkpoint Synchronization (`GetCheckpoint`)
 When a node attempts to upload a batch with the old `ledger_epoch`, `IngestBatch` rejects it with `409 LEDGER_EPOCH_MISMATCH`.
@@ -86,7 +86,7 @@ Once all active nodes have synchronized to the new `ledger_epoch` and replayed t
 err := usageSvc.CompleteRecovery(ctx, actorUUID)
 ```
 - Clears `reconciliation_in_progress = FALSE` on `usage_rollups` while preserving `gap = TRUE` on any periods affected by `replay_unavailable` or event gaps.
-- Sets `usage_ledger_state.mode = 'normal'` and records `completed_at` on `usage_ledger_epochs`.
+- Sets `usage_ledger_state.mode = 'normal'`, records `completed_at` on `usage_ledger_epochs`, and appends a `usage_ledger.complete_recovery` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` and `recovery_id` in `changes.after` (Decision D-051).
 
 ### Operator CLI (`fvpn-usage-admin`)
 All five operator recovery and drill-down workflows can be invoked from the CLI against the central configuration file:

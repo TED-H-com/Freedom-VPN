@@ -108,4 +108,24 @@ func TestCLI_FreezeRecoveryCompleteAdjustAndAudit(t *testing.T) {
 	if len(page.Items) < 4 {
 		t.Fatalf("expected at least 4 audit events, got %d", len(page.Items))
 	}
+	for _, item := range page.Items {
+		switch item.Action {
+		case "usage_ledger.freeze", "usage_ledger.begin_recovery", "usage_ledger.complete_recovery":
+			if item.Resource.Type != api.ResourceTypeFleetConfig || uuid.UUID(item.Resource.Id).String() != "00000000-0000-0000-0000-000000000001" {
+				t.Fatalf("%s resource = %+v, want fleet_config:00000000-0000-0000-0000-000000000001 (D-051)", item.Action, item.Resource)
+			}
+			afterMap, err := item.Changes.After.Get()
+			if err != nil {
+				t.Fatalf("%s missing changes.after metadata: %v", item.Action, err)
+			}
+			if got, _ := afterMap["usage_ledger_id"].(string); got != "00000000-0000-0000-0000-000000000130" {
+				t.Fatalf("%s changes.after.usage_ledger_id = %q, want 00000000-0000-0000-0000-000000000130", item.Action, got)
+			}
+			if item.Action != "usage_ledger.freeze" {
+				if got, _ := afterMap["recovery_id"].(string); got != recState.RecoveryID.String() {
+					t.Fatalf("%s changes.after.recovery_id = %q, want %s", item.Action, got, recState.RecoveryID)
+				}
+			}
+		}
+	}
 }

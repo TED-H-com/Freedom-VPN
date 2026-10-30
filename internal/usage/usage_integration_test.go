@@ -1008,6 +1008,49 @@ func TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable(t *testing.T) {
 	if finalUsage.Quality.ReconciliationInProgress {
 		t.Fatalf("expected ReconciliationInProgress=false after CompleteRecovery")
 	}
+
+	// Verify recovery audit rows use fleet_config:00000000-0000-0000-0000-000000000001 and carry
+	// usage_ledger_id (and recovery_id) in after_diff metadata (Decision D-051).
+	auditRows, err := envRestored.pool.Query(ctx, `
+		SELECT action, resource, after_diff
+		FROM audit_events
+		WHERE action IN ('usage_ledger.freeze', 'usage_ledger.begin_recovery', 'usage_ledger.complete_recovery')
+		ORDER BY occurred_at ASC, id ASC
+	`)
+	if err != nil {
+		t.Fatalf("query recovery audit_events: %v", err)
+	}
+	defer auditRows.Close()
+	var seenAuditActions []string
+	for auditRows.Next() {
+		var action, resource string
+		var afterRaw []byte
+		if err := auditRows.Scan(&action, &resource, &afterRaw); err != nil {
+			t.Fatalf("scan recovery audit row: %v", err)
+		}
+		seenAuditActions = append(seenAuditActions, action)
+		if resource != "fleet_config:00000000-0000-0000-0000-000000000001" {
+			t.Fatalf("%s audit resource = %q, want fleet_config:00000000-0000-0000-0000-000000000001 (D-051)", action, resource)
+		}
+		var meta map[string]any
+		if err := json.Unmarshal(afterRaw, &meta); err != nil {
+			t.Fatalf("unmarshal %s after_diff: %v", action, err)
+		}
+		if got, _ := meta["usage_ledger_id"].(string); got != "00000000-0000-0000-0000-000000000130" {
+			t.Fatalf("%s metadata usage_ledger_id = %q, want 00000000-0000-0000-0000-000000000130", action, got)
+		}
+		if action != "usage_ledger.freeze" {
+			if got, _ := meta["recovery_id"].(string); got != recState.RecoveryID.String() {
+				t.Fatalf("%s metadata recovery_id = %q, want %s", action, got, recState.RecoveryID)
+			}
+		}
+	}
+	if err := auditRows.Err(); err != nil {
+		t.Fatalf("iterate recovery audit rows: %v", err)
+	}
+	if len(seenAuditActions) != 3 {
+		t.Fatalf("expected 3 recovery audit actions, got %v", seenAuditActions)
+	}
 }
 
 func TestMTR04_PrecisionAbove2Pow53EndToEnd(t *testing.T) {
