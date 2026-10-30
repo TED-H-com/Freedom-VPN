@@ -20,11 +20,19 @@ type fakeAdapter struct {
 	mu           sync.Mutex
 	peers        map[string]Peer
 	ignoreWrites bool
+	script       []Peer
+	grants       int
 }
 
 func (f *fakeAdapter) ObservePeer(_ context.Context, _, peer string) (Peer, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	if len(f.script) > 0 {
+		p := f.script[0]
+		f.script = f.script[1:]
+		p.Groups = append([]uuid.UUID{}, p.Groups...)
+		return p, nil
+	}
 	p, ok := f.peers[peer]
 	if !ok {
 		return p, db.ErrNotFound
@@ -34,6 +42,9 @@ func (f *fakeAdapter) ObservePeer(_ context.Context, _, peer string) (Peer, erro
 func (f *fakeAdapter) SetAuthorization(_ context.Context, _, peer string, allow bool, groups []uuid.UUID) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	if allow {
+		f.grants++
+	}
 	if f.ignoreWrites {
 		return nil
 	}
@@ -45,6 +56,17 @@ func (f *fakeAdapter) SetAuthorization(_ context.Context, _, peer string, allow 
 	p.Groups = append([]uuid.UUID{}, groups...)
 	f.peers[peer] = p
 	return nil
+}
+func (f *fakeAdapter) setPeer(p Peer) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	p.Groups = append([]uuid.UUID{}, p.Groups...)
+	f.peers[p.ID] = p
+}
+func (f *fakeAdapter) grantCount() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.grants
 }
 func deviceCommand(role string, id uuid.UUID) entitlement.Command {
 	return entitlement.Command{Actor: entitlement.Actor{Role: role, ID: id, RequestID: uuid.New()}, Key: uuid.New()}
