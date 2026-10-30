@@ -1,96 +1,116 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-30T04:50:26.068612Z",
-  "local_source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
-  "origin_main_revision_at_record_refresh": "9951359f581edb4de95a3a7ec3c5074c18faddc0",
+  "follow_up": 4,
+  "checked_at": "2026-10-30T07:45:51.232255Z",
+  "local_source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "initial_source_revision": "4299123",
+  "at_start": {
+    "wire_nodes_followup_15_found": false
+  },
+  "before_publication": {
+    "wire_nodes_followup_15_found": true,
+    "merged_pr": 148,
+    "fast_forward_performed": true
+  },
   "commands": [
     "git fetch origin",
-    "git log --oneline origin/main | grep \"w2-control-core follow-up 10\"",
-    "git log --oneline origin/main | grep \"w3-devstack-e2e follow-up 7\"",
-    "git log --oneline f7281ec --grep=\"w3-devstack-e2e follow-up 7\""
+    "git log --oneline origin/main --grep='w3-wire-nodes follow-up 15'",
+    "git merge --ff-only origin/main",
+    "git fetch origin; git log --oneline origin/main --grep='w3-wire-nodes follow-up 15'"
   ],
-  "at_start": {
-    "control_followup_10_found": true,
-    "devstack_followup_7_found": false,
-    "local_source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c"
-  },
-  "later_remote_observation": {
-    "devstack_followup_7_found": true,
-    "merge_pr": 118,
-    "roadmap_commit": "ed1e0de",
-    "merged_fix_commit": "a924716",
-    "remote_ref_first_includes_fix_at": "2026-10-30T04:30:47Z",
-    "source": "git reflog show --date=iso origin/main; shared remote ref advanced during work"
-  },
-  "merge_performed": false,
-  "decision": "Run remains pinned to assigned f7281ec under the requested check-at-start gate. #118 arrived later and is not attributed to this run.",
+  "decision": "#148 arrived during initial inspection; fast-forwarded this task branch before any live run. All application observations remain pinned to 9b17127; no merge during a live run.",
+  "history": [
+    {
+      "follow_up": 3,
+      "record": "followup3-dependencies.json"
+    }
+  ],
   "requests": {
     "SECOPS-03": {
-      "status": "peer identity and native device admission resolved; ready DNS baseline blocked in this run",
+      "status": "resolved: fresh real DNS/ready baseline",
       "merged_prs": [
-        81,
-        83,
-        114
+        143,
+        146,
+        148
       ],
-      "evidence": "live.json"
+      "evidence": "publication.json"
     },
     "SECOPS-06": {
-      "status": "resolved: 20/20 authenticated; exact subject and address thresholds measured",
+      "status": "login/class buckets resolved; 8 MiB body blocked by SECOPS-15",
       "merged_prs": [
-        106
+        106,
+        141,
+        145
       ],
       "evidence": "limiter.json"
     },
-    "SECOPS-09": {
-      "status": "blocked on tested revision; owner follow-up merged during run, needs retest on #118",
+    "SECOPS-07": {
+      "status": "DOC01\u2013DOC14 resolved",
       "merged_prs": [
-        118
+        138
       ],
-      "merged_after_start": true,
+      "evidence": "scope-review.json"
+    },
+    "SECOPS-09": {
+      "status": "persistent recovery resolved; counted-flow gate remains on devstack follow-up 9",
+      "merged_prs": [
+        118,
+        143,
+        146
+      ],
       "evidence": "AT29.json"
     },
-    "SECOPS-11": {
-      "status": "worker component negative/positive pass after #109; live publication blocked before operation by DNS/readiness",
+    "SECOPS-10": {
+      "status": "blocked: isolated 50/60 admitted, login 51 fails at configured nginx 256-connection budget; hook supports multiple peers",
       "merged_prs": [
-        109
+        143
+      ],
+      "evidence": "native-scale.json"
+    },
+    "SECOPS-11": {
+      "status": "resolved live unarmed step refusal and successful zero-binding published generation; not traffic proof",
+      "merged_prs": [
+        109,
+        148
       ],
       "evidence": "publication.json"
     },
     "SECOPS-12": {
-      "status": "harness fix resolved; historical physical PITR remains valid after backups follow-up 4",
+      "status": "resolved historical image/PITR proof; no new schema compatibility assertion",
       "merged_prs": [
         112,
         111
       ],
-      "evidence": "pitr-compatibility.json"
+      "evidence": "pitr.json"
     },
     "SECOPS-13": {
-      "status": "owner test fails against refreshed live evidence; needs immutable regression fixture",
-      "introduced_by_pr": 109,
+      "status": "resolved exact owner test passes frozen testdata fixture",
+      "merged_prs": [
+        130,
+        148
+      ],
       "evidence": "components.json"
     },
     "SECOPS-14": {
-      "status": "lab landing GET / returns 500 after successful authentication; UI completion not proved",
+      "status": "resolved 20/20 GET / 200 and correct authenticated sessions",
+      "merged_prs": [
+        143
+      ],
       "evidence": "limiter.json"
+    },
+    "SECOPS-15": {
+      "status": "new blocked: 8 MiB usage allowance conflicts with 1 MiB whole-body canonicalization",
+      "merged_prs": [
+        145
+      ],
+      "evidence": "limiter.json"
+    },
+    "SECOPS-16": {
+      "status": "new observed: gateway error contains transient device-flow query value; counts only published",
+      "merged_prs": [
+        143
+      ],
+      "evidence": "native-diagnostics.json"
     }
-  },
-  "history": [
-    {
-      "follow_up": 2,
-      "record": {
-        "checked_at": "2026-10-30T03:45:24.566360Z",
-        "local_source_revision": "2a2146890607a00285c4262686608dba2ac6ba2f",
-        "origin_main_revision": "4d02151b78ff95e3fb0a08bdfeccd33082da0e69",
-        "commands": [
-          "git fetch origin",
-          "git log --oneline origin/main | grep \"w2-control-core follow-up 10\"",
-          "git log --oneline origin/main | grep \"w3-devstack-e2e follow-up 7\""
-        ],
-        "control_followup_10_found": false,
-        "devstack_followup_7_found": false,
-        "merge_performed": false,
-        "decision": "Both owning follow-ups absent at the instructed check. Retain historical burst measurement; no recovery workaround."
-      }
-    }
-  ]
+  }
 }

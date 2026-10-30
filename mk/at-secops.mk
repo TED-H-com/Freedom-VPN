@@ -39,3 +39,11 @@ at-secops-build:
 at-secops-pitr:
 	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 FVPN_SECOPS_PITR=1 $(AT_SECOPS_RUN) go test -v -tags e2e,integration -p 1 -parallel 2 -count=1 -timeout 12m -run '^TestAT30_LivePITRSource$$' ./tests/e2e/at/secops
 	python3 tests/e2e/at/secops/pitr.py
+
+.PHONY: at-secops-followup4
+at-secops-followup4:
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --follow-up-4
+
+.PHONY: at-secops-native-scale
+at-secops-native-scale:
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/scale_run.py

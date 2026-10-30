@@ -92,14 +92,3 @@ func (r *runner) threatFeedNode(ctx context.Context, admin *session) {
 	}
 	note("owner", "w2-agent-core / w3-wire-nodes: inspect issued reference, accepted DNS evidence and provisioning above; lab resolver config and HTTP readback are recorded")
 }
-
-func (r *runner) threatFeedTamper(ctx context.Context, admin *session) {
-	rec := Record{ID: "threat-feed-tamper", Title: "Corrupted resolver response retains node last-good", Spec: []string{"§12.5", "§19 AT22"}, Status: StatusBlocked}
-	note := recPathNote(&rec)
-	note("positive_node_delivery", boolText(r.dnsApplied))
-	probe, _ := r.lab.docker(r.lab.node, "fvpn-e2e-nodeconfig", "dns-probe")
-	note("last_good_resolver_readback", strings.TrimSpace(string(probe)))
-	note("fault_injected", "false")
-	note("owner", "w3-devstack-e2e: node mTLS response corruption hook required; central wrong-pin evidence does not test node tampering or last-good retention")
-	r.record(rec)
-}
