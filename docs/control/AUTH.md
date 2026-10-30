@@ -31,12 +31,15 @@ OIDC callback chooses the role from verified IdP claims and rotates only its rol
 cookie. The old `__Host-fvpn-session` cookie is no longer accepted; sign in again.
 There remains one short-lived login flow cookie per browser.
 
-Identity is canonical `(issuer, subject)` (D-052 F-04). `client_scope` is recorded
+Identity is canonical `(issuer, subject)` via `internal/members/issuer.Canonical`
+(D-052 F-04 / F-09). `client_scope` is recorded
 as diagnostic metadata (last OIDC client scope seen) and is never part of identity:
 an existing `identity_bindings` row with a different `client_scope` is reused, its
-`verified_at` (and `client_scope` when mutable) is updated in the same transaction,
-and `identity_binding.proof_updated` (`after: {"identity_binding_id","reason":"proof_updated"}`)
-is appended on the D-029 allowlist without raw subject or issuer fields. Email is
+`client_scope` and `verified_at` are updated in place in the same transaction
+(migration `00186`), and `identity_binding.proof_updated`
+(`after: {"identity_binding_id","reason":"proof_updated"}`)
+is appended once for the rotation on the D-029 allowlist without raw subject or
+issuer fields. Email is
 neither requested nor used for linking. A new identity, `pending_payment` member
 and `member.register` audit event are created atomically only when no `(issuer, subject)`
 binding exists; a canonical `(issuer, subject)` advisory lock plus a savepoint-backed
