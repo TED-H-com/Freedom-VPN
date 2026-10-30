@@ -77,7 +77,7 @@ Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the si
 
 | Role | Used By | Purpose |
 |---|---|---|
-| `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`00001`–`00180`). |
+| `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`00001`–`00181`). |
 | `fvpn_control` | `fvpn-control` | CRUD on operational tables; `INSERT` + `SELECT` on `audit_events` and `usage_events` (no `UPDATE`/`DELETE` on append-only tables, `F-02`–`F-04`). |
 | `fvpn_worker` | `fvpn-worker` | Claims `outbox_jobs`, reconciles NetBird/Stripe/DNS, updates `usage_rollups`. |
 | `fvpn_retention` | Retention job | Executes `SELECT purge_retained(...)` (`F-03`) to delete expired raw payloads and logs while recording an audit row. |
@@ -116,7 +116,7 @@ FVPN_DATABASE_URL="postgres://fvpn_migrator:PASSWORD@198.51.100.10:5432/fvpn?ssl
   /usr/local/bin/fvpn-migrate status
 ```
 
-Expected output (`19` migrations applied, including `00006` which aligns `purge_retained()` audit rows with canonical `<resource_type>:<uuid>` format per `D-035`):
+Expected output (`20` migrations applied, including `00006` which aligns `purge_retained()` audit rows with canonical `<resource_type>:<uuid>` format per `D-035`):
 
 ```text
 current_database="fvpn"
@@ -139,6 +139,7 @@ current_database="fvpn"
 00160 applied
 00161 applied
 00180 applied
+00181 applied
 ```
 
 After migrations complete, grant table/sequence permissions to `fvpn_control`, `fvpn_worker`, `fvpn_retention`, `fvpn_recovery`, and `fvpn_backup` (`pg_read_all_data`) `[production only]`:

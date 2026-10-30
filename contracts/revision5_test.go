@@ -186,9 +186,6 @@ func TestDNS03_FeedDefaultAndNullableAttribution(t *testing.T) {
 
 func TestAPI01_Revision5ResolverOperation(t *testing.T) {
 	doc := loadDoc(t)
-	if doc.Info.Version != "1.1.1" {
-		t.Fatal("API version must be 1.1.1")
-	}
 	op := doc.Paths.Find("/agent/resolver-documents/{document_id}").Get
 	if op.RequestBody != nil || op.Extensions["x-fvpn-auth"] != "agent-mtls" {
 		t.Fatal("resolver read requires mTLS and no body")

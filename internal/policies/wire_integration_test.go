@@ -453,7 +453,8 @@ func TestPoliciesHTTP_AllSixPolicyTypesActivateIdempotencyWorkerAndAudit(t *test
 	}
 
 	// Run worker dispatcher to process all outbox events (6 policy.activated + 1 fleet.release_support_changed)
-	// and transition operations to succeeded.
+	// and complete desired-state compilation. This fixture has no DNS handlers.
+	// DNS activation must await its required domain read-back.
 	for i := 0; i < 10; i++ {
 		worked, err := st.disp.Once(ctx)
 		if err != nil {
@@ -473,8 +474,17 @@ func TestPoliciesHTTP_AllSixPolicyTypesActivateIdempotencyWorkerAndAudit(t *test
 		if err := json.Unmarshal(wOp.Body.Bytes(), &op); err != nil {
 			t.Fatalf("unmarshal operation: %v", err)
 		}
-		if op.Status != api.OperationStatusSucceeded {
-			t.Fatalf("expected operation %s to be succeeded after worker job, got %s", opID, op.Status)
+		wantStatus := api.OperationStatusSucceeded
+		for _, step := range op.Steps {
+			if step.Name == "dns_document" || step.Name == "dns_feed_refresh" {
+				wantStatus = api.OperationStatusRunning
+				if !step.Required || step.Status != api.OperationStepStatusPending || !step.ObservedAt.IsNull() {
+					t.Fatalf("DNS domain without a handler claimed completion: %+v", step)
+				}
+			}
+		}
+		if op.Status != wantStatus {
+			t.Fatalf("operation %s after desired-state worker: got %s want %s", opID, op.Status, wantStatus)
 		}
 	}
 

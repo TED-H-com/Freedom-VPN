@@ -40,8 +40,8 @@ dns-test:
 	@$(dns-with-disk-tmp) go test -count=1 $(DNS_PKGS)
 
 dns-test-publish:
-	@$(dns-with-disk-tmp) go test -count=1 -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/...
-	@$(dns-with-disk-tmp) go test -count=1 -tags=integration ./apps/worker -run 'TestD054|Test12_5'
+	@$(dns-with-disk-tmp) go test -count=1 -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/... ./internal/policies
+	@$(dns-with-disk-tmp) go test -count=1 -tags=integration ./apps/worker -run 'TestD054|Test12_5|TestReview_F04'
 
 dns-lab:
 	@$(dns-with-disk-tmp) FVPN_NETLAB=1 FVPN_LAB_PREFIX=$${FVPN_LAB_PREFIX:-fvpn-w3-dns-publish} go test -count=1 -tags=netlab -timeout 10m ./tests/netlab/dns/...

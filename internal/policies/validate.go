@@ -601,21 +601,8 @@ func checkDomainIsolationBaseline(rawDomain string, fieldPath string) error {
 		return newValidationError(fieldPath, ReasonIsolationBaselineViolation, fmt.Sprintf("domain rule %q cannot target an IP prefix (fixed isolation baseline)", rawDomain))
 	}
 
-	reservedSuffixes := []string{
-		"localhost",
-		"local",
-		"internal",
-		"home.arpa",
-		"in-addr.arpa",
-		"ip6.arpa",
-		"corp",
-		"lan",
-		"intranet",
-	}
-	for _, suf := range reservedSuffixes {
-		if trimmed == suf || strings.HasSuffix(trimmed, "."+suf) {
-			return newValidationError(fieldPath, ReasonIsolationBaselineViolation, fmt.Sprintf("domain rule %q targets reserved/private zone %q and cannot loosen the fixed isolation baseline", rawDomain, suf))
-		}
+	if dnspolicy.IsReservedDomain(trimmed) {
+		return newValidationError(fieldPath, ReasonIsolationBaselineViolation, "domain rule targets a reserved/private zone")
 	}
 	return nil
 }
