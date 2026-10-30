@@ -10,7 +10,7 @@ import (
 )
 
 // Status is the claim a scenario is allowed to make. pass is something the
-// run observed. blocked is a product gap the run reached and recorded.
+// run observed. blocked is a dependency or measurement gap the run reached and recorded.
 // fail is an unexpected break in the harness or a step that should already work.
 type Status string
 

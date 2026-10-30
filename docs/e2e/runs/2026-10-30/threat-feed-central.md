@@ -4,9 +4,9 @@ Approved feed bootstrap, wrong pin and resolver publication
 
 Status: pass
 
-Run: 22c14cd9-39fc-444b-a7c5-c04cf3ffbff6
+Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
 
-Source: 43176b8860bf90970e96b100c1ba4e957f09363d
+Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
 
 Spec: §12.3, §12.5, §19 AT22
 
@@ -18,7 +18,7 @@ Spec: §12.3, §12.5, §19 AT22
 - normalized_rule_count: 10
 - content_kind: approved_snapshot
 - bootstrap_audit_count: 1
-- metrics_after_bootstrap: fvpn_dns_feed_last_good_age_seconds{feed_code="e2e-feed"} 0.789536718; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="success"} 1
+- metrics_after_bootstrap: fvpn_dns_feed_last_good_age_seconds{feed_code="e2e-feed"} 0.810975085; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="success"} 1
 - create_e2e-feed-profile: 201
 - activate_profile: 202
 - resolver_document_exists: true

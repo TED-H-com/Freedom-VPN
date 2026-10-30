@@ -163,7 +163,7 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `publish` | `PUT /admin/nodes/{id}/publication`, then poll the operation | §5.2, §14.2 |
 | `forwarding` | forward-chain generation and `fvmb0` member accept rules | §5, §19 AT10 |
 | `member-traffic` | API-created plan, grant, same-subject embedded-IdP join and device poll | §8, §19 AT12 |
-| `native-scale-hook` | two distinct native users with two authorized peers each | SECOPS-10 smoke |
+| `native-scale-hook` | 20 distinct native users with three authorized peers each | SECOPS-10 |
 | `usage` | `GET /member/usage` and real agent samples after a positive counted flow | §10, §19 AT14, AT15 |
 | `release-register` | real packages, registration, verification and API-activated support policy | §13.2–§13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
@@ -171,6 +171,9 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `threat-feed-central` | approved bootstrap, wrong-pin rejection, audit, worker metrics, resolver document | §12.3, §12.5, §19 AT22 groundwork |
 | `threat-feed-node` | issued document, verified mTLS bytes, applied projection and synthetic block | §12.5, §19 AT22 |
 | `threat-feed-tamper` | separate corrupted-response and last-good proof | §12.5, §19 AT22 |
+| `device-revoke` | two counted native devices, member DELETE, ingress drop, frozen counters and surviving sibling | §8, §10, AT02, F3-02 |
+| `gateway-privacy` | forced upstream failure with a synthetic auth query; value-free diagnostics | SECOPS-16, AT28 |
+| `second-exit` | independent real enrollment, resolver and nft namespace via shared hooks | F3-03, AT09 groundwork |
 | `revoke` | `POST /admin/nodes/{id}/revoke` | §5, §19 AT13 |
 
 AT07 (reinstall of an existing node) is not executed. A `pass` record is only
@@ -294,20 +297,58 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
 - D-053 runs real candidates and records their actual runtime health answers.
   A successful update does not prove serving traffic or rollback to last-good.
 - Shared importable helpers and a 20-users × 3-peers scale hook are documented
-  in RUN.md. Acceptance smoke-tests 2 × 2; full scale, deadline faults and guest
-  VM clock rollback remain with the relevant harness/operator owners.
+  in RUN.md. Acceptance executes the full 20 × 3 native admission cohort. Deadline faults,
+  production hardware capacity and guest VM clock rollback remain with their
+  harness/operator owners.
 - The separate portal driver retains the four fixture deviations listed above.
   Those rows are not used by this acceptance runner and cannot clear its gates.
 - Dated evidence is replaced as a complete set. The 2026-10-29 directory remains
   the earlier follow-up, including its parallel-stack proof; 2026-10-30 holds
   the latest complete run. Records with `blocked` keep the acceptance command
-  non-zero and identify the responsible product area.
+  non-zero and identify the responsible owner.
 
-## Latest complete run — follow-up 9
+## Latest complete run — follow-up 10
 
-See [followup9-verification.md](followup9-verification.md) for fresh-stack run
+See [followup10-verification.md](followup10-verification.md) for fresh-stack run
 counts, source commits and real-release digests. The dated root records are one
-complete run; subdirectories retain the first two complete runs. Exploratory
+complete merged-tree run; `followup10-run1/`, `followup10-run2/` and
+`followup10-run3/` retain the original three complete runs. Exploratory
 attempts are excluded. [Owner requests](requests.md) distinguish resolved lab
 findings from remaining measurement limits. The previous follow-up's
-[verification](followup8-verification.md) remains historical evidence.
+[verification](followup9-verification.md) remains historical evidence.
+
+The latest merged-tree run `3a129919-af3f-4bc9-b54a-8075eae8af45` on `79259af`
+is **21 pass / 5 blocked / 0 fail** (Go 1 / make 2). Both update scenarios pass,
+including #154 probe issuance with zero omissions and measured §13.9 traversal.
+Member traffic saw no advertised exit at the lab's one-time selection check;
+a later read showed it available but unselected. The lab owns bounded
+route-discovery polling. `member-traffic`, `usage`, `forwarding`, `device-revoke`
+and `lease-expiry` remain blocked without a positive counted flow; no agent
+forwarding defect is inferred from this run. See [owner requests](requests.md).
+
+## Node image prerequisites (F3-02)
+
+The node namespace needs kernel WireGuard, nftables, conntrack, traffic control
+(HTB and fq_codel), forwarding, and `/dev/net/tun`. The image supplies pinned
+NetBird 0.82.0, `ip`/`tc` from iproute2, `nft`, **conntrack**, CA certificates,
+and `wget`; `tcpdump` is a lab diagnostic. Conntrack is a runtime prerequisite:
+the product deletes revoked-source connections using `conntrack -D -s/-d`.
+Installing it ad hoc or skipping that deletion cannot pass revocation.
+The [device-revoke scenario](scenarios/device-revoke.md) exercises the packaged
+executable without restarting the agent or clearing its state. Every networking
+command executes inside the owned node/member namespace, never on the host.
+
+## Gateway budget and protected diagnostics
+
+The lab budget is 60 cohort peers (20 users × 3), plus up to six scenario/service
+peers: primary member, revoked device, replacement, dedicated health probe and
+two exits (66 peer slots total). Nginx has two workers
+with 4096 connections each; this includes upstream sockets and long-lived
+management/signal/relay streams. This is a TEST ONLY lab budget, not a product
+capacity certification. HTTP logs contain only server name, method and status.
+Native HTTP error logs are suppressed because their built-in format can append
+a request URI including device-flow query values; process-level errors remain
+on stderr. The controlled `/oauth2/e2e-log-fault` route proxies to a closed
+loopback port and proves a 502 diagnostic without its synthetic query value.
+`JoinNativeMember` scans each protected CLI stream before deletion and returns
+aggregate inventory counts. No matched secret or URI leaves that scan.

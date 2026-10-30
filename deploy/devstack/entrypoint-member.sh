@@ -20,6 +20,16 @@ while [ "$i" -lt 40 ]; do
     i=$((i + 1))
     sleep 1
 done
+if [ "${FVPN_E2E_PROBE:-0}" = 1 ]; then
+    while [ ! -s /var/lib/vpn-node/e2e/setup.key ]; do sleep 1; done
+    netbird up --setup-key-file /var/lib/vpn-node/e2e/setup.key \
+        --management-url https://netbird.example.invalid:443 \
+        --hostname "${FVPN_E2E_MEMBER_NAME}" --interface-name fvnb0 \
+        --disable-dns --disable-ipv6 --log-level warn --log-file console \
+        > /var/lib/vpn-node/e2e/netbird-up.log 2>&1
+    rm -f /var/lib/vpn-node/e2e/setup.key
+    printf '%s\n' '{"stage":"netbird_up"}' > /var/lib/vpn-node/e2e/status.json
+fi
 while true; do
     if [ -f /var/lib/vpn-node/e2e/user-auth ]; then
         rm -f /var/lib/vpn-node/e2e/user-auth

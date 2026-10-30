@@ -4,9 +4,9 @@ Control loopback metrics listener
 
 Status: pass
 
-Run: 22c14cd9-39fc-444b-a7c5-c04cf3ffbff6
+Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
 
-Source: 43176b8860bf90970e96b100c1ba4e957f09363d
+Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
 
 Spec: §17.1
 

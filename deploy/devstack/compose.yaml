@@ -16,7 +16,9 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: "false"
     ipam:
       config:
-        - subnet: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.0/24
+        - # Dynamic native peers cannot take a stopped service's static IP.
+          subnet: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.0/24
+          ip_range: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.128/25
           gateway: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.1
   origin:
     name: fvpn-${FVPN_E2E_PREFIX:-e2e}-origin
@@ -158,6 +160,8 @@ services:
       - /var/lib/releases
       - -secret-file
       - /secrets/origin.secret
+      - -probe-udp-addr
+      - :4443
     ports:
       - "127.0.0.1:${FVPN_E2E_PORT_ORIGIN:-18445}:443"
     volumes:
