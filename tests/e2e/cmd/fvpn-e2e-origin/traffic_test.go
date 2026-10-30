@@ -12,6 +12,7 @@ import (
 func TestSyntheticTrafficProbeRequiresAuthAndExactID(t *testing.T) {
 	p := &trafficProbe{}
 	mux := http.NewServeMux()
+	mux.Handle("GET /", http.NotFoundHandler())
 	p.register(mux, "TEST ONLY generated-at-runtime equivalent")
 	id := uuid.NewString()
 	call := func(method, secret, body string) int {

@@ -20,7 +20,7 @@ type trafficProbe struct {
 }
 
 func (p *trafficProbe) register(mux *http.ServeMux, secret string) {
-	mux.HandleFunc("/e2e/traffic", func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		if subtle.ConstantTimeCompare([]byte(r.Header.Get("X-E2E-Secret")), []byte(secret)) != 1 {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
@@ -49,7 +49,9 @@ func (p *trafficProbe) register(mux *http.ServeMux, secret string) {
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
-	})
+	}
+	mux.HandleFunc("GET /e2e/traffic", handler)
+	mux.HandleFunc("PUT /e2e/traffic", handler)
 }
 func (p *trafficProbe) observe(r *http.Request) {
 	p.mu.Lock()
