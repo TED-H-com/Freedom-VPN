@@ -305,7 +305,7 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
 - Dated evidence is replaced as a complete set. The 2026-10-29 directory remains
   the earlier follow-up, including its parallel-stack proof; 2026-10-30 holds
   the latest complete run. Records with `blocked` keep the acceptance command
-  non-zero and identify the responsible product area.
+  non-zero and identify the responsible owner.
 
 ## Latest complete run — follow-up 10
 

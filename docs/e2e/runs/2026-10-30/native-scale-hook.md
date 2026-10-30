@@ -1,14 +1,14 @@
 # native-scale-hook
 
-Native scale hook smoke: distinct users and peers
+60 simultaneous native peers: gateway budget and protected streams
 
 Status: pass
 
-Run: 22c14cd9-39fc-444b-a7c5-c04cf3ffbff6
+Run: 14231a83-130d-40fb-a9b4-0d3851520b67
 
-Source: 43176b8860bf90970e96b100c1ba4e957f09363d
+Source: 2eeda9df03749b942c6f5afde6a7bc3a2ba8fce3
 
 Spec: §8, §19 AT12, SECOPS-10
 
-- counts: {"Users":2,"Peers":4,"IdentityMatches":4,"Authorized":4}
-- scope: 2 users x 2 native peers validates the hook; 20 x 3 load is not executed or claimed. The same existing compose/network/image is used.
+- counts: {"Users":20,"Peers":60,"IdentityMatches":60,"Authorized":60,"ScannedLogs":60,"ProtectedLogs":60,"SimultaneousAuthorized":60}
+- scope: 20 users x 3 native peers on the existing compose/network/image; each identity and authorized device checked. Capacity is a lab budget, not a production hardware claim.

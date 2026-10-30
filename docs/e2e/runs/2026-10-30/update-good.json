@@ -25,6 +25,18 @@
       "detail": "true"
     },
     {
+      "name": "probe_not_member",
+      "detail": "true"
+    },
+    {
+      "name": "probe_route_selected",
+      "detail": "true"
+    },
+    {
+      "name": "probe_config_scope",
+      "detail": "one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant"
+    },
+    {
       "name": "running_candidate_executable",
       "detail": "true"
     },
@@ -77,11 +89,27 @@
       "detail": "stage=locally_succeeded error_code= error_stage= error_detail= | health_json {\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"} | event seq=8 stage=checking detail={\"kind\":\"health_attest\",\"phase\":\"candidate\",\"statuses\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\" | event seq=9 stage=locally_succeeded detail="
     },
     {
+      "name": "probe_traffic",
+      "detail": "{\"attempts\":944,\"authenticated_udp_replies\":14}"
+    },
+    {
+      "name": "probe_window",
+      "detail": "{\"samples\":673,\"grant_samples\":3,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":44,\"probe_up_bytes\":1078,\"probe_down_bytes\":1078,\"member_bytes_before\":15044,\"member_bytes_after\":15044,\"elements_after\":0}"
+    },
+    {
+      "name": "probe_origin_receipt",
+      "detail": "{\"probe_id\":\"190a8ae2-3725-4fee-8dab-f2eb10e2ae09\",\"requests\":14,\"source_address\":\"192.0.3.20\"}"
+    },
+    {
+      "name": "probe_traversal_verified",
+      "detail": "true"
+    },
+    {
       "name": "note",
       "detail": "locally_succeeded was observed"
     }
   ],
-  "at": "2026-10-30T07:49:13Z",
-  "run_id": "22c14cd9-39fc-444b-a7c5-c04cf3ffbff6",
-  "source_commit": "43176b8860bf90970e96b100c1ba4e957f09363d"
+  "at": "2026-10-30T10:50:38Z",
+  "run_id": "14231a83-130d-40fb-a9b4-0d3851520b67",
+  "source_commit": "2eeda9df03749b942c6f5afde6a7bc3a2ba8fce3"
 }
