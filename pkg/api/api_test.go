@@ -17,6 +17,7 @@ import (
 )
 
 var registry = map[string]func() any{
+	"AuditEvent":          func() any { return new(AuditEvent) },
 	"ResolverDocument":    func() any { return new(ResolverDocument) },
 	"MemberGroup":         func() any { return new(MemberGroup) },
 	"MemberGroupCreate":   func() any { return new(MemberGroupCreate) },

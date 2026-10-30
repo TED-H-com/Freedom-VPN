@@ -159,7 +159,7 @@ func (r *runner) noteProjection(ctx context.Context, memberID string, note func(
 	note("member_devices", itoa(devices))
 	note("device_bindings", itoa(bindings))
 	if users == 0 {
-		note("projection", "writer not yet merged")
+		note("projection", "D-052 mapping not observed; owner w3-wire-members")
 		return
 	}
 	note("external_user_id", external)

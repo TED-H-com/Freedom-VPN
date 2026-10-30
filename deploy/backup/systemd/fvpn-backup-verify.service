@@ -1,0 +1,16 @@
+# /etc/systemd/system/fvpn-backup-verify.service
+# Daily isolated restore & schema/checklist verification of the latest backup (§17.2, AT30).
+[Unit]
+Description=Freedom VPN Central PostgreSQL Isolated Restore Verification
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=-/etc/fvpn/secrets/pgbackrest-repo.env
+ExecStart=/usr/local/lib/fvpn/backup/verify.sh --stanza fvpn --repo-volume /var/lib/pgbackrest --migrate-bin /usr/local/bin/fvpn-migrate
+NoNewPrivileges=true
+PrivateTmp=true

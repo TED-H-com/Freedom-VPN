@@ -1,0 +1,12 @@
+# /etc/systemd/system/fvpn-backup-diff.timer
+# Runs the daily differential base backup Mon-Sat at 01:00 UTC (§17.2).
+[Unit]
+Description=Daily Freedom VPN Central PostgreSQL Differential Base Backup Timer
+
+[Timer]
+OnCalendar=Mon..Sat *-*-* 01:00:00 UTC
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

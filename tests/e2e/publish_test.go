@@ -44,6 +44,7 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 		rec.Observations = append(rec.Observations, Observation{Name: "agent_baseline_observed", Detail: boolText(ready)})
 		var snapshot []byte
 		err := conn.QueryRow(ctx, `SELECT jsonb_build_object(
+			'exit_group_count', (SELECT count(*) FROM exit_groups eg JOIN exits x ON x.id=eg.exit_id WHERE x.node_id=n.id),
 			'node', jsonb_build_object('provisioning_state', n.provisioning_state,
 				'safety_status', n.safety_status, 'data_health', n.data_health,
 				'desired_config_generation', n.desired_config_generation::text,

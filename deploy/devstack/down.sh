@@ -1,6 +1,6 @@
 #!/bin/sh
 # Remove every object this prefix created. Another prefix is left alone.
-# Upstream image tags are left alone.
+# Shared neutral build-cache images and upstream tags are left alone.
 set -eu
 cd "$(dirname "$0")/../.."
 ROOT=$(pwd)
