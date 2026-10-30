@@ -110,6 +110,7 @@ func (r *runner) threatFeed(ctx context.Context, admin *session) {
 	if profile == uuid.Nil || !activate(profile, profileDef, "profile") {
 		return
 	}
+	r.profileID = profile
 	var generation, docHash string
 	var docRaw []byte
 	published := poll(func() bool {

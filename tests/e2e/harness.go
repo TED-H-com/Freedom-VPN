@@ -23,7 +23,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
-	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
@@ -85,6 +84,7 @@ func openLab() (*lab, error) {
 		"agent.example.invalid:9443":   fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["agent"]),
 		"idp.example.invalid:443":      fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["idp"]),
 		"netbird.example.invalid:443":  fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["gateway"]),
+		"api.stripe.com:443":           fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["payment"]),
 		"releases.example.invalid:443": fmt.Sprintf("127.0.0.1:%d", stack.HostPorts["origin"]),
 	}
 	tr := &http.Transport{
@@ -424,42 +424,6 @@ func (l *lab) uploadRelease(ctx context.Context, id uuid.UUID, dir string, canon
 	return l.putObject(ctx, "r/"+id.String()+"/manifest.json", canonical)
 }
 
-func (l *lab) insertReleaseSupport(ctx context.Context) error {
-	conn, err := l.db(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-	sum, err := canonjson.Hash([]byte(`{}`))
-	if err != nil {
-		return err
-	}
-	var existing uuid.UUID
-	err = conn.QueryRow(ctx, `SELECT id FROM policy_definitions WHERE type='release_support' AND code='e2e empty support'`).Scan(&existing)
-	if err == nil {
-		return nil
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return err
-	}
-	definition, revision := uuid.New(), uuid.New()
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-	if _, err := tx.Exec(ctx, `INSERT INTO policy_definitions(id,type,code) VALUES($1,'release_support','e2e empty support')`, definition); err != nil {
-		return err
-	}
-	if _, err := tx.Exec(ctx, `INSERT INTO policy_revisions(id,definition_id,type,revision,schema_version,payload,payload_hash,signing_key_ref,created_by) VALUES($1,$2,'release_support',1,1,'{}',$3,'e2e key','e2e actor')`, revision, definition, sum[:]); err != nil {
-		return err
-	}
-	if _, err := tx.Exec(ctx, `UPDATE policy_definitions SET active_revision_id=$2, resource_version=resource_version+1 WHERE id=$1`, definition, revision); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
-}
-
 // setBootRelease runs before the enrollment token is delivered. The release
 // packages contain the image's tree-built binaries; only its lab UUID is added.
 func (l *lab) setBootRelease(id uuid.UUID) error {
@@ -499,27 +463,6 @@ func desiredUpdateRelease(raw []byte) string {
 		return ""
 	}
 	return env.Signed.Update.ReleaseID
-}
-
-func (l *lab) allowReleases(ctx context.Context, ids []uuid.UUID) error {
-	if len(ids) == 0 {
-		return errors.New("no releases")
-	}
-	conn, err := l.db(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-	// Eligible requires both arrays (§13.2). Generation stays put so the
-	// batch's expected_generation still matches GET /admin/releases.
-	_, err = conn.Exec(ctx, `
-		UPDATE fleet_config
-		SET supported_release_policy='allowlist',
-		    supported_release_ids=$1::uuid[],
-		    approved_release_ids=$1::uuid[],
-		    resource_version=resource_version+1
-		WHERE id='00000000-0000-0000-0000-000000000001'`, ids)
-	return err
 }
 
 func (l *lab) verifyDesired(raw []byte) error {
