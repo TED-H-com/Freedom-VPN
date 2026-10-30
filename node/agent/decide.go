@@ -65,6 +65,10 @@ type Input struct {
 	// the egress source (signed, local, or none) and is not the attestation
 	// reason. Empty leaves a passed tunnel check without a detail.
 	ProbeSource string
+	// ProbeOmitted is the fixed refusal reason from a matching challenge.
+	// Its observation time survives sidecar consumption and ordinary probes.
+	ProbeOmitted   string
+	ProbeOmittedAt time.Time
 	// DNSDocument is true when the in-force desired state names a resolver
 	// document. dns_policy then follows the apply result, not DesiredOK alone.
 	DNSDocument bool
@@ -321,7 +325,7 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 		release,
 		bind,
 		withDetail(chk(api.NodeCheckNameStorage, in.StorageOK && !in.UsagePersist && !in.UsageDisk, api.ErrorCodeSTOREUNAVAILABLE, at), "Node state could not be stored."),
-		withDetail(tunnelCheck(in, at), in.ProbeSource),
+		tunnelCheck(in, at),
 	}
 }
 
@@ -358,6 +362,18 @@ func notRun(name api.NodeCheckName, at time.Time) api.NodeCheck {
 }
 
 func tunnelCheck(in Input, at time.Time) api.NodeCheck {
+	c := tunnelStatus(in, at)
+	if in.ProbeOmitted != "" {
+		// Omission is meaningful even for not_run; withDetail intentionally
+		// omits ordinary source sentences when a check did not run.
+		c.Detail = sanitizeDetail("probe_omitted: " + in.ProbeOmitted)
+		c.ObservedAt = in.ProbeOmittedAt
+		return c
+	}
+	return withDetail(c, in.ProbeSource)
+}
+
+func tunnelStatus(in Input, at time.Time) api.NodeCheck {
 	if !in.BaselineOK {
 		return chk(api.NodeCheckNameTunnelProbe, false, api.ErrorCodeISOLATIONBASELINEMISSING, at)
 	}
