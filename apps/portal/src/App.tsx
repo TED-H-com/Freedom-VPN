@@ -10,6 +10,7 @@ import { AdminDnsPolicyPage } from './pages/admin/AdminDnsPolicyPage';
 import { AdminEnrollmentDetailPage } from './pages/admin/AdminEnrollmentDetailPage';
 import { AdminFleetUpdatesPage } from './pages/admin/AdminFleetUpdatesPage';
 import { AdminFupPolicyPage } from './pages/admin/AdminFupPolicyPage';
+import { AdminGroupsPage } from './pages/admin/AdminGroupsPage';
 import { AdminMemberDetailPage } from './pages/admin/AdminMemberDetailPage';
 import { AdminMembersListPage } from './pages/admin/AdminMembersListPage';
 import { AdminNodeDetailPage } from './pages/admin/AdminNodeDetailPage';
@@ -60,6 +61,14 @@ export function AppRoutes(): React.ReactElement {
             element={
               <RoleGuard requiredRole="admin">
                 <AdminNodesListPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="admin/groups"
+            element={
+              <RoleGuard requiredRole="admin">
+                <AdminGroupsPage />
               </RoleGuard>
             }
           />
