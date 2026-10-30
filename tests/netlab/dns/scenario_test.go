@@ -4,10 +4,13 @@ package publishlab_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,9 +20,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	nodedns "github.com/TED-H-com/Freedom-VPN/node/dns"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"golang.org/x/net/dns/dnsmessage"
 )
 
@@ -39,7 +44,7 @@ var prefixPattern = regexp.MustCompile(`^fvpn-[a-z0-9][a-z0-9-]{0,40}$`)
 // FVPN_LAB_PREFIX. --network none cannot be used: AdGuard Home has to reach the
 // lab CoreDNS, and the test has to query the published DNS ports. Nothing is
 // published except 127.0.0.1, and the upstream zone does not recurse.
-func Test12_5_LabPublishAndWithdraw(t *testing.T) {
+func TestAT20_D054_LabFeedAllowAndWithdraw(t *testing.T) {
 	if os.Getenv("FVPN_NETLAB") != "1" {
 		t.Skip("set FVPN_NETLAB=1 to run the DNS publish lab")
 	}
@@ -52,8 +57,7 @@ func Test12_5_LabPublishAndWithdraw(t *testing.T) {
 	}
 
 	root := moduleRoot(t)
-	state := filepath.Join(os.TempDir(), prefix+"-state")
-	cleanupLab(prefix, state)
+	state := t.TempDir()
 	t.Cleanup(func() { cleanupLab(prefix, state) })
 
 	upstreamHost := prefix + "-upstream"
@@ -81,15 +85,27 @@ func Test12_5_LabPublishAndWithdraw(t *testing.T) {
 	waitReady(t, "http://127.0.0.1:18181", creds)
 	waitReady(t, "http://127.0.0.1:18182", creds)
 
-	compiled, err := dnspublish.Compile(dnspublish.Input{
+	// TEST ONLY approved local HTTPS feed. No public Internet or DNS lookup.
+	body := "blocked.example.com\nsafe-target.example.com\n"
+	fixture := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = fmt.Fprint(w, body) }))
+	defer fixture.Close()
+	client := fixture.Client()
+	tr := client.Transport.(*http.Transport).Clone()
+	tr.DialContext = func(ctx context.Context, network, _ string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, network, fixture.Listener.Addr().String())
+	}
+	client.Transport = tr
+	content, reason := dnsfeeds.Fetch(context.Background(), client, api.ThreatFeedPayload{SourceUrl: "https://example.com/feed", ContentSha256: fmt.Sprintf("%x", sha256.Sum256([]byte(body))), Format: api.ThreatFeedPayloadFormatDomainList, MaxSizeBytes: 4096, ValidFrom: time.Now().Add(-time.Hour), ValidUntil: time.Now().Add(time.Hour)}, nil, time.Now(), 50)
+	if reason != "" {
+		t.Fatal(reason)
+	}
+	input := dnspublish.Input{
 		ProfileCode: "standard", BlockResponse: "nxdomain", BlockedTTLSeconds: 60,
 		Upstreams:    []string{upstreamHost + ":5353"},
 		BootstrapDNS: []string{"127.0.0.11:53"},
-		Rules: []dnspublish.Rule{
-			{RuleID: "01900000-0000-7000-8000-0000000000b1", Domain: "blocked.example.com", IncludeSubdomains: true, Action: "block", Reason: "admin_rule"},
-			{RuleID: "01900000-0000-7000-8000-0000000000a1", Domain: "safe-target.example.com", IncludeSubdomains: false, Action: "allow", Reason: "false_positive"},
-		},
-	})
+		Feeds:        []dnspublish.Feed{{FeedCode: "test-feed", ContentSHA256: content.SHA256, Format: "domain_list", Categories: []string{"malware"}, Entries: content.Entries}},
+	}
+	compiled, err := dnspublish.Compile(input)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,6 +124,19 @@ func Test12_5_LabPublishAndWithdraw(t *testing.T) {
 	addrs := []string{"127.0.0.1:15451", "127.0.0.1:15452"}
 	for _, addr := range addrs {
 		expectNXDOMAIN(t, addr, "blocked.example.com")
+		expectNXDOMAIN(t, addr, "safe-target.example.com")
+	}
+	input.Rules = []dnspublish.Rule{{RuleID: "01900000-0000-7000-8000-0000000000a1", Domain: "safe-target.example.com", Action: "allow", Reason: "false_positive"}}
+	compiled, err = dnspublish.Compile(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ev, err = ap.Apply(context.Background(), "2", compiled.Document)
+	if err != nil || !ev.Verified || len(ev.Feeds) != 1 || ev.Feeds[0].RuleCount != 2 {
+		t.Fatalf("allow feed evidence %+v %v", ev, err)
+	}
+	for _, addr := range addrs {
+		expectNXDOMAIN(t, addr, "blocked.example.com")
 		expectNXDOMAIN(t, addr, "sub.blocked.example.com")
 		expectIP(t, addr, "safe-target.example.com", "192.0.2.15")
 	}
@@ -117,7 +146,7 @@ func Test12_5_LabPublishAndWithdraw(t *testing.T) {
 	}
 	assertNoQueryFiles(t, state)
 
-	withdrawn, err := ap.Withdraw(context.Background(), "1", compiled.Hash)
+	withdrawn, err := ap.Withdraw(context.Background(), "2", compiled.Hash)
 	if err != nil || withdrawn.Verified || withdrawn.DNSOK() {
 		t.Fatalf("withdraw evidence %+v err %v", withdrawn, err)
 	}
@@ -356,7 +385,7 @@ func cleanupLab(prefix, state string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 	for _, name := range []string{prefix + "-resolver1", prefix + "-resolver2", prefix + "-upstream"} {
-		_ = exec.CommandContext(ctx, "docker", "rm", "-f", name).Run()
+		_ = exec.CommandContext(ctx, "docker", "rm", "-fv", name).Run()
 	}
 	_ = exec.CommandContext(ctx, "docker", "network", "rm", prefix+"-net").Run()
 	_ = os.RemoveAll(state)

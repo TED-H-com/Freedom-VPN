@@ -5,12 +5,15 @@ package dnsfeeds
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"net/netip"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -148,4 +151,10 @@ func TestD054_DNS01_JobRetainsLastGoodAndAuditsEveryFailure(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE event_type='dns.feed.refresh' AND delivered_at IS NULL`).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("schedule duplicates: %d %v", count, err)
 	}
+}
+
+func dnspolicyRefusingClient() *http.Client {
+	return dnspolicy.NewSourceHTTPClient(time.Second, func(context.Context, string, string) ([]netip.Addr, error) {
+		return []netip.Addr{netip.MustParseAddr("127.0.0.1")}, nil
+	}, nil)
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -100,7 +101,9 @@ func (a *Applier) Apply(ctx context.Context, generation string, doc dnspublish.D
 			ev.Verified = false
 			return ev, err
 		}
-		return Evidence{PolicyGeneration: gen.String(), DocumentHash: hash, AppliedAt: a.now(), Verified: true}, nil
+		ev := evidenceFrom(documentState(doc, rules), a.now())
+		ev.Verified = true
+		return ev, nil
 	}
 	desired := documentState(doc, rules)
 	if err := a.writeAll(ctx, desired); err != nil {
@@ -112,7 +115,9 @@ func (a *Applier) Apply(ctx context.Context, generation string, doc dnspublish.D
 	if err := a.probeDocument(ctx, doc); err != nil {
 		return a.rollback(ctx, snaps, err)
 	}
-	return Evidence{PolicyGeneration: gen.String(), DocumentHash: hash, AppliedAt: a.now(), Verified: true}, nil
+	ev := evidenceFrom(documentState(doc, rules), a.now())
+	ev.Verified = true
+	return ev, nil
 }
 
 // Withdraw removes a policy. An empty hash withdraws whatever is installed.
@@ -286,18 +291,11 @@ func (a *Applier) oneVerifies(ctx context.Context, st resolverState, dnsAddr str
 }
 
 func (a *Applier) probeDocument(ctx context.Context, doc dnspublish.Document) error {
-	var blockedNames, allowedNames []string
-	for _, rule := range doc.Rules {
-		if rule.Action == string(dnspolicy.ActionAllow) {
-			if len(allowedNames) < maxProbes {
-				allowedNames = append(allowedNames, rule.Domain)
-			}
-			continue
-		}
-		if len(blockedNames) < maxProbes {
-			blockedNames = append(blockedNames, rule.Domain)
-		}
+	rules, err := dnspublish.RenderRules(doc, "0", strings.Repeat("0", 64))
+	if err != nil {
+		return err
 	}
+	blockedNames, allowedNames := domains(rules)
 	addrs := make([]string, len(a.targets))
 	for i, t := range a.targets {
 		addrs[i] = t.DNSAddr
@@ -474,7 +472,23 @@ func headerValue(rules []string, prefix string) string {
 }
 
 func evidenceFrom(st resolverState, now time.Time) Evidence {
+	var feeds []FeedEvidence
+	for _, line := range st.Rules {
+		if !strings.HasPrefix(line, "! fvpn-feed: ") {
+			continue
+		}
+		fields := strings.Fields(strings.TrimPrefix(line, "! fvpn-feed: "))
+		if len(fields) != 3 || !validHash(fields[1]) {
+			continue
+		}
+		count, err := strconv.Atoi(fields[2])
+		if err != nil || count < 1 {
+			continue
+		}
+		feeds = append(feeds, FeedEvidence{FeedCode: fields[0], ContentSHA256: fields[1], RuleCount: count})
+	}
 	return Evidence{
+		Feeds:            feeds,
 		PolicyGeneration: headerValue(st.Rules, dnspublish.HeaderPolicyGenerationPrefix),
 		DocumentHash:     strings.ToLower(headerValue(st.Rules, dnspolicy.HeaderBundleHashPrefix)),
 		AppliedAt:        now,
@@ -496,27 +510,52 @@ func validHash(h string) bool {
 	return true
 }
 
+// Classify probes by effective precedence, including overlapping suffixes.
+// An allow that overrides a feed must not also be probed as blocked.
 func domains(rules []string) (blockedNames, allowedNames []string) {
+	type entry struct {
+		domain   string
+		sub      bool
+		priority int
+	}
+	var entries []entry
 	for _, line := range rules {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "!") || strings.HasPrefix(line, "#") {
+		if line == "" || strings.HasPrefix(line, "!") {
 			continue
 		}
-		allow := strings.HasPrefix(line, "@@")
+		priority := 3
+		if strings.HasPrefix(line, "@@") {
+			priority = 2
+		}
+		if strings.HasSuffix(line, "$important") {
+			priority = 1
+		}
 		raw := strings.TrimPrefix(line, "@@")
-		raw = strings.TrimPrefix(raw, "||")
-		raw = strings.TrimPrefix(raw, "|")
-		if i := strings.IndexAny(raw, "^$"); i >= 0 {
+		sub := strings.HasPrefix(raw, "||")
+		raw = strings.TrimLeft(raw, "|")
+		if i := strings.IndexByte(raw, '^'); i >= 0 {
 			raw = raw[:i]
-		}
-		raw = strings.Trim(strings.TrimSuffix(raw, "."), ".")
-		if raw == "" || strings.Contains(raw, " ") {
+		} else {
 			continue
 		}
-		if allow {
-			allowedNames = append(allowedNames, raw)
+		entries = append(entries, entry{raw, sub, priority})
+	}
+	seen := map[string]bool{}
+	for _, candidate := range entries {
+		if seen[candidate.domain] {
+			continue
+		}
+		seen[candidate.domain] = true
+		priority := 4
+		for _, rule := range entries {
+			if rule.priority < priority && dnspolicy.MatchesDomain(rule.domain, rule.sub, candidate.domain) {
+				priority = rule.priority
+			}
+		}
+		if priority == 2 {
+			allowedNames = append(allowedNames, candidate.domain)
 		} else {
-			blockedNames = append(blockedNames, raw)
+			blockedNames = append(blockedNames, candidate.domain)
 		}
 	}
 	return blockedNames, allowedNames

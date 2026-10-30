@@ -136,9 +136,3 @@ func TestD054_DNS02_HostsAreExactAndAdblockIsLayerThree(t *testing.T) {
 		t.Fatalf("adblock: %+v %s", c, reason)
 	}
 }
-
-func dnspolicyRefusingClient() *http.Client {
-	return dnspolicy.NewSourceHTTPClient(time.Second, func(context.Context, string, string) ([]netip.Addr, error) {
-		return []netip.Addr{netip.MustParseAddr("127.0.0.1")}, nil
-	}, nil)
-}

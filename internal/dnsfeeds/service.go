@@ -99,7 +99,10 @@ func (s *Service) Handle(ctx context.Context, event db.ClaimedEvent) (string, er
 	if err != nil {
 		return "", err
 	}
-	if changed {
+	if !changed {
+		return "dns-feed:superseded:" + body.RevisionID.String(), nil
+	}
+	{
 		result := reason
 		if result == "" {
 			result = "success"
@@ -118,6 +121,7 @@ func (s *Service) Handle(ctx context.Context, event db.ClaimedEvent) (string, er
 func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time) (*attempt, error) {
 	var a *attempt
 	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		a = nil
 		var raw []byte
 		err := tx.QueryRow(ctx, `SELECT r.payload FROM policy_revisions r JOIN policy_definitions d ON d.active_revision_id=r.id WHERE r.id=$1 AND r.type='threat_feed' FOR SHARE OF d`, rev).Scan(&raw)
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -171,10 +175,11 @@ func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time
 func (s *Service) finish(ctx context.Context, a *attempt, event db.ClaimedEvent, c *Content, reason string, now time.Time) (bool, error) {
 	committed := false
 	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		committed = false
 		// Recheck activation under a lock: an in-flight fetch cannot resurrect a
 		// revision replaced while the HTTP request was running.
 		var active bool
-		err := tx.QueryRow(ctx, `SELECT active_revision_id=$1 FROM policy_definitions WHERE id=(SELECT definition_id FROM policy_revisions WHERE id=$1) FOR SHARE`, a.revision).Scan(&active)
+		err := tx.QueryRow(ctx, `SELECT coalesce(active_revision_id=$1,false) FROM policy_definitions WHERE id=(SELECT definition_id FROM policy_revisions WHERE id=$1) FOR SHARE`, a.revision).Scan(&active)
 		if err != nil {
 			return err
 		}
