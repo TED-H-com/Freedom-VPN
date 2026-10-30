@@ -14,6 +14,15 @@ listeners, routing, response tracking and request IDs. All command handlers reus
 `httpapi.Transaction`, set durable resource references, and implement replay.
 Standalone service callers retain their existing transaction/idempotency APIs.
 
+Node-domain tests compose only core operations and node handlers (D-039).
+Their unregistered member routes do not describe the production binary:
+`apps/control/handlers.go` also registers `members()` and `usage()`.
+`wire_members.go` installs `httpadapter.Handlers.GetMemberSelf` and
+`ListMemberDevices` from `internal/members/httpadapter/reads.go` for
+`GET /member/me` and `GET /member/devices`; `wire_usage.go` installs
+`UsageHandler.GetMemberUsage` for `GET /member/usage`. The control binary
+uses this production `Domains()` list through `control.Servers`.
+
 The following transitional 501 handlers are removed:
 
 | Operation | Behavior |
@@ -398,7 +407,9 @@ that are unpublished or offline. Creation replay returns the original immutable
 `PublicationRequest.group_ids` is handled by `exits.SetPublicationTx` under its
 existing node/exit locks and `If-Match`. Omission preserves membership, an empty
 array clears it, and a nonempty array replaces it. Unknown IDs return 422 with
-`/group_ids` detail before writes. Membership, publication, the single generation
+`/group_ids` detail. A group removed after validation produces the same field
+error through the membership foreign-key check, rolling back the entire change.
+Membership, publication, the single generation
 and version advance, operation, outbox and audit commit together (§5.2, §15.3).
 Node detail exposes the same sorted membership in `group_ids` and the legacy
 `member_group_ids`.
@@ -408,9 +419,9 @@ rewriting the immutable report. Node detail reads DNS evidence from the report
 selected by current-incarnation observed state in the same repeatable-read
 snapshot as the rest of the detail. A late old report does not replace evidence;
 a newer report with null or absent evidence reports null, never a newer desired
-policy or an inferred successful apply. Revision 5's NodeDetail schema allows
-this additive property; a typed generated `NodeDetail.dns_policy_evidence` member
-is requested from the contracts owner. Diagnostic producers remain responsible
+policy or an inferred successful apply. Contracts revision 6's typed
+`NodeDetail.dns_policy_evidence` member is projected directly through the generated
+response, with no additive wrapper. Diagnostic producers remain responsible
 for bounded, redacted text (§13.9, SEC02).
 
 The resolver endpoint authorizes before consulting `nodes.ResolverDocumentSource`
@@ -419,8 +430,8 @@ It validates the stored bytes against the issued reference (ID, profile revision
 policy generation, SHA-256 and size), requires canonical JSON of at most 1 MiB,
 and writes those bytes without HTML escaping or a trailing newline. Responses
 set `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0` in the
-strict response. The core Transport currently overwrites the latter with
-`no-store`; its exact-route exception is a separate pending owner request.
+strict response. The core Transport preserves that cache policy for this exact
+GET 200 route; errors retain `no-store`.
 `RecordIssuedResolverDocumentTx` records a typed, metadata-only issuance audit
 after confirming the reference exists in the persisted signed envelope; a lookup
 joins that record to immutable desired-state history and checks the current
@@ -445,7 +456,7 @@ still requires retained proof; purged or absent historical proof returns 404.
 The production integration test issues a desired state, verifies its signature,
 fetches exactly the stored normalized canonical document and checks its digest
 ETag, rejects another node, allows the previous generation, and rejects generation
-minus two. The independent core cache-header exception remains its owner's work.
+minus two. The production test also verifies the core cache-header exception.
 
 ## D-055 adversarial read-back and withdrawal
 
