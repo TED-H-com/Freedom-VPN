@@ -74,4 +74,64 @@ amd64/arm64 compilation. Manual workflow dispatch runs Docker acceptance, as
 in `at-updates.yml`, and uploads public records even on failure. Physical arm64
 execution and real hardware/machine-image certification remain unmeasured.
 
-Initial attempts and actual gate output are recorded below after execution.
+## Initial attempts — 2026-10-30
+
+Both invocations used source commit
+`e4215bc151742774bbf957d2305246c514207de8`, source-tree SHA-256
+`5e40bea111e14698dc95a939aa71097deb6cc495586110e393567fa5b72ee50d`.
+Attempt 1 had a clean worktree; attempt 2's dirty flag reflects attempt 1's
+new evidence files. The identical tree hashes confirm no driver/product source
+change between attempts. The later evidence commit changes documentation only.
+
+| Attempt | UTC interval | Run ID / immutable records | Result |
+|---|---|---|---|
+| 1 | 17:02:13Z–17:02:16Z | [79b89e47-b23f-45f8-a683-28e0557dc1ba](history/79b89e47-b23f-45f8-a683-28e0557dc1ba/AT06.json) | Startup 2; runner 1; make 2; both ATs blocked |
+| 2 | 17:02:23Z–17:02:24Z | [9db51ea3-d807-449e-a812-cfad739db675](history/9db51ea3-d807-449e-a812-cfad739db675/AT06.json) | Startup 2; runner 1; make 2; both ATs blocked |
+
+Actual startup diagnostic, identical on both attempts (path-bearing make
+directory/recipe lines omitted from this public extract):
+
+```text
+fvpn-e2e-prepare: port base slot is out of range
+make[1]: *** [mk/e2e.mk:42: e2e-up] Error 2
+```
+
+Actual second run tail:
+
+```text
+fresh_teardown: exit 0
+fresh_startup: exit 2
+final_teardown: exit 0
+AT06: blocked: ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range
+AT07: blocked: ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range
+records: docs/e2e/at/enrollment; run 9db51ea3-d807-449e-a812-cfad739db675
+make: *** [mk/at-enrollment.mk:12: at-enrollment] Error 1
+```
+
+The current AT06 retains 27 prior blocked checks; AT07 retains 13. There are
+no current or prior product passes/failures because the lab never started.
+Live images, live test-binary hashes, token/CSR API observations and log-scan
+counts are unavailable. In particular, zero secret hits is **not** claimed.
+
+Actual `at-enrollment-lint` tail, exit 0:
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment	0.007s
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK
+at-enrollment-lint: gofmt, vet, pinned staticcheck, offline checks and amd64/arm64 compilation passed
+```
+
+`make go-lint` exited 0 with empty stdout/stderr. It ran root gofmt, vet and
+staticcheck v0.8.2. The area gate additionally compiled and vetted the e2e-tagged
+driver, exercised offline Go/Python tests and cross-compiled its amd64/arm64
+test binaries. No dependency changed.
+
+Both final teardowns exited 0. Each attempt's final inventory was:
+
+```json
+{"containers": 0, "networks": 0, "volumes": 0, "images": 0}
+```
