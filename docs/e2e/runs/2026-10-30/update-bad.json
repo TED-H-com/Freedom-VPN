@@ -1,0 +1,73 @@
+{
+  "id": "update-bad",
+  "title": "Tampered artifact fails closed",
+  "spec": [
+    "§13.4",
+    "§19 AT25",
+    "§19 AT27"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "2"
+    },
+    {
+      "name": "target_count",
+      "detail": "1"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "exit_code",
+      "detail": "2"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "false"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "false"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "-"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "note",
+      "detail": "terminal state did not match a claimed success"
+    }
+  ],
+  "at": "2026-10-30T00:08:31Z"
+}

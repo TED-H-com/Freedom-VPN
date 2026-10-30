@@ -47,25 +47,35 @@ func TestE2E_Acceptance(t *testing.T) {
 	}
 	nodeID := run.enroll(ctx, admin)
 	run.desired(ctx)
+	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
 		good, bad := run.releases(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
 		run.revoke(ctx, admin, nodeID)
+	} else {
+		run.forwarding(run.lab.forwardChain())
 	}
 }
 
 type runner struct {
-	t          *testing.T
-	lab        *lab
-	dir        string
-	bad        bool
-	nodeID     uuid.UUID
-	incID      uuid.UUID
-	enrolledID uuid.UUID
-	planID     uuid.UUID
-	planRevID  uuid.UUID
+	t              *testing.T
+	lab            *lab
+	dir            string
+	bad            bool
+	nodeID         uuid.UUID
+	incID          uuid.UUID
+	enrolledID     uuid.UUID
+	planID         uuid.UUID
+	planRevID      uuid.UUID
+	usageDevice    uuid.UUID
+	usageRevision  decstr.U64
+	usageFrom      time.Time
+	usageUntil     time.Time
+	usageReady     bool
+	usageSentStart time.Time
+	usageSentEnd   time.Time
 }
 
 func (r *runner) record(rec Record) {
@@ -249,7 +259,6 @@ func (r *runner) desired(ctx context.Context) {
 	if !ok {
 		rec.Observations = append(rec.Observations, Observation{Name: "envelope", Detail: "absent or rejected"})
 		r.record(rec)
-		r.forwarding(r.lab.forwardChain())
 		return
 	}
 	rec.Status = StatusPass
@@ -266,21 +275,21 @@ func (r *runner) desired(ctx context.Context) {
 	rec.Observations = append(rec.Observations, Observation{Name: "serving_count", Detail: itoa(len(env.Signed.Serving))})
 	rec.Observations = append(rec.Observations, Observation{Name: "update_present", Detail: boolText(env.Signed.Update != nil)})
 	r.record(rec)
-	r.forwarding(r.lab.forwardChain())
 }
 
 func (r *runner) forwarding(view forwardView) {
 	status := StatusBlocked
-	detail := "forward chain policy is " + emptyDash(view.Policy) + " with " + itoa(view.MemberAccept) + " member accept rules; AT10 is not claimed"
-	if view.MemberAccept > 0 {
+	detail := "forward chain policy is " + emptyDash(view.Policy) + ", generation " + itoa(view.Generation) + ", with " + itoa(view.MemberAccept) + " member accept rules; AT10 is not claimed"
+	if view.MemberAccept > 0 && view.Generation >= 1 {
 		status = StatusPass
-		detail = "forward chain has member accept rules"
+		detail = "forward chain generation is " + itoa(view.Generation) + " with member accept rules"
 	}
 	r.record(Record{
 		ID: "forwarding", Title: "Member forwarding follows a serving lease", Spec: []string{"§5", "§19 AT10"}, Status: status,
 		Observations: []Observation{
 			{Name: "nft_table_present", Detail: boolText(view.Present)},
 			{Name: "forward_policy", Detail: emptyDash(view.Policy)},
+			{Name: "forward_generation", Detail: itoa(view.Generation)},
 			{Name: "baseline_marker", Detail: boolText(view.Baseline)},
 			{Name: "member_accept_rules", Detail: itoa(view.MemberAccept)},
 			{Name: "forward_excerpt", Detail: emptyDash(view.Excerpt)},
@@ -290,6 +299,7 @@ func (r *runner) forwarding(view forwardView) {
 }
 
 func (r *runner) member(ctx context.Context, admin *session) {
+	defer func() { r.forwarding(r.lab.forwardChain()) }()
 	rec := Record{ID: "member-traffic", Title: "Member device and exit traffic", Spec: []string{"§8", "§19 AT12"}, Status: StatusBlocked}
 	member, err := r.lab.login(ctx, "e2e-member", "member")
 	if err != nil {
@@ -317,9 +327,7 @@ func (r *runner) member(ctx context.Context, admin *session) {
 	if err != nil || grant.Status < 200 || grant.Status >= 300 {
 		rec.Observations = append(rec.Observations, Observation{Name: "grant_body", Detail: clipText(string(grant.Body), 180)})
 	}
-	r.memberNetBird(ctx, recPathNote(&rec))
-	devs, err := member.call(ctx, "GET", r.lab.public+"/api/v1/member/devices", nil, nil)
-	rec.Observations = append(rec.Observations, Observation{Name: "devices", Detail: httpDetail(devs, err)})
+	r.memberNetBird(ctx, member, recPathNote(&rec))
 	planForCheckout := r.planID
 	if planForCheckout == uuid.Nil {
 		planForCheckout = uuid.New()
@@ -347,7 +355,18 @@ func (r *runner) usage(ctx context.Context, member *session) {
 		r.record(rec)
 		return
 	}
+	if !r.usageReady {
+		rec.Observations = append(rec.Observations, Observation{Name: "batch", Detail: "not sent"})
+		rec.Observations = append(rec.Observations, Observation{Name: "member_total_bytes", Detail: emptyDash(memberUsageTotal(resp.Body))})
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "no device binding was projected, so no usage batch was sent"})
+		r.record(rec)
+		return
+	}
 	same, firstStatus, secondStatus, accepted, outcome := r.replayUsageBatch(member.memberID)
+	if !r.usageSentStart.IsZero() {
+		rec.Observations = append(rec.Observations, Observation{Name: "interval_start", Detail: r.usageSentStart.UTC().Format(time.RFC3339)})
+		rec.Observations = append(rec.Observations, Observation{Name: "interval_end", Detail: r.usageSentEnd.UTC().Format(time.RFC3339)})
+	}
 	rec.Observations = append(rec.Observations, Observation{Name: "batch_status", Detail: firstStatus})
 	rec.Observations = append(rec.Observations, Observation{Name: "replay_status", Detail: secondStatus})
 	rec.Observations = append(rec.Observations, Observation{Name: "replay_results_equal", Detail: boolText(same)})
@@ -362,6 +381,8 @@ func (r *runner) usage(ctx context.Context, member *session) {
 	case resp.Status == 200 && same && exact && accepted:
 		rec.Status = StatusPass
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "replay returned the same results and the member total matches the uploaded bytes"})
+	case firstStatus == "not-sent":
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: emptyDash(outcome)})
 	case resp.Status == 200 && same:
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "member usage is served and the idempotent replay returned the same results; exact byte totals were not claimed"})
 	default:
@@ -758,83 +779,6 @@ func (r *runner) netbirdCount(ctx context.Context, path string) int {
 	return -1
 }
 
-func (r *runner) memberNetBird(ctx context.Context, note func(name, detail string)) {
-	token, err := r.lab.secret("netbird.token")
-	if err != nil {
-		note("member_netbird", "token unavailable")
-		return
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.lab.netbird+"/api/groups", nil)
-	if err != nil {
-		note("member_netbird", "groups request")
-		return
-	}
-	req.Header.Set("Authorization", "Token "+token)
-	client := &http.Client{Transport: r.lab.transport, Timeout: 20 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		note("member_netbird", "groups unreachable")
-		return
-	}
-	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	resp.Body.Close()
-	var groups []nbGroup
-	_ = json.Unmarshal(raw, &groups)
-	group := pickAutoGroup(groups)
-	if group == "" {
-		group = r.netbirdGroup(ctx, client, token)
-	}
-	body := map[string]any{
-		"name": "e2e-member", "type": "one-off", "expires_in": 86400, "usage_limit": 1,
-		"auto_groups": []string{group}, "ephemeral": false, "allow_extra_dns_labels": false,
-	}
-	if group == "" {
-		note("member_netbird", "no auto group")
-		return
-	}
-	rawBody, _ := json.Marshal(body)
-	req, err = http.NewRequestWithContext(ctx, http.MethodPost, r.lab.netbird+"/api/setup-keys", bytes.NewReader(rawBody))
-	if err != nil {
-		note("member_netbird", "setup key request")
-		return
-	}
-	req.Header.Set("Authorization", "Token "+token)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err = client.Do(req)
-	if err != nil {
-		note("member_netbird", "setup key unreachable")
-		return
-	}
-	raw, _ = io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		note("member_netbird", "setup key HTTP "+itoa(resp.StatusCode)+" "+clipText(string(raw), 160))
-		return
-	}
-	var created struct {
-		Key string `json:"key"`
-	}
-	if json.Unmarshal(raw, &created) != nil || created.Key == "" {
-		note("member_netbird", "setup key absent")
-		return
-	}
-	path := filepath.Join(r.lab.state, "member", "var", "e2e", "setup.key")
-	if writeAtomic(path, []byte(created.Key+"\n")) != nil {
-		note("member_netbird", "setup key file")
-		return
-	}
-	created.Key = ""
-	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
-	defer cancel()
-	up := waitUntil(wait, 2*time.Second, func() bool {
-		return r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json") == "netbird_up"
-	})
-	note("member_netbird", r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json"))
-	if !up {
-		note("member_stage", "not up")
-	}
-}
-
 func recPathNote(rec *Record) func(string, string) {
 	return func(name, detail string) {
 		rec.Observations = append(rec.Observations, Observation{Name: name, Detail: detail})
@@ -992,19 +936,26 @@ func (r *runner) replayUsageBatch(memberID string) (same bool, firstStatus, seco
 	if r.enrolledID == uuid.Nil || r.incID == uuid.Nil {
 		return false, "no-node", "no-node", false, ""
 	}
+	if !r.usageReady {
+		return false, "not-sent", "not-sent", false, "no binding was projected"
+	}
 	memberUUID, err := uuid.Parse(memberID)
 	if err != nil {
 		return false, "no-member", "no-member", false, ""
 	}
-	now := time.Now().UTC().Truncate(time.Second)
+	start, end, ok := coveredInterval(r.usageFrom, r.usageUntil, time.Now())
+	if !ok {
+		return false, "not-sent", "not-sent", false, "binding window does not cover an interval"
+	}
+	r.usageSentStart, r.usageSentEnd = start, end
 	ev, err := usage.WithComputedHash(api.UsageEvent{
 		SchemaVersion: api.UsageEventSchemaVersionN1, NodeId: openapi_types.UUID(r.enrolledID),
 		NodeIncarnationId: openapi_types.UUID(r.incID), MeterEpochId: openapi_types.UUID(uuid.New()),
-		EventSeq: decstr.U64(1), IntervalStart: now.Add(-5 * time.Minute), IntervalEnd: now,
+		EventSeq: decstr.U64(1), IntervalStart: start, IntervalEnd: end,
 		MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete,
 		Records: []api.UsageRecord{{
-			MemberId: openapi_types.UUID(memberUUID), DeviceId: openapi_types.UUID(uuid.New()),
-			BindingRevision: decstr.U64(1), PeriodId: now.Format("2006-01"),
+			MemberId: openapi_types.UUID(memberUUID), DeviceId: openapi_types.UUID(r.usageDevice),
+			BindingRevision: r.usageRevision, PeriodId: start.UTC().Format("2006-01"),
 			UploadBytes: decstr.U64(1000), DownloadBytes: decstr.U64(2000),
 		}},
 	})
@@ -1045,28 +996,6 @@ func (r *runner) postUsage(key string) ([]byte, string) {
 		}
 	}
 	return out, status
-}
-
-func (r *runner) netbirdGroup(ctx context.Context, client *http.Client, token string) string {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, r.lab.netbird+"/api/groups", bytes.NewReader([]byte(`{"name":"fvpn-unpublished-nodes","peers":[],"resources":[]}`)))
-	if err != nil {
-		return ""
-	}
-	req.Header.Set("Authorization", "Token "+token)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return ""
-	}
-	defer resp.Body.Close()
-	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	var created struct {
-		ID string `json:"id"`
-	}
-	if json.Unmarshal(raw, &created) != nil {
-		return ""
-	}
-	return created.ID
 }
 
 type nbGroup struct {
@@ -1116,9 +1045,6 @@ func (r *runner) readJournal(releaseID string) journalView {
 	var stage, code, errorStage, detail, health string
 	err = db.QueryRowContext(ctx, `SELECT stage, COALESCE(error_code,''), COALESCE(error_stage,''), COALESCE(error_detail,''), COALESCE(health_json,'') FROM txns WHERE release_id = ? ORDER BY updated_at DESC LIMIT 1`, releaseID).Scan(&stage, &code, &errorStage, &detail, &health)
 	if err != nil {
-		err = db.QueryRowContext(ctx, `SELECT stage, COALESCE(error_code,''), COALESCE(error_stage,''), COALESCE(error_detail,''), COALESCE(health_json,'') FROM txns ORDER BY updated_at DESC LIMIT 1`).Scan(&stage, &code, &errorStage, &detail, &health)
-	}
-	if err != nil {
 		return view
 	}
 	view.Health = health
@@ -1128,9 +1054,6 @@ func (r *runner) readJournal(releaseID string) journalView {
 	fmtLine("stage=" + stage + " error_code=" + code + " error_stage=" + errorStage + " error_detail=" + detail)
 	fmtLine("health_json " + health)
 	rows, err := db.QueryContext(ctx, `SELECT e.seq, e.stage, COALESCE(e.detail,'') FROM txn_events e JOIN txns t ON t.txn_id = e.txn_id WHERE t.release_id = ? ORDER BY e.seq`, releaseID)
-	if err != nil {
-		rows, err = db.QueryContext(ctx, `SELECT seq, stage, COALESCE(detail,'') FROM txn_events ORDER BY seq`)
-	}
 	if err == nil {
 		for rows.Next() {
 			var seq int
