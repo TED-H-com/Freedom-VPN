@@ -33,6 +33,8 @@ Freedom VPN compiles the 4-layer policy model (`internal/dnspolicy`) into AdGuar
 | **Layer 3: `source_list`** | `block` | `false` | `\|<domain>^` | Standard threat/category feed block covering the exact hostname `<domain>` only (`hosts` file entries). |
 | **Layer 4: `normal_resolution`** | `resolve` | N/A | *(No rule emitted)* | Unmatched queries resolve normally via configured upstreams. |
 
+Layer 3 in the running publisher is sourced from `dns_feed_refresh_state.last_good_content` joined to immutable `dns_feed_contents`, not from a policy’s URL or a resolver-managed external list. D-054 bootstrap approval, bounded refresh and failure retention happen on the control plane. Resolver documents embed the normalized set and raw content hash; the enclosing canonical document hash covers every entry. Missing last-good rejects publication. See [FEEDS.md](FEEDS.md) and [PUBLISH.md](PUBLISH.md).
+
 ### 2.1 Why `$important` and Single-Pipe `|` Match `Evaluate` Exactly
 
 In AdGuard Home's `urlfilter` DNS engine:

@@ -8,7 +8,7 @@ FVPN_HOST_UID ?= $(shell id -u)
 FVPN_HOST_GID ?= $(shell id -g)
 DNS_COMPOSE_DIR := deploy/dev/adguard
 DNS_COMPOSE_FILE := $(DNS_COMPOSE_DIR)/docker-compose.yml
-DNS_PKGS := ./internal/dnspolicy/... ./internal/dnspublish/... ./internal/dnsfeeds/... ./node/dns/...
+DNS_PKGS := ./internal/dnspolicy/... ./internal/dnspublish/... ./internal/dnsfeeds/... ./node/dns/... ./apps/worker ./internal/config
 
 dns-with-disk-tmp = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/go.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";
 
@@ -24,14 +24,14 @@ dns-build:
 	@$(dns-with-disk-tmp) GOARCH=arm64 go build $(DNS_PKGS) ./apps/worker/...
 
 dns-lint:
-	@test -z "$$(gofmt -l internal/dnspolicy internal/dnspublish internal/dnsfeeds node/dns tests/netlab/dns apps/worker/jobs.go apps/worker/jobs_dns.go)" || (echo "gofmt needed on: $$(gofmt -l internal/dnspolicy internal/dnspublish internal/dnsfeeds node/dns tests/netlab/dns apps/worker/jobs.go apps/worker/jobs_dns.go)" && exit 1)
+	@test -z "$$(gofmt -l internal/dnspolicy internal/dnspublish internal/dnsfeeds node/dns tests/netlab/dns internal/config/dns*.go apps/worker/jobs.go apps/worker/jobs_dns*.go)" || (echo "gofmt needed on: $$(gofmt -l internal/dnspolicy internal/dnspublish internal/dnsfeeds node/dns tests/netlab/dns internal/config/dns*.go apps/worker/jobs.go apps/worker/jobs_dns*.go)" && exit 1)
 	@$(dns-with-disk-tmp) go vet $(DNS_PKGS)
 	@$(dns-with-disk-tmp) go vet -tags=adguard_integration ./internal/dnspolicy/...
-	@$(dns-with-disk-tmp) go vet -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/...
+	@$(dns-with-disk-tmp) go vet -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/... ./apps/worker
 	@$(dns-with-disk-tmp) go vet -tags=netlab ./tests/netlab/dns/...
 	@$(dns-with-disk-tmp) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 $(DNS_PKGS)
 	@$(dns-with-disk-tmp) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags=adguard_integration ./internal/dnspolicy/...
-	@$(dns-with-disk-tmp) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/...
+	@$(dns-with-disk-tmp) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/... ./apps/worker
 	@$(dns-with-disk-tmp) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags=netlab ./tests/netlab/dns/...
 
 dns-verify: dns-lint dns-build dns-test
@@ -41,6 +41,7 @@ dns-test:
 
 dns-test-publish:
 	@$(dns-with-disk-tmp) go test -count=1 -tags=integration ./internal/dnspublish/... ./internal/dnsfeeds/...
+	@$(dns-with-disk-tmp) go test -count=1 -tags=integration ./apps/worker -run 'TestD054|Test12_5'
 
 dns-lab:
 	@$(dns-with-disk-tmp) FVPN_NETLAB=1 FVPN_LAB_PREFIX=$${FVPN_LAB_PREFIX:-fvpn-w3-dns-publish} go test -count=1 -tags=netlab -timeout 10m ./tests/netlab/dns/...

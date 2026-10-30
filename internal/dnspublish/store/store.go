@@ -124,8 +124,10 @@ type activation struct {
 
 func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen decstr.U64, operationID string) (Publication, error) {
 	var pub Publication
+	activationGen := gen
 	err := db.InTx(ctx, p.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		pub = Publication{}
+		gen = activationGen
 		if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(544055)`); err != nil {
 			return err
 		}
@@ -208,7 +210,9 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 }
 
 func (p *Publisher) withdraw(ctx context.Context, defID, revID uuid.UUID, gen decstr.U64, operationID string) error {
+	activationGen := gen
 	return db.InTx(ctx, p.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		gen = activationGen
 		if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(544055)`); err != nil {
 			return err
 		}

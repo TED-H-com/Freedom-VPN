@@ -146,7 +146,19 @@ func TestAT20_D054_LabFeedAllowAndWithdraw(t *testing.T) {
 	}
 	assertNoQueryFiles(t, state)
 
-	withdrawn, err := ap.Withdraw(context.Background(), "2", compiled.Hash)
+	// Layer 1 must still override the explicit Layer 2 allow.
+	input.Rules = append(input.Rules, dnspublish.Rule{RuleID: "01900000-0000-7000-8000-0000000000b1", Domain: "safe-target.example.com", Action: "block", Reason: "admin_rule"})
+	compiled, err = dnspublish.Compile(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ev, err := ap.Apply(context.Background(), "3", compiled.Document); err != nil || !ev.Verified {
+		t.Fatalf("admin precedence %+v %v", ev, err)
+	}
+	for _, addr := range addrs {
+		expectNXDOMAIN(t, addr, "safe-target.example.com")
+	}
+	withdrawn, err := ap.Withdraw(context.Background(), "3", compiled.Hash)
 	if err != nil || withdrawn.Verified || withdrawn.DNSOK() {
 		t.Fatalf("withdraw evidence %+v err %v", withdrawn, err)
 	}

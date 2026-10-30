@@ -505,3 +505,42 @@ func withAction(t *testing.T, raw []byte, action string) []byte {
 	}
 	return out
 }
+
+func TestD054_DNS01_MissingLastGoodCannotPublish(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	ps := policies.NewStore(pool)
+	actor := uuid.New()
+	now := time.Now().UTC()
+	feed := api.ThreatFeedPayload{Provider: "TEST ONLY", FeedCode: "missing-feed", LicenseName: "TEST ONLY", LicenseUrl: "https://example.com/license", CommercialUseBasis: "TEST ONLY fixture license", Attribution: presence.NewNullNullable[string](), SourceUrl: "https://example.com/feed", Format: api.ThreatFeedPayloadFormatDomainList, Categories: []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware}, ContentSha256: strings.Repeat("a", 64), MaxSizeBytes: 4096, ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(time.Hour), UpdateIntervalSeconds: 300}
+	raw, _ := json.Marshal(feed)
+	code := "missing-feed"
+	rev, err := ps.CreateRevision(ctx, policies.CreateRevisionInput{Code: &code, Type: api.PolicyTypeThreatFeed, SchemaVersion: 1, Payload: raw, Reason: "TEST ONLY", ActorID: actor})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ps.ActivateRevision(ctx, policies.ActivateRevisionInput{DefinitionID: rev.DefinitionID, RevisionID: rev.RevisionID, ExpectedVersion: "1", Reason: "TEST ONLY", ActorID: actor}); err != nil {
+		t.Fatal(err)
+	}
+	profile := api.DnsProfilePayload{ProfileCode: "waiting", DisplayName: api.LocalizedText{ZhTW: "TEST ONLY"}, DomainRuleSetRevisionIds: []uuid.UUID{}, ThreatFeedRevisionIds: []uuid.UUID{rev.RevisionID}, BlockResponse: api.DnsProfilePayloadBlockResponseNxdomain, BlockedTtlSeconds: 60}
+	raw, _ = json.Marshal(profile)
+	code = "waiting"
+	prof, err := ps.CreateRevision(ctx, policies.CreateRevisionInput{Code: &code, Type: api.PolicyTypeDnsProfile, SchemaVersion: 1, Payload: raw, Reason: "TEST ONLY", ActorID: actor})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ps.ActivateRevision(ctx, policies.ActivateRevisionInput{DefinitionID: prof.DefinitionID, RevisionID: prof.RevisionID, ExpectedVersion: "1", Reason: "TEST ONLY", ActorID: actor}); err != nil {
+		t.Fatal(err)
+	}
+	p, err := NewPublisher(pool, Config{Upstreams: []string{"192.0.2.53:53"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.Handle(ctx, loadPublishEvent(t, ctx, pool, 0)); err == nil || err.Error() != "feed_last_good_missing" {
+		t.Fatalf("missing content accepted: %v", err)
+	}
+	var heads int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM dns_publication_heads`).Scan(&heads); err != nil || heads != 0 {
+		t.Fatalf("head without content: %d %v", heads, err)
+	}
+}

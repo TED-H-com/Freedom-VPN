@@ -136,3 +136,18 @@ func TestD054_DNS02_HostsAreExactAndAdblockIsLayerThree(t *testing.T) {
 		t.Fatalf("adblock: %+v %s", c, reason)
 	}
 }
+
+func TestD054_DNS01_NormalizedContentIsBounded(t *testing.T) {
+	var body strings.Builder
+	for i := range 10000 {
+		fmt.Fprintf(&body, "entry-%d.example.com\n", i)
+	}
+	raw := body.String()
+	client := localFeed(t, &raw)
+	now := time.Now()
+	p := testPayload(raw, now)
+	p.MaxSizeBytes = 32000000
+	if c, reason := Fetch(context.Background(), client, p, nil, now, 50); c != nil || reason != "content_too_large" {
+		t.Fatalf("embedded bound: %s", reason)
+	}
+}
