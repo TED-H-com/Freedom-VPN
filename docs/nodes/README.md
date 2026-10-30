@@ -410,5 +410,45 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
    - Per §5.1 and §8.1, `safety_status` and `provisioning_state` reflect the isolation and policy baseline (`internet_only`, `meter_path`, `tunnel_probe`, policy/release/DNS/storage baseline), whereas active member traffic forwarding is reflected by `member_forwarding_observed` and `PublicationDataPathFailure` (`"check_failed"` / `"serving_checks_unconfirmed"`).
    - Serving checks (`lease`, `qos`, `source_binding`) intentionally do not flip `provisioning_state` to `"applying"` or `safety_status` to `"failed"`: because `RenewTx` requires `provisioning_state == "ready"` to issue member grants, downgrading `provisioning_state` on `lease: LEASE_EXPIRED` would deadlock recovery from a grant-less lease.
 
+---
 
+## 10. Node Incarnation History, Enrollment `token_sha256`, and `awaiting_member_grants`, Follow-up 19
+
+### 10.1 `GET /api/v1/admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`, ENR-03)
+
+1. **Single-Query Read Model (`internal/nodes/incarnations.go`, `internal/nodes/httpwire/handlers.go`)**:
+   - `(*Service).ListNodeIncarnations` executes a single read-only query over `nodes` joined via `LEFT JOIN LATERAL` to `node_incarnations`, `node_enrollments` (`e.incarnation_id = i.id AND e.node_id = i.node_id`), and the per-incarnation usage ledger tables from migration `00130_usage_ledger.sql` (`usage_checkpoints`, `usage_events`, `usage_samples`).
+   - Returns HTTP 404 (`RESOURCE_NOT_FOUND`) only when no `nodes` row exists for `{node_id}`; a known node with no bound incarnations returns HTTP 200 with `items: []` and `next_cursor: null`.
+   - Ordered newest first (`created_at DESC, id DESC`), cursor-paginated (`limit` default 50, max 100; cursor `<= 512` chars), protected by admin RBAC.
+
+2. **Identity, Lifecycle State, and `retire_reason` Derivation**:
+   - `bound_public_key_sha256`: lowercase 64-character hex encoding of `node_incarnations.public_key_fingerprint`.
+   - `bound_at`: `coalesce(node_enrollments.consumed_at, node_incarnations.created_at)`.
+   - `current`: `nodes.current_incarnation_id = node_incarnations.id`.
+   - `state`: `"active"` when `node_incarnations.revoked_at IS NULL`, else `"retired"`.
+   - `retired_at`: `node_incarnations.revoked_at` (`null` while active).
+   - `retire_reason`: `null` while active; when retired (`revoked_at IS NOT NULL`):
+     - `"reinstall"` if a later `node_incarnations` row exists for the same `node_id`;
+     - else `"revocation"` if `nodes.lifecycle_state` is `'revoked'` or `'retired'`;
+     - else `"supersession"`.
+
+3. **Per-Incarnation Retained Usage (`NodeIncarnationUsage`)**:
+   - Reads only `usage_checkpoints` (`node_id`, `incarnation_id`, `updated_at`), `usage_events` (`id`, `node_id`, `incarnation_id`), and `usage_samples` (`event_id`, `upload_bytes`, `download_bytes`). Never reads `usage_event_rejections`, `usage_event_conflicts`, `usage_rollups`, or `usage_rollup_details`.
+   - `upload_bytes` and `download_bytes` are the sums of accepted `usage_samples` (`NUMERIC(20,0)`) formatted as decimal strings and parsed via `decstr.Parse` (`decstr.U64`). Any sum exceeding $2^{64}-1$ fails closed with `decstr.ErrOverflow` (HTTP 500 `INTERNAL_ERROR`), never returning a truncated total.
+   - `through` is `usage_checkpoints.updated_at` (`null` when no checkpoint row exists; when a checkpoint row exists with zero samples, bytes are `"0"` and `through` is set).
+   - Usage is keyed by `(node_id, incarnation_id)` and never moves between incarnations across guarded reinstalls.
+
+### 10.2 `token_sha256` on Enrollment Responses and Audit Events (ENR-02)
+
+- `internal/enrollment` populates `api.Enrollment.TokenSha256` (`*string`, 64 lowercase hex characters of `node_enrollments.token_hash`) on `createEnrollment` (both initial creation and idempotent replay), `getEnrollment`, and `revokeEnrollment`, and `internal/nodes/httpwire` passes the domain `api.Enrollment` through unchanged while never exposing the plaintext token after initial creation.
+- `enrollment.created` audit events record `changes.after.token_sha256` without redaction (via the `_sha256` suffix exemption in `internal/audit`).
+
+### 10.3 `awaiting_member_grants` in the Nodes Read Model (D-067, Revision 10)
+
+- `ForwardingBlockReasonAwaitingMemberGrants` (`"awaiting_member_grants"`) means the node holds a valid node lease (`lease` check passed or non-expired) with zero member grants while `device_bindings` are desired in its compiled policy.
+- **Validation & Read Model Projection**:
+  - `SubmitObservation` validates every element of `report.ForwardingBlockReasons` against `api.ForwardingBlockReason.Valid()`, rejecting unknown block reasons with `422 VALIDATION_FAILED`.
+  - When `member_forwarding_enabled == false` and `forwarding_block_reasons` contains `"awaiting_member_grants"` (with `internet_only == "passed"` and `meter_path` absent, `"not_run"`, or `"passed"`), `evaluateObservationEvidence` preserves `safety_status = "passed"` and `data_health = "healthy"` (or `"degraded"` if degraded by another check)—the node is healthy and provisional, not `"expired"` or `"failed"`.
+  - In `GET /api/v1/admin/nodes/{node_id}` (`NodeDetail`) and `GET /api/v1/admin/nodes` (`NodeSummary`), the node shows `provisioning_state: "ready"`, `safety_status: "passed"`, `data_health: "healthy"`, and `member_forwarding_observed: false`, while `node_observations.report_payload` retains `"forwarding_block_reasons": ["awaiting_member_grants"]`.
+  - **Publication & Operations**: `exits.publication_intent` and `exits.publication_observed` remain unchanged; `PublicationDataPathFailure` returns `"forwarding_disabled"` because `member_forwarding_enabled == false`, so `node.publish` completes `agent_policy` once the desired generation is acknowledged with passed safety while keeping `data_path_probe` pending until member grants arrive and member forwarding is armed. Member/entitlement/device operations waiting on their `"nodes"` step advance to `succeeded` once the node acknowledges the target generation with `safety_status = "passed"` and `provisioning_state = "ready"`.
 
