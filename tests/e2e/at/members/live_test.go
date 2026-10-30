@@ -57,14 +57,16 @@ type step struct {
 	At       string `json:"at"`
 }
 type buildInfo struct {
-	Source    string                       `json:"source_commit"`
-	Dirty     bool                         `json:"source_dirty"`
-	Images    map[string]string            `json:"image_digests"`
-	Binaries  map[string]string            `json:"binary_sha256"`
-	BinaryVCS map[string]map[string]string `json:"binary_vcs"`
+	TestBinary string                       `json:"test_binary_sha256"`
+	Source     string                       `json:"source_commit"`
+	Dirty      bool                         `json:"source_dirty"`
+	Images     map[string]string            `json:"image_digests"`
+	Binaries   map[string]string            `json:"binary_sha256"`
+	BinaryVCS  map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
-	Complete bool `json:"complete"`
+	Complete   bool                    `json:"complete"`
+	Forwarding []forwardingObservation `json:"forwarding,omitempty"`
 	e2e.Record
 	ReleaseDigests   map[string]string `json:"release_digests,omitempty"`
 	FollowupBuild    *buildInfo        `json:"followup_build,omitempty"`
@@ -89,6 +91,8 @@ type live struct {
 	build                                    buildInfo
 	node, inc, plan, planRev, groupA, groupB uuid.UUID
 	run                                      string
+	runID                                    string
+	restartAfter                             time.Time
 	nativePeer                               string
 	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
@@ -152,6 +156,9 @@ func TestATMembers_Live(t *testing.T) {
 	}
 }
 func (l *live) open() {
+	if l.runID == "" {
+		l.runID = uuid.NewString()
+	}
 	raw, err := os.ReadFile(filepath.Join(l.state, "stack.json"))
 	if err != nil || json.Unmarshal(raw, &l.stack) != nil || l.stack.Prefix != "fvpn-w4-members" || l.stack.PortBase != 24000 {
 		l.t.Fatal("assigned stack missing")
@@ -187,6 +194,13 @@ func (l *live) open() {
 	}
 	l.t.Cleanup(l.pool.Close)
 	l.build = buildInfo{Images: map[string]string{}, Binaries: map[string]string{}, BinaryVCS: map[string]map[string]string{}}
+
+	if executable, e := os.Executable(); e == nil {
+		if raw, e := os.ReadFile(executable); e == nil {
+			sum := sha256.Sum256(raw)
+			l.build.TestBinary = hex.EncodeToString(sum[:])
+		}
+	}
 	out, err := l.command("git", "rev-parse", "HEAD")
 	if err != nil {
 		l.t.Fatal("git commit missing")
@@ -194,7 +208,7 @@ func (l *live) open() {
 	l.build.Source = strings.TrimSpace(string(out))
 	out, _ = l.command("git", "status", "--porcelain")
 	l.build.Dirty = len(out) > 0
-	for _, s := range []string{"control", "worker", "node", "member", "postgres", "idp", "netbird", "gateway", "payment", "origin", "adguard", "coredns"} {
+	for _, s := range []string{"control", "worker", "node", "node-netns", "member", "postgres", "idp", "netbird", "gateway", "payment", "origin", "adguard", "coredns"} {
 		out, err = l.docker("inspect", "--format", "{{.Image}}", l.name(s))
 		if err != nil {
 			l.t.Fatalf("assigned container %s unavailable", s)
@@ -253,7 +267,7 @@ func (l *live) request(b *browser, method, endpoint string, body any, headers ma
 	select {
 	case <-l.ctx.Done():
 		return response{code: "CANCELLED"}
-	case <-time.After(600 * time.Millisecond):
+	case <-time.After(requestSpacing(endpoint)):
 	}
 	var raw []byte
 	var err error
@@ -357,7 +371,7 @@ func (l *live) wait(timeout time.Duration, fn func() bool) bool {
 func (l *live) newRecord(id string) record {
 	for _, c := range catalogue() {
 		if c.id == id {
-			r := record{Record: e2e.Record{ID: id, Title: c.title, Spec: []string{"§19.1", "§19 " + id, c.requirements}, Status: e2e.StatusPass, At: time.Now().UTC().Format(time.RFC3339)}, Build: l.build, Steps: []step{}, Blockers: []string{}}
+			r := record{Record: e2e.Record{RunID: l.runID, SourceCommit: l.build.Source, ID: id, Title: c.title, Spec: []string{"§19.1", "§19 " + id, c.requirements}, Status: e2e.StatusPass, At: time.Now().UTC().Format(time.RFC3339)}, Build: l.build, Steps: []step{}, Blockers: []string{}}
 			if c.operator {
 				r.Operator = "needs operator run"
 			}
@@ -449,3 +463,11 @@ func (l *live) write(r *record) {
 	}
 }
 func detail(r response) string { return fmt.Sprintf("HTTP %d %s", r.status, r.code) }
+
+// D-060: each paced probe is asserted once; never retry a rate-limited webhook.
+func requestSpacing(endpoint string) time.Duration {
+	if strings.Contains(endpoint, "/webhooks/") || strings.Contains(endpoint, "/agent/") {
+		return 2 * time.Second
+	}
+	return 600 * time.Millisecond
+}

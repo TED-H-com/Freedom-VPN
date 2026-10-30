@@ -28,7 +28,7 @@ func (l *live) installProbe() bool {
 	if _, err := cmd.CombinedOutput(); err != nil {
 		return false
 	}
-	for _, s := range []string{"member", "node", "adguard", "control"} {
+	for _, s := range []string{"member", "node", "adguard", "control", "origin"} {
 		if _, err := l.docker("cp", path, l.name(s)+":/tmp/at-members-probe"); err != nil {
 			return false
 		}
@@ -213,6 +213,21 @@ func (l *live) privacy(r *record) {
 
 // D-056: a central document or HTTP 200 alone never proves node application.
 func (l *live) resolverEvidence(r *record) {
+	// A committed document precedes the next heartbeat. Wait for typed evidence
+	// of this profile before recording a genuine issued-document mismatch.
+	_ = l.wait(45*time.Second, func() bool {
+		got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+		var node api.NodeDetail
+		if json.Unmarshal(got.body, &node) != nil {
+			return false
+		}
+		ev, err := node.DnsPolicyEvidence.Get()
+		if err != nil || node.DnsPolicyEvidence.IsNull() {
+			return false
+		}
+		return ev.Outcome == api.DnsPolicyEvidenceOutcomeApplied && l.count(`SELECT count(*) FROM dns_resolver_documents WHERE id=$1 AND profile_revision_id=(SELECT active_revision_id FROM policy_definitions WHERE type='dns_profile' ORDER BY id LIMIT 1)`, ev.DocumentId) > 0
+	})
+
 	got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
 	var node api.NodeDetail
 	decode := json.Unmarshal(got.body, &node)
@@ -225,13 +240,13 @@ func (l *live) resolverEvidence(r *record) {
 	code, _ := evidence.ErrorCode.Get()
 	r.check("typed DNS evidence", "record exact issued-document application, or explicit null", fmt.Sprintf("HTTP=%d; decoded=%t; specified=%t; null=%t; present=%t; outcome=%s; error_code=%s; issued_document_matches=%t", got.status, decode == nil, node.DnsPolicyEvidence.IsSpecified(), node.DnsPolicyEvidence.IsNull(), present, evidence.Outcome, code, document), "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document", got.status == 200 && decode == nil)
 	if !present {
-		r.block(inheritedResolverGate)
+		r.block("D-056/D-061: typed resolver evidence is unavailable on this live node; owner w3-wire-nodes / w2-agent-core; inspect issued document and accepted observation.")
 		return
 	}
 	// This run can supersede the historical missing-reference observation.
 	kept := r.Blockers[:0]
 	for _, b := range r.Blockers {
-		if b != inheritedResolverGate {
+		if !strings.HasPrefix(b, "D-056/D-061: typed resolver evidence is unavailable") && !(document && evidence.Outcome == api.DnsPolicyEvidenceOutcomeApplied && strings.HasPrefix(b, "F2-03:")) {
 			kept = append(kept, b)
 		}
 	}

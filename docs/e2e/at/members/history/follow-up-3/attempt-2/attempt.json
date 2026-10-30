@@ -1,0 +1,70 @@
+{
+  "run_id": "f81a8365-7839-4756-bee2-9bb2a5506cdd",
+  "full_suite_seconds": 536.259,
+  "full_suite_make_exit": 2,
+  "readback_seconds": 379.446,
+  "readback_exit": 0,
+  "observation_seconds": 12.254,
+  "observation_exit": 0,
+  "current_checks": {
+    "pass": 242
+  },
+  "prior_checks": {
+    "pass": 30,
+    "fail": 1
+  },
+  "cases": {
+    "AT01": "blocked",
+    "AT02": "blocked",
+    "AT03": "blocked",
+    "AT04": "blocked",
+    "AT05": "blocked",
+    "AT08": "blocked",
+    "AT09": "blocked",
+    "AT20": "blocked",
+    "AT21": "blocked",
+    "AT22": "blocked"
+  },
+  "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+  "product_binary_vcs": {
+    "fvpn-agent": {
+      "go_version": "go1.27.3",
+      "vcs.modified": "true",
+      "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+      "vcs.time": "2026-10-30T06:53:32Z"
+    },
+    "fvpn-control": {
+      "go_version": "go1.27.3",
+      "vcs.modified": "true",
+      "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+      "vcs.time": "2026-10-30T06:53:32Z"
+    },
+    "fvpn-updater": {
+      "go_version": "go1.27.3",
+      "vcs.modified": "true",
+      "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+      "vcs.time": "2026-10-30T06:53:32Z"
+    },
+    "fvpn-worker": {
+      "go_version": "go1.27.3",
+      "vcs.modified": "true",
+      "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+      "vcs.time": "2026-10-30T06:53:32Z"
+    }
+  },
+  "image_digests": {
+    "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "control": "sha256:e0b0962d65c2aa9d624a85ab0e5125dba1988c442239302bb4ee0e47694766f5",
+    "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+    "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "idp": "sha256:43f35b4f6e9b09946ba68c278df19b15e6dea634aeafc90222a2d8e1bd145e8b",
+    "member": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+    "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "node": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+    "node-netns": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+    "origin": "sha256:3e93d4ac149fa83afeba0d16bc7356233fdafa901173170284201571aefa4949",
+    "payment": "sha256:b94f665571a02bd216fb711389800644a59ee4305457bdd9a1eac5835f183fca",
+    "postgres": "sha256:1cb277caacac43d52fe2be6d55109ac026fa5c246198d490887b2ee35e94772f",
+    "worker": "sha256:f7c8e5588bd4cd0ca5a62a3bae235332ad355ee0a1cd0eb551b6cc994a639966"
+  }
+}
