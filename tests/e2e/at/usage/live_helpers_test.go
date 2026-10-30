@@ -4,10 +4,16 @@ package usage
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/sha256"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,12 +25,92 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 
 	_ "modernc.org/sqlite"
 )
+
+type d067CycleMeasurement struct {
+	Cycle                            string            `json:"cycle"`
+	NodeID                           uuid.UUID         `json:"node_id"`
+	IncarnationID                    uuid.UUID         `json:"incarnation_id"`
+	OldAppliedGeneration             uint64            `json:"old_applied_generation"`
+	TargetDesiredGeneration          uint64            `json:"target_desired_generation"`
+	ProvisionalLeaseID               uuid.UUID         `json:"provisional_lease_id"`
+	ProvisionalLeaseGeneration       uint64            `json:"provisional_lease_generation"`
+	ProvisionalLeaseIssuedAt         string            `json:"provisional_lease_issued_at"`
+	ProvisionalLeaseExpiresAt        string            `json:"provisional_lease_expires_at"`
+	ProvisionalLeaseTTLSeconds       int64             `json:"provisional_lease_ttl_seconds"`
+	ProvisionalLeaseMemberCount      int               `json:"provisional_lease_member_count"`
+	ReadyObservationReportID         uuid.UUID         `json:"ready_observation_report_id"`
+	ReadyObservationReceivedAt       string            `json:"ready_observation_received_at"`
+	ForwardingBlockReasons           []string          `json:"forwarding_block_reasons"`
+	CheckErrorCodes                  map[string]string `json:"check_error_codes"`
+	Errors                           []api.NodeError   `json:"errors"`
+	LeaseExpiredReportedDuringWindow bool              `json:"lease_expired_reported_during_window"`
+	PopulatedLeaseID                 uuid.UUID         `json:"populated_lease_id"`
+	PopulatedLeaseGeneration         uint64            `json:"populated_lease_generation"`
+	PopulatedLeaseIssuedAt           string            `json:"populated_lease_issued_at"`
+	PopulatedLeaseExpiresAt          string            `json:"populated_lease_expires_at"`
+	PopulatedLeaseTTLSeconds         int64             `json:"populated_lease_ttl_seconds"`
+	PopulatedLeaseMemberCount        int               `json:"populated_lease_member_count"`
+	PopulatedLeaseInForceAt          string            `json:"populated_lease_in_force_at"`
+	FirstCountedByteAt               string            `json:"first_counted_byte_at"`
+	ReadyToPopulatedLeaseMs          int64             `json:"ready_to_populated_lease_ms"`
+	ReadyToFirstCountedByteMs        int64             `json:"ready_to_first_counted_byte_ms"`
+	MaxAllowedWindowMs               int64             `json:"max_allowed_window_ms"`
+	FirstCountedTransfer             transferResult    `json:"first_counted_transfer"`
+}
+
+type fupTransitionMeasurement struct {
+	Transition                     string            `json:"transition"`
+	Trigger                        string            `json:"trigger"`
+	StartedAt                      string            `json:"started_at"`
+	FUPMemberGenerationBefore      uint64            `json:"fup_member_generation_before"`
+	FUPMemberGenerationAfter       uint64            `json:"fup_member_generation_after"`
+	EnforcedTierIndex              int               `json:"enforced_tier_index"`
+	EnforcedDownBPS                int64             `json:"enforced_down_bps"`
+	EnforcedUpBPS                  int64             `json:"enforced_up_bps"`
+	DesiredGenBefore               map[string]uint64 `json:"desired_gen_before"`
+	DesiredGenAfter                map[string]uint64 `json:"desired_gen_after"`
+	DesiredGenAfterReplay          map[string]uint64 `json:"desired_gen_after_replay"`
+	FUPMemberGenerationAfterReplay uint64            `json:"fup_member_generation_after_replay"`
+	ApplyingObservedTrue           bool              `json:"applying_observed_true"`
+	ApplyingClearedToFalse         bool              `json:"applying_cleared_to_false"`
+	ApplyingClearedAt              string            `json:"applying_cleared_at"`
+	WallClockMsToApplyingFalse     int64             `json:"wall_clock_ms_to_applying_false"`
+	ClearingObservationReportID    uuid.UUID         `json:"clearing_observation_report_id"`
+	ClearingObservationNodeID      uuid.UUID         `json:"clearing_observation_node_id"`
+	ClearingObservationGeneration  uint64            `json:"clearing_observation_generation"`
+	ClearingObservationReceivedAt  string            `json:"clearing_observation_received_at"`
+	Node1TCClassRate               string            `json:"node1_tc_class_rate"`
+	Node2TCClassRate               string            `json:"node2_tc_class_rate"`
+	BothExitsInstalledTier2TC      bool              `json:"both_exits_installed_tier2_tc"`
+}
+
+type incarnationRetentionMeasurement struct {
+	NodeID                         uuid.UUID               `json:"node_id"`
+	OldIncarnationID               uuid.UUID               `json:"old_incarnation_id"`
+	NewIncarnationID               uuid.UUID               `json:"new_incarnation_id"`
+	ActiveReenrollRejected409Code  string                  `json:"active_reenroll_rejected_409_code"`
+	IncarnationsBeforeRevoke       api.NodeIncarnationList `json:"incarnations_before_revoke"`
+	IncarnationsAfterRevoke        api.NodeIncarnationList `json:"incarnations_after_revoke"`
+	IncarnationsAfterReinstall     api.NodeIncarnationList `json:"incarnations_after_reinstall"`
+	IncarnationsAfterNewTraffic    api.NodeIncarnationList `json:"incarnations_after_new_traffic"`
+	MemberTotalsBeforeReinstall    api.UsageTotals         `json:"member_totals_before_reinstall"`
+	MemberTotalsAfterReinstall     api.UsageTotals         `json:"member_totals_after_reinstall"`
+	MemberTotalsAfterNewTraffic    api.UsageTotals         `json:"member_totals_after_new_traffic"`
+	DBPeriodTotalsBeforeReinstall  map[string]string       `json:"db_period_totals_before_reinstall"`
+	DBPeriodTotalsAfterReinstall   map[string]string       `json:"db_period_totals_after_reinstall"`
+	DBPeriodTotalsAfterNewTraffic  map[string]string       `json:"db_period_totals_after_new_traffic"`
+	NewIncarnationCountedTransfer  transferResult          `json:"new_incarnation_counted_transfer"`
+	OldIncarnationUsageFixed       bool                    `json:"old_incarnation_usage_fixed"`
+	MemberTotalUnchangedOnReenroll bool                    `json:"member_total_unchanged_on_reenroll"`
+	NewTrafficAccumulatedSameMonth bool                    `json:"new_traffic_accumulated_same_month"`
+}
 
 type sqliteUsageSnapshot struct {
 	NextSeq         uint64   `json:"next_seq"`
@@ -150,7 +236,6 @@ func (s *liveSuite) ifaceL3Bytes(service, iface string) (rxL3 uint64, txL3 uint6
 }
 
 func (s *liveSuite) waitNodeServingAndPublished(nodeService string, nodeID uuid.UUID, deviceID uuid.UUID) bool {
-	restartedForLease := false
 	return s.waitFor(120*time.Second, func() bool {
 		var desired, applied, pubObs, provState string
 		err := s.pool.QueryRow(s.ctx, `
@@ -159,17 +244,12 @@ func (s *liveSuite) waitNodeServingAndPublished(nodeService string, nodeID uuid.
 			LEFT JOIN exits e ON e.node_id = n.id
 			WHERE n.id = $1
 		`, nodeID).Scan(&desired, &applied, &pubObs, &provState)
-		if err != nil || desired == "0" || desired != applied || pubObs != "active" {
+		if err != nil || desired == "0" || desired != applied || pubObs != "active" || provState != "ready" {
 			return false
 		}
 		hb, code, _ := s.execInContainer(nodeService, "cat", "/run/vpn-node/heartbeat")
 		hbStr := string(hb)
 		if code != 0 || !strings.Contains(hbStr, "serving 1") {
-			if !restartedForLease && provState == "ready" && strings.Contains(hbStr, "reason lease_expired") {
-				restartedForLease = true
-				s.stopNodeAgent(nodeService)
-				s.startNodeAgent(nodeService)
-			}
 			return false
 		}
 		if deviceID != uuid.Nil {
@@ -430,4 +510,561 @@ func (s *liveSuite) buildAndInstallUsageAdmin() {
 func (s *liveSuite) runUsageAdmin(args ...string) ([]byte, int, error) {
 	fullArgs := append([]string{"/tmp/fvpn-usage-admin", "-config", "/etc/fvpn/central.json"}, args...)
 	return s.execInContainer("control", fullArgs...)
+}
+
+func (s *liveSuite) measureD067ProvisionalWindow(
+	cycleName string,
+	nodeService string,
+	nodeID uuid.UUID,
+	incarnationID uuid.UUID,
+	advanceDesired func(),
+	needSelectRoute bool,
+) d067CycleMeasurement {
+	s.stopNodeAgent(nodeService)
+
+	var oldAppliedGen uint64
+	var lastObsAt time.Time
+	var lastPayloadRaw []byte
+	if err := s.pool.QueryRow(s.ctx, `
+		SELECT n.applied_config_generation::bigint,
+		       COALESCE(n.last_observed_at, '1970-01-01T00:00:00Z'::timestamptz),
+		       (SELECT report_payload FROM node_observations WHERE node_id = n.id AND incarnation_id = $2 ORDER BY received_at DESC LIMIT 1)
+		FROM nodes n
+		WHERE n.id = $1
+	`, nodeID, incarnationID).Scan(&oldAppliedGen, &lastObsAt, &lastPayloadRaw); err != nil || len(lastPayloadRaw) == 0 {
+		s.t.Fatalf("D-067 %s: query baseline observation for %s failed: err=%v payloadLen=%d", cycleName, nodeID, err, len(lastPayloadRaw))
+	}
+
+	advanceDesired()
+
+	var targetDesiredGen uint64
+	if !s.waitFor(45*time.Second, func() bool {
+		err := s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, nodeID).Scan(&targetDesiredGen)
+		return err == nil && targetDesiredGen > oldAppliedGen
+	}) {
+		s.t.Fatalf("D-067 %s: desired_config_generation did not advance beyond %d (got %d)", cycleName, oldAppliedGen, targetDesiredGen)
+	}
+
+	// Ensure nodes.provisioning_state is 'applying' (via stale-generation observations at oldAppliedGen < targetDesiredGen)
+	var provState string
+	_ = s.pool.QueryRow(s.ctx, `SELECT provisioning_state FROM nodes WHERE id = $1`, nodeID).Scan(&provState)
+	for attempt := 0; attempt < 3 && provState != "applying"; attempt++ {
+		var staleRep api.ObservationReport
+		if err := json.Unmarshal(lastPayloadRaw, &staleRep); err != nil {
+			s.t.Fatalf("D-067 %s: unmarshal baseline observation report: %v", cycleName, err)
+		}
+		staleRep.ReportId = uuid.New()
+		obsAt := lastObsAt.UTC().Add(10 * time.Millisecond)
+		nowCheck := time.Now().UTC().Add(-500 * time.Millisecond)
+		if obsAt.After(nowCheck) {
+			time.Sleep(600 * time.Millisecond)
+		}
+		staleRep.ObservedAt = obsAt
+		staleRep.AppliedConfigGeneration.Set(decstr.U64(oldAppliedGen))
+		lastObsAt = obsAt
+		resp := s.agentCall(http.MethodPost, "/api/v1/agent/observations", staleRep, nil)
+		if resp.status != http.StatusAccepted {
+			s.t.Fatalf("D-067 %s: stale observation %d rejected: HTTP %d %s", cycleName, attempt, resp.status, string(resp.body))
+		}
+		time.Sleep(450 * time.Millisecond)
+		_ = s.pool.QueryRow(s.ctx, `SELECT provisioning_state FROM nodes WHERE id = $1`, nodeID).Scan(&provState)
+	}
+	if provState != "applying" {
+		s.t.Fatalf("D-067 %s: node %s did not enter provisioning_state=applying before agent start (got %q)", cycleName, nodeID, provState)
+	}
+
+	var maxLeaseBefore, maxObsBefore time.Time
+	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(MAX(issued_at), '1970-01-01T00:00:00Z'::timestamptz) FROM serving_leases WHERE node_id = $1 AND incarnation_id = $2`, nodeID, incarnationID).Scan(&maxLeaseBefore)
+	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(MAX(received_at), '1970-01-01T00:00:00Z'::timestamptz) FROM node_observations WHERE node_id = $1 AND incarnation_id = $2`, nodeID, incarnationID).Scan(&maxObsBefore)
+
+	s.startNodeAgent(nodeService)
+
+	// 1. Wait for provisional lease (members: [], 60s expiry) and awaiting_member_grants observation that flips node to ready
+	var provLeaseID uuid.UUID
+	var provLeaseGen uint64
+	var provLeaseIssued, provLeaseExpires time.Time
+	var provLeaseMembers int
+	var readyObsID uuid.UUID
+	var readyObsReceived time.Time
+	var readyObsRaw []byte
+
+	gotProvisionalAndReady := s.waitFor(45*time.Second, func() bool {
+		err1 := s.pool.QueryRow(s.ctx, `
+			SELECT id, policy_generation::bigint, issued_at, expires_at, jsonb_array_length(envelope->'signed'->'members')
+			FROM serving_leases
+			WHERE node_id = $1 AND incarnation_id = $2 AND issued_at > $3 AND policy_generation >= $4
+			  AND jsonb_array_length(envelope->'signed'->'members') = 0
+			ORDER BY issued_at ASC
+			LIMIT 1
+		`, nodeID, incarnationID, maxLeaseBefore, targetDesiredGen).Scan(&provLeaseID, &provLeaseGen, &provLeaseIssued, &provLeaseExpires, &provLeaseMembers)
+		if err1 != nil {
+			return false
+		}
+		err2 := s.pool.QueryRow(s.ctx, `
+			SELECT report_id, received_at, report_payload
+			FROM node_observations
+			WHERE node_id = $1 AND incarnation_id = $2 AND received_at > $3 AND applied_generation >= $4
+			  AND safety_status = 'passed'
+			  AND report_payload->>'provisioning_state' = 'ready'
+			  AND report_payload->'forwarding_block_reasons' @> '["awaiting_member_grants"]'::jsonb
+			ORDER BY received_at ASC
+			LIMIT 1
+		`, nodeID, incarnationID, maxObsBefore, targetDesiredGen).Scan(&readyObsID, &readyObsReceived, &readyObsRaw)
+		return err2 == nil
+	})
+	if !gotProvisionalAndReady {
+		s.t.Fatalf("D-067 %s: did not observe provisional lease (members:[]) and awaiting_member_grants observation on %s", cycleName, nodeID)
+	}
+
+	var readyObs api.ObservationReport
+	if err := json.Unmarshal(readyObsRaw, &readyObs); err != nil {
+		s.t.Fatalf("D-067 %s: unmarshal ready observation: %v", cycleName, err)
+	}
+	blockReasons := make([]string, 0, len(readyObs.ForwardingBlockReasons))
+	for _, r := range readyObs.ForwardingBlockReasons {
+		blockReasons = append(blockReasons, string(r))
+	}
+	checkCodes := make(map[string]string)
+	for _, ch := range readyObs.Checks {
+		if ch.Name == api.NodeCheckNameLease || ch.Name == api.NodeCheckNameQos || ch.Name == api.NodeCheckNameSourceBinding {
+			if code, err := ch.ErrorCode.Get(); err == nil {
+				checkCodes[string(ch.Name)] = string(code)
+			} else {
+				checkCodes[string(ch.Name)] = string(ch.Status)
+			}
+		}
+	}
+	provTTL := int64(provLeaseExpires.Sub(provLeaseIssued).Seconds())
+	if provTTL != 60 || provLeaseMembers != 0 || readyObs.MemberForwardingEnabled ||
+		checkCodes["lease"] != "AWAITING_MEMBER_GRANTS" ||
+		checkCodes["qos"] != "AWAITING_MEMBER_GRANTS" ||
+		checkCodes["source_binding"] != "AWAITING_MEMBER_GRANTS" ||
+		len(readyObs.Errors) != 1 || readyObs.Errors[0].Stage != "lease" || readyObs.Errors[0].Code != api.ErrorCodeAWAITINGMEMBERGRANTS {
+		s.t.Fatalf("D-067 %s: invalid provisional lease/observation evidence: ttl=%ds members=%d checks=%v errors=%+v reasons=%v",
+			cycleName, provTTL, provLeaseMembers, checkCodes, readyObs.Errors, blockReasons)
+	}
+
+	// 2. Wait for populated lease (members > 0, 86400s expiry) to be in force on node (heartbeat serving 1 + device counters)
+	var popLeaseID uuid.UUID
+	var popLeaseGen uint64
+	var popLeaseIssued, popLeaseExpires, popInForceAt time.Time
+	var popLeaseMembers int
+
+	gotPopulatedInForce := s.waitFor(75*time.Second, func() bool {
+		err := s.pool.QueryRow(s.ctx, `
+			SELECT id, policy_generation::bigint, issued_at, expires_at, jsonb_array_length(envelope->'signed'->'members')
+			FROM serving_leases
+			WHERE node_id = $1 AND incarnation_id = $2 AND issued_at >= $3 AND policy_generation >= $4
+			  AND jsonb_array_length(envelope->'signed'->'members') > 0
+			ORDER BY issued_at ASC
+			LIMIT 1
+		`, nodeID, incarnationID, provLeaseIssued, targetDesiredGen).Scan(&popLeaseID, &popLeaseGen, &popLeaseIssued, &popLeaseExpires, &popLeaseMembers)
+		if err != nil || popLeaseMembers == 0 {
+			return false
+		}
+		hb, code, _ := s.execInContainer(nodeService, "cat", "/run/vpn-node/heartbeat")
+		if code != 0 || !strings.Contains(string(hb), "serving 1") {
+			return false
+		}
+		_, _, gen, _, ok := s.deviceCounters(nodeService, s.deviceA)
+		if !ok || gen == 0 {
+			return false
+		}
+		popInForceAt = time.Now().UTC()
+		return true
+	})
+	if !gotPopulatedInForce {
+		s.t.Fatalf("D-067 %s: populated lease did not enter force on %s", cycleName, nodeID)
+	}
+
+	// Ensure exit publication_observed is active before sending member traffic
+	if !s.waitFor(60*time.Second, func() bool {
+		var pubObs string
+		err := s.pool.QueryRow(s.ctx, `SELECT COALESCE(publication_observed, '') FROM exits WHERE node_id = $1`, nodeID).Scan(&pubObs)
+		return err == nil && pubObs == "active"
+	}) {
+		s.t.Fatalf("D-067 %s: exits.publication_observed did not reach active for %s", cycleName, nodeID)
+	}
+
+	if needSelectRoute {
+		originIP, _ := s.originAndSNAT(nodeService)
+		netListA, routedA := s.selectExitRoute("member", s.exitNetID, originIP)
+		if !routedA {
+			s.t.Fatalf("D-067 %s: member route selection for %s failed: %s", cycleName, s.exitNetID, netListA)
+		}
+		netListB, routedB := s.selectExitRoute("member-b", s.exitNetID, originIP)
+		if !routedB {
+			s.t.Fatalf("D-067 %s: member-b route selection for %s failed: %s", cycleName, s.exitNetID, netListB)
+		}
+	}
+
+	tr := s.runCountedTransfer("member", nodeService, s.deviceA, 1)
+	firstCountedByteAt := time.Now().UTC()
+
+	// Verify LEASE_EXPIRED / lease_expired was NEVER reported in any observation during the window
+	var leaseExpiredCount int
+	_ = s.pool.QueryRow(s.ctx, `
+		SELECT count(*)
+		FROM node_observations
+		WHERE node_id = $1 AND incarnation_id = $2 AND received_at > $3
+		  AND (
+			report_payload->'forwarding_block_reasons' @> '["lease_expired"]'::jsonb
+			OR report_payload::text LIKE '%LEASE_EXPIRED%'
+		  )
+	`, nodeID, incarnationID, maxObsBefore).Scan(&leaseExpiredCount)
+
+	readyToPopMs := popInForceAt.Sub(readyObsReceived).Milliseconds()
+	if readyToPopMs < 0 {
+		readyToPopMs = 0
+	}
+	readyToFirstByteMs := firstCountedByteAt.Sub(readyObsReceived).Milliseconds()
+	if readyToFirstByteMs < 0 {
+		readyToFirstByteMs = 0
+	}
+	const maxWindowMs = 65000 // 60s central backstop + 5s (1 heartbeat interval)
+	popTTL := int64(popLeaseExpires.Sub(popLeaseIssued).Seconds())
+
+	if !tr.Counted || leaseExpiredCount != 0 || readyToPopMs > maxWindowMs || readyToFirstByteMs > maxWindowMs {
+		s.t.Fatalf("D-067 %s assertion failed: counted=%t leaseExpiredCount=%d readyToPopMs=%d readyToFirstByteMs=%d (max %d)",
+			cycleName, tr.Counted, leaseExpiredCount, readyToPopMs, readyToFirstByteMs, maxWindowMs)
+	}
+
+	return d067CycleMeasurement{
+		Cycle:                            cycleName,
+		NodeID:                           nodeID,
+		IncarnationID:                    incarnationID,
+		OldAppliedGeneration:             oldAppliedGen,
+		TargetDesiredGeneration:          targetDesiredGen,
+		ProvisionalLeaseID:               provLeaseID,
+		ProvisionalLeaseGeneration:       provLeaseGen,
+		ProvisionalLeaseIssuedAt:         provLeaseIssued.UTC().Format(time.RFC3339Nano),
+		ProvisionalLeaseExpiresAt:        provLeaseExpires.UTC().Format(time.RFC3339Nano),
+		ProvisionalLeaseTTLSeconds:       provTTL,
+		ProvisionalLeaseMemberCount:      provLeaseMembers,
+		ReadyObservationReportID:         readyObsID,
+		ReadyObservationReceivedAt:       readyObsReceived.UTC().Format(time.RFC3339Nano),
+		ForwardingBlockReasons:           blockReasons,
+		CheckErrorCodes:                  checkCodes,
+		Errors:                           readyObs.Errors,
+		LeaseExpiredReportedDuringWindow: leaseExpiredCount > 0,
+		PopulatedLeaseID:                 popLeaseID,
+		PopulatedLeaseGeneration:         popLeaseGen,
+		PopulatedLeaseIssuedAt:           popLeaseIssued.UTC().Format(time.RFC3339Nano),
+		PopulatedLeaseExpiresAt:          popLeaseExpires.UTC().Format(time.RFC3339Nano),
+		PopulatedLeaseTTLSeconds:         popTTL,
+		PopulatedLeaseMemberCount:        popLeaseMembers,
+		PopulatedLeaseInForceAt:          popInForceAt.UTC().Format(time.RFC3339Nano),
+		FirstCountedByteAt:               firstCountedByteAt.UTC().Format(time.RFC3339Nano),
+		ReadyToPopulatedLeaseMs:          readyToPopMs,
+		ReadyToFirstCountedByteMs:        readyToFirstByteMs,
+		MaxAllowedWindowMs:               maxWindowMs,
+		FirstCountedTransfer:             tr,
+	}
+}
+
+func (s *liveSuite) enrollNonCarryingNode() (uuid.UUID, uuid.UUID) {
+	name := "TEST ONLY w4-usage non-carrying node"
+	createResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/enrollments", api.EnrollmentCreateRequest{
+		Delivery: api.EnrollmentDeliveryInstaller,
+		Name:     &name,
+	}, idemHeaders())
+	var created api.EnrollmentCreated
+	if createResp.status != http.StatusCreated || json.Unmarshal(createResp.body, &created) != nil {
+		s.t.Fatalf("create non-carrying enrollment failed: HTTP %d %s", createResp.status, string(createResp.body))
+	}
+	token, err := created.Token.Get()
+	if err != nil || !created.SecretAvailable {
+		s.t.Fatalf("non-carrying enrollment token missing: %v", err)
+	}
+	s.extraRedactions = append(s.extraRedactions, token)
+
+	incID := uuid.Must(uuid.NewV7())
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		s.t.Fatalf("generate P-256 key: %v", err)
+	}
+	csrDER, err := x509.CreateCertificateRequest(rand.Reader, &x509.CertificateRequest{
+		Subject: pkix.Name{CommonName: incID.String()},
+	}, priv)
+	if err != nil {
+		s.t.Fatalf("create CSR: %v", err)
+	}
+	csrPEM := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrDER}))
+	enrollReq := map[string]any{
+		"csr_pem":               csrPEM,
+		"enrollment_request_id": uuid.Must(uuid.NewV7()),
+		"node_incarnation_id":   incID,
+		"platform": map[string]any{
+			"agent_version": "0.1.0",
+			"arch":          "amd64",
+			"kernel":        "6.8.0",
+			"os":            "ubuntu-24.04",
+		},
+	}
+	enrollResp := s.doHTTP(nil, http.MethodPost, "https://agent.example.invalid:9443/api/v1/agent/enroll", enrollReq, map[string]string{
+		"Authorization": "Bearer " + token,
+	})
+	if enrollResp.status != http.StatusOK {
+		s.t.Fatalf("POST /api/v1/agent/enroll for non-carrying node failed: HTTP %d %s", enrollResp.status, string(enrollResp.body))
+	}
+	nodeID := created.Enrollment.NodeId
+	s.t.Cleanup(func() {
+		_ = s.nodeMutation(nodeID, http.MethodDelete, "", map[string]any{"reason": "TEST ONLY cleanup non-carrying node"})
+	})
+	return nodeID, incID
+}
+
+func (s *liveSuite) queryDesiredGenerations(nodes ...uuid.UUID) map[string]uint64 {
+	out := make(map[string]uint64, len(nodes))
+	for _, id := range nodes {
+		var gen uint64
+		_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, id).Scan(&gen)
+		out[id.String()] = gen
+	}
+	return out
+}
+
+func (s *liveSuite) queryFUPMemberState(memberID string) (gen uint64, mode string, tierIdx int, downBPS int64, upBPS int64) {
+	_ = s.pool.QueryRow(s.ctx, `
+		SELECT generation::bigint, mode, COALESCE(enforced_tier_index, would_apply_tier_index, 0),
+		       COALESCE(enforced_down_bps, would_apply_down_bps, 0),
+		       COALESCE(enforced_up_bps, would_apply_up_bps, 0)
+		FROM fup_member_states
+		WHERE member_id = $1
+		ORDER BY updated_at DESC
+		LIMIT 1
+	`, memberID).Scan(&gen, &mode, &tierIdx, &downBPS, &upBPS)
+	return
+}
+
+func sameIncarnationUsage(a, b api.NodeIncarnationUsage) bool {
+	if a.UploadBytes != b.UploadBytes || a.DownloadBytes != b.DownloadBytes {
+		return false
+	}
+	if a.Through.IsNull() != b.Through.IsNull() {
+		return false
+	}
+	if a.Through.IsNull() {
+		return true
+	}
+	ta, errA := a.Through.Get()
+	tb, errB := b.Through.Get()
+	return errA == nil && errB == nil && ta.Equal(tb)
+}
+
+func (s *liveSuite) queryMemberUsagePeriodRow(memberID string) map[string]string {
+	var periodID, up, down, total string
+	_ = s.pool.QueryRow(s.ctx, `
+		SELECT period_id, upload_bytes::text, download_bytes::text, total_bytes::text
+		FROM member_usage_periods
+		WHERE member_id = $1
+		ORDER BY period_start DESC
+		LIMIT 1
+	`, memberID).Scan(&periodID, &up, &down, &total)
+	return map[string]string{
+		"period_id":      periodID,
+		"upload_bytes":   up,
+		"download_bytes": down,
+		"total_bytes":    total,
+	}
+}
+
+func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMeasurement {
+	oldInc2 := s.incarnation2ID
+
+	// 1. Snapshot GET /api/v1/admin/nodes/{node2_id}/incarnations and member usage before revoke/reinstall
+	incBeforeResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)
+	var incBefore api.NodeIncarnationList
+	if incBeforeResp.status != http.StatusOK || json.Unmarshal(incBeforeResp.body, &incBefore) != nil || len(incBefore.Items) != 1 {
+		s.t.Fatalf("ENR-03 GET /incarnations before revoke failed: HTTP %d %s", incBeforeResp.status, string(incBeforeResp.body))
+	}
+	oldUsage := incBefore.Items[0].Usage
+	if incBefore.Items[0].IncarnationId != oldInc2 || !incBefore.Items[0].Current ||
+		incBefore.Items[0].State != api.NodeIncarnationStateActive ||
+		uint64(oldUsage.UploadBytes) == 0 || uint64(oldUsage.DownloadBytes) == 0 || oldUsage.Through.IsNull() {
+		s.t.Fatalf("ENR-03 unexpected active incarnation summary before revoke: %+v", incBefore.Items[0])
+	}
+
+	memBeforeResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+	var memBefore api.MemberUsage
+	_ = json.Unmarshal(memBeforeResp.body, &memBefore)
+	dbBefore := s.queryMemberUsagePeriodRow(s.memberA.memberID)
+
+	// 2. Verify bound enrollment while incarnation is active is rejected with 409 NODE_INCARNATION_ACTIVE
+	reinstallName := "TEST ONLY w4-usage node2 reinstall"
+	activeRejectResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/enrollments", api.EnrollmentCreateRequest{
+		Delivery: api.EnrollmentDeliveryInstaller,
+		NodeId:   &s.node2ID,
+		Name:     &reinstallName,
+	}, idemHeaders())
+	if activeRejectResp.status != http.StatusConflict || activeRejectResp.code != "NODE_INCARNATION_ACTIVE" {
+		s.t.Fatalf("ENR-03 expected 409 NODE_INCARNATION_ACTIVE before revoke, got HTTP %d %s", activeRejectResp.status, string(activeRejectResp.body))
+	}
+
+	// 3. Stop node2 agent so no further samples occur on oldInc2, then revoke node2 via POST /api/v1/admin/nodes/{id}/revoke
+	s.stopNodeAgent("node2")
+	revResp := s.nodeMutation(s.node2ID, http.MethodPost, "/revoke", map[string]any{
+		"reason": "TEST ONLY AT19 ENR-03 revoke before reinstall",
+	})
+	var revOp api.OperationAccepted
+	if revResp.status != http.StatusAccepted || json.Unmarshal(revResp.body, &revOp) != nil {
+		s.t.Fatalf("ENR-03 POST /api/v1/admin/nodes/%s/revoke failed: HTTP %d %s", s.node2ID, revResp.status, string(revResp.body))
+	}
+	_ = s.waitFor(45*time.Second, func() bool {
+		r := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/operations/"+revOp.OperationId.String(), nil, nil)
+		var op api.Operation
+		return r.status == http.StatusOK && json.Unmarshal(r.body, &op) == nil &&
+			(op.Status == api.OperationStatusSucceeded || op.Status == api.OperationStatusPartiallySucceeded)
+	})
+
+	incRevokedResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)
+	var incRevoked api.NodeIncarnationList
+	_ = json.Unmarshal(incRevokedResp.body, &incRevoked)
+	if incRevokedResp.status != http.StatusOK || len(incRevoked.Items) != 1 ||
+		incRevoked.Items[0].State != api.NodeIncarnationStateRetired ||
+		!sameIncarnationUsage(incRevoked.Items[0].Usage, oldUsage) {
+		s.t.Fatalf("ENR-03 GET /incarnations after revoke mismatch: %+v", incRevoked)
+	}
+
+	// 4. Wipe node2 container local disk state and recreate fresh node2 slot, then issue bound reinstall token for s.node2ID
+	absStateDir := s.stateDir
+	if !filepath.IsAbs(absStateDir) {
+		absStateDir = filepath.Join(s.root, absStateDir)
+	}
+	s.cleanupDocker("rm", "-f", s.containerName("node2"), s.containerName("node2-adguard"), s.containerName("node2-netns"))
+	s.cleanupDocker("run", "--rm", "--name", s.containerName("node2-cleanup"), "--entrypoint", "/bin/rm", "-v", absStateDir+":/state", s.imageDigests["node"], "-rf", "/state/node2")
+	_ = os.RemoveAll(filepath.Join(absStateDir, "node2"))
+	if err := s.hook.StartSecondExit(s.ctx); err != nil {
+		s.t.Fatalf("ENR-03 StartSecondExit for reinstall: %v", err)
+	}
+
+	enrollCreateResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/enrollments", api.EnrollmentCreateRequest{
+		Delivery: api.EnrollmentDeliveryInstaller,
+		NodeId:   &s.node2ID,
+		Name:     &reinstallName,
+	}, idemHeaders())
+	var enrollCreated api.EnrollmentCreated
+	if enrollCreateResp.status != http.StatusCreated || json.Unmarshal(enrollCreateResp.body, &enrollCreated) != nil || enrollCreated.Enrollment.NodeId != s.node2ID {
+		s.t.Fatalf("ENR-03 bound POST /api/v1/admin/enrollments failed: HTTP %d %s", enrollCreateResp.status, string(enrollCreateResp.body))
+	}
+	token, err := enrollCreated.Token.Get()
+	if err != nil || !enrollCreated.SecretAvailable {
+		s.t.Fatalf("ENR-03 bound enrollment token missing: %v", err)
+	}
+	s.extraRedactions = append(s.extraRedactions, token)
+
+	tokenDir := filepath.Join(absStateDir, "node2", "var", "e2e")
+	if err := os.MkdirAll(tokenDir, 0o700); err != nil {
+		s.t.Fatalf("ENR-03 mkdir %s: %v", tokenDir, err)
+	}
+	tokenPath := filepath.Join(tokenDir, "enrollment.token")
+	if err := os.WriteFile(tokenPath+".tmp", []byte(token+"\n"), 0o600); err != nil || os.Rename(tokenPath+".tmp", tokenPath) != nil {
+		s.t.Fatalf("ENR-03 write enrollment.token failed: %v", err)
+	}
+
+	if !s.waitFor(180*time.Second, func() bool {
+		raw, code, err := s.execInContainer("node2", "cat", "/var/lib/vpn-node/e2e/netbird.json")
+		return err == nil && code == 0 && strings.Contains(string(raw), `"netbird_up"`)
+	}) {
+		s.t.Fatalf("ENR-03 node2 reinstall netbird_up timed out")
+	}
+
+	identRaw, identCode, identErr := s.execInContainer("node2", "cat", "/var/lib/vpn-node/identity/node.json")
+	var newIdent struct {
+		NodeID            uuid.UUID `json:"node_id"`
+		NodeIncarnationID uuid.UUID `json:"node_incarnation_id"`
+	}
+	if identErr != nil || identCode != 0 || json.Unmarshal(identRaw, &newIdent) != nil ||
+		newIdent.NodeID != s.node2ID || newIdent.NodeIncarnationID == uuid.Nil || newIdent.NodeIncarnationID == oldInc2 {
+		s.t.Fatalf("ENR-03 reinstalled node2 identity mismatch: %s", string(identRaw))
+	}
+	newInc2 := newIdent.NodeIncarnationID
+	s.incarnation2ID = newInc2
+
+	// 5. Inspect GET /api/v1/admin/nodes/{node2_id}/incarnations and member usage immediately after reinstall (before publishing/traffic)
+	incReinstalledResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)
+	var incReinstalled api.NodeIncarnationList
+	_ = json.Unmarshal(incReinstalledResp.body, &incReinstalled)
+	memReinstalledResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+	var memReinstalled api.MemberUsage
+	_ = json.Unmarshal(memReinstalledResp.body, &memReinstalled)
+	dbReinstalled := s.queryMemberUsagePeriodRow(s.memberA.memberID)
+
+	retireReasonReinstall, reasonErr := incReinstalled.Items[1].RetireReason.Get()
+	memberUnchangedOnReenroll := memReinstalled.Totals.TotalBytes == memBefore.Totals.TotalBytes &&
+		memReinstalled.Totals.UploadBytes == memBefore.Totals.UploadBytes &&
+		memReinstalled.Totals.DownloadBytes == memBefore.Totals.DownloadBytes &&
+		dbReinstalled["total_bytes"] == dbBefore["total_bytes"]
+
+	if incReinstalledResp.status != http.StatusOK || len(incReinstalled.Items) != 2 ||
+		incReinstalled.Items[0].IncarnationId != newInc2 || !incReinstalled.Items[0].Current ||
+		incReinstalled.Items[0].State != api.NodeIncarnationStateActive ||
+		uint64(incReinstalled.Items[0].Usage.UploadBytes) != 0 || uint64(incReinstalled.Items[0].Usage.DownloadBytes) != 0 || !incReinstalled.Items[0].Usage.Through.IsNull() ||
+		incReinstalled.Items[1].IncarnationId != oldInc2 || incReinstalled.Items[1].Current ||
+		incReinstalled.Items[1].State != api.NodeIncarnationStateRetired ||
+		reasonErr != nil || retireReasonReinstall != api.NodeIncarnationRetireReasonReinstall ||
+		!sameIncarnationUsage(incReinstalled.Items[1].Usage, oldUsage) || !memberUnchangedOnReenroll {
+		s.t.Fatalf("ENR-03 post-reinstall check failed: inc=%+v memBefore=%+v memAfter=%+v", incReinstalled, memBefore.Totals, memReinstalled.Totals)
+	}
+
+	// 6. Publish node2 under newInc2, route memberA traffic through node2, flush usage upload, and verify retained vs new usage
+	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, 15000000, 8000000)
+	if !s.waitNodeServingAndPublished("node2", s.node2ID, s.deviceA) {
+		s.t.Fatalf("ENR-03 reinstalled node2 %s did not converge to serving=1 + publication_observed=active", s.node2ID)
+	}
+	originIP, _ := s.originAndSNAT("node2")
+	if _, routed := s.selectExitRoute("member", s.exit2NetID, originIP); !routed {
+		s.t.Fatalf("ENR-03 selectExitRoute to reinstalled node2 (%s) failed", s.exit2NetID)
+	}
+	trNew := s.runCountedTransfer("member", "node2", s.deviceA, 3)
+	if !trNew.Counted {
+		s.t.Fatalf("ENR-03 counted transfer on reinstalled node2 failed: %+v", trNew)
+	}
+	s.flushNodeUsageUpload("node2", s.node2ID)
+	_, _ = s.selectExitRoute("member", s.exitNetID, originIP)
+
+	incAfterTrafficResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)
+	var incAfterTraffic api.NodeIncarnationList
+	_ = json.Unmarshal(incAfterTrafficResp.body, &incAfterTraffic)
+	memAfterTrafficResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+	var memAfterTraffic api.MemberUsage
+	_ = json.Unmarshal(memAfterTrafficResp.body, &memAfterTraffic)
+	dbAfterTraffic := s.queryMemberUsagePeriodRow(s.memberA.memberID)
+
+	newIncUsage := incAfterTraffic.Items[0].Usage
+	oldUsageFixed := len(incAfterTraffic.Items) == 2 &&
+		incAfterTraffic.Items[1].IncarnationId == oldInc2 &&
+		sameIncarnationUsage(incAfterTraffic.Items[1].Usage, oldUsage)
+	newTrafficAccumulated := uint64(newIncUsage.UploadBytes) > 0 &&
+		uint64(newIncUsage.DownloadBytes) > 0 &&
+		!newIncUsage.Through.IsNull() &&
+		uint64(memAfterTraffic.Totals.UploadBytes) == uint64(memBefore.Totals.UploadBytes)+uint64(newIncUsage.UploadBytes) &&
+		uint64(memAfterTraffic.Totals.DownloadBytes) == uint64(memBefore.Totals.DownloadBytes)+uint64(newIncUsage.DownloadBytes) &&
+		uint64(memAfterTraffic.Totals.TotalBytes) == uint64(memBefore.Totals.TotalBytes)+uint64(newIncUsage.UploadBytes)+uint64(newIncUsage.DownloadBytes)
+
+	if !oldUsageFixed || !newTrafficAccumulated {
+		s.t.Fatalf("ENR-03 post-traffic retention check failed: oldUsageFixed=%t newTrafficAccumulated=%t incAfter=%+v memBefore=%+v memAfter=%+v",
+			oldUsageFixed, newTrafficAccumulated, incAfterTraffic, memBefore.Totals, memAfterTraffic.Totals)
+	}
+
+	return incarnationRetentionMeasurement{
+		NodeID:                         s.node2ID,
+		OldIncarnationID:               oldInc2,
+		NewIncarnationID:               newInc2,
+		ActiveReenrollRejected409Code:  activeRejectResp.code,
+		IncarnationsBeforeRevoke:       incBefore,
+		IncarnationsAfterRevoke:        incRevoked,
+		IncarnationsAfterReinstall:     incReinstalled,
+		IncarnationsAfterNewTraffic:    incAfterTraffic,
+		MemberTotalsBeforeReinstall:    memBefore.Totals,
+		MemberTotalsAfterReinstall:     memReinstalled.Totals,
+		MemberTotalsAfterNewTraffic:    memAfterTraffic.Totals,
+		DBPeriodTotalsBeforeReinstall:  dbBefore,
+		DBPeriodTotalsAfterReinstall:   dbReinstalled,
+		DBPeriodTotalsAfterNewTraffic:  dbAfterTraffic,
+		NewIncarnationCountedTransfer:  trNew,
+		OldIncarnationUsageFixed:       oldUsageFixed,
+		MemberTotalUnchangedOnReenroll: memberUnchangedOnReenroll,
+		NewTrafficAccumulatedSameMonth: newTrafficAccumulated,
+	}
 }

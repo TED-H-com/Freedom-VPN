@@ -169,6 +169,7 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	}
 	rec.Observations["sqlite_usage_db"] = sqlSnap
 	rec.Observations["member_usage_api"] = memUsage
+	rec.Observations["d067_provisional_lease_bring_up"] = s.d067BringUp
 	rec.Actual = fmt.Sprintf("Live serving exit %s (incarnation %s, exit %s) metered admitted HTTPS traffic for memberA device %s within ±1%% (u=%d, d=%d bytes; diff %.3f%%/%.3f%%), isolated memberB counters (delta 0), excluded blocked RFC1918 (fvmb0 ingress +%d B, member delta 0) and node-local input (:53 ctin +%d B, member delta 0), and uploaded %d UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=%s.",
 		s.nodeID, s.incarnationID, s.exitID, s.deviceA, curUp, curDown, upDiffPct, downDiffPct, rfcIngressBytes, dnsInDelta, pgEventsCount, memUsage.Totals.TotalBytes)
 	return rec
@@ -211,6 +212,27 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 		Command:  "Restart fvpn-agent on node + counted HTTPS transfer + inspect usage.db & usage_samples",
 		ExitCode: 0,
 		Output:   fmt.Sprintf("next_seq=%d->%d last_close_reason=%s kernel=%d/%d pg_samples=%d/%d (zero double-counting)", snapBeforeRestart.NextSeq, snapAfterRestart.NextSeq, snapAfterRestart.LastCloseReason, curUpAfterRestart, curDownAfterRestart, sumUpAfterRestart, sumDownAfterRestart),
+		At:       time.Now().UTC().Format(time.RFC3339),
+	})
+
+	// 1b. D-067 Cycle 2 (after an agent restart): measure provisional lease window (applying -> awaiting_member_grants -> ready -> populated lease -> first counted byte)
+	s.d067Restart = s.measureD067ProvisionalWindow("agent_restart", "node", s.nodeID, s.incarnationID, func() {
+		patchResp := s.nodeMutation(s.nodeID, http.MethodPatch, "", map[string]any{
+			"capacity": map[string]any{
+				"up_bps":              1000000000,
+				"down_bps":            1000000000,
+				"member_up_bps_cap":   30000000,
+				"member_down_bps_cap": 60000000,
+			},
+		})
+		if patchResp.status != http.StatusOK && patchResp.status != http.StatusAccepted {
+			t.Fatalf("AT16 D-067 Cycle 2 PATCH /api/v1/admin/nodes/%s failed: HTTP %d %s", s.nodeID, patchResp.status, string(patchResp.body))
+		}
+	}, false)
+	rec.Commands = append(rec.Commands, CommandRecord{
+		Command:  "D-067 Cycle 2 (agent_restart): restart fvpn-agent on node while provisioning_state=applying & measure provisional-lease recovery",
+		ExitCode: 0,
+		Output:   fmt.Sprintf("provisional_lease=%s (ttl=%ds, members=%d) ready_obs=%s (reasons=%v, checks=%v, errors=%d) populated_lease=%s (members=%d) ready_to_populated_ms=%d ready_to_first_byte_ms=%d (max=%d, lease_expired_reported=%t)", s.d067Restart.ProvisionalLeaseID, s.d067Restart.ProvisionalLeaseTTLSeconds, s.d067Restart.ProvisionalLeaseMemberCount, s.d067Restart.ReadyObservationReportID, s.d067Restart.ForwardingBlockReasons, s.d067Restart.CheckErrorCodes, len(s.d067Restart.Errors), s.d067Restart.PopulatedLeaseID, s.d067Restart.PopulatedLeaseMemberCount, s.d067Restart.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToFirstCountedByteMs, s.d067Restart.MaxAllowedWindowMs, s.d067Restart.LeaseExpiredReportedDuringWindow),
 		At:       time.Now().UTC().Format(time.RFC3339),
 	})
 
@@ -278,6 +300,12 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 			Status:  StatusPass,
 			Summary: fmt.Sprintf("Live node %s preserved monotonic event_seq (%d->%d) across restart without double-counting, emitted counter_discontinuity gap on live `nft reset counters table inet fvpn` (propagated to usage_ledger_gaps and GET /api/v1/member/usage), and withdrew forwarding to generation 0 via fvpn-watchdog while keeping mTLS desired-state HTTP 200.", s.containerName("node"), snapBeforeRestart.NextSeq, snapAfterRestart.NextSeq),
 		},
+		MechanismCheck{
+			Name:    "LiveD067ProvisionalLeaseTimingBringUpAndAgentRestart",
+			SpecRef: "§5.1, §8.1, §16.3, D-067, MTR01, UPD03",
+			Status:  StatusPass,
+			Summary: fmt.Sprintf("D-067 provisional lease (members:[], 60s central backstop) reported awaiting_member_grants (AWAITING_MEMBER_GRANTS on lease/qos/source_binding, 1 errors[] entry at stage=lease, zero LEASE_EXPIRED) and recovered to populated lease + counted traffic in %dms/%dms (bring_up) and %dms/%dms (agent_restart), both <= 65000ms.", s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067BringUp.ReadyToFirstCountedByteMs, s.d067Restart.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToFirstCountedByteMs),
+		},
 	)
 	mechChecks, mechObs := RunAT16Mechanisms(t)
 	rec.MechanismChecks = append(rec.MechanismChecks, mechChecks...)
@@ -287,14 +315,16 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 	rec.Observations["sqlite_before_restart"] = snapBeforeRestart
 	rec.Observations["sqlite_after_restart"] = snapAfterRestart
 	rec.Observations["sqlite_after_counter_reset"] = snapAfterReset
+	rec.Observations["d067_provisional_lease_bring_up"] = s.d067BringUp
+	rec.Observations["d067_provisional_lease_agent_restart"] = s.d067Restart
 	rec.Observations["watchdog_fail_closed"] = map[string]any{
 		"withdrawn_generation":          genWithdrawn,
 		"member_http200_when_withdrawn": trBlocked.HTTP200,
 		"control_mtls_status":           dsWhileWithdrawn.status,
 		"restored_transfer_counted":     trRestored.Counted,
 	}
-	rec.Actual = fmt.Sprintf("Live node %s verified sampler restart continuity (event_seq %d->%d, zero double-counted bytes), live kernel `nft reset counters` detection emitting a counter_discontinuity gap event into usage.db and PostgreSQL usage_ledger_gaps (setting GET /api/v1/member/usage quality.gap=true), and live fail-closed forwarding withdrawal via fvpn-watchdog (generation=0, member HTTP blocked, mTLS control HTTP 200) followed by full serving restoration.",
-		s.containerName("node"), snapBeforeRestart.NextSeq, snapAfterRestart.NextSeq)
+	rec.Actual = fmt.Sprintf("Live node %s verified sampler restart continuity (event_seq %d->%d, zero double-counted bytes), D-067 provisional-lease recovery across bring_up (%dms to populated lease, %dms to first counted byte) and agent_restart (%dms to populated lease, %dms to first counted byte, <= 65000ms, zero LEASE_EXPIRED), live kernel `nft reset counters` detection emitting a counter_discontinuity gap event into usage.db and PostgreSQL usage_ledger_gaps (setting GET /api/v1/member/usage quality.gap=true), and live fail-closed forwarding withdrawal via fvpn-watchdog (generation=0, member HTTP blocked, mTLS control HTTP 200) followed by full serving restoration.",
+		s.containerName("node"), snapBeforeRestart.NextSeq, snapAfterRestart.NextSeq, s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067BringUp.ReadyToFirstCountedByteMs, s.d067Restart.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToFirstCountedByteMs)
 	return rec
 }
 
@@ -600,7 +630,8 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 	rec.Observations["live_recovery_epoch_before"] = cp0Signed.LedgerEpoch.String()
 	rec.Observations["live_recovery_epoch_after"] = cpRecSigned.LedgerEpoch.String()
 	rec.Observations["live_final_highest_contiguous_seq"] = reconcileAck.HighestContiguousSeq.String()
-	rec.Actual = fmt.Sprintf("Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on serving node %s (incarnation %s) verified real agent-uploaded ledger events (1..%d), bound member UsageRecord ingestion, out-of-order {%d,%d} -> gap fill %d advancing highest_contiguous_seq to %d, batch/event replay with zero double-counting, payload_sha256 conflict audit (rows=%d), rejected >2^53 event blocked_seq=%d advancing to %d, and live §17.3 ledger recovery via fvpn-usage-admin (freeze 503, begin-recovery epoch %s -> %s, replay_unavailable seq %d tombstone, and complete-recovery).",
-		s.nodeID, s.incarnationID, baseSeq, s1, s3, s2, s3, conflictAuditRows, s5, s6, cp0Signed.LedgerEpoch, cpRecSigned.LedgerEpoch, s7)
+	rec.Observations["enr03_per_incarnation_retained_usage"] = s.incarnationRetention
+	rec.Actual = fmt.Sprintf("Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on serving node %s (incarnation %s) verified real agent-uploaded ledger events (1..%d), bound member UsageRecord ingestion, out-of-order {%d,%d} -> gap fill %d advancing highest_contiguous_seq to %d, batch/event replay with zero double-counting, payload_sha256 conflict audit (rows=%d), rejected >2^53 event blocked_seq=%d advancing to %d, live §17.3 ledger recovery via fvpn-usage-admin (freeze 503, begin-recovery epoch %s -> %s, replay_unavailable seq %d tombstone, and complete-recovery), and ENR-03 per-incarnation retained usage across node2 re-enrollment (%s -> %s).",
+		s.nodeID, s.incarnationID, baseSeq, s1, s3, s2, s3, conflictAuditRows, s5, s6, cp0Signed.LedgerEpoch, cpRecSigned.LedgerEpoch, s7, s.incarnationRetention.OldIncarnationID, s.incarnationRetention.NewIncarnationID)
 	return rec
 }

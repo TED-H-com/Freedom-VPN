@@ -77,15 +77,17 @@ type liveSuite struct {
 	memberA *browserSession
 	memberB *browserSession
 
-	groupID        uuid.UUID
-	nodeID         uuid.UUID
-	incarnationID  uuid.UUID
-	exitID         uuid.UUID
-	exitNetID      string
-	node2ID        uuid.UUID
-	incarnation2ID uuid.UUID
-	exit2ID        uuid.UUID
-	exit2NetID     string
+	groupID            uuid.UUID
+	nodeID             uuid.UUID
+	incarnationID      uuid.UUID
+	exitID             uuid.UUID
+	exitNetID          string
+	node2ID            uuid.UUID
+	incarnation2ID     uuid.UUID
+	exit2ID            uuid.UUID
+	exit2NetID         string
+	otherNodeID        uuid.UUID
+	otherIncarnationID uuid.UUID
 
 	deviceA           uuid.UUID
 	deviceB           uuid.UUID
@@ -104,9 +106,14 @@ type liveSuite struct {
 	agentClient *http.Client
 	nodeTrust   *envelope.TrustStore
 
-	sharedCmds        []CommandRecord
-	extraRedactions   []string
-	bootstrapTransfer transferResult
+	sharedCmds               []CommandRecord
+	extraRedactions          []string
+	bootstrapTransfer        transferResult
+	d067BringUp              d067CycleMeasurement
+	d067Restart              d067CycleMeasurement
+	fupActivationTransition  fupTransitionMeasurement
+	fupUsageIngestTransition fupTransitionMeasurement
+	incarnationRetention     incarnationRetentionMeasurement
 }
 
 func TestATUsage_Live(t *testing.T) {
@@ -540,10 +547,13 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID uuid.UUID
 	ready := s.waitFor(90*time.Second, func() bool {
 		var ok bool
 		err := s.pool.QueryRow(s.ctx, `
-			SELECT n.provisioning_state = 'ready' AND COALESCE((
-				SELECT applied_generation > 0 AND safety_status = 'passed' AND report_payload->>'provisioning_state' = 'ready'
+			SELECT n.provisioning_state = 'ready'
+			   AND n.desired_config_generation > 0
+			   AND n.applied_config_generation >= n.desired_config_generation
+			   AND COALESCE((
+				SELECT applied_generation >= n.desired_config_generation AND safety_status = 'passed' AND report_payload->>'provisioning_state' = 'ready'
 				FROM node_observations
-				WHERE node_id = n.id
+				WHERE node_id = n.id AND incarnation_id = n.current_incarnation_id
 				ORDER BY received_at DESC
 				LIMIT 1
 			), false)
@@ -807,92 +817,91 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 	}
 	s.nodeTrust = nodeTrust
 
-	// 5. Grant entitlements to memberA and memberB via POST /api/v1/admin/members/{id}/grants
-	for _, mem := range []*browserSession{s.memberA, s.memberB} {
-		checkResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
-		var existingMem api.MemberDetail
-		if checkResp.status == http.StatusOK && json.Unmarshal(checkResp.body, &existingMem) == nil && existingMem.Entitlement.State == "active" {
-			continue
-		}
-		grantResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/members/"+mem.memberID+"/grants", api.GrantCreateRequest{
-			Source:         api.GrantSourceAdminGrant,
-			Reason:         "TEST ONLY bootstrap grant",
-			PlanRevisionId: &s.planRevID,
-			ValidUntil:     time.Now().UTC().Add(24 * time.Hour),
-		}, idemHeaders())
-		if grantResp.status != http.StatusAccepted {
-			s.t.Fatalf("grant for %s failed: HTTP %d %s", mem.memberID, grantResp.status, string(grantResp.body))
-		}
-		active := s.waitFor(45*time.Second, func() bool {
-			r := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
-			var m api.MemberDetail
-			return r.status == http.StatusOK && json.Unmarshal(r.body, &m) == nil && m.Entitlement.State == "active"
-		})
-		if !active {
-			s.t.Fatalf("member %s did not reach service_status=active", mem.memberID)
-		}
-	}
+	// 5–8. Grant entitlements, admit native devices for memberA and memberB, and measure D-067 Cycle 1 (bring_up)
+	// provisional-lease window (applying -> awaiting_member_grants -> ready -> populated lease -> first counted byte).
+	s.d067BringUp = s.measureD067ProvisionalWindow("bring_up", "node", s.nodeID, s.incarnationID, func() {
+		var oldApplied uint64
+		_ = s.pool.QueryRow(s.ctx, `SELECT applied_config_generation::bigint FROM nodes WHERE id = $1`, s.nodeID).Scan(&oldApplied)
 
-	// 6. Native admission for memberA (primary member container) and memberB (member-b container)
-	var existingDevA uuid.UUID
-	_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberA.memberID).Scan(&existingDevA)
-	if existingDevA != uuid.Nil {
-		s.deviceA = existingDevA
-	} else {
-		peerA, err := s.hook.JoinNativeMember(s.ctx, s.memberAHook(), s.memberA.subject, s.containerName("member"), "fvpn-member-e2e")
-		if err != nil || !peerA.Authorized || peerA.DeviceID == uuid.Nil {
-			s.t.Fatalf("JoinNativeMember(memberA) failed: err=%v peer=%+v", err, peerA)
+		for _, mem := range []*browserSession{s.memberA, s.memberB} {
+			checkResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
+			var existingMem api.MemberDetail
+			if checkResp.status == http.StatusOK && json.Unmarshal(checkResp.body, &existingMem) == nil && existingMem.Entitlement.State == "active" {
+				continue
+			}
+			grantResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/members/"+mem.memberID+"/grants", api.GrantCreateRequest{
+				Source:         api.GrantSourceAdminGrant,
+				Reason:         "TEST ONLY bootstrap grant",
+				PlanRevisionId: &s.planRevID,
+				ValidUntil:     time.Now().UTC().Add(24 * time.Hour),
+			}, idemHeaders())
+			if grantResp.status != http.StatusAccepted {
+				s.t.Fatalf("grant for %s failed: HTTP %d %s", mem.memberID, grantResp.status, string(grantResp.body))
+			}
+			active := s.waitFor(45*time.Second, func() bool {
+				r := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
+				var m api.MemberDetail
+				return r.status == http.StatusOK && json.Unmarshal(r.body, &m) == nil && m.Entitlement.State == "active"
+			})
+			if !active {
+				s.t.Fatalf("member %s did not reach service_status=active", mem.memberID)
+			}
 		}
-		s.deviceA = peerA.DeviceID
-	}
 
-	var existingDevB uuid.UUID
-	_, inspectErrB := s.runHostCmd("docker", "inspect", s.containerName("member-b"))
-	if inspectErrB == nil {
-		_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberB.memberID).Scan(&existingDevB)
-	}
-	if existingDevB != uuid.Nil {
-		s.deviceB = existingDevB
-	} else {
-		s.cleanupDocker("rm", "-f", s.containerName("member-b"))
-		s.cleanupDocker("volume", "rm", "-f", s.containerName("member-b"))
-		memberBContainer, err := s.hook.StartNativePeer(s.ctx, "b")
-		if err != nil {
-			s.t.Fatalf("StartNativePeer(b) failed: %v", err)
+		var existingDevA uuid.UUID
+		_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberA.memberID).Scan(&existingDevA)
+		if existingDevA != uuid.Nil {
+			s.deviceA = existingDevA
+		} else {
+			peerA, err := s.hook.JoinNativeMember(s.ctx, s.memberAHook(), s.memberA.subject, s.containerName("member"), "fvpn-member-e2e")
+			if err != nil || !peerA.Authorized || peerA.DeviceID == uuid.Nil {
+				s.t.Fatalf("JoinNativeMember(memberA) failed: err=%v peer=%+v", err, peerA)
+			}
+			s.deviceA = peerA.DeviceID
 		}
-		peerB, err := s.hook.JoinNativeMember(s.ctx, s.memberBHook(), s.memberB.subject, memberBContainer, memberBContainer)
-		if err != nil || !peerB.Authorized || peerB.DeviceID == uuid.Nil {
-			s.t.Fatalf("JoinNativeMember(memberB) failed: err=%v peer=%+v", err, peerB)
+
+		var existingDevB uuid.UUID
+		_, inspectErrB := s.runHostCmd("docker", "inspect", s.containerName("member-b"))
+		if inspectErrB == nil {
+			_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberB.memberID).Scan(&existingDevB)
 		}
-		s.deviceB = peerB.DeviceID
-	}
+		if existingDevB != uuid.Nil {
+			s.deviceB = existingDevB
+		} else {
+			s.cleanupDocker("rm", "-f", s.containerName("member-b"))
+			s.cleanupDocker("volume", "rm", "-f", s.containerName("member-b"))
+			memberBContainer, err := s.hook.StartNativePeer(s.ctx, "b")
+			if err != nil {
+				s.t.Fatalf("StartNativePeer(b) failed: %v", err)
+			}
+			peerB, err := s.hook.JoinNativeMember(s.ctx, s.memberBHook(), s.memberB.subject, memberBContainer, memberBContainer)
+			if err != nil || !peerB.Authorized || peerB.DeviceID == uuid.Nil {
+				s.t.Fatalf("JoinNativeMember(memberB) failed: err=%v peer=%+v", err, peerB)
+			}
+			s.deviceB = peerB.DeviceID
+		}
 
-	// 7. Wait for populated-generation convergence and publication-gate recovery (publication_observed=active, heartbeat serving 1, device counters present)
-	if !s.waitNodeServingAndPublished("node", s.nodeID, s.deviceA) {
-		s.t.Fatalf("node %s did not converge to serving=1 + publication_observed=active with deviceA counters", s.nodeID)
-	}
+		var curDesired uint64
+		_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, s.nodeID).Scan(&curDesired)
+		if curDesired <= oldApplied {
+			_ = s.nodeMutation(s.nodeID, http.MethodPatch, "", map[string]any{
+				"capacity": map[string]any{
+					"up_bps":              1000000000,
+					"down_bps":            1000000000,
+					"member_up_bps_cap":   30000000,
+					"member_down_bps_cap": 60000000,
+				},
+			})
+		}
+	}, true)
 
-	originIP, _ := s.originAndSNAT("node")
-	netListA, routedA := s.selectExitRoute("member", s.exitNetID, originIP)
-	if !routedA {
-		s.t.Fatalf("member route selection for %s failed: networks=%s", s.exitNetID, netListA)
-	}
-	netListB, routedB := s.selectExitRoute("member-b", s.exitNetID, originIP)
-	if !routedB {
-		s.t.Fatalf("member-b route selection for %s failed: networks=%s", s.exitNetID, netListB)
-	}
-
-	// 8. Prove counted baseline flow before evaluating AT14-AT19
-	s.bootstrapTransfer = s.runCountedTransfer("member", "node", s.deviceA, 1)
-	if !s.bootstrapTransfer.Counted {
-		s.t.Fatalf("bootstrap counted flow failed: %+v", s.bootstrapTransfer)
-	}
+	s.bootstrapTransfer = s.d067BringUp.FirstCountedTransfer
 	hbOut, _, _ := s.execInContainer("node", "cat", "/run/vpn-node/heartbeat")
 	s.sharedCmds = append(s.sharedCmds,
 		CommandRecord{
-			Command:  "PATCH /api/v1/admin/nodes/{id} + PUT /publication + JoinNativeMember(memberA, memberB) + netbird networks select " + s.exitNetID,
+			Command:  "PATCH /api/v1/admin/nodes/{id} + PUT /publication + JoinNativeMember(memberA, memberB) + D-067 Cycle 1 (bring_up) provisional-lease window",
 			ExitCode: 0,
-			Output:   fmt.Sprintf("node_id=%s exit_id=%s exit_net_id=%s deviceA=%s deviceB=%s routedA=%t routedB=%t heartbeat=%q", s.nodeID, s.exitID, s.exitNetID, s.deviceA, s.deviceB, routedA, routedB, strings.TrimSpace(string(hbOut))),
+			Output:   fmt.Sprintf("node_id=%s exit_id=%s deviceA=%s deviceB=%s provisional_lease=%s (ttl=%ds, members=%d) ready_obs=%s (reasons=%v, checks=%v) populated_lease=%s (members=%d) ready_to_populated_ms=%d ready_to_first_byte_ms=%d heartbeat=%q", s.nodeID, s.exitID, s.deviceA, s.deviceB, s.d067BringUp.ProvisionalLeaseID, s.d067BringUp.ProvisionalLeaseTTLSeconds, s.d067BringUp.ProvisionalLeaseMemberCount, s.d067BringUp.ReadyObservationReportID, s.d067BringUp.ForwardingBlockReasons, s.d067BringUp.CheckErrorCodes, s.d067BringUp.PopulatedLeaseID, s.d067BringUp.PopulatedLeaseMemberCount, s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067BringUp.ReadyToFirstCountedByteMs, strings.TrimSpace(string(hbOut))),
 			At:       time.Now().UTC().Format(time.RFC3339),
 		},
 		CommandRecord{
