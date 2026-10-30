@@ -762,8 +762,16 @@ func TestLeases_ReadinessGateAndSameGenerationGrantRecovery(t *testing.T) {
 	if len(grantlessEnv.Signed.Members) != 0 {
 		t.Fatalf("grantless lease Members = %+v, want empty slice [] while node is not ready", grantlessEnv.Signed.Members)
 	}
+	wantProvisionalDur := time.Duration(ProvisionalGrantlessLeaseSeconds) * time.Second
+	if gotDur := grantlessEnv.Signed.ExpiresAt.Sub(grantlessEnv.Signed.IssuedAt); gotDur != wantProvisionalDur {
+		t.Fatalf("grantless lease window while not ready = %v, want %v (D-067 central backstop)", gotDur, wantProvisionalDur)
+	}
+	if grantlessEnv.Signed.MaxOfflineSeconds != DefaultMaxOfflineLeaseSeconds {
+		t.Fatalf("grantless lease MaxOfflineSeconds = %d, want %d", grantlessEnv.Signed.MaxOfflineSeconds, DefaultMaxOfflineLeaseSeconds)
+	}
 
-	// Contract part 2: node becomes ready on the same generation pubGen; next RenewTx carries the member grants on the same generation.
+	// Contract part 2: node becomes ready on the same generation pubGen; next RenewTx carries the member grants on the same generation
+	// and restores the full configured max_offline_lease_seconds window (D-065).
 	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, baseReport(pubGen, api.ProvisioningStateReady, api.SafetyStatusPassed, api.DataHealthHealthy, api.HealthCheckStatusPassed)); err != nil {
 		t.Fatalf("SubmitObservation ready: %v", err)
 	}
@@ -794,6 +802,10 @@ func TestLeases_ReadinessGateAndSameGenerationGrantRecovery(t *testing.T) {
 	}
 	if len(populatedEnv.Signed.Members) != 1 || populatedEnv.Signed.Members[0].MemberId != memberID {
 		t.Fatalf("populated lease Members = %+v, want [%s]", populatedEnv.Signed.Members, memberID)
+	}
+	wantReadyDur := time.Duration(DefaultMaxOfflineLeaseSeconds) * time.Second
+	if gotDur := populatedEnv.Signed.ExpiresAt.Sub(populatedEnv.Signed.IssuedAt); gotDur != wantReadyDur {
+		t.Fatalf("ready node lease window = %v, want %v (must never shorten a ready node)", gotDur, wantReadyDur)
 	}
 
 	// Contract part 3 (isolation timeline regression): when central advances desired_config_generation
@@ -826,6 +838,11 @@ func TestLeases_ReadinessGateAndSameGenerationGrantRecovery(t *testing.T) {
 	}
 
 	// Agent syncs genNext2 and calls RenewTx before sending its genNext2 observation.
+	// Also verify D-065 configured max_offline_lease_seconds (7200s): a ready node keeps the 7200s window,
+	// whereas a published exit whose provisioning_state is not ready receives the 60s D-067 backstop expiry.
+	if _, err := pool.Exec(ctx, `UPDATE fleet_config SET max_offline_lease_seconds = 7200, resource_version = resource_version + 1`); err != nil {
+		t.Fatalf("update fleet_config max_offline_lease_seconds: %v", err)
+	}
 	var nextGenLease api.ServingLeaseEnvelope
 	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var rErr error
@@ -842,5 +859,8 @@ func TestLeases_ReadinessGateAndSameGenerationGrantRecovery(t *testing.T) {
 	}
 	if nextGenLease.Signed.ConfigGeneration != genNext2 || len(nextGenLease.Signed.Members) != 1 || nextGenLease.Signed.Members[0].MemberId != memberID {
 		t.Fatalf("RenewTx on genNext2 = (gen=%d, members=%+v), want (gen=%d, member=%s)", nextGenLease.Signed.ConfigGeneration, nextGenLease.Signed.Members, genNext2, memberID)
+	}
+	if gotDur := nextGenLease.Signed.ExpiresAt.Sub(nextGenLease.Signed.IssuedAt); gotDur != 7200*time.Second || nextGenLease.Signed.MaxOfflineSeconds != 7200 {
+		t.Fatalf("ready node lease with D-065 7200s window = (dur=%v, max_offline=%d), want (2h0m0s, 7200)", gotDur, nextGenLease.Signed.MaxOfflineSeconds)
 	}
 }
