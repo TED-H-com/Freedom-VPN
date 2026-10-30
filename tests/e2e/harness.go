@@ -356,7 +356,7 @@ func (l *lab) putObject(ctx context.Context, name string, body []byte) error {
 	return nil
 }
 
-func (l *lab) signedRelease(dir, product, sequence, commit, buildID string) (uuid.UUID, []byte, error) {
+func (l *lab) signedRelease(dir, product, sequence, commit, buildID string, installed map[string]string) (uuid.UUID, []byte, error) {
 	key, err := release.LoadKey(filepath.Join(l.state, "release", "key.json"))
 	if err != nil {
 		return uuid.Nil, nil, err
@@ -390,8 +390,8 @@ func (l *lab) signedRelease(dir, product, sequence, commit, buildID string) (uui
 			NoticesURL: base + "/NOTICE.txt", SourceURL: base + "/source.txt",
 		},
 		Artifacts: []release.ArtifactInput{
-			{OSID: "ubuntu", OSVersions: []string{"24.04"}, Architecture: "amd64", Path: amd, URL: base + "/amd64.tar.zst", InstalledSizeBytes: "1000"},
-			{OSID: "ubuntu", OSVersions: []string{"24.04"}, Architecture: "arm64", Path: arm, URL: base + "/arm64.tar.zst", InstalledSizeBytes: "1000"},
+			{OSID: "ubuntu", OSVersions: []string{"24.04"}, Architecture: "amd64", Path: amd, URL: base + "/amd64.tar.zst", InstalledSizeBytes: installed["amd64"]},
+			{OSID: "ubuntu", OSVersions: []string{"24.04"}, Architecture: "arm64", Path: arm, URL: base + "/arm64.tar.zst", InstalledSizeBytes: installed["arm64"]},
 		},
 	}, time.Now().UTC())
 	if err != nil {
@@ -458,6 +458,31 @@ func (l *lab) insertReleaseSupport(ctx context.Context) error {
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+// setBootRelease runs before the enrollment token is delivered. The release
+// packages contain the image's tree-built binaries; only its lab UUID is added.
+func (l *lab) setBootRelease(id uuid.UUID) error {
+	for _, name := range []string{"agent-enroll.json", "agent-run.json"} {
+		path := filepath.Join(l.state, "node", "etc", name)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		var config map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &config); err != nil {
+			return err
+		}
+		config["release_id"], _ = json.Marshal(id.String())
+		raw, err = json.MarshalIndent(config, "", "  ")
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(path, raw, 0o600); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (l *lab) allowReleases(ctx context.Context, ids []uuid.UUID) error {

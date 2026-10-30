@@ -162,7 +162,8 @@ func (r *runner) noteProjection(ctx context.Context, memberID string, note func(
 		note("projection", "writer not yet merged")
 		return
 	}
-	note("projection", "external_user_id "+external)
+	note("external_user_id", external)
+	note("projection", "mapping present")
 }
 
 func containsCSV(list, item string) bool {
