@@ -289,13 +289,14 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 	// Non-binary fvpn-* identifiers used in the specification and configuration,
 	// classified explicitly so nothing is skipped silently.
 	nonBinaryClassification := map[string]string{
-		"fvpn-enrollment-v1":    "protocol-domain-separation-label",
-		"fvpn-release-trust-v1": "protocol-domain-separation-label",
-		"fvpn-portal-prod":      "example-oidc-client-id",
-		"fvpn-portal-test":      "example-oidc-client-id",
-		"fvpn-enroll-peer":      "netbird-correlation-group-prefix (fvpn-enroll-peer-<hash>)",
-		"fvpn-node":             "netbird-setup-key-prefix (fvpn-node-<node_id>-<incarnation_id>)",
-		"fvpn-updater-recover":  "systemd-oneshot-unit (fvpn-updater-recover.service)",
+		"fvpn-enrollment-v1":     "protocol-domain-separation-label",
+		"fvpn-release-trust-v1":  "protocol-domain-separation-label",
+		"fvpn-portal-prod":       "example-oidc-client-id",
+		"fvpn-portal-test":       "example-oidc-client-id",
+		"fvpn-enroll-peer":       "netbird-correlation-group-prefix (fvpn-enroll-peer-<hash>)",
+		"fvpn-unpublished-nodes": "netbird-shared-staging-group-name",
+		"fvpn-node":              "netbird-setup-key-prefix (fvpn-node-<node_id>-<incarnation_id>)",
+		"fvpn-updater-recover":   "systemd-oneshot-unit (fvpn-updater-recover.service)",
 	}
 
 	tokenRE := regexp.MustCompile(`\b(fvpn-[a-z0-9-]+)(\.service)?\b`)
@@ -359,15 +360,20 @@ func TestHandover_MigrationInventory(t *testing.T) {
 	wantFirst := wantIDs[0]
 	wantLast := wantIDs[len(wantIDs)-1]
 
-	// 1. Check migration count and range claims across owned docs.
-	countRE := regexp.MustCompile("`?([0-9]+)`?\\s+(?:forward\\s+)?migrations")
+	// 1. Check migration count, range, and last-ID claims across owned docs.
+	countRE := regexp.MustCompile("(?:`?([0-9]+)`?\\s+(?:forward\\s+)?migrations|count\\s+`?([0-9]+)`?)")
 	rangeRE := regexp.MustCompile("`(00[0-9]{3})`[–-]`(00[0-9]{3})`")
+	lastIDRE := regexp.MustCompile("(?:last ID\\s+`(00[0-9]{3})`|through\\s+`(00[0-9]{3})(?:_[a-z0-9_]+\\.sql)?`)")
 	for _, doc := range ownedDocs {
 		content := readOwnedDoc(t, root, doc)
 		for _, m := range countRE.FindAllStringSubmatch(content, -1) {
-			gotCount, err := strconv.Atoi(m[1])
+			numStr := m[1]
+			if numStr == "" {
+				numStr = m[2]
+			}
+			gotCount, err := strconv.Atoi(numStr)
 			if err != nil {
-				t.Fatalf("%s: parse migration count %q: %v", doc, m[1], err)
+				t.Fatalf("%s: parse migration count %q: %v", doc, numStr, err)
 			}
 			if gotCount != wantCount {
 				t.Errorf("%s: migration count claim is %d, want %d (from db/migrations/)", doc, gotCount, wantCount)
@@ -376,6 +382,15 @@ func TestHandover_MigrationInventory(t *testing.T) {
 		for _, m := range rangeRE.FindAllStringSubmatch(content, -1) {
 			if m[1] != wantFirst || m[2] != wantLast {
 				t.Errorf("%s: migration range claim is %s..%s, want %s..%s", doc, m[1], m[2], wantFirst, wantLast)
+			}
+		}
+		for _, m := range lastIDRE.FindAllStringSubmatch(content, -1) {
+			gotLast := m[1]
+			if gotLast == "" {
+				gotLast = m[2]
+			}
+			if gotLast != wantLast {
+				t.Errorf("%s: migration last-ID claim is %s, want %s (from db/migrations/)", doc, gotLast, wantLast)
 			}
 		}
 	}

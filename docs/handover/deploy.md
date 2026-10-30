@@ -632,12 +632,20 @@ Write `/etc/vpn-node/agent.json` (`0600`) `[production only]`:
   "host_reserve_bps": 20000000,
   "netbird_backend": "kernel",
   "updater_recover": "/opt/vpn-node/current/fvpn-updater",
-  "updater_config": "/etc/vpn-node/updater.json"
+  "updater_config": "/etc/vpn-node/updater.json",
+  "dns": {
+    "resolvers": [
+      { "id": "agh-primary", "admin_url": "http://127.0.0.1:8080", "dns_addr": "127.0.0.1:53" },
+      { "id": "agh-secondary", "admin_url": "http://127.0.0.1:8081", "dns_addr": "127.0.0.2:53" }
+    ],
+    "resolver_credentials_file": "/etc/vpn-node/resolver-credentials.json"
+  }
 }
 ```
-> **Important (`AGENTS.md §4`, `D-034`, `D-058a`, `D-058b`, `node/agent/probe.go`)**:
+> **Important (`AGENTS.md §4`, `D-034`, `D-058a`, `D-058b`, `D-061`, `docs/node/README.md`, `node/agent/probe.go`)**:
 > - `datapath.member_ingress` and `datapath.uplink` **must** start with `fv` (`^fv[a-z0-9_-]{1,13}$`) and must differ.
 > - `host_reserve_bps` **must** be greater than zero (otherwise `fvpn-agent` exits with code `64` before touching the kernel).
+> - `dns.resolvers[]` (`1..8` host-local AdGuard Home targets, each with IP-literal `admin_url` and `dns_addr`) and `dns.resolver_credentials_file` (`D-061`, `docs/node/README.md`) configure node-side resolver convergence (`node/dns.Applier`). Never place credentials inline in `agent.json`: `resolver_credentials_file` must be an absolute path to a regular file owned by `root` (`uid 0`) with mode `0600` containing `{"username":"...","password":"..."}`. `fvpn-agent run` loads the credentials at startup and reloads them on `SIGHUP` without stopping; wrong file ownership or mode fails `dns_policy` closed (`FORBIDDEN`, detail `"Resolver credentials are not usable."`) without logging the secret or URL.
 > - `egress_probe_target` (`host:port`) is the optional local fallback egress target for the node's `tunnel_probe` check. When the signed `DesiredState.egress_probe` field is non-null on an in-force desired state (`D-058a`), its `1..4` TCP IP-literal targets (default `timeout_ms: 2000`, bounds `100..10000`) override `egress_probe_target`; if a signed `egress_probe` is structurally invalid, `tunnel_probe` fails closed without falling back to the local target. `NodeCheck.detail` (`<= 500` single-line ASCII characters, sanitized by `D-058b` so URLs, tokens, paths, and SQL/stack fragments are never emitted) reports which source ran (`"Egress probe used the signed targets."`, `"Egress probe used the local target."`, `"Egress probe used no extra target."`, or `"Signed egress probe was rejected."`).
 > - Never set `test_mode: true` on production nodes.
 
@@ -679,7 +687,7 @@ What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`, `
 1. Generates an ECDSA P-256 private key inside `/var/lib/vpn-node/identity` (`0600`, never leaves the node) and submits a PKCS#10 CSR + `fvpn-enrollment-v1` proof to `POST /api/v1/agent/enroll`.
 2. Receives `node_id`, `incarnation_id`, and the signed mTLS client certificate.
 3. Zero-overwrites, syncs, and unlinks `/run/vpn-node/enrollment.token` (`agent.NeutralizeToken`).
-4. Calls `POST /api/v1/agent/bootstrap` over mTLS (`:9443`) to fetch the one-time NetBird `setup_key` (subsequent calls return `410 BOOTSTRAP_CONSUMED`). Central creates a dedicated one-off NetBird correlation group (`fvpn-enroll-peer-<16-hex-sha256>`) and passes it in `auto_groups` (`D-055`). During `node.enroll.correlate`, `fvpn-worker` matches the single peer in that correlation group, verifies the peer hostname and `/32` overlay IPv4 (`100.64.0.0/10`), records `external_bindings` (`node_peer`), removes the temporary correlation group, and writes `netbird_peer_id` on `nodes`.
+4. Calls `POST /api/v1/agent/bootstrap` over mTLS (`:9443`) to fetch the one-time NetBird `setup_key` (subsequent calls return `410 BOOTSTRAP_CONSUMED`). Central (`node.provision.requested`) creates a single-use setup key whose `auto_groups` contain the shared staging group (`fvpn-unpublished-nodes`) and a dedicated empty per-enrollment correlation group (`fvpn-enroll-peer-<hash>`, `D-055`, `docs/nodes/WIRING.md`). During `node.peer.discover`, `fvpn-worker` (`DiscoverNodePeer`) correlates the unique non-ephemeral, userless peer in that correlation group without hostname, address, or timing inference, records `node:<node>:<incarnation>` in `external_bindings`, detaches and deletes the temporary correlation group with read-back, and commits `peer_readback`.
 
 ### 9.4 Installing Node systemd Units and Publishing the Exit (`§7.3`, `§13.5`, `§16.3`, `D-057`)
 
@@ -693,6 +701,4 @@ systemctl daemon-reload
 systemctl enable --now fvpn-updater-recover.service fvpn-agent.service fvpn-watchdog.service
 ```
 
-Before publishing the exit node (`PUT /api/v1/admin/nodes/{node_id}/publication`), ensure at least one member group is attached to the node's exit (`exit_groups`) via `PATCH /api/v1/admin/nodes/{node_id}` (`member_group_ids: ["<group_uuid>"]`, with `If-Match` and `Idempotency-Key`) so `fvpn-worker` can publish and read back the NetBird exit route (`netbird_route_readback`, `docs/nodes/WIRING.md`, `docs/e2e/README.md`). (OpenAPI `1.1.1` / `D-057` also adds `GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, and `PublicationRequest.group_ids`; on current `main`, `/api/v1/admin/groups` still returns `501 NOT_IMPLEMENTED` pending handler wiring and `SetNodePublication` reads the node's persisted `member_group_ids`.)
-
-Once the node reports healthy observations (`provisioning_state: "ready"`, `control_status: "online"`, `safety_status: "passed"`, `data_health: "healthy"`, and `observation.checks` entries `internet_only`, `dns_policy`, and `tunnel_probe` with `status: "passed"`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node (`PUT /api/v1/admin/nodes/{node_id}/publication` with `publication_intent: "published"` and `If-Match: "<etag>"`). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `status: "succeeded"` with `publication_observed: "active"` and NetBird route read-back evidence before announcing the exit to members.
+Create or verify the target member group via `POST /api/v1/admin/groups` (`CreateAdminGroup`, `201 MemberGroup`, audited as `group.create` on `member_group:<id>`, `D-057`, `D-059`) or `GET /api/v1/admin/groups` (`ListAdminGroups`). Once the node reports healthy observations (`provisioning_state: "ready"`, `control_status: "online"`, `safety_status: "passed"`, `data_health: "healthy"`, and `observation.checks` entries `internet_only`, `dns_policy`, and `tunnel_probe` with `status: "passed"`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node via `PUT /api/v1/admin/nodes/{node_id}/publication` (`SetNodePublication` -> `exits.SetPublicationTx`, `docs/nodes/WIRING.md`) supplying `publication_intent: "published"`, `group_ids: ["<group_uuid>"]`, `If-Match: "<etag>"`, and `Idempotency-Key` (or pre-attach `member_group_ids` via `PATCH /api/v1/admin/nodes/{node_id}` and omit `group_ids` to preserve existing membership). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `status: "succeeded"` with `publication_observed: "active"` and NetBird route read-back evidence (`netbird_route_readback`) before announcing the exit to members.

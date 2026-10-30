@@ -120,24 +120,23 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
   -H "Cookie: __Host-fvpn_session=${ADMIN_SESSION}"
 ```
 
-### 2.3 OpenAPI 1.1.1 Contract Inventory (`44` Operations) & Pending Handler Wiring (`docs/contracts/README.md`, `docs/ROADMAP.md`)
+### 2.3 OpenAPI 1.1.1 Contract Inventory (`44` Operations) (`docs/contracts/README.md`, `docs/nodes/WIRING.md`)
 
-`contracts/openapi.yaml` (`version: 1.1.1`, Revisions 5 and 5.1) defines **44 HTTP operations** across `/api/v1`:
-- **41 operations** are wired in `apps/control` on `main`.
-- **3 operations** added in Revisions 5 and 5.1 currently return `501 NOT_IMPLEMENTED` from the generated composite server on `main`, pending downstream handler wiring:
-  1. `GET /api/v1/admin/groups` (`ListAdminGroups`, `D-057`): Lists member groups (`MemberGroupList`).
-  2. `POST /api/v1/admin/groups` (`CreateAdminGroup`, `D-057`, `D-059`): Creates an immutable member group (`MemberGroupCreate` -> `201 MemberGroup`, audited under `member_group:<group_id>`).
-  3. `GET /api/v1/agent/resolver-documents/{document_id}` (`GetResolverDocument`, `D-056`): Agent mTLS fetch of a canonical `resolver_document` (`200 ResolverDocument`, `Cache-Control: no-store`).
+`contracts/openapi.yaml` (`version: 1.1.1`, Revisions 5 and 5.1) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
+- **Member Groups (`GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, `D-057`, `D-059`)**:
+  `CreateAdminGroup` writes an immutable `member_groups` row (unique `code` and `name`), records a typed `group.create` audit event on `member_group:<id>`, and stores the idempotent `201 MemberGroup` receipt in one transaction (`replay` returns the original `201` body). `ListAdminGroups` orders by `code`, supports exact `code` filtering and cursor pagination, and counts every attached exit in `exit_count` (including unpublished or offline exits).
+- **Authenticated Resolver Document Delivery (`GET /api/v1/agent/resolver-documents/{document_id}`, `D-056`)**:
+  `GetResolverDocument` authorizes the mTLS-authenticated node's current incarnation and current or immediately previous desired-state generation before consulting `nodes.ResolverDocumentSource` (`store.NewDocumentReader(pool)`). Unknown and unissued document IDs both return `404 NOT_FOUND`. Validated responses stream the exact canonical RFC 8785 JSON bytes (`<= 1 MiB`) with `ETag: "sha256:<hex>"`. *(See `docs/nodes/WIRING.md` §Resolver documents, group membership and observations for the current desired-state compiler input-hook boundary.)*
 
 ---
 
-## 3. Enrolling, Classifying, Publishing, Revoking, and Retiring Nodes (`§6`, `§7`, `§14.5`, `D-055`–`D-058`)
+## 3. Enrolling, Classifying, Publishing, Revoking, and Retiring Nodes (`§6`, `§7`, `§14.5`, `D-055`–`D-058`, `D-061`)
 
 ### 3.1 Enrolling a New Node or Reinstalling an Existing Node (`POST /api/v1/admin/enrollments`)
 
 - **New Node**: Omit `node_id`. Set `delivery: "installer"` (default 15-minute TTL / `900s`) or `"preinstalled"` (default 7-day TTL / `604800s`), plus optional `name`, `region`, `notes`, and `member_group_ids`.
 - **Bootstrap & One-Off NetBird Correlation Group (`D-055`, `docs/nodes/WIRING.md`)**:
-  When the enrolled node calls `POST /api/v1/agent/bootstrap` over mTLS, central creates a single-use NetBird setup key (`fvpn-node-<node_id>-<incarnation_id>`) attached to a dedicated one-off NetBird correlation group (`fvpn-enroll-peer-<16-hex-sha256>`). The worker's `node.enroll.correlate` handler finds the unique peer in that correlation group, verifies its hostname and `/32` overlay IPv4 (`100.64.0.0/10`), records `external_bindings` (`node_peer`), deletes the temporary correlation group, and sets `netbird_peer_id` on `nodes`.
+  When the enrolled node calls `POST /api/v1/agent/bootstrap` over mTLS, central (`node.provision.requested`) creates a single-use NetBird setup key (`usage_limit=1`, non-ephemeral) whose `auto_groups` contain `fvpn-unpublished-nodes` and a dedicated empty per-enrollment correlation group (`fvpn-enroll-peer-<hash>`). The worker's `node.peer.discover` handler (`DiscoverNodePeer`) correlates the unique non-ephemeral, userless peer in that correlation group without hostname, address, or timing inference, records `node:<node>:<incarnation>` in `external_bindings`, detaches and deletes the temporary correlation group with read-back, and commits `peer_readback`.
 - **Reinstalling an Existing Node (`§6.2`, `00111_pki_reinstall.sql`, `AT07`)**:
   1. First **revoke** the node's current incarnation (`POST /api/v1/admin/nodes/{node_id}/revoke`) so no active incarnation remains (`409 NODE_INCARNATION_ACTIVE` is returned if an incarnation is still active; `409 NODE_RETIRED` if the node was permanently retired).
   2. Call `POST /api/v1/admin/enrollments` with `"node_id": "<existing_node_uuid>"` and `"delivery": "installer"`.
@@ -173,8 +172,8 @@ curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}" 
 ### 3.3 Publishing, Disabling, and Unpublishing Exits (`PUT /api/v1/admin/nodes/{node_id}/publication`)
 
 Exit publication controls whether member devices route traffic through the node (`§5.2`, `§7.3`, `D-057`, `docs/nodes/WIRING.md`):
-- `"published"`: Creates/enables the NetBird exit route (`0.0.0.0/0`) and `member-to-exit` policy for the exit's attached `exit_groups` (`member_group_ids`), and sets `publication_intent: "published"` in the node's signed desired state. Requires the node to have a valid incarnation, `provisioning_state = "ready"`, an approved serving release (`409 MINIMUM_VERSION_VIOLATION` or `409 STATE_CONFLICT` otherwise), and non-empty `exit_groups` so `netbird_route_readback` can complete.
-  - **Group attachment (`D-057`):** OpenAPI `1.1.1` adds optional `group_ids` on `PublicationRequest` (and `group_ids` on `NodeDetail` alongside `member_group_ids`) to atomically replace `exit_groups` under the same `If-Match`. On current `main`, attach `member_group_ids` via `PATCH /api/v1/admin/nodes/{node_id}` before calling `PUT /api/v1/admin/nodes/{node_id}/publication`.
+- `"published"`: Creates/enables the NetBird exit route (`0.0.0.0/0`) and `member-to-exit` policy for the exit's attached `exit_groups` (`group_ids` / `member_group_ids`), and sets `publication_intent: "published"` in the node's signed desired state. Requires the node to have a valid incarnation, `provisioning_state = "ready"`, an approved serving release (`409 MINIMUM_VERSION_VIOLATION` or `409 STATE_CONFLICT` otherwise), and non-empty `exit_groups` so `netbird_route_readback` can complete.
+  - **Atomic group attachment (`D-057`, `exits.SetPublicationTx`):** `PublicationRequest.group_ids` is persisted atomically under the node/exit locks and `If-Match` alongside the publication intent, single generation/version advance, operation, outbox event, and `exit:<uuid>` audit row. Omitting `group_ids` preserves existing membership, `[]` clears it, and a non-empty array replaces it (`422` with `/group_ids` detail if any group UUID is unknown). `NodeDetail` exposes the sorted membership in both `group_ids` and `member_group_ids`.
 - `"disabled"`: Temporarily removes the node from member exit routing (`node.disable`) while keeping the node enrolled and online for diagnostics or updates.
 - `"unpublished"`: Withdraws the exit publication (`node.unpublish`).
 
@@ -187,6 +186,9 @@ curl -fsS -X PUT "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}/pub
   -H "Content-Type: application/json" \
   -d '{
     "publication_intent": "published",
+    "group_ids": [
+      "01950000-0000-7000-8000-000000000001"
+    ],
     "reason": "Exit readiness checks verified"
   }'
 ```
@@ -291,24 +293,24 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches/${BA
 
 ---
 
-## 5. Threat Feeds, Resolver Document Publication, and `dns.feed.refresh_failed` Runbook (`§12`, `D-054`, `D-056`, `D-058c`, `D-058d`, `docs/dns/PUBLISH.md`, `docs/dns/FEEDS.md`)
+## 5. Threat Feeds, Resolver Document Publication, and `dns.feed.refresh_failed` Runbook (`§12`, `D-054`, `D-056`, `D-058c`, `D-058d`, `D-061`, `docs/dns/PUBLISH.md`, `docs/dns/FEEDS.md`, `docs/node/README.md`)
 
 ### 5.1 How Threat Feeds and Resolver Documents Are Published and Delivered
 
-1. **Threat-Feed Refresh (`dns.feed.refresh`, `00181_dns_feed_contents.sql`, `D-054`)**:
-   - Activating a `threat_feed` policy revision enqueues `dns.feed.refresh` in `outbox_events`.
-   - `fvpn-worker` fetches `source_url` over HTTPS (rejecting private, loopback, overlay, link-local, and documentation literals), verifies the exact SHA-256 against the revision's pinned `content_sha256`, normalizes domains via IDNA, enforces the shrink guard (`feed_max_removal_percent`, default `50%`), and writes approved entries to `dns_feed_contents` and status to `dns_feed_refresh_state`.
-   - `GET /api/v1/admin/policies?type=threat_feed` exposes `PolicyDefinition.threat_feed_status` (`D-058c`) with `status` (`healthy`, `stale`, `failed`, or `bootstrap_pending`), `last_good_sha256`, `entry_count`, `next_refresh_at`, and `last_error_code`.
-2. **Resolver Document Compilation (`dns.publish`, `00180_dns_publish.sql`, `D-056`)**:
-   - When a `dns_profile`, `domain_rule_set`, or `threat_feed` updates, `fvpn-worker` compiles a deterministic canonical JSON `resolver_document` (`kind = "resolver_document"`, `schema_version = 1`), stores it in `dns_resolver_documents`, and advances `dns_publication_heads`.
-   - `desiredstate.Compiler` embeds a signed `ResolverDocumentRef` (`document_id`, `profile_revision_id`, `generation`, `content_sha256`, `size_bytes`) in `DesiredState.dns.resolver_document`.
-3. **Node Delivery & Verification (`node/agent/resolver.go`, `node/dns`, `D-056`)**:
-   - `fvpn-agent` fetches `GET /api/v1/agent/resolver-documents/{document_id}` over mTLS (or reads its SQLite `resolver_cache`), verifies the exact byte length (`size_bytes`) and SHA-256 (`content_sha256`) before parsing, applies the policy to all configured AdGuard Home instances via `node/dns.Applier` (with automatic rollback on partial failure), and reports `ObservationReport.dns_policy_evidence` (`outcome`: `applied`, `failed`, `partial`, or `not_run`, plus `feeds[]` evidence).
-   - *(Note: On current `main`, the central HTTP handler for `GET /api/v1/agent/resolver-documents/{document_id}` returns `501 NOT_IMPLEMENTED` pending control-plane handler wiring; see §2.3.)*
+1. **Threat-Feed Refresh (`dns.feed.refresh`, `00181_dns_feed_contents.sql`, `00182_dns_feed_review.sql`, `D-054`)**:
+   - Activating a `threat_feed` policy revision enqueues `dns.feed.refresh` in `outbox_events` and requires both `desired_state_compile` and `dns_feed_refresh` steps (`observed_refs.dns_feed_content`) on the `policy.activate` operation (`00182_dns_feed_review.sql`).
+   - `fvpn-worker` fetches `source_url` over HTTPS (`NewSourceHTTPClient` with SSRF protection rejecting loopback, RFC1918, CGNAT `100.64.0.0/10`, link-local, multicast, ULA, and documentation literals, and refusing redirects), verifies the exact SHA-256 against the revision's pinned `content_sha256` on bootstrap, normalizes domains via IDNA, enforces the removal guard (`feed_max_removal_percent`, default `50%`) and addition cap (`MaxAdditionPercent = 100%`), and writes immutable entries to `dns_feed_contents` and status to `dns_feed_refresh_state` (fenced by `activation_generation` and `last_receipt`).
+   - `GET /api/v1/admin/policies?type=threat_feed` exposes `PolicyDefinition.threat_feed_status` (`D-058c`) with `approved_content_sha256`, `last_good_content_sha256`, `rule_count`, `last_attempt_status` (`never`, `success`, `failed`), `consecutive_failures`, `next_due_at`, and bounded `last_error_code`.
+2. **Resolver Document Compilation (`dns.publish`, `00180_dns_publish.sql`, `00182_dns_feed_review.sql`, `D-056`)**:
+   - Activating a `dns_profile` requires both `desired_state_compile` and `dns_document` steps (`observed_refs.dns_document`). `fvpn-worker` compiles a deterministic canonical JSON `resolver_document` (`kind = "resolver_document"`, `schema_version = 1`), stores it in `dns_resolver_documents`, and advances `dns_publication_heads` (`dns_profile_feeds_eligible` ensures all referenced threat-feed revisions remain active and within `[valid_from, valid_until)`).
+3. **Node Delivery, Verification & Local AdGuard Home Credentials (`node/agent/resolver.go`, `node/dns`, `D-056`, `D-061`, `docs/node/README.md`, `docs/nodes/WIRING.md`)**:
+   - `GetResolverDocument` (`GET /api/v1/agent/resolver-documents/{document_id}`) authorizes the mTLS-authenticated node's current incarnation and current/previous desired-state generation via `RecordIssuedResolverDocumentTx` and streams the canonical RFC 8785 bytes (`ETag: "sha256:<hex>"`). *(See `docs/nodes/WIRING.md` §Resolver documents, group membership and observations for the current desired-state compiler input-hook boundary.)*
+   - On the exit node (`D-061`, `docs/node/README.md`), `agent.json` configures `dns.resolvers[]` (`1..8` host-local AdGuard Home targets with IP-literal `admin_url` and `dns_addr`) and `dns.resolver_credentials_file` (an absolute path to a `root`-owned mode `0600` JSON file `{"username","password"}`). `fvpn-agent run` loads `resolver_credentials_file` at startup and reloads it on `SIGHUP` without stopping; wrong file mode/owner refuses the check (`FORBIDDEN`, detail `"Resolver credentials are not usable."`) without logging the secret or URL.
+   - `fvpn-agent` verifies the exact byte length (`size_bytes`) and SHA-256 (`content_sha256`) before parsing, applies the policy to all configured AdGuard Home instances via `node/dns.Applier` (with automatic rollback on partial failure), and reports `ObservationReport.dns_policy_evidence` (`outcome`: `applied`, `failed`, `partial`, or `not_run`, plus `feeds[]` evidence).
 
 ### 5.2 Troubleshooting `dns.feed.refresh_failed` (`docs/dns/FEEDS.md`)
 
-When a threat-feed fetch fails (`fetch_failed`, `content_mismatch`, `parse_failed`, `conflict_detected`, `shrink_limit_exceeded`, or `expired`), `fvpn-worker` retains the previous approved snapshot in `dns_feed_contents`, records `last_refresh_status = 'failed'` in `dns_feed_refresh_state`, increments `fvpn_dns_feed_refresh_total{outcome="retained_last_good"}` (or `"failed_no_last_good"` on initial bootstrap), and writes an `audit_events` row with `action = 'dns.feed.refresh_failed'`.
+When a threat-feed fetch fails (`fetch_failed`, `http_status`, `read_failed` -> `DEPENDENCY_UNAVAILABLE`; `content_mismatch` -> `HASH_MISMATCH`; `oversize`, `content_too_large` -> `PAYLOAD_TOO_LARGE`; `invalid_config`, `invalid_size`, `outside_validity`, `ssrf_refused`, `parse_error`, `zero_rules`, `delta_breach` -> `VALIDATION_FAILED`), `fvpn-worker` retains `last_good_content` in `dns_feed_refresh_state`, increments `consecutive_failures` and `fvpn_dns_feed_refresh_total`, and appends an `audit_events` row with `action = 'dns.feed.refresh_failed'`.
 
 Inspect failed threat feeds and recent audit events:
 ```sql
@@ -328,8 +330,8 @@ LEFT JOIN dns_feed_contents c
 WHERE r.consecutive_failures > 0
 ORDER BY r.last_attempt_at DESC NULLS LAST;
 ```
-- **`content_mismatch`**: Upstream feed content changed without a new pinned revision. Inspect the new upstream feed, compute its SHA-256, and create + activate a new `threat_feed` policy revision with the updated `content_sha256`.
-- **`shrink_limit_exceeded`**: Upstream feed dropped more than `feed_max_removal_percent` (default `50%`) of its entries. Verify whether the upstream source was truncated before creating a new revision.
+- **`content_mismatch` (`HASH_MISMATCH`)**: Bootstrap bytes differ from the reviewed snapshot pin. Confirm the intended upstream version and approve + activate a new `threat_feed` revision with the reviewed `content_sha256`.
+- **`delta_breach` (`VALIDATION_FAILED`)**: Upstream feed removed more than `feed_max_removal_percent` (default `50%`) of entries relative to either the previous last-good or the bootstrap snapshot, or added more than `MaxAdditionPercent` (`100%`) relative to the bootstrap snapshot. Verify whether the upstream list was truncated or materially replaced before approving a new revision.
 
 ---
 
