@@ -71,6 +71,32 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				GetFleetConfig(context.Context, gen.GetFleetConfigRequestObject) (gen.GetFleetConfigResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: GetFleetConfig")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
+				UpdateFleetConfig(context.Context, gen.UpdateFleetConfigRequestObject) (gen.UpdateFleetConfigResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: UpdateFleetConfig")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				ListAdminGroups(context.Context, gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error)
 			}); ok {
 				n++
@@ -629,6 +655,28 @@ func (c *Composite) RevokeEnrollment(ctx context.Context, r gen.RevokeEnrollment
 			RevokeEnrollment(context.Context, gen.RevokeEnrollmentRequestObject) (gen.RevokeEnrollmentResponseObject, error)
 		}); ok {
 			return h.RevokeEnrollment(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+func (c *Composite) GetFleetConfig(ctx context.Context, r gen.GetFleetConfigRequestObject) (gen.GetFleetConfigResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			GetFleetConfig(context.Context, gen.GetFleetConfigRequestObject) (gen.GetFleetConfigResponseObject, error)
+		}); ok {
+			return h.GetFleetConfig(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+func (c *Composite) UpdateFleetConfig(ctx context.Context, r gen.UpdateFleetConfigRequestObject) (gen.UpdateFleetConfigResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			UpdateFleetConfig(context.Context, gen.UpdateFleetConfigRequestObject) (gen.UpdateFleetConfigResponseObject, error)
+		}); ok {
+			return h.UpdateFleetConfig(ctx, r)
 		}
 	}
 	return nil, errNotImplemented
