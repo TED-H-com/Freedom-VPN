@@ -66,11 +66,25 @@ removal time. Keeping the client's kernel route alone cannot guarantee packets
 arrive at the exit after the remote peer disappears. No node-rule defect is
 inferred from zero node ingress. DELETE-to-first-node-drop is **not observed**.
 
-Missing primitive: a controlled tunnel-ingress traffic path that remains usable
-at the node after NetBird removes the revoked peer, while the real agent keeps
-applying signed state. It must attribute post-DELETE packets to the old device
-source and measure `fvmb0` ingress plus named drop/admission counters, without
-restoring a revoked peer/group/binding or altering product enforcement.
-**Owner: w3-devstack-e2e with w1-netlab for the isolated ingress fixture.**
-The current native pause hook supplies the stale client only; it does not supply
-that independent node-side ingress path. This strict assertion remains blocked.
+The follow-up 11 client path cannot deliver a frame once `fvnb0`'s route is
+withdrawn. That wget remains in the record as route-withdrawal evidence. It is
+not the pass criterion.
+
+## Follow-up 13: injected ingress after withdrawal
+
+The strict proof runs after the same revocation (peer, group, and binding
+withdrawn; new serving generation). `ObserveMemberIngress` copies `fvpn-netlab`
+into the node and injects one UDP datagram, destination port 9, onto `fvmb0`.
+`-mechanism` is empty, so link type 65534 selects `tun-mirred`.
+
+| Inject | Source | Required counters | Capture |
+|---|---|---|---|
+| Revoked | The withdrawn device's overlay IPv4, read before pause | `ctunku` packets +1 exactly; no `u_`/`d_`/`nu_`/`nd_` counter moves | `fvup0` and the origin namespace stay empty |
+| Admitted | The sibling that kept forwarding | That device's `u_<hex>` packets +1; `ctunku` does not move. The same device's `d_` counter may also move when UDP/9 draws an ICMP unreachable; every other device counter stays still | Both captures show the UDP datagram (source port 40000) |
+
+`u_<hex>` is the device UUID with dashes removed. The record stores both
+counter deltas and both capture texts. Sibling counted flow, the same agent
+PID, and a replacement native device remain required. A counter or capture
+contradiction is `fail`. The hook does not restore the revoked authorization
+and does not write `inet fvpn`. Live evidence is
+[follow-up 13](../runs/2026-10-30/followup13/device-revoke.md).

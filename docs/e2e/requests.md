@@ -5,29 +5,26 @@ Evidence: [follow-up 11 verification](followup11-verification.md), source
 `76f0725c-2264-4021-a553-60f6c921e32b`. Only `e2e` / `18000` is exercised.
 Previous follow-up 10 records remain archived, including `followup10-merged/`.
 
-## Stale-client revocation ingress — blocked
+## Stale-client revocation ingress — inject hook
 
-Owner: **w3-devstack-e2e with w1-netlab** for the isolated ingress fixture.
-[Device-revoke](runs/2026-10-30/device-revoke.md) establishes two native counted
-flows and a further counted flow while the revoked client's NetBird userspace
-service is SIGSTOPped. DELETE is 202; generation 8 projects ready/passed; the
-exit agent PID is unchanged. The client retains its `fvnb0` exit route.
+Owner: **w3-devstack-e2e**. The netlab primitive is `InjectMemberIngress`
+(`tests/netlab`, merged #196). Devstack calls it through
+`Stack.InjectMemberIngress` and `Stack.ObserveMemberIngress`.
 
-The post-apply node capture nevertheless reports `0 packets captured`, and
-`ctunku` stays `0 → 0`. Revoked bytes freeze `5262 → 5262`, conntrack is empty,
-and origin receipt is zero. Sibling and replacement requests remain counted;
-member accept rules remain; client SIGCONT cleanup succeeds. The later node
-NetBird inventory no longer contains the revoked peer. That inventory supports
-upstream transport withdrawal but does not time its removal. No node forwarding
-bug or node-side drop is inferred from zero node ingress.
+[Follow-up 11](runs/2026-10-30/device-revoke.md) remains the historical client
+observation: DELETE 202, generation 8, same agent PID, and `0 packets captured`
+on the paused client's own wget because the `fvnb0` route was withdrawn.
+DELETE-to-first-node-drop on that client request stays **not observed**. No
+node-forwarding bug is inferred from that zero.
 
-**Missing primitive:** a controlled tunnel-ingress transport that survives the
-remote NetBird peer withdrawal while the actual agent applies its new signed
-state, with the old device source attributed at `fvmb0` and read-only named
-counter observations. A stale route on the client alone is insufficient. Do not
-restore the revoked peer/group/binding or edit enforcement to manufacture a pass.
-DELETE-to-first-node-drop remains **not observed**. This is distinct from the
-resolved conntrack executable/apply failure and the resolved route-discovery race.
+The strict proof is now an injected UDP/9 frame on `fvmb0` after withdrawal.
+The revoked source must move `ctunku` by exactly one packet and must not appear
+on `fvup0` or at the origin. The still-admitted sibling must move `u_<hex>`
+(device UUID, dashes removed) by one packet and must appear in both captures.
+The hook does not restore the revoked peer, group, or binding and does not
+write `inet fvpn`. Live evidence:
+[follow-up 13](runs/2026-10-30/followup13/device-revoke.md).
+Members (AT02) and isolation (AT13) call the export rather than the CLI.
 See the [scenario scope](scenarios/device-revoke.md).
 
 ## Enrollment binding — ready for harness adoption
@@ -135,7 +132,11 @@ Do not mark AT06 or AT07 passed from these records.
 ### ENR-05 — usage acknowledgement hold (not implemented)
 
 Owner: **w4-usage** (usage agent and ledger), then devstack once that
-contract exists. Enrollment follow-up 13 stays blocked on this.
+contract exists. Follow-up 13 rechecked current `main`: `node/internal/usageupload`
+still acknowledges every uploaded batch, and nothing exposes a withhold-only-acks
+switch or the read-only ledger snapshot below. Enrollment follow-up 13 stays
+blocked on this. Devstack did not pause the agent, restart a container, or edit
+outbox rows in its place.
 
 Confirm the upload endpoint and status that withhold only usage
 acknowledgements while production and sampling continue, and an approved
@@ -149,7 +150,10 @@ hook. Never edit or delete outbox rows to manufacture a hold.
 ### ENR-06 — installer re-run and controlled reinstall (not implemented)
 
 Owner: **packaging / installer**, then devstack once that invocation exists.
-Enrollment follow-up 13 stays blocked on this.
+Follow-up 13 rechecked current `main`: `packaging/` contains only the release
+archive. There is no installer command to wrap. Enrollment follow-up 13 stays
+blocked on this. A container restart, key erasure, or copied identity rows were
+not substituted.
 
 Supply the real installer invocation and the disposable Ubuntu storage and
 service prerequisites for an idempotent re-run that preserves identity and
