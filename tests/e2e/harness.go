@@ -601,3 +601,64 @@ func (l *lab) candidateConfig(id uuid.UUID, version string) error {
 	}
 	return os.WriteFile(filepath.Join(l.state, "node", "var", "e2e", "agent-"+id.String()+".json"), raw, 0o600)
 }
+
+func httpDetail(resp reply, err error) string {
+	if err != nil {
+		return "transport"
+	}
+	if resp.Code != "" {
+		return itoa(resp.Status) + " " + resp.Code
+	}
+	return itoa(resp.Status)
+}
+
+func itoa(n int) string {
+	if n == 0 {
+		return "0"
+	}
+	neg := n < 0
+	if neg {
+		n = -n
+	}
+	var buf [16]byte
+	i := len(buf)
+	for n > 0 {
+		i--
+		buf[i] = byte('0' + n%10)
+		n /= 10
+	}
+	if neg {
+		i--
+		buf[i] = '-'
+	}
+	return string(buf[i:])
+}
+
+func clipText(s string, n int) string {
+	s = strings.TrimSpace(s)
+	if len(s) > n {
+		s = s[:n]
+	}
+	return s
+}
+
+func apiErrorText(raw []byte) string {
+	var doc struct {
+		Error struct {
+			Code    string         `json:"code"`
+			Message string         `json:"message"`
+			Details map[string]any `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(raw, &doc) != nil || doc.Error.Code == "" {
+		return clipText(string(raw), 500)
+	}
+	text := doc.Error.Code + " " + doc.Error.Message
+	if len(doc.Error.Details) > 0 {
+		extra, err := json.Marshal(doc.Error.Details)
+		if err == nil {
+			text += " " + string(extra)
+		}
+	}
+	return clipText(text, 800)
+}

@@ -762,44 +762,12 @@ func recPathNote(rec *Record) func(string, string) {
 	}
 }
 
-func httpDetail(resp reply, err error) string {
-	if err != nil {
-		return "transport"
-	}
-	if resp.Code != "" {
-		return itoa(resp.Status) + " " + resp.Code
-	}
-	return itoa(resp.Status)
-}
-
 func writeAtomic(path string, b []byte) error {
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, b, 0o600); err != nil {
 		return err
 	}
 	return os.Rename(tmp, path)
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	var buf [16]byte
-	i := len(buf)
-	for n > 0 {
-		i--
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	if neg {
-		i--
-		buf[i] = '-'
-	}
-	return string(buf[i:])
 }
 
 func boolText(v bool) string {
@@ -848,29 +816,6 @@ func (l *lab) rememberPlan(plan, rev uuid.UUID) error {
 		return err
 	}
 	return os.WriteFile(path, append(out, '\n'), 0o600)
-}
-
-func (l *lab) savedPlan() (uuid.UUID, uuid.UUID, error) {
-	raw, err := os.ReadFile(filepath.Join(l.state, "stack.json"))
-	if err != nil {
-		return uuid.Nil, uuid.Nil, err
-	}
-	var doc struct {
-		Plan string `json:"plan_id"`
-		Rev  string `json:"plan_revision_id"`
-	}
-	if json.Unmarshal(raw, &doc) != nil {
-		return uuid.Nil, uuid.Nil, errors.New("stack identity")
-	}
-	plan, err := uuid.Parse(doc.Plan)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, err
-	}
-	rev, err := uuid.Parse(doc.Rev)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, err
-	}
-	return plan, rev, nil
 }
 
 func (r *runner) replayUsageBatch(memberID string) (same bool, firstStatus, secondStatus string, accepted bool, outcome string) {
@@ -1127,14 +1072,6 @@ func excerptMatching(blob string, needles []string, maxLines int) string {
 func emptyDash(s string) string {
 	if s == "" {
 		return "-"
-	}
-	return s
-}
-
-func clipText(s string, n int) string {
-	s = strings.TrimSpace(s)
-	if len(s) > n {
-		s = s[:n]
 	}
 	return s
 }

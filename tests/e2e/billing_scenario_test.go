@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -77,8 +79,8 @@ func (r *runner) catalogue(ctx context.Context, admin *session) {
 	rec.Status = StatusPass
 }
 
-func (r *runner) billing(ctx context.Context, _ *session) {
-	rec := Record{ID: "billing", Title: "Checkout provider truth projects a paid period", Spec: []string{"§9.2", "§9.3", "§19 AT03", "§19 AT04"}, Status: StatusFail}
+func (r *runner) portal(ctx context.Context, member *session) bool {
+	rec := Record{ID: "portal-billing-return", Title: "Built Portal billing return renders in a browser", Spec: []string{"§18.4", "§19 AT03"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
 	note := recPathNote(&rec)
 	client := &http.Client{Transport: r.lab.transport, Timeout: 15 * time.Second}
@@ -92,17 +94,41 @@ func (r *runner) billing(ctx context.Context, _ *session) {
 	}
 	note("built_portal_spa", boolText(portalOK))
 	if !portalOK {
+		return false
+	}
+	portalURL, _ := url.Parse(r.lab.public)
+	input, _ := json.Marshal(map[string]any{"port": r.lab.ports["control"], "cookies": member.http.Jar.Cookies(portalURL)})
+	browserCtx, stop := context.WithTimeout(ctx, 40*time.Second)
+	defer stop()
+	browser := exec.CommandContext(browserCtx, "node", filepath.Join(r.lab.root, "deploy/devstack/probe-portal.mjs"))
+	browser.Stdin = bytes.NewReader(input)
+	browserOut, browserErr := browser.Output()
+	note("browser_probe", strings.TrimSpace(string(browserOut)))
+	if browserErr != nil {
+		note("browser_error", "billing page did not render successfully")
+		return false
+	}
+	rec.Status = StatusPass
+	return true
+}
+
+func (r *runner) billing(ctx context.Context, _ *session) {
+	rec := Record{ID: "billing", Title: "Checkout provider truth projects a paid period", Spec: []string{"§9.2", "§9.3", "§19 AT03", "§19 AT04"}, Status: StatusFail}
+	defer func() { r.record(rec) }()
+	note := recPathNote(&rec)
+	client := &http.Client{Transport: r.lab.transport, Timeout: 15 * time.Second}
+	member, err := r.lab.login(ctx, "e2e-billing", "member")
+	if err != nil {
+		note("login", err.Error())
+		return
+	}
+	if !r.portal(ctx, member) {
+		note("portal", "return page probe failed")
 		return
 	}
 	if r.planRevID == uuid.Nil {
 		rec.Status = StatusBlocked
 		note("owner", r.planError+"; payment live reconciliation awaits API-created plan")
-		return
-	}
-	// Separate native member, no manual grant: only provider truth can pay it.
-	member, err := r.lab.login(ctx, "e2e-billing", "member")
-	if err != nil {
-		note("login", err.Error())
 		return
 	}
 	checkout, err := member.call(ctx, "POST", r.lab.public+"/api/v1/member/checkout-sessions", api.CheckoutSessionRequest{PlanId: r.planID, ReturnUrl: r.lab.public + "/billing/return"}, map[string]string{"Idempotency-Key": uuid.NewString()})
@@ -174,7 +200,7 @@ func (r *runner) billing(ctx context.Context, _ *session) {
 		var rows []byte
 		ok := waitUntil(wait, time.Second, func() bool {
 			var matched bool
-			err := conn.QueryRow(wait, `SELECT s.last_reconciled_at IS NOT NULL AND s.cancel_at_period_end=$2 AND (s.paid_from=$3 AND s.paid_through=$4) IS NOT DISTINCT FROM $5 AND (SELECT coalesce(sum(amount_minor),0) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='refund')=$6 AND e.state=ANY($7::text[]) FROM subscriptions s JOIN entitlements e ON e.member_id=s.member_id WHERE s.member_id=$1`, member.memberID, canceled, start, end, paid, refund, func() []string {
+			err := conn.QueryRow(wait, `SELECT s.last_reconciled_at IS NOT NULL AND s.cancel_at_period_end=$2 AND (($5 AND s.paid_from=$3 AND s.paid_through=$4) OR (NOT $5 AND s.paid_from IS NULL AND s.paid_through IS NULL)) AND (SELECT coalesce(sum(amount_minor),0) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='refund')=$6 AND e.state=ANY($7::text[]) FROM subscriptions s JOIN entitlements e ON e.member_id=s.member_id WHERE s.member_id=$1`, member.memberID, canceled, start, end, paid, refund, func() []string {
 				if !paid {
 					return []string{"pending_payment", "expired"}
 				}

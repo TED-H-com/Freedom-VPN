@@ -154,13 +154,10 @@ func (r *runner) metrics(ctx context.Context) {
 	cmd := exec.CommandContext(probe, "docker", "exec", r.lab.control, "wget", "--server-response", "--timeout=3", "--tries=1", "-O-", "http://127.0.0.1:9091/metrics")
 	raw, err := cmd.CombinedOutput()
 	status := ""
-	count := 0
+	count := strings.Count(string(raw), "# HELP ")
 	for _, line := range strings.Split(string(raw), "\n") {
 		if strings.Contains(line, "HTTP/") {
 			status = strings.TrimSpace(line)
-		}
-		if strings.HasPrefix(line, "# HELP ") {
-			count++
 		}
 	}
 	note("response", status)
