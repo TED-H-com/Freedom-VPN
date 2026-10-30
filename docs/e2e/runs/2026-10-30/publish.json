@@ -8,16 +8,24 @@
   "status": "blocked",
   "observations": [
     {
+      "name": "agent_baseline_observed",
+      "detail": "true"
+    },
+    {
+      "name": "stored_rows",
+      "detail": "{\"node\": {\"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"applying\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}, {\"name\": \"tunnel_probe\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T01:11:40.318735193Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"peer_observe_events\": 0}"
+    },
+    {
       "name": "control_status",
       "detail": "online"
     },
     {
       "name": "safety_status",
-      "detail": "failed"
+      "detail": "passed"
     },
     {
       "name": "data_health",
-      "detail": "unknown"
+      "detail": "healthy"
     },
     {
       "name": "provisioning_state",
@@ -41,7 +49,7 @@
     },
     {
       "name": "config_applied",
-      "detail": "0"
+      "detail": "1"
     },
     {
       "name": "check_dns_policy",
@@ -53,7 +61,7 @@
     },
     {
       "name": "check_lease",
-      "detail": "failed"
+      "detail": "not_run"
     },
     {
       "name": "check_meter_path",
@@ -65,15 +73,15 @@
     },
     {
       "name": "check_qos",
-      "detail": "failed"
+      "detail": "not_run"
     },
     {
       "name": "check_release_supported",
-      "detail": "failed"
+      "detail": "passed"
     },
     {
       "name": "check_source_binding",
-      "detail": "failed"
+      "detail": "not_run"
     },
     {
       "name": "check_storage",
@@ -81,7 +89,7 @@
     },
     {
       "name": "check_tunnel_probe",
-      "detail": "not_run"
+      "detail": "passed"
     },
     {
       "name": "put",
@@ -89,8 +97,10 @@
     },
     {
       "name": "put_error",
-      "detail": "NODE_NOT_SERVICEABLE node does not satisfy serving baseline requirements {\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}"
+      "detail": "NODE_NOT_SERVICEABLE node does not satisfy serving baseline requirements {\"failed_checks\":[\"provisioning_state=applying (want ready)\"]}"
     }
   ],
-  "at": "2026-10-30T00:05:56Z"
+  "at": "2026-10-30T01:11:41Z",
+  "run_id": "6bf270e4-abb1-43ff-93eb-18d282fc7c2a",
+  "source_commit": "5477de091f449047193fdc9114cfca4ced5b36e6"
 }

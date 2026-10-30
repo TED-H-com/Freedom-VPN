@@ -50,8 +50,10 @@ The harness dials `127.0.0.1` at these ports and keeps the TLS name
 
 ## Issuer
 
-One deployment uses one OIDC issuer and a public subject for both the portal
-and NetBird (D-052, §14.2). The lab issuer is the embedded Dex issuer of
+One deployment uses one OIDC issuer and public (non-pairwise) subjects for both
+the portal and NetBird (D-052, §2 [S36], §14.2). Production must configure that
+same issuer and subject contract for both clients; matching email addresses is
+not identity evidence. The lab issuer is the embedded Dex issuer of
 `netbird-server` 0.82.0:
 
 `https://netbird.example.invalid/oauth2`
@@ -81,8 +83,10 @@ that secret. The lab IdP is a token adapter on two paths only,
 `POST /oauth2/token` and `GET /oauth2/keys`. For an authorization-code grant
 whose redirect is the portal callback, the adapter drops the client secret,
 exchanges the code with Dex, checks Dex's signature, and re-signs an ID token
-with the same `iss`, `sub`, `nonce`, and `auth_time`, plus TEST ONLY `roles`
-and `amr: ["mfa"]`. The admin role is selected when the Dex profile name or
+with the same `iss`, `sub`, and `nonce`, preserving `auth_time` when present
+and otherwise using Dex's `iat`, plus TEST ONLY `roles` and `amr: ["mfa"]`.
+The injected MFA claim is a lab fixture, not evidence of a real second factor.
+The admin role is selected when the Dex profile name or
 email is `E2E Admin` or `admin@example.invalid`. Every other grant, including
 the CLI device-code grant, is proxied unchanged, so management still validates
 Dex signatures with its in-process keys. `GET /oauth2/keys` returns Dex's keys
@@ -162,10 +166,33 @@ member total matches the uploaded bytes.
 ## How to read evidence
 
 Each scenario writes `docs/e2e/runs/<UTC date>/<id>.json` and a short `.md`
-summary. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
+summary. Every record in one run carries the same `run_id` and `source_commit`;
+the timestamp `at` is the scenario's write time. Replace a dated set only after
+all thirteen scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
 reached a gap and recorded the response; it is not a pass. Observations are
 names and short details. Tokens, setup keys, passwords, DSNs, and home paths
-are redacted. The process exits non-zero when any record is not `pass`.
+are redacted. Raw portal subjects and NetBird user ids are also redacted;
+`same_subject` records the comparison made before redaction. The process exits
+non-zero when any record is not `pass` (Go test exits 1; make exits 2).
+
+## Portal fixture deviations
+
+`apps/portal/e2e/dev-stack.mjs` is a separate portal test driver. Its fixture
+rows do not prove acceptance of publication, device admission, or an updater:
+
+- It hand-seeds the enrolled node's `exits` row to `published` / `active`
+  after polling node readiness. The dev-stack acceptance runner instead calls
+  the publication API and records its operation or rejection.
+- `SEEDED_NODE_2_ID` is a synthetic second node/incarnation and exit with
+  `ready`, `passed`, and `healthy` values, including an arm64 label. No second
+  node process or arm64 execution is established by those rows.
+- The single-column `desired_release_id` fixture writes a target directly to
+  `nodes` because the node PATCH API does not set that field; creating a new
+  all-nodes update batch would supersede its prearranged batch. This bypasses
+  the product update intent path.
+- Its `update_results` fixture inserts an accepted result and policy refs for
+  the succeeded update job. Those fields exercise portal rendering, including
+  policy evidence; they are not a result submitted by a running updater.
 
 ## Known limits
 
@@ -179,6 +206,14 @@ are redacted. The process exits non-zero when any record is not `pass`.
   `approved_release_ids`. The run writes both allowlist arrays in SQL so a
   batch is not rejected as `RELEASE_NOT_APPROVED`, and it does not bump
   `generation`, so `expected_generation` still matches the API.
+- Before enrollment the acceptance runner packages the tree-built agent,
+  watchdog, and updater for amd64 and arm64 as a TEST ONLY boot release
+  (`0.1.0`). It registers and verifies that release and both update fixtures,
+  sets the boot UUID in the node configs, and includes all three IDs in the
+  serving allowlist. `desired-state` records whether the boot ID is supported.
+  Previously the non-empty update allowlist excluded the node's unset release
+  ID, which correctly caused `release_supported=failed`. The `1.0.1` and
+  `1.0.2` update archives remain marker fixtures for the updater exercise.
 - Stripe's API host is fixed in the client. The lab publishes it as the
   Docker alias `api.stripe.com` with a certificate for that name. The lab
   seeds one plan whose provider is `stripe` and whose price id is `e2e-price`.
@@ -192,14 +227,25 @@ are redacted. The process exits non-zero when any record is not `pass`.
   while that writer is absent. The 2026-10-30 run recorded grant 202, checkout
   201, device path `/oauth2/device`, login submitted, stage `netbird_up`, and
   one peer of two with a NetBird user. `GET /api/v1/member/devices` was 200
-  with zero devices. No binding was projected and no flow was counted, so
-  AT12 is not claimed.
+  with zero devices. `same_subject=true` confirms that the portal subject and
+  NetBird identity match before redaction. Stored row counts for this member
+  were `netbird_user_bindings=0`, `member_devices=0`, and `device_bindings=0`.
+  This is the missing production mapping writer, not an issuer mismatch.
+  No binding was projected and no flow was counted, so AT12 is not claimed.
 - After enroll the run calls `PUT /admin/nodes/{id}/publication` with intent
   `published` and `If-Match`. The 2026-10-30 call returned 422
-  `NODE_NOT_SERVICEABLE` before an operation existed. The failed checks were
-  `provisioning_state=applying (want ready)` and `safety_status=failed`.
-  `publication_observed` stayed absent, so the poll of `agent_policy`,
-  `netbird_route_readback`, and `data_path_probe` did not start.
+  `NODE_NOT_SERVICEABLE` before an operation existed, with only
+  `provisioning_state=applying (want ready)` in `failed_checks`. The accepted
+  observation now reports `ready`, `safety_status=passed`, `data_health=healthy`,
+  `tunnel_probe=passed`, and applied generation `1`. The stored node still has
+  `provisioning_state=applying`, although desired and applied are both `1`.
+  Its incarnation peer id and the report's NetBird peer id are null, and there
+  are zero `node.peer.observe` events: the HTTP observer only enqueues that
+  worker job for a non-null peer id. The worker also requires that id before
+  its ready transition. This is the central wire-nodes blocker; the agent
+  baseline fix from PR #75 is visible. `publication_observed` stays absent,
+  so `agent_policy`, `netbird_route_readback`, and `data_path_probe` were not
+  reached. `publish` includes the stored row snapshot without seeding a fix.
 - `GET /api/v1/member/usage` is served. A usage batch is sent only when a
   desired-state `device_bindings` row matches an authorized device and covers
   the interval. The 2026-10-30 run did not send a batch. The member total
@@ -216,9 +262,12 @@ are redacted. The process exits non-zero when any record is not `pass`.
   2026-10-30 good-release journal `health_json` was
   `{"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}`.
   That update ended `recovery_required` with `ROLLBACK_FAILED`. The bad
-  release has no journal row, so `HASH_MISMATCH` was not observed.
-  `locally_succeeded` was not observed. AT23, AT25, and AT27 are not claimed
-  from this run.
+  release was rejected with `HASH_MISMATCH: content changed during resume`;
+  its record passes only the tampered-byte rejection observation. It has no
+  journal health row and proves no successful rollback. `locally_succeeded`
+  was not observed; full AT23, AT25, and AT27 completion is not claimed.
+  The harness waits for the release in `signed.update.release_id` before
+  invoking the updater; presence in `serving_release_ids` alone is insufficient.
 - The meter runs inside `fvpn-agent`. There is no separate meter or
   time-anchor binary. `host_reserve_bps` is set in the generated agent file
   because the binary has no default (D-034).
@@ -228,3 +277,10 @@ are redacted. The process exits non-zero when any record is not `pass`.
   the follow-up 2 run, including `parallel-stacks.md`. The first recorded run
   of 2026-10-29 is the copy in `acc17fb`. A forward chain that stays on the
   baseline is not an AT10 or AT29 pass.
+
+The final 2026-10-30 run is `6bf270e4-abb1-43ff-93eb-18d282fc7c2a`, from
+source commit `5477de091f449047193fdc9114cfca4ced5b36e6`. All thirteen scenarios
+completed: seven pass and six blocked, with no scenario labeled fail.
+`TestE2E_Acceptance` took 197.36 seconds and exited 1 (`make` exited 2),
+preserving the non-pass gate. These records replace the earlier attempts on
+that date; they are not a combination of runs.
