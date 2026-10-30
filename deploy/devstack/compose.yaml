@@ -241,8 +241,8 @@ services:
       # Directory mount: AdGuard rewrites the file with rename, which fails on a file bind.
       - ${FVPN_E2E_STATE}/adguard/conf:/opt/adguardhome/conf
       - ${FVPN_E2E_STATE}/adguard/work:/opt/adguardhome/work
-    depends_on: [coredns, node]
-    network_mode: service:node
+    depends_on: [coredns, node-netns]
+    network_mode: service:node-netns
     restart: "no"
 
   control:
@@ -299,6 +299,19 @@ services:
       origin: {}
     restart: "no"
 
+  # Keep loopback DNS and the node interfaces in one namespace across either
+  # process-container restart. This container runs no network configuration.
+  node-netns:
+    image: ${FVPN_E2E_IMAGE_NODE:-fvpn-devstack-node:local}
+    container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-node-netns
+    entrypoint: ["sleep", "infinity"]
+    networks:
+      lab:
+        ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.40
+      origin:
+        ipv4_address: ${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20
+    restart: "no"
+
   node:
     image: ${FVPN_E2E_IMAGE_NODE:-fvpn-devstack-node:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-node
@@ -309,15 +322,13 @@ services:
       - ${FVPN_E2E_STATE}/node/etc:/etc/vpn-node
       - ${FVPN_E2E_STATE}/node/var:/var/lib/vpn-node
     depends_on:
+      adguard:
+        condition: service_started
       control:
         condition: service_healthy
       gateway:
         condition: service_started
-    networks:
-      lab:
-        ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.40
-      origin:
-        ipv4_address: ${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20
+    network_mode: service:node-netns
     restart: "no"
 
   member:

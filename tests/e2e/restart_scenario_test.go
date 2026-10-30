@@ -48,23 +48,30 @@ func (r *runner) restartNode(ctx context.Context) {
 	defer cancel()
 	var heartbeat, boot []byte
 	var stage string
+	var tableOK, accepted bool
 	ok := waitUntil(wait, time.Second, func() bool {
 		stage = r.lab.stage(r.lab.node, "/var/lib/vpn-node/e2e/status.json")
 		heartbeat, _ = r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
 		boot, _ = r.lab.docker(r.lab.node, "cat", "/etc/vpn-node/boot-id")
 		_, err := r.lab.docker(r.lab.node, "nft", "list", "table", "inet", "fvpn")
-		return stage == "enrolled" && err == nil && string(boot) != string(oldBoot) && strings.Contains(string(heartbeat), "boot_id "+strings.TrimSpace(string(boot)))
+		tableOK = err == nil
+		rowErr := conn.QueryRow(wait, `SELECT EXISTS(SELECT 1 FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND received_at >= $3)`, r.nodeID, r.incID, started).Scan(&accepted)
+		return stage == "enrolled" && tableOK && rowErr == nil && accepted && string(boot) != string(oldBoot) && strings.Contains(string(heartbeat), "boot_id "+strings.TrimSpace(string(boot)))
 	})
 	after, err := snapshot()
 	sameIdentity, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/identity/node.json")
 	note("resume_within_watchdog_deadline", boolText(ok))
+	note("nft_table_readable", boolText(tableOK))
+	note("new_observation_same_incarnation", boolText(accepted))
+	dns, dnsErr := r.lab.docker(r.lab.node, "fvpn-e2e-nodeconfig", "dns-probe")
+	note("resolver_after_restart", strings.TrimSpace(string(dns)))
 	note("restart_elapsed_ms", itoa(int(time.Since(started).Milliseconds())))
 	note("status_stage", stage)
 	note("heartbeat", strings.TrimSpace(string(heartbeat)))
 	note("same_node_and_incarnation", boolText(string(identity) == string(sameIdentity)))
 	note("enrollment_rows_unchanged", boolText(err == nil && before == after))
 	note("installer_token_absent_after", boolText(!r.lab.fileNonEmpty(r.lab.node, "/var/lib/vpn-node/e2e/enrollment.token")))
-	if ok && err == nil && before == after && tokenAbsent && string(identity) == string(sameIdentity) {
+	if ok && dnsErr == nil && err == nil && before == after && tokenAbsent && string(identity) == string(sameIdentity) {
 		rec.Status = StatusPass
 	}
 }
