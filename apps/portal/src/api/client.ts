@@ -28,6 +28,8 @@ import type {
   EnrollmentCreateRequest,
   EnrollmentCreateResponse,
   EnrollmentRecord,
+  FleetConfig,
+  FleetConfigUpdate,
   GrantCreateRequest,
   MemberDetail,
   MemberDeviceListResponse,
@@ -824,6 +826,31 @@ export class FreedomVpnApiClient {
       method: 'get',
       path: '/admin/audit-events',
       query,
+    });
+  }
+
+  // --- Admin Fleet Configuration (D-065, §16.3) ---
+
+  getFleetConfig(): Promise<WithEtag<FleetConfig>> {
+    return this.callOperationWithEtag({
+      method: 'get',
+      path: '/admin/fleet-config',
+    });
+  }
+
+  updateFleetConfig(
+    body: FleetConfigUpdate,
+    ifMatch?: string | null,
+    actionId?: string,
+  ): Promise<WithEtag<FleetConfig>> {
+    const resolvedIfMatch =
+      ifMatch === null ? '' : (ifMatch ?? this.etagStore.get('/admin/fleet-config'));
+    return this.callOperationWithEtag({
+      method: 'put',
+      path: '/admin/fleet-config',
+      body,
+      ifMatch: resolvedIfMatch,
+      actionId,
     });
   }
 

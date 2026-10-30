@@ -209,6 +209,11 @@ export function AppLayout(): React.ReactElement {
                 <li>
                   <NavLink to="/admin/audit">{t('nav.admin.audit')}</NavLink>
                 </li>
+                <li>
+                  <NavLink to="/admin/settings" data-testid="nav-admin-settings">
+                    {t('nav.admin.settings')}
+                  </NavLink>
+                </li>
               </ul>
             </>
           )}

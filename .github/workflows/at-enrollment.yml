@@ -43,4 +43,4 @@ jobs:
           path: docs/e2e/at/enrollment/
       - name: tear down
         if: always()
-        run: FVPN_E2E_PREFIX=w4-enroll FVPN_E2E_PORT_BASE=66000 make -f mk/e2e.mk e2e-down
+        run: FVPN_E2E_PREFIX=w4-enroll FVPN_E2E_PORT_BASE=12000 make -f mk/e2e.mk e2e-down

@@ -131,7 +131,7 @@ func unchangedVersions(before, after updateDocument) bool {
 }
 
 func (s *updatesFollowup) preResultInjection(batch api.UpdateBatchAccepted, boot, target, unexpectedCurrent, unexpectedLastGood uuid.UUID) {
-	pause := filepath.Join(s.r.lab.state, "node", "var", "e2e", "pause-agent")
+	pause := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e", "pause-agent")
 	if writeAtomic(pause, []byte("TEST ONLY pre-result observation injection\n")) != nil {
 		s.r.t.Fatal("pause request failed")
 	}
@@ -208,6 +208,16 @@ func (s *updatesFollowup) preResultInjection(batch api.UpdateBatchAccepted, boot
 		auditOK = auditOK && countsOK
 		steps = append(steps, map[string]any{"case": scenario.name, "heartbeats": requests, "audit_pages": pages, "audit_counts": counts, "expected_audit_counts": expected, "audit_matches": countsOK})
 	}
+	report.set("report_id", uuid.NewString())
+	report.set("observed_at", time.Now().UTC())
+	report.set("current_release_id", target)
+	report.set("last_good_release_id", nil)
+	response := s.nodePOST("/api/v1/agent/observations", report)
+	after := s.authoritySnapshot()
+	pages, counts, complete := s.unexpectedAudit(intent.JobId.String())
+	nullOK := response.Status == 202 && after.text("current_release_id") == target.String() && string(after["last_good_release_id"]) == "null" && s.acceptedResultCount() == 0 && complete && len(counts) == 3
+	evidence["agreeing_null_last_good"] = map[string]any{"request": report, "http_status": response.Status, "response": json.RawMessage(response.Body), "projection": after, "batch_api_response": s.target(batch).BatchJSON, "audit_pages": pages, "audit_counts": counts}
+	s.note("AT24", "check_null_last_good_seed", nullOK)
 	evidence["policy"] = "docs/updates/central-lifecycle.md:427-465; fleet follow-up 8 requires agreeing last-good; fresh case (c) boot is unexpected and audited once"
 	evidence["steps"] = steps
 	for _, id := range []string{"AT24", "AT27"} {
@@ -229,11 +239,10 @@ func (s *updatesFollowup) firstResultLastGood(good uuid.UUID, accepted bool) {
 }
 
 // This job is issued after genuine accepted evidence has recorded 1.0.1.
-// Keep the requested c2/c3 assertions distinct from the current policy; a
-// policy/expectation conflict is evidence for the orchestrator, not permission
-// to seed the database or fabricate an updater result.
+// Follow-up 7 resolves F6-02: accepted evidence closes seeding for every
+// later job in this incarnation. Mismatches withhold confirmation only.
 func (s *updatesFollowup) recordedInjection(batch api.UpdateBatchAccepted, recorded, target, unrelated uuid.UUID) {
-	pause := filepath.Join(s.r.lab.state, "node", "var", "e2e", "pause-agent")
+	pause := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e", "pause-agent")
 	if writeAtomic(pause, []byte("TEST ONLY recorded-incarnation observations\n")) != nil {
 		s.r.t.Fatal("pause recorded agent failed")
 	}
@@ -264,6 +273,7 @@ func (s *updatesFollowup) recordedInjection(batch api.UpdateBatchAccepted, recor
 	bound, boundErr := intent.BatchId.Get()
 	valid := count > 0 && before.text("current_release_id") == recorded.String() && before.text("last_good_release_id") == recorded.String() && boundErr == nil && bound == batch.BatchId && intent.ReleaseId == target && intent.IncarnationId == s.r.incID
 	auditsOK := true
+	withheldOK := true
 	steps := []any{}
 	for index, scenario := range []struct {
 		name    string
@@ -281,33 +291,33 @@ func (s *updatesFollowup) recordedInjection(batch api.UpdateBatchAccepted, recor
 			response := s.nodePOST("/api/v1/agent/observations", report)
 			after, view := s.authoritySnapshot(), s.target(batch)
 			expected := recorded
-			if index > 0 {
-				expected = target
-			}
 			versions := after.text("current_release_id") == expected.String() && after.text("last_good_release_id") == recorded.String() && sameJSON(before["recovery_required"], after["recovery_required"])
 			if index > 0 {
 				versions = versions && view.Unconfirmed
 			}
+			observation := s.readJSON(`SELECT jsonb_build_object('last_observed_at',last_observed_at,'job_id',id,'generation',generation::text) FROM update_jobs WHERE id=$1`, intent.JobId)
+			if index > 0 {
+				withheldOK = withheldOK && string(document(observation)["last_observed_at"]) == "null" && view.Unconfirmed
+			}
 			noResult := s.acceptedResultCount() == count
 			valid = valid && response.Status == 202 && versions && noResult
 			payload, _ := json.Marshal(report)
-			requests = append(requests, map[string]any{"repeat": repeat, "request": json.RawMessage(payload), "http_status": response.Status, "response": json.RawMessage(response.Body), "batch_api_response": view.BatchJSON, "projection": after, "requested_versions_match": versions, "accepted_versions_preserved": unchangedVersions(before, after), "no_new_accepted_result": noResult})
+			requests = append(requests, map[string]any{"repeat": repeat, "request": json.RawMessage(payload), "http_status": response.Status, "response": json.RawMessage(response.Body), "batch_api_response": view.BatchJSON, "projection": after, "versions_match": versions, "accepted_versions_preserved": unchangedVersions(before, after), "no_new_accepted_result": noResult, "job_observation": observation})
 		}
 		pages, counts, complete := s.unexpectedAudit(intent.JobId.String())
 		expected := map[string]int{}
-		if index == 2 {
-			expected[unrelated.String()] = 1
-		}
+
 		matches := complete && reflect.DeepEqual(counts, expected)
 		auditsOK = auditsOK && matches
-		steps = append(steps, map[string]any{"case": scenario.name, "heartbeats": requests, "audit_pages": pages, "audit_counts": counts, "requested_audit_counts": expected, "requested_audits_match": matches})
+		steps = append(steps, map[string]any{"case": scenario.name, "heartbeats": requests, "audit_pages": pages, "audit_counts": counts, "expected_audit_counts": expected, "audit_matches": matches})
 	}
 	for _, id := range []string{"AT24", "AT27"} {
-		s.note(id, "recorded_pre_result_injection", map[string]any{"before": before, "accepted_results_before": count, "recorded_release_id": recorded, "target_release_id": target, "unrelated_release_id": unrelated, "job_id": intent.JobId, "generation": intent.Generation, "steps": steps, "policy": "docs/updates/central-lifecycle.md:465 closes seeding after first accepted result, even for later jobs"})
+		s.note(id, "recorded_pre_result_injection", map[string]any{"before": before, "accepted_results_before": count, "recorded_release_id": recorded, "target_release_id": target, "unrelated_release_id": unrelated, "job_id": intent.JobId, "generation": intent.Generation, "steps": steps, "policy": "docs/updates/central-lifecycle.md:467 closes seeding after first accepted result, even for later jobs"})
 		s.note(id, "check_recorded_versions", valid)
 		s.note(id, "check_recorded_audits", auditsOK)
+		s.note(id, "check_withheld_observation", withheldOK)
 	}
-	s.r.t.Logf("recorded injection requested assertions: versions=%t audits=%t", valid, auditsOK)
+	s.r.t.Logf("recorded injection accepted-result authority: versions=%t audits=%t", valid, auditsOK)
 }
 
 func (s *updatesFollowup) recordedLastGood(release uuid.UUID, accepted bool) {
