@@ -1,0 +1,491 @@
+//go:build e2e
+
+package e2e
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	at "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates"
+	"github.com/google/uuid"
+)
+
+// This file is overlaid into the shared e2e package by run.py. In particular,
+// runner.releases remains the only build/sign/register pipeline (D-053).
+func TestUpdatesFollowup(t *testing.T) {
+	if os.Getenv("FVPN_E2E") != "1" {
+		t.Skip("requires owned devstack")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
+	defer cancel()
+	records := map[string]*at.Record{}
+	titles := []string{"Good candidate and central confirmation", "Unconfirmed and needs-attention presentation", "Tampered archive never executes", "Genuine candidate health failure rolls back", "Recovery after interrupted apply"}
+	runID := uuid.NewString()
+	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, title := range titles {
+		id := fmt.Sprintf("AT%d", 23+i)
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 1 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4–§13.12"}, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+	}
+	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
+	defer func() {
+		dir := filepath.Join("..", "..", "docs", "e2e", "at", "updates")
+		var summary strings.Builder
+		fmt.Fprintf(&summary, "# Updates follow-up 1\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		for i := 23; i <= 27; i++ {
+			rec := records[fmt.Sprintf("AT%d", i)]
+			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
+		}
+		if err := at.WriteAcceptance(dir, records); err != nil {
+			t.Error(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "summary.md"), []byte(summary.String()), 0o644); err != nil {
+			t.Error(err)
+		}
+	}()
+	lab, err := openLab()
+	if err != nil {
+		t.Fatal("owned stack unavailable")
+	}
+	if lab.prefix != "fvpn-w4-updates" {
+		t.Fatal("refusing non-owned stack")
+	}
+	r := &runner{t: t, lab: lab, dir: filepath.Join(lab.root, ".agent", "followup1", runID), runID: runID, sourceCommit: strings.TrimSpace(string(commit))}
+	s := &updatesFollowup{r: r, ctx: ctx, rec: records}
+	admin := r.login(ctx, "e2e-admin", "admin")
+	if admin == nil {
+		return
+	}
+	s.admin = admin
+	good, bad := r.releases(ctx, admin)
+	if good == uuid.Nil || bad == uuid.Nil {
+		s.blockAll("w3-devstack-e2e: real release build/register prerequisite failed")
+		return
+	}
+	var releaseEvidence Record
+	raw, err := os.ReadFile(filepath.Join(r.dir, "release-register.json"))
+	if err != nil || json.Unmarshal(raw, &releaseEvidence) != nil {
+		t.Fatal("release evidence unavailable")
+	}
+	var boot uuid.UUID
+	for _, ob := range releaseEvidence.Observations {
+		if ob.Name == "boot_release_id" {
+			boot, _ = uuid.Parse(ob.Detail)
+		}
+		if strings.Contains(ob.Name, "sha256") || strings.HasPrefix(ob.Name, "verify_") {
+			for id := range records {
+				s.note(id, ob.Name, ob.Detail)
+			}
+		}
+	}
+	if boot == uuid.Nil {
+		t.Fatal("boot release missing")
+	}
+	r.enroll(ctx, admin)
+	if r.nodeID == uuid.Nil || r.incID == uuid.Nil {
+		s.blockAll("w3-wire-nodes: enrollment/peer bootstrap prerequisite failed")
+		return
+	}
+	for _, rec := range records {
+		rec.NodeIncarnation = r.incID.String()
+	}
+	conn, err := lab.db(ctx)
+	if err != nil {
+		t.Fatal("owned observation database unavailable")
+	}
+	defer conn.Close(ctx)
+	ready := s.wait(2*time.Minute, func() bool {
+		var ok bool
+		err := conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM nodes n JOIN node_observations o ON o.node_id=n.id WHERE n.id=$1 AND n.provisioning_state='ready' AND o.applied_generation>0 AND o.safety_status='passed' AND o.report_payload->>'provisioning_state'='ready')`, r.nodeID).Scan(&ok)
+		return err == nil && ok
+	})
+	for id := range records {
+		s.note(id, "accepted_unpublished_baseline", ready)
+		s.note(id, "netbird_manifest_version", "0.82.0")
+		s.note(id, "release_ids", map[string]uuid.UUID{"boot": boot, "good": good, "negative": bad})
+	}
+	if !ready {
+		s.blockAll("w2-agent-core / w3-wire-nodes: accepted ready baseline not observed")
+		return
+	}
+
+	batch, ok := s.batch("AT23", good)
+	if !ok {
+		return
+	}
+	pending := s.target(batch)
+	s.note("AT24", "before_apply", pending)
+	s.execute("AT23", false)
+	goodJournal := s.journal(good)
+	s.note("AT23", "journal", goodJournal)
+	running := s.running(good)
+	s.note("AT23", "running_verified_candidate", running)
+	confirmed := s.confirm(batch, "succeeded")
+	s.note("AT23", "central", confirmed)
+	localGood := goodJournal.Stage == "locally_succeeded" && goodJournal.Current == good.String() && goodJournal.LastGood == good.String() && running
+	if localGood && goodJournal.allPassed() && confirmed.State == "succeeded" && !confirmed.Unconfirmed {
+		s.pass("AT23", "Real 1.0.1 candidate answered D-053, locally_succeeded, then central succeeded and confirmed")
+	} else {
+		s.block("AT23", "w4-node-updater / w3-wire-fleet: good update or central confirmation prerequisite incomplete")
+	}
+	if !localGood {
+		s.block("AT25", "w4-node-updater: last-good prerequisite absent")
+		s.block("AT26", "w4-node-updater: last-good prerequisite absent")
+		s.block("AT27", "w4-node-updater: last-good prerequisite absent")
+		return
+	}
+
+	// TEST ONLY failure stimulus: a real TCP probe to a closed port inside the
+	// owned node. Only this candidate's runtime config changes. The agent must
+	// observe the failed dial and answer the challenge itself; no health writes.
+	config := filepath.Join(lab.state, "node", "var", "e2e", "agent-"+boot.String()+".json")
+	original, err := os.ReadFile(config)
+	if err != nil {
+		t.Fatal("negative candidate config unavailable")
+	}
+	var cfg map[string]any
+	if json.Unmarshal(original, &cfg) != nil {
+		t.Fatal("candidate config invalid")
+	}
+	cfg["egress_probe_target"] = "127.0.0.1:1"
+	changed, _ := json.MarshalIndent(cfg, "", "  ")
+	if err := writeAtomic(config, changed); err != nil {
+		t.Fatal("negative probe configuration failed")
+	}
+	defer func() {
+		if err := writeAtomic(config, original); err != nil {
+			t.Error("restore candidate config failed")
+		}
+	}()
+	rollbackBatch, ok := s.batch("AT26", boot)
+	if ok {
+		s.note("AT26", "failure_stimulus", "TEST ONLY: candidate TCP egress probe dials its own closed loopback port; no forced health values or journal writes")
+		s.execute("AT26", false)
+		journal := s.journal(boot)
+		s.note("AT26", "journal", journal)
+		s.note("AT26", "last_good_process_restored", s.running(good))
+		target := s.confirm(rollbackBatch, "rolled_back")
+		s.note("AT26", "central", target)
+		if journal.Stage == "rolled_back" && journal.Current == good.String() && journal.LastGood == good.String() && journal.candidateFailed() && journal.rollbackPassed() && s.running(good) && target.State == "rolled_back" {
+			s.pass("AT26", "Candidate reported a genuine tunnel_probe failure; updater restored and health-checked 1.0.1 last-good; central rolled_back")
+		} else {
+			s.block("AT26", "w4-node-updater / w2-agent-core: genuine health failure did not produce a verified last-good rollback")
+		}
+	}
+	if err := writeAtomic(config, original); err != nil {
+		t.Fatal("restore candidate config failed")
+	}
+
+	archivePath := filepath.Join(lab.state, "releases", "r", bad.String(), "amd64.tar.zst")
+	originalArchive, err := os.ReadFile(archivePath)
+	if err != nil || len(originalArchive) == 0 {
+		t.Fatal("real negative archive unavailable")
+	}
+	tampered := append([]byte(nil), originalArchive...)
+	tampered[len(tampered)/2] ^= 1
+	object := "r/" + bad.String() + "/amd64.tar.zst"
+	if err := lab.putObject(ctx, object, tampered); err != nil {
+		t.Fatal("tamper upload failed")
+	}
+	badBatch, ok := s.batch("AT25", bad)
+	if ok {
+		s.execute("AT25", false)
+		journal := s.journal(bad)
+		s.note("AT25", "journal", journal)
+		absent, err := lab.docker(lab.node, "sh", "-c", `test ! -e /opt/vpn-node/releases/`+bad.String()+`/bin/fvpn-agent && printf absent`)
+		neverInstalled := err == nil && string(absent) == "absent"
+		s.note("AT25", "candidate_executable_absent", neverInstalled)
+		target := s.confirm(badBatch, "failed")
+		s.note("AT25", "central", target)
+		s.note("AT24", "after_rejected_candidate", target)
+		if journal.JobError == "HASH_MISMATCH" && journal.Stage == "" && neverInstalled && s.running(good) && target.State == "failed" {
+			s.pass("AT25", "A byte-tampered real archive produced HASH_MISMATCH before a transaction or executable was installed; last-good still running")
+		} else {
+			s.block("AT25", "w4-node-updater: tampered artifact rejection or central result incomplete")
+		}
+		if pending.Unconfirmed && target.NeedsAttention && target.State == "failed" {
+			s.pass("AT24", "Product API showed unconfirmed before apply and needs_attention on the rejected candidate; no observation rows seeded")
+		} else {
+			s.block("AT24", "w3-wire-fleet: unconfirmed/needs_attention projection not observed")
+		}
+	}
+	if err := lab.putObject(ctx, object, originalArchive); err != nil {
+		t.Fatal("restore original archive failed")
+	}
+
+	recoverBatch, ok := s.batch("AT27", bad)
+	if !ok {
+		return
+	}
+	s.execute("AT27", true)
+	interrupted := s.journal(bad)
+	s.note("AT27", "interrupted_journal", interrupted)
+	s.note("AT27", "members_blocked_at_interruption", lab.forwardChain().MemberAccept == 0)
+	// The process died at a real service boundary, after final_sampled was
+	// durable. Restore normal hooks, then let production Recover read its journal.
+	done := filepath.Join(lab.state, "node", "var", "e2e", "updater.json.done")
+	raw, err = os.ReadFile(done)
+	if err != nil || json.Unmarshal(raw, &cfg) != nil {
+		t.Fatal("recovery config unavailable")
+	}
+	cfg["stop_command"] = []string{"/usr/local/bin/agent-service.sh", "stop"}
+	raw, _ = json.MarshalIndent(cfg, "", "  ")
+	recoverConfig := filepath.Join(lab.state, "node", "var", "e2e", "updater-recover.json")
+	if err := writeAtomic(recoverConfig, raw); err != nil {
+		t.Fatal("recovery config write failed")
+	}
+	command := exec.CommandContext(ctx, "docker", "exec", lab.node, "fvpn-updater", "recover", "-config", "/var/lib/vpn-node/e2e/updater-recover.json")
+	output, err := command.CombinedOutput()
+	s.note("AT27", "recover_exit_success", err == nil)
+	s.note("AT27", "recover_output_empty", len(output) == 0)
+	_ = os.Remove(filepath.Join(lab.state, "node", "var", "e2e", "pause-agent"))
+	journal := s.journal(bad)
+	s.note("AT27", "recovered_journal", journal)
+	target := s.confirm(recoverBatch, "succeeded")
+	s.note("AT27", "central", target)
+	s.note("AT27", "running_verified_candidate", s.running(bad))
+	if interrupted.Stage == "final_sampled" && interrupted.TxnID != "" && interrupted.TxnID == journal.TxnID && journal.Stage == "locally_succeeded" && journal.allPassed() && s.running(bad) && target.State == "succeeded" && !target.Unconfirmed {
+		s.pass("AT27", "SIGKILL interrupted apply at final_sampled; production recover completed the same transaction with candidate D-053 health and central confirmation")
+	} else {
+		s.block("AT27", "w4-node-updater / w3-wire-fleet: interrupted transaction recovery or central confirmation incomplete")
+	}
+}
+
+type updatesFollowup struct {
+	r     *runner
+	ctx   context.Context
+	admin *session
+	rec   map[string]*at.Record
+}
+
+func (s *updatesFollowup) note(id, name string, value any) {
+	raw, _ := json.Marshal(value)
+	s.rec[id].Observations = append(s.rec[id].Observations, at.Observation{Name: name, Detail: string(raw)})
+}
+func (s *updatesFollowup) pass(id, detail string) {
+	s.rec[id].Status = at.StatusPass
+	s.rec[id].Actual = detail
+	s.r.t.Log(id + ": pass: " + detail)
+}
+func (s *updatesFollowup) block(id, detail string) {
+	s.rec[id].Actual = detail
+	s.r.t.Log(id + ": blocked: " + detail)
+}
+func (s *updatesFollowup) blockAll(detail string) {
+	for id := range s.rec {
+		s.block(id, detail)
+	}
+}
+func (s *updatesFollowup) wait(d time.Duration, fn func() bool) bool {
+	ctx, cancel := context.WithTimeout(s.ctx, d)
+	defer cancel()
+	return waitUntil(ctx, 2*time.Second, fn)
+}
+func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAccepted, bool) {
+	var accepted api.UpdateBatchAccepted
+	reply, err := s.admin.call(s.ctx, "GET", s.r.lab.public+"/api/v1/admin/releases", nil, nil)
+	var page api.ReleaseList
+	if err != nil || reply.Status != 200 || json.Unmarshal(reply.Body, &page) != nil {
+		s.block(id, "w3-wire-fleet: fleet read unavailable")
+		return accepted, false
+	}
+	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 1"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	s.note(id, "batch_response", httpDetail(reply, err))
+	if err != nil || reply.Status != 202 || json.Unmarshal(reply.Body, &accepted) != nil {
+		s.block(id, "w3-wire-fleet: batch create not accepted")
+		return accepted, false
+	}
+	s.note(id, "batch_id", accepted.BatchId)
+	s.note(id, "generation", accepted.FleetGeneration.String())
+	seen := s.wait(90*time.Second, func() bool {
+		raw, err := s.r.lab.docker(s.r.lab.node, "cat", "/var/lib/vpn-node/state/desired-state.json")
+		var state struct {
+			Signed struct {
+				Update *api.UpdateIntent `json:"update"`
+			} `json:"signed"`
+		}
+		if err != nil || json.Unmarshal(raw, &state) != nil || state.Signed.Update == nil {
+			return false
+		}
+		batch, err := state.Signed.Update.BatchId.Get()
+		return err == nil && batch == accepted.BatchId && state.Signed.Update.ReleaseId == release
+	})
+	s.note(id, "signed_intent_for_this_batch", seen)
+	if !seen {
+		s.block(id, "w3-wire-fleet / w2-agent-core: signed update intent not delivered for this batch")
+	}
+	return accepted, seen
+}
+
+type updatesTarget struct {
+	State          string `json:"state"`
+	Unconfirmed    bool   `json:"unconfirmed"`
+	NeedsAttention bool   `json:"needs_attention"`
+	CurrentRelease string `json:"current_release"`
+	ErrorCode      string `json:"error_code"`
+}
+
+func (s *updatesFollowup) target(batch api.UpdateBatchAccepted) updatesTarget {
+	reply, err := s.admin.call(s.ctx, "GET", s.r.lab.public+"/api/v1/admin/update-batches/"+batch.BatchId.String(), nil, nil)
+	var view api.UpdateBatch
+	if err != nil || reply.Status != 200 || json.Unmarshal(reply.Body, &view) != nil || len(view.Targets) != 1 {
+		return updatesTarget{State: "unavailable"}
+	}
+	target := view.Targets[0]
+	result := updatesTarget{State: string(target.State), Unconfirmed: target.Unconfirmed, NeedsAttention: target.NeedsAttention}
+	if id, err := target.CurrentReleaseId.Get(); err == nil {
+		result.CurrentRelease = id.String()
+	}
+	if job, err := target.CurrentJob.Get(); err == nil {
+		if code, err := job.ErrorCode.Get(); err == nil {
+			result.ErrorCode = string(code)
+		}
+	}
+	return result
+}
+func (s *updatesFollowup) confirm(batch api.UpdateBatchAccepted, state string) updatesTarget {
+	var target updatesTarget
+	s.wait(90*time.Second, func() bool { target = s.target(batch); return target.State == state && !target.Unconfirmed })
+	return target
+}
+func (s *updatesFollowup) running(id uuid.UUID) bool {
+	raw, err := s.r.lab.docker(s.r.lab.node, "sh", "-c", `test -s /var/lib/vpn-node/e2e/agent.pid && readlink /proc/$(cat /var/lib/vpn-node/e2e/agent.pid)/exe`)
+	return err == nil && strings.TrimSpace(string(raw)) == "/opt/vpn-node/releases/"+id.String()+"/bin/fvpn-agent"
+}
+func (s *updatesFollowup) execute(id string, interrupt bool) {
+	dir := filepath.Join(s.r.lab.state, "node", "var", "e2e")
+	pause := filepath.Join(dir, "pause-agent")
+	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
+		s.r.t.Fatal("pause failed")
+	}
+	if !interrupt {
+		defer os.Remove(pause)
+	}
+	time.Sleep(4 * time.Second)
+	_ = os.Remove(filepath.Join(dir, "updater-result.json"))
+	if interrupt {
+		raw, err := os.ReadFile(filepath.Join(dir, "updater.json.done"))
+		var cfg map[string]any
+		if err != nil || json.Unmarshal(raw, &cfg) != nil {
+			s.r.t.Fatal("prior updater config missing")
+		}
+		// TEST ONLY: the subprocess kills its updater parent after the real
+		// service stop, leaving the durable journal untouched for recovery.
+		cfg["stop_command"] = []string{"/bin/sh", "-c", `/usr/local/bin/agent-service.sh stop; kill -KILL "$PPID"`}
+		raw, _ = json.MarshalIndent(cfg, "", "  ")
+		if err := writeAtomic(filepath.Join(dir, "updater.json"), raw); err != nil {
+			s.r.t.Fatal("interrupt config failed")
+		}
+	} else if err := s.r.writeUpdaterConfig(); err != nil {
+		s.r.t.Fatal("updater config failed")
+	}
+	finished := s.wait(4*time.Minute, func() bool {
+		_, resultErr := os.Stat(filepath.Join(dir, "updater-result.json"))
+		_, configErr := os.Stat(filepath.Join(dir, "updater.json"))
+		return resultErr == nil && os.IsNotExist(configErr)
+	})
+	s.note(id, "updater_finished", finished)
+	raw, _ := os.ReadFile(filepath.Join(dir, "updater-result.json"))
+	var result struct {
+		ExitCode int `json:"exit_code"`
+	}
+	if json.Unmarshal(raw, &result) == nil {
+		s.note(id, "updater_exit_code", result.ExitCode)
+	}
+	if !finished {
+		s.r.t.Fatal("updater did not finish; evidence remains blocked")
+	}
+}
+
+type updatesJournal struct {
+	TxnID        string            `json:"txn_id"`
+	Stage        string            `json:"stage"`
+	Error        string            `json:"error"`
+	JobError     string            `json:"job_error"`
+	Current      string            `json:"current"`
+	LastGood     string            `json:"last_good"`
+	Health       map[string]string `json:"health"`
+	Attestations []map[string]any  `json:"attestations"`
+	OutboxState  string            `json:"outbox_state"`
+	OutboxStatus string            `json:"outbox_status"`
+	OutboxError  string            `json:"outbox_error"`
+}
+
+func (j updatesJournal) allPassed() bool {
+	for _, key := range []string{"processes", "identity_and_state", "dns_policy", "internet_only", "tunnel_probe"} {
+		if j.Health[key] != "passed" {
+			return false
+		}
+	}
+	return true
+}
+func (j updatesJournal) candidateFailed() bool {
+	for _, a := range j.Attestations {
+		if a["phase"] == "candidate" && a["agent_tunnel_probe"] == "failed" {
+			return true
+		}
+	}
+	return false
+}
+func (j updatesJournal) rollbackPassed() bool {
+	for _, a := range j.Attestations {
+		if a["phase"] == "rollback" && a["agent_tunnel_probe"] == "passed" && a["agent_internet_only"] == "passed" && a["agent_dns_policy"] == "passed" {
+			return true
+		}
+	}
+	return false
+}
+func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
+	var view updatesJournal
+	path := filepath.Join(s.r.t.TempDir(), "journal.db")
+	if err := exec.CommandContext(s.ctx, "docker", "cp", s.r.lab.node+":/var/lib/vpn-node/update-journal/journal.db", path).Run(); err != nil {
+		return view
+	}
+	_ = exec.CommandContext(s.ctx, "docker", "cp", s.r.lab.node+":/var/lib/vpn-node/update-journal/journal.db-wal", path+"-wal").Run()
+	db, err := sql.Open("sqlite", "file:"+path+"?_pragma=busy_timeout(2000)")
+	if err != nil {
+		return view
+	}
+	defer db.Close()
+	var health string
+	_ = db.QueryRow(`SELECT txn_id,stage,coalesce(error_code,''),coalesce(health_json,'') FROM txns WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, release.String()).Scan(&view.TxnID, &view.Stage, &view.Error, &health)
+	_ = json.Unmarshal([]byte(health), &view.Health)
+	_ = db.QueryRow(`SELECT coalesce(error_code,'') FROM jobs WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, release.String()).Scan(&view.JobError)
+	_ = db.QueryRow(`SELECT value FROM meta WHERE key='current_release_id'`).Scan(&view.Current)
+	_ = db.QueryRow(`SELECT value FROM meta WHERE key='last_good_release_id'`).Scan(&view.LastGood)
+	_ = db.QueryRow(`SELECT state,status,coalesce(last_error,'') FROM result_outbox WHERE job_id=(SELECT job_id FROM jobs WHERE release_id=? ORDER BY updated_at DESC LIMIT 1) ORDER BY seq DESC LIMIT 1`, release.String()).Scan(&view.OutboxState, &view.OutboxStatus, &view.OutboxError)
+	rows, err := db.Query(`SELECT detail FROM txn_events WHERE txn_id=? ORDER BY seq`, view.TxnID)
+	if err != nil {
+		return view
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var raw string
+		if rows.Scan(&raw) != nil {
+			continue
+		}
+		var event map[string]any
+		if json.Unmarshal([]byte(raw), &event) != nil || event["kind"] != "health_attest" {
+			continue
+		}
+		safe := map[string]any{}
+		for _, key := range []string{"kind", "phase", "reason", "internet_only_reason", "dns_policy_reason", "tunnel_probe_reason", "agent_internet_only", "agent_dns_policy", "agent_tunnel_probe", "agent_version", "netbird_version", "published"} {
+			if value, ok := event[key]; ok {
+				safe[key] = value
+			}
+		}
+		view.Attestations = append(view.Attestations, safe)
+	}
+	return view
+}
