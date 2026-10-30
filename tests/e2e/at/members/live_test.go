@@ -40,6 +40,7 @@ type stackConfig struct {
 type browser struct {
 	client       *http.Client
 	csrf, member string
+	cred         idplogin.Cred
 }
 type response struct {
 	status  int
@@ -84,7 +85,8 @@ type live struct {
 	build                                    buildInfo
 	node, inc, plan, planRev, groupA, groupB uuid.UUID
 	run                                      string
-	machinePeer                              string
+	nativePeer                               string
+	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
 }
 
@@ -299,6 +301,7 @@ func (l *live) login(subject, role string) *browser {
 	if r.status != 200 || json.Unmarshal(r.body, &s) != nil || !s.Authenticated || s.Role != role {
 		l.t.Fatalf("real browser login unavailable: status=%d role=%s", r.status, role)
 	}
+	b.cred = cred
 	b.member = s.MemberID
 	b.csrf = r.headers.Get("X-CSRF-Token")
 	if b.csrf == "" {
