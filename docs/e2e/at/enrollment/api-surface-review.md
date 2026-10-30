@@ -86,4 +86,3 @@ AT07 live nodes each have one incarnation and a usage checkpoint with accepted
 bytes `"0"` and `through` set (`2026-10-30T20:51:11.681114Z` and
 `2026-10-30T20:51:24.065428Z`). That is the documented checkpoint-with-no-samples
 shape. Counted historical usage across an installer rerun is still unmeasured.
-
