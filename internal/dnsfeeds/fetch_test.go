@@ -3,6 +3,7 @@ package dnsfeeds
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -34,6 +35,68 @@ func localFeed(t *testing.T, body *string) *http.Client {
 func digest(body string) string { return fmt.Sprintf("%x", sha256.Sum256([]byte(body))) }
 func testPayload(body string, now time.Time) api.ThreatFeedPayload {
 	return api.ThreatFeedPayload{Provider: "TEST ONLY", FeedCode: "test-feed", LicenseName: "TEST ONLY", LicenseUrl: "https://example.com/license", CommercialUseBasis: "TEST ONLY permission for fixture use", SourceUrl: "https://example.com/feed", ContentSha256: digest(body), Format: api.ThreatFeedPayloadFormatDomainList, Categories: []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware}, MaxSizeBytes: 4096, ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(30 * 24 * time.Hour), UpdateIntervalSeconds: 300}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestB9_RefreshAttributionVector(t *testing.T) {
+	now := time.Date(2026, 10, 29, 0, 0, 0, 0, time.UTC)
+	body := "a.example.com\n"
+	client := localFeed(t, &body)
+	base := testPayload(body, now)
+	cases := []struct {
+		name   string
+		set    func(*api.ThreatFeedPayload)
+		reason string
+	}{
+		{name: "null", set: func(p *api.ThreatFeedPayload) { p.Attribution.SetNull() }},
+		{name: "missing", set: func(*api.ThreatFeedPayload) {}},
+		{name: "empty", set: func(p *api.ThreatFeedPayload) { p.Attribution.Set("") }, reason: "invalid_config"},
+		{name: "whitespace", set: func(p *api.ThreatFeedPayload) { p.Attribution.Set("   ") }, reason: "invalid_config"},
+		{name: "valid", set: func(p *api.ThreatFeedPayload) { p.Attribution.Set("TEST ONLY attribution") }},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := base
+			tc.set(&p)
+			c := client
+			if tc.reason != "" {
+				c = &http.Client{Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+					t.Fatal("refresh dialed a blank attribution")
+					return nil, errors.New("dialed")
+				})}
+			}
+			got, reason := Fetch(context.Background(), c, p, nil, now, 50)
+			if reason != tc.reason || (reason == "") != (got != nil) {
+				t.Fatalf("got %+v reason %s", got, reason)
+			}
+		})
+	}
+	// A null note does not loosen URL scheme, host class, port 443, or size.
+	for _, tc := range []struct {
+		name, url, reason string
+		zeroSize          bool
+	}{
+		{name: "scheme", url: "http://example.com/feed", reason: "ssrf_refused"},
+		{name: "port", url: "https://example.com:8443/feed", reason: "ssrf_refused"},
+		{name: "host", url: "https://127.0.0.1/feed", reason: "ssrf_refused"},
+		{name: "size", url: "https://example.com/feed", reason: "invalid_size", zeroSize: true},
+	} {
+		t.Run("null_keeps_"+tc.name, func(t *testing.T) {
+			p := base
+			p.Attribution.SetNull()
+			p.SourceUrl = tc.url
+			if tc.zeroSize {
+				p.MaxSizeBytes = 0
+			}
+			got, reason := Fetch(context.Background(), client, p, nil, now, 50)
+			if got != nil || reason != tc.reason {
+				t.Fatalf("got %+v reason %s", got, reason)
+			}
+		})
+	}
 }
 
 func TestD054_DNS01_AdditionsAndDomainIsolationAreIndependentGuards(t *testing.T) {

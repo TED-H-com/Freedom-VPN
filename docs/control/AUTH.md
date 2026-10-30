@@ -31,12 +31,21 @@ OIDC callback chooses the role from verified IdP claims and rotates only its rol
 cookie. The old `__Host-fvpn-session` cookie is no longer accepted; sign in again.
 There remains one short-lived login flow cookie per browser.
 
-Identity is `(issuer, client scope, subject)`. Email is neither requested nor used
-for linking. A new identity, pending_payment member and audit event are created
-atomically; a scoped advisory lock prevents concurrent first logins from creating
-duplicate members. Administrators use `admin_identities` and `admin_sessions`
-(migration 00101); admin logins never insert `members` or `identity_bindings`.
-Admin and member identities remain distinct even for the same scoped subject.
+Identity is canonical `(issuer, subject)` (D-052 F-04). `client_scope` is recorded
+as diagnostic metadata (last OIDC client scope seen) and is never part of identity:
+an existing `identity_bindings` row with a different `client_scope` is reused, its
+`verified_at` (and `client_scope` when mutable) is updated in the same transaction,
+and `identity_binding.proof_updated` (`after: {"identity_binding_id","reason":"proof_updated"}`)
+is appended on the D-029 allowlist without raw subject or issuer fields. Email is
+neither requested nor used for linking. A new identity, `pending_payment` member
+and `member.register` audit event are created atomically only when no `(issuer, subject)`
+binding exists; a canonical `(issuer, subject)` advisory lock plus a savepoint-backed
+insert-or-select retry on unique violation (`identity_bindings_subject_key` or
+`identity_bindings_issuer_subject_key`) prevents concurrent first logins from creating
+duplicate members across schema versions. Administrators use `admin_identities` and
+`admin_sessions` (migration 00101), resolved and updated by canonical `(issuer, subject)`
+under the same rule; admin logins never insert `members` or `identity_bindings`.
+Admin and member identities remain distinct even for the same `(issuer, subject)`.
 `GET /auth/login` accepts an optional `?role=member|admin` query parameter (or
 infers `admin` from `return_to=/admin...`, defaulting to `member`) and binds the
 requested role to the login flow so a dual-role account can sign in as a member

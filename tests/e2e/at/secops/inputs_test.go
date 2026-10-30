@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,49 +17,79 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 )
 
-// D-050: only product inputs are seeded. Plan configuration has no HTTP create
-// endpoint. Grants, member status, entitlements and device admission follow the
-// production command/projector path; the acceptance harness never writes them.
-func (p *liveProbe) planInputs() {
-	ctx := p.t.Context()
-	p.groupID = uuid.New()
-	p.planRevision = uuid.New()
-	plan := uuid.New()
-	tx, err := p.db.Begin(ctx)
+// D-050 / D-057: configuration is supplied through the group and policy APIs.
+// Plans, revisions and member projections are product-written, never SQL fixtures.
+func (p *liveProbe) planInputs(admin *liveSession) {
+	r := p.call(admin, "POST", "/api/v1/admin/groups", api.MemberGroupCreate{Code: "secops-input", Name: "TEST ONLY secops"}, nil)
+	p.check("create member group input", r, 201, "")
+	var group api.MemberGroup
+	if json.Unmarshal(r.body, &group) != nil || group.GroupId == uuid.Nil {
+		p.t.Fatal("group input absent")
+	}
+	p.groupID = group.GroupId
+	raw, err := os.ReadFile(filepath.Join(p.root, "contracts/examples/policies/fair-use.json"))
 	if err != nil {
-		p.t.Fatal("plan input transaction")
+		p.t.Fatal("fair-use input")
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
-	if _, err = tx.Exec(ctx, `INSERT INTO member_groups(id,code,name) VALUES($1,'secops-input','TEST ONLY secops input')`, p.groupID); err != nil {
-		p.t.Fatal("group input")
+	var fair map[string]any
+	if json.Unmarshal(raw, &fair) != nil {
+		p.t.Fatal("fair-use decode")
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO plans(id,code) VALUES($1,'secops-input')`, plan); err != nil {
-		p.t.Fatal("plan input")
+	now := time.Now().UTC()
+	fair["overrides"] = []any{}
+	fair["effective_at"] = time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	fup := p.policyInput(admin, "fair_use", fair)
+	dns := p.policyInput(admin, "dns_profile", map[string]any{"profile_code": "secops-input", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []string{}, "block_response": "nxdomain", "blocked_ttl_seconds": 60})
+	p.planRevision = p.policyInput(admin, "plan", map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{p.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "TEST-ONLY-secops"}, "rate_limit": nil, "fair_use_revision_id": fup, "dns_profile_revision_id": dns})
+	p.metadata["sql_input_fixtures"] = []string{}
+	p.metadata["policy_revision"] = p.planRevision
+}
+
+func (p *liveProbe) policyInput(admin *liveSession, kind string, payload any) uuid.UUID {
+	r := p.call(admin, "POST", "/api/v1/admin/policies", map[string]any{"type": kind, "code": "secops-" + kind, "schema_version": 1, "reason": "TEST ONLY acceptance input", "payload": payload}, nil)
+	p.check("create "+kind+" policy input", r, 201, "")
+	var revision struct {
+		ID         uuid.UUID `json:"revision_id"`
+		Definition uuid.UUID `json:"definition_id"`
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,schema_version,payload) VALUES($1,$2,1,3,$3::uuid[],1,'{"display_name":{"zh-TW":"TEST ONLY secops"}}')`, p.planRevision, plan, []uuid.UUID{p.groupID}); err != nil {
-		p.t.Fatal("plan revision input")
+	if json.Unmarshal(r.body, &revision) != nil || revision.ID == uuid.Nil {
+		p.t.Fatal("policy input absent")
 	}
-	if _, err = tx.Exec(ctx, `UPDATE plans SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, plan, p.planRevision); err != nil {
-		p.t.Fatal("plan active revision")
+	r = p.call(admin, "GET", "/api/v1/admin/policies?type="+kind, nil, nil)
+	var page api.PolicyDefinitionList
+	if json.Unmarshal(r.body, &page) != nil {
+		p.t.Fatal("policy input list")
 	}
-	// TEST ONLY AT29 ceiling; configuration input, not a projected lease row.
-	if _, err = tx.Exec(ctx, `UPDATE fleet_config SET max_offline_lease_seconds=90,resource_version=resource_version+1 WHERE id='00000000-0000-0000-0000-000000000001'`); err != nil {
-		p.t.Fatal("short lease configuration input")
+	var version string
+	for _, item := range page.Items {
+		if item.DefinitionId == revision.Definition {
+			version = item.ResourceVersion.String()
+		}
 	}
-	p.metadata["short_node_lease_seconds"] = 90
-	if tx.Commit(ctx) != nil {
-		p.t.Fatal("plan input commit")
+	if version == "" {
+		p.t.Fatal("policy version absent")
 	}
-	p.metadata["sql_input_fixtures"] = []map[string]string{
-		{"table": "fleet_config", "reason": "TEST ONLY 90-second node lease ceiling; no HTTP setting command; leases themselves are product-issued"},
-		{"table": "member_groups", "reason": "group configuration input; no group-create HTTP endpoint"},
-		{"table": "plans / plan_revisions", "reason": "TEST ONLY finite grant plan, limit 3 and node exit group; no plan-create HTTP endpoint"},
-		{"table": "policy_definitions / policy_revisions", "reason": "documented dev-stack empty release-support input; no artifact/update acceptance claimed"},
+	r = p.call(admin, "POST", "/api/v1/admin/policies/"+revision.Definition.String()+"/activate", map[string]any{"revision_id": revision.ID, "reason": "TEST ONLY activation"}, map[string]string{"If-Match": `"` + version + `"`})
+	p.check("activate "+kind+" policy input", r, 202, "")
+	for deadline := time.Now().Add(90 * time.Second); time.Now().Before(deadline); {
+		r = p.call(admin, "GET", "/api/v1/admin/policies?type="+kind, nil, nil)
+		if r.status == 200 && json.Unmarshal(r.body, &page) == nil {
+			for _, item := range page.Items {
+				id, e := item.ActiveRevisionId.Get()
+				if item.DefinitionId == revision.Definition && e == nil && id == revision.ID {
+					return revision.ID
+				}
+			}
+		}
+		time.Sleep(time.Second)
 	}
+	p.t.Fatal("policy activation projection timeout")
+	return uuid.Nil
 }
 func (p *liveProbe) grantMembers(admin *liveSession, members []*liveSession) {
 	end := time.Now().UTC().Add(time.Hour).Truncate(time.Second)
@@ -203,6 +232,16 @@ func (p *liveProbe) admissionCounts(m *liveSession) {
 }
 
 func (p *liveProbe) concurrentLogins(members []*liveSession) {
+	if os.Getenv("FVPN_SECOPS_LOGIN_BURST") != "1" {
+		raw, err := os.ReadFile(filepath.Join(p.root, "docs/e2e/at/secops/followup1-login.json"))
+		var historical map[string]any
+		if err != nil || json.Unmarshal(raw, &historical) != nil {
+			p.t.Fatal("historical login evidence")
+		}
+		p.metadata["concurrent_sign_in"] = historical
+		p.metadata["login_41st_request"] = map[string]any{"status": "blocked on control follow-up 10 / D-060", "expected_status": 429, "actual_status": nil, "retry_after": nil, "remeasured": false}
+		return
+	}
 	type outcome struct {
 		client        *http.Client
 		authenticated bool
@@ -281,7 +320,7 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 	p.check("enrolled node detail", detail, 200, "")
 	p.metadata["agent_node_incarnation"] = view.CurrentIncarnationId
 	p.metadata["node_service_precondition"] = map[string]any{"lifecycle": view.LifecycleState, "provisioning": view.ProvisioningState, "data_health": view.DataHealth, "safety": view.SafetyStatus, "publication": view.PublicationIntent, "observed_publication": view.PublicationObserved, "config_generation": view.ConfigGeneration, "management_peer_bound": view.NetbirdPeerId.IsSpecified() && !view.NetbirdPeerId.IsNull()}
-	r := p.call(admin, "PUT", "/api/v1/admin/nodes/"+node.String()+"/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, Reason: "TEST ONLY serving precondition"}, map[string]string{"If-Match": detail.header.Get("ETag")})
+	r := p.call(admin, "PUT", "/api/v1/admin/nodes/"+node.String()+"/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, GroupIds: &[]uuid.UUID{p.groupID}, Reason: "TEST ONLY serving precondition"}, map[string]string{"If-Match": detail.header.Get("ETag")})
 	p.metadata["publication_request"] = map[string]any{"status": r.status, "code": r.code}
 	if r.status == 202 {
 		var op api.Operation

@@ -83,11 +83,19 @@ func applyCmd(args []string) error {
 
 func baselineCmd(args []string) error {
 	fs := flag.NewFlagSet("baseline", flag.ContinueOnError)
+	path := fs.String("f", "", "optional model JSON; a nil probe removes the exception")
 	ingress := fs.String("ingress", "fv-fh", "member ingress interface")
 	uplink := fs.String("uplink", "fv-ih", "uplink interface")
 	snat := fs.String("snat", "192.0.2.37", "snat address, required by the datapath check")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *path != "" {
+		m, err := loadModel(*path)
+		if err != nil {
+			return err
+		}
+		return enforce.ApplyBaselineModel(context.Background(), enforce.System{}, m)
 	}
 	addr, err := netip.ParseAddr(*snat)
 	if err != nil {

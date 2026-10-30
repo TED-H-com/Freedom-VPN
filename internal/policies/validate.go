@@ -637,8 +637,8 @@ func ValidateThreatFeed(p api.ThreatFeedPayload) error {
 	if !isConfirmedCommercialBasis(p.CommercialUseBasis) {
 		return newValidationError("/payload/commercial_use_basis", ReasonThreatFeedUnconfirmedBasis, "commercial_use_basis must confirm commercial SaaS/VPN redistribution rights")
 	}
-	if attr, err := p.Attribution.Get(); err == nil && len(attr) > 1000 {
-		return newValidationError("/payload/attribution", ReasonSchemaInvalid, "attribution must not exceed 1000 characters")
+	if err := checkThreatFeedAttribution(p); err != nil {
+		return err
 	}
 
 	switch p.Format {
@@ -679,6 +679,28 @@ func ValidateThreatFeed(p api.ThreatFeedPayload) error {
 		return newValidationError("/payload/update_interval_seconds", ReasonSchemaInvalid, fmt.Sprintf("update_interval_seconds must be in [300, 604800], got %d", p.UpdateIntervalSeconds))
 	}
 
+	return nil
+}
+
+// checkThreatFeedAttribution accepts null and omission. A non-null blank or
+// whitespace-only note is rejected with the schema_invalid reason already
+// used for this field. ValidatePayload rejects a note longer than 1000
+// characters at JSON Schema maxLength before this function runs; the length
+// check stays for ValidateThreatFeed callers that do not re-run the schema.
+func checkThreatFeedAttribution(p api.ThreatFeedPayload) error {
+	if !p.Attribution.IsSpecified() || p.Attribution.IsNull() {
+		return nil
+	}
+	value, err := p.Attribution.Get()
+	if err != nil {
+		return nil
+	}
+	if err := dnspolicy.ValidateAttributionNote(&value); err != nil {
+		return newValidationError("/payload/attribution", ReasonSchemaInvalid, "attribution must be null or a non-blank note")
+	}
+	if len(value) > 1000 {
+		return newValidationError("/payload/attribution", ReasonSchemaInvalid, "attribution must not exceed 1000 characters")
+	}
 	return nil
 }
 

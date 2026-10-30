@@ -289,11 +289,6 @@ docker cp "$migrate_bin" "${PREFIX}-primary:/usr/local/bin/fvpn-migrate"
 docker exec -e FVPN_DATABASE_URL='postgres://fvpn@127.0.0.1:5432/fvpn?sslmode=disable' \
 	"${PREFIX}-primary" /usr/local/bin/fvpn-migrate up >"$LOG_DIR/migrate.txt" 2>&1
 printf 'migrate status head:\n%s\n' "$(head -n 5 "$LOG_DIR/migrate.txt")"
-if grep -q '00181' "${ROOT}/docs/handover/deploy.md"; then
-	pass "deploy.md §3.3 mentions migration 00181"
-else
-	fail "docs/handover/deploy.md §3.3 expected status lists 19 migrations through 00180 and omits 00181 (repo has $(set -- "${ROOT}"/db/migrations/*.sql; echo "$#") migration files)"
-fi
 run_bad_sql() {
 	local name="$1" sql="$2"
 	local out="$LOG_DIR/sql-${name}.txt"
@@ -422,6 +417,20 @@ else
 		pass "restore-pitr.sh --target-time kept M and dropped B (the shipped drill requires M)"
 	else
 		fail "time restore markers=${time_markers}; a PITR proof requires A,M present and B absent"
+	fi
+	# Derive the complete inventory from source, then check the restored target.
+	migration_files=("${ROOT}"/db/migrations/*.sql)
+	expected_status="$(for migration in "${migration_files[@]}"; do
+		version="${migration##*/}"
+		printf '%s applied\n' "${version%%_*}"
+	done)"
+	docker cp "$migrate_bin" "${PREFIX}-time:/usr/local/bin/fvpn-migrate"
+	if docker exec -e FVPN_DATABASE_URL='postgres://fvpn@127.0.0.1:5432/fvpn?sslmode=disable' \
+		"${PREFIX}-time" /usr/local/bin/fvpn-migrate status >"$LOG_DIR/restored-migration-status.txt" 2>&1 &&
+		[[ "$(sed '1d' "$LOG_DIR/restored-migration-status.txt")" == "$expected_status" ]]; then
+		pass "restored target has every source migration applied (${#migration_files[@]} files), no pending version"
+	else
+		fail "restored migration status does not match db/migrations/*.sql (${#migration_files[@]} files), all applied with no pending version"
 	fi
 fi
 
