@@ -213,6 +213,15 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if opStatus != "pending" || !strings.Contains(observed, stored.DocumentHash) {
 		t.Fatalf("operation status %s observed %s", opStatus, observed)
 	}
+	var operationEvidence struct {
+		Document struct {
+			Generation    string `json:"generation"`
+			ContentSHA256 string `json:"content_sha256"`
+		} `json:"dns_document"`
+	}
+	if err := json.Unmarshal([]byte(observed), &operationEvidence); err != nil || operationEvidence.Document.Generation != stored.PolicyGeneration.String() || operationEvidence.Document.ContentSHA256 != stored.DocumentHash {
+		t.Fatalf("revision 5 publication evidence: %v", err)
+	}
 	var audit string
 	if err := pool.QueryRow(ctx, `SELECT coalesce(string_agg(after_diff::text, ','), '') FROM audit_events WHERE action IN ('dns.publish', 'dns.withdraw')`).Scan(&audit); err != nil {
 		t.Fatal(err)
@@ -460,7 +469,7 @@ func assertDNSAudit(t *testing.T, ctx context.Context, pool *pgxpool.Pool, defID
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, key := range []string{"policy_generation", "document_sha256", "status", "head", "definition_id", "profile_revision_id"} {
+		for _, key := range []string{"generation", "content_sha256", "status", "head", "definition_id", "profile_revision_id"} {
 			value, _ := after[key].(string)
 			if value == "" {
 				t.Fatalf("%s missing %s in %#v", ev.Action, key, after)
