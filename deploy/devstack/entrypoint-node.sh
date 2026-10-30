@@ -26,15 +26,28 @@ cat /proc/sys/kernel/random/uuid > /etc/vpn-node/boot-id
 epoch=$(cat /proc/sys/kernel/random/uuid)
 epoch2=$(cat /proc/sys/kernel/random/uuid)
 printf '{"closed_meter_epoch_id":"%s","last_durable_event_seq":"0","central_acked_through":"0","new_meter_epoch_id":"%s"}\n' "$epoch" "$epoch2" > /var/lib/vpn-node/e2e/meter.json
-printf '%s\n' '{"stage":"waiting_token"}' > /var/lib/vpn-node/e2e/status.json
-while [ ! -s /var/lib/vpn-node/e2e/enrollment.token ]; do
-    sleep 1
-done
-printf '%s\n' '{"stage":"enrolling"}' > /var/lib/vpn-node/e2e/status.json
-if ! fvpn-agent enroll -config /etc/vpn-node/agent-enroll.json -token-file /var/lib/vpn-node/e2e/enrollment.token; then
-    printf '%s\n' '{"stage":"enroll_failed"}' > /var/lib/vpn-node/e2e/status.json
-    exit 1
+# A durable identity resumes through the normal fail-closed runtime. Do not
+# request or consume another installer token on a container restart. A partial
+# identity is an error, never permission to silently enroll a second incarnation.
+if [ -s /var/lib/vpn-node/identity/node.json ]; then
+    if [ ! -s /var/lib/vpn-node/identity/cert.pem ] || [ ! -s /var/lib/vpn-node/identity/key.pem ]; then
+        printf '%s\n' '{"stage":"identity_incomplete"}' > /var/lib/vpn-node/e2e/status.json
+        exit 1
+    fi
+    printf '%s\n' '{"stage":"resuming"}' > /var/lib/vpn-node/e2e/status.json
+else
+    printf '%s\n' '{"stage":"waiting_token"}' > /var/lib/vpn-node/e2e/status.json
+    while [ ! -s /var/lib/vpn-node/e2e/enrollment.token ]; do
+        sleep 1
+    done
+    printf '%s\n' '{"stage":"enrolling"}' > /var/lib/vpn-node/e2e/status.json
+    if ! fvpn-agent enroll -config /etc/vpn-node/agent-enroll.json -token-file /var/lib/vpn-node/e2e/enrollment.token; then
+        printf '%s\n' '{"stage":"enroll_failed"}' > /var/lib/vpn-node/e2e/status.json
+        exit 1
+    fi
 fi
+# PIDs belong to the old container process tree, not the durable identity.
+rm -f /var/lib/vpn-node/e2e/agent.pid
 fvpn-e2e-nodeconfig
 printf '%s\n' '{"stage":"enrolled"}' > /var/lib/vpn-node/e2e/status.json
 fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/watchdog.log 2>&1 &
