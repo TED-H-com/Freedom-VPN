@@ -1,0 +1,149 @@
+{
+  "run_id": "815b716a-b8da-40a6-aa9d-6446eab8da07",
+  "scope": "Follow-up 1 requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT27",
+  "title": "Recovery after interrupted apply",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "blocked",
+  "at": "2026-10-30T02:40:16Z",
+  "expected": "Recovery after interrupted apply",
+  "actual": "w4-node-updater / w2-agent-core / w3-wire-fleet: see interrupted/recovered journal and observation evidence; complete recovery requires central confirmation",
+  "git": "d3009ea28352acb43e0dae5c95acd62f197ef619",
+  "node_incarnation": "01a18aa7-32ea-72fd-bb80-befe73a013e0",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "artifact_sha256_0.1.0_amd64",
+      "detail": "\"f0eb8f676033b28786ce7c32a5825aa518e83ae37aa96d47442a4a215ae7d521\""
+    },
+    {
+      "name": "artifact_sha256_0.1.0_arm64",
+      "detail": "\"10ef7a060720e67fdbc8d9107495c557645e5647965549be854b3ad869fb2180\""
+    },
+    {
+      "name": "signed_manifest_sha256_0.1.0",
+      "detail": "\"818c5cb234e30ecdf34fc839818ce4c06bd8646830d7ed97c50879524cd8a65b\""
+    },
+    {
+      "name": "manifest_sha256_0.1.0",
+      "detail": "\"264abcddb2e5889e748ad7de0b6cf61f1820dd61e50c29ea8be1512cc2b57e9e\""
+    },
+    {
+      "name": "artifact_sha256_1.0.1_amd64",
+      "detail": "\"2581d4dde1d450b244fb7bffe2f1ff86dfd0114b58e4bff0078229b465400de0\""
+    },
+    {
+      "name": "artifact_sha256_1.0.1_arm64",
+      "detail": "\"73a007c1875c127df74a2e54df0674db624fbdf5ed2c7f37e0040b344529c02a\""
+    },
+    {
+      "name": "signed_manifest_sha256_1.0.1",
+      "detail": "\"696d3eb84323dadcd61b313fd56227246ab17d566c1358ebdc701edd5cee51dc\""
+    },
+    {
+      "name": "manifest_sha256_1.0.1",
+      "detail": "\"d8effdc34274fe8e189c7cd1cb1dea14e37fcfe671ca056f5f34a5001de2b734\""
+    },
+    {
+      "name": "artifact_sha256_1.0.2_amd64",
+      "detail": "\"d540897b514e3397ff08c73c1d895922843337e6a9a146b0b0452d2c0d419cab\""
+    },
+    {
+      "name": "artifact_sha256_1.0.2_arm64",
+      "detail": "\"f42921c3e217ebae8c6968621a906d665035e9863ba49487059410f3fbdac743\""
+    },
+    {
+      "name": "signed_manifest_sha256_1.0.2",
+      "detail": "\"e9d0273264c8fa525e83e11dd2ea626c01b5d73b36ae0c22b25c37d272dca04f\""
+    },
+    {
+      "name": "manifest_sha256_1.0.2",
+      "detail": "\"d23f0c5c06067280a8b69372dd73cecf921f8a02621f0d1fbef92021d3174c43\""
+    },
+    {
+      "name": "verify_01a18aa7-0f90-70c5-93f4-ebc185e8011e",
+      "detail": "\"verified\""
+    },
+    {
+      "name": "verify_01a18aa7-171a-767a-94c4-efb28b612ed9",
+      "detail": "\"verified\""
+    },
+    {
+      "name": "verify_01a18aa7-1e6b-77f6-b51e-29d216ea49fa",
+      "detail": "\"verified\""
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a18aa7-0f90-70c5-93f4-ebc185e8011e\",\"good\":\"01a18aa7-171a-767a-94c4-efb28b612ed9\",\"negative\":\"01a18aa7-1e6b-77f6-b51e-29d216ea49fa\"}"
+    },
+    {
+      "name": "batch_response",
+      "detail": "\"202\""
+    },
+    {
+      "name": "batch_id",
+      "detail": "\"01a18aaa-c917-7d69-9c53-9bdc03d4ffbc\""
+    },
+    {
+      "name": "generation",
+      "detail": "\"3\""
+    },
+    {
+      "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "updater_finished",
+      "detail": "true"
+    },
+    {
+      "name": "interrupted_journal",
+      "detail": "{\"txn_id\":\"01a18aaa-fa3c-7527-a657-c8badf7dab25\",\"stage\":\"final_sampled\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18aa7-171a-767a-94c4-efb28b612ed9\",\"last_good\":\"01a18aa7-171a-767a-94c4-efb28b612ed9\",\"health\":null,\"attestations\":null,\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+    },
+    {
+      "name": "members_blocked_at_interruption",
+      "detail": "true"
+    },
+    {
+      "name": "recover_exit_success",
+      "detail": "false"
+    },
+    {
+      "name": "recover_output_empty",
+      "detail": "true"
+    },
+    {
+      "name": "recovered_journal",
+      "detail": "{\"txn_id\":\"01a18aaa-fa3c-7527-a657-c8badf7dab25\",\"stage\":\"locally_succeeded\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18aa7-1e6b-77f6-b51e-29d216ea49fa\",\"last_good\":\"01a18aa7-1e6b-77f6-b51e-29d216ea49fa\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"attestations\":[{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.2\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_up\"}],\"outbox_state\":\"succeeded\",\"outbox_status\":\"pending\",\"outbox_error\":\"\"}"
+    },
+    {
+      "name": "central",
+      "detail": "{\"state\":\"queued\",\"unconfirmed\":true,\"needs_attention\":false,\"current_release\":\"01a18aa7-171a-767a-94c4-efb28b612ed9\",\"error_code\":\"\"}"
+    },
+    {
+      "name": "confirmation_projection",
+      "detail": "{\"current_job\":{\"state\":\"queued\",\"generation\":\"3\",\"last_result_at\":null},\"fleet_observed_at\":\"2026-10-30T02:33:38.375957+00:00\",\"fleet_received_at\":\"2026-10-30T02:33:38.379874+00:00\",\"fleet_update_generation\":\"1\",\"latest_node_observation\":{\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"observed_at\":\"2026-10-30T02:38:06.93073+00:00\",\"received_at\":\"2026-10-30T02:38:06.934531+00:00\"}}"
+    },
+    {
+      "name": "running_verified_candidate",
+      "detail": "true"
+    }
+  ]
+}
