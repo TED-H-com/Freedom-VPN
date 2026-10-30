@@ -118,7 +118,7 @@ func verifyCmd(args []string) error {
 		return err
 	}
 	ctx := context.Background()
-	raw, err := enforce.System{}.Output(ctx, "nft", "-j", "list", "table", enforce.TableFamily, enforce.TableName)
+	raw, err := enforce.System{}.Output(ctx, "nft", "-j", "list", "ruleset")
 	if err != nil {
 		return err
 	}

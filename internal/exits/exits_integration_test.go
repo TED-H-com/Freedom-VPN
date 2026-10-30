@@ -205,24 +205,34 @@ func TestAT08_PublishHappyPathAndFailureRetryNoDuplicateRoute(t *testing.T) {
 		t.Fatalf("SetPublication result = (etag=%s, op=%+v), want new etag & pending node.publish", etag2, pubOp)
 	}
 
-	// 2. Failure branch 1: ExecuteOperation before node ACKs the new desired-state generation.
-	// Intent stays published, operation fails on agent_policy, and no NetBird route is created yet.
+	// 2. Gate branch 1 (D-074): ExecuteOperation before node ACKs the new desired-state generation.
+	// Intent stays published, operation stays running with agent_policy pending (NODE_NOT_SERVICEABLE / stale_generation),
+	// publication_observed stays applying, and no NetBird route is created yet.
 	failedOp1, err := exitsSvc.ExecuteOperation(ctx, pubOp.OperationId)
 	if err != nil {
 		t.Fatalf("ExecuteOperation before node ACK: %v", err)
 	}
-	if failedOp1.Status != api.OperationStatusFailed {
-		t.Fatalf("failedOp1.Status = %s, want failed", failedOp1.Status)
+	if failedOp1.Status != api.OperationStatusRunning || !failedOp1.Error.IsNull() {
+		t.Fatalf("failedOp1 = (status=%s, err=%+v), want running with null error", failedOp1.Status, failedOp1.Error)
+	}
+	for _, st := range failedOp1.Steps {
+		if st.Name == nodes.StepAgentPolicy {
+			code, cErr := st.ErrorCode.Get()
+			msg, mErr := st.Message.Get()
+			if st.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
+				t.Fatalf("agent_policy step = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", st)
+			}
+		}
 	}
 	if nb.RouteCount() != 0 {
 		t.Fatalf("expected 0 NetBird routes before node policy ACK, got %d", nb.RouteCount())
 	}
 	detailAfterFail1, _, _ := nodesSvc.GetNode(ctx, nodeID)
 	if detailAfterFail1.PublicationIntent != api.PublicationIntentPublished {
-		t.Fatalf("PublicationIntent changed to %s after failure, must stay published", detailAfterFail1.PublicationIntent)
+		t.Fatalf("PublicationIntent changed to %s after gated wait, must stay published", detailAfterFail1.PublicationIntent)
 	}
-	if detailAfterFail1.PublicationObserved != api.PublicationObservedError {
-		t.Fatalf("PublicationObserved = %s, want error", detailAfterFail1.PublicationObserved)
+	if detailAfterFail1.PublicationObserved != api.PublicationObservedAbsent {
+		t.Fatalf("PublicationObserved = %s, want absent (unchanged before route read-back)", detailAfterFail1.PublicationObserved)
 	}
 
 	// 3. Failure branch 2: Node ACKs the compiled desired_config_generation, but NetBird fails.

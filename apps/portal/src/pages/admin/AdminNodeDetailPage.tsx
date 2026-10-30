@@ -5,17 +5,22 @@ import {
   apiClient,
   ApiError,
   deriveNodeSummaryPhrase,
+  isNodeAwaitingMemberGrants,
+  isNodeLeaseExpired,
+  isProvisionalLeaseWaitingCheck,
+  type NodeDetailWithForwardingReasons,
   type OperationResource,
 } from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { ConflictDialog } from '../../components/common/ConflictDialog';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n, type TranslationKey } from '../../i18n';
+import { formatLocaleWithUtc } from '../../lib/datetime';
 import { formatBpsMbps } from '../../lib/decimal';
 
 export function AdminNodeDetailPage(): React.ReactElement {
   const { nodeId = '' } = useParams<{ nodeId: string }>();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
 
   const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
@@ -300,6 +305,9 @@ export function AdminNodeDetailPage(): React.ReactElement {
   const isRevokedOrRetired =
     node.lifecycle_state === 'revoked' || node.lifecycle_state === 'retired';
   const latestError = node.recent_errors[0];
+  const nodeWithReasons = node as NodeDetailWithForwardingReasons;
+  const awaitingMemberGrants = isNodeAwaitingMemberGrants(nodeWithReasons);
+  const leaseExpired = isNodeLeaseExpired(nodeWithReasons);
 
   return (
     <div data-testid="admin-node-detail-page">
@@ -317,6 +325,89 @@ export function AdminNodeDetailPage(): React.ReactElement {
               etag: etag ?? `"${node.resource_version}"`,
             })}
           </p>
+          {node.identity_conflict == null ? null : !node.identity_conflict
+              .mapping_frozen && node.identity_conflict.conflict_count === 0 ? (
+            <div
+              style={{ marginTop: '0.25rem' }}
+              data-testid="node-identity-conflict-section"
+            >
+              <span
+                className="text-muted"
+                style={{ fontSize: '0.82rem' }}
+                data-testid="node-identity-conflict-none"
+              >
+                {t('admin.nodeDetail.identityConflict.none')}
+              </span>
+            </div>
+          ) : (
+            <div
+              className="alert alert-danger"
+              style={{ marginTop: '0.5rem', marginBottom: 0, padding: '0.6rem 0.75rem' }}
+              data-testid="node-identity-conflict-section"
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                }}
+                data-testid="node-identity-conflict-frozen"
+              >
+                <span
+                  className="badge badge-danger"
+                  data-testid="node-identity-conflict-frozen-badge"
+                >
+                  {t('admin.nodeDetail.identityConflict.frozenBadge')}
+                </span>
+                <span
+                  className="mono"
+                  style={{ fontSize: '0.82rem' }}
+                  data-testid="node-identity-conflict-count"
+                >
+                  {t('admin.nodeDetail.identityConflict.countLabel', {
+                    count: String(node.identity_conflict.conflict_count),
+                  })}
+                </span>
+                <span
+                  className="mono"
+                  style={{ fontSize: '0.82rem' }}
+                  data-testid="node-identity-conflict-last-at"
+                >
+                  {t('admin.nodeDetail.identityConflict.lastAtLabel', {
+                    time: formatLocaleWithUtc(
+                      node.identity_conflict.last_conflict_at,
+                      locale,
+                    ),
+                  })}
+                </span>
+              </div>
+              <div
+                style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}
+                data-testid="node-identity-conflict-resolution"
+              >
+                <a
+                  href="#revoke-node-identity-btn"
+                  data-testid="node-identity-conflict-revoke-link"
+                  onClick={(e) => {
+                    const el = document.getElementById('revoke-node-identity-btn');
+                    if (el && typeof el.scrollIntoView === 'function') {
+                      e.preventDefault();
+                      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      el.focus();
+                    }
+                  }}
+                  style={{
+                    fontWeight: 600,
+                    color: 'var(--color-danger)',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  {t('admin.nodeDetail.identityConflict.resolutionText')}
+                </a>
+              </div>
+            </div>
+          )}
         </div>
         <span className="badge badge-info" data-testid="node-detail-summary-badge">
           {t(summaryKey)}
@@ -356,6 +447,46 @@ export function AdminNodeDetailPage(): React.ReactElement {
             time: node.last_seen_at ?? 'Never',
           })}
         </p>
+
+        {awaitingMemberGrants && (
+          <div
+            className="banner banner-info"
+            role="status"
+            style={{ marginTop: '0.75rem' }}
+            data-testid="node-provisional-lease-waiting-banner"
+          >
+            <span
+              className="badge badge-warning mono"
+              style={{ marginRight: '0.5rem' }}
+              data-testid="node-provisional-lease-waiting-badge"
+            >
+              awaiting_member_grants
+            </span>
+            <span data-testid="node-provisional-lease-waiting-copy">
+              {t('admin.nodeDetail.provisionalLease.waitingCopy')}
+            </span>
+          </div>
+        )}
+
+        {leaseExpired && (
+          <div
+            className="alert alert-danger"
+            role="alert"
+            style={{ marginTop: '0.75rem' }}
+            data-testid="node-lease-expired-failure-banner"
+          >
+            <span
+              className="badge badge-danger mono"
+              style={{ marginRight: '0.5rem' }}
+              data-testid="node-lease-expired-failure-badge"
+            >
+              lease_expired
+            </span>
+            <span data-testid="node-lease-expired-failure-copy">
+              {t('admin.nodeDetail.leaseExpired.failureCopy')}
+            </span>
+          </div>
+        )}
 
         <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
           <table className="data-table">
@@ -426,8 +557,51 @@ export function AdminNodeDetailPage(): React.ReactElement {
                     </div>
                   )}
                 </td>
-                <td className="mono">
-                  forwarding: {node.member_forwarding_observed ? 'true' : 'false'}
+                <td className="mono" data-testid="observed-member-forwarding">
+                  <div>
+                    forwarding: {node.member_forwarding_observed ? 'true' : 'false'}
+                  </div>
+                  {nodeWithReasons.forwarding_block_reasons &&
+                    nodeWithReasons.forwarding_block_reasons.length > 0 && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '0.35rem',
+                          marginTop: '0.35rem',
+                        }}
+                        data-testid="node-forwarding-block-reasons"
+                      >
+                        {nodeWithReasons.forwarding_block_reasons.map((reason) =>
+                          reason === 'awaiting_member_grants' ? (
+                            <span
+                              key={reason}
+                              className="badge badge-warning"
+                              data-testid="forwarding-block-reason-awaiting_member_grants"
+                            >
+                              {reason}:{' '}
+                              {t('admin.nodeDetail.provisionalLease.waitingCopy')}
+                            </span>
+                          ) : reason === 'lease_expired' ? (
+                            <span
+                              key={reason}
+                              className="badge badge-danger"
+                              data-testid="forwarding-block-reason-lease_expired"
+                            >
+                              {reason}: {t('admin.nodeDetail.leaseExpired.failureCopy')}
+                            </span>
+                          ) : (
+                            <span
+                              key={reason}
+                              className="badge badge-danger mono"
+                              data-testid={`forwarding-block-reason-${reason}`}
+                            >
+                              {reason}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    )}
                 </td>
               </tr>
               <tr>
@@ -687,6 +861,7 @@ export function AdminNodeDetailPage(): React.ReactElement {
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
+              id="revoke-node-identity-btn"
               type="button"
               className="btn btn-danger"
               data-testid="revoke-node-identity-btn"
@@ -839,38 +1014,62 @@ export function AdminNodeDetailPage(): React.ReactElement {
                   </td>
                 </tr>
               ) : (
-                node.checks.map((c) => (
-                  <tr key={c.name} data-testid={`node-check-row-${c.name}`}>
-                    <td className="mono" style={{ fontWeight: 600 }}>
-                      {c.name}
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          c.status === 'passed'
-                            ? 'badge-success'
-                            : c.status === 'failed'
-                              ? 'badge-danger'
-                              : 'badge-warning'
-                        }`}
-                        data-testid={`node-check-status-${c.name}`}
+                node.checks.map((c) => {
+                  const isWaitingGrants = isProvisionalLeaseWaitingCheck(
+                    c,
+                    nodeWithReasons.forwarding_block_reasons,
+                  );
+                  const isLeaseExpiredCheck = c.error_code === 'LEASE_EXPIRED';
+                  return (
+                    <tr key={c.name} data-testid={`node-check-row-${c.name}`}>
+                      <td className="mono" style={{ fontWeight: 600 }}>
+                        {c.name}
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            isWaitingGrants
+                              ? 'badge-warning'
+                              : c.status === 'passed'
+                                ? 'badge-success'
+                                : c.status === 'failed'
+                                  ? 'badge-danger'
+                                  : 'badge-warning'
+                          }`}
+                          data-testid={`node-check-status-${c.name}`}
+                        >
+                          {isWaitingGrants
+                            ? t('admin.nodeDetail.provisionalLease.waitingStatus')
+                            : c.status}
+                        </span>
+                      </td>
+                      <td
+                        className="mono"
+                        data-testid={`node-check-error-code-${c.name}`}
                       >
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="mono">{c.error_code ?? '—'}</td>
-                    <td
-                      className="mono"
-                      style={{ fontSize: '0.82rem', wordBreak: 'break-word' }}
-                      data-testid={`node-check-detail-${c.name}`}
-                    >
-                      {c.detail ?? '—'}
-                    </td>
-                    <td className="mono" style={{ fontSize: '0.8rem' }}>
-                      {c.observed_at}
-                    </td>
-                  </tr>
-                ))
+                        {c.error_code ?? '—'}
+                      </td>
+                      <td
+                        className="mono"
+                        style={{ fontSize: '0.82rem', wordBreak: 'break-word' }}
+                        data-testid={`node-check-detail-${c.name}`}
+                      >
+                        {isWaitingGrants
+                          ? `${t('admin.nodeDetail.provisionalLease.waitingCopy')}${
+                              c.detail ? ` — ${c.detail}` : ''
+                            }`
+                          : isLeaseExpiredCheck
+                            ? `${t('admin.nodeDetail.leaseExpired.failureCopy')}${
+                                c.detail ? ` — ${c.detail}` : ''
+                              }`
+                            : (c.detail ?? '—')}
+                      </td>
+                      <td className="mono" style={{ fontSize: '0.8rem' }}>
+                        {c.observed_at}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -1092,7 +1291,7 @@ export function AdminNodeDetailPage(): React.ReactElement {
       </section>
 
       {/* Recent Errors & Diagnostics */}
-      <section className="card">
+      <section className="card" data-testid="node-recent-errors-section">
         <h2>{t('admin.nodeDetail.errors.title')}</h2>
         {!latestError ? (
           <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
@@ -1101,11 +1300,30 @@ export function AdminNodeDetailPage(): React.ReactElement {
         ) : (
           <div style={{ marginTop: '0.5rem' }}>
             <details style={{ marginBottom: '0.5rem' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 600 }}>
-                <span className="badge badge-danger" style={{ marginRight: '0.5rem' }}>
+              <summary
+                style={{ cursor: 'pointer', fontWeight: 600 }}
+                data-testid="node-latest-error-summary"
+              >
+                <span
+                  className={`badge ${
+                    latestError.code === 'AWAITING_MEMBER_GRANTS'
+                      ? 'badge-warning'
+                      : 'badge-danger'
+                  }`}
+                  style={{ marginRight: '0.5rem' }}
+                  data-testid="node-latest-error-badge"
+                >
                   {latestError.code}
                 </span>
-                {latestError.message}
+                {latestError.code === 'AWAITING_MEMBER_GRANTS'
+                  ? `${t('admin.nodeDetail.provisionalLease.waitingCopy')}${
+                      latestError.message ? ` (${latestError.message})` : ''
+                    }`
+                  : latestError.code === 'LEASE_EXPIRED'
+                    ? `${t('admin.nodeDetail.leaseExpired.failureCopy')}${
+                        latestError.message ? ` (${latestError.message})` : ''
+                      }`
+                    : latestError.message}
               </summary>
               <div
                 className="mono"
@@ -1117,7 +1335,19 @@ export function AdminNodeDetailPage(): React.ReactElement {
                 }}
               >
                 checks:{' '}
-                {node.checks.map((c) => `${c.name}=${c.status}`).join(', ') || 'none'}
+                {node.checks
+                  .map(
+                    (c) =>
+                      `${c.name}=${
+                        isProvisionalLeaseWaitingCheck(
+                          c,
+                          nodeWithReasons.forwarding_block_reasons,
+                        )
+                          ? 'waiting'
+                          : c.status
+                      }`,
+                  )
+                  .join(', ') || 'none'}
               </div>
             </details>
           </div>

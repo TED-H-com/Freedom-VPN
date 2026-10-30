@@ -136,6 +136,7 @@ Continuing from `highest_contiguous_seq = 200`:
   - Consumed by the Fair-Use Policy evaluator (`§11.2` step 1). Returns cross-node `UploadBytes`, `DownloadBytes`, `TotalBytes` (including adjustments), quality flags, and the exact `LedgerWatermark` (`LedgerEpoch`, `ProjectionGeneration`, `AggregateAsOf`, and per-stream `(NodeID, NodeIncarnationID, HighestContiguousSeq, MaxSeenSeq)`) used to compute the total.
 - **`GetMemberDrillDown(ctx, memberID, period, granularity)`**:
   - Admin breakdown (`usage_rollup_details`) grouped by `(node_id, device_id, period)` using historical `device_bindings` attribution (`§10.2`, `AT19`).
+- **Fair-Use activation, recompile, and `fair_use.applying`:** Usage that moves a member into a new enforced tier enqueues `fup.member_generation_changed`. The policies worker hands that event, and a `fair_use` `policy.activated` event, to `desiredstate.Compiler.RecompileBatch`, which compiles one new config generation on each published exit carrying the member so the updated `MemberRatePolicy` is what those exits serve. `fair_use.applying` stays true until every one of those exits has applied that compiled generation (`nodes.applied_config_generation` at least the envelope generation whose `member_rate_policies` entry already contains the member generation) and the latest observation is online with safety passed. One exit that has not acknowledged keeps `applying` true. Replaying the generation event does not bump the exit generation again once that envelope is current.
 
 ---
 

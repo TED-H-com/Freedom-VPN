@@ -608,8 +608,31 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       'standard-exits (Standard Exit Group)',
     );
 
-    // Verify NodeCheck.detail (D-058) and DnsPolicyEvidence (D-056) in zh-TW and en
+    // Verify NodeCheck.detail (D-058), DnsPolicyEvidence (D-056), IdentityConflict (D-072), and AT09-style provisional window (D-067/D-071) in zh-TW and en
+    await expect(page.getByTestId('node-identity-conflict-section')).toBeVisible();
+    await expect(page.getByTestId('node-identity-conflict-none')).toContainText(
+      '無身分映射衝突 (no identity conflict)',
+    );
+    await expect(page.getByTestId('node-identity-conflict-frozen-badge')).toHaveCount(0);
+
     await expect(page.getByTestId('node-checks-table')).toBeVisible();
+    const provisionalBannerCountZh = await page
+      .getByTestId('node-provisional-lease-waiting-banner')
+      .count();
+    if (provisionalBannerCountZh > 0) {
+      await expect(page.getByTestId('node-provisional-lease-waiting-copy')).toContainText(
+        '等待會員授權；節點會自動續租（最長 60 秒）',
+      );
+    } else {
+      await expect(page.getByTestId('node-check-status-internet_only')).toHaveText(
+        'passed',
+      );
+    }
+    await expect(page.getByTestId('node-lease-expired-failure-banner')).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText(
+      '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
+    );
+
     await expect(page.getByTestId('node-check-detail-internet_only')).toContainText(
       'inet fvpn table verified; RFC1918 egress blocked',
     );
@@ -658,6 +681,25 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     );
 
     await page.getByTestId('locale-switcher').selectOption('en');
+    await expect(page.getByTestId('node-identity-conflict-none')).toContainText(
+      'No identity conflict',
+    );
+    const provisionalBannerCountEn = await page
+      .getByTestId('node-provisional-lease-waiting-banner')
+      .count();
+    if (provisionalBannerCountEn > 0) {
+      await expect(page.getByTestId('node-provisional-lease-waiting-copy')).toContainText(
+        'Waiting for member grants; the node renews automatically (within 60 s)',
+      );
+    } else {
+      await expect(page.getByTestId('node-check-status-internet_only')).toHaveText(
+        'passed',
+      );
+    }
+    await expect(page.getByTestId('node-lease-expired-failure-banner')).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText(
+      'Node serving lease has expired; member forwarding has stopped.',
+    );
     await expect(page.getByTestId('node-publication-groups-editor')).toContainText(
       'Exit Attached Groups (D-057)',
     );
@@ -669,9 +711,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     );
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
 
-    // Verify "not yet reported" state when dns_policy_evidence is null on secondary offline node (D-056)
+    // Verify "not yet reported" state when dns_policy_evidence is null and nothing rendered when identity_conflict is null on secondary offline node (D-056, D-072)
     await page.goto(`/admin/nodes/${tyoNode!.node_id}`);
     await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
+    await expect(page.getByTestId('node-identity-conflict-section')).toHaveCount(0);
     await expect(page.getByTestId('node-dns-evidence-not-reported')).toContainText(
       '尚未回報 (not yet reported)',
     );
