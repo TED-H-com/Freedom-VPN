@@ -1,10 +1,13 @@
 openapi: 3.0.3
 info:
   title: Freedom VPN Control API
-  version: 1.1.1
+  version: 1.2.0
   description: |
     Contract for the Freedom VPN central control API (Project Spec v1.0, §14).
     There are 44 endpoints, including D-015 bootstrap and D-056/D-057 delivery/groups.
+    Revision 6 (1.2.0) types reported `NodeDetail.dns_policy_evidence`, records
+    D-062 update-result and observation semantics, and D-034e rollback allow-list
+    semantics. The changelog is `docs/contracts/README.md`.
     This document is the single source of truth: Go types (`pkg/api`) and
     TypeScript types (`contracts/ts/openapi.d.ts`) are generated from it, and the
     contract tests in `contracts/` validate every example against it.
@@ -3334,6 +3337,20 @@ components:
             description: Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed.
               Empty means no attached groups; absent means not projected. Existing member_group_ids remains
               unchanged.
+          dns_policy_evidence:
+            description: |
+              Reported DNS policy evidence from the immutable observation selected for this
+              node's current incarnation (D-056). Same shape as ObservationReport.dns_policy_evidence:
+              document id, content digest, policy generation, outcome, applied_at, feed summaries
+              and error_code. Bounded check text stays on checks[].detail. This is the node's
+              report. It is not central verification that apply succeeded. Absent or null means
+              no evidence was reported; never infer a successful apply.
+            type: object
+            allOf:
+            - $ref: '#/components/schemas/DnsPolicyEvidence'
+            nullable: true
+            x-omitempty: false
+            x-omitzero: true
 
     NodeCheck:
       type: object
@@ -5198,6 +5215,11 @@ components:
           type: array
           maxItems: 64
           uniqueItems: true
+          description: |
+            Empty means no additional restriction (D-034e). A non-empty list is a
+            fail-closed intersection with the serving set: the rollback target must
+            be in both this list and serving_release_ids. The updater and central
+            enforce the same rule.
           items:
             type: string
             format: uuid
@@ -6805,6 +6827,9 @@ components:
         usage:
           $ref: '#/components/schemas/UsageOutboxStatus'
         update:
+          description: |
+            Populated from durable updater state on every observation (D-062e).
+            A null generation means no update state and must never be read as generation 0.
           type: object
           required:
           - job_id
@@ -6818,6 +6843,8 @@ components:
               format: uuid
               nullable: true
             generation:
+              description: |
+                Null means no update state (D-062e). Never read null as generation 0.
               type: string
               pattern: ^(0|[1-9][0-9]*)$
               maxLength: 20
@@ -7302,11 +7329,19 @@ components:
     UpdateResult:
       type: object
       description: |
-        Update job progress or result (§13.10.3). `payload_hash` is the lowercase
+        Update job progress or result (§13.10.3, D-062). `payload_hash` is the lowercase
         hex SHA-256 of the RFC 8785 canonical JSON of this object without the
         `payload_hash` member (`canonjson.HashHex(result, "payload_hash")`).
         result_id is the idempotency key. A rolled_back result reports the original
         target as not achieved together with the actual current release.
+        `health` is null only for a `failed` result whose `stage` precedes checking.
+        The health-checking `UpdateStage` is `check`; `claim`, `download`, `verify`,
+        `preflight`, `prepare`, `block_forwarding`, `final_sample`, `stop_services`,
+        `migrate`, `switch` and `start` precede it. A `rolled_back` result's `health`
+        is the restored release's checks and `error_code` is the candidate's failure.
+        For `rolled_back`, `current_release_id` is the restored release and
+        `previous_release_id` is the candidate. Optional `candidate_health` carries
+        the candidate's checks for rolled-back diagnostics and is null or absent otherwise.
         recovery_required=true means member forwarding stays off until recovery.
       required: [result_id, node_id, incarnation_id, boot_id, batch_id, target_id, job_id, attempt, generation, state, stage, requested_release_id, current_release_id, previous_release_id, manifest_sha256, policy_generation, state_schema_version, usage_checkpoint, health, publication_intent, member_forwarding_enabled, error_code, recovery_required, started_at, finished_at, payload_hash]
       additionalProperties: false
@@ -7358,11 +7393,16 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: 'Release actually active after this step, from local verification.'
+          description: |
+            Release actually active after this step, from local verification.
+            For rolled_back, this is the restored release (D-062).
         previous_release_id:
           type: string
           format: uuid
           nullable: true
+          description: |
+            For rolled_back, the candidate release that failed (D-062).
+            Otherwise the release that was active before this step.
         manifest_sha256:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -7392,6 +7432,19 @@ components:
           allOf:
             - $ref: '#/components/schemas/UpdateHealth'
           nullable: true
+          description: |
+            Null only for a failed result whose stage precedes checking (D-062).
+            For rolled_back, these are the restored release's checks.
+        candidate_health:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/UpdateHealth'
+          nullable: true
+          x-omitempty: false
+          x-omitzero: true
+          description: |
+            Candidate checks kept for rolled_back diagnostics (D-062). Null or absent
+            on every other result. Do not read this as the restored release's health.
         publication_intent:
           $ref: '#/components/schemas/PublicationIntent'
         member_forwarding_enabled:
@@ -7637,9 +7690,13 @@ components:
     ResolverDocument:
       type: object
       additionalProperties: true
-      description: Opaque canonical resolver-document object produced by internal/dnspublish (§12.4, D-056).
+      description: |
+        Opaque canonical resolver-document object produced by internal/dnspublish (§12.4, D-056).
         Return the stored RFC 8785 bytes verbatim, without an envelope, JSON re-encoding or trailing newline;
         bounded by the signed size_bytes (at most 1048576). The node validates document semantics before apply.
+        When upstreams is non-empty, bootstrap_dns is non-empty. The compiler copies upstreams into
+        bootstrap_dns when that input is empty, and a document that leaves bootstrap_dns empty while
+        naming upstreams is not normalized and must be rejected.
       x-go-type: json.RawMessage
     DnsFeedEvidence:
       type: object
@@ -7663,11 +7720,14 @@ components:
           maximum: 500000
     DnsPolicyEvidence:
       type: object
-      description: Evidence bound to the issued resolver document and its policy generation (D-056). Only
-        applied with successful read-back may pass dns_policy. partial, failed and not_run never imply success.
-        applied_at is null when no successful apply time is known. Feeds describe applied content, not the
-        newest available content; feed_code values must be unique. Never include queries, member addresses
-        or raw feed bodies.
+      description: |
+        Evidence the node reported for the resolver document it applied (D-056). Central stores
+        and projects this object; it is not central verification that apply succeeded. Only
+        outcome applied, with the node's own successful read-back, may pass the node's dns_policy
+        check. partial, failed and not_run never imply success. applied_at is null when no
+        successful apply time is known. Feeds describe applied content, not the newest available
+        content; feed_code values must be unique. Never include queries, member addresses or raw
+        feed bodies.
       required:
       - document_id
       - content_sha256
