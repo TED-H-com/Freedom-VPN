@@ -385,7 +385,7 @@ func (r *runner) member(ctx context.Context, admin *session) {
 }
 
 func (r *runner) usage(ctx context.Context, member *session) {
-	rec := Record{ID: "usage", Title: "Sampled usage visible with exact bytes", Spec: []string{"§10", "§19 AT14", "§19 AT15"}, Status: StatusBlocked}
+	rec := Record{ID: "usage", Title: "Agent samples after native admitted traffic", Spec: []string{"§10", "§19 AT14", "§19 AT15"}, Status: StatusBlocked}
 	if member == nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "member", Detail: "no session"})
 		r.record(rec)

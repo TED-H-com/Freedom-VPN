@@ -168,7 +168,14 @@ func (r *runner) threatFeed(ctx context.Context, admin *session) {
 		if !activate(good, feedDef, "restore_good_feed") {
 			return
 		}
-		note("approved_feed_restored_for_node", "true")
+		eligible := poll(func() bool {
+			var ok bool
+			return conn.QueryRow(ctx, `SELECT active_revision_id=$1 AND dns_profile_feeds_eligible($2,clock_timestamp()) FROM policy_definitions WHERE id=$3`, good, profile, feedDef).Scan(&ok) == nil && ok
+		})
+		note("approved_feed_restored_for_node", boolText(eligible))
+		if !eligible {
+			return
+		}
 		rec.Status = StatusPass
 	}
 }
