@@ -66,6 +66,8 @@ export type NodeSummary = components['schemas']['NodeSummary'];
 export type NodeSummaryItem = components['schemas']['NodeSummary'];
 export type NodeDetail = components['schemas']['NodeDetail'];
 export type NodeCheck = components['schemas']['NodeCheck'];
+export type DnsPolicyEvidence = components['schemas']['DnsPolicyEvidence'];
+export type DnsFeedEvidence = components['schemas']['DnsFeedEvidence'];
 export type NodeError = components['schemas']['NodeError'];
 export type StateDrift = components['schemas']['StateDrift'];
 export type NodeList = components['schemas']['NodeList'];
@@ -149,6 +151,9 @@ export type UpdateTarget = components['schemas']['UpdateTarget'];
 export type UpdateTargetItem = components['schemas']['UpdateTarget'];
 export type UpdateJobSummary = components['schemas']['UpdateJobSummary'];
 export type UpdateStage = components['schemas']['UpdateStage'];
+export type UpdateHealth = components['schemas']['UpdateHealth'];
+export type UpdateResult = components['schemas']['UpdateResult'];
+export type UpdateUsageCheckpoint = components['schemas']['UpdateUsageCheckpoint'];
 export type UpdateBatchRetryRequest = components['schemas']['UpdateBatchRetryRequest'];
 
 // Audit Events (§14.2, §18.1)

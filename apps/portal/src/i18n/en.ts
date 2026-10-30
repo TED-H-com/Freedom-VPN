@@ -630,4 +630,33 @@ export const en: Record<TranslationKey, string> = {
     'Refresh interval (update_interval_seconds) out of contract bounds: must be between 300 and 604800 seconds.',
   'admin.dns.threatFeedForm.bypassClientCheckLabel':
     'Bypass client-side bounds check to test server 422 field validation (Send raw value to server)',
+
+  // Follow-up 8: Typed DNS Policy Evidence (D-056) & Rolled-Back Candidate Health (D-062)
+  'admin.nodeDetail.dnsEvidence.title': 'Node-Reported DNS Policy Evidence (D-056)',
+  'admin.nodeDetail.dnsEvidence.disclaimer':
+    'Note: These values are reported by the node and are never central proof of apply (D-056).',
+  'admin.nodeDetail.dnsEvidence.notReported': 'Not yet reported',
+  'admin.nodeDetail.dnsEvidence.documentId': 'Resolver Document ID (document_id)',
+  'admin.nodeDetail.dnsEvidence.contentSha256':
+    'Document Content SHA-256 (content_sha256)',
+  'admin.nodeDetail.dnsEvidence.generation': 'DNS Policy Generation (generation)',
+  'admin.nodeDetail.dnsEvidence.outcome': 'Apply Outcome (outcome)',
+  'admin.nodeDetail.dnsEvidence.appliedAt': 'Applied At (applied_at)',
+  'admin.nodeDetail.dnsEvidence.errorCode': 'Error Code (error_code)',
+  'admin.nodeDetail.dnsEvidence.feedsTitle': 'Node-Reported Feed Summary (feeds)',
+  'admin.nodeDetail.dnsEvidence.feedsEmpty': 'No attached threat feeds (0 feeds)',
+
+  'admin.updates.rollbackHealth.sectionTitle':
+    'Rolled-Back Target Release Health Comparison (D-062)',
+  'admin.updates.rollbackHealth.restoredTitle': 'Restored Release Health Checks (health)',
+  'admin.updates.rollbackHealth.restoredReleaseLabel':
+    'Restored Release (current_release_id):',
+  'admin.updates.rollbackHealth.candidateTitle':
+    'Failed Candidate Release Health Checks (candidate_health)',
+  'admin.updates.rollbackHealth.candidateReleaseLabel':
+    'Failed Candidate Release (previous_release_id):',
+  'admin.updates.rollbackHealth.candidateNullNotice':
+    'Candidate health checks not reported (candidate_health: null — rolled back before candidate health check ran)',
+  'admin.updates.rollbackHealth.restoredNullNotice':
+    'Restored release health checks not reported (health: null)',
 };

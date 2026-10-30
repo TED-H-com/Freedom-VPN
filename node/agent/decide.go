@@ -283,7 +283,9 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 }
 
 func dnsCheck(in Input, at time.Time) api.NodeCheck {
-	if !in.DNSDocument {
+	// No named document: desired state in force is enough. A named document
+	// that this process has not marked applied is never that pass.
+	if !in.DNSDocument && !resolverNamed(in.Desired) {
 		return withDetail(chk(api.NodeCheckNameDnsPolicy, in.DesiredOK, api.ErrorCodeAUTHORIZATIONEXPIRED, at), "Desired state is not in force.")
 	}
 	code := in.DNSCode
@@ -292,9 +294,17 @@ func dnsCheck(in Input, at time.Time) api.NodeCheck {
 	}
 	detail := in.DNSDetail
 	if detail == "" {
-		detail = "Resolver policy is not in force."
+		detail = "Resolver document was not applied."
 	}
-	return withDetail(chk(api.NodeCheckNameDnsPolicy, in.DesiredOK && !in.DNSFailed, code, at), detail)
+	return withDetail(chk(api.NodeCheckNameDnsPolicy, in.DNSDocument && in.DesiredOK && !in.DNSFailed, code, at), detail)
+}
+
+func resolverNamed(ds *api.DesiredState) bool {
+	if ds == nil {
+		return false
+	}
+	_, err := ds.Dns.ResolverDocument.Get()
+	return err == nil
 }
 
 func notRun(name api.NodeCheckName, at time.Time) api.NodeCheck {

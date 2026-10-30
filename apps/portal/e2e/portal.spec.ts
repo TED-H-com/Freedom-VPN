@@ -415,7 +415,9 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     };
     const tpeNode =
       nodesJson.items.find((n) => n.name === 'tw-tpe-01') ?? nodesJson.items[0];
+    const tyoNode = nodesJson.items.find((n) => n.name === 'jp-tyo-01');
     expect(tpeNode).toBeTruthy();
+    expect(tyoNode).toBeTruthy();
 
     // 2. Node detail attached groups, PUT /publication with group_ids + 412 conflict, and NodeCheck.detail (D-057, D-058)
     await page.goto(`/admin/nodes/${tpeNode.node_id}`);
@@ -424,7 +426,7 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       'standard-exits (Standard Exit Group)',
     );
 
-    // Verify NodeCheck.detail (D-058) in zh-TW and en
+    // Verify NodeCheck.detail (D-058) and DnsPolicyEvidence (D-056) in zh-TW and en
     await expect(page.getByTestId('node-checks-table')).toBeVisible();
     await expect(page.getByTestId('node-check-detail-internet_only')).toContainText(
       'inet fvpn table verified; RFC1918 egress blocked',
@@ -435,6 +437,14 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('node-check-detail-tunnel_probe')).toContainText(
       'NetBird WireGuard peer handshake verified',
     );
+    await expect(page.getByTestId('node-dns-policy-evidence-section')).toBeVisible();
+    await expect(page.getByTestId('node-dns-evidence-disclaimer')).toContainText(
+      '絕非中央驗證已套用之證明',
+    );
+    await expect(page.getByTestId('node-dns-evidence-outcome')).toContainText('applied');
+    await expect(
+      page.getByTestId('node-dns-evidence-feed-malware-domains-default'),
+    ).toContainText('rules=1420');
 
     // 412 conflict handling on PUT /publication with stale ETag
     const bumpRes = await request.post(`${BASE_URL}/__e2e/bump-node-version`, {
@@ -467,6 +477,21 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     );
     await expect(page.getByTestId('node-checks-section')).toContainText(
       'Node Local Safety & Health Checks (D-058)',
+    );
+    await expect(page.getByTestId('node-dns-evidence-disclaimer')).toContainText(
+      'reported by the node and are never central proof of apply',
+    );
+    await page.getByTestId('locale-switcher').selectOption('zh-TW');
+
+    // Verify "not yet reported" state when dns_policy_evidence is null on secondary offline node (D-056)
+    await page.goto(`/admin/nodes/${tyoNode!.node_id}`);
+    await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
+    await expect(page.getByTestId('node-dns-evidence-not-reported')).toContainText(
+      '尚未回報 (not yet reported)',
+    );
+    await page.getByTestId('locale-switcher').selectOption('en');
+    await expect(page.getByTestId('node-dns-evidence-not-reported')).toContainText(
+      'Not yet reported',
     );
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
 

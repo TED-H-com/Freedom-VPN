@@ -138,6 +138,9 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 			return out, e
 		}
 		if bytes.Equal(canonical, raw) {
+			if err := reconcileDevices(ctx, tx, memberID, result, in.Now); err != nil {
+				return out, err
+			}
 			return Projection{Result: result, MemberID: memberID, Revision: version, ComputedAt: computed}, s.schedule(ctx, tx, memberID, in)
 		}
 	}
@@ -163,13 +166,10 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 	if err != nil {
 		return out, err
 	}
-	// Renew finite IP ownership for still-authorized devices (§15.2). Never
-	// shorten committed usage history when an entitlement loses time.
-	if result.Allows(in.Now) {
-		if _, err = tx.Exec(ctx, `UPDATE device_bindings b SET valid_until=$2 WHERE b.member_id=$1 AND b.valid_until<$2 AND EXISTS(SELECT 1 FROM member_devices d WHERE d.id=b.device_id AND d.status='authorized')`, memberID, result.EffectiveServiceEnd); err != nil {
-			return out, err
-		}
+	if err = reconcileDevices(ctx, tx, memberID, result, in.Now); err != nil {
+		return out, err
 	}
+
 	historyID, err := uuid.NewV7()
 	if err != nil {
 		return out, err
@@ -185,7 +185,17 @@ func (s *Store) Recompute(ctx context.Context, tx pgx.Tx, memberID uuid.UUID) (P
 		return out, err
 	}
 
-	payload, err := canonjson.Marshal(out)
+	// F-02: dispatch touches every previous and current group; persisted
+	// entitlement remains the new rights only.
+	event := out
+	var previous Result
+	if len(old) > 0 {
+		if err = json.Unmarshal(old, &previous); err != nil {
+			return out, err
+		}
+	}
+	event.ExitGroups = ids(append(append([]uuid.UUID{}, previous.ExitGroups...), result.ExitGroups...))
+	payload, err := canonjson.Marshal(event)
 	if err != nil {
 		return out, err
 	}

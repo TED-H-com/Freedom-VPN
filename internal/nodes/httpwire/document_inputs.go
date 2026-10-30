@@ -18,26 +18,14 @@ import (
 func (r *Runtime) ResolveDocumentInputs(ctx context.Context, tx pgx.Tx, state *api.DesiredState, revisions []uuid.UUID) error {
 	state.EgressProbe = presence.FromPointer(r.Config.EgressProbe)
 	state.Dns.ResolverDocument.SetNull()
-	rows, err := tx.Query(ctx, `SELECT id FROM policy_definitions WHERE type='dns_profile' AND active_revision_id IS NOT NULL ORDER BY id LIMIT 2`)
-	if err != nil {
+	profile, err := activeResolverProfile(ctx, tx)
+	if err != nil || profile == uuid.Nil {
 		return err
-	}
-	definitions, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
-	if err != nil {
-		return err
-	}
-	if len(definitions) == 0 {
-		return nil
-	}
-	// There is no node-to-profile assignment in the current contract. Never
-	// arbitrarily choose one profile if the fleet has ambiguous active profiles.
-	if len(definitions) != 1 {
-		return apierr.New(apierr.DependencyUnavailable, "Node DNS profile selection is ambiguous.")
 	}
 	if r.ResolverDocuments == nil {
 		return errors.New("resolver document source required")
 	}
-	document, err := r.ResolverDocuments.LatestPublished(ctx, definitions[0])
+	document, err := r.ResolverDocuments.LatestPublished(ctx, profile)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return apierr.New(apierr.DependencyUnavailable, "Node DNS profile has no published resolver document.")
 	}
@@ -53,4 +41,24 @@ func (r *Runtime) ResolveDocumentInputs(ctx context.Context, tx pgx.Tx, state *a
 	}
 	state.Dns.ResolverDocument.Set(ref)
 	return nil
+}
+
+func activeResolverProfile(ctx context.Context, q nodes.Querier) (uuid.UUID, error) {
+	rows, err := q.Query(ctx, `SELECT id FROM policy_definitions WHERE type='dns_profile' AND active_revision_id IS NOT NULL ORDER BY id LIMIT 2`)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	definitions, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if len(definitions) == 0 {
+		return uuid.Nil, nil
+	}
+	// There is no node-to-profile assignment in the current contract. Never
+	// arbitrarily choose one profile if the fleet has ambiguous active profiles.
+	if len(definitions) != 1 {
+		return uuid.Nil, apierr.New(apierr.DependencyUnavailable, "Node DNS profile selection is ambiguous.")
+	}
+	return definitions[0], nil
 }
