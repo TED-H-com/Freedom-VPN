@@ -3,7 +3,7 @@
 Every procedure below is **needs operator run**. It has not passed. Complete
 SECOPS-09 and prove counted member traffic before attempting outage assertions. Use the shared `deploy/devstack`
 implementation with an orchestrator-assigned instance; do not fork it. On this
-branch the only assigned instance is `w4-secops`, base `30000`. The automated logical restore uses a separate network-none container; no second
+branch the only assigned instance is `w4-secops`, base `30000`. The automated physical restore uses a separate network-none container; no second
 networked restore slot or production hardware is allocated. Record UTC start/end, source commit,
 binary and image digests, OS/kernel/app builds, policy revision, incarnation,
 commands, expected/actual, and verdict for each row. All test rates are TEST ONLY.
@@ -122,13 +122,15 @@ files; prepare them privately for the additional manual steps.
 
 This run must use a newly allocated isolated restore copy. Do not point any
 restore command at `FVPN_TEST_DATABASE_URL`, the live lab or another task's DB.
-The runner has passed a real isolated logical dump/replay subset (see
-[restore.json](restore.json)). The steps below extend that evidence to WAL/PITR,
-original node archives and coordinated external reconciliation; they are unrun.
+The runner has passed a real isolated pgBackRest WAL/PITR and retained-sender
+replay subset (see [pitr.json](pitr.json)). The larger drill below adds original
+node archives and coordinated external reconciliation; it remains unrun.
 
 1. First use the owning `w4-ops-backups` pgBackRest procedure in
-   `deploy/backup/` and `docs/ops/backups.md` after it lands; these paths are absent
-   on this follow-up checkout. Do not create a parallel physical backup path.
+   `deploy/backup/` and `docs/ops/backups.md`; both are present on this checkout.
+   Use the procedure in `docs/handover/restore-drill.md`. If its drill helper is
+   invoked, set `FVPN_BACKUP_DRILL_PREFIX=fvpn-w4-secops-drill` and provide the
+   required primary-container guard. Do not create a parallel backup path.
    On the isolated source copy, use a valid node archive retaining at least
    72 hours. Generate original events 1–400, persist exact hashes/totals and
    archive a base backup plus WAL through that commit. Record backup ID,

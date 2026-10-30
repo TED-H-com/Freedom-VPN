@@ -54,7 +54,7 @@ WG=/usr/local/bin/wg
 log "forwarding off before any path exists"
 sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 net.ipv6.conf.default.forwarding=0 >/dev/null
 
-for ns in fv-fwd fv-a1 fv-a2 fv-b1 fv-rogue fv-inet fv-lan; do
+for ns in fv-fwd fv-a1 fv-a2 fv-b1 fv-rogue fv-probe fv-inet fv-lan; do
 	ip netns add "$ns"
 	ip netns exec "$ns" ip link set lo up
 	ip netns exec "$ns" sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 >/dev/null
@@ -67,6 +67,9 @@ veth_pair fv-a1 fv-a1u 192.0.2.2/30 fv-fwd fv-fa1 192.0.2.1/30 9000
 veth_pair fv-a2 fv-a2u 192.0.2.6/30 fv-fwd fv-fa2 192.0.2.5/30 9000
 veth_pair fv-b1 fv-b1u 192.0.2.10/30 fv-fwd fv-fb1 192.0.2.9/30 9000
 veth_pair fv-rogue fv-rgu 192.0.2.14/30 fv-fwd fv-frg 192.0.2.13/30 9000
+# Dedicated synthetic-probe peer. Not a member. 100.64.8.2 is the same /24
+# and is routed here so the nft source match, not WireGuard, is what drops it.
+veth_pair fv-probe fv-pru 192.0.2.18/30 fv-fwd fv-fpr 192.0.2.17/30 9000
 # Host side of the routing-peer link. Upload arrives here.
 veth_pair root fv-fh 192.0.2.33/30 fv-fwd fv-ff 192.0.2.34/30 1500
 nsdo root ip -6 addr add fd00:db8:ff::33/64 dev fv-fh nodad
@@ -112,7 +115,7 @@ nsdo fv-lan ip route add default via 192.168.0.1 dev fv-ll
 nsdo fv-lan ip -6 route add default via fd00:db8:ffff::1 dev fv-ll
 
 log "wireguard keys in /scratch (not the repo)"
-for name in fwd a1 a2 b1 rogue; do
+for name in fwd a1 a2 b1 rogue probe; do
 	"$WG" genkey | tee "$SCRATCH/keys/$name" | "$WG" pubkey >"$SCRATCH/keys/$name.pub"
 done
 chmod 600 "$SCRATCH/keys"/*
@@ -122,7 +125,8 @@ nsdo fv-fwd "$WG" set fv-wg0 listen-port 51820 private-key "$SCRATCH/keys/fwd" \
 	peer "$(cat "$SCRATCH/keys/a1.pub")" allowed-ips 100.64.1.1/32,fd00:db8:a1::1/128 \
 	peer "$(cat "$SCRATCH/keys/a2.pub")" allowed-ips 100.64.1.2/32 \
 	peer "$(cat "$SCRATCH/keys/b1.pub")" allowed-ips 100.64.2.1/32 \
-	peer "$(cat "$SCRATCH/keys/rogue.pub")" allowed-ips 100.64.9.9/32
+	peer "$(cat "$SCRATCH/keys/rogue.pub")" allowed-ips 100.64.9.9/32 \
+	peer "$(cat "$SCRATCH/keys/probe.pub")" allowed-ips 100.64.8.1/32,100.64.8.2/32
 nsdo fv-fwd ip addr add 100.64.0.1/32 dev fv-wg0
 nsdo fv-fwd ip -6 addr add fd00:db8:f::1/128 dev fv-wg0 nodad
 nsdo fv-fwd ip link set fv-wg0 up mtu 1420
@@ -149,6 +153,8 @@ setup_member fv-a1 a1 192.0.2.1 100.64.1.1/32 fd00:db8:a1::1/128
 setup_member fv-a2 a2 192.0.2.5 100.64.1.2/32
 setup_member fv-b1 b1 192.0.2.9 100.64.2.1/32
 setup_member fv-rogue rogue 192.0.2.13 100.64.9.9/32
+setup_member fv-probe probe 192.0.2.17 100.64.8.1/32
+nsdo fv-probe ip addr add 100.64.8.2/32 dev fv-wg0
 
 # Member-originated packets go to the host. Packets from the host go back
 # into the matching tunnel. No hairpin inside the routing namespace (§8.2).
@@ -156,6 +162,8 @@ nsdo fv-fwd ip route add 100.64.1.1/32 dev fv-wg0 table 100
 nsdo fv-fwd ip route add 100.64.1.2/32 dev fv-wg0 table 100
 nsdo fv-fwd ip route add 100.64.2.1/32 dev fv-wg0 table 100
 nsdo fv-fwd ip route add 100.64.9.9/32 dev fv-wg0 table 100
+nsdo fv-fwd ip route add 100.64.8.1/32 dev fv-wg0 table 100
+nsdo fv-fwd ip route add 100.64.8.2/32 dev fv-wg0 table 100
 nsdo fv-fwd ip -6 route add fd00:db8:a1::1/128 dev fv-wg0 table 100
 nsdo fv-fwd ip route add default via 192.0.2.33 dev fv-ff table 200
 nsdo fv-fwd ip route add 100.64.0.0/10 via 192.0.2.33 dev fv-ff table 200
@@ -167,7 +175,7 @@ nsdo fv-fwd ip -6 rule add iif fv-ff lookup 100 priority 50
 nsdo fv-fwd ip route add default via 192.0.2.33 dev fv-ff
 nsdo fv-fwd ip -6 route add default via fd00:db8:ff::33 dev fv-ff
 
-for ns in root fv-fwd fv-a1 fv-a2 fv-b1 fv-rogue fv-inet fv-lan; do
+for ns in root fv-fwd fv-a1 fv-a2 fv-b1 fv-rogue fv-probe fv-inet fv-lan; do
 	rp_off "$ns"
 done
 
@@ -210,8 +218,9 @@ for attempt in 1 2 3 4 5 6 7 8; do
 	nsdo fv-a2 ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
 	nsdo fv-b1 ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
 	nsdo fv-rogue ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
+	nsdo fv-probe ping -c 1 -W 1 100.64.0.1 >/dev/null 2>&1 || true
 	count=$(nsdo fv-fwd "$WG" show fv-wg0 latest-handshakes | awk '$2 > 0 { n++ } END { print n+0 }')
-	if [[ "$count" == 4 ]]; then
+	if [[ "$count" == 5 ]]; then
 		ready=1
 		break
 	fi

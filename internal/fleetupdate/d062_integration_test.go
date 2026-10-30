@@ -13,6 +13,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -113,6 +114,8 @@ func TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist(t *testing.T)
 	w := l.intent(i)
 	l.report(i, w, "applying")
 	r := result(w, string(recorded.State))
+	// D-062(b): rebind the recorded candidate identity with the authorized job.
+	r.PreviousReleaseId.Set(w.Intent.ReleaseId)
 	r.Stage = recorded.Stage
 	r.Health = recorded.Health
 	r.ErrorCode = recorded.ErrorCode
@@ -133,6 +136,9 @@ func TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist(t *testing.T)
 		t.Fatal("recorded restored release is not healthy")
 	}
 	r.Health.Set(health)
+	// D-062(d): corrected evidence is a new result, never a changed replay of
+	// the permanently rejected payload above.
+	r.ResultId = uuid.New()
 	if _, err = l.s.SubmitResult(l.ctx, i, payload(t, r)); err != nil {
 		t.Fatal("empty allowlist must not reject serving restored release", err)
 	}
@@ -171,7 +177,22 @@ func TestD062e_NullUpdateGenerationRetainsOrderingWithoutConfirmation(t *testing
 	if _, err = svc.SubmitObservation(l.ctx, i.NodeID, i.IncarnationID, report); err != nil {
 		t.Fatal(err)
 	}
-	view, err := l.s.NodeVersionView(l.ctx, i.NodeID)
+	projection, err := l.s.NodeVersionView(l.ctx, i.NodeID)
+	if err != nil || projection.ObservedGeneration != nil {
+		t.Fatal("null update generation must remain absent in the node view", projection, err)
+	}
+	// The original harness assertion below checks the stored ordering fence.
+	// D-062(e) makes the public observation projection nullable, so read the
+	// numeric high-water mark separately instead of conflating the two values.
+	var view struct {
+		ObservedGeneration decstr.U64
+		LastObservedAt     *time.Time
+	}
+	var storedGeneration string
+	err = l.s.pool.QueryRow(l.ctx, `SELECT observed_update_generation::text,last_observed_at FROM fleet_node_state WHERE node_id=$1`, i.NodeID).Scan(&storedGeneration, &view.LastObservedAt)
+	if err == nil {
+		view.ObservedGeneration, err = decstr.Parse(storedGeneration)
+	}
 	if err != nil || view.ObservedGeneration != w.Intent.Generation || view.LastObservedAt == nil || !view.LastObservedAt.Equal(report.ObservedAt.Truncate(time.Microsecond)) {
 		t.Fatal("routine observation rejected or generation lowered", view, err)
 	}

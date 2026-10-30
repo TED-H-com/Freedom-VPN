@@ -13,12 +13,13 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Executed only inside the network-none restoration container. The immutable
-// dump and retained batch originate from the running lab, not a seeded copy.
-// This is the logical-restore subset of §17.3 / AT30, not a WAL/PITR claim.
+// backup and retained batch originate from the running lab, not a seeded copy.
+// §17.3 / AT30: physical mode also verifies the WAL recovery boundary before writes.
 func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 	if os.Getenv("FVPN_SECOPS_RESTORE") != "network-none" {
 		t.Skip("requires isolated restore container")
@@ -61,8 +62,22 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 	if err != nil {
 		t.Fatal("restore checkpoint")
 	}
-	if before.Signed.HighestContiguousSeq != 5 {
-		t.Fatal("restore did not return earlier checkpoint 5")
+	expectedACK := decstr.U64(5)
+	restoredTo := before.Signed.IssuedAt
+	physical := map[string]any{}
+	if raw, readErr := os.ReadFile("/fixture/pitr-manifest.json"); readErr == nil {
+		var manifest pitrManifest
+		if json.Unmarshal(raw, &manifest) != nil {
+			t.Fatal("PITR manifest decode")
+		}
+		expectedACK = manifest.TargetACK
+		restoredTo = manifest.Target
+		physical = verifyPhysicalRestore(t, pool, manifest)
+	} else if !os.IsNotExist(readErr) {
+		t.Fatal("PITR manifest read")
+	}
+	if before.Signed.HighestContiguousSeq != expectedACK {
+		t.Fatal("restored checkpoint differs from target")
 	}
 	actor := "00000000-0000-0000-0000-000000000003"
 	var entitlementBefore string
@@ -70,13 +85,13 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 	if err != nil {
 		t.Fatal("entitlement baseline")
 	}
-	if svc.FreezeIngest(ctx, actor, "TEST ONLY isolated logical restore") != nil {
+	if svc.FreezeIngest(ctx, actor, "TEST ONLY isolated backup restore") != nil {
 		t.Fatal("freeze")
 	}
 	if _, err = svc.IngestBatch(ctx, identity, batch); err == nil {
 		t.Fatal("frozen ingestion accepted")
 	}
-	state, err := svc.BeginRecovery(ctx, usage.RecoveryRequest{Actor: actor, Reason: "TEST ONLY retained window replay", RestoredTo: before.Signed.IssuedAt, AffectedSince: batch.Events[0].IntervalStart})
+	state, err := svc.BeginRecovery(ctx, usage.RecoveryRequest{Actor: actor, Reason: "TEST ONLY retained window replay", RestoredTo: restoredTo, AffectedSince: batch.Events[0].IntervalStart})
 	if err != nil {
 		t.Fatal("begin recovery")
 	}
@@ -103,11 +118,15 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 			repeat++
 		}
 	}
-	if accepted != 5 || duplicate != 5 || repeat != 10 || again.HighestContiguousSeq != 10 {
+	if accepted != 10-int(expectedACK) || duplicate != int(expectedACK) || repeat != 10 || again.HighestContiguousSeq != 10 {
 		t.Fatalf("replay counts accepted=%d duplicate=%d repeat=%d ack=%s", accepted, duplicate, repeat, again.HighestContiguousSeq)
 	}
 	if svc.CompleteRecovery(ctx, actor) != nil {
 		t.Fatal("complete recovery")
+	}
+	total, err := svc.GetMemberPeriodTotal(ctx, batch.Events[0].Records[0].MemberId, string(batch.Events[0].Records[0].PeriodId))
+	if err != nil || total.TotalBytes != 3000 || total.Gap || total.ReconciliationInProgress {
+		t.Fatal("replayed member rollup must total exactly 3000 bytes without gap or pending reconciliation")
 	}
 	var entitlementAfter string
 	err = pool.QueryRow(ctx, `SELECT string_agg(member_id::text||effective_service_end::text,',' ORDER BY member_id) FROM entitlements`).Scan(&entitlementAfter)
@@ -127,6 +146,11 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 		}
 	}
 	report := map[string]any{"kind": "logical snapshot restore and service replay", "status": "passed", "utc": time.Now().UTC(), "restored_ack": before.Signed.HighestContiguousSeq, "previous_ack": 10, "epoch_rotated": state.PreviousLedgerEpoch != state.NewLedgerEpoch, "replayed_accepted": accepted, "replayed_duplicate": duplicate, "second_replay_duplicate": repeat, "final_ack": again.HighestContiguousSeq, "ledger_rows": count, "entitlements_unchanged": true, "canonical_hashes_preserved": true, "protocol_seconds": time.Since(start).Seconds(), "external_reconciliation": false, "archive_source": "host-retained synthetic signed-node upload; not actual node SQLite archive"}
+	if len(physical) > 0 {
+		report["kind"] = "physical pgBackRest WAL/PITR and service replay"
+		report["physical_boundary"] = physical
+	}
+	report["final_member_total_bytes"] = total.TotalBytes
 	encoded, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
 		t.Fatal(err)

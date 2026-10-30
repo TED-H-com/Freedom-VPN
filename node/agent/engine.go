@@ -150,6 +150,9 @@ type Engine struct {
 	dnsDetail     string
 	dnsEv         *api.DnsPolicyEvidence
 	probeSource   string
+	// updateSnapReason is the last updater-journal snapshot class. A repeat
+	// of the same class is not logged again. Success clears it.
+	updateSnapReason string
 }
 
 // Start opens the store, the trust bundle and the control client.

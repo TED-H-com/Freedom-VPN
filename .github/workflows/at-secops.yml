@@ -23,5 +23,5 @@ jobs:
           go-version: '1.27.3'
       - run: make -f mk/at-secops.mk at-secops-test at-secops-lint at-secops-build
       # The privileged acceptance run is explicit and produces blocked records
-      # for serving, WAL recovery and full mixed/relay load preconditions.
+      # for serving and full mixed/relay load preconditions.
       # This job validates supporting code; it does not certify AT28–AT32.

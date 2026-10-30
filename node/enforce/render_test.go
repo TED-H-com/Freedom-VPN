@@ -43,7 +43,7 @@ func TestRender_Golden(t *testing.T) {
 	if !strings.Contains(plan.NFT, "timeout 3600s") {
 		t.Fatal("expected 3600s element timeout")
 	}
-	base, err := RenderBaseline(goldenModel().Datapath, State{})
+	base, err := RenderBaseline(Model{Datapath: goldenModel().Datapath}, State{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -327,10 +327,10 @@ func TestVerifyBaseline(t *testing.T) {
 		{"rule":{"family":"inet","table":"fvpn","chain":"input","expr":[{"match":{"left":{"meta":{"key":"iifname"}},"right":"fv-fh"}},{"drop":null}]}},
 		{"chain":{"family":"inet","table":"fvpn","name":"output","type":"filter","hook":"output","prio":-150,"policy":"accept"}}
 	]}`)
-	if err := VerifyBaseline(raw, dp); err != nil {
+	if err := VerifyBaseline(raw, Model{Datapath: dp}); err != nil {
 		t.Fatal(err)
 	}
-	if err := VerifyBaseline([]byte(`{"nftables":[{"chain":{"table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":0,"policy":"accept"}}]}`), dp); err == nil || !strings.Contains(err.Error(), string(ReasonIsolationBaselineMissing)) {
+	if err := VerifyBaseline([]byte(`{"nftables":[{"chain":{"table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":0,"policy":"accept"}}]}`), Model{Datapath: dp}); err == nil || !strings.Contains(err.Error(), string(ReasonIsolationBaselineMissing)) {
 		t.Fatalf("baseline: %v", err)
 	}
 }

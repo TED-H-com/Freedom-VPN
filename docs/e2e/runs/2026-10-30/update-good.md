@@ -4,9 +4,9 @@ Good release reaches a terminal updater state
 
 Status: pass
 
-Run: 5de03570-0436-477d-9847-6f6984432bd8
+Run: dc2f6353-89ec-434c-bc68-567066d9fe51
 
-Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
+Source: b15ff057cd5e91e227477de6a09d977931fa62d8
 
 Spec: §13, §19 AT23, §19 AT25
 
