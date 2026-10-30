@@ -106,6 +106,10 @@ func AuditResult(ctx context.Context, tx pgx.Tx, actor Actor, action string, res
 		fields = []string{"revision", "state"}
 	case "device.authorize", "device.revoke":
 		fields = []string{"member_id", "status", "reason"}
+	case "device.authorization.external_withdrawal":
+		// peer_id and observed_groups name the withdrawn peer. "authorization"
+		// in a field name would be redacted, so it stays in the action only.
+		fields = []string{"member_id", "peer_id", "observed_groups", "reason"}
 	case "identity_binding.created", "identity_binding.proof_updated", "identity_binding.rejected":
 		fields = []string{"identity_binding_id", "revision", "reason"}
 	case "billing.checkout", "billing.portal", "billing.checkout_completed", "billing.portal_completed":
