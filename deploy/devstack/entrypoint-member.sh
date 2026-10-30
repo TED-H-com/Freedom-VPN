@@ -12,6 +12,7 @@ fi
 export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 printf '%s\n' '{"stage":"waiting_user_auth"}' > /var/lib/vpn-node/e2e/status.json
 netbird service run --log-level warn --log-file console >/var/lib/vpn-node/e2e/netbird-service.log 2>&1 &
+printf '%s\n' "$!" > /var/lib/vpn-node/e2e/netbird-service.pid
 i=0
 while [ "$i" -lt 40 ]; do
     if netbird status --check live >/dev/null 2>&1; then

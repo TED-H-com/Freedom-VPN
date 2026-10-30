@@ -4,9 +4,9 @@ Good release reaches a terminal updater state
 
 Status: pass
 
-Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
+Run: 76f0725c-2264-4021-a553-60f6c921e32b
 
-Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
+Source: 1b2f358880d38ae643865edc2bb6f19756748456
 
 Spec: §13, §19 AT23, §19 AT25
 
@@ -34,8 +34,8 @@ Spec: §13, §19 AT23, §19 AT25
 - error_code: -
 - result_last_error: -
 - journal_excerpt: stage=locally_succeeded error_code= error_stage= error_detail= | health_json {"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":"passed","tunnel_probe":"passed"} | event seq=8 stage=checking detail={"kind":"health_attest","phase":"candidate","statuses":{"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":" | event seq=9 stage=locally_succeeded detail=
-- probe_traffic: {"attempts":1311,"authenticated_udp_replies":24}
-- probe_window: {"samples":843,"grant_samples":3,"source_elements":1,"destination_elements":1,"max_timeout_seconds":44,"probe_up_bytes":1848,"probe_down_bytes":1848,"member_bytes_before":0,"member_bytes_after":0,"elements_after":0}
-- probe_origin_receipt: {"probe_id":"3abe1f67-9ec2-479d-b61f-b1b3dbc70b06","requests":24,"source_address":"192.0.3.20"}
+- probe_traffic: {"attempts":1312,"authenticated_udp_replies":29}
+- probe_window: {"samples":884,"grant_samples":3,"source_elements":1,"destination_elements":1,"max_timeout_seconds":44,"probe_up_bytes":2233,"probe_down_bytes":2233,"member_bytes_before":15786,"member_bytes_after":15786,"elements_after":0}
+- probe_origin_receipt: {"probe_id":"40b2d434-bd79-4a3a-95fc-82961b69f32e","requests":29,"source_address":"192.0.3.20"}
 - probe_traversal_verified: true
 - note: locally_succeeded was observed
