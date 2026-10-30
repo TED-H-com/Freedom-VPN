@@ -472,6 +472,7 @@ const (
 	ErrorCodeACKCONFLICT              ErrorCode = "ACK_CONFLICT"
 	ErrorCodeARTIFACTINVALID          ErrorCode = "ARTIFACT_INVALID"
 	ErrorCodeAUTHORIZATIONEXPIRED     ErrorCode = "AUTHORIZATION_EXPIRED"
+	ErrorCodeAWAITINGMEMBERGRANTS     ErrorCode = "AWAITING_MEMBER_GRANTS"
 	ErrorCodeBOOTSTRAPCONSUMED        ErrorCode = "BOOTSTRAP_CONSUMED"
 	ErrorCodeBOOTSTRAPEXPIRED         ErrorCode = "BOOTSTRAP_EXPIRED"
 	ErrorCodeBOOTSTRAPNOTREADY        ErrorCode = "BOOTSTRAP_NOT_READY"
@@ -549,6 +550,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeARTIFACTINVALID:
 		return true
 	case ErrorCodeAUTHORIZATIONEXPIRED:
+		return true
+	case ErrorCodeAWAITINGMEMBERGRANTS:
 		return true
 	case ErrorCodeBOOTSTRAPCONSUMED:
 		return true
@@ -3040,8 +3043,9 @@ type ErrorBody struct {
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
 	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-	// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-	// in revision 8 are report-only and have no HTTP response status.
+	// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+	// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+	// have no HTTP response status.
 	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 	// endpoints must not ship with it in a release.
 	// Node enforcement verification (§13.11) is the address-free group the node
@@ -3060,6 +3064,7 @@ type ErrorBody struct {
 	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+	// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 	Code ErrorCode `json:"code"`
 
 	// Details Machine-readable context, always an object (empty when there is none).
@@ -3084,8 +3089,9 @@ type ErrorBody struct {
 // contracts tests keep this enum identical to that table. Codes marked
 // node-local in `pkg/apierr` are reported mainly inside agent payloads
 // (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-// in revision 8 are report-only and have no HTTP response status.
+// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+// have no HTTP response status.
 // NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 // endpoints must not ship with it in a release.
 // Node enforcement verification (§13.11) is the address-free group the node
@@ -3104,6 +3110,7 @@ type ErrorBody struct {
 // MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 // ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 // PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 type ErrorCode string
 
 // ErrorEnvelope Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
@@ -3358,7 +3365,9 @@ type FleetReleaseState struct {
 // (D-067) is different: the node holds a valid node lease whose member
 // grant set is empty while the desired generation carries member bindings.
 // The agent renews on a bounded schedule. Do not report `lease_expired`
-// for that provisional lease.
+// for that provisional lease. While that deadline holds, the `lease`,
+// `qos` and `source_binding` checks and the single `errors[]` entry use
+// `ErrorCode` `AWAITING_MEMBER_GRANTS` (D-071). This enum is unchanged.
 type ForwardingBlockReason string
 
 // GrantCreateRequest defines model for GrantCreateRequest.
@@ -3745,7 +3754,14 @@ type NodeCapacity struct {
 	UpBps          int64                    `json:"up_bps"`
 }
 
-// NodeCheck defines model for NodeCheck.
+// NodeCheck One named node check. In the D-071 provisional state (the node lease for this
+// generation is inside its anchored deadline, `config_generation` equals the desired
+// generation, `lease.members` is empty, and desired `device_bindings` is non-empty),
+// `name=lease`, `name=qos` and `name=source_binding` are `status=failed` with
+// `error_code=AWAITING_MEMBER_GRANTS`, not `VALIDATION_FAILED`. Details are
+// `Serving lease has no member grants yet.`, `Rate policy could not be applied.`
+// and `No member binding was admitted.`. A passed deadline uses `LEASE_EXPIRED`
+// (`Serving lease is not in force.`). A generation mismatch uses `STALE_GENERATION`.
 type NodeCheck struct {
 	// Detail Bounded operator-facing diagnostic (§13.9, SEC02, D-058). Never secrets, identity subjects, tokens, raw member addresses, queries or credential-bearing URLs; producers redact before reporting.
 	Detail     *string                      `json:"detail,omitempty"`
@@ -3790,6 +3806,12 @@ type NodeDetail struct {
 
 	// GroupIds Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed. Empty means no attached groups; absent means not projected. Existing member_group_ids remains unchanged.
 	GroupIds *[]openapi_types.UUID `json:"group_ids,omitempty"`
+
+	// IdentityConflict Cloned or duplicated node identity state (spec line 278, docs/pki/enrollment.md).
+	// null when the node has no current incarnation or no endpoint has been observed yet;
+	// absent means the server does not project it yet (pre-revision-11). Endpoint hashes,
+	// addresses and compatibility domains are never exposed.
+	IdentityConflict nullable.Nullable[NodeIdentityConflict] `json:"identity_conflict,omitzero"`
 
 	// LastSeenAt Central received_at of the last authenticated agent report.
 	LastSeenAt nullable.Nullable[time.Time] `json:"last_seen_at"`
@@ -3840,8 +3862,9 @@ type NodeError struct {
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
 	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-	// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-	// in revision 8 are report-only and have no HTTP response status.
+	// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+	// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+	// have no HTTP response status.
 	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 	// endpoints must not ship with it in a release.
 	// Node enforcement verification (§13.11) is the address-free group the node
@@ -3860,12 +3883,25 @@ type NodeError struct {
 	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+	// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 	Code ErrorCode `json:"code"`
 
 	// Message Redacted summary; never tokens, keys, environment or browsing data (§13.11).
 	Message    string    `json:"message"`
 	ObservedAt time.Time `json:"observed_at"`
 	Stage      string    `json:"stage"`
+}
+
+// NodeIdentityConflict Cloned or duplicated node identity state for the current incarnation
+// (spec line 278, docs/pki/enrollment.md). Endpoint hashes, addresses and
+// compatibility domains are never exposed.
+type NodeIdentityConflict struct {
+	// ConflictCount Recorded identity conflicts for the current incarnation.
+	ConflictCount  int                          `json:"conflict_count"`
+	LastConflictAt nullable.Nullable[time.Time] `json:"last_conflict_at"`
+
+	// MappingFrozen The current incarnation's external identity mapping is frozen - automatic mapping updates are suppressed. Resolution is operator revoke + re-enroll (the new incarnation starts unfrozen). There is no automatic unfreeze and no unfreeze operation.
+	MappingFrozen bool `json:"mapping_frozen"`
 }
 
 // NodeIncarnation One historical incarnation (§6.2, §15.3). Columns: `node_incarnations.id`,
@@ -4088,7 +4124,24 @@ type ObservationAccepted struct {
 // ObservationAcceptedAccepted defines model for ObservationAccepted.Accepted.
 type ObservationAcceptedAccepted bool
 
-// ObservationReport Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at.
+// ObservationReport Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
+// the center stores its own received_at.
+// D-071. When the node lease for this generation is inside its anchored deadline and
+// `config_generation` equals the desired generation, but `lease.members` is empty while
+// desired `device_bindings` is non-empty, `forwarding_block_reasons` contains
+// `awaiting_member_grants` (revision 10; that vocabulary is unchanged) and `safety_status`
+// stays `passed`. `checks[]` then carries `name=lease`, `status=failed`,
+// `error_code=AWAITING_MEMBER_GRANTS`, detail `Serving lease has no member grants yet.`;
+// `name=qos` and `name=source_binding` in the same provisional state carry
+// `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) with details
+// `Rate policy could not be applied.` and `No member binding was admitted.`.
+// `errors[]` carries exactly one entry `code=AWAITING_MEMBER_GRANTS`, `stage=lease`,
+// `message=Serving lease has no member grants yet.`. The agent renews on the D-067
+// schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline
+// failure and not a malformed policy.
+// Negatives, unchanged: a passed deadline is `lease_expired` / `LEASE_EXPIRED`
+// (`Serving lease is not in force.`); a generation mismatch is `policy_missing` /
+// `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
 type ObservationReport struct {
 	// AgentVersion Exact pinned component version (never `latest`).
 	AgentVersion            ComponentVersion              `json:"agent_version"`
@@ -4167,8 +4220,9 @@ type Operation struct {
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
 		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-		// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-		// in revision 8 are report-only and have no HTTP response status.
+		// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+		// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+		// have no HTTP response status.
 		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 		// endpoints must not ship with it in a release.
 		// Node enforcement verification (§13.11) is the address-free group the node
@@ -4187,6 +4241,7 @@ type Operation struct {
 		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+		// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
 	}] `json:"error"`
@@ -5323,8 +5378,9 @@ type UsageEventResult struct {
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
 		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-		// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-		// in revision 8 are report-only and have no HTTP response status.
+		// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+		// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+		// have no HTTP response status.
 		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 		// endpoints must not ship with it in a release.
 		// Node enforcement verification (§13.11) is the address-free group the node
@@ -5343,6 +5399,7 @@ type UsageEventResult struct {
 		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+		// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
 		Message string       `json:"message"`

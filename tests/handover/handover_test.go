@@ -1025,7 +1025,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 func TestHandover_Followup8Claims(t *testing.T) {
 	root := repoRoot(t)
 
-	// 1. Verify OpenAPI 1.6.0 revision 10 schema elements: listNodeIncarnations, Enrollment.token_sha256, and awaiting_member_grants.
+	// 1. Verify OpenAPI 1.7.0 revision 11 still carries the revision 10 schema elements: listNodeIncarnations, Enrollment.token_sha256, and awaiting_member_grants.
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -1052,7 +1052,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 		t.Fatal("contracts/openapi.yaml ForwardingBlockReason enum missing awaiting_member_grants")
 	}
 
-	// 2. Verify all 47 revision-10 operations are wired on main (no "Forty-six" or "46 of 47" wording remains).
+	// 2. Verify all 47 revision 11 operations are wired on main (no "Forty-six" or "46 of 47" wording remains).
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	handoverREADME := readOwnedDoc(t, root, "docs/handover/README.md")
 	opsREADME := readOwnedDoc(t, root, "docs/ops/README.md")
@@ -1068,7 +1068,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 		}
 	}
 
-	// 3. Verify operator-guide.md pins for control follow-up 19 (#190), revision 10 (#191/#195/#200),
+	// 3. Verify operator-guide.md pins for control follow-up 19 (#190), revision 11 (keeping #191/#195/#200),
 	// D-067 (#193/#198/#201/#202), D-068 (#189), updater follow-up 12 (#192), and secops follow-up 7 (#203).
 	for _, token := range []string{
 		"All 47 are wired in `apps/control` on `main`",
@@ -1087,7 +1087,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 		"sets `ExcludeRequestBody`",
 		"returns `501 NOT_IMPLEMENTED` without a third decode",
 		"order for a large body is `400 MALFORMED_REQUEST` syntax, `422 VALIDATION_FAILED` schema, `403 INCARNATION_MISMATCH` identity",
-		// Contract revision 10 (#191, #195, #200): incarnations, token_sha256, awaiting_member_grants.
+		// Contract revision 11 keeps revision 10 (#191, #195, #200): incarnations, token_sha256, awaiting_member_grants.
 		"GET /api/v1/admin/nodes/{node_id}/incarnations",
 		"listNodeIncarnations",
 		"retire_reason",
