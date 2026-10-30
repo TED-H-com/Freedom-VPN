@@ -10,6 +10,7 @@ import type {
   GrantCreateRequest,
   MemberGroupCreate,
   MemberPatchRequest,
+  NodeIdentityConflict,
   NodePatchRequest,
   NodeSummaryItem,
   OperationResource,
@@ -21,7 +22,10 @@ import type {
   UpdateBatchAccepted,
   UpdateBatchCreateRequest,
 } from '../api/types';
-import type { UpdateTargetWithResult } from '../api/view-models';
+import type {
+  NodeDetailWithForwardingReasons,
+  UpdateTargetWithResult,
+} from '../api/view-models';
 import { normalizeAndValidateDomain } from '../lib/dns';
 import {
   buildMemberSelfForPersona,
@@ -58,6 +62,148 @@ export function setMockRolledBackCandidateHealth(mode: 'populated' | 'null'): vo
   target.health = source.health;
   target.candidate_health = source.candidate_health ?? null;
   target.last_result = source;
+}
+
+export function setMockNodeIdentityConflict(
+  nodeId: string,
+  identityConflict: NodeIdentityConflict | null | undefined,
+): void {
+  const detail = state.nodes[nodeId];
+  if (!detail) return;
+  if (identityConflict === undefined) {
+    delete detail.identity_conflict;
+  } else {
+    detail.identity_conflict = identityConflict;
+  }
+}
+
+export function setMockNodeLeaseState(
+  nodeId: string,
+  mode: 'awaiting_member_grants' | 'lease_expired' | 'passed',
+): void {
+  const detail = state.nodes[nodeId] as NodeDetailWithForwardingReasons | undefined;
+  if (!detail) return;
+  const observedAt = '2026-10-30T18:00:00Z';
+  if (mode === 'awaiting_member_grants') {
+    detail.safety_status = 'passed';
+    detail.member_forwarding_observed = false;
+    detail.forwarding_block_reasons = ['awaiting_member_grants'];
+    detail.checks = [
+      {
+        name: 'internet_only',
+        status: 'passed',
+        observed_at: observedAt,
+        error_code: null,
+        detail: 'inet fvpn table verified; RFC1918 egress blocked',
+      },
+      {
+        name: 'lease',
+        status: 'failed',
+        observed_at: observedAt,
+        error_code: 'AWAITING_MEMBER_GRANTS',
+        detail: 'Serving lease has no member grants yet.',
+      },
+      {
+        name: 'qos',
+        status: 'failed',
+        observed_at: observedAt,
+        error_code: 'AWAITING_MEMBER_GRANTS',
+        detail: 'Rate policy could not be applied.',
+      },
+      {
+        name: 'source_binding',
+        status: 'failed',
+        observed_at: observedAt,
+        error_code: 'AWAITING_MEMBER_GRANTS',
+        detail: 'No member binding was admitted.',
+      },
+    ];
+    detail.recent_errors = [
+      {
+        code: 'AWAITING_MEMBER_GRANTS',
+        stage: 'lease',
+        message: 'Serving lease has no member grants yet.',
+        observed_at: observedAt,
+      },
+    ];
+  } else if (mode === 'lease_expired') {
+    detail.safety_status = 'expired';
+    detail.member_forwarding_observed = false;
+    detail.forwarding_block_reasons = ['lease_expired'];
+    detail.checks = [
+      {
+        name: 'internet_only',
+        status: 'passed',
+        observed_at: observedAt,
+        error_code: null,
+        detail: 'inet fvpn table verified; RFC1918 egress blocked',
+      },
+      {
+        name: 'lease',
+        status: 'failed',
+        observed_at: observedAt,
+        error_code: 'LEASE_EXPIRED',
+        detail: 'Serving lease expired at 2026-10-30T17:59:00Z.',
+      },
+      {
+        name: 'qos',
+        status: 'failed',
+        observed_at: observedAt,
+        error_code: 'LEASE_EXPIRED',
+        detail: 'Rate policy withdrawn on lease expiry.',
+      },
+      {
+        name: 'source_binding',
+        status: 'failed',
+        observed_at: observedAt,
+        error_code: 'LEASE_EXPIRED',
+        detail: 'Member bindings withdrawn fail-closed.',
+      },
+    ];
+    detail.recent_errors = [
+      {
+        code: 'LEASE_EXPIRED',
+        stage: 'lease',
+        message: 'Serving lease has expired; member forwarding has stopped.',
+        observed_at: observedAt,
+      },
+    ];
+  } else {
+    detail.safety_status = 'passed';
+    detail.member_forwarding_observed = true;
+    delete detail.forwarding_block_reasons;
+    detail.checks = [
+      {
+        name: 'internet_only',
+        status: 'passed',
+        observed_at: observedAt,
+        error_code: null,
+        detail: 'inet fvpn table verified; RFC1918 egress blocked',
+      },
+      {
+        name: 'lease',
+        status: 'passed',
+        observed_at: observedAt,
+        error_code: null,
+        detail: 'Serving lease valid with active member grants.',
+      },
+      {
+        name: 'qos',
+        status: 'passed',
+        observed_at: observedAt,
+        error_code: null,
+        detail: 'HTB + fq_codel applied for admitted members.',
+      },
+      {
+        name: 'source_binding',
+        status: 'passed',
+        observed_at: observedAt,
+        error_code: null,
+        detail: 'Admitted member source bindings enforced.',
+      },
+    ];
+    detail.recent_errors = [];
+  }
 }
 
 export function setMockPersona(persona: MockPersona): void {
