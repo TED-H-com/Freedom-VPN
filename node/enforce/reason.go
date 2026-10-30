@@ -38,6 +38,9 @@ const (
 	ReasonMark Reason = "MARK_SEMANTICS_VIOLATED"
 	// ReasonIsolation means the allow/deny policy itself does not match.
 	ReasonIsolation Reason = "ISOLATION_POLICY_INVALID"
+	// ReasonProbeUnbounded means a synthetic-probe set element has no kernel
+	// timeout, so the exception would outlive the health check (§13.9).
+	ReasonProbeUnbounded Reason = "PROBE_UNBOUNDED"
 )
 
 // CheckError is a verification failure with a specific reason.
