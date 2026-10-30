@@ -1,37 +1,24 @@
-# Requests to orchestrator — Follow-up 5
+# Requests to orchestrator — Follow-up 6
 
-Measured main: `446b6b0` (#162), final run
-`86e6106a-1be1-4003-9b0f-35a30e9cda12`, fresh `w4-secops` / `30000`.
-See [dependencies](dependencies.json) for exact merged roadmap entries.
+Measured application main `00e1d0c`: devstack #170, control #169, agent
+#166/#171, fleet-update #167 and updater #168. Full source and run identifiers
+are in [dependencies](dependencies.json) and [summary](summary.md).
 
-| ID / state | Cases | Owner / location | Evidence and next action |
-|---|---|---|---|
-| SECOPS-03 / resolved | AT29, AT31 | devstack #143/#153, nodes #160, agent #162 | Fresh ready/passed/healthy node, DNS and serving checks pass. Current selected-exit flow is counted. |
-| SECOPS-04 / paid and grant subsets passed; remaining hooks blocked | AT29 | devstack `tests/e2e/cmd/fvpn-e2e-prepare/main.go:prepare`; `tests/e2e/stack_exports.go:PauseAgent`; node/fleet configuration owner | `deadlines.json`: real paid/grant source ends, control loss, SIGKILL agent, grant case SIGSTOP watchdog, allowset expiry, worker freeze, and valid-policy recovery. Remaining: prepared `grace_seconds=0` at main.go:243 has no documented finite-grace hook; `fleet_config.max_offline_lease_seconds` has no public setter or exported helper, so the node ceiling remains 86400. Provide sanctioned product inputs for these settings; never hand-write fleet or entitlement rows. Established TCP/UDP and guest rollback remain separate unrun rows. |
-| SECOPS-05 / historical physical half passed; full reconciliation open | AT30 | backups and remaining acceptance integration | Original `pitr.json`/source preserved. Actual retained node SQLite replay and independently current payment, peer and revocation-intent reconciliation still need isolated restored-service integration. No new full-service RPO/RTO claim. |
-| SECOPS-06 / resolved scoped login and classes | AT28, AT31 | control #106/#141/#145/#161 | 20/20 logins; exact burst refusals and matching metrics retained. Current body caps now agree. IPv6 /64 remains component verified, not a live IPv6-origin claim. |
-| SECOPS-07 / prior DOC01–14 resolved; DOC15 open | AT32 | handover #138/#157, devstack docs | See DOC15 below. Physical platform statements remain correctly qualified. |
-| SECOPS-08 / needs operator run | AT29–AT32 | operator | Real Windows/macOS/iOS/Android, physical arm64, second NAT, candidate hardware and disposable guest clock rollback remain in `operator-runs.md`. |
-| SECOPS-09 / selected counted flow resolved | AT29, AT31 | devstack #153, agent #146/#162 | Explicit selection of the real published exit yields `fvnb0`, HTTPS 200, authenticated node-SNAT arrival and exact-device byte growth. Retire the missing/empty-member-lease serving blocker for this evidence. It is not the reason remaining cases are blocked. |
-| SECOPS-10 / open on devstack follow-up 10 | full AT31 | `tests/e2e/native_exports.go:StartNativePeer,JoinNativeMember`; `deploy/devstack/nginx.conf` | Follow-up 10 was absent at both pre-run checks. Historical unchanged 20×3 attempt remains 50/60, limited by 256 gateway connections; no new 60-device success is claimed. This run drove two counted devices with 20 portal readers. After the budget fix merges, rerun the unchanged 20×3 profile. |
-| SECOPS-11 / prior halves retained; current populated serving passed | AT29, AT31 | nodes #109/#148/#160 | Prior immutable negative and zero-binding positive remain in `followup4-publication.json`; this run adds real populated publication plus counted traffic, without forged observations. |
-| SECOPS-12 / resolved historical PITR setup | AT30 | backups #111 and acceptance #112 | Original isolated restore image/target evidence retained; no current-schema physical rerun asserted. |
-| SECOPS-13 / resolved | verification | nodes #130/#148, `internal/nodes/publication_evidence_test.go:17` | Exact requested owner test still passes against immutable owner testdata, independent of current live.json. |
-| SECOPS-14 / resolved | AT28, AT31 | devstack #143 | Current 20 walkers land at GET / 200 and authenticate the expected distinct members. |
-| SECOPS-15 / resolved by measured retest | AT28, AT31 | control #161; `docs/control/AUTH.md:Request body limits`, `internal/httpapi/middleware.go` | Valid usage sizes 8 MiB−1 and 8 MiB return 200; +1 returns 413 PAYLOAD_TOO_LARGE. All six other class triplets agree with the 1 MiB boundary. The observed 400 for whitespace on bodyless bootstrap is JSON validation, not oversize refusal. Real node-A heartbeat under node-B identity is refused 403; no telemetry row is forged. Duplicate retries leave one synthetic event row. |
-| SECOPS-16 / remains open | AT28 | devstack `deploy/devstack/nginx.conf`; follow-up 10 | Follow-up 10 is absent from measured main, so the earlier exhaustion diagnostic and auth-query leak are not retired. Retained-stream known-canary scans are zero; that does not disprove the earlier `user_code` error-log finding or cover deleted transient native login logs. Add protected scan-before-delete/capture in `tests/e2e/native_exports.go:JoinNativeMember` for complete stream coverage. |
-| F3-02 / measured coherence resolved | post-revoke | devstack #153, enforce #159, agent #162 | DELETE device returns 202; next observation applies generation 22, forwarding true, empty reasons. Second member has counted flow before and after; revoked device loses the exit. No package installation, process restart or policy workaround was used to repair revocation. |
-| DOC15 / documentation change requested | AT32 | handover `docs/handover/member-guide.md:121,353`; devstack `docs/e2e/RUN.md:207` | These current-status paragraphs still name missing conntrack or lease refresh. #153 installs conntrack and this run measures counted forwarding and post-revoke coherence. Attribute prior blocked records historically and link current scoped evidence, while preserving grace/clock/platform/transport qualifications. |
+| Request | Status and exact owner | Evidence / next action |
+|---|---|---|
+| SECOPS-10, gateway admission | Resolved for admission after devstack #170; both fresh runs 20 users / 60 devices / 60 bindings | Both the unchanged sequential 20×3 profile and `ScaleNativeMembers` run on fresh separate instances. Both simultaneous product snapshots and exact identity/admission checks passed; read windows were 600/600 each, p95 16.413 / 47.604 ms. Admission alone cannot certify full AT31. |
+| AT31 counted cohort and node telemetry | Open; `w4-at-security-ops` acceptance owner | Extend `tests/e2e/at/secops/counted_capacity_test.go:countedCapacity` to drive and record each admitted peer's selected-exit route, authenticated origin receipt and exact-device byte growth under concurrent policy/sampling/relay load. Add usable node process/cgroup CPU, memory and IO telemetry; Follow-up 5 Docker node statistics were unavailable. `StartSecondExit` now exists; a two-exit mixed-flow measurement remains acceptance work, not a missing devstack hook. Candidate hardware and member platforms remain operator runs. |
+| SECOPS-16, all native log streams | Open after devstack #170; all-stream verdict in secret-scan.json | Gateway method/status/server diagnostics and protected transient files are separate streams. `tests/e2e/native_scan.go:ScanNativeJoinLog` and `native_exports.go:JoinNativeMember` give exact pre-delete key counts for the sequential profile. The sequential retest has 60/60 protected pre-delete streams with one recognized device-flow key line each, keeping this row open under the requested zero-canary criterion. Gateway retained diagnostics have zero key lines; that is not an all-stream zero result. Public evidence keeps only counts and key names. |
+| SECOPS-16, bulk helper scan observability | Open; devstack `tests/e2e/native_exports.go:ScaleNativeMembers` | `NativeScale` returns only present/protected totals; it discards each `NativePeer.LogScan.DeviceFlowKeys`, stream identity and scanner error. Add a bounded scan-results callback or counts keyed by the synthetic peer role, including scan success. The independent scanner watcher supplies partial/in-flight coverage here; it must not replace a missing final scan with zero. |
+| SECOPS-04, finite grace input | Blocked; devstack `tests/e2e/cmd/fvpn-e2e-prepare/main.go:run (line 243)`, members settings | Proposed documented flag: `--members-grace-seconds=<nonnegative integer>` propagated by `mk/e2e.mk` from `FVPN_E2E_MEMBERS_GRACE_SECONDS`; preserve TEST ONLY default 0 and use the existing members settings validator. Render `config/members.json:grace_seconds` and a nonblank TEST ONLY `grace_reason` for nonzero grace before control and worker start. Require `E2E_RESET=1` / a fresh own-prefix stack for a changed value; do not imply live reload. If restart-in-place is supported later, document restarting both control and worker and bounded reconcile/readback, without writing projections. Evidence must retain the sanitized value/config digest and startup times, original paid-through, derived grace/effective end, signed lease bound, serving/counter baseline, cutoff attempts and recovery ACK. |
+| SECOPS-04, short node lease | Blocked; contracts revision 9, D-065, then fleet configuration owner | `fleet_config.max_offline_lease_seconds` still lacks a sanctioned public setter. Wait for the admin fleet configuration API, then set a TEST ONLY finite bound through it with required idempotency/ETag semantics and read back the issued lease. Never update the table or replace signatures in acceptance. |
+| AT28 untrusted X-Forwarded-For row | Blocked on control follow-up 18 | It was absent on measured main. After it merges, use an actual untrusted lab connection and alternating documentation-range header values, retaining the unchanged refusal threshold and principal metric. No header-based simulated address sweep is claimed here. |
+| SECOPS-05 / AT30 | Unchanged | No `deploy/backup`, restore-drill or backup runbook change since #165. Original PITR remains historical. Actual retained-node archive replay plus independently current payment/peer/revocation reconciliation remain acceptance integration work. |
+| SECOPS-08 / AT32 | Needs operator run | Existing physical architecture, candidate hardware, second NAT, guest clock rollback and real member-platform scripts remain in operator-runs.md. |
 
-The extra native hook does not inherit the Compose origin hostname mapping.
-The first attempt records the actual DNS refusal. The final probe uses the
-controlled origin IP already present in its generated certificate SAN, retaining
-TLS verification; it changes no DNS, route, group or policy.
-
-The two-device measurements do not justify a 60-device or candidate-hardware
-capacity claim. Node Docker stats returned 0B/0B memory and zero CPU/IO in all
-25 samples, so node resource usage is unavailable. Before the next capacity
-run, augment `tests/e2e/at/secops/counted_capacity_test.go:countedCapacity` with
-usable process/cgroup telemetry; no node memory limit can be inferred from
-these zeros. Central-service snapshots and raw IO are preserved, without tuning
-the test after seeing the results.
+SECOPS-03/-06/-09/-11/-12/-13/-14/-15 and measured F3-02 retain the specific
+previous passes under [Follow-up 5 history](history/follow-up-5/README.md), except
+that the current limiter/body rows are remeasured after #169. The missing
+counted-flow blocker is not restored by this admission-only run. DOC15's obsolete
+current-status wording was corrected by handover #163; no new physical claim
+follows from that correction.

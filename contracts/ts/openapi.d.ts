@@ -908,6 +908,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/fleet-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read fleet configuration
+         * @description Operator-role read of the singleton fleet configuration (D-065, §16.3).
+         *     The row id is `00000000-0000-0000-0000-000000000001`.
+         *     `max_offline_lease_seconds` is copied onto leases issued or renewed after
+         *     it is stored. Leases already issued keep their `max_offline_seconds`
+         *     until renewal: a later write does not shorten or extend them, and the
+         *     §16.3 replay rule is untouched (replaying a known lease never restarts
+         *     its time). The response carries the strong ETag `"<resource_version>"`.
+         *     `default_max_offline_lease_seconds` is the read-only recommended default,
+         *     always 86400. The maximum 86400 is the §16.3 ceiling (每次服務租約最長 24
+         *     小時), not a recommendation. The minimum 60 exists for test labs: the
+         *     agent renews when the remaining window is at or below
+         *     min(`renew_lead_seconds` 120, window/2) with a 10 s heartbeat, so a 60 s
+         *     lease is renewed at about 30 s remaining. The portal must warn below 900 s.
+         */
+        get: operations["getFleetConfig"];
+        /**
+         * Set the fleet offline-lease ceiling
+         * @description Stores `max_offline_lease_seconds` on the singleton fleet configuration
+         *     (D-065, §16.3). Returns 200 with the resource. The API reserves 202 for
+         *     an operation whose external or data-plane effect is still pending;
+         *     `Operation` succeeds only after observed evidence for every required
+         *     step. This write is one local row. Lease issuance reads that row later,
+         *     and leases already issued are not rewritten, so nothing in the data
+         *     plane is pending when the response is sent.
+         *     The value applies only to leases issued or renewed after the write.
+         *     There is no retroactive shortening and no extension. The §16.3 replay
+         *     rule is untouched. The minimum 60 exists for test labs (renewal at about
+         *     30 s remaining on a 60 s lease; see GET). The portal must warn below
+         *     900 s. The maximum 86400 is the §16.3 ceiling, not a recommendation.
+         *     An accepted write increments `resource_version`, sets `updated_at`, and
+         *     records one audit event `fleet_config.update` on resource
+         *     `fleet_config:00000000-0000-0000-0000-000000000001`. `changes.before` and
+         *     `changes.after` each contain `max_offline_lease_seconds`. `operation_id`
+         *     is null. Requires If-Match (428 PRECONDITION_REQUIRED when missing, 412
+         *     RESOURCE_VERSION_CONFLICT with `details.current_resource_version`) and
+         *     Idempotency-Key. The same key and payload replay the original 200; a
+         *     different payload is 409 IDEMPOTENCY_CONFLICT. A value below 60 or above
+         *     86400 is 422 VALIDATION_FAILED, the existing schema-validation code.
+         */
+        put: operations["updateFleetConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/groups": {
         parameters: {
             query?: never;
@@ -1016,6 +1072,46 @@ export interface components {
         };
         /** @description A command that only needs an audited reason. */
         ReasonRequest: {
+            reason: string;
+        };
+        /**
+         * @description Singleton fleet configuration (D-065, §16.3). The row id is
+         *     `00000000-0000-0000-0000-000000000001`. `resource_version` is the strong
+         *     ETag value without the surrounding quotes.
+         */
+        FleetConfig: {
+            /**
+             * @description Seconds copied onto leases issued or renewed after this value is
+             *     stored. Already issued leases keep `max_offline_seconds` until
+             *     renewal. 60 is the test-lab floor. 86400 is the §16.3 ceiling
+             *     (每次服務租約最長 24 小時), not a recommendation. The portal must warn
+             *     when the value is below 900.
+             */
+            max_offline_lease_seconds: number;
+            /**
+             * @description Read-only recommended default (§16.3). Always 86400. Not accepted on PUT.
+             * @enum {integer}
+             */
+            readonly default_max_offline_lease_seconds: 86400;
+            /** @description Monotonic version of the fleet configuration row. The ETag is `"<resource_version>"`. */
+            resource_version: string;
+            /**
+             * Format: date-time
+             * @description Time of the last accepted write.
+             */
+            updated_at: string;
+        };
+        /**
+         * @description Replace `max_offline_lease_seconds` (D-065). `reason` uses the same
+         *     bounds as the other admin reasons (`ReasonRequest`).
+         */
+        FleetConfigUpdate: {
+            /**
+             * @description Next value copied onto leases issued or renewed after this write.
+             *     Below 60 or above 86400 is 422 VALIDATION_FAILED.
+             */
+            max_offline_lease_seconds: number;
+            /** @description Audited reason for the change. */
             reason: string;
         };
         /**
@@ -3404,7 +3500,9 @@ export interface components {
              */
             expires_at: string;
             /**
-             * @description configured_max_offline_lease; recommended default 24 hours (§16.3).
+             * @description Seconds copied from fleet configuration at issuance or renewal (§16.3).
+             *     A later `PUT /admin/fleet-config` does not rewrite this field. 86400 is
+             *     the ceiling and the recommended default.
              * @default 86400
              */
             max_offline_seconds: number;
@@ -5407,6 +5505,84 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getFleetConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current fleet configuration. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetConfig"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    updateFleetConfig: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Strong ETag of the resource as last read, `"<resource_version>"` (§14.5).
+                 *     Missing: 428 PRECONDITION_REQUIRED. Mismatch: 412
+                 *     RESOURCE_VERSION_CONFLICT with details.current_resource_version.
+                 */
+                "If-Match": components["parameters"]["IfMatch"];
+                /**
+                 * @description Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+                 *     route and key. Same key and same validated payload return the same resource
+                 *     or operation; same key and a different payload return 409
+                 *     IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+                 *     header: 400 MALFORMED_REQUEST.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FleetConfigUpdate"];
+            };
+        };
+        responses: {
+            /** @description Fleet configuration stored. ETag is the new resource version. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetConfig"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            428: components["responses"]["PreconditionRequired"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalError"];
             503: components["responses"]["ServiceUnavailable"];

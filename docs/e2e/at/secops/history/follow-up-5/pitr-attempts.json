@@ -1,0 +1,41 @@
+{
+  "first_development_attempt": {
+    "source_revision": "2a21468",
+    "status": "passed",
+    "source_test_seconds": 51.234,
+    "restore_test_seconds": 0.05,
+    "result": "ACK7 ->10; 3 accepted/7 duplicate; repeat10 duplicate; grant and audit boundary unchanged",
+    "limitations": "Superseded by final fresh drill; initial manifest encoded DB timestamps with local offset, converted to UTC by restore driver"
+  },
+  "combined_acceptance_attempt": {
+    "source_revision": "e48c6af",
+    "status": "blocked",
+    "source_test_seconds": 153.4,
+    "source_test_status": "passed",
+    "restore_status": "image lookup failed before data restore",
+    "source_container_image": "sha256:d95c58d0f1e21a87b1414c268af7fb5437e4b96ea17dc85e266e5ec0769a4a10",
+    "actual": "Docker run: No such image for the digest returned by docker inspect source .Image",
+    "cause": "not established; neutral cache tag now resolves to another image; no other-prefix operations performed",
+    "resolution": "Build the existing deploy/backup/postgres/Dockerfile under an owned restore-image tag, then use its immutable ID and remove that tag after the drill"
+  },
+  "transient_bringup_attempt": {
+    "status": "failed before source test",
+    "actual": "Assigned 127.0.0.1:35432 bind refused; subsequent read-only ss and docker publish inventory showed no listener",
+    "action": "Removed only owned partial stack and retried the official command after observing the assigned port free; no alternate port or other-prefix mutation"
+  },
+  "same_second_target_attempt": {
+    "status": "failed before restore",
+    "source_test_seconds": 57.2,
+    "backup_label": "20261030-035639F",
+    "backup_stop_utc": "2026-10-30T03:56:47Z",
+    "target_utc": "2026-10-30T03:56:47.947956Z",
+    "actual": "pgBackRest [075]: unable to find backup set with stop time less than target",
+    "resolution": "Harness waits on PostgreSQL clock until at least backup stop +1 whole second before pre-target writes and target capture; restore still uses --target-time"
+  },
+  "final_focused_attempt": {
+    "status": "passed",
+    "source_test_seconds": 50.411,
+    "result": "pitr.json",
+    "cleanup": "cleanup.json"
+  }
+}

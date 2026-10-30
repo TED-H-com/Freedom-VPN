@@ -196,6 +196,9 @@ func TestProbeException_ServingApplyThenClear(t *testing.T) {
 
 func TestProbeException_AbsentChallengeDoesNotInstall(t *testing.T) {
 	r := newRig(t)
+	// Keep signed lease time aligned with the challenge's frozen clock even
+	// when race instrumentation or host load slows setup.
+	r.srv.SetClock(r.clock.Wall)
 	r.eng.prober = &verProbe{version: "0.76.2"}
 	r.srv.SetPublication(api.PublicationIntentUnpublished)
 	enrollBoot(t, r)
@@ -204,7 +207,10 @@ func TestProbeException_AbsentChallengeDoesNotInstall(t *testing.T) {
 	n := countKind(r.plane.calls, "baseline_model")
 	applies := r.plane.applies
 	stepOK(t, r)
-	requireAttest(t, r, ch)
+	att := requireAttest(t, r, ch)
+	if !att.GeneratedAt.Equal(r.clock.Wall()) {
+		t.Fatalf("producer and challenge clocks differ: generated=%s validator=%s", att.GeneratedAt, r.clock.Wall())
+	}
 	if countKind(r.plane.calls, "baseline_model") != n || r.plane.applies != applies {
 		t.Fatalf("challenge without a probe installed one: models %d applies %d -> %d", countKind(r.plane.calls, "baseline_model"), applies, r.plane.applies)
 	}
