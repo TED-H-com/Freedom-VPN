@@ -6,10 +6,6 @@
   "tls_certificate_file": "secrets/server.crt",
   "tls_key_file": "secrets/server.key",
   "agent_ca_file": "secrets/agent-ca.crt",
-  "members_config_file": "members.json",
-  "dns_config_file": "dns.json",
-  "policies_config_file": "policies.json",
-  "usage_config_file": "usage.json",
   "database_url_file": "secrets/database-url",
   "oidc_issuer": "https://idp.example.invalid",
   "oidc_client_id": "portal-example",
@@ -22,5 +18,10 @@
   "session_idle_seconds": 1800,
   "session_absolute_seconds": 43200,
   "idempotency_seconds": 604800,
-  "migrate_on_start": false
+  "migrate_on_start": false,
+  "members_config_file": "members.json",
+  "dns_config_file": "dns.json",
+  "nodes_config_file": "nodes.json",
+  "policies_config_file": "policies.json",
+  "usage_config_file": "usage.json"
 }

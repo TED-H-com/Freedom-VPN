@@ -68,6 +68,8 @@ const (
 	StepAgentPolicy          = "agent_policy"
 	StepNetBirdRouteReadback = "netbird_route_readback"
 	StepDataPathProbe        = "data_path_probe"
+	// Enrollment revocation also requires confirmed setup-key and peer removal.
+	StepNetBirdIdentityCleanup = "netbird_identity_cleanup"
 )
 
 // Standard operation kinds for nodes and exits (§5.2, §14.2).

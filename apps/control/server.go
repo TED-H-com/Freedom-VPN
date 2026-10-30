@@ -9,7 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"reflect"
 	"strings"
@@ -23,6 +25,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Dependencies are supplied once by the binary; domains never open another pool.
@@ -30,6 +34,7 @@ type Dependencies struct {
 	Config  config.Config
 	Pool    *pgxpool.Pool
 	Browser *auth.Browser
+	Metrics *prometheus.Registry
 	Logger  *slog.Logger
 }
 type Domain struct {
@@ -43,18 +48,22 @@ type Built struct {
 	Runners    []func(context.Context) error
 }
 
-// Application owns the two listeners and the lifecycle of all domain runners.
+// Application owns the API and metrics listeners and all domain runners.
 // Only the composition layer may construct or wrap the listeners' handlers.
 type Application struct {
-	Public, Agent *http.Server
-	runners       []func(context.Context) error
-	shutdown      time.Duration
+	Public, Agent, Metrics *http.Server
+	runners                []func(context.Context) error
+	shutdown               time.Duration
+	logger                 *slog.Logger
 }
 
 // Servers builds the default Domains list, or an explicit list for composition
 // tests. Middleware runs in registration order, inside httpapi.Transport, on
 // both listeners. Nothing listens or starts a goroutine until Run.
 func Servers(ctx context.Context, d Dependencies, domains ...Domain) (*Application, error) {
+	if d.Metrics == nil {
+		d.Metrics = prometheus.NewRegistry()
+	}
 	if domains == nil {
 		domains = Domains()
 	}
@@ -98,6 +107,14 @@ func Servers(ctx context.Context, d Dependencies, domains ...Domain) (*Applicati
 	c := d.Config
 	if d.Pool == nil || d.Browser == nil || c.ShutdownSeconds < 1 {
 		return nil, errors.New("control database, browser and shutdown_seconds required")
+	}
+	metricsAddress, e := netip.ParseAddrPort(c.MetricsAddress)
+	if e != nil || !metricsAddress.Addr().IsLoopback() {
+		return nil, errors.New("metrics_address must be a loopback IP address and port")
+	}
+	requests := prometheus.NewCounterVec(prometheus.CounterOpts{Name: "fvpn_control_http_requests_total", Help: "Control API responses by normalized route and HTTP status."}, []string{"route", "status"})
+	if e := d.Metrics.Register(requests); e != nil {
+		return nil, e
 	}
 	wrap := func(h http.Handler) http.Handler {
 		for i := len(middleware) - 1; i >= 0; i-- {
@@ -177,16 +194,22 @@ func Servers(ctx context.Context, d Dependencies, domains ...Domain) (*Applicati
 		})
 	}
 	makeServer := func(address string, h http.Handler, t *tls.Config) *http.Server {
-		return &http.Server{Addr: address, Handler: httpapi.Transport(d.Logger, h), TLSConfig: t, ReadHeaderTimeout: time.Duration(c.ReadTimeoutSeconds) * time.Second, ReadTimeout: time.Duration(c.ReadTimeoutSeconds) * time.Second, WriteTimeout: time.Duration(c.WriteTimeoutSeconds) * time.Second, IdleTimeout: time.Duration(c.IdleTimeoutSeconds) * time.Second, MaxHeaderBytes: 32 << 10, ErrorLog: slog.NewLogLogger(slog.NewTextHandler(discardWriter{}, nil), slog.LevelError)}
+		return &http.Server{Addr: address, Handler: h, TLSConfig: t, ReadHeaderTimeout: time.Duration(c.ReadTimeoutSeconds) * time.Second, ReadTimeout: time.Duration(c.ReadTimeoutSeconds) * time.Second, WriteTimeout: time.Duration(c.WriteTimeoutSeconds) * time.Second, IdleTimeout: time.Duration(c.IdleTimeoutSeconds) * time.Second, MaxHeaderBytes: 32 << 10, ErrorLog: slog.NewLogLogger(slog.NewTextHandler(discardWriter{}, nil), slog.LevelError)}
 	}
-	public := makeServer(c.PublicAddress, root(wrap(publicAPI), false), &tls.Config{MinVersion: tls.VersionTLS13, Certificates: []tls.Certificate{certificate}})
-	agent := makeServer(c.AgentAddress, root(wrap(agentAPI), true), AgentTLSConfig(certificate, roots))
+	public := makeServer(c.PublicAddress, httpapi.TransportWithMetrics(d.Logger, root(wrap(publicAPI), false), requests), &tls.Config{MinVersion: tls.VersionTLS13, Certificates: []tls.Certificate{certificate}})
+	agent := makeServer(c.AgentAddress, httpapi.TransportWithMetrics(d.Logger, root(wrap(agentAPI), true), requests), AgentTLSConfig(certificate, roots))
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("GET /metrics", promhttp.HandlerFor(d.Metrics, promhttp.HandlerOpts{}))
+	metricsMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		apierr.Write(w, r, apierr.New(apierr.ResourceNotFound, "Route not found."))
+	})
+	metrics := makeServer(c.MetricsAddress, httpapi.Transport(d.Logger, metricsMux), nil)
 	if d.Logger != nil {
 		for i, domain := range domains {
 			d.Logger.Info("control domain built", "domain", domain.Name, "operations", operationNames(built[i].Handlers), "agent_authenticator", built[i].Agents != nil, "runners", len(built[i].Runners))
 		}
 	}
-	return &Application{Public: public, Agent: agent, runners: runners, shutdown: time.Duration(c.ShutdownSeconds) * time.Second}, nil
+	return &Application{Public: public, Agent: agent, Metrics: metrics, runners: runners, shutdown: time.Duration(c.ShutdownSeconds) * time.Second, logger: d.Logger}, nil
 }
 
 // TLS handshake errors may contain hostile certificate fields; discard the
@@ -200,12 +223,40 @@ func (discardWriter) Write(p []byte) (int, error) { return len(p), nil }
 func Run(ctx context.Context, app *Application) error {
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
-	servers := []*http.Server{app.Public, app.Agent}
+	servers := []*http.Server{app.Public, app.Agent, app.Metrics}
+	names := []string{"public", "agent", "metrics"}
+	listeners := make([]net.Listener, 0, len(servers))
+	defer func() {
+		for _, listener := range listeners {
+			_ = listener.Close()
+		}
+	}()
+	// Bind every socket before starting runners. A bind failure closes sockets
+	// already opened; Shutdown cannot race a later ListenAndServe startup.
+	for _, s := range servers {
+		listener, err := (&net.ListenConfig{}).Listen(ctx, "tcp", s.Addr)
+		if err != nil {
+			if ctx.Err() != nil {
+				return nil
+			}
+			return err
+		}
+		listeners = append(listeners, listener)
+	}
 	results := make(chan error, len(servers)+len(app.runners))
 	launch := func(run func(context.Context) error) { go func() { results <- run(ctx) }() }
-	for _, s := range servers {
+	for i, s := range servers {
+		listener := listeners[i]
+		if app.logger != nil {
+			app.logger.InfoContext(ctx, "control listener started", "listener", names[i], "address", listener.Addr().String())
+		}
 		launch(func(context.Context) error {
-			e := s.ListenAndServeTLS("", "")
+			var e error
+			if s == app.Metrics {
+				e = s.Serve(listener)
+			} else {
+				e = s.ServeTLS(listener, "", "")
+			}
 			if errors.Is(e, http.ErrServerClosed) {
 				return nil
 			}

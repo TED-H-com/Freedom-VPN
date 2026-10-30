@@ -136,7 +136,7 @@ func Write(dir string, rec Record) error {
 		b.WriteString("- " + ob.Name + ": " + ob.Detail + "\n")
 	}
 	b.WriteString("\n")
-	return os.WriteFile(base+".md", []byte(b.String()), 0o644)
+	return os.WriteFile(base+".md", []byte(strings.TrimRight(b.String(), "\n")+"\n"), 0o644)
 }
 
 // WriteExtra stores a redacted sibling of a record, such as a ruleset or a

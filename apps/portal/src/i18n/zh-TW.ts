@@ -249,7 +249,9 @@ export const zhTW = {
   'admin.updates.col.pubIntent': '發布意圖 (更新不改變意圖)',
   'admin.updates.col.versions': '目前版本 → 目標版本 (Last Good)',
   'admin.updates.col.bucket': '互斥進度桶 (Bucket)',
+  'admin.updates.col.policyEvidence': '套用政策證據 (policy_generation / policy_refs)',
   'admin.updates.col.error': '錯誤碼 ／ 最後回報時間',
+  'admin.updates.evidenceNotReported': '未回報 (not reported)',
 
   // Admin Members (§9.2, §18.1)
   'admin.members.title': '會員列表與資格管理 (§9.2, §18.1)',
@@ -409,7 +411,7 @@ export const zhTW = {
   'member.devices.quotaHelp':
     '若已達方案裝置上限，您可在此撤銷不再使用或遺失的舊裝置，待同步完成後即可登錄新裝置（§7.3, AT02）。您只能管理及撤銷自己的裝置。',
   'member.devices.col.name': '裝置名稱 ／ 平台',
-  'member.devices.col.overlayIp': '分配位址 ／ Peer ID',
+  'member.devices.col.overlayIp': '裝置識別碼 (Device ID)',
   'member.devices.col.status': '授權狀態',
   'member.devices.col.lastSeen': '最近活動 ／ 授權時間',
   'member.devices.col.action': '操作',

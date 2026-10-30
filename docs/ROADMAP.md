@@ -85,9 +85,11 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | done (#41) |
 | w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | done (#40) |
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | done (#44) |
+| w2-agent-core follow-up 3: baseline safety separated from serving, unpublished generations acknowledged, data-path probe (publication deadlock, agent side) | WP05, WP07 | done (#75) |
 | w1-deps-bump follow-up 1: golang.org/x/crypto GO-2026-5932 | WP01 | done (no change: GO-2026-5932 is the unused x/crypto/openpgp packages, no fixed release exists, govulncheck symbol scan clean) |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | done (#56; all screens on live endpoints, Playwright e2e against real control/worker in CI, dev stack seeds inputs and awaits product projection per D-050) |
 | w3-portal-live follow-up 3: dev-stack node readiness through the agent observation path (fixes main Portal CI after #62) | WP10 | done (#67) |
+| w3-portal-live follow-up 4: pending-apply banner derived from the PATCH response (Portal CI race), DOC12 device-id label, update-target policy evidence | WP10 | done (#74) |
 | r2-ledger-review confirmation pass on main 3224345: probes re-run read-only, 11 of 12 findings closed; finding 9 (uint64 clamp) still open in internal/fup → policies follow-up | WP05, WP07, WP08 | done (read-only) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | done (#50; 6 scenarios pass, lab gaps → follow-up 2) |
 | w3-devstack-e2e follow-up 2: policies/usage settings in the lab, side-by-side stacks (prefix + port base), NetBird signal via gateway, plan catalog, forwarding baseline check | WP11 | done (#59; 7/12 scenarios pass, 5 blocked on the serving-node and device-binding preconditions) |
@@ -106,17 +108,18 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 5: worker execution of node.publication_changed via exits.ExecuteOperation, applied-policy evidence on update targets (D-048) | WP04, WP05, WP09 | done (#60; worker executes node.publication_changed through the exits executor with a real NetBird adapter; UpdateTarget policy evidence populated) |
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
-| w3-wire-nodes follow-up 8: retire the legacy withdraw handlers; node.revoke/node.retire through the publication executor | WP04, WP05, WP09 | in progress |
+| w3-wire-nodes follow-up 8: retire the legacy withdraw handlers; node.revoke/node.retire through the publication executor | WP04, WP05, WP09 | done (#70) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | harness merged (#63): AT28 passed live; AT29–AT32 blocked on the serving node, WAL archiving, the IdP identity fixture and operator runs |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
-| w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | in progress |
-| w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | in progress |
+| w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | done (#69) |
+| w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | harness merged (#73): AT23–AT27 blocked on the serving baseline and on the updater health check that fails for a not-yet-serving node (no last-good); arm64 needs an operator run |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
+| w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
-| w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | in progress |
+| w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 

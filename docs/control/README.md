@@ -70,6 +70,10 @@ contains only deployment placeholders. Database DSN and optional OIDC client
 secret are read from files; TLS key material is loaded from its file. Effective
 configuration redacts file paths and OIDC settings and never includes contents.
 Do not put DSNs or secret contents directly in configuration/environment values.
+The example includes all five domain files, in central config order:
+`members_config_file`, `dns_config_file`, `nodes_config_file`,
+`policies_config_file`, and `usage_config_file`. Supply the corresponding domain
+settings as described in [composition](COMPOSITION.md#lifecycle-and-responsibilities).
 
 Use a DDL-capable connection only for explicit migrations; use a least-privileged
 runtime identity otherwise. Apply embedded migrations before either process starts.
@@ -86,6 +90,14 @@ pings PostgreSQL. Agent health probes also need a valid client certificate. Sign
 stop acceptance and drain requests under a bounded shutdown timeout. Read-header,
 read, write and keepalive deadlines are startup settings. Startup logs intentionally
 omit underlying provider/driver/TLS error strings, which can contain credentials.
+
+The control metrics listener serves plain HTTP `GET /metrics` on `metrics_address`
+(default `127.0.0.1:9091`, loopback IP literals only), using the registry shared
+with domain builds. It exports `fvpn_control_http_requests_total{route,status}`
+with bounded normalized route labels. Startup logs record the actual bound
+address, including an ephemeral port when configured as zero. Metrics starts and
+drains with the other listeners; a listener failure stops the application. Control
+and worker need distinct metrics ports when hosted together.
 
 No latency/SLA, fleet enforcement timing, real device or arm64 runtime claims are
 made. Both architectures are cross-compiled; §16.5 targets require a separate

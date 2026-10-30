@@ -44,6 +44,8 @@ type Options struct {
 	// Tests pass a fake so they do not need nft.
 	MeterSource meter.Source
 	Trust       *envelope.TrustStore
+	// Prober runs the data-path probe. Nil uses NetBird status.
+	Prober Prober
 }
 
 // Engine is one agent process (§5, §16.3). It is not safe for concurrent Step.
@@ -112,6 +114,8 @@ type Engine struct {
 	policyExpires  time.Duration
 	lastObs        time.Time
 	lastServing    bool
+	prober         Prober
+	lastProbe      ProbeResult
 }
 
 // Start opens the store, the trust bundle and the control client.
@@ -155,6 +159,7 @@ func Start(opt Options) (*Engine, error) {
 		cfg: opt.Config, store: store, client: opt.Client, plane: opt.Plane,
 		clock: opt.Clock, bootID: boot, trust: trust, hooks: opt.Hooks,
 		log: opt.Log, meterSource: opt.MeterSource, ownStore: ownStore, storageOK: true,
+		prober: opt.Prober,
 	}
 	if e.client == nil {
 		pool := x509.NewCertPool()
@@ -332,6 +337,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	e.latch()
 	if e.revoked {
 		e.withdraw(ctx)
+		e.refreshProbe(ctx)
 		e.decision = Decide(e.input())
 		e.publishMeterEpoch()
 		_ = e.observe(ctx)
@@ -370,6 +376,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	if pending, err := e.store.Pending(ctx); err == nil {
 		e.outboxFull = len(pending) >= 32
 	}
+	e.refreshProbe(ctx)
 	e.decision = Decide(e.input())
 	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
 		return err
@@ -450,7 +457,23 @@ func (e *Engine) input() Input {
 		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
 		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
+		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
 	}
+}
+
+func (e *Engine) refreshProbe(ctx context.Context) {
+	p := e.prober
+	if p == nil {
+		nb := newNetbirdProber(e.cfg)
+		p = nb
+	}
+	published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
+	e.lastProbe = p.Probe(ctx, ProbeRequest{
+		Published: published,
+		Egress:    e.cfg.EgressProbeTarget,
+		Ingress:   e.cfg.Datapath.MemberIngress,
+		Uplink:    e.cfg.Datapath.Uplink,
+	})
 }
 
 // verifyTime reports the time used to check a signed document.
@@ -537,7 +560,14 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
-		return e.baseline(ctx)
+		if err := e.baseline(ctx); err != nil {
+			return err
+		}
+		// Unpublished (and any other non-serving) desired generation is
+		// acknowledged only after the baseline is in place. The serving
+		// model was cleared, so this does not forward member traffic.
+		e.ackApplied(ctx, d.Applied)
+		return nil
 	}
 	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 3, 50*time.Millisecond)
 	if errors.Is(err, nodelock.ErrBusy) {
@@ -611,6 +641,21 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	e.resumeSampling()
 	e.switchEpoch(ctx)
 	return nil
+}
+
+func (e *Engine) ackApplied(ctx context.Context, gen uint64) {
+	if gen == 0 || e.desired == nil || !e.desiredOK {
+		return
+	}
+	if e.appliedGen == gen {
+		return
+	}
+	if err := e.store.MarkApplied(ctx, gen); err != nil {
+		e.storageOK = false
+		e.log.Warn("applied generation", "err", err.Error())
+		return
+	}
+	e.appliedGen = gen
 }
 
 func (e *Engine) noteApply(err error) {
