@@ -13,7 +13,7 @@ Freedom VPN v1 operates as a modular monolith in the central plane (`fvpn-contro
 | Component | Recommended Host / Placement | Exposed Endpoints / Ports | Documentation Example Address |
 |---|---|---|---|
 | **PostgreSQL 17** | Dedicated DB host or private subnet | `5432/tcp` (internal TLS only, never public) | `198.51.100.10:5432` (`db.internal.example.com`) |
-| **`fvpn-control`** | Central API host (behind reverse proxy or direct TLS; see caveat below) | `:8443/tcp` (Public HTTPS: Portal, OIDC, Webhooks, `/agent/enroll`)<br>`:9443/tcp` (Agent mTLS: `/api/v1/agent/*` except enroll)<br>`127.0.0.1:9091/tcp` (Prometheus `/metrics`) | `https://vpn.example.com` (`198.51.100.20`)<br>`https://agent.vpn.example.com:9443` |
+| **`fvpn-control`** | Central API host (behind reverse proxy or direct TLS; see `trusted_proxies` note below) | `:8443/tcp` (Public HTTPS: Portal, OIDC, Webhooks, `/agent/enroll`)<br>`:9443/tcp` (Agent mTLS: `/api/v1/agent/*` except enroll)<br>`127.0.0.1:9091/tcp` (Prometheus `/metrics`) | `https://vpn.example.com` (`198.51.100.20`)<br>`https://agent.vpn.example.com:9443` |
 | **`fvpn-worker`** | Co-located with `fvpn-control` or dedicated worker host sharing the signing vault | `127.0.0.1:9092/tcp` (Prometheus `/metrics` & `/healthz`, `/readyz`) | `198.51.100.20` / `198.51.100.21` |
 | **OIDC Identity Provider** | External managed OIDC or self-hosted IdP | `443/tcp` (HTTPS) | `https://id.example.com` |
 | **NetBird CE (`0.82.0`)** | Dedicated overlay coordination host | `443/tcp` (Management API `/api`, gRPC, Signal, Relay)<br>`3478/udp` (STUN/TURN) | `https://netbird.example.com` (`198.51.100.30`) |
@@ -21,7 +21,7 @@ Freedom VPN v1 operates as a modular monolith in the central plane (`fvpn-contro
 | **Release Origin** | Immutable HTTPS object storage / static origin (`§13.3`, `§16.2`) | `443/tcp` (HTTPS read-only to nodes) | `https://releases.example.com` (`203.0.113.10`) |
 | **Exit Nodes** | Ubuntu 24.04 LTS (`amd64` or `arm64`) | WireGuard UDP port (`51820/udp`), outbound HTTPS (`443/tcp`, `9443/tcp`) | Public egress `192.0.2.20`, Overlay `100.64.0.100` |
 
-> **Reverse-proxy and multi-replica limiter caveat (`#141`, `#169`, `docs/control/README.md`, `docs/control/AUTH.md`):** On `main`, `fvpn-control` keys connection-address rate limiters (`ingress` per class, `anonymous`, and browser `login`) strictly on `r.RemoteAddr` and ignores forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`). Until trusted-proxy CIDR support (control follow-up 18) is merged, production either terminates TLS directly on `fvpn-control` (or uses L4 TCP passthrough) or accepts that clients behind an address-rewriting reverse proxy share the proxy's source-address bucket; the agent mTLS listener (`:9443`) must terminate directly on `fvpn-control` (or L4 passthrough) so client certificates and peer addresses are preserved; and `fvpn-control` replicas do not share process-local rate-limiter or concurrency-gate state.
+> **Reverse-proxy (`trusted_proxies`) and multi-replica limiter rules (`#141`, `#169`, `#174`, `internal/config/proxies.go`, `docs/control/README.md`, `docs/control/AUTH.md`):** Production either terminates TLS on `fvpn-control` and leaves `trusted_proxies` (`FVPN_TRUSTED_PROXIES`) empty (so `X-Forwarded-For` is ignored and pre-authentication buckets key on the TCP peer `r.RemoteAddr`), or sets `trusted_proxies` to the reverse proxy's source CIDRs; a proxy that connects from several addresses is several CIDRs (each source address as a `/32` or a covering prefix), each at least `/8` (IPv4) or `/32` (IPv6); `0.0.0.0/0`, `::/0`, any shorter prefix, and IPv4-mapped IPv6 CIDRs are rejected by `config.ParseTrustedProxies` because `"trusting the world lets any peer choose its bucket"`; list proxy addresses only (an address inside a trusted CIDR is treated as a hop and skipped during the rightmost `X-Forwarded-For` walk, while `X-Real-IP` and RFC 7239 `Forwarded` stay ignored); the agent listener (`:9443`) never reads `X-Forwarded-For` and must not sit behind an address-rewriting proxy (if it does, client certificates still authenticate the node and `subject` buckets stay per node, while `ingress` keys are the proxy address); and replicas do not share in-memory limiter state, so replicas multiply the per-process budgets.
 
 ---
 
@@ -307,6 +307,7 @@ Both `fvpn-control` and `fvpn-worker` read `/etc/fvpn/control.json` and validate
   "webhook_body_bytes": 1048576,
   "max_concurrent": 128,
   "max_rate_principals": 10000,
+  "trusted_proxies": [],
   "ingress_rate": { "per_second": 20, "burst": 60 },
   "browser_rate": { "per_second": 10, "burst": 30 },
   "agent_rate": { "per_second": 5, "burst": 10 },

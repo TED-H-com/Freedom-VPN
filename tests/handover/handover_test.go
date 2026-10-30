@@ -4,6 +4,9 @@
 package handover_test
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -751,7 +754,8 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"#164", "#165", "#166", "#167", "#168", "#169", "#170", "#171", "#172",
+		"contract revision 8 (#164)",
+		"#164", "#165", "#166", "#167", "#168", "#169", "#170", "#171", "#172", "#174",
 		"ISOLATION_POLICY_INVALID",
 		"GENERATION_MISMATCH",
 		"HOOK_PRIORITY_MISMATCH",
@@ -767,6 +771,8 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 		"probe_omitted",
 		"DisallowUnknownFields",
 		"checkLargeJSONDocument",
+		"trusted_proxies",
+		"ParseTrustedProxies",
 		"StartSecondExit",
 	} {
 		if !strings.Contains(operatorGuide, token) {
@@ -777,6 +783,10 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
 	for _, token := range []string{
 		"r.RemoteAddr",
+		"trusted_proxies",
+		"ParseTrustedProxies",
+		"trusting the world lets any peer choose its bucket",
+		"#174",
 		"conntrack delete pending; serving ruleset verified",
 		"pending_revocations",
 		"ExtraDeniedV4",
@@ -794,6 +804,7 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 		"DisallowUnknownFields",
 		"checkLargeJSONDocument",
 		"anonClass",
+		"trusted_proxies",
 	} {
 		if !strings.Contains(calibrationGuide, token) {
 			t.Errorf("docs/handover/calibration.md missing expected follow-up 6 claim %q", token)
@@ -811,9 +822,42 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 		"#169",
 		"#171",
 		"#172",
+		"#174",
 	} {
 		if !strings.Contains(r12, token) {
 			t.Errorf("docs/reviews/r12-enforce-limits-review.md missing expected provenance/closing token %q", token)
+		}
+	}
+
+	var scopeReview struct {
+		FollowUp6         map[string]any `json:"follow_up_6"`
+		HandoverFollowUp6 struct {
+			ReviewedDocuments []struct {
+				Path   string `json:"path"`
+				SHA256 string `json:"sha256"`
+			} `json:"reviewed_documents"`
+		} `json:"handover_follow_up_6"`
+	}
+	rawScope := readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")
+	if err := json.Unmarshal([]byte(rawScope), &scopeReview); err != nil {
+		t.Fatalf("unmarshal docs/e2e/at/secops/scope-review.json: %v", err)
+	}
+	if len(scopeReview.FollowUp6) == 0 {
+		t.Error("docs/e2e/at/secops/scope-review.json missing follow_up_6 entry")
+	}
+	if len(scopeReview.HandoverFollowUp6.ReviewedDocuments) != 7 {
+		t.Fatalf("docs/e2e/at/secops/scope-review.json handover_follow_up_6.reviewed_documents count = %d, want 7", len(scopeReview.HandoverFollowUp6.ReviewedDocuments))
+	}
+	for _, entry := range scopeReview.HandoverFollowUp6.ReviewedDocuments {
+		raw, err := os.ReadFile(filepath.Join(root, entry.Path))
+		if err != nil {
+			t.Errorf("read %s: %v", entry.Path, err)
+			continue
+		}
+		sum := sha256.Sum256(raw)
+		got := hex.EncodeToString(sum[:])
+		if got != entry.SHA256 {
+			t.Errorf("docs/e2e/at/secops/scope-review.json handover_follow_up_6 sha256 for %s = %s, want %s", entry.Path, entry.SHA256, got)
 		}
 	}
 }
