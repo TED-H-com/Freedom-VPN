@@ -251,6 +251,16 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 			// Applying/checking older jobs may finish their own ledger, but not the pointer.
 			updateJob := !terminal(j.state) && canAdvance(j.state, string(r.State))
 			if updateJob {
+				if r.State == api.UpdateResultStateRolledBack && j.state != "applying" && j.state != "checking" {
+					// §13.10.3 / AT26: a validated terminal rollback proves the
+					// local apply happened even if no progress result was sent.
+					// Traverse the base DB guard's required apply phase inside
+					// this same savepoint, without a fabricated progress receipt
+					// or a separately committed intermediate state.
+					if _, e = tx.Exec(ctx, `UPDATE update_jobs SET state='applying' WHERE id=$1`, j.id); e != nil {
+						return e
+					}
+				}
 				_, e = tx.Exec(ctx, `UPDATE update_jobs SET state=$2,phase_since=CASE WHEN state<>$2 THEN clock_timestamp() ELSE phase_since END,needs_attention=($2='failed'),started_at=coalesce(started_at,clock_timestamp()),completed_at=CASE WHEN $3 THEN clock_timestamp() ELSE completed_at END,
  actual_release_id=$4,last_good_release_id=CASE WHEN $5 THEN $4 ELSE last_good_release_id END,last_result_at=clock_timestamp(),result_id=CASE WHEN $3 THEN $6 ELSE result_id END,result_hash=CASE WHEN $3 THEN $7 ELSE result_hash END,error_code=$8,observed_evidence=$9::jsonb||jsonb_build_object('attempt_release_id',observed_evidence->'attempt_release_id'),recovery_required=$10,stage=$11 WHERE id=$1`, j.id, string(r.State), isTerminal, currentReleaseID, success || r.State == "rolled_back", r.ResultId, digest, errorCode, raw, recovery, stage)
 				if e != nil {
@@ -343,11 +353,11 @@ func canAdvance(from, to string) bool {
 	switch to {
 	case "already_current":
 		return from == "queued" || from == "waiting_online"
-	case "rolled_back":
-		return from == "applying" || from == "checking"
 	case "superseded":
 		return from == "queued" || from == "waiting_online" || from == "downloading" || from == "verifying"
-	case "succeeded", "failed", "superseded_incarnation", "cancelled_revoked", "cancelled_retired":
+	case "succeeded", "failed", "rolled_back", "superseded_incarnation", "cancelled_revoked", "cancelled_retired":
+		// §13.8 / AT26: terminal evidence does not require prior progress
+		// delivery. Identity/generation and health are validated before this.
 		return true
 	}
 	rank := map[string]int{"queued": 0, "waiting_online": 0, "downloading": 1, "verifying": 2, "applying": 3, "checking": 4}

@@ -10,7 +10,11 @@ import (
 )
 
 func TestSECOPS11_RecordedBaselineDoesNotProveServing(t *testing.T) {
-	raw, err := os.ReadFile("../../docs/e2e/at/secops/live.json")
+	// testdata/secops11_recorded_baseline.json is the SECOPS-11 recorded baseline
+	// captured by the security-ops harness before #109 and is frozen here on purpose:
+	// the harness's docs/e2e/at/secops/live.json is rewritten by every acceptance run
+	// and must not be read by unit tests.
+	raw, err := os.ReadFile("testdata/secops11_recorded_baseline.json")
 	if err != nil {
 		t.Fatal(err)
 	}

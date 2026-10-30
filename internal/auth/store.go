@@ -43,24 +43,33 @@ type PostgresStore struct{ Pool *pgxpool.Pool }
 
 func digest(s string) []byte { h := sha256.Sum256([]byte(s)); return h[:] }
 func (s PostgresStore) SaveFlow(ctx context.Context, f Flow) error {
-	verifier := f.Verifier
-	if f.Role == Admin || f.Role == Member {
-		verifier = string(f.Role) + ":" + f.Verifier
+	var role *string
+	if f.Role != "" {
+		r := string(f.Role)
+		role = &r
 	}
-	_, e := s.Pool.Exec(ctx, `INSERT INTO oidc_login_flows(state_hash,browser_hash,nonce,verifier,expires_at,id) VALUES($1,$2,$3,$4,$5,$6)`, digest(f.State), digest(f.Browser), f.Nonce, verifier, f.Expires, uuid.Must(uuid.NewV7()))
+	_, e := s.Pool.Exec(ctx, `INSERT INTO oidc_login_flows(state_hash,browser_hash,nonce,verifier,role,expires_at,id) VALUES($1,$2,$3,$4,$5,$6,$7)`, digest(f.State), digest(f.Browser), f.Nonce, f.Verifier, role, f.Expires, uuid.Must(uuid.NewV7()))
 	return e
 }
 func (s PostgresStore) ConsumeFlow(ctx context.Context, state, browser string) (Flow, error) {
 	var f Flow
-	e := s.Pool.QueryRow(ctx, `DELETE FROM oidc_login_flows WHERE state_hash=$1 AND browser_hash=$2 AND expires_at>clock_timestamp() RETURNING nonce,verifier,expires_at`, digest(state), digest(browser)).Scan(&f.Nonce, &f.Verifier, &f.Expires)
+	var role *string
+	e := s.Pool.QueryRow(ctx, `DELETE FROM oidc_login_flows WHERE state_hash=$1 AND browser_hash=$2 AND expires_at>clock_timestamp() RETURNING nonce,verifier,role,expires_at`, digest(state), digest(browser)).Scan(&f.Nonce, &f.Verifier, &role, &f.Expires)
 	if e != nil {
 		return f, e
 	}
+	if role != nil {
+		f.Role = Role(*role)
+	}
 	if after, ok := strings.CutPrefix(f.Verifier, string(Admin)+":"); ok {
-		f.Role = Admin
+		if f.Role == "" {
+			f.Role = Admin
+		}
 		f.Verifier = after
 	} else if after, ok := strings.CutPrefix(f.Verifier, string(Member)+":"); ok {
-		f.Role = Member
+		if f.Role == "" {
+			f.Role = Member
+		}
 		f.Verifier = after
 	}
 	return f, nil

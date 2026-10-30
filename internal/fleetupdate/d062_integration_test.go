@@ -112,6 +112,8 @@ func TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist(t *testing.T)
 	i := l.node("amd64", "unpublished", "registered", true)
 	b := l.batch(candidate.ReleaseId)
 	w := l.intent(i)
+	// This covers progress followed by a terminal result. The real producer's
+	// direct queued-to-rollback path is covered by TestAT26_DirectRollbackFromQueued.
 	l.report(i, w, "applying")
 	r := result(w, string(recorded.State))
 	// D-062(b): rebind the recorded candidate identity with the authorized job.

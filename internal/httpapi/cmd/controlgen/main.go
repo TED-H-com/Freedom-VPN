@@ -50,8 +50,7 @@ func main() {
 	}
 	fmt.Fprintln(&b, "return c,nil }")
 	for _, m := range methods {
-
-		fmt.Fprintf(&b, "func(c *Composite)%s(ctx context.Context,r gen.%sRequestObject)(gen.%sResponseObject,error){for _,s:=range c.sets {if h,ok:=s.(interface{%s(context.Context,gen.%sRequestObject)(gen.%sResponseObject,error)});ok{return h.%s(ctx,r)}};return nil,errNotImplemented}\n", m, m, m, m, m, m, m)
+		fmt.Fprintf(&b, "\nfunc(c *Composite)%s(ctx context.Context,r gen.%sRequestObject)(gen.%sResponseObject,error){for _,s:=range c.sets {if h,ok:=s.(interface{%s(context.Context,gen.%sRequestObject)(gen.%sResponseObject,error)});ok{return h.%s(ctx,r)}};return nil,errNotImplemented}\n", m, m, m, m, m, m, m)
 	}
 	fmt.Fprintln(&b, "var _ gen.StrictServerInterface = (*Composite)(nil)")
 	write(filepath.Join(*out, "composition.gen.go"), b.Bytes())

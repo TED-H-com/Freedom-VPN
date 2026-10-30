@@ -1,0 +1,42 @@
+{
+  "target_id": "7648dcdb-c82e-4611-8608-06895697e0a9",
+  "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+  "node_name": "Tokyo 1",
+  "incarnation_at_snapshot": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+  "execution_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+  "online_at_snapshot": true,
+  "generation": "7",
+  "state": "rolled_back",
+  "attempts": 2,
+  "current_job": {
+    "job_id": "02d164bb-b3bf-44ba-9470-5dba6122c3e0",
+    "attempt": 2,
+    "state": "rolled_back",
+    "stage": "check",
+    "error_code": "HEALTH_CHECK_FAILED",
+    "recovery_required": false,
+    "started_at": "2026-10-28T15:10:00Z",
+    "finished_at": "2026-10-28T15:12:30Z"
+  },
+  "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+  "previous_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+  "health": {
+    "processes": "passed",
+    "identity_and_state": "passed",
+    "internet_only": "passed",
+    "dns_policy": "passed",
+    "tunnel_probe": "passed"
+  },
+  "candidate_health": {
+    "processes": "passed",
+    "identity_and_state": "passed",
+    "internet_only": "passed",
+    "dns_policy": "passed",
+    "tunnel_probe": "failed"
+  },
+  "last_result_at": "2026-10-28T15:12:31Z",
+  "last_observed_at": "2026-10-28T15:13:00Z",
+  "retryable": false,
+  "needs_attention": true,
+  "unconfirmed": false
+}
