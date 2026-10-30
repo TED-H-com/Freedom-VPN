@@ -10,8 +10,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/google/uuid"
 )
 
@@ -58,7 +60,12 @@ type Config struct {
 	EgressProbeTarget string `json:"egress_probe_target"`
 	UpdaterRecover    string `json:"updater_recover"`
 	UpdaterConfig     string `json:"updater_config"`
-	BootIDFile        string `json:"boot_id_file"`
+	// UpdaterJournal is the updater journal database file (journal.db).
+	// JournalDir is that file's directory and stays the location of the
+	// health sidecars and the forwarding latch. Empty selects the updater
+	// default, /var/lib/vpn-node/update-journal/journal.db.
+	UpdaterJournal string `json:"updater_journal"`
+	BootIDFile     string `json:"boot_id_file"`
 	// DNS is optional. Absent keeps the resolver applier unset (D-061).
 	DNS *DNSConfig `json:"dns,omitempty"`
 }
@@ -98,7 +105,10 @@ func (c *Config) applyDefaults() {
 		c.IdentityDir = "/var/lib/vpn-node/identity"
 	}
 	if c.JournalDir == "" {
-		c.JournalDir = "/var/lib/vpn-node/update-journal"
+		c.JournalDir = updatejournal.DefaultDir
+	}
+	if c.UpdaterJournal == "" {
+		c.UpdaterJournal = filepath.Join(updatejournal.DefaultDir, updatejournal.FileName)
 	}
 	if c.LockPath == "" {
 		c.LockPath = "/var/lib/vpn-node/update.lock"
@@ -191,6 +201,20 @@ func (c Config) validate() error {
 	}
 	if err := c.validateDNS(); err != nil {
 		return err
+	}
+	if err := c.validateUpdaterJournal(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// errUpdaterJournal is a fixed load error. It does not include the path.
+var errUpdaterJournal = errors.New("agent: updater_journal is not usable")
+
+func (c Config) validateUpdaterJournal() error {
+	p := c.UpdaterJournal
+	if p == "" || len(p) > 4096 || strings.ContainsRune(p, 0) || strings.Contains(p, "://") || !filepath.IsAbs(p) {
+		return errUpdaterJournal
 	}
 	return nil
 }

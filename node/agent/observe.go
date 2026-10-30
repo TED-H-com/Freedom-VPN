@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -23,7 +26,7 @@ func (e *Engine) observe(ctx context.Context) error {
 	if !due || e.outboxFull {
 		return nil
 	}
-	rep, err := e.report(wall.UTC())
+	rep, err := e.report(ctx, wall.UTC())
 	if err != nil {
 		return err
 	}
@@ -40,7 +43,7 @@ func (e *Engine) observe(ctx context.Context) error {
 	return nil
 }
 
-func (e *Engine) report(at time.Time) (api.ObservationReport, error) {
+func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationReport, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return api.ObservationReport{}, err
@@ -117,14 +120,88 @@ func (e *Engine) report(at time.Time) (api.ObservationReport, error) {
 	rep.Netbird.Backend = backend
 	rep.Netbird.PeerId = presence.NewNullNullable[string]()
 	rep.Netbird.Version = presence.NewNullNullable[string]()
-	rep.Update.Generation = presence.NewNullNullable[decstr.U64]()
-	rep.Update.JobId = presence.NewNullNullable[uuid.UUID]()
-	rep.Update.Stage = presence.NewNullNullable[api.UpdateStage]()
-	rep.Update.State = presence.NewNullNullable[api.UpdateJobState]()
+	e.attachUpdate(ctx, &rep)
 	if e.dnsEv != nil {
 		rep.DnsPolicyEvidence = presence.NewNullableWithValue(*e.dnsEv)
 	}
 	return rep, nil
+}
+
+// attachUpdate reads the updater journal once for this report. A null
+// generation (no file, no recorded job, or a snapshot error) leaves the
+// update members null. The read is not cached and does not fail the report.
+// current_release_id is a top-level observation field; while generation is
+// set it comes from this snapshot, not from the configured release.
+func (e *Engine) attachUpdate(ctx context.Context, rep *api.ObservationReport) {
+	rep.Update.Generation = presence.NewNullNullable[decstr.U64]()
+	rep.Update.JobId = presence.NewNullNullable[uuid.UUID]()
+	rep.Update.Stage = presence.NewNullNullable[api.UpdateStage]()
+	rep.Update.State = presence.NewNullNullable[api.UpdateJobState]()
+	if e.cfg.UpdaterJournal == "" {
+		return
+	}
+	snap, err := updatejournal.Snapshot(ctx, e.cfg.UpdaterJournal)
+	e.noteUpdateSnapshot(err)
+	if err != nil || snap.Generation == nil {
+		return
+	}
+	rep.Update.Generation = presence.NewNullableWithValue(*snap.Generation)
+	if id, perr := uuid.Parse(snap.JobID); perr == nil && id != uuid.Nil {
+		rep.Update.JobId = presence.NewNullableWithValue(id)
+	}
+	if stage := api.UpdateStage(snap.Stage); stage.Valid() {
+		rep.Update.Stage = presence.NewNullableWithValue(stage)
+	}
+	if state := api.UpdateJobState(snap.State); state.Valid() {
+		rep.Update.State = presence.NewNullableWithValue(state)
+	}
+	current := presence.NewNullNullable[uuid.UUID]()
+	if id, perr := uuid.Parse(snap.CurrentRelease); perr == nil && id != uuid.Nil {
+		current = presence.NewNullableWithValue(id)
+	}
+	last := presence.NewNullNullable[uuid.UUID]()
+	if id, perr := uuid.Parse(snap.LastGoodRelease); perr == nil && id != uuid.Nil {
+		last = presence.NewNullableWithValue(id)
+	}
+	rep.CurrentReleaseId = current
+	rep.LastGoodReleaseId = last
+}
+
+func (e *Engine) noteUpdateSnapshot(err error) {
+	reason := updateSnapshotReason(err)
+	if reason == e.updateSnapReason {
+		return
+	}
+	e.updateSnapReason = reason
+	if reason == "" || e.log == nil {
+		return
+	}
+	e.log.Warn("updater journal snapshot", "reason", reason)
+}
+
+// updateSnapshotReason is a short class. It is safe to log. Snapshot errors
+// can carry a path or a schema number, and those stay out of the log.
+func updateSnapshotReason(err error) string {
+	if err == nil {
+		return ""
+	}
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		return "missing"
+	case errors.Is(err, context.Canceled):
+		return "canceled"
+	case errors.Is(err, context.DeadlineExceeded):
+		return "deadline"
+	}
+	msg := err.Error()
+	switch {
+	case strings.Contains(msg, "unsupported snapshot schema"):
+		return "unsupported_schema"
+	case strings.Contains(msg, "regular database file"):
+		return "not_a_file"
+	default:
+		return "unreadable"
+	}
 }
 
 func reportedHealth(h api.DataHealth) api.DataHealth {

@@ -38,12 +38,13 @@ The enrollment token is read from the file, or from stdin when the path is `-`. 
 | `/var/lib/vpn-node/state/agent.db` | 0600 | agent SQLite store (WAL, `synchronous=FULL`) |
 | `/var/lib/vpn-node/state/usage.db` | 0600 | usage ledger (WAL, `synchronous=FULL`); path is `state_dir/usage.db` |
 | `/var/lib/vpn-node/state/desired-state.json` | 0644 | agent, only after the envelope verifies |
+| `/var/lib/vpn-node/update-journal/journal.db` | 0600 | updater journal; the agent only reads it (`updater_journal`) |
 | `/var/lib/vpn-node/update-journal/forwarding.blocked` | — | updater latch; the agent only reads it |
 | `/var/lib/vpn-node/update.lock` | — | flock shared by the agent, the installer and the updater (`node/internal/nodelock`) |
 | `/run/vpn-node/heartbeat` | 0644 | agent; the watchdog only reads it |
 | `/etc/vpn-node/agent.json` | — | installer; no secrets |
 
-The updater journal database is not created here. `usage.db` is created by the agent the first time an enrolled process boots. Every path above is configurable in `agent.json` except the usage file name, which is always `usage.db` inside `state_dir`. Tests use a temp directory.
+The updater journal database is not created here. `updater_journal` is that database file, default `/var/lib/vpn-node/update-journal/journal.db`, the same directory the updater uses. `journal_dir` is the directory, not the file: `forwarding.blocked`, `health-challenge.json`, and `health-attest.json` stay there. `usage.db` is created by the agent the first time an enrolled process boots. Every path above is configurable in `agent.json` except the usage file name, which is always `usage.db` inside `state_dir`. Tests use a temp directory.
 
 The desired-state file is replaced by a temp file and `rename` in the same directory, after `AcceptDesired` has stored the verified envelope. An unverified document is never written there. The store is the anti-rollback authority: a generation older than the accepted one is rejected and the file is left as it was. On boot the agent rewrites the file from the stored envelope.
 
@@ -103,6 +104,8 @@ IPv6 is always blocked. A null capacity blocks forwarding. `test_exempt_v4` is a
 ## Observations
 
 Heartbeats default to 10 seconds. Observation reports default to 30 seconds (§16.5). Reports carry the applied generation, the baseline and serving checks, `safety_status`, `data_health`, the running release, and failure reasons. `data_health` is the probe result: `unknown` only before the first run, then `healthy`, `degraded`, or `failed`. `netbird.peer_id` stays null. NetBird `status --json` has no management peer id, and the agent does not invent one from the public key. Reports are queued in the local outbox and resent until the center accepts them. HTTP 202 means accepted, not verified. 409 and 422 are conflicts and are not retried. 429 and 5xx stay pending.
+
+Each report calls `updatejournal.Snapshot` on `updater_journal` at report time. The call is read-only, does not create or migrate the database, and stops at the caller's deadline or one second. The `update` object is always present. Its members are `generation`, `job_id`, `stage`, and `state`. A null `generation` means no update state: the file is missing, the schema cannot be read, the snapshot missed its deadline, or the database has no job. That is not generation 0, and the next report does not reuse the previous snapshot. A recorded job fills those members from that snapshot. `locally_succeeded` is stage `report` and state `succeeded`. A destructive rollback is stage `report` and state `rolled_back`, and the restored release is the top-level `current_release_id`. Journal stage `recovery_required` is reported as stage `rollback` and state `failed`, which is the API vocabulary the snapshot already uses; `recovery_required` is not an observation state. `current_release_id` and `last_good_release_id` stay top-level fields. While `generation` is set they come from the journal pointers, and a pointer that is not a UUID is null. Otherwise they stay the configured release, with `last_good_release_id` set only after a generation has been applied. A snapshot error is logged once each time its reason class changes (`missing`, `deadline`, `canceled`, `unsupported_schema`, `not_a_file`, `unreadable`). The line does not include the path or the journal contents. The observation is still queued.
 
 ## Data-path probe (§5, §13.9)
 
@@ -181,7 +184,8 @@ Updater:
 | `egress_probe_target` | no | `host:port` for the data-path probe when desired state has no signed `egress_probe`. Empty skips that leg |
 | `dns.resolvers[]` | no | Host-local AdGuard targets, at most 8. Each has `admin_url` (`http` or `https`, IP literal, explicit port, no user, query, or path) and `dns_addr` (`host:port` of the DNS listener). `dns.New` requires both. Loopback is allowed. A link-local or private address is allowed only when it is assigned on a host interface. Optional `id` is a short token |
 | `dns.resolver_credentials_file` | with `dns.resolvers` | Absolute path of a root-owned mode `0600` JSON file `{"username","password"}`, one pair for every resolver. Loaded at process start and again on `SIGHUP` during `run`. A wrong mode or owner refuses the check with a fixed detail and does not log the secret or the URL |
-| `state_dir`, `identity_dir`, `journal_dir`, `lock_path`, `heartbeat_path` | no | Defaults under `/var/lib/vpn-node` and `/run/vpn-node`. Usage ledger is `state_dir/usage.db` |
+| `state_dir`, `identity_dir`, `journal_dir`, `lock_path`, `heartbeat_path` | no | Defaults under `/var/lib/vpn-node` and `/run/vpn-node`. Usage ledger is `state_dir/usage.db`. `journal_dir` is the directory for the latch and the health files |
+| `updater_journal` | no | Updater journal database file. Default `/var/lib/vpn-node/update-journal/journal.db`. A missing file is no update state. The agent does not create it |
 | `release_id` | no | Local release UUID. Empty blocks forwarding as an unknown release |
 | `test_mode`, `test_exempt_v4` | no | Exempt prefixes apply only when `test_mode` is true |
 | `renew_lead_seconds`, `heartbeat_seconds`, `poll_seconds`, `observation_seconds`, `watchdog_stale_seconds` | no | Zero selects the defaults in §16.3 and §16.5 |
@@ -193,6 +197,7 @@ Updater:
   "state_dir": "/var/lib/vpn-node/state",
   "identity_dir": "/var/lib/vpn-node/identity",
   "journal_dir": "/var/lib/vpn-node/update-journal",
+  "updater_journal": "/var/lib/vpn-node/update-journal/journal.db",
   "lock_path": "/var/lib/vpn-node/update.lock",
   "control_url": "https://control.example.invalid",
   "server_ca_file": "/etc/vpn-node/ca.pem",
