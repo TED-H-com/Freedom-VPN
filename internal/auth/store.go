@@ -17,6 +17,7 @@ import (
 
 type Flow struct {
 	State, Browser, Nonce, Verifier string
+	Role                            Role
 	Expires                         time.Time
 }
 type Identity struct {
@@ -32,17 +33,34 @@ type Store interface {
 	Session(context.Context, string, time.Duration) (Principal, error)
 	Logout(context.Context, string) error
 }
+type loginRejectionAuditor interface {
+	AuditLoginRejection(ctx context.Context, reason string, request uuid.UUID) error
+}
 type PostgresStore struct{ Pool *pgxpool.Pool }
 
 func digest(s string) []byte { h := sha256.Sum256([]byte(s)); return h[:] }
 func (s PostgresStore) SaveFlow(ctx context.Context, f Flow) error {
-	_, e := s.Pool.Exec(ctx, `INSERT INTO oidc_login_flows(state_hash,browser_hash,nonce,verifier,expires_at,id) VALUES($1,$2,$3,$4,$5,$6)`, digest(f.State), digest(f.Browser), f.Nonce, f.Verifier, f.Expires, uuid.Must(uuid.NewV7()))
+	verifier := f.Verifier
+	if f.Role == Admin || f.Role == Member {
+		verifier = string(f.Role) + ":" + f.Verifier
+	}
+	_, e := s.Pool.Exec(ctx, `INSERT INTO oidc_login_flows(state_hash,browser_hash,nonce,verifier,expires_at,id) VALUES($1,$2,$3,$4,$5,$6)`, digest(f.State), digest(f.Browser), f.Nonce, verifier, f.Expires, uuid.Must(uuid.NewV7()))
 	return e
 }
 func (s PostgresStore) ConsumeFlow(ctx context.Context, state, browser string) (Flow, error) {
 	var f Flow
 	e := s.Pool.QueryRow(ctx, `DELETE FROM oidc_login_flows WHERE state_hash=$1 AND browser_hash=$2 AND expires_at>clock_timestamp() RETURNING nonce,verifier,expires_at`, digest(state), digest(browser)).Scan(&f.Nonce, &f.Verifier, &f.Expires)
-	return f, e
+	if e != nil {
+		return f, e
+	}
+	if after, ok := strings.CutPrefix(f.Verifier, string(Admin)+":"); ok {
+		f.Role = Admin
+		f.Verifier = after
+	} else if after, ok := strings.CutPrefix(f.Verifier, string(Member)+":"); ok {
+		f.Role = Member
+		f.Verifier = after
+	}
+	return f, nil
 }
 func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string, absolute time.Duration, request uuid.UUID) (p Principal, err error) {
 	if strings.TrimSpace(i.Subject) == "" || strings.TrimSpace(i.Issuer) == "" || strings.TrimSpace(i.ClientScope) == "" || token == "" || (i.Role != Admin && i.Role != Member) {
@@ -81,8 +99,15 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 			return apierr.New(apierr.Forbidden, "Account is closed.")
 		}
 		if old != "" {
-			if _, e = tx.Exec(ctx, `DELETE FROM browser_sessions WHERE token_hash=$1 AND role='member'`, digest(old)); e != nil {
+			var oldMemberID uuid.UUID
+			e = tx.QueryRow(ctx, `DELETE FROM browser_sessions WHERE token_hash=$1 AND role='member' RETURNING member_id`, digest(old)).Scan(&oldMemberID)
+			if e != nil && !errors.Is(e, pgx.ErrNoRows) {
 				return e
+			}
+			if e == nil && oldMemberID != uuid.Nil && oldMemberID != p.ID {
+				if e = appendSessionAuditWithAfter(ctx, tx, Principal{ID: oldMemberID, Role: Member}, "session.logout", request, []byte(`{"reason":"superseded"}`)); e != nil {
+					return e
+				}
 			}
 		}
 		expires := time.Now().UTC().Add(absolute)
