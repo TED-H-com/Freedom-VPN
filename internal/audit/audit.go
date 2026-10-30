@@ -24,6 +24,9 @@ import (
 )
 
 func sensitive(key string) bool {
+	if len(key) > len("_sha256") && strings.HasSuffix(strings.ToLower(key), "_sha256") {
+		return false
+	}
 	k := strings.ToLower(strings.NewReplacer("-", "", "_", "", " ", "").Replace(key))
 	for _, term := range []string{"token", "secret", "password", "authorization", "cookie", "privatekey", "setupkey", "signature", "certificate", "csr", "queryname", "url", "destination", "packet", "paymentpayload"} {
 		if strings.Contains(k, term) {

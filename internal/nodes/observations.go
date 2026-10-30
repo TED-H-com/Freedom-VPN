@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
@@ -233,8 +234,12 @@ func (s *Service) SubmitObservation(
 			// §5.1 / §6.1: baseline readiness needs safety and a generation ACK,
 			// not a management peer ID. A reported ID still requires read-back;
 			// absent IDs must not block unpublished/disabled baseline readiness.
+			// Once the incarnation has reached provisioning_state='ready', an in-flight
+			// observation for an already-applied generation with safety_status='passed'
+			// does not downgrade provisioning_state back to 'applying' when central
+			// concurrently advances desired_config_generation.
 			var acknowledged, bound bool
-			if err := tx.QueryRow(ctx, `SELECT $2::numeric>0 AND $2::numeric>=n.desired_config_generation,i.peer_id IS NOT NULL FROM nodes n JOIN node_incarnations i ON i.id=$3 WHERE n.id=$1`, authNodeID, appliedGenStr, authIncarnationID).Scan(&acknowledged, &bound); err != nil {
+			if err := tx.QueryRow(ctx, `SELECT ($2::numeric>0 AND ($2::numeric>=n.desired_config_generation OR n.provisioning_state='ready')),i.peer_id IS NOT NULL FROM nodes n JOIN node_incarnations i ON i.id=$3 WHERE n.id=$1`, authNodeID, appliedGenStr, authIncarnationID).Scan(&acknowledged, &bound); err != nil {
 				return err
 			}
 			_, peerErr := report.Netbird.PeerId.Get()
@@ -284,13 +289,18 @@ func (s *Service) SubmitObservation(
 			}
 
 			obsAuditID := uuid.Must(uuid.NewV7())
-			afterObsAudit, _ := json.Marshal(map[string]any{
+			afterObsMap := map[string]any{
 				"report_id":                 report.ReportId.String(),
 				"applied_config_generation": appliedGenStr,
 				"safety_status":             string(effectiveSafety),
 				"data_health":               string(effectiveHealth),
 				"provisioning_state":        string(provisioning),
-			})
+			}
+			if _, ok := isPendingIsolationApplyError(report, effectiveForwarding); ok {
+				afterObsMap["isolation_error_code"] = string(api.ErrorCodeISOLATIONPOLICYINVALID)
+				afterObsMap["isolation_error_reason"] = "conntrack_delete_pending"
+			}
+			afterObsAudit, _ := json.Marshal(afterObsMap)
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 				ID:            obsAuditID,
 				Actor:         authNodeID.String(),
@@ -403,7 +413,36 @@ func evaluateObservationEvidence(report api.ObservationReport) (api.SafetyStatus
 		health = api.DataHealthDegraded
 	}
 
+	if _, ok := hasIsolationApplyError(report); ok {
+		if health == api.DataHealthHealthy {
+			health = api.DataHealthDegraded
+		}
+		if !forwarding {
+			safety = api.SafetyStatusFailed
+		}
+	}
+	for _, e := range report.Errors {
+		if e.Code == api.ErrorCodeISOLATIONBASELINEMISSING || e.Code == api.ErrorCodeMETERPATHINVALID {
+			safety = api.SafetyStatusFailed
+		}
+	}
+
 	return safety, health, forwarding, errs
+}
+
+func isRevokeMemberOperation(kind, memberState string) bool {
+	switch kind {
+	case string(api.OperationKindMemberDeviceRevoke),
+		string(api.OperationKindMemberGrantRevoke),
+		string(api.OperationKindMemberSuspend),
+		"member.revoke",
+		"member_device.revoke":
+		return true
+	case string(api.OperationKindMemberUpdate):
+		return memberState == "closed" || memberState == "suspended"
+	default:
+		return false
+	}
 }
 
 // advanceNodeOperationsOnObservation inspects active node operations and updates
@@ -462,6 +501,8 @@ func advanceNodeOperationsOnObservation(
 	for _, ch := range report.Checks {
 		checkStatus[ch.Name] = ch.Status
 	}
+	_, hasIsoErr := hasIsolationApplyError(report)
+	_, pendingIso := isPendingIsolationApplyError(report, effectiveForwarding)
 
 	for _, op := range ops {
 		var desiredGen uint64
@@ -488,9 +529,9 @@ func advanceNodeOperationsOnObservation(
 		changed := false
 		switch op.kind {
 		case OpKindPublish, OpKindUpdate:
-			// Requires applied_config_generation >= desired_generation AND safety_status == passed AND provisioning_state == ready.
+			// Requires applied_config_generation >= desired_generation AND safety_status == passed AND provisioning_state == ready without an isolation apply error.
 			if step, ok := steps[StepAgentPolicy]; ok && step.Status != string(api.OperationStepStatusSucceeded) {
-				if effectiveSafety == api.SafetyStatusPassed && report.ProvisioningState == api.ProvisioningStateReady {
+				if effectiveSafety == api.SafetyStatusPassed && report.ProvisioningState == api.ProvisioningStateReady && !hasIsoErr {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepAgentPolicy
 					step.ObservedAt = &now
@@ -515,6 +556,7 @@ func advanceNodeOperationsOnObservation(
 				if steps[StepAgentPolicy].Status == string(api.OperationStepStatusSucceeded) &&
 					checkStatus[api.NodeCheckNameTunnelProbe] == api.HealthCheckStatusPassed &&
 					effectiveHealth == api.DataHealthHealthy &&
+					!hasIsoErr &&
 					publicationConfirmed {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepDataPathProbe
@@ -633,95 +675,275 @@ func advanceNodeOperationsOnObservation(
 		}
 	}
 
-	// Also advance the "nodes" step on member, entitlement_grant (via entitlement_grants.member_id),
-	// and member_device (via member_devices.member_id) operations when the node has applied its
-	// desired config generation and passed safety checks (Members request 3).
-	if effectiveSafety == api.SafetyStatusPassed &&
-		report.ProvisioningState == api.ProvisioningStateReady &&
-		report.AppliedConfigGeneration.IsSpecified() &&
+	// Also advance or hold the "nodes" step on member, entitlement_grant (via entitlement_grants.member_id),
+	// and member_device (via member_devices.member_id) operations (§5.2, §8.1, r13 M-3).
+	var desiredNodeGenStr, dbAppliedNodeGenStr string
+	if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr, &dbAppliedNodeGenStr); err != nil {
+		return err
+	}
+	desiredNodeGen, _ := strconv.ParseUint(desiredNodeGenStr, 10, 64)
+	dbAppliedNodeGen, _ := strconv.ParseUint(dbAppliedNodeGenStr, 10, 64)
+
+	reportAcked := report.AppliedConfigGeneration.IsSpecified() &&
 		!report.AppliedConfigGeneration.IsNull() &&
-		appliedGen > 0 {
-		var desiredNodeGenStr string
-		if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr); err != nil {
+		appliedGen > 0 &&
+		appliedGen >= desiredNodeGen
+	nodeAcked := desiredNodeGen > 0 && (reportAcked || dbAppliedNodeGen >= desiredNodeGen)
+	cleanReady := reportAcked &&
+		effectiveSafety == api.SafetyStatusPassed &&
+		report.ProvisioningState == api.ProvisioningStateReady &&
+		!hasIsoErr
+	failedClosed := !effectiveForwarding &&
+		!pendingIso &&
+		checkStatus[api.NodeCheckNameInternetOnly] == api.HealthCheckStatusPassed &&
+		(nodeAcked || hasIsoErr)
+
+	if cleanReady || (reportAcked && pendingIso) || failedClosed {
+		type memberOpCandidate struct {
+			id                  uuid.UUID
+			kind                string
+			resourceType        string
+			resourceID          uuid.UUID
+			requestID           *uuid.UUID
+			memberState         string
+			prevStatus          string
+			prevErrCode         string
+			otherNodePendingIso bool
+		}
+		mRows, err := tx.Query(ctx, `
+			SELECT
+				o.id,
+				o.kind,
+				o.resource_type,
+				o.resource_id,
+				o.request_id,
+				coalesce(m.status, ''),
+				coalesce(o.steps->'nodes'->>'status', ''),
+				coalesce(o.steps->'nodes'->>'error_code', ''),
+				EXISTS (
+					SELECT 1
+					FROM nodes n2
+					JOIN exits ex2 ON ex2.node_id = n2.id
+					WHERE n2.id <> $1
+					  AND n2.lifecycle_state = 'registered'
+					  AND coalesce(n2.member_forwarding_observed, false)
+					  AND n2.recent_errors @> '[{"code":"ISOLATION_POLICY_INVALID"}]'::jsonb
+					  AND (
+						NOT EXISTS (SELECT 1 FROM exit_groups eg2 WHERE eg2.exit_id = ex2.id)
+						OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
+						OR EXISTS (
+							SELECT 1
+							FROM exit_groups eg2
+							WHERE eg2.exit_id = ex2.id
+							  AND (
+								(e.projection->'exit_group_ids') ? eg2.group_id::text
+								OR eg2.group_id = ANY(m.member_group_ids)
+							  )
+						)
+					  )
+				)
+			FROM operations o
+			LEFT JOIN entitlement_grants g ON o.resource_type = 'entitlement_grant' AND g.id = o.resource_id
+			LEFT JOIN member_devices d ON o.resource_type = 'member_device' AND d.id = o.resource_id
+			LEFT JOIN members m ON m.id = CASE
+				WHEN o.resource_type = 'member' THEN o.resource_id
+				WHEN o.resource_type = 'entitlement_grant' THEN g.member_id
+				WHEN o.resource_type = 'member_device' THEN d.member_id
+			END
+			LEFT JOIN entitlements e ON e.member_id = m.id
+			WHERE o.resource_type IN ('member', 'entitlement_grant', 'member_device')
+			  AND m.id IS NOT NULL
+			  AND o.status IN ('pending', 'running', 'failed', 'partially_succeeded')
+			  AND o.steps->'nodes'->>'status' IN ('pending', 'running', 'failed')
+			  AND (
+				(o.resource_type IN ('member', 'entitlement_grant') AND (o.desired_generation IS NULL OR (e.revision IS NOT NULL AND e.revision >= o.desired_generation)))
+				OR (o.resource_type = 'member_device' AND (o.desired_generation IS NULL OR (d.resource_version IS NOT NULL AND d.resource_version >= o.desired_generation)))
+			  )
+			  AND (
+				o.kind <> 'member.grant'
+				OR NOT EXISTS (
+					SELECT 1 FROM entitlement_grants g2
+					WHERE (g2.operation_id = o.id OR (o.resource_type = 'entitlement_grant' AND g2.id = o.resource_id))
+					  AND g2.valid_from > $2
+				)
+			  )
+			  AND (
+				NOT EXISTS (SELECT 1 FROM exits ex JOIN exit_groups eg ON eg.exit_id = ex.id WHERE ex.node_id = $1)
+				OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
+				OR EXISTS (
+					SELECT 1
+					FROM exits ex
+					JOIN exit_groups eg ON eg.exit_id = ex.id
+					WHERE ex.node_id = $1
+					  AND (
+						(e.projection->'exit_group_ids') ? eg.group_id::text
+						OR eg.group_id = ANY(m.member_group_ids)
+					  )
+				)
+			  )
+			ORDER BY o.id ASC
+			FOR UPDATE OF o`, nodeID, now)
+		if err != nil {
 			return err
 		}
-		desiredNodeGen, _ := strconv.ParseUint(desiredNodeGenStr, 10, 64)
-		if appliedGen >= desiredNodeGen {
-			mRows, err := tx.Query(ctx, `
-				SELECT o.id
-				FROM operations o
-				LEFT JOIN entitlement_grants g ON o.resource_type = 'entitlement_grant' AND g.id = o.resource_id
-				LEFT JOIN member_devices d ON o.resource_type = 'member_device' AND d.id = o.resource_id
-				LEFT JOIN members m ON m.id = CASE
-					WHEN o.resource_type = 'member' THEN o.resource_id
-					WHEN o.resource_type = 'entitlement_grant' THEN g.member_id
-					WHEN o.resource_type = 'member_device' THEN d.member_id
-				END
-				LEFT JOIN entitlements e ON e.member_id = m.id
-				WHERE o.resource_type IN ('member', 'entitlement_grant', 'member_device')
-				  AND m.id IS NOT NULL
-				  AND o.status IN ('pending', 'running', 'failed', 'partially_succeeded')
-				  AND o.steps->'nodes'->>'status' IN ('pending', 'running', 'failed')
-				  AND (
-					(o.resource_type IN ('member', 'entitlement_grant') AND (o.desired_generation IS NULL OR (e.revision IS NOT NULL AND e.revision >= o.desired_generation)))
-					OR (o.resource_type = 'member_device' AND (o.desired_generation IS NULL OR (d.resource_version IS NOT NULL AND d.resource_version >= o.desired_generation)))
-				  )
-				  AND (
-					o.kind <> 'member.grant'
-					OR NOT EXISTS (
-						SELECT 1 FROM entitlement_grants g2
-						WHERE (g2.operation_id = o.id OR (o.resource_type = 'entitlement_grant' AND g2.id = o.resource_id))
-						  AND g2.valid_from > $2
-					)
-				  )
-				  AND (
-					NOT EXISTS (SELECT 1 FROM exits ex JOIN exit_groups eg ON eg.exit_id = ex.id WHERE ex.node_id = $1)
-					OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
-					OR EXISTS (
-						SELECT 1
-						FROM exits ex
-						JOIN exit_groups eg ON eg.exit_id = ex.id
-						WHERE ex.node_id = $1
-						  AND (
-							(e.projection->'exit_group_ids') ? eg.group_id::text
-							OR eg.group_id = ANY(m.member_group_ids)
-						  )
-					)
-				  )
-				ORDER BY o.id ASC
-				FOR UPDATE OF o`, nodeID, now)
-			if err != nil {
-				return err
-			}
-			var memberOpIDs []uuid.UUID
-			for mRows.Next() {
-				var opID uuid.UUID
-				if err := mRows.Scan(&opID); err != nil {
-					mRows.Close()
-					return err
-				}
-				memberOpIDs = append(memberOpIDs, opID)
-			}
-			if err := mRows.Err(); err != nil {
+		var memberOps []memberOpCandidate
+		for mRows.Next() {
+			var c memberOpCandidate
+			if err := mRows.Scan(
+				&c.id, &c.kind, &c.resourceType, &c.resourceID, &c.requestID,
+				&c.memberState, &c.prevStatus, &c.prevErrCode, &c.otherNodePendingIso,
+			); err != nil {
 				mRows.Close()
 				return err
 			}
+			if c.requestID != nil && *c.requestID == uuid.Nil {
+				c.requestID = nil
+			}
+			memberOps = append(memberOps, c)
+		}
+		if err := mRows.Err(); err != nil {
 			mRows.Close()
+			return err
+		}
+		mRows.Close()
 
-			for _, opID := range memberOpIDs {
-				var failed bool
-				if err := tx.QueryRow(ctx, `SELECT steps->'nodes'->>'status' = 'failed' FROM operations WHERE id = $1`, opID).Scan(&failed); err != nil {
+		for _, op := range memberOps {
+			if reportAcked && pendingIso {
+				// Keep the "nodes" step pending while a conntrack flow delete retry is pending
+				// on the applied generation, surfacing ISOLATION_POLICY_INVALID through the operation read.
+				var stepsBytes, refsBytes []byte
+				if err := tx.QueryRow(ctx, `SELECT steps, coalesce(observed_refs, '{}'::jsonb) FROM operations WHERE id = $1`, op.id).Scan(&stepsBytes, &refsBytes); err != nil {
 					return err
 				}
-				if failed {
-					if err := entitlement.TransitionOperation(ctx, tx, opID, "nodes", api.OperationStepStatusRunning, nil); err != nil {
+				var steps map[string]StoredStep
+				if err := json.Unmarshal(stepsBytes, &steps); err != nil {
+					return err
+				}
+				var refs map[string]any
+				if len(refsBytes) > 0 {
+					_ = json.Unmarshal(refsBytes, &refs)
+				}
+				if refs == nil {
+					refs = map[string]any{}
+				}
+				nodeStep := steps["nodes"]
+				errCode := string(api.ErrorCodeISOLATIONPOLICYINVALID)
+				errMsg := "member_forwarding_unconfirmed"
+				nodeStep.Status = string(api.OperationStepStatusPending)
+				nodeStep.ErrorCode = &errCode
+				nodeStep.ErrorMessage = &errMsg
+				nodeStep.Reason = "conntrack_delete_pending"
+				nodeStep.ObservedAt = &now
+				nodeStep.UpdatedAt = now
+				steps["nodes"] = nodeStep
+				refs["nodes_isolation_pending"] = fmt.Sprintf("report:%s:gen:%d:error:ISOLATION_POLICY_INVALID", report.ReportId, appliedGen)
+
+				newStepsJSON, err := json.Marshal(steps)
+				if err != nil {
+					return err
+				}
+				newRefsJSON, err := json.Marshal(refs)
+				if err != nil {
+					return err
+				}
+				if _, err := tx.Exec(ctx, `
+					UPDATE operations
+					SET steps = $2::jsonb,
+					    observed_refs = $3::jsonb,
+					    updated_at = $4,
+					    resource_version = coalesce(resource_version, 0) + 1
+					WHERE id = $1`, op.id, newStepsJSON, newRefsJSON, now); err != nil {
+					return err
+				}
+				if op.prevErrCode != string(api.ErrorCodeISOLATIONPOLICYINVALID) {
+					opIDCopy := op.id
+					ev, err := audit.NewEvent(audit.Entry{
+						Actor:       audit.Actor{Type: api.AuditEventActorTypeNode, ID: nodeID},
+						Action:      "node.revoke_isolation_pending",
+						Resource:    api.ResourceRef{Type: api.ResourceType(op.resourceType), Id: op.resourceID},
+						Result:      api.AuditEventResultFailed,
+						OperationID: &opIDCopy,
+						RequestID:   op.requestID,
+						Before:      map[string]any{"nodes_step_status": op.prevStatus},
+						After: map[string]any{
+							"nodes_step_status":         string(api.OperationStepStatusPending),
+							"error_code":                string(api.ErrorCodeISOLATIONPOLICYINVALID),
+							"reason":                    "conntrack_delete_pending",
+							"applied_config_generation": strconv.FormatUint(appliedGen, 10),
+							"report_id":                 report.ReportId.String(),
+						},
+						Fields: []string{"nodes_step_status", "error_code", "reason", "applied_config_generation", "report_id"},
+					})
+					if err != nil {
+						return err
+					}
+					if err := audit.AppendEvent(ctx, tx, ev); err != nil {
 						return err
 					}
 				}
-				if err := entitlement.TransitionOperation(ctx, tx, opID, "nodes", api.OperationStepStatusSucceeded, &operations.Evidence{
-					Reference:  "audit_event:" + obsAuditID.String(),
-					ObservedAt: now,
-				}); err != nil {
+				continue
+			}
+
+			canCompleteOnFailClosed := !cleanReady && failedClosed && (op.prevErrCode == string(api.ErrorCodeISOLATIONPOLICYINVALID) || (nodeAcked && isRevokeMemberOperation(op.kind, op.memberState)))
+			if !cleanReady && !canCompleteOnFailClosed {
+				continue
+			}
+			if op.otherNodePendingIso {
+				continue
+			}
+
+			if op.prevStatus == "failed" {
+				if err := entitlement.TransitionOperation(ctx, tx, op.id, "nodes", api.OperationStepStatusRunning, nil); err != nil {
+					return err
+				}
+			}
+			if _, err := tx.Exec(ctx, `
+				UPDATE operations
+				SET steps = jsonb_set(steps, '{nodes}', (steps->'nodes') - 'error_code' - 'error_message' - 'reason'),
+				    observed_refs = coalesce(observed_refs, '{}'::jsonb) - 'nodes_isolation_pending'
+				WHERE id = $1`, op.id); err != nil {
+				return err
+			}
+			if err := entitlement.TransitionOperation(ctx, tx, op.id, "nodes", api.OperationStepStatusSucceeded, &operations.Evidence{
+				Reference:  "audit_event:" + obsAuditID.String(),
+				ObservedAt: now,
+			}); err != nil {
+				return err
+			}
+			if op.prevErrCode == string(api.ErrorCodeISOLATIONPOLICYINVALID) || canCompleteOnFailClosed {
+				resolution := "conntrack_delete_succeeded"
+				if !cleanReady && canCompleteOnFailClosed {
+					resolution = "node_failed_closed"
+				}
+				genVal := appliedGen
+				if genVal == 0 {
+					genVal = dbAppliedNodeGen
+				}
+				opIDCopy := op.id
+				ev, err := audit.NewEvent(audit.Entry{
+					Actor:       audit.Actor{Type: api.AuditEventActorTypeNode, ID: nodeID},
+					Action:      "node.revoke_isolation_resolved",
+					Resource:    api.ResourceRef{Type: api.ResourceType(op.resourceType), Id: op.resourceID},
+					Result:      api.AuditEventResultSucceeded,
+					OperationID: &opIDCopy,
+					RequestID:   op.requestID,
+					Before: map[string]any{
+						"nodes_step_status": op.prevStatus,
+						"error_code":        op.prevErrCode,
+					},
+					After: map[string]any{
+						"nodes_step_status":         string(api.OperationStepStatusSucceeded),
+						"error_code":                "",
+						"resolution":                resolution,
+						"applied_config_generation": strconv.FormatUint(genVal, 10),
+						"report_id":                 report.ReportId.String(),
+					},
+					Fields: []string{"nodes_step_status", "error_code", "resolution", "applied_config_generation", "report_id"},
+				})
+				if err != nil {
+					return err
+				}
+				if err := audit.AppendEvent(ctx, tx, ev); err != nil {
 					return err
 				}
 			}

@@ -19,10 +19,14 @@ pending -> revoked
 Consumed enrollments retain immutable request ID, original public-key
 fingerprint, request hash, incarnation, certificate and operation references.
 They cannot be revoked as enrollments: revoke the node identity instead.
-Get responses contain state/binding/expiry and metadata, never token plaintext.
-Admin create replay returns the same enrollment with `token=null` and
-`secret_available=false`. If the first response was lost, revoke the unused
-enrollment and create a new one with a new idempotency key.
+Get responses contain state/binding/expiry, metadata and the read-only stored
+token digest `token_sha256` (`api.Enrollment.TokenSha256`, `*string`: 64-character
+lowercase hex from `encode(token_hash, 'hex')`, distinct from
+`bound_public_key_sha256`), never token plaintext (ENR-02, contract revision 10).
+Admin create and its idempotent replay return the same `api.Enrollment` digest;
+replay returns `token=null` and `secret_available=false`. If the first response
+was lost, revoke the unused enrollment and create a new one with a new
+idempotency key.
 
 First use locks the reserved node and enrollment row, validates token state and
 expiry, creates the incarnation, stores the public certificate, and records a
@@ -70,6 +74,12 @@ keeps serial history bounded. Normal renewal has its own serial receipts.
 
 D-029 audit records use UUID actors, `node:<uuid>` or `enrollment:<uuid>`
 resources, and the generated `succeeded` result for committed local changes.
+`enrollment.created` records `token_sha256` alongside `reason` in
+`changes.after` (`After: {"reason": "", "token_sha256": "<64-hex>"}`,
+`Fields: ["reason", "token_sha256"]`); `enrollment.consumed` records only
+`reason` (ENR-02). Property names ending in `_sha256` are digests and are never
+redacted by `internal/audit`, whereas `token`, `access_token`, `refresh_token`
+and `token_hash` remain redacted.
 Bootstrap claims refer to the stable Node; its incarnation remains in the
 identity and bootstrap tables. Administrator service callers supply
 `admin:<uuid>` (or a bare canonical administrator UUID), never a display label.

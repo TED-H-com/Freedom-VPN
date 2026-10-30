@@ -40,6 +40,9 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if err := verifyChainSet(rs); err != nil {
 		return err
 	}
+	if err := verifyModelRules(rs); err != nil {
+		return err
+	}
 	fwd := rs.Chains["forward"]
 	if !generationComment(fwd, m.Generation) {
 		return checkf(ReasonGenerationMismatch, "forward rules do not carry fvpn_generation=%d", m.Generation)
@@ -80,6 +83,9 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 				return checkf(ReasonQoS, "assignment for %s is not minor 0x%x", d.Binding.MemberID, d.Minor)
 			}
 		}
+	}
+	if err := verifyDeviceClass(fwd, devices); err != nil {
+		return err
 	}
 	in := rs.Chains["input"]
 	if err := verifyInputDrops(in, m.Datapath.MemberIngress); err != nil {
@@ -129,6 +135,9 @@ func VerifyBaseline(raw []byte, m Model) error {
 	}
 	if err := rejectBypass(rs); err != nil {
 		return &CheckError{Reason: ReasonIsolationBaselineMissing, Detail: err.Error()}
+	}
+	if err := verifyModelRules(rs); err != nil {
+		return err
 	}
 	fwd, ok := rs.Chains["forward"]
 	if !ok || fwd.Policy != "drop" || fwd.Hook != "forward" || !fwd.HasPrio || fwd.Prio != HookPriorityFilter {
@@ -655,12 +664,12 @@ func servingAcceptKind(rule RuleView, m Model) string {
 	case deviceCounter(rule.Counter, "u_") && exactNames(rule.IIF, in) && exactNames(rule.OIF, up) &&
 		len(rule.SaddrSets) == 0 && len(rule.DaddrSets) == 0 &&
 		len(rule.Dports) == 0 && len(rule.Sports) == 0 && len(rule.L4Protos) == 0 &&
-		hostOrEmpty(rule.Saddrs) && len(rule.Daddrs) == 0:
+		oneHost(rule.Saddrs) && len(rule.Daddrs) == 0:
 		return "upload"
 	case deviceCounter(rule.Counter, "d_") && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) &&
 		len(rule.SaddrSets) == 0 && len(rule.DaddrSets) == 0 &&
 		len(rule.Dports) == 0 && len(rule.Sports) == 0 && len(rule.L4Protos) == 0 &&
-		len(rule.Saddrs) == 0 && hostOrEmpty(rule.Daddrs):
+		len(rule.Saddrs) == 0 && oneHost(rule.Daddrs):
 		return "download"
 	default:
 		return ""
@@ -679,11 +688,105 @@ func oneHost(ps []netip.Prefix) bool {
 	return len(ps) == 1 && ps[0].Bits() == 32 && ps[0].Addr().Is4()
 }
 
-func hostOrEmpty(ps []netip.Prefix) bool {
-	if len(ps) == 0 {
-		return true
+// verifyModelRules requires the rendered shape on every chain. The generation
+// and class markers are the only rules without a verdict. Output stays empty:
+// a jump into it would otherwise leave forward.
+func verifyModelRules(rs Ruleset) error {
+	if len(rs.Chains["output"].Rules) > 0 {
+		return checkf(ReasonIsolation, "output chain is not empty")
 	}
-	return oneHost(ps)
+	for _, name := range []string{"forward", "input", "postrouting"} {
+		for _, rule := range rs.Chains[name].Rules {
+			if err := verifyRuleShape(name, rule); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func verifyRuleShape(chain string, rule RuleView) error {
+	if rule.Tainted || rule.Verdicts > 1 {
+		return checkf(ReasonIsolation, "rule uses an expression the renderer does not emit")
+	}
+	if isMarker(rule) {
+		return nil
+	}
+	switch chain {
+	case "forward":
+		if rule.Verdict != "accept" && rule.Verdict != "drop" {
+			return checkf(ReasonIsolation, "forward rule has no verdict")
+		}
+	case "input":
+		if rule.Verdict != "drop" {
+			return checkf(ReasonIsolation, "input rule is not a drop")
+		}
+	case "postrouting":
+		if rule.Verdict != "" || rule.SNAT == "" {
+			return checkf(ReasonIsolation, "postrouting rule is not SNAT")
+		}
+	}
+	if rule.Verdict == "drop" && (rule.MatchMark || len(rule.L4Protos) > 0 || len(rule.Dports) > 0 || len(rule.Sports) > 0) {
+		return checkf(ReasonIsolation, "drop rule carries a match the renderer does not emit")
+	}
+	return nil
+}
+
+func isMarker(rule RuleView) bool {
+	if rule.Verdict != "" || rule.SNAT != "" || rule.Verdicts != 0 || rule.Tainted {
+		return false
+	}
+	return strings.Contains(rule.Comment, "fvpn_generation=") || strings.Contains(rule.Comment, "fvpn_class=")
+}
+
+// verifyDeviceClass requires every device accept to name exactly one admitted
+// address and that device's HTB class. One matching rule is not enough: an
+// extra accept for the same counter at the host default class still fails.
+func verifyDeviceClass(fwd ChainView, devices []admittedDevice) error {
+	byID := map[uuid.UUID]admittedDevice{}
+	for _, d := range devices {
+		if d.TimeoutOK() {
+			byID[d.Binding.DeviceID] = d
+		}
+	}
+	for _, rule := range fwd.Rules {
+		if rule.Verdict != "accept" {
+			continue
+		}
+		id, _, _, ok := parseDeviceCounter(rule.Counter)
+		if !ok {
+			continue
+		}
+		d, known := byID[id]
+		got, other, dirOK := deviceHostSide(rule)
+		if !known || !dirOK {
+			return checkf(ReasonQoS, "device rule priority is not the assigned class")
+		}
+		if len(other) != 0 || !oneHost(got) || !addrIn(got[0].Addr(), d.Addrs) || len(rule.Prios) != 1 || rule.Prios[0] != ClassID(d.Minor) {
+			return checkf(ReasonQoS, "device rule priority is not the assigned class")
+		}
+	}
+	return nil
+}
+
+func deviceHostSide(rule RuleView) (got, other []netip.Prefix, ok bool) {
+	switch {
+	case strings.HasPrefix(rule.Counter, "nu_"), strings.HasPrefix(rule.Counter, "u_"):
+		return rule.Saddrs, rule.Daddrs, true
+	case strings.HasPrefix(rule.Counter, "nd_"), strings.HasPrefix(rule.Counter, "d_"):
+		return rule.Daddrs, rule.Saddrs, true
+	default:
+		return nil, nil, false
+	}
+}
+
+func addrIn(addr netip.Addr, addrs []netip.Addr) bool {
+	for _, a := range addrs {
+		if a == addr {
+			return true
+		}
+	}
+	return false
 }
 
 // verifyChainSet allows only the base chains Render emits. A regular chain
