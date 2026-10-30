@@ -32,10 +32,9 @@ func TestReviewD056_OwningNodeReceivesPublishedDocument(t *testing.T) {
 	_, otherEnrolled, otherCert := f.enroll(f.create(nil))
 	other := f.call("GET", path, nil, otherCert, nil)
 	if refErr != nil || ref != doc.Reference || got.Code != http.StatusOK || !bytes.Equal(got.Body.Bytes(), doc.Canonical) || other.Code != http.StatusNotFound {
-		// TODO(review): ResolveDocumentInputs and RecordIssuedResolverDocumentTx have
-		// no production caller. CompileControlState never puts resolver_document in
-		// the signed envelope, so the issuing node cannot fetch the published bytes.
-		t.Fatalf("TODO(review): published resolver document was not delivered to the owning node: node=%s otherNode=%s refErr=%v ref=%+v want=%+v ownerStatus=%d ownerCache=%q ownerType=%q ownerBody=%s otherStatus=%d otherBody=%s desiredHasRef=%t",
+		// Regression proof: the production compiler must issue the published
+		// reference and authorize only its owning node to fetch canonical bytes.
+		t.Fatalf("published resolver document was not delivered to the owning node: node=%s otherNode=%s refErr=%v ref=%+v want=%+v ownerStatus=%d ownerCache=%q ownerType=%q ownerBody=%s otherStatus=%d otherBody=%s desiredHasRef=%t",
 			enrolled.NodeId, otherEnrolled.NodeId, refErr, ref, doc.Reference, got.Code, got.Header().Get("Cache-Control"), got.Header().Get("Content-Type"), got.Body.String(), other.Code, other.Body.String(), strings.Contains(stateW.Body.String(), doc.Reference.DocumentId.String()))
 	}
 	if got.Header().Get("Content-Type") != "application/json" {
