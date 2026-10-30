@@ -1,4 +1,5 @@
 {
+  "complete": true,
   "id": "AT01",
   "title": "Identity and first use",
   "spec": [
@@ -11,6 +12,18 @@
     {
       "name": "same-client stable identity",
       "detail": "pass; expected: same member UUID across browser sessions; actual: same_member=true; distinct_members=true; command: shared Dex password form; /auth/login?role=member; GET /auth/session"
+    },
+    {
+      "name": "finite capacity and classification",
+      "detail": "pass; expected: 200 or 202; actual: HTTP 202 ; command: PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps"
+    },
+    {
+      "name": "publication command published",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication operation published",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=running; required=3; succeeded=2; intent=published; observed=error; command: poll operations.steps and required observations; read exits projection"
     },
     {
       "name": "finite entitlement command",
@@ -41,72 +54,96 @@
       "detail": "pass; expected: observe real member device count; actual: member_A_devices=1; command: SELECT count(*) FROM member_devices WHERE member_id=A"
     },
     {
+      "name": "current serving prerequisite",
+      "detail": "pass; expected: record desired/applied and lease members; actual: {\"lease\": {\"issued_at\": \"2026-10-30T04:49:55.706909+00:00\", \"expires_at\": \"2026-10-31T04:49:55.706909+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"4\", \"desired\": \"5\"}; command: read nodes and latest serving_leases; no projection writes"
+    },
+    {
+      "name": "admission counters",
+      "detail": "pass; expected: record actual per-device counters; actual: read_ok=true; counters=0; command: docker exec node nft -j list table inet fvpn"
+    },
+    {
       "name": "blocked",
-      "detail": "Selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake require an applied exit and successful forwarding baseline, checked separately in AT08. Platform script: OPERATORS.md."
+      "detail": "Publication operation did not succeed within 90 seconds: running"
+    },
+    {
+      "name": "blocked",
+      "detail": "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
     },
     {
       "name": "provenance",
-      "detail": "source=3262e1a764f67c9168ef6b6e36746edb012b629d; applied generation=0; incarnation=01a18a79-ed50-7d25-856d-0f5de751a390; image/binary digests in JSON"
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=4; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
     },
     {
       "name": "operator",
       "detail": "needs operator run; see OPERATORS.md"
     }
   ],
-  "at": "2026-10-30T01:43:31Z",
+  "at": "2026-10-30T04:49:58Z",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "3ce91db255ceb05fa6bbdfe74c4d79e98a3c5b0a9fc10719ddd01f71104d2311",
+    "artifact_sha256_0.1.0_arm64": "8a3c751ffffc75471e56304f49bb4953e001e66693795afa71d63188aa5db1f9",
+    "manifest_sha256_0.1.0": "83084d298022708e93c7440710c579168c19b7f52bb5099bae8e2c6cc0330ae7",
+    "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
+  },
   "build": {
-    "source_commit": "3262e1a764f67c9168ef6b6e36746edb012b629d",
+    "source_commit": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
+      "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
-      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
+      "idp": "sha256:320b23fdef36cfa4692098eb7322651d2564940b2bd9391e41b1ae7f2ee6616c",
+      "member": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
-      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
-      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
+      "node": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "origin": "sha256:93fec27d47887eb12e0460bb04cb062f1f52fa07ecd53f02c0e28c978152f631",
+      "payment": "sha256:5035fa31f764486a80b630b2ce67b2596746c961b16e20d1b5d75aa07c48dec1",
+      "postgres": "sha256:2e5105c206622fbd0a47cd1c6f461a6c6b0cd1c5283c582e3e81b9e36a4f78ca",
+      "worker": "sha256:c2e2a7edccfa35211ba46a593f98485d6658b87b1574b9133264ebc487b937a3"
     },
     "binary_sha256": {
-      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
-      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
-      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
-      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
+      "fvpn-agent": "836a17206778bfd2a3a16c315a463ff9a2ea930ab7e5c62e984a5aa8ae89fdfc",
+      "fvpn-control": "0a0a546c77f29adefdb129fad60029289a7ad10e062dd4c7b30978b8c483aca7",
+      "fvpn-updater": "4a211f3b0c0058a05b8caca5987389eb16266ae982b762a1521cbf95c4dcee35",
+      "fvpn-worker": "3e6ed00a1fda21e79cc7da44b6bb092207d5adfbb5367ef0c18036031a4bd798"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       }
     }
   },
-  "policy_revision": "0",
-  "active_policy_revisions": {},
-  "node_incarnation": "01a18a79-ed50-7d25-856d-0f5de751a390",
+  "policy_revision": "4",
+  "active_policy_revisions": {
+    "dns_profile": "01a18b24-8e3f-7e27-aba2-cbfda5fb9612",
+    "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
+    "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
+    "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b"
+  },
+  "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
   "steps": [
     {
       "name": "same-client stable identity",
@@ -114,7 +151,31 @@
       "expected": "same member UUID across browser sessions",
       "actual": "same_member=true; distinct_members=true",
       "command": "shared Dex password form; /auth/login?role=member; GET /auth/session",
-      "at": "2026-10-30T01:43:32Z"
+      "at": "2026-10-30T04:49:58Z"
+    },
+    {
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "expected": "200 or 202",
+      "actual": "HTTP 202 ",
+      "command": "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps",
+      "at": "2026-10-30T04:50:28Z"
+    },
+    {
+      "name": "publication command published",
+      "status": "pass",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 202 ",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-10-30T04:50:29Z"
+    },
+    {
+      "name": "publication operation published",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=running; required=3; succeeded=2; intent=published; observed=error",
+      "command": "poll operations.steps and required observations; read exits projection",
+      "at": "2026-10-30T04:51:59Z"
     },
     {
       "name": "finite entitlement command",
@@ -122,7 +183,7 @@
       "expected": "202 accepted, not applied",
       "actual": "HTTP 202 ",
       "command": "POST /admin/members/{A}/grants",
-      "at": "2026-10-30T01:43:32Z"
+      "at": "2026-10-30T04:52:00Z"
     },
     {
       "name": "member self read",
@@ -130,7 +191,7 @@
       "expected": "200",
       "actual": "HTTP 200 ",
       "command": "GET /member/me",
-      "at": "2026-10-30T01:43:33Z"
+      "at": "2026-10-30T04:52:00Z"
     },
     {
       "name": "member shared issuer login",
@@ -138,7 +199,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T01:43:35Z"
+      "at": "2026-10-30T04:52:02Z"
     },
     {
       "name": "member native peer",
@@ -146,7 +207,7 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T01:43:40Z"
+      "at": "2026-10-30T04:52:07Z"
     },
     {
       "name": "cross-client production identity proof",
@@ -154,7 +215,7 @@
       "expected": "dashboard/CLI share public subject; verified mapping and finite device binding",
       "actual": "verified_mappings=1; device_projected=true; live_bindings=1",
       "command": "shared idplogin helper; native CLI device flow; read product D-052 mapping and D-050 device projections",
-      "at": "2026-10-30T01:43:53Z"
+      "at": "2026-10-30T04:52:09Z"
     },
     {
       "name": "browser sign-out",
@@ -162,7 +223,7 @@
       "expected": "session unauthenticated",
       "actual": "logout=204; authenticated=false",
       "command": "POST /auth/logout; GET /auth/session",
-      "at": "2026-10-30T01:43:54Z"
+      "at": "2026-10-30T04:52:11Z"
     },
     {
       "name": "native device precondition",
@@ -170,11 +231,28 @@
       "expected": "observe real member device count",
       "actual": "member_A_devices=1",
       "command": "SELECT count(*) FROM member_devices WHERE member_id=A",
-      "at": "2026-10-30T01:43:54Z"
+      "at": "2026-10-30T04:52:11Z"
+    },
+    {
+      "name": "current serving prerequisite",
+      "status": "pass",
+      "expected": "record desired/applied and lease members",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T04:49:55.706909+00:00\", \"expires_at\": \"2026-10-31T04:49:55.706909+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"4\", \"desired\": \"5\"}",
+      "command": "read nodes and latest serving_leases; no projection writes",
+      "at": "2026-10-30T04:52:11Z"
+    },
+    {
+      "name": "admission counters",
+      "status": "pass",
+      "expected": "record actual per-device counters",
+      "actual": "read_ok=true; counters=0",
+      "command": "docker exec node nft -j list table inet fvpn",
+      "at": "2026-10-30T04:52:11Z"
     }
   ],
   "blockers": [
-    "Selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake require an applied exit and successful forwarding baseline, checked separately in AT08. Platform script: OPERATORS.md."
+    "Publication operation did not succeed within 90 seconds: running",
+    "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
   ],
   "operator_status": "needs operator run"
 }
