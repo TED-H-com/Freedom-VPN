@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,9 +34,24 @@ func probeConfigFixture(t *testing.T) Config {
 	dir := t.TempDir()
 	trust := filepath.Join(dir, "trust.json")
 	writeTrust(t, trust)
+	agentConfig := filepath.Join(dir, "agent.json")
+	writeProbeAgentConfig(t, agentConfig, `{"control_url":"https://control.example.invalid","dns":{"resolvers":[{"admin_url":"http://127.0.0.1:3000","dns_addr":"127.0.0.1:53"}]}}`)
 	return Config{Layout: testLayout(dir), NodeID: uuid.Must(uuid.NewV7()), IncarnationID: uuid.Must(uuid.NewV7()),
 		BootID: uuid.Must(uuid.NewV7()), Platform: testPlatform(), ReleaseTrust: trust, DesiredTrust: trust,
+		AgentConfig: agentConfig, probeSources: probeAddressSources{
+			interfaces: func() ([]net.Addr, error) { return nil, nil },
+			lookup: func(context.Context, string, string) ([]netip.Addr, error) {
+				return []netip.Addr{netip.MustParseAddr("192.0.2.1")}, nil
+			},
+		},
 		DesiredState: filepath.Join(dir, "desired.json"), MeterCheckpoint: filepath.Join(dir, "meter.json")}
+}
+
+func writeProbeAgentConfig(t *testing.T, path, raw string) {
+	t.Helper()
+	if err := os.WriteFile(path, []byte(raw), 0o600); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func loadProbeConfig(t *testing.T, cfg Config) (Config, error) {
@@ -47,7 +64,7 @@ func loadProbeConfig(t *testing.T, cfg Config) (Config, error) {
 	if err := os.WriteFile(path, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return LoadConfig(path)
+	return loadConfig(path, cfg.probeSources)
 }
 
 func TestUPD_D063_ProbeConfigIssueAndNonce(t *testing.T) {
@@ -78,6 +95,7 @@ func TestUPD_D063_ProbeConfigIssueAndNonce(t *testing.T) {
 			rel := w.makeRelease("probe", 1, []int{1})
 			w.seed(rel)
 			w.eng.ProbePeer = configured.ProbePeer
+			w.eng.probeEnv = configured.probeEnv
 			nc := &NodeChecks{Journal: w.layout.Journal, Node: w.node, Now: w.eng.now, rt: &checkRT{}}
 			w.eng.Health = nc
 			var priorNonce string

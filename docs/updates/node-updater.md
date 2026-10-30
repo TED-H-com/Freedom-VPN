@@ -40,6 +40,7 @@ Template fragment only; `PUBLIC_TEST_ENDPOINT_IPV4` must be replaced with the te
 
 ```json
 {
+  "agent_config": "/etc/vpn-node/agent.json",
   "probe_peer": {
     "peer_id": "dedicated-probe-peer",
     "source_v4": "100.64.8.1/32",
@@ -52,6 +53,16 @@ Template fragment only; `PUBLIC_TEST_ENDPOINT_IPV4` must be replaced with the te
 ```
 
 Use the dedicated test peer's actual NetBird ID and `/32` overlay source; do not use a member peer. Specify 1–4 public `/32` destination sockets, each with lowercase `tcp` or `udp` and port 1–65535. `resolver_dns` optionally requests the agent's configured resolvers on TCP/UDP 53 in addition to those destinations. The issuer uses the enforcement package's specification deny list: RFC1918, CGNAT/overlay, loopback, link-local and metadata, documentation, benchmark, multicast, reserved and other specification-denied destinations fail configuration load. Artifact-origin/loopback test options do not relax this check. Peer IDs must be nonblank, at most 128 bytes and free of ASCII controls. Unknown JSON members, malformed values and trailing JSON are rejected with fixed, bounded errors that do not echo configuration values.
+
+The updater also collects address exclusions at configuration load, engine construction, and every challenge issuance:
+
+- Every global unicast IPv4 address returned by the host's interface inventory, including private and CGNAT interface addresses. A source or destination equal to any of these is refused. Other private/CGNAT `/32` sources remain valid overlay peer addresses; the destination deny list does not apply to sources.
+- The literal address or all DNS answers for `control_url` in the agent configuration, and for updater `result_url` when set. Destinations equal to any of these addresses are refused.
+- Each `dns.resolvers[].dns_addr` listener host and `dns.resolvers[].admin_url` host in the agent configuration. Destinations equal to a resolver endpoint are refused regardless of `resolver_dns` and regardless of the requested port.
+
+`agent_config` selects the running agent's configuration file; omission or an empty value selects `/etc/vpn-node/agent.json`. Set it explicitly when the agent uses a different file. The updater reads only its address-bearing fields, accepts unrelated agent configuration fields, and never opens the resolver credentials file. The file must be regular, valid JSON and at most 1 MiB. Interface enumeration, configuration reads and DNS resolution run afresh for each validation; all DNS lookups share a two-second deadline. A missing/malformed configuration, missing control URL, unavailable address source, failed/empty DNS lookup, or refused probe fails load with exactly `updater: invalid probe_peer`.
+
+If an input becomes unavailable or an address becomes forbidden after load, issuance still writes a fresh challenge with `probe` omitted. The configured probe remains available for later revalidation. The CLI logs `health challenge probe omitted` once per refusal class per updater process, using only a fixed `reason`: `malformed`, `denied_destination`, `node_source`, `node_destination`, `control_destination`, `resolver_destination`, `agent_config_unavailable`, `node_addresses_unavailable`, `control_addresses_unavailable` or `resolver_addresses_unavailable`. No peer, address, hostname, URL, path or raw lookup error appears in this diagnostic. With `probe_peer` absent, none of these address inputs is required or read.
 
 The production challenge uses `issued_at = now` and `expires_at = issued_at + 45s`; no config field changes that TTL. This is below D-063's 300s maximum. The consumer installs only after issuance, caps lifetime relative to issuance and expiry, and independently rejects member collisions, host addresses and additional denied ranges. Issuance is a request, not proof of successful installation or traffic. The [challenge contract](node-health-attestation.md#optional-synthetic-probe-d-063) describes exact limits, nonce binding, privacy and updater/agent ownership. Actual path verification still requires the authenticated synthetic probe and its challenge-bound attestation.
 

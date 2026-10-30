@@ -218,9 +218,10 @@ receipt time plus authenticated job/generation and observed time; it adds no wir
 sequence field. `ObserveTx`/`Observe` are also available to integrations that
 already maintain a trustworthy monotonic per-incarnation observation sequence.
 Old sequences/generations cannot overwrite newer actual versions. Before the
-incarnation's first accepted result, a bound observation may seed the installed
-versions and flag a revoked last-good for recovery. After an accepted result,
-observations preserve the accepted versions and recovery; disagreements stay
+incarnation's first accepted result, a bound observation may seed current only
+from the current job's target or an already recorded current/last-good release.
+It preserves last-good and can flag that recorded release as revoked. After an
+accepted result, observations preserve the accepted versions and recovery; disagreements stay
 unconfirmed. Missing observations stay unconfirmed.
 
 If an agent reports a generation ahead of restored central state (§17.4), intent
@@ -421,14 +422,33 @@ the high-water and versions unchanged, just like a null generation. Proofs:
 `TestReviewR9_D062_JoblessAndInvalidVocabulary`, and
 `TestReviewR9_D062_RecoveryAndRetryAttemptAuthority`.
 
-Version seeding is explicitly limited to incarnations with no accepted result
-receipt. The wire path additionally requires a validated job and its exact
-generation; it cannot seed from a jobless report. Once a result is accepted,
-seeding closes even for later jobs in that incarnation. A current terminal
-result can correct an earlier same-generation seed. The trusted sequence
-adapter also retains its separate restore high-water behavior, without moving
-versions after acceptance. `TestReviewR9_D062_PreResultSeedAndTerminalAuthority`
-and `TestUPD02_ResultBindingExpiryAndRestore` cover these bounds. No schema
+Before that incarnation's first accepted result, a heartbeat may seed current
+only with the **current job's target** or a release already recorded in the
+node's current/last-good columns (§13.2, §13.8; r11). A superseded target alone
+is insufficient. Last-good is preserved until an accepted result establishes
+it; repeatedly reporting a seeded target cannot promote it to last-good.
+Unexpected releases are ignored for the version columns and withhold the job's
+observation timestamp, leaving `unconfirmed=true`. Recovery uses the recorded
+last-good, never an unexpected heartbeat claim. Each distinct unexpected
+release/job pair gets one `update_observation.unexpected_release` audit with
+node actor/resource, result `failed`, and only `job_id`/`release_id` evidence.
+The existing fleet transaction lock serializes the audit lookup and append;
+repeated or concurrent reports add no duplicate audit, while a different release
+or job records new evidence. Proofs: the adopted
+`TestReviewR11_HeartbeatSeedsAnyReleaseUntilAResult`,
+`TestReviewR11_PreResultTargetSeedPreservesLastGood`,
+`TestReviewR11_UnexpectedReleaseAuditBound` (D-029 read-back), and
+`TestReviewR11_SupersededTargetCannotSeed`.
+
+The wire path additionally requires a validated job and its exact generation;
+it cannot seed from a jobless report. Once a result is accepted, seeding closes
+even for later jobs in that incarnation. A current terminal result can correct
+an earlier same-generation seed and establish last-good; that write returns
+`applied_to_current_observation=true` even when current was already seeded.
+The trusted sequence adapter retains its separate restore high-water behavior,
+without moving versions after acceptance.
+`TestReviewR9_D062_PreResultSeedAndTerminalAuthority` and
+`TestUPD02_ResultBindingExpiryAndRestore` cover these bounds. No schema
 relaxation or new projection column is needed.
 
 A conflicting result records one row and one audit per

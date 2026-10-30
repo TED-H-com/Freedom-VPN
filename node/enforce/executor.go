@@ -15,6 +15,8 @@ type Executor interface {
 	NftBatch(ctx context.Context, script string) error
 	TCBatch(ctx context.Context, script string) error
 	Output(ctx context.Context, name string, args ...string) ([]byte, error)
+	// LookPath reports where name would be found. It does not run the binary.
+	LookPath(name string) (string, error)
 }
 
 // CmdError is a failed nft, tc or conntrack invocation. Out is the combined
@@ -65,6 +67,10 @@ func stripBatchComments(script string) string {
 		b.WriteByte('\n')
 	}
 	return b.String()
+}
+
+func (System) LookPath(name string) (string, error) {
+	return exec.LookPath(name)
 }
 
 func (System) Output(ctx context.Context, name string, args ...string) ([]byte, error) {

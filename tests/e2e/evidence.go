@@ -106,5 +106,9 @@ func Write(dir string, rec Record) error {
 		b.WriteString("- " + ob.Name + ": " + ob.Detail + "\n")
 	}
 	b.WriteString("\n")
-	return os.WriteFile(base+".md", []byte(strings.TrimRight(b.String(), "\n")+"\n"), 0o644)
+	lines := strings.Split(b.String(), "\n")
+	for i := range lines {
+		lines[i] = strings.TrimRight(lines[i], " \t")
+	}
+	return os.WriteFile(base+".md", []byte(strings.TrimRight(strings.Join(lines, "\n"), "\n")+"\n"), 0o644)
 }

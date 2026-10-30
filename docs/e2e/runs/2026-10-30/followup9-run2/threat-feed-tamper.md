@@ -1,0 +1,22 @@
+# threat-feed-tamper
+
+Corrupted resolver response retains node last-good and recovers
+
+Status: pass
+
+Run: 65712989-0b05-4117-9a50-689499cd31be
+
+Source: 43176b8860bf90970e96b100c1ba4e957f09363d
+
+Spec: §12.5, §19 AT22
+
+- positive_node_delivery: true
+- last_good_before: {"admin_http":200,"query_log_enabled":false,"query_log_file_enabled":false,"rule_count":16,"rules_sha256":"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8","statistics_enabled":false,"synthetic_answer_count":0,"synthetic_blocked":true}
+- source_change: approved source adds one synthetic rule; wait for its configured 300-second refresh cadence
+- fault_injected: true
+- transport_fault: {"corrupted_sha256":"567f57ef81726f5c9dcd4c2bdc86d239777ec36d469dfad3b3c716c54d7fc3b1","document_id":"01a18bb8-095a-74e8-a454-c012eb78c5b2","fault_injected":true,"http_status":200,"original_sha256":"902faeee2f51333c81a57317d8637395452acb65952a71966ddfd4f3f83e9455","responses":2,"size_bytes":1238}
+- rejected_evidence: {"applied_at":null,"content_sha256":"567f57ef81726f5c9dcd4c2bdc86d239777ec36d469dfad3b3c716c54d7fc3b1","document_id":"01a18bb8-095a-74e8-a454-c012eb78c5b2","error_code":"HASH_MISMATCH","feeds":[],"generation":"3","outcome":"failed"}
+- last_good_during_fault: {"admin_http":200,"query_log_enabled":false,"query_log_file_enabled":false,"rule_count":16,"rules_sha256":"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8","statistics_enabled":false,"synthetic_answer_count":0,"synthetic_blocked":true}
+- last_good_unchanged: true
+- recovered_evidence: {"applied_at":"2026-10-30T07:31:03.915049745Z","content_sha256":"902faeee2f51333c81a57317d8637395452acb65952a71966ddfd4f3f83e9455","document_id":"01a18bb8-095a-74e8-a454-c012eb78c5b2","error_code":null,"feeds":[{"content_sha256":"6fc90b883869a9d03e200a0b014521d0b04c290d2ede553a3c028b53e4e319d5","feed_code":"e2e-feed","rule_count":11}],"generation":"3","outcome":"applied"}
+- resolver_after_recovery: {"admin_http":200,"query_log_enabled":false,"query_log_file_enabled":false,"rule_count":17,"rules_sha256":"79231a4738bf6d4430427b961953da912f1204eb8ce49cbdcd42d834405ddadb","statistics_enabled":false,"synthetic_answer_count":0,"synthetic_blocked":true}
