@@ -62,7 +62,7 @@ contracts-lint:
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run $(CONTRACTS_STATICCHECK) $(CONTRACTS_GO_PKGS)
 
 contracts-typecheck:
-	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict contracts/ts/openapi.d.ts
+	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict contracts/ts/openapi.d.ts contracts/ts/schema.d.ts
 	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict --target es2022 contracts/ts/strict-json.ts
 
 contracts-test:

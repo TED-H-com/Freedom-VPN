@@ -44,8 +44,8 @@ against the exact committed documents.
 The six payload schemas below are copied **byte for byte** from
 `internal/policies/schemas/`; the owner's copies remain in place. The DNS profile
 schema lives there too; `internal/dnspolicy` has no separate payload schema.
-Descriptions, `$id`, and even the old "Candidate for promotion" comments are
-preserved. They are embedded by `contracts.Schemas()` under `policies/`.
+The owner reconciled these schemas after revision 3. They are embedded by
+`contracts.Schemas()` under `policies/`, retaining their own `$id` values.
 Use each file's own `$id`; `SchemaID` is for the top-level generated schemas.
 
 | Policy type | JSON Schema snapshot | Valid payload example |
@@ -63,22 +63,22 @@ loads the six `PolicyRevisionCreate.*` contract fixtures. Commercial amounts,
 limits and rates are **TEST ONLY**. Promotion tests check the original bytes,
 embedded bytes, valid payloads, unknown-member and missing-member failures.
 
-These snapshots predate changes to OpenAPI and are **not interchangeable** with
-its payload schemas. HTTP bodies still use OpenAPI; this promotion changes no
-validation semantics. Known differences requiring owner reconciliation:
+The owner reconciliation tests compare every snapshot structurally with OpenAPI
+and keep both schema copies byte-identical. The remaining intentional differences
+are stronger uint64 patterns in the standalone policy schemas:
 
-| Snapshot | Difference from current OpenAPI |
+| Snapshot field | Difference from OpenAPI |
 |---|---|
-| plan / fair_use | Rate integers and plan price lack the safe-integer maximum 9007199254740991; canonicalization and service validation remain mandatory |
-| plan | Exit groups cap 64 vs 100; provider is length-bounded free text vs a code pattern; price ref cap 256 vs 255. Its device-limit description says default 3, while D-016 leaves the production choice pending |
-| dns_profile | Both revision-reference arrays cap 32 vs 50 |
-| domain_rule_set | Rules cap 10000 vs 100000; revision starts at 1 in both (D-048/D-049 revision 4); reason is free text vs a code pattern; profile_id has explicit 1–64 length bounds |
-| threat_feed | Provider cap 128 vs 100; license/source URLs cap 512 vs 2048; commercial-use evidence cap 500 vs 1000; categories cap 8 |
-| release_support | Approved/serving IDs cap 64 vs 1000; revoked IDs cap 256 vs 1000 |
+| `fair_use.tiers[].threshold_bytes` | Pattern enforces the uint64 upper bound |
+| `domain_rule_set.rules[].revision` | Pattern enforces both positive revision and the uint64 upper bound |
+| `threat_feed.max_size_bytes` | Pattern enforces the uint64 upper bound |
 
-Revision 5 synchronizes only the D-058 threat-feed interval default/optionality into both copies; attribution remains nullable. Other copied-schema differences are not silently repaired. Cross-field rules in the service table
-below still apply, as do decimal uint64 bounds and original-byte canonical JSON
-validation before signing or hashing (§14.1).
+OpenAPI uses decimal-string shape/length plus the generated `decstr` decoder for
+that upper bound. Revision 5 mechanically synchronizes only the D-058 feed
+interval optionality/default annotation into both copies; attribution remains
+nullable. This does not materialize a runtime default in the policy service.
+Cross-field rules in the service table below still apply, as does original-byte
+canonical JSON validation before signing or hashing (§14.1).
 
 ## Release trust-update document
 

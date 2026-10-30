@@ -201,3 +201,62 @@ func TestAPI01_Revision5ResolverOperation(t *testing.T) {
 		t.Fatal("D-056 NOT_FOUND must be non-retryable 404")
 	}
 }
+
+// §12.3 / D-056, D-058: evidence limits apply independently of signature
+// verification. Raw generation numbers and internal-only errors are rejected.
+func TestDNS03_ReportedEvidenceBounds(t *testing.T) {
+	for _, outcome := range []string{"applied", "partial", "failed", "not_run"} {
+		var evidence map[string]any
+		readJSON(t, "examples/valid/DnsPolicyEvidence.json", &evidence)
+		evidence["outcome"] = outcome
+		if outcome != "applied" {
+			evidence["applied_at"] = nil
+			evidence["error_code"] = "HASH_MISMATCH"
+		}
+		raw, _ := json.Marshal(evidence)
+		if err := validateComponent(t, "DnsPolicyEvidence", raw); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, tc := range []struct {
+		name  string
+		edit  func(map[string]any)
+		valid bool
+	}{
+		{"max_uint64", func(e map[string]any) { e["generation"] = "18446744073709551615" }, true},
+		{"numeric_generation", func(e map[string]any) { e["generation"] = 1 }, false},
+		{"unknown_outcome", func(e map[string]any) { e["outcome"] = "success" }, false},
+		{"internal_reason", func(e map[string]any) { e["error_code"] = "fetch_failed" }, false},
+		{"missing_error", func(e map[string]any) { delete(e, "error_code") }, false},
+		{"missing_feeds", func(e map[string]any) { delete(e, "feeds") }, false},
+		{"uppercase_digest", func(e map[string]any) { e["content_sha256"] = strings.Repeat("A", 64) }, false},
+		{"33_feeds", func(e map[string]any) {
+			var feeds []any
+			for i := 0; i < 33; i++ {
+				feeds = append(feeds, map[string]any{"feed_code": fmt.Sprintf("feed-%d", i), "content_sha256": strings.Repeat("a", 64), "rule_count": 0})
+			}
+			e["feeds"] = feeds
+		}, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var evidence map[string]any
+			readJSON(t, "examples/valid/DnsPolicyEvidence.json", &evidence)
+			tc.edit(evidence)
+			raw, _ := json.Marshal(evidence)
+			if (validateComponent(t, "DnsPolicyEvidence", raw) == nil) != tc.valid {
+				t.Fatal("incorrect evidence validation")
+			}
+		})
+	}
+	// uint64 overflow is enforced by the generated decstr decoder beyond regex.
+	var evidence api.DnsPolicyEvidence
+	raw := bytes.Replace(readFile(t, "examples/valid/DnsPolicyEvidence.json"), []byte("9007199254740993"), []byte("18446744073709551616"), 1)
+	if json.Unmarshal(raw, &evidence) == nil {
+		t.Fatal("accepted uint64 overflow")
+	}
+	var status api.ThreatFeedStatus
+	readJSON(t, "examples/valid/ThreatFeedStatus.bootstrap-empty.json", &status)
+	if !status.LastGoodAgeSeconds.IsNull() || !status.LastGoodRuleCount.IsNull() || !status.LastGoodContentSha256.IsNull() {
+		t.Fatal("bootstrap unknowns became zero/empty")
+	}
+}
