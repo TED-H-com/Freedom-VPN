@@ -97,7 +97,7 @@ func Test12_5_DNSDomainRequiresConfigFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if built.Jobs[dnspublish.EventDNSPublish] == nil || len(built.Runners) != 0 {
+	if built.Jobs[dnspublish.EventDNSPublish] == nil || len(built.Runners) != 1 || built.Jobs["dns.feed.refresh"] == nil {
 		t.Fatalf("dns domain jobs=%d runners=%d", len(built.Jobs), len(built.Runners))
 	}
 }

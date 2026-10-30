@@ -1,4 +1,6 @@
 {
   "upstreams": ["192.0.2.53:53", "[2001:db8::53]:53"],
-  "bootstrap_dns": ["192.0.2.54:53"]
+  "bootstrap_dns": ["192.0.2.54:53"],
+  "feed_update_cadence_seconds": 21600,
+  "feed_max_removal_percent": 50
 }

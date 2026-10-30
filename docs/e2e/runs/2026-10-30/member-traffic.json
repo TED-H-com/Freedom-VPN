@@ -12,12 +12,20 @@
       "detail": "true"
     },
     {
+      "name": "portal_issuer",
+      "detail": "https://netbird.example.invalid/oauth2"
+    },
+    {
+      "name": "portal_sub",
+      "detail": "[redacted]"
+    },
+    {
       "name": "plan_id",
-      "detail": "85fcf5f7-f3fe-4b15-b993-883256ca2427"
+      "detail": "ca03e4b8-fd5d-441f-aec2-bef790a986ed"
     },
     {
       "name": "plan_revision_id",
-      "detail": "05e34015-8bca-40eb-8e29-a2bc61e99803"
+      "detail": "43889fd5-329f-47a6-87e0-8fbd160babf6"
     },
     {
       "name": "grant",
@@ -25,7 +33,7 @@
     },
     {
       "name": "join",
-      "detail": "embedded IdP user"
+      "detail": "embedded IdP user, same subject as the portal session"
     },
     {
       "name": "device_flow_path",
@@ -42,6 +50,18 @@
     {
       "name": "member_netbird",
       "detail": "netbird_up"
+    },
+    {
+      "name": "netbird_user_id",
+      "detail": "[redacted]"
+    },
+    {
+      "name": "peer_user_id",
+      "detail": "[redacted]"
+    },
+    {
+      "name": "same_subject",
+      "detail": "true"
     },
     {
       "name": "peers_with_user",
@@ -64,6 +84,22 @@
       "detail": "not projected"
     },
     {
+      "name": "netbird_user_bindings",
+      "detail": "0"
+    },
+    {
+      "name": "member_devices",
+      "detail": "0"
+    },
+    {
+      "name": "device_bindings",
+      "detail": "0"
+    },
+    {
+      "name": "projection",
+      "detail": "writer not yet merged"
+    },
+    {
       "name": "checkout",
       "detail": "201"
     },
@@ -72,5 +108,7 @@
       "detail": "not claimed; no flow was counted"
     }
   ],
-  "at": "2026-10-30T00:08:07Z"
+  "at": "2026-10-30T01:13:52Z",
+  "run_id": "6bf270e4-abb1-43ff-93eb-18d282fc7c2a",
+  "source_commit": "5477de091f449047193fdc9114cfca4ced5b36e6"
 }

@@ -6,7 +6,7 @@
     "§19 AT25",
     "§19 AT27"
   ],
-  "status": "blocked",
+  "status": "pass",
   "observations": [
     {
       "name": "batch",
@@ -26,7 +26,7 @@
     },
     {
       "name": "exit_code",
-      "detail": "2"
+      "detail": "1"
     },
     {
       "name": "locally_succeeded",
@@ -38,7 +38,7 @@
     },
     {
       "name": "HASH_MISMATCH",
-      "detail": "false"
+      "detail": "true"
     },
     {
       "name": "recovery_required",
@@ -65,9 +65,15 @@
       "detail": "-"
     },
     {
+      "name": "journal_excerpt",
+      "detail": "fvpn-updater: updater: HASH_MISMATCH: content changed during resume"
+    },
+    {
       "name": "note",
-      "detail": "terminal state did not match a claimed success"
+      "detail": "tampered bytes were rejected"
     }
   ],
-  "at": "2026-10-30T00:08:31Z"
+  "at": "2026-10-30T01:14:13Z",
+  "run_id": "6bf270e4-abb1-43ff-93eb-18d282fc7c2a",
+  "source_commit": "5477de091f449047193fdc9114cfca4ced5b36e6"
 }

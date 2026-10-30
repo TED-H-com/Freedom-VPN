@@ -27,6 +27,46 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 		r.record(rec)
 		return
 	}
+	// Wait for the agent's accepted baseline report, not the worker's ready
+	// projection: the latter is precisely the central gate this scenario tests.
+	conn, dbErr := r.lab.db(ctx)
+	if dbErr == nil {
+		defer conn.Close(ctx)
+		wait, cancel := context.WithTimeout(ctx, 90*time.Second)
+		ready := waitUntil(wait, 2*time.Second, func() bool {
+			var ready bool
+			err := conn.QueryRow(wait, `SELECT EXISTS(SELECT 1 FROM node_observations
+				WHERE node_id=$1 AND applied_generation>0 AND safety_status='passed'
+				AND report_payload->>'provisioning_state'='ready')`, nodeID).Scan(&ready)
+			return err == nil && ready
+		})
+		cancel()
+		rec.Observations = append(rec.Observations, Observation{Name: "agent_baseline_observed", Detail: boolText(ready)})
+		var snapshot []byte
+		err := conn.QueryRow(ctx, `SELECT jsonb_build_object(
+			'node', jsonb_build_object('provisioning_state', n.provisioning_state,
+				'safety_status', n.safety_status, 'data_health', n.data_health,
+				'desired_config_generation', n.desired_config_generation::text,
+				'applied_config_generation', n.applied_config_generation::text,
+				'peer_id', i.peer_id),
+			'observation', (SELECT jsonb_build_object(
+				'provisioning_state', o.report_payload->'provisioning_state',
+				'safety_status', o.safety_status, 'data_health', o.data_health,
+				'applied_config_generation', o.applied_generation::text,
+				'peer_id', o.report_payload->'netbird'->'peer_id',
+				'checks', o.report_payload->'checks') FROM node_observations o
+				WHERE o.node_id=n.id ORDER BY received_at DESC LIMIT 1),
+			'peer_observe_events', (SELECT count(*) FROM outbox_events
+				WHERE aggregate_id=i.id AND event_type='node.peer.observe'))
+			FROM nodes n JOIN node_incarnations i ON i.id=n.current_incarnation_id WHERE n.id=$1`, nodeID).Scan(&snapshot)
+		if err == nil {
+			rec.Observations = append(rec.Observations, Observation{Name: "stored_rows", Detail: string(snapshot)})
+		} else {
+			rec.Observations = append(rec.Observations, Observation{Name: "stored_rows", Detail: "query failed"})
+		}
+	} else {
+		rec.Observations = append(rec.Observations, Observation{Name: "stored_rows", Detail: "database unavailable"})
+	}
 	detail, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String(), nil, nil)
 	if err != nil || detail.Status != 200 {
 		rec.Status = StatusFail

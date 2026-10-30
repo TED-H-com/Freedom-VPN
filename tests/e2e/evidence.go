@@ -34,6 +34,8 @@ type Record struct {
 	Status       Status        `json:"status"`
 	Observations []Observation `json:"observations"`
 	At           string        `json:"at"`
+	RunID        string        `json:"run_id,omitempty"`
+	SourceCommit string        `json:"source_commit,omitempty"`
 }
 
 func mustCompile(parts ...string) *regexp.Regexp {
@@ -70,6 +72,10 @@ func Write(dir string, rec Record) error {
 		rec.At = time.Now().UTC().Format(time.RFC3339)
 	}
 	for i := range rec.Observations {
+		switch rec.Observations[i].Name {
+		case "portal_sub", "netbird_user_id", "peer_user_id", "external_user_id":
+			rec.Observations[i].Detail = "[redacted]"
+		}
 		rec.Observations[i].Detail = Redact(rec.Observations[i].Detail)
 		rec.Observations[i].Name = Redact(rec.Observations[i].Name)
 	}
@@ -90,6 +96,9 @@ func Write(dir string, rec Record) error {
 	b.WriteString("# " + rec.ID + "\n\n")
 	b.WriteString(rec.Title + "\n\n")
 	b.WriteString("Status: " + string(rec.Status) + "\n\n")
+	if rec.RunID != "" {
+		b.WriteString("Run: " + rec.RunID + "\n\nSource: " + rec.SourceCommit + "\n\n")
+	}
 	if len(rec.Spec) > 0 {
 		b.WriteString("Spec: " + strings.Join(rec.Spec, ", ") + "\n\n")
 	}

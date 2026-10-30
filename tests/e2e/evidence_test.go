@@ -39,3 +39,24 @@ func TestWrite_RoundTrip(t *testing.T) {
 		t.Fatalf("summary: %s", b)
 	}
 }
+
+func TestSEC02_WriteRedactsIdentitySubjects(t *testing.T) {
+	dir := t.TempDir()
+	rec := Record{ID: "identity", Status: StatusBlocked, RunID: "test-run", SourceCommit: "test-commit"}
+	for _, name := range []string{"portal_sub", "netbird_user_id", "peer_user_id", "external_user_id"} {
+		rec.Observations = append(rec.Observations, Observation{Name: name, Detail: "synthetic-private-subject"})
+	}
+	rec.Observations = append(rec.Observations, Observation{Name: "same_subject", Detail: "true"})
+	if err := Write(dir, rec); err != nil {
+		t.Fatal(err)
+	}
+	for _, ext := range []string{".json", ".md"} {
+		raw, err := os.ReadFile(filepath.Join(dir, rec.ID+ext))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(raw), "synthetic-private-subject") || !strings.Contains(string(raw), "same_subject") || !strings.Contains(string(raw), "test-run") {
+			t.Fatalf("unsafe or incomplete evidence: %s", raw)
+		}
+	}
+}

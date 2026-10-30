@@ -2,11 +2,13 @@ package config
 
 import (
 	"bytes"
+	"github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func Test12_5_DNSConfigIsExplicitAndRedacted(t *testing.T) {
@@ -58,5 +60,32 @@ func Test12_5_DNSConfigIsExplicitAndRedacted(t *testing.T) {
 	}
 	if _, err := LoadDNS(filepath.Join(dir, "missing.json")); err == nil {
 		t.Fatal("missing dns configuration accepted")
+	}
+}
+
+func TestD054_DNSFeedParameterDefaultsAndBounds(t *testing.T) {
+	cfg := DNS{Upstreams: []string{"192.0.2.53:53"}}
+	if err := cfg.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if time.Duration(cfg.FeedUpdateCadenceSeconds)*time.Second != dnsfeeds.DefaultUpdateCadence {
+		t.Fatal("cadence default diverged")
+	}
+	for _, value := range []int{-1, 51} {
+		cfg.FeedMaxRemovalPercent = &value
+		if cfg.Validate() == nil {
+			t.Fatalf("accepted removal bound %d", value)
+		}
+	}
+	strict := 0
+	cfg.FeedMaxRemovalPercent = &strict
+	if err := cfg.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	for _, value := range []int{-1, 299, 604801} {
+		cfg.FeedUpdateCadenceSeconds = value
+		if cfg.Validate() == nil {
+			t.Fatalf("accepted cadence %d", value)
+		}
 	}
 }

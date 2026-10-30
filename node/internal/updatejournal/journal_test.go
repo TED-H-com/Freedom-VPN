@@ -399,3 +399,59 @@ func TestReleasesImmutableAndRetention(t *testing.T) {
 		t.Fatalf("desired state = %s", ds)
 	}
 }
+
+func TestJournalHealthStaysWithItsReasons(t *testing.T) {
+	j, _ := openTest(t)
+	ctx := context.Background()
+	if _, err := j.BeginTxn(ctx, Txn{TxnID: "t1", JobID: "j1", Attempt: 1, Generation: 1, ReleaseID: "r", ManifestSHA256: "aa"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range []Stage{StageBlocked, StageFinalSampled, StageStopped, StageMigrated, StageSwitched, StageChecking} {
+		if _, err := j.Advance(ctx, "t1", s, StageUpdate{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	first := map[string]string{"processes": "passed", "internet_only": "failed"}
+	if err := j.RecordHealth(ctx, "t1", first); err != nil {
+		t.Fatal(err)
+	}
+	if err := j.RecordEvent(ctx, "t1", `{"kind":"health_attest","reason":"probe refused"}`); err != nil {
+		t.Fatal(err)
+	}
+	if err := j.RecordHealth(ctx, "t1", map[string]string{"processes": "passed", "internet_only": "passed"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := j.Advance(ctx, "t1", StageRollingBack, StageUpdate{
+		Health: map[string]string{"internet_only": "passed"}, ErrorCode: "HEALTH_CHECK_FAILED",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := j.Advance(ctx, "t1", StageRecoveryRequired, StageUpdate{
+		Health: map[string]string{"internet_only": "passed"}, ErrorCode: "ROLLBACK_FAILED",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	txn, err := j.GetTxn(ctx, "t1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(txn.Health) != `{"internet_only":"failed","processes":"passed"}` {
+		t.Fatalf("health overwritten: %s", txn.Health)
+	}
+	ev, err := j.TxnEvents(ctx, "t1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var saw bool
+	for _, e := range ev {
+		if e.Detail == `{"kind":"health_attest","reason":"probe refused"}` && e.Stage == StageChecking {
+			saw = true
+		}
+	}
+	if !saw {
+		t.Fatalf("detail missing from %+v", ev)
+	}
+	if err := j.RecordEvent(ctx, "missing", "x"); !errors.Is(err, ErrNotFound) {
+		t.Fatal(err)
+	}
+}
