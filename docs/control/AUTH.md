@@ -122,6 +122,43 @@ Every HTTP 429 from either limiter includes `Retry-After` and the fixed
 `RATE_LIMITED` error code (`apierr.RateLimited`), and increments
 `fvpn_control_rate_limited_total{class,limiter}` on the control Prometheus
 registry (`class="login"` or `"session"`, `limiter="address"` or `"subject"`).
+The same counter, with the route class and `limiter="address"` or
+`"subject"`, records API 429 responses. It does not move for a body-size
+413 or a JSON 400.
+
+## Request body limits
+
+The API handler reads each body through `http.MaxBytesReader` at the class
+cap from `classify`:
+
+| Class | Routes | Setting | Default |
+| --- | --- | --- | --- |
+| browser | browser-tagged operations | `browser_body_bytes` | 1 MiB |
+| agent | agent-tagged operations other than the rows below | `agent_body_bytes` | 1 MiB |
+| heartbeat | `SubmitObservation` | `agent_body_bytes` | 1 MiB |
+| lease | `RenewServingLease` | `agent_body_bytes` | 1 MiB |
+| anonymous | `EnrollNode` | `agent_body_bytes` | 1 MiB |
+| anonymous | `ReceiveProviderWebhook` | `webhook_body_bytes` | 1 MiB |
+| usage | `SubmitUsageBatch` | `usage_body_bytes` | 8 MiB |
+
+Checks run in this order:
+
+1. **Size.** Above the class cap the response is HTTP 413 `PAYLOAD_TOO_LARGE`
+   (`Request body exceeds the configured limit.`). The extra byte is not parsed.
+2. **JSON well-formedness.** Webhook bodies skip this step; `httpapi.RawBody`
+   keeps the capped bytes for the provider signature. Every other JSON body
+   of at most `canonjson.MaxBytes` (1 MiB) must pass `canonjson.Canonicalize`.
+   That 1 MiB bound is the signed-document limit and stays there. A larger
+   body, which the usage cap allows through 8 MiB, is read with one
+   `json.Decoder` over a `LimitReader` at the class cap. The decoder accepts
+   one JSON value and rejects trailing data. Failure is HTTP 400
+   `MALFORMED_REQUEST` (`Invalid JSON document.`).
+3. **Schema.** kin-openapi validation failure is HTTP 422 `VALIDATION_FAILED`.
+   Webhook bodies are excluded; the provider's JSON is not a contract schema.
+4. **Identity.** For agent mTLS, every `node_id`, `node_incarnation_id`, and
+   `incarnation_id` in the parsed body, including nested usage events, must
+   match the certificate. A mismatch is HTTP 403 `INCARNATION_MISMATCH`.
+   The comparison uses the parsed value. It does not use canonical bytes.
 
 The production config requires HTTPS issuer/origin. Tests use a local signed-token
 httptest provider with PKCE validation and negative signature, issuer, audience,
