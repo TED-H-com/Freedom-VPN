@@ -23,7 +23,7 @@ func reviewUse(f *fake, key SetupKey, correlation string) {
 	f.objects["groups"][correlation]["peers"] = []any{"TEST-node"}
 }
 
-// TODO(review): membership and used_times are snapshotted on separate GETs.
+// Regression proof: membership and used_times are snapshotted on separate GETs.
 // A peer that joins, and the key that moves 0 → 1, between those reads is a
 // terminal group_peer_without_key_use conflict. The safe result is a re-read
 // that binds this single use, or a retryable NotFound/Unconfirmed.
@@ -48,7 +48,7 @@ func TestAT06_D055_Review_StaleKeyUseIsNotTerminal(t *testing.T) {
 	t.Fatal(err)
 }
 
-// TODO(review): the single-member decision is not repeated after GET /peers/{id}.
+// Regression proof: the single-member decision is not repeated after GET /peers/{id}.
 // A second member, or used_times moving 1 → 2, in that window still binds the
 // first peer and deletes the group.
 func TestAT06_D055_Review_PeerJoiningAfterSnapshotDoesNotBind(t *testing.T) {
@@ -70,7 +70,7 @@ func TestAT06_D055_Review_PeerJoiningAfterSnapshotDoesNotBind(t *testing.T) {
 	t.Fatalf("first peer bound after the group changed: err=%v bound=%v group_remains=%v", err, bound, f.objects["groups"][correlation] != nil)
 }
 
-// TODO(review): PolicyRule.authorized_groups is a map whose keys are group IDs.
+// Regression proof: PolicyRule.authorized_groups is a map whose keys are group IDs.
 // ids() only accepts arrays, so a policy that names the correlation group only
 // there does not conflict. Discovery binds and deletes the group.
 func TestAT06_D055_Review_AuthorizedGroupsMapIsIsolation(t *testing.T) {
@@ -90,7 +90,7 @@ func TestAT06_D055_Review_AuthorizedGroupsMapIsIsolation(t *testing.T) {
 	t.Fatalf("authorized_groups map was ignored: err=%v bound=%v group_remains=%v", err, bound, f.objects["groups"][correlation] != nil)
 }
 
-// TODO(review): isolation lists policies and routes only. A nameserver whose
+// Regression proof: isolation lists policies and routes only. A nameserver whose
 // groups array contains the correlation group does not conflict.
 func TestAT06_D055_Review_NameserverReferenceBlocksDiscovery(t *testing.T) {
 	f, c, key, _, correlation := discoveryFixture(t)
@@ -108,7 +108,7 @@ func TestAT06_D055_Review_NameserverReferenceBlocksDiscovery(t *testing.T) {
 	t.Fatalf("nameserver group reference was ignored: err=%v bound=%v group_remains=%v", err, bound, f.objects["groups"][correlation] != nil)
 }
 
-// TODO(review): a key issued with only the shared staging group never matches
+// Regression proof: a key issued with only the shared staging group never matches
 // by name, address, or time, but the miss is NotFound. The worker then polls
 // until the retry budget and reports management_peer_unconfirmed. The operator
 // message has to say to revoke this attempt and re-enroll.
@@ -130,7 +130,7 @@ func TestAT06_D055_Review_LegacyOneGroupKeyAsksForReenroll(t *testing.T) {
 	t.Fatalf("legacy key must be a terminal revoke-and-re-enroll conflict, got %v (%s)", err, DiscoveryReason(err))
 }
 
-// TODO(review): peers_count is not compared with the peers array. One visible
+// Regression proof: peers_count is not compared with the peers array. One visible
 // peer and peers_count 2 still binds candidate zero.
 func TestAT06_D055_Review_PeerCountMismatchDoesNotBind(t *testing.T) {
 	f, c, key, _, correlation := discoveryFixture(t)
@@ -144,7 +144,7 @@ func TestAT06_D055_Review_PeerCountMismatchDoesNotBind(t *testing.T) {
 	t.Fatalf("peers_count disagreement bound a peer: err=%v bound=%v", err, bound)
 }
 
-// TODO(review): recordPeer runs before cleanup. A policy that appears on the
+// Regression proof: recordPeer runs before cleanup. A policy that appears on the
 // second isolation list returns Conflict and leaves the new adapter binding.
 // The worker treats that Conflict as terminal and does not retry cleanup.
 func TestAT06_D055_Review_ConflictAfterBindRollsBack(t *testing.T) {
@@ -172,7 +172,7 @@ func TestAT06_D055_Review_ConflictAfterBindRollsBack(t *testing.T) {
 	t.Fatalf("binding survived a cleanup conflict: err=%v bound=%v group_remains=%v policy_lists=%d", err, bound, f.objects["groups"][correlation] != nil, lists)
 }
 
-// TODO(review): RevokeNodeSetupKey deletes the correlation group and does not
+// Regression proof: RevokeNodeSetupKey deletes the correlation group and does not
 // delete its peer. DeletePeer then no-ops because no node binding exists, so
 // the management peer stays in the shared staging group.
 func TestAT07_D055_Review_RevokeBeforeBindWithdrawsPeer(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	nodelib "github.com/TED-H-com/Freedom-VPN/internal/nodes"
 )
 
-// TODO(review): the worker freezes the incarnation on the first attempt when
+// Regression proof: the worker freezes the incarnation on the first attempt when
 // management commits the one-off use between the setup-key GET and the
 // correlation-group GET. A consistent re-read would bind TEST-peer.
 func TestAT06_D055_Review_StaleKeyUseFreezesLiveEnrollment(t *testing.T) {
@@ -37,7 +37,7 @@ func TestAT06_D055_Review_StaleKeyUseFreezesLiveEnrollment(t *testing.T) {
 	}
 }
 
-// TODO(review): a second group member and a second key use that appear on the
+// Regression proof: a second group member and a second key use that appear on the
 // peer GET, after the single-member check, still commit that first peer.
 func TestAT06_D055_Review_PeerJoinsAfterSnapshotBindsFirst(t *testing.T) {
 	f := newDiscoveryWorker(t)
@@ -72,7 +72,7 @@ func TestAT06_D055_Review_PeerJoinsAfterSnapshotBindsFirst(t *testing.T) {
 	}
 }
 
-// TODO(review): revoke before recordPeer deletes the correlation group, leaves
+// Regression proof: revoke before recordPeer deletes the correlation group, leaves
 // the management peer, and node.identity_withdrawn still lists the incarnation.
 func TestAT07_D055_Review_RevokeBeforeDiscoveryLeavesPeer(t *testing.T) {
 	f := newDiscoveryWorker(t)

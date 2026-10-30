@@ -47,7 +47,7 @@ func (f *discoveryManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	respond := func(v any) { w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(v) }
 	path := strings.TrimPrefix(r.URL.Path, "/api/")
 	switch {
-	case path == "policies" || path == "routes":
+	case path == "policies" || path == "routes" || path == "dns/nameservers":
 		respond([]any{})
 	case path == "groups" && r.Method == "GET":
 		groups := []any{}
