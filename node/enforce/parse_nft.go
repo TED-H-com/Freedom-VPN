@@ -71,6 +71,15 @@ type RuleView struct {
 	MatchMark        bool
 	DNAT             bool
 	SNAT             string
+	// Tainted is true when the rule carries an expression the renderer does
+	// not emit: a statement outside the rendered set, more than one verdict
+	// token, a verdict token that is not itself a statement, a positive match
+	// whose operator is not ==, or an address right-hand side that is neither
+	// one prefix nor one named set. Verification fails closed.
+	Tainted bool
+	// Verdicts is the number of accept and drop tokens anywhere in the
+	// expression, including tokens nested inside a verdict map.
+	Verdicts int
 }
 
 // setElement is one element of an nft set. Bounded is false when the element
@@ -415,7 +424,56 @@ func inspectExpr(raw json.RawMessage, rv *RuleView) error {
 		return err
 	}
 	walkExpr(v, rv)
+	noteStatements(v, rv)
+	if rv.Verdicts > 1 {
+		rv.Tainted = true
+	}
 	return nil
+}
+
+// renderedStatements are the expression keys Render emits. A direct statement
+// with any other key is outside the model. flow and xt are offload bypasses.
+var renderedStatements = map[string]bool{
+	"match": true, "counter": true, "mangle": true,
+	"accept": true, "drop": true, "snat": true,
+}
+
+func noteStatements(v any, rv *RuleView) {
+	arr, ok := v.([]any)
+	if !ok {
+		if v != nil {
+			rv.Tainted = true
+		}
+		return
+	}
+	stmtVerdicts := 0
+	for _, item := range arr {
+		obj, ok := item.(map[string]any)
+		if !ok || len(obj) != 1 {
+			rv.Tainted = true
+			continue
+		}
+		var key string
+		for k := range obj {
+			key = k
+		}
+		switch key {
+		case "accept", "drop":
+			stmtVerdicts++
+		case "flow", "xt":
+			rv.Offload = true
+			rv.Tainted = true
+		default:
+			if !renderedStatements[key] {
+				rv.Tainted = true
+			}
+		}
+	}
+	// A verdict token nested inside a match or a verdict map is not the
+	// statement the renderer emits.
+	if stmtVerdicts != rv.Verdicts {
+		rv.Tainted = true
+	}
 }
 
 func walkExpr(v any, rv *RuleView) {
@@ -423,9 +481,11 @@ func walkExpr(v any, rv *RuleView) {
 	case map[string]any:
 		if _, ok := t["accept"]; ok {
 			rv.Verdict = "accept"
+			rv.Verdicts++
 		}
 		if _, ok := t["drop"]; ok {
 			rv.Verdict = "drop"
+			rv.Verdicts++
 		}
 		if _, ok := t["dnat"]; ok {
 			rv.DNAT = true
@@ -498,9 +558,16 @@ func noteMangle(v any, rv *RuleView) {
 	}
 }
 
+// opIsEq is the positive match the renderer emits. A missing operator is the
+// same match: some fixtures omit it, and nft prints "==" when it is present.
+func opIsEq(op string) bool {
+	return op == "" || op == "=="
+}
+
 func noteMatch(v any, rv *RuleView) {
 	m, ok := v.(map[string]any)
 	if !ok {
+		rv.Tainted = true
 		return
 	}
 	op, _ := m["op"].(string)
@@ -508,52 +575,53 @@ func noteMatch(v any, rv *RuleView) {
 	right := m["right"]
 	if meta, ok := left["meta"].(map[string]any); ok {
 		key, _ := meta["key"].(string)
-		if key == "mark" {
+		name, _ := right.(string)
+		switch key {
+		case "mark":
 			rv.MatchMark = true
-		}
-		if name, ok := right.(string); ok && name != "" {
-			switch key {
-			case "iifname":
+		case "iifname", "oifname":
+			if !opIsEq(op) || name == "" {
+				rv.Tainted = true
+				break
+			}
+			if key == "iifname" {
 				rv.IIF = append(rv.IIF, name)
-			case "oifname":
+			} else {
 				rv.OIF = append(rv.OIF, name)
 			}
+		case "nfproto":
+			if !opIsEq(op) || name == "" {
+				rv.Tainted = true
+				break
+			}
+			rv.NFProto = name
+		case "l4proto":
+			if !opIsEq(op) || name == "" {
+				rv.Tainted = true
+				break
+			}
+			rv.L4Protos = append(rv.L4Protos, name)
 		}
 	}
 	if _, ok := left["concat"]; ok {
-		if name, ok := matchSet(right); ok {
+		if !opIsEq(op) {
+			rv.Tainted = true
+		} else if name, ok := matchSet(right); ok {
 			rv.ConcatSets = append(rv.ConcatSets, name)
+		} else {
+			rv.Tainted = true
 		}
 	}
 	if payload, ok := left["payload"].(map[string]any); ok {
 		field, _ := payload["field"].(string)
 		switch field {
 		case "saddr", "daddr":
-			if name, ok := matchSet(right); ok {
-				if op == "!=" {
-					rv.NegSets = append(rv.NegSets, name)
-					if field == "saddr" {
-						rv.NegSaddr = append(rv.NegSaddr, name)
-					}
-					if field == "daddr" {
-						rv.NegDaddr = append(rv.NegDaddr, name)
-					}
-				}
-				if op == "==" && field == "saddr" {
-					rv.SaddrSets = append(rv.SaddrSets, name)
-				}
-				if op == "==" && field == "daddr" {
-					rv.DaddrSets = append(rv.DaddrSets, name)
-				}
-			} else if p, ok := matchPrefix(right); ok && op == "==" {
-				if field == "saddr" {
-					rv.Saddrs = append(rv.Saddrs, p)
-				}
-				if field == "daddr" {
-					rv.Daddrs = append(rv.Daddrs, p)
-				}
-			}
+			noteAddrMatch(rv, op, field, right)
 		case "dport", "sport":
+			if !opIsEq(op) {
+				rv.Tainted = true
+				break
+			}
 			if n, ok := asUint(right); ok && n > 0 && n <= 65535 {
 				if field == "sport" {
 					rv.Sports = append(rv.Sports, uint16(n))
@@ -566,13 +634,6 @@ func noteMatch(v any, rv *RuleView) {
 			}
 		}
 	}
-	if meta, ok := left["meta"].(map[string]any); ok {
-		if key, _ := meta["key"].(string); key == "nfproto" {
-			if name, ok := right.(string); ok {
-				rv.NFProto = name
-			}
-		}
-	}
 	if ct, ok := left["ct"].(map[string]any); ok && ct["key"] == "state" && mentionsEstablished(right) {
 		if op == "!=" {
 			rv.CTNotEstablished = true
@@ -580,6 +641,70 @@ func noteMatch(v any, rv *RuleView) {
 			rv.CTEstablished = true
 		}
 	}
+}
+
+// noteAddrMatch records one named set or one prefix. A negated named set is
+// the allow-set drop the renderer emits. Anything else, including an
+// anonymous set and a negated prefix, taints the rule.
+func noteAddrMatch(rv *RuleView, op, field string, right any) {
+	if name, ok := namedSetRef(right); ok {
+		if op == "!=" {
+			rv.NegSets = append(rv.NegSets, name)
+			if field == "saddr" {
+				rv.NegSaddr = append(rv.NegSaddr, name)
+			} else {
+				rv.NegDaddr = append(rv.NegDaddr, name)
+			}
+			return
+		}
+		if opIsEq(op) {
+			if field == "saddr" {
+				rv.SaddrSets = append(rv.SaddrSets, name)
+			} else {
+				rv.DaddrSets = append(rv.DaddrSets, name)
+			}
+			return
+		}
+		rv.Tainted = true
+		return
+	}
+	if opIsEq(op) {
+		if p, ok := matchPrefix(right); ok {
+			if field == "saddr" {
+				rv.Saddrs = append(rv.Saddrs, p)
+			} else {
+				rv.Daddrs = append(rv.Daddrs, p)
+			}
+			return
+		}
+	}
+	rv.Tainted = true
+}
+
+// namedSetRef is one named set. An anonymous set (a list of prefixes or
+// addresses) is not a named set.
+func namedSetRef(right any) (string, bool) {
+	switch t := right.(type) {
+	case string:
+		if strings.HasPrefix(t, "@") && len(t) > 1 {
+			return t[1:], true
+		}
+	case map[string]any:
+		switch set := t["set"].(type) {
+		case string:
+			if set != "" {
+				return strings.TrimPrefix(set, "@"), true
+			}
+		case []any:
+			if len(set) == 1 {
+				s, ok := set[0].(string)
+				if ok && s != "" && !strings.Contains(s, ".") {
+					return strings.TrimPrefix(s, "@"), true
+				}
+			}
+		}
+	}
+	return "", false
 }
 
 func noteSNAT(v any, rv *RuleView) {
