@@ -8,6 +8,8 @@ import (
 	"errors"
 	"net/http"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
@@ -23,13 +25,66 @@ import (
 )
 
 type Step struct {
-	Required    bool                    `json:"required"`
-	Status      api.OperationStepStatus `json:"status"`
-	Reason      string                  `json:"reason,omitempty"`
-	ObservedRef string                  `json:"observed_ref,omitempty"`
-	ObservedAt  *time.Time              `json:"observed_at,omitempty"`
-	ErrorCode   *api.ErrorCode          `json:"error_code,omitempty"`
+	Required     bool                    `json:"required"`
+	Status       api.OperationStepStatus `json:"status"`
+	Reason       string                  `json:"reason,omitempty"`
+	ObservedRef  string                  `json:"observed_ref,omitempty"`
+	ObservedAt   *time.Time              `json:"observed_at,omitempty"`
+	ErrorCode    *api.ErrorCode          `json:"error_code,omitempty"`
+	ErrorMessage *string                 `json:"error_message,omitempty"`
 }
+
+var (
+	boundedPublicationEvidenceCauses = []string{
+		"route_missing",
+		"route_disabled",
+		"route_ambiguous",
+		"route_contract_mismatch",
+		"route_peer_mismatch",
+		"route_groups_mismatch",
+		"group_evidence_unavailable",
+		"no_distribution_groups",
+		"identity_unconfirmed",
+		"adapter_unavailable",
+	}
+	boundedPublicationErrorKinds = []string{
+		"not_found",
+		"conflict",
+		"rate_limited",
+		"unauthorized",
+		"upstream",
+		"unavailable",
+		"invalid",
+		"unconfirmed",
+	}
+	boundedStepExtraCauses = []string{
+		"member_forwarding_unconfirmed",
+		"desired_state_unavailable",
+	}
+)
+
+// IsBoundedFailureCause reports whether cause is in the fixed admin operation
+// failure vocabulary (exits.PublicationFailureCause plus node publication step causes).
+func IsBoundedFailureCause(cause string) bool {
+	if slices.Contains(boundedPublicationEvidenceCauses, cause) || slices.Contains(boundedStepExtraCauses, cause) {
+		return true
+	}
+	if status, ok := strings.CutPrefix(cause, "publish_rejected:"); ok {
+		if len(status) != 3 {
+			return false
+		}
+		code, err := strconv.Atoi(status)
+		return err == nil && code >= 400 && code <= 599 && strconv.Itoa(code) == status
+	}
+	if kind, ok := strings.CutPrefix(cause, "publish_failed:"); ok {
+		return slices.Contains(boundedPublicationErrorKinds, kind)
+	}
+	if kind, ok := strings.CutPrefix(cause, "readback_failed:"); ok {
+		return slices.Contains(boundedPublicationErrorKinds, kind)
+	}
+	return false
+}
+
 type Evidence struct {
 	Reference  string    `json:"reference"`
 	ObservedAt time.Time `json:"observed_at"`
@@ -98,6 +153,9 @@ func (s Store) Get(ctx context.Context, id uuid.UUID, p auth.Principal) (op api.
 		}
 		if v.ErrorCode != nil {
 			message := "Step failed; quote the operation ID."
+			if p.Role == auth.Admin && v.ErrorMessage != nil && IsBoundedFailureCause(*v.ErrorMessage) {
+				message = *v.ErrorMessage
+			}
 			step.Message.Set(message)
 		}
 		if (op.Status == "failed" || op.Status == "partially_succeeded") && v.ErrorCode != nil && op.Error.IsNull() {

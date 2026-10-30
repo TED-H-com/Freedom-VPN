@@ -34,6 +34,16 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 
 func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
+	jobs.Register("node.resolver_documents.reconcile", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		ctx = commandtx.WithClaim(ctx, event)
+		if err := r.ReconcileResolverDocuments(ctx); err != nil {
+			return "", err
+		}
+		err := commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			return enqueueScheduledNodeJob(ctx, tx, event.EventType, event.ID, time.Now().Add(resolverReconcilePeriod(r.Config.ReconcileSeconds)))
+		})
+		return "resolver-reconciliation:" + event.ID.String(), err
+	})
 	jobs.Register("node.peer.discover", nodePeerDiscovery(r, nb, attempts))
 	var publication exits.NetBirdAdapter = httpwire.NewPublicationAdapter(r, nb)
 	if len(publicationAdapter) > 1 {
@@ -273,15 +283,22 @@ func scheduleNodeReconcile(ctx context.Context, tx pgx.Tx, event db.ClaimedEvent
 	return enqueueNodeReconcile(ctx, tx, event.ID, time.Now().Add(time.Duration(seconds)*time.Second))
 }
 func enqueueNodeReconcile(ctx context.Context, tx pgx.Tx, exclude uuid.UUID, available time.Time) error {
+	return enqueueScheduledNodeJob(ctx, tx, "node.reconcile", exclude, available)
+}
+func enqueueScheduledNodeJob(ctx context.Context, tx pgx.Tx, eventType string, exclude uuid.UUID, available time.Time) error {
 	var exists bool
-	if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM outbox_events WHERE event_type='node.reconcile' AND delivered_at IS NULL AND dead_lettered_at IS NULL AND id<>$1)`, exclude).Scan(&exists); e != nil {
+	if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM outbox_events WHERE event_type=$2 AND delivered_at IS NULL AND dead_lettered_at IS NULL AND id<>$1)`, exclude, eventType).Scan(&exists); e != nil {
 		return e
 	}
 	if exists {
 		return nil
 	}
 	raw, _ := canonjson.Marshal(map[string]int{"schema_version": 1})
-	return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: uuid.MustParse(releases.FleetID), AggregateType: "fleet_config", AggregateVersion: "1", EventType: "node.reconcile", SchemaVersion: 1, Payload: raw, AvailableAt: available})
+	return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: uuid.MustParse(releases.FleetID), AggregateType: "fleet_config", AggregateVersion: "1", EventType: eventType, SchemaVersion: 1, Payload: raw, AvailableAt: available})
+}
+
+func resolverReconcilePeriod(seconds int) time.Duration {
+	return time.Duration(max(1, min(seconds, 60))) * time.Second
 }
 
 // nodes builds once from the process-owned pool/configuration (D-026). The
@@ -323,9 +340,14 @@ func RunNodeSchedule(ctx context.Context, runtime *httpwire.Runtime) error {
 		return errors.New("node schedule configuration required")
 	}
 	seed := func() error {
-		return commandtx.InTx(ctx, runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return enqueueNodeReconcile(ctx, tx, uuid.Nil, time.Now()) })
+		return commandtx.InTx(ctx, runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			if err := enqueueNodeReconcile(ctx, tx, uuid.Nil, time.Now()); err != nil {
+				return err
+			}
+			return enqueueScheduledNodeJob(ctx, tx, "node.resolver_documents.reconcile", uuid.Nil, time.Now())
+		})
 	}
-	ticker := time.NewTicker(time.Duration(runtime.Config.ReconcileSeconds) * time.Second)
+	ticker := time.NewTicker(resolverReconcilePeriod(runtime.Config.ReconcileSeconds))
 	defer ticker.Stop()
 	for {
 		if err := seed(); err != nil {

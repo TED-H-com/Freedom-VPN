@@ -37,6 +37,16 @@ var _ DNSApplier = (*dns.Applier)(nil)
 
 var feedCodeRE = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
 
+// appliedDNS is the one resolver document this process has recorded as
+// applied. dns_policy may pass only when the in-force desired state names
+// this id and this content digest. Anything else, including a revoked skip
+// that does not call Apply, clears it.
+type appliedDNS struct {
+	id   uuid.UUID
+	hash string
+	ok   bool
+}
+
 type resolverErr struct {
 	code   api.ErrorCode
 	detail string
@@ -53,20 +63,29 @@ func (e *resolverErr) Error() string {
 // applyResolver fetches, verifies, and applies dns.resolver_document.
 // Absent or null keeps designated resolvers only and reports no evidence.
 // Size and digest are checked against the exact bytes before parse or Apply.
+// A revoked node does not call Apply. The named document is then not
+// recorded, so dns_policy cannot pass on desired state alone.
 func (e *Engine) applyResolver(ctx context.Context) {
 	e.dnsDocument = false
 	e.dnsFailed = false
 	e.dnsCode = ""
 	e.dnsDetail = ""
 	e.dnsEv = nil
-	if e.revoked || !e.enrolled || e.desired == nil || !e.desiredOK {
+	if !e.enrolled || e.desired == nil || !e.desiredOK {
+		e.appliedDNS = appliedDNS{}
 		return
 	}
 	ref, err := e.desired.Dns.ResolverDocument.Get()
 	if err != nil {
+		e.appliedDNS = appliedDNS{}
 		return
 	}
 	e.dnsDocument = true
+	if e.revoked {
+		e.appliedDNS = appliedDNS{}
+		e.refuseUnapplied(ref)
+		return
+	}
 	if !resolverRefOK(ref) {
 		e.noteResolver(ref, nil, api.DnsPolicyEvidenceOutcomeFailed, api.ErrorCodeVALIDATIONFAILED, "Resolver document reference is not usable.")
 		return
@@ -178,7 +197,60 @@ func resolverRefOK(ref api.ResolverDocumentRef) bool {
 	return err == nil
 }
 
+// refuseUnapplied records that the named document is not the applied one.
+// A missing applier is not_run. A live applier that was not called, including
+// the revoked skip, is failed. Neither outcome is passed.
+func (e *Engine) refuseUnapplied(ref api.ResolverDocumentRef) {
+	if e.dnsApply == nil {
+		e.noteResolver(ref, nil, api.DnsPolicyEvidenceOutcomeNotRun, api.ErrorCodeDEPENDENCYUNAVAILABLE, "Resolver policy did not run.")
+		return
+	}
+	e.noteResolver(ref, nil, api.DnsPolicyEvidenceOutcomeFailed, api.ErrorCodeVALIDATIONFAILED, "Resolver document was not applied.")
+}
+
+// dnsRecorded reports whether this process applied this exact document.
+func (e *Engine) dnsRecorded(ref api.ResolverDocumentRef) bool {
+	return e.appliedDNS.ok && e.appliedDNS.id == ref.DocumentId && strings.EqualFold(e.appliedDNS.hash, ref.ContentSha256)
+}
+
+// guardNamedDNS makes the check flags match the applied record. A desired
+// state that names a document this process has not applied must not reach
+// Decide as "no document".
+func (e *Engine) guardNamedDNS() {
+	if !e.enrolled || e.desired == nil || !e.desiredOK {
+		return
+	}
+	ref, err := e.desired.Dns.ResolverDocument.Get()
+	if err != nil {
+		return
+	}
+	if e.dnsRecorded(ref) && !e.dnsFailed {
+		e.dnsDocument = true
+		return
+	}
+	e.dnsDocument = true
+	if e.dnsFailed && e.dnsEv != nil && e.dnsEv.DocumentId == ref.DocumentId {
+		return
+	}
+	e.appliedDNS = appliedDNS{}
+	e.refuseUnapplied(ref)
+}
+
+// namedDNSUnapplied is true when a fresh probe must not reuse an earlier
+// dns_policy pass. The in-force document is not the recorded apply.
+func (e *Engine) namedDNSUnapplied() bool {
+	if !e.enrolled || e.desired == nil || !e.desiredOK {
+		return false
+	}
+	ref, err := e.desired.Dns.ResolverDocument.Get()
+	if err != nil {
+		return false
+	}
+	return !e.dnsRecorded(ref) || e.dnsFailed
+}
+
 func (e *Engine) noteResolver(ref api.ResolverDocumentRef, body []byte, outcome api.DnsPolicyEvidenceOutcome, code api.ErrorCode, detail string) {
+	e.appliedDNS = appliedDNS{}
 	e.dnsFailed = true
 	e.dnsCode = code
 	e.dnsDetail = detail
@@ -213,6 +285,11 @@ func (e *Engine) noteDNSApply(ref api.ResolverDocumentRef, ev dns.Evidence, body
 	e.dnsFailed = outcome != api.DnsPolicyEvidenceOutcomeApplied
 	e.dnsCode = code
 	e.dnsDetail = detail
+	if outcome == api.DnsPolicyEvidenceOutcomeApplied {
+		e.appliedDNS = appliedDNS{ok: true, id: ref.DocumentId, hash: strings.ToLower(ref.ContentSha256)}
+	} else {
+		e.appliedDNS = appliedDNS{}
+	}
 	hash := strings.ToLower(strings.TrimSpace(ev.DocumentHash))
 	if !shaOK(hash) {
 		hash = heldHash(body, ref)

@@ -31,20 +31,42 @@ type Components struct {
 	Enforcement string `json:"enforcement"`
 }
 
+// ChallengeProbeDest is one exact socket the synthetic probe may reach.
+// AddrV4 is an IPv4 prefix string. The agent accepts only a /32.
+type ChallengeProbeDest struct {
+	AddrV4 string `json:"addr_v4"`
+	Proto  string `json:"proto"`
+	Port   uint16 `json:"port"`
+}
+
+// ChallengeProbe asks the agent to install the §13.9 exception for this
+// check only. The updater names the dedicated test peer. The agent chooses
+// ExpiresAt from the challenge deadline and the 300s cap. A missing probe
+// installs nothing. Fields that are not a /32, a member peer, or an admin
+// port on a node address are refused rather than widened.
+type ChallengeProbe struct {
+	PeerID       string               `json:"peer_id"`
+	SourceV4     string               `json:"source_v4"`
+	Destinations []ChallengeProbeDest `json:"destinations,omitempty"`
+	ResolverDNS  bool                 `json:"resolver_dns,omitempty"`
+}
+
 // Challenge is the updater's per-check challenge. One file is live at a
 // time. A new check overwrites it. Consumed is set only when the updater
 // marks the file instead of removing it; a consumed challenge never matches.
+// Probe is optional. The updater omits it until it names a test peer.
 type Challenge struct {
-	TxnID         string     `json:"txn_id"`
-	Nonce         string     `json:"nonce"`
-	ReleaseID     string     `json:"release_id"`
-	NodeID        string     `json:"node_id"`
-	IncarnationID string     `json:"incarnation_id"`
-	BootID        string     `json:"boot_id"`
-	IssuedAt      time.Time  `json:"issued_at"`
-	ExpiresAt     time.Time  `json:"expires_at"`
-	Components    Components `json:"components"`
-	Consumed      bool       `json:"consumed,omitempty"`
+	TxnID         string          `json:"txn_id"`
+	Nonce         string          `json:"nonce"`
+	ReleaseID     string          `json:"release_id"`
+	NodeID        string          `json:"node_id"`
+	IncarnationID string          `json:"incarnation_id"`
+	BootID        string          `json:"boot_id"`
+	IssuedAt      time.Time       `json:"issued_at"`
+	ExpiresAt     time.Time       `json:"expires_at"`
+	Components    Components      `json:"components"`
+	Consumed      bool            `json:"consumed,omitempty"`
+	Probe         *ChallengeProbe `json:"probe,omitempty"`
 }
 
 // Check is one agent-reported §13.9 result. Status is a HealthCheckStatus.

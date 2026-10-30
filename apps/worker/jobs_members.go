@@ -26,9 +26,9 @@ func WithMembers(ctx context.Context, s *membersruntime.Services) context.Contex
 }
 func members() Domain {
 	return Domain{Name: "members", Build: func(_ context.Context, d Dependencies) (Built, error) {
-		cfg, e := config.LoadMembers(d.Config.MembersConfigFile)
+		cfg, e := config.LoadMembersForIssuer(d.Config.MembersConfigFile, d.Config.OIDCIssuer)
 		if e != nil {
-			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
+			return Built{}, e
 		}
 		identity, e := devices.NewIdentityDiscovery(d.Config.OIDCIssuer, d.Metrics, d.Logger)
 		if e != nil {
@@ -36,11 +36,10 @@ func members() Domain {
 		}
 		// The nodes domain supplies its configured compiler through WithCompiler
 		// before dispatch (D-026); building members does not depend on its order.
-		services, e := membersruntime.New(d.Pool, cfg, nil)
+		services, e := membersruntime.New(d.Pool, cfg, identity, nil)
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
 		}
-		services.Adapter.Identity = identity
 		return Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }, Runners: []func(context.Context) error{func(ctx context.Context) error { return RunMemberSchedule(ctx, services) }}}, nil
 	}}
 }

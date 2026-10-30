@@ -142,7 +142,8 @@ response; 202 is acceptance, never completion.
 | Rolled back to unsupported/revoked release | `MINIMUM_VERSION_VIOLATION`, persist recovery attention; forwarding stays forbidden |
 | Rolled back without a verified, trusted, readable restored manifest, restored health, candidate ID/failure, or membership in a nonempty rollback allowlist | Reject; never count rollback as target success |
 | Older applying/checking job finishes | Finish that job's ledger, ACK as history, leave newest pointer/generation intact |
-| Superseded/terminal job reports late, progress goes backwards, already_current arrives after download began, or rollback arrives before applying | Append history; preserve terminal ledger/current pointer |
+| Superseded/terminal job reports late, progress goes backwards, or already_current arrives after download began | Append history; preserve terminal ledger/current pointer |
+| Validated succeeded/failed/rolled_back result for the current job arrives while its ledger is still queued | Commit the terminal job/target state and normal current-result ACK; no earlier progress delivery is required |
 | Current terminal result with a strictly greater update generation than the observation | Advance actual and last-good release when supported by result evidence, even if a routine pre-switch heartbeat arrived after authorization |
 | Heartbeat already carries the same or a newer update generation | Save result and ACK; preserve the heartbeat observation and return `applied_to_current_observation=false` |
 | Report claims forwarding while disabled, disruptive, unsupported or recovery-required | `NODE_NOT_SERVICEABLE`; never rewrite publication intent |
@@ -152,6 +153,32 @@ batch projection and audit commit before an ACK is returned. The result digest
 available in the existing contract is `manifest_sha256`; there is no separate
 artifact-digest field in `UpdateResult`. Actual artifact verification belongs to
 the updater, and its test evidence must accompany release qualification.
+
+The updater can deliver only its durable terminal result after completing the
+local transaction (§13.6, §13.10.3; AT26). A current `rolled_back` result therefore
+closes a queued target with its restored release, original failure code and the
+existing attention/counting rules. `accepted_as_history=false` does not imply
+`applied_to_current_observation=true`: an equal/newer generation heartbeat remains
+authoritative. A later authenticated observation clears `unconfirmed` normally.
+
+Heartbeat ingestion does not promote job phases. Result acceptance is independent
+of that optional progress path. The base SQL guard permits rollback only from
+applying/checking; after all result evidence validation, the result transaction
+traverses applying and writes the final rollback in the same savepoint. Only the
+terminal state is committed, with one result receipt and its audit. It does not
+invent a progress report, loosen a database guard, or publish an intermediate
+batch state. Rejected evidence, superseded jobs and frozen terminal jobs never
+enter this transition.
+
+An ACK already stored as history before this correction remains immutable on
+replay. It does not repair that older queued target retroactively. Start a fresh
+batch to exercise the corrected producer path; do not edit a sealed result or
+rewrite its original receipt.
+
+`testdata/at26-direct-rollback.json` in the fleetupdate package is the unchanged
+AT26 producer capture, including passing restored checks and failed candidate
+tunnel probe. The regression rebinds only job/release identity and authorization
+times to isolated test data; it sends no applying/checking result before rollback.
 
 ## Counting example (§13.12)
 
