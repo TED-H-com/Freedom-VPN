@@ -13,24 +13,87 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+type adminIdentityRow struct {
+	id          uuid.UUID
+	clientScope string
+}
+
+func lookupAdminIdentities(ctx context.Context, tx pgx.Tx, canonIssuer, rawIssuer, subject string) ([]adminIdentityRow, error) {
+	rows, err := tx.Query(ctx, `SELECT id,client_scope FROM admin_identities WHERE (issuer=$1 OR issuer=$2) AND subject=$3 ORDER BY created_at ASC,id ASC LIMIT 2`, canonIssuer, rawIssuer, subject)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []adminIdentityRow
+	for rows.Next() {
+		var r adminIdentityRow
+		if err := rows.Scan(&r.id, &r.clientScope); err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
 // loginAdmin shares no membership identity or session rows (§16.1, D-032).
-func (s PostgresStore) loginAdmin(ctx context.Context, i Identity, token, old string, absolute time.Duration, request uuid.UUID) (p Principal, err error) {
+func (s PostgresStore) loginAdmin(ctx context.Context, i Identity, rawIssuer, token, old string, absolute time.Duration, request uuid.UUID) (p Principal, err error) {
 	if !i.MFA {
 		return p, apierr.New(apierr.Forbidden, "Administrator MFA required.")
 	}
 	p = Principal{Role: Admin, DisplayLabel: i.Label, MFAVerified: true, AuthenticatedAt: i.AuthTime}
 	err = db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		scoped, _ := json.Marshal([]string{"admin", i.Issuer, i.ClientScope, i.Subject})
+		scoped, _ := json.Marshal([]string{"admin", i.Issuer, i.Subject})
 		if _, e := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, string(scoped)); e != nil {
 			return e
 		}
-		e := tx.QueryRow(ctx, `SELECT id FROM admin_identities WHERE issuer=$1 AND client_scope=$2 AND subject=$3`, i.Issuer, i.ClientScope, i.Subject).Scan(&p.ID)
-		if errors.Is(e, pgx.ErrNoRows) {
-			p.ID = uuid.Must(uuid.NewV7())
-			_, e = tx.Exec(ctx, `INSERT INTO admin_identities(id,issuer,client_scope,subject) VALUES($1,$2,$3,$4)`, p.ID, i.Issuer, i.ClientScope, i.Subject)
-		}
+		found, e := lookupAdminIdentities(ctx, tx, i.Issuer, rawIssuer, i.Subject)
 		if e != nil {
 			return e
+		}
+		if len(found) > 1 {
+			return apierr.New(apierr.Forbidden, "Administrator identity is ambiguous.")
+		}
+		if len(found) == 1 {
+			p.ID = found[0].id
+			if found[0].clientScope != i.ClientScope {
+				if _, e = tx.Exec(ctx, `UPDATE admin_identities SET client_scope=$2 WHERE id=$1`, p.ID, i.ClientScope); e != nil {
+					return e
+				}
+			}
+		} else {
+			if _, e = tx.Exec(ctx, `SAVEPOINT auth_register_admin`); e != nil {
+				return e
+			}
+			adminID := uuid.Must(uuid.NewV7())
+			_, e = tx.Exec(ctx, `INSERT INTO admin_identities(id,issuer,client_scope,subject) VALUES($1,$2,$3,$4)`, adminID, i.Issuer, i.ClientScope, i.Subject)
+			if isUniqueViolation(e) {
+				if _, rbErr := tx.Exec(ctx, `ROLLBACK TO SAVEPOINT auth_register_admin`); rbErr != nil {
+					return rbErr
+				}
+				if _, rlErr := tx.Exec(ctx, `RELEASE SAVEPOINT auth_register_admin`); rlErr != nil {
+					return rlErr
+				}
+				rechecked, selErr := lookupAdminIdentities(ctx, tx, i.Issuer, rawIssuer, i.Subject)
+				if selErr != nil {
+					return selErr
+				}
+				if len(rechecked) != 1 {
+					return apierr.New(apierr.Forbidden, "Administrator identity is ambiguous.")
+				}
+				p.ID = rechecked[0].id
+				if rechecked[0].clientScope != i.ClientScope {
+					if _, e = tx.Exec(ctx, `UPDATE admin_identities SET client_scope=$2 WHERE id=$1`, p.ID, i.ClientScope); e != nil {
+						return e
+					}
+				}
+			} else if e != nil {
+				return e
+			} else {
+				p.ID = adminID
+				if _, e = tx.Exec(ctx, `RELEASE SAVEPOINT auth_register_admin`); e != nil {
+					return e
+				}
+			}
 		}
 		if old != "" {
 			var oldAdminID uuid.UUID

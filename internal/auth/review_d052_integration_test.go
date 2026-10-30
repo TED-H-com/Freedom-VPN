@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -196,4 +198,225 @@ func TestReview_F11_CrossPrincipalSessionOverwriteUnauditedAndAdminClaimBlocksMe
 			t.Errorf("[F-11]: dual-role user requesting /auth/login?role=member&return_to=/member/devices received %d identity_bindings rows (forced into Admin role); want 1 member identity_binding for D-052", bindings)
 		}
 	})
+}
+
+func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testing.T) {
+	schemas := []struct {
+		name               string
+		ddl                string
+		expectUpdatedScope bool
+	}{
+		{
+			name: "current_schema",
+		},
+		{
+			name: "migration_00183_issuer_subject_unique",
+			ddl:  `ALTER TABLE identity_bindings ADD CONSTRAINT identity_bindings_issuer_subject_key UNIQUE (issuer, subject);`,
+		},
+		{
+			name: "migration_00183_with_mutable_client_scope",
+			ddl: `
+				ALTER TABLE identity_bindings ADD CONSTRAINT identity_bindings_issuer_subject_key UNIQUE (issuer, subject);
+				DROP TRIGGER identity_bindings_identity ON identity_bindings;
+				CREATE TRIGGER identity_bindings_identity BEFORE UPDATE ON identity_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','issuer','subject');
+			`,
+			expectUpdatedScope: true,
+		},
+	}
+
+	for _, sc := range schemas {
+		t.Run(sc.name, func(t *testing.T) {
+			pool := dbtest.New(t)
+			ctx := t.Context()
+			if sc.ddl != "" {
+				if _, err := pool.Exec(ctx, sc.ddl); err != nil {
+					t.Fatal(err)
+				}
+			}
+			store := PostgresStore{Pool: pool}
+			now := time.Now().UTC()
+
+			// 1. Client-scope rotation and issuer canonicalization keep the same member and leave 1 binding.
+			sub := "f04-member-subject-" + sc.name
+			idV1 := Identity{
+				Issuer:      "https://idp.example.invalid/dex",
+				ClientScope: "portal-v1",
+				Subject:     sub,
+				Label:       "F04 Member",
+				Role:        Member,
+				AuthTime:    now,
+				Expires:     now.Add(time.Hour),
+			}
+			p1, err := store.Login(ctx, idV1, randomToken(), "", time.Hour, uuid.New())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			idV2 := idV1
+			idV2.Issuer = "https://IDP.Example.Invalid:443/dex/"
+			idV2.ClientScope = "portal-v2"
+			p2, err := store.Login(ctx, idV2, randomToken(), "", time.Hour, uuid.New())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p2.ID != p1.ID {
+				t.Fatalf("client_scope rotation created second member: got %s, want %s", p2.ID, p1.ID)
+			}
+
+			var bindingCount int
+			var recordedScope string
+			if err := pool.QueryRow(ctx, `SELECT count(*), min(client_scope) FROM identity_bindings WHERE subject=$1`, sub).Scan(&bindingCount, &recordedScope); err != nil {
+				t.Fatal(err)
+			}
+			if bindingCount != 1 {
+				t.Fatalf("expected 1 identity_binding for subject %q, got %d", sub, bindingCount)
+			}
+			if sc.expectUpdatedScope && recordedScope != "portal-v2" {
+				t.Fatalf("expected client_scope updated to portal-v2, got %q", recordedScope)
+			}
+
+			// 2. Audit event on reused binding with rotated client_scope stays on D-029 allowlist without raw subject/issuer.
+			var proofAudits int
+			var beforeRaw, afterRaw string
+			if err := pool.QueryRow(ctx, `SELECT count(*), coalesce(min(before_diff::text),''), coalesce(min(after_diff::text),'') FROM audit_events WHERE action='identity_binding.proof_updated' AND actor=$1 AND resource=$2 AND result='succeeded' AND after_diff->>'reason'='proof_updated' AND coalesce(after_diff->>'identity_binding_id','') <> ''`, p1.ID.String(), "member:"+p1.ID.String()).Scan(&proofAudits, &beforeRaw, &afterRaw); err != nil {
+				t.Fatal(err)
+			}
+			if proofAudits != 1 {
+				t.Fatalf("expected 1 identity_binding.proof_updated audit event, got %d", proofAudits)
+			}
+			var afterMap map[string]any
+			if err := json.Unmarshal([]byte(afterRaw), &afterMap); err != nil {
+				t.Fatal(err)
+			}
+			for k := range afterMap {
+				if k != "identity_binding_id" && k != "reason" {
+					t.Fatalf("unexpected non-allowlisted key %q in identity_binding.proof_updated after_diff: %s", k, afterRaw)
+				}
+			}
+			combinedAudit := beforeRaw + " " + afterRaw
+			if strings.Contains(combinedAudit, sub) || strings.Contains(combinedAudit, "idp.example.invalid") || strings.Contains(combinedAudit, "portal-v") {
+				t.Fatalf("identity_binding.proof_updated audit leaked raw identity fields: %s", combinedAudit)
+			}
+
+			// 3. Racing first-time logins across client scopes yield one member and one binding.
+			raceSub := "f04-race-subject-" + sc.name
+			const racers = 8
+			start := make(chan struct{})
+			var wg sync.WaitGroup
+			memberIDs := make(chan uuid.UUID, racers)
+			errs := make(chan error, racers)
+			for i := 0; i < racers; i++ {
+				scope := "portal-v1"
+				if i%2 == 1 {
+					scope = "portal-v2"
+				}
+				wg.Add(1)
+				go func(clientScope string) {
+					defer wg.Done()
+					<-start
+					p, err := store.Login(ctx, Identity{
+						Issuer:      "https://idp.example.invalid/dex",
+						ClientScope: clientScope,
+						Subject:     raceSub,
+						Label:       "Race Member",
+						Role:        Member,
+						AuthTime:    now,
+						Expires:     now.Add(time.Hour),
+					}, randomToken(), "", time.Hour, uuid.New())
+					if err != nil {
+						errs <- err
+						return
+					}
+					memberIDs <- p.ID
+				}(scope)
+			}
+			close(start)
+			wg.Wait()
+			close(memberIDs)
+			close(errs)
+			for err := range errs {
+				t.Fatalf("concurrent login error: %v", err)
+			}
+			var raceMemberID uuid.UUID
+			for id := range memberIDs {
+				if raceMemberID == uuid.Nil {
+					raceMemberID = id
+				} else if id != raceMemberID {
+					t.Fatalf("racing first logins created distinct members: %s vs %s", raceMemberID, id)
+				}
+			}
+			var raceBindings int
+			var raceScope string
+			if err := pool.QueryRow(ctx, `SELECT count(*), min(client_scope) FROM identity_bindings WHERE subject=$1`, raceSub).Scan(&raceBindings, &raceScope); err != nil {
+				t.Fatal(err)
+			}
+			if raceBindings != 1 {
+				t.Fatalf("expected 1 binding after racing first logins, got %d", raceBindings)
+			}
+
+			// Also verify the unique-violation (23505) savepoint retry path directly when an insert collides with the existing unique key.
+			collisionScope := raceScope
+			if sc.ddl != "" {
+				collisionScope = "portal-v3"
+			}
+			tx, err := pool.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() { _ = tx.Rollback(ctx) }()
+			recoveredID, created, err := insertOrSelectMemberBinding(ctx, tx, Identity{
+				Issuer:      "https://idp.example.invalid/dex",
+				ClientScope: collisionScope,
+				Subject:     raceSub,
+				Label:       "Race Member",
+				Role:        Member,
+			}, "https://idp.example.invalid/dex", uuid.New())
+			if err != nil {
+				t.Fatalf("insertOrSelectMemberBinding on existing unique key failed: %v", err)
+			}
+			if created || recoveredID != raceMemberID {
+				t.Fatalf("insertOrSelectMemberBinding = (%s, created=%v), want (%s, created=false)", recoveredID, created, raceMemberID)
+			}
+
+			// 4. Admin identities also resolve by canonical (issuer, subject) across client_scope rotation.
+			adminSub := "f04-admin-subject-" + sc.name
+			admin1, err := store.Login(ctx, Identity{
+				Issuer:      "https://idp.example.invalid/dex",
+				ClientScope: "portal-v1",
+				Subject:     adminSub,
+				Label:       "F04 Admin",
+				Role:        Admin,
+				MFA:         true,
+				AuthTime:    now,
+				Expires:     now.Add(time.Hour),
+			}, randomToken(), "", time.Hour, uuid.New())
+			if err != nil {
+				t.Fatal(err)
+			}
+			admin2, err := store.Login(ctx, Identity{
+				Issuer:      "https://IDP.Example.Invalid:443/dex/",
+				ClientScope: "portal-v2",
+				Subject:     adminSub,
+				Label:       "F04 Admin",
+				Role:        Admin,
+				MFA:         true,
+				AuthTime:    now,
+				Expires:     now.Add(time.Hour),
+			}, randomToken(), "", time.Hour, uuid.New())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if admin2.ID != admin1.ID {
+				t.Fatalf("admin client_scope rotation created second admin identity: %s vs %s", admin2.ID, admin1.ID)
+			}
+			var adminCount int
+			var adminScope string
+			if err := pool.QueryRow(ctx, `SELECT count(*), min(client_scope) FROM admin_identities WHERE subject=$1`, adminSub).Scan(&adminCount, &adminScope); err != nil {
+				t.Fatal(err)
+			}
+			if adminCount != 1 || adminScope != "portal-v2" {
+				t.Fatalf("admin_identities count=%d scope=%q, want count=1 scope=portal-v2", adminCount, adminScope)
+			}
+		})
+	}
 }
