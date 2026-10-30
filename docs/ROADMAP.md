@@ -157,6 +157,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-contracts-r8: TestDNS03 encodes the generated NodeDetail directly (no source-text guard on the nodes wrapper); README names dnspolicy.ValidateAttributionNote | WP02 | done (#119) |
 | w3-contracts-r9: revision 7 (API 1.3.0) UpdateTarget previous_release_id/health/candidate_health; controlgen separator; step-message vocabulary documented | WP02 | done (#131) |
 | w3-contracts-r10: revision 8 (API 1.4.0) — ErrorCode carries all twelve node enforcement verification reasons (agent heartbeats with ISOLATION_POLICY_INVALID etc. validate); apierr mirror; portal messages; handover version statements | WP02 | done (#164) |
+| w3-contracts-r11: revision 9 (API 1.5.0, 46 operations) — fleet configuration admin resource: GET/PUT /admin/fleet-config for max_offline_lease_seconds with If-Match precondition and audit (D-065) | WP02 | done (#176) |
 | w3-wire-nodes follow-up 5: worker execution of node.publication_changed via exits.ExecuteOperation, applied-policy evidence on update targets (D-048) | WP04, WP05, WP09 | done (#60; worker executes node.publication_changed through the exits executor with a real NetBird adapter; UpdateTarget policy evidence populated) |
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
