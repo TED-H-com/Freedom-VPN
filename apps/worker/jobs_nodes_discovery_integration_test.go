@@ -208,9 +208,18 @@ func (f *discoveryWorker) observe(t *testing.T, present bool) {
 
 func TestAT06_D055_NullObservationDiscoversManagementPeer(t *testing.T) {
 	f := newDiscoveryWorker(t)
+	// First provisioning-triggered attempt sees the unused key. The same event
+	// recovers after management registration, without another key or group.
+	id := f.dispatch(t, "node.peer.discover")
+	var pending bool
+	if err := f.r.Pool.QueryRow(t.Context(), `SELECT delivered_at IS NULL AND dead_lettered_at IS NULL AND attempt=1 FROM outbox_events WHERE id=$1`, id).Scan(&pending); err != nil || !pending {
+		t.Fatal(pending, err)
+	}
 	f.fake.useKey("TEST-peer")
 	f.observe(t, false)
-	id := f.dispatch(t, "node.peer.discover")
+	if replay := f.dispatch(t, "node.peer.discover"); replay != id {
+		t.Fatal("discovery event was replaced")
+	}
 	var peer, deployment string
 	if err := f.r.Pool.QueryRow(t.Context(), `SELECT peer_id,deployment_id FROM node_incarnations WHERE id=$1`, f.report.NodeIncarnationId).Scan(&peer, &deployment); err != nil || peer != "TEST-peer" || deployment != f.r.Config.NetBirdDeployment {
 		t.Fatal(peer, deployment, err)

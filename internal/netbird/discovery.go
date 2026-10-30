@@ -111,7 +111,8 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 			if err != nil {
 				return Peer{}, err
 			}
-			if !ok || !slices.Equal(ids(key["auto_groups"]), sorted([]string{shared.ExternalID, stringField(group, "id")})) {
+			autoGroups, groupsOK := key["auto_groups"].([]any)
+			if !ok || !groupsOK || len(autoGroups) != 2 || !slices.Equal(ids(key["auto_groups"]), sorted([]string{shared.ExternalID, stringField(group, "id")})) {
 				return Peer{}, discoveryConflict("setup_key_groups_changed")
 			}
 		}

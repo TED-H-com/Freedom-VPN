@@ -615,7 +615,8 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 	if e != nil {
 		return SetupKey{}, e
 	}
-	if stringField(observed, "name") != name || stringField(observed, "type") != "one-off" || observed["usage_limit"] != float64(1) || observed["ephemeral"] != false || !slices.Equal(ids(observed["auto_groups"]), groups) {
+	autoGroups, groupsOK := observed["auto_groups"].([]any)
+	if !groupsOK || len(autoGroups) != 2 || stringField(observed, "name") != name || stringField(observed, "type") != "one-off" || observed["usage_limit"] != float64(1) || observed["ephemeral"] != false || !slices.Equal(ids(observed["auto_groups"]), groups) {
 		return SetupKey{}, failure(Unconfirmed)
 	}
 	if result.SecretAvailable {

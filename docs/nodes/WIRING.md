@@ -180,6 +180,10 @@ the adapter binding, then fences the central projection again after read-back.
 A consumed key may have management state `overused` (the one-off limit has been
 reached) or expire while the peer remains enrolled; exactly one use is accepted,
 while a revoked key is rejected. See the [adapter protocol](../../internal/netbird/DISCOVERY.md).
+Previously issued one-group keys cannot prove this correlation retroactively;
+those attempts require explicit revocation and a new authorized enrollment.
+The lab must consume the product-issued two-group key, not a manually supplied
+setup key or a peer mapping inferred from a name/address.
 
 `nodes.NetBirdBindings` aliases `devices.NetBirdBindings`, sharing the
 [member/device binding convention](../members/README.md#netbird-binding-and-lock-namespace-convention):

@@ -65,7 +65,7 @@ func TestAT06_DiscoverNodePeerManagementCorrelation(t *testing.T) {
 }
 
 func TestAT06_DiscoveryConflictNeverBinds(t *testing.T) {
-	for _, scenario := range []string{"two_peers", "reused_key", "user_peer", "ephemeral_peer", "policy_group", "route_group", "revoked", "no_key_use"} {
+	for _, scenario := range []string{"two_peers", "reused_key", "user_peer", "ephemeral_peer", "policy_group", "route_group", "revoked", "no_key_use", "changed_groups", "duplicate_groups"} {
 		t.Run(scenario, func(t *testing.T) {
 			f, c, key, _, correlation := discoveryFixture(t)
 			f.objects["setup-keys"][key.ID]["used_times"] = float64(1)
@@ -85,6 +85,10 @@ func TestAT06_DiscoveryConflictNeverBinds(t *testing.T) {
 				f.objects["routes"]["TEST-route"] = decodeObject(object{"peer_groups": []string{correlation}})
 			case "revoked":
 				f.objects["setup-keys"][key.ID]["revoked"] = true
+			case "changed_groups":
+				f.objects["setup-keys"][key.ID]["auto_groups"] = []any{correlation}
+			case "duplicate_groups":
+				f.objects["setup-keys"][key.ID]["auto_groups"] = append(f.objects["setup-keys"][key.ID]["auto_groups"].([]any), correlation)
 			case "no_key_use":
 				f.objects["setup-keys"][key.ID]["used_times"] = float64(0)
 			}
