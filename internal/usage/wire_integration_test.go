@@ -1081,3 +1081,52 @@ func TestMigration00131_UsageBatchReplayGooseUpDownRoundTrip(t *testing.T) {
 		t.Fatalf("expected usage_batch_replays to exist after Up(all): exists=%v err=%v", exists, err)
 	}
 }
+
+// TestSubmitUsageBatchTwoMiBWhitespaceAccepted posts one valid event padded
+// with JSON whitespace to 2 MiB. The contract response is HTTP 200; the event
+// result status is accepted and the contiguous ACK advances.
+func TestSubmitUsageBatchTwoMiBWhitespaceAccepted(t *testing.T) {
+	st := newUsageHTTPStack(t)
+	meterEpoch := uuid.New()
+	id := usage.NodeIdentity{NodeID: st.node1, NodeIncarnationID: st.inc1}
+	base := time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)
+	ev := makeSignedEvent(t, id, 1, meterEpoch, base, base.Add(time.Minute), api.UsageQualityComplete, nil, []api.UsageRecord{{
+		MemberId:        st.memberA,
+		DeviceId:        st.deviceA,
+		BindingRevision: 1,
+		PeriodId:        "2026-10",
+		UploadBytes:     1000,
+		DownloadBytes:   2000,
+	}})
+	raw, err := json.Marshal(api.UsageBatchRequest{
+		NodeId:            openapi_types.UUID(st.node1),
+		NodeIncarnationId: openapi_types.UUID(st.inc1),
+		LedgerEpoch:       presence.NewNullNullable[openapi_types.UUID](),
+		Events:            []api.UsageEvent{ev},
+	})
+	if err != nil {
+		t.Fatalf("marshal batch: %v", err)
+	}
+	const size = 2 << 20
+	if len(raw) >= size || raw[0] != '{' {
+		t.Fatalf("fixture length %d", len(raw))
+	}
+	body := make([]byte, 0, size)
+	body = append(body, '{')
+	body = append(body, bytes.Repeat([]byte{' '}, size-len(raw))...)
+	body = append(body, raw[1:]...)
+	w := st.doAgent(t, http.MethodPost, "/api/v1/agent/usage-batches", string(body), "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("status=%d body=%s", w.Code, w.Body.String())
+	}
+	var resp api.UsageBatchResult
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if len(resp.Results) != 1 || resp.Results[0].Status != api.UsageEventResultStatusAccepted {
+		t.Fatalf("results=%+v", resp.Results)
+	}
+	if resp.HighestContiguousSeq != decstr.U64(1) {
+		t.Fatalf("highest_contiguous_seq=%s", resp.HighestContiguousSeq)
+	}
+}

@@ -34,7 +34,7 @@ and security headers → contract route/listener classification and per-peer ing
 limits → session or machine
 authentication → role/MFA checks → per-principal rate and concurrency buckets →
 Origin/CSRF and recent admin authentication → required key/If-Match headers →
-body limit → strict JSON syntax and schema validation → machine identity consistency
+class body cap (413 above it) → JSON well-formedness (400) → schema validation (422) → machine identity consistency
 → generated strict binding → command transaction/replay → domain handler.
 
 Access logs contain only central request ID, normalized route template, status
@@ -64,8 +64,27 @@ for browser, agent control, heartbeat, lease and usage traffic; anonymous
 enrollment and webhooks have another bucket on that same address key. The
 loaded operation ids `EnrollNode` and `ReceiveProviderWebhook` use the
 anonymous class, `SubmitObservation` uses heartbeat, `RenewServingLease` uses
-lease, and `SubmitUsageBatch` uses usage. Auth routes are additionally
-bounded per connection address. Limits are
+lease, and `SubmitUsageBatch` uses usage. Body caps are separate from those
+rate buckets. Browser writes use `browser_body_bytes` (default 1 MiB). Agent
+control, heartbeat, lease renewal, and anonymous enrollment use
+`agent_body_bytes` (default 1 MiB). Provider webhooks use
+`webhook_body_bytes` (default 1 MiB). Usage batches use `usage_body_bytes`
+(default 8 MiB). A body larger than its class cap is HTTP 413
+`PAYLOAD_TOO_LARGE` (`Request body exceeds the configured limit.`) and the
+extra byte is not parsed. A body within the cap then passes a JSON
+well-formedness check, except webhook bodies, which stay raw for provider
+signature verification. Up to `canonjson.MaxBytes` (1 MiB, the signed
+canonical-document bound) the check is `canonjson.Canonicalize`. Above that
+bound, and only through the class cap, one `json.Decoder` over a
+`LimitReader` accepts a single JSON value and rejects trailing data. A
+failure is HTTP 400 `MALFORMED_REQUEST` (`Invalid JSON document.`). Schema
+validation follows (422 `VALIDATION_FAILED`). Machine-identity comparison
+then reads the parsed body, including nested usage events, and returns 403
+`INCARNATION_MISMATCH` when a node or incarnation field differs from the
+certificate. `fvpn_control_rate_limited_total` counts HTTP 429 responses
+only.
+
+Auth routes are additionally bounded per connection address. Limits are
 per process, with a bounded principal map; deployment replicas multiply capacity.
 If horizontally scaling, budget limits across replicas or add a shared limiter.
 A saturated limiter returns 429 with `Retry-After`, never acknowledges work.
