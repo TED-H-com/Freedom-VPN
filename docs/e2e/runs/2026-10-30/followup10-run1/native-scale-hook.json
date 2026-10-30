@@ -1,0 +1,23 @@
+{
+  "id": "native-scale-hook",
+  "title": "60 simultaneous native peers: gateway budget and protected streams",
+  "spec": [
+    "§8",
+    "§19 AT12",
+    "SECOPS-10"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "counts",
+      "detail": "{\"Users\":20,\"Peers\":60,\"IdentityMatches\":60,\"Authorized\":60,\"ScannedLogs\":60,\"ProtectedLogs\":60,\"SimultaneousAuthorized\":60}"
+    },
+    {
+      "name": "scope",
+      "detail": "20 users x 3 native peers on the existing compose/network/image; each identity and authorized device checked. Capacity is a lab budget, not a production hardware claim."
+    }
+  ],
+  "at": "2026-10-30T09:58:01Z",
+  "run_id": "cfda038f-dc18-4371-8047-a4d34954066f",
+  "source_commit": "2eeda9df03749b942c6f5afde6a7bc3a2ba8fce3"
+}

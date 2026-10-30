@@ -1,6 +1,6 @@
 {
   "id": "native-scale-hook",
-  "title": "Native scale hook smoke: distinct users and peers",
+  "title": "60 simultaneous native peers: gateway budget and protected streams",
   "spec": [
     "§8",
     "§19 AT12",
@@ -10,14 +10,14 @@
   "observations": [
     {
       "name": "counts",
-      "detail": "{\"Users\":2,\"Peers\":4,\"IdentityMatches\":4,\"Authorized\":4}"
+      "detail": "{\"Users\":20,\"Peers\":60,\"IdentityMatches\":60,\"Authorized\":60,\"ScannedLogs\":60,\"ProtectedLogs\":60,\"SimultaneousAuthorized\":60}"
     },
     {
       "name": "scope",
-      "detail": "2 users x 2 native peers validates the hook; 20 x 3 load is not executed or claimed. The same existing compose/network/image is used."
+      "detail": "20 users x 3 native peers on the existing compose/network/image; each identity and authorized device checked. Capacity is a lab budget, not a production hardware claim."
     }
   ],
-  "at": "2026-10-30T07:46:09Z",
-  "run_id": "22c14cd9-39fc-444b-a7c5-c04cf3ffbff6",
-  "source_commit": "43176b8860bf90970e96b100c1ba4e957f09363d"
+  "at": "2026-10-30T16:31:48Z",
+  "run_id": "3a129919-af3f-4bc9-b54a-8075eae8af45",
+  "source_commit": "79259af1facc1faa798fbb83cc20aa4e74539d1f"
 }
