@@ -252,7 +252,10 @@ claim full AT22. No feed is fetched from the public Internet.
   subject alone is still insufficient evidence of device authorization.
 - Publication must complete its operation, including NetBird route read-back.
   `ready` and a 202 response alone do not prove publication. See `publish` for
-  the exact stored node/observation values and each operation step.
+  the exact stored node/observation values and each operation step. An empty
+  `exit_groups` input prevents the production adapter from publishing a paid
+  route; the missing admin group/exit attachment path is D-057 (contracts
+  revision 5, then central exit wiring). The lab records that count.
 - Member forwarding counts only `fvmb0` accepts in the `inet fvpn` forward
   chain. An `fvnb0` accept or an unrelated chain does not count. Exact usage
   acceptance needs a projected desired-state binding covering the uploaded
