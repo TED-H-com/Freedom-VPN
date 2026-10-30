@@ -54,8 +54,7 @@ type Config struct {
 	// JSON still has to say management is connected.
 	NetbirdStatusFile string `json:"netbird_status_file"`
 	// EgressProbeTarget is host:port for the data-path probe. Empty skips
-	// that leg. Desired state cannot name a target until the contract grows
-	// a field; this setting is the stand-in (§13.9).
+	// that leg. A non-null signed egress_probe replaces it (D-058).
 	EgressProbeTarget string `json:"egress_probe_target"`
 	UpdaterRecover    string `json:"updater_recover"`
 	UpdaterConfig     string `json:"updater_config"`

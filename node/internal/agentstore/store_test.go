@@ -2,8 +2,12 @@ package agentstore
 
 import (
 	"context"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
 	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -127,5 +131,92 @@ func TestStoreRoundTripAndStaleGeneration(t *testing.T) {
 	pending, err = s.Pending(ctx)
 	if err != nil || len(pending) != 0 {
 		t.Fatal(pending, err)
+	}
+}
+
+func TestResolverCacheSurvivesReopen(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "agent.db")
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []byte(`{"kind":"resolver_document"}`)
+	sum := sha256.Sum256(body)
+	hash := hex.EncodeToString(sum[:])
+	id := "01900000-0000-7000-8000-000000000056"
+	if err := s.PutResolverCache(ctx, id, hash, body); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.PutResolverCache(ctx, id, strings.Repeat("ab", 32), body); err == nil {
+		t.Fatal("wrong hash was stored")
+	}
+	var version int
+	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&version); err != nil || version != 2 {
+		t.Fatalf("version %d %v", version, err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	s, err = Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	got, ok, err := s.ResolverCache(ctx, id)
+	if err != nil || !ok || string(got) != string(body) {
+		t.Fatalf("%q %v %v", got, ok, err)
+	}
+	if _, ok, err = s.ResolverCache(ctx, "other"); err != nil || ok {
+		t.Fatalf("miss %v %v", ok, err)
+	}
+	if _, err := s.db.ExecContext(ctx, `UPDATE resolver_cache SET content_sha256 = ? WHERE document_id = ?`, strings.Repeat("cd", 32), id); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, err = s.ResolverCache(ctx, id); err != nil || ok {
+		t.Fatalf("damaged row %v %v", ok, err)
+	}
+}
+
+func TestResolverCacheMigratesFromV1(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "agent.db")
+	db, err := sql.Open("sqlite", "file:"+path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE schema_migrations (
+		version INTEGER PRIMARY KEY,
+		name TEXT NOT NULL,
+		applied_at TEXT NOT NULL)`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO schema_migrations (version, name, applied_at) VALUES (1, 'agent_core', '2026-01-01T00:00:00Z')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`PRAGMA user_version = 1`); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	var version int
+	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&version); err != nil || version != schemaVersion {
+		t.Fatalf("version %d %v", version, err)
+	}
+	body := []byte("cached-document")
+	sum := sha256.Sum256(body)
+	hash := hex.EncodeToString(sum[:])
+	if err := s.PutResolverCache(ctx, "doc-1", hash, body); err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err := s.ResolverCache(ctx, "doc-1")
+	if err != nil || !ok || string(got) != string(body) {
+		t.Fatalf("%q %v %v", got, ok, err)
 	}
 }
