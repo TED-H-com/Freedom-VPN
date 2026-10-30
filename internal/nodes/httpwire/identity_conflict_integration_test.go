@@ -605,3 +605,246 @@ func TestD072_ClonedIdentityConflictRoamingFreezeAuditAndReenroll(t *testing.T) 
 		t.Fatalf("new incarnation should be unfrozen after observation: frozen=%v err=%v", newFrozen, err)
 	}
 }
+
+func assertIdentityConflictJSONKeys(t *testing.T, rawNodeDetail []byte, wantNull bool) {
+	t.Helper()
+	var doc map[string]any
+	if err := json.Unmarshal(rawNodeDetail, &doc); err != nil {
+		t.Fatalf("unmarshal NodeDetail JSON: %v", err)
+	}
+	rawVal, present := doc["identity_conflict"]
+	if !present {
+		t.Fatalf("NodeDetail JSON is missing required projected field identity_conflict: %s", string(rawNodeDetail))
+	}
+	if wantNull {
+		if rawVal != nil {
+			t.Fatalf("identity_conflict = %#v, want null", rawVal)
+		}
+		return
+	}
+	obj, ok := rawVal.(map[string]any)
+	if !ok {
+		t.Fatalf("identity_conflict = %#v, want JSON object", rawVal)
+	}
+	if len(obj) != 3 {
+		t.Fatalf("identity_conflict JSON object must have exactly 3 keys, got %d: %#v", len(obj), obj)
+	}
+	for _, k := range []string{"mapping_frozen", "conflict_count", "last_conflict_at"} {
+		if _, exists := obj[k]; !exists {
+			t.Fatalf("identity_conflict JSON object missing key %q: %#v", k, obj)
+		}
+	}
+	for _, forbidden := range []string{"198.51.100", "203.0.113", "endpoint_hash", "previous_hash", "conflicting_hash"} {
+		if strings.Contains(string(rawNodeDetail), forbidden) {
+			t.Fatalf("NodeDetail JSON leaked forbidden string %q: %s", forbidden, string(rawNodeDetail))
+		}
+	}
+}
+
+func TestD072_NodeDetailIdentityConflictProjectionAndETag(t *testing.T) {
+	f := setupWithTrustedProxies(t, []string{"192.0.2.0/24"})
+	ctx := t.Context()
+	vault := f.r.Provider.(*signing.FileProvider)
+	if _, err := vault.Rotate(ctx, signing.Lease, 48*time.Hour, time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := vault.Rotate(ctx, signing.DesiredState, 48*time.Hour, time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	releaseID := seedApprovedRelease(t, f)
+	f.r.Config.DesiredStateSeconds = 3600
+	f.r.Config.DNSResolverIPv4 = []string{"100.64.0.53"}
+	f.r.Config.DNSResolverIPv6 = []string{"2001:db8::53"}
+
+	now := time.Now().UTC().Truncate(time.Second)
+	f.r.Enrollment.SetClock(func() time.Time { return now })
+
+	domainX := "198.51.100.10:50000"
+	domainY := "203.0.113.20:50000"
+
+	// -------------------------------------------------------------------------
+	// (d) Node with no current incarnation -> identity_conflict is null.
+	// -------------------------------------------------------------------------
+	noIncNodeID := uuid.New()
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO nodes (id, lifecycle_state, provisioning_state) VALUES ($1, 'enrolling', 'pending')`, noIncNodeID); err != nil {
+		t.Fatalf("insert enrolling node without current_incarnation_id: %v", err)
+	}
+	wNoInc := f.call("GET", "/api/v1/admin/nodes/"+noIncNodeID.String(), nil, nil, nil)
+	detailNoInc := decode[api.NodeDetail](t, wNoInc, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wNoInc.Body.Bytes(), true)
+	if !detailNoInc.IdentityConflict.IsSpecified() || !detailNoInc.IdentityConflict.IsNull() {
+		t.Fatalf("node with no current incarnation: IdentityConflict = %+v, want specified null", detailNoInc.IdentityConflict)
+	}
+
+	// Enrolled node before any endpoint is observed -> also null.
+	_, enrolled, cert := f.enroll(f.create(nil))
+	wBeforeObs := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, nil)
+	detailBeforeObs := decode[api.NodeDetail](t, wBeforeObs, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wBeforeObs.Body.Bytes(), true)
+	if !detailBeforeObs.IdentityConflict.IsSpecified() || !detailBeforeObs.IdentityConflict.IsNull() {
+		t.Fatalf("enrolled node before first endpoint observation: IdentityConflict = %+v, want specified null", detailBeforeObs.IdentityConflict)
+	}
+	etagBeforeObs := wBeforeObs.Header().Get("ETag")
+	if etagBeforeObs == "" {
+		t.Fatal("expected ETag on GetNode response")
+	}
+	if w304 := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, map[string]string{"If-None-Match": etagBeforeObs}); w304.Code != http.StatusNotModified {
+		t.Fatalf("If-None-Match %s before change = %d, want 304", etagBeforeObs, w304.Code)
+	}
+
+	// -------------------------------------------------------------------------
+	// (a) Enrolled node, no conflict -> {mapping_frozen: false, conflict_count: 0, last_conflict_at: null}.
+	// -------------------------------------------------------------------------
+	now = now.Add(5 * time.Second)
+	leaseReq1 := api.LeaseRenewalRequest{
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  enrolled.NodeId,
+		NodeIncarnationId:       enrolled.NodeIncarnationId,
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+	}
+	decode[api.ServingLeaseEnvelope](t, f.callFrom("POST", "/api/v1/agent/lease-renewals", leaseReq1, cert, domainX, nil), http.StatusOK)
+
+	wNoConflict := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, nil)
+	detailNoConflict := decode[api.NodeDetail](t, wNoConflict, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wNoConflict.Body.Bytes(), false)
+	icA, err := detailNoConflict.IdentityConflict.Get()
+	if err != nil {
+		t.Fatalf("expected non-null identity_conflict in (a): %v", err)
+	}
+	if icA.MappingFrozen || icA.ConflictCount != 0 || !icA.LastConflictAt.IsNull() {
+		t.Fatalf("(a) identity_conflict = %+v, want {false, 0, null}", icA)
+	}
+	etagA := wNoConflict.Header().Get("ETag")
+	if etagA == "" || etagA == etagBeforeObs {
+		t.Fatalf("expected ETag to change when first endpoint row created: before=%q after=%q", etagBeforeObs, etagA)
+	}
+	if w304 := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, map[string]string{"If-None-Match": etagA}); w304.Code != http.StatusNotModified {
+		t.Fatalf("If-None-Match %s in (a) = %d, want 304", etagA, w304.Code)
+	}
+
+	// Verify listNodes / NodeSummary is unchanged and does not project identity_conflict.
+	wList := f.call("GET", "/api/v1/admin/nodes", nil, nil, nil)
+	if wList.Code != http.StatusOK {
+		t.Fatalf("GET /api/v1/admin/nodes = %d", wList.Code)
+	}
+	if strings.Contains(wList.Body.String(), "identity_conflict") {
+		t.Fatalf("listNodes / NodeSummary must not contain identity_conflict: %s", wList.Body.String())
+	}
+
+	// -------------------------------------------------------------------------
+	// (b) & (e) After an interleaving conflict -> {true, 1, <ts>}, ETag changes
+	// across (a)->(b), 304 otherwise; and a second conflict row -> {true, 2, <newer ts>}.
+	// -------------------------------------------------------------------------
+	now = now.Add(10 * time.Second)
+	leaseReq2 := api.LeaseRenewalRequest{
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  enrolled.NodeId,
+		NodeIncarnationId:       enrolled.NodeIncarnationId,
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+	}
+	decode[api.ServingLeaseEnvelope](t, f.callFrom("POST", "/api/v1/agent/lease-renewals", leaseReq2, cert, domainY, nil), http.StatusOK)
+
+	now = now.Add(10 * time.Second)
+	conflict1At := now
+	leaseReq3 := api.LeaseRenewalRequest{
+		RenewalRequestId:        uuid.New(),
+		NodeId:                  enrolled.NodeId,
+		NodeIncarnationId:       enrolled.NodeIncarnationId,
+		CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
+	}
+	decode[api.ServingLeaseEnvelope](t, f.callFrom("POST", "/api/v1/agent/lease-renewals", leaseReq3, cert, domainX, nil), http.StatusOK)
+
+	// Old ETag from (a) must not return 304 now that conflict was recorded.
+	wConflict1 := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, map[string]string{"If-None-Match": etagA})
+	detailConflict1 := decode[api.NodeDetail](t, wConflict1, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wConflict1.Body.Bytes(), false)
+	etagB1 := wConflict1.Header().Get("ETag")
+	if etagB1 == "" || etagB1 == etagA {
+		t.Fatalf("(e) expected ETag to change across (a)->(b): etagA=%q etagB1=%q", etagA, etagB1)
+	}
+	if w304 := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, map[string]string{"If-None-Match": etagB1}); w304.Code != http.StatusNotModified {
+		t.Fatalf("(e) If-None-Match %s after conflict 1 = %d, want 304", etagB1, w304.Code)
+	}
+	icB1, err := detailConflict1.IdentityConflict.Get()
+	if err != nil {
+		t.Fatalf("expected non-null identity_conflict in (b): %v", err)
+	}
+	lastAt1, err := icB1.LastConflictAt.Get()
+	if err != nil || !icB1.MappingFrozen || icB1.ConflictCount != 1 || !lastAt1.Equal(conflict1At) {
+		t.Fatalf("(b) after 1st conflict: got %+v (last=%v err=%v), want {true, 1, %v}", icB1, lastAt1, err, conflict1At)
+	}
+	// Deliverable 3: no drift entry for identity_conflict.
+	for _, d := range detailConflict1.Drift {
+		if strings.Contains(d.Field, "identity") || strings.Contains(d.Field, "conflict") {
+			t.Fatalf("unexpected drift entry for identity_conflict: %+v", d)
+		}
+	}
+
+	// Second conflict row with a newer timestamp -> {true, 2, <newer ts>}.
+	conflict2At := conflict1At.Add(25 * time.Second)
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO node_identity_conflicts (id, incarnation_id, previous_hash, conflicting_hash, observed_at) VALUES ($1, $2, $3, $4, $5)`,
+		uuid.Must(uuid.NewV7()), enrolled.NodeIncarnationId, domainSHA256("198.51.100.0/24"), domainSHA256("192.0.2.0/24"), conflict2At); err != nil {
+		t.Fatalf("insert second conflict row: %v", err)
+	}
+	if _, err := f.r.Pool.Exec(ctx, `UPDATE nodes SET resource_version = resource_version + 1 WHERE id = $1`, enrolled.NodeId); err != nil {
+		t.Fatalf("bump resource_version for second conflict row: %v", err)
+	}
+
+	wConflict2 := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, map[string]string{"If-None-Match": etagB1})
+	detailConflict2 := decode[api.NodeDetail](t, wConflict2, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wConflict2.Body.Bytes(), false)
+	etagB2 := wConflict2.Header().Get("ETag")
+	if etagB2 == "" || etagB2 == etagB1 {
+		t.Fatalf("expected ETag to change on second conflict row: etagB1=%q etagB2=%q", etagB1, etagB2)
+	}
+	icB2, err := detailConflict2.IdentityConflict.Get()
+	if err != nil {
+		t.Fatalf("expected non-null identity_conflict after 2nd conflict: %v", err)
+	}
+	lastAt2, err := icB2.LastConflictAt.Get()
+	if err != nil || !icB2.MappingFrozen || icB2.ConflictCount != 2 || !lastAt2.Equal(conflict2At) {
+		t.Fatalf("(b) after 2nd conflict: got %+v (last=%v err=%v), want {true, 2, %v}", icB2, lastAt2, err, conflict2At)
+	}
+
+	// -------------------------------------------------------------------------
+	// (c) After revokeNode + re-enroll -> new incarnation projects {false, 0, null}
+	// (once observed; null before first endpoint observation) and the retired
+	// incarnation's rows are not counted.
+	// -------------------------------------------------------------------------
+	revResp := f.call("POST", "/api/v1/admin/nodes/"+enrolled.NodeId.String()+"/revoke", map[string]string{"reason": "TEST ONLY revoke conflicted incarnation"}, nil, map[string]string{
+		"Idempotency-Key": uuid.NewString(),
+		"If-Match":        etagB2,
+	})
+	if revResp.Code != http.StatusAccepted {
+		t.Fatalf("revokeNode: %d %s", revResp.Code, revResp.Body.String())
+	}
+
+	_, reEnrolled, reCert := f.enroll(f.create(&enrolled.NodeId))
+
+	// Before first endpoint observation on the new incarnation -> null (retired incarnation's rows are ignored).
+	wReBeforeObs := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, nil)
+	detailReBeforeObs := decode[api.NodeDetail](t, wReBeforeObs, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wReBeforeObs.Body.Bytes(), true)
+	if !detailReBeforeObs.IdentityConflict.IsSpecified() || !detailReBeforeObs.IdentityConflict.IsNull() {
+		t.Fatalf("re-enrolled node before first endpoint observation: IdentityConflict = %+v, want specified null", detailReBeforeObs.IdentityConflict)
+	}
+
+	// After first endpoint observation on the new incarnation -> {false, 0, null} (retired incarnation's 2 conflict rows not counted).
+	now = conflict2At.Add(10 * time.Second)
+	reObs := loadObservationReport(t, reEnrolled.NodeId, reEnrolled.NodeIncarnationId, releaseID, now)
+	decode[api.ObservationAccepted](t, f.callFrom("POST", "/api/v1/agent/observations", reObs, reCert, domainY, nil), http.StatusAccepted)
+
+	wReAfterObs := f.call("GET", "/api/v1/admin/nodes/"+enrolled.NodeId.String(), nil, nil, nil)
+	detailReAfterObs := decode[api.NodeDetail](t, wReAfterObs, http.StatusOK)
+	assertIdentityConflictJSONKeys(t, wReAfterObs.Body.Bytes(), false)
+	icC, err := detailReAfterObs.IdentityConflict.Get()
+	if err != nil {
+		t.Fatalf("expected non-null identity_conflict in (c): %v", err)
+	}
+	if icC.MappingFrozen || icC.ConflictCount != 0 || !icC.LastConflictAt.IsNull() {
+		t.Fatalf("(c) after revokeNode + re-enroll: got %+v, want {false, 0, null}", icC)
+	}
+}
