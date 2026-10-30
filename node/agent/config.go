@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -46,9 +47,19 @@ type Config struct {
 	HostV4                  []string       `json:"host_v4"`
 	HostReserveBPS          uint64         `json:"host_reserve_bps"`
 	NetbirdBackend          string         `json:"netbird_backend"`
-	UpdaterRecover          string         `json:"updater_recover"`
-	UpdaterConfig           string         `json:"updater_config"`
-	BootIDFile              string         `json:"boot_id_file"`
+	// NetbirdStatusFile, when set, is a NetBird `status --json` document
+	// the probe reads instead of running the CLI. Production leaves this
+	// empty. The lab container has no NetBird daemon and points it at a
+	// fixture. It is not a way to mark the probe passed by itself: the
+	// JSON still has to say management is connected.
+	NetbirdStatusFile string `json:"netbird_status_file"`
+	// EgressProbeTarget is host:port for the data-path probe. Empty skips
+	// that leg. Desired state cannot name a target until the contract grows
+	// a field; this setting is the stand-in (§13.9).
+	EgressProbeTarget string `json:"egress_probe_target"`
+	UpdaterRecover    string `json:"updater_recover"`
+	UpdaterConfig     string `json:"updater_config"`
+	BootIDFile        string `json:"boot_id_file"`
 }
 
 // DatapathConfig names the interfaces enforce binds to.
@@ -171,6 +182,11 @@ func (c Config) validate() error {
 	case "kernel", "userspace", "unknown":
 	default:
 		return errors.New("agent: netbird_backend must be kernel, userspace or unknown")
+	}
+	if c.EgressProbeTarget != "" {
+		if _, _, err := net.SplitHostPort(c.EgressProbeTarget); err != nil {
+			return errors.New("agent: egress_probe_target must be host:port")
+		}
 	}
 	return nil
 }

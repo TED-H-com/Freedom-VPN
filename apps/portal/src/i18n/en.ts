@@ -271,7 +271,10 @@ export const en: Record<TranslationKey, string> = {
   'admin.updates.col.pubIntent': 'Publication Intent (Preserved)',
   'admin.updates.col.versions': 'Current → Target Release (Last Good)',
   'admin.updates.col.bucket': 'Mutually Exclusive Bucket',
+  'admin.updates.col.policyEvidence':
+    'Applied Policy Evidence (policy_generation / policy_refs)',
   'admin.updates.col.error': 'Error Code / Last Reported',
+  'admin.updates.evidenceNotReported': 'not reported',
 
   // Admin Members (§9.2, §18.1)
   'admin.members.title': 'Members & Entitlement Management (§9.2, §18.1)',
@@ -445,7 +448,7 @@ export const en: Record<TranslationKey, string> = {
   'member.devices.quotaHelp':
     'If you reach your device limit, you can revoke an old or lost device here and then connect your new device once synchronization completes (§7.3, AT02). You can only view and revoke your own devices.',
   'member.devices.col.name': 'Device Name / Platform',
-  'member.devices.col.overlayIp': 'Overlay IP / Peer ID',
+  'member.devices.col.overlayIp': 'Device ID',
   'member.devices.col.status': 'Authorization Status',
   'member.devices.col.lastSeen': 'Last Activity / Authorized At',
   'member.devices.col.action': 'Action',
