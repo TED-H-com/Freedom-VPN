@@ -24,6 +24,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	switch os.Args[1] {
+	case "monitor":
+		monitor()
 	case "transfer":
 		transfer()
 	case "observe":

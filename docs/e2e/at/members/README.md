@@ -1,73 +1,56 @@
-# Wave 4 member acceptance — Follow-up 2
+# Wave 4 member acceptance — Follow-up 3
 
-This suite exercises the real assigned devstack. Whole ATs remain non-green
-while their traffic, topology or operator prerequisites are missing. Successful
-subchecks are recorded separately; a 202 never counts as applied forwarding.
-See [RUN.md](RUN.md), [requests.md](requests.md) and each JSON record.
+Run only the assigned `w4-members / 24000` stack. [RUN.md](RUN.md) records both
+fresh attempts; [summary.md](summary.md) lists current AT outcomes and
+[requests.md](requests.md) names the remaining owners. Prior evidence is
+preserved under [history/follow-up-2](history/follow-up-2/RUN.md).
 
 ```sh
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
 make -f mk/at-members.mk at-members
-# Supplemental evidence on those same images and node incarnation:
 make -f mk/at-members.mk at-members-readback
+FVPN_AT_MEMBERS_OBSERVE_ONLY=1 make -f mk/at-members.mk at-members-readback
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
 ```
 
-Use a fresh stack. `PrepareServingBaseline` builds/signs both architectures and
-activates nonempty release support before enrollment. Groups, plan policies,
-finite grants, revocation, capacities and publication use product APIs. Native
-peers use shared Dex login and `StartNativePeer`. Two real-adapter goroutines
-race for the final device slot. All business projections are product-owned
-(D-050); the only direct SQL inputs left are synthetic old/young audit rows.
+The full target is intentionally non-green when any complete AT is blocked.
+The readback targets are partial observations on the same images and incarnation;
+their successful exit cannot pass a full AT. Earlier assertions remain in
+`prior_checks` or the archived complete attempt, with their original UTC times.
 
-Billing uses authenticated provider snapshots tied to actual checkout IDs,
-then exact signed webhook bytes and reconciliation polling. Each event-order
-permutation uses an independent subject/checkout. Created/failed event inputs
-reuse the provider's object and the generated TEST ONLY signing key because
-those two event kinds are not yet emitted by the shared hook. No invoice,
-subscription, paid interval or entitlement row is hand-written.
+D-050 applies throughout: signed releases use `PrepareServingBaseline`; groups,
+plans, grants, publication and devices use product APIs and production admission.
+Native login uses the shared Dex walker. Two barrier-synchronized goroutines
+exercise the real device adapter for the last slot. SQL reads projections; only
+synthetic audit retention inputs are inserted directly.
 
-The baseline DNS profile allows the existing controlled `feed-01.example.invalid`
-fixture; it does not depend on a public DNS probe. Later policies revise the
-same active DNS definition. Typed node evidence and actual node-mTLS document
-fetches distinguish delivery from application. Loopback resolver probes are
-labeled separately from native member DNS, which remains disabled by the lab
-entrypoint. The inherited lease gate blocks traffic claims.
+Billing uses real checkout sessions, authenticated provider snapshots and exact
+signed hook bytes for every event, including created and failed. Replays are
+paced two seconds apart, asserted once and never retried after a 429. No limiter
+setting, invoice, subscription or entitlement projection is changed by the test.
 
-`at-members-readback` records current projections, independent A/B publication
-commands, disable/restart persistence, NetBird route semantics, and resolver
-application. After recording the entrypoint restart blocker, the documented agent-only service
-hook permits independent DNS work; this does not certify reboot recovery. It
-then runs a real 300-second feed-refresh failure experiment on
-a self-authored TEST ONLY source and verifies last-good preservation. It restores
-the feed bytes and generated DNS cadence settings. The target is a **partial**
-path; its successful exit does not pass a full AT. `FVPN_AT_MEMBERS_OBSERVE_ONLY=1`
-rechecks observations without repeating publication mutations or the scheduled
-feed experiment. Earlier publication checks, including harness expectation
-failures, remain in `prior_checks` with their timestamps.
+Forwarding records contain native route selection, route interface, node named
+counter snapshots and concurrent bounded packet observations inside the member,
+node and origin containers. The observer keeps only counts by interface and
+direction for the controlled TCP connection; no packet body, URL history or
+credential is retained. Both a CA-verified origin response and increases in the
+specific device's upload/download counters are required for counted forwarding.
+See [forwarding-observation.md](forwarding-observation.md).
 
-JSON records include UTC times, commands, expected/actual results, source and
-binary/image digests, release artifact hashes, policy revisions and node
-incarnation. `complete:false` records are incremental and remain blocked until
-the case finishes. Raw logs, dumps, provider bodies, signatures and credentials
-are never public evidence.
+DNS policy revisions reuse one active definition. Node-mTLS document digests
+and typed `dns_policy_evidence` distinguish publication from actual application.
+The scheduled feed experiment tests `attribution:null`, rejects blank notes,
+then observes a real failed refresh and retained last-good content. Loopback DNS
+is explicitly separate from native member DNS; the stock client disables DNS.
 
-| AT | Full acceptance | Evidence | Outstanding scope |
-|---|---|---|---|
-| AT01 | blocked | [JSON](AT01.json), [page](AT01.md) | counted traffic; four platforms |
-| AT02 | blocked | [JSON](AT02.json), [page](AT02.md), [trace](AT02-TRACE.md) | winner/loser real gateway control |
-| AT03 | blocked | [JSON](AT03.json), [page](AT03.md) | paid device's gateway authorization |
-| AT04 | blocked | [JSON](AT04.json), [page](AT04.md) | long-flow stop on every node; rendered state |
-| AT05 | blocked | [JSON](AT05.json), [page](AT05.md) | three boot sources; physical arm64 |
-| AT08 | blocked | [JSON](AT08.json), [page](AT08.md) | applied group forwarding and disable |
-| AT09 | blocked | [JSON](AT09.json), [page](AT09.md) | two-exit flow baseline, transport/MTU, second NAT |
-| AT20 | blocked | [JSON](AT20.json), [page](AT20.md) | native DNS, complete RR/cache/rebinding matrix |
-| AT21 | blocked | [JSON](AT21.json), [page](AT21.md) | second filtering resolver; native DNS/DoH/DoT |
-| AT22 | blocked | [JSON](AT22.json), [page](AT22.md) | member URL traffic, full file/usage/backup retention |
+Records include run UUID, source/build/image digests, UTC timestamps, commands,
+expected/actual results, policy revisions and incarnation. `complete:false`
+means an incremental record, never a completed AT. Raw logs, provider bodies,
+signatures and credentials stay out of public evidence.
 
-Platform, arm64 and physical NAT rows stay **needs operator run** under
-[OPERATORS.md](OPERATORS.md). [PROCEDURES.md](PROCEDURES.md) specifies the full
-remaining acceptance sequence; [BLOCKERS.md](BLOCKERS.md) is historical.
+[OPERATORS.md](OPERATORS.md) retains exact **needs operator run** scripts for
+Windows/macOS/iOS/Android, physical arm64 and second physical NAT.
+[PROCEDURES.md](PROCEDURES.md) describes the complete acceptance matrix.
 
 ```sh
 make -f mk/at-members.mk at-members-lint at-members-test at-members-build
@@ -75,6 +58,5 @@ make go-lint
 go vet -tags e2e ./tests/...
 ```
 
-Targets use disk scratch and pinned staticcheck. The workflow checks PRs and
-runs the assigned stack on manual dispatch, installs the shared Portal browser
-probe, removes only its prefix and uploads only public evidence.
+The unchanged workflow uses the existing shared Portal browser dependency,
+checks the owned packages and tears down only this prefix.

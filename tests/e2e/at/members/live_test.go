@@ -57,11 +57,12 @@ type step struct {
 	At       string `json:"at"`
 }
 type buildInfo struct {
-	Source    string                       `json:"source_commit"`
-	Dirty     bool                         `json:"source_dirty"`
-	Images    map[string]string            `json:"image_digests"`
-	Binaries  map[string]string            `json:"binary_sha256"`
-	BinaryVCS map[string]map[string]string `json:"binary_vcs"`
+	TestBinary string                       `json:"test_binary_sha256"`
+	Source     string                       `json:"source_commit"`
+	Dirty      bool                         `json:"source_dirty"`
+	Images     map[string]string            `json:"image_digests"`
+	Binaries   map[string]string            `json:"binary_sha256"`
+	BinaryVCS  map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
 	Complete   bool                    `json:"complete"`
@@ -90,6 +91,8 @@ type live struct {
 	build                                    buildInfo
 	node, inc, plan, planRev, groupA, groupB uuid.UUID
 	run                                      string
+	runID                                    string
+	restartAfter                             time.Time
 	nativePeer                               string
 	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
@@ -119,7 +122,7 @@ func TestATMembers_Live(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Minute)
 	defer cancel()
-	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()}
+	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
 	l.open()
 	var err error
@@ -153,6 +156,9 @@ func TestATMembers_Live(t *testing.T) {
 	}
 }
 func (l *live) open() {
+	if l.runID == "" {
+		l.runID = uuid.NewString()
+	}
 	raw, err := os.ReadFile(filepath.Join(l.state, "stack.json"))
 	if err != nil || json.Unmarshal(raw, &l.stack) != nil || l.stack.Prefix != "fvpn-w4-members" || l.stack.PortBase != 24000 {
 		l.t.Fatal("assigned stack missing")
@@ -188,6 +194,13 @@ func (l *live) open() {
 	}
 	l.t.Cleanup(l.pool.Close)
 	l.build = buildInfo{Images: map[string]string{}, Binaries: map[string]string{}, BinaryVCS: map[string]map[string]string{}}
+
+	if executable, e := os.Executable(); e == nil {
+		if raw, e := os.ReadFile(executable); e == nil {
+			sum := sha256.Sum256(raw)
+			l.build.TestBinary = hex.EncodeToString(sum[:])
+		}
+	}
 	out, err := l.command("git", "rev-parse", "HEAD")
 	if err != nil {
 		l.t.Fatal("git commit missing")
@@ -358,7 +371,7 @@ func (l *live) wait(timeout time.Duration, fn func() bool) bool {
 func (l *live) newRecord(id string) record {
 	for _, c := range catalogue() {
 		if c.id == id {
-			r := record{Record: e2e.Record{RunID: l.run, SourceCommit: l.build.Source, ID: id, Title: c.title, Spec: []string{"§19.1", "§19 " + id, c.requirements}, Status: e2e.StatusPass, At: time.Now().UTC().Format(time.RFC3339)}, Build: l.build, Steps: []step{}, Blockers: []string{}}
+			r := record{Record: e2e.Record{RunID: l.runID, SourceCommit: l.build.Source, ID: id, Title: c.title, Spec: []string{"§19.1", "§19 " + id, c.requirements}, Status: e2e.StatusPass, At: time.Now().UTC().Format(time.RFC3339)}, Build: l.build, Steps: []step{}, Blockers: []string{}}
 			if c.operator {
 				r.Operator = "needs operator run"
 			}

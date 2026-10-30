@@ -3,8 +3,11 @@
 package members
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -25,6 +28,8 @@ type counterObservation struct {
 	Counters          map[string]decstr.U64 `json:"diagnostic_bytes"`
 }
 type forwardingObservation struct {
+	SourceAT            string                     `json:"source_at,omitempty"`
+	ProbeSHA256         string                     `json:"probe_sha256"`
 	At                  string                     `json:"at"`
 	Member              string                     `json:"member_container_role"`
 	RouteSelected       bool                       `json:"route_selected"`
@@ -109,16 +114,34 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 			return false
 		}
 	}
+
+	if raw, e := os.ReadFile(filepath.Join(l.root, ".agent/at-members/probe")); e == nil {
+		hash := sha256.Sum256(raw)
+		o.ProbeSHA256 = hex.EncodeToString(hash[:])
+	}
 	o.RouteBefore = l.routeObservation(service)
-	got := l.nb("GET", "/routes", nil)
-	var routes []netbird.Route
-	_ = json.Unmarshal(got.body, &routes)
-	for _, route := range routes {
-		if route.Network == "0.0.0.0/0" && route.Enabled {
-			_, err := l.inside(service, "netbird", "routes", "select", route.NetworkID)
-			o.RouteSelected = err == nil
-			break
+	// Native distribution can lag central publication; poll the advertised
+	// network before selecting it. Negative peers are probed once, never enrolled.
+	selectRoute := func() bool {
+		got := l.nb("GET", "/routes", nil)
+		var routes []netbird.Route
+		_ = json.Unmarshal(got.body, &routes)
+		if got.status != 200 {
+			return false
 		}
+		advertised, _ := l.inside(service, "netbird", "routes", "list")
+		for _, route := range routes {
+			if route.Network == "0.0.0.0/0" && route.Enabled && strings.Contains(string(advertised), route.NetworkID) {
+				_, err := l.inside(service, "netbird", "routes", "select", route.NetworkID)
+				return err == nil
+			}
+		}
+		return false
+	}
+	if device != uuid.Nil {
+		o.RouteSelected = l.wait(45*time.Second, selectRoute)
+	} else {
+		o.RouteSelected = selectRoute()
 	}
 	time.Sleep(2 * time.Second)
 	o.RouteAfter = l.routeObservation(service)
@@ -127,11 +150,9 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 	_ = json.Unmarshal(status, &native)
 	// Never persist the full NetBird status (public keys, endpoint identities).
 	selected := map[string]json.RawMessage{}
-	for _, key := range []string{"management", "signal", "localPeerState", "routes"} {
+	for _, key := range []string{"daemonVersion", "daemonStatus", "usesKernelInterface", "networks"} {
 		if v := native[key]; len(v) > 0 {
-			if key == "localPeerState" || key == "routes" {
-				selected[key] = v
-			}
+			selected[key] = v
 		}
 	}
 	o.PeerStatus, _ = json.Marshal(selected)
@@ -162,7 +183,13 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 	}
 	_ = json.Unmarshal(o.Transfer, &transfer)
 	o.Counted = transfer.Receipt && o.After.DeviceUpload > o.Before.DeviceUpload && o.After.DeviceDownload > o.Before.DeviceDownload
-	o.FirstUnconfirmedHop = "inspect per-interface packet observations; origin receipt and device admission must both succeed"
+	o.FirstUnconfirmedHop = "selected route to node or later path; consult counters and packet observations"
+	if !o.RouteSelected {
+		o.FirstUnconfirmedHop = "member exit selection: controlled-origin route remains on underlay; no selected exit"
+	}
+	if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
+		o.FirstUnconfirmedHop = "node forward-chain baseline: ctbase increases, zero member accept rules, no origin response (F3-02)"
+	}
 	if o.Counted {
 		o.FirstUnconfirmedHop = "none: origin HTTP response and both device admission counters increased"
 	}
@@ -171,6 +198,8 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 	r.check("bounded member transfer observation", "record selected route, node counters, packet hops and origin receipt", string(encoded), "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after", true)
 	if device == uuid.Nil {
 		r.check("quota loser real transfer", "no origin response", fmt.Sprintf("origin_receipt=%t", transfer.Receipt), "bounded HTTPS from the losing native peer before slot reuse", !transfer.Receipt)
+	} else if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
+		r.block("F3-02: member packets reach the node but increment its generation-0 baseline drop counter. Inspect required conntrack after real revocation; see requests.md.")
 	} else if !o.Counted {
 		r.block("F3-01: bounded member transfer did not produce both an origin receipt and device upload/download counter increments. See forwarding-observation.md and this JSON forwarding field; owner to resolve from first missing hop.")
 	}
@@ -200,4 +229,37 @@ func (l *live) routeObservation(service string) json.RawMessage {
 
 func (o forwardingObservation) String() string {
 	return fmt.Sprintf("member=%s selected=%t counted=%t", o.Member, o.RouteSelected, o.Counted)
+}
+
+// Read-only diagnosis after the first real revocation; no missing package is
+// installed by the AT harness, and no enforcement decision is bypassed.
+func (l *live) revocationReadback(r *record) {
+	// The later paid-member attempt measures where traffic stops after AT02's
+	// revoke. Link that unchanged same-run trace, labeling its original case.
+	if r.ID == "AT02" {
+		var later record
+		raw, err := os.ReadFile(filepath.Join(l.root, "docs/e2e/at/members/AT03.json"))
+		already := false
+		for _, o := range r.Forwarding {
+			already = already || o.SourceAT == "AT03"
+		}
+		if !already && err == nil && json.Unmarshal(raw, &later) == nil && later.RunID == r.RunID && later.NodeIncarnation == r.NodeIncarnation {
+			for _, o := range later.Forwarding {
+				if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
+					o.SourceAT = "AT03"
+					o.FirstUnconfirmedHop = "node forward-chain baseline after AT02 revocation: ctbase increases; zero accept rules; no origin receipt (F3-02)"
+					r.Forwarding = append(r.Forwarding, o)
+					r.check("same-run post-revoke transfer", "link subsequent AT03 trace without claiming a new probe", o.String(), "read same-run AT03 forwarding record; matching run UUID and incarnation", true)
+				}
+			}
+		}
+	}
+
+	_, missing := l.inside("node", "sh", "-c", "command -v conntrack")
+	var raw []byte
+	err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('first_apply_failure',(SELECT min(received_at) FROM node_observations WHERE node_id=$1 AND report_payload->'errors' @> '[{"stage":"apply","message":"apply failed"}]'::jsonb),'apply_failure_observations',(SELECT count(*) FROM node_observations WHERE node_id=$1 AND report_payload->'errors' @> '[{"stage":"apply","message":"apply failed"}]'::jsonb))`, l.node).Scan(&raw)
+	r.check("post-revoke enforcement dependency", "record required conntrack executable and actual apply failures", fmt.Sprintf("conntrack_present=%t; observations=%s", missing == nil, raw), "docker exec node command -v conntrack; read immutable node observation errors", err == nil)
+	if missing != nil {
+		r.block("F3-02: required conntrack executable is absent from the running lab node. The first device revocation is followed by repeated HEALTH_CHECK_FAILED/apply failed and generation-0 baseline; later paid-member packets increment ctbase instead of member counters. Owner: devstack deploy/devstack/Dockerfile.node; node/enforce/apply.go:deleteConntrack requires conntrack -D. No package was installed and no projection was bypassed.")
+	}
 }

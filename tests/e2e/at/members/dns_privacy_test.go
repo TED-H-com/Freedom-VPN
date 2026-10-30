@@ -213,6 +213,21 @@ func (l *live) privacy(r *record) {
 
 // D-056: a central document or HTTP 200 alone never proves node application.
 func (l *live) resolverEvidence(r *record) {
+	// A committed document precedes the next heartbeat. Wait for typed evidence
+	// of this profile before recording a genuine issued-document mismatch.
+	_ = l.wait(45*time.Second, func() bool {
+		got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+		var node api.NodeDetail
+		if json.Unmarshal(got.body, &node) != nil {
+			return false
+		}
+		ev, err := node.DnsPolicyEvidence.Get()
+		if err != nil || node.DnsPolicyEvidence.IsNull() {
+			return false
+		}
+		return ev.Outcome == api.DnsPolicyEvidenceOutcomeApplied && l.count(`SELECT count(*) FROM dns_resolver_documents WHERE id=$1 AND profile_revision_id=(SELECT active_revision_id FROM policy_definitions WHERE type='dns_profile' ORDER BY id LIMIT 1)`, ev.DocumentId) > 0
+	})
+
 	got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
 	var node api.NodeDetail
 	decode := json.Unmarshal(got.body, &node)
@@ -231,7 +246,7 @@ func (l *live) resolverEvidence(r *record) {
 	// This run can supersede the historical missing-reference observation.
 	kept := r.Blockers[:0]
 	for _, b := range r.Blockers {
-		if !strings.HasPrefix(b, "D-056/D-061: typed resolver evidence is unavailable") {
+		if !strings.HasPrefix(b, "D-056/D-061: typed resolver evidence is unavailable") && !(document && evidence.Outcome == api.DnsPolicyEvidenceOutcomeApplied && strings.HasPrefix(b, "F2-03:")) {
 			kept = append(kept, b)
 		}
 	}

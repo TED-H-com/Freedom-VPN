@@ -1,6 +1,12 @@
+# Historical first-pass findings
+
+Superseded by [Follow-up 3 requests](requests.md). B9 is retired: null attribution
+works; only blank/whitespace notes reject. The original text below is preserved
+as historical evidence, not a statement about the current product.
+
 # Historical requests — Follow-up 1
 
-Superseded by [Follow-up 2 requests](requests.md) and the current AT records.
+The original follow-up-2 supersession notice is retained below this historical heading.
 The dated findings below describe the earlier run, not the current stack.
 
 Observed on fresh `w4-members / 24000`, product source

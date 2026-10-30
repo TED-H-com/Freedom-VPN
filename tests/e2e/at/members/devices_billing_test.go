@@ -167,9 +167,16 @@ func (l *live) payment(r *record) {
 }
 
 func (l *live) paymentOrders(r *record) {
+	seenMembers := map[string]bool{}
 	orders := [][3]string{{"created", "paid", "failed"}, {"created", "failed", "paid"}, {"paid", "created", "failed"}, {"paid", "failed", "created"}, {"failed", "created", "paid"}, {"failed", "paid", "created"}}
 	for i, order := range orders {
 		b := l.login(fmt.Sprintf("AT-order-%s-%d", l.run, i), "member")
+		r.check("independent ordering identity", "one new member per permutation", fmt.Sprintf("unique=%t", !seenMembers[b.member]), "shared IdP login with short fixture key", !seenMembers[b.member])
+		if seenMembers[b.member] {
+			r.block("Harness identity collision; stop ordering matrix without modifying projections")
+			return
+		}
+		seenMembers[b.member] = true
 		p := l.checkout(r, b, time.Now().Add(time.Hour))
 		if p == nil || !l.truth(r, p) {
 			return
@@ -215,6 +222,8 @@ func (l *live) entitlements(r *record) {
 		r.check("cancel and partial refund event", "202 then reconciled", detail(got), "update provider truth; POST signed event", got.status == 202 && l.processed(ev))
 		l.paidReadback(r, p, "cancel_at_period_end", 250)
 	}
+	monitor := l.startFlow(r, "member-paid")
+	refundAt := time.Now().UTC()
 	p.snapshot["refund_minor"] = 1000
 	p.snapshot["status"] = "canceled"
 	if l.truth(r, p) {
@@ -229,6 +238,7 @@ func (l *live) entitlements(r *record) {
 		got = l.sendEvent(deleted)
 		r.check("cancellation deletion replay", "202; reconciled without restoring service", detail(got), "POST customer.subscription.deleted after canceled truth", got.status == 202 && l.processed(deleted) && l.entitlementState(l.c) == "expired")
 	}
+	l.finishFlow(r, monitor, refundAt)
 	// Expiry runs on a fresh, paid subscription so no grant masks the boundary.
 	expiryMember := l.login("AT-expiry-"+l.run, "member")
 	ep := l.checkout(r, expiryMember, time.Now().Add(45*time.Second))
@@ -252,6 +262,6 @@ func (l *live) entitlements(r *record) {
 		screen := l.api(suspended, "GET", "/api/v1/member/me", nil, nil)
 		r.check("member screen state", "200; admin_suspended true despite paid interval", fmt.Sprintf("HTTP=%d; suspended=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after successful paid reconciliation", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
 	}
-	r.block("Full gateway/withdrawal acceptance requires a positive counted member transfer; see this run AT01/AT02 forwarding observations. Control projections alone do not prove forwarding.")
+	r.block("Shared origin only serves HTTPS; no controlled persistent UDP echo/flow endpoint or second runnable exit is present. Existing TCP full-refund withdrawal is measured separately; all-node UDP/expiry/suspension flow timing remains unproved. Owner: devstack fixture hooks.")
 	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts.")
 }

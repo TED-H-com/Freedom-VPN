@@ -29,14 +29,14 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 12*time.Minute)
 	defer cancel()
-	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()}
+	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
 	l.open()
 	l.admin = l.login("e2e-admin", "admin")
 	if l.pool.QueryRow(ctx, `SELECT id,current_incarnation_id FROM nodes WHERE current_incarnation_id IS NOT NULL ORDER BY created_at DESC LIMIT 1`).Scan(&l.node, &l.inc) != nil {
 		t.Fatal("prior run node unavailable")
 	}
-	ids := []string{"AT02", "AT08", "AT20", "AT22"}
+	ids := []string{"AT02", "AT03", "AT04", "AT08", "AT20", "AT22"}
 	for _, id := range ids {
 		var r record
 		raw, err := os.ReadFile(filepath.Join(l.root, "docs/e2e/at/members", id+".json"))
@@ -55,24 +55,44 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 		r.FollowupBuild = &l.build
 		switch id {
 		case "AT02":
+			l.revocationReadback(&r)
 			devices := l.count(`SELECT count(*) FROM member_devices WHERE status='authorized'`)
 			proofs := l.count(`SELECT count(*) FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id WHERE n.external_user_id=i.subject AND n.mapping_proof='shared_issuer_public_subject:'||i.issuer`)
 			var desired, applied string
 			_ = l.pool.QueryRow(ctx, `SELECT desired_config_generation::text,applied_config_generation::text FROM nodes WHERE id=$1`, l.node).Scan(&desired, &applied)
 			observations := l.count(`SELECT count(*) FROM device_authorization_observations WHERE observed_authorized`)
 			r.check("post-worker projection readback", "record native proofs, devices and desired/applied separately", fmt.Sprintf("verified_proofs=%d; authorized_devices=%d; observed_authorized=%d; desired_generation=%s; applied_generation=%s", proofs, devices, observations, desired, applied), "read product projections after worker resumes; no projection fixtures", proofs >= 2 && devices >= 4)
+		case "AT03", "AT04":
+			l.revocationReadback(&r)
+			for i := range r.Forwarding {
+				o := &r.Forwarding[i]
+				if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
+					o.FirstUnconfirmedHop = "node forward-chain baseline: ctbase increases, zero member accept rules, no origin response; missing conntrack after revocation (F3-02)"
+					kept := r.Blockers[:0]
+					for _, b := range r.Blockers {
+						if !strings.HasPrefix(b, "F3-01:") {
+							kept = append(kept, b)
+						}
+					}
+					r.Blockers = kept
+				}
+			}
 		case "AT08":
 			// Re-execute independent publication checks after bounded ETag retry.
 			// Preserve the original attempt, including any 412, with its UTC time.
 			r.PriorChecks = append(r.PriorChecks, r.Steps...)
 			r.Steps = nil
 			r.Blockers = nil
-			r.Status = "pass"
+			r.Status = "blocked"
+			r.block("Partial publication readback; original complete AT checks remain in prior_checks. Full forwarding and group isolation are not passed by this supplement.")
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-a-%' ORDER BY code LIMIT 1`).Scan(&l.groupA)
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-b-%' ORDER BY code LIMIT 1`).Scan(&l.groupB)
-			if os.Getenv("FVPN_AT_MEMBERS_OBSERVE_ONLY") != "1" && l.groupA != uuid.Nil && l.groupB != uuid.Nil {
-				l.publication(&r)
-			}
+			// Primary suite already exercised mutation/restart. A supplement
+			// observes completion; it must not turn a retryable intermediate
+			// publication step into a new full acceptance pass.
+			var publication []byte
+			err := l.pool.QueryRow(ctx, `SELECT coalesce(jsonb_agg(jsonb_build_object('status',status,'steps',steps) ORDER BY created_at),'[]'::jsonb) FROM operations WHERE kind IN ('node.publish','node.disable')`).Scan(&publication)
+			r.check("publication completion readback", "record terminal/current step evidence without a new command", string(publication), "read product operation history; no publication mutation", err == nil)
 			l.restartReadback(&r)
 			l.servingPrecondition(&r)
 			l.routeReadback(&r)
@@ -207,7 +227,7 @@ func (l *live) restartReadback(r *record) {
 		}
 		_ = json.Unmarshal(raw, &state)
 		stage = state.Stage
-		return stage == "enrolled"
+		return stage == "enrolled" && (l.restartAfter.IsZero() || l.count(`SELECT count(*) FROM node_observations WHERE node_id=$1 AND received_at>$2`, l.node, l.restartAfter) > 0)
 	})
 	_, tokenErr := l.inside("node", "test", "-e", "/var/lib/vpn-node/e2e/enrollment.token")
 	_, nftErr := l.inside("node", "nft", "-j", "list", "table", "inet", "fvpn")

@@ -129,7 +129,13 @@ func (l *live) identity(r *record) {
 	before := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1`, l.a.member)
 	r.check("native device precondition", "observe real member device count", fmt.Sprintf("member_A_devices=%d", before), "SELECT count(*) FROM member_devices WHERE member_id=A", true)
 	l.forwardingGate(r)
-	l.traceForwarding(r, "member", id)
+	if l.traceForwarding(r, "member", id) {
+		_, pauseErr := l.docker("pause", l.name("member"))
+		time.Sleep(2 * time.Second)
+		_, wakeErr := l.docker("unpause", l.name("member"))
+		r.check("Linux sleep wake analogue", "pause/unpause succeeds", fmt.Sprintf("pause=%t; wake=%t", pauseErr == nil, wakeErr == nil), "docker pause/unpause assigned member container", pauseErr == nil && wakeErr == nil)
+		l.traceForwarding(r, "member", id)
+	}
 	r.block("AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately.")
 }
 func (l *live) nodeMutation(method, suffix string, body any) response {
@@ -166,13 +172,32 @@ func (l *live) publication(r *record) {
 	b := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupB)
 	r.check("A-only publication readback", "one A attachment, zero B; NetBird routes readable", fmt.Sprintf("A=%d; B=%d; routes=%d; HTTP=%d", a, b, len(list), routes.status), "read exit_groups; GET NetBird /api/routes", a == 1 && b == 0 && routes.status == 200)
 	l.forwardingGate(r)
-	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
-	l.traceForwarding(r, "member-b1", uuid.Nil)
+	if l.a != nil {
+		l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
+		l.traceForwarding(r, "member-b1", uuid.Nil)
+	} else {
+		r.block("Partial publication cycle has no live extra B peer; full A/B forwarding must use primary run evidence")
+	}
 	l.publicationCommand(r, "published", []uuid.UUID{l.groupB})
+	l.forwardingGate(r)
+	var bDevice uuid.UUID
+	if l.b != nil {
+		_ = l.pool.QueryRow(l.ctx, `SELECT id FROM member_devices WHERE member_id=$1 AND status='authorized' ORDER BY created_at LIMIT 1`, l.b.member).Scan(&bDevice)
+	}
+	if bDevice != uuid.Nil {
+		l.traceForwarding(r, "member-b1", bDevice)
+		l.traceForwarding(r, "member", uuid.Nil)
+	} else {
+		r.block("Partial readback has no retained native B container; complete A/B forwarding remains in the primary run")
+	}
+
 	regroup := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupB)
 	r.check("regroup projection", "group B attached", fmt.Sprintf("B=%d", regroup), "PUT group_ids=[B]; read product attachment", regroup == 1)
 	l.publicationCommand(r, "disabled", []uuid.UUID{l.groupB})
-	l.traceForwarding(r, "member-b1", uuid.Nil)
+	if l.b != nil {
+		l.traceForwarding(r, "member-b1", uuid.Nil)
+	}
+	l.restartAfter = time.Now().UTC()
 	_, err := l.docker("restart", l.name("node"))
 	r.check("node restart", "restart succeeds", fmt.Sprintf("restart_ok=%t", err == nil), "docker restart fvpn-w4-members-node", err == nil)
 	l.restartReadback(r)
@@ -187,5 +212,5 @@ func (l *live) exits(r *record) {
 	r.check("exit inventory", "record active node count and client routes", fmt.Sprintf("enrolled_nodes=%d; routes_command_ok=%t; route_output_bytes=%d", n, err == nil, len(out)), "SELECT enrolled nodes; docker exec member netbird routes list", n >= 1)
 	l.forwardingGate(r)
 	l.routeReadback(r)
-	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the observed positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
+	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The shared stack has one runnable node and no exported second-node enrollment hook; SEEDED_NODE_2_ID in docs/e2e/README.md is a synthetic fixture forbidden by D-050. Single-exit native selection/skip_auto_apply is recorded in forwarding traces. Two-exit switch/death, relay/direct, UDP/QUIC and PMTU fixtures are unavailable; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
 }

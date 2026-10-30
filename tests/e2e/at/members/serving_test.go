@@ -104,11 +104,10 @@ func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) 
 	}
 	_ = json.Unmarshal(got.body, &command)
 	var status string
-	var failedStep bool
 	var required, observed int
 	ready := l.wait(90*time.Second, func() bool {
-		err := l.pool.QueryRow(l.ctx, `SELECT status,EXISTS(SELECT 1 FROM jsonb_each(steps) s(k,v) WHERE v->>'status'='failed') FROM operations WHERE id=$1`, command.ID).Scan(&status, &failedStep)
-		return err == nil && (status == "succeeded" || status == "failed" || failedStep)
+		err := l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE id=$1`, command.ID).Scan(&status)
+		return err == nil && (status == "succeeded" || status == "failed" || status == "partially_succeeded")
 	})
 	// Operation completion requires read-back evidence (base F-02), not merely 202.
 	_ = l.pool.QueryRow(l.ctx, `SELECT count(*) FILTER(WHERE (v->>'required')::boolean),count(*) FILTER(WHERE (v->>'required')::boolean AND v->>'status'='succeeded') FROM operations o CROSS JOIN LATERAL jsonb_each(o.steps) s(k,v) WHERE o.id=$1`, command.ID).Scan(&required, &observed)

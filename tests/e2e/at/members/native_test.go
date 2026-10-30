@@ -192,10 +192,12 @@ func (l *live) devices(r *record) {
 	close(out)
 	wins, limits, other := 0, 0, 0
 	loser := ""
+	winner := ""
 	for o := range out {
 		switch {
 		case o.err == nil:
 			wins++
+			winner = o.peer
 		case errors.Is(o.err, devices.ErrLimit):
 			limits++
 			loser = o.peer
@@ -215,6 +217,11 @@ func (l *live) devices(r *record) {
 	_, _ = l.docker("unpause", l.name("worker"))
 	l.forwardingGate(r)
 	l.traceForwarding(r, "member", first)
+	winnerService := "member-a3"
+	if winner == contenders[1] {
+		winnerService = "member-a4"
+	}
+	l.traceForwarding(r, winnerService, l.awaitDevice(winner))
 	loserService := "member-a3"
 	if loser == contenders[1] {
 		loserService = "member-a4"
@@ -231,4 +238,5 @@ func (l *live) devices(r *record) {
 	r.check("revoke releases exactly one slot", "202; 3 to 2 to 3; former loser admitted", fmt.Sprintf("revoke_HTTP=%d; after_revoke=%d; admitted=%t; final_authorized=%d", revoke.status, freed, err == nil, restored), "DELETE A2 through member API; ObserveAndAuthorize former loser", revoke.status == 202 && freed == 2 && err == nil && restored == 3)
 	_, _ = l.docker("unpause", l.name("worker"))
 	l.forwardingGate(r)
+	l.revocationReadback(r)
 }

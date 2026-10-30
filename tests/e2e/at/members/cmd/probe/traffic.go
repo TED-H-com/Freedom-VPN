@@ -60,17 +60,23 @@ func observe() {
 	result := map[string]any{"available": false, "interfaces": counts, "duration_seconds": 9, "filter": "controlled-origin TCP/443, fixed client port 38443"}
 	defer func() { _ = json.NewEncoder(os.Stdout).Encode(result) }()
 	// SOCK_DGRAM removes the link header on both Ethernet and WireGuard.
-	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_DGRAM|unix.SOCK_NONBLOCK, int(htons(unix.ETH_P_IP)))
+	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_DGRAM|unix.SOCK_NONBLOCK, int(htons(unix.ETH_P_ALL)))
 	if err != nil {
 		return
 	}
 	defer unix.Close(fd)
 	result["available"] = true
 	buf := make([]byte, 65536)
-	end := time.Now().Add(9 * time.Second)
+	started := time.Now()
+	end := started.Add(9 * time.Second)
+	defer func() { result["elapsed_ms"] = time.Since(started).Milliseconds() }()
 	for time.Now().Before(end) {
 		_, err := unix.Poll([]unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}, 100)
+		if err == unix.EINTR {
+			continue
+		}
 		if err != nil {
+			result["poll_error"] = true
 			return
 		}
 		n, addr, err := unix.Recvfrom(fd, buf, 0)

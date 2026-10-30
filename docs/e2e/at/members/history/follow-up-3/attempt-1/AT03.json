@@ -1,0 +1,407 @@
+{
+  "complete": false,
+  "id": "AT03",
+  "title": "Payment replay and ordering",
+  "spec": [
+    "§19.1",
+    "§19 AT03",
+    "BILL01 BILL03 ENT01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "real Portal billing return",
+      "detail": "pass; expected: built billing page renders, pending confirmation; no API error; actual: probe_ok=true; HTTP=200; page=true; pending=true; api_error=false; command: shared deploy/devstack/probe-portal.mjs; cookies via stdin, controlled origin only"
+    },
+    {
+      "name": "checkout command replay",
+      "detail": "pass; expected: 201 and same hosted session; actual: first=201; replay=201; same_session=true; command: POST /member/checkout-sessions twice with same Idempotency-Key"
+    },
+    {
+      "name": "forged return before provider truth",
+      "detail": "pass; expected: 200 built Portal; no subscription or live entitlement; actual: HTTP=200; subscriptions=0; state=pending_payment; command: GET forged return before snapshot; read product subscriptions and entitlement"
+    },
+    {
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
+    },
+    {
+      "name": "provider event invoice.paid",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "invalid signature",
+      "detail": "pass; expected: 401; no inbox row; actual: HTTP=401; inbox=0; command: POST provider's exact bytes with invalid signature"
+    },
+    {
+      "name": "first paid event",
+      "detail": "pass; expected: 202 then inbox succeeded; actual: HTTP=202; reconciled=true; command: POST exact provider event; poll processing_status"
+    },
+    {
+      "name": "reconciled active",
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T06:55:31+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T07:56:30+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T07:56:30+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "paced paid replay",
+      "detail": "pass; expected: 202 once; no rate-limit retry; actual: HTTP 202 ; command: wait 2 seconds; POST identical provider bytes once"
+    },
+    {
+      "name": "ten identical paid deliveries",
+      "detail": "pass; expected: one inbox/invoice; one revision change then stable; actual: accepted=10; inbox=1; invoices=1; before=1; paid=2; after=2; command: POST identical exact bytes 10 times; read keys, intervals and revisions"
+    },
+    {
+      "name": "reconciled active",
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T06:55:31+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T07:56:30+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T07:56:30+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+    },
+    {
+      "name": "checkout command replay",
+      "detail": "pass; expected: 201 and same hosted session; actual: first=201; replay=201; same_session=true; command: POST /member/checkout-sessions twice with same Idempotency-Key"
+    },
+    {
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
+    },
+    {
+      "name": "provider event invoice.paid",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "provider event customer.subscription.created",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "provider event invoice.payment_failed",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "reconciled active",
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T06:55:58+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T07:56:57+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T07:56:57+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+    },
+    {
+      "name": "delivery order created/paid/failed",
+      "detail": "pass; expected: each event processed against same authoritative paid truth; one exact interval; actual: delivered=3; processed=3; invoices=1; period_matches=true; command: fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval"
+    },
+    {
+      "name": "blocked",
+      "detail": "Run in progress; this is an incremental record, not a full AT result."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=ac93203dbabc05aa3c1c70f644370a205a704f16; applied generation=12; incarnation=01a18b96-3498-7699-8be8-57226e6cc442; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-10-30T06:56:30Z",
+  "run_id": "c2eb408c-7d5e-4ef0-893b-348f101a448e",
+  "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "bd60b5255ee3bdc57cddae5a1ef9eba06dc2f9e0413fc17ed7328652af2aba8f",
+    "artifact_sha256_0.1.0_arm64": "2ef451364582779d9f80013aeb353b924f0f68073f2fd1ded0c8f3eacb395ef7",
+    "manifest_sha256_0.1.0": "d62fba11f33ccf3afe72b8847a4c8ccb3a5db73e9367811a453f2e516cef8d1e",
+    "signed_manifest_sha256_0.1.0": "fe23828b76f1cb95fede48f2b10aa849cb7aa8cae78c7d20a890866b8d673018"
+  },
+  "build": {
+    "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:8c221cf6ba6ba00e7cc4b5d82a5c7fd5a303f2c7e44dd27207c39f18badf010d",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:f4c424ef5d659700e949624e9e211f0c5a2b1ef2b2dec4d8ad90bad780134894",
+      "member": "sha256:6c923ac5e958a4c52781e7d44a1460dcb2c376c3bd6f20f9c6464014813226e2",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:6c923ac5e958a4c52781e7d44a1460dcb2c376c3bd6f20f9c6464014813226e2",
+      "node-netns": "sha256:6c923ac5e958a4c52781e7d44a1460dcb2c376c3bd6f20f9c6464014813226e2",
+      "origin": "sha256:90fbcc2ccc21b205585777ac93bbe7935c8a70e6920508f390fef217db7898f2",
+      "payment": "sha256:50b94babc89e2a9da5dd4b3fb53a713f9d4b295c9d4ec7877fefb5cc403dc635",
+      "postgres": "sha256:04abc96ae6aa5cbe22acd62c730041d9df03d391a44f0b4341f4d7dae1b55faf",
+      "worker": "sha256:6031f7c01be25cc3bb29388ac6205191447ce956a2244ffc086bc797168bd395"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "917a4314601be703587a8eab1e171bde0227ba5467afbd0b0e9c63e8011e838d",
+      "fvpn-control": "6fc94dd9d464b08c6be85feaa129b58016db19edd80bf585c81ddc4c6b8f3232",
+      "fvpn-updater": "098091fcd511060dc59d44f9e3311c4decf9edbe7b3fc386cf04cdc2052588be",
+      "fvpn-worker": "d5d5f634a5c562b6c74a9f3220559e19e6a2e7e7e2e6e8b000f42cdc881fd6b1"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "b8aa6901c85d514b581df13f303c66760b027dfb",
+        "vcs.time": "2026-10-30T06:29:52Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "b8aa6901c85d514b581df13f303c66760b027dfb",
+        "vcs.time": "2026-10-30T06:29:52Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "b8aa6901c85d514b581df13f303c66760b027dfb",
+        "vcs.time": "2026-10-30T06:29:52Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "b8aa6901c85d514b581df13f303c66760b027dfb",
+        "vcs.time": "2026-10-30T06:29:52Z"
+      }
+    }
+  },
+  "policy_revision": "12",
+  "active_policy_revisions": {
+    "dns_profile": "01a18b96-20fc-7d36-b531-5ffa745fa890",
+    "domain_rule_set": "01a18b96-1c3e-7b6a-bd5e-32f4d4c03ce6",
+    "fair_use": "01a18b96-177f-7b53-8506-a5e5f8202f47",
+    "plan": "01a18b96-2a8a-72ce-ac2c-0ee2aca2c7bc",
+    "release_support": "01a18b96-1039-755b-bd73-5fbde7563dad"
+  },
+  "node_incarnation": "01a18b96-3498-7699-8be8-57226e6cc442",
+  "steps": [
+    {
+      "name": "real Portal billing return",
+      "status": "pass",
+      "expected": "built billing page renders, pending confirmation; no API error",
+      "actual": "probe_ok=true; HTTP=200; page=true; pending=true; api_error=false",
+      "command": "shared deploy/devstack/probe-portal.mjs; cookies via stdin, controlled origin only",
+      "at": "2026-10-30T06:56:30Z"
+    },
+    {
+      "name": "checkout command replay",
+      "status": "pass",
+      "expected": "201 and same hosted session",
+      "actual": "first=201; replay=201; same_session=true",
+      "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
+      "at": "2026-10-30T06:56:31Z"
+    },
+    {
+      "name": "forged return before provider truth",
+      "status": "pass",
+      "expected": "200 built Portal; no subscription or live entitlement",
+      "actual": "HTTP=200; subscriptions=0; state=pending_payment",
+      "command": "GET forged return before snapshot; read product subscriptions and entitlement",
+      "at": "2026-10-30T06:56:32Z"
+    },
+    {
+      "name": "authoritative provider truth",
+      "status": "pass",
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-30T06:56:32Z"
+    },
+    {
+      "name": "provider event invoice.paid",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T06:56:33Z"
+    },
+    {
+      "name": "invalid signature",
+      "status": "pass",
+      "expected": "401; no inbox row",
+      "actual": "HTTP=401; inbox=0",
+      "command": "POST provider's exact bytes with invalid signature",
+      "at": "2026-10-30T06:56:35Z"
+    },
+    {
+      "name": "first paid event",
+      "status": "pass",
+      "expected": "202 then inbox succeeded",
+      "actual": "HTTP=202; reconciled=true",
+      "command": "POST exact provider event; poll processing_status",
+      "at": "2026-10-30T06:56:38Z"
+    },
+    {
+      "name": "reconciled active",
+      "status": "pass",
+      "expected": "one exact paid interval; state=active; refund=0",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T06:55:31+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T07:56:30+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T07:56:30+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T06:56:38Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:40Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:42Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:44Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:46Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:48Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:50Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:52Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:54Z"
+    },
+    {
+      "name": "paced paid replay",
+      "status": "pass",
+      "expected": "202 once; no rate-limit retry",
+      "actual": "HTTP 202 ",
+      "command": "wait 2 seconds; POST identical provider bytes once",
+      "at": "2026-10-30T06:56:56Z"
+    },
+    {
+      "name": "ten identical paid deliveries",
+      "status": "pass",
+      "expected": "one inbox/invoice; one revision change then stable",
+      "actual": "accepted=10; inbox=1; invoices=1; before=1; paid=2; after=2",
+      "command": "POST identical exact bytes 10 times; read keys, intervals and revisions",
+      "at": "2026-10-30T06:56:56Z"
+    },
+    {
+      "name": "reconciled active",
+      "status": "pass",
+      "expected": "one exact paid interval; state=active; refund=0",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T06:55:31+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T07:56:30+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T07:56:30+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T06:56:56Z"
+    },
+    {
+      "name": "checkout command replay",
+      "status": "pass",
+      "expected": "201 and same hosted session",
+      "actual": "first=201; replay=201; same_session=true",
+      "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
+      "at": "2026-10-30T06:56:58Z"
+    },
+    {
+      "name": "authoritative provider truth",
+      "status": "pass",
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-30T06:56:59Z"
+    },
+    {
+      "name": "provider event invoice.paid",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T06:56:59Z"
+    },
+    {
+      "name": "provider event customer.subscription.created",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T06:57:00Z"
+    },
+    {
+      "name": "provider event invoice.payment_failed",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T06:57:00Z"
+    },
+    {
+      "name": "reconciled active",
+      "status": "pass",
+      "expected": "one exact paid interval; state=active; refund=0",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T06:55:58+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T07:56:57+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T07:56:57+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T06:57:09Z"
+    },
+    {
+      "name": "delivery order created/paid/failed",
+      "status": "pass",
+      "expected": "each event processed against same authoritative paid truth; one exact interval",
+      "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
+      "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
+      "at": "2026-10-30T06:57:09Z"
+    }
+  ],
+  "blockers": [
+    "Run in progress; this is an incremental record, not a full AT result."
+  ]
+}

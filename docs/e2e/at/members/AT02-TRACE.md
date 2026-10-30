@@ -1,9 +1,11 @@
-# AT02 device-to-usage binding trace — Follow-up 2
+# AT02 device-to-usage binding trace — Follow-up 3
 
 The native admission gap is resolved in this run. [AT01](AT01.json) proves the
 shared issuer mapping; [AT02](AT02.json) proves the quota transaction, ownership
-gates, slot reuse and receipt validation. Complete AT02 remains **blocked** on a
-serving gateway positive control; database authorization is not forwarding.
+gates, slot reuse and receipt validation. Complete AT02 remains **blocked** after revocation by missing lab conntrack
+(F3-02). A and the final-slot winner have real counted forwarding; the loser
+has no selected exit and no origin response. Database authorization alone is
+not forwarding.
 
 | Stage | Product path | Live evidence |
 |---|---|---|
@@ -13,7 +15,7 @@ serving gateway positive control; database authorization is not forwarding.
 | Last-slot race | Two real contenders in reused lab member images; own worker paused only during the barrier | A has two of three devices. Two goroutines start together: one commits, one returns `ErrLimit`; count becomes three. Loser has no device row or paid group. |
 | Cross-owner access | HTTP list/delete and `devices.Service.Get` | A's list omits B's existing device; deleting it returns 404 without identifiers; service read is not found with an empty result. B remains authorized. |
 | Slot reuse | Member DELETE, then real-adapter admission | Count changes 3 → 2 → 3; former loser is admitted. No projection is hand-written. |
-| External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, and desired/applied generations are recorded separately from the unchanged empty-member lease. |
+| External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, and desired/applied generations are recorded with current-generation leases; post-revoke apply failure is separate. |
 | Node identity | `apps/worker/jobs_nodes.go`, `node.peer.observe` | This node identity path is separate from the native member identity/device writer; never substitute a node peer for a member device. |
 | Usage negative control | Actual node mTLS, deliberately unknown device | Per-event `VALIDATION_FAILED / binding_not_found`. This remains the correct rejection. |
 | Usage positive control | Actual projected device/revision and interval wholly inside its binding | `accepted`, then `duplicate`; exactly one receipt and one sample. Synthetic bytes test ingest, not metering. |
@@ -40,5 +42,7 @@ SELECT count(*) FROM usage_samples;
 ```
 
 Use `docker exec fvpn-w4-members-postgres psql -U fvpn -d fvpn -X` only.
-Never migrate or query the shared admin database for these checks. Full
-forwarding and the quota loser's actual gateway denial still await [F2-01](requests.md).
+Never migrate or query the shared admin database for these checks. The
+positive/negative packet path is in [forwarding-observation.md](forwarding-observation.md).
+Post-revoke recovery awaits [F3-02](requests.md); original transaction and usage
+checks remain intact.
