@@ -11,9 +11,9 @@ import (
 
 func TestAPI01_Revision9FleetConfig(t *testing.T) {
 	doc := loadDoc(t)
-	// Revision 10 advances info.version to 1.6.0. This test still pins revision 9's decisions.
-	if doc.Info.Version != "1.6.0" {
-		t.Fatal("API version must be 1.6.0")
+	// Revision 11 advances info.version to 1.7.0. This test still pins revision 9's decisions.
+	if doc.Info.Version != "1.7.0" {
+		t.Fatal("API version must be 1.7.0")
 	}
 	if n := len(operations(t)); n != 47 {
 		t.Fatalf("got %d operations, want 47", n)

@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 47 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 47 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -254,6 +254,43 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 11
+
+API version **1.7.0**. The endpoint count stays **47**. No new operation.
+
+### D-071 `ErrorCode.AWAITING_MEMBER_GRANTS`
+
+The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
+
+The code is report-only (`pkg/apierr` HTTP status 0, node-local). It is not a browser-facing HTTP error. `forwarding_block_reasons` still contains `awaiting_member_grants` (revision 10); that vocabulary is unchanged. `safety_status` stays `passed` while the deadline holds.
+
+`ObservationReport.checks[]` in that provisional state:
+
+| name | status | error_code | detail |
+|---|---|---|---|
+| `lease` | `failed` | `AWAITING_MEMBER_GRANTS` | `Serving lease has no member grants yet.` |
+| `qos` | `failed` | `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) | `Rate policy could not be applied.` |
+| `source_binding` | `failed` | `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) | `No member binding was admitted.` |
+
+`ObservationReport.errors[]` carries exactly one entry: `code=AWAITING_MEMBER_GRANTS`, `stage=lease`, `message=Serving lease has no member grants yet.`
+
+Negatives, unchanged: a passed deadline is `lease_expired` / `LEASE_EXPIRED` (`Serving lease is not in force.`); a generation mismatch is `policy_missing` / `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
+
+### D-072 `NodeDetail.identity_conflict`
+
+`NodeDetail` (not `NodeSummary`) gains optional nullable `identity_conflict` (`NodeIdentityConflict`): `mapping_frozen`, `conflict_count`, `last_conflict_at`. Absent means the server does not project the field yet (pre-revision-11). Null means the node has no current incarnation or no endpoint has been observed yet. Endpoint hashes, addresses and compatibility domains are never exposed.
+
+`conflict_count` is an integer with minimum 0 and maximum 9007199254740991. The maximum is the JSON-number bound required by the contract integer convention (2^53-1). It is not a product cap. `last_conflict_at` is a nullable UTC `Z` date-time, the same pattern as `retired_at`.
+
+This is the operator-visible projection of spec line 278 (`docs/pki/enrollment.md`, "Revocation and conflicts"). `ObserveEndpoint` freezes the current incarnation's external identity mapping when a different compatibility-domain hash is seen, retains the original endpoint, and does not apply last-writer-wins. There is no automatic unfreeze and no unfreeze operation.
+
+Reconciliation is `revokeNode` plus a new enrollment. The new incarnation starts unfrozen. wire-nodes follow-up 22 projects the field. The operator node detail renders it later (portal follow-up). No new operation, no new error code, and no audit-action enum change (audit actions are free strings).
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-071 | `ErrorCode.AWAITING_MEMBER_GRANTS`; `ObservationReport` and `NodeCheck` placement | agent follow-up 18 adopts the code; the portal error table has the operator copy |
+| D-072 | `NodeDetail.identity_conflict` | wire-nodes follow-up 22 projects the field; portal follow-up renders node detail |
 
 ## Revision 10
 
