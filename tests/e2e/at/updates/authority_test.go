@@ -120,6 +120,14 @@ func (s *updatesFollowup) followup4(batch api.UpdateBatchAccepted, candidate, re
 // HTTP response body/status comes back. TEST ONLY requests use an owned bind mount.
 func (s *updatesFollowup) nodePOST(route string, body any) reply {
 	s.r.t.Helper()
+	// Respect the product's default heartbeat (1/s) and agent (5/s) buckets,
+	// shared with the real process. Each expected response is asserted once;
+	// a rate-limit failure is never retried into a passing conflict assertion.
+	select {
+	case <-time.After(2 * time.Second):
+	case <-s.ctx.Done():
+		s.r.t.Fatal("node API probe context expired")
+	}
 	if route != "/api/v1/agent/observations" && route != "/api/v1/agent/update-results" {
 		s.r.t.Fatal("unexpected node API probe route")
 	}
