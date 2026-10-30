@@ -137,6 +137,7 @@ func writeAgentConfig(controlURL string, stale, interval int) error {
 		"netbird_status_file": labDir + "/netbird-status.json",
 	}
 	status := []byte("{" +
+		`"daemonVersion":"0.76.2",` +
 		`"management":{"url":"https://netbird.example.invalid","connected":true},` +
 		`"relays":{"total":1,"available":1,"details":[{"uri":"https://netbird.example.invalid","available":true}]}` +
 		"}\n")
