@@ -124,7 +124,8 @@ make -f mk/e2e.mk e2e-down
 builds `fvpn-control`, `fvpn-worker`, and the node binaries, and starts
 PostgreSQL 17, the test IdP, a fake payment provider, NetBird CE, AdGuard
 Home, CoreDNS, a release origin, one privileged node, and one member
-container. Bridges do not masquerade, so the lab has no working path to the
+container. Node and AdGuard share a stable namespace held by `node-netns`.
+Bridges do not masquerade, so the lab has no working path to the
 public Internet. Published ports listen on `127.0.0.1` only.
 `e2e-down` removes that prefix and leaves upstream image tags in place.
 
@@ -158,6 +159,7 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `admin-login` | OIDC authorization code with MFA; the member session is inside `member-traffic` | §14.2 |
 | `enroll-bootstrap` | installer token, bootstrap consumed once, NetBird join | §6, §19 AT06 |
 | `desired-state` | signed desired-state file on the node | §5, §8 |
+| `node-restart` | durable identity resume, new heartbeat, nft baseline and unchanged enrollment | §5, §6, F2-05 |
 | `publish` | `PUT /admin/nodes/{id}/publication`, then poll the operation | §5.2, §14.2 |
 | `forwarding` | forward-chain generation and `fvmb0` member accept rules | §5, §19 AT10 |
 | `member-traffic` | API-created plan, grant, same-subject embedded-IdP join and device poll | §8, §19 AT12 |
@@ -167,7 +169,8 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
 | `lease-expiry` | stop control and read the forward chain again | §5, §19 AT29 |
 | `threat-feed-central` | approved bootstrap, wrong-pin rejection, audit, worker metrics, resolver document | §12.3, §12.5, §19 AT22 groundwork |
-| `threat-feed-node` | D-061 local resolver, issued-reference and node evidence probe | §12.5, §19 AT22 |
+| `threat-feed-node` | issued document, verified mTLS bytes, applied projection and synthetic block | §12.5, §19 AT22 |
+| `threat-feed-tamper` | separate corrupted-response and last-good proof | §12.5, §19 AT22 |
 | `revoke` | `POST /admin/nodes/{id}/revoke` | §5, §19 AT13 |
 
 AT07 (reinstall of an existing node) is not executed. A `pass` record is only
@@ -239,10 +242,10 @@ revision with a wrong pin must fail bootstrap with `content_mismatch` and a
 `dns.feed.refresh_failed` audit. Last-good is per revision: the new revision
 stays null, while the prior approved content and resolver generation remain.
 The document digest and normalized embedded rules are checked without
-recording DNS queries. On-node delivery is separately blocked: the current desired-state compiler
-omits `dns.resolver_document`; the authenticated document request returns 404
-and node DNS evidence is null. D-061 credentials and the local AdGuard listener
-are wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetched from the public Internet.
+recording DNS queries. Periodic resolver reconciliation (#127) now issues the
+node document reference. Positive node delivery and the tampered-response case
+have separate records. D-061 credentials and the local AdGuard listener are
+wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetched from the public Internet.
 
 ## Known limits
 
@@ -268,18 +271,20 @@ are wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is f
   the tested main tree. The lab uses their writers and reports their observed
   rows; it no longer treats those implementations as absent. A matching
   subject alone is still insufficient evidence of device authorization.
-- Publication now succeeds through the D-057 group API and route readback.
-  Native D-052 identity matching, authorization and desired bindings also pass.
-  Forwarding remains blocked on w2-agent-core: the agent retains its initial
-  empty-member lease after desired state changes. Exact lease generations,
-  member counts, deadlines and heartbeat are recorded in `member-traffic`.
+- D-057 publication uses real groups and checks the operation's data-path step,
+  including `member_forwarding_unconfirmed`. HTTP 202 and route readback alone
+  cannot complete it. Native D-052 identity authorization is a separate gate.
+  The latest verification records whether agent follow-up 9 is present and
+  compares the lease with the applied generation and actual admission counters.
+  Exact member counts, deadlines and heartbeat remain in `member-traffic`.
 - Only a native controlled-origin request with a device admission counter
   increment can pass forwarding. Usage must come from the real sampler. Expiry
   faults run only after that positive flow; none is claimed from a baseline.
-- D-061 resolver configuration uses the node-local namespace and root-owned
-  mode-0600 credentials. `threat-feed-node` remains blocked on w3-wire-nodes /
-  internal/desiredstate reference issuance, with authenticated 404 and null
-  projected DNS evidence. Bad-pin last-good application needs that positive path.
+- D-061 resolver configuration uses the stable `node-netns` namespace shared by
+  node and AdGuard, with root-owned mode-0600 credentials. The exact runtime
+  `dns` object, signed reference and projected apply evidence are in
+  `threat-feed-node`. `threat-feed-tamper` separately reports whether a corrupt
+  mTLS response was injected; a central wrong pin is not node last-good proof.
 - D-053 runs real candidates and records their actual runtime health answers.
   A successful update does not prove serving traffic or rollback to last-good.
 - Shared importable helpers and a 20-users × 3-peers scale hook are documented
@@ -292,9 +297,9 @@ are wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is f
   the latest complete run. Records with `blocked` keep the acceptance command
   non-zero and identify the responsible product area.
 
-## Latest complete run — follow-up 7
+## Latest complete run — follow-up 8
 
-See [followup7-verification.md](followup7-verification.md) for fresh-stack run
+See [followup8-verification.md](followup8-verification.md) for fresh-stack run
 counts, source commits and real-release digests. The dated records are one
 complete run; exploratory runs are excluded. The previous follow-up's
-[verification](followup6-verification.md) remains historical evidence.
+[verification](followup7-verification.md) remains historical evidence.

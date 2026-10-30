@@ -87,7 +87,7 @@ func (r *runner) noteAdmissionGate(ctx context.Context, admin *session, rec *Rec
  'capacity',n.capacity,
  'latest_lease',(SELECT jsonb_build_object('generation',s.policy_generation::text,'issued_at',s.issued_at,'expires_at',s.expires_at,'member_count',jsonb_array_length(s.envelope->'signed'->'members')) FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
  'lease_count',(SELECT count(*) FROM serving_leases s WHERE s.node_id=n.id),
- 'observation',(SELECT jsonb_build_object('checks',o.report_payload->'checks','forwarding',o.report_payload->'forwarding') FROM node_observations o WHERE o.node_id=n.id ORDER BY received_at DESC LIMIT 1)) FROM nodes n WHERE n.id=$1`, r.nodeID).Scan(&raw)
+ 'observation',(SELECT jsonb_build_object('checks',o.report_payload->'checks','member_forwarding_enabled',o.report_payload->'member_forwarding_enabled','forwarding_block_reasons',o.report_payload->'forwarding_block_reasons') FROM node_observations o WHERE o.node_id=n.id ORDER BY received_at DESC LIMIT 1)) FROM nodes n WHERE n.id=$1`, r.nodeID).Scan(&raw)
 	if err == nil {
 		note("serving_gate_rows", string(raw))
 	} else {

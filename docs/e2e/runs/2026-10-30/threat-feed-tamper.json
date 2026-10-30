@@ -1,0 +1,30 @@
+{
+  "id": "threat-feed-tamper",
+  "title": "Corrupted resolver response retains node last-good",
+  "spec": [
+    "§12.5",
+    "§19 AT22"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "positive_node_delivery",
+      "detail": "true"
+    },
+    {
+      "name": "last_good_resolver_readback",
+      "detail": "{\"admin_http\":200,\"query_log_enabled\":false,\"query_log_file_enabled\":false,\"rule_count\":16,\"rules_sha256\":\"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8\",\"statistics_enabled\":false,\"synthetic_answer_count\":0,\"synthetic_blocked\":true}"
+    },
+    {
+      "name": "fault_injected",
+      "detail": "false"
+    },
+    {
+      "name": "owner",
+      "detail": "w3-devstack-e2e: node mTLS response corruption hook required; central wrong-pin evidence does not test node tampering or last-good retention"
+    }
+  ],
+  "at": "2026-10-30T05:56:28Z",
+  "run_id": "742a2b14-355f-462e-be89-52ffb2c1993b",
+  "source_commit": "05d70d63890bb181937dabfe01b9e9a680d76086"
+}

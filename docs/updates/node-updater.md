@@ -32,6 +32,29 @@ The config file holds paths and ids. It does not hold the release private key. `
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
 
+## Synthetic health probe configuration (D-063)
+
+The optional `probe_peer` config block requests the dedicated synthetic peer's temporary exception while member forwarding stays blocked (§13.9). Omission (or null) keeps the previous behavior: the challenge has no `probe` member. Configuration does not mark any check passed. Both candidate checks and restored-release rollback checks carry the configured request, each with a fresh nonce.
+
+Template fragment only; `PUBLIC_TEST_ENDPOINT_IPV4` must be replaced with the team's controlled public test endpoint before loading. The placeholder is deliberately not a deployable address:
+
+```json
+{
+  "probe_peer": {
+    "peer_id": "dedicated-probe-peer",
+    "source_v4": "100.64.8.1/32",
+    "destinations": [
+      {"addr_v4": "PUBLIC_TEST_ENDPOINT_IPV4/32", "proto": "tcp", "port": 443}
+    ],
+    "resolver_dns": false
+  }
+}
+```
+
+Use the dedicated test peer's actual NetBird ID and `/32` overlay source; do not use a member peer. Specify 1–4 public `/32` destination sockets, each with lowercase `tcp` or `udp` and port 1–65535. `resolver_dns` optionally requests the agent's configured resolvers on TCP/UDP 53 in addition to those destinations. The issuer uses the enforcement package's specification deny list: RFC1918, CGNAT/overlay, loopback, link-local and metadata, documentation, benchmark, multicast, reserved and other specification-denied destinations fail configuration load. Artifact-origin/loopback test options do not relax this check. Peer IDs must be nonblank, at most 128 bytes and free of ASCII controls. Unknown JSON members, malformed values and trailing JSON are rejected with fixed, bounded errors that do not echo configuration values.
+
+The production challenge uses `issued_at = now` and `expires_at = issued_at + 45s`; no config field changes that TTL. This is below D-063's 300s maximum. The consumer installs only after issuance, caps lifetime relative to issuance and expiry, and independently rejects member collisions, host addresses and additional denied ranges. Issuance is a request, not proof of successful installation or traffic. The [challenge contract](node-health-attestation.md#optional-synthetic-probe-d-063) describes exact limits, nonce binding, privacy and updater/agent ownership. Actual path verification still requires the authenticated synthetic probe and its challenge-bound attestation.
+
 ## What the updater accepts
 
 Work comes from a desired-state envelope (§14.7). `FileSource` verifies it on every read with a `desired-state` purpose key. The window is half-open `[issued_at, expires_at)`. The node id and incarnation must match. An unverifiable or expired envelope blocks forwarding. A valid envelope with `update: null` is not a job (`ErrNoWork`) and does not by itself change the latch.

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
@@ -50,6 +51,7 @@ type Engine struct {
 	Sender       ResultSink
 	Journal      *updatejournal.Journal
 	Download     DownloadConfig
+	ProbePeer    *healthattest.ChallengeProbe
 	// Attest is the challenge window for isolation, DNS and the tunnel probe
 	// (D-053). Zero values use HealthAttestWait, HealthAttestPoll and
 	// HealthChallengeTTL. The updater config cannot set it.
