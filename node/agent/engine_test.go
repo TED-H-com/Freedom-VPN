@@ -15,8 +15,17 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
+
+// passProbe is a data-path probe that has already succeeded. Unit tests
+// have no NetBird daemon and no fv interfaces. Production uses netbirdProber.
+type passProbe struct{}
+
+func (passProbe) Probe(context.Context, ProbeRequest) ProbeResult {
+	return ProbeResult{Ran: true, Check: api.HealthCheckStatusPassed, Health: api.DataHealthHealthy, Detail: "overlay_up"}
+}
 
 type memPlane struct {
 	baselines int
@@ -96,7 +105,7 @@ func newRig(t *testing.T) *rig {
 	plane := &memPlane{}
 	var buf bytes.Buffer
 	log := slog.New(slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	eng, err := Start(Options{Config: cfg, Clock: clock, Plane: plane, Log: log, MeterSource: staticSource{boot: boot.String()}})
+	eng, err := Start(Options{Config: cfg, Clock: clock, Plane: plane, Log: log, MeterSource: staticSource{boot: boot.String()}, Prober: passProbe{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -321,7 +330,7 @@ func TestStep_RebootRequiresNewerLease(t *testing.T) {
 	}
 	defer store.Close()
 	plane := &memPlane{}
-	eng, err := Start(Options{Config: cfg, Store: store, Clock: r.clock, Plane: plane, Log: slog.New(slog.DiscardHandler), MeterSource: staticSource{boot: next.String()}})
+	eng, err := Start(Options{Config: cfg, Store: store, Clock: r.clock, Plane: plane, Log: slog.New(slog.DiscardHandler), MeterSource: staticSource{boot: next.String()}, Prober: passProbe{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -340,5 +349,58 @@ func TestStep_RebootRequiresNewerLease(t *testing.T) {
 	}
 	if eng.leaseMono != mono {
 		t.Fatalf("reboot restarted mono_sent: %s -> %s", mono, eng.leaseMono)
+	}
+}
+
+func TestStep_UnpublishedAcksBaseline(t *testing.T) {
+	r := newRig(t)
+	r.srv.SetPublication(api.PublicationIntentUnpublished)
+	if err := r.eng.Enroll(context.Background(), "token-test-only"); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.Boot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.Step(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.serving || r.plane.applies != 0 {
+		t.Fatalf("unpublished forwarded: serving %v applies %d model %+v", r.eng.serving, r.plane.applies, r.plane.last.Bindings)
+	}
+	if r.plane.baselines < 2 {
+		t.Fatalf("baseline was not installed: %d", r.plane.baselines)
+	}
+	if r.eng.desired == nil || r.eng.desired.PublicationIntent != api.PublicationIntentUnpublished {
+		t.Fatalf("desired %+v", r.eng.desired)
+	}
+	want := uint64(r.eng.desired.ConfigGeneration)
+	if want == 0 || r.eng.appliedGen != want || r.eng.decision.Applied != want {
+		t.Fatalf("applied %d decision %d desired %d", r.eng.appliedGen, r.eng.decision.Applied, want)
+	}
+	if r.eng.decision.Safety != api.SafetyStatusPassed || r.eng.decision.Provisioning != api.ProvisioningStateReady {
+		t.Fatalf("safety %s provisioning %s reasons %v", r.eng.decision.Safety, r.eng.decision.Provisioning, r.eng.decision.Reasons)
+	}
+	if r.eng.decision.DataHealth != api.DataHealthHealthy || r.eng.decision.Serve || len(r.eng.decision.Model.Bindings) != 0 {
+		t.Fatalf("health %s serve %v bindings %d", r.eng.decision.DataHealth, r.eng.decision.Serve, len(r.eng.decision.Model.Bindings))
+	}
+	for _, name := range []api.NodeCheckName{api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+		c, ok := checkBy(r.eng.decision.Checks, name)
+		if !ok || c.Status != api.HealthCheckStatusNotRun {
+			t.Fatalf("%s %+v", name, c)
+		}
+	}
+	rep, ok := r.srv.LastObservation()
+	if !ok {
+		t.Fatal("observation was not accepted")
+	}
+	gen, err := rep.AppliedConfigGeneration.Get()
+	if err != nil || uint64(gen) != want {
+		t.Fatalf("reported generation %v %v", gen, err)
+	}
+	if rep.SafetyStatus != api.SafetyStatusPassed || rep.DataHealth != api.DataHealthHealthy || rep.ProvisioningState != api.ProvisioningStateReady || rep.MemberForwardingEnabled {
+		t.Fatalf("report safety %s health %s provisioning %s forwarding %v", rep.SafetyStatus, rep.DataHealth, rep.ProvisioningState, rep.MemberForwardingEnabled)
+	}
+	if _, err := rep.Netbird.PeerId.Get(); err == nil {
+		t.Fatal("observation invented a NetBird peer id")
 	}
 }

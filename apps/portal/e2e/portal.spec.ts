@@ -96,9 +96,12 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     const meJson = (await meRes.json()) as { member_id: string };
     const activeMemberId = meJson.member_id;
 
-    // 2. Navigate to /member/devices and verify 3 / 3 quota and limit warning banner
+    // 2. Navigate to /member/devices and verify 3 / 3 quota, limit warning banner, and Device ID column label (DOC12)
     await page.goto('/member/devices');
     await expect(page.getByTestId('member-devices-page')).toBeVisible();
+    await expect(page.getByTestId('member-devices-table')).toContainText(
+      '裝置識別碼 (Device ID)',
+    );
     await expect(page.getByTestId('device-quota-badge')).toContainText('3 / 3');
     await expect(page.getByTestId('device-limit-warning')).toBeVisible();
 
@@ -147,52 +150,63 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
   });
 
   test('TestOperator_NodePatchAnd412PreconditionConflict', async ({ page, request }) => {
-    // 1. Navigate to /admin/nodes and open the primary Taipei node
-    await page.goto('/admin/nodes');
-    await expect(page.getByTestId('admin-nodes-list-page')).toBeVisible();
-
-    const nodesRes = await request.get(`${BASE_URL}/api/v1/admin/nodes?role=admin`);
-    const nodesData = (await nodesRes.json()) as {
-      items: Array<{ node_id: string; name: string }>;
-    };
-    const tpeNode =
-      nodesData.items.find((n) => n.name === 'tw-tpe-01') || nodesData.items[0];
-    expect(tpeNode).toBeTruthy();
-
-    await page.goto(`/admin/nodes/${tpeNode.node_id}`);
-    await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
-
-    // 2. Verify desired vs observed state separation
-    await expect(page.getByTestId('desired-vs-observed-section')).toBeVisible();
-    await expect(page.getByTestId('desired-publication')).toBeVisible();
-    await expect(page.getByTestId('observed-publication')).toBeVisible();
-    await expect(page.getByTestId('desired-config-gen')).toBeVisible();
-    await expect(page.getByTestId('observed-config-gen')).toBeVisible();
-
-    // 3. Perform a valid PATCH with If-Match
-    await expect(page.locator('#edit-node-name')).toHaveValue('tw-tpe-01');
-    await page.locator('#edit-node-notes').fill('Updated note via E2E step 1');
-    await page.getByTestId('save-node-patch-btn').click();
-    await expect(page.getByTestId('saved-pending-apply-banner')).toBeVisible();
-
-    // 4. Bump node resource_version concurrently on the backend while browser holds stale ETag
-    const bumpRes = await request.post(`${BASE_URL}/__e2e/bump-node-version`, {
-      data: { node_id: tpeNode.node_id },
+    const holdRes = await request.post(`${BASE_URL}/__e2e/hold-node-observations`, {
+      data: { hold: true },
     });
-    expect(bumpRes.ok()).toBeTruthy();
+    expect(holdRes.ok()).toBeTruthy();
 
-    // 5. Submit PATCH with stale ETag -> expect 412 RESOURCE_VERSION_CONFLICT and ConflictDialog
-    await page.locator('#edit-node-notes').fill('Stale write attempt');
-    await page.getByTestId('save-node-patch-btn').click();
+    try {
+      // 1. Navigate to /admin/nodes and open the primary Taipei node
+      await page.goto('/admin/nodes');
+      await expect(page.getByTestId('admin-nodes-list-page')).toBeVisible();
 
-    await expect(page.getByTestId('conflict-dialog')).toBeVisible();
+      const nodesRes = await request.get(`${BASE_URL}/api/v1/admin/nodes?role=admin`);
+      const nodesData = (await nodesRes.json()) as {
+        items: Array<{ node_id: string; name: string }>;
+      };
+      const tpeNode =
+        nodesData.items.find((n) => n.name === 'tw-tpe-01') || nodesData.items[0];
+      expect(tpeNode).toBeTruthy();
 
-    // 6. Click reload in ConflictDialog -> verify latest version & concurrent notes load cleanly
-    await page.getByTestId('conflict-reload-btn').click();
-    await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
-    await expect(page.locator('#edit-node-notes')).toHaveValue(
-      'Concurrent operator edit',
-    );
+      await page.goto(`/admin/nodes/${tpeNode.node_id}`);
+      await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
+
+      // 2. Verify desired vs observed state separation
+      await expect(page.getByTestId('desired-vs-observed-section')).toBeVisible();
+      await expect(page.getByTestId('desired-publication')).toBeVisible();
+      await expect(page.getByTestId('observed-publication')).toBeVisible();
+      await expect(page.getByTestId('desired-config-gen')).toBeVisible();
+      await expect(page.getByTestId('observed-config-gen')).toBeVisible();
+
+      // 3. Perform a valid PATCH with If-Match
+      await expect(page.locator('#edit-node-name')).toHaveValue('tw-tpe-01');
+      await page.locator('#edit-node-notes').fill('Updated note via E2E step 1');
+      await page.getByTestId('save-node-patch-btn').click();
+      await expect(page.getByTestId('saved-pending-apply-banner')).toBeVisible();
+
+      // 4. Bump node resource_version concurrently on the backend while browser holds stale ETag
+      const bumpRes = await request.post(`${BASE_URL}/__e2e/bump-node-version`, {
+        data: { node_id: tpeNode.node_id },
+      });
+      expect(bumpRes.ok()).toBeTruthy();
+
+      // 5. Submit PATCH with stale ETag -> expect 412 RESOURCE_VERSION_CONFLICT and ConflictDialog
+      await page.locator('#edit-node-notes').fill('Stale write attempt');
+      await page.getByTestId('save-node-patch-btn').click();
+
+      await expect(page.getByTestId('conflict-dialog')).toBeVisible();
+
+      // 6. Click reload in ConflictDialog -> verify latest version & concurrent notes load cleanly
+      await page.getByTestId('conflict-reload-btn').click();
+      await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
+      await expect(page.locator('#edit-node-notes')).toHaveValue(
+        'Concurrent operator edit',
+      );
+    } finally {
+      await request.post(`${BASE_URL}/__e2e/hold-node-observations`, {
+        data: { hold: false },
+      });
+    }
   });
 
   test('TestAT06_AT07_EnrollmentTokenSingleDisplayNoStorageLeakAndRevoke', async ({
@@ -244,7 +258,18 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
   test('TestAT23_AT24_UpdateBatchProgressNeedsAttentionAndUnconfirmed', async ({
     page,
+    request,
   }) => {
+    const nodesRes = await request.get(`${BASE_URL}/api/v1/admin/nodes`);
+    const nodesJson = (await nodesRes.json()) as {
+      items: Array<{ node_id: string; name?: string | null }>;
+    };
+    const enrolledNode =
+      nodesJson.items.find((n) => n.name === 'tw-tpe-01-updated') ??
+      nodesJson.items.find((n) => n.name === 'tw-tpe-01') ??
+      nodesJson.items[0];
+    const enrolledNodeId = enrolledNode!.node_id;
+
     // 1. Navigate to the seeded fleet update batch on /admin/updates
     await page.goto(`/admin/updates?batch_id=${SEEDED_BATCH_ID}`);
     await expect(page.getByTestId('admin-fleet-updates-page')).toBeVisible();
@@ -256,13 +281,25 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('bucket-succeeded')).toContainText('1');
     await expect(page.getByTestId('bucket-failed')).toContainText('1');
 
-    // 3. Verify per-target `needs_attention` and `unconfirmed` badges (D-015, §13.7)
+    // 3. Verify per-target `needs_attention`, `unconfirmed`, and D-048 `policy_generation` / `policy_refs` evidence
     await expect(
       page.getByTestId(`target-needs-attention-${SEEDED_NODE_2_ID}`),
     ).toBeVisible();
     await expect(
       page.getByTestId(`target-unconfirmed-${SEEDED_NODE_2_ID}`),
     ).toBeVisible();
+    await expect(page.getByTestId(`target-policy-gen-${enrolledNodeId}`)).toContainText(
+      '2',
+    );
+    await expect(page.getByTestId(`target-policy-refs-${enrolledNodeId}`)).toContainText(
+      '0195f100-0000-7000-8000-000000000401',
+    );
+    await expect(page.getByTestId(`target-policy-gen-${SEEDED_NODE_2_ID}`)).toContainText(
+      '未回報 (not reported)',
+    );
+    await expect(
+      page.getByTestId(`target-policy-refs-${SEEDED_NODE_2_ID}`),
+    ).toContainText('未回報 (not reported)');
 
     // 4. Verify locale switching (zh-TW <-> en) and accessible labels
     await page.getByTestId('locale-switcher').selectOption('en');
@@ -272,6 +309,9 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(
       page.getByTestId(`target-unconfirmed-${SEEDED_NODE_2_ID}`),
     ).toContainText('Unconfirmed');
+    await expect(page.getByTestId(`target-policy-gen-${SEEDED_NODE_2_ID}`)).toContainText(
+      'not reported',
+    );
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
   });
 
