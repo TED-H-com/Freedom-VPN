@@ -232,6 +232,7 @@ func (l *live) devices(r *record) {
 		loserService = "member-a4"
 	}
 	l.traceForwarding(r, loserService, uuid.Nil)
+	l.traceForwarding(r, "member-a2", second)
 	if _, err = l.docker("pause", l.name("worker")); err != nil {
 		r.block("Could not re-pause worker for slot reuse")
 		return

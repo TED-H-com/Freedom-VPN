@@ -1,9 +1,16 @@
 {
+  "node_incarnations": {
+    "node": "01a18dd2-0805-7138-a0d9-3c77628ff51f"
+  },
   "complete": true,
   "forwarding": [
     {
-      "probe_sha256": "7e2d311067bbd0779e4baa938c7b53b8bb8eb706ef87a9d0034bc1526f2a95a7",
-      "at": "2026-10-30T07:12:14Z",
+      "node_container_role": "node",
+      "node_incarnation": "01a18dd2-0805-7138-a0d9-3c77628ff51f",
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "1f185dbd0d47cd344d183e7904d06b5377016e1d8124682309ad0dfd68d6e2c0",
+      "at": "2026-10-30T17:25:17Z",
       "member_container_role": "member-paid",
       "route_selected": true,
       "route_before": [
@@ -31,10 +38,10 @@
       },
       "node_before": {
         "available": true,
-        "generation": "0",
+        "generation": "19",
         "device_upload_bytes": "0",
         "device_download_bytes": "0",
-        "member_accept_rules": 0,
+        "member_accept_rules": 24,
         "diagnostic_bytes": {
           "ctbadns": "0",
           "ctbase": "0",
@@ -46,27 +53,27 @@
           "ctunkd": "0",
           "ctunku": "0",
           "ctv6": "0",
-          "nd_01a18ba2a0bf79b09e92ebb1480f61c9": "0",
-          "nd_01a18ba38ae17137916095878edf79af": "0",
-          "nd_01a18ba40caa7b04919c473f6f99c81f": "0",
-          "nd_01a18ba481cb7ca38139bf9ad42429dd": "0",
-          "nd_01a18ba685c371418865569b872dbd41": "0",
-          "nu_01a18ba2a0bf79b09e92ebb1480f61c9": "0",
-          "nu_01a18ba38ae17137916095878edf79af": "0",
-          "nu_01a18ba40caa7b04919c473f6f99c81f": "0",
-          "nu_01a18ba481cb7ca38139bf9ad42429dd": "0",
-          "nu_01a18ba685c371418865569b872dbd41": "0"
+          "nd_01a18dd2ebf373c59499a96d11ea199e": "0",
+          "nd_01a18dd3d79176e3b8670f869c439e19": "0",
+          "nd_01a18dd45bbc75a4902d1fdf13cc3178": "0",
+          "nd_01a18dd53e1f7143b6ee7e619f18eca8": "0",
+          "nd_01a18dd7f55e75c2aafcc5e5dd26fc02": "0",
+          "nu_01a18dd2ebf373c59499a96d11ea199e": "0",
+          "nu_01a18dd3d79176e3b8670f869c439e19": "0",
+          "nu_01a18dd45bbc75a4902d1fdf13cc3178": "0",
+          "nu_01a18dd53e1f7143b6ee7e619f18eca8": "0",
+          "nu_01a18dd7f55e75c2aafcc5e5dd26fc02": "0"
         }
       },
       "node_after": {
         "available": true,
-        "generation": "0",
-        "device_upload_bytes": "0",
-        "device_download_bytes": "0",
-        "member_accept_rules": 0,
+        "generation": "19",
+        "device_upload_bytes": "2305",
+        "device_download_bytes": "2411",
+        "member_accept_rules": 24,
         "diagnostic_bytes": {
           "ctbadns": "0",
-          "ctbase": "300",
+          "ctbase": "0",
           "ctdeny": "0",
           "cthost": "0",
           "ctin": "0",
@@ -75,56 +82,67 @@
           "ctunkd": "0",
           "ctunku": "0",
           "ctv6": "0",
-          "nd_01a18ba2a0bf79b09e92ebb1480f61c9": "0",
-          "nd_01a18ba38ae17137916095878edf79af": "0",
-          "nd_01a18ba40caa7b04919c473f6f99c81f": "0",
-          "nd_01a18ba481cb7ca38139bf9ad42429dd": "0",
-          "nd_01a18ba685c371418865569b872dbd41": "0",
-          "nu_01a18ba2a0bf79b09e92ebb1480f61c9": "0",
-          "nu_01a18ba38ae17137916095878edf79af": "0",
-          "nu_01a18ba40caa7b04919c473f6f99c81f": "0",
-          "nu_01a18ba481cb7ca38139bf9ad42429dd": "0",
-          "nu_01a18ba685c371418865569b872dbd41": "0"
+          "nd_01a18dd2ebf373c59499a96d11ea199e": "0",
+          "nd_01a18dd3d79176e3b8670f869c439e19": "0",
+          "nd_01a18dd45bbc75a4902d1fdf13cc3178": "0",
+          "nd_01a18dd53e1f7143b6ee7e619f18eca8": "0",
+          "nd_01a18dd7f55e75c2aafcc5e5dd26fc02": "0",
+          "nu_01a18dd2ebf373c59499a96d11ea199e": "0",
+          "nu_01a18dd3d79176e3b8670f869c439e19": "0",
+          "nu_01a18dd45bbc75a4902d1fdf13cc3178": "0",
+          "nu_01a18dd53e1f7143b6ee7e619f18eca8": "0",
+          "nu_01a18dd7f55e75c2aafcc5e5dd26fc02": "0"
         }
       },
       "packet_observations": {
         "member-paid": {
           "available": true,
           "duration_seconds": 9,
-          "elapsed_ms": 2512,
+          "elapsed_ms": 9032,
           "filter": "controlled-origin TCP/443, fixed client port 38443",
           "interfaces": {
             "fvnb0": {
-              "to_origin": 2
+              "from_origin": 7,
+              "to_origin": 10
             }
           }
         },
         "node": {
           "available": true,
           "duration_seconds": 9,
-          "elapsed_ms": 9033,
+          "elapsed_ms": 9003,
           "filter": "controlled-origin TCP/443, fixed client port 38443",
           "interfaces": {
             "fvmb0": {
-              "to_origin": 5
+              "from_origin": 7,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 10
             }
           }
         },
         "origin": {
           "available": true,
           "duration_seconds": 9,
-          "elapsed_ms": 5794,
+          "elapsed_ms": 9009,
           "filter": "controlled-origin TCP/443, fixed client port 38443",
-          "interfaces": {}
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
         }
       },
       "transfer": {
-        "body_bytes": 0,
-        "http_status": 0,
-        "origin_receipt": false
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
       },
-      "counted": false,
-      "first_unconfirmed_hop": "node forward-chain baseline: ctbase increases, zero member accept rules, no origin response; missing conntrack after revocation (F3-02)"
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
     }
   ],
   "id": "AT03",
@@ -134,7 +152,7 @@
     "§19 AT03",
     "BILL01 BILL03 ENT01"
   ],
-  "status": "blocked",
+  "status": "pass",
   "observations": [
     {
       "name": "real Portal billing return",
@@ -166,7 +184,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:08:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:09:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:09:43+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:00+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:22:59+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:22:59+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "paced paid replay",
@@ -210,7 +228,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:08:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:09:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:09:43+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:00+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:22:59+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:22:59+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "independent ordering identity",
@@ -238,7 +256,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:11+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:09+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:09+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:27+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:23:26+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:23:26+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order created/paid/failed",
@@ -270,7 +288,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:24+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:23+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:23+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:41+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:23:39+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:23:39+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order created/failed/paid",
@@ -302,7 +320,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:37+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:36+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:36+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:54+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:23:53+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:23:53+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order paid/created/failed",
@@ -334,7 +352,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:51+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:50+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:50+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:23:07+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:24:06+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:24:06+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order paid/failed/created",
@@ -366,7 +384,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:10:04+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:11:03+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:11:03+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:23:21+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:24:20+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:24:20+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order failed/created/paid",
@@ -398,7 +416,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:10:18+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:11:16+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:11:16+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:23:34+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:24:33+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:24:33+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order failed/paid/created",
@@ -413,149 +431,159 @@
       "detail": "pass; expected: new real peer belongs to the same public subject; actual: new_peer=true; same_subject=true; command: GET NetBird /api/peers; compare user_id to shared-login credential ID in memory"
     },
     {
+      "name": "member-paid protected native log inventory",
+      "detail": "pass; expected: mode 0600; values never retained; actual: {\"present\":true,\"bytes\":93,\"mode\":\"0:600\",\"device_flow_keys\":1}; command: Stack.ScanNativeJoinLog before transient log deletion"
+    },
+    {
       "name": "current-generation lease after desired change",
-      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-30T07:11:53.63783+00:00\", \"expires_at\": \"2026-10-31T07:11:53.63783+00:00\", \"generation\": \"20\", \"member_count\": 8}, \"applied\": \"20\", \"desired\": \"20\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": false}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
+      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-30T17:25:07.362132+00:00\", \"expires_at\": \"2026-10-31T17:25:07.362132+00:00\", \"generation\": \"19\", \"member_count\": 8}, \"applied\": \"19\", \"desired\": \"19\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
     },
     {
       "name": "bounded member transfer observation",
-      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"probe_sha256\":\"7e2d311067bbd0779e4baa938c7b53b8bb8eb706ef87a9d0034bc1526f2a95a7\",\"at\":\"2026-10-30T07:12:14Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nd_01a18ba38ae17137916095878edf79af\":\"0\",\"nd_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nd_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nd_01a18ba685c371418865569b872dbd41\":\"0\",\"nu_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nu_01a18ba38ae17137916095878edf79af\":\"0\",\"nu_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nu_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nu_01a18ba685c371418865569b872dbd41\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"300\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nd_01a18ba38ae17137916095878edf79af\":\"0\",\"nd_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nd_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nd_01a18ba685c371418865569b872dbd41\":\"0\",\"nu_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nu_01a18ba38ae17137916095878edf79af\":\"0\",\"nu_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nu_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nu_01a18ba685c371418865569b872dbd41\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":2512,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"to_origin\":2}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9033,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"to_origin\":5}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":5794,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"selected route to node or later path; consult counters and packet observations\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a18dd2-0805-7138-a0d9-3c77628ff51f\",\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"1f185dbd0d47cd344d183e7904d06b5377016e1d8124682309ad0dfd68d6e2c0\",\"at\":\"2026-10-30T17:25:17Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"19\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nd_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nd_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nd_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nd_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\",\"nu_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nu_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nu_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nu_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nu_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"19\",\"device_upload_bytes\":\"2305\",\"device_download_bytes\":\"2411\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nd_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nd_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nd_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nd_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\",\"nu_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nu_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nu_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nu_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nu_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9032,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9003,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9009,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
     },
     {
-      "name": "post-revoke enforcement dependency",
-      "detail": "pass; expected: record required conntrack executable and actual apply failures; actual: conntrack_present=false; observations={\"first_apply_failure\": \"2026-10-30T07:09:39.760469+00:00\", \"apply_failure_observations\": 10}; command: docker exec node command -v conntrack; read immutable node observation errors"
+      "name": "post-revoke enforcement dependency and health",
+      "detail": "pass; expected: conntrack present; typed accepted observation retained; actual: conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}; command: command -v conntrack; read latest accepted api.ObservationReport (generated enum)"
     },
     {
-      "name": "blocked",
-      "detail": "F3-02: required conntrack executable is absent from the running lab node. The first device revocation is followed by repeated HEALTH_CHECK_FAILED/apply failed and generation-0 baseline; later paid-member packets increment ctbase instead of member counters. Owner: devstack deploy/devstack/Dockerfile.node; node/enforce/apply.go:deleteConntrack requires conntrack -D. No package was installed and no projection was bypassed."
+      "name": "post-revoke enforcement dependency and health",
+      "detail": "pass; expected: conntrack present; typed accepted observation retained; actual: conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}; command: command -v conntrack; read latest accepted api.ObservationReport (generated enum)"
     },
     {
       "name": "provenance",
-      "detail": "source=ac93203dbabc05aa3c1c70f644370a205a704f16; applied generation=37; incarnation=01a18ba1-ea3e-7375-a704-849e1343798c; image/binary digests in JSON"
+      "detail": "source=a511927c4962b21cc90d04dc372f11f848cf6478; applied generation=52; incarnation=01a18dd2-0805-7138-a0d9-3c77628ff51f; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-30T07:09:42Z",
-  "run_id": "f81a8365-7839-4756-bee2-9bb2a5506cdd",
-  "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+  "at": "2026-10-30T17:22:58Z",
+  "run_id": "d89eda32-84ef-4582-b669-053d5d9abadd",
+  "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "30f01b3a8f647896d300fcf801de9dce58a2708f432001b3abd77c3ec9db6347",
-    "artifact_sha256_0.1.0_arm64": "761cb23219e072b88b12d4191180404c7a1e84d904be6f890ffdb2565d2428f2",
-    "manifest_sha256_0.1.0": "527546eaa63b96a6caba82341c03e87d4752379a77a6f85385211390dc55adb7",
-    "signed_manifest_sha256_0.1.0": "d9474b88bd3265816c538a093e7bbdf1df4e1802aca17de838c7dae65b8056f9"
+    "artifact_sha256_0.1.0_amd64": "b4afc29b9bd56179f4e6981a646cf1de4235c99cb236e362344c702bde00f7e4",
+    "artifact_sha256_0.1.0_arm64": "1eb4b1a7fda363a79f272e4ecb2e918e5a4ee5c8b405e31a8883f695c692a0dc",
+    "manifest_sha256_0.1.0": "174148889555165c85f4f92a62254c9006ec69f167192ca1c7f9b4c84ef440da",
+    "signed_manifest_sha256_0.1.0": "3c14199507eb3d9d3812b98ff4c18731f0123206654a99c677c6aeb1568a3df8"
   },
   "followup_build": {
-    "test_binary_sha256": "1a5eebf176f3648c202b8de4316f29906a1e8e0e21836e88bb650c803bd83ec8",
-    "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+    "test_binary_sha256": "63ee44e7c4636d3c870a4d24ec9539edeb5c21f7b842488f33c36d3e93527abc",
+    "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
     "source_dirty": true,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:e0b0962d65c2aa9d624a85ab0e5125dba1988c442239302bb4ee0e47694766f5",
+      "control": "sha256:2a6646fd892f30018da565de5e6efaf82a90fe80767c1e23d4c064b4e0ea4003",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:43f35b4f6e9b09946ba68c278df19b15e6dea634aeafc90222a2d8e1bd145e8b",
-      "member": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+      "idp": "sha256:0de1b30726f2f2d6025af017369d7a985c07d9217fc99aaa021c76253de59af3",
+      "member": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
-      "node-netns": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
-      "origin": "sha256:3e93d4ac149fa83afeba0d16bc7356233fdafa901173170284201571aefa4949",
-      "payment": "sha256:b94f665571a02bd216fb711389800644a59ee4305457bdd9a1eac5835f183fca",
-      "postgres": "sha256:1cb277caacac43d52fe2be6d55109ac026fa5c246198d490887b2ee35e94772f",
-      "worker": "sha256:f7c8e5588bd4cd0ca5a62a3bae235332ad355ee0a1cd0eb551b6cc994a639966"
+      "node": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node-netns": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node2": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "origin": "sha256:7b53fea2e5d6608eb1b7c0aabab94ad6a395ce93d05a69907d767b2abc97a3ad",
+      "payment": "sha256:d77d107156c5263a3a30c94a5a7ce25e928395a9b939f1ca2ee3f03441feb9b1",
+      "postgres": "sha256:967ea92c079ea53bb34e8a2837cbcc96d6f6359ebf81957b40fddb085f9dcc71",
+      "worker": "sha256:fc936c5874d1181714f3a8cebeb2ffe9e0a2511afefb67c08c5a9ee88d39379f"
     },
     "binary_sha256": {
-      "fvpn-agent": "5cdc2c7dcf861f62bbf429eb6e75f41906f4d32047dddbac538bde979e74453e",
-      "fvpn-control": "3a1995717ef086f4d77983daafac8f4deb1b907b58d014f34c60a4f2435ec165",
-      "fvpn-updater": "5b12789d1a63b4170d0cbb314b963de3e782ba977c117f0b7ff8174d705b6300",
-      "fvpn-worker": "1912e47393dd093e0016e16b7df916a99c80f3b772331f7994eb2950db049729"
+      "fvpn-agent": "392bf09563f83d471ec10d4270499b47bb6321bb3a043289e7d4a790e4e78b47",
+      "fvpn-control": "fa1d08d7d8287540f9964e4f726ebc1130d8f24b6cf41ee27f0425b5dc90a019",
+      "fvpn-updater": "9e7487d542beea600d9568a0f58f6e009f19e36db1a44772bda8f1a8e753ac60",
+      "fvpn-worker": "6440ca5d9cd9d6886fd38edd707acef2a251406d138201961a8139e4985c37f7"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       }
     }
   },
   "build": {
-    "test_binary_sha256": "347fad8675efb7ef6cec33435d1608db45ea4f16ed0f6ead19ecb013ae0e8134",
-    "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+    "test_binary_sha256": "8ef1802ab2af74afbf5f8106a7e62a6ccfed08dc3f6f13f9700895025db24342",
+    "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
     "source_dirty": true,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:e0b0962d65c2aa9d624a85ab0e5125dba1988c442239302bb4ee0e47694766f5",
+      "control": "sha256:2a6646fd892f30018da565de5e6efaf82a90fe80767c1e23d4c064b4e0ea4003",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:43f35b4f6e9b09946ba68c278df19b15e6dea634aeafc90222a2d8e1bd145e8b",
-      "member": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+      "idp": "sha256:0de1b30726f2f2d6025af017369d7a985c07d9217fc99aaa021c76253de59af3",
+      "member": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
-      "node-netns": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
-      "origin": "sha256:3e93d4ac149fa83afeba0d16bc7356233fdafa901173170284201571aefa4949",
-      "payment": "sha256:b94f665571a02bd216fb711389800644a59ee4305457bdd9a1eac5835f183fca",
-      "postgres": "sha256:1cb277caacac43d52fe2be6d55109ac026fa5c246198d490887b2ee35e94772f",
-      "worker": "sha256:f7c8e5588bd4cd0ca5a62a3bae235332ad355ee0a1cd0eb551b6cc994a639966"
+      "node": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node-netns": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node2": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "origin": "sha256:7b53fea2e5d6608eb1b7c0aabab94ad6a395ce93d05a69907d767b2abc97a3ad",
+      "payment": "sha256:d77d107156c5263a3a30c94a5a7ce25e928395a9b939f1ca2ee3f03441feb9b1",
+      "postgres": "sha256:967ea92c079ea53bb34e8a2837cbcc96d6f6359ebf81957b40fddb085f9dcc71",
+      "worker": "sha256:fc936c5874d1181714f3a8cebeb2ffe9e0a2511afefb67c08c5a9ee88d39379f"
     },
     "binary_sha256": {
-      "fvpn-agent": "5cdc2c7dcf861f62bbf429eb6e75f41906f4d32047dddbac538bde979e74453e",
-      "fvpn-control": "3a1995717ef086f4d77983daafac8f4deb1b907b58d014f34c60a4f2435ec165",
-      "fvpn-updater": "5b12789d1a63b4170d0cbb314b963de3e782ba977c117f0b7ff8174d705b6300",
-      "fvpn-worker": "1912e47393dd093e0016e16b7df916a99c80f3b772331f7994eb2950db049729"
+      "fvpn-agent": "392bf09563f83d471ec10d4270499b47bb6321bb3a043289e7d4a790e4e78b47",
+      "fvpn-control": "fa1d08d7d8287540f9964e4f726ebc1130d8f24b6cf41ee27f0425b5dc90a019",
+      "fvpn-updater": "9e7487d542beea600d9568a0f58f6e009f19e36db1a44772bda8f1a8e753ac60",
+      "fvpn-worker": "6440ca5d9cd9d6886fd38edd707acef2a251406d138201961a8139e4985c37f7"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "true",
-        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
-        "vcs.time": "2026-10-30T06:53:32Z"
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
       }
     }
   },
-  "policy_revision": "37",
+  "policy_revision": "52",
   "active_policy_revisions": {
-    "dns_profile": "01a18bac-29c9-70b4-a8f4-f33bb7291332",
-    "domain_rule_set": "01a18ba1-d3ef-7d09-9dd9-6ac05ead2d0f",
-    "fair_use": "01a18ba1-cf2a-7611-976b-1f7016381ef0",
-    "plan": "01a18ba1-e232-71e4-a6ba-a0adc96cc8dc",
-    "release_support": "01a18ba1-c7e5-72b2-baf9-de3ee636f542",
-    "threat_feed": "01a18bac-1d12-70be-8607-6c89309f952b"
+    "dns_profile": "01a18de9-98eb-7032-8000-c91d80330a9f",
+    "domain_rule_set": "01a18dd1-ee0a-7869-83e8-5c86fe89816f",
+    "fair_use": "01a18dd1-e94c-7b2b-961e-39bc47cf378c",
+    "plan": "01a18dd1-fc64-77c8-bda0-2c3983402c38",
+    "release_support": "01a18dd1-e208-7bf5-9ad3-867512255e6a",
+    "threat_feed": "01a18de9-9027-70c8-8d74-5418b201e85f"
   },
-  "node_incarnation": "01a18ba1-ea3e-7375-a704-849e1343798c",
+  "node_incarnation": "01a18dd2-0805-7138-a0d9-3c77628ff51f",
   "steps": [
     {
       "name": "real Portal billing return",
@@ -563,7 +591,7 @@
       "expected": "built billing page renders, pending confirmation; no API error",
       "actual": "probe_ok=true; HTTP=200; page=true; pending=true; api_error=false",
       "command": "shared deploy/devstack/probe-portal.mjs; cookies via stdin, controlled origin only",
-      "at": "2026-10-30T07:09:43Z"
+      "at": "2026-10-30T17:22:59Z"
     },
     {
       "name": "checkout command replay",
@@ -571,7 +599,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:09:44Z"
+      "at": "2026-10-30T17:23:00Z"
     },
     {
       "name": "forged return before provider truth",
@@ -579,7 +607,7 @@
       "expected": "200 built Portal; no subscription or live entitlement",
       "actual": "HTTP=200; subscriptions=0; state=pending_payment",
       "command": "GET forged return before snapshot; read product subscriptions and entitlement",
-      "at": "2026-10-30T07:09:44Z"
+      "at": "2026-10-30T17:23:01Z"
     },
     {
       "name": "authoritative provider truth",
@@ -587,7 +615,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:09:45Z"
+      "at": "2026-10-30T17:23:02Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -595,7 +623,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:09:46Z"
+      "at": "2026-10-30T17:23:02Z"
     },
     {
       "name": "invalid signature",
@@ -603,7 +631,7 @@
       "expected": "401; no inbox row",
       "actual": "HTTP=401; inbox=0",
       "command": "POST provider's exact bytes with invalid signature",
-      "at": "2026-10-30T07:09:48Z"
+      "at": "2026-10-30T17:23:04Z"
     },
     {
       "name": "first paid event",
@@ -611,15 +639,15 @@
       "expected": "202 then inbox succeeded",
       "actual": "HTTP=202; reconciled=true",
       "command": "POST exact provider event; poll processing_status",
-      "at": "2026-10-30T07:09:51Z"
+      "at": "2026-10-30T17:23:07Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:08:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:09:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:09:43+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:00+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:22:59+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:22:59+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:09:51Z"
+      "at": "2026-10-30T17:23:07Z"
     },
     {
       "name": "paced paid replay",
@@ -627,7 +655,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:09:53Z"
+      "at": "2026-10-30T17:23:09Z"
     },
     {
       "name": "paced paid replay",
@@ -635,7 +663,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:09:55Z"
+      "at": "2026-10-30T17:23:11Z"
     },
     {
       "name": "paced paid replay",
@@ -643,7 +671,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:09:57Z"
+      "at": "2026-10-30T17:23:13Z"
     },
     {
       "name": "paced paid replay",
@@ -651,7 +679,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:09:59Z"
+      "at": "2026-10-30T17:23:15Z"
     },
     {
       "name": "paced paid replay",
@@ -659,7 +687,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:10:01Z"
+      "at": "2026-10-30T17:23:17Z"
     },
     {
       "name": "paced paid replay",
@@ -667,7 +695,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:10:03Z"
+      "at": "2026-10-30T17:23:19Z"
     },
     {
       "name": "paced paid replay",
@@ -675,7 +703,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:10:05Z"
+      "at": "2026-10-30T17:23:21Z"
     },
     {
       "name": "paced paid replay",
@@ -683,7 +711,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:10:07Z"
+      "at": "2026-10-30T17:23:23Z"
     },
     {
       "name": "paced paid replay",
@@ -691,7 +719,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T07:10:09Z"
+      "at": "2026-10-30T17:23:25Z"
     },
     {
       "name": "ten identical paid deliveries",
@@ -699,15 +727,15 @@
       "expected": "one inbox/invoice; one revision change then stable",
       "actual": "accepted=10; inbox=1; invoices=1; before=1; paid=2; after=2",
       "command": "POST identical exact bytes 10 times; read keys, intervals and revisions",
-      "at": "2026-10-30T07:10:09Z"
+      "at": "2026-10-30T17:23:25Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:08:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:09:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:09:43+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:00+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:22:59+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:22:59+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:10:09Z"
+      "at": "2026-10-30T17:23:25Z"
     },
     {
       "name": "independent ordering identity",
@@ -715,7 +743,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T07:10:09Z"
+      "at": "2026-10-30T17:23:26Z"
     },
     {
       "name": "checkout command replay",
@@ -723,7 +751,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:10:11Z"
+      "at": "2026-10-30T17:23:27Z"
     },
     {
       "name": "authoritative provider truth",
@@ -731,7 +759,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:10:11Z"
+      "at": "2026-10-30T17:23:28Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -739,7 +767,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:12Z"
+      "at": "2026-10-30T17:23:28Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -747,7 +775,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:12Z"
+      "at": "2026-10-30T17:23:29Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -755,15 +783,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:13Z"
+      "at": "2026-10-30T17:23:30Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:11+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:09+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:09+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:27+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:23:26+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:23:26+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:10:22Z"
+      "at": "2026-10-30T17:23:39Z"
     },
     {
       "name": "delivery order created/paid/failed",
@@ -771,7 +799,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T07:10:22Z"
+      "at": "2026-10-30T17:23:39Z"
     },
     {
       "name": "independent ordering identity",
@@ -779,7 +807,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T07:10:23Z"
+      "at": "2026-10-30T17:23:39Z"
     },
     {
       "name": "checkout command replay",
@@ -787,7 +815,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:10:24Z"
+      "at": "2026-10-30T17:23:41Z"
     },
     {
       "name": "authoritative provider truth",
@@ -795,7 +823,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:10:25Z"
+      "at": "2026-10-30T17:23:41Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -803,7 +831,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:25Z"
+      "at": "2026-10-30T17:23:42Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -811,7 +839,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:26Z"
+      "at": "2026-10-30T17:23:42Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -819,15 +847,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:26Z"
+      "at": "2026-10-30T17:23:43Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:24+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:23+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:23+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:41+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:23:39+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:23:39+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:10:35Z"
+      "at": "2026-10-30T17:23:52Z"
     },
     {
       "name": "delivery order created/failed/paid",
@@ -835,7 +863,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T07:10:35Z"
+      "at": "2026-10-30T17:23:52Z"
     },
     {
       "name": "independent ordering identity",
@@ -843,7 +871,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T07:10:36Z"
+      "at": "2026-10-30T17:23:53Z"
     },
     {
       "name": "checkout command replay",
@@ -851,7 +879,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:10:37Z"
+      "at": "2026-10-30T17:23:54Z"
     },
     {
       "name": "authoritative provider truth",
@@ -859,7 +887,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:10:38Z"
+      "at": "2026-10-30T17:23:55Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -867,7 +895,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:39Z"
+      "at": "2026-10-30T17:23:55Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -875,7 +903,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:39Z"
+      "at": "2026-10-30T17:23:56Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -883,15 +911,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:40Z"
+      "at": "2026-10-30T17:23:56Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:37+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:36+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:36+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:22:54+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:23:53+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:23:53+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:10:49Z"
+      "at": "2026-10-30T17:24:05Z"
     },
     {
       "name": "delivery order paid/created/failed",
@@ -899,7 +927,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T07:10:49Z"
+      "at": "2026-10-30T17:24:05Z"
     },
     {
       "name": "independent ordering identity",
@@ -907,7 +935,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T07:10:50Z"
+      "at": "2026-10-30T17:24:06Z"
     },
     {
       "name": "checkout command replay",
@@ -915,7 +943,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:10:51Z"
+      "at": "2026-10-30T17:24:07Z"
     },
     {
       "name": "authoritative provider truth",
@@ -923,7 +951,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:10:51Z"
+      "at": "2026-10-30T17:24:08Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -931,7 +959,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:52Z"
+      "at": "2026-10-30T17:24:09Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -939,7 +967,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:53Z"
+      "at": "2026-10-30T17:24:09Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -947,15 +975,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:10:53Z"
+      "at": "2026-10-30T17:24:10Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:09:51+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:10:50+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:10:50+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:23:07+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:24:06+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:24:06+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:11:02Z"
+      "at": "2026-10-30T17:24:19Z"
     },
     {
       "name": "delivery order paid/failed/created",
@@ -963,7 +991,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T07:11:02Z"
+      "at": "2026-10-30T17:24:19Z"
     },
     {
       "name": "independent ordering identity",
@@ -971,7 +999,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T07:11:03Z"
+      "at": "2026-10-30T17:24:20Z"
     },
     {
       "name": "checkout command replay",
@@ -979,7 +1007,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:11:04Z"
+      "at": "2026-10-30T17:24:21Z"
     },
     {
       "name": "authoritative provider truth",
@@ -987,7 +1015,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:11:05Z"
+      "at": "2026-10-30T17:24:21Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -995,7 +1023,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:11:05Z"
+      "at": "2026-10-30T17:24:22Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -1003,7 +1031,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:11:06Z"
+      "at": "2026-10-30T17:24:23Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -1011,15 +1039,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:11:07Z"
+      "at": "2026-10-30T17:24:23Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:10:04+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:11:03+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:11:03+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:23:21+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:24:20+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:24:20+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:11:16Z"
+      "at": "2026-10-30T17:24:32Z"
     },
     {
       "name": "delivery order failed/created/paid",
@@ -1027,7 +1055,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T07:11:16Z"
+      "at": "2026-10-30T17:24:32Z"
     },
     {
       "name": "independent ordering identity",
@@ -1035,7 +1063,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T07:11:16Z"
+      "at": "2026-10-30T17:24:33Z"
     },
     {
       "name": "checkout command replay",
@@ -1043,7 +1071,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T07:11:18Z"
+      "at": "2026-10-30T17:24:34Z"
     },
     {
       "name": "authoritative provider truth",
@@ -1051,7 +1079,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T07:11:18Z"
+      "at": "2026-10-30T17:24:35Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -1059,7 +1087,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:11:19Z"
+      "at": "2026-10-30T17:24:35Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -1067,7 +1095,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:11:19Z"
+      "at": "2026-10-30T17:24:36Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -1075,15 +1103,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T07:11:20Z"
+      "at": "2026-10-30T17:24:37Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T07:10:18+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T08:11:16+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T08:11:16+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T17:23:34+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T18:24:33+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T18:24:33+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T07:11:29Z"
+      "at": "2026-10-30T17:24:46Z"
     },
     {
       "name": "delivery order failed/paid/created",
@@ -1091,7 +1119,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T07:11:29Z"
+      "at": "2026-10-30T17:24:46Z"
     },
     {
       "name": "member-paid shared issuer login",
@@ -1099,7 +1127,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T07:11:32Z"
+      "at": "2026-10-30T17:24:49Z"
     },
     {
       "name": "member-paid native peer",
@@ -1107,34 +1135,48 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T07:11:37Z"
+      "at": "2026-10-30T17:24:54Z"
+    },
+    {
+      "name": "member-paid protected native log inventory",
+      "status": "pass",
+      "expected": "mode 0600; values never retained",
+      "actual": "{\"present\":true,\"bytes\":93,\"mode\":\"0:600\",\"device_flow_keys\":1}",
+      "command": "Stack.ScanNativeJoinLog before transient log deletion",
+      "at": "2026-10-30T17:24:54Z"
     },
     {
       "name": "current-generation lease after desired change",
       "status": "pass",
       "expected": "uninterrupted agent: desired=applied=latest lease generation, unexpired",
-      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T07:11:53.63783+00:00\", \"expires_at\": \"2026-10-31T07:11:53.63783+00:00\", \"generation\": \"20\", \"member_count\": 8}, \"applied\": \"20\", \"desired\": \"20\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:12:14.001438056Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": false}}",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T17:25:07.362132+00:00\", \"expires_at\": \"2026-10-31T17:25:07.362132+00:00\", \"generation\": \"19\", \"member_count\": 8}, \"applied\": \"19\", \"desired\": \"19\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T17:25:17.524428044Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}",
       "command": "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes",
-      "at": "2026-10-30T07:12:14Z"
+      "at": "2026-10-30T17:25:17Z"
     },
     {
       "name": "bounded member transfer observation",
       "status": "pass",
       "expected": "record selected route, node counters, packet hops and origin receipt",
-      "actual": "{\"probe_sha256\":\"7e2d311067bbd0779e4baa938c7b53b8bb8eb706ef87a9d0034bc1526f2a95a7\",\"at\":\"2026-10-30T07:12:14Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nd_01a18ba38ae17137916095878edf79af\":\"0\",\"nd_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nd_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nd_01a18ba685c371418865569b872dbd41\":\"0\",\"nu_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nu_01a18ba38ae17137916095878edf79af\":\"0\",\"nu_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nu_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nu_01a18ba685c371418865569b872dbd41\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"300\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nd_01a18ba38ae17137916095878edf79af\":\"0\",\"nd_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nd_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nd_01a18ba685c371418865569b872dbd41\":\"0\",\"nu_01a18ba2a0bf79b09e92ebb1480f61c9\":\"0\",\"nu_01a18ba38ae17137916095878edf79af\":\"0\",\"nu_01a18ba40caa7b04919c473f6f99c81f\":\"0\",\"nu_01a18ba481cb7ca38139bf9ad42429dd\":\"0\",\"nu_01a18ba685c371418865569b872dbd41\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":2512,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"to_origin\":2}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9033,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"to_origin\":5}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":5794,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"selected route to node or later path; consult counters and packet observations\"}",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a18dd2-0805-7138-a0d9-3c77628ff51f\",\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"1f185dbd0d47cd344d183e7904d06b5377016e1d8124682309ad0dfd68d6e2c0\",\"at\":\"2026-10-30T17:25:17Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"19\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nd_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nd_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nd_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nd_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\",\"nu_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nu_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nu_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nu_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nu_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"19\",\"device_upload_bytes\":\"2305\",\"device_download_bytes\":\"2411\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nd_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nd_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nd_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nd_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\",\"nu_01a18dd2ebf373c59499a96d11ea199e\":\"0\",\"nu_01a18dd3d79176e3b8670f869c439e19\":\"0\",\"nu_01a18dd45bbc75a4902d1fdf13cc3178\":\"0\",\"nu_01a18dd53e1f7143b6ee7e619f18eca8\":\"0\",\"nu_01a18dd7f55e75c2aafcc5e5dd26fc02\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9032,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9003,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9009,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
       "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
-      "at": "2026-10-30T07:12:27Z"
+      "at": "2026-10-30T17:25:30Z"
     },
     {
-      "name": "post-revoke enforcement dependency",
+      "name": "post-revoke enforcement dependency and health",
       "status": "pass",
-      "expected": "record required conntrack executable and actual apply failures",
-      "actual": "conntrack_present=false; observations={\"first_apply_failure\": \"2026-10-30T07:09:39.760469+00:00\", \"apply_failure_observations\": 10}",
-      "command": "docker exec node command -v conntrack; read immutable node observation errors",
-      "at": "2026-10-30T07:26:27Z"
+      "expected": "conntrack present; typed accepted observation retained",
+      "actual": "conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:43:48.66380367Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}",
+      "command": "command -v conntrack; read latest accepted api.ObservationReport (generated enum)",
+      "at": "2026-10-30T17:44:02Z"
+    },
+    {
+      "name": "post-revoke enforcement dependency and health",
+      "status": "pass",
+      "expected": "conntrack present; typed accepted observation retained",
+      "actual": "conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T17:50:30.550385644Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}",
+      "command": "command -v conntrack; read latest accepted api.ObservationReport (generated enum)",
+      "at": "2026-10-30T17:50:45Z"
     }
   ],
-  "blockers": [
-    "F3-02: required conntrack executable is absent from the running lab node. The first device revocation is followed by repeated HEALTH_CHECK_FAILED/apply failed and generation-0 baseline; later paid-member packets increment ctbase instead of member counters. Owner: devstack deploy/devstack/Dockerfile.node; node/enforce/apply.go:deleteConntrack requires conntrack -D. No package was installed and no projection was bypassed."
-  ]
+  "blockers": []
 }

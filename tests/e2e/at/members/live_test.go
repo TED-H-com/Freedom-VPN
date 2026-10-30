@@ -149,6 +149,8 @@ func TestATMembers_Live(t *testing.T) {
 	} {
 		t.Run(task.id, func(t *testing.T) {
 			r := l.newRecord(task.id)
+			// Each independent case performs real OIDC reauthentication; never lengthen recent-auth policy.
+			l.admin = l.login("e2e-admin", "admin")
 			task.run(&r)
 			r.Complete = true
 			l.write(&r)

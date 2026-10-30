@@ -1,124 +1,176 @@
-# Follow-up 3 requests to orchestrator
+# Follow-up 4 requests to orchestrator
 
-Assigned stack: `w4-members / 24000`. Both attempts are retained under
-[history/follow-up-3](history/follow-up-3/attempt-1/attempt.json).
-D-050 was respected: no identity, entitlement, subscription, device, binding,
-observation or publication projection was seeded or repaired.
+Use the [current AT table](summary.md), [run ledger](RUN.md) and per-AT JSON
+for the observed boundary. No application, contract, migration or shared lab
+source was changed. No D-050 projection was seeded or repaired.
 
-## F3-01 — select the native exit in the shared forwarding driver
+## F4-01 — empty member lease after second-exit restart
 
-Owner: **devstack**, `tests/e2e/traffic_scenario_test.go:countedFlow` and its
-member-traffic caller. This is a shared harness request, not an agent defect.
+Owner: **w2-agent-core**, coordinated with **w3-wire-nodes** for lease issuance.
+Locations: `node/agent/sync.go:needRenew`, `node/agent/decide.go:Decide`,
+`internal/leases/leases.go:RenewTx` (`includeMembers`). AT: AT09.
 
-[AT01](AT01.json) proves generation-5 lease/applied equality, six member accept
-rules, a selected `fvnb0`/`netbird` route, origin HTTPS 200 and device upload /
-download increments of 2214 / 2411 bytes. It repeats after pause/unpause.
-[AT02](AT02.json) also records counted A and race-winner transfers. See the
-[hop observation](forwarding-observation.md).
+Reproduce on fresh `w4-members / 24000`: run the complete suite through paid
+member admission and both published exits; select node2 and prove its counted
+transfer. Stop `node2`, `node2-adguard` and `node2-netns`, then start the holder,
+resolver and node in that order. Do not alter any identity, policy or projection.
+Poll a fresh accepted serving observation for 90 seconds, then issue the bounded
+member transfer. The same node incarnation resumes, but the recovery assertion
+fails and the member's five TCP attempts reach node2's `fvmb0` and its
+generation-zero baseline. No origin receipt or device byte increment follows;
+the primary exit still carries counted traffic.
 
-The shared driver invokes `wget` without native exit selection. With
-`skip_auto_apply=true`, the member's controlled-origin route initially uses
-`eth0`. Poll `netbird routes list` for the advertised exit, select its network
-ID through `netbird routes select`, then prove the kernel route uses the tunnel
-before counting the controlled request. Keep `skip_auto_apply=true`; do not add
-host routes, grant an unbound peer, or change node enforcement. The first
-attempt's unsuccessful immediate selection is retained, not relabeled passed.
+Run `d89eda32-84ef-4582-b669-053d5d9abadd` records generation 23 with seven member
+grants before the fault. At `17:37:24.662928Z`, immediately after restart, central
+issues another generation-23 lease with **zero member grants**, expiring
+`2026-10-31T17:37:24.662928Z`. Repeated accepted observations report forwarding
+false and `lease_expired`. AT20's independent DNS policy change subsequently
+issues generation 24 at `17:39:36.696084Z`, again with seven grants, and forwarding
+becomes true. This later change is not an AT09 repair or a passing recovery.
+The [JSON](AT09.json) retains the failed primary check in `prior_checks`, the
+original packet trace, and the immutable lease/observation timeline. The full
+primary record is under [attempt 2](history/follow-up-4/attempt-2/AT09.json).
 
-## F3-02 — missing conntrack breaks enforcement after device revocation
+The source reading points to a same-generation refresh gap: `RenewTx` correctly
+omits member grants while the node is not ready, but `needRenew` considers a
+fresh same-generation node lease sufficient until its renewal lead. `Decide`
+uses `lease_expired` when nonempty desired bindings yield no admitted model
+bindings, even though the node lease deadline is in the future. This is an
+inference from the trace and source, not a claim about an unobserved internal
+branch.
 
-Owner: **devstack**, `deploy/devstack/Dockerfile.node` dependency installation.
-Related product path: **w2-agent-core / enforcement**,
-`node/agent/engine.go:enforce` → `node/enforce/apply.go:Apply` → `deleteConntrack`.
-Blocks the complete post-revoke AT02 result and subsequent AT03/AT04/AT08 traffic.
+Request: investigate bounded lease refresh after restart/readiness when a
+published populated desired generation receives an empty grant list. Restore
+service through normal verified leases without requiring an unrelated policy
+change; keep fail-closed entitlement/binding checks and accurate block reasons.
+Add a counted restart regression with unchanged desired generation. Do not
+force readiness, forge a grant, shorten a production timeout or clear state.
 
-Reproduce on a fresh stack with `make -f mk/at-members.mk at-members`:
+## F4-03 — remaining transport/platform matrix
 
-1. AT01 and the AT02 final-slot winner have origin responses and increasing
-   device counters. AT02 rejects the other contender and protects B's device.
-2. Revoke A2 through the member DELETE API and admit the former loser through
-   the production adapter. Counts change 3 → 2 → 3 at `2026-10-30T07:09:36Z`.
-3. The first immutable observation with `HEALTH_CHECK_FAILED`, stage `apply`,
-   message `apply failed` arrives at `07:09:39.760469Z`; failures repeat.
-4. `docker exec fvpn-w4-members-node sh -c 'command -v conntrack'` finds no
-   executable. `deleteConntrack` invokes `conntrack -D -s/-d` for dropped addresses;
-   the image installs only ca-certificates, iproute2, nftables and wget.
-5. AT03's paid member selects the exit successfully. Its five SYN packets reach
-   node `fvmb0`, but the forward chain is generation 0 with zero accept rules.
-   `ctbase` increases 0 → 300 bytes; device counters stay zero, no uplink packets
-   or origin response are observed. Lease generation remains current: this is
-   not the old F2-01 renewal defect.
+Owner: **w3-devstack-e2e and the platform/operator campaign**.
+Locations: `tests/e2e/second_exit.go:StartSecondExit`,
+`tests/e2e/cmd/fvpn-e2e-origin/probe_udp.go`, and `docs/e2e/RUN.md`.
+ATs: AT01, AT04, AT09.
 
-Include the required conntrack utility in the shared node image and rerun the
-same revoke/replace sequence without restarting the agent or clearing state.
-Do not work around withdrawal by skipping `deleteConntrack`, rewriting device
-rows, or installing a package ad hoc in the acceptance container. This task did
-none of those. The evidence bounds the cause to the missing executable and the
-observed apply failure; the hidden command error was not instrumented.
+Reproduce: prepare the signed baseline, enroll/publish both actual exits, admit
+paid native peers and run the owned harness. HTTPS traverses both exits with
+selected-node SNAT and device counter evidence. The available UDP/4443 hook is
+an authenticated updater-only exception probe; it is not a member echo/QUIC
+fixture and must not be counted as member traffic. No controlled forced-relay,
+QUIC or PMTU matrix is exported.
 
-Agent diagnostics follow-up: `noteApply` reports the existing apply error, but
-the same observations have all named checks `passed` and an empty
-`forwarding_block_reasons` while `member_forwarding_enabled=false`. Keep public
-failure reporting coherent using the existing contract vocabulary. No new
-HTTP error or reason token is proposed here.
+Request: add a bounded member TCP/UDP/QUIC/PMTU fixture and a documented
+forced-relay transport fault through the shared lab. Keep the updater probe
+separate. Run the exact four-platform/network-change and physical second-NAT
+scripts in [OPERATORS.md](OPERATORS.md). Persistent TCP refund, expiry and
+suspension observations are retained independently; they cannot pass the UDP
+or physical-network assertions.
 
-## F3-03 — remaining controlled lab coverage
+## F4-04 — member UDP withdrawal on every exit
 
-Owner: **devstack**, documented exports in `tests/e2e/stack_exports.go`,
-`tests/e2e/native_exports.go`, `deploy/devstack/compose.yaml`,
-`deploy/devstack/entrypoint-member.sh`, `deploy/devstack/coredns/`, and
-`tests/e2e/cmd/fvpn-e2e-origin/main.go`.
+Owner: **w3-devstack-e2e**. Location:
+`tests/e2e/cmd/fvpn-e2e-origin/probe_udp.go`; AT04.
+The existing hook serves the updater exception only. Reproduce with the real
+paid cohorts and refund/expiry/suspension events in AT04: persistent TCP can be
+measured, but there is no sanctioned member UDP echo peer. Add the bounded member
+fixture requested in F4-03, then run existing and new UDP flows through both
+published exits. Do not reuse or count the non-member updater probe. Extend `deploy/devstack/probe-portal.mjs` with rendered suspended/expired state readback, coordinated with the portal owner; the current probe establishes the billing return only.
 
-- AT01: a documented second member network is needed for a Linux network move.
-  Pause/unpause is exercised. Four native platforms remain operator runs.
-- AT04: the existing origin only serves HTTPS. Supply bounded persistent UDP
-  and TCP flow hooks and a second runnable exit before all-node stop timing can
-  pass. The TCP refund monitor was attempted but had no positive baseline after
-  F3-02; its refusal to claim stop latency is recorded.
-- AT05: supply preinstalled/cloud-init/operator-installer boot flavours. The
-  current stack executes one installer runtime; token reservations and arm64
-  cross-compilation do not prove the other sources or physical arm64.
-- AT09: one runnable node was observed. `Stack.Enroll` targets `node` only;
-  README's `SEEDED_NODE_2_ID` is a synthetic fixture, forbidden by D-050.
-  Supply a second runnable exit hook, direct/forced-relay and UDP/QUIC/PMTU
-  controlled endpoints. Native selection of the one exit is already proven.
-- AT20/21: the member entrypoint uses `--disable-dns`; one AdGuard filter plus
-  an authoritative CoreDNS is not two independent filtering resolvers. Supply
-  normal native DNS configuration, a second filter, policy-sync fault hook and
-  positive CNAME/AAAA/HTTPS/SVCB/rebinding fixtures. Node-local D-056 delivery
-  does not certify that the member uses that resolver.
-- AT22: extend file/raw-usage/rollup and backup-expiry fixtures. Current scans
-  cover DNS sentinels, resolver settings, service logs, metrics, audit and an
-  in-memory dump, plus audit purge and scheduled feed last-good. They do not
-  certify every retention surface or a representative URL history.
+## F4-05 — native DNS configuration and automatic controlled fallback
 
-## Closed or superseded findings
+Owner: **w3-devstack-e2e**, then the native-client integration owner if required.
+Locations: `deploy/devstack/entrypoint-member.sh`,
+`tests/e2e/native_exports.go:JoinNativeMember`, `tests/e2e/second_exit.go`.
+ATs: AT20, AT21.
 
-- **F2-01**: closed by #146 and live current-generation lease evidence under
-  uninterrupted operation. It is no longer an unconditional harness blocker.
-- **F2-05**: #143 durable restart/stable `node-netns` path exercised with the
-  same incarnation, fresh accepted observation, readable nft table and no
-  installer token. No agent-only service workaround or resolver restart.
-- **B4**: all six created/paid/failed orders now use authenticated provider hooks,
-  independently identified members, exact HMAC bytes and two-second pacing.
-  Ten replays, invalid signature, forged return, cancellation, partial/full
-  refund, real expiry and suspension precedence are recorded.
-- **B6/B7 / F2-03**: typed applied resolver evidence and exact node-mTLS
-  canonical digest match are live. An initial stale profile observation is
-  preserved; supplemental convergence is recorded separately.
-- **B9**: `attribution:null` is accepted, activated and referenced by a DNS
-  profile. Empty and whitespace-only attribution receive 422. The historical
-  claim is retired; [AT22.json](AT22.json) contains the exact checks.
+Reproduce: read only `DisableDNS` from the running member's
+`/var/lib/netbird/default.json`; it is true. Pause each of `adguard` and
+`node2-adguard` in turn: its loopback DNS endpoint becomes unavailable while
+the other continues to apply the synthetic block. Typed node evidence and the
+node-mTLS document hash establish resolver delivery separately.
 
-The first attempt's payment collision was a **harness defect**, not a provider
-or product finding: a long fixture name lost its order suffix at the shared
-40-character key boundary. Run UUID and short fixture key are now separate,
-and each order asserts a unique member. Its interrupted evidence is retained.
+Request: export a native member DNS configuration path using the product's
+issued resolver document and both authorized filtering resolvers. Then measure
+automatic fallback, no public fallback and recovery. Explicit loopback queries
+are not native-client failover. The synchronization corruption hook is tested
+separately; Private DNS/DoH remain operator runs with member guidance.
 
-Publication polling initially stopped on a retryable failed step while the
-operation was still running. The final harness waits for terminal operation
-state; the readback records later step results without erasing earlier
-checks. AT08's post-restart 422 `NODE_NOT_SERVICEABLE` remains in `prior_checks`;
-no failed prior result is upgraded to a complete pass.
+## F4-06 — complete privacy and retention surfaces
 
-[OPERATORS.md](OPERATORS.md) retains **needs operator run** for the four real
-platforms, physical arm64, second physical NAT and candidate hardware.
+Owner: **w3-devstack-e2e**, with usage/database/backup owners for retention inputs.
+Locations: `tests/e2e/backup_scenario_test.go`, `docs/e2e/scenarios/backup.md`,
+`tests/e2e/at/members/dns_privacy_test.go:privacy` and
+`privacy_readback_test.go:secondPrivacy`.
+AT: AT22.
+
+Reproduce: run the synthetic DNS sentinel, disabled querylog/statistics
+readback, log/metrics/audit/pg_dump scans and guarded audit purge. The extra
+resolver has its own config/log inventory. The scheduled partial target
+publishes a self-authored licensed feed, observes the real failed refresh and
+last-good delivery. These checks do not age representative raw-usage/rollup,
+file and backup artifacts through every configured retention deadline, or
+cover a representative member URL history workload.
+
+Request: provide sanctioned retention inputs for those remaining surfaces and
+a bounded member URL privacy sample through shared hooks; do not backdate or
+repair projector-owned rows. Record the selected commercial feed's actual
+license separately: the TEST ONLY self-authored feed is not commercial-source
+approval. Full AT22 stays blocked despite passed subsets.
+
+## F4-07 — controlled DNS RR/cache/rebinding matrix
+
+Owner: **w3-devstack-e2e**, with DNS/netlab owners reviewing fixture semantics.
+Locations: `deploy/devstack/coredns/example.invalid.zone`,
+`tests/e2e/at/members/dns_privacy_test.go:dnsRules`.
+AT: AT20.
+
+Reproduce: publish canonical rules through the API and inspect the node's typed
+applied document, then issue the recorded A/AAAA/CNAME/HTTPS/SVCB queries. API
+normalization rejection and resolver application are measured, but the shared
+zone does not provide the complete positive/negative CNAME, HTTPS/SVCB, cache
+expiry and rebinding sequence. Native DNS is additionally blocked by F4-05.
+
+Request: extend the controlled zone and sanctioned rebinding fixture with exact
+answers/TTLs, including label-boundary controls and an allowed domain that
+changes to an isolated private target. Prove that DNS allowlisting never opens
+that network. Never query unrelated Internet domains.
+
+## F4-10 — source flavours and physical architecture
+
+Owner: **packaging/devstack and the operator campaign**.
+Locations: `deploy/devstack/entrypoint-node.sh`,
+`tests/e2e/stack_exports.go:EnrollAt`, [OPERATORS.md](OPERATORS.md).
+AT: AT05.
+
+Two real nodes use the same installer entrypoint. Installer/preinstalled token
+reservation and one-time replay contracts pass, but a preinstalled reservation
+is not a preinstalled boot and a second installer is not cloud-init. Supply the
+other two boot-source fixtures/provenance and run physical arm64. The signed
+arm64 artifact and arm64 probe cross-build are not a hardware run.
+
+## Closed prior findings and preserved harness findings
+
+- F3-02: current images contain conntrack. AT02 requires a continuous agent PID,
+  coherent serving health, revoked-source denial/empty conntrack and counted
+  sibling/replacement traffic. The historical failure remains archived.
+- F3-01: selection waits for the advertised route and explicitly selects the
+  network matching the intended node's peer. `skip_auto_apply` remains true.
+- D-056/D-061: typed resolver evidence, canonical mTLS document hashes and actual
+  block answers replace the former missing-delivery diagnosis. Null feed
+  attribution is valid; only blank/whitespace notes are rejected.
+- Attempt 1 retains its early `partially_succeeded` withdrawal sample and the
+  subsequent node ACK in `AT08-late-operation.json`. `executeWithdraw` explicitly
+  permits this transition. Attempt 2 retains progress states and waits within
+  the original bound for succeeded.
+- Attempt 1's restart probe sampled the fail-closed startup before fresh health.
+  Stopping only `node2` also leaves its kernel namespace held by two containers.
+  Attempt 2 stops all three namespace holders and requires a new serving
+  observation before its recovery transfer. No product state is repaired.
+- Attempt 1 AT21 retains HTTP 403 after recent-auth expiry. Attempt 2 performs
+  real OIDC login per case; no auth window or limiter configuration changed.
+
+The strict post-revoke node-ingress measurement remains the **devstack** owner's
+separate [recorded limitation](../../runs/2026-10-30/followup10-run3/device-revoke.md):
+route withdrawal prevents that later packet from reaching the node. This harness
+does not restore a revoked route or relabel upstream withdrawal as a kernel drop.

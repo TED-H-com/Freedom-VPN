@@ -92,5 +92,5 @@ func (l *live) finishFlow(r *record, f *flowMonitor, event time.Time) {
 		}
 	}
 	raw, _ := json.Marshal(ticks)
-	r.check("persistent TCP refund withdrawal "+f.service, "positive/reused TCP stops within 60 seconds of full-refund input", fmt.Sprintf("event_utc=%s; last_good=%s; first_failure=%s; reused_tcp=%t; stop_seconds=%.3f; ticks=%s", event.Format(time.RFC3339Nano), lastGood.Format(time.RFC3339Nano), firstBad.Format(time.RFC3339Nano), reused, firstBad.Sub(event).Seconds(), raw), "persistent CA-verified HTTPS GET every 500ms; actual full refund hook; two-second request deadline; maximum 85 seconds", reused && !firstBad.IsZero() && firstBad.After(event) && firstBad.Sub(event) <= 60*time.Second)
+	r.check("persistent TCP withdrawal "+f.service, "positive/reused TCP stops within 60 seconds of rights-change input or real expiry", fmt.Sprintf("event_utc=%s; last_good=%s; first_failure=%s; reused_tcp=%t; stop_seconds=%.3f; ticks=%s", event.Format(time.RFC3339Nano), lastGood.Format(time.RFC3339Nano), firstBad.Format(time.RFC3339Nano), reused, firstBad.Sub(event).Seconds(), raw), "persistent CA-verified HTTPS GET every 500ms; actual rights change or real UTC expiry; two-second request deadline; maximum 85 seconds", reused && !firstBad.IsZero() && firstBad.After(event) && firstBad.Sub(event) <= 60*time.Second)
 }

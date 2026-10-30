@@ -203,6 +203,9 @@ func (l *live) publication(r *record) {
 	l.restartReadback(r)
 	intent, observed := l.publicationState()
 	r.check("disabled persists", "disabled intent after node restart", fmt.Sprintf("intent=%s; observed=%s", intent, observed), "read publication after reconnect/restart", intent == "disabled")
+	if l.b != nil {
+		l.traceForwarding(r, "member-b1", uuid.Nil)
+	}
 	// Restore the API intent for independent DNS checks; no lease is forged.
 	l.publish(r, []uuid.UUID{l.groupA})
 }

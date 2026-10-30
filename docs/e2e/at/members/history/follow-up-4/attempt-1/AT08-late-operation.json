@@ -1,0 +1,38 @@
+{
+  "run_id": "13ccb8ab-9edf-4b0a-90f9-c3758ad4ec5f",
+  "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
+  "at": "2026-10-30T17:13:47.722648Z",
+  "expected": "retain primary partially_succeeded and observe eventual ACK without replacing it",
+  "actual": {
+    "steps": {
+      "agent_policy": {
+        "order": 1,
+        "status": "succeeded",
+        "required": true,
+        "updated_at": "2026-10-30T17:11:12.513221Z",
+        "observed_at": "2026-10-30T17:11:12.513221Z",
+        "observed_ref": "agent_policy"
+      },
+      "data_path_probe": {
+        "order": 3,
+        "reason": "route withdrawn; data path probe not applicable",
+        "status": "not_required",
+        "required": false,
+        "updated_at": "2026-10-30T17:11:09.72253179Z"
+      },
+      "netbird_route_readback": {
+        "order": 2,
+        "status": "succeeded",
+        "required": true,
+        "updated_at": "2026-10-30T17:11:09.857613358Z",
+        "observed_at": "2026-10-30T17:11:09.857613358Z",
+        "observed_ref": "netbird_route_readback"
+      }
+    },
+    "status": "succeeded",
+    "operation_id": "ab5bb14a-3440-4acf-b73f-cb7537a19252"
+  },
+  "command": "read latest node.disable operation after primary AT08 bounded sample",
+  "scope": "supplement only; primary status remains blocked",
+  "owner": "at-members harness: internal/exits/exits.go executeWithdraw and the node observation ACK intentionally permits late ACK"
+}

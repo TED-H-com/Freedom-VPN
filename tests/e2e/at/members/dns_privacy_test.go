@@ -124,6 +124,11 @@ func (l *live) dnsRules(r *record) {
 	r.block("Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
 }
 func (l *live) dnsFailure(r *record) {
+	raw, readErr := l.inside("member", "cat", "/var/lib/netbird/default.json")
+	var native struct{ DisableDNS bool }
+	decodeErr := json.Unmarshal(raw, &native)
+	r.check("native DNS configuration", "record actual persisted client DNS setting", fmt.Sprintf("read_ok=%t; DisableDNS=%t", readErr == nil && decodeErr == nil, native.DisableDNS), "read /var/lib/netbird/default.json in memory; emit DisableDNS boolean only", readErr == nil && decodeErr == nil)
+
 	if !l.secondExit(r) || !l.installProbe() {
 		r.block("F4-02: second resolver prerequisite unavailable")
 		return
@@ -151,7 +156,7 @@ func (l *live) dnsFailure(r *record) {
 	l.resolverEvidence(r)
 	restore()
 	l.dnsSyncFault(r)
-	r.block("F4-05: two independent filtering resolvers survive alternating faults, but the native member entrypoint still uses --disable-dns. No product-distributed two-resolver client configuration/fallback is available; loopback probes do not prove automatic member failover or public-DNS exclusion. Owner: w3-devstack-e2e member-entrypoint.sh and native DNS fixture. Android Private DNS/browser DoH remain needs operator run; guidance in OPERATORS.md.")
+	r.block("F4-05: two independent filtering resolvers survive alternating faults, but the native member entrypoint still uses --disable-dns. No product-distributed two-resolver client configuration/fallback is available; loopback probes do not prove automatic member failover or public-DNS exclusion. Owner: w3-devstack-e2e deploy/devstack/entrypoint-member.sh and native DNS fixture. Android Private DNS/browser DoH remain needs operator run; guidance in OPERATORS.md.")
 }
 
 func (l *live) dnsSyncFault(r *record) {
