@@ -40,6 +40,8 @@ type requestMeta struct {
 	raw          []byte
 	scope        string
 	logger       *slog.Logger
+	clientCert   *x509.Certificate
+	clientDomain string
 }
 type metaKey struct{}
 
@@ -54,6 +56,25 @@ func RawBody(ctx context.Context) []byte {
 func ClientTrace(ctx context.Context) string {
 	if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok {
 		return m.trace
+	}
+	return ""
+}
+
+// ClientCertificate returns the authenticated mTLS leaf certificate for an
+// agent-listener request, or nil on other listeners.
+func ClientCertificate(ctx context.Context) *x509.Certificate {
+	if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok {
+		return m.clientCert
+	}
+	return nil
+}
+
+// ClientCompatibilityDomain returns the coarsened client endpoint domain
+// (IPv4 /24 or IPv6 /48, honouring X-Forwarded-For only from configured
+// trusted proxies) for an authenticated mTLS request, or "" when unavailable.
+func ClientCompatibilityDomain(ctx context.Context) string {
+	if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok {
+		return m.clientDomain
 	}
 	return ""
 }
@@ -474,6 +495,10 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				apierr.Write(w, r, apierr.New(apierr.Unauthenticated, "Invalid machine identity."))
 				return
 			}
+			m.clientCert = leaf
+			if domain, ok := compatibilityDomain(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies); ok {
+				m.clientDomain = domain
+			}
 		} else {
 			var peerOK bool
 			peer, peerOK = requestRateKey(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies, true)
@@ -824,8 +849,9 @@ const maxForwardedHops = 64
 // a chain of only trusted hops, or a peer outside the trusted networks keeps
 // the TCP peer. An unparseable TCP peer or an unparseable chosen entry
 // returns ok false. RFC 7239 Forwarded and X-Real-IP are not read.
-// The agent listener does not call this function. Its ingress key is the
-// SHA-256 of the verified client certificate.
+// The agent listener's rate-limiter ingress key is the SHA-256 of the verified
+// client certificate; it calls compatibilityDomain (which wraps requestRateKey)
+// to derive the coarsened /24 or /48 client domain for cloned-identity checks (D-072).
 func requestRateKey(remoteAddr string, forwarded []string, trusted []*net.IPNet, useForwarded bool) (string, bool) {
 	if !useForwarded || len(trusted) == 0 {
 		return connectionRateKey(remoteAddr)
@@ -848,6 +874,35 @@ func requestRateKey(remoteAddr string, forwarded []string, trusted []*net.IPNet,
 		return rateKeyFromIP(ip)
 	}
 	return rateKeyFromIP(peer)
+}
+
+const ipv4CompatibilityPrefixBits = 24
+
+// compatibilityDomain derives the endpoint compatibility domain (D-072) for an
+// authenticated request using the trusted-proxy logic of requestRateKey and
+// coarsening IPv4 to /24 and IPv6 to /48 before server-side hashing. Two clones
+// behind the same compatibility domain are not distinguished by this check.
+func compatibilityDomain(remoteAddr string, forwarded []string, trusted []*net.IPNet) (string, bool) {
+	key, ok := requestRateKey(remoteAddr, forwarded, trusted, true)
+	if !ok {
+		return "", false
+	}
+	ip := net.ParseIP(key)
+	if ip == nil {
+		return "", false
+	}
+	if v4 := ip.To4(); v4 != nil {
+		masked := v4.Mask(net.CIDRMask(ipv4CompatibilityPrefixBits, 32))
+		if masked == nil {
+			return "", false
+		}
+		return masked.String() + "/24", true
+	}
+	masked := ip.Mask(net.CIDRMask(ipv6AggregatePrefixBits, 128))
+	if masked == nil {
+		return "", false
+	}
+	return masked.String() + "/48", true
 }
 
 func ipInNets(ip net.IP, nets []*net.IPNet) bool {

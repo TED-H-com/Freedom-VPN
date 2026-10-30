@@ -22,6 +22,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type Handlers struct {
@@ -278,18 +279,39 @@ func (h *Handlers) RetireNode(ctx context.Context, r gen.RetireNodeRequestObject
 	op, e := h.operation(ctx, out.OperationID)
 	return gen.RetireNode202JSONResponse{OperationAcceptedJSONResponse: op}, e
 }
+
+// observeAgentEndpointTx records the authenticated mTLS client's compatibility
+// domain inside the handler's transaction before any automatic identity-mapping
+// mutation in the same request (D-072). When a conflict freezes the mapping,
+// the request still returns its normal 2xx response while the frozen mapping
+// immediately governs observation projection and peer discovery.
+func (h *Handlers) observeAgentEndpointTx(ctx context.Context, tx pgx.Tx) error {
+	if h.Runtime == nil || h.Runtime.Enrollment == nil {
+		return nil
+	}
+	cert := httpapi.ClientCertificate(ctx)
+	domain := httpapi.ClientCompatibilityDomain(ctx)
+	if cert == nil || domain == "" {
+		return nil
+	}
+	_, err := h.Runtime.Enrollment.ObserveEndpointTx(ctx, tx, cert, domain, h.Runtime.Enrollment.ActiveWindow())
+	return err
+}
+
 func (h *Handlers) SubmitObservation(ctx context.Context, r gen.SubmitObservationRequestObject) (gen.SubmitObservationResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
 	i := identity(ctx)
 	var out api.ObservationAccepted
-	var e error
-	if tx, err := httpapi.Transaction(ctx); err == nil {
-		out, e = h.Runtime.Nodes.SubmitObservationTx(ctx, tx, i.NodeID, i.IncarnationID, *r.Body)
-	} else {
-		out, e = h.Runtime.Nodes.SubmitObservation(ctx, i.NodeID, i.IncarnationID, *r.Body)
-	}
+	e := commandtx.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
+			return err
+		}
+		var err error
+		out, err = h.Runtime.Nodes.SubmitObservationTx(ctx, tx, i.NodeID, i.IncarnationID, *r.Body)
+		return err
+	})
 	if e != nil {
 		return nil, e
 	}

@@ -38,8 +38,8 @@ The following transitional 501 handlers are removed:
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
 | `setNodePublication` | All three intents use `exits.Service.SetPublicationTx` inside the HTTP command transaction; 202 returns the pending publication operation. |
 | `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
-| `renewServingLease` | Signed 24-hour default maximum, bounded member grants, natural renewal-ID replay without restarting deadlines. |
-| `submitObservation` | Immutable deduplicated receipt, then `ObserveReportTx` in the same transaction, fleet lock before node lock. |
+| `renewServingLease` | Signed 24-hour default maximum (60 s D-067 backstop when `provisioning_state != 'ready'`), bounded member grants, natural renewal-ID replay without restarting deadlines, and transactional `ObserveEndpointTx` cloned-identity check (D-072). |
+| `submitObservation` | Immutable deduplicated receipt, transactional `ObserveEndpointTx` cloned-identity check (D-072), then `SubmitObservationTx` and `ObserveReportTx` in the same transaction, fleet lock before node lock. |
 | `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
 | `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
 | `submitUpdateResult` | Durable 202 ACK; identical result replays, changed payload returns 409 ACK_CONFLICT with retained conflict evidence. |

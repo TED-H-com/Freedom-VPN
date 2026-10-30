@@ -1,17 +1,23 @@
 package enrollment
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"crypto/x509"
 	"errors"
+	"net"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
+	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -152,54 +158,345 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 	return out, nil
 }
 
+type roamingCandidate struct {
+	candidateHash   []byte
+	candidateSeenAt time.Time
+	priorA          []byte
+	priorB          []byte
+	txID            uint64
+	beforeTx        *roamingCandidate
+}
+
+func (c *roamingCandidate) cloneFlat() *roamingCandidate {
+	if c == nil {
+		return nil
+	}
+	return &roamingCandidate{
+		candidateHash:   bytes.Clone(c.candidateHash),
+		candidateSeenAt: c.candidateSeenAt,
+		priorA:          bytes.Clone(c.priorA),
+		priorB:          bytes.Clone(c.priorB),
+	}
+}
+
+func (c *roamingCandidate) beginTx(txID uint64) {
+	if c.txID != txID {
+		c.beforeTx = c.cloneFlat()
+		c.txID = txID
+	}
+}
+
+func (c *roamingCandidate) rollback() {
+	if c.beforeTx == nil {
+		c.candidateHash = nil
+		c.candidateSeenAt = time.Time{}
+		c.priorA = nil
+		c.priorB = nil
+		c.txID = 0
+		return
+	}
+	c.candidateHash = bytes.Clone(c.beforeTx.candidateHash)
+	c.candidateSeenAt = c.beforeTx.candidateSeenAt
+	c.priorA = bytes.Clone(c.beforeTx.priorA)
+	c.priorB = bytes.Clone(c.beforeTx.priorB)
+	c.txID = 0
+	c.beforeTx = nil
+}
+
+func (c *roamingCandidate) setPriorPair(a, b []byte) {
+	c.priorA = bytes.Clone(a)
+	c.priorB = bytes.Clone(b)
+}
+
+func (c *roamingCandidate) matchesPriorPair(a, b []byte) bool {
+	if c == nil || len(c.priorA) == 0 || len(c.priorB) == 0 {
+		return false
+	}
+	return (bytes.Equal(c.priorA, a) && bytes.Equal(c.priorB, b)) ||
+		(bytes.Equal(c.priorA, b) && bytes.Equal(c.priorB, a))
+}
+
+// CompatibilityDomain normalizes an IP endpoint or CIDR into its coarsened
+// compatibility domain (IPv4 /24 or IPv6 /48) before server-side hashing (D-072).
+// Non-IP opaque domain identifiers pass through trimmed.
+func CompatibilityDomain(endpoint string) string {
+	s := strings.TrimSpace(endpoint)
+	if s == "" {
+		return ""
+	}
+	if ip, _, err := net.ParseCIDR(s); err == nil && ip != nil {
+		return coarsenIPDomain(ip)
+	}
+	host := s
+	if h, _, err := net.SplitHostPort(s); err == nil {
+		host = h
+	} else if len(s) >= 2 && s[0] == '[' && s[len(s)-1] == ']' {
+		host = s[1 : len(s)-1]
+	}
+	if i := strings.IndexByte(host, '%'); i >= 0 {
+		host = host[:i]
+	}
+	if ip := net.ParseIP(host); ip != nil {
+		return coarsenIPDomain(ip)
+	}
+	return s
+}
+
+func coarsenIPDomain(ip net.IP) string {
+	if v4 := ip.To4(); v4 != nil {
+		masked := v4.Mask(net.CIDRMask(24, 32))
+		if masked != nil {
+			return masked.String() + "/24"
+		}
+	}
+	masked := ip.Mask(net.CIDRMask(48, 128))
+	if masked != nil {
+		return masked.String() + "/48"
+	}
+	return ip.String()
+}
+
 // ObserveEndpoint receives an opaque, authenticated compatibility-domain value
 // from the adapter, never raw headers. Hashes avoid persisting endpoint lists.
-// A changed endpoint within activeWindow freezes automatic mapping forever;
-// incompatible activity is evidence requiring operator reconciliation (§6.2).
+// A single switch X->Y inside activeWindow is treated as roaming (X remains
+// mapped while Y is recorded as candidate and promoted only after X has been
+// quiet for a full activeWindow). Interleaving (X->Y->X within activeWindow,
+// or Y and X both seen within one window twice) records a conflict and freezes
+// automatic mapping forever (§6.2, D-072).
 // Returns whether mapping updates are allowed. It does not grant forwarding.
 func (s *Service) ObserveEndpoint(ctx context.Context, cert *x509.Certificate, endpoint string, activeWindow time.Duration) (allowed bool, err error) {
+	ctx = requestContext(ctx)
 	if !validIdentifier(endpoint) || len(endpoint) > 1024 || activeWindow <= 0 {
 		return false, apierr.New(apierr.ValidationFailed, "Endpoint observation invalid.")
 	}
-	id, err := s.auth.Authenticate(ctx, cert)
-	if err != nil {
+	if _, err = s.auth.Authenticate(ctx, cert); err != nil {
 		return false, err
 	}
-	hash := sha256.Sum256([]byte(endpoint))
 	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		if _, e := s.auth.LockAuthenticated(ctx, tx, cert); e != nil {
-			return e
-		}
-		var prev []byte
-		var active, frozen bool
-		e := tx.QueryRow(ctx, `SELECT endpoint_hash,last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond',mapping_frozen FROM node_identity_endpoints WHERE incarnation_id=$1 FOR UPDATE`, id.IncarnationID, activeWindow.Milliseconds()).Scan(&prev, &active, &frozen)
-		if errors.Is(e, pgx.ErrNoRows) {
-			_, e = tx.Exec(ctx, `INSERT INTO node_identity_endpoints(incarnation_id,endpoint_hash,last_seen_at) VALUES($1,$2,clock_timestamp())`, id.IncarnationID, hash[:])
-			allowed = true
-			return e
-		}
-		if e != nil {
-			return e
-		}
-		if frozen {
-			allowed = false
-			return nil
-		}
-		if active && string(prev) != string(hash[:]) {
-			conflict, e := uuid.NewV7()
-			if e != nil {
-				return e
-			}
-			if _, e = tx.Exec(ctx, `INSERT INTO node_identity_conflicts(id,incarnation_id,previous_hash,conflicting_hash,observed_at) VALUES($1,$2,$3,$4,clock_timestamp()) ON CONFLICT DO NOTHING`, conflict, id.IncarnationID, prev, hash[:]); e != nil {
-				return e
-			}
-			_, e = tx.Exec(ctx, `UPDATE node_identity_endpoints SET mapping_frozen=true WHERE incarnation_id=$1`, id.IncarnationID)
-			allowed = false
-			return e
-		}
-		_, e = tx.Exec(ctx, `UPDATE node_identity_endpoints SET endpoint_hash=$2,last_seen_at=clock_timestamp() WHERE incarnation_id=$1`, id.IncarnationID, hash[:])
-		allowed = true
+		var e error
+		allowed, e = s.ObserveEndpointTx(ctx, tx, cert, endpoint, activeWindow)
 		return e
 	})
 	return allowed, safe(err)
+}
+
+// ObserveEndpointTx records an authenticated compatibility-domain observation
+// inside the caller's existing database transaction (D-072). Callers that already
+// hold fleet_config or run inside a request transaction use this entry point so
+// lock ordering (§13.1) and transactional atomicity are preserved.
+func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.Certificate, endpoint string, activeWindow time.Duration) (allowed bool, err error) {
+	ctx = requestContext(ctx)
+	if activeWindow <= 0 {
+		activeWindow = s.ActiveWindow()
+	}
+	domain := CompatibilityDomain(endpoint)
+	if !validIdentifier(domain) || len(domain) > 1024 || activeWindow <= 0 {
+		return false, apierr.New(apierr.ValidationFailed, "Endpoint observation invalid.")
+	}
+	id, err := s.auth.LockAuthenticated(ctx, tx, cert)
+	if err != nil {
+		return false, err
+	}
+	hash := sha256.Sum256([]byte(domain))
+
+	var dbNow time.Time
+	var txID uint64
+	if err = tx.QueryRow(ctx, `SELECT clock_timestamp(), pg_current_xact_id()::text::bigint`).Scan(&dbNow, &txID); err != nil {
+		return false, safe(err)
+	}
+	now := dbNow.UTC()
+	s.mu.Lock()
+	clock := s.clock
+	s.mu.Unlock()
+	if clock != nil {
+		now = clock().UTC()
+	}
+
+	cand := s.reconcileCandidateTx(ctx, tx, id.IncarnationID, txID)
+
+	var prev []byte
+	var lastSeen time.Time
+	var frozen bool
+	err = tx.QueryRow(ctx, `SELECT endpoint_hash,last_seen_at,mapping_frozen FROM node_identity_endpoints WHERE incarnation_id=$1 FOR UPDATE`, id.IncarnationID).Scan(&prev, &lastSeen, &frozen)
+	if errors.Is(err, pgx.ErrNoRows) {
+		if _, err = tx.Exec(ctx, `INSERT INTO node_identity_endpoints(incarnation_id,endpoint_hash,last_seen_at) VALUES($1,$2,$3)`, id.IncarnationID, hash[:], now); err != nil {
+			return false, safe(err)
+		}
+		s.mu.Lock()
+		cand.beginTx(txID)
+		cand.candidateHash = nil
+		cand.candidateSeenAt = time.Time{}
+		cand.priorA = nil
+		cand.priorB = nil
+		s.mu.Unlock()
+		return true, nil
+	}
+	if err != nil {
+		return false, safe(err)
+	}
+	if frozen {
+		return false, nil
+	}
+
+	xActive := lastSeen.UTC().After(now.Add(-activeWindow))
+	s.mu.Lock()
+	yActive := len(cand.candidateHash) > 0 && cand.candidateSeenAt.UTC().After(now.Add(-activeWindow))
+	if !yActive && len(cand.candidateHash) > 0 {
+		cand.beginTx(txID)
+		cand.candidateHash = nil
+		cand.candidateSeenAt = time.Time{}
+	}
+	candHash := bytes.Clone(cand.candidateHash)
+	matchesPrior := cand.matchesPriorPair(prev, hash[:])
+	s.mu.Unlock()
+
+	if bytes.Equal(prev, hash[:]) {
+		if yActive {
+			// Interleaving X -> Y -> X while Y is still inside activeWindow.
+			if err = s.recordIdentityConflict(ctx, tx, id, prev, candHash, now); err != nil {
+				return false, safe(err)
+			}
+			s.mu.Lock()
+			cand.beginTx(txID)
+			cand.candidateHash = nil
+			cand.candidateSeenAt = time.Time{}
+			s.mu.Unlock()
+			return false, nil
+		}
+		if _, err = tx.Exec(ctx, `UPDATE node_identity_endpoints SET last_seen_at=$2 WHERE incarnation_id=$1`, id.IncarnationID, now); err != nil {
+			return false, safe(err)
+		}
+		return true, nil
+	}
+
+	if !xActive {
+		// X has been quiet for at least a full activeWindow; promote the new
+		// endpoint (whether the roaming candidate Y or a fresh endpoint).
+		if _, err = tx.Exec(ctx, `UPDATE node_identity_endpoints SET endpoint_hash=$2,last_seen_at=$3 WHERE incarnation_id=$1`, id.IncarnationID, hash[:], now); err != nil {
+			return false, safe(err)
+		}
+		s.mu.Lock()
+		cand.beginTx(txID)
+		cand.candidateHash = nil
+		cand.candidateSeenAt = time.Time{}
+		s.mu.Unlock()
+		return true, nil
+	}
+
+	// X is still inside activeWindow and incoming hash != prev (X).
+	if yActive {
+		if !bytes.Equal(candHash, hash[:]) {
+			// A third incompatible domain Z observed while X and Y are inside the window.
+			if err = s.recordIdentityConflict(ctx, tx, id, prev, hash[:], now); err != nil {
+				return false, safe(err)
+			}
+			s.mu.Lock()
+			cand.beginTx(txID)
+			cand.candidateHash = nil
+			cand.candidateSeenAt = time.Time{}
+			s.mu.Unlock()
+			return false, nil
+		}
+		// Y observed again while waiting for X to remain quiet for activeWindow.
+		s.mu.Lock()
+		cand.beginTx(txID)
+		cand.candidateSeenAt = now
+		s.mu.Unlock()
+		return true, nil
+	}
+
+	if matchesPrior {
+		// Y and X have both been seen within one window twice.
+		if err = s.recordIdentityConflict(ctx, tx, id, prev, hash[:], now); err != nil {
+			return false, safe(err)
+		}
+		s.mu.Lock()
+		cand.beginTx(txID)
+		cand.candidateHash = nil
+		cand.candidateSeenAt = time.Time{}
+		s.mu.Unlock()
+		return false, nil
+	}
+
+	// First switch X -> Y inside activeWindow: roaming candidate. Keep X mapped
+	// in node_identity_endpoints and record Y as candidate until X has been quiet
+	// for a full activeWindow.
+	s.mu.Lock()
+	cand.beginTx(txID)
+	cand.candidateHash = bytes.Clone(hash[:])
+	cand.candidateSeenAt = now
+	cand.setPriorPair(prev, hash[:])
+	s.mu.Unlock()
+	return true, nil
+}
+
+func (s *Service) reconcileCandidateTx(ctx context.Context, tx pgx.Tx, incarnationID uuid.UUID, currentTxID uint64) *roamingCandidate {
+	s.mu.Lock()
+	if s.candidates == nil {
+		s.candidates = make(map[uuid.UUID]*roamingCandidate)
+	}
+	cand, ok := s.candidates[incarnationID]
+	if !ok {
+		cand = &roamingCandidate{}
+		s.candidates[incarnationID] = cand
+	}
+	prevTxID := cand.txID
+	s.mu.Unlock()
+
+	if prevTxID != 0 && prevTxID != currentTxID {
+		var status *string
+		if err := tx.QueryRow(ctx, `SELECT pg_xact_status($1::text::xid8)`, strconv.FormatUint(prevTxID, 10)).Scan(&status); err == nil {
+			s.mu.Lock()
+			if cand.txID == prevTxID {
+				if status != nil && *status == "aborted" {
+					cand.rollback()
+				} else if status != nil && *status == "committed" {
+					cand.txID = 0
+					cand.beforeTx = nil
+				}
+			}
+			s.mu.Unlock()
+		}
+	}
+	return cand
+}
+
+func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.NodeIdentity, prevHash, conflictingHash []byte, now time.Time) error {
+	conflictID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+	tag, err := tx.Exec(ctx, `INSERT INTO node_identity_conflicts(id,incarnation_id,previous_hash,conflicting_hash,observed_at) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`, conflictID, id.IncarnationID, prevHash, conflictingHash, now)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `UPDATE node_identity_endpoints SET mapping_frozen=true WHERE incarnation_id=$1`, id.IncarnationID); err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil
+	}
+	var conflictCount int
+	if err = tx.QueryRow(ctx, `SELECT count(*) FROM node_identity_conflicts WHERE incarnation_id=$1`, id.IncarnationID).Scan(&conflictCount); err != nil {
+		return err
+	}
+	requestID := commandtx.RequestID(ctx)
+	after := map[string]any{
+		"incarnation_id": id.IncarnationID.String(),
+		"conflict_count": conflictCount,
+		"observed_at":    now.UTC().Format(time.RFC3339),
+	}
+	event, err := audit.NewEvent(audit.Entry{
+		Actor:     audit.Actor{Type: api.AuditEventActorTypeNode, ID: id.NodeID},
+		Action:    "node.identity.conflict",
+		Resource:  api.ResourceRef{Type: api.ResourceTypeNode, Id: id.NodeID},
+		Result:    api.AuditEventResultSucceeded,
+		RequestID: &requestID,
+		After:     after,
+		Fields:    []string{"incarnation_id", "conflict_count", "observed_at"},
+	})
+	if err != nil {
+		return err
+	}
+	return audit.AppendEvent(ctx, tx, event)
 }
