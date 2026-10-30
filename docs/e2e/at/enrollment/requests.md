@@ -30,3 +30,9 @@ Run `9bb66c4e-e429-450b-8671-521d33926ede` measured the same token-hash and
 incarnation checks on `746651e` before follow-up 12 was in this branch. Run
 `bebfe230-26d4-4e3d-b052-81d258d04e07` retains the 429 failures. No current
 subcheck failed on `7615d23d`. Complete ATs remain blocked.
+
+## Devstack follow-up 13 recheck (2026-10-30)
+
+Rechecked on devstack parent `52dc770`. ENR-05 stays blocked. `node/internal/usageupload` still acknowledges every batch. There is no withhold-only-acks switch and no approved read-only ledger snapshot with immutable event hashes, decimal sequence and epoch identity, and the contiguous ACK watermark across restart. `PauseAgent` is not that hook. Do not edit or delete outbox rows. Owner: w4-usage, then devstack. Symbols: `HoldUsageAcknowledgements(ctx, slot, hold)`, `UsageLedgerSnapshot(ctx, slot)`, `CountedMemberTraffic`.
+
+ENR-06 stays blocked. `packaging/` is only the release archive. There is no installer invocation or disposable Ubuntu service entry point to wrap. A container restart, key erasure, or copied identity rows are not that proof. Owner: packaging/installer, then devstack. Symbols: `RerunInstaller(ctx, slot)`, `ControlledReinstall(ctx, slot, enrollment)`.

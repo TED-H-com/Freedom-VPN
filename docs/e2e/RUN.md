@@ -3,7 +3,12 @@
 Use `FVPN_E2E_PREFIX` and the assigned `FVPN_E2E_PORT_BASE` for your stack.
 Runtime objects are `fvpn-<prefix>-*`; immutable per-run image IDs pin neutral
 `fvpn-devstack-*` build-cache images. The devstack owner uses `e2e` / `18000`.
-Never use another owner's running containers or the shared test PostgreSQL.
+`e2e-down` selects that exact prefix. A name belongs to the prefix when it is
+`fvpn-<prefix>` or `fvpn-<prefix>-<known token>` (compose service, `pg`,
+`pgbackrest-repo`, `nb`, `member` and its peer suffix, `node2`, `node-clone`,
+`restore`, `state-reset`). Prefix `e2e` therefore leaves `fvpn-e2e-exports-*`
+alone, including while both stacks exist. Never use another owner's running
+containers or the shared test PostgreSQL.
 
 ```sh
 export CGO_ENABLED=0 GOTOOLCHAIN=local
@@ -482,6 +487,14 @@ prepared stack prefix. The smoke procedure is in
 | `MachineIdentityFingerprints(ctx, slot)` | SHA-256 of trimmed OS machine-id text, DER agent SPKI and raw NetBird X25519 public key. The native key is read from the client profile `/var/lib/netbird/default.json` inside the node. No private key, certificate or native config is returned. |
 | `StartClonedIdentityFixture(ctx, "node")` | Requires unused `node-clone`; stops source, copies durable state, identity and `/var/lib/netbird` into private mounts before clone boot, then resumes source. The clone bind-mounts that profile at `/var/lib/netbird`. A clean `StartSecondExit` still leaves the image's `/var/lib/netbird` writable. Returns a fixture with `Observe(ctx)` for hashes, entrypoint stages and actual read-only conflict/freeze rows. Never publish this clone. Prefix teardown removes it. |
 | `NativePeer.Stream`, `NativeScale.Streams` | Final per-stream scan inventory, at most 60 entries for 20×3. Contains synthetic stream name, `scanned/missing/error/not_started`, `NativeLogScan` (including `DeviceFlowKeys`), fixed safe error class and deletion outcome. A nonzero count is not a clean scan; missing/error is not zero. `JoinNativeMember` returns scanner/deletion errors instead of discarding them. |
+| `InjectMemberIngress(ctx, iface, source, dest, port)` | Copies `fvpn-netlab` into `fvpn-<prefix>-node` and runs `inject` with an empty `-mechanism`. `fvmb0` (type 65534) selects `tun-mirred`. Returns `MemberIngressResult`: absolute `before`/`after` named counters and `deltas` for counters that moved. Does not write `inet fvpn`, call `wg`, or change the member address, qdisc, or routes. A non-admitted source moves `ctunku` by one packet. An admitted source moves `u_` plus the device UUID with dashes removed. UDP port 9 can also move that same device's `d_` counter when the origin returns ICMP unreachable; other devices' counters stay still. |
+| `ObserveMemberIngress(ctx, source, dest)` | Calls `InjectMemberIngress` for `fvmb0` UDP port 9 while tcpdump watches node `fvup0` and the origin network namespace. Returns `MemberIngressProof` (the counter result plus both capture texts). |
+
+`u_<hex>` is the product upload counter (`usageCounter`), not a traffic-class minor.
+Compare packet deltas from `Deltas` or from `before`/`after`. The acceptance
+device-revoke scenario records both deltas and the two captures under
+`runs/2026-10-30/followup13/`. Members and isolation call these methods;
+they do not shell out to `fvpn-netlab`.
 
 Probe example (the caller keeps its existing updater invocation):
 
