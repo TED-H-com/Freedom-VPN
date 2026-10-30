@@ -133,14 +133,18 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Money.** `amount_minor` (int64 minor units) plus ISO 4217 `currency`.
 - **Nullability and presence.** `nullable: true` is allowed on required
   members and the optional nullable members named by
-  `TestAPI01_OptionalNullableFields` (D-048, D-056, D-058, and revision 6's
-  `NodeDetail.dns_policy_evidence` and `UpdateResult.candidate_health`). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+  `TestAPI01_OptionalNullableFields` (D-048, D-056, D-058, revision 6's
+  `NodeDetail.dns_policy_evidence` and `UpdateResult.candidate_health`, and
+  revision 7's `UpdateTarget.previous_release_id`, `health` and
+  `candidate_health`). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
   `nullable`); its zero value is unspecified and **fails marshaling**. Use
   `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
   for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
-  Optional `UpdateTarget.policy_generation` and `policy_refs` use the same
+  Optional `UpdateTarget.policy_generation`, `policy_refs`,
+  `previous_release_id`, `health` and `candidate_health` use the same
   type with `omitzero`: unspecified fields are omitted, while explicit null,
-  zero generation and empty references are preserved. Required members have
+  zero generation, empty references and explicit health objects are preserved.
+  Required members have
   no omission tag and still fail marshaling when unspecified.
   Both `UpdateResult.recovery_required` and `UpdateJobSummary.recovery_required`
   use `presence.Required[bool]`: `NewRequired(false)` preserves explicit false,
@@ -247,6 +251,43 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 7
+
+API version **1.3.0**. The endpoint count remains **44**. No operation, enum
+value, `UpdateResult` member, `UpdateHealth` member or existing required member
+changed. Old `UpdateTarget` payloads that omit the new members stay valid.
+Consumers adopt them in portal follow-up 8 and fleet-update follow-up 5; this
+revision does not change the projector.
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-050, D-062 | Optional nullable `UpdateTarget.previous_release_id` (uuid), `health` (`UpdateHealth`) and `candidate_health` (`UpdateHealth`) | Portal batch detail; fleet-update projector copies them from the stored result |
+
+`GET /api/v1/admin/update-batches/{batch_id}` returns one `UpdateTarget` per
+target. The three members mirror that target's latest **current** accepted
+result: the result applied as the current observation. History results
+(superseded generation) never populate them. Servers must not invent a value
+when no current result exists (D-050).
+
+| Member | Null |
+|---|---|
+| `previous_release_id` | Null when the target has no current result. On `rolled_back`, the candidate release. |
+| `health` | Null when the target has no current result, or that result carried `health: null` (for example `ARTIFACT_INVALID` before any check ran). On `rolled_back`, the restored release's checks. |
+| `candidate_health` | Null unless that current result is `rolled_back` and carried the candidate's checks (D-062 d). |
+
+Omission and explicit null both stay schema-valid. `candidate_health` set on a
+non-`rolled_back` state is still schema-valid. That rule is semantic and is
+enforced by the fleet-update projector, not by the schema.
+
+Examples: [rolled-back target](../../contracts/examples/valid/UpdateTarget.rolled-back.json),
+[explicit nulls](../../contracts/examples/valid/UpdateTarget.null-evidence.json)
+and [batch detail](../../contracts/examples/valid/UpdateBatch.rolled-back.json).
+The original [UpdateTarget](../../contracts/examples/valid/UpdateTarget.json)
+and [UpdateBatch](../../contracts/examples/valid/UpdateBatch.json) keep the
+omitted shape.
+
+`UpdateResult` and `UpdateHealth` are unchanged. No operation changed.
 
 ## Revision 6
 
@@ -425,6 +466,7 @@ them. `reasons.json` names the owner and rule for each fixture.
 | Resolver bytes remain immutable/canonical; signed digest, length, profile and policy generation bind them; verify before apply, no partial apply on mismatch | DNS publisher / agent / DNS applier | §12.3–§12.4, D-056 |
 | Evidence binds the actual applied document and unique feed codes; only applied with read-back may pass dns_policy; unknown never becomes zero. Node detail projects that report and does not treat it as central proof of apply | agent / nodes observation service | §14.7, D-056 |
 | `UpdateResult.health` is null only for `failed` before stage `check`; `rolled_back` health is the restored release, `error_code` and `candidate_health` are the candidate, `current_release_id` is restored and `previous_release_id` is the candidate | fleet update service / node updater | §13.10.3, D-062 |
+| `UpdateTarget.previous_release_id`, `health` and `candidate_health` copy only the latest current accepted result. History results (superseded generation) never populate them. `candidate_health` is set only when that result is `rolled_back` and carried the candidate's checks. Schema acceptance on other states is not permission to project it | fleet update projector | §13.10.3, §15.4, D-050, D-062 |
 | Observation `update` comes from durable updater state; null generation is not generation 0 | agent / fleet update service | §13.10, D-062e |
 | Empty `rollback.allowed_release_ids` adds no restriction; a non-empty list fail-closes against the serving set in the updater and in central | node updater / fleet update service | §13.7, D-034e |
 | Resolver `bootstrap_dns` is non-empty when `upstreams` is; empty input is copied, a stored empty list is rejected | DNS publisher / agent | §12.4, D-028 |
@@ -478,6 +520,11 @@ fixtures use a TEST ONLY allowlist containing `https://portal.example.invalid`.
   Examples retain the [original omitted shape](../../contracts/examples/valid/UpdateBatch.json),
   add [reported evidence](../../contracts/examples/valid/UpdateBatch.applied-policy.json)
   and [unknown evidence](../../contracts/examples/valid/UpdateBatch.unknown-policy.json).
+  Revision 7 adds optional `previous_release_id`, `health` and
+  `candidate_health` on the same object, copied from that same current result
+  (see Revision 7). The omitted batch example stays valid. The
+  [rolled-back batch](../../contracts/examples/valid/UpdateBatch.rolled-back.json)
+  shows both health objects.
 - **Serving lease (§16.3).** `lease_id`, node and incarnation,
   `authorization_generation`, `config_generation`, `issued_at` (signed server
   time), `expires_at` (node lease end), `max_offline_seconds` (recommended
