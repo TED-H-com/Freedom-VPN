@@ -35,9 +35,9 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 		wait, cancel := context.WithTimeout(ctx, 90*time.Second)
 		ready := waitUntil(wait, 2*time.Second, func() bool {
 			var ready bool
-			err := conn.QueryRow(wait, `SELECT EXISTS(SELECT 1 FROM node_observations
-				WHERE node_id=$1 AND applied_generation>0 AND safety_status='passed'
-				AND report_payload->>'provisioning_state'='ready')`, nodeID).Scan(&ready)
+			err := conn.QueryRow(wait, `SELECT COALESCE((SELECT applied_generation>0 AND safety_status='passed'
+                AND report_payload->>'provisioning_state'='ready'
+                FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1), false)`, nodeID).Scan(&ready)
 			return err == nil && ready
 		})
 		cancel()

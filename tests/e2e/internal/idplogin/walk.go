@@ -95,8 +95,8 @@ func Walk(ctx context.Context, client *http.Client, start, email, password strin
 			return status, err
 		}
 		page := string(raw)
-		// The portal has no index. A finished callback is followed to GET /,
-		// which may be a 404 and may contain a form. Do not submit that form.
+		// A completed callback lands on the served portal with HTTP 200.
+		// Do not submit an unrelated form from that landing page.
 		if portalHost(resp) && accept != nil && accept(resp, page) {
 			return status, nil
 		}
@@ -179,21 +179,12 @@ func portalHost(resp *http.Response) bool {
 	return resp != nil && resp.Request != nil && resp.Request.URL != nil && resp.Request.URL.Hostname() == "portal.example.invalid"
 }
 
-// PortalDone reports that the browser landed on the portal after the callback.
-// Control serves no GET /. The client follows the 303 and sees 404. A failed
-// callback stays on /auth/callback with a 4xx and is not success.
+// PortalDone requires a healthy landing after the callback. Callback errors,
+// redirects and a missing or failing index are not successful logins.
 func PortalDone(resp *http.Response, _ string) bool {
-	if !portalHost(resp) {
-		return false
-	}
-	u := resp.Request.URL
-	if u.Path == "/auth/callback" {
-		return resp.StatusCode >= 200 && resp.StatusCode < 400
-	}
-	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
-		return true
-	}
-	return u.Path == "/" || u.Path == ""
+	return portalHost(resp) && resp.StatusCode == http.StatusOK &&
+		resp.Request.URL.Path != "/auth/callback" &&
+		!strings.HasPrefix(resp.Request.URL.Path, "/auth/")
 }
 
 // PortalLogin starts at the portal login route and finishes on the portal.
