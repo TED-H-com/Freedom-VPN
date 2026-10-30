@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 44 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 46 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -113,7 +113,7 @@ malformed public key, and missing revocation timestamp.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs44`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs46`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -242,7 +242,7 @@ meanings and where those codes may appear are in [Revision 8](#revision-8).
 ## Browser role selector (D-032)
 
 `GET /auth/session` and `POST /auth/logout` are existing browser routes outside
-`/api/v1` and outside the 44-endpoint API. Their query parameter is recorded in
+`/api/v1` and outside the 46-endpoint API. Their query parameter is recorded in
 `openapi.yaml` under `x-fvpn-browser-auth`:
 
 | Parameter | Type | Presence | Cookies |
@@ -254,6 +254,46 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 9
+
+API version **1.5.0**. The endpoint count is **46**. No `ErrorCode` was added.
+`GET /admin/fleet-config` and `PUT /admin/fleet-config` are the only new
+operations (D-065). Old payloads stay valid.
+
+`PUT` returns **200** `FleetConfig`, not 202. The contract says `201` means a
+local resource was durably created and `202` means an operation was accepted
+whose external or data-plane effect is still pending. `Operation` is an
+asynchronous operation that succeeds only with observed evidence for every
+required step; `activatePolicyRevision` stays pending until applied-generation
+ACKs. Setting `max_offline_lease_seconds` writes one local row. Lease issuance
+reads that row later, and leases already issued keep their
+`max_offline_seconds` until renewal, so no node or data-plane step is pending
+when the response is sent.
+
+The value applies only to leases issued or renewed after the write. There is
+no retroactive shortening and no extension. The §16.3 replay rule is untouched.
+60 seconds is the test-lab floor: the agent renews when the remaining window
+is at or below min(`renew_lead_seconds` 120, window/2) with a 10 s heartbeat,
+so a 60 s lease is renewed at about 30 s remaining. The portal must warn below
+900 s. 86400 is the §16.3 ceiling (每次服務租約最長 24 小時), not a recommendation.
+`default_max_offline_lease_seconds` is read-only and always 86400.
+
+An accepted write increments `resource_version`, sets `updated_at`, returns
+`ETag: "<resource_version>"`, and records one `fleet_config.update` audit event
+on `fleet_config:00000000-0000-0000-0000-000000000001`. `changes.before` and
+`changes.after` each contain `max_offline_lease_seconds`. `operation_id` is
+null. Missing `If-Match` is 428 `PRECONDITION_REQUIRED`. A mismatch is 412
+`RESOURCE_VERSION_CONFLICT` with `details.current_resource_version`. The same
+`Idempotency-Key` and payload replay the original 200; a different payload is
+409 `IDEMPOTENCY_CONFLICT`. A value outside 60..86400 is 422
+`VALIDATION_FAILED`, the code the shared schema filter already returns for
+minimum and maximum. `MALFORMED_REQUEST` (400) stays the code for malformed
+JSON and a missing `Idempotency-Key`.
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-065 | `FleetConfig`, `FleetConfigUpdate`; `getFleetConfig`, `updateFleetConfig` | w3-wire-nodes admin handler and lease read; portal settings; AT29 harnesses |
 
 ## Revision 8
 
@@ -619,7 +659,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the current count of 44 (including D-015);
+1. Find the requirement in the spec. New endpoints change the current count of 46 (including D-015 and D-065);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -696,6 +736,8 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /agent/resolver-documents/{document_id}` | `getResolverDocument` | Agent mTLS | 200 | §14.4, §14.7, §12.3, D-056 | DNS01 DNS03 SEC01 |
 | `GET /admin/groups` | `listAdminGroups` | Admin | 200 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
 | `POST /admin/groups` | `createAdminGroup` | Admin | 201 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
+| `GET /admin/fleet-config` | `getFleetConfig` | adminSession | 200 | §14.2, §14.5, §16.3, D-065 | SEC01 API01 |
+| `PUT /admin/fleet-config` | `updateFleetConfig` | adminSession + csrfToken | 200 | §14.2, §14.5, §16.3, D-065 | SEC01 API01 |
 
 ## Operation step messages
 
@@ -737,6 +779,9 @@ unchanged.
 - **D-058:** sign probe configuration, expose bounded diagnostic/feed metadata,
   and default optional source refresh cadence to 21600 seconds. Version 1.1.0
   has 44 operations. Spec prose amendments remain pending authorization.
+- **D-065:** expose `max_offline_lease_seconds` only through
+  `GET /admin/fleet-config` and `PUT /admin/fleet-config`. The endpoint count
+  is 46. Harnesses and operators do not write `fleet_config` directly.
 
 - The update batch targets page is part of `GET /admin/update-batches/{batch_id}`
   (`targets`, `next_cursor`) under D-007; D-015 adds bootstrap and D-056/D-057 add resolver delivery and groups, making 44 endpoints. §13.10.4's
