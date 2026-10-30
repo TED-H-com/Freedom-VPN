@@ -32,7 +32,7 @@ func labPrefix() string {
 	if v := os.Getenv("FVPN_LAB_PREFIX"); v != "" {
 		return v
 	}
-	return "fvpn-w4-at-isolation"
+	return "fvpn-w4-isolation-lab"
 }
 
 func skipLab(t *testing.T) {
@@ -290,11 +290,21 @@ func ifaceMAC(t *testing.T, ns, dev string) string {
 
 func startCapture(t *testing.T, ns, iface, filter, path string) {
 	t.Helper()
+	startDirectionalCapture(t, ns, iface, "in", filter, path)
+}
+
+func startDirectionalCapture(t *testing.T, ns, iface, direction, filter, path string) {
+	t.Helper()
+	if direction != "in" && direction != "out" && direction != "inout" {
+		t.Fatalf("invalid capture direction %q", direction)
+	}
 	expr := ""
 	if strings.TrimSpace(filter) != "" {
 		expr = " " + strconv.Quote(filter)
 	}
-	script := fmt.Sprintf("echo $$ > %s.pid; exec tcpdump -n -l -s 96 -i %s%s > %s 2>%s.err", path, iface, expr, path, path)
+	// Omit per-socket timestamps so simultaneous inout/out captures compare
+	// packet headers rather than slightly different kernel delivery times.
+	script := fmt.Sprintf("echo $$ > %s.pid; exec tcpdump -nn -t -l -s 96 -Q %s -i %s%s > %s 2>%s.err", path, direction, iface, expr, path, path)
 	var err error
 	if ns == "" || ns == "root" {
 		err = dockerDetach("sh", "-c", script)
@@ -303,6 +313,9 @@ func startCapture(t *testing.T, ns, iface, filter, path string) {
 	}
 	if err != nil {
 		t.Fatal(err)
+	}
+	if !waitLog(t, path+".err", "listening on ", 5*time.Second) {
+		t.Fatalf("capture did not start: %s", readScratch(t, path+".err"))
 	}
 }
 
@@ -313,14 +326,11 @@ func stopCaptures() {
 
 func captureBody(t *testing.T, path string) string {
 	t.Helper()
-	if !scratchExists(path) {
-		return ""
+	errText := readScratch(t, path+".err")
+	if !strings.Contains(errText, "listening on ") || !strings.Contains(errText, "\n0 packets dropped by kernel") {
+		t.Fatalf("capture %s missing completion or lost packets: %s", path, errText)
 	}
-	out, _, err := dockerExec("cat", path)
-	if err != nil {
-		return ""
-	}
-	return out
+	return readScratch(t, path)
 }
 
 func counterPackets(t *testing.T, m enforce.Model, name string) uint64 {
@@ -359,7 +369,7 @@ func labMeta(policy string) isolation.Record {
 		Build: gitSHA(), ImageDigests: []string{labPrefix() + ":lab " + id},
 		PolicyRevision: policy, NodeIncarnation: "mechanism-lab",
 		Commands: []string{
-			"FVPN_LAB_PREFIX=" + labPrefix() + " make -f mk/netlab.mk netlab-up",
+			"FVPN_LAB_PREFIX=" + labPrefix() + " make -f mk/at-isolation.mk at-isolation-lab-up",
 			"FVPN_NETLAB=1 FVPN_LAB_PREFIX=" + labPrefix() + " FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at",
 		},
 	}

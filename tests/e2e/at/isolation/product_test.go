@@ -18,8 +18,7 @@ import (
 
 // TestProduct_AT10_AT13 drives AT10–AT13 on the assembled dev stack (§19).
 // A missing serving node is recorded as blocked with the operation step that
-// stopped it. The test fails only when the harness itself breaks or when a
-// protected destination is accepted on the member exit path.
+// stopped it. Every record is written before a non-pass fails the gate.
 func TestProduct_AT10_AT13(t *testing.T) {
 	if os.Getenv("FVPN_E2E") != "1" {
 		t.Skip("set FVPN_E2E=1 to run isolation acceptance against the dev stack")
@@ -363,14 +362,14 @@ func collectMeta() Record {
 		Commands: []string{
 			"FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 make -f mk/e2e.mk e2e-up",
 			"FVPN_E2E=1 FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 go test -tags e2e -count=1 -timeout 25m -p 1 -parallel 1 ./tests/e2e/at/isolation",
-			"FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-test",
+			"make -f mk/at-isolation.mk at-isolation",
 		},
 	}
 	for _, name := range []string{
 		"fvpn-w4-isolation-node:local",
 		"fvpn-w4-isolation-control:local",
 		"fvpn-w4-isolation-worker:local",
-		"fvpn-w4-at-isolation:lab",
+		"fvpn-w4-isolation-lab:lab",
 	} {
 		rec.ImageDigests = append(rec.ImageDigests, name+" "+imageID(name))
 	}
@@ -456,6 +455,11 @@ func writeProduct(t *testing.T, dir string, meta Record, obs productObs, probe e
 		rec.Observations = append(rec.Observations, obs.notes...)
 		if err := Write(dir, rec); err != nil {
 			t.Errorf("evidence %s: %v", c.id, err)
+		}
+	}
+	for _, c := range cases {
+		if c.result.status != StatusPass {
+			t.Errorf("%s: %s; see %s.json", c.id, c.result.status, c.id)
 		}
 	}
 }
