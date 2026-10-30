@@ -2,6 +2,7 @@ package enforce
 
 import (
 	"fmt"
+	"net/netip"
 	"strings"
 
 	"github.com/google/uuid"
@@ -170,13 +171,16 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	if err := verifyProbeElements(rs, m); err != nil {
 		return err
 	}
+	if err := verifyResolverSet(rs, m); err != nil {
+		return err
+	}
 	if _, ok := rs.Counters[counterProbeUp]; !ok {
 		return checkf(ReasonIsolation, "missing counter %s", counterProbeUp)
 	}
 	if _, ok := rs.Counters[counterProbeDown]; !ok {
 		return checkf(ReasonIsolation, "missing counter %s", counterProbeDown)
 	}
-	var tuple, dns, down, other int
+	var tuple, dns, down, other, dnsTCP, dnsUDP int
 	var v6Idx, denyIdx, hostIdx, tupleIdx, dnsIdx, downIdx, memberIdx = -1, -1, -1, -1, -1, -1, -1
 	for i, rule := range fwd.Rules {
 		if rule.Verdict == "drop" && rule.NFProto == "ipv6" && v6Idx < 0 {
@@ -198,11 +202,23 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 			if dnsIdx < 0 {
 				dnsIdx = i
 			}
+			if hasProto(rule, "tcp") {
+				dnsTCP++
+			}
+			if hasProto(rule, "udp") {
+				dnsUDP++
+			}
 		case "down":
 			down++
 			downIdx = i
 		default:
 			if rule.Verdict == "accept" {
+				// A probe-source accept that is not the port-53 pair or the
+				// destination tuple would outlive the exception's shape.
+				// Serving and baseline both fail closed (§13.9).
+				if probeScopedAccept(rule) {
+					return checkf(ReasonIsolation, "probe source accept is wider than the DNS or tuple exception")
+				}
 				other++
 				if strings.HasPrefix(rule.Counter, "u_") && memberIdx < 0 {
 					memberIdx = i
@@ -213,6 +229,9 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	wantTuple, wantDNS, wantDown := expectedProbeAccepts(m.Probe)
 	if tuple != wantTuple || dns != wantDNS || down != wantDown {
 		return checkf(ReasonIsolation, "probe accepts tuple=%d dns=%d down=%d, want %d/%d/%d", tuple, dns, down, wantTuple, wantDNS, wantDown)
+	}
+	if wantDNS > 0 && (dnsTCP != 1 || dnsUDP != 1) {
+		return checkf(ReasonIsolation, "probe DNS accept is not one tcp and one udp port 53")
 	}
 	if baseline && other > 0 {
 		return checkf(ReasonIsolationBaselineMissing, "baseline forward chain contains an accept that is not the probe")
@@ -255,19 +274,68 @@ func classifyProbeRule(rule RuleView, m Model) string {
 	if rule.Verdict != "accept" {
 		return ""
 	}
-	if rule.Counter == counterProbeDown && hasName(rule.IIF, up) && hasName(rule.OIF, in) && hasName(rule.DaddrSets, setProbeV4) && rule.CTEstablished {
+	if rule.Counter == counterProbeDown && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) && exactNames(rule.DaddrSets, setProbeV4) && len(rule.SaddrSets) == 0 && len(rule.ConcatSets) == 0 && len(rule.Dports) == 0 && rule.CTEstablished {
 		return "down"
 	}
-	if rule.Counter != counterProbeUp || !hasName(rule.IIF, in) || !hasName(rule.OIF, up) || !hasName(rule.SaddrSets, setProbeV4) {
+	if rule.Counter != counterProbeUp || !exactNames(rule.IIF, in) || !exactNames(rule.OIF, up) || !exactNames(rule.SaddrSets, setProbeV4) || rule.CTEstablished {
 		return ""
 	}
-	if hasName(rule.ConcatSets, setProbeDstV4) {
+	if exactNames(rule.ConcatSets, setProbeDstV4) && len(rule.DaddrSets) == 0 && len(rule.Dports) == 0 && len(rule.L4Protos) == 0 {
 		return "tuple"
 	}
-	if hasName(rule.DaddrSets, "resolver_v4") && hasPort(rule, 53) && (hasProto(rule, "tcp") || hasProto(rule, "udp")) {
+	// One L4 protocol, one destination port, one destination set. Anything
+	// else is not the resolver carve-out and must not count as it.
+	if exactNames(rule.DaddrSets, "resolver_v4") && len(rule.ConcatSets) == 0 && len(rule.Dports) == 1 && rule.Dports[0] == 53 && len(rule.L4Protos) == 1 && (rule.L4Protos[0] == "tcp" || rule.L4Protos[0] == "udp") {
 		return "dns"
 	}
 	return ""
+}
+
+// probeScopedAccept is an accept that names the probe source, the probe
+// destination tuple, or the probe address and was not classified above.
+func probeScopedAccept(rule RuleView) bool {
+	return hasName(rule.SaddrSets, setProbeV4) || hasName(rule.DaddrSets, setProbeV4) || hasName(rule.ConcatSets, setProbeV4) || hasName(rule.ConcatSets, setProbeDstV4)
+}
+
+func exactNames(names []string, want string) bool {
+	return len(names) == 1 && names[0] == want
+}
+
+// verifyResolverSet requires @resolver_v4 to be exactly the configured
+// resolver addresses while the probe DNS hole is open. A prefix, a range,
+// or an extra address fails closed. The detail does not name an address.
+func verifyResolverSet(rs Ruleset, m Model) error {
+	if m.Probe == nil || !m.Probe.ResolverDNS {
+		return nil
+	}
+	if rs.Tainted["resolver_v4"] {
+		return checkf(ReasonIsolation, "resolver_v4 contains a prefix, range, or unknown element")
+	}
+	want := map[netip.Addr]struct{}{}
+	for _, addr := range m.Resolvers {
+		if !addr.IsValid() || !addr.Is4() {
+			return checkf(ReasonIsolation, "resolver_v4 is not exactly the configured resolvers")
+		}
+		want[addr] = struct{}{}
+	}
+	got := rs.Elements["resolver_v4"]
+	if len(got) != len(want) {
+		return checkf(ReasonIsolation, "resolver_v4 is not exactly the configured resolvers")
+	}
+	seen := map[netip.Addr]struct{}{}
+	for _, el := range got {
+		if el.Concat || el.Port != 0 || el.Proto != "" {
+			return checkf(ReasonIsolation, "resolver_v4 is not exactly the configured resolvers")
+		}
+		if _, ok := want[el.Addr]; !ok {
+			return checkf(ReasonIsolation, "resolver_v4 is not exactly the configured resolvers")
+		}
+		if _, dup := seen[el.Addr]; dup {
+			return checkf(ReasonIsolation, "resolver_v4 is not exactly the configured resolvers")
+		}
+		seen[el.Addr] = struct{}{}
+	}
+	return nil
 }
 
 func verifyProbeElements(rs Ruleset, m Model) error {
@@ -335,15 +403,6 @@ func boundedElement(el setElement, set string, limit uint32) error {
 func hasProbeSNAT(ch ChainView, m Model) bool {
 	for _, rule := range ch.Rules {
 		if rule.SNAT == m.Datapath.SNAT.String() && hasName(rule.SaddrSets, setProbeV4) && hasName(rule.OIF, m.Datapath.Uplink) {
-			return true
-		}
-	}
-	return false
-}
-
-func hasPort(rule RuleView, port uint16) bool {
-	for _, p := range rule.Dports {
-		if p == port {
 			return true
 		}
 	}
