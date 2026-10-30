@@ -1,0 +1,117 @@
+{
+  "run_id": "46c64443-af2d-4295-a3a9-5e6c69bc4828",
+  "source_commit": "c8d4a00cf1bf594b20016263c2cfc3c164d92bc9",
+  "at": "2026-10-30T17:57:42Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "harness_source": {
+    "differs_from_source_commit": false,
+    "files_sha256": {
+      "authority_test.go": "468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21",
+      "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
+      "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
+      "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
+      "lab_test.go": "cd471a5cf47e726ad8a3600b39f4e443df88acfd370680fef9ffdd8a12edd4b2",
+      "live_test.go": "71b6c5af3f3dad8d5c5bc822d5e0f80ec8b9c1ce4e70a3981ac59d1663cfbd51",
+      "preresult_test.go": "b29ad4399f58f0345fdb083a1598c49a15d2acf0ec1752994128afd55f8a4b06",
+      "probe_test.go": "6aef8573b323614681290df15a26f461e16020cd4b537204e69b8d9e9ed5ffa0",
+      "restated_test.go": "de0c397ff62ad3bb6cc4ec5f1c2b18ebeffbba7635d496310f17e8c1383d7edf"
+    }
+  },
+  "main_commit": "8a203b97b7c9e7566f1eed50376cad7dd13e708d",
+  "roadmap_lines": [
+    "8a203b9 roadmap: w4-at-updates follow-up 6 merged (#177)",
+    "be2976c roadmap: w3-contracts-r11 merged (#176)",
+    "729ef25 roadmap: w3-portal-live follow-up 10 merged (#175)",
+    "5555772 roadmap: w2-control-core follow-up 18 merged (#174)",
+    "cd2eb7b roadmap: w4-at-enrollment merged (#173)",
+    "ff04c72 roadmap: w1-netlab follow-up 7 merged (#172)",
+    "00e1d0c roadmap: w2-agent-core follow-up 13 merged (#171)",
+    "631f6d4 roadmap: w2-agent-core follow-up 10 merged (#171)",
+    "e0a84fb roadmap: w3-devstack-e2e follow-up 10 merged (#170)",
+    "ea5e3e7 roadmap: w2-control-core follow-up 17 merged (#169)",
+    "cbb9430 roadmap: w2-updater follow-up 11 merged (#168)",
+    "b4d212d roadmap: w2-fleet-update follow-up 8 merged (#167)",
+    "7653373 roadmap: w2-agent-core follow-up 12 merged (#166)",
+    "5ee3a05 roadmap: w4-at-security-ops follow-up 5 merged (#165)",
+    "23d5005 roadmap: w3-contracts-r10 merged (#164)",
+    "ea860cc roadmap: w4-handover follow-up 5 merged (#163)",
+    "446b6b0 roadmap: w2-agent-core follow-up 11 merged (#162)",
+    "5c58d32 roadmap: w2-control-core follow-up 16 merged (#161)",
+    "afcaa1d roadmap: w3-wire-nodes follow-up 16 merged (#160)",
+    "cc1303a roadmap: w1-netlab follow-up 6 merged (#159)",
+    "3fe72ca roadmap: w4-at-updates follow-up 5 merged (#158)",
+    "73e0200 roadmap: w4-handover follow-up 4 merged (#157)",
+    "b2c4c0f roadmap: w1-netlab follow-up 5 merged (#156)",
+    "84e099c roadmap: w2-fleet-update follow-up 7 merged (#155)",
+    "481f8ff roadmap: w2-updater follow-up 10 merged (#154)",
+    "27d9229 roadmap: w3-devstack-e2e follow-up 9 merged (#153)"
+  ],
+  "make_target": "make -f mk/at-updates.mk at-updates",
+  "make_exit_code": 2,
+  "go_test_exit_code": 1,
+  "results": {
+    "AT23": "blocked",
+    "AT24": "pass",
+    "AT25": "blocked",
+    "AT26": "pass",
+    "AT27": "pass"
+  },
+  "record_provenance": {
+    "AT23": {
+      "run_id": "a83d5d64-505c-488c-b560-5a777566702e",
+      "source_commit": "1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f",
+      "at": "2026-10-30T17:10:45Z",
+      "rerun": false
+    },
+    "AT24": {
+      "run_id": "46c64443-af2d-4295-a3a9-5e6c69bc4828",
+      "source_commit": "c8d4a00cf1bf594b20016263c2cfc3c164d92bc9",
+      "at": "2026-10-30T17:57:42Z",
+      "rerun": true
+    },
+    "AT25": {
+      "run_id": "a83d5d64-505c-488c-b560-5a777566702e",
+      "source_commit": "1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f",
+      "at": "2026-10-30T17:10:45Z",
+      "rerun": false
+    },
+    "AT26": {
+      "run_id": "46c64443-af2d-4295-a3a9-5e6c69bc4828",
+      "source_commit": "c8d4a00cf1bf594b20016263c2cfc3c164d92bc9",
+      "at": "2026-10-30T17:57:42Z",
+      "rerun": true
+    },
+    "AT27": {
+      "run_id": "46c64443-af2d-4295-a3a9-5e6c69bc4828",
+      "source_commit": "c8d4a00cf1bf594b20016263c2cfc3c164d92bc9",
+      "at": "2026-10-30T17:57:42Z",
+      "rerun": true
+    }
+  },
+  "manifest_and_artifact_digests": {
+    "artifact_sha256_0.1.0_amd64": "2d1923520dd5fcde06deb50421a93d49c4688cd9994acb303dcfb2692fd9e60d",
+    "artifact_sha256_0.1.0_arm64": "8ccb4fc08878c6370093c0b3ae6a1bfe71dd00a8db9d231830424434f72f004c",
+    "artifact_sha256_1.0.1_amd64": "4df4705e1d42acf7c13879360058dd99d7ab68a8acaccd5023f985c6e2388238",
+    "artifact_sha256_1.0.1_arm64": "117cc3f3e1ab792fb38af2025e9ed6cc5e8592e872c94c161bf4a4ddffdd87c2",
+    "artifact_sha256_1.0.2_amd64": "9817fe3fa20ed84de8e573443047fb756de040d55757107097718e9dae7502ea",
+    "artifact_sha256_1.0.2_arm64": "c25ea136a5c53eaf1205627ba66cba76520d745660d8cfd060c59d88118a8609",
+    "manifest_sha256_0.1.0": "4ab4ab5a922b2226e6d40013f1f28be368711d4dabd669cb1f0807ecc8f3dccf",
+    "manifest_sha256_1.0.1": "b261bd87fbc62d2e3ced30b3bb8fbf1eb1185a24cd911939c0a18d2566fe1977",
+    "manifest_sha256_1.0.2": "957b8c9b3a1661b8020c8602c695d7c693e849a96b7ff5176d58ce9c81e42df2",
+    "signed_manifest_sha256_0.1.0": "00ec203237cb516531d20f78b61c549b934b2f54043ac8d435d3eeaa8dee45f5",
+    "signed_manifest_sha256_1.0.1": "04268e0625812409ce2f14e9924d6c350335f1171304a44bf3e6488fdfa5cdab",
+    "signed_manifest_sha256_1.0.2": "15b1abd09fceffeb600d17eade7c422b35ddcd1e730c598b5967e27dfcc76858",
+    "artifact_sha256_1.0.3_amd64": "0fb36ff4084918c810e1f24d882c70011d41e803fa587d2b7941e6955178f439",
+    "artifact_sha256_1.0.3_arm64": "b74558ef39eaca5944d06e2767f132dc762cede105968d801f257a6ac11e5cbf",
+    "manifest_sha256_1.0.3": "5cf57bfc4c41fd4399f50cb0db1a7c0804560ab938134531f5cf1cf768127f7a",
+    "signed_manifest_sha256_1.0.3": "78c3ee6a4b5ec967fef8647d9230ed54576ad9bfe8f4777c9dd3901cfa54c005"
+  },
+  "diagnostic_first_run": {
+    "run_id": "008a155b-a94f-4c36-8cbb-a574258c678b",
+    "history": "history/follow-up-7/first-run/README.md",
+    "make_exit_code": 2,
+    "reason": "Harness expected 200 for a genuine replay; the contract specifies and product returned 202. Corrected assertion and reran all fresh cases."
+  },
+  "scope": "Restated AT24/AT27 and unchanged AT26 live; AT23/AT25 retained blocked on F5-02; two amd64 nodes; both architecture bundles built; not the complete original §19 population"
+}

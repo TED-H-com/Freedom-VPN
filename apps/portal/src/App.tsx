@@ -16,6 +16,7 @@ import { AdminMembersListPage } from './pages/admin/AdminMembersListPage';
 import { AdminNodeDetailPage } from './pages/admin/AdminNodeDetailPage';
 import { AdminNodesListPage } from './pages/admin/AdminNodesListPage';
 import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { MemberBillingPage } from './pages/member/MemberBillingPage';
 import { MemberDevicesPage } from './pages/member/MemberDevicesPage';
 import { MemberDnsProtectionPage } from './pages/member/MemberDnsProtectionPage';
@@ -141,6 +142,14 @@ export function AppRoutes(): React.ReactElement {
             element={
               <RoleGuard requiredRole="admin">
                 <AdminAuditPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="admin/settings"
+            element={
+              <RoleGuard requiredRole="admin">
+                <AdminSettingsPage />
               </RoleGuard>
             }
           />

@@ -222,6 +222,22 @@ func (l *live) entitlements(r *record) {
 		r.check("cancel and partial refund event", "202 then reconciled", detail(got), "update provider truth; POST signed event", got.status == 202 && l.processed(ev))
 		l.paidReadback(r, p, "cancel_at_period_end", 250)
 	}
+	// Two separate native devices keep a persistent TCP connection on each exit.
+	var secondMonitor *flowMonitor
+	if l.secondExit(r) {
+		peer := l.native(r, l.c, "member-paid2")
+		device := l.awaitDevice(peer)
+		restore := l.useSecond()
+		l.forwardingGate(r)
+		if device != uuid.Nil && l.traceForwarding(r, "member-paid2", device) {
+			secondMonitor = l.startFlow(r, "member-paid2")
+		}
+		restore()
+	}
+	var paidDevice uuid.UUID
+	_ = l.pool.QueryRow(l.ctx, `SELECT id FROM member_devices WHERE member_id=$1 AND status='authorized' ORDER BY created_at LIMIT 1`, l.c.member).Scan(&paidDevice)
+	l.forwardingGate(r)
+	l.traceForwarding(r, "member-paid", paidDevice)
 	monitor := l.startFlow(r, "member-paid")
 	refundAt := time.Now().UTC()
 	p.snapshot["refund_minor"] = 1000
@@ -239,16 +255,29 @@ func (l *live) entitlements(r *record) {
 		r.check("cancellation deletion replay", "202; reconciled without restoring service", detail(got), "POST customer.subscription.deleted after canceled truth", got.status == 202 && l.processed(deleted) && l.entitlementState(l.c) == "expired")
 	}
 	l.finishFlow(r, monitor, refundAt)
+	l.finishFlow(r, secondMonitor, refundAt)
+	l.traceForwarding(r, "member-paid", uuid.Nil)
+	if l.second.NodeID != uuid.Nil {
+		restore := l.useSecond()
+		l.traceForwarding(r, "member-paid2", uuid.Nil)
+		restore()
+	}
 	// Expiry runs on a fresh, paid subscription so no grant masks the boundary.
 	expiryMember := l.login("AT-expiry-"+l.run, "member")
-	ep := l.checkout(r, expiryMember, time.Now().Add(45*time.Second))
+	ep := l.checkout(r, expiryMember, time.Now().Add(150*time.Second))
 	if ep != nil && l.truth(r, ep) {
 		ev := l.event(r, ep, "checkout.session.completed")
 		got := l.sendEvent(ev)
-		r.check("short real paid period", "202 then active", detail(got), "actual checkout and provider paid interval ending in 45 seconds", got.status == 202 && l.processed(ev))
+		r.check("short real paid period", "202 then active", detail(got), "actual checkout and provider paid interval ending in 150 seconds", got.status == 202 && l.processed(ev))
 		l.paidReadback(r, ep, "active", 0)
+		services := l.paidPair(r, expiryMember, "expiry")
+		if remaining := time.Until(ep.end) - 50*time.Second; remaining > 0 {
+			time.Sleep(remaining)
+		}
+		monitors := l.pairMonitors(r, services)
 		expired := l.wait(100*time.Second, func() bool { return l.entitlementState(expiryMember) == "expired" })
 		r.check("real paid expiry", "product projection expires at real UTC boundary", fmt.Sprintf("expired=%t; seconds_after_end=%.0f", expired, time.Since(ep.end).Seconds()), "poll entitlement.state without changing any clock", expired)
+		l.endPair(r, services, monitors, ep.end)
 	}
 	suspended := l.login("AT-suspend-"+l.run, "member")
 	got := l.patchMember(suspended, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY successful payment precedence"})
@@ -262,6 +291,12 @@ func (l *live) entitlements(r *record) {
 		screen := l.api(suspended, "GET", "/api/v1/member/me", nil, nil)
 		r.check("member screen state", "200; admin_suspended true despite paid interval", fmt.Sprintf("HTTP=%d; suspended=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after successful paid reconciliation", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
 	}
-	r.block("Shared origin only serves HTTPS; no controlled persistent UDP echo/flow endpoint or second runnable exit is present. Existing TCP full-refund withdrawal is measured separately; all-node UDP/expiry/suspension flow timing remains unproved. Owner: devstack fixture hooks.")
-	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts.")
+	l.suspendedFlows(r)
+	if l.second.NodeID != uuid.Nil {
+		restore := l.useSecond()
+		l.publicationCommand(r, "disabled", []uuid.UUID{l.groupA})
+		restore()
+	}
+	r.block("F4-04: persistent TCP refund withdrawal is attempted on both real exits. The shared UDP/4443 hook is an authenticated updater-only probe, not a member echo service; do not count it as member traffic. Member UDP withdrawal timing remains unproved; TCP refund, expiry and suspension are measured on both nodes. Owner: w3-devstack-e2e traffic fixtures.")
+	r.block("The full case additionally needs member UDP withdrawal timing and rendered suspended/expired member screens. Individual TCP observations above retain their actual pass/fail; OPERATORS.md retains the remaining exact scripts.")
 }
