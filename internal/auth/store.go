@@ -5,12 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
-	"net"
-	"net/url"
 	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/members/issuer"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -74,29 +73,6 @@ func (s PostgresStore) ConsumeFlow(ctx context.Context, state, browser string) (
 	}
 	return f, nil
 }
-func canonicalIssuer(raw string) string {
-	u, err := url.Parse(raw)
-	if err != nil || strings.TrimSpace(raw) != raw || strings.ContainsAny(raw, "?#") || u.User != nil || u.Opaque != "" || u.Hostname() == "" || strings.HasSuffix(u.Host, ":") {
-		return raw
-	}
-	u.Scheme = strings.ToLower(u.Scheme)
-	if u.Scheme != "https" && u.Scheme != "http" {
-		return raw
-	}
-	host, port := strings.ToLower(u.Hostname()), u.Port()
-	if u.Scheme == "https" && port == "443" || u.Scheme == "http" && port == "80" {
-		port = ""
-	}
-	if port != "" {
-		host = net.JoinHostPort(host, port)
-	} else if strings.Contains(host, ":") {
-		host = "[" + host + "]"
-	}
-	u.Host = host
-	u.Path = strings.TrimRight(u.Path, "/")
-	u.RawPath = strings.TrimRight(u.RawPath, "/")
-	return u.String()
-}
 
 func isUniqueViolation(err error) bool {
 	var pgErr *pgconn.PgError
@@ -128,18 +104,7 @@ func lookupMemberBindings(ctx context.Context, tx pgx.Tx, canonIssuer, rawIssuer
 }
 
 func updateMemberBindingScope(ctx context.Context, tx pgx.Tx, memberID, bindingID uuid.UUID, role Role, clientScope string, request uuid.UUID) error {
-	if _, err := tx.Exec(ctx, `SAVEPOINT auth_update_scope`); err != nil {
-		return err
-	}
 	if _, err := tx.Exec(ctx, `UPDATE identity_bindings SET client_scope=$2,verified_at=clock_timestamp() WHERE id=$1`, bindingID, clientScope); err != nil {
-		if _, rbErr := tx.Exec(ctx, `ROLLBACK TO SAVEPOINT auth_update_scope`); rbErr != nil {
-			return rbErr
-		}
-		if _, err := tx.Exec(ctx, `UPDATE identity_bindings SET verified_at=clock_timestamp() WHERE id=$1`, bindingID); err != nil {
-			return err
-		}
-	}
-	if _, err := tx.Exec(ctx, `RELEASE SAVEPOINT auth_update_scope`); err != nil {
 		return err
 	}
 	after, err := json.Marshal(map[string]any{
@@ -216,7 +181,11 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 		return p, errors.New("invalid login identity")
 	}
 	rawIssuer := i.Issuer
-	i.Issuer = canonicalIssuer(i.Issuer)
+	canonIssuer, err := issuer.Canonical(i.Issuer)
+	if err != nil {
+		return p, err
+	}
+	i.Issuer = canonIssuer
 	if request == uuid.Nil {
 		request = uuid.Must(uuid.NewV7())
 	}

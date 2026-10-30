@@ -208,11 +208,13 @@ func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testin
 		expectUpdatedScope  bool
 	}{
 		{
-			name: "current_schema",
+			name:               "current_schema",
+			expectUpdatedScope: true,
 		},
 		{
 			name:                "migration_00183_issuer_subject_unique",
 			issuerSubjectUnique: true,
+			expectUpdatedScope:  true,
 		},
 		{
 			name:                "migration_00183_with_mutable_client_scope",
@@ -281,6 +283,15 @@ func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testin
 				t.Fatalf("client_scope rotation created second member: got %s, want %s", p2.ID, p1.ID)
 			}
 
+			// Second login from the rotated client must keep the member/scope and must NOT append a second identity_binding.proof_updated audit event.
+			p3, err := store.Login(ctx, idV2, randomToken(), "", time.Hour, uuid.New())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p3.ID != p1.ID {
+				t.Fatalf("second rotated-client login changed member: got %s, want %s", p3.ID, p1.ID)
+			}
+
 			var bindingCount int
 			var recordedScope string
 			if err := pool.QueryRow(ctx, `SELECT count(*), min(client_scope) FROM identity_bindings WHERE subject=$1`, sub).Scan(&bindingCount, &recordedScope); err != nil {
@@ -293,15 +304,16 @@ func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testin
 				t.Fatalf("expected client_scope updated to portal-v2, got %q", recordedScope)
 			}
 
-			// 2. Audit event on reused binding with rotated client_scope stays on D-029 allowlist without raw subject/issuer.
+			// 2. Audit event on reused binding with rotated client_scope is emitted once for the rotation and stays on D-029 allowlist without raw subject/issuer.
 			var proofAudits int
 			var beforeRaw, afterRaw string
 			if err := pool.QueryRow(ctx, `SELECT count(*), coalesce(min(before_diff::text),''), coalesce(min(after_diff::text),'') FROM audit_events WHERE action='identity_binding.proof_updated' AND actor=$1 AND resource=$2 AND result='succeeded' AND after_diff->>'reason'='proof_updated' AND coalesce(after_diff->>'identity_binding_id','') <> ''`, p1.ID.String(), "member:"+p1.ID.String()).Scan(&proofAudits, &beforeRaw, &afterRaw); err != nil {
 				t.Fatal(err)
 			}
 			if proofAudits != 1 {
-				t.Fatalf("expected 1 identity_binding.proof_updated audit event, got %d", proofAudits)
+				t.Fatalf("expected 1 identity_binding.proof_updated audit event after two logins from rotated client, got %d", proofAudits)
 			}
+			t.Logf("schema=%s recorded_scope=%s proof_updated_audits=%d", sc.name, recordedScope, proofAudits)
 			var afterMap map[string]any
 			if err := json.Unmarshal([]byte(afterRaw), &afterMap); err != nil {
 				t.Fatal(err)
