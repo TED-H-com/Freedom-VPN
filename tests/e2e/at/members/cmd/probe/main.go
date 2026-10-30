@@ -25,7 +25,7 @@ func main() {
 	defer cancel()
 	switch os.Args[1] {
 	case "dns":
-		if len(os.Args) != 6 || (os.Args[2] != "172.28.31.53:53" && os.Args[2] != "172.28.31.54:53") {
+		if len(os.Args) != 6 || (os.Args[2] != "172.28.31.40:53" && os.Args[2] != "172.28.31.54:53") {
 			os.Exit(2)
 		}
 		typ, err := strconv.ParseUint(os.Args[4], 10, 16)

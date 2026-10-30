@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
 )
@@ -32,7 +33,7 @@ func (l *live) installProbe() bool {
 	return true
 }
 func (l *live) dns(name, typ, proto string) string {
-	raw, err := l.inside("member", "/tmp/at-members-probe", "dns", l.stack.LabPrefix+".53:53", name, typ, proto)
+	raw, err := l.inside("member", "/tmp/at-members-probe", "dns", l.stack.LabPrefix+".40:53", name, typ, proto)
 	if err != nil {
 		return "probe unavailable"
 	}
@@ -81,7 +82,7 @@ func (l *live) dnsRules(r *record) {
 		UserRules []string `json:"user_rules"`
 	}
 	var err error
-	applied := l.wait(20*time.Second, func() bool {
+	applied := func() bool {
 		var raw []byte
 		raw, err = l.resolver("/control/filtering/status")
 		_ = json.Unmarshal(raw, &status)
@@ -91,7 +92,7 @@ func (l *live) dnsRules(r *record) {
 			}
 		}
 		return false
-	})
+	}()
 	var compileStatus string
 	_ = l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE kind='policy.activate' ORDER BY created_at DESC LIMIT 1`).Scan(&compileStatus)
 	r.check("policy operation versus resolver", "record compilation operation separately from application", "latest_policy_operation="+compileStatus, "SELECT operations.status for policy.activate", compileStatus != "")
@@ -100,8 +101,9 @@ func (l *live) dnsRules(r *record) {
 		actual := l.dns(q.name, q.typ, "udp")
 		r.check("wire DNS "+q.name+" type "+q.typ, "record actual controlled resolver answer (management path)", actual, "docker exec member probe dns controlled-resolver", actual != "probe unavailable")
 	}
+	l.resolverEvidence(r)
 	if !applied {
-		r.block("After central publication and a 20-second apply window, activated policy is not present in real AdGuard user_rules. The resolver document is not delivered to the node/AdGuard. Owners: w3-contracts-r5, then nodes/agent delivery follow-ups. Responses above are precondition observations, not passing block/cache semantics.")
+		r.block(inheritedResolverGate)
 	}
 	r.block("Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
 }
@@ -170,7 +172,7 @@ func (l *live) privacy(r *record) {
 	}
 	r.check("service log scan", "12 services; no sentinel", fmt.Sprintf("services_scanned=%d; sentinel_matches=%d", scanned, matches), "docker logs assigned containers; count sentinel in memory", scanned == 12 && matches == 0)
 	metrics, merr := l.inside("control", "/tmp/at-members-probe", "http", "metrics")
-	r.check("metrics scan", "record endpoint availability and sentinel matches", fmt.Sprintf("read_ok=%t; sentinel_matches=%d", merr == nil, bytes.Count(metrics, []byte(sentinel))), "control loopback /metrics via probe", merr != nil || !bytes.Contains(metrics, []byte(sentinel)))
+	r.check("metrics scan", "record endpoint availability and sentinel matches", fmt.Sprintf("read_ok=%t; sentinel_matches=%d", merr == nil, bytes.Count(metrics, []byte(sentinel))), "control loopback /metrics via probe", merr == nil && !bytes.Contains(metrics, []byte(sentinel)))
 	if merr != nil {
 		r.block("Configured control metrics listener 127.0.0.1:9091 is unreachable from the control container; metrics privacy cannot be inspected. Config.MetricsAddress is not wired by apps/control.")
 	}
@@ -194,5 +196,22 @@ func (l *live) privacy(r *record) {
 	}
 	feeds := l.count(`SELECT count(*) FROM policy_definitions WHERE type='threat_feed' AND active_revision_id IS NOT NULL`)
 	r.check("feed inventory", "record actual active feed count", fmt.Sprintf("active_feed_definitions=%d", feeds), "SELECT active threat_feed policies", true)
-	r.block("No active licensed threat feed exists in the running lab; source/license review and last-good update failure cannot be exercised. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed.")
+	r.block("No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed.")
+}
+
+// D-056: a central document or an HTTP 200 alone never proves node application.
+func (l *live) resolverEvidence(r *record) {
+	got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+	var node api.NodeDetail
+	decode := json.Unmarshal(got.body, &node)
+	evidence, getErr := node.DnsPolicyEvidence.Get()
+	present := getErr == nil && node.DnsPolicyEvidence.IsSpecified() && !node.DnsPolicyEvidence.IsNull()
+	var document bool
+	if present {
+		document = l.count(`SELECT count(*) FROM dns_resolver_documents WHERE id=$1`, evidence.DocumentId) > 0
+	}
+	r.check("typed DNS evidence", "record exact issued-document application, or explicit null", fmt.Sprintf("HTTP=%d; decoded=%t; specified=%t; null=%t; present=%t; outcome=%s; issued_document_matches=%t", got.status, decode == nil, node.DnsPolicyEvidence.IsSpecified(), node.DnsPolicyEvidence.IsNull(), present, evidence.Outcome, document), "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document", got.status == 200 && decode == nil)
+	if !present || evidence.Outcome != api.DnsPolicyEvidenceOutcomeApplied || !document {
+		r.block(inheritedResolverGate)
+	}
 }

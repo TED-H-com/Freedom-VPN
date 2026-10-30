@@ -5,11 +5,9 @@ package members
 import (
 	"context"
 	"crypto/sha256"
-	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -74,7 +72,7 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			}
 			docs := l.count(`SELECT count(*) FROM dns_resolver_documents`)
 			r.check("central resolver document readback", "record stored publication versus node delivery", fmt.Sprintf("central_documents=%d", docs), "SELECT dns_resolver_documents", docs > 0)
-			r.block("Node delivery of the resolver document remains absent: w3-contracts-r5, then the nodes/agent follow-ups. Central compilation is not resolver application.")
+			l.resolverEvidence(&r)
 		case "AT22":
 			if os.Getenv("FVPN_AT_MEMBERS_FEED_READBACK") == "1" {
 				l.feedReadback(&r)
@@ -89,35 +87,9 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 	}
 }
 func (l *live) servingPrecondition(r *record) {
-	var provisioning, safety, desired, applied string
-	var hasPeer bool
-	_ = l.pool.QueryRow(l.ctx, `SELECT n.provisioning_state,n.safety_status,n.desired_config_generation::text,n.applied_config_generation::text,i.peer_id IS NOT NULL FROM nodes n JOIN node_incarnations i ON i.id=n.current_incarnation_id WHERE n.id=$1`, l.node).Scan(&provisioning, &safety, &desired, &applied, &hasPeer)
 	policies := l.count(`SELECT count(*) FROM policy_definitions WHERE type='release_support' AND active_revision_id IS NOT NULL`)
-	r.check("serving precondition diagnosis", "read actual readiness and active policy", fmt.Sprintf("provisioning=%s; safety=%s; desired=%s; applied=%s; node_peer_present=%t; active_release_policies=%d", provisioning, safety, desired, applied, hasPeer, policies), "SELECT node/incarnation and active release_support policy", provisioning != "")
-	cert, e1 := l.inside("node", "cat", "/var/lib/vpn-node/identity/cert.pem")
-	key, e2 := l.inside("node", "cat", "/var/lib/vpn-node/identity/key.pem")
-	if e1 != nil || e2 != nil {
-		r.block("node identity unavailable for desired-state readback")
-		return
-	}
-	pair, err := tls.X509KeyPair(cert, key)
-	if err != nil {
-		r.block("node TLS identity invalid")
-		return
-	}
-	transport := l.transport.Clone()
-	defer transport.CloseIdleConnections()
-	transport.TLSClientConfig.Certificates = []tls.Certificate{pair}
-	got := l.request(&browser{client: &http.Client{Transport: transport, Timeout: 20 * time.Second}}, "GET", "https://agent.example.invalid:9443/api/v1/agent/desired-state", nil, nil)
-	// Match a known safe error, never emit arbitrary server error details.
-	releaseRequired := strings.Contains(string(got.body), "Release support policy required")
-	r.check("real node desired-state gate", "record mTLS response and precise missing precondition", fmt.Sprintf("%s; release_support_required=%t", detail(got), releaseRequired), "GET /agent/desired-state using actual node mTLS", got.status != 0)
-	if releaseRequired {
-		r.block("Observed mTLS desired-state 503 DEPENDENCY_UNAVAILABLE: Release support policy required. The fresh e2e-up hook supplies no active release-support policy; tests/e2e/harness.go:insertReleaseSupport uses non-contract {}. Request a reusable valid signed boot-release/support-policy setup hook from devstack. No readiness or projection rows are fabricated.")
-	}
-	if !hasPeer {
-		r.block("Node incarnation peer_id is still null; D-055 owner w3-wire-nodes follow-up 10 must supply real management peer observation. This run cannot isolate its effect until the missing release-support baseline is supplied.")
-	}
+	r.check("shared serving support readback", "nonempty active API policy", fmt.Sprintf("active_release_policies=%d", policies), "read policy_definitions after PrepareServingBaseline", policies > 0)
+	l.forwardingGate(r)
 }
 
 // §12.3 / D-054: all content, state and publication rows below are produced by
@@ -150,6 +122,7 @@ func (l *live) feedLastGood(r *record) {
 	upload := func(body []byte) response {
 		return l.request(nil, "PUT", "https://releases.example.invalid/e2e/object?name="+object, body, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
 	}
+	defer func() { _ = upload(raw) }()
 	put := upload(raw)
 	r.check("controlled feed input", "204 uploaded to existing controlled origin", detail(put), "PUT lab origin /e2e/object with synthetic feed bytes", put.status == 204)
 	if put.status != 204 {
@@ -200,7 +173,7 @@ func (l *live) feedLastGood(r *record) {
 		}
 	}
 	r.Blockers = filtered
-	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. AT22 remains blocked on resolver document delivery (w3-contracts-r5, then nodes/agent), metrics listener, real member URL flow and remaining file/raw-usage/backup retention coverage. Commercial feed approval remains a business decision.")
+	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. AT22 remains blocked on the inherited missing desired-state resolver reference (w3-wire-nodes/internal/desiredstate), real member URL flow and remaining file/raw-usage/backup retention coverage. Commercial feed approval remains a business decision.")
 }
 
 // Inspect the existing scheduled experiment without forcing its projection or
