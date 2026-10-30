@@ -1,6 +1,6 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-This document provides the repeatable backup, point-in-time restore (PITR), and post-restore reconciliation procedure (`§17.2`, `§17.3`, `§17.4`, `§19 AT30`), together with the measured RPO and RTO evidence from the Wave 4 verification drill.
+This document provides the repeatable backup, point-in-time restore (PITR), and post-restore reconciliation procedure (`§9.3`, `§17.2`, `§17.3`, `§17.4`, `§19 AT30`), together with the measured RPO and RTO evidence from the Wave 4 verification drill.
 
 ---
 
@@ -190,7 +190,7 @@ Execute every step in order during a real disaster recovery event or scheduled q
   ```bash
   systemctl stop fvpn-control.service fvpn-worker.service
   ```
-  *(Note: Exit nodes continue forwarding traffic for existing members while their serving leases remain valid (`86,400s` default, `§7.5`), and buffer new usage events in local SQLite (`§10.5`).)*
+  *(Note: Exit nodes continue forwarding traffic for existing members while their serving leases and member service deadlines remain valid (`86,400s` default max offline lease, `§16.3`), and buffer new usage events in local SQLite (`§10.5`, `§10.8`).)*
 
 - [ ] **1.2 Verify `/var/lib/fvpn/vault` Integrity (`§16.2`, `§17.2`)**:
   Confirm that `/var/lib/fvpn/vault/state.json` and all key files are intact and were **not** rolled back with the database snapshot. Any key revocations or rotations recorded in `state.json` must remain in effect after DB restore.
@@ -247,25 +247,25 @@ Execute every step in order during a real disaster recovery event or scheduled q
   curl -fsS https://vpn.example.com:8443/readyz
   ```
 
-### Phase 4: Reconcile Payments and Member Entitlements (`§9.7`, `§17.4`)
+### Phase 4: Reconcile Payments and Member Entitlements (`§9.3`, `§17.4`)
 
 A point-in-time database restore may roll back webhook receipts (`billing_events`) or subscription state transitions that occurred between `restored_to` and the incident.
 
 - [ ] **4.1 Verify Automatic Billing Reconciliation (`billing.reconcile`)**:
   `fvpn-worker` runs the `billing.reconcile` loop every `reconcile_seconds` (`900s` in production config). To trigger or verify reconciliation immediately:
-  1. Replay unacknowledged webhook events from the Stripe Dashboard (`Developers -> Webhooks -> Send/Resend`) covering `[restored_to - 1h, now]`. Webhook handling is idempotent by `provider_event_id` and never creates duplicate charges (`BIL02`).
+  1. Replay unacknowledged webhook events from the Stripe Dashboard (`Developers -> Webhooks -> Send/Resend`) covering `[restored_to - 1h, now]`. Webhook handling is idempotent by `provider_event_id` and never creates duplicate charges (`BILL01`).
   2. Inspect `billing_subscriptions`, `entitlements`, and `members` for any subscription updated during the RPO window:
      ```sql
      SELECT id, member_id, provider_subscription_id, status, current_period_end, updated_at
      FROM billing_subscriptions
      ORDER BY updated_at DESC LIMIT 50;
      ```
-- [ ] **4.2 Re-apply Post-Snapshot Admin Suspensions or Manual Grants (`§9.3`, `§17.4`)**:
+- [ ] **4.2 Re-apply Post-Snapshot Admin Suspensions or Manual Grants (`§9.2`, `§9.3`, `§17.4`)**:
   By design (`internal/billing/service.go`), payment reconciliation updates subscription periods but **never** clears an active administrative suspension (`members.status = 'suspended'`) or overwrites an active manual grant (`entitlement_grants`). If an operator manually suspended a member or issued a grant after `restored_to`, re-apply it via the Admin Portal (`/admin/members/{member_id}`) using a fresh `Idempotency-Key`.
 
-### Phase 5: Reconcile NetBird Overlay, Node PKI, and DNS State (`§5.5`, `§6.4`, `§12.2`, `§17.4`)
+### Phase 5: Reconcile NetBird Overlay, Node PKI, and DNS State (`§5.2`, `§6.4`, `§12.2`, `§17.4`)
 
-Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard Home are downstream enforcement targets (`§3.4`).
+Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard Home are downstream enforcement targets (`§3`, `§15`).
 
 - [ ] **5.1 Re-revoke Any Post-Snapshot Node Incarnations (`§6.4`, `§17.2`)**:
   Cross-check node revocation records against out-of-band operator logs. If any node was revoked or retired after `restored_to`, immediately invoke `POST /api/v1/admin/nodes/{node_id}/revoke` (or `DELETE /api/v1/admin/nodes/{node_id}`) so the node's mTLS certificate is revoked and its NetBird peer/route are removed.
