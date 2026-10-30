@@ -3,6 +3,7 @@ package devices
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
@@ -62,14 +63,18 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	if err = json.Unmarshal(raw, &r); err != nil {
 		return err
 	}
-	allow := status == "authorized" && r.Allows(s.Entitlements.Time())
+	var withinLimit bool
+	if err = conn.QueryRow(ctx, `SELECT $1::uuid IN (`+entitlement.AuthorizedDeviceIDsSQL+` AND ranked.member_id=$2)`, id, member).Scan(&withinLimit); err != nil {
+		return err
+	}
+	allow := status == "authorized" && withinLimit && r.Allows(s.Entitlements.Time())
 	preflight, err := s.Adapter.ObservePeer(ctx, deployment, peer)
 	if err != nil {
 		return err
 	}
 	var mapped bool
 	if !preflight.IdentityUnmapped && preflight.DeploymentID == deployment && preflight.ID == peer && preflight.OverlayIP.IsValid() {
-		err = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id JOIN device_bindings b ON b.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.external_user_id=$3 AND n.mapping_proof<>'' AND i.stable_claim_ref<>'' AND b.device_id=$4 AND b.overlay_scope=$5 AND b.overlay_ip=$6::inet AND b.valid_from<=clock_timestamp() AND b.valid_until>clock_timestamp())`, member, deployment, preflight.ExternalUserID, id, preflight.OverlayScope, preflight.OverlayIP.String()).Scan(&mapped)
+		err = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id JOIN device_bindings b ON b.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.external_user_id=$3 AND n.mapping_proof='shared_issuer_public_subject:' || i.issuer AND i.subject=n.external_user_id AND n.revision>0 AND i.stable_claim_ref='sub' AND i.binding_method='oidc' AND n.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp() AND b.device_id=$4 AND b.overlay_scope=$5 AND b.overlay_ip=$6::inet AND b.valid_from<=clock_timestamp() AND b.valid_until>clock_timestamp())`, member, deployment, preflight.ExternalUserID, id, preflight.OverlayScope, preflight.OverlayIP.String()).Scan(&mapped)
 		if err != nil {
 			return err
 		}
@@ -141,7 +146,7 @@ func sameGroups(a, b []uuid.UUID) bool {
 }
 
 // SyncMember handles member.entitlement_changed, including suspension, expiry,
-// and closure; device statuses remain distinct from temporary entitlement loss.
+// and closure; every device is attempted even if another adapter call fails.
 func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) (retErr error) {
 	var initial decstr.U64
 	if err := s.Pool.QueryRow(ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, member).Scan(&initial); err != nil {
@@ -174,9 +179,10 @@ func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) (retErr erro
 		return err
 	}
 	for _, id := range ids {
-		if err = s.SyncDevice(ctx, id); err != nil {
-			return err
-		}
+		err = errors.Join(err, s.SyncDevice(ctx, id))
+	}
+	if err != nil {
+		return err
 	}
 
 	return db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {

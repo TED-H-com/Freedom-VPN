@@ -28,8 +28,8 @@ correlate required `nodes` steps with persisted node observations. Without that
 compiler, policy-dependent jobs fail/retry/dead-letter after NetBird sync; billing
 and reconciliation work still runs. Never substitute the compiler's TEST ONLY
 fallback rates or mark node enforcement complete from compilation alone. The
-baseline desired-state reader still needs its owner's D-030 follow-up to consume
-`entitlement.ListServingMembersForGroups`. `assignments` is reserved in v1:
+serving-rights predicate is `entitlement.ListServingMembersForGroups`.
+`assignments` is reserved in v1:
 no new reader or writer may use it. The authoritative group set is
 `entitlements.projection.exit_group_ids`, the sorted union of the entitlement's
 pinned plan revision groups and `members.member_group_ids`.
@@ -124,9 +124,14 @@ one transaction. Provider reads finish before that transaction begins. A proof
 change for the same immutable identity increments the revision; unchanged
 discoveries preserve the revision and verification timestamp. A different
 member or identity for an existing external ID is an `identity_conflict`, and
-the existing row remains untouched. Ambiguous client-scoped identities also
-fail closed. Native peers are admitted under the member lock after the proof
-exists; the competing final slot is serialized in PostgreSQL.
+the existing row remains untouched. Migration
+`00183_identity_bindings_issuer_subject.sql` makes
+`(issuer, subject)` unique across client scopes. Historical duplicates stop the
+migration with a duplicate-group count; it never merges members. Login must
+resolve and lock by that pair and preserve the original identity row and its
+immutable `client_scope` when an OIDC client is rotated. Ambiguous historical
+identities fail closed. Native peers are admitted under the member lock after
+the proof exists; the competing final slot is serialized in PostgreSQL.
 
 Pairwise/unknown subjects fail closed as `identity_unmapped`. Never fix them by
 matching email or display name; configure public subjects at the shared IdP.
@@ -140,7 +145,22 @@ conflicting identities and increments the worker metric
 `service_user` or `blocked_user`; each discovery observation counts again.
 Subjects, emails, names, issuer URLs and provider IDs are not metric labels or
 discovery log fields. Subsequent authorization read-back rechecks the user and
-proof; stale or blocked identities cannot grant access.
+proof; stale or blocked identities cannot grant access. Runtime construction
+requires an `*devices.IdentityDiscovery`; an adapter missing it returns an
+unmapped observation. Admission, synchronization and adapter reads independently
+require exact subject equality, `stable_claim_ref = 'sub'`, `binding_method =
+'oidc'`, and the exact shared-issuer proof, with verified timestamps.
+
+Mapping creation, proof updates and rejections also append allowlisted audit
+events. Denied device admissions commit `device.authorize` with result `denied`
+and one fixed reason: `device_limit_reached`, `entitlement_inactive`, or
+`identity_unmapped`. These rows survive the rejected command's rollback; audit
+write failures propagate for retry. Known resources retain their real UUIDs;
+unknown identities use the fleet-configuration singleton instead of inventing a
+member or retaining the external subject. Denials create no operation. Accepted
+commands carry their actual operation UUID in the formal audit correlation field.
+Member metadata audit records contain changed-field booleans, IDs and state;
+notes, display names and free-text reasons are excluded.
 
 `devices.NetBirdAdapter` implements the existing narrow `devices.Adapter`.
 `EnsureMemberDevice` verifies the actual user, including service/blocked/unsafe
@@ -148,8 +168,30 @@ auto-group checks. `EnsurePaidGroup` recovers stable group identities;
 `ApplyDeviceAuthorization` removes obsolete owned memberships before additions.
 Unmanaged groups and their memberships are preserved. Device revocation removes
 all owned access memberships and retains the native peer and durable tombstone;
-suspension also withdraws access without deleting identity. A changed user/IP
-mapping is denied and observed withdrawal is recorded, never treated as a grant.
+suspension also withdraws access without deleting identity. `SyncMember` attempts
+every device, joins failures, and succeeds only with complete observed evidence.
+The adapter hashes the immutable identity-binding UUID and user ID, excluding
+the mutable proof revision. Existing revision-dependent hashes are converted
+only when `devices.NetBirdBindings.VerifyMemberIdentity` independently proves
+the exact immutable database tuple and current revision; a generic store with
+an unknown hash continues to fail closed. A changed user/IP mapping is denied and observed withdrawal is recorded, never treated as a grant.
+
+### Quota withdrawals and finite binding history
+
+`Entitlements.Recompute` keeps the oldest authorizations ordered by
+`authorized_at ASC, id ASC`. Excess devices become `pending` and each withdrawal
+is audited. `entitlement.AuthorizedDeviceIDsSQL` is the shared rank predicate for
+reconciliation and NetBird synchronization; desired-state readers must apply it
+too so legacy excess rows cannot escape the quota. An entitlement restoration
+readmits only previously authorized, non-revoked devices with verified mappings,
+in the same order and within the available slots.
+
+Loss of service or a slot clamps open bindings to
+`greatest(valid_from + interval '1 microsecond', now)`. Restoration inserts a new
+binding revision; historical intervals never reopen. A former IP now owned by
+another device is not reclaimed. An exclusion-constraint collision is a state
+conflict, never a device-limit error. Existing still-open intervals can be
+renewed without rewriting their closed predecessors (§9.4, §15.2).
 
 ### NetBird binding and lock-namespace convention
 
@@ -179,13 +221,18 @@ not claim/discard unrelated rows.
 | Event | Action |
 |---|---|
 | `billing.inbox_received` | Process exactly `inbox_id`; fetch authoritative provider state, append evidence and recompute rights. |
-| `member.entitlement_changed` | Sync every member device from current state, then compile affected node policies. |
+| `member.entitlement_changed` | Sync every member device from current state, then compile nodes in previous ∪ current exit groups. |
 | `member.suspended` | Idempotently sync current member state and compile affected node policies. |
 | `device.authorized`, `device.revoked` | Sync current device state, then compile affected node policies. |
 | `netbird.device_sync` | Independently reconcile the referenced device and persist version-fenced observation. |
 | `billing.reconcile` | Page known subscriptions into synthetic inbox events; run/page identity deduplicates retries. |
 | `members.reconcile` | Sweep finite deadlines, create missing first-login projections and repair member device drift. |
 | `devices.discover` | Observe native users, persist D-052 public-subject proofs, then admit only verified, entitled native peers within quota. |
+
+The `member.entitlement_changed` payload's `exit_group_ids` is the sorted union
+of previous and current groups, so removed-group nodes receive withdrawal too.
+The stored entitlement projection and HTTP response contain only current rights;
+consumers must not interpret the event's affected-group set as new access rights.
 
 `RunMemberSchedule` enqueues billing reconciliation and member/device maintenance
 at the configured intervals, including at startup. Time-slot and page identities
@@ -206,7 +253,13 @@ has a production default. See [config.example.json](config.example.json) for
 **TEST ONLY** values and secret-file placeholders.
 
 The existing central `oidc_issuer` is also passed into member identity discovery
-by both domain builders. Both processes must use the same central setting and
+by both domain builders through `config.LoadMembersForIssuer`. Configuration
+must already be canonical: lowercase scheme/host, no default port, no trailing
+slash, no query or fragment. Noncanonical input fails startup with the fixed
+`oidc_issuer` setting error. The shared functions are
+`internal/members/issuer.Canonical` and `issuer.Validate`; token-validation setup
+must use the same representation. `NewIdentityDiscovery` canonicalizes direct
+callers with that helper. Both processes must use the same central setting and
 the NetBird deployment must authenticate against that issuer with public
 subjects. [central.config.example.json](central.config.example.json) is the
 central configuration fragment to combine with the full control/worker example;

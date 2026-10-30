@@ -1,5 +1,9 @@
 # Updates follow-up 1: real candidates and D-053
 
+> Historical implementation and findings before D-062. Follow-up 2 retires
+> the overlay and imports `tests/e2e.PrepareServingBaseline`. See the
+> [current summary](summary.md) and [current requests](requests.md).
+
 Run the suite with `make -f mk/at-updates.mk at-updates`. It creates only the
 `w4-updates` stack on port base `42000`, writes all five records, then exits
 nonzero for any blocked/failed scenario and tears the stack down. To reuse a

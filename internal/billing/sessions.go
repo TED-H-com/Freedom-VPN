@@ -120,7 +120,7 @@ func (s *Service) prepareSession(ctx context.Context, c entitlement.Command, kin
 			return err
 		}
 
-		if err = entitlement.Audit(ctx, tx, c.Actor, "billing."+kind, api.ResourceTypeCheckoutSession, id, nil, map[string]any{"session_id": id}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "billing."+kind, api.ResourceTypeCheckoutSession, id, nil, map[string]any{"session_id": id}, op); err != nil {
 			return err
 		}
 		out = SessionIntent{ID: id}
@@ -239,7 +239,7 @@ func (s *Service) FulfillSession(ctx context.Context, id uuid.UUID) (retErr erro
 		// Record completion only after the provider result is durably stored.
 		// Cached replays return above, so each session has one completion audit.
 		actor := entitlement.Actor{ID: uuid.MustParse("00000000-0000-0000-0000-000000000003"), Role: string(api.AuditEventActorTypeSystem)}
-		if err = entitlement.Audit(ctx, tx, actor, "billing."+kind+"_completed", api.ResourceTypeCheckoutSession, id, nil, map[string]any{"session_id": id, "state": "succeeded", "expires_at": hosted.ExpiresAt}); err != nil {
+		if err = entitlement.Audit(ctx, tx, actor, "billing."+kind+"_completed", api.ResourceTypeCheckoutSession, id, nil, map[string]any{"session_id": id, "state": "succeeded", "expires_at": hosted.ExpiresAt}, operation); err != nil {
 			return err
 		}
 		if operation == nil {
