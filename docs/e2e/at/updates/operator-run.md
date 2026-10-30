@@ -86,3 +86,5 @@ health attestations or journal contents. All temporary files use disk-backed
 scratch. The shared helper activates release support through the product API. This
 harness makes no database writes; readiness and update observations come from
 the product APIs and agent, following D-050.
+
+Current findings and owner requests are in [requests.md](requests.md).

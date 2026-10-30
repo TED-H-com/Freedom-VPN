@@ -270,8 +270,8 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.note("AT26", "rollback_allowed_release_ids", manifest.Signed.Rollback.AllowedReleaseIds)
 		if rollbackReceipt && len(manifest.Signed.Rollback.AllowedReleaseIds) == 0 && journal.Stage == "rolled_back" && journal.Current == lastGood.String() && journal.LastGood == lastGood.String() && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) && target.State == "rolled_back" {
 			s.pass("AT26", "Candidate reported a genuine tunnel_probe failure; updater restored and health-checked the real last-good; central rolled_back")
-		} else if journal.Stage == "rolled_back" && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) {
-			s.block("AT26", "w4-node-updater / w3-wire-fleet: candidate failed and last-good rollback is recorded locally, but central rollback acceptance is incomplete; inspect journal and result outbox")
+		} else if rollbackReceipt && journal.Stage == "rolled_back" && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) {
+			s.block("AT26", fmt.Sprintf("w2-fleet-update: central accepted the healthy rollback result but the target remained %s; inspect the exact result and ACK in central_result_receipts", target.State))
 		} else {
 			s.block("AT26", "w4-node-updater / w2-agent-core: expected candidate-failure and healthy last-good rollback evidence incomplete")
 		}
