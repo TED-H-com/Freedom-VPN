@@ -2,6 +2,7 @@ package idplogin
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -74,6 +75,47 @@ func TestWalkPostsThePasswordAndLandsOnThePortal(t *testing.T) {
 	}
 	if posted.Get("login") != "user@example.invalid" || posted.Get("password") != "s3cret" {
 		t.Fatal("password form was not posted")
+	}
+}
+
+func TestPortalDoneAcceptsTheMissingIndex(t *testing.T) {
+	index := &http.Response{StatusCode: http.StatusNotFound, Request: httptest.NewRequest(http.MethodGet, "https://portal.example.invalid:8443/", nil)}
+	if !PortalDone(index, "404 page not found\n<form action=\"/search\"></form>") {
+		t.Fatal("missing index")
+	}
+	failed := &http.Response{StatusCode: http.StatusUnauthorized, Request: httptest.NewRequest(http.MethodGet, "https://portal.example.invalid:8443/auth/callback?code=x", nil)}
+	if PortalDone(failed, `{"error":{"code":"UNAUTHENTICATED"}}`) {
+		t.Fatal("failed callback")
+	}
+	other := &http.Response{StatusCode: http.StatusOK, Request: httptest.NewRequest(http.MethodGet, "https://netbird.example.invalid/oauth2/auth", nil)}
+	if PortalDone(other, "ok") {
+		t.Fatal("idp page")
+	}
+}
+
+func TestWalkDoesNotSubmitAPortalForm(t *testing.T) {
+	var posted bool
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			posted = true
+			http.Error(w, "posted", http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`<form action="/search"><input name="q" value=""></form>`))
+	})}
+	go func() { _ = srv.Serve(ln) }()
+	t.Cleanup(func() { _ = srv.Close() })
+	client := &http.Client{Transport: &http.Transport{DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, network, ln.Addr().String())
+	}}, CheckRedirect: RedirectLimit(20)}
+	status, err := Walk(context.Background(), client, "http://portal.example.invalid/", "user@example.invalid", "s3cret", PortalDone)
+	if err != nil || status != http.StatusNotFound || posted {
+		t.Fatalf("walk %d posted=%v %v", status, posted, err)
 	}
 }
 
