@@ -781,6 +781,7 @@ func (sr *SourceRegistry) httpClient(override *http.Client) *http.Client {
 	}
 	tr.Proxy = nil
 	tr.DisableKeepAlives = true
+	tr.DisableCompression = true
 	tr.DialContext = makeSSRFDialContext(timeout, lookupIP, dial)
 
 	c := *override
@@ -984,6 +985,7 @@ func (sr *SourceRegistry) FetchAndUpdate(
 	if err != nil {
 		return fmt.Errorf("create request for source %q: %w", sourceID, err)
 	}
+	req.Header.Set("Accept-Encoding", "identity")
 	resp, err := httpCli.Do(req)
 	if err != nil {
 		var ve *ValidationError
@@ -996,6 +998,9 @@ func (sr *SourceRegistry) FetchAndUpdate(
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("fetch source %q returned HTTP %d", sourceID, resp.StatusCode)
+	}
+	if resp.Uncompressed || (resp.Header.Get("Content-Encoding") != "" && resp.Header.Get("Content-Encoding") != "identity") {
+		return &ValidationError{Code: ErrCodeSourceFormatUnsupported, Message: "encoded source responses are forbidden"}
 	}
 
 	return sr.UpdateFromReader(sourceID, newVersion, resp.Body, opts, now, smokeCheck)

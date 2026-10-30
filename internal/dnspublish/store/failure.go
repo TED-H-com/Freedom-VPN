@@ -44,10 +44,14 @@ func (p *Publisher) recordFailure(ctx context.Context, def, rev uuid.UUID, gener
 			reason, code = "outside_validity", api.ErrorCodeVALIDATIONFAILED
 		}
 		var opID uuid.UUID
+		var requestID *uuid.UUID
 		if operation != "" {
 			var err error
 			opID, err = uuid.Parse(operation)
 			if err != nil {
+				return err
+			}
+			if err := tx.QueryRow(ctx, `SELECT request_id FROM operations WHERE id=$1`, opID).Scan(&requestID); err != nil && !errors.Is(err, pgx.ErrNoRows) {
 				return err
 			}
 		}
@@ -55,7 +59,7 @@ func (p *Publisher) recordFailure(ctx context.Context, def, rev uuid.UUID, gener
 			return err
 		}
 		for _, resource := range []api.ResourceRef{{Type: api.ResourceTypePolicyDefinition, Id: def}, {Type: api.ResourceTypePolicyRevision, Id: rev}} {
-			entry := audit.Entry{Actor: audit.SystemActor, Action: "dns.publish_failed", Resource: resource, Result: api.AuditEventResultFailed, After: map[string]any{"reason_code": reason}, Fields: []string{"reason_code"}}
+			entry := audit.Entry{Actor: audit.SystemActor, Action: "dns.publish_failed", Resource: resource, Result: api.AuditEventResultFailed, RequestID: requestID, After: map[string]any{"reason_code": reason}, Fields: []string{"reason_code"}}
 			if opID != uuid.Nil {
 				entry.OperationID = &opID
 			}
