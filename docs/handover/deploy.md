@@ -77,9 +77,9 @@ Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the si
 
 | Role | Used By | Purpose |
 |---|---|---|
-| `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`00001`–`00180`). |
+| `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`00001`–`00181`, 20 migrations). |
 | `fvpn_control` | `fvpn-control` | CRUD on operational tables; `INSERT` + `SELECT` on `audit_events` and `usage_events` (no `UPDATE`/`DELETE` on append-only tables, `F-02`–`F-04`). |
-| `fvpn_worker` | `fvpn-worker` | Claims `outbox_jobs`, reconciles NetBird/Stripe/DNS, updates `usage_rollups`. |
+| `fvpn_worker` | `fvpn-worker` | Claims `outbox_events`, reconciles NetBird/Stripe/DNS (including threat-feed refreshes in `dns_feed_contents` and `dns_feed_refresh_state`), updates `usage_rollups`. |
 | `fvpn_retention` | Retention job | Executes `SELECT purge_retained(...)` (`F-03`) to delete expired raw payloads and logs while recording an audit row. |
 | `fvpn_recovery` | `fvpn-usage-admin` | Executes usage ledger freeze, epoch rotation (`usage_recovery_records`, `usage_ledger_epochs`), and adjustments. |
 | `fvpn_backup` | `pg_dump` / `pgBackRest` | Read-only physical/logical backup role. |
@@ -87,6 +87,7 @@ Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the si
 Create the database and roles `[production only]`:
 
 ```sql
+-- [mechanical-check: cluster-role-ddl]
 CREATE DATABASE fvpn;
 \c fvpn
 
@@ -116,7 +117,7 @@ FVPN_DATABASE_URL="postgres://fvpn_migrator:PASSWORD@198.51.100.10:5432/fvpn?ssl
   /usr/local/bin/fvpn-migrate status
 ```
 
-Expected output (`19` migrations applied, including `00006` which aligns `purge_retained()` audit rows with canonical `<resource_type>:<uuid>` format per `D-035`):
+Expected output (`20` migrations applied through `00181_dns_feed_contents.sql`, including `00006` which aligns `purge_retained()` audit rows with canonical `<resource_type>:<uuid>` format per `D-035`, `00180` for `dns_publication_heads` and `dns_resolver_documents`, and `00181` for `dns_feed_contents` and `dns_feed_refresh_state`):
 
 ```text
 current_database="fvpn"
@@ -139,11 +140,13 @@ current_database="fvpn"
 00160 applied
 00161 applied
 00180 applied
+00181 applied
 ```
 
 After migrations complete, grant table/sequence permissions to `fvpn_control`, `fvpn_worker`, `fvpn_retention`, `fvpn_recovery`, and `fvpn_backup` (`pg_read_all_data`) `[production only]`:
 
 ```sql
+-- [mechanical-check: cluster-role-ddl]
 GRANT USAGE ON SCHEMA public TO fvpn_control, fvpn_worker, fvpn_retention, fvpn_recovery, fvpn_backup;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO fvpn_control, fvpn_worker, fvpn_recovery;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO fvpn_control, fvpn_worker, fvpn_recovery;
@@ -158,15 +161,16 @@ GRANT pg_read_all_data TO fvpn_backup;
 
 ## 4. External Dependencies Setup
 
-### 4.1 OIDC Provider (`§9.1`, `§16.1`, `docs/control/AUTH.md`, `docs/portal/AUTH.md`)
+### 4.1 OIDC Provider (`§9.1`, `§16.1`, `D-052`, `docs/control/AUTH.md`, `docs/members/README.md`, `docs/e2e/README.md`)
 
-1. Configure a single OIDC issuer (`https://id.example.com`) shared by the Portal (`fvpn-control`) and NetBird (`§7.3`, `§9.1`, `§15.2`):
+1. Configure a single OIDC issuer (`https://id.example.com`) shared by the Portal (`fvpn-control` / `fvpn-worker`) and NetBird (`§2 [S36]`, `§7.3`, `§9.1`, `§15.2`, `D-052`):
    - **Portal Client (`oidc_client_id`)**: Confidential client using Authorization Code + PKCE (`S256`).
      - Allowed Redirect URI: `https://vpn.example.com/auth/callback`
-     - Subject identifier type: `public` (so `iss` + `sub` matches across Portal and NetBird clients, allowing central device synchronization `member.device_authorize` / `members.devicereconcile` to verify ownership and authorize `MemberDevice` records automatically without manual peer entry, `§7.3`, `§9.4`).
+     - Subject identifier type: `public` (non-pairwise). The worker's `devices.discover` handler lists NetBird users (`GET /api/users`), excludes service and blocked accounts, and matches the observed NetBird user ID to `identity_bindings.subject` under `oidc_issuer`, writing `netbird_user_bindings` with `mapping_proof = "shared_issuer_public_subject:" + oidc_issuer` (`docs/members/README.md`). Pairwise or unknown subjects fail closed as `identity_unmapped` (`fvpn_netbird_identity_discovery_total{result="identity_unmapped"}`) and are excluded from `GET /api/v1/member/devices`; matching email addresses or display names is never used as identity evidence.
+     - **Lab vs. production issuer note (`docs/e2e/README.md`):** In `deploy/devstack`, `netbird-server:0.82.0` uses its embedded Dex issuer (`https://netbird.example.invalid/oauth2`) and a lab token adapter (`tests/e2e/cmd/fvpn-e2e-idp`) that re-signs portal callback tokens with `TEST ONLY` `roles` and `amr: ["mfa"]`. Production deployments must configure an external OIDC provider shared by both portal and NetBird with real WebAuthn/TOTP MFA.
    - **Admin Role Claim & MFA (`§9.1`, `§16.1`)**:
      - Emit claim `roles` containing `"admin"` (or configure `admin_claim` and `admin_value` in `control.json`).
-     - Enforce MFA at the IdP for administrators and emit `amr: ["mfa"]` (or a configured `mfa_acr` value). `fvpn-control` rejects `/auth/login?role=admin` with `403 ADMIN_MFA_REQUIRED` if neither `mfa_amr` nor `mfa_acr` matches, and requires re-authentication within `recent_auth_seconds` (`900s`) for high-risk mutations (`POST /admin/nodes/{id}/revoke`, `DELETE /admin/nodes/{id}`, `POST /admin/update-batches`, `POST /admin/policies/{kind}/revisions/{rev}/activate`).
+     - Enforce MFA at the IdP for administrators and emit `amr: ["mfa"]` (or a configured `mfa_acr` value). `fvpn-control` rejects `/auth/login?role=admin` with `403 ADMIN_MFA_REQUIRED` if neither `mfa_amr` nor `mfa_acr` matches, and requires re-authentication within `recent_auth_seconds` (`900s`) for high-risk mutations (`POST /api/v1/admin/nodes/{node_id}/revoke`, `DELETE /api/v1/admin/nodes/{node_id}`, `POST /api/v1/admin/update-batches`, `POST /api/v1/admin/policies/{definition_id}/activate`).
 
 ### 4.2 NetBird CE (`0.82.0` Management, Signal, Relay, STUN) (`§7.1`, `§7.2`, `docs/netbird/VERSIONS.md`)
 
@@ -260,7 +264,7 @@ fvpn-release: private key stays on the build machine; do not copy it to nodes
 Run a one-time initialization ceremony on the central host to populate `/var/lib/fvpn/vault`, generate `/etc/fvpn/secrets/agent-ca.pem`, pin the offline `release` public key via `PinReleaseRoot`, and export `/etc/vpn-node/trust.json` for nodes `[production only]`:
 
 ```go
-// Ceremony steps executed via internal/signing and internal/pki (see cmd/fvpn-e2e-prepare for reference):
+// Ceremony steps executed via internal/signing and internal/pki (see tests/e2e/cmd/fvpn-e2e-prepare for reference):
 // 1. vault, _ := signing.InitializeFileProvider("/var/lib/fvpn/vault")
 // 2. caKeyID, _ := vault.Rotate(ctx, signing.NodeCA, 365*24*time.Hour, 30*24*time.Hour)
 // 3. For each purpose in [BootstrapSecret, DesiredState, Lease, Recovery, LedgerEpoch]:
@@ -410,7 +414,7 @@ Both `fvpn-control` and `fvpn-worker` read `/etc/fvpn/control.json` and validate
 }
 ```
 
-### 6.4 `/etc/fvpn/dns.json` (`dns_config_file`)
+### 6.4 `/etc/fvpn/dns.json` (`dns_config_file`, `D-028`, `D-054`, `D-058d`)
 
 ```json
 {
@@ -420,9 +424,12 @@ Both `fvpn-control` and `fvpn-worker` read `/etc/fvpn/control.json` and validate
   ],
   "bootstrap_dns": [
     "198.51.100.53:53"
-  ]
+  ],
+  "feed_update_cadence_seconds": 21600,
+  "feed_max_removal_percent": 50
 }
 ```
+> **Note (`docs/dns/FEEDS.md`, `internal/config/dns.go`):** `feed_update_cadence_seconds` (default `21600` seconds / 6 hours, bounds `300..604800`, `D-054`) sets the worker's fallback threat-feed refresh cadence when a `threat_feed` policy revision omits `update_interval_seconds` (`D-058d`). `feed_max_removal_percent` (default `50`, bounds `0..50`, `D-054`) sets the shrink-guard threshold above which a refreshed feed is rejected with `shrink_limit_exceeded` while retaining the last-good approved content in `dns_feed_contents`.
 
 ### 6.5 `/etc/fvpn/policies.json` (`policies_config_file`)
 
@@ -612,6 +619,7 @@ Write `/etc/vpn-node/agent.json` (`0600`) `[production only]`:
     "uplink": "fvup0",
     "snat": "192.0.2.20"
   },
+  "egress_probe_target": "192.0.2.10:443",
   "agent_release": "2026.10.1",
   "release_id": "0196ed00-0000-7000-8000-000000000701",
   "renew_lead_seconds": 86400,
@@ -626,9 +634,10 @@ Write `/etc/vpn-node/agent.json` (`0600`) `[production only]`:
   "updater_config": "/etc/vpn-node/updater.json"
 }
 ```
-> **Important (`AGENTS.md §4`, `D-034`)**:
+> **Important (`AGENTS.md §4`, `D-034`, `D-058a`, `D-058b`, `node/agent/probe.go`)**:
 > - `datapath.member_ingress` and `datapath.uplink` **must** start with `fv` (`^fv[a-z0-9_-]{1,13}$`) and must differ.
 > - `host_reserve_bps` **must** be greater than zero (otherwise `fvpn-agent` exits with code `64` before touching the kernel).
+> - `egress_probe_target` (`host:port`) is the optional local fallback egress target for the node's `tunnel_probe` check. When the signed `DesiredState.egress_probe` field is non-null on an in-force desired state (`D-058a`), its `1..4` TCP IP-literal targets (default `timeout_ms: 2000`, bounds `100..10000`) override `egress_probe_target`; if a signed `egress_probe` is structurally invalid, `tunnel_probe` fails closed without falling back to the local target. `NodeCheck.detail` (`<= 500` single-line ASCII characters, sanitized by `D-058b` so URLs, tokens, paths, and SQL/stack fragments are never emitted) reports which source ran (`"Egress probe used the signed targets."`, `"Egress probe used the local target."`, `"Egress probe used no extra target."`, or `"Signed egress probe was rejected."`).
 > - Never set `test_mode: true` on production nodes.
 
 ### 9.2 Issuing a One-Time Enrollment Token (`POST /api/v1/admin/enrollments`)
@@ -642,14 +651,14 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/enrollments" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d '{
-    "enrollment_mode": "installer",
-    "intended_class": "standard",
-    "intended_region": "tw-tpe",
-    "note": "First production exit node tw-tpe-01"
+    "delivery": "installer",
+    "name": "tw-tpe-01",
+    "region": "tw-tpe",
+    "notes": "First production exit node tw-tpe-01"
   }'
 ```
 
-The response carries `Cache-Control: no-store` and returns the one-time `enrollment_token` (`§6.1`).
+The response carries `Cache-Control: no-store` and returns the one-time `token` (`EnrollmentCreated.token`, `§6.1`).
 
 ### 9.3 Running `fvpn-agent enroll` on the Node
 
@@ -665,13 +674,13 @@ printf '%s\n' "${ENROLLMENT_TOKEN}" > /run/vpn-node/enrollment.token
   -token-file /run/vpn-node/enrollment.token
 ```
 
-What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`):
+What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`, `D-055`, `docs/nodes/WIRING.md`):
 1. Generates an ECDSA P-256 private key inside `/var/lib/vpn-node/identity` (`0600`, never leaves the node) and submits a PKCS#10 CSR + `fvpn-enrollment-v1` proof to `POST /api/v1/agent/enroll`.
 2. Receives `node_id`, `incarnation_id`, and the signed mTLS client certificate.
 3. Zero-overwrites, syncs, and unlinks `/run/vpn-node/enrollment.token` (`agent.NeutralizeToken`).
-4. Calls `POST /api/v1/agent/bootstrap` over mTLS (`:9443`) to fetch the one-time NetBird `setup_key` (subsequent calls return `410 BOOTSTRAP_CONSUMED`).
+4. Calls `POST /api/v1/agent/bootstrap` over mTLS (`:9443`) to fetch the one-time NetBird `setup_key` (subsequent calls return `410 BOOTSTRAP_CONSUMED`). Central creates a dedicated one-off NetBird correlation group (`fvpn-enroll-peer-<16-hex-sha256>`) and passes it in `auto_groups` (`D-055`). During `node.enroll.correlate`, `fvpn-worker` matches the single peer in that correlation group, verifies the peer hostname and `/32` overlay IPv4 (`100.64.0.0/10`), records `external_bindings` (`node_peer`), removes the temporary correlation group, and writes `netbird_peer_id` on `nodes`.
 
-### 9.4 Installing Node systemd Units and Publishing the Exit (`§7.3`, `§13.5`, `§16.3`)
+### 9.4 Installing Node systemd Units and Publishing the Exit (`§7.3`, `§13.5`, `§16.3`, `D-057`)
 
 Install the three systemd units from `node/agent/systemd/` (`fvpn-updater-recover.service`, `fvpn-agent.service`, `fvpn-watchdog.service`) and enable them `[production only]`:
 
@@ -683,4 +692,6 @@ systemctl daemon-reload
 systemctl enable --now fvpn-updater-recover.service fvpn-agent.service fvpn-watchdog.service
 ```
 
-Once the node reports healthy observations (`provisioning_state: "ready"`, `kernel_Compatibility: true`, `isolation_verified: true`, `dns_enforcement_verified: true`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node (`PUT /api/v1/admin/nodes/{node_id}/publication` with `publication_intent: "published"` and `If-Match: "<etag>"`). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `state: "succeeded"` with read-back evidence from NetBird before anunciar the exit to members.
+Before publishing the exit node (`PUT /api/v1/admin/nodes/{node_id}/publication`), ensure at least one member group is attached to the node's exit (`exit_groups`) via `PATCH /api/v1/admin/nodes/{node_id}` (`member_group_ids: ["<group_uuid>"]`, with `If-Match` and `Idempotency-Key`) so `fvpn-worker` can publish and read back the NetBird exit route (`netbird_route_readback`, `docs/nodes/WIRING.md`, `docs/e2e/README.md`). (OpenAPI `1.1.1` / `D-057` also adds `GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, and `PublicationRequest.group_ids`; on current `main`, `/api/v1/admin/groups` still returns `501 NOT_IMPLEMENTED` pending handler wiring and `SetNodePublication` reads the node's persisted `member_group_ids`.)
+
+Once the node reports healthy observations (`provisioning_state: "ready"`, `control_status: "online"`, `safety_status: "passed"`, `data_health: "healthy"`, and `observation.checks` entries `internet_only`, `dns_policy`, and `tunnel_probe` with `status: "passed"`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node (`PUT /api/v1/admin/nodes/{node_id}/publication` with `publication_intent: "published"` and `If-Match: "<etag>"`). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `status: "succeeded"` with `publication_observed: "active"` and NetBird route read-back evidence before announcing the exit to members.
