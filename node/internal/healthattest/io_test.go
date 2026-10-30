@@ -58,6 +58,17 @@ func TestD053_JournalDirectoryAndLeafModes(t *testing.T) {
 	}
 }
 
+func TestD053_JournalSymlinkWithTrailingSeparator(t *testing.T) {
+	dir := privateDir(t)
+	link := filepath.Join(privateDir(t), "journal")
+	if err := os.Symlink(dir, link); err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckDir(link + string(os.PathSeparator)); ReasonOf(err) != ReasonSymlink {
+		t.Fatalf("followed directory symlink with trailing separator: %v", err)
+	}
+}
+
 type ownerInfo struct {
 	os.FileInfo
 	stat syscall.Stat_t

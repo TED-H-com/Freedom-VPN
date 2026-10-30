@@ -48,7 +48,7 @@ type Challenge struct {
 }
 
 // Check is one agent-reported §13.9 result. Status is a HealthCheckStatus.
-// Reason is a short operator string, not a log of names or packets.
+// Reason uses the fixed vocabulary in checkReason, never names or packets.
 type Check struct {
 	Status api.HealthCheckStatus `json:"status"`
 	Reason string                `json:"reason"`

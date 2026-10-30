@@ -114,7 +114,9 @@ func ReadObservedAttestation(dir string) (Attestation, Observed, error) {
 func CheckDir(dir string) error { return checkDir(dir) }
 
 func checkDir(dir string) error {
-	info, err := os.Lstat(dir)
+	// A trailing separator makes Lstat follow a directory symlink on Unix.
+	// Match filepath.Join's normalization before checking the directory itself.
+	info, err := os.Lstat(filepath.Clean(dir))
 	if err != nil {
 		return err
 	}
@@ -314,6 +316,9 @@ func readFile(path string) ([]byte, os.FileInfo, error) {
 	}
 	if !os.SameFile(info, opened) || info.Mode() != opened.Mode() {
 		return nil, info, &rejectError{Reason: ReasonMalformed}
+	}
+	if err := checkOwner(opened); err != nil {
+		return nil, info, err
 	}
 	buf, err := io.ReadAll(io.LimitReader(f, MaxFileBytes+1))
 	if err != nil {
