@@ -43,7 +43,10 @@ func ParseQdiscJSON(raw []byte) (QdiscView, error) {
 			view.RootHTB = true
 		}
 		if kind == "fq_codel" {
-			if _, minor, ok := splitHandle(parent); ok {
+			major, minor, ok := splitHandle(parent)
+			// The renderer attaches fq_codel under HTB major 1. A leaf whose
+			// parent major is anything else is not the member class.
+			if ok && uint32(major) == HTBMajor {
 				view.Leaves[minor] = true
 			}
 		}
@@ -91,7 +94,13 @@ func ParseClassJSON(raw []byte, view QdiscView) (QdiscView, error) {
 }
 
 func parseClassText(raw []byte, view QdiscView) (QdiscView, error) {
+	// A comment or a backslash continuation can hide the real rate behind a
+	// later token. Real `tc class show` output has neither.
+	if bytes.Contains(raw, []byte("#")) || bytes.Contains(raw, []byte("\\")) {
+		return view, fmt.Errorf("tc class text contains a comment or continuation")
+	}
 	found := 0
+	seen := map[string]bool{}
 	for _, line := range strings.Split(string(raw), "\n") {
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "class htb ") {
@@ -101,20 +110,28 @@ func parseClassText(raw []byte, view QdiscView) (QdiscView, error) {
 		if len(fields) < 3 {
 			continue
 		}
+		handle := fields[2]
+		if seen[handle] {
+			return view, fmt.Errorf("tc class %s is duplicated", handle)
+		}
 		var rate, ceil uint64
+		var rateN, ceilN int
 		var haveRate, haveCeil bool
 		for i := 0; i+1 < len(fields); i++ {
 			switch fields[i] {
 			case "rate":
+				rateN++
 				rate, haveRate = parseRateString(fields[i+1])
 			case "ceil":
+				ceilN++
 				ceil, haveCeil = parseRateString(fields[i+1])
 			}
 		}
-		if !haveRate || !haveCeil {
-			return view, fmt.Errorf("tc class %s has no rate and ceil", fields[2])
+		if rateN != 1 || ceilN != 1 || !haveRate || !haveCeil {
+			return view, fmt.Errorf("tc class %s has no single rate and ceil", handle)
 		}
-		view.Classes[fields[2]] = ClassView{RateBPS: rate, CeilBPS: ceil, Found: true}
+		seen[handle] = true
+		view.Classes[handle] = ClassView{RateBPS: rate, CeilBPS: ceil, Found: true}
 		found++
 	}
 	if found == 0 {

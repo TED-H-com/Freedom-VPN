@@ -226,10 +226,10 @@ func TestDecideNobodyAdmittedKeepsSafety(t *testing.T) {
 	if d.Serve || d.Safety != api.SafetyStatusPassed {
 		t.Fatalf("serve %v safety %s reasons %v", d.Serve, d.Safety, d.Reasons)
 	}
-	if !hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
-		t.Fatalf("reasons %v", d.Reasons)
-	}
+	assertProvisionalDecision(t, d)
 	assertServingChecks(t, d.Checks, api.HealthCheckStatusFailed)
+	_, rep := reported(t, in)
+	assertProvisionalReport(t, rep)
 }
 
 func TestDecideBareIPv4BindingIsAdmitted(t *testing.T) {

@@ -801,6 +801,7 @@ func smallModel() Model {
 func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 	minor := assignments[m.Bindings[0].MemberID]
 	classid := ClassID(minor)
+	addr := m.Bindings[0].AllowedV4[0].Addr().String()
 	up := usageCounter(dirUpload, m.Bindings[0].DeviceID)
 	dn := usageCounter(dirDownload, m.Bindings[0].DeviceID)
 	doc := map[string]any{
@@ -829,6 +830,7 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.MemberIngress}},
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "oifname"}}, "right": m.Datapath.Uplink}},
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "saddr"}}, "right": addr}},
 				map[string]any{"counter": map[string]any{"name": up}},
 				map[string]any{"mangle": map[string]any{"key": map[string]any{"meta": map[string]any{"key": "priority"}}, "value": classid}},
 				map[string]any{"accept": nil},
@@ -846,6 +848,7 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.Uplink}},
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "oifname"}}, "right": m.Datapath.MemberIngress}},
+				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": "ip", "field": "daddr"}}, "right": addr}},
 				map[string]any{"counter": map[string]any{"name": dn}},
 				map[string]any{"mangle": map[string]any{"key": map[string]any{"meta": map[string]any{"key": "priority"}}, "value": classid}},
 				map[string]any{"accept": nil},
