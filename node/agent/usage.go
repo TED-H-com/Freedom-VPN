@@ -133,6 +133,7 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		return
 	}
 	e.usage = st
+	e.usageStatus = st
 	src := e.meterSource
 	if src == nil {
 		ks := &kernelSource{
@@ -297,4 +298,6 @@ func (e *Engine) shutdownUsage() {
 		_ = e.usage.Close()
 		e.usage = nil
 	}
+	e.usageStatus = nil
+	e.hasUsage = false
 }

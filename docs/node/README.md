@@ -123,6 +123,20 @@ Heartbeats default to 10 seconds. Observation reports default to 30 seconds (§1
 
 Each report calls `updatejournal.Snapshot` on `updater_journal` at report time. The call is read-only, does not create or migrate the database, and stops at the caller's deadline or one second. The `update` object is always present. Its members are `generation`, `job_id`, `stage`, and `state`. A null `generation` means no update state: the file is missing, the schema cannot be read, the snapshot missed its deadline, or the database has no job. That is not generation 0, and the next report does not reuse the previous snapshot. A recorded job fills those members from that snapshot. `locally_succeeded` is stage `report` and state `succeeded`. A destructive rollback is stage `report` and state `rolled_back`, and the restored release is the top-level `current_release_id`. Journal stage `recovery_required` is reported as stage `rollback` and state `failed`, which is the API vocabulary the snapshot already uses; `recovery_required` is not an observation state. `current_release_id` and `last_good_release_id` stay top-level fields. `current_release_id` defaults to the running binary's configured release, including when the journal pointer is empty or invalid. A journal pointer overrides it only when the job ID is a valid nonzero UUID and the transaction reached `locally_succeeded` or `rolled_back`. Claimed, in-progress, and recovery-required jobs cannot override it. With a recorded generation, `last_good_release_id` still comes from the journal pointer (null if invalid); otherwise it is the configured release only after a generation has been applied. A snapshot error is logged once each time its reason class changes (`missing`, `deadline`, `canceled`, `unsupported_schema`, `not_a_file`, `unreadable`). The line does not include the path or the journal contents. The observation is still queued.
 
+The `usage` object is live outbox status, read from the open usage store when the report is built (§10.5, §10.6, §10.8). The read is bounded to about 2 seconds. Before the store is open, and when the read fails, the report keeps the zero shape: null `ledger_epoch`, `meter_epoch_id`, `blocked_seq` and `oldest_unacked_at`, and `"0"` or 0 for the other fields. A read that reaches the time limit sends the last successful status from this process. Neither outcome adds an `errors[]` entry, and neither changes `safety_status`, `provisioning_state`, or member forwarding. The agent logs `usage status unavailable: <reason>` or `usage status available` once when that state changes.
+
+- `ledger_epoch` is the central ledger epoch adopted from a verified checkpoint, or null when none has been accepted.
+- `meter_epoch_id` is the open meter epoch, or null when none is open.
+- `last_durable_event_seq` is the highest durable event sequence, `"0"` when no event exists.
+- `central_acked_through` is the contiguous ACK watermark, `"0"` when none has been acknowledged.
+- `blocked_seq` is the lowest sequence that cannot be acknowledged, or null when nothing is blocked.
+- `unacked_event_count` is the number of events still in the outbox.
+- `unacked_payload_bytes` is the sum of the canonical payload bytes of those unacknowledged events.
+- `oldest_unacked_at` is the time the oldest outbox row was stored, or null when the outbox is empty.
+- `acked_archive_bytes` is the sum of archived payload bytes still retained for replay.
+
+Central stores the whole report, including `usage`, in `node_observations.report_payload`. The same acceptance updates the `nodes` row's control status, last-seen and last-observed times, applied generation, provisioning state, data health, safety status, observed member forwarding, current and last-good release ids, latest checks, and recent errors. The usage fields remain inside that observation payload.
+
 ## Data-path probe (§5, §13.9)
 
 Each step computes a preliminary `Decide` before probing, then recomputes it with the probe result. Losing a serving gate first withdraws members to the baseline. The probe does not change `publication_intent`, does not install a member allow, and does not open member traffic. A control-plane HTTP failure is not this probe. `control_url` is not a probe target.
@@ -281,6 +295,7 @@ Resolver apply evidence is bound to the signed reference's digest and decimal ge
 - `dns_policy` passes only after this process has applied the named resolver document (same id and digest). A revoked skip does not call Apply again and does not report that check passed.
 - Resolver admin URLs and the DNS listen address are host-local. The credential file is root-owned mode `0600` and is loaded at start and on `SIGHUP`. The URL and the password are not written to logs, observations, or check detail.
 - Contract revision 11 adopted. A provisional lease (D-067, D-071) reports `ErrorCode` `AWAITING_MEMBER_GRANTS`.
+- SECOPS-19: observation usage block populated. The report reads the open usage store at build time; a missing store or a failed read keeps the zero shape and adds no error, and a timed-out read reuses the last good status.
 
 ## 待實測
 
