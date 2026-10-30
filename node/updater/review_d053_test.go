@@ -17,29 +17,7 @@ import (
 )
 
 func TestUPD_D053_Review_RevokedCurrentRollbackIssuesChallengeAndReportsTruth(t *testing.T) {
-	// TODO(review): When the currently running release `cur` is revoked via
-	// SignedRevoked, rollbackIfRevoked calls restoreRelease(ctx, target)
-	// (revoke.go:97, 238-272). Unlike stepRollback (apply.go:287),
-	// restoreRelease switches the `current` symlink to `target`, updates
-	// Pointers.CurrentRelease to `target`, stops `cur`, and starts `target`,
-	// but NEVER calls e.issueChallenge (or e.consumeChallenge) before
-	// e.runHealth (revoke.go:264).
-	//
-	// Under the production NodeChecks health adapter (host.go:151):
-	// 1. NodeChecks.evaluate (attest.go:131) sees bound == nil and immediately
-	//    fails runHealth with ReasonMissing ("attestation_missing"), so
-	//    rolling back from a revoked release to a healthy retained release
-	//    ALWAYS fails with ROLLBACK_FAILED.
-	// 2. Worse (Rollback Truth lie): when restoreRelease returns
-	//    ROLLBACK_FAILED, rollbackIfRevoked calls blockRevoked (revoke.go:98,
-	//    108-130) without stopping `target` or restoring Pointers. On disk
-	//    `current` points to `target` and `target` is left running, in the
-	//    journal CurrentRelease is `target` while LastGood is still the
-	//    revoked `cur`, and blockRevoked enqueues an UpdateResult reporting
-	//    State=failed, Stage=rollback, ErrorCode=ROLLBACK_FAILED,
-	//    RecoveryRequired=true, CurrentReleaseId=target, and
-	//    PreviousReleaseId=target (lying that PreviousReleaseId was `target`
-	//    instead of `cur`).
+	// Regression proof from the D-053 adversarial review.
 	w := newWorld(t)
 	w.releaseSeq = "1"
 	older := w.makeRelease("older", 1, []int{1})
@@ -76,18 +54,7 @@ func TestUPD_D053_Review_RevokedCurrentRollbackIssuesChallengeAndReportsTruth(t 
 }
 
 func TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires(t *testing.T) {
-	// TODO(review): NodeChecks.poll (attest.go:142-158) breaks out of the
-	// wait loop as soon as readOnce returns `got != nil` (line 148), and
-	// readOnce (attest.go:195-199) returns `got = &at` whenever the challenge
-	// binding is valid (`reason == ""` or `reason == ReasonNotRun`), even if
-	// one of the agent's checks is still `failed` or `not_run` while the
-	// candidate is warming up.
-	//
-	// If the candidate agent writes an initial attestation at t=2ms where
-	// tunnel_probe is still `failed` (or `not_run`) and then rewrites
-	// health-attest.json at t=10ms with all checks `passed` (well inside the
-	// Wait window), poll aborts immediately on the first read instead of
-	// polling until all checks pass or the Wait window expires.
+	// Regression proof from the D-053 adversarial review.
 	w := newWorld(t)
 	next := w.makeRelease("new", 1, []int{1})
 	touchPersistent(t, w.layout)
@@ -154,14 +121,11 @@ func TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires(t *te
 }
 
 func TestUPD_D053_Review_PollDeadlineIgnoresInjectedClock(t *testing.T) {
-	// TODO(review): NodeChecks.poll (attest.go:143, 151) computes
-	// `deadline := time.Now().Add(n.wait())` and checks
-	// `!time.Now().Before(deadline)` using the host wall clock `time.Now()`,
-	// while readOnce validates challenge expiry against the injected clock
-	// `n.now()` (attest.go:195). When `n.Sleep` advances the injected clock
-	// `n.Now` by `Wait`, `poll` ignores `n.now()` and keeps spinning until
-	// wall-clock `time.Now()` reaches `deadline` (or ctx is canceled).
+	// Regression proof from the D-053 adversarial review.
 	dir := t.TempDir()
+	if err := os.Chmod(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
 	node := Node{
 		ID:          uuid.Must(uuid.NewV7()),
 		Incarnation: uuid.Must(uuid.NewV7()),
@@ -218,25 +182,7 @@ func TestUPD_D053_Review_PollDeadlineIgnoresInjectedClock(t *testing.T) {
 }
 
 func TestUPD_D053_Review_CrashInStepRollbackAfterSetLastGoodLiesRecoveryRequired(t *testing.T) {
-	// TODO(review): In stepRollback (apply.go:240-322), on the 3rd rollback
-	// attempt (`maxRollbackAttempts == 3`), the updater switches `current` to
-	// `target` (`old`), starts `target`, runs `runHealth` (which passes), and
-	// updates `Pointers{LastGood: target}` (apply.go:276-315) BEFORE advancing
-	// the journal stage to `StageRolledBack` (apply.go:320).
-	//
-	// If the process crashes or errors at `snapshotPointers` (line 317) or
-	// before `advance(StageRolledBack)` (line 320), the transaction stage in
-	// SQLite remains `StageRollingBack`, while on disk `current` points to
-	// `old`, `old` is running and passed health attestation, and `Pointers`
-	// has `CurrentRelease == old` and `LastGood == old`.
-	//
-	// On recovery (`Recover`), `stepRollback` increments `rollback-<txn>` to 4
-	// (`> maxRollbackAttempts`), immediately transitions to
-	// `StageRecoveryRequired` (`ROLLBACK_FAILED`), keeps member forwarding
-	// blocked, and enqueues an upstream `UpdateResult` with `State=failed`,
-	// `ErrorCode=ROLLBACK_FAILED`, `RecoveryRequired=true`, and
-	// `CurrentReleaseId=old` — lying that rollback failed when `old` is
-	// actually restored, healthy, and running.
+	// Regression proof from the D-053 adversarial review.
 	w := newWorld(t)
 	old := w.makeRelease("old", 1, []int{1})
 	next := w.makeRelease("new", 1, []int{1})
@@ -283,56 +229,24 @@ func TestUPD_D053_Review_CrashInStepRollbackAfterSetLastGoodLiesRecoveryRequired
 		t.Fatal(err)
 	}
 
-	// Execute all of stepRollback attempt #3 up through runHealth passing and
-	// SetPointers(LastGood: old), then simulate a crash right before
-	// advance(StageRolledBack) by making immutable.snap uncreatable ONLY on the
-	// post-health snapshotPointers call (after health-challenge.json has been
-	// consumed by consumeChallenge at line 307).
-	// Wait: snapshotPointers runs twice in stepRollback: once at line 300
-	// (while health-challenge.json exists) and once at line 317 (after
-	// consumeChallenge removed health-challenge.json and SetPointers(LastGood)
-	// succeeded!).
-	rel, err := w.layout.relativeRelease(old.id.String())
+	// Exercise the actual third attempt. LastGood and StageRolledBack now
+	// commit together, so the first crash boundary after LastGood changes is
+	// after stepRollback returns, before seal. Do not reconstruct the removed
+	// intermediate state by calling SetPointers directly.
+	c, err := w.eng.claimedFor(context.Background(), txn)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Remove(w.layout.Current); err != nil {
+	if _, err := w.eng.stepRollback(context.Background(), txn, c); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Symlink(rel, w.layout.Current); err != nil {
+	if rollbackChecks != 1 {
+		t.Fatalf("rollback checks = %d, want 1", rollbackChecks)
+	}
+	if err := w.eng.Close(); err != nil {
 		t.Fatal(err)
 	}
-	// Run stepRollback attempt #3 up to SetPointers(LastGood: old), crashing before advance(StageRolledBack).
-	if _, err := bumpCounter(counterPath); err != nil {
-		t.Fatal(err)
-	}
-	if err := w.eng.Journal.SetPointers(context.Background(), updatejournal.Pointers{CurrentRelease: old.id.String()}); err != nil {
-		t.Fatal(err)
-	}
-	_ = w.eng.Services.Stop(context.Background())
-	if err := w.eng.issueChallenge(context.Background(), txn, old.id.String(), "rollback"); err != nil {
-		t.Fatal(err)
-	}
-	if err := w.eng.Services.Start(context.Background(), w.layout.releaseDir(old.id.String())); err != nil {
-		t.Fatal(err)
-	}
-	if err := w.eng.snapshotPointers(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-	view := w.eng.viewFor(context.Background(), old.id.String(), w.eng.manifestOf(context.Background(), old.id.String()))
-	h, ok := w.eng.runHealth(context.Background(), view)
-	w.eng.recordHealth(context.Background(), txn.TxnID, h)
-	w.eng.consumeChallenge()
-	if !ok {
-		t.Fatalf("expected rollback health check on old release to pass, got %+v", h)
-	}
-	if err := w.eng.Journal.SetPointers(context.Background(), updatejournal.Pointers{LastGood: old.id.String()}); err != nil {
-		t.Fatal(err)
-	}
-	if err := w.eng.snapshotPointers(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-	// Process crashes here, right before line 320 `e.advance(ctx, txn, StageRolledBack, ...)`.
+	w.eng.Journal = nil
 
 	// Now the updater restarts and runs Recover(ctx).
 	recErr := w.eng.Recover(context.Background())
@@ -349,25 +263,7 @@ func TestUPD_D053_Review_CrashInStepRollbackAfterSetLastGoodLiesRecoveryRequired
 }
 
 func TestUPD_D053_Review_CrashInStepCheckAfterSetStateSchemaBreaksRollback(t *testing.T) {
-	// TODO(review): In stepCheck (apply.go:227-237), the updater mutates
-	// `Pointers{LastGood: txn.ReleaseID}` (line 227) and
-	// `SetStateSchema(schema)` (line 234) BEFORE committing
-	// `advance(StageLocallySucceeded)` (line 237).
-	//
-	// If the process crashes after lines 227-235 and before line 237 on check
-	// attempt 8 (`maxCheckAttempts`), the durable stage in SQLite is still
-	// `StageChecking`, but `LastGood` has already been overwritten with the
-	// candidate `txn.ReleaseID` and `StateSchema` has already been updated to
-	// `txn.StateSchemaTo` (e.g. schema 2).
-	//
-	// On `Recover`, `stepCheck` increments `checks-<txn>` to 9
-	// (`> maxCheckAttempts`) and enters `StageRollingBack`. When `pickRollback`
-	// evaluates `old` (which has `StateSchemaTo: 1`, while candidate had
-	// `StateSchemaTo: 2` and `StateSchemaSupported: [1, 2]`), `evalLastGood`
-	// (health.go:154: `cur == rel.StateSchemaTo`) sees `cur == 2 != 1` and
-	// rejects `old` as `SCHEMA_INCOMPATIBLE`, forcing `StageRecoveryRequired`
-	// while leaving the unsealed candidate `next` as `CurrentRelease` and
-	// `LastGood`!
+	// Regression proof from the D-053 adversarial review.
 	w := newWorld(t)
 	old := w.makeRelease("old", 1, []int{1})
 	next := w.makeRelease("new", 2, []int{1, 2})
@@ -397,20 +293,20 @@ func TestUPD_D053_Review_CrashInStepCheckAfterSetStateSchemaBreaksRollback(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Simulate crash on attempt 8 after SetPointers(LastGood: next) and
-	// SetStateSchema(2), right before advance(StageLocallySucceeded).
+	// Run the actual eighth check. The schema and LastGood can only become
+	// visible with StageLocallySucceeded. Crash before seal and reopen SQLite.
 	checksPath := filepath.Join(w.layout.Journal, "checks-"+txn.TxnID)
-	if err := os.WriteFile(checksPath, []byte("8\n"), 0o600); err != nil {
+	if err := os.WriteFile(checksPath, []byte("7\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := w.eng.Journal.SetPointers(context.Background(), updatejournal.Pointers{LastGood: next.id.String()}); err != nil {
+	if _, err := w.eng.stepCheck(context.Background(), txn); err != nil {
 		t.Fatal(err)
 	}
-	if err := w.eng.Journal.SetStateSchema(context.Background(), 2); err != nil {
+	if err := w.eng.Close(); err != nil {
 		t.Fatal(err)
 	}
+	w.eng.Journal = nil
 
-	// Recover now runs stepCheck (attempt 9 > maxCheckAttempts) -> beginRollback -> stepRollback.
 	recErr := w.eng.Recover(context.Background())
 	last, err := w.eng.Journal.LastTxn(context.Background())
 	if err != nil {
@@ -421,6 +317,14 @@ func TestUPD_D053_Review_CrashInStepCheckAfterSetStateSchemaBreaksRollback(t *te
 		t.Fatalf("premature LastGood/StateSchema mutation in stepCheck before advance(StageLocallySucceeded) broke rollback: recErr=%v, stage=%s, code=%s, pointers=%+v",
 			recErr, last.Stage, last.ErrorCode, p)
 	}
+	if last.Stage != updatejournal.StageLocallySucceeded || p.LastGood != next.id.String() {
+		t.Fatalf("committed check lost on restart: stage=%s pointers=%+v", last.Stage, p)
+	}
+	schema, err := w.eng.Journal.StateSchema(context.Background())
+	if err != nil || schema != 2 {
+		t.Fatalf("schema=%d err=%v", schema, err)
+	}
+
 }
 
 func TestUPD_D053_Review_Held_VersionTokenAndTTLClampCannotHideMismatch(t *testing.T) {

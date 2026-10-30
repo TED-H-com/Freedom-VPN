@@ -94,6 +94,8 @@ type StageUpdate struct {
 	Checkpoint        any // JSON-encoded when non-nil
 	Health            any // JSON-encoded when non-nil
 	RollbackReleaseID string
+	Pointers          Pointers // nonempty fields change atomically with the stage
+	StateSchema       int      // positive values change atomically with the stage
 }
 
 // Advance moves a transaction to the next stage in one durable write. The
@@ -158,6 +160,14 @@ func (j *Journal) Advance(ctx context.Context, txnID string, to Stage, u StageUp
 	}
 	if err := persistAdvanceGate(ctx, tx, to); err != nil {
 		return Txn{}, err
+	}
+	if err := setPointers(ctx, tx, u.Pointers); err != nil {
+		return Txn{}, err
+	}
+	if u.StateSchema > 0 {
+		if err := setMeta(ctx, tx, metaStateSchema, fmt.Sprint(u.StateSchema)); err != nil {
+			return Txn{}, err
+		}
 	}
 	if err := tx.Commit(); err != nil {
 		return Txn{}, err

@@ -94,6 +94,49 @@ func ReadAttestation(dir string) (Attestation, os.FileInfo, error) {
 	return a, info, err
 }
 
+// ReadObservedAttestation decodes and fingerprints the same bounded read.
+// This avoids a path replacement between a freshness observation and decoding.
+func ReadObservedAttestation(dir string) (Attestation, Observed, error) {
+	var a Attestation
+	body, info, err := readFile(filepath.Join(dir, AttestationFile))
+	if err != nil {
+		return a, Observed{}, err
+	}
+	if err := decodeJSON(body, &a); err != nil {
+		return a, Observed{}, err
+	}
+	return a, observed(info, body), nil
+}
+
+// CheckDir validates an existing private journal directory without following
+// a symlink or repairing unsafe permissions. Layout setup uses the same check
+// as challenge and attestation I/O.
+func CheckDir(dir string) error { return checkDir(dir) }
+
+func checkDir(dir string) error {
+	info, err := os.Lstat(dir)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return &rejectError{Reason: ReasonSymlink}
+	}
+	if !info.IsDir() {
+		return &rejectError{Reason: ReasonMalformed}
+	}
+	if info.Mode().Perm()&0o077 != 0 {
+		return &rejectError{Reason: ReasonBadMode}
+	}
+	return checkOwner(info)
+}
+
+func checkOwner(info os.FileInfo) error {
+	if st, ok := info.Sys().(*syscall.Stat_t); ok && uint64(st.Uid) != uint64(os.Geteuid()) {
+		return &rejectError{Reason: ReasonBadOwner}
+	}
+	return nil
+}
+
 // AttestationPrecedes reports that the attestation timestamp is not strictly
 // after the challenge timestamp. Equal timestamps count as precedes.
 func AttestationPrecedes(challengeMod, attestMod time.Time) bool {
@@ -115,35 +158,21 @@ type Observed struct {
 // ObserveAttestation stats the attestation path. A missing file is an empty
 // Observed and a nil error. Symlinks are refused.
 func ObserveAttestation(dir string) (Observed, error) {
-	path := filepath.Join(dir, AttestationFile)
-	info, err := os.Lstat(path)
+	if err := checkDir(dir); err != nil {
+		return Observed{}, err
+	}
+	body, info, err := readFile(filepath.Join(dir, AttestationFile))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return Observed{}, nil
 		}
 		return Observed{}, err
 	}
-	if info.Mode()&os.ModeSymlink != 0 {
-		return Observed{}, &rejectError{Reason: ReasonSymlink}
-	}
-	if !info.Mode().IsRegular() {
-		return Observed{}, &rejectError{Reason: ReasonMalformed}
-	}
-	if info.Size() > MaxFileBytes {
-		return Observed{}, &rejectError{Reason: ReasonTooLarge}
-	}
-	f, err := os.Open(path)
-	if err != nil {
-		return Observed{}, err
-	}
-	defer f.Close()
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return Observed{}, err
-	}
-	var sum [32]byte
-	copy(sum[:], h.Sum(nil))
-	return Observed{Present: true, Inode: inodeOf(info), Mod: info.ModTime(), Size: info.Size(), Sum: sum}, nil
+	return observed(info, body), nil
+}
+
+func observed(info os.FileInfo, body []byte) Observed {
+	return Observed{Present: true, Inode: inodeOf(info), Mod: info.ModTime(), Size: int64(len(body)), Sum: sha256.Sum256(body)}
 }
 
 // Rewritten reports whether cur is a different file from the snapshot taken
@@ -175,6 +204,9 @@ func inodeOf(info os.FileInfo) uint64 {
 // Consume removes the challenge and the attestation. A missing file is not
 // an error. The updater calls this after it has recorded health.
 func Consume(dir string) error {
+	if err := checkDir(dir); err != nil {
+		return err
+	}
 	var err error
 	for _, name := range []string{ChallengeFile, AttestationFile} {
 		if e := os.Remove(filepath.Join(dir, name)); e != nil && !os.IsNotExist(e) {
@@ -192,11 +224,17 @@ func MarkConsumed(dir string, c Challenge) error {
 }
 
 func writeJSON(path string, v any) error {
+	if err := checkDir(filepath.Dir(path)); err != nil {
+		return err
+	}
 	body, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
 	body = append(body, '\n')
+	if len(body) > MaxFileBytes {
+		return &rejectError{Reason: ReasonTooLarge}
+	}
 	dir := filepath.Dir(path)
 	tmp, err := os.CreateTemp(dir, "."+filepath.Base(path)+".tmp-*")
 	if err != nil {
@@ -226,9 +264,6 @@ func writeJSON(path string, v any) error {
 		return err
 	}
 	ok = true
-	if err := os.Chmod(path, 0o600); err != nil {
-		return err
-	}
 	d, err := os.Open(dir)
 	if err != nil {
 		return err
@@ -238,40 +273,68 @@ func writeJSON(path string, v any) error {
 }
 
 func readJSON(path string, dest any) (os.FileInfo, error) {
+	body, info, err := readFile(path)
+	if err != nil {
+		return info, err
+	}
+	return info, decodeJSON(body, dest)
+}
+
+func readFile(path string) ([]byte, os.FileInfo, error) {
+	if err := checkDir(filepath.Dir(path)); err != nil {
+		return nil, nil, err
+	}
 	info, err := os.Lstat(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if info.Mode()&os.ModeSymlink != 0 {
-		return info, &rejectError{Reason: ReasonSymlink}
+		return nil, info, &rejectError{Reason: ReasonSymlink}
 	}
 	if !info.Mode().IsRegular() {
-		return info, &rejectError{Reason: ReasonMalformed}
+		return nil, info, &rejectError{Reason: ReasonMalformed}
 	}
 	if info.Mode().Perm() != 0o600 {
-		return info, &rejectError{Reason: ReasonBadMode}
+		return nil, info, &rejectError{Reason: ReasonBadMode}
+	}
+	if err := checkOwner(info); err != nil {
+		return nil, info, err
 	}
 	if info.Size() > MaxFileBytes {
-		return info, &rejectError{Reason: ReasonTooLarge}
+		return nil, info, &rejectError{Reason: ReasonTooLarge}
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return info, err
+		return nil, info, err
 	}
 	defer f.Close()
-	buf := make([]byte, info.Size())
-	if _, err := io.ReadFull(f, buf); err != nil {
-		return info, err
+	opened, err := f.Stat()
+	if err != nil {
+		return nil, info, err
 	}
+	if !os.SameFile(info, opened) || info.Mode() != opened.Mode() {
+		return nil, info, &rejectError{Reason: ReasonMalformed}
+	}
+	buf, err := io.ReadAll(io.LimitReader(f, MaxFileBytes+1))
+	if err != nil {
+		return nil, info, err
+	}
+	if len(buf) > MaxFileBytes {
+		return nil, info, &rejectError{Reason: ReasonTooLarge}
+	}
+	return buf, info, nil
+}
+
+func decodeJSON(buf []byte, dest any) error {
 	dec := json.NewDecoder(bytes.NewReader(buf))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(dest); err != nil {
-		return info, fmt.Errorf("healthattest: %w", err)
+		return fmt.Errorf("healthattest: %w", err)
 	}
-	if dec.More() {
-		return info, &rejectError{Reason: ReasonMalformed}
+	if err := dec.Decode(new(any)); err != io.EOF {
+		return &rejectError{Reason: ReasonMalformed}
 	}
-	return info, nil
+	return nil
 }
 
 // rejectError is a typed refusal from a reader, as opposed to a missing file.

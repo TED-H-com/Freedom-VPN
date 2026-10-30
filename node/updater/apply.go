@@ -224,17 +224,13 @@ func (e *Engine) stepCheck(ctx context.Context, txn updatejournal.Txn) (updatejo
 	if !ok {
 		return e.beginRollback(ctx, txn, apierr.HealthCheckFailed, api.UpdateStageCheck, &h)
 	}
-	if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{LastGood: txn.ReleaseID}); err != nil {
-		return txn, err
-	}
 	schema := txn.StateSchemaTo
 	if schema < 1 {
 		schema = schemaAtLeast1(e.Platform.StateSchema)
 	}
-	if err := e.Journal.SetStateSchema(ctx, schema); err != nil {
-		return txn, err
-	}
-	return e.advance(ctx, txn, updatejournal.StageLocallySucceeded, updatejournal.StageUpdate{Health: h})
+	return e.advance(ctx, txn, updatejournal.StageLocallySucceeded, updatejournal.StageUpdate{
+		Health: h, Pointers: updatejournal.Pointers{LastGood: txn.ReleaseID}, StateSchema: schema,
+	})
 }
 
 func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c claimed) (updatejournal.Txn, error) {
@@ -308,17 +304,10 @@ func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c clai
 		if !ok {
 			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, &h)
 		}
-		// The restored release passed checks. Do not leave a revoked
-		// release recorded as last_good. Refresh the pointer snapshot so
-		// it names that release.
-		if err := e.Journal.SetPointers(ctx, updatejournal.Pointers{LastGood: target}); err != nil {
-			return txn, err
-		}
-		if err := e.snapshotPointers(ctx); err != nil {
-			return e.toRecovery(ctx, txn, apierr.CheckpointFailed, api.UpdateStageRollback, nil)
-		}
+		// Commit verified last_good with the terminal stage: recovery must
+		// never see last_good updated while the attempt remains in flight.
 		return e.advance(ctx, txn, updatejournal.StageRolledBack, updatejournal.StageUpdate{
-			Health: h, RollbackReleaseID: target,
+			Health: h, RollbackReleaseID: target, Pointers: updatejournal.Pointers{LastGood: target},
 		})
 	}
 	return e.advance(ctx, txn, updatejournal.StageRolledBack, updatejournal.StageUpdate{

@@ -11,12 +11,7 @@ import (
 )
 
 func TestD053_Review_SymlinkedJournalDirRejected(t *testing.T) {
-	// TODO(review): WriteChallenge, ReadChallenge, WriteAttestation,
-	// ObserveAttestation, and ReadAttestation only os.Lstat the leaf file path
-	// (filepath.Join(dir, name)) and never verify that the journal directory
-	// itself is not a symlink. If the journal directory path is a symlink to
-	// an attacker-controlled directory, all five functions silently follow the
-	// directory symlink instead of failing closed with ReasonSymlink.
+	// Regression proof from the D-053 adversarial review.
 	base := t.TempDir()
 	realDir := filepath.Join(base, "real-journal")
 	if err := os.MkdirAll(realDir, 0o700); err != nil {
@@ -46,13 +41,7 @@ func TestD053_Review_SymlinkedJournalDirRejected(t *testing.T) {
 }
 
 func TestD053_Review_SharedWritableJournalDirRejected(t *testing.T) {
-	// TODO(review): WriteChallenge, ReadChallenge, WriteAttestation,
-	// ObserveAttestation, and ReadAttestation never verify that the journal
-	// directory has mode 0700 (no group/world write permissions), and
-	// ObserveAttestation does not even check 0600 on the leaf file. When the
-	// journal directory is shared with a less-privileged user (0777 or 0770),
-	// that user can unlink/rename root's 0600 health-attest.json and replace
-	// it with their own 0600 file.
+	// Regression proof from the D-053 adversarial review.
 	dir := filepath.Join(t.TempDir(), "shared-journal")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
@@ -84,13 +73,7 @@ func TestD053_Review_SharedWritableJournalDirRejected(t *testing.T) {
 }
 
 func TestD053_Review_ValidateRejectsFutureGeneratedAtClockSkew(t *testing.T) {
-	// TODO(review): Validate (validate.go:49-54) checks that
-	// attestation.GeneratedAt is strictly between challenge.IssuedAt and
-	// challenge.ExpiresAt, and that now is before challenge.ExpiresAt, but
-	// never checks whether attestation.GeneratedAt is in the future relative
-	// to the updater's clock `now` (e.g. GeneratedAt.After(now)). An
-	// attestation claiming to have been generated 40s in the future relative
-	// to `now` is accepted with an empty Reason.
+	// Regression proof from the D-053 adversarial review.
 	ch, at, now, versions := validPair(t)
 	// Updater evaluates at t = IssuedAt + 1s, but attestation claims GeneratedAt = IssuedAt + 40s.
 	at.GeneratedAt = now.Add(39 * time.Second)
@@ -100,13 +83,7 @@ func TestD053_Review_ValidateRejectsFutureGeneratedAtClockSkew(t *testing.T) {
 }
 
 func TestD053_Review_ValidateRejectsFreeFormReasonAndURLs(t *testing.T) {
-	// TODO(review): D-053 requires fixed vocabularies in check reasons and no
-	// member data or URLs/DNS names in attestation and journal contents
-	// (SEC02). While the agent producer restricts tunnel reasons via
-	// detailToken, Validate's checkReason (validate.go:126-135) accepts any
-	// arbitrary 160-byte non-control UTF-8 string (including URLs, DNS query
-	// names, and member overlay IPs), and NodeChecks.decide copies those raw
-	// strings into the updater SQLite journal (txn_events).
+	// Regression proof from the D-053 adversarial review.
 	ch, at, now, versions := validPair(t)
 	at.Checks.TunnelProbe.Reason = "https://member.example.com/query?dns=secret.internal&peer=100.64.0.99"
 	if got := Validate(ch, at, now, versions); got != ReasonBadReason {
@@ -178,6 +155,9 @@ func TestD053_Review_Held_ValidateAndFileDefenses(t *testing.T) {
 
 	// 2. File size bounds (> MaxFileBytes = 64 KiB), partial writes, and trailing JSON tokens are rejected.
 	dir := t.TempDir()
+	if err := os.Chmod(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
 	attPath := filepath.Join(dir, AttestationFile)
 	oversized := `{"txn_id":"` + strings.Repeat("a", MaxFileBytes) + `"}`
 	if err := os.WriteFile(attPath, []byte(oversized), 0o600); err != nil {

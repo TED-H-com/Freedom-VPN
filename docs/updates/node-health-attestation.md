@@ -15,7 +15,9 @@ Both files live in the updater journal directory, the same directory the agent a
 
 Write them with `healthattest.WriteChallenge` and `healthattest.WriteAttestation`. Those helpers create a temporary file in the same directory, set mode `0600`, `fsync`, rename over the destination, and `fsync` the directory. One challenge is live at a time. A new check overwrites it. After health is recorded the updater removes both files. If the remove fails, it rewrites the challenge with `"consumed": true`. `Validate` rejects a consumed challenge.
 
-A reader refuses a symlink, any file that is not a regular file, any mode other than `0600`, a file larger than 64KiB, unknown JSON fields, and trailing data after the JSON value.
+The journal directory must already exist, must not be a symlink, must have no group/other permission bits, and must belong to the effective user where the platform exposes ownership. Updater setup creates it as `0700` and rejects unsafe existing directories without changing their permissions.
+
+A reader refuses a symlink, any file that is not a regular file, any mode other than `0600`, a file larger than 64KiB, unknown JSON fields, and trailing data after the JSON value. Readers verify the opened file is the same inode as the checked path and bound every read to 64KiB plus one byte. The consumer hashes and decodes the same bytes when checking freshness, so replacement between separate observation and decoding cannot bypass the check.
 
 ## Challenge
 
@@ -66,9 +68,17 @@ The agent writes one answer for the challenge it just read. Echo the challenge i
 }
 ```
 
-Each status is `passed`, `failed` or `not_run`. A reason is a short operator string, at most 160 bytes, with no control characters. Do not put DNS names, URLs, packet contents or peer lists in it (SEC02).
+Each status is `passed`, `failed` or `not_run`. Reasons use a fixed vocabulary and remain bounded to 160 bytes. Unknown strings are rejected as `bad_reason` before any attestation detail reaches the updater journal (SEC02). The accepted values are:
 
-`generated_at` is strictly after `issued_at` and strictly before `expires_at`. The updater's clock at validation must also still be before `expires_at`. There is no second skew allowance inside that window: a `generated_at` later than the updater's clock is accepted only while it remains before `expires_at`.
+- Empty string, `baseline held`, `baseline missing`.
+- `policy loaded`, `policy in force`, `policy not in force`.
+- `not run`, `probe not run`, `probe skipped`, `probe refused`, `probe failed`.
+- `overlay up`, `overlay_up`, `overlay_down`, `overlay_partial`.
+- `probe reached the lab endpoint` (the original contract example).
+
+The real producer's fixed reasons are included. A new producer reason requires an explicit consumer vocabulary update; an arbitrary lowercase token is not sufficient.
+
+`generated_at` is strictly after `issued_at` and strictly before `expires_at`. The updater's clock at validation must also still be before `expires_at`. A timestamp more than `MaxClockSkew` (2s) ahead of the updater's clock is rejected as `generated_in_future`; this allowance never relaxes the issue/expiry bounds.
 
 ## Ordering
 
@@ -77,7 +87,7 @@ Each status is `passed`, `failed` or `not_run`. A reason is a short operator str
 3. The check stage calls `Start` again. That call is the signal that the challenge is live. `Start` is idempotent.
 4. The agent reads the challenge, runs the checks below, and writes `health-attest.json` with an atomic rename.
 5. The updater polls until the wait window. It records health, appends a `txn_events` detail (`kind` `health_attest`, `phase` `candidate`), and removes both files.
-6. On a destructive rollback the updater stops the candidate first, writes a new challenge whose `release_id` is the restored release, then starts that release. The restored agent answers that challenge, with that release's component versions. The updater appends a second detail with `phase` `rollback`. The first health report stays the candidate's.
+6. On a destructive rollback the updater stops the candidate first, writes a new challenge whose `release_id` is the restored release, then starts that release. The restored agent answers that challenge, with that release's component versions. The updater appends a second detail with `phase` `rollback`. The first health report stays the candidate's. Revocation recovery also stops the revoked service before switching, then issues a fresh recovery transaction UUID and rollback challenge before starting the retained release. On health failure it stops that target, retains the selected tree as `current`, leaves `last_good` unchanged, and reports the revoked release as `previous_release_id`.
 
 A resume of `checking` issues a new nonce. An answer that still carries the previous nonce fails `nonce_mismatch`.
 
@@ -93,7 +103,7 @@ The defaults are code constants, pending measurement (待實測), not a verified
 
 The 8-attempt cap and the 3-rollback cap are unchanged. The attempt that crosses the cap does not issue a candidate challenge. Each attempt that does run uses a new nonce and its own wait window.
 
-A missing file, a wrong nonce, a wrong release, a stale boot id, a version mismatch, or an expired `generated_at` does not end the wait by itself. The updater keeps the last reason and continues until the deadline, so one corrected atomic rewrite inside the window can still pass. A file that validates, including a binding `not_run`, ends the wait immediately.
+A missing file, a wrong nonce, a wrong release, a stale boot id, a version mismatch, or an expired `generated_at` does not end the wait by itself. The updater keeps the last reason and continues until the deadline, so one corrected atomic rewrite inside the window can still pass. Only a valid answer with all three checks `passed` ends the wait early. Valid `failed` and `not_run` answers can be replaced during warm-up. At the deadline the consumer returns the latest valid answer, even if a later read was missing or malformed; without a valid answer it returns the last rejection reason. The deadline uses the injected updater clock, with a context timeout to bound a stalled clock.
 
 ## What the agent checks before it answers
 
@@ -107,7 +117,7 @@ Run all three for an unpublished node and for a disabled node. Member forwarding
 
 `agent_version` is the agent binary this process is running. `netbird_version` is the NetBird client version this process observes. Both must equal the challenge `components` for the release under test. On a rollback challenge those components belong to the restored release.
 
-`not_run` is a real status and the updater maps it to `failed`. The probe is mandatory, including when the node is unpublished or disabled. Send `not_run` only when the check truly did not run, and expect the attempt to fail. Do not send it as a placeholder for a later answer in the same attempt: a binding `not_run` ends the wait.
+`not_run` is a real status and the updater maps it to `failed`. The probe is mandatory, including when the node is unpublished or disabled. Send `not_run` only when the check truly did not run, and expect the attempt to fail. A later passing answer within the wait window can still complete the attempt; a final `not_run` fails closed.
 
 ## What the updater accepts
 
@@ -117,13 +127,13 @@ Acceptance requires all of the following:
 
 - The on-disk challenge is the one the updater just wrote (`Same`), and it is not `consumed`.
 - `txn_id`, `nonce`, `release_id`, `node_id`, `incarnation_id` and `boot_id` match that challenge. Ids compare case-insensitively and must be UUID-shaped. The nonce matches exactly, lowercase hex.
-- `generated_at` is after `issued_at` and before `expires_at`, and the updater's clock is before `expires_at`.
+- `generated_at` is after `issued_at` and before `expires_at`, and the updater's clock is before `expires_at`; it is no more than 2s ahead of that clock.
 - The attestation path was rewritten after the pre-challenge snapshot. A new inode, a later modification time, a different size, or a different SHA-256 counts. An equal modification time does not. On the development host two immediate writes can share one timestamp, so the agent must rename a new file into place (`WriteAttestation` does this). An in-place update that keeps the inode, the timestamp and the bytes is invisible.
 - `agent_version` equals `components.node_agent` and `netbird_version` equals `components.netbird`. An empty manifest version fails closed.
 - `published` is a known publication intent.
-- Each status is a known `HealthCheckStatus`, and each reason is within 160 bytes and has no control characters.
+- Each status is a known `HealthCheckStatus`, and each reason is within 160 bytes and belongs to the fixed vocabulary above.
 
-A file that was already at `health-attest.json` when the challenge was written is `attestation_precedes_challenge`. The updater journals that and ignores the file until a rewrite. The refusal reasons are the `healthattest.Reason*` constants: `txn_mismatch`, `nonce_mismatch`, `release_mismatch`, `node_mismatch`, `incarnation_mismatch`, `boot_mismatch`, `generated_before_issue`, `expired`, `agent_version_mismatch`, `netbird_version_mismatch`, `unknown_status`, `not_run`, `bad_publication`, `bad_reason`, `malformed`, `consumed`, `bad_mode`, `symlink`, `too_large`, `attestation_precedes_challenge`, `attestation_missing`, `challenge_replaced`, `manifest_unavailable`, `unreadable`.
+A file that was already at `health-attest.json` when the challenge was written is `attestation_precedes_challenge`. The updater journals that and ignores the file until a rewrite. The refusal reasons are the `healthattest.Reason*` constants: `txn_mismatch`, `nonce_mismatch`, `release_mismatch`, `node_mismatch`, `incarnation_mismatch`, `boot_mismatch`, `generated_before_issue`, `generated_in_future`, `expired`, `agent_version_mismatch`, `netbird_version_mismatch`, `unknown_status`, `not_run`, `bad_publication`, `bad_reason`, `malformed`, `consumed`, `bad_mode`, `bad_owner`, `symlink`, `too_large`, `attestation_precedes_challenge`, `attestation_missing`, `challenge_replaced`, `manifest_unavailable`, `unreadable`.
 
 ## Negative cases
 
