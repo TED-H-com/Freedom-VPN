@@ -19,7 +19,7 @@ import (
 
 const (
 	EventRefresh             = "dns.feed.refresh"
-	DefaultUpdateCadence     = 6 * time.Hour // D-054; 待實測.
+	DefaultUpdateCadence     = dnspolicy.DefaultFeedUpdateIntervalSeconds * time.Second // D-054; 待實測.
 	DefaultMaxRemovalPercent = 50
 	// Keep embedded feeds bounded within the existing 1 MiB resolver document.
 	MaxEmbeddedFeedBytes = 512 * 1024

@@ -309,3 +309,36 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
     --actor "${ADMIN_ACTOR_UUID}"
   ```
   This marks the `usage_recovery_records` entry `completed`, clears `reconciliation_in_progress` on `usage_rollups` (preserving `gap = TRUE` where `replay_unavailable` occurred), and sets `usage_ledger_state.mode = 'normal'`.
+
+---
+
+## 7. Automated Docker PITR Drill Names (`tests/backup`, `FVPN_BACKUP_DRILL_PREFIX`)
+
+`TestAT30_BackupPITRDrill` (`go test -tags integration ./tests/backup/`, also `make -f mk/backup.mk backup-drill`) builds a PostgreSQL 17 + pgBackRest image and runs the primary, the isolated restore, and `verify.sh` on one Docker prefix. Concurrent drills must not share that prefix. The repository-wide integration gate and a second local run can execute at the same time.
+
+Set `FVPN_BACKUP_DRILL_PREFIX` to choose the prefix. The value must match `fvpn-w4-ops-backups-<lowercase-run-id>`: the family name, then one or more hyphen-separated segments of lowercase letters and digits, at most 63 characters. `.github/workflows/backup.yml` sets `fvpn-w4-ops-backups-gha<run_id>-<run_attempt>`.
+
+When the variable is unset, the test draws 4 bytes from `crypto/rand` and uses `fvpn-w4-ops-backups-` plus those bytes as 8 lowercase hex digits.
+
+The test creates and deletes only objects owned by that prefix (the name equals the prefix, or starts with the prefix plus `-`). It registers the cleanup with `t.Cleanup`, so a failure removes the same set. It does not remove the bare family, a neighboring run, or `fvpn-pg`.
+
+| Object | Name |
+|---|---|
+| Image tag | `<prefix>-postgres:17` |
+| Primary container | `<prefix>-primary` |
+| Primary volume | `<prefix>-primary-pgdata` |
+| Repository volume | `<prefix>-repo` |
+| Restore container | `<prefix>-restore` |
+| Restore volume | `<prefix>-restore-pgdata` |
+| `verify.sh` prefix | `<prefix>-verify` |
+| Network name reserved for cleanup | `<prefix>-net` |
+
+The primary and the restore container join Docker's built-in `none` network (`--network none`, zero published host ports). `<prefix>-net` is not created. Cleanup still removes a network of that name if one was left behind.
+
+Stale objects from a killed drill are not removed by the next random-prefix run. Remove the whole `fvpn-w4-ops-backups-*` family, and only that family, with:
+
+```bash
+make -f mk/backup.mk backup-drill-clean
+```
+
+Do not run `backup-drill-clean` while a drill is still using a `fvpn-w4-ops-backups-*` prefix. The test never calls that target.

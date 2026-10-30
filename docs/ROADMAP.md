@@ -127,16 +127,19 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
 | w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | done (#69) |
 | w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | harness merged (#73): AT23–AT27 blocked on the serving baseline and on the updater health check that fails for a not-yet-serving node (no last-good); arm64 needs an operator run |
+| w4-at-updates follow-up 1 | AT23–AT27 re-run against real signed 0.1.0/1.0.1/1.0.2 candidates through the D-053 health path: local update, tamper rejection, same-transaction recovery and last-good rollback proven; all five blocked on central reporting (observations carry null update fields → unconfirmed; failure results with health=null rejected 422 → target stays queued, needs_attention=false) | done (#95) |
 | w4-at-usage: acceptance tests for usage metering, fair use and billing against the lab | WP10 | harness merged (#80): AT14–AT19 blocked on the serving baseline and on exit-group bootstrap (no admin path creates member groups or attaches exits; D-057 in contracts revision 5) |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
 | w4-ops-backups: central PostgreSQL backups — pgBackRest WAL archiving, base backups, point-in-time restore drill in CI, post-restore checklist and runbook (SECOPS-05, AT30) | WP12 | done (#86) |
+| w4-ops-backups follow-up 1 | PITR drill reentrant and race-free: per-run FVPN_BACKUP_DRILL_PREFIX (CI gha<run_id>-<attempt>; bare family name and fvpn-pg rejected), prefix-scoped cleanup, one readiness helper on the final ready line; two concurrent drills pass | done (#94) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
 | w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w3-dns-publish follow-up 3: threat-feed content pipeline (D-054): bootstrap pin, cadence refresh with last-good, failure observations, Layer 3 rules published to the resolver document | WP08 | done (#79) |
+| w3-dns-publish follow-up 4 | Feed cadence default and null attribution (D-058), threat_feed_status projected from real refresh observations, resolver-document delivery reads for the nodes owner (D-056), revision 5 evidence names | done (#93) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.

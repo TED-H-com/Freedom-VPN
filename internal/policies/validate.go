@@ -73,6 +73,13 @@ func ValidatePayload(policyType api.PolicyType, schemaVersion int, rawPayload []
 		}
 	}
 
+	if policyType == api.PolicyTypeThreatFeed {
+		var err error
+		rawPayload, err = dnspolicy.MaterializeFeedDefaults(rawPayload)
+		if err != nil {
+			return nil, newValidationError("/payload", ReasonCanonicalJSONInvalid, "invalid threat feed JSON")
+		}
+	}
 	if err := ValidateJSONSchema(policyType, rawPayload); err != nil {
 		return nil, err
 	}
