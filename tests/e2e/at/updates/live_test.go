@@ -41,17 +41,18 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 2 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 3 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
 	}
 	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
 	defer func() {
 		dir := filepath.Join(root, "docs", "e2e", "at", "updates")
 		var summary strings.Builder
-		fmt.Fprintf(&summary, "# Updates follow-up 2\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		fmt.Fprintf(&summary, "# Updates follow-up 3\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
 		for i := 23; i <= 27; i++ {
 			rec := records[fmt.Sprintf("AT%d", i)]
 			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
 		}
+		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 2 AT26 history](history/follow-up-2/README.md).\n")
 		if err := at.WriteAcceptance(dir, records); err != nil {
 			t.Error(err)
 		}
@@ -261,6 +262,11 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.note("AT26", "last_good_process_restored", s.running(lastGood))
 		target := s.confirm(rollbackBatch, "rolled_back")
 		s.note("AT26", "central", target)
+		s.note("AT26", "batch_api_status", target.HTTPStatus)
+		if json.Valid(target.BatchJSON) {
+			s.note("AT26", "batch_api_response", target.BatchJSON)
+		}
+		s.note("AT26", "confirmation_projection", s.projection())
 		rollbackReceipt := s.receipts("AT26", rollbackBatch)
 		manifestRaw, manifestErr := os.ReadFile(filepath.Join(lab.state, "releases", "r", boot.String(), "manifest.json"))
 		var manifest api.ReleaseManifestEnvelope
@@ -268,10 +274,10 @@ func TestUpdatesFollowup(t *testing.T) {
 			t.Fatal("rollback manifest read failed")
 		}
 		s.note("AT26", "rollback_allowed_release_ids", manifest.Signed.Rollback.AllowedReleaseIds)
-		if rollbackReceipt && len(manifest.Signed.Rollback.AllowedReleaseIds) == 0 && journal.Stage == "rolled_back" && journal.Current == lastGood.String() && journal.LastGood == lastGood.String() && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) && target.State == "rolled_back" {
-			s.pass("AT26", "Candidate reported a genuine tunnel_probe failure; updater restored and health-checked the real last-good; central rolled_back")
-		} else if rollbackReceipt && journal.Stage == "rolled_back" && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) {
-			s.block("AT26", fmt.Sprintf("w2-fleet-update: central accepted the healthy rollback result but the target remained %s; inspect the exact result and ACK in central_result_receipts", target.State))
+		if rollbackReceipt && len(manifest.Signed.Rollback.AllowedReleaseIds) == 0 && journal.Stage == "rolled_back" && journal.Current == lastGood.String() && journal.LastGood == lastGood.String() && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) && rollbackTargetComplete(target, lastGood.String()) {
+			s.pass("AT26", "Candidate tunnel_probe failed; healthy last-good restored; one terminal rollback received a current ACK; central rolled_back, needs_attention=true and unconfirmed=false")
+		} else if journal.Stage == "rolled_back" && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) {
+			s.block("AT26", fmt.Sprintf("w2-fleet-update: healthy local rollback needs one current ACK and a confirmed rolled_back target with attention; observed state=%s unconfirmed=%t needs_attention=%t; inspect exact result, ACK and batch API response", target.State, target.Unconfirmed, target.NeedsAttention))
 		} else {
 			s.block("AT26", "w4-node-updater / w2-agent-core: expected candidate-failure and healthy last-good rollback evidence incomplete")
 		}
@@ -320,7 +326,7 @@ func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAc
 		s.block(id, "w3-wire-fleet: fleet read unavailable")
 		return accepted, false
 	}
-	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 2"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 3"}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	s.note(id, "batch_response", httpDetail(reply, err))
 	if err != nil || reply.Status != 202 || json.Unmarshal(reply.Body, &accepted) != nil {
 		s.block(id, "w3-wire-fleet: batch create not accepted")
@@ -349,21 +355,23 @@ func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAc
 }
 
 type updatesTarget struct {
-	State          string `json:"state"`
-	Unconfirmed    bool   `json:"unconfirmed"`
-	NeedsAttention bool   `json:"needs_attention"`
-	CurrentRelease string `json:"current_release"`
-	ErrorCode      string `json:"error_code"`
+	BatchJSON      json.RawMessage `json:"-"`
+	HTTPStatus     int             `json:"-"`
+	State          string          `json:"state"`
+	Unconfirmed    bool            `json:"unconfirmed"`
+	NeedsAttention bool            `json:"needs_attention"`
+	CurrentRelease string          `json:"current_release"`
+	ErrorCode      string          `json:"error_code"`
 }
 
 func (s *updatesFollowup) target(batch api.UpdateBatchAccepted) updatesTarget {
 	reply, err := s.admin.call(s.ctx, "GET", s.r.lab.public+"/api/v1/admin/update-batches/"+batch.BatchId.String(), nil, nil)
 	var view api.UpdateBatch
 	if err != nil || reply.Status != 200 || json.Unmarshal(reply.Body, &view) != nil || len(view.Targets) != 1 {
-		return updatesTarget{State: "unavailable"}
+		return updatesTarget{State: "unavailable", BatchJSON: reply.Body, HTTPStatus: reply.Status}
 	}
 	target := view.Targets[0]
-	result := updatesTarget{State: string(target.State), Unconfirmed: target.Unconfirmed, NeedsAttention: target.NeedsAttention}
+	result := updatesTarget{State: string(target.State), Unconfirmed: target.Unconfirmed, NeedsAttention: target.NeedsAttention, BatchJSON: reply.Body, HTTPStatus: reply.Status}
 	if id, err := target.CurrentReleaseId.Get(); err == nil {
 		result.CurrentRelease = id.String()
 	}
@@ -596,6 +604,58 @@ func TestUpdatesFollowupEvidence(t *testing.T) {
 	if updatesRecoveryComplete(before, after, true, true, accepted) {
 		t.Fatal("not_run is not healthy recovery")
 	}
+	t.Run("AT26 accepted history cannot pass", func(t *testing.T) {
+		root, err := repoRoot()
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := os.ReadFile(filepath.Join(root, "docs/e2e/at/updates/history/follow-up-2/AT26.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var record at.Record
+		if err := json.Unmarshal(raw, &record); err != nil {
+			t.Fatal(err)
+		}
+		found := false
+		for _, ob := range record.Observations {
+			if ob.Name != "central_result_receipts" {
+				continue
+			}
+			found = true
+			var receipts []updatesReceipt
+			if err := json.Unmarshal([]byte(ob.Detail), &receipts); err != nil {
+				t.Fatal(err)
+			}
+			if rollbackReceiptComplete(receipts) {
+				t.Fatal("historical ACK cannot pass AT26")
+			}
+			current := false
+			receipts[0].Response.AcceptedAsHistory = &current
+			if !rollbackReceiptComplete(receipts) {
+				t.Fatal("one healthy current rollback receipt must pass")
+			}
+			if rollbackReceiptComplete(append(receipts, receipts[0])) {
+				t.Fatal("multiple results cannot prove the single terminal path")
+			}
+			receipts[0].Response.AcceptedAsHistory = nil
+			if rollbackReceiptComplete(receipts) {
+				t.Fatal("missing ACK history status is not current evidence")
+			}
+		}
+		if !found {
+			t.Fatal("historical receipt missing")
+		}
+		target := updatesTarget{State: "rolled_back", NeedsAttention: true, ErrorCode: "HEALTH_CHECK_FAILED", CurrentRelease: "restored"}
+		if !rollbackTargetComplete(target, "restored") {
+			t.Fatal("confirmed rollback target must pass")
+		}
+		target.Unconfirmed = true
+		if rollbackTargetComplete(target, "restored") {
+			t.Fatal("unconfirmed rollback cannot pass")
+		}
+	})
+
 }
 
 // Receipts preserve the product's immutable result JSON and original ACK or
@@ -621,16 +681,7 @@ func (s *updatesFollowup) receipts(id string, batch api.UpdateBatchAccepted) boo
 	if err == nil && json.Valid(snapshot) {
 		s.note(id, "product_journal_snapshot", json.RawMessage(snapshot))
 	}
-	var receipts []struct {
-		Payload struct {
-			State     string            `json:"state"`
-			Health    map[string]string `json:"health"`
-			Candidate map[string]string `json:"candidate_health"`
-		} `json:"payload"`
-		Response struct {
-			Accepted bool `json:"accepted"`
-		} `json:"response"`
-	}
+	var receipts []updatesReceipt
 	if json.Unmarshal(raw, &receipts) != nil {
 		return false
 	}
@@ -649,10 +700,35 @@ func (s *updatesFollowup) receipts(id string, batch api.UpdateBatchAccepted) boo
 				return true
 			}
 		case "AT26":
-			if p.State == "rolled_back" && p.Candidate["tunnel_probe"] == "failed" && (updatesJournal{Health: p.Health}).allPassed() {
-				return true
-			}
+			return rollbackReceiptComplete(receipts)
 		}
 	}
 	return false
+}
+
+// The original AT26 ACK was accepted as history. A later observation alone
+// cannot turn that receipt into current terminal completion.
+type updatesReceipt struct {
+	Payload struct {
+		State     string            `json:"state"`
+		Health    map[string]string `json:"health"`
+		Candidate map[string]string `json:"candidate_health"`
+		ErrorCode string            `json:"error_code"`
+	} `json:"payload"`
+	Response struct {
+		Accepted          bool  `json:"accepted"`
+		AcceptedAsHistory *bool `json:"accepted_as_history"`
+	} `json:"response"`
+}
+
+func rollbackReceiptComplete(receipts []updatesReceipt) bool {
+	if len(receipts) != 1 {
+		return false
+	}
+	r := receipts[0]
+	return r.Response.Accepted && r.Response.AcceptedAsHistory != nil && !*r.Response.AcceptedAsHistory && r.Payload.State == "rolled_back" && r.Payload.ErrorCode == "HEALTH_CHECK_FAILED" && r.Payload.Candidate["tunnel_probe"] == "failed" && (updatesJournal{Health: r.Payload.Health}).allPassed()
+}
+
+func rollbackTargetComplete(target updatesTarget, lastGood string) bool {
+	return target.State == "rolled_back" && !target.Unconfirmed && target.NeedsAttention && target.ErrorCode == "HEALTH_CHECK_FAILED" && target.CurrentRelease == lastGood
 }

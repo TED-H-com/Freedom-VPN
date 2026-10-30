@@ -17,6 +17,9 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if err := rejectBypass(rs); err != nil {
 		return err
 	}
+	if err := validateProbe(m); err != nil {
+		return checkf(ReasonProbeUnbounded, "%v", err)
+	}
 	devices, _, _, err := validateServing(m)
 	if err != nil {
 		return err
@@ -78,8 +81,20 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if !hasDropOnIngress(in, m.Datapath.MemberIngress) {
 		return checkf(ReasonIsolation, "input chain does not drop member ingress %s", m.Datapath.MemberIngress)
 	}
+	if err := verifyAllowedSet(rs); err != nil {
+		return err
+	}
 	if err := verifyProbe(rs, m, false); err != nil {
 		return err
+	}
+	return nil
+}
+
+// verifyAllowedSet fails closed when the member allow set contains a prefix,
+// a range, or any element the parser cannot accept as a timed host address.
+func verifyAllowedSet(rs Ruleset) error {
+	if rs.Tainted["allowed_v4"] {
+		return checkf(ReasonIsolation, "allowed_v4 contains a prefix, range, or unknown element")
 	}
 	return nil
 }
@@ -90,10 +105,8 @@ func VerifyBaseline(raw []byte, m Model) error {
 	if err := validateDatapath(m.Datapath); err != nil {
 		return err
 	}
-	if m.Probe != nil {
-		if err := validateProbe(m); err != nil {
-			return err
-		}
+	if err := validateProbe(m); err != nil {
+		return checkf(ReasonProbeUnbounded, "%v", err)
 	}
 	rs, err := ParseRuleset(raw)
 	if err != nil {
@@ -105,6 +118,9 @@ func VerifyBaseline(raw []byte, m Model) error {
 	fwd, ok := rs.Chains["forward"]
 	if !ok || fwd.Policy != "drop" || fwd.Hook != "forward" || !fwd.HasPrio || fwd.Prio != HookPriorityFilter {
 		return checkf(ReasonIsolationBaselineMissing, "forward chain is not the drop baseline")
+	}
+	if err := verifyAllowedSet(rs); err != nil {
+		return err
 	}
 	if err := verifyProbe(rs, m, true); err != nil {
 		if m.Probe == nil {
@@ -143,12 +159,15 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 				}
 			}
 		}
+		if rs.Tainted[setProbeV4] || rs.Tainted[setProbeDstV4] {
+			return checkf(ReasonProbeUnbounded, "probe set contains a prefix, range, or unknown element")
+		}
 		if len(rs.Elements[setProbeV4]) > 0 || len(rs.Elements[setProbeDstV4]) > 0 {
 			return checkf(ReasonIsolation, "probe set is populated without a probe exception")
 		}
 		return nil
 	}
-	if err := verifyProbeElements(rs, m.Probe); err != nil {
+	if err := verifyProbeElements(rs, m); err != nil {
 		return err
 	}
 	if _, ok := rs.Counters[counterProbeUp]; !ok {
@@ -251,12 +270,20 @@ func classifyProbeRule(rule RuleView, m Model) string {
 	return ""
 }
 
-func verifyProbeElements(rs Ruleset, p *ProbeException) error {
+func verifyProbeElements(rs Ruleset, m Model) error {
+	p := m.Probe
+	if rs.Tainted[setProbeV4] || rs.Tainted[setProbeDstV4] {
+		return checkf(ReasonProbeUnbounded, "probe set contains a prefix, range, or unknown element")
+	}
+	limit, ok := probeTimeout(p.ExpiresAt, m.Now)
+	if !ok || limit > ProbeMaxSeconds {
+		return checkf(ReasonProbeUnbounded, "probe expiration is not admissible")
+	}
 	src := rs.Elements[setProbeV4]
 	if len(src) != 1 || src[0].Concat || src[0].Addr != p.SourceV4.Addr() {
 		return checkf(ReasonIsolation, "probe_v4 is not exactly the probe source")
 	}
-	if err := boundedElement(src[0], setProbeV4); err != nil {
+	if err := boundedElement(src[0], setProbeV4, limit); err != nil {
 		return err
 	}
 	want := map[string]ProbeDestination{}
@@ -275,7 +302,7 @@ func verifyProbeElements(rs Ruleset, p *ProbeException) error {
 		return checkf(ReasonIsolation, "probe_dst_v4 has %d elements, want %d", len(got), len(want))
 	}
 	for _, el := range got {
-		if err := boundedElement(el, setProbeDstV4); err != nil {
+		if err := boundedElement(el, setProbeDstV4, limit); err != nil {
 			return err
 		}
 		key := el.Addr.String() + "/" + el.Proto + "/" + fmt.Sprint(el.Port)
@@ -286,9 +313,21 @@ func verifyProbeElements(rs Ruleset, p *ProbeException) error {
 	return nil
 }
 
-func boundedElement(el setElement, set string) error {
-	if !el.Bounded || el.Seconds == 0 || el.Seconds > ProbeMaxSeconds {
-		return checkf(ReasonProbeUnbounded, "%s element %s has no kernel timeout within %ds", set, el.Addr, ProbeMaxSeconds)
+// boundedElement accepts a probe element when it has a kernel timeout, the
+// original timeout (max of timeout and expires) is within ProbeMaxSeconds,
+// and the remaining lifetime is within limit+1. limit is the model window.
+// The extra second covers the floor in probeTimeout and the tick between the
+// listing and Now. In the kernel, timeout does not shrink and expires does.
+func boundedElement(el setElement, set string, limit uint32) error {
+	if !el.Bounded || el.Seconds == 0 {
+		return checkf(ReasonProbeUnbounded, "%s element %s has no kernel timeout within ceiling %ds", set, el.Addr, ProbeMaxSeconds)
+	}
+	if el.Seconds > ProbeMaxSeconds {
+		return checkf(ReasonProbeUnbounded, "%s element %s original timeout %ds exceeds ceiling %ds", set, el.Addr, el.Seconds, ProbeMaxSeconds)
+	}
+	bound := limit + 1
+	if el.Window == 0 || el.Window > bound {
+		return checkf(ReasonProbeUnbounded, "%s element %s remaining %ds exceeds bound %ds", set, el.Addr, el.Window, bound)
 	}
 	return nil
 }

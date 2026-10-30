@@ -112,7 +112,7 @@ func TestBIL01_ProviderTruthCheckoutRefundsAndCancellation(t *testing.T) {
 		}
 
 	}
-	for _, kind := range []string{"checkout.session.completed", "invoice.paid", "customer.subscription.updated", "customer.subscription.deleted", "charge.refunded"} {
+	for _, kind := range []string{"checkout.session.completed", "invoice.paid", "invoice.payment_failed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted", "charge.refunded"} {
 		code, raw := call("/e2e/event", hook, map[string]string{"checkout_id": checkout.ID, "type": kind})
 		if code != 200 {
 			t.Fatalf("event HTTP %d", code)

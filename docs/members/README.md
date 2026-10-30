@@ -128,8 +128,15 @@ the existing row remains untouched. Migration
 `00183_identity_bindings_issuer_subject.sql` makes
 `(issuer, subject)` unique across client scopes. Historical duplicates stop the
 migration with a duplicate-group count; it never merges members. Login must
-resolve and lock by that pair and preserve the original identity row and its
-immutable `client_scope` when an OIDC client is rotated. Ambiguous historical
+resolve and lock by the canonical `(issuer, subject)` pair, preserving the
+original identity row and member when an OIDC client is rotated. `client_scope`
+is diagnostic metadata, not part of identity ownership. Migration
+`00186_identity_bindings_client_scope_mutable.sql` makes it mutable so login
+stores the newly observed scope; repeated logins from that scope do not append
+another `identity_binding.proof_updated` audit. The trigger still forbids
+changes to `id`, `member_id`, `issuer` and `subject`. Its Down restores the old
+scope immutability guard without rewriting stored values. Both unique
+constraints from 00183 and the original schema remain. Ambiguous historical
 identities fail closed. Native peers are admitted under the member lock after
 the proof exists; the competing final slot is serialized in PostgreSQL.
 
@@ -256,9 +263,12 @@ The existing central `oidc_issuer` is also passed into member identity discovery
 by both domain builders through `config.LoadMembersForIssuer`. Configuration
 must already be canonical: lowercase scheme/host, no default port, no trailing
 slash, no query or fragment. Noncanonical input fails startup with the fixed
-`oidc_issuer` setting error. The shared functions are
-`internal/members/issuer.Canonical` and `issuer.Validate`; token-validation setup
-must use the same representation. `NewIdentityDiscovery` canonicalizes direct
+`oidc_issuer` setting error. The `internal/members/issuer` package is the single
+source for issuer comparison: `issuer.Canonical` normalizes comparisons and
+`issuer.Validate` requires canonical configuration. Only literal trailing slashes
+are trimmed, and encoded bytes are preserved. Token-validation setup must
+import those helpers too (control follow-up 13 owns that integration).
+`NewIdentityDiscovery` canonicalizes direct
 callers with that helper. Both processes must use the same central setting and
 the NetBird deployment must authenticate against that issuer with public
 subjects. [central.config.example.json](central.config.example.json) is the

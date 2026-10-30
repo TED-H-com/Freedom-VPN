@@ -1,67 +1,51 @@
 {
   "id": "threat-feed-node",
-  "title": "Issued resolver document reaches the node resolver",
+  "title": "Issued resolver document is applied and blocks a synthetic name",
   "spec": [
     "§12.5",
     "§19 AT22",
     "D-061"
   ],
-  "status": "blocked",
+  "status": "pass",
   "observations": [
     {
       "name": "credential_owner_mode",
       "detail": "0:600"
     },
     {
-      "name": "dns_config",
-      "detail": "agent-run only; lab admin 127.0.0.1:8080 and DNS 127.0.0.1:53; AdGuard shares node network namespace"
+      "name": "agent_run_dns",
+      "detail": "{\n    \"resolver_credentials_file\": \"/etc/vpn-node/resolver-credentials.json\",\n    \"resolvers\": [\n      {\n        \"admin_url\": \"http://127.0.0.1:8080\",\n        \"dns_addr\": \"127.0.0.1:53\",\n        \"id\": \"lab\"\n      }\n    ]\n  }"
     },
     {
-      "name": "document_id",
-      "detail": "01a18b06-ede8-72cd-ada2-b80cdcae7dd8"
+      "name": "desired_resolver_reference",
+      "detail": "{\"content_sha256\":\"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a\",\"document_id\":\"01a18b59-c505-7d68-803b-4cacea8fcb71\",\"generation\":\"2\",\"profile_revision_id\":\"01a18b59-bb8b-791e-a896-dac6aabcab86\",\"size_bytes\":1174}"
     },
     {
-      "name": "content_sha256",
-      "detail": "96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a"
-    },
-    {
-      "name": "generation",
-      "detail": "2"
-    },
-    {
-      "name": "size_bytes",
-      "detail": "1174"
-    },
-    {
-      "name": "desired_resolver_reference_issued",
-      "detail": "false"
-    },
-    {
-      "name": "resolver_document_response",
-      "detail": "{\"error\":{\"code\":\"NOT_FOUND\",\"message\":\"Resolver document not found.\",\"request_id\":\"01a18b0b-09bd-7445-b575-7876088cc360\",\"retryable\":false,\"details\":{}}}  HTTP/1.1 404 Not Found"
+      "name": "dns_policy_evidence",
+      "detail": "{\"applied_at\":\"2026-10-30T05:48:45.04294586Z\",\"content_sha256\":\"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a\",\"document_id\":\"01a18b59-c505-7d68-803b-4cacea8fcb71\",\"error_code\":null,\"feeds\":[{\"content_sha256\":\"c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174\",\"feed_code\":\"e2e-feed\",\"rule_count\":10}],\"generation\":\"2\",\"outcome\":\"applied\"}"
     },
     {
       "name": "admin_node",
       "detail": "200"
     },
     {
-      "name": "dns_policy_evidence",
-      "detail": "null"
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "resolver_document_response",
+      "detail": "HTTP/1.1 200 OK"
+    },
+    {
+      "name": "mtls_body_matches_signed_digest_and_size",
+      "detail": "true"
     },
     {
       "name": "resolver_readback",
-      "detail": "{\"admin_http\":200,\"query_log_enabled\":false,\"query_log_file_enabled\":false,\"rule_count\":0,\"rules_sha256\":\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\",\"statistics_enabled\":false,\"synthetic_answer_count\":1,\"synthetic_blocked\":false}"
-    },
-    {
-      "name": "owner",
-      "detail": "w3-wire-nodes / internal/desiredstate: compiler emits resolver addresses but no resolver_document reference; D-056 issuance is missing"
-    },
-    {
-      "name": "tampered_document_case",
-      "detail": "blocked by the same missing issued reference; no last-good node apply exists to preserve. No signed state or projector row is fabricated."
+      "detail": "{\"admin_http\":200,\"query_log_enabled\":false,\"query_log_file_enabled\":false,\"rule_count\":16,\"rules_sha256\":\"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8\",\"statistics_enabled\":false,\"synthetic_answer_count\":0,\"synthetic_blocked\":true}"
     }
   ],
-  "at": "2026-10-30T04:21:58Z",
-  "run_id": "dc2f6353-89ec-434c-bc68-567066d9fe51",
-  "source_commit": "b15ff057cd5e91e227477de6a09d977931fa62d8"
+  "at": "2026-10-30T05:48:45Z",
+  "run_id": "742a2b14-355f-462e-be89-52ffb2c1993b",
+  "source_commit": "05d70d63890bb181937dabfe01b9e9a680d76086"
 }

@@ -20,6 +20,11 @@ type State struct {
 	// means the marker is absent or the boot baseline. A flush of the chain
 	// clears the marker without zeroing named counters (§10.7).
 	Generation uint64
+	// ProbeRemain is the shortest remaining lifetime, in seconds, of elements
+	// already in probe_v4 or probe_dst_v4. Zero means those sets are absent,
+	// empty, or their elements could not be read. Render will not replace a
+	// live probe with a fresh ProbeMaxSeconds window when this is zero.
+	ProbeRemain uint32
 }
 
 func (s State) hasChain(name string) bool { return s.Chains[name] }

@@ -1,4 +1,7 @@
-# Requests to orchestrator — Follow-up 1
+# Historical requests — Follow-up 1
+
+Superseded by [Follow-up 2 requests](requests.md) and the current AT records.
+The dated findings below describe the earlier run, not the current stack.
 
 Observed on fresh `w4-members / 24000`, product source
 `629766c18d1bdd63a336972f95ae2b41734a242b` (full binary VCS revisions and image digests are in each AT JSON).

@@ -1,7 +1,9 @@
 package healthattest
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -16,6 +18,91 @@ func privateDir(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return dir
+}
+
+func TestD063_IssuedProbeRoundTripAndBinding(t *testing.T) {
+	base, _, _, versions := validPair(t)
+	probe := &ChallengeProbe{
+		PeerID: "probe-test-peer", SourceV4: "100.64.8.1/32",
+		// Serialization-only fixture; no packets are sent to these addresses.
+		Destinations: []ChallengeProbeDest{
+			{AddrV4: "192.0.2.1/32", Proto: "tcp", Port: 443},
+			{AddrV4: "198.51.100.1/32", Proto: "udp", Port: 53},
+		}, ResolverDNS: true,
+	}
+	in := Input{TxnID: base.TxnID, ReleaseID: base.ReleaseID, NodeID: base.NodeID,
+		IncarnationID: base.IncarnationID, BootID: base.BootID, Components: versions,
+		Now: base.IssuedAt, TTL: 45 * time.Second, Probe: probe}
+	ch, err := Issue(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := json.Marshal(probe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := privateDir(t)
+	if err := WriteChallenge(dir, ch); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := ReadChallenge(dir)
+	if err != nil || !probeSame(got.Probe, probe) || !got.Same(ch) {
+		t.Fatal("probe changed on disk", err)
+	}
+	roundTrip, err := json.Marshal(got.Probe)
+	if err != nil || !bytes.Equal(roundTrip, want) {
+		t.Fatal("probe JSON changed on round trip", err)
+	}
+	// Configuration changes cannot mutate the issued challenge or its binding.
+	probe.PeerID = "different-peer"
+	probe.Destinations[0].Port++
+	if !ch.Same(got) {
+		t.Fatal("issued probe aliases caller storage")
+	}
+	for _, mutate := range []func(*ChallengeProbe){
+		func(p *ChallengeProbe) { p.PeerID += "x" },
+		func(p *ChallengeProbe) { p.SourceV4 = "100.64.8.2/32" },
+		func(p *ChallengeProbe) { p.Destinations[0].AddrV4 = "203.0.113.1/32" },
+		func(p *ChallengeProbe) { p.Destinations[0].Proto = "udp" },
+		func(p *ChallengeProbe) { p.Destinations[0].Port++ },
+		func(p *ChallengeProbe) { p.Destinations = p.Destinations[:1] },
+		func(p *ChallengeProbe) { p.ResolverDNS = false },
+	} {
+		other, _, err := ReadChallenge(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		mutate(other.Probe)
+		if other.Same(ch) {
+			t.Fatal("probe replacement matched issuance")
+		}
+	}
+	_, at, now, _ := validPair(t)
+	at.Nonce = ch.Nonce
+	if reason := Validate(ch, at, now, versions); reason != "" {
+		t.Fatal("matching passed attestation refused", reason)
+	}
+	next, err := Issue(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reason := Validate(next, at, now, versions); reason != ReasonNonceMismatch {
+		t.Fatal("passed probe replay accepted", reason)
+	}
+	if err := MarkConsumed(dir, ch); err != nil {
+		t.Fatal(err)
+	}
+	consumed, _, err := ReadChallenge(dir)
+	if err != nil || !probeSame(consumed.Probe, ch.Probe) {
+		t.Fatal("consumption changed probe", err)
+	}
+	if reason := Validate(consumed, at, now, versions); reason != ReasonConsumed {
+		t.Fatal("consumed probe accepted", reason)
+	}
+	in.TTL = 300*time.Second + time.Nanosecond
+	if _, err := Issue(in); err == nil {
+		t.Fatal("probe issuance exceeded 300s")
+	}
 }
 
 func TestD053_JournalDirectoryAndLeafModes(t *testing.T) {

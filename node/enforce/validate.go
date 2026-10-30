@@ -221,6 +221,9 @@ func validateProbe(m Model) error {
 	if len(p.Destinations) == 0 && !p.ResolverDNS {
 		return fmt.Errorf("probe has no destinations and resolver DNS is off")
 	}
+	if len(p.Destinations) > ProbeMaxDestinations {
+		return fmt.Errorf("probe has %d destinations, limit is %d", len(p.Destinations), ProbeMaxDestinations)
+	}
 	if p.ResolverDNS {
 		if len(m.Resolvers) == 0 {
 			return fmt.Errorf("probe resolver DNS requires at least one ipv4 resolver")
@@ -265,6 +268,13 @@ func validateProbeDestination(m Model, d ProbeDestination, denied []netip.Prefix
 	}
 	if d.Port == 0 {
 		return fmt.Errorf("probe destination port must be 1-65535")
+	}
+	for _, b := range m.Bindings {
+		for _, allowed := range b.AllowedV4 {
+			if allowed.IsValid() && allowed.Overlaps(d.AddrV4) {
+				return fmt.Errorf("probe destination %s overlaps member binding %s", d.AddrV4, b.DeviceID)
+			}
+		}
 	}
 	addr := d.AddrV4.Addr()
 	if addr.IsUnspecified() || addr.IsMulticast() || addr.IsLoopback() || addr.IsLinkLocalUnicast() {

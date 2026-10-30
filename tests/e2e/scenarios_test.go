@@ -54,11 +54,15 @@ func TestE2E_Acceptance(t *testing.T) {
 	good, bad := run.releases(ctx, admin)
 	nodeID := run.enroll(ctx, admin)
 	run.desired(ctx)
+	if nodeID != uuid.Nil {
+		run.threatFeedNode(ctx, admin)
+		run.restartNode(ctx)
+	}
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
 		run.scaleHook(ctx, admin)
-		run.threatFeedNode(ctx, admin)
+		run.threatFeedTamper(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
 		run.revoke(ctx, admin, nodeID)
@@ -84,6 +88,7 @@ type runner struct {
 	planID       uuid.UUID
 	planRevID    uuid.UUID
 	usageDevice  uuid.UUID
+	dnsApplied   bool
 	flowCounted  bool
 	usageReady   bool
 }
@@ -168,6 +173,11 @@ func (r *runner) login(ctx context.Context, subject, role string) *session {
 		rec.Observations = append(rec.Observations, Observation{Name: "error", Detail: err.Error()})
 		r.record(rec)
 		r.t.Fatalf("login %s: %v", role, err)
+	}
+	landing, landingErr := s.call(ctx, "GET", r.lab.public+"/", nil, nil)
+	rec.Observations = append(rec.Observations, Observation{Name: "landing", Detail: httpDetail(landing, landingErr)})
+	if landingErr != nil || landing.Status != 200 {
+		rec.Status = StatusFail
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "role", Detail: s.role})
 	if s.memberID != "" {

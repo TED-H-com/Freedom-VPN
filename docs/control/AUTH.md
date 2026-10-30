@@ -31,12 +31,15 @@ OIDC callback chooses the role from verified IdP claims and rotates only its rol
 cookie. The old `__Host-fvpn-session` cookie is no longer accepted; sign in again.
 There remains one short-lived login flow cookie per browser.
 
-Identity is canonical `(issuer, subject)` (D-052 F-04). `client_scope` is recorded
+Identity is canonical `(issuer, subject)` via `internal/members/issuer.Canonical`
+(D-052 F-04 / F-09). `client_scope` is recorded
 as diagnostic metadata (last OIDC client scope seen) and is never part of identity:
 an existing `identity_bindings` row with a different `client_scope` is reused, its
-`verified_at` (and `client_scope` when mutable) is updated in the same transaction,
-and `identity_binding.proof_updated` (`after: {"identity_binding_id","reason":"proof_updated"}`)
-is appended on the D-029 allowlist without raw subject or issuer fields. Email is
+`client_scope` and `verified_at` are updated in place in the same transaction
+(migration `00186`), and `identity_binding.proof_updated`
+(`after: {"identity_binding_id","reason":"proof_updated"}`)
+is appended once for the rotation on the D-029 allowlist without raw subject or
+issuer fields. Email is
 neither requested nor used for linking. A new identity, `pending_payment` member
 and `member.register` audit event are created atomically only when no `(issuer, subject)`
 binding exists; a canonical `(issuer, subject)` advisory lock plus a savepoint-backed
@@ -83,15 +86,32 @@ be raised in a lab via `internal/config` (`docs/control/config.example.json`)
 and can never be disabled (startup validation rejects zero burst or zero refill):
 
 1. **Per-source-address limiter (`login_rate`, default `burst: 40`, `per_second: 1` / 60 per minute):**
-   Enforced in `httpapi.BrowserRoutesWithMetrics` before handler execution and
-   keyed on the direct peer IP address (`"login:" + host` for `/auth/login`,
-   `/auth/callback` and `/auth/token`; `"session:" + host` for `/auth/session`
-   and `/auth/logout`, ignoring untrusted forwarding headers). Production members
-   commonly share a single source address behind carrier-grade NAT or enterprise
-   gateways, and one OIDC sign-in takes two requests (`GET /auth/login` plus
-   `GET /auth/callback`); a burst of 40 allows 20 concurrent member sign-ins from
-   one shared address to complete while keeping session bootstrap/logout in a
-   separate per-address bucket.
+   Enforced in `httpapi.BrowserRoutesWithMetrics` before handler execution.
+   The key is only the connection address (`r.RemoteAddr`). Forwarding headers
+   (`X-Forwarded-For`, `X-Real-IP`, `Forwarded`) and the source port are ignored.
+   IPv4, including an IPv4-mapped IPv6 address, is one bucket per address.
+   IPv6 is one bucket per /64 prefix, so one subscriber prefix cannot fill
+   `max_rate_principals` (default 10000) with a distinct bucket per /128.
+   There is no prefix-length setting. Bracketed (`[2001:db8:0:1::1]:443`) and
+   unbracketed (`2001:db8:0:1::1:443`) forms of the same address share that key.
+   A zone identifier is not part of the key. Login routes (`/auth/login`,
+   `/auth/callback`, and any other auth path, including `/auth/token`) use
+   `"login:" + key`. `/auth/session` and `/auth/logout` use `"session:" + key`,
+   a separate bucket with the same address rule.
+   A connection address that does not parse as IPv4 or IPv6 fails closed with
+   HTTP 429 `RATE_LIMITED` and `Retry-After` of at least one second. That
+   request is not placed in a shared empty-host bucket and does not occupy a
+   principal slot. The same 429 increments
+   `fvpn_control_rate_limited_total{class,limiter="address"}`.
+   The anonymous enrollment and webhook address burst, and the
+   pre-authentication ingress bucket, derive their address key the same way
+   (`anonymous:` and `ingress:` prefixes in `internal/httpapi`).
+   Production members commonly share a single source address behind
+   carrier-grade NAT or enterprise gateways, and one OIDC sign-in takes two
+   requests (`GET /auth/login` plus `GET /auth/callback`); a burst of 40 allows
+   20 concurrent member sign-ins from one shared IPv4 address, or from one
+   IPv6 /64, to complete while keeping session bootstrap and logout in a
+   separate bucket.
 2. **Per-subject completion limiter (`login_subject_per_minute`, default `10` per minute):**
    Enforced in `Browser.callback` after OIDC token verification and keyed on the
    authenticated scoped subject `(issuer, client_id, sub)`. This bounds repeated
