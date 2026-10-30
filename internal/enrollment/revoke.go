@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -89,7 +91,8 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 			state = "retired"
 			kind = api.OperationKindNodeRetire
 		}
-		if _, e = tx.Exec(ctx, `UPDATE nodes SET lifecycle_state=$2,retired_at=CASE WHEN $2='retired' THEN clock_timestamp() ELSE retired_at END,desired_config_generation=desired_config_generation+1,resource_version=resource_version+1 WHERE id=$1`, node, state); e != nil {
+		var generation decstr.U64
+		if e = tx.QueryRow(ctx, `UPDATE nodes SET lifecycle_state=$2,retired_at=CASE WHEN $2='retired' THEN clock_timestamp() ELSE retired_at END,desired_config_generation=desired_config_generation+1,resource_version=resource_version+1 WHERE id=$1 RETURNING desired_config_generation::text`, node, state).Scan(&generation); e != nil {
 			return e
 		}
 		if _, e = tx.Exec(ctx, `UPDATE exits SET publication_intent='disabled',resource_version=resource_version+1 WHERE node_id=$1`, node); e != nil {
@@ -115,20 +118,23 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if e != nil {
 			return e
 		}
-		out.OperationID, e = operations.Create(ctx, tx, operations.CreateRequest{Kind: kind, Principal: actor, Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: node}, RequestID: commandtx.RequestID(ctx), ResourceVersion: &out.ResourceVersion, Steps: map[string]operations.Step{
-			"route_withdrawal": {Required: true}, "peer_withdrawal": {Required: true},
-		}})
+		steps := map[string]operations.Step{}
+		for name, step := range nodes.NewNodeOperationSteps(string(kind), time.Now().UTC()) {
+			steps[name] = operations.Step{Required: step.Required, Reason: step.Reason}
+		}
+		// §5.2: identity withdrawal is required in addition to route withdrawal;
+		// a missing node ACK cannot hide unconfirmed setup keys or remote peers.
+		steps[nodes.StepNetBirdIdentityCleanup] = operations.Step{Required: true}
+		out.OperationID, e = operations.Create(ctx, tx, operations.CreateRequest{Kind: kind, Principal: actor, Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: node}, RequestID: commandtx.RequestID(ctx), ResourceVersion: &out.ResourceVersion, DesiredGeneration: &generation, Steps: steps})
 		if e != nil {
 			return e
 		}
-		for _, event := range []string{"node.routes.withdraw", "node.peer.withdraw"} {
-			payload, e := canonjson.Marshal(map[string]any{"schema_version": 1, "node_id": node, "incarnation_id": incarnation, "operation_id": out.OperationID})
-			if e != nil {
-				return e
-			}
-			if e = db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: node, AggregateType: "node", AggregateVersion: out.ResourceVersion.String(), EventType: event, SchemaVersion: 1, Payload: payload}); e != nil {
-				return e
-			}
+		payload, e := canonjson.Marshal(map[string]any{"schema_version": 1, "node_id": node, "incarnation_id": incarnation, "operation_id": out.OperationID})
+		if e != nil {
+			return e
+		}
+		if e = db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: node, AggregateType: "node", AggregateVersion: out.ResourceVersion.String(), EventType: desiredstate.EventNodePublicationChanged, SchemaVersion: 1, Payload: payload}); e != nil {
+			return e
 		}
 		if e = complete(ctx, tx, record, api.ResourceTypeNode, node, 202, &out.OperationID); e != nil {
 			return e

@@ -145,8 +145,11 @@ func TestF06F10F13_ServiceWritesPreserveCommittedEvidence(t *testing.T) {
  AND count(*) FILTER(WHERE response_status=202 AND operation_id=$1)=1 FROM idempotency_requests`, result.OperationID).Scan(&complete); err != nil || !complete {
 		t.Fatal("command did not commit complete replay references/status", err)
 	}
-	if err = f.pool.QueryRow(ctx, `SELECT status='pending' AND steps<>'{}'::jsonb
-	AND NOT EXISTS(SELECT 1 FROM jsonb_each(steps) WHERE value->>'required' IS DISTINCT FROM 'true' OR value->>'status' IS DISTINCT FROM 'pending')
+	if err = f.pool.QueryRow(ctx, `SELECT status='pending'
+	AND (SELECT count(*) FROM jsonb_each(steps) WHERE value->>'required'='true')=3
+	AND NOT EXISTS(SELECT 1 FROM jsonb_each(steps) WHERE value->>'required'='true' AND value->>'status' IS DISTINCT FROM 'pending')
+	AND steps->'data_path_probe'->>'required'='false' AND steps->'data_path_probe'->>'status'='not_required'
+	AND steps->'data_path_probe'->>'reason'<>''
  FROM operations WHERE id=$1`, result.OperationID).Scan(&pending); err != nil || !pending {
 		t.Fatal("withdrawal operation does not start pending with required steps", err)
 	}

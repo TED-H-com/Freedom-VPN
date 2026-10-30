@@ -1,321 +1,454 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-本文件包含繁體中文（預設語言，`zh-TW`）與英文（`en`）雙語完整說明（`AGENTS.md §3`、`§5`、`§10`–`§12`、`§18.2`、`§19.1`）。
+本文件包含繁體中文（預設語言，`zh-TW`）與英文（`en`）雙語完整說明（`AGENTS.md §3`、`§7.3`、`§8.1`–`§8.3`、`§9.2`、`§9.4`、`§10`–`§12`、`§16.3`、`§16.5`、`§18.4`–`§18.5`、`§19.1`）。
 This document provides the complete Member Guide in Traditional Chinese (`zh-TW`, primary) followed by English (`en`, secondary).
 
 ---
 
 # 第一部分：繁體中文會員手冊 (`zh-TW`)
 
-## 1. 支援平台與釘選客戶端版本 (`§5.2`, `docs/netbird/VERSIONS.md`)
+## 1. 支援平台與候選客戶端版本 (`§3.2`, `§7.3`, `§18.5`, `APP01`, `docs/netbird/VERSIONS.md`)
 
-Freedom VPN v1 採用官方簽章之 **NetBird 客戶端** 搭配 **Freedom VPN 會員入口網站（Member Portal）**（`https://vpn.example.com/member`）。請務必安裝以下經驗證之釘選版本：
+Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會員入口網站（Member Portal）**（`https://vpn.example.com/member`）。
 
-| 平台 | 釘選客戶端版本 | 最低作業系統需求 |
-|---|---|---|
-| **Windows** | `0.82.0` | Windows 10 (22H2+) / Windows 11 (`amd64` / `arm64`) |
-| **macOS** | `0.82.0` | macOS 14 Sonoma / macOS 15 Sequoia (Apple Silicon & Intel) |
-| **iOS / iPadOS** | `0.4.1` (`build 2`) | iOS / iPadOS 17.0+ |
-| **Android** | `0.6.2` | Android 12+ |
+> **重要狀態說明（`§7.3`、`§19.1`、`docs/netbird/VERSIONS.md`）**：下表所列之四大原生平台版本目前均為 **候選版本（Candidate Versions — 待實測 / Needs Operator Run）**。Linux 容器環境之測試結果不代表桌面或行動端原生 App 相容性已驗證；正式支援聲明將於完成四平台實機驗收（`AT01`、`AT09`、`AT21`）並附上帶日期之實測紀錄後定案。
+
+| 平台 | 候選客戶端版本 (`docs/netbird/VERSIONS.md`) | 目標作業系統基準 | 實機驗收狀態 (`AT01`, `AT09`, `AT21`) |
+|---|---|---|---|
+| **Windows** | NetBird daemon/CLI 與隨附桌面 UI `v0.82.0` | Windows 10 (22H2+) / Windows 11 (`amd64` / `arm64`) | **候選版本 — 尚未實測（Needs operator run，`AT01`、`AT09`、`AT21`）** |
+| **macOS** | NetBird daemon/CLI 與隨附桌面 UI `v0.82.0` | macOS 14 Sonoma / macOS 15 Sequoia (Apple Silicon & Intel) | **候選版本 — 尚未實測（Needs operator run，`AT01`、`AT09`、`AT21`）** |
+| **iOS / iPadOS** | NetBird iOS 客戶端 `v0.4.1`（`build 2`） | iOS / iPadOS 17.0+ | **候選版本 — 上游標示 `build 2` 為 TestFlight 測試版，尚未斷言 App Store 正式上架狀態；尚未實測（Needs operator run，`AT01`、`AT09`、`AT21`）** |
+| **Android** | NetBird Android 客戶端 `v0.6.2`（獨立行動端版本號，非 `0.82.0`） | Android 12+ | **候選版本 — 尚未實測（Needs operator run，`AT01`、`AT09`、`AT21`）** |
 
 ---
 
-## 2. 四大平台完整安裝、授權與連線步驟 (`§5.1`, `§5.2`, `§18.2`)
+## 2. 四大平台安裝、中央自動授權與連線步驟 (`§7.3`, `§9.2`, `§9.4`, `§18.4`, `§18.5`)
 
-### 2.1 第一步：登入會員入口網站並啟用訂閱 (`/member`, `/member/billing`)
+### 2.1 第一步：登入會員入口網站並確認有效方案 (`/member`, `/member/billing`)
 
-1. 開啟瀏覽器前往 `https://vpn.example.com/member`，點擊 **登入（Sign In）** 並透過您的 OIDC 帳號完成驗證。
-2. 若尚未啟用訂閱，請至 **帳單與方案（Billing）** 分頁選擇方案並點擊 **前往結帳（Checkout）**（`POST /api/v1/member/checkout-sessions`）。付款完成後，入口網站狀態會顯示為 **`Active`（有效）**。
+1. 開啟瀏覽器前往 `https://vpn.example.com/member`，點擊 **登入（Sign In）** 並透過您的 OIDC 帳號完成驗證（`§9.1`、`§16.1`、`ID01`）。
+2. 若尚未啟用訂閱，請至 **帳單與方案（Billing）** 分頁選擇方案並點擊 **前往結帳（Checkout）**（`POST /api/v1/member/checkout-sessions`，回傳 `201 Created` 結帳網址）。待付款供應商 webhook 對帳完成後，入口網站服務資格狀態會顯示為 **`Active`（有效）**（`§9.2`、`§9.3`、`BILL01`、`BILL03`；前端結帳回跳頁本身不直接代表已開通，`AT03`）。
 
-### 2.2 第二步：依平台安裝 NetBird 客戶端並登入同一帳號
+### 2.2 第二步：設定 NetBird 管理網址、登入 OIDC 並由中央自動授權裝置 (`§7.3`, `§9.4`)
 
-> **重要提醒**：在任何裝置上啟動 NetBird 後，必須先將 **Management URL（管理伺服器網址）** 設定為 `https://netbird.example.com`，並使用與會員入口網站 **完全相同** 的 OIDC 帳號登入，接著再到會員入口網站 `/member/devices` 點擊 **授權此裝置（Authorize Device）**，並等待狀態由 `Pending（套用中）` 變更為 **`Authorized / Applied（已生效）`**。
+> **中央自動授權機制說明（`§7.3`、`§9.4`、`MEM01`、`MEM02`）**：會員入口網站 `/member/devices` **沒有**手動授權按鈕，API 亦無會員手動新增裝置端點。當您在官方 NetBird 客戶端將 **Management URL（管理伺服器網址）** 指向 `https://netbird.example.com` 並使用與會員入口網站 **相同之 OIDC 帳號** 完成 SSO 登入後，中央控制服務會自動辨識新註冊的 NetBird peer、在資料庫交易鎖定下檢查您的有效資格與裝置名額上限（`device_limit`），並透過背景作業（`member.device_authorize`）自動配發出口群組與 DNS 權限。您只需在 `/member/devices`（`GET /api/v1/member/devices`）檢視裝置狀態由 `pending`（套用中）自動變為 **`authorized`（已授權）**。
 
-#### A. Windows (`0.82.0`)
-1. 安裝官方 `netbird-installer_0.82.0_windows_amd64.exe`。
+#### A. Windows（候選版本 `v0.82.0`，待實測 `AT01`）
+1. 安裝官方候選版 `v0.82.0` Windows 安裝程式。
 2. 點擊系統列（System Tray）的 NetBird 圖示 -> **Settings（設定）** -> **Advanced（進階）**。
 3. 在 **Management URL** 輸入 `https://netbird.example.com` 並儲存（或於 PowerShell 執行 `netbird up --management-url https://netbird.example.com`）。
-4. 系統會開啟瀏覽器，請使用您的 Freedom VPN 帳號完成 OIDC 登入。
-5. 回到會員入口網站 `https://vpn.example.com/member/devices`，找到剛註冊的 Windows 裝置，點擊 **授權（Authorize）**，等待操作狀態變為 **`Succeeded（已生效）`**。
-6. 在系統列 NetBird 圖示點擊 **Connect**，並於 **Exit Node / Networks** 選單勾選欲使用的出口節點（例如 `tw-tpe-01`）。
+4. 系統會開啟瀏覽器，請使用您的 Freedom VPN OIDC 帳號完成 SSO 登入。
+5. 開啟會員入口網站 `https://vpn.example.com/member/devices` 檢視裝置列表，確認剛登入的 Windows 裝置已自動出現，且狀態由 `pending`（套用中）轉為 **`authorized`（已授權）**（若名額已滿，請先於該頁面撤銷不再使用的舊裝置，`AT02`）。
+6. 在系統列 NetBird 圖示點擊 **Connect**，並於 **Exit Node / Networks** 選單手動勾選欲使用的出口節點（例如 `tw-tpe-01`；所有獨立出口預設關閉自動套用 `skip_auto_apply = true`，必須在客戶端內手動選取，`§7.2`、`§18.4`、`EXIT02`）。
 
-#### B. macOS (`0.82.0`)
-1. 安裝官方 `NetBird_0.82.0_darwin.dmg` 並啟動應用程式（首次啟動時請允許 macOS 新增 VPN 設定檔與系統網路延伸模組）。
+#### B. macOS（候選版本 `v0.82.0`，待實測 `AT01`）
+1. 安裝官方候選版 `v0.82.0` macOS 套件並啟動應用程式（首次啟動時請允許 macOS 新增 VPN 設定檔與系統網路延伸模組）。
 2. 點擊頂部選單列（Menu Bar）的 NetBird 圖示 -> **Preferences / Settings** -> **Advanced**。
 3. 將 **Management URL** 設為 `https://netbird.example.com` 並儲存，接著點擊 **Connect** 完成瀏覽器 OIDC 登入。
-4. 前往會員入口網站 `https://vpn.example.com/member/devices` 授權該 macOS 裝置，等待狀態顯示 **`Authorized（已生效）`**。
-5. 於選單列 NetBird 圖示選擇出口節點（Exit Node）即可開始安全連線。
+4. 前往會員入口網站 `https://vpn.example.com/member/devices` 確認該 macOS 裝置已被中央自動納管且狀態顯示為 **`authorized`（已授權）**。
+5. 於選單列 NetBird 圖示手動選擇出口節點（Exit Node）。
 
-#### C. iOS / iPadOS (`0.4.1 build 2`)
-1. 自 App Store 安裝官方 **NetBird** App（`0.4.1 build 2`）。
-2. 開啟 App，點擊 **Change Server / Server**，輸入 `https://netbird.example.com` 並點擊儲存（Save）。
-3. 點擊中間連線按鈕，於系統彈窗點擊 **Allow（允許新增 VPN 設定）**，並在彈出的瀏覽器視窗完成 OIDC 登入。
-4. 開啟 `https://vpn.example.com/member/devices` 授權您的 iPhone/iPad，等待狀態顯示 **`Authorized（已生效）`**。
-5. 回到 NetBird App 確認連線已開啟並已套用預設出口節點。
+#### C. iOS / iPadOS（候選版本 `v0.4.1 build 2` TestFlight，待實測 `AT01`）
+1. 安裝候選版 **NetBird** iOS App（`v0.4.1, build 2`；注意：上游將 `build 2` 標示為 **TestFlight** 版本，尚未斷言 App Store 正式上架狀態，正式發布前須完成 `AT01` 實機確認，`docs/netbird/VERSIONS.md`）。
+2. 開啟 App，前往 **Settings -> Change Server / Server**，輸入 `https://netbird.example.com`（不輸入 setup key）並儲存。
+3. 點擊連線按鈕，於系統彈窗點擊 **Allow（允許新增 VPN 設定）**，並在彈出的瀏覽器視窗完成 OIDC SSO 登入。
+4. 開啟 `https://vpn.example.com/member/devices` 確認您的 iPhone / iPad 已自動列於清單且狀態轉為 **`authorized`（已授權）**。
+5. 回到 NetBird App 的 **Connection -> Exit node** 手動選擇已授權的出口節點。
 
-#### D. Android (`0.6.2`)
-1. 自 Google Play 安裝官方 **NetBird** App（`0.6.2`）。
-2. 開啟 App，點擊右上角齒輪（Server 設定），將 **Management URL** 設為 `https://netbird.example.com` 並儲存。
-3. 點擊連線按鈕，核准 Android VPN 連線權限並於瀏覽器完成 OIDC 登入。
-4. 前往 `https://vpn.example.com/member/devices` 授權您的 Android 裝置，等待狀態變為 **`Authorized（已生效）`**。
-5. **重要 DNS 設定**：請至 Android **設定 -> 網路和網際網路 -> 私人 DNS（Private DNS）**，將其設為 **「關閉（Off）」**（詳見第 5 節說明），以確保 Freedom VPN 的惡意網站過濾正常運作。
+#### D. Android（候選版本 `v0.6.2`，待實測 `AT01`、`AT21`）
+1. 安裝候選版 **NetBird** Android App（`v0.6.2`）。
+2. 開啟 App，前往 **Settings -> Profiles -> Add**，將 **Management Server** 設為自架網址 `https://netbird.example.com`（不輸入 setup key）並儲存。
+3. 點擊連線按鈕，核准 Android VPN 連線權限並於瀏覽器完成 OIDC SSO 登入。
+4. 前往 `https://vpn.example.com/member/devices` 確認您的 Android 裝置已由中央自動授權且狀態顯示為 **`authorized`（已授權）**，再於 App 內手動選擇出口節點。
+5. **重要 DNS 設定（`§12.6`、`AT21`）**：Android 的系統「私人 DNS（Private DNS）」預設或開啟時會繞過 VPN 指派的 DNS 解析器。使用本服務之網域防護時，請至 Android **設定 -> 網路和網際網路 -> 私人 DNS（Private DNS）**（實際路徑依手機廠牌與系統版本而異），將其設為 **「關閉（Off）」**（詳見第 6 節說明）。
 
 ---
 
-## 3. 手動驗證腳本 (`AT01`, `AT09`, `AT21`) (`§19.1`, `§19 AT01, AT09, AT21`)
+## 3. 手動驗證腳本 (`AT01`, `AT09`, `AT21`, `AT29`) (`§7.3`, `§8.1`–`§8.3`, `§12.1`, `§12.6`, `§16.3`, `§16.5`, `§19`)
 
-連線後，您可依下列驗收步驟驗證出口轉發、成員隔離、斷線保護（Kill Switch）與 DNS 防護是否正常運作：
+> **量測狀態說明（`§19.1`、`docs/e2e/README.md`）**：以下腳本為受控驗收環境與實機測試的操作程序（`docs/e2e/at/members/OPERATORS.md`）。目前四平台客戶端行為（`AT01`、`AT09`、`AT21`）與線上/離線轉發切斷時效（`AT04`、`AT13`、`AT29`）均 **尚未實測（not yet measured — needs operator run）**。
 
-### 3.1 `AT01`：驗證出口 IP 切換與成員間完全隔離 (`ISO01`–`ISO04`)
+### 3.1 `AT01`、`AT10`、`AT12`：驗證受控出口來源 IP 與跨會員隔離 (`§7.3`, `§8.1`, `§8.2`, `ISO01`, `ISO02`)
 
-- **macOS / Linux 終端機指令** `[Verified on dev/test stack]`：
+1. **驗證會員工作階段與有效資格（`GET /api/v1/member/me`）**：
+   - `/api/v1/member/me` 回傳的是您的會員帳號與服務資格狀態（`status`、`effective_service_end`、`plan`），**並非**用來反映客戶端的出口公網 IP，且呼叫時必須附帶已認證的瀏覽器工作階段 Cookie（請透過權限 `0600` 的 curl 設定檔傳遞，避免將工作階段秘密留在指令歷史中，`§16.1`、`§16.2`）：
+   ```bash
+   # 建立 0600 設定檔（測試完成後刪除），內含：header = "Cookie: __Host-fvpn_session=<SESSION_TOKEN>"
+   curl -fsS --config ~/.config/fvpn/session.curl https://vpn.example.com/api/v1/member/me
+   ```
+2. **以受控測試端點驗證出口來源 IP 切換（`AT01`、`AT09`）**：
+   - 依據安全與衛生規範（`AGENTS.md §7`、`§19.1`），驗證出口 IP 時必須使用團隊受控的測試/實驗室回應端點（例如 `https://echo.test.example.invalid/ip`，回傳伺服器觀測到的連線來源 IP），不得對未授權第三方網站發起測試。
+   - **步驟**：先在**未開啟隧道（或未勾選出口）**時查詢受控端點並記錄原始來源 IP；接著在 NetBird 客戶端**手動勾選目標出口節點**後再次查詢，確認觀測到的來源位址已切換為該出口節點的對外出口位址（例如文件示例位址 `192.0.2.20`）：
+   ```bash
+   # 連線前：顯示設備原本網路的來源位址
+   curl -fsS https://echo.test.example.invalid/ip
+
+   # 選取出口節點連線後：必須顯示所選出口節點的對外位址（如文件示例 192.0.2.20）
+   curl -fsS https://echo.test.example.invalid/ip
+   ```
+3. **具備正向連通對照的跨會員隔離測試（`ISO01`、`AT12`）**：
+   - 單純 `ping` 失敗若發生在隧道中斷時，不能證明隔離規則有效。因此測試跨會員阻擋時，必須**先執行正向連通控制組（Positive Reachability Control）**確認隧道轉發與授權 DNS 正常運作，且另一位測試會員裝置（文件示例 Overlay IP `100.64.0.11`）同時在線，再測試連線至 `100.64.0.11` 是否被拒絕：
+   - **macOS / Linux 終端機指令（候選環境驗收腳本 — 尚未實測 / Needs operator run，`AT01`、`AT12`）**：
+     ```bash
+     # 1. 正向連通控制組：確認透過隧道可正常連線至受控測試端點與授權 DNS (53/tcp, 53/udp)
+     curl -fsS https://echo.test.example.invalid/healthz
+     nslookup example.com 100.64.0.53
+
+     # 2. 跨會員隔離驗證：嘗試連線另一位在線會員裝置的 Overlay IP (示例 100.64.0.11) -> 必須 100% 丟棄
+     ping -c 3 -W 2 100.64.0.11
+     # 預期結果：100.0% packet loss（由 NetBird 存取政策與出口節點 inet fvpn 防火牆阻擋）
+     ```
+   - **Windows PowerShell 指令（候選環境驗收腳本 — 尚未實測 / Needs operator run，`AT01`、`AT12`）**：
+     ```powershell
+     # 1. 正向連通控制組：確認受控測試端點可達
+     Invoke-RestMethod -Uri https://echo.test.example.invalid/healthz
+
+     # 2. 跨會員隔離驗證：嘗試連線另一台在線會員裝置 Overlay IP (示例 100.64.0.11) -> 必須為 False
+     Test-NetConnection -ComputerName 100.64.0.11 -Port 443
+     ```
+
+### 3.2 `AT09`、`AT29`：伺服器端 Fail-Closed 保護、終端無 Kill-Switch 限制與平台網路切換行為 (`§7.3`, `§8.2`, `§16.3`, `§16.5`, `ISO02`, `ENT02`)
+
+1. **重要限制揭露：無終端完整 Kill-Switch 保證（`§7.3`、`§17.1`）**：
+   - Freedom VPN v1 使用未客製之官方 NetBird 客戶端，**不提供完整的作業系統層級「永遠開啟 / 強制斷線保護（Always-On / Kill Switch）」模式**（與會員入口網站 `member.gettingStarted.killSwitchWarningBody` 警告一致）。
+   - **伺服器端 Fail-Closed 與終端路由的區別**：出口節點的 `inet fvpn` 防火牆（Fail-Closed）僅保證**當封包進入 VPN 隧道到達出口節點時**，若節點隔離基線、租約或會員資格失效，**出口節點不會代為轉發流量**。但若您的手機或電腦因隧道中斷、應用程式關閉、睡眠喚醒或切換 Wi-Fi / 行動網路而失去 VPN 路由，客戶端作業系統**可能會改走原本的本地 ISP 網路直接連線**（`§7.3`）。
+2. **三種伺服器端停止轉發機制與時效說明（`§16.3`、`§16.5`、`AT04`、`AT13`、`AT29`）**：
+   - **節點本機 Watchdog 心跳逾時（`§16.3`）**：出口節點上的獨立守護程序 `fvpn-watchdog` 會檢查本機 `fvpn-agent` 的心跳檔案（預設設定 `watchdog_stale_seconds = 30` 秒）。若本機 `fvpn-agent` 卡死或異常退出，`fvpn-watchdog` 會將該節點的 `inet fvpn` 切換回 baseline drop 狀態，停止該節點的會員轉發。
+   - **控制面在線時的主動撤權 / 停用（`§16.5`、`AT04`、`AT13`）**：當中央控制服務與出口節點均在線時，管理員停用出口、會員停權或撤銷裝置的**線上政策收斂設計目標以 60 秒為起點**（`§16.5` 非功能目標，並非瞬間生效，亦非離線保證）。
+   - **控制面失聯時的離線到期界線（`§16.3`、`AT29`）**：當出口節點與中央控制面失聯時，無法即時收到新發生的撤權通知；節點核心透過 `inet fvpn` 的 `@allowed_v4` timeout 集合強制執行 `min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`（預設最長離線租約上限為 `86,400` 秒 / 24 小時），最早期限到達時由核心自動停止轉發，且不受系統牆鐘回調（clock rollback）延長。
+   - **實測狀態**：上述三項端到端流量切斷時間目前均 **尚未實測（not yet measured，待執行 `AT04`、`AT13` 與 `AT29`；`2026-10-29` 之 `lease-expiry.json` 執行紀錄在停止控制面時尚無活躍會員轉發規則）**。
+3. **四平台斷線、睡眠喚醒與換網行為記錄要求（`§7.3`、`§18.5`、`APP01`、`AT01`、`AT09`）**：
+   - 各平台客戶端在睡眠/鎖定、切換網路及所選出口被停用時的實際路由行為，須依 `docs/e2e/at/members/OPERATORS.md` 逐平台實測並記錄：
+
+| 平台 | 測試動作 (`AT01` / `AT09`) | 觀測重點（是否恢復隧道、是否退回本地 ISP、所需秒數） | 目前狀態 |
+|---|---|---|---|
+| **Windows (`v0.82.0` 候選版)** | 睡眠 2 分鐘後喚醒；於兩個受控 Wi-Fi 網路間切換；連線中停止所選出口節點 | 記錄喚醒與換網後之出口選擇、受控 echo 來源 IP、DNS 解析路徑，以及出口停止時是否發生本地網路直連 fallback | **尚未實測（Not yet measured — 待執行 `AT01`、`AT09`）** |
+| **macOS (`v0.82.0` 候選版)** | 睡眠 2 分鐘後喚醒；於兩個受控 Wi-Fi 網路間切換；連線中停止所選出口節點 | 記錄喚醒與換網後之出口選擇、受控 echo 來源 IP、DNS 解析路徑，以及出口停止時是否發生本地網路直連 fallback | **尚未實測（Not yet measured — 待執行 `AT01`、`AT09`）** |
+| **iOS / iPadOS (`v0.4.1 build 2` 候選版)** | 鎖定螢幕 2 分鐘後喚醒（記錄為行動端背景暫停）；切換受控 Wi-Fi 網路；連線中停止所選出口節點 | 記錄喚醒與換網後之隧道狀態、受控 echo 來源 IP、DNS 解析路徑及出口中斷時之行為 | **尚未實測（Not yet measured — 待執行 `AT01`、`AT09`）** |
+| **Android (`v0.6.2` 候選版)** | 鎖定/省電 2 分鐘後喚醒（一併記錄電池最佳化設定）；切換受控 Wi-Fi 網路；連線中停止所選出口節點 | 記錄喚醒與換網後之隧道狀態、受控 echo 來源 IP、DNS 解析路徑及出口中斷時之行為 | **尚未實測（Not yet measured — 待執行 `AT01`、`AT09`）** |
+
+### 3.3 `AT20`、`AT21`：驗證 DNS 惡意網域攔截（`NXDOMAIN`）與白名單放行 (`§12.1`, `§12.4`, `§12.6`, `§12.8`, `DNS01`–`DNS04`)
+
+- **macOS / Linux（`dig` 或 `nslookup`，候選環境驗收腳本 — 尚未實測 / Needs operator run，`AT20`、`AT21`）**：
   ```bash
-  # 1. 檢查外部出口 IP 是否已切換為 Freedom VPN 出口節點公網 IP (例如 192.0.2.20)
-  curl -fsS https://vpn.example.com/api/v1/member/me
-
-  # 2. 驗證成員與成員之間無法互連 (以另一台成員裝置的 Overlay IP 100.64.0.11 為例，必須 100% 逾時/封鎖)
-  ping -c 3 -W 2 100.64.0.11
-  # 預期結果：100.0% packet loss (封包被 NetBird 政策與出口節點 inet fvpn 防火牆雙重丟棄)
-  ```
-- **Windows PowerShell 指令**：
-  ```powershell
-  # 驗證另一台成員裝置 Overlay IP 無法連線 (必須顯示 False / 逾時)
-  Test-NetConnection -ComputerName 100.64.0.11 -Port 443
-  ```
-
-### 3.2 `AT09`：驗證 Fail-Closed 斷線保護（無明文外洩）與自動重連 (`§7.5`, `§8.2`)
-
-1. 在連線狀態下持續執行外部連線測試。
-2. 當出口節點切換、租約到期（`86,400` 秒離線上限）或管理員停用該出口時，出口節點之 `inet fvpn` 資料平面與 `fvpn-watchdog` 會在 **30 秒內** 自動關閉轉發（Fail-Closed）。
-3. **驗證標準**：在節點停止轉發或隧道重連期間，會員流量會被安全阻斷，**絕不會**退回本地 ISP 明文直連外洩真實 IP；當節點恢復或切換至健康出口後，流量自動恢復。
-
-### 3.3 `AT21`：驗證 DNS 惡意網域攔截（`NXDOMAIN`）與白名單放行 (`§12.1`, `§12.4`)
-
-- **macOS / Linux (`dig` 或 `nslookup`)** `[Verified on dev/test stack]`：
-  ```bash
-  # 1. 查詢受封鎖之測試惡意網域 -> 必須回傳 NXDOMAIN
+  # 1. 查詢受封鎖之測試惡意網域（以文件示例解析器位址 100.64.0.53 為例）-> 預期回傳 NXDOMAIN
   nslookup malware.test.example.invalid 100.64.0.53
 
-  # 2. 查詢正常網域與白名單覆寫網域 -> 必須回傳 NOERROR 與正常 IP
+  # 2. 查詢正常網域與白名單覆寫網域 -> 預期回傳 NOERROR 與正常位址
   nslookup example.com 100.64.0.53
   ```
-- **Windows PowerShell**：
+- **Windows PowerShell（候選環境驗收腳本 — 尚未實測 / Needs operator run，`AT20`、`AT21`）**：
   ```powershell
   Resolve-DnsName malware.test.example.invalid -Server 100.64.0.53
   # 預期結果：DNS name does not exist (RCODE=3 NXDOMAIN)
   Resolve-DnsName example.com -Server 100.64.0.53
   ```
-- **iOS / Android**：
-  開啟瀏覽器造訪正常網站（如 `https://example.com`）應正常載入；造訪被封鎖之釣魚/惡意測試網域應立即顯示無法解析網域（`DNS_PROBE_FINISHED_NXDOMAIN`）。
+- **四大平台系統解析器與瀏覽器路徑（`§12.6`、`AT21`）**：
+  除指定解析器位址查詢外，各平台實機驗收（`AT21`，**尚未實測 / Needs operator run**）須在關閉 Android 私人 DNS 與關閉瀏覽器自訂安全 DNS 的情況下，直接以一般瀏覽器驗證系統預設 DNS 路徑確實經由受控解析器阻擋測試惡意網域。
 
 ---
 
-## 4. 裝置數量上限與自助管理 (`/member/devices`, `§5.1`, `AT02`, `AT03`)
+## 4. 裝置數量上限與自助撤銷 (`/member/devices`, `§7.3`, `§9.4`, `MEM01`–`MEM03`, `ENT02`, `AT02`, `AT04`)
 
-1. **預設裝置上限**：每位會員預設最多可同時授權 **3 台裝置**（`device_limit = 3`，實際上限依您的訂閱方案或管理員設定顯示於 `/member/devices`）。
-2. **達到上限時（`409 DEVICE_LIMIT_REACHED`）**：若您嘗試授權第 4 台裝置，系統會拒絕授權並提示已達裝置上限（`AT02`）。
-3. **自助撤銷舊裝置（`AT03`）**：
-   - 前往 `https://vpn.example.com/member/devices`。
-   - 找到不再使用的舊裝置，點擊 **撤銷（Revoke）**。
-   - 等待操作狀態由 `Pending` 變為 **`Revoked / Succeeded`**（系統會立即移除該裝置的出口轉發權限並停用其 NetBird Peer），即可釋出名額授權新裝置。
-
----
-
-## 5. 用量統計與公平使用政策（FUP）顯示說明 (`/member/usage`, `§10`, `§11`)
-
-在會員入口網站 **用量（Usage）** 分頁（`/member/usage`）中，您可以查看當月與每日的上傳、下載及總流量：
-
-1. **計量口徑（`forward_admission_v1`）**：
-   - 僅計算實際通過出口節點轉發驗證（`inet fvpn` forward 路徑）之會員 IPv4/IPv6 流量位元組（`§10.1`）。被防火牆丟棄的封包或控制通道訊號不會計入您的用量。
-2. **結算週期與重置時間**：
-   - 以 **UTC 日曆月**（每月 1 日 `00:00:00Z` 至下月 1 日 `00:00:00Z`）為統計與 FUP 重置週期（`§11.1`，跨月自動重置為 `Tier 0` 全速，`AT18`）。
-3. **公平使用（FUP）降速階層與共享範圍**：
-   - 當月累積總流量超過方案門檻時，系統會依階層調降速率上限（`Tier 1`、`Tier 2`...），但**保證不低於可用底線速率（`minimum_rate`）**，不會將已付費會員斷網（`§11.2`、`AT17`）。
-   - **同出口共享限速（`§11.3`）**：同一位會員名下的多台裝置若同時連線至**同一台出口節點**，會共享該會員在該出口節點的頻寬上限。
-   - 若系統處於 **觀測模式（`shadow` mode）**，頁面會顯示預估階層，但實際連線仍維持全速（`throttled: false`）。
-4. **資料品質標記說明（`§10.6`、`§18.2`）**：
-   - **`統計截至 (Aggregate as of)`**：中央帳本已完成連續確認（Watermark）的時間點。
-   - **`對帳中 (Reconciliation in progress)`**：系統正在進行備份還原後的節點序列重播對帳，數據將於對帳完成後定案。
-   - **`含缺口 (Gap)` / `估算 (Estimated)`**：代表部分區間因節點異常斷電或重啟而存在未完整取樣之缺口；系統**絕不會憑空捏造或補猜您的流量位元組**（`§10.6`）。
+1. **預設裝置上限（`§9.4`、`§21`、`MEM02`）**：每位會員建議預設最多可同時擁有 **3 台已授權裝置**（`device_limit = 3`，實際上限依您的訂閱方案或管理員設定顯示於 `/member/devices` 的已用/上限配額）。
+2. **達到上限時的行為（`409 DEVICE_LIMIT_REACHED`，`AT02`）**：當您在新裝置登入 NetBird 而已授權裝置數已達上限時，中央自動授權交易會在資料庫列鎖定下拒絕授予新裝置出口權限（紀錄 `DEVICE_LIMIT_REACHED`），該新裝置將停留在未授權狀態而無法使用 VPN 出口轉發（`§7.3`、`§9.4`、`AT02`）。
+3. **自助撤銷舊裝置與生效時效（`§9.4`、`§16.3`、`§16.5`、`AT02`、`AT04`、`AT29`）**：
+   - 前往 `https://vpn.example.com/member/devices`，找到不再使用的舊裝置，點擊 **撤銷（Revoke）**（呼叫 `DELETE /api/v1/member/devices/{device_id}`，建立非同步 `member.device_revoke` 操作）。
+   - **撤銷生效時間說明**：點擊撤銷**並非瞬間在全球所有節點同步斷線**。在中央與出口節點皆在線的正常路徑下，系統會非同步撤除 NetBird 權限並下發新政策版本以終止既有與新連線（規格在線撤權目標以 **60 秒**為起點，`§16.5`；實際端到端切斷時間 **尚未實測 / not yet measured**，待執行 `AT02`、`AT04`、`AT29`）。若某台出口節點當時與控制面失聯，該節點上的轉發最長受既有核心租約/服務截止期限（`min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`，預設最長 `86,400` 秒，`§16.3`、`AT29`）約束。
+   - 待 `/member/devices` 頁面上的撤銷操作狀態完成並釋出配額後，即可讓新裝置取得授權。
 
 ---
 
-## 6. DNS 安全防護行為、隱私承諾與技術限制 (`§12.1`, `§12.6`, `§12.7`, `SEC02`)
+## 5. 用量統計與公平使用政策（FUP）顯示說明 (`/member/usage`, `§8.3`, `§10`, `§11`, `MTR01`–`MTR05`, `FUP01`–`FUP04`, `AT14`, `AT17`–`AT19`)
 
-### 6.1 我們提供的保護與零日誌隱私承諾 (`SEC02`)
-- **惡意與釣魚網域攔截**：所有連線至出口節點的標準 DNS 查詢（`UDP/53` 與 `TCP/53`）皆由出口節點強制導向內部受保護的 AdGuard Home 解析器（`100.64.0.53`、`100.64.0.54`），針對已知惡意軟體與釣魚網域回傳 `NXDOMAIN`。
-- **零 DNS 查詢日誌（`SEC02`）**：Freedom VPN **完全關閉** AdGuard Home 的查詢日誌（`querylog.enabled: false`）與統計紀錄，且中央資料庫與節點日誌**絕不記錄**您查詢過的完整網域名稱、造訪的網址（URL）或封包內容。
+在會員入口網站 **用量與速度（Usage）** 分頁（`/member/usage`）中，您可以查看當月與每日的上傳、下載及總流量：
 
-### 6.2 您必須了解的技術限制（DoH / DoT 繞過說明，`§12.6`）
-我們堅持誠實揭露 DNS 防護的技術邊界，不作誇大宣稱：
-1. **瀏覽器加密 DNS（DoH / Secure DNS）與系統私人 DNS 繞過**：
-   - 若您的瀏覽器（Chrome、Edge、Firefox、Brave 的「安全 DNS / Use Secure DNS」）或作業系統（Android「私人 DNS / Private DNS」、iOS 第三方加密 DNS 描述檔）啟用了 **DNS-over-HTTPS (DoH)** 或 **DNS-over-TLS (DoT)**，DNS 查詢會被封裝在一般 HTTPS（連接埠 `443`）流量中直接發往外部供應商（如 `8.8.8.8` 或 `1.1.1.1`），從而**繞過** Freedom VPN 的 DNS 惡意網域過濾。
-   - **建議設定**：為獲得完整防護，請將 Android「私人 DNS」設為**關閉（Off）**，並將瀏覽器的「安全 DNS」設為**使用目前的服務供應商（系統預設 DNS）**或關閉。
-2. **不進行 TLS 解密（No MITM）與網址路徑檢查**：
-   - Freedom VPN **絕不攔截或解密您的 HTTPS 憑證**，因此我們只過濾「網域名稱（Domain）」，無法過濾同一網域下的特定網頁路徑（URL Path）或網頁內容。
-3. **不攔截純 IP 直連**：
-   - 若惡意程式不查詢 DNS 而直接連線至外部 IP 位址，DNS 層過濾不會觸發。
+### 5.1 計量口徑（`forward_admission_v1`）與 v1 IPv6 封鎖模式 (`§8.3`, `§10.1`, `MTR01`, `AT11`, `AT14`)
+- **正式計量位置（`§10.1`）**：`forward_admission_v1` 僅計算解開隧道後通過出口節點授權與隔離檢查、獲准進入轉發路徑（`inet fvpn` forward chain）之內層封包位元組（包含內層 IP 與傳輸層標頭，上行與下行各計一次）。在計量點之前被防火牆拒絕的封包、外層 WireGuard 封裝或節點控制通道流量，均不會計入會員用量；而在通過 admission hook 之後才因佇列（qdisc）或下游網路丟棄的封包則可能已計入，因此此數值為「已記錄的 VPN 轉送入場用量」，不等同應用程式最終下載完成的檔案大小（`§10.1`）。
+- **v1 IPv6 阻擋模式說明（`§8.3`、`node/enforce`）**：雖然跨節點帳本與身分綁定之資料結構（schema）預留了 IPv4 與 IPv6 欄位，但 **Freedom VPN v1 的節點資料平面固定執行 `IPv6Block`（`block`）模式**——出口節點 `inet fvpn` 會無條件丟棄所有會員 IPv6 轉發流量（`meta nfproto ipv6 ... drop`），僅提供會員 **IPv4** 轉發服務。因此在 v1 中，您的實際轉發與計量位元組皆來自獲准通過的內層 IPv4 流量（`AT11`、`AT14`）。
+
+### 5.2 結算週期、跨月歸屬與重置時間 (`§10.4`, `§10.9`, `§11.1`, `MTR04`, `FUP01`, `AT17`, `AT19`)
+- 以 **UTC 自然月**（每月 1 日 `00:00:00Z` 至下月 1 日 `00:00:00Z` 半開區間）為統計與公平使用級距重置週期（`§10.4`、`§11.1`）。
+- 跨月邊界與遲到事件依觀測區間歸屬對應月份，不會因上月遲到事件而延長本月調速（`§10.9`、`AT17`）；進入新 UTC 月份時，當期累計用量與調速級距自動從 `Tier 0` 重新計算（`§11.2`、`AT19`）。
+
+### 5.3 公平使用（FUP）調速階層、共享容量限制與強制 Fail-Closed 例外 (`§11.1`–`§11.7`, `FUP01`–`FUP04`, `AT18`, `AT19`)
+- **調速階層與設定底線（`minimum_rate`，`§11.1`、`§11.2`、`AT19`）**：當月跨全部裝置與出口節點累積總流量超過方案門檻時，系統在 `enforce` 模式下會依階層調降您在各出口節點的 HTB 速率上限（`Tier 1`、`Tier 2`...）。政策編譯器要求每個階層的設定上限皆不低於正數設定底線 **`minimum_rate`**（`down_bps > 0`、`up_bps > 0`），代表**公平使用調速本身不會因流量超額而將您的設定速率設為 `0 bps`**。
+- **非保證實得頻寬、且受節點共享容量約束（`§11.3`、`§11.6`、`§11.7`、`FUP02`、`FUP04`、`AT18`）**：
+  - `minimum_rate` 與各級距之 `down_bps` / `up_bps` 僅為出口節點 `tc` HTB 排程器的**設定速率上限/底線（Configured Shaping Floor / Ceiling）**，**並非**對您終端實得下載或上傳速度的保證。
+  - **同出口多裝置共享（`§11.3`、`AT18`）**：同一位會員名下的多台已授權裝置若同時使用**同一台出口節點**，會共同分享該會員在該出口節點的單一 HTB 速率類別（不會每台裝置各拿一份滿額速率）。
+  - **節點總容量共享（`§11.3`、`FUP04`）**：所有連線至同一台出口節點的會員共同受該節點父類別總容量上限（`node_capacity`）以及上游 ISP / Relay 線路條件限制；當節點總容量壅塞時，實際可得吞吐量可能低於個別級距上限。
+- **強制 Fail-Closed 停止轉發之例外情形（`§8.2`、`§10.7`、`§10.8`、`§13.6`、`§16.3`、`ISO02`）**：
+  - `minimum_rate` 絕不覆蓋安全、資格與計量完整性規則。當發生以下任一情況時，出口節點**必然會立即或於期限到達時停止您的流量轉發（Fail-Closed）**：
+    1. 您的訂閱/人工授權到期、帳號被停權、裝置被撤銷，或節點離線服務租約（`forwarding_deadline`）到期（`§9.2`、`§16.3`、`AT04`、`AT29`）；
+    2. 出口節點之 Internet-only 隔離檢查、DNS 基線檢查或 `fvpn-watchdog` 心跳檢查失敗（`§8.2`、`§16.3`、`AT10`、`AT13`）；
+    3. 出口節點本機計量路徑異常（`METER_PATH_INVALID`）、本機 SQLite 無法寫入，或未獲中央 ACK 之 usage outbox 達到容量/時間保護上限（建議預設 `72 小時` 或 `256 MB`，`§10.3`、`§10.7`、`§10.8`、`AT16`）；
+    4. 出口節點正處於程式更新的切換與健康檢查窗口（`applying` / `checking`，`§13.2`、`§13.6`）。
+- **觀測模式（`shadow` mode，`§11.1`、`§11.2`、`AT19`）**：若系統處於 `shadow` 模式，頁面會顯示預估級距（`would_apply_tier`），但節點資料面仍維持正常未降速設定（`throttled: false`）。
+
+### 5.4 資料品質標記說明 (`§10.6`–`§10.9`, `§18.4`, `AT16`, `AT17`, `AT30`)
+- **`統計截至 (Aggregate as of)`**：中央帳本已完成投影彙總的資料時間點（`§10.6`）。
+- **`對帳中 (Reconciliation in progress)`**：中央資料庫於備份還原後正在執行節點事件重播與對帳，數據將於對帳完成後定案（`§10.8`、`§17.3`、`AT30`）。
+- **`含缺口 (Gap)` / `邊界估算 (Boundary Estimated)`**：`gap` 代表部分區間因節點異常斷電、重啟或超過保存窗口而存在無法重建之未取樣缺口；`boundary_estimated` 代表跨 UTC 月界區間依重疊時間比例整數分攤。系統**絕不會憑空捏造或虛構未知的流量位元組**（`§10.7`–`§10.9`）。
 
 ---
 
-## 7. 客服支援與問題回報流程 (`§18.2`)
+## 6. DNS 安全防護行為、資料最小化與技術限制 (`§8.1`, `§12.1`–`§12.7`, `DNS01`–`DNS04`, `SEC02`, `AT12`, `AT20`–`AT22`)
+
+### 6.1 受控解析器配置、防火牆規則與資料最小化 (`§8.1`, `§12.2`, `§12.6`, `§12.7`, `DNS03`, `SEC02`, `AT12`, `AT21`, `AT22`)
+- **受控 DNS 解析器與 `inet fvpn` 規則（`node/enforce/render_nft.go`）**：
+  - NetBird 會將本服務配置的受控 AdGuard Home 解析器位址（例如文件示例位址 `100.64.0.53` 與 `100.64.0.54`；實際位址依部署環境設定而定，`AGENTS.md §8`）下發給已授權的會員裝置（`§12.2`）。
+  - 在出口節點資料平面（`inet fvpn` forward chain）中，規則僅精確放行已授權會員位址（`@allowed_v4`）連往受控解析器集合（`@resolver_v4`）的 **`UDP/53` 與 `TCP/53`** 查詢（計入獨立的 `dns_service_v1` 計數器，不計入會員上網流量），並**強制丟棄**連往解析器位址的所有非 53 埠流量（如管理埠 `8080` 或 SSH，`§8.1`、`DNS03`、`AT12`）。
+  - **無全域 Port-53 DNAT 強制劫持**：出口節點 `inet fvpn` **並未**實作將任意外部 `UDP/53` 或 `TCP/53` 流量透過 DNAT 透明改寫至內部解析器的機制。會員裝置若手動指定外部 Port-53 DNS，其封包是否被阻擋或依政策處理，取決於環境所選定的外部 DNS 政策（`§12.6` 標記為 `待決策`，各平台實際行為 **尚未實測 / not yet measured**，列入 `AT21`）。
+  - 受控解析器針對命中的惡意軟體、釣魚或管理員封鎖網域回傳 `NXDOMAIN`；當單台受控解析器故障時，僅能切換至另一台套用相同政策的受控解析器，**絕不會**靜默退回未過濾的公共 DNS（`§12.2`、`§12.5`、`AT21`）。
+- **資料最小化與無完整查詢日誌（`SEC02`、`§12.7`、`§16.4`、`AT22`）**：
+  - 受控 AdGuard Home 解析器在組態上關閉查詢日誌與統計功能（`querylog.enabled: false`、`querylog.file_enabled: false`、`statistics.enabled: false`），且一般服務日誌、指標（metrics）與中央資料庫**不記錄**您查詢過的完整網域名稱（qname）、造訪的完整網址（URL）或封包內容（`§12.7`）。
+  - **誠實揭露（`§16.4`）**：本服務**不宣稱完全無日誌（not a complete no-log service）**——系統仍會保存必要的會員資格、裝置授權狀態、匿名化流量計量（`usage_events` / `usage_rollups`）與管理/安全稽核紀錄（`audit_events`）。
+
+### 6.2 您必須了解的技術限制：DoT / DoQ 與 DoH 差異及防護邊界 (`§1.1`, `§12.1`, `§12.6`, `DNS04`, `AT21`)
+我們堅持如實揭露網域層級 DNS 防護的技術邊界：
+1. **區分 DoT / DoQ（連接埠 `853`）與 DoH（HTTPS 連接埠 `443`）的繞過與政策行為（`§12.6`）**：
+   - **DNS-over-TLS（DoT，使用 `TCP/853`）與 DNS-over-QUIC（DoQ，使用 `UDP/853`）**：例如 Android 系統的「私人 DNS（Private DNS）」或特定系統加密 DNS 設定，走專用連接埠 `853`。
+   - **DNS-over-HTTPS（DoH，使用一般 HTTPS `TCP/443` 或 `UDP/443`）**：例如瀏覽器（Chrome、Edge、Firefox、Brave）內建的「安全 DNS（Use Secure DNS）」或應用程式自建的 DoH 查詢，會將 DNS 查詢封裝在一般 HTTPS（`443` 埠）流量中，且常與一般網站共用 CDN 或 IP。
+   - **實際影響與限制（`§12.6`、`AT21`）**：外部 Port-53 DNS、DoT/DoQ（`853` 埠）及已知加密 DNS 端點雖可依部署所選政策加以限制，但對於未受管（unmanaged）會員裝置上的瀏覽器 DoH（`443` 埠）或開啟中的 Android 私人 DNS，本服務**無法保證全面辨識或攔截**。當這類設定開啟時，查詢可能繞過 VPN 指派的受控解析器（導致惡意網域過濾不生效）或因政策阻擋而解析失敗（各平台實際行為 **尚未實測 / not yet measured**，待執行 `AT21`）。
+   - **建議設定**：使用本服務之網域防護時，請將 Android「私人 DNS」設為 **「關閉（Off）」**，並將瀏覽器自訂「安全 DNS / DoH」關閉（改用系統預設解析器），再依 3.3 節確認解析路徑。
+2. **不進行 TLS 中間人解密（No MITM）與網址路徑檢查（`§1.1`、`§12.1`）**：
+   - Freedom VPN **絕不攔截或解密您的 HTTPS / TLS 流量**，因此僅能比對「網域名稱（Domain）」，無法檢查或過濾同一網域下的特定網頁路徑（`/path`）、查詢參數或下載檔案內容。
+3. **不攔截純 IP 直連與本機區域網路（`§1`、`§12.1`、`§12.6`）**：
+   - 若程式不查詢 DNS 而直接連線至外部公網 IP 位址，DNS 規則不會觸發；且伺服器端出口隔離僅管制進入 VPN 隧道的流量，不涵蓋您設備在自身本地 Wi-Fi / LAN 上的區網連線。
+
+---
+
+## 7. 客服支援與誤擋回報流程 (`§12.5`, `§12.6`, `§18.3`, `§18.4`, `AT20`, `AT22`)
 
 當您遇到連線異常、帳單問題或認為某個正常網站被誤攔截時：
-1. **收集診斷識別碼（請勿提供密碼或私鑰）**：
-   - 在會員入口網站（`/member`）發生錯誤時，請複製畫面錯誤訊息中的 **`Request ID`**，或在 `/member/devices` 複製 **`Operation ID`**。
-   - **安全警告**：客服人員**永遠不會**向您索取 OIDC 密碼、工作階段 Cookie 或任何私鑰檔案。
-2. **回報誤攔截網域（False Positive）或惡意網域**：
-   - 請提供完整網域名稱（例如 `sub.example.com`）與發生時間（UTC），管理員可透過 `domain_rule_set` 白名單覆寫（`allow`）在 1 分鐘內（`blocked_ttl_seconds = 60`）為全體會員解除誤封鎖。
+1. **收集診斷識別碼（請勿提供密碼或私鑰，`§16.2`、`§18.3`）**：
+   - 在會員入口網站（`/member`）發生錯誤時，請複製畫面錯誤訊息中的 **`Request ID`**（或操作紀錄中的 **`Operation ID`**）與發生時間（UTC）。
+   - **安全警告**：支援人員**永遠不會**向您索取 OIDC 密碼、工作階段 Cookie（`__Host-fvpn_session`）或任何私鑰檔案。
+2. **回報誤攔截網域（False Positive）與生效時間說明（`§12.5`、`§12.6`、`AT20`、`AT22`）**：
+   - 請提供完整網域名稱（例如 `sub.example.com`）與發生時間（UTC）。管理員確認後可於 `domain_rule_set` 政策新增白名單覆寫（`action: "allow"`，可覆蓋一般威脅清單誤擋，但不會解除強制 deny 或內網 IP 隔離，`§12.4`）。
+   - **解除封鎖之實際生效時間（不作全域 60 秒保證，`§12.5`）**：白名單發布後的端到端生效時間取決於三個獨立環節：
+     1. **中央編譯與解析器套用延遲（Publication & Resolver Apply Delay）**：管理員啟用新政策版本後，由 `fvpn-worker` 編譯 bundle 並推送至兩台受控 AdGuard Home 解析器完成語法檢查、smoke test 與原子載入（此發布至解析器 ACK 之延遲目前 **尚未實測 / not yet measured**，列入 `AT20` / `AT22` / `AT31` 驗收）；
+     2. **受控解析器之封鎖回應快取 TTL（`blocked_ttl_seconds`）**：`dns_profile` 中的 `blocked_ttl_seconds` 為可調整設定（範圍 `1..86400` 秒，`60` 秒僅為規格建議起點，`§12.5`），僅控制封鎖回應的 DNS TTL 標頭，並非端到端生效 SLA；
+     3. **終端作業系統、瀏覽器快取與既有連線（`§12.5`）**：即使受控解析器已載入新版本，您的作業系統 DNS 快取、瀏覽器快取或已建立的長連線仍可能暫時沿用舊結果。若管理員通知已發布白名單，建議您清除本機 DNS 快取、重啟瀏覽器或重新連線 VPN 隧道以加速重新解析。
 
 ---
 
 # Part II: English Member Guide (`en`)
 
-## 1. Supported Platforms and Pinned Client Versions (`§5.2`, `docs/netbird/VERSIONS.md`)
+## 1. Supported Platforms and Candidate Client Versions (`§3.2`, `§7.3`, `§18.5`, `APP01`, `docs/netbird/VERSIONS.md`)
 
-Freedom VPN v1 uses the official signed **NetBird Client** paired with the **Freedom VPN Member Portal** (`https://vpn.example.com/member`). Always install the pinned, verified client version for your operating system:
+Freedom VPN v1 is designed to use the official **NetBird Client** paired with the **Freedom VPN Member Portal** (`https://vpn.example.com/member`).
 
-| Platform | Pinned Client Version | Minimum OS Version |
-|---|---|---|
-| **Windows** | `0.82.0` | Windows 10 (22H2+) / Windows 11 (`amd64` / `arm64`) |
-| **macOS** | `0.82.0` | macOS 14 Sonoma / macOS 15 Sequoia (Apple Silicon & Intel) |
-| **iOS / iPadOS** | `0.4.1` (`build 2`) | iOS / iPadOS 17.0+ |
-| **Android** | `0.6.2` | Android 12+ |
+> **Important Status Notice (`§7.3`, `§19.1`, `docs/netbird/VERSIONS.md`)**: Every native client version listed below is currently a **candidate version (`待實測` — needs operator run)**. Linux container lab tests do not establish native desktop or mobile client compatibility; production support claims require completed real-device acceptance runs (`AT01`, `AT09`, `AT21`) with dated evidence.
+
+| Platform | Candidate Client Version (`docs/netbird/VERSIONS.md`) | Target OS Baseline | Device Acceptance Status (`AT01`, `AT09`, `AT21`) |
+|---|---|---|---|
+| **Windows** | NetBird daemon/CLI and bundled desktop UI `v0.82.0` | Windows 10 (22H2+) / Windows 11 (`amd64` / `arm64`) | **Candidate — not yet measured (needs operator run, `AT01`, `AT09`, `AT21`)** |
+| **macOS** | NetBird daemon/CLI and bundled desktop UI `v0.82.0` | macOS 14 Sonoma / macOS 15 Sequoia (Apple Silicon & Intel) | **Candidate — not yet measured (needs operator run, `AT01`, `AT09`, `AT21`)** |
+| **iOS / iPadOS** | NetBird iOS client `v0.4.1` (`build 2`) | iOS / iPadOS 17.0+ | **Candidate — upstream labels `build 2` as a TestFlight release and does not assert App Store availability; not yet measured (needs operator run, `AT01`, `AT09`, `AT21`)** |
+| **Android** | NetBird Android client `v0.6.2` (separate mobile version; not `0.82.0`) | Android 12+ | **Candidate — not yet measured (needs operator run, `AT01`, `AT09`, `AT21`)** |
 
 ---
 
-## 2. Step-by-Step Setup Across All Four Platforms (`§5.1`, `§5.2`, `§18.2`)
+## 2. Step-by-Step Setup and Automatic Central Authorization Across All Four Platforms (`§7.3`, `§9.2`, `§9.4`, `§18.4`, `§18.5`)
 
-### 2.1 Step 1: Sign In to the Member Portal and Activate Your Plan (`/member`, `/member/billing`)
+### 2.1 Step 1: Sign In to the Member Portal and Confirm an Active Entitlement (`/member`, `/member/billing`)
 
-1. Open `https://vpn.example.com/member` in your browser, click **Sign In**, and authenticate with your OIDC account.
-2. Under **Billing**, select a subscription plan and click **Checkout** (`POST /api/v1/member/checkout-sessions`). Once completed, your entitlement status shows **`Active`**.
+1. Open `https://vpn.example.com/member` in your browser, click **Sign In**, and authenticate with your OIDC account (`§9.1`, `§16.1`, `ID01`).
+2. Under **Billing**, select a subscription plan and click **Checkout** (`POST /api/v1/member/checkout-sessions`, which returns `201 Created` with `checkout_url`). Once the payment provider webhook is verified and reconciled, your entitlement status transitions to **`Active`** (`§9.2`, `§9.3`, `BILL01`, `BILL03`; the browser return page alone never activates access, `AT03`).
 
-### 2.2 Step 2: Install NetBird, Point to the Management URL, and Authorize Your Device
+### 2.2 Step 2: Point NetBird to the Management URL, Sign In via SSO, and Verify Automatic Central Authorization (`§7.3`, `§9.4`)
 
-> **Important**: On every platform, set the NetBird **Management URL** to `https://netbird.example.com` and sign in with the **exact same OIDC account** used in the Member Portal. Then open `https://vpn.example.com/member/devices`, click **Authorize Device**, and wait for the status to change from `Pending` to **`Authorized / Applied`**.
+> **How Device Authorization Actually Works (`§7.3`, `§9.4`, `MEM01`, `MEM02`)**: There is **no** manual authorization button on `/member/devices` and no member device-creation API endpoint in the 41-endpoint contract. When you point the official NetBird client's **Management URL** to `https://netbird.example.com` and sign in with the **same OIDC identity** used in the Member Portal, the central control plane automatically maps the new NetBird peer to your account, checks your active entitlement and `device_limit` quota under a database transaction lock, and dispatches the asynchronous `member.device_authorize` synchronization job to grant exit and DNS permissions. You simply check `https://vpn.example.com/member/devices` (`GET /api/v1/member/devices`) to see your device appear and transition from `pending` to **`authorized`**.
 
-#### A. Windows (`0.82.0`)
-1. Install `netbird-installer_0.82.0_windows_amd64.exe`.
+#### A. Windows (Candidate `v0.82.0`, needs operator run `AT01`)
+1. Install the candidate `v0.82.0` Windows installer.
 2. Right-click the NetBird tray icon -> **Settings** -> **Advanced**, set **Management URL** to `https://netbird.example.com`, and save (or run `netbird up --management-url https://netbird.example.com` in PowerShell).
-3. Complete the browser OIDC sign-in when prompted.
-4. In `https://vpn.example.com/member/devices`, click **Authorize** next to your Windows device and wait for the operation to reach **`Succeeded`**.
-5. Click **Connect** in the NetBird tray menu and select your desired **Exit Node** (e.g., `tw-tpe-01`).
+3. Complete the browser OIDC SSO sign-in when prompted.
+4. Open `https://vpn.example.com/member/devices` and confirm your Windows device appears automatically and transitions from `pending` to **`authorized`** (if your device quota is full, revoke an older device on `/member/devices` first, `AT02`).
+5. Click **Connect** in the NetBird tray menu and manually select your desired **Exit Node** (e.g., `tw-tpe-01`; independent exits have `skip_auto_apply = true` and must be selected manually in the client app, `§7.2`, `§18.4`, `EXIT02`).
 
-#### B. macOS (`0.82.0`)
-1. Install `NetBird_0.82.0_darwin.dmg`, launch NetBird, and approve the macOS VPN configuration and system extension prompts.
-2. Click the NetBird menu bar icon -> **Preferences / Settings** -> **Advanced**, set **Management URL** to `https://netbird.example.com`, and click **Connect** to complete OIDC sign-in.
-3. Authorize your Mac in `https://vpn.example.com/member/devices` and wait for **`Authorized`** status.
-4. Select an exit node from the NetBird menu bar icon.
+#### B. macOS (Candidate `v0.82.0`, needs operator run `AT01`)
+1. Install the candidate `v0.82.0` macOS package, launch NetBird, and approve the macOS VPN configuration and system extension prompts.
+2. Click the NetBird menu bar icon -> **Preferences / Settings** -> **Advanced**, set **Management URL** to `https://netbird.example.com`, and click **Connect** to complete OIDC SSO sign-in.
+3. Open `https://vpn.example.com/member/devices` and verify that central device synchronization has transitioned your Mac from `pending` to **`authorized`**.
+4. Manually select an authorized exit node from the NetBird menu bar icon.
 
-#### C. iOS / iPadOS (`0.4.1 build 2`)
-1. Install **NetBird** (`0.4.1 build 2`) from the App Store.
-2. Open the app, tap **Change Server / Server**, enter `https://netbird.example.com`, and tap **Save**.
-3. Tap the connect button, approve the iOS VPN permission prompt, and sign in with your OIDC account.
-4. Open `https://vpn.example.com/member/devices` to authorize your iPhone/iPad and wait for **`Authorized`** status.
-5. Return to the NetBird app and verify the tunnel is connected.
+#### C. iOS / iPadOS (Candidate `v0.4.1 build 2` TestFlight, needs operator run `AT01`)
+1. Install the candidate **NetBird** iOS client (`v0.4.1, build 2`; note: upstream labels `build 2` as a **TestFlight** release and does not assert App Store availability — verify the exact distribution channel and build during the `AT01` operator run, `docs/netbird/VERSIONS.md`).
+2. Open the app, tap **Settings -> Change Server / Server**, enter `https://netbird.example.com` (do not enter a setup key), and tap **Save**.
+3. Tap the connect button, approve the iOS VPN configuration prompt, and sign in with your OIDC account in the browser sheet.
+4. Open `https://vpn.example.com/member/devices` and confirm your iPhone/iPad is listed and automatically transitions from `pending` to **`authorized`**.
+5. In the NetBird app (`Connection -> Exit node`), manually select an authorized exit node.
 
-#### D. Android (`0.6.2`)
-1. Install **NetBird** (`0.6.2`) from Google Play.
-2. Tap the gear icon (Server settings), set **Management URL** to `https://netbird.example.com`, and save.
-3. Tap Connect, accept the Android VPN prompt, and complete OIDC sign-in.
-4. Authorize your Android device at `https://vpn.example.com/member/devices` and wait for **`Authorized`** status.
-5. **Important DNS Step**: Go to Android **Settings -> Network & internet -> Private DNS** and set it to **Off** (see Section 6 below) so Freedom VPN's protective DNS filtering takes effect.
+#### D. Android (Candidate `v0.6.2`, needs operator run `AT01`, `AT21`)
+1. Install the candidate **NetBird** Android app (`v0.6.2`).
+2. Open **Settings -> Profiles -> Add**, set **Management Server** to Self-hosted `https://netbird.example.com` (no setup key), and save.
+3. Tap Connect, accept the Android VPN permission prompt, and complete OIDC SSO sign-in.
+4. Check `https://vpn.example.com/member/devices` to confirm your Android device is automatically **`authorized`**, then manually select an exit node in the app.
+5. **Important DNS Step (`§12.6`, `AT21`)**: Android's system "Private DNS" bypasses VPN-assigned DNS resolvers when enabled. To use Freedom VPN's domain filtering, open Android **Settings -> Network & internet -> Private DNS** (exact menu path varies by OEM) and set it to **Off** (see Section 6 below).
 
 ---
 
-## 3. Manual Verification Scripts (`AT01`, `AT09`, `AT21`) (`§19.1`, `§19 AT01, AT09, AT21`)
+## 3. Manual Verification Scripts (`AT01`, `AT09`, `AT21`, `AT29`) (`§7.3`, `§8.1`–`§8.3`, `§12.1`, `§12.6`, `§16.3`, `§16.5`, `§19`)
 
-### 3.1 `AT01`: Verify Exit Egress IP and Member-to-Member Isolation (`ISO01`–`ISO04`)
+> **Measurement Status (`§19.1`, `docs/e2e/README.md`)**: The procedures below define the verification steps for controlled lab and native-client acceptance (`docs/e2e/at/members/OPERATORS.md`). Native four-platform runs (`AT01`, `AT09`, `AT21`) and live end-to-end forwarding cutoff timings (`AT04`, `AT13`, `AT29`) are **not yet measured (needs operator run)**.
 
-- **macOS / Linux Terminal** `[Verified on dev/test stack]`:
+### 3.1 `AT01`, `AT10`, `AT12`: Verify Controlled Exit Egress IP and Member-to-Member Isolation (`§7.3`, `§8.1`, `§8.2`, `ISO01`, `ISO02`)
+
+1. **Authenticated Member Session Check (`GET /api/v1/member/me`)**:
+   - `/api/v1/member/me` returns your account and entitlement JSON (`status`, `effective_service_end`, `plan`), **not** your client egress IP, and requires an authenticated session cookie passed via a `0600` curl config file (so session tokens are never exposed on the command line, `§16.1`, `§16.2`):
+   ```bash
+   # ~/.config/fvpn/session.curl (mode 0600) contains: header = "Cookie: __Host-fvpn_session=<SESSION_TOKEN>"
+   curl -fsS --config ~/.config/fvpn/session.curl https://vpn.example.com/api/v1/member/me
+   ```
+2. **Verify Exit Egress IP via the Controlled Lab Origin (`AT01`, `AT09`)**:
+   - Per `AGENTS.md §7` and `§19.1`, never probe third-party IP-echo websites. Query the **controlled test/lab origin** (for example `https://echo.test.example.invalid/ip`, which echoes the observed client source address) **before** enabling the exit route and **after** selecting the exit node, confirming that the observed source IP changes to the selected exit node's egress IP (e.g., documentation address `192.0.2.20`):
+   ```bash
+   # Before selecting exit node: returns your pre-tunnel underlay address
+   curl -fsS https://echo.test.example.invalid/ip
+
+   # After selecting exit node: must return the selected exit node's egress IP (e.g., 192.0.2.20)
+   curl -fsS https://echo.test.example.invalid/ip
+   ```
+3. **Member-to-Member Isolation with a Positive Reachability Control (`ISO01`, `AT12`)**:
+   - A failed ping alone does not prove isolation if the tunnel itself is down. Always execute a **positive reachability control** over the tunnel first (confirming that the controlled test origin `https://echo.test.example.invalid/healthz` and the configured resolver `100.64.0.53` on port `53` are reachable, and that a second member's device at documentation overlay address `100.64.0.11` is online), and then verify that traffic to `100.64.0.11` is dropped:
+   - **macOS / Linux Terminal (Candidate verification script — not yet measured / needs operator run, `AT01`, `AT12`)**:
+     ```bash
+     # 1. Positive reachability control over the active tunnel
+     curl -fsS https://echo.test.example.invalid/healthz
+     nslookup example.com 100.64.0.53
+
+     # 2. Member-to-member isolation check (100.64.0.11 = online second member peer) -> must drop 100%
+     ping -c 3 -W 2 100.64.0.11
+     # Expected: 100.0% packet loss (dropped by NetBird policy and exit-node inet fvpn rules)
+     ```
+   - **Windows PowerShell (Candidate verification script — not yet measured / needs operator run, `AT01`, `AT12`)**:
+     ```powershell
+     # 1. Positive reachability control
+     Invoke-RestMethod -Uri https://echo.test.example.invalid/healthz
+
+     # 2. Member-to-member isolation check against online second member peer (100.64.0.11)
+     Test-NetConnection -ComputerName 100.64.0.11 -Port 443
+     # Expected: TcpTestSucceeded : False
+     ```
+
+### 3.2 `AT09`, `AT29`: Server-Side Fail-Closed Gate, No Client Kill-Switch Guarantee, and Platform Transition Behavior (`§7.3`, `§8.2`, `§16.3`, `§16.5`, `ISO02`, `ENT02`)
+
+1. **Explicit Limitation: No Complete Client Kill-Switch Guarantee (`§7.3`, `§17.1`)**:
+   - Freedom VPN v1 uses the stock official NetBird client, which **does not provide a complete OS-level always-on / kill-switch mode** (matching the warning in Portal `member.gettingStarted.killSwitchWarningBody`).
+   - **Server-Side Fail-Closed vs. Endpoint Routing**: The exit node's `inet fvpn` fail-closed rules guarantee only that **the exit node itself** stops forwarding packets that arrive over the tunnel when a lease, entitlement, or safety check fails. They do **not** lock down your device's local routing table: if the tunnel disconnects, the client app stops, the device wakes from sleep, or you switch between Wi-Fi and cellular networks, your operating system **may fall back to sending traffic directly over your local ISP** (`§7.3`).
+2. **Three Distinct Server-Side Cutoff Mechanisms and Unmeasured Timings (`§16.3`, `§16.5`, `AT04`, `AT13`, `AT29`)**:
+   - **Node-Local Watchdog Staleness (`§16.3`)**: On each exit node, `fvpn-watchdog` monitors the local `fvpn-agent` heartbeat file (configured `watchdog_stale_seconds = 30` seconds by default) and reverts the local `inet fvpn` table to baseline drop if the local agent stalls or crashes.
+   - **Online Revocation / Disable (`§16.5`, `AT04`, `AT13`)**: When the control plane and exit node are online, administrative disable, member suspension, or device revocation has a spec design target starting at **60 seconds** (`§16.5` NFR target — not instantaneous, not a 30-second guarantee, and not applicable while a node is offline).
+   - **Offline Lease / Service Deadline (`§16.3`, `AT29`)**: When an exit node cannot reach the control plane, it enforces the earliest of `effective_service_end`, `node_lease_end`, and `signed_server_time + max_offline_seconds` (configured default `86,400` seconds / 24 hours) via kernel nftables set timeouts (`@allowed_v4`), independent of wall-clock rollback.
+   - **Measurement Status**: End-to-end flow cutoff timings across all three paths are **not yet measured (pending `AT04`, `AT13`, and `AT29`; the `2026-10-29` `lease-expiry.json` run had `0` member accept rules before stopping control)**.
+3. **Per-Platform Disconnect, Sleep/Wake, and Network-Switch Matrix (`§7.3`, `§18.5`, `APP01`, `AT01`, `AT09`)**:
+   - Per `docs/e2e/at/members/OPERATORS.md`, each platform's disconnect, sleep/lock, and network-switch behavior must be recorded during operator runs:
+
+| Platform | Required Test Actions (`AT01` / `AT09`) | Observations to Record (Tunnel Recovery, Local-ISP Fallback, Recovery Seconds) | Current Status |
+|---|---|---|---|
+| **Windows (`v0.82.0` candidate)** | Sleep 2 min -> wake; switch between two controlled Wi-Fi networks; stop selected exit node while connected | Selected exit, controlled echo source IP, DNS path, recovery time, and whether traffic falls back to the local ISP when the exit stops | **Not yet measured (pending `AT01`, `AT09` operator run)** |
+| **macOS (`v0.82.0` candidate)** | Sleep 2 min -> wake; switch between two controlled Wi-Fi networks; stop selected exit node while connected | Selected exit, controlled echo source IP, DNS path, recovery time, and whether traffic falls back to the local ISP when the exit stops | **Not yet measured (pending `AT01`, `AT09` operator run)** |
+| **iOS / iPadOS (`v0.4.1 build 2` candidate)** | Lock screen 2 min -> wake (recorded as mobile suspension, not desktop sleep); switch Wi-Fi networks; stop selected exit node | Tunnel state, controlled echo source IP, DNS path, and route/fallback behavior on wake and exit stop | **Not yet measured (pending `AT01`, `AT09` operator run)** |
+| **Android (`v0.6.2` candidate)** | Lock / power-save 2 min -> wake (recording battery optimization setting); switch Wi-Fi networks; stop selected exit node | Tunnel state, controlled echo source IP, DNS path, and route/fallback behavior on wake and exit stop | **Not yet measured (pending `AT01`, `AT09` operator run)** |
+
+### 3.3 `AT20`, `AT21`: Verify DNS Threat Blocking (`NXDOMAIN`) and Allow-List Resolution (`§12.1`, `§12.4`, `§12.6`, `§12.8`, `DNS01`–`DNS04`)
+
+- **macOS / Linux (`nslookup` / `dig`, candidate verification script — not yet measured / needs operator run, `AT20`, `AT21`)**:
   ```bash
-  # 1. Confirm authenticated session and active state
-  curl -fsS https://vpn.example.com/api/v1/member/me
-
-  # 2. Verify member-to-member traffic is blocked (replace 100.64.0.11 with another member peer IP)
-  ping -c 3 -W 2 100.64.0.11
-  # Expected: 100.0% packet loss (blocked by both NetBird policy and exit-node inet fvpn rules)
-  ```
-- **Windows PowerShell**:
-  ```powershell
-  Test-NetConnection -ComputerName 100.64.0.11 -Port 443
-  # Expected: TcpTestSucceeded : False
-  ```
-
-### 3.2 `AT09`: Verify Fail-Closed Kill Switch (No Cleartext Leak) and Reconnect (`§7.5`, `§8.2`)
-
-1. Start a continuous ping or download test while connected through an exit node.
-2. If an exit node's serving lease expires (`86,400s` max offline window), its health check fails, or `fvpn-watchdog` detects a stale heartbeat (`> 30s`), the exit node immediately disables member forwarding (`inet fvpn` fail-closed gate).
-3. **Verification Criteria**: Traffic stops cleanly rather than leaking unencrypted over your local ISP, and automatically resumes once the exit node recovers or you switch to another published exit node.
-
-### 3.3 `AT21`: Verify DNS Threat Blocking (`NXDOMAIN`) and Allow-List Resolution (`§12.1`, `§12.4`)
-
-- **macOS / Linux (`nslookup` / `dig`)** `[Verified on dev/test stack]`:
-  ```bash
-  # 1. Query a blocked test domain -> must return NXDOMAIN
+  # 1. Query a blocked test domain against a configured resolver (example 100.64.0.53) -> expected NXDOMAIN
   nslookup malware.test.example.invalid 100.64.0.53
 
-  # 2. Query a normal or allow-listed domain -> must return NOERROR and an IP address
+  # 2. Query a normal or allow-listed domain -> expected NOERROR and an IP address
   nslookup example.com 100.64.0.53
   ```
-- **Windows PowerShell**:
+- **Windows PowerShell (Candidate verification script — not yet measured / needs operator run, `AT20`, `AT21`)**:
   ```powershell
   Resolve-DnsName malware.test.example.invalid -Server 100.64.0.53
   # Expected: DNS name does not exist (RCODE=3 NXDOMAIN)
   Resolve-DnsName example.com -Server 100.64.0.53
   ```
+- **System Resolver & Browser Path Across All Four Platforms (`§12.6`, `AT21`)**:
+  In addition to direct `nslookup` queries, per-platform acceptance (`AT21`, **not yet measured / needs operator run**) must verify resolution through the OS system resolver and a standard browser with Android Private DNS and custom browser DoH turned Off, and then record behavior when Private DNS (DoT) or browser DoH is enabled.
 
 ---
 
-## 4. Device Limits and Self-Service Revocation (`/member/devices`, `§5.1`, `AT02`, `AT03`)
+## 4. Device Limits and Self-Service Revocation (`/member/devices`, `§7.3`, `§9.4`, `MEM01`–`MEM03`, `ENT02`, `AT02`, `AT04`)
 
-1. **Device Limit**: By default, each member can authorize up to **3 devices** (`device_limit = 3`, configurable per plan).
-2. **Limit Reached (`409 DEVICE_LIMIT_REACHED`)**: Attempting to authorize an additional device beyond your limit returns `DEVICE_LIMIT_REACHED` (`AT02`).
-3. **Revoking a Device (`AT03`)**:
-   - Visit `https://vpn.example.com/member/devices` and click **Revoke** next to any device you wish to remove (`DELETE /api/v1/member/devices/{device_id}`).
-   - Once the revocation operation reaches **`Succeeded`**, the old device's tunnel access is terminated and the slot is immediately available for a new device.
-
----
-
-## 5. Usage Metering and Fair-Use Policy (FUP) Display (`/member/usage`, `§10`, `§11`)
-
-1. **Metering Definition (`forward_admission_v1`)**:
-   - Only IPv4/IPv6 bytes admitted into the exit-node forwarding path (`inet fvpn`) are counted (`§10.1`). Dropped packets and control-plane traffic are never billed or counted.
-2. **UTC Monthly Reset**:
-   - Usage totals and Fair-Use tiers reset on the **1st of each UTC calendar month at `00:00:00Z`** (`§11.1`, `AT18`).
-3. **Fair-Use Tiers & Per-Exit Shared Scope**:
-   - If your monthly total exceeds a fair-use tier threshold, your rate is shaped to that tier's `down_bps` / `up_bps` ceiling, which is guaranteed to stay at or above a usable `minimum_rate` floor (`> 0 bps`, never a hard cutoff, `§11.2`, `AT17`).
-   - All authorized devices belonging to your account that are connected to the **same exit node** share your member rate class on that exit node (`§11.3`).
-   - When `shadow` mode is active, the Portal displays your informational tier while `throttled` remains `false`.
-4. **Quality Badges (`§10.6`, `§18.2`)**:
-   - **`Aggregate as of`**: Timestamp of the latest contiguous usage checkpoint committed from exit nodes.
-   - **`Reconciliation in progress`**: Shown temporarily while nodes replay events following a central database restore.
-   - **`Gap` / `Estimated`**: Indicates that an exit node experienced an unscheduled reboot or retention gap during the period; Freedom VPN **never invents or fabricates missing byte counts** (`§10.6`).
+1. **Default Device Limit (`§9.4`, `§21`, `MEM02`)**: By recommended default, each member can have up to **3 authorized devices** (`device_limit = 3`, configurable per plan and shown as `used / limit` on `/member/devices`).
+2. **Limit Reached (`409 DEVICE_LIMIT_REACHED`, `AT02`)**: If you sign into NetBird on a new device when all of your device slots are already occupied, central automatic device authorization rejects the new peer under a row lock (`DEVICE_LIMIT_REACHED`, `AT02`) and does not grant it exit forwarding permissions (`§7.3`, `§9.4`).
+3. **Self-Service Revocation and Cutoff Timing (`§9.4`, `§16.3`, `§16.5`, `AT02`, `AT04`, `AT29`)**:
+   - Visit `https://vpn.example.com/member/devices` and click **Revoke** next to the device you want to remove (`DELETE /api/v1/member/devices/{device_id}`, which creates an asynchronous `member.device_revoke` operation).
+   - **Propagation Timing (Not Instantaneous)**: Revoking a device is an asynchronous control-plane and node-policy operation, **not** an instantaneous global disconnect. When the control plane and exit nodes are online, the spec design target for revoking existing and new flows starts at **60 seconds** (`§16.5`; actual end-to-end cutoff timing is **not yet measured**, pending `AT02`, `AT04`, `AT29`). If an exit node is unreachable from the control plane, forwarding on that node remains bounded by the earliest kernel lease/service deadline (`min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`, default `86,400s`, `§16.3`, `AT29`).
+   - Once the revocation operation reaches **`succeeded`**, the device slot is released for a new device.
 
 ---
 
-## 6. DNS Behaviour, Privacy Guarantee, and Explicit Limitations (`§12.1`, `§12.6`, `§12.7`, `SEC02`)
+## 5. Usage Metering and Fair-Use Policy (FUP) Display (`/member/usage`, `§8.3`, `§10`, `§11`, `MTR01`–`MTR05`, `FUP01`–`FUP04`, `AT14`, `AT17`–`AT19`)
 
-### 6.1 Domain-Level Protection and Zero Query Logging (`SEC02`)
-- Standard DNS queries (`UDP/53` and `TCP/53`) from member tunnels are redirected by the exit node (`inet fvpn` DNAT) to Freedom VPN's hardened AdGuard Home resolvers (`100.64.0.53`, `100.64.0.54`), returning `NXDOMAIN` for blocked malware and phishing domains.
-- **Zero DNS Query Logging (`SEC02`)**: AdGuard Home query logs and statistics are disabled (`querylog.enabled: false`, `statistics.enabled: false`). Freedom VPN never logs or stores the domains you query, the URLs you visit, or packet payloads.
+### 5.1 Metering Definition (`forward_admission_v1`) and v1 IPv6-Block Mode (`§8.3`, `§10.1`, `MTR01`, `AT11`, `AT14`)
+- **Formal Metering Point (`§10.1`)**: `forward_admission_v1` counts inner IP packet bytes (including inner IP and transport headers, once per direction) that have passed tunnel decapsulation, member binding verification, and Internet-only isolation checks at the exit-node `inet fvpn` admission hook. Packets dropped before the admission hook, outer WireGuard encapsulation, and node control traffic are excluded; packets dropped after the admission hook by `tc` shaping or downstream links may still be counted, so this figure represents **recorded VPN forwarding admission usage**, not application-layer delivered file size (`§10.1`).
+- **v1 IPv6-Block Mode (`§8.3`, `node/enforce`)**: Although the usage ledger and binding schemas (`§10.1`, `§10.2`) include fields for IPv4 and IPv6 bindings, **Freedom VPN v1 data-plane enforcement (`node/enforce`) implements `IPv6Block` (`block`) mode only**: the `inet fvpn` forward chain unconditionally drops all member IPv6 traffic (`meta nfproto ipv6 ... drop`) and forwards authorized member **IPv4** traffic only. No IPv6 Internet forwarding path is enabled in v1 (`AT11`, `AT14`).
 
-### 6.2 Explicit Technical Limitations (DoH / Private DNS Bypass Stated Clearly, `§12.6`)
-1. **Browser DoH ("Secure DNS") and OS Private DNS (DoT/DoH) Bypass**:
-   - If your browser (Chrome/Firefox/Edge/Brave "Use Secure DNS") or operating system (Android "Private DNS" or iOS encrypted DNS profiles) sends encrypted DNS over HTTPS (`TCP/443` or `UDP/443`) directly to an external resolver (such as `1.1.1.1` or `8.8.8.8`), those queries bypass port-53 DNS interception and **will not be filtered** by Freedom VPN.
-   - **How to Ensure Protection**: Turn **Off** Android "Private DNS" and set browser "Secure DNS" to **Off** or **Use current service provider (system default)**.
-2. **No TLS Interception (No MITM) and No URL Path Filtering**:
-   - Freedom VPN never intercepts TLS certificates or decrypts HTTPS traffic. Blocking operates strictly at the **domain name** level, not on specific URL paths or page contents.
-3. **No Direct-IP Blocking via DNS**:
-   - Connections made directly to raw IP addresses without a DNS lookup are not filtered by DNS policies.
+### 5.2 UTC Monthly Reset and Boundary Attribution (`§10.4`, `§10.9`, `§11.1`, `MTR04`, `FUP01`, `AT17`, `AT19`)
+- Usage totals and Fair-Use tiers are evaluated over each **UTC calendar month** (`[YYYY-MM-01T00:00:00Z, next_month)`, `§10.4`, `§11.1`).
+- Late-arriving events from a previous UTC month are attributed to that previous month and do not re-trigger throttling in the new month (`§10.9`, `AT17`). At the start of a new UTC month (`00:00:00Z`), the current period total and Fair-Use tier reset to `Tier 0` (`§11.2`, `AT19`).
+
+### 5.3 Fair-Use Tiers, Configured Shaping Floor, Shared Capacity, and Mandatory Fail-Closed Exceptions (`§11.1`–`§11.7`, `FUP01`–`FUP04`, `AT18`, `AT19`)
+- **Configured Shaping Floor (`minimum_rate`, `§11.1`, `§11.2`, `AT19`)**: When your cumulative monthly usage across all devices and exit nodes crosses a tier threshold in `enforce` mode, your per-exit HTB class ceiling (`down_bps` / `up_bps`) steps down to that tier's configured rate. Every tier is validated to stay at or above a positive configured **`minimum_rate`** (`> 0 bps`), meaning **Fair-Use tiering itself does not configure a `0 bps` rate for exceeding a byte threshold**.
+- **Not a Guaranteed Delivered Speed & Subject to Shared Capacity (`§11.3`, `§11.6`, `§11.7`, `FUP02`, `FUP04`, `AT18`)**:
+  - `minimum_rate` and tier rates are **configured `tc` HTB shaper parameters** on the exit node, **not** a guaranteed delivered download or upload speed.
+  - **Per-Exit Multi-Device Sharing (`§11.3`, `AT18`)**: All authorized devices under your account connected to the **same exit node** share a single per-member HTB class on that exit node (`rate_scope = (member_id, node_id, direction)`).
+  - **Shared Node Capacity Ceiling (`§11.3`, `FUP04`)**: All members on an exit node share the node's parent capacity ceiling (`node_capacity`: `qos.Up` / `qos.Down`) as well as physical uplink and Relay bandwidth; under contention, actual throughput can be lower than your individual class ceiling.
+- **Mandatory Fail-Closed Exceptions Still Stop Forwarding (`§8.2`, `§10.7`, `§10.8`, `§13.6`, `§16.3`, `ISO02`)**:
+  - `minimum_rate` never overrides safety, entitlement, or metering-integrity rules. An exit node **will stop forwarding your traffic (fail-closed)** whenever:
+    1. Your subscription/entitlement or the node's offline serving lease (`forwarding_deadline`) expires, or your account/device is suspended or revoked (`§9.2`, `§16.3`, `AT04`, `AT29`);
+    2. The exit node fails an isolation, DNS baseline, or `fvpn-watchdog` check (`§8.2`, `§16.3`, `AT10`, `AT13`);
+    3. The node's local meter path fails (`METER_PATH_INVALID`), local SQLite storage becomes unwritable, or the unacknowledged usage outbox reaches its protection limit (`72 hours` or `256 MB` recommended default, `§10.3`, `§10.7`, `§10.8`, `AT16`);
+    4. The node enters the disruptive switch/check window of a software update (`applying` / `checking`, `§13.2`, `§13.6`).
+- **Shadow Mode (`§11.1`, `§11.2`, `AT19`)**: When `shadow` mode is active, the Portal displays your informational `would_apply_tier` while `throttled` remains `false`.
+
+### 5.4 Quality Badges (`§10.6`–`§10.9`, `§18.4`, `AT16`, `AT17`, `AT30`)
+- **`Aggregate as of`**: UTC timestamp of the latest usage projection watermark committed in the central ledger (`§10.6`).
+- **`Reconciliation in progress`**: Shown while nodes verify signed checkpoints and replay retained events after a central database restore (`§10.8`, `§17.3`, `AT30`).
+- **`Gap` / `Boundary Estimated`**: `gap` indicates that an exit node experienced an unscheduled power loss, reboot, or retention expiry leaving unrecorded intervals; `boundary_estimated` indicates an interval spanning a UTC month boundary that was split proportionally by elapsed time. Freedom VPN **never fabricates or guesses missing byte counts** (`§10.7`–`§10.9`).
 
 ---
 
-## 7. Support Contact Flow (`§18.2`)
+## 6. DNS Behaviour, Data Minimization, and Explicit Limitations (`§8.1`, `§12.1`–`§12.7`, `DNS01`–`DNS04`, `SEC02`, `AT12`, `AT20`–`AT22`)
 
-1. **Include Diagnostic IDs (Never Share Secrets)**:
-   - When contacting support about an error in the Member Portal, include the **`Request ID`** shown in the error banner or the **`Operation ID`** from `/member/devices`, along with the approximate UTC timestamp.
-   - **Never** send your OIDC password, session cookies, or private keys to support.
-2. **Reporting False Positives (Wrongly Blocked Domains)**:
-   - Send the exact domain name (e.g., `app.example.com`) to support. Once approved, an administrator adds an `allow` override in `domain_rule_set`, which takes effect within 60 seconds (`blocked_ttl_seconds = 60`).
+### 6.1 Configured Resolvers, Firewall Rules, and Data Minimization (`§8.1`, `§12.2`, `§12.6`, `§12.7`, `DNS03`, `SEC02`, `AT12`, `AT21`, `AT22`)
+- **Configured DNS Resolvers and `inet fvpn` Rules (`node/enforce/render_nft.go`)**:
+  - NetBird distributes the deployment's configured AdGuard Home resolver addresses (for example, documentation addresses `100.64.0.53` and `100.64.0.54` per `AGENTS.md §8`; actual addresses depend on `nodes.json:dns_resolver_ipv4`) to authorized member clients (`§12.2`).
+  - In the exit node's `inet fvpn` forward chain (`node/enforce/render_nft.go`), `Render` permits `UDP/53` and `TCP/53` from authorized member addresses (`@allowed_v4`) to the configured resolver set (`@resolver_v4`, counted under `dns_service_v1`) and **drops** all non-port-53 traffic to `@resolver_v4` (`counterBadDNS`, blocking access to the resolver's admin UI or SSH, `§8.1`, `DNS03`, `AT12`).
+  - **No Universal Port-53 DNAT Interception**: `inet fvpn` **does not** perform universal DNAT redirection of arbitrary external port-53 traffic. How manual external port-53 DNS queries from a client are handled depends on the deployment's selected external-DNS policy (`§12.6`, marked `待決策` / pending decision, and **not yet measured** under `AT21`).
+  - Configured resolvers return `NXDOMAIN` for blocked malware, phishing, and admin-denied domains. If one controlled resolver becomes unavailable, failover uses only the other controlled resolver with the same policy—never an unfiltered public DNS resolver (`§12.2`, `§12.5`, `AT21`).
+- **Data Minimization and No Query History Logging (`SEC02`, `§12.7`, `§16.4`, `AT22`)**:
+  - AdGuard Home query logs and statistics are disabled in the candidate configuration (`querylog.enabled: false`, `querylog.file_enabled: false`, `statistics.enabled: false`). Service logs, metrics, and the central database never record full queried domain names (qnames), full URLs, or packet payloads (`§12.7`).
+  - **Honest Scope (`§16.4`)**: Freedom VPN **does not claim to be a complete no-log service**—the platform retains necessary entitlement records, device authorization state, anonymized usage accounting (`usage_events` / `usage_rollups`), and administrative/security audit trails (`audit_events`).
+
+### 6.2 Explicit Technical Limitations: DoT / DoQ vs. DoH and Filtering Boundaries (`§1.1`, `§12.1`, `§12.6`, `DNS04`, `AT21`)
+1. **Distinguishing DoT / DoQ (`853`) from DoH (`443`) and Policy/Platform Dependence (`§12.6`)**:
+   - **DNS-over-TLS (DoT, `TCP/853`) and DNS-over-QUIC (DoQ, `UDP/853`)**: Used by features such as Android "Private DNS" or dedicated encrypted-DNS profiles over port `853`.
+   - **DNS-over-HTTPS (DoH, `TCP/443` and `UDP/443`)**: Used by browser "Use Secure DNS" settings (Chrome, Firefox, Edge, Brave) or application-level DoH resolvers over standard HTTPS port `443`, often sharing IP addresses and CDNs with ordinary websites.
+   - **Behavior and Limitations (`§12.6`, `AT21`)**: While external port-53 DNS, DoT/DoQ (`853`), and known encrypted-DNS endpoints may be restricted according to the deployment's selected policy (`§12.6`), an unmanaged client device or browser using DoH over port `443` (or Android Private DNS when enabled) cannot be guaranteed to be intercepted and may either bypass VPN-assigned DNS filtering or fail to resolve depending on the active policy and OS/browser behavior (**not yet measured across all four native platforms; tracked under `AT21`**).
+   - **Recommended Configuration**: Turn **Off** Android "Private DNS" and disable custom browser "Secure DNS / DoH" (use the system default resolver), then verify your resolution path using Section 3.3.
+2. **No TLS Interception (No MITM) and No URL-Path Filtering (`§1.1`, `§12.1`)**:
+   - Freedom VPN never intercepts TLS certificates or decrypts HTTPS traffic. Filtering operates strictly on **domain names**, not on `/path` segments, query strings, or downloaded file contents.
+3. **No Direct-IP Blocking via DNS and Local LAN Boundary (`§1`, `§12.1`, `§12.6`)**:
+   - Connections made directly to raw IP addresses without a DNS lookup do not traverse DNS rules, and server-side exit isolation applies only to traffic entering the VPN tunnel, not to your device's local Wi-Fi/LAN subnet.
+
+---
+
+## 7. Support Contact Flow and False-Positive Unblocking (`§12.5`, `§12.6`, `§18.3`, `§18.4`, `AT20`, `AT22`)
+
+1. **Include Diagnostic IDs (Never Share Secrets, `§16.2`, `§18.3`)**:
+   - When contacting support about an error in the Member Portal, include the **`Request ID`** shown in the error banner (or the **`Operation ID`** from `/member/devices`) along with the approximate UTC timestamp.
+   - **Never** send your OIDC password, session cookies (`__Host-fvpn_session`), or private keys to support.
+2. **Reporting False Positives and Unblock Propagation Timing (`§12.5`, `§12.6`, `AT20`, `AT22`)**:
+   - Send the exact domain name (e.g., `app.example.com`) and UTC timestamp to support. Once approved, an administrator activates a new `domain_rule_set` policy revision with an `allow` rule (which overrides general threat-feed false positives, but never overrides an explicit admin `block` rule or IP-layer private-network isolation, `§12.4`).
+   - **How Unblock Propagation Timing Works (No Universal 60-Second Guarantee, `§12.5`)**: End-to-end propagation of an `allow` override depends on three separate factors:
+     1. **Central Bundle Publication & Resolver Apply Delay**: After the administrator activates the policy revision, `fvpn-worker` compiles the bundle and pushes it to each AdGuard Home resolver, which validates and reloads it before reporting its applied generation (this publication and resolver-apply delay is **not yet measured**, tracked under `AT20` / `AT22` / `AT31`);
+     2. **Configured Blocked-Response TTL (`blocked_ttl_seconds`)**: The `dns_profile` setting `blocked_ttl_seconds` (configurable `1..86400` seconds; `60` seconds is only a recommended starting point in `§12.5`) governs only the DNS TTL header on blocked responses, not end-to-end propagation time;
+     3. **Client OS, Browser Caches, and Existing Connections (`§12.5`)**: Even after controlled resolvers apply the new revision, your operating system DNS cache, browser DNS/socket cache, or already-open HTTPS/QUIC sessions may continue holding cached results until they expire or you flush your local DNS cache, restart the browser, or reconnect the VPN tunnel.

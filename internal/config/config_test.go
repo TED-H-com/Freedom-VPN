@@ -4,9 +4,36 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestAPI01_ControlExampleDomainFiles(t *testing.T) {
+	// Exercise the shipped file without ambient FVPN_* overrides masking it.
+	typ := reflect.TypeFor[Config]()
+	for i := 0; i < typ.NumField(); i++ {
+		name := "FVPN_" + strings.ToUpper(typ.Field(i).Tag.Get("json"))
+		if _, ok := os.LookupEnv(name); ok {
+			t.Setenv(name, "") // Restore the original value during cleanup.
+			if err := os.Unsetenv(name); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	c, err := Load("../../docs/control/config.example.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.ValidateControl(); err != nil {
+		t.Fatal(err)
+	}
+	got := []string{c.MembersConfigFile, c.DNSConfigFile, c.NodesConfigFile, c.PoliciesConfigFile, c.UsageConfigFile}
+	want := []string{"members.json", "dns.json", "nodes.json", "policies.json", "usage.json"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("example domain files: got %v, want %v", got, want)
+	}
+}
 
 func TestSEC01_ConfigValidationAndRedaction(t *testing.T) {
 	c := Defaults()

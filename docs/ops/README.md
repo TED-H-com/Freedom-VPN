@@ -8,7 +8,7 @@ Operational runbooks, deployment guides, parameter calibration references, and d
 - [**Backup and Restore Drill Record (`../handover/restore-drill.md`)**](../handover/restore-drill.md) — `AT30` point-in-time recovery checklist, Wave 4 measured RPO/RTO evidence, `fvpn-usage-admin` ledger freeze/recovery/replay, and Stripe + NetBird state reconciliation.
 - [**Parameter Calibration Guide (`../handover/calibration.md`)**](../handover/calibration.md) — Business and engineering parameter matrix (`none`, `test only`, `proposed`), spec constraints, and decision ownership (`Ted` vs. `core team`).
 - [**Operator Guide (`../handover/operator-guide.md`)**](../handover/operator-guide.md) — Daily/weekly checklists, reading operations and audit trails, node lifecycle, fleet update batches (`needs_attention` / `unconfirmed`), ledger freeze/adjustments, member suspension, and key rotation.
-- [**Member Guide (`../handover/member-guide.md`)**](../handover/member-guide.md) — Bilingual (`zh-TW` / `en`) guide for Windows, macOS, iOS, and Android, manual verification scripts (`AT01`, `AT09`, `AT21`), device limits, usage/FUP display, DNS behaviour and DoH limits, and support flow.
+- [**Member Guide (`../handover/member-guide.md`)**](../handover/member-guide.md) — Bilingual (`zh-TW` / `en`) guide covering candidate client versions (`needs operator run`) and automatic central device authorization for Windows, macOS, iOS, and Android, manual verification scripts (`AT01`, `AT09`, `AT21`, `AT29`), device limits & revocation (`AT02`, `AT04`), usage (`IPv6Block` mode) & FUP display (`AT17`–`AT19`), DNS behaviour and DoT/DoQ vs. DoH limits, and support flow.
 
 ## Domain Operational References
 

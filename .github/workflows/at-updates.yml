@@ -1,0 +1,40 @@
+name: at-updates
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+
+jobs:
+  lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: lint acceptance driver
+        run: make -f mk/at-updates.mk at-updates-lint
+
+  stack:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: AT23-AT27
+        run: make -f mk/at-updates.mk at-updates
+      - name: tear down
+        if: always()
+        run: FVPN_E2E_PREFIX=w4-updates FVPN_E2E_PORT_BASE=42000 make -f mk/e2e.mk e2e-down

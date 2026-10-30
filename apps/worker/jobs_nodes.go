@@ -59,14 +59,21 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		if err != nil {
 			return "", err
 		}
-		if op.Resource.Type != api.ResourceTypeNode || op.Resource.Id != event.AggregateID || (op.Kind != api.OperationKindNodePublish && op.Kind != api.OperationKindNodeUnpublish && op.Kind != api.OperationKindNodeDisable) {
+		revoking := op.Kind == api.OperationKindNodeRevoke || op.Kind == api.OperationKindNodeRetire
+		if op.Resource.Type != api.ResourceTypeNode || op.Resource.Id != event.AggregateID || (!revoking && op.Kind != api.OperationKindNodePublish && op.Kind != api.OperationKindNodeUnpublish && op.Kind != api.OperationKindNodeDisable) {
 			return "", errors.New("publication operation does not match event")
 		}
 		switch op.Status {
 		case api.OperationStatusSucceeded, api.OperationStatusSuperseded, api.OperationStatusPartiallySucceeded:
 			return op.OperationId.String(), nil
 		}
-		op, err = pub.ExecuteOperation(ctx, payload.OperationID)
+		executor := pub
+		if revoking {
+			// Cleanup runs inside the withdrawal adapter before the executor can
+			// finalize this operation, retaining the same claim and retry budget.
+			executor = exits.NewService(r.Pool, compiler, httpwire.NewRevocationAdapter(r, nb, publication, op))
+		}
+		op, err = executor.ExecuteOperation(ctx, payload.OperationID)
 		if err != nil {
 			return "", err
 		}
@@ -205,91 +212,6 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		})
 		return "observation:" + payload.ReportID.String(), e
 	})
-	// Compatibility: enrollment.RevokeNode still emits both withdrawal events.
-	// Remove only when that producer and its peer/key revocation are migrated.
-	withdraw := func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-		var p struct {
-			NodeID        uuid.UUID  `json:"node_id"`
-			IncarnationID *uuid.UUID `json:"incarnation_id"`
-			OperationID   uuid.UUID  `json:"operation_id"`
-		}
-		if e := json.Unmarshal(event.Payload, &p); e != nil {
-			return "", e
-		}
-		if p.NodeID == uuid.Nil || p.OperationID == uuid.Nil || nb == nil {
-			return "", errors.New("invalid withdrawal event or adapter")
-		}
-		var exit uuid.UUID
-		if e := r.Pool.QueryRow(ctx, `SELECT id FROM exits WHERE node_id=$1`, p.NodeID).Scan(&exit); e != nil {
-			return "", e
-		}
-		if e := nb.WithdrawExit(ctx, exit.String()); e != nil {
-			return "", e
-		}
-		step := "route_withdrawal"
-		if event.EventType == "node.peer.withdraw" {
-			step = "peer_withdrawal"
-			keyRows, e := r.Pool.Query(ctx, `SELECT e.operation_id FROM node_enrollments e JOIN node_incarnations i ON i.id=e.incarnation_id WHERE e.node_id=$1 AND i.revoked_at IS NOT NULL`, p.NodeID)
-			if e != nil {
-				return "", e
-			}
-			keys, e := pgx.CollectRows(keyRows, pgx.RowTo[uuid.UUID])
-			if e != nil {
-				return "", e
-			}
-			for _, key := range keys {
-				if e = nb.RevokeNodeSetupKey(ctx, key.String()); e != nil {
-					return "", e
-				}
-			}
-			rows, e := r.Pool.Query(ctx, `SELECT id,peer_id FROM node_incarnations WHERE node_id=$1 AND revoked_at IS NOT NULL`, p.NodeID)
-			if e != nil {
-				return "", e
-			}
-			type peer struct {
-				id     uuid.UUID
-				remote *string
-			}
-			var peers []peer
-			for rows.Next() {
-				var p peer
-				if e = rows.Scan(&p.id, &p.remote); e != nil {
-					rows.Close()
-					return "", e
-				}
-				peers = append(peers, p)
-			}
-			e = rows.Err()
-			rows.Close()
-			if e != nil {
-				return "", e
-			}
-			for _, peer := range peers {
-				if peer.remote != nil {
-					binding := "node:" + p.NodeID.String() + ":" + peer.id.String()
-					if _, e = nb.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: p.NodeID.String(), IncarnationID: peer.id.String(), PeerID: *peer.remote}); e != nil && !netbird.IsKind(e, netbird.NotFound) {
-						return "", e
-					}
-					if e = nb.DeletePeer(ctx, binding); e != nil {
-						return "", e
-					}
-				}
-			}
-		}
-		ctx = commandtx.WithClaim(ctx, event)
-		e := commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-			if _, e := tx.Exec(ctx, `UPDATE exits SET publication_observed='withdrawn',resource_version=resource_version+1 WHERE id=$1`, exit); e != nil {
-				return e
-			}
-			if _, e := tx.Exec(ctx, `UPDATE outbox_events SET delivery_receipt=$2 WHERE id=$1`, event.ID, "withdrawal:"+event.ID.String()); e != nil {
-				return e
-			}
-			return stepSucceeded(ctx, tx, p.OperationID, step, "withdrawal:"+event.ID.String())
-		})
-		return "withdrawal:" + event.ID.String(), e
-	}
-	jobs.Register("node.routes.withdraw", withdraw)
-	jobs.Register("node.peer.withdraw", withdraw)
 	reconcile := func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
 		if e := r.Fleet.Reconcile(ctx); e != nil {

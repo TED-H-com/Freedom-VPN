@@ -2,7 +2,7 @@
 
 This guide defines the routine operational runbooks for Freedom VPN administrators (`§6`–`§15`, `§17`–`§18`).
 
-All administrative browser sessions require OIDC authentication with MFA (`amr: ["mfa"]` or configured `acr`) via `/auth/login?role=admin` (`§15.1`). High-risk mutations (`POST /admin/nodes/{id}/revoke`, `DELETE /admin/nodes/{id}`, `POST /admin/update-batches`, `POST /admin/policies/{kind}/revisions/{rev}/activate`) additionally require recent authentication within `recent_auth_seconds` (`900s`, `403 RECENT_AUTH_REQUIRED` if stale) and explicit confirmation in the Admin Portal (`§15.1`, `§18.1`).
+All administrative browser sessions require OIDC authentication with MFA (`amr: ["mfa"]` or configured `acr`) via `/auth/login?role=admin` (`§9.1`, `§16.1`). High-risk mutations (`POST /admin/nodes/{id}/revoke`, `DELETE /admin/nodes/{id}`, `POST /admin/update-batches`, `POST /admin/policies/{kind}/revisions/{rev}/activate`) additionally require recent authentication within `recent_auth_seconds` (`900s`, `403 RECENT_AUTH_REQUIRED` if stale) and explicit confirmation in the Admin Portal (`§9.1`, `§16.1`, `§18.1`).
 
 ---
 
@@ -89,7 +89,7 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
 ### 3.1 Enrolling a New Node or Reinstalling an Existing Node (`POST /api/v1/admin/enrollments`)
 
 - **New Node**: Omit `node_id`. Choose `enrollment_mode: "installer"` (default 15-minute TTL) or `"preinstalled"` (default 7-day TTL).
-- **Reinstalling an Existing Node (`§6.5`, `00111_pki_reinstall.sql`)**:
+- **Reinstalling an Existing Node (`§6.2`, `00111_pki_reinstall.sql`)**:
   1. First **revoke** the node's current incarnation (`POST /api/v1/admin/nodes/{node_id}/revoke`) so no active incarnation remains (`409 NODE_INCARNATION_ACTIVE` is returned if an incarnation is still active; `409 NODE_RETIRED` if the node was permanently retired).
   2. Call `POST /api/v1/admin/enrollments` with `"node_id": "<existing_node_uuid>"`.
   3. Run `fvpn-agent enroll -config /etc/vpn-node/agent.json -token-file /run/vpn-node/enrollment.token` on the node. A new `incarnation_id` and mTLS certificate are issued under the same `node_id`.
@@ -142,7 +142,7 @@ Always poll the returned `Operation` (`GET /api/v1/admin/operations/{operation_i
 ### 3.4 Revoking (`POST .../revoke`) vs. Retiring (`DELETE /api/v1/admin/nodes/{node_id}`)
 
 - **Revoke (`POST /api/v1/admin/nodes/{node_id}/revoke`)**:
-  Immediately revokes the node's current mTLS client certificate (`node_certificates`), revokes its serving lease, unpublishes its NetBird exit route, and deletes/disables its NetBird peer (`AT07`). The `node_id` remains in `revoked` state and can be reinstalled with a new incarnation (`§6.5`).
+  Immediately revokes the node's current mTLS client certificate (`node_certificates`), revokes its serving lease, unpublishes its NetBird exit route, and deletes/disables its NetBird peer (`AT07`, `AT13`). The `node_id` remains in `revoked` state and can be reinstalled with a new incarnation (`§6.2`).
 - **Retire (`DELETE /api/v1/admin/nodes/{node_id}`)**:
   Permanently decommissions the node (`lifecycle_state = 'retired'`). A retired node can never be re-enrolled (`409 NODE_RETIRED`), while historical usage events and audit logs remain intact (`§7.1`).
 
