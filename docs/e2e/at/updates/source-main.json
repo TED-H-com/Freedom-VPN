@@ -1,50 +1,35 @@
 {
-  "run_id": "71078ab8-edf8-4d23-af72-ea247f704011",
-  "source_commit": "c8d4a00cf1bf594b20016263c2cfc3c164d92bc9",
-  "at": "2026-10-30T18:09:36Z",
+  "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+  "source_commit": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+  "at": "2026-10-30T20:59:15Z",
   "prefix": "w4-updates",
   "port_base": 42000,
   "harness_source": {
-    "differs_from_source_commit": true,
+    "differs_from_source_commit": false,
     "files_sha256": {
       "authority_test.go": "468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21",
       "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
       "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
       "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
-      "lab_test.go": "cd471a5cf47e726ad8a3600b39f4e443df88acfd370680fef9ffdd8a12edd4b2",
-      "live_test.go": "ae216df6fd7208c309646dc1b2eca407ac9d6006b08a62c254a44f5365884c49",
-      "preresult_test.go": "b29ad4399f58f0345fdb083a1598c49a15d2acf0ec1752994128afd55f8a4b06",
-      "probe_test.go": "6aef8573b323614681290df15a26f461e16020cd4b537204e69b8d9e9ed5ffa0",
-      "restated_test.go": "de0c397ff62ad3bb6cc4ec5f1c2b18ebeffbba7635d496310f17e8c1383d7edf"
+      "lab_test.go": "30fc113965a1b10d59fc5918fa340971c0f7f52f8c40db0e94780b9eff39e58b",
+      "live_test.go": "d132ac2e23f74c9f34c46280c46778737f2650e1343e57fd7d792b15e9a9aea0",
+      "preresult_test.go": "530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf",
+      "probe_test.go": "b214d46d2f8582457830cb485904ee85df176d53734b32731351f39c20b50d01",
+      "restated_test.go": "d35f27ea2c26e1d4e5e86ac6e9c7110678e5a7cc65373d08608e31331bd65aa8"
     }
   },
-  "main_commit": "8a203b97b7c9e7566f1eed50376cad7dd13e708d",
+  "main_commit": {
+    "commit": "52dc77026cb168df5684ae2ccd5cbcadb4dbaeff",
+    "committed_at": "2026-10-30T16:22:11-04:00",
+    "subject": "roadmap: w3-devstack-e2e follow-up 12 merged (#204)"
+  },
   "roadmap_lines": [
-    "8a203b9 roadmap: w4-at-updates follow-up 6 merged (#177)",
-    "be2976c roadmap: w3-contracts-r11 merged (#176)",
-    "729ef25 roadmap: w3-portal-live follow-up 10 merged (#175)",
-    "5555772 roadmap: w2-control-core follow-up 18 merged (#174)",
-    "cd2eb7b roadmap: w4-at-enrollment merged (#173)",
-    "ff04c72 roadmap: w1-netlab follow-up 7 merged (#172)",
-    "00e1d0c roadmap: w2-agent-core follow-up 13 merged (#171)",
-    "631f6d4 roadmap: w2-agent-core follow-up 10 merged (#171)",
-    "e0a84fb roadmap: w3-devstack-e2e follow-up 10 merged (#170)",
-    "ea5e3e7 roadmap: w2-control-core follow-up 17 merged (#169)",
-    "cbb9430 roadmap: w2-updater follow-up 11 merged (#168)",
-    "b4d212d roadmap: w2-fleet-update follow-up 8 merged (#167)",
-    "7653373 roadmap: w2-agent-core follow-up 12 merged (#166)",
-    "5ee3a05 roadmap: w4-at-security-ops follow-up 5 merged (#165)",
-    "23d5005 roadmap: w3-contracts-r10 merged (#164)",
-    "ea860cc roadmap: w4-handover follow-up 5 merged (#163)",
-    "446b6b0 roadmap: w2-agent-core follow-up 11 merged (#162)",
-    "5c58d32 roadmap: w2-control-core follow-up 16 merged (#161)",
-    "afcaa1d roadmap: w3-wire-nodes follow-up 16 merged (#160)",
-    "cc1303a roadmap: w1-netlab follow-up 6 merged (#159)",
-    "3fe72ca roadmap: w4-at-updates follow-up 5 merged (#158)",
-    "73e0200 roadmap: w4-handover follow-up 4 merged (#157)",
-    "b2c4c0f roadmap: w1-netlab follow-up 5 merged (#156)",
-    "84e099c roadmap: w2-fleet-update follow-up 7 merged (#155)",
-    "481f8ff roadmap: w2-updater follow-up 10 merged (#154)",
-    "27d9229 roadmap: w3-devstack-e2e follow-up 9 merged (#153)"
+    "52dc770 roadmap: w3-devstack-e2e follow-up 12 merged (#204)",
+    "0559f7e e2e: harness exports — updater probe peer (F5-02), own-key enrollment join and peer inventory (ENR-04), cloned-identity fixture (ENR-07 setup), per-stream secret-scan results (SECOPS-16); three live defects fixed (follow-up 12) (#204)",
+    "357ddbc roadmap: w4-handover follow-up 7 merged (#190)",
+    "c5f3c65 fleetupdate: D-068 pre-result seeding fills only a null current_release_id and heartbeats attach to the current job only; unexpected-release audits bounded to 16 per job (follow-up 9) (#189)",
+    "cc04f32 at-updates: AT24/AT26/AT27 pass on fresh w4-updates stack — accepted-result authority (F6-02 resolved), offline catch-up + post-batch inheritance, stale-ACK 202 replay; AT23/AT25 retained for F5-02 (follow-up 7) (#186)",
+    "7ac4c14 roadmap: w3-devstack-e2e follow-up 11 merged (#170)",
+    "c8d4a00 roadmap: w2-fleet-update follow-up 8 merged (#167)"
   ]
 }

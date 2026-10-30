@@ -129,6 +129,7 @@ type NodeCheck = api.NodeCheck
 type NodeCheckName = api.NodeCheckName
 type NodeDetail = api.NodeDetail
 type NodeError = api.NodeError
+type NodeIdentityConflict = api.NodeIdentityConflict
 type NodeIncarnation = api.NodeIncarnation
 type NodeIncarnationList = api.NodeIncarnationList
 type NodeIncarnationRetireReason = api.NodeIncarnationRetireReason

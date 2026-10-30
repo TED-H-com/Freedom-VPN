@@ -185,7 +185,8 @@ func Decide(in Input) Decision {
 	// A fresh same-generation lease with an empty member grant set, while
 	// device bindings are still desired (D-067), reports
 	// awaiting_member_grants. That lease is in force, so it is not
-	// lease_expired and its check does not use LEASE_EXPIRED.
+	// lease_expired. The checks and the single errors entry use
+	// AWAITING_MEMBER_GRANTS (D-071, contract revision 11).
 	leaseStale := leaseGenerationStale(in)
 	leaseOK := leaseInForce(in) && !leaseStale
 	grantsPending := grantsProvisional(in)
@@ -219,6 +220,10 @@ func Decide(in Input) Decision {
 			// Grants that admit nobody stay on the existing token.
 			if grantsPending {
 				add(api.ForwardingBlockReasonAwaitingMemberGrants)
+				d.Errors = append(d.Errors, api.NodeError{
+					Code: api.ErrorCodeAWAITINGMEMBERGRANTS, Message: leaseGrantsPendingDetail,
+					ObservedAt: at, Stage: "lease",
+				})
 			} else {
 				add(api.ForwardingBlockReasonLeaseExpired)
 			}
@@ -318,21 +323,21 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 		case leaseGenerationStale(in):
 			lease = withDetail(chk(api.NodeCheckNameLease, false, api.ErrorCodeSTALEGENERATION, at), "Serving lease is not for the applied generation.")
 		case grantsPending && !leaseOK:
-			// The check stays failed so the detail is kept. No ErrorCode
-			// names a lease that is still in force, so the code is null
-			// and Decide does not append LEASE_EXPIRED to errors.
-			lease = withDetail(api.NodeCheck{
-				Name: api.NodeCheckNameLease, Status: api.HealthCheckStatusFailed, ObservedAt: at,
-				ErrorCode: presence.NewNullNullable[api.ErrorCode](),
-			}, leaseGrantsPendingDetail)
+			lease = withDetail(chk(api.NodeCheckNameLease, false, api.ErrorCodeAWAITINGMEMBERGRANTS, at), leaseGrantsPendingDetail)
 		default:
 			lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at), "Serving lease is not in force.")
 		}
 		if leaseOK && in.LeaseRetryPending {
 			lease.Detail = sanitizeDetail("Lease renewal is waiting for Retry-After; the current lease remains in force.")
 		}
-		qos = withDetail(chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "Rate policy could not be applied.")
-		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "No member binding was admitted.")
+		qosCode := api.ErrorCodeVALIDATIONFAILED
+		bindCode := api.ErrorCodeVALIDATIONFAILED
+		if grantsPending && !leaseOK {
+			qosCode = api.ErrorCodeAWAITINGMEMBERGRANTS
+			bindCode = api.ErrorCodeAWAITINGMEMBERGRANTS
+		}
+		qos = withDetail(chk(api.NodeCheckNameQos, qosOK && leaseOK, qosCode, at), "Rate policy could not be applied.")
+		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, bindCode, at), "No member binding was admitted.")
 	}
 	if in.ApplyError != nil || in.DependencyMissing {
 		code := api.ErrorCodeDEPENDENCYUNAVAILABLE

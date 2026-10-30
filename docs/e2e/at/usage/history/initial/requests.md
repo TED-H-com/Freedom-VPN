@@ -1,0 +1,15 @@
+# Upstream Blockers & Requests to Orchestrator (w4-at-usage)
+
+During live verification against `fvpn-w4-usage` (`FVPN_E2E_PORT_BASE=48000`) at commit `912d976b03b9948ba308cd6e4e97d0f931574510`, the following upstream product preconditions prevented full end-to-end member data-plane traffic for `AT14`–`AT19`:
+
+1. **Node Publication Rejected (`422 NODE_NOT_SERVICEABLE`)**:
+   - **File / Area**: `internal/nodes/httpwire/publication.go`, `node/agent/engine.go`, `tests/e2e/cmd/fvpn-e2e-prepare`
+   - **Symptom**: After enrolling `fvpn-w4-usage-node` (`node_id=01a18a49-4020-71c6-ad22-893acd249a8b`, `incarnation_id=01a18a49-4253-781f-9f9e-de9c6c24c5ec`) and activating `release_support` (`01a18a56-073d-7935-aca4-a37399e44c1c`), `PUT /api/v1/admin/nodes/01a18a49-4020-71c6-ad22-893acd249a8b/publication` with `{"desired_publication_state":"published"}` returns `HTTP 422 NODE_NOT_SERVICEABLE` (`{"error":{"code":"NODE_NOT_SERVICEABLE","message":"node does not satisfy serving baseline requirements","request_id":"01a18a56-1b83-7802-8c0f-98bbc9d92e63","retryable":false,"details":{"failed_checks":["provisioning_state=applying (want ready)"]}}}`).
+   - **Impact on AT14, AT16, AT18, AT19**: Because the node cannot transition to `published` + `serving`, `fvpn-agent` keeps `table inet fvpn` at `fvpn_generation=0` (fail-closed) and does not start the periodic usage sampler (`node/agent/usage.go` `resumeSampling`).
+   - **Requested Fix**: Ensure the devstack node image registers its release in `releases` (or satisfies `release_support`), passes the node isolation/safety baseline check (`safety_status=ok`, `provisioning_state=ready`), and can acquire a serving lease upon `PUT /api/v1/admin/nodes/{id}/publication`.
+
+2. **Missing Member Exit Group & Device Admission Flow on Unseeded Stack**:
+   - **File / Area**: `apps/control`, `internal/devices`, `tests/e2e/cmd/fvpn-e2e-prepare`
+   - **Symptom**: On an unseeded stack (obeying D-050 zero-SQL-seeding), `member_groups` has `0` rows and no HTTP creation endpoint, so `POST /api/v1/admin/policies` (`type=plan`) returns `HTTP 422` (`{"error":{"code":"VALIDATION_FAILED","message":"exit_group_id 0195f000-0000-7000-8000-000000000999 does not exist (cannot grant non-existent exit group)","request_id":"01a18a56-1464-73c7-95d4-b3a7c8c3eb06","retryable":false,"details":{"fields":[{"field":"/payload/exit_group_ids/0","reason":"plan_unknown_exit_group"}],"reason":"plan_unknown_exit_group"}}}`), and `device_bindings` has `0` rows.
+   - **Impact on AT14, AT15, AT17, AT18, AT19**: `POST /api/v1/agent/usage-batches` rejects non-empty `records` via `validateEventBindingsInTx` (`binding_not_found`) when no active `device_bindings` row exists for the `(member_id, device_id, node_id)` tuple.
+   - **Requested Fix**: Seed a default `TEST ONLY` `member_groups` row during `fvpn-e2e-prepare` (or expose an admin exit-group bootstrap path) and complete the end-to-end member device NetBird admission flow so `device_bindings` rows are created through product APIs.

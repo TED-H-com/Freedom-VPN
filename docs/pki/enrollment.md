@@ -185,15 +185,53 @@ followed by a DB transaction failure intentionally leaves authentication denied;
 retry the same revoke command to finish DB state and withdrawal work. A new
 heartbeat, installer run, renewal or enrollment replay cannot undo this.
 
-`ObserveEndpoint` uses a server-derived endpoint compatibility domain, not an
-untrusted body ID or full destination list. A different hash within the active
-window records a conflict and permanently freezes its mapping row, returning
-`false` for all later automatic updates. The original endpoint is retained;
-no last-writer-wins replacement happens. This does not infer physical device
-identity from IP/MAC. Adapter policy must distinguish ordinary roaming from
-incompatible simultaneous activity. The worker must honor this freeze before
-mutating its external identity mapping. Resolution is explicit operator work;
-there is no automatic unfreeze or new remote-shell capability.
+`ObserveEndpoint` and `ObserveEndpointTx` (`internal/enrollment/revoke.go`) use a
+server-derived endpoint compatibility domain (D-072), never an untrusted body ID
+or raw forwarding header:
+- **Ingress callers**: On the mTLS agent listener (`internal/httpapi/middleware.go`),
+  `httpapi.New` records the verified leaf certificate (`httpapi.ClientCertificate`)
+  and the coarsened compatibility domain (`httpapi.ClientCompatibilityDomain`) in
+  request-local metadata. The two per-request transactional agent write handlers—lease
+  renewal (`POST /api/v1/agent/lease-renewals`) and observation submission
+  (`POST /api/v1/agent/observations`)—call `Enrollment.ObserveEndpointTx` inside
+  their request transaction before any automatic identity-mapping mutation. GET
+  routes (`GET /api/v1/agent/desired-state`, `GET /api/v1/agent/resolver-documents/{id}`)
+  never touch `node_identity_endpoints` or `node_identity_conflicts`.
+- **Compatibility domain & limitation**: The client address is derived by the
+  existing `requestRateKey` trusted-proxy logic (`X-Forwarded-For` is honoured
+  only when the TCP peer is in configured `trusted_proxies`; otherwise `RemoteAddr`
+  is used) and coarsened to **IPv4 `/24`** or **IPv6 `/48`** before server-side
+  SHA-256 hashing into `endpoint_hash`. Raw IP addresses and CIDR strings are
+  never stored or logged. Limitation: two clones operating behind the same `/24`
+  or `/48` compatibility domain are not distinguished by this check.
+- **Roaming vs. interleaving (`DefaultIdentityActiveWindow = 120s`)**: The default
+  120 s active window is larger than the 60 s D-067 provisional lease renewal cap
+  and the 30 s heartbeat interval (so a renewing or heartbeating node always
+  refreshes inside the window) and shorter than a finite-member serving lease.
+  A single switch `X → Y` (`Y` first seen while `X` was seen inside `activeWindow`)
+  is treated as **roaming**: `X` remains the mapped `endpoint_hash` in
+  `node_identity_endpoints`, `Y` is tracked as the candidate, and `Y` is promoted
+  to `node_identity_endpoints` only once `X` has been quiet for a full
+  `activeWindow`. **Interleaving**—`X` seen again while `Y` is still inside
+  `activeWindow` (`X → Y → X`), `Y` and `X` both seen within one window twice, or
+  a third incompatible domain `Z` seen while `X` and `Y` are inside the window—records
+  one row in `node_identity_conflicts`, sets `mapping_frozen = true` (enforced
+  irreversibly by database trigger `pki_mapping_frozen`), and emits one
+  `node.identity.conflict` audit event on `node:<node_id>` with `changes.after`
+  containing only `incarnation_id`, `conflict_count`, and `observed_at` (no
+  hashes, addresses, or domains; later requests while frozen emit no additional
+  audit event). The triggering HTTP request still returns its normal 2xx response.
+- **Freeze honors & operator reconciliation**: Once `mapping_frozen = true`, all
+  automatic external identity mapping updates (`node.peer.observe`,
+  `node.peer.discover`, `node.provision.requested`, `EnsureNodePeer`,
+  `DiscoverNodePeer`, and `PublishExit`) skip mutation (no last-writer-wins), and
+  `SubmitObservation` applies the D-055 terminal incarnation state
+  (`provisioning_state = 'failed'`, `safety_status = 'failed'`,
+  `member_forwarding_observed = false`). This is intended: a cloned private key
+  is an identity compromise. Reconciliation uses the existing operator path—`revokeNode`
+  followed by a new enrollment (`createEnrollment` + `enrollNode`)—which creates
+  a fresh unfrozen incarnation while preserving the historical conflict rows on
+  the retired incarnation. There is no unfreeze operation.
 
 
 An explicitly authorized reinstall uses the same stable Node and a new incarnation.

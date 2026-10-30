@@ -517,36 +517,36 @@
     ]
   },
   "handover_follow_up_6": {
-    "reviewed_at": "2026-10-30T18:15:00Z",
-    "base_main_commit": "8eaafcbd22c2e1dc0fb72d0f72b150e512bb3249",
+    "reviewed_at": "2026-10-30T20:25:00Z",
+    "base_main_commit": "7c7cf9b084152a5c32e8d9551c22940f97a338ca",
     "reviewed_documents": [
       {
         "path": "README.md",
-        "sha256": "fbfc108f72c6553df274418a347a4cf0197ef180806f8a2c8850772cac4c455e"
+        "sha256": "fa2fe4b7672ff0375aabe4a49c13cf1bef5b6e0ee859e1d4e9dc2a31f51d447e"
       },
       {
         "path": "docs/handover/README.md",
-        "sha256": "7557bd0ca9dde49c87d9c9a49f73564b4a96455d54cd367e2887999d5b43a0d9"
+        "sha256": "00ebae0f40c249f34597f71241da347829b2aa47fae1765a9f89e94610f50159"
       },
       {
         "path": "docs/handover/deploy.md",
-        "sha256": "15598a210d2bc0afe608e1787a0c491dc3f9b820d13a581fe2fd5e1268fd7df2"
+        "sha256": "e3610bb4d2a491737520bb096b37c96ba24acda1a5975e01e208cf0430dba68a"
       },
       {
         "path": "docs/handover/calibration.md",
-        "sha256": "d10e51d3b76408be9badd23be4d86b6c783cd83d1b0a10c6887684aa172f133f"
+        "sha256": "16802e780887c81e92a59ceb2925cf14f72815fee0db2174016ad1ca1cdd7ebf"
       },
       {
         "path": "docs/handover/operator-guide.md",
-        "sha256": "c091cc1e6c0f38c134158bca8df51fed67738aa587ec2eeda44df4c971dda008"
+        "sha256": "2bbce730031094833aa5594ac028015aadb36a28d67f4e17c80fab84f13577c3"
       },
       {
         "path": "docs/handover/member-guide.md",
-        "sha256": "34cd613cc514cd9e8b8d3f8b07e01801e4e7badf10d3415dece8935c264a232f"
+        "sha256": "069d726a5eb943eaa764df335c8a620666ea6f6778da6739cf6189332c900abd"
       },
       {
         "path": "docs/ops/README.md",
-        "sha256": "fcd9132ef3a07b67f8f86d4ffe1e062561e3c4333c75e0e431eae732c00a551f"
+        "sha256": "633b84880d7422a699d6a87734cf313a675821cfe1e4bca4be1f7812c3739cd1"
       }
     ],
     "doc15_handover_half": {
@@ -560,29 +560,29 @@
     }
   },
   "follow_up_7": {
-    "reviewed_at": "2026-10-30T19:20:00Z",
-    "application_base": "fb3ea32",
-    "scope": "Read public README/member guide/operator guide, changed handover claims, and portal i18n text after #185/#188/#191 (D-065 fleet configuration operator view and contract revision 10). Physical platform and candidate-hardware rows stay needs operator run.",
+    "reviewed_at": "2026-10-30T20:25:00Z",
+    "application_base": "7c7cf9b",
+    "scope": "Read public README/member guide/operator guide, changed handover claims, and portal i18n text after #185/#188/#191/#200/#203 (D-065 fleet configuration operator view, contract revision 11, D-067/D-068, control follow-up 19, and DOC16 follow-up 5 history pin). Physical platform and candidate-hardware rows stay needs operator run.",
     "files": [
       {
         "path": "README.md",
-        "sha256": "fbfc108f72c6553df274418a347a4cf0197ef180806f8a2c8850772cac4c455e"
+        "sha256": "fa2fe4b7672ff0375aabe4a49c13cf1bef5b6e0ee859e1d4e9dc2a31f51d447e"
       },
       {
         "path": "docs/handover/member-guide.md",
-        "sha256": "34cd613cc514cd9e8b8d3f8b07e01801e4e7badf10d3415dece8935c264a232f"
+        "sha256": "069d726a5eb943eaa764df335c8a620666ea6f6778da6739cf6189332c900abd"
       },
       {
         "path": "docs/handover/operator-guide.md",
-        "sha256": "c091cc1e6c0f38c134158bca8df51fed67738aa587ec2eeda44df4c971dda008"
+        "sha256": "2bbce730031094833aa5594ac028015aadb36a28d67f4e17c80fab84f13577c3"
       },
       {
         "path": "docs/handover/calibration.md",
-        "sha256": "d10e51d3b76408be9badd23be4d86b6c783cd83d1b0a10c6887684aa172f133f"
+        "sha256": "16802e780887c81e92a59ceb2925cf14f72815fee0db2174016ad1ca1cdd7ebf"
       },
       {
         "path": "docs/ops/README.md",
-        "sha256": "fcd9132ef3a07b67f8f86d4ffe1e062561e3c4333c75e0e431eae732c00a551f"
+        "sha256": "633b84880d7422a699d6a87734cf313a675821cfe1e4bca4be1f7812c3739cd1"
       },
       {
         "path": "apps/portal/src/i18n/en.ts",
@@ -608,7 +608,8 @@
       {
         "id": "DOC16",
         "owner": "w4-handover",
-        "status": "open",
+        "status": "resolved in w4-handover follow-up 8",
+        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2 and Part II en §3.2); tests/handover/handover_test.go",
         "file": "docs/handover/member-guide.md",
         "section": "Measurement status, both languages",
         "reason": "#180/#188 cites mutable secops counted-flow/deadlines/capacity paths as Follow-up 5 evidence with fixed two-device numbers; those root records change each run. Pin the cited #165 values to history/follow-up-5/ (or the exact commit). Keep guest wall-clock rollback distinct from component clock tests."

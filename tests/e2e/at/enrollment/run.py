@@ -19,32 +19,33 @@ PORT_BASE = "12000"
 REQUIRED = {
     "AT06": ["fresh_stack", "response_dropped", "same_holder_retry", "one_node",
              "current_incarnation", "consumed_binding", "single_consumption_audit",
-             "incarnation_uniqueness", "peer_uniqueness", "audit_token_hash", "csr_proof",
+             "incarnation_uniqueness", "incarnation_history", "token_sha256_create",
+             "token_sha256_get", "token_sha256_revoke", "audit_token_hash",
+             "peer_uniqueness", "csr_proof",
              "different_key_race", "race_winner_identity", "expired_token", "revoked_token", "token_only",
              "invalid_proof", "bootstrap_requires_mtls", "retry_no_store", "evidence_set_scan",
-             "secret_scan_current_probe_evidence",
+             "secret_scan_admin_reads", "secret_scan_current_probe_evidence",
              "secret_scan_control/console", "secret_scan_worker/console",
              "secret_scan_node/console", "secret_scan_node/agent.log",
              "secret_scan_node/watchdog.log", "secret_scan_node/netbird-service.log",
              "secret_scan_node/netbird-up.log", "secret_scan_node/resolver-proxy.log"],
     "AT07": ["fresh_stack", "distinct_api_first_boot", "distinct_first_boot", "current_incarnation",
+             "incarnation_uniqueness", "incarnation_history",
              "machine_identity", "counted_unacked_usage", "installer_rerun",
              "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied",
              "historical_usage_retained", "cloned_identity_conflict"],
 }
 MISSING = {
-    "incarnation_uniqueness": "ENR-03 / w3-wire-nodes: getNode.current_incarnation_id is not complete incarnation count/history",
-    "peer_uniqueness": "ENR-04 / devstack follow-up 12: JoinEnrolledIdentity and EnrollmentPeerInventory are not exported",
-    "audit_token_hash": "ENR-02 / pki-enroll: listAuditEvents.changes has no enrollment token-hash evidence",
-    "distinct_first_boot": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported; API identity comparison alone is partial",
-    "machine_identity": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported",
+    "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
+    "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
+    "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "counted_unacked_usage": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
     "installer_rerun": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
     "identity_ledger_preserved": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
     "controlled_reinstall": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
     "old_certificate_denied": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
-    "historical_usage_retained": "ENR-03/ENR-05/ENR-06: history API and counted usage across reinstall required",
-    "cloned_identity_conflict": "ENR-07 / devstack follow-up 12: StartClonedIdentityFixture is not exported",
+    "historical_usage_retained": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately",
+    "cloned_identity_conflict": "ENR-07 StartClonedIdentityFixture was not observed; devstack follow-up 12 PR #204 exports it",
 }
 
 
@@ -198,45 +199,77 @@ def main():
             observed.append(dict(at=at, name=name, status=status, detail=detail, observed_at=now()))
 
         probe_path = private / "probe.json"
-        try:
-            down = run("fresh_teardown", ["make", "-f", "mk/e2e.mk", "e2e-down"])
+        join_probe_path = private / "probe-join.json"
+        binary = Path(scratch) / "enrollment.test"
+
+        def compile_probe():
+            if binary.exists():
+                return 0
+            built = run("compile_probe", ["go", "test", "-tags", "e2e", "-c", "-o", str(binary), "./tests/e2e/at/enrollment"])
+            if built == 0:
+                meta["test_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
+            return built
+
+        def bring_up(label):
+            down = run(label + "_teardown", ["make", "-f", "mk/e2e.mk", "e2e-down"])
             if down or any(inventory().values()):
-                for at in REQUIRED:
-                    note(at, "fresh_stack", "blocked", "Owned-prefix fresh teardown did not complete")
-            else:
-                up = run("fresh_startup", ["make", "-f", "mk/e2e.mk", "e2e-up"], {"E2E_RESET": "1"})
-                startup = (private / "fresh_startup.log").read_text(errors="replace")
-                reason = (f"ENR-01: shared prepare rejected assigned port base {PORT_BASE}: port base slot is out of range"
-                          if "port base slot is out of range" in startup else "Fresh stack startup failed; private diagnostic log retained")
-                for at in REQUIRED:
-                    note(at, "fresh_stack", "blocked" if up else "pass", reason if up else "E2E_RESET=1 fresh stack started")
-                if up == 0:
-                    # Inspect only the assigned stack; IDs stay pinned across the run.
-                    meta["image_digests"] = {s: output(["docker", "inspect", "--format={{.Image}}", "fvpn-w4-enroll-" + s])
-                                             for s in ("control", "worker", "node")}
-                    meta["image_evidence"] = "immutable running container image IDs"
-                    binary = Path(scratch) / "enrollment.test"
-                    built = run("compile_probe", ["go", "test", "-tags", "e2e", "-c", "-o", str(binary), "./tests/e2e/at/enrollment"])
-                    if built == 0:
-                        meta["test_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
-                        code = run("live_probe", [str(binary), "-test.v", "-test.run=^TestAT06_AT07_Live$", "-test.timeout=30m"],
-                                   {"FVPN_E2E": "1", "FVPN_AT_ENROLLMENT_PROBE": str(probe_path)})
-                        if code:
-                            for at in REQUIRED:
-                                note(at, "probe_process", "fail", "Live probe process returned nonzero; completed checks retained")
-                    else:
+                return False, "Owned-prefix fresh teardown did not complete"
+            up = run(label + "_startup", ["make", "-f", "mk/e2e.mk", "e2e-up"], {"E2E_RESET": "1"})
+            startup = (private / (label + "_startup.log")).read_text(errors="replace")
+            if "port base slot is out of range" in startup:
+                return False, f"ENR-01: shared prepare rejected assigned port base {PORT_BASE}: port base slot is out of range"
+            if up:
+                return False, "Fresh stack startup failed; private diagnostic log retained"
+            return True, ""
+
+        def digests():
+            return {s: output(["docker", "inspect", "--format={{.Image}}", "fvpn-w4-enroll-" + s])
+                    for s in ("control", "worker", "node")}
+
+        try:
+            # Acceptance stack: API enrollments, both clean first boots, fingerprints
+            # and the clone fixture. The own-key join needs node2 while it is still
+            # waiting, so it runs on the next fresh stack.
+            up, reason = bring_up("fresh")
+            for at in REQUIRED:
+                note(at, "fresh_stack", "pass" if up else "blocked",
+                     "E2E_RESET=1 fresh stack started" if up else reason)
+            if up:
+                meta["image_digests"] = digests()
+                meta["image_evidence"] = "immutable running container image IDs"
+                if compile_probe() == 0:
+                    code = run("live_probe", [str(binary), "-test.v", "-test.run=^TestAT06_AT07_Live$", "-test.timeout=30m"],
+                               {"FVPN_E2E": "1", "FVPN_AT_ENROLLMENT_PHASE": "full", "FVPN_AT_ENROLLMENT_PROBE": str(probe_path)})
+                    if code:
                         for at in REQUIRED:
-                            note(at, "probe_compile", "fail", "Live acceptance probe did not compile")
+                            note(at, "probe_process", "fail", "Live probe process returned nonzero; completed checks retained")
+                else:
+                    for at in REQUIRED:
+                        note(at, "probe_compile", "fail", "Live acceptance probe did not compile")
+            # Join stack: JoinEnrolledIdentity consumes the only fresh waiting slot.
+            join_up, join_reason = bring_up("join")
+            if not join_up:
+                note("AT06", "peer_uniqueness", "blocked", "ENR-04 join cycle did not start: " + join_reason)
+            else:
+                meta["join_image_digests"] = digests()
+                if compile_probe() == 0:
+                    code = run("live_probe_join", [str(binary), "-test.v", "-test.run=^TestAT06_AT07_Live$", "-test.timeout=30m"],
+                               {"FVPN_E2E": "1", "FVPN_AT_ENROLLMENT_PHASE": "join", "FVPN_AT_ENROLLMENT_PROBE": str(join_probe_path)})
+                    if code:
+                        note("AT06", "probe_process", "fail", "Join-cycle probe process returned nonzero; completed checks retained")
+                else:
+                    note("AT06", "probe_compile", "fail", "Live acceptance probe did not compile")
         except (OSError, subprocess.CalledProcessError, ValueError):
             for at in REQUIRED:
                 note(at, "runner", "fail", "Runner prerequisite failed; exception content withheld")
         finally:
-            if probe_path.exists():
-                try:
-                    observed += json.loads(probe_path.read_text())
-                except (OSError, ValueError):
-                    for at in REQUIRED:
-                        note(at, "probe_evidence", "fail", "Probe evidence could not be decoded")
+            for path in (probe_path, join_probe_path):
+                if path.exists():
+                    try:
+                        observed += json.loads(path.read_text())
+                    except (OSError, ValueError):
+                        for at in REQUIRED:
+                            note(at, "probe_evidence", "fail", "Probe evidence could not be decoded")
             down = run("final_teardown", ["make", "-f", "mk/e2e.mk", "e2e-down"])
             try:
                 meta["cleanup"] = inventory()

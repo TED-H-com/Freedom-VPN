@@ -1,0 +1,76 @@
+{
+  "batch_id": "01a18dfa-d579-765a-97b2-2f9753de0b85",
+  "counts": {
+    "already_current": 0,
+    "applying": 0,
+    "cancelled": 0,
+    "checking": 0,
+    "downloading": 0,
+    "failed": 0,
+    "queued": 0,
+    "rolled_back": 1,
+    "succeeded": 0,
+    "superseded": 0,
+    "verifying": 0,
+    "waiting_online": 0
+  },
+  "created_at": "2026-10-30T18:03:08.53628Z",
+  "created_by": "01a18df9-10de-71cc-9b85-65302881a968",
+  "next_cursor": null,
+  "operation_id": "01a18dfa-d579-7885-8f5a-d770bf97aac1",
+  "reason": "TEST ONLY updates follow-up 7",
+  "release_id": "01a18df9-1864-7020-96d1-4a2c0d0589e7",
+  "requires_service_restart": true,
+  "state": "completed_with_exceptions",
+  "target_count": 1,
+  "targets": [
+    {
+      "attempts": 1,
+      "candidate_health": {
+        "dns_policy": "passed",
+        "identity_and_state": "passed",
+        "internet_only": "passed",
+        "processes": "passed",
+        "tunnel_probe": "failed"
+      },
+      "current_job": {
+        "attempt": 1,
+        "error_code": "HEALTH_CHECK_FAILED",
+        "finished_at": "2026-10-30T18:03:51.223684Z",
+        "job_id": "01a18dfa-d57a-71f6-a8bd-84cf1d015ad0",
+        "recovery_required": false,
+        "stage": "report",
+        "started_at": "2026-10-30T18:03:51.223684Z",
+        "state": "rolled_back"
+      },
+      "current_release_id": "01a18df9-2090-7b4f-a9c7-7652f5891521",
+      "execution_incarnation_id": "01a18df9-3b91-7c94-a4a7-05b886ac7858",
+      "generation": "2",
+      "health": {
+        "dns_policy": "passed",
+        "identity_and_state": "passed",
+        "internet_only": "passed",
+        "processes": "passed",
+        "tunnel_probe": "passed"
+      },
+      "incarnation_at_snapshot": "01a18df9-3b91-7c94-a4a7-05b886ac7858",
+      "last_observed_at": "2026-10-30T18:04:21.8292Z",
+      "last_result_at": "2026-10-30T18:03:51.223684Z",
+      "needs_attention": true,
+      "node_id": "01a18df9-384b-78e9-923f-bc8e3fcb5acf",
+      "node_name": "TEST ONLY updates",
+      "online_at_snapshot": true,
+      "policy_generation": "7",
+      "policy_refs": [
+        "01a18df9-2ce2-765b-a917-5fa93920c35c"
+      ],
+      "previous_release_id": "01a18df9-1864-7020-96d1-4a2c0d0589e7",
+      "retryable": false,
+      "state": "rolled_back",
+      "target_id": "01a18dfa-d579-7dc2-85a2-e280e85ffeef",
+      "unconfirmed": false
+    }
+  ],
+  "targets_url": "/api/v1/admin/update-batches/01a18dfa-d579-765a-97b2-2f9753de0b85",
+  "updated_at": "2026-10-30T18:03:51.22532Z"
+}

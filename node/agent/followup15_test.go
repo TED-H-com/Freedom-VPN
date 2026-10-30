@@ -167,6 +167,7 @@ func TestD067_EmptyBindingsDoNotRenewProvisionally(t *testing.T) {
 	if hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonLeaseExpired) {
 		t.Fatalf("empty bindings reported a grant reason: %v", r.eng.decision.Reasons)
 	}
+	assertNoAwaitingMemberGrants(t, r.eng.decision)
 }
 
 func TestD067_GrantedLeaseKeepsRenewalLead(t *testing.T) {
@@ -180,6 +181,11 @@ func TestD067_GrantedLeaseKeepsRenewalLead(t *testing.T) {
 	if r.srv.LeaseRenewals() != count || !r.eng.serving || len(r.eng.lease.Members) == 0 {
 		t.Fatalf("granted lease renewed inside the lead: count=%d serving=%v members=%d", r.srv.LeaseRenewals()-count, r.eng.serving, len(r.eng.lease.Members))
 	}
+	lease := leaseCheck(t, r.eng.decision.Checks)
+	if lease.Status != api.HealthCheckStatusPassed || !lease.ErrorCode.IsNull() {
+		t.Fatalf("granted lease check failed: status=%s null=%v", lease.Status, lease.ErrorCode.IsNull())
+	}
+	assertNoAwaitingMemberGrants(t, r.eng.decision)
 }
 
 func TestD067_StaleGenerationThenEmptyMembershipConverges(t *testing.T) {
@@ -200,6 +206,7 @@ func TestD067_StaleGenerationThenEmptyMembershipConverges(t *testing.T) {
 	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeSTALEGENERATION {
 		t.Fatalf("stale lease check: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
 	}
+	assertNoAwaitingMemberGrants(t, r.eng.decision)
 
 	r.srv.SetLeaseGeneration(0)
 	r.srv.SetMemberGrantsReady(false)
@@ -223,6 +230,11 @@ func TestD067_StaleGenerationThenEmptyMembershipConverges(t *testing.T) {
 	if r.srv.LeaseRenewals() != count+2 || !r.eng.serving || uint64(r.eng.desired.ConfigGeneration) != 12 || uint64(r.eng.lease.ConfigGeneration) != 12 || len(r.eng.lease.Members) != 3 || r.eng.appliedGen != 12 {
 		t.Fatalf("did not converge on generation 12: renewals=%d serving=%v desired=%s lease=%s members=%d applied=%d reasons=%v", r.srv.LeaseRenewals()-count, r.eng.serving, r.eng.desired.ConfigGeneration, r.eng.lease.ConfigGeneration, len(r.eng.lease.Members), r.eng.appliedGen, r.eng.decision.Reasons)
 	}
+	lease = leaseCheck(t, r.eng.decision.Checks)
+	if lease.Status != api.HealthCheckStatusPassed {
+		t.Fatalf("granted lease check failed after convergence: status=%s", lease.Status)
+	}
+	assertNoAwaitingMemberGrants(t, r.eng.decision)
 }
 
 func TestD067_ExpiredLeaseNeverAwaitingMemberGrants(t *testing.T) {
@@ -239,6 +251,7 @@ func TestD067_ExpiredLeaseNeverAwaitingMemberGrants(t *testing.T) {
 	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeLEASEEXPIRED || detailValue(lease) != "Serving lease is not in force." {
 		t.Fatalf("expired lease check: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
 	}
+	assertNoAwaitingMemberGrants(t, d)
 
 	in.LeaseFresh = false
 	in.MonoNow = in.LeaseMonoSent
@@ -250,6 +263,7 @@ func TestD067_ExpiredLeaseNeverAwaitingMemberGrants(t *testing.T) {
 	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeLEASEEXPIRED {
 		t.Fatalf("unstored lease check: status=%s null=%v", lease.Status, lease.ErrorCode.IsNull())
 	}
+	assertNoAwaitingMemberGrants(t, d)
 }
 
 func TestD067_EmptyBindingsReportNeitherGrantReason(t *testing.T) {
@@ -261,6 +275,7 @@ func TestD067_EmptyBindingsReportNeitherGrantReason(t *testing.T) {
 	if lease.Status != api.HealthCheckStatusNotRun {
 		t.Fatalf("empty bindings ran the lease check: %+v", lease)
 	}
+	assertNoAwaitingMemberGrants(t, d)
 }
 
 func TestD067_StaleGenerationKeepsPolicyMissing(t *testing.T) {
@@ -279,6 +294,7 @@ func TestD067_StaleGenerationKeepsPolicyMissing(t *testing.T) {
 	if check.Status != api.HealthCheckStatusFailed || codeOf(t, check) != api.ErrorCodeSTALEGENERATION || detailValue(check) != "Serving lease is not for the applied generation." {
 		t.Fatalf("stale lease check: status=%s code=%s detail=%q", check.Status, codeOf(t, check), detailValue(check))
 	}
+	assertNoAwaitingMemberGrants(t, d)
 }
 
 func TestD067_UnmatchedGrantStaysLeaseExpired(t *testing.T) {
@@ -296,6 +312,7 @@ func TestD067_UnmatchedGrantStaysLeaseExpired(t *testing.T) {
 	if check.Status != api.HealthCheckStatusFailed || codeOf(t, check) != api.ErrorCodeLEASEEXPIRED {
 		t.Fatalf("unmatched grant lease check: status=%s null=%v code-ok=%v", check.Status, check.ErrorCode.IsNull(), codeOf(t, check))
 	}
+	assertNoAwaitingMemberGrants(t, d)
 }
 
 func assertProvisionalDecision(t *testing.T, d Decision) {
@@ -306,17 +323,37 @@ func assertProvisionalDecision(t *testing.T, d Decision) {
 	if len(d.Reasons) == 0 || d.Reasons[0] != api.ForwardingBlockReasonAwaitingMemberGrants || hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
 		t.Fatalf("reasons %v", d.Reasons)
 	}
-	if hasCode(d.Errors, api.ErrorCodeLEASEEXPIRED) {
-		t.Fatalf("errors carry LEASE_EXPIRED: %+v", d.Errors)
+	if len(d.Errors) != 1 || d.Errors[0].Code != api.ErrorCodeAWAITINGMEMBERGRANTS || d.Errors[0].Stage != "lease" || d.Errors[0].Message != leaseGrantsPendingDetail {
+		t.Fatalf("errors %+v", d.Errors)
+	}
+	if hasCode(d.Errors, api.ErrorCodeLEASEEXPIRED) || hasCode(d.Errors, api.ErrorCodeVALIDATIONFAILED) {
+		t.Fatalf("errors carry the wrong code: %+v", d.Errors)
 	}
 	lease := leaseCheck(t, d.Checks)
-	if lease.Status != api.HealthCheckStatusFailed || !lease.ErrorCode.IsNull() || detailValue(lease) != leaseGrantsPendingDetail {
-		t.Fatalf("lease check: status=%s null=%v detail=%q", lease.Status, lease.ErrorCode.IsNull(), detailValue(lease))
+	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(lease) != leaseGrantsPendingDetail {
+		t.Fatalf("lease check: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
 	}
-	for _, name := range []api.NodeCheckName{api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
-		c, ok := checkBy(d.Checks, name)
-		if !ok || c.Status != api.HealthCheckStatusFailed || codeOf(t, c) != api.ErrorCodeVALIDATIONFAILED {
-			t.Fatalf("%s: status=%s", name, c.Status)
+	qos, ok := checkBy(d.Checks, api.NodeCheckNameQos)
+	if !ok || qos.Status != api.HealthCheckStatusFailed || codeOf(t, qos) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(qos) != "Rate policy could not be applied." {
+		t.Fatalf("qos: status=%s detail=%q", qos.Status, detailValue(qos))
+	}
+	bind, ok := checkBy(d.Checks, api.NodeCheckNameSourceBinding)
+	if !ok || bind.Status != api.HealthCheckStatusFailed || codeOf(t, bind) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(bind) != "No member binding was admitted." {
+		t.Fatalf("source_binding: status=%s detail=%q", bind.Status, detailValue(bind))
+	}
+}
+
+func assertNoAwaitingMemberGrants(t *testing.T, d Decision) {
+	t.Helper()
+	if hasReason(d.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasCode(d.Errors, api.ErrorCodeAWAITINGMEMBERGRANTS) {
+		t.Fatalf("awaiting member grants leaked: reasons=%v errors=%+v", d.Reasons, d.Errors)
+	}
+	for _, c := range d.Checks {
+		if c.ErrorCode.IsNull() {
+			continue
+		}
+		if codeOf(t, c) == api.ErrorCodeAWAITINGMEMBERGRANTS {
+			t.Fatalf("%s carries AWAITING_MEMBER_GRANTS", c.Name)
 		}
 	}
 }
@@ -329,8 +366,20 @@ func assertProvisionalReport(t *testing.T, rep api.ObservationReport) {
 	if len(rep.ForwardingBlockReasons) == 0 || rep.ForwardingBlockReasons[0] != api.ForwardingBlockReasonAwaitingMemberGrants || hasReason(rep.ForwardingBlockReasons, api.ForwardingBlockReasonLeaseExpired) {
 		t.Fatalf("report reasons %v", rep.ForwardingBlockReasons)
 	}
-	if hasCode(rep.Errors, api.ErrorCodeLEASEEXPIRED) {
+	if len(rep.Errors) != 1 || rep.Errors[0].Code != api.ErrorCodeAWAITINGMEMBERGRANTS || rep.Errors[0].Stage != "lease" || rep.Errors[0].Message != leaseGrantsPendingDetail {
 		t.Fatalf("report errors %+v", rep.Errors)
+	}
+	lease := leaseCheck(t, rep.Checks)
+	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(lease) != leaseGrantsPendingDetail {
+		t.Fatalf("report lease: status=%s detail=%q", lease.Status, detailValue(lease))
+	}
+	qos, ok := checkBy(rep.Checks, api.NodeCheckNameQos)
+	if !ok || qos.Status != api.HealthCheckStatusFailed || codeOf(t, qos) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(qos) != "Rate policy could not be applied." {
+		t.Fatalf("report qos: status=%s detail=%q", qos.Status, detailValue(qos))
+	}
+	bind, ok := checkBy(rep.Checks, api.NodeCheckNameSourceBinding)
+	if !ok || bind.Status != api.HealthCheckStatusFailed || codeOf(t, bind) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(bind) != "No member binding was admitted." {
+		t.Fatalf("report source_binding: status=%s detail=%q", bind.Status, detailValue(bind))
 	}
 	raw, err := json.Marshal(rep)
 	if err != nil {
@@ -340,8 +389,11 @@ func assertProvisionalReport(t *testing.T, rep api.ObservationReport) {
 	if !strings.Contains(body, `"awaiting_member_grants"`) || strings.Contains(body, `"lease_expired"`) || strings.Contains(body, `"LEASE_EXPIRED"`) {
 		t.Fatalf("wire report: %s", body)
 	}
-	if !strings.Contains(body, `"Serving lease has no member grants yet."`) {
-		t.Fatalf("wire report dropped the lease detail: %s", body)
+	if strings.Count(body, `"AWAITING_MEMBER_GRANTS"`) != 4 || strings.Count(body, `"Serving lease has no member grants yet."`) != 2 {
+		t.Fatalf("wire report codes: %s", body)
+	}
+	if !strings.Contains(body, `"Rate policy could not be applied."`) || !strings.Contains(body, `"No member binding was admitted."`) {
+		t.Fatalf("wire report dropped a check detail: %s", body)
 	}
 }
 

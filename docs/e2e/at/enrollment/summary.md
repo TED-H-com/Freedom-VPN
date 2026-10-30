@@ -1,30 +1,31 @@
-# Enrollment acceptance — follow-up 1
+# Enrollment acceptance — follow-up 2
 
-Run `75dbb974-04d2-4e45-a6bd-cfe0d923bd2c`, 2026-10-30 18:07:10Z–18:09:56Z,
-using the corrected `w4-enroll / 12000` binding. Fresh startup and live probes
-exit 0; the acceptance target exits nonzero because both complete ATs are blocked.
+Run `7615d23d-d572-4db1-a903-9610dd3bcef3`, 2026-10-30 20:49:33Z–20:55:13Z,
+on `w4-enroll / 12000`. Source `efba7fba96e9e354900e9360b6ef4cfebf578ea7`
+(dirty harness at invocation), tree SHA-256
+`79cc1e81c8cc85f9044c425e3505608d51714bf91a90d0f444e0ed560899fc0b`.
+Both fresh stacks and both live probes exit 0. The acceptance target exits
+nonzero because AT06 still carries prior failures and AT07 still has blocked
+subchecks.
 
-| AT | Complete status | Decisive observation | Passing live evidence | Record |
+| AT | Complete status | Decisive observation | Current subchecks | Record |
 |---|---|---|---|---|
-| AT06 | blocked | Enrollment audit changes expose only `reason`, no stored token hash (ENR-02) | Dropped-response retry returns the same certificate/incarnation; two-key race gives 201 + 409 ENROLLMENT_KEY_MISMATCH; expiry/revocation/proof negatives and secret scans pass | [AT06.json](AT06.json), [AT06.md](AT06.md) |
-| AT07 | blocked | `MachineIdentityFingerprints` is not exported (ENR-07) | Both documented node slots join from the same immutable image with distinct API Node/incarnation IDs and bound peers | [AT07.json](AT07.json), [AT07.md](AT07.md) |
+| AT06 | blocked | Prior failed check requires explicit review. The four retained failures are run `bebfe230-26d4-4e3d-b052-81d258d04e07` (`audit_read`, `issue_reinstall`, `incarnation_history`, `probe_process`), HTTP 429 `RATE_LIMITED`. The harness now honors `Retry-After`. That resolution is a harness change. Every current subcheck passed, including `token_sha256` (revision 10, PR #195) and `listNodeIncarnations` (PR #200) and `EnrollmentPeerInventory` (devstack follow-up 12, PR #204). | 205 passing, 0 blocked, 0 failed | [AT06.json](AT06.json), [AT06.md](AT06.md) |
+| AT07 | blocked | `StartClonedIdentityFixture.Observe` showed the same machine, agent SPKI and NetBird key hashes on source and clone, both stages `enrolled`, `conflicts` 0, `mapping_frozen` false (ENR-08) | 15 passing, 7 blocked, 0 failed | [AT07.json](AT07.json), [AT07.md](AT07.md) |
 
-AT06 has 85 passing and 4 blocked recorded subchecks; AT07 has 10 passing and
-9 blocked. No subcheck failed. The 54/26 prior checks from both initial attempts
-remain retained, with their original run IDs and blocked results.
+ENR-02 and ENR-03 are closed on this run. ENR-04 is closed: the join cycle's
+discarded-response race returned 201 and 409 `ENROLLMENT_KEY_MISMATCH`, the
+replay joined with bootstrap HTTP 200, and both inventory reads were
+`complete` with one setup key, one use and one projected peer. ENR-07
+fingerprints are measured and differ across the two clean first boots. The
+clone fixture ran; conflict rows did not appear. ENR-05 and ENR-06 stay blocked
+on devstack follow-up 13.
 
-Complete AT06 also awaits complete incarnation evidence (ENR-03) and the
-own-key join/peer inventory exports (ENR-04). AT07 awaits the fingerprint/clone,
-held-ACK usage and real installer/reinstall exports (ENR-05/06/07). The real
-first-boot peers do not stand in for AT06's own-key race-winner peer.
-
-[API review](api-surface-review.md) distinguishes current identity, audit
-history, member aggregate usage and the agent checkpoint. [Requests](requests.md)
-retain the exact product questions and devstack follow-up 12/13 owners.
-[RUN.md](RUN.md) has provenance, image IDs, real command output and cleanup.
-Both earlier attempts and this run remain under `history/`.
-
-Control, worker, both nodes' streams, current probe evidence and 30 existing
-public evidence files were scanned against 64 in-memory token/key patterns:
-zero matches. No secret values or raw logs are published. Teardown exits 0;
-owned containers, networks, volumes and images are all zero.
+Earlier immutable runs: initial `79b89e47-b23f-45f8-a683-28e0557dc1ba` and
+`9db51ea3-d807-449e-a812-cfad739db675`; follow-up 1
+`75dbb974-04d2-4e45-a6bd-cfe0d923bd2c`; the 429 attempt
+`bebfe230-26d4-4e3d-b052-81d258d04e07`; the revision-10 measurement
+`9bb66c4e-e429-450b-8671-521d33926ede` on `746651e` before follow-up 12 was in
+this branch. [Requests](requests.md), [API review](api-surface-review.md) and
+[RUN.md](RUN.md) carry the closure evidence. Teardown left owned containers,
+networks, volumes and images at zero.

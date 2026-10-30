@@ -57,22 +57,12 @@ export function OperationBanner({
   }, [operation]);
 
   useEffect(() => {
-    if (!polledOp) {
-      return;
-    }
-    const isPermanentlySettled =
-      polledOp.status === 'succeeded' || polledOp.status === 'superseded';
-    if (isPermanentlySettled || pollAttempt >= 25) {
+    if (!polledOp || isTerminalOperationStatus(polledOp.status)) {
       return;
     }
     let cancelled = false;
-    const isRecoverableFailure =
-      polledOp.status === 'failed' || polledOp.status === 'partially_succeeded';
-    const delayMs = isRecoverableFailure
-      ? 350
-      : pollAttempt === 0
-        ? 60
-        : Math.min(1000, 120 * Math.pow(2, pollAttempt - 1));
+    const delayMs =
+      pollAttempt === 0 ? 60 : Math.min(2000, 120 * Math.pow(2, pollAttempt - 1));
     const timer = setTimeout(async () => {
       try {
         const updated =
@@ -81,10 +71,11 @@ export function OperationBanner({
             : await apiClient.getOperation(polledOp.operation_id);
         if (!cancelled) {
           setPolledOp(updated);
-          if (isTerminalOperationStatus(updated.status) && onTerminal) {
-            onTerminal(updated);
-          }
-          if (updated.status !== 'succeeded' && updated.status !== 'superseded') {
+          if (isTerminalOperationStatus(updated.status)) {
+            if (onTerminal) {
+              onTerminal(updated);
+            }
+          } else {
             setPollAttempt((prev) => prev + 1);
           }
         }

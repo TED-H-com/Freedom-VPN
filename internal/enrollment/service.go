@@ -15,6 +15,7 @@ import (
 	"errors"
 	"log/slog"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -38,6 +39,12 @@ const TokenPrefix = "fvpn_enr_"
 const DefaultInstallerValidity = 15 * time.Minute
 const DefaultPreinstalledValidity = 7 * 24 * time.Hour
 
+// DefaultIdentityActiveWindow is the endpoint compatibility window (D-072).
+// Chosen at 120s: larger than the 60s provisional lease renewal cap (D-067)
+// and the 30s heartbeat interval so an active or renewing node always refreshes
+// inside the window, while remaining shorter than the finite-member serving lease.
+const DefaultIdentityActiveWindow = 120 * time.Second
+
 // TEST ONLY. Production bootstrap-delivery validity is a required setting.
 const TestBootstrapValidity = 10 * time.Minute
 
@@ -45,6 +52,7 @@ type Config struct {
 	InstallerValidity    time.Duration
 	PreinstalledValidity time.Duration
 	BootstrapValidity    time.Duration
+	IdentityActiveWindow time.Duration
 	Logger               *slog.Logger
 }
 type Service struct {
@@ -54,6 +62,10 @@ type Service struct {
 	secrets signing.Provider
 	fence   pki.Revocations
 	cfg     Config
+
+	mu         sync.Mutex
+	clock      func() time.Time
+	candidates map[uuid.UUID]*roamingCandidate
 }
 
 func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signing.Provider, fence pki.Revocations, cfg Config) (*Service, error) {
@@ -63,10 +75,37 @@ func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signi
 	if cfg.PreinstalledValidity == 0 {
 		cfg.PreinstalledValidity = DefaultPreinstalledValidity
 	}
+	if cfg.IdentityActiveWindow <= 0 {
+		cfg.IdentityActiveWindow = DefaultIdentityActiveWindow
+	}
 	if pool == nil || ca == nil || auth == nil || secrets == nil || fence == nil || cfg.InstallerValidity < time.Minute || cfg.PreinstalledValidity < time.Minute || cfg.InstallerValidity > 30*24*time.Hour || cfg.PreinstalledValidity > 30*24*time.Hour || cfg.BootstrapValidity <= 0 {
 		return nil, errors.New("enrollment: dependencies and explicit bootstrap validity required")
 	}
-	return &Service{pool, ca, auth, secrets, fence, cfg}, nil
+	return &Service{
+		pool:       pool,
+		ca:         ca,
+		auth:       auth,
+		secrets:    secrets,
+		fence:      fence,
+		cfg:        cfg,
+		candidates: make(map[uuid.UUID]*roamingCandidate),
+	}, nil
+}
+
+// SetClock overrides the wall clock used by ObserveEndpoint and ObserveEndpointTx
+// in tests. Passing nil restores the database transaction clock.
+func (s *Service) SetClock(clock func() time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.clock = clock
+}
+
+// ActiveWindow returns the configured compatibility-domain activity window (D-072).
+func (s *Service) ActiveWindow() time.Duration {
+	if s == nil || s.cfg.IdentityActiveWindow <= 0 {
+		return DefaultIdentityActiveWindow
+	}
+	return s.cfg.IdentityActiveWindow
 }
 
 // Command identifies the already-authorized administrator and UUID idempotency

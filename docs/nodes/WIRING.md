@@ -38,8 +38,8 @@ The following transitional 501 handlers are removed:
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
 | `setNodePublication` | All three intents use `exits.Service.SetPublicationTx` inside the HTTP command transaction; 202 returns the pending publication operation. |
 | `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
-| `renewServingLease` | Signed 24-hour default maximum, bounded member grants, natural renewal-ID replay without restarting deadlines. |
-| `submitObservation` | Immutable deduplicated receipt, then `ObserveReportTx` in the same transaction, fleet lock before node lock. |
+| `renewServingLease` | Signed 24-hour default maximum (60 s D-067 backstop when `provisioning_state != 'ready'`), bounded member grants, natural renewal-ID replay without restarting deadlines, and transactional `ObserveEndpointTx` cloned-identity check (D-072). |
+| `submitObservation` | Immutable deduplicated receipt, transactional `ObserveEndpointTx` cloned-identity check (D-072), then `SubmitObservationTx` and `ObserveReportTx` in the same transaction, fleet lock before node lock. |
 | `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
 | `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
 | `submitUpdateResult` | Durable 202 ACK; identical result replays, changed payload returns 409 ACK_CONFLICT with retained conflict evidence. |
@@ -600,35 +600,56 @@ provided and every current envelope still carrying that member's device binding
 or rate policy. This removes access on nodes in removed groups even when an older
 producer supplies only new groups (D-052 F-02).
 
-## Revocation completion under pending isolation errors and lease readiness (Follow-up 18)
+## Revocation completion under pending isolation errors and lease readiness (Follow-up 18 & Follow-up 20, D-067, D-070)
 
 When an accepted `ObservationReport` on `applied_config_generation >= desired_config_generation`
-carries an `ISOLATION_POLICY_INVALID` apply error while member forwarding remains active
-(for example, a pending `conntrack -D` flow flush after the serving ruleset is verified,
-r13 M-3), `SubmitObservation` degrades `data_health` to `degraded`, withholds publication
-serving evidence (`PublicationDataPathFailure = "isolation_unconfirmed"`), and holds the
-`"nodes"` step of matching member/entitlement/device operations in `pending` with
+carries an `ISOLATION_POLICY_INVALID` apply error (`code == "ISOLATION_POLICY_INVALID"` and
+`stage == "apply"`, D-070) while member forwarding remains active or `safety_status == "passed"`
+(for example, a pending `conntrack -D` flow flush under the 12-attempt bound after the serving
+ruleset is verified: `message = "conntrack delete pending; serving ruleset verified"`,
+`member_forwarding_enabled = true`, `safety_status = "passed"`, and every check `passed`),
+`SubmitObservation` degrades `data_health` to `degraded`, withholds publication serving evidence
+(`PublicationDataPathFailure = "isolation_unconfirmed"`), and holds the `"nodes"` step of
+matching member/entitlement/device operations in `pending` with
 `error_code = "ISOLATION_POLICY_INVALID"`, `error_message = "member_forwarding_unconfirmed"`,
 `reason = "conntrack_delete_pending"`, and a correlated `node.revoke_isolation_pending`
-(`result = "failed"`) audit event. The `"nodes"` step completes and emits
-`node.revoke_isolation_resolved` (`result = "succeeded"`) only when either (a) a subsequent
-observation on the target generation clears the `ISOLATION_POLICY_INVALID` error
-(`resolution = "conntrack_delete_succeeded"`), or (b) the node fails closed after exhausting
-its bounded retry (`member_forwarding_enabled = false`, `safety_status = "failed"`,
-`provisioning_state = "applying"`, `internet_only = "passed"`,
-`resolution = "node_failed_closed"`).
+(`result = "failed"`) audit event. The `"nodes"` step is never completed while the node forwards
+with a pending conntrack delete. It completes and emits `node.revoke_isolation_resolved`
+(`result = "succeeded"`) only when no other registered, online node that shares an exit group with
+the member's plan and has a fresh observation within `DefaultStaleTimeout` (`90s` on both
+`last_observed_at` and `last_seen_at`, r14 H-1; an enrolled exit with no `exit_groups` row never
+holds the fence) still reports a pending `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}`
+error while forwarding,
+and either (a) a subsequent observation on the target generation clears the
+`ISOLATION_POLICY_INVALID` apply error (`resolution = "conntrack_delete_succeeded"`), or (b) the
+node fails closed with the agent's real fail-closed observation shape (D-070:
+`member_forwarding_enabled = false`, `safety_status = "failed"`, `forwarding_block_reasons`
+contains `"safety_check_failed"`, check `internet_only` **failed** with
+`error_code = "ISOLATION_POLICY_INVALID"` and detail `"Conntrack delete exceeded the retry bound."`
+or `"Conntrack is not installed."`, and the `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}`
+error still present in `errors`; `resolution = "node_failed_closed"`).
 
 For serving leases (`POST /api/v1/agent/lease-renewals`, `leases.Service.RenewTx`), member
 grants are included only when `lifecycle_state == 'registered'`,
-`publication_intent == 'published'`, and `provisioning_state == 'ready'`. A registered,
-published node with compiled `device_bindings > 0` that is not yet `ready` receives a
-grant-less lease (`members: []`) on `config_generation == desired_config_generation`; once
-its ready observation is ingested, the next `RenewTx` carries the member grants on that
-same `config_generation`. Once an incarnation has reached `provisioning_state = 'ready'`,
-an in-flight observation for an already-applied generation with `safety_status = 'passed'`
-does not downgrade `provisioning_state` back to `'applying'` when central concurrently
-advances `desired_config_generation`, preventing avoidable grant-less lease windows across
-policy recompilations.
+`publication_intent == 'published'`, `provisioning_state == 'ready'`, and `len(groupIDs) > 0`.
+When `includeMembers` is false on a registered, published exit because `provisioning_state` is
+not `'ready'`, `RenewTx` issues the grant-less lease (`members: []`) on
+`config_generation == desired_config_generation` with `expires_at = issued_at + min(max_offline_seconds, 60s)`
+(`leases.ProvisionalGrantlessLeaseSeconds = 60`, D-067 central backstop), while keeping
+`max_offline_seconds` copied from `fleet_config.max_offline_lease_seconds`. Ready nodes
+(`provisioning_state == 'ready'`) are never shortened and keep the configured
+`max_offline_lease_seconds` window (D-065). Once the node's first ready observation after
+restart is ingested by `nodes.Service.SubmitObservation` (`internal/nodes/observations.go:237-295`,
+triggered on the first `(*agent.Engine).Step` via `evaluate`/`Decide` -> `enforce`/`ackApplied` ->
+`observe`/`flush` in `node/agent/engine.go:572-796`, `node/agent/decide.go:253-260,454-506`, and
+`node/agent/observe.go:19-44,217-249`), `nodes.provisioning_state` flips to `'ready'` immediately
+on that first accepted observation, and the next `RenewTx` carries the member grants on the same
+`config_generation`. Once an incarnation has reached `provisioning_state = 'ready'`, at most
+one in-flight observation for an already-applied generation with `safety_status = 'passed'`
+preserves `provisioning_state = 'ready'` when central concurrently advances
+`desired_config_generation` (recorded via `stale_generation_grace` on `node.observation_applied`,
+r14 M-2); a second consecutive stale report below `desired_config_generation` downgrades
+`provisioning_state` to `'applying'`.
 
 ## Node incarnation history, enrollment `token_sha256`, and `awaiting_member_grants` (Follow-up 19)
 
@@ -670,4 +691,14 @@ registered on `httpapi.Composite`, all 47 OpenAPI operations are wired.
   while `node_observations.report_payload` retains `forwarding_block_reasons: ["awaiting_member_grants"]`
   and `PublicationDataPathFailure` returns `"forwarding_disabled"` so publication state is
   unchanged until member grants arrive and member forwarding is enabled.
+
+## Cloned-identity conflict detection, freeze, and `NodeDetail.identity_conflict` projection (D-072, Follow-ups 21 & 22)
+
+- **Production ingress (`internal/httpapi/middleware.go`, `internal/nodes/httpwire/handlers.go`, `internal/nodes/httpwire/state.go`)**:
+  On authenticated `agent-mtls` requests, `httpapi.New` records the verified leaf certificate and coarsened client compatibility domain (`requestRateKey` -> `enrollment.CompatibilityDomain`: IPv4 `/24`, IPv6 `/48`) in request-local context. `Handlers.RenewServingLease` (`POST /api/v1/agent/lease-renewals`) and `Handlers.SubmitObservation` (`POST /api/v1/agent/observations`) invoke `Enrollment.ObserveEndpointTx` inside the per-request transaction before any automatic identity-mapping mutation. `GET /api/v1/agent/desired-state` performs no endpoint write.
+- **Roaming vs. interleaving (`internal/enrollment/revoke.go`, `DefaultIdentityActiveWindow = 120s`)**:
+  A single switch `X -> Y` inside `activeWindow` keeps `X` mapped in `node_identity_endpoints` and records `Y` as a roaming candidate, promoting `Y` only after `X` has been quiet for a full `activeWindow`. Interleaving (`X -> Y -> X` inside `activeWindow`, `Y` and `X` both seen within one window twice, or a third domain `Z` while `X` and `Y` are active) inserts one `node_identity_conflicts` row, sets `node_identity_endpoints.mapping_frozen = true`, increments `nodes.resource_version`, and emits one `node.identity.conflict` audit event (`incarnation_id`, `conflict_count`, `observed_at` only). While frozen, automatic NetBird peer/route mapping mutations are suppressed and `SubmitObservationTx` projects the D-055 terminal state (`provisioning_state = 'failed'`, `safety_status = 'failed'`, `member_forwarding_observed = false`).
+- **`NodeDetail.identity_conflict` read model and ETag (`internal/nodes/nodes.go`, `internal/nodes/httpwire/handlers.go`)**:
+  `getNodeWithQuerier` joins `node_identity_endpoints` and a `LATERAL` aggregation over `node_identity_conflicts` for `nodes.current_incarnation_id` in the single `GetNode` query: `null` when `current_incarnation_id` is null or no `node_identity_endpoints` row exists yet for the current incarnation, and `{mapping_frozen, conflict_count, last_conflict_at}` otherwise. Endpoint hashes, IP addresses, and compatibility domains are never serialized. `Handlers.GetNode` honours `If-None-Match` (`304 Not Modified` when the `"<resource_version>"` ETag matches). Operator reconciliation is `revokeNode` followed by re-enrollment (`createEnrollment` + `enrollNode`).
+
 

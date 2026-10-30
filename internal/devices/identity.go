@@ -72,9 +72,23 @@ func (a *NetBirdAdapter) bindUser(ctx context.Context, external string) (string,
 	err := db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) (retErr error) {
 		var member, identity uuid.UUID
 		defer func() {
-			if retErr == nil {
-				retErr = auditIdentity(ctx, tx, member, identity, result)
+			if retErr != nil {
+				return
 			}
+			if identityRejection(result) {
+				changed, err := noteDiscoveryDecision(ctx, tx, a.DeploymentID, "user:"+external, result)
+				if err != nil {
+					retErr = err
+					return
+				}
+				if !changed {
+					return
+				}
+			} else if err := relaxDiscoveryDecision(ctx, tx, a.DeploymentID, "user:"+external); err != nil {
+				retErr = err
+				return
+			}
+			retErr = auditIdentity(ctx, tx, member, identity, result)
 		}()
 		type candidate struct{ identity, member uuid.UUID }
 		rows, err := tx.Query(ctx, `SELECT i.id,i.member_id FROM identity_bindings i WHERE i.issuer=$1 AND i.subject=$2 AND i.stable_claim_ref='sub' AND i.binding_method='oidc' AND i.verified_at<=clock_timestamp() ORDER BY i.id LIMIT 2`, a.Identity.issuer, external)
