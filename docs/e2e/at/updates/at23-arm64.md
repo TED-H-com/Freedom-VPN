@@ -31,4 +31,3 @@ Commands:
 - emulation: exec /fvpn-updater: exec format error exit status 255
 - hardware: needs operator run; this host did not execute the arm64 binary
 - sources: preinstalled box, cloud Ubuntu and coordinated third-party Ubuntu are operator-run.md; the lab container is one Ubuntu 24.04 amd64 source
-

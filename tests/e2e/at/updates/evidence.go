@@ -169,7 +169,6 @@ func Write(dir string, rec Record) error {
 	for _, ob := range rec.Observations {
 		b.WriteString(strings.TrimRight("- "+ob.Name+": "+ob.Detail, " \t") + "\n")
 	}
-	b.WriteString("\n")
 	return os.WriteFile(base+".md", []byte(b.String()), 0o644)
 }
 

@@ -47,4 +47,3 @@ seq=9 stage=recovery_required detail=
 - forward_chain: present accepts=0
 - cited_run: main:docs/e2e/runs/2026-10-30/update-good.md (comparison only; this record uses its own journal)
 - decision: Missing updater health adapter: host.go:151 selects NodeChecks; health.go:59-68 unconditionally fails isolation, DNS and tunnel checks regardless of publication. apply.go:212-215 starts rollback; decide.go:33-34 and apply.go:238-243 produce recovery_required when no safe last-good exists, before SwitchSymlink at apply.go:266. This is correct fail-closed recovery, but publication alone is not a valid health prerequisite. Spec §13.9 requires real baseline and restricted authenticated candidate-path probes while unpublished/disabled. See health-analysis.md, Requests to orchestrator.
-
