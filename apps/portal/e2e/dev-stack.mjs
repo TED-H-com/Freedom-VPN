@@ -1107,9 +1107,12 @@ async function enrollLiveNode(
   const bootId = crypto.randomUUID();
   const ledgerEpoch = crypto.randomUUID();
   const meterEpochId = crypto.randomUUID();
+  let lastObservedMs = 0;
 
   async function submitObservation(appliedGen = '1') {
-    const nowIso = new Date().toISOString();
+    const nowMs = Math.max(Date.now(), lastObservedMs + 1);
+    lastObservedMs = nowMs;
+    const nowIso = new Date(nowMs).toISOString();
     const obsBody = {
       report_id: crypto.randomUUID(),
       node_id: nodeId,
@@ -1153,7 +1156,7 @@ async function enrollLiveNode(
       },
       update: {
         job_id: null,
-        generation: null,
+        generation: '1',
         state: null,
         stage: null,
       },
@@ -1179,7 +1182,7 @@ async function enrollLiveNode(
       ],
       errors: [],
     };
-    await httpsRequest(`${agentBaseUrl}/api/v1/agent/observations`, {
+    const obsRes = await httpsRequest(`${agentBaseUrl}/api/v1/agent/observations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(obsBody),
@@ -1187,6 +1190,11 @@ async function enrollLiveNode(
       cert: clientCertPem,
       key: nodeKeyPem,
     });
+    if (obsRes.status !== 200 && obsRes.status !== 202) {
+      throw new Error(
+        `POST /api/v1/agent/observations failed (${obsRes.status}): ${obsRes.text}`,
+      );
+    }
   }
 
   return {
@@ -1360,6 +1368,51 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
   );
 }
 
+async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
+  const deadline = Date.now() + 15_000;
+  let lastRow = null;
+  while (Date.now() < deadline) {
+    const genRes = await pool.query(
+      `SELECT greatest(desired_config_generation, 1)::text AS target_gen FROM nodes WHERE id = $1`,
+      [liveNode.nodeId],
+    );
+    const targetGen = genRes.rows[0]?.target_gen || '1';
+    await liveNode.submitObservation(targetGen);
+
+    const res = await pool.query(
+      `SELECT
+         desired_config_generation::text AS desired_config_generation,
+         applied_config_generation::text AS applied_config_generation,
+         provisioning_state,
+         safety_status,
+         control_status,
+         data_health,
+         current_release_id,
+         last_good_release_id,
+         (applied_config_generation >= desired_config_generation) AS gen_caught_up
+       FROM nodes
+       WHERE id = $1`,
+      [liveNode.nodeId],
+    );
+    lastRow = res.rows[0] || null;
+    if (
+      lastRow &&
+      lastRow.provisioning_state === 'ready' &&
+      lastRow.safety_status === 'passed' &&
+      lastRow.control_status === 'online' &&
+      lastRow.gen_caught_up === true &&
+      lastRow.current_release_id === RELEASE_110_ID &&
+      lastRow.last_good_release_id === RELEASE_110_ID
+    ) {
+      return lastRow;
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(
+    `Timed out waiting for live node observation projection on ${label} (${liveNode.nodeId}); last=${JSON.stringify(lastRow)}`,
+  );
+}
+
 async function seedDatabase(
   pool,
   adminId,
@@ -1367,8 +1420,9 @@ async function seedDatabase(
   controlBaseUrl,
   caPem,
   defaultMemberId,
-  enrolledNodeId,
+  liveNode,
 ) {
+  const enrolledNodeId = liveNode.nodeId;
   const now = new Date();
   // Valid < 30d grant window (14d + 1h < MaxGrantDuration 2592000s, D-050)
   const periodStart = new Date(now.getTime() - 3600_000);
@@ -1685,10 +1739,15 @@ async function seedDatabase(
   });
 
   await runSeedStep('seed-node-and-exit-fixtures', async () => {
+    // Missing product path: PATCH /api/v1/admin/nodes/{node_id} does not accept desired_release_id,
+    // and POST /api/v1/admin/update-batches creates a new all_nodes batch with queued jobs that would
+    // supersede the AT23/AT24 fixture batch (SEEDED_BATCH_ID).
     await pool.query(
-      `UPDATE nodes SET current_release_id = $2, last_good_release_id = $2, desired_release_id = $2, desired_config_generation = 1, applied_config_generation = 1, provisioning_state = 'ready', control_status = 'online', data_health = 'healthy', safety_status = 'passed', resource_version = resource_version + 1 WHERE id = $1`,
+      `UPDATE nodes SET desired_release_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
       [enrolledNodeId, RELEASE_110_ID],
     );
+    await pollLiveNodeReady(pool, liveNode, 'seed-node-and-exit-fixtures');
+
     await pool.query(
       `UPDATE exits SET publication_intent = 'published', publication_observed = 'active', resource_version = resource_version + 1 WHERE node_id = $1`,
       [enrolledNodeId],
@@ -1702,8 +1761,8 @@ async function seedDatabase(
     );
 
     await pool.query(
-      `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, desired_config_generation, applied_config_generation, update_generation, desired_release_id, current_release_id, last_good_release_id, control_status, data_health, safety_status, last_seen_at, last_observed_at)
-       VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', 1, 1, 1, $2, $2, $2, 'online', 'healthy', 'passed', clock_timestamp(), clock_timestamp())
+      `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, desired_release_id, current_release_id, last_good_release_id, control_status, data_health, safety_status, last_seen_at, last_observed_at)
+       VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', $2, $2, $2, 'online', 'healthy', 'passed', clock_timestamp(), clock_timestamp())
        ON CONFLICT (id) DO NOTHING`,
       [SEEDED_NODE_2_ID, RELEASE_110_ID],
     );
@@ -1785,16 +1844,12 @@ async function seedDatabase(
       );
 
       await client.query(
-        `INSERT INTO fleet_node_state(node_id, current_job_id, current_target_id, observation_incarnation_id, observation_seq, observed_update_generation, last_observed_at, received_at, recovery_required)
-         VALUES ($1, $2, $3, $4, 10, 1, clock_timestamp(), clock_timestamp(), false)
+        `INSERT INTO fleet_node_state(node_id, current_job_id, current_target_id)
+         VALUES ($1, $2, $3)
          ON CONFLICT (node_id) DO UPDATE
          SET current_job_id = EXCLUDED.current_job_id,
-             current_target_id = EXCLUDED.current_target_id,
-             observation_incarnation_id = EXCLUDED.observation_incarnation_id,
-             observed_update_generation = 1,
-             last_observed_at = clock_timestamp(),
-             received_at = clock_timestamp()`,
-        [enrolledNodeId, job1Id, target1Id, enrolledIncId],
+             current_target_id = EXCLUDED.current_target_id`,
+        [enrolledNodeId, job1Id, target1Id],
       );
 
       await client.query(
@@ -2236,33 +2291,43 @@ async function main() {
       controlBaseUrl,
       caPem,
       defaultMemberId,
-      liveNode.nodeId,
+      liveNode,
     );
     await runSeedStep('submit-initial-node-observation', async () => {
-      await liveNode.submitObservation('1');
+      await pollLiveNodeReady(pool, liveNode, 'submit-initial-node-observation');
     });
 
+    let heartbeatInFlight = false;
     heartbeatTimer = setInterval(async () => {
+      if (heartbeatInFlight) return;
+      heartbeatInFlight = true;
       try {
-        const pendingRes = await pool.query(
-          `SELECT EXISTS(
-             SELECT 1 FROM operations
-             WHERE kind IN ('node.publish', 'node.unpublish', 'node.disable')
-               AND status IN ('pending', 'running', 'partially_succeeded')
-           ) AS has_pending`,
+        const stateRes = await pool.query(
+          `SELECT
+             greatest(n.desired_config_generation, 1)::text AS desired_gen,
+             (n.applied_config_generation < n.desired_config_generation
+              OR n.provisioning_state <> 'ready'
+              OR n.control_status <> 'online'
+              OR n.safety_status <> 'passed') AS node_needs_obs,
+             EXISTS(
+               SELECT 1 FROM operations
+               WHERE kind IN ('node.publish', 'node.unpublish', 'node.disable')
+                 AND status IN ('pending', 'running', 'partially_succeeded')
+             ) AS has_pending
+           FROM nodes n
+           WHERE n.id = $1`,
+          [liveNode.nodeId],
         );
-        if (pendingRes.rows[0]?.has_pending) {
-          const genRes = await pool.query(
-            `SELECT greatest(desired_config_generation, 1)::text AS gen FROM nodes WHERE id = $1`,
-            [liveNode.nodeId],
-          );
-          const gen = genRes.rows[0]?.gen || '1';
-          await liveNode.submitObservation(gen);
+        const row = stateRes.rows[0];
+        if (row && (row.node_needs_obs || row.has_pending)) {
+          await liveNode.submitObservation(row.desired_gen || '1');
         }
       } catch {
         // Ignore transient errors during shutdown
+      } finally {
+        heartbeatInFlight = false;
       }
-    }, 300);
+    }, 250);
 
     const roleSessions = {
       admin: adminAuth,
