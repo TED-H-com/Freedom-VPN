@@ -298,7 +298,7 @@ func credentialMode(fi os.FileInfo) bool {
 		return false
 	}
 	st, ok := fi.Sys().(*syscall.Stat_t)
-	return ok && st != nil && st.Uid == 0
+	return ok && st != nil && st.Uid == 0 && st.Gid == 0 && st.Nlink == 1
 }
 
 func sameStat(a, b os.FileInfo) bool {

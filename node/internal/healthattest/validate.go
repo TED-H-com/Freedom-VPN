@@ -138,7 +138,7 @@ func checkReason(s string) Reason {
 	switch s {
 	case "", "baseline held", "baseline missing", "policy loaded",
 		"policy in force", "policy not in force", "not run", "probe not run",
-		"overlay up", "probe failed", "overlay_up", "overlay_down", "overlay_partial",
+		"overlay up", "probe failed", "overlay_up", "overlay_down", "overlay_partial", "probe_clear_failed",
 		"probe reached the lab endpoint", "probe skipped", "probe refused":
 		return ""
 	default:
