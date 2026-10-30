@@ -32,12 +32,15 @@ func (r *Runtime) ResolveDocumentInputs(ctx context.Context, tx pgx.Tx, state *a
 	// There is no node-to-profile assignment in the current contract. Never
 	// arbitrarily choose one profile if the fleet has ambiguous active profiles.
 	if len(definitions) != 1 {
-		return apierr.New(apierr.StateConflict, "Node DNS profile selection is ambiguous.")
+		return apierr.New(apierr.DependencyUnavailable, "Node DNS profile selection is ambiguous.")
 	}
 	if r.ResolverDocuments == nil {
 		return errors.New("resolver document source required")
 	}
 	document, err := r.ResolverDocuments.LatestPublished(ctx, tx, definitions[0])
+	if errors.Is(err, pgx.ErrNoRows) {
+		return apierr.New(apierr.DependencyUnavailable, "Node DNS profile has no published resolver document.")
+	}
 	if err != nil {
 		return err
 	}
