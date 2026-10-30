@@ -1,26 +1,24 @@
-# Enrollment acceptance requests
+# Enrollment acceptance requests — follow-up 1
 
-Binding: `w4-enroll / 66000`. D-050 applies to every request. These are missing
-acceptance prerequisites or read surfaces, not claims of a live product defect.
-No projector row may be seeded or repaired to close them.
+Current binding: `w4-enroll / 12000`. D-050 applies to every request. The
+initial 66000 attempts are immutable history, not the current binding.
 
-| ID | Owner | Affected evidence | Requested interface or action |
+| ID | State | Owner | Exact remaining evidence / question |
 |---|---|---|---|
-| ENR-01 | orchestrator + w3-devstack-e2e | All live AT06/AT07 checks | Assign an unused legal port slot and authorize the binding change. `parseLayout` permits eight bases `18000 + 6000*n`, n=0..7; 66000 selects slot 8 and exceeds 65535 even before offsets. Do not widen the validator to accept impossible ports. |
-| ENR-02 | PKI/enrollment + control audit owner | AT06 token hash in admin audit | Expose an allowlisted `token_hash` (SHA-256 hex) in the enrollment resource's `/api/v1/admin/audit-events` evidence, or an approved equivalent audit digest. `appendDomainAudit` currently emits only `reason`. A locally calculated hash is not server storage evidence. |
-| ENR-03 | nodes/control contract owner + PKI | AT06 one incarnation; AT07 old incarnation/history | Provide an admin read surface for complete incarnation count/history per Node, including immutable ID, public-key digest and revoked state, and retained usage attribution. `NodeDetail.current_incarnation_id` proves only the current pointer. No database query or uniqueness-constraint inference replaces the required API evidence. |
-| ENR-04 | w3-devstack-e2e + NetBird adapter owner | AT06 actual peer uniqueness after lost response and race | Document/export `JoinEnrolledIdentity` for harness-generated key/CSR enrollment, with secrets remaining private, normal one-time mTLS bootstrap, and `EnrollmentPeerInventory` returning complete read-back counts correlated to the enrollment operation. Existing `EnrollAt` generates its own request and cannot exercise our identical-byte response-loss request. Zero peers before joining cannot prove peer idempotence. |
-| ENR-05 | w3-devstack-e2e + usage agent owner | AT07 counted, not yet ACKed usage and continuity | Document/export `HoldUsageAcknowledgements(ctx, slot, hold)` at the transport boundary and `UsageLedgerSnapshot(ctx, slot)` with immutable event hashes/decimal sequences and actual ACK watermark. Pair with a shared `CountedMemberTraffic` hook that polls native exit availability, selects the API-published exit and confirms device counters plus controlled-origin receipt. Release the hold through the same hook and verify contiguous ACKs, no duplicate events and unchanged history. `PauseAgent` stops the producer too and is not this hook. |
-| ENR-06 | w3-devstack-e2e + packaging/installer owner | AT07 installer rerun and controlled reinstall | Document/export `RerunInstaller(ctx, slot)` executing the real installer on supported disposable node storage, preserving identity and outbox; `ControlledReinstall(ctx, slot, enrollment)` must use a fresh API-authorized token after revocation, preserve stable Node/history and retain a local old-cert mTLS probe. Export only its HTTP/TLS rejection verdict. Container restart is durable resume, not installer rerun. Do not copy keys, erase identity or edit ledgers from this harness. |
-| ENR-07 | w3-devstack-e2e + packaging/agent identity owner | AT07 machine identity and cloned enrolled image boundary | Document/export `MachineIdentityFingerprints(ctx, slot)` returning only hashes of OS machine-id, Agent SPKI and NetBird public key; `StartClonedIdentityFixture` must create the disposable cloned-image condition before boot and expose conflict/freeze observations. Existing `StartSecondExit` is a clean base-image second boot, explicitly not an enrolled-identity clone. No ad hoc copy into a running container is allowed. |
+| ENR-01 | closed | orchestrator / devstack #182 | #182 explicitly assigns legal base 12000 to w4-enroll. All active pins use 12000; 6000 remains reserved. |
+| ENR-02 | open product question | pki-enroll | Does `listAuditEvents` (`GET /api/v1/admin/audit-events`, enrollment resource) expose the stored enrollment-token SHA-256 in an approved `changes.before/after` field? Revision 9 allows arbitrary change properties but declares no token-hash field; `appendDomainAudit` writes only `reason`, and audit redaction treats token-named keys as sensitive. Which approved digest field satisfies §19 AT06 “token hash 紀錄” and §6.1 “資料庫只保存雜湊”? See the live field inventory when available. |
+| ENR-03 | open product question | w3-wire-nodes | Which operation/field exposes complete incarnation history/count and retained usage by Node/incarnation for §19 AT06 “同一 incarnation” and §19 AT07 “歷史 Node 保留” / “歷史用量”? `getNode.current_incarnation_id`, `getEnrollment.node_incarnation_id`, member period usage totals and the agent-only checkpoint provide partial identity/usage evidence; revision 9 declares no complete admin incarnation collection or per-incarnation usage ledger read. Please identify the existing approved surface, or specify the missing public read contract. |
+| ENR-04 | blocked; follow-up 12 | devstack | Export/document `JoinEnrolledIdentity`, `EnrollmentPeerInventory` for the harness's exact own-key requests, normal one-time bootstrap and complete correlated peer readback. No zero-peer result before joining can prove one-peer idempotence. |
+| ENR-05 | blocked; follow-up 13 | devstack | Export/document `HoldUsageAcknowledgements`, `UsageLedgerSnapshot`, `CountedMemberTraffic`. Need counted traffic, nonempty unACKed ledger, immutable hashes/decimal sequence numbers and actual contiguous ACKs across installer rerun. |
+| ENR-06 | blocked; follow-up 13 | devstack | Export/document `RerunInstaller`, `ControlledReinstall`. Need the real installer, preserved identity/ledger, new authorized token/incarnation, old-cert mTLS rejection and historical Node/usage readback. |
+| ENR-07 | blocked; follow-up 12 | devstack | Export/document `MachineIdentityFingerprints`, `StartClonedIdentityFixture`. Need actual key/machine fingerprints and sanctioned cloned-image conflict evidence; no manual copy into a live node. |
 
-ENR-01 is the initial decisive blocker. ENR-02/03 follow the current public API
-and audit writer; ENR-04..07 follow the documented lab export inventory in
-[`docs/e2e/RUN.md`](../../RUN.md) and `tests/e2e/internal/labstack`. They remain
-requests even after a valid slot is assigned. The separate AT07 first-boot
-probe uses `Enroll`, `StartSecondExit`, `EnrollAt(..., "node2")`, public
-`cert.pem` readback, exact image IDs and admin current-incarnation readback.
+[API surface review](api-surface-review.md) names each reviewed revision-9
+operation and field and distinguishes identity binding, immutable audit,
+aggregate usage and historical ledger evidence. Existing APIs are used first.
+No SQL read, row repair, fake observation or ad hoc identity copy is proposed.
 
-The API already supports a 60-second enrollment lifetime and revocation. No
-clock manipulation, TTL override below the contract minimum, direct PKI service
-call or enrollment database fixture is needed for those AT06 negatives.
+The current merged lab exports `Enroll`, `StartSecondExit`, `EnrollAt`,
+`PauseAgent`, and durable restart. These support two clean first boots and
+normal identity readback; durable restart is not a real installer rerun or an
+ACK hold. Shared hook documentation: [RUN.md](../../RUN.md).

@@ -9,12 +9,12 @@ make go-lint
 ```
 
 The live target binds `FVPN_E2E_PREFIX=w4-enroll` and
-`FVPN_E2E_PORT_BASE=66000`, always tears down the owned prefix, requests a fresh
+`FVPN_E2E_PORT_BASE=12000`, always tears down the owned prefix, requests a fresh
 stack with `E2E_RESET=1`, runs the API probes if startup succeeds, and tears down
 again before final records are published. It exits nonzero unless both complete
-ATs pass. **The assigned base is currently invalid (ENR-01).** No substitute slot
-is chosen. A failed startup is recorded as blocked acceptance, never skipped or
-presented as product success.
+ATs pass. ENR-01 is closed by devstack #182 and the orchestrator correction.
+The merged table explicitly assigns 12000 to w4-enroll. The reserved 6000 slot
+is never used. Failed checks retain their individual failure and block the AT.
 
 Each invocation writes `AT06.json`, `AT06.md`, `AT07.json`, `AT07.md` and
 `summary.md` before the first external action, then finalizes them and an
@@ -50,9 +50,9 @@ Those missing observations stay blocked (ENR-02/03). No peer-uniqueness pass is
 possible until a real join and complete peer inventory are available (ENR-04).
 
 AT07 clean first boots use `Enroll` and `StartSecondExit`/`EnrollAt` with the
-same immutable node image. Only the documented public certificate is read
-from each identity directory; its SPKI fingerprint and admin identity are
-compared. Node private keys stay on their nodes. OS machine identity, an
+same immutable node image. Admin identities and image IDs are compared.
+Fingerprinting awaits the documented MachineIdentityFingerprints export; the
+harness does not emulate it with identity-file reads. OS machine identity, an
 enrolled-identity clone, unacknowledged counted usage, installer rerun,
 controlled reinstall, old mTLS identity rejection and historical usage all
 remain explicit required checks with named missing hooks (ENR-05..07).
@@ -65,7 +65,7 @@ never zero hits. CSR/proof/request digests are stored; raw tokens, private
 keys, full CSRs, proofs, session cookies and raw logs never enter public records.
 
 Every previous check is retained with its run ID in `prior_checks`; historical
-attempts are not overwritten. Any current failure outranks blocked checks. A
+attempts are not overwritten. Any current failed subcheck determines the blocked AT observation. A
 prior failed check prevents a later full pass until the orchestrator explicitly
 reviews its resolution. A partial readback cannot erase a prior failure.
 
@@ -108,8 +108,8 @@ records: docs/e2e/at/enrollment; run 9db51ea3-d807-449e-a812-cfad739db675
 make: *** [mk/at-enrollment.mk:12: at-enrollment] Error 1
 ```
 
-The current AT06 retains 27 prior blocked checks; AT07 retains 13. There are
-no current or prior product passes/failures because the lab never started.
+The initial AT06 retained 27 prior blocked checks; AT07 retained 13. There are
+no product passes/failures in these initial attempts because the lab never started.
 Live images, live test-binary hashes, token/CSR API observations and log-scan
 counts are unavailable. In particular, zero secret hits is **not** claimed.
 
@@ -135,3 +135,14 @@ Both final teardowns exited 0. Each attempt's final inventory was:
 ```json
 {"containers": 0, "networks": 0, "volumes": 0, "images": 0}
 ```
+
+## Follow-up 1 — corrected binding
+
+Binding: `w4-enroll / 12000`, as assigned in shared RUN.md and #182.
+The initial 66000 records above and their archives remain unchanged historical
+evidence. Live observations and final gate tails follow after this run.
+
+ENR-02 and ENR-03 were reviewed against contract revision 9 before requesting
+changes. See [API surface review](api-surface-review.md). The current missing
+exports are assigned to devstack follow-up 12 (ENR-04/07) and follow-up 13
+(ENR-05/06); no host-side replacement fixture is constructed.
