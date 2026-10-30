@@ -328,6 +328,9 @@ func notRun(name api.NodeCheckName, at time.Time) api.NodeCheck {
 }
 
 func tunnelCheck(in Input, at time.Time) api.NodeCheck {
+	if !in.BaselineOK {
+		return chk(api.NodeCheckNameTunnelProbe, false, api.ErrorCodeISOLATIONBASELINEMISSING, at)
+	}
 	if !in.ProbeRan {
 		return notRun(api.NodeCheckNameTunnelProbe, at)
 	}
