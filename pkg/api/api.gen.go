@@ -2561,7 +2561,13 @@ type DnsFeedEvidence struct {
 	RuleCount     int    `json:"rule_count"`
 }
 
-// DnsPolicyEvidence Evidence bound to the issued resolver document and its policy generation (D-056). Only applied with successful read-back may pass dns_policy. partial, failed and not_run never imply success. applied_at is null when no successful apply time is known. Feeds describe applied content, not the newest available content; feed_code values must be unique. Never include queries, member addresses or raw feed bodies.
+// DnsPolicyEvidence Evidence the node reported for the resolver document it applied (D-056). Central stores
+// and projects this object; it is not central verification that apply succeeded. Only
+// outcome applied, with the node's own successful read-back, may pass the node's dns_policy
+// check. partial, failed and not_run never imply success. applied_at is null when no
+// successful apply time is known. Feeds describe applied content, not the newest available
+// content; feed_code values must be unique. Never include queries, member addresses or raw
+// feed bodies.
 type DnsPolicyEvidence struct {
 	AppliedAt     nullable.Nullable[time.Time] `json:"applied_at"`
 	ContentSha256 string                       `json:"content_sha256"`
@@ -3284,6 +3290,10 @@ type ManifestEvidence struct {
 
 // ManifestRollback defines model for ManifestRollback.
 type ManifestRollback struct {
+	// AllowedReleaseIds Empty means no additional restriction (D-034e). A non-empty list is a
+	// fail-closed intersection with the serving set: the rollback target must
+	// be in both this list and serving_release_ids. The updater and central
+	// enforce the same rule.
 	AllowedReleaseIds []openapi_types.UUID `json:"allowed_release_ids"`
 	HealthProfile     string               `json:"health_profile"`
 
@@ -3589,6 +3599,14 @@ type NodeDetail struct {
 	// DataHealth Result of real data-path probes (§5).
 	DataHealth DataHealth `json:"data_health"`
 
+	// DnsPolicyEvidence Reported DNS policy evidence from the immutable observation selected for this
+	// node's current incarnation (D-056). Same shape as ObservationReport.dns_policy_evidence:
+	// document id, content digest, policy generation, outcome, applied_at, feed summaries
+	// and error_code. Bounded check text stays on checks[].detail. This is the node's
+	// report. It is not central verification that apply succeeded. Absent or null means
+	// no evidence was reported; never infer a successful apply.
+	DnsPolicyEvidence nullable.Nullable[DnsPolicyEvidence] `json:"dns_policy_evidence,omitzero"`
+
 	// Drift Fields whose desired and observed values differ.
 	Drift []StateDrift `json:"drift"`
 
@@ -3818,7 +3836,11 @@ type ObservationReport struct {
 
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
 	SafetyStatus SafetyStatus `json:"safety_status"`
-	Update       struct {
+
+	// Update Populated from durable updater state on every observation (D-062e).
+	// A null generation means no update state and must never be read as generation 0.
+	Update struct {
+		// Generation Null means no update state (D-062e). Never read null as generation 0.
 		Generation nullable.Nullable[decstr.U64]         `json:"generation"`
 		JobId      nullable.Nullable[openapi_types.UUID] `json:"job_id"`
 		Stage      nullable.Nullable[UpdateStage]        `json:"stage"`
@@ -4309,7 +4331,12 @@ type ReplayUnavailableRange struct {
 // ReplayUnavailableRangeReason defines model for ReplayUnavailableRange.Reason.
 type ReplayUnavailableRangeReason string
 
-// ResolverDocument Opaque canonical resolver-document object produced by internal/dnspublish (§12.4, D-056). Return the stored RFC 8785 bytes verbatim, without an envelope, JSON re-encoding or trailing newline; bounded by the signed size_bytes (at most 1048576). The node validates document semantics before apply.
+// ResolverDocument Opaque canonical resolver-document object produced by internal/dnspublish (§12.4, D-056).
+// Return the stored RFC 8785 bytes verbatim, without an envelope, JSON re-encoding or trailing newline;
+// bounded by the signed size_bytes (at most 1048576). The node validates document semantics before apply.
+// When upstreams is non-empty, bootstrap_dns is non-empty. The compiler copies upstreams into
+// bootstrap_dns when that input is empty, and a document that leaves bootstrap_dns empty while
+// naming upstreams is not normalized and must be rejected.
 type ResolverDocument = json.RawMessage
 
 // ResolverDocumentRef Signed reference to immutable resolver document bytes (§12.3, §14.7, D-056). generation is the policy generation that produced the document, not config_generation. content_sha256 hashes the exact RFC 8785 bytes; size_bytes is their byte length. Fetch and verify both before apply; mismatch fails dns_policy without partial apply.
@@ -4703,36 +4730,55 @@ type UpdateJobSummary struct {
 	State UpdateJobState `json:"state"`
 }
 
-// UpdateResult Update job progress or result (§13.10.3). `payload_hash` is the lowercase
+// UpdateResult Update job progress or result (§13.10.3, D-062). `payload_hash` is the lowercase
 // hex SHA-256 of the RFC 8785 canonical JSON of this object without the
 // `payload_hash` member (`canonjson.HashHex(result, "payload_hash")`).
 // result_id is the idempotency key. A rolled_back result reports the original
 // target as not achieved together with the actual current release.
+// `health` is null only for a `failed` result whose `stage` precedes checking.
+// The health-checking `UpdateStage` is `check`; `claim`, `download`, `verify`,
+// `preflight`, `prepare`, `block_forwarding`, `final_sample`, `stop_services`,
+// `migrate`, `switch` and `start` precede it. A `rolled_back` result's `health`
+// is the restored release's checks and `error_code` is the candidate's failure.
+// For `rolled_back`, `current_release_id` is the restored release and
+// `previous_release_id` is the candidate. Optional `candidate_health` carries
+// the candidate's checks for rolled-back diagnostics and is null or absent otherwise.
 // recovery_required=true means member forwarding stays off until recovery.
 type UpdateResult struct {
 	Attempt int                                   `json:"attempt"`
 	BatchId nullable.Nullable[openapi_types.UUID] `json:"batch_id"`
 	BootId  openapi_types.UUID                    `json:"boot_id"`
 
+	// CandidateHealth Candidate checks kept for rolled_back diagnostics (D-062). Null or absent
+	// on every other result. Do not read this as the restored release's health.
+	CandidateHealth nullable.Nullable[UpdateHealth] `json:"candidate_health,omitzero"`
+
 	// CurrentReleaseId Release actually active after this step, from local verification.
-	CurrentReleaseId        nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
-	ErrorCode               nullable.Nullable[ErrorCode]          `json:"error_code"`
-	FinishedAt              nullable.Nullable[time.Time]          `json:"finished_at"`
-	Generation              decstr.U64                            `json:"generation"`
-	Health                  nullable.Nullable[UpdateHealth]       `json:"health"`
-	IncarnationId           openapi_types.UUID                    `json:"incarnation_id"`
-	JobId                   openapi_types.UUID                    `json:"job_id"`
-	ManifestSha256          string                                `json:"manifest_sha256"`
-	MemberForwardingEnabled bool                                  `json:"member_forwarding_enabled"`
-	NodeId                  openapi_types.UUID                    `json:"node_id"`
-	PayloadHash             string                                `json:"payload_hash"`
+	// For rolled_back, this is the restored release (D-062).
+	CurrentReleaseId nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
+	ErrorCode        nullable.Nullable[ErrorCode]          `json:"error_code"`
+	FinishedAt       nullable.Nullable[time.Time]          `json:"finished_at"`
+	Generation       decstr.U64                            `json:"generation"`
+
+	// Health Null only for a failed result whose stage precedes checking (D-062).
+	// For rolled_back, these are the restored release's checks.
+	Health                  nullable.Nullable[UpdateHealth] `json:"health"`
+	IncarnationId           openapi_types.UUID              `json:"incarnation_id"`
+	JobId                   openapi_types.UUID              `json:"job_id"`
+	ManifestSha256          string                          `json:"manifest_sha256"`
+	MemberForwardingEnabled bool                            `json:"member_forwarding_enabled"`
+	NodeId                  openapi_types.UUID              `json:"node_id"`
+	PayloadHash             string                          `json:"payload_hash"`
 
 	// PolicyGeneration The desired-state config_generation actually applied when this result
 	// was produced (§13.10.3, §14.7), not the update job generation or the
 	// newest received desired state. Component policy_refs belong to desired
 	// state; they do not replace this applied configuration generation.
 	// This member was already required in the v1 contract and remains so.
-	PolicyGeneration  decstr.U64                            `json:"policy_generation"`
+	PolicyGeneration decstr.U64 `json:"policy_generation"`
+
+	// PreviousReleaseId For rolled_back, the candidate release that failed (D-062).
+	// Otherwise the release that was active before this step.
 	PreviousReleaseId nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
 
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.

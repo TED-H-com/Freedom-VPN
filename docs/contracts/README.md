@@ -132,7 +132,9 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
   integers with explicit bounds within ±(2^53−1). No floating-point numbers.
 - **Money.** `amount_minor` (int64 minor units) plus ISO 4217 `currency`.
 - **Nullability and presence.** `nullable: true` is allowed on required
-  members and the two optional UpdateTarget policy-evidence members (D-048). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+  members and the optional nullable members named by
+  `TestAPI01_OptionalNullableFields` (D-048, D-056, D-058, and revision 6's
+  `NodeDetail.dns_policy_evidence` and `UpdateResult.candidate_health`). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
   `nullable`); its zero value is unspecified and **fails marshaling**. Use
   `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
   for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
@@ -245,6 +247,55 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 6
+
+API version **1.2.0**. The endpoint count remains **44**. No operation, enum
+value or existing member was removed. Consumers adopt the new optional members
+in their next follow-ups; omission stays valid.
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-056 | Optional nullable `NodeDetail.dns_policy_evidence` (`DnsPolicyEvidence`) | Nodes HTTP owner can drop the additive projection; portal and any node-detail client |
+| D-062 | Optional nullable `UpdateResult.candidate_health` (`UpdateHealth`); `health`, `error_code`, `current_release_id` and `previous_release_id` descriptions | Updater (emit) and fleet-update service (accept) |
+| D-062e | `ObservationReport.update` description: durable updater state; null generation is not 0 | Agent observation producer and fleet-update progress reader |
+| D-034e | `ReleaseManifest.rollback.allowed_release_ids` description | Updater and fleet-update service, same fail-closed intersection |
+| Resolver example | `ResolverDocument.json` regenerated from `dnspublish.Compile`; `bootstrap_dns` is non-empty when `upstreams` is | Agent and DNS owners that pin the example digest |
+
+`NodeDetail.dns_policy_evidence` is the node's report for the current
+incarnation, the same object as `ObservationReport.dns_policy_evidence`. Central
+projects it. It does not verify that apply succeeded. Absent and null both mean
+no report. Check text stays on `checks[].detail`.
+
+`UpdateResult.health` is null only for a `failed` result whose `stage` precedes
+checking (`UpdateStage` value `check`). A `rolled_back` result's `health` is the
+restored release's checks, `error_code` is the candidate's failure,
+`current_release_id` is the restored release, and `previous_release_id` is the
+candidate. `candidate_health` carries the candidate's checks for that diagnosis
+and is null or absent otherwise.
+
+`ObservationReport.update` is populated from durable updater state on every
+observation. A null `generation` means there is no update state. Readers must
+not treat that null as generation 0.
+
+An empty `allowed_release_ids` adds no restriction. A non-empty list is a
+fail-closed intersection with the serving set, enforced by the updater and by
+central alike.
+
+`bootstrap_dns` on a resolver document is non-empty whenever `upstreams` is.
+The compiler copies upstreams into an empty bootstrap list. `dnspublish.Verify`
+rejects a document that still has an empty bootstrap list beside upstreams.
+The valid example is the compiler's canonical bytes, with no trailing newline.
+
+Not in this revision:
+
+- No new error code for a publication whose exit has no attached groups.
+  `VALIDATION_FAILED` already carries a `/group_ids` field detail, and
+  `NODE_NOT_SERVICEABLE` already carries `failed_checks`. No owner showed that
+  this vocabulary cannot express the condition. wire-nodes follow-up 12 in the
+  roadmap is the compiler seam, not an error-code request.
+- Nullable threat-feed attribution stays as revision 5 left it. That is a DNS
+  owner code fix, and no owner reported the contract wrong.
 
 ## Revision 5.1
 
@@ -371,7 +422,11 @@ them. `reasons.json` names the owner and rule for each fixture.
 |---|---|---|
 | Resolver fetch is limited to documents actually issued to this node at current/previous config generation; return identical NOT_FOUND for unknown/unissued IDs | nodes wiring / desired-state issuer | §14.7, D-056 |
 | Resolver bytes remain immutable/canonical; signed digest, length, profile and policy generation bind them; verify before apply, no partial apply on mismatch | DNS publisher / agent / DNS applier | §12.3–§12.4, D-056 |
-| Evidence binds the actual applied document and unique feed codes; only applied with read-back may pass dns_policy; unknown never becomes zero | agent / nodes observation service | §14.7, D-056 |
+| Evidence binds the actual applied document and unique feed codes; only applied with read-back may pass dns_policy; unknown never becomes zero. Node detail projects that report and does not treat it as central proof of apply | agent / nodes observation service | §14.7, D-056 |
+| `UpdateResult.health` is null only for `failed` before stage `check`; `rolled_back` health is the restored release, `error_code` and `candidate_health` are the candidate, `current_release_id` is restored and `previous_release_id` is the candidate | fleet update service / node updater | §13.10.3, D-062 |
+| Observation `update` comes from durable updater state; null generation is not generation 0 | agent / fleet update service | §13.10, D-062e |
+| Empty `rollback.allowed_release_ids` adds no restriction; a non-empty list fail-closes against the serving set in the updater and in central | node updater / fleet update service | §13.7, D-034e |
+| Resolver `bootstrap_dns` is non-empty when `upstreams` is; empty input is copied, a stored empty list is rejected | DNS publisher / agent | §12.4, D-028 |
 | Group code/name uniqueness; publication membership and intent replace atomically under the exit version; every referenced group exists, with field errors for unknown IDs | nodes publication / policy service | §5.2, §15.2–§15.3, D-057 |
 | Signed probe overrides local config; authenticate dedicated probe identity, control destinations and exact temporary isolation exceptions; apply omitted 2000 ms timeout | desired-state / agent service | §8.1, §13.9, D-058 |
 | Diagnostic messages are sanitized; threat_feed_status only for threat_feed, active revision only, safe internal-error mapping, null bootstrap history, age derived from last success | node agent / DNS feed / policy read services | §12.3, SEC02, D-058 |

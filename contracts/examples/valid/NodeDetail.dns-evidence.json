@@ -1,0 +1,86 @@
+{
+  "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+  "exit_id": "caba5aec-4b2b-432c-9512-211a7b3e96db",
+  "name": "Tokyo 1",
+  "region": "jp-tokyo",
+  "member_group_ids": [
+    "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+  ],
+  "lifecycle_state": "registered",
+  "provisioning_state": "ready",
+  "publication_intent": "disabled",
+  "publication_observed": "withdrawn",
+  "control_status": "online",
+  "data_health": "healthy",
+  "safety_status": "passed",
+  "member_forwarding_observed": false,
+  "config_generation": {
+    "desired": "128",
+    "applied": "127"
+  },
+  "releases": {
+    "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+    "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+    "last_good_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+  },
+  "update": {
+    "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+    "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+    "generation": "7",
+    "state": "downloading",
+    "last_result_at": "2026-10-28T14:06:00Z",
+    "last_observed_at": "2026-10-28T14:06:30Z",
+    "last_error_code": null
+  },
+  "last_seen_at": "2026-10-28T14:06:30Z",
+  "resource_version": "42",
+  "created_at": "2026-10-01T09:00:00Z",
+  "current_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+  "platform": {
+    "os": "ubuntu",
+    "os_version": "24.04",
+    "arch": "arm64"
+  },
+  "capacity": {
+    "down_bps": 1000000000,
+    "up_bps": 1000000000,
+    "member_down_bps_cap": 200000000,
+    "member_up_bps_cap": 100000000
+  },
+  "notes": "Pre-installed box; source noted for reference only.",
+  "netbird_peer_id": "peer-test-node-01",
+  "observed_exit_ipv4": "203.0.113.10",
+  "observed_exit_ipv6": null,
+  "checks": [
+    {
+      "name": "internet_only",
+      "status": "passed",
+      "observed_at": "2026-10-28T14:06:30Z",
+      "error_code": null
+    },
+    {
+      "name": "meter_path",
+      "status": "passed",
+      "observed_at": "2026-10-28T14:06:30Z",
+      "error_code": null
+    }
+  ],
+  "recent_errors": [],
+  "drift": [
+    {
+      "field": "config_generation",
+      "desired": "128",
+      "observed": "127"
+    }
+  ],
+  "retired_at": null,
+  "dns_policy_evidence": {
+    "document_id": "01900000-0000-7000-8000-000000000056",
+    "content_sha256": "2bed2c3a6225090d221f86c8d597c2782a44149ad9bafa7f02783c4cbaf5f20d",
+    "generation": "9007199254740993",
+    "outcome": "applied",
+    "applied_at": "2026-01-02T12:00:00Z",
+    "feeds": [],
+    "error_code": null
+  }
+}
