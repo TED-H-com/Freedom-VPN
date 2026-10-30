@@ -1,70 +1,72 @@
-# Requests to orchestrator — follow-up 5
+# Requests to orchestrator — follow-up 6
 
-Run `743c186d-5765-43e9-8b40-7839be178e13`, source `dd72ed4e43e2be21a852e6741d8caa06a8f6ad48`, at `2026-10-30T08:35:19Z`.
-Fresh-stack make exit **2**; records were written before failure and teardown.
-AT23/25/26 pass; AT24/27 are blocked by the recorded-boot prerequisite. The
-original five update scenarios and follow-up 4 checks still pass.
+Run `a83d5d64-505c-488c-b560-5a777566702e`, source `1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f`, evidence `2026-10-30T17:10:45Z`. Prefix `w4-updates`, port base 42000.
 
-## F5-01 — recorded-boot prerequisite absent
+Make exit **2**. AT26 passes. AT23/AT25 are blocked on the shared lab
+probe prerequisite; AT24/AT27 on the requested recorded-incarnation assertions.
+All original update scenarios and follow-up 4 checks still pass.
 
-**Owners: w3-devstack-e2e and w2-fleet-update; fixture/expectation decision by the
-orchestrator.** Provide a supported product path for the requested fresh
-incarnation to have a recorded boot release before its first accepted result,
-or clarify case (c)'s expectation when both central columns start null. Do not
-seed the columns or relax observation authority to accommodate this harness.
+## F6-02 — recorded c2/c3 conflict with accepted-result authority
 
-Observed baseline: current_release_id=null, last_good_release_id=null,
-accepted results=0. Twelve authenticated heartbeats all return 202. Case (a)
-leaves both columns null/unconfirmed and creates one audit. Case (b) moves
-current to the authorized job target, leaves last-good null, and creates one
-audit for its distinct unrelated last-good. Repetitions do not add audits.
-Case (c) also preserves last-good=null but creates exactly one additional audit
-for boot, because boot was never centrally recorded. This is not evidence of
-a fleet-update allowlist defect: `internal/fleetupdate/serving.go:133` permits
-only the target/current/last-good; lines 143–147 audit unexpected claims.
-`internal/nodes/observations.go:222` delegates version ownership to fleet and
-clears its own write inputs. Jobless arrival cannot establish boot provenance
-(`internal/fleetupdate/serving.go:218`). The source policy is described at
-`docs/updates/central-lifecycle.md:425`.
+**Owner: w2-fleet-update; expectation decision by orchestrator.** Resolve the
+requested recorded-incarnation c2 seeding and c3 one-audit expectations against
+the documented incarnation-wide acceptance rule. Do not weaken authority to
+make this harness pass. On the real recorded incarnation, c1 leaves current
+and last-good at 1.0.1 with zero audits, as requested. Every c2 report retains
+1.0.1 rather than seeding the job target 1.0.2; every c3 report retains 1.0.1
+and produces zero unexpected-release audits. c2/c3 withhold confirmation.
+Each has four HTTP 202 reports and no new accepted result. The later real
+updater recovery succeeds and establishes both columns as 1.0.2.
 
-The real AT23 updater subsequently produces one accepted success result,
-establishing both current and last-good as 1.0.1. No success was forged for
-this probe. [Raw requests, responses, batch GETs and admin audit pages](pre-result.json)
-and [case table](pre-result.md) include all repetitions and the exact success
-receipt. AT24/AT27 retain blocked status until the requested recorded-boot
-fixture is genuinely exercised.
+`docs/updates/central-lifecycle.md:417-423,467` says accepted results own serving
+versions and closes seeding even for later jobs. `internal/fleetupdate/serving.go:125`
+guards both seeding and audit creation with `!accepted`; lines 142-156 write
+current/audits only inside that branch. The implementation matches that policy,
+but the requested c2/c3 assertions cannot pass under it. Preserve the explicit
+assertions pending a decision. [Exact requests, responses, batch GETs, audit
+pages, before/after and real accepted results](pre-result.json).
 
-## F5-02 — no lab probe peer; default agent config path absent
+Fresh b/c also differ from the older f7 seeding behavior: fleet f8 (#167) requires
+reported last-good to equal recorded last-good before any current write
+(`serving.go:142`). With null baseline, b/c keep current=null. This is recorded
+as the current policy's correct behavior, not as a fabricated target seed.
 
-**Owner: w3-devstack-e2e (follow-up 10 lab setup).** This run's main contains
-follow-up 9 (#153), not follow-up 10. Both AT23 and AT25 read **no probe peer in
-lab**. `/etc/vpn-node/updater-recover.json` and the actual updater invocation
-configs have no probe_peer and no agent_config. `/etc/vpn-node/agent.json` does
-not exist; the lab agent uses `/etc/vpn-node/agent-run.json`.
+## F5-02 reopened — peer setup not exposed to the shared lab path
 
-When adding the lab peer, supply the actual agent config path in updater config.
-`tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go:50` constructs the updater config and
-line 63 writes the recovery config; `tests/e2e/cmd/fvpn-e2e-prepare/main.go:391`
-writes agent-run.json. `docs/updates/node-updater.md:63` documents the default
-path and `:65` the fixed `agent_config_unavailable` class. No such class was
-emitted in this run: with probe_peer absent, these inputs are not validated.
-The expected class for adding a peer without fixing that missing path is
-`agent_config_unavailable`; it is a prospective finding, not a fabricated log.
+**Owner: w3-devstack-e2e.** Export the existing dedicated probe setup and
+read-only exception observer through the shared lab API, including its generated
+probe config, so this harness can reuse #170 without a second pipeline. Actual
+AT23/AT25 invocation configs and `/etc/vpn-node/updater-recover.json` have no
+probe_peer. Both set agent_config to the existing `/etc/vpn-node/agent-run.json`.
+No challenge probe or refusal was emitted; D-063/D-064 issuance is unverified.
 
-[Configs/challenges/omission diagnostics](probe-issuance.json) and the
-[probe finding](probe-issuance.md) preserve what was actually read. No file,
-peer or health response was created to make issuance pass. Conditional probe
-inspection is complete, but a configured D-063 issuance path remains untested.
+`tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go:56-65` sets the correct path but no peer.
+`tests/e2e/probe_scenario_test.go:45-134` creates the dedicated setup-key peer,
+transport policy and narrow route in a private test-only runner method; only
+`tests/e2e/scenarios_test.go:550` calls it. The public `Stack` methods in
+`tests/e2e/stack_exports.go` and `PrepareServingBaseline` have no equivalent.
+[Actual node configs, fresh challenges, attestations and stderr inspection](probe-issuance.json).
+No peer or alias file was created by this harness. AT25's hash rejection occurs
+before health, so it cannot issue a fresh challenge; clarify whether the probe
+requirement should apply to a separate valid-candidate invocation for AT25.
 
-## Tested main and resolved prior requests
+## Resolved
 
-[Source-main snapshot](source-main.json): fleet-update f7 #155, updater f10 #154,
-devstack f9 #153, agent f10 #150, wire-nodes f15 #148, netlab f4 #144. Agent f11,
-wire-nodes f16, netlab f5 and devstack f10 are absent from this checkout.
+- **F5-01:** resolved by the orchestrator's fresh-null expectation. Fresh case c
+  produces exactly one boot-release/job audit despite repetitions. This main's
+  f8 also retains both null columns because last-good disagrees. Policy citation:
+  `docs/updates/central-lifecycle.md:458-465`. First genuine AT23 success then
+  establishes current and last-good at 1.0.1; no boot provenance was seeded.
+- **F5-02 path component:** #170 supplies the real, existing
+  `/etc/vpn-node/agent-run.json`. F6-01 is not opened: no
+  `agent_config_unavailable` refusal occurred. The peer integration portion
+  remains open above.
+- #129 direct terminal rollback, #136 revision 7 target evidence and #140
+  accepted-result authority/receipt bounds remain verified. AT26 retains the
+  exact accepted result, current ACK and raw batch JSON.
 
-The #129 terminal rollback, #136 revision 7 target evidence and #140 accepted
-result authority/receipt bounds remain verified. Exact current rollback result,
-ACK and both batch GETs remain in AT26 and the standalone AT26 JSON files.
-[Follow-up 4](history/follow-up-4/README.md) and earlier captures remain unchanged.
-No product, contract or migration was edited. Physical arm64 and the broader
-original §19 matrix remain outside this run; both architectures compile.
+Tested main includes devstack f10 #170, updater f11 #168, fleet f8 #167,
+agent f12 #166 (and f11 #162), wire-nodes f16 #160 and netlab f6 #159.
+See [source snapshot](source-main.json) and [unchanged follow-up 5 history](history/follow-up-5/README.md).
+No product, contract or migration changes. Physical arm64 and the full original
+§19 matrix remain later operator work; both architectures compile.

@@ -1,68 +1,32 @@
 # Wave 4 security and operations acceptance
 
-Follow-up 5 measured main `446b6b0` (#162), using only `w4-secops` / port base
-`30000`. Run `86e6106a-1be1-4003-9b0f-35a30e9cda12` took place on a shared dev
-host, **not candidate hardware**. [Dependencies](dependencies.json) list the
-merged roadmap entries and the absent devstack follow-up 10.
+[Follow-up 6 summary](summary.md) records main `00e1d0c`, devstack #170 and
+control #169. Two fresh `w4-secops` / 30000 instances each admitted **20 users
+and 60 devices**, with 60 simultaneous current bindings. Both 600-read windows
+returned HTTP 200 with no foreign devices; read p95 was **16.413 / 47.604 ms**.
+These are admission and control diagnostics on a shared dev host.
 
-```sh
-make -f mk/at-secops.mk at-secops-followup5
-```
+| Case | Full status | Current result / remaining gate |
+|---|---|---|
+| [AT28](AT28.json) | blocked | Anonymous saturation leaves admin/lease 200; usage boundary 200/200/413, one duplicate-safe ledger row. SECOPS-16 stays open for positive protected transient key counts; full resource matrix and later trusted-proxy row remain. |
+| [AT29](AT29.json) | blocked | Historical paid/grant cutoff subsets retained. Finite-grace prepare option, D-065 short fleet lease setter, established TCP/UDP and guest rollback remain. |
+| [AT30](AT30.json) | blocked | Unchanged; backups did not change since #165. Real retained-node replay and independent provider/peer reconciliation remain. |
+| [AT31](AT31.json) | blocked | SECOPS-10 admission resolved. Counted flow per peer, node process/cgroup telemetry, concurrent mixed/relay load and candidate hardware remain. |
+| [AT32](AT32.json) | blocked | Historical scope review retained; DOC15 fixed by #163. Physical origins and platforms need operator runs. |
 
-The target refuses an occupied namespace and tears down its own objects. It
-exits 2 while full acceptance has remaining gates; the live Go probe and all
-25 supporting suites passed. The deadline worker guard is now started by the
-target; this recorded run invoked the same guard alongside it before the faults.
+[SECOPS-16 records](secret-scan.json) cover 135 retained streams per phase and
+protected transient streams. Retained streams have zero known-canary and
+device-flow-key matches. The sequential profile has 60 exact pre-delete scans,
+each with one device-flow key line. The helper reports 60 protected pre-delete
+streams; an independent watcher observed a key in each, while the helper does
+not return per-stream final key totals. No values or matched lines are public.
+The earlier gateway finding is not retired under the requested all-stream-zero
+criterion; current gateway diagnostics alone contain zero key/exhaustion lines.
 
-| Case | Full status | Measured subset | Remaining gates |
-|---|---|---|---|
-| [AT28](AT28.json) | blocked | Usage 8 MiB and all other class cap triplets pass; duplicate retries leave one row; 20/20 login | Complete resource/log matrix; SECOPS-16 exhaustion recheck |
-| [AT29](AT29.json) | blocked | Selected counted flow; paid agent-crash cutoff; grant kernel deadline with agent/watchdog stopped; valid-policy recovery | Finite grace input, short node-lease input, established TCP/UDP, guest clock rollback |
-| [AT30](AT30.json) | blocked | Original physical PITR/synthetic replay retained, no new restore | Real node archive and independent provider/peer reconciliation |
-| [AT31](AT31.json) | blocked | 20 readers and 2 counted devices, fixed five-minute window; real ledger/policy/usage observations | 60-device gateway budget, two nodes, forced relay/UDP, usable node resource telemetry, candidate hardware |
-| [AT32](AT32.json) | blocked | Prior DOC01–14 fixes retained; DOC15 requests historical attribution of obsolete blockers | Three physical origins and native platform/hardware operator rows |
-
-[Counted-flow proof](counted-flow.json) follows the required order: select the
-single API-created `fvpn-exit-...`, route through `fvnb0`, verify HTTPS 200 and
-an authenticated origin receipt from node SNAT, then check the exact device's
-admission bytes. The first probe added **1,066 upload / 1,513 download bytes**.
-Extra peers use the controlled IP in the origin certificate's SAN because they
-do not inherit Compose hostname aliases. TLS verification stays enabled; no
-route, group, policy or projected row is manufactured.
-
-[Capacity](capacity.json) records 6,000 successful portal reads, zero wrong
-member responses, p50/p95/p99 **13.442 / 23.074 / 368.457 ms**, and 300 successful
-HTTPS requests from each native device. Admission deltas were
-**310,512 / 456,974** and **307,780 / 453,957** upload/download bytes, including
-protocol overhead and diagnostic policy probes. Policy ACKs took **6.013 s**
-and **1.007 s**; latest sampled usage was API-visible within an observed
-**4.371 s upper bound**. The node ledger had ACK62/max-seen62, 62 receipts and
-123 declared/actual samples. The first member's total also includes the
-separately labeled 300-byte synthetic node-B event. These numbers do not certify
-throughput or the unrun full profile in [load-profile.json](load-profile.json).
-
-There are 100 resource snapshots. Central-service CPU, memory and block IO are
-retained; all node Docker samples returned 0B/0B memory and zero CPU/IO, which
-is **unavailable telemetry**, not a zero-resource node. See [dev host](dev-host.json).
-
-[Deadlines](deadlines.json) retain 66 timestamped HTTPS attempts, signed bounds,
-monotonic heartbeat values, kernel timeout sets and recovery ACKs. Paid service
-ended at 09:41:05Z; the last successful post-fault attempt started at 09:40:53.171Z
-before watchdog closure. Grant service ended at 09:44:33Z; the last success
-started at 09:44:31.763Z with the watchdog stopped. No attempt starting after
-either end succeeded. The [worker guard](fault-injection.json) prevented central
-reconciliation from being the cause of withdrawal. Original paid/grant ends
-remained unchanged; only new finite grants and applied policy restored traffic.
-
-[Post-revoke](post-revoke.json) records generation **22**, forwarding enabled,
-empty block reasons, and a counted second-member flow after the first device's
-202 revoke. The revoked device no longer advertised the exit. This resolves
-the measured F3-02 coherence half after #153/#159/#162.
-
-[Limiter](limiter.json) retires SECOPS-15 on measured cap−1/cap/cap+1 results.
-[Attempt history](followup5-attempts.json) preserves the first complete run and
-its extra-peer hostname failure. [Requests](requests.md), [scope review](scope-review.json),
-[secret scan](secret-scan.json), [validation](validation.json) and
-[operator procedures](operator-runs.md) retain qualifications and exact owners.
-All live mutations use product APIs or exported lab/process hooks (D-050);
-projected tables are read-only. No application, lab or migration source changed.
+Use [RUN.md](RUN.md), [requests.md](requests.md), [dependencies.json](dependencies.json)
+and [validation.json](validation.json). The run target exits 2 for full-case
+gates while both live probes pass. Both instances were torn down. Prior
+counted-traffic, deadline, revocation and PITR measurements remain attributed
+under [history/follow-up-5](history/README.md); they are not new 60-peer traffic
+measurements. [Gateway inventory](gateway-inventory.json) qualifies the initial
+unavailable worker count and preserves socket/FD samples without addresses.
