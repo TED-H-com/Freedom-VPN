@@ -6,10 +6,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -22,6 +24,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -126,6 +129,19 @@ func (p *liveProbe) open() {
 		p.t.Fatal("source revision")
 	}
 	p.metadata["source_revision"] = strings.TrimSpace(string(revision))
+	sourceFiles, er := filepath.Glob(filepath.Join(p.root, "tests/e2e/at/secops/*.go"))
+	if er != nil {
+		p.t.Fatal("probe source inventory")
+	}
+	hash := sha256.New()
+	for _, name := range sourceFiles {
+		raw, e := os.ReadFile(name)
+		if e != nil {
+			p.t.Fatal("probe source digest")
+		}
+		_, _ = hash.Write(raw)
+	}
+	p.metadata["probe_source_sha256"] = fmt.Sprintf("%x", hash.Sum(nil))
 	raw, err := os.ReadFile(filepath.Join(p.state, "stack.json"))
 	if err != nil {
 		p.t.Fatal("stack state absent")
@@ -210,11 +226,15 @@ func (p *liveProbe) call(s *liveSession, method, path string, body any, h map[st
 		req.Header.Set("Idempotency-Key", uuid.NewString())
 	}
 	for k, v := range h {
-		req.Header.Set(k, v)
+		if v == "" {
+			req.Header.Del(k)
+		} else {
+			req.Header.Set(k, v)
+		}
 	}
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return liveReply{status: 0, code: "TRANSPORT_REFUSED"}
+		return liveReply{status: 0, code: transportClass(err)}
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
@@ -244,8 +264,9 @@ func (p *liveProbe) login(subject, role string) *liveSession {
 	if err != nil {
 		p.t.Fatal("lab user unavailable")
 	}
-	if idplogin.PortalLogin(p.t.Context(), s.client, livePublic, cred.Email, cred.Password) != nil {
-		p.t.Fatal("IdP login failed")
+	if err := idplogin.PortalLogin(p.t.Context(), s.client, livePublic, cred.Email, cred.Password); err != nil {
+		p.metadata["login_failure"] = map[string]any{"role": role, "error_class": transportClass(err), "utc": time.Now().UTC()}
+		p.t.Fatal("IdP login failed: ", transportClass(err))
 	}
 	r := p.call(s, "GET", "/auth/session?role="+role, nil, nil)
 	var v struct {
@@ -663,10 +684,27 @@ func (p *liveProbe) finish() {
 			p.secrets = append(p.secrets, bytes.TrimSpace(raw))
 		}
 	}
-	services := []string{"postgres", "idp", "payment", "origin", "netbird", "gateway", "coredns", "adguard", "control", "worker", "node", "member"}
+	services := []string{"postgres", "idp", "payment", "origin", "netbird", "gateway", "coredns", "adguard", "control", "worker", "node-netns", "node", "member"}
+	extra, inventoryErr := exec.CommandContext(p.t.Context(), "docker", "ps", "-a", "--filter", "name=^fvpn-w4-secops-member-", "--format", "{{.Names}}").Output()
+	if inventoryErr != nil {
+		p.t.Error("native peer log inventory failed")
+	}
+	for _, name := range strings.Fields(string(extra)) {
+		if strings.HasPrefix(name, livePrefix+"member-") {
+			services = append(services, strings.TrimPrefix(name, livePrefix))
+		}
+	}
 	streams := []map[string]any{}
 	images := []map[string]string{}
+	logDir := filepath.Join(p.root, ".agent/secops/captured-logs")
+	if os.MkdirAll(logDir, 0700) != nil {
+		p.t.Error("private diagnostic directory")
+	}
 	scan := func(name string, raw []byte, err error) {
+		file := strings.NewReplacer("/", "_", " ", "_").Replace(name) + ".log"
+		if os.WriteFile(filepath.Join(logDir, file), raw, 0600) != nil {
+			p.t.Error("private diagnostic capture")
+		}
 		findings := 0
 		for _, secret := range p.secrets {
 			if len(secret) >= 16 && bytes.Contains(raw, secret) {
@@ -689,7 +727,10 @@ func (p *liveProbe) finish() {
 			images = append(images, map[string]string{"service": service, "image_id": strings.TrimSpace(string(id))})
 		}
 	}
-	for _, service := range []string{"node", "member"} {
+	for _, service := range services {
+		if service != "node" && service != "member" && !strings.HasPrefix(service, "member-") {
+			continue
+		}
 		listing, err := p.docker(service, "find", "/var/lib/vpn-node/e2e", "/var/log/netbird", "-type", "f", "-name", "*.log")
 		if err != nil {
 			p.t.Error("log stream inventory failed")
@@ -733,6 +774,9 @@ func (p *liveProbe) finish() {
 	if os.Getenv("FVPN_SECOPS_PITR") == "1" {
 		name = "pitr-source.json"
 	}
+	if os.Getenv("FVPN_SECOPS_SCALE_ONLY") == "1" {
+		name = "native-scale-live.json"
+	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {
 		p.t.Error("evidence write")
 	}
@@ -767,4 +811,20 @@ func (p *liveProbe) memberOperation(members []*liveSession) {
 	}
 	p.check("own operation visible", p.call(members[0], "GET", "/api/v1/member/operations/"+op.OperationId.String(), nil, nil), 200, "")
 	p.check("foreign operation hidden", p.call(members[1], "GET", "/api/v1/member/operations/"+op.OperationId.String(), nil, nil), 404, "")
+}
+
+// Never publish a url.Error string: callback URLs can contain OAuth state.
+func transportClass(err error) string {
+	var netErr net.Error
+	var verify *tls.CertificateVerificationError
+	switch {
+	case errors.As(err, &netErr) && netErr.Timeout():
+		return "TRANSPORT_TIMEOUT"
+	case errors.As(err, &verify):
+		return "TLS_VERIFY_FAILED"
+	case errors.Is(err, syscall.ECONNREFUSED):
+		return "CONNECTION_REFUSED"
+	default:
+		return "TRANSPORT_REFUSED"
+	}
 }

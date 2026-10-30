@@ -5,9 +5,6 @@ package members
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -147,7 +144,9 @@ func (l *live) payment(r *record) {
 	paidRev := l.revision(l.c)
 	accepted := 1
 	for range 9 {
-		if l.sendEvent(paid).status == 202 {
+		reply := l.sendEvent(paid)
+		r.check("paced paid replay", "202 once; no rate-limit retry", detail(reply), "wait 2 seconds; POST identical provider bytes once", reply.status == 202)
+		if reply.status == 202 {
 			accepted++
 		}
 	}
@@ -157,36 +156,35 @@ func (l *live) payment(r *record) {
 	l.paidReadback(r, p, "active", 0)
 	l.write(r)
 	l.paymentOrders(r)
-	r.block(inheritedLeaseGate)
+	peer := l.native(r, l.c, "member-paid")
+	device := l.awaitDevice(peer)
+	if device == uuid.Nil {
+		r.block("Paid native device admission did not converge")
+	} else {
+		l.forwardingGate(r)
+		l.traceForwarding(r, "member-paid", device)
+	}
 }
 
-// AT03: the hook supports paid/updated, but not created/failed events. Reuse its
-// real checkout-bound object and sign these two documented event INPUTS with the
-// generated TEST ONLY key. Authoritative truth still comes exclusively from the
-// provider hook. This never inserts an invoice/subscription/entitlement fixture.
-func (l *live) orderingEvent(template paymentEvent, kind string) paymentEvent {
-	var v map[string]any
-	_ = json.Unmarshal([]byte(template.Body), &v)
-	v["type"] = kind
-	v["id"] = "evt_TEST_ONLY_" + uuid.NewString()
-	raw, _ := json.Marshal(v)
-	stamp := fmt.Sprint(time.Now().Unix())
-	mac := hmac.New(sha256.New, []byte(l.secret("webhook.secret")))
-	_, _ = mac.Write([]byte(stamp + "."))
-	_, _ = mac.Write(raw)
-	return paymentEvent{string(raw), "t=" + stamp + ",v1=" + hex.EncodeToString(mac.Sum(nil))}
-}
 func (l *live) paymentOrders(r *record) {
+	seenMembers := map[string]bool{}
 	orders := [][3]string{{"created", "paid", "failed"}, {"created", "failed", "paid"}, {"paid", "created", "failed"}, {"paid", "failed", "created"}, {"failed", "created", "paid"}, {"failed", "paid", "created"}}
 	for i, order := range orders {
 		b := l.login(fmt.Sprintf("AT-order-%s-%d", l.run, i), "member")
+		r.check("independent ordering identity", "one new member per permutation", fmt.Sprintf("unique=%t", !seenMembers[b.member]), "shared IdP login with short fixture key", !seenMembers[b.member])
+		if seenMembers[b.member] {
+			r.block("Harness identity collision; stop ordering matrix without modifying projections")
+			return
+		}
+		seenMembers[b.member] = true
 		p := l.checkout(r, b, time.Now().Add(time.Hour))
 		if p == nil || !l.truth(r, p) {
 			return
 		}
 		invoice := l.event(r, p, "invoice.paid")
-		subscription := l.event(r, p, "customer.subscription.updated")
-		events := map[string]paymentEvent{"created": l.orderingEvent(subscription, "customer.subscription.created"), "paid": invoice, "failed": l.orderingEvent(invoice, "invoice.payment_failed")}
+		created := l.event(r, p, "customer.subscription.created")
+		failed := l.event(r, p, "invoice.payment_failed")
+		events := map[string]paymentEvent{"created": created, "paid": invoice, "failed": failed}
 		delivered, processed := 0, 0
 		for _, kind := range order {
 			if l.sendEvent(events[kind]).status == 202 {
@@ -198,7 +196,7 @@ func (l *live) paymentOrders(r *record) {
 		}
 		good := l.paidReadback(r, p, "active", 0)
 		rows := l.count(`SELECT count(*) FROM billing_records WHERE member_id=$1 AND record_type='paid_invoice'`, b.member)
-		r.check("delivery order "+strings.Join(order[:], "/"), "each event processed against same authoritative paid truth; one exact interval", fmt.Sprintf("delivered=%d; processed=%d; invoices=%d; period_matches=%t", delivered, processed, rows, good), "fresh checkout/subject per order; provider event templates; signed created/failed event inputs; read paid interval", delivered == 3 && processed == 3 && rows == 1 && good)
+		r.check("delivery order "+strings.Join(order[:], "/"), "each event processed against same authoritative paid truth; one exact interval", fmt.Sprintf("delivered=%d; processed=%d; invoices=%d; period_matches=%t", delivered, processed, rows, good), "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval", delivered == 3 && processed == 3 && rows == 1 && good)
 		l.write(r)
 	}
 }
@@ -224,6 +222,8 @@ func (l *live) entitlements(r *record) {
 		r.check("cancel and partial refund event", "202 then reconciled", detail(got), "update provider truth; POST signed event", got.status == 202 && l.processed(ev))
 		l.paidReadback(r, p, "cancel_at_period_end", 250)
 	}
+	monitor := l.startFlow(r, "member-paid")
+	refundAt := time.Now().UTC()
 	p.snapshot["refund_minor"] = 1000
 	p.snapshot["status"] = "canceled"
 	if l.truth(r, p) {
@@ -238,6 +238,7 @@ func (l *live) entitlements(r *record) {
 		got = l.sendEvent(deleted)
 		r.check("cancellation deletion replay", "202; reconciled without restoring service", detail(got), "POST customer.subscription.deleted after canceled truth", got.status == 202 && l.processed(deleted) && l.entitlementState(l.c) == "expired")
 	}
+	l.finishFlow(r, monitor, refundAt)
 	// Expiry runs on a fresh, paid subscription so no grant masks the boundary.
 	expiryMember := l.login("AT-expiry-"+l.run, "member")
 	ep := l.checkout(r, expiryMember, time.Now().Add(45*time.Second))
@@ -261,6 +262,6 @@ func (l *live) entitlements(r *record) {
 		screen := l.api(suspended, "GET", "/api/v1/member/me", nil, nil)
 		r.check("member screen state", "200; admin_suspended true despite paid interval", fmt.Sprintf("HTTP=%d; suspended=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after successful paid reconciliation", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
 	}
-	r.block(inheritedLeaseGate)
+	r.block("Shared origin only serves HTTPS; no controlled persistent UDP echo/flow endpoint or second runnable exit is present. Existing TCP full-refund withdrawal is measured separately; all-node UDP/expiry/suspension flow timing remains unproved. Owner: devstack fixture hooks.")
 	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts.")
 }

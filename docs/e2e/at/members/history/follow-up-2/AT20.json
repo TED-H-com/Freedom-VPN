@@ -1,0 +1,503 @@
+{
+  "complete": true,
+  "id": "AT20",
+  "title": "DNS rules and record types",
+  "spec": [
+    "§19.1",
+    "§19 AT20",
+    "DNS01 DNS02 ISO04"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "reject noncanonical EXAMPLE.COM",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
+    },
+    {
+      "name": "reject noncanonical example.com.",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
+    },
+    {
+      "name": "reject noncanonical bücher.example.com",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
+    },
+    {
+      "name": "reject noncanonical https://example.com/path",
+      "detail": "pass; expected: 422 (contract canonical ASCII); actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies domain_rule_set"
+    },
+    {
+      "name": "canonical rules",
+      "detail": "pass; expected: 201, immutable canonical payload; actual: HTTP 201 ; command: POST canonical A-label, include_subdomains and allow rules"
+    },
+    {
+      "name": "duplicate and conflict rejection",
+      "detail": "pass; expected: both 409 conflict; actual: duplicate=409; conflict=409; command: POST duplicate/conflicting rules"
+    },
+    {
+      "name": "DNS profile",
+      "detail": "pass; expected: 201 with TEST ONLY 5-second TTL; actual: HTTP 201 ; command: POST /admin/policies dns_profile"
+    },
+    {
+      "name": "DNS activation",
+      "detail": "pass; expected: 202 pending external apply; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
+    },
+    {
+      "name": "compiled DNS documents",
+      "detail": "pass; expected: observe central publication separately from resolver apply; actual: stored_documents=1; command: SELECT count dns_resolver_documents"
+    },
+    {
+      "name": "policy operation versus resolver",
+      "detail": "pass; expected: record compilation operation separately from application; actual: latest_policy_operation=pending; command: SELECT operations.status for policy.activate"
+    },
+    {
+      "name": "actual resolver readback",
+      "detail": "pass; expected: record applied-rule presence; actual: API_ok=true; user_rules=6; requested_block_present=false; command: AdGuard GET /control/filtering/status"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS LAB.example.invalid. type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS sub.lab.example.invalid type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS notexample.com type 1",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":0}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 5",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 28",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 65",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 64",
+      "detail": "pass; expected: record actual controlled resolver answer (management path); actual: {\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: docker exec member probe dns controlled-resolver"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=522; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "central resolver document readback",
+      "detail": "pass; expected: record stored publication versus node delivery; actual: central_documents=2; command: SELECT dns_resolver_documents"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=867; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "central resolver document readback",
+      "detail": "pass; expected: record stored publication versus node delivery; actual: central_documents=3; command: SELECT dns_resolver_documents"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=670; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "blocked",
+      "detail": "Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=39; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-10-30T04:56:51Z",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "3ce91db255ceb05fa6bbdfe74c4d79e98a3c5b0a9fc10719ddd01f71104d2311",
+    "artifact_sha256_0.1.0_arm64": "8a3c751ffffc75471e56304f49bb4953e001e66693795afa71d63188aa5db1f9",
+    "manifest_sha256_0.1.0": "83084d298022708e93c7440710c579168c19b7f52bb5099bae8e2c6cc0330ae7",
+    "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
+  },
+  "followup_build": {
+    "source_commit": "75e7e33c6ea125b2b6568c87e075081ba0d1c18f",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:320b23fdef36cfa4692098eb7322651d2564940b2bd9391e41b1ae7f2ee6616c",
+      "member": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "origin": "sha256:93fec27d47887eb12e0460bb04cb062f1f52fa07ecd53f02c0e28c978152f631",
+      "payment": "sha256:5035fa31f764486a80b630b2ce67b2596746c961b16e20d1b5d75aa07c48dec1",
+      "postgres": "sha256:2e5105c206622fbd0a47cd1c6f461a6c6b0cd1c5283c582e3e81b9e36a4f78ca",
+      "worker": "sha256:c2e2a7edccfa35211ba46a593f98485d6658b87b1574b9133264ebc487b937a3"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "836a17206778bfd2a3a16c315a463ff9a2ea930ab7e5c62e984a5aa8ae89fdfc",
+      "fvpn-control": "0a0a546c77f29adefdb129fad60029289a7ad10e062dd4c7b30978b8c483aca7",
+      "fvpn-updater": "4a211f3b0c0058a05b8caca5987389eb16266ae982b762a1521cbf95c4dcee35",
+      "fvpn-worker": "3e6ed00a1fda21e79cc7da44b6bb092207d5adfbb5367ef0c18036031a4bd798"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      }
+    }
+  },
+  "build": {
+    "source_commit": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:320b23fdef36cfa4692098eb7322651d2564940b2bd9391e41b1ae7f2ee6616c",
+      "member": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "origin": "sha256:93fec27d47887eb12e0460bb04cb062f1f52fa07ecd53f02c0e28c978152f631",
+      "payment": "sha256:5035fa31f764486a80b630b2ce67b2596746c961b16e20d1b5d75aa07c48dec1",
+      "postgres": "sha256:2e5105c206622fbd0a47cd1c6f461a6c6b0cd1c5283c582e3e81b9e36a4f78ca",
+      "worker": "sha256:c2e2a7edccfa35211ba46a593f98485d6658b87b1574b9133264ebc487b937a3"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "836a17206778bfd2a3a16c315a463ff9a2ea930ab7e5c62e984a5aa8ae89fdfc",
+      "fvpn-control": "0a0a546c77f29adefdb129fad60029289a7ad10e062dd4c7b30978b8c483aca7",
+      "fvpn-updater": "4a211f3b0c0058a05b8caca5987389eb16266ae982b762a1521cbf95c4dcee35",
+      "fvpn-worker": "3e6ed00a1fda21e79cc7da44b6bb092207d5adfbb5367ef0c18036031a4bd798"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      }
+    }
+  },
+  "policy_revision": "39",
+  "active_policy_revisions": {
+    "dns_profile": "01a18b2c-a731-7247-b0e8-91c9457ed6ed",
+    "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
+    "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
+    "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b",
+    "threat_feed": "01a18b2c-9e60-7089-8598-2b92227aeaf9"
+  },
+  "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
+  "steps": [
+    {
+      "name": "reject noncanonical EXAMPLE.COM",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-30T04:56:52Z"
+    },
+    {
+      "name": "reject noncanonical example.com.",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-30T04:56:52Z"
+    },
+    {
+      "name": "reject noncanonical bücher.example.com",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-30T04:56:53Z"
+    },
+    {
+      "name": "reject noncanonical https://example.com/path",
+      "status": "pass",
+      "expected": "422 (contract canonical ASCII)",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies domain_rule_set",
+      "at": "2026-10-30T04:56:53Z"
+    },
+    {
+      "name": "canonical rules",
+      "status": "pass",
+      "expected": "201, immutable canonical payload",
+      "actual": "HTTP 201 ",
+      "command": "POST canonical A-label, include_subdomains and allow rules",
+      "at": "2026-10-30T04:56:54Z"
+    },
+    {
+      "name": "duplicate and conflict rejection",
+      "status": "pass",
+      "expected": "both 409 conflict",
+      "actual": "duplicate=409; conflict=409",
+      "command": "POST duplicate/conflicting rules",
+      "at": "2026-10-30T04:56:55Z"
+    },
+    {
+      "name": "DNS profile",
+      "status": "pass",
+      "expected": "201 with TEST ONLY 5-second TTL",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies dns_profile",
+      "at": "2026-10-30T04:56:56Z"
+    },
+    {
+      "name": "DNS activation",
+      "status": "pass",
+      "expected": "202 pending external apply",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-30T04:56:56Z"
+    },
+    {
+      "name": "compiled DNS documents",
+      "status": "pass",
+      "expected": "observe central publication separately from resolver apply",
+      "actual": "stored_documents=1",
+      "command": "SELECT count dns_resolver_documents",
+      "at": "2026-10-30T04:56:56Z"
+    },
+    {
+      "name": "policy operation versus resolver",
+      "status": "pass",
+      "expected": "record compilation operation separately from application",
+      "actual": "latest_policy_operation=pending",
+      "command": "SELECT operations.status for policy.activate",
+      "at": "2026-10-30T04:56:56Z"
+    },
+    {
+      "name": "actual resolver readback",
+      "status": "pass",
+      "expected": "record applied-rule presence",
+      "actual": "API_ok=true; user_rules=6; requested_block_present=false",
+      "command": "AdGuard GET /control/filtering/status",
+      "at": "2026-10-30T04:56:56Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS LAB.example.invalid. type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS sub.lab.example.invalid type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS notexample.com type 1",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":0}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 5",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 28",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 65",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "wire DNS lab.example.invalid type 64",
+      "status": "pass",
+      "expected": "record actual controlled resolver answer (management path)",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "docker exec member probe dns controlled-resolver",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T04:56:57Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=522",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T04:56:58Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T04:56:59Z"
+    },
+    {
+      "name": "central resolver document readback",
+      "status": "pass",
+      "expected": "record stored publication versus node delivery",
+      "actual": "central_documents=2",
+      "command": "SELECT dns_resolver_documents",
+      "at": "2026-10-30T04:58:36Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T04:58:36Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=867",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T04:58:37Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T04:58:38Z"
+    },
+    {
+      "name": "central resolver document readback",
+      "status": "pass",
+      "expected": "record stored publication versus node delivery",
+      "actual": "central_documents=3",
+      "command": "SELECT dns_resolver_documents",
+      "at": "2026-10-30T05:05:14Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T05:05:15Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=670",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T05:05:15Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T05:05:16Z"
+    }
+  ],
+  "blockers": [
+    "Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20."
+  ]
+}

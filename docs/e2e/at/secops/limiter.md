@@ -1,27 +1,29 @@
-# SECOPS-06: passed under D-060
+# SECOPS-06: class buckets passed; usage size boundary blocked
 
-The real `w4-secops` / `30000` run authenticated **20/20** distinct members
-from a barrier start, with separate cookie jars and one source address.
-Every session returned HTTP 200 with the correct member UUID. Neither limiter
-counter advanced during the burst. Settings were the documented defaults:
-address burst 40/refill 1 per second, subject 10 completions per minute.
+Source `9b17127c888f94191d759617c99fe1225078a092`. Unmodified settings are in [runtime settings](runtime-settings.json).
 
-| Probe | First rejection | Error | Exact Retry-After |
-|---|---|---|---|
-| One identity completing login repeatedly | Completion 11, `/auth/callback` | 429 RATE_LIMITED | `4` |
-| One address initiating login without redirects | Request 41, `/auth/login` | 429 RATE_LIMITED | `1` |
+| Class / probe | First rejection | Retry-After | Metric delta |
+|---|---:|---|---:|
+| heartbeat | 6 | `1` | 1 |
+| lease | 6 | `1` | 1 |
+| usage | 11 | `1` | 1 |
+| enrollment | 11 | `1` | 1 |
+| webhook | 11 | `1` | 1 |
+| anonymous_shared | 11 | `1` | 1 |
 
-The subject sequence took 2.593 seconds, so the remaining token refill wait was
-four seconds. Another identity still authenticated. The address sequence reached
-its rejection in 0.075926144 seconds. An untrusted forwarding header did not
-bypass it; session bootstrap stayed HTTP 200, and a new login initiation succeeded
-after the one-second wait. Counters increased once for each matching limiter.
-Only natural refill waits were used; no clock or setting changes.
+All refusals above are 429 RATE_LIMITED with the matching class/limiter label. Enrollment and provider webhook share the anonymous address bucket. Observations use schema-invalid `{}` to avoid fabricated telemetry; lease and usage payloads are valid.
 
-The final lab `GET /` landing response was HTTP 500 for all 20 users. The shared
-login walker accepts that index-less landing; authenticated session checks are
-separate. This is authentication proof, not portal rendering proof (SECOPS-14).
+| Valid usage body bytes | Expected HTTP | Actual HTTP |
+|---:|---:|---:|
+| 1048576 | 200 | 200 |
+| 1048577 | 200 | 400 |
+| 8388608 | 200 | 400 |
+| 8388609 | 413 | 413 |
 
-[Complete record](limiter.json) contains UTC times, build/image digests, settings,
-bounded request/response evidence and commands. [Original 0/20 result](followup1-login.json)
-is preserved and marked superseded by control follow-up 10 / PR #106.
+Bodies contain the same valid event plus legal trailing JSON spaces. The optional Idempotency-Key header is absent. The 1 MiB canonicalization boundary conflicts with the configured 8 MiB usage limit (SECOPS-15). Ten small uploads returned one accepted and nine duplicate results; one ledger row remains.
+
+The barrier-started login completed **20/20**, with zero wrong identities. GET / and session responses were 200 for all 20. This resolves SECOPS-14 landing behavior, not browser-render/platform acceptance.
+
+Login completion 11 / Retry-After 4 and initiation 41 / Retry-After 1 remain the attributed [Follow-up 3 measurement](followup3-limiter.json). The combined run stopped during native scale before repeating those late calls. IPv6 /64 remains component verified; the live source uses IPv4 loopback.
+
+[JSON record](limiter.json) includes UTC, commands, digests and response/metric evidence. Follow-up 3 per-class assumptions are superseded by #145; the earlier login conclusion remains resolved.

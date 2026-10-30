@@ -130,8 +130,8 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 // attachUpdate reads the updater journal once for this report. A null
 // generation (no file, no recorded job, or a snapshot error) leaves the
 // update members null. The read is not cached and does not fail the report.
-// current_release_id is a top-level observation field; while generation is
-// set it comes from this snapshot, not from the configured release.
+// current_release_id defaults to the running binary. Only a completed local
+// switch or rollback with a valid job ID can override it from the journal.
 func (e *Engine) attachUpdate(ctx context.Context, rep *api.ObservationReport) {
 	rep.Update.Generation = presence.NewNullNullable[decstr.U64]()
 	rep.Update.JobId = presence.NewNullNullable[uuid.UUID]()
@@ -155,9 +155,12 @@ func (e *Engine) attachUpdate(ctx context.Context, rep *api.ObservationReport) {
 	if state := api.UpdateJobState(snap.State); state.Valid() {
 		rep.Update.State = presence.NewNullableWithValue(state)
 	}
-	current := presence.NewNullNullable[uuid.UUID]()
-	if id, perr := uuid.Parse(snap.CurrentRelease); perr == nil && id != uuid.Nil {
-		current = presence.NewNullableWithValue(id)
+	current := presence.NewNullableWithValue(e.cfg.ReleaseUUID())
+	_, jobErr := rep.Update.JobId.Get()
+	if jobErr == nil && (snap.JournalStage == updatejournal.StageLocallySucceeded || snap.JournalStage == updatejournal.StageRolledBack) {
+		if id, perr := uuid.Parse(snap.CurrentRelease); perr == nil && id != uuid.Nil {
+			current = presence.NewNullableWithValue(id)
+		}
 	}
 	last := presence.NewNullNullable[uuid.UUID]()
 	if id, perr := uuid.Parse(snap.LastGoodRelease); perr == nil && id != uuid.Nil {

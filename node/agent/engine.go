@@ -18,6 +18,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/agentstore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
@@ -132,6 +133,8 @@ type Engine struct {
 	// until that rename.
 	healthNonce string
 	healthSig   string
+	// probeChallenge records the issuance already installed by this process.
+	probeChallenge *healthattest.Challenge
 	// desiredSynced is set when a verified document was loaded, or when this
 	// process received a desired-state response (200, 304, or revocation).
 	// A transport error with no document does not set it. A health answer
@@ -551,6 +554,7 @@ func (e *Engine) input() Input {
 }
 
 func (e *Engine) refreshProbe(ctx context.Context) {
+	e.prepareProbe(ctx)
 	e.withProbeException(ctx, func() {
 		p := e.prober
 		if p == nil {
@@ -652,6 +656,18 @@ func (e *Engine) baseline(ctx context.Context) error {
 }
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
+	baselineOK, meterFailed := e.baselineOK, e.meterFailed
+	defer func() {
+		if baselineOK != e.baselineOK || meterFailed != e.meterFailed {
+			errs := e.decision.Errors
+			e.decision = Decide(e.input())
+			for _, err := range errs {
+				if err.Stage == "apply" || err.Code == api.ErrorCodeMETEREPOCHCHANGE {
+					e.decision.Errors = append(e.decision.Errors, err)
+				}
+			}
+		}
+	}()
 	if !d.Serve {
 		e.handoff(ctx)
 		e.serving = false

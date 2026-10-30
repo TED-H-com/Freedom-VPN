@@ -1,26 +1,23 @@
-# SECOPS-11: component verified; live halves blocked
+# SECOPS-11: live gate and zero-binding publication verified
 
-On tested revision `f7281ec`, the live publication command returned **422
-NODE_NOT_SERVICEABLE before creating an operation**. Its current immutable
-observation reports applied/desired generation 2, `provisioning=applying`,
-`safety=failed` and `dns_policy=failed / DEPENDENCY_UNAVAILABLE`. Forwarding is
-disabled despite a reported unexpired lease. Consequently there is no live
-`data_path_probe` row, and the requested `member_forwarding_unconfirmed` operation
-assertion remains blocked. The earlier admission refusal is not substituted for it.
+The real ready baseline, with capacity unset, accepted PUT as 202 and recorded
+`data_path_probe=failed`, `NODE_NOT_SERVICEABLE`, `member_forwarding_unconfirmed`.
+The operation was still running/retrying at that snapshot. This proves the step
+refusal, not a terminal failed operation. After the finite capacity input, its
+retry could recover; both snapshots remain in the record.
 
-The worker integration test
-`TestSECOPS11_PublicationWorkerRequiresArmedMemberDataPath` passed both rejection
-of an unarmed report and success with valid forwarding evidence after #109.
-The separate owner unit test `TestSECOPS11_RecordedBaselineDoesNotProveServing`
-failed because it reads mutable acceptance evidence and requires the historical
-buggy `succeeded` operation. SECOPS-13 requests an immutable owner fixture.
+The next publication succeeded with an issued **published** generation containing
+**zero device bindings**. All required operation steps succeeded after #148.
+Publication with one genuinely admitted device also succeeded. No observation
+report or projected row was written by the harness.
 
-Watchdog remains `serving=0`, `reason=recovery_required`, deadline 0. The persistent
-recovery config is absent; no device admission counter advances. Both the live
-publication positive and AT29/AT31 serving matrix require the shared lab owner's
-resolver baseline and recovery fix. #118 arrived after the instructed initial
-dependency check and is not part of this run; see [dependencies](dependencies.json).
-No fake-agent edit or fixture row was used to make the node ready.
+The real watchdog reported serving=1, reason=serving, with DNS/lease/QoS/source
+binding checks passed. The observation-named lease generation matched applied
+generation 9. The controlled native request failed and both per-device admission
+counters stayed at zero. This keeps AT29 and full AT31 blocked on the devstack
+follow-up 9 counted-flow gate; no forwarding diagnosis beyond these counters.
 
-[Record](publication.json), [live observations](live.json), [supporting results](components.json)
-and [requests](requests.md) retain the expected/actual result and exact owners.
+SECOPS-13's exact owner test passes against its frozen testdata fixture (#130),
+including after this live record changed. [JSON record](publication.json),
+[live evidence](live.json), [component results](components.json) and
+[requests](requests.md) preserve command, UTC, incarnation and digest evidence.

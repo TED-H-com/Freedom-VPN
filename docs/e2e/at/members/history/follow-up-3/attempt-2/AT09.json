@@ -1,0 +1,137 @@
+{
+  "complete": true,
+  "id": "AT09",
+  "title": "Exit selection, NAT, relay and MTU",
+  "spec": [
+    "§19.1",
+    "§19 AT09",
+    "EXIT02 APP01 NFR01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "exit inventory",
+      "detail": "pass; expected: record active node count and client routes; actual: enrolled_nodes=1; routes_command_ok=true; route_output_bytes=23; command: SELECT enrolled nodes; docker exec member netbird routes list"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-30T07:15:04.646924+00:00\", \"expires_at\": \"2026-10-31T07:15:04.646924+00:00\", \"generation\": \"34\", \"member_count\": 0}, \"applied\": \"34\", \"desired\": \"34\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"failed\", \"error_code\": \"HEALTH_CHECK_FAILED\", \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}], \"forwarding_block_reasons\": [\"not_published\", \"safety_check_failed\"], \"member_forwarding_enabled\": false}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
+    },
+    {
+      "name": "real default-route semantics",
+      "detail": "pass; expected: explicit peer, skip_auto_apply=true and masquerade=false (node owns NAT); actual: HTTP=200; defaults=1; skip_auto_apply=1; enabled=1; masquerade=0; peer_set=1; command: GET NetBird /api/routes; retain counts, not external identifiers"
+    },
+    {
+      "name": "blocked",
+      "detail": "Observed 1 enrolled node, no two-exit forwarding baseline. The shared stack has one runnable node and no exported second-node enrollment hook; SEEDED_NODE_2_ID in docs/e2e/README.md is a synthetic fixture forbidden by D-050. Single-exit native selection/skip_auto_apply is recorded in forwarding traces. Two-exit switch/death, relay/direct, UDP/QUIC and PMTU fixtures are unavailable; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=ac93203dbabc05aa3c1c70f644370a205a704f16; applied generation=34; incarnation=01a18ba1-ea3e-7375-a704-849e1343798c; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-30T07:15:06Z",
+  "run_id": "f81a8365-7839-4756-bee2-9bb2a5506cdd",
+  "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "30f01b3a8f647896d300fcf801de9dce58a2708f432001b3abd77c3ec9db6347",
+    "artifact_sha256_0.1.0_arm64": "761cb23219e072b88b12d4191180404c7a1e84d904be6f890ffdb2565d2428f2",
+    "manifest_sha256_0.1.0": "527546eaa63b96a6caba82341c03e87d4752379a77a6f85385211390dc55adb7",
+    "signed_manifest_sha256_0.1.0": "d9474b88bd3265816c538a093e7bbdf1df4e1802aca17de838c7dae65b8056f9"
+  },
+  "build": {
+    "test_binary_sha256": "347fad8675efb7ef6cec33435d1608db45ea4f16ed0f6ead19ecb013ae0e8134",
+    "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:e0b0962d65c2aa9d624a85ab0e5125dba1988c442239302bb4ee0e47694766f5",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:43f35b4f6e9b09946ba68c278df19b15e6dea634aeafc90222a2d8e1bd145e8b",
+      "member": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+      "node-netns": "sha256:b6a403d9b2816367119da7febd080770ddabf23f3e1577e2af9c00e840e507d4",
+      "origin": "sha256:3e93d4ac149fa83afeba0d16bc7356233fdafa901173170284201571aefa4949",
+      "payment": "sha256:b94f665571a02bd216fb711389800644a59ee4305457bdd9a1eac5835f183fca",
+      "postgres": "sha256:1cb277caacac43d52fe2be6d55109ac026fa5c246198d490887b2ee35e94772f",
+      "worker": "sha256:f7c8e5588bd4cd0ca5a62a3bae235332ad355ee0a1cd0eb551b6cc994a639966"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "5cdc2c7dcf861f62bbf429eb6e75f41906f4d32047dddbac538bde979e74453e",
+      "fvpn-control": "3a1995717ef086f4d77983daafac8f4deb1b907b58d014f34c60a4f2435ec165",
+      "fvpn-updater": "5b12789d1a63b4170d0cbb314b963de3e782ba977c117f0b7ff8174d705b6300",
+      "fvpn-worker": "1912e47393dd093e0016e16b7df916a99c80f3b772331f7994eb2950db049729"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+        "vcs.time": "2026-10-30T06:53:32Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+        "vcs.time": "2026-10-30T06:53:32Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+        "vcs.time": "2026-10-30T06:53:32Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+        "vcs.time": "2026-10-30T06:53:32Z"
+      }
+    }
+  },
+  "policy_revision": "34",
+  "active_policy_revisions": {
+    "dns_profile": "01a18ba1-d8ad-7e0f-a176-fc3a6b4fb386",
+    "domain_rule_set": "01a18ba1-d3ef-7d09-9dd9-6ac05ead2d0f",
+    "fair_use": "01a18ba1-cf2a-7611-976b-1f7016381ef0",
+    "plan": "01a18ba1-e232-71e4-a6ba-a0adc96cc8dc",
+    "release_support": "01a18ba1-c7e5-72b2-baf9-de3ee636f542"
+  },
+  "node_incarnation": "01a18ba1-ea3e-7375-a704-849e1343798c",
+  "steps": [
+    {
+      "name": "exit inventory",
+      "status": "pass",
+      "expected": "record active node count and client routes",
+      "actual": "enrolled_nodes=1; routes_command_ok=true; route_output_bytes=23",
+      "command": "SELECT enrolled nodes; docker exec member netbird routes list",
+      "at": "2026-10-30T07:15:06Z"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "status": "pass",
+      "expected": "uninterrupted agent: desired=applied=latest lease generation, unexpired",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T07:15:04.646924+00:00\", \"expires_at\": \"2026-10-31T07:15:04.646924+00:00\", \"generation\": \"34\", \"member_count\": 0}, \"applied\": \"34\", \"desired\": \"34\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"failed\", \"error_code\": \"HEALTH_CHECK_FAILED\", \"observed_at\": \"2026-10-30T07:15:04.66847588Z\"}], \"forwarding_block_reasons\": [\"not_published\", \"safety_check_failed\"], \"member_forwarding_enabled\": false}}",
+      "command": "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes",
+      "at": "2026-10-30T07:15:06Z"
+    },
+    {
+      "name": "real default-route semantics",
+      "status": "pass",
+      "expected": "explicit peer, skip_auto_apply=true and masquerade=false (node owns NAT)",
+      "actual": "HTTP=200; defaults=1; skip_auto_apply=1; enabled=1; masquerade=0; peer_set=1",
+      "command": "GET NetBird /api/routes; retain counts, not external identifiers",
+      "at": "2026-10-30T07:15:07Z"
+    }
+  ],
+  "blockers": [
+    "Observed 1 enrolled node, no two-exit forwarding baseline. The shared stack has one runnable node and no exported second-node enrollment hook; SEEDED_NODE_2_ID in docs/e2e/README.md is a synthetic fixture forbidden by D-050. Single-exit native selection/skip_auto_apply is recorded in forwarding traces. Two-exit switch/death, relay/direct, UDP/QUIC and PMTU fixtures are unavailable; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic."
+  ],
+  "operator_status": "needs operator run"
+}

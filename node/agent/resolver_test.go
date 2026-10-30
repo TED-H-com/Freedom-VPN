@@ -71,7 +71,11 @@ func (s *scriptDNS) Apply(_ context.Context, generation string, doc dnspublish.D
 		ev.PolicyGeneration = generation
 	}
 	if ev.DocumentHash == "" {
-		ev.DocumentHash = strings.Repeat("ab", 32)
+		var err error
+		ev.DocumentHash, _, err = dnspublish.Hash(doc)
+		if err != nil {
+			return ev, err
+		}
 	}
 	if ev.AppliedAt.IsZero() {
 		ev.AppliedAt = time.Date(2026, 1, 2, 12, 0, 0, 0, time.UTC)

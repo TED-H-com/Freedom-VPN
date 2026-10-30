@@ -59,7 +59,8 @@ func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]en
 	return res, nil
 }
 
-func (m *memPlane) Baseline(context.Context, enforce.Datapath) error {
+func (m *memPlane) Baseline(_ context.Context, dp enforce.Datapath) error {
+	m.last = enforce.Model{Datapath: dp}
 	m.baselines++
 	m.calls = append(m.calls, planeCall{kind: "baseline"})
 	return nil

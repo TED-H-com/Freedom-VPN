@@ -1,0 +1,145 @@
+{
+  "complete": true,
+  "id": "AT21",
+  "title": "DNS failure and encrypted DNS boundary",
+  "spec": [
+    "§19.1",
+    "§19 AT21",
+    "DNS03 DNS04 APP01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "resolver topology",
+      "detail": "pass; expected: record upstream/fallback counts; actual: API_ok=true; upstream_count=1; fallback_count=0; bootstrap_count=1; filtering_resolvers=1; command: AdGuard GET /control/dns_info"
+    },
+    {
+      "name": "adguard failure",
+      "detail": "pass; expected: no successful answer while resolver/upstream paused; actual: {\"available\":false}; command: docker pause fvpn-w4-members-adguard; unique sentinel query; unpause"
+    },
+    {
+      "name": "coredns failure",
+      "detail": "pass; expected: no successful answer while resolver/upstream paused; actual: {\"available\":false}; command: docker pause fvpn-w4-members-coredns; unique sentinel query; unpause"
+    },
+    {
+      "name": "fault restoration",
+      "detail": "pass; expected: controlled answer available; actual: {\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}; command: node loopback probe DNS after both unpause operations"
+    },
+    {
+      "name": "blocked",
+      "detail": "Running topology contains one filtering resolver and one authoritative CoreDNS upstream, not two independent controlled filtering resolvers. The member entrypoint uses --disable-dns. Faults above prove direct resolver unavailability only; client fallback/public-DNS exclusion and policy-sync failure require devstack follow-up. Android Private DNS/browser DoH scripts and member guidance are in OPERATORS.md."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=30; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-30T04:56:59Z",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "3ce91db255ceb05fa6bbdfe74c4d79e98a3c5b0a9fc10719ddd01f71104d2311",
+    "artifact_sha256_0.1.0_arm64": "8a3c751ffffc75471e56304f49bb4953e001e66693795afa71d63188aa5db1f9",
+    "manifest_sha256_0.1.0": "83084d298022708e93c7440710c579168c19b7f52bb5099bae8e2c6cc0330ae7",
+    "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
+  },
+  "build": {
+    "source_commit": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:320b23fdef36cfa4692098eb7322651d2564940b2bd9391e41b1ae7f2ee6616c",
+      "member": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "origin": "sha256:93fec27d47887eb12e0460bb04cb062f1f52fa07ecd53f02c0e28c978152f631",
+      "payment": "sha256:5035fa31f764486a80b630b2ce67b2596746c961b16e20d1b5d75aa07c48dec1",
+      "postgres": "sha256:2e5105c206622fbd0a47cd1c6f461a6c6b0cd1c5283c582e3e81b9e36a4f78ca",
+      "worker": "sha256:c2e2a7edccfa35211ba46a593f98485d6658b87b1574b9133264ebc487b937a3"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "836a17206778bfd2a3a16c315a463ff9a2ea930ab7e5c62e984a5aa8ae89fdfc",
+      "fvpn-control": "0a0a546c77f29adefdb129fad60029289a7ad10e062dd4c7b30978b8c483aca7",
+      "fvpn-updater": "4a211f3b0c0058a05b8caca5987389eb16266ae982b762a1521cbf95c4dcee35",
+      "fvpn-worker": "3e6ed00a1fda21e79cc7da44b6bb092207d5adfbb5367ef0c18036031a4bd798"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
+      }
+    }
+  },
+  "policy_revision": "30",
+  "active_policy_revisions": {
+    "dns_profile": "01a18b2b-0b04-7061-b759-483a4e35a3d0",
+    "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
+    "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
+    "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b"
+  },
+  "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
+  "steps": [
+    {
+      "name": "resolver topology",
+      "status": "pass",
+      "expected": "record upstream/fallback counts",
+      "actual": "API_ok=true; upstream_count=1; fallback_count=0; bootstrap_count=1; filtering_resolvers=1",
+      "command": "AdGuard GET /control/dns_info",
+      "at": "2026-10-30T04:56:59Z"
+    },
+    {
+      "name": "adguard failure",
+      "status": "pass",
+      "expected": "no successful answer while resolver/upstream paused",
+      "actual": "{\"available\":false}",
+      "command": "docker pause fvpn-w4-members-adguard; unique sentinel query; unpause",
+      "at": "2026-10-30T04:57:01Z"
+    },
+    {
+      "name": "coredns failure",
+      "status": "pass",
+      "expected": "no successful answer while resolver/upstream paused",
+      "actual": "{\"available\":false}",
+      "command": "docker pause fvpn-w4-members-coredns; unique sentinel query; unpause",
+      "at": "2026-10-30T04:57:01Z"
+    },
+    {
+      "name": "fault restoration",
+      "status": "pass",
+      "expected": "controlled answer available",
+      "actual": "{\"answers\":1,\"available\":true,\"rcode\":0,\"ttl\":3600}",
+      "command": "node loopback probe DNS after both unpause operations",
+      "at": "2026-10-30T04:57:01Z"
+    }
+  ],
+  "blockers": [
+    "Running topology contains one filtering resolver and one authoritative CoreDNS upstream, not two independent controlled filtering resolvers. The member entrypoint uses --disable-dns. Faults above prove direct resolver unavailability only; client fallback/public-DNS exclusion and policy-sync failure require devstack follow-up. Android Private DNS/browser DoH scripts and member guidance are in OPERATORS.md."
+  ],
+  "operator_status": "needs operator run"
+}
