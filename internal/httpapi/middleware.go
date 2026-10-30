@@ -225,32 +225,30 @@ func newLimiter(max int) *limiter {
 // not depend on how fast the requests run, and restores it when the test ends.
 var limiterNow = time.Now
 
-// evictIdleWindow is how many least-recently-used buckets are examined when
-// the table is full. A constant window stays O(1). One depleted tail cannot
-// hide a newer bucket that has already refilled. More than this many depleted
-// buckets sitting at the tail can still refuse a newcomer while a full bucket
-// waits further toward the head.
-const evictIdleWindow = 8
-
 // allow spends one token or returns how long the caller should wait.
-// At capacity it scans a bounded window from the tail and evicts the first
-// bucket that is idle with a full token count or has been idle for more than
-// an hour. A live bucket stays. When no bucket in the window qualifies, the
-// new principal is refused and nothing is inserted.
+// At capacity it walks from the tail and evicts the first bucket that is idle
+// with a full token count or has been idle for more than an hour. A live
+// bucket stays. The walk stops at the first eligible bucket, so it is short
+// unless a run of depleted buckets sits at the tail. It is bounded by the
+// table. When no bucket qualifies, the new principal is refused and nothing
+// is inserted.
 func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 	return l.allowGrouped(key, "", b)
 }
 
-// allowGrouped is allow with an optional group budget. An empty group is not
-// counted. A new key whose group is already at the budget is refused without
-// eviction and without an insert. An existing key still spends a token.
+// allowGrouped is allow with an optional group reserve. An empty group is not
+// counted. A new key in a group that already holds keys is refused, without
+// eviction and without an insert, when only anonymousGroupReserve slots
+// remain. An existing key still spends a token.
 func (l *limiter) allowGrouped(key, group string, b config.Bucket) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := limiterNow()
 	e, ok := l.entries[key]
 	if !ok {
-		if group != "" && l.groups[group] >= l.groupBudget() {
+		// A /48 that already holds keys leaves anonymousGroupReserve slots
+		// for other prefixes. Those slots are not taken by eviction.
+		if group != "" && l.groups[group] > 0 && l.max-len(l.entries) <= anonymousGroupReserve {
 			return time.Second
 		}
 		if len(l.entries) >= l.max && !l.evictIdle(now) {
@@ -283,23 +281,21 @@ func (l *limiter) allowGrouped(key, group string, b config.Bucket) time.Duration
 	return 0
 }
 
-// groupBudget is the most /64 keys one anonymous /48 may hold. Half the
-// principal cap leaves room for another prefix. A cap of one still allows
-// that single slot.
-func (l *limiter) groupBudget() int {
-	n := l.max / 2
-	if n < 1 {
-		return 1
-	}
-	return n
-}
+// anonymousGroupReserve is the number of principal slots one anonymous /48
+// must leave free. It is not a config key. A hosting /48 may hold every
+// other slot (max_rate_principals minus one, and at least one slot when the
+// cap is one). A new /64 in a /48 that already has keys is refused, without
+// eviction, once only this reserve remains. Another /48, or an IPv4 address,
+// can still take the reserve. Default reserve: 1.
+const anonymousGroupReserve = 1
 
-// evictIdle drops the first eligible bucket in a window that starts at the
-// tail and walks toward newer entries. Eligible means the bucket has refilled
-// to its burst after going idle, or it has been idle for more than an hour.
+// evictIdle drops the first eligible bucket on the path from the tail toward
+// newer entries. Eligible means the bucket has refilled to its burst after
+// going idle, or it has been idle for more than an hour. The walk covers the
+// whole table so a run of depleted tail buckets cannot hide a full one.
 func (l *limiter) evictIdle(now time.Time) bool {
 	e := l.tail
-	for n := 0; e != nil && n < evictIdleWindow; n++ {
+	for e != nil {
 		elapsed := now.Sub(e.at)
 		refilled := math.Min(e.burst, e.tokens+elapsed.Seconds()*e.perSecond)
 		fullIdle := e.burst > 0 && refilled >= e.burst && elapsed > 0
@@ -457,9 +453,11 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		m.route = r.Method + " /api/v1" + route.Path
 		class, bounds, bodyLimit := classify(op, o.Config)
 		// A peer without a verified client certificate never occupies a
-		// limiter slot. The agent listener then spends an ingress token and a
-		// concurrency slot, both keyed by that certificate, before the
-		// database lookup. A failed lookup still spent the token.
+		// limiter slot. The agent listener then spends an ingress token,
+		// keyed by the node URN on that leaf when the PKI wrote one and by
+		// the leaf fingerprint otherwise, and takes the class concurrency
+		// slot, both before the database lookup. A failed lookup still spent
+		// the token.
 		var p auth.Principal
 		var peer string
 		if mtls {
@@ -468,7 +466,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				return
 			}
 			leaf := r.TLS.VerifiedChains[0][0]
-			if delay := ingress[class].allow(certRateKey(leaf), o.Config.IngressRate); delay > 0 {
+			if delay := ingress[class].allow(agentIngressKey(leaf), o.Config.IngressRate); delay > 0 {
 				if o.RateLimited != nil {
 					o.RateLimited.WithLabelValues(class, "address").Inc()
 				}
@@ -814,8 +812,8 @@ func rateKeyFromIP(ip net.IP) (string, bool) {
 	return prefix.String(), true
 }
 
-// ipv6AggregatePrefixBits is the anonymous-table budget beside the /64 key.
-// One /48 may hold at most half of max_rate_principals /64 buckets.
+// ipv6AggregatePrefixBits is the anonymous-table group beside the /64 key.
+// One /48 may hold every slot except anonymousGroupReserve.
 const ipv6AggregatePrefixBits = 48
 
 // anonymousGroup is the /48 of an IPv6 rate key. IPv4 keys are not grouped.
@@ -831,11 +829,58 @@ func anonymousGroup(rateKey string) string {
 	return masked.String()
 }
 
-// certRateKey is the SHA-256 of the verified leaf certificate's DER. It is
-// computed from memory and is the agent listener's ingress key.
+// certRateKey is the SHA-256 of the verified leaf certificate's DER.
+// It separates verified leaves that do not carry a node URN. A leaf the
+// PKI issued is keyed by agentIngressKey instead, so renewal overlap does
+// not buy a second burst.
 func certRateKey(cert *x509.Certificate) string {
 	sum := sha256.Sum256(cert.Raw)
 	return hex.EncodeToString(sum[:])
+}
+
+// nodeURNPrefix is the SAN CA.Issue writes for the node id:
+// urn:fvpn:node:<uuid>. The incarnation URN is not part of the ingress key.
+const nodeURNPrefix = "urn:fvpn:node:"
+
+// agentIngressKey is one pre-authentication bucket per node. The leaf is
+// already in r.TLS.VerifiedChains, so the node id is the URI SAN from that
+// certificate and the lookup does not touch the database. Two still-usable
+// serials of one node share the bucket. A verified leaf with no canonical
+// node URN keeps certRateKey, so those leaves do not collapse together and
+// do not join a real node's bucket.
+func agentIngressKey(cert *x509.Certificate) string {
+	if id, ok := nodeIDFromVerifiedLeaf(cert); ok {
+		return "node:" + id
+	}
+	return certRateKey(cert)
+}
+
+func nodeIDFromVerifiedLeaf(cert *x509.Certificate) (string, bool) {
+	if cert == nil {
+		return "", false
+	}
+	var node string
+	for _, u := range cert.URIs {
+		if u == nil {
+			continue
+		}
+		raw := u.String()
+		if len(raw) <= len(nodeURNPrefix) || raw[:len(nodeURNPrefix)] != nodeURNPrefix {
+			continue
+		}
+		id, err := uuid.Parse(raw[len(nodeURNPrefix):])
+		if err != nil || id == uuid.Nil || raw != nodeURNPrefix+id.String() {
+			return "", false
+		}
+		if node != "" && node != id.String() {
+			return "", false
+		}
+		node = id.String()
+	}
+	if node == "" {
+		return "", false
+	}
+	return node, true
 }
 
 // maxForwardedHops is the number of X-Forwarded-For entries read from the
