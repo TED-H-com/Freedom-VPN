@@ -96,21 +96,24 @@ func TestAT08_PublicationWorkerEmptyBindingEvidence(t *testing.T) {
 				}
 			}
 			nb := exits.NewFakeNetBirdAdapter()
-			dispatcher := f.publicationDispatcher(nb, 1)
+			dispatcher := f.publicationDispatcher(nb, 2)
 			f.publicationDispatch(dispatcher, op.OperationId)
 			after := f.publicationOperation(op.OperationId)
 			wantStatus := api.OperationStatusSucceeded
 			if tc.want != "" {
-				wantStatus = api.OperationStatusFailed
+				wantStatus = api.OperationStatusRunning
 			}
-			if after.Status != wantStatus {
+			if after.Status != wantStatus || (tc.want != "" && !after.Error.IsNull()) {
 				t.Fatal("worker outcome", after)
 			}
-			var active bool
-			if err = r.Pool.QueryRow(t.Context(), `SELECT publication_observed='active' FROM exits WHERE node_id=$1`, report.NodeId).Scan(&active); err != nil || active != (tc.want == "") {
-				t.Fatal("active projection", active, err)
+			var observed string
+			if err = r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id=$1`, report.NodeId).Scan(&observed); err != nil {
+				t.Fatal("publication_observed query", err)
 			}
 			if tc.want == "" {
+				if observed != "active" {
+					t.Fatal("active projection", observed)
+				}
 				for _, step := range after.Steps {
 					if step.Status != api.OperationStepStatusSucceeded || step.ObservedAt.IsNull() {
 						t.Fatal("missing evidence", step)
@@ -119,15 +122,34 @@ func TestAT08_PublicationWorkerEmptyBindingEvidence(t *testing.T) {
 				if nb.RouteCount() != 1 {
 					t.Fatal("route not confirmed")
 				}
-			} else if tc.stale {
-				var reason string
-				if err = r.Pool.QueryRow(t.Context(), `SELECT steps->'agent_policy'->>'reason' FROM operations WHERE id=$1`, op.OperationId).Scan(&reason); err != nil || reason != tc.want {
-					t.Fatal("stale ACK reason lost", reason, err)
-				}
 			} else {
+				if observed != "absent" {
+					t.Fatalf("gated publish changed publication_observed to %q before exhaustion, want absent (unchanged)", observed)
+				}
+				stepKey := nodes.StepDataPathProbe
+				if tc.stale {
+					stepKey = nodes.StepAgentPolicy
+				}
+				for _, step := range after.Steps {
+					if step.Name == stepKey {
+						code, cErr := step.ErrorCode.Get()
+						msg, mErr := step.Message.Get()
+						if step.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
+							t.Fatalf("gated step %s = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", stepKey, step)
+						}
+					}
+				}
 				var reason, message string
-				if err = r.Pool.QueryRow(t.Context(), `SELECT steps->'data_path_probe'->>'reason',steps->'data_path_probe'->>'error_message' FROM operations WHERE id=$1`, op.OperationId).Scan(&reason, &message); err != nil || reason != tc.want || message != "member_forwarding_unconfirmed" {
-					t.Fatal("bounded reason lost", reason, message, err)
+				if err = r.Pool.QueryRow(t.Context(), `SELECT steps->$2->>'reason',steps->$2->>'error_message' FROM operations WHERE id=$1`, op.OperationId, stepKey).Scan(&reason, &message); err != nil || reason != tc.want || message != "member_forwarding_unconfirmed" {
+					t.Fatal("bounded reason lost", stepKey, reason, message, err)
+				}
+				f.publicationDispatch(dispatcher, op.OperationId)
+				exhausted := f.publicationOperation(op.OperationId)
+				if exhausted.Status != api.OperationStatusFailed || exhausted.Error.IsNull() {
+					t.Fatal("exhausted outcome", exhausted)
+				}
+				if err = r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id=$1`, report.NodeId).Scan(&observed); err != nil || observed != "error" {
+					t.Fatal("exhausted publication_observed", observed, err)
 				}
 			}
 		})

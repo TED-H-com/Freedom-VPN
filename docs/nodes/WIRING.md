@@ -525,7 +525,7 @@ failed withdrawal emits a fixed reason and stays subject to the dispatcher retry
 budget. Inactive discovery receipts remain no-ops: the separately queued revoke
 operation owns this confirmed external withdrawal.
 
-## Publication serving evidence and failure causes (SECOPS-11)
+## Publication serving evidence, pending gate waiting state, and failure causes (SECOPS-11, D-074)
 
 The current immutable report must acknowledge the published generation, report
 `member_forwarding_enabled=true`, healthy data and ready provisioning, pass the
@@ -539,9 +539,53 @@ reports or unknown binding counts for the exception and storing a fixed gate
 cause in the existing step `reason` (`stale_generation`, `forwarding_disabled`,
 `tunnel_not_passed`, `isolation_unconfirmed`, `readiness_unconfirmed`,
 `check_failed`, `serving_checks_unconfirmed`, or `lease_unconfirmed`) alongside
-`member_forwarding_unconfirmed`, with retry/exhaustion, `CheckPublishable` and
+`member_forwarding_unconfirmed`, with `CheckPublishable` and
 member admission unchanged; this is agent-reported capability, not counted
 traffic or a measurement of the watchdog/kernel.
+
+**D-074 (gated `node.publish` waits in `pending`, does not fail while retries remain):**
+A gate that is not yet satisfied (`agent_policy` for `stale_generation` or
+`readiness_unconfirmed`; `data_path_probe` for `member_forwarding_unconfirmed`
+with its reason vocabulary) is a waiting state, not a failure:
+
+- While the worker retry budget remains (`event.Attempt < worker_attempts`),
+  `exits.Service.failGatedPublish` calls `pendingPublishStepOutcome` to keep the
+  gated step in `status = 'pending'` with `error_code = 'NODE_NOT_SERVICEABLE'`,
+  bounded `message = 'member_forwarding_unconfirmed'`, and the gate `reason`
+  (when `agent_policy` is gated on a newer generation, `data_path_probe` is also
+  reset to clean `pending` so stale probe evidence from an older generation
+  cannot linger). The operation remains `status = 'running'` (or `pending`
+  before the first claim) with `error_code = NULL` and `error_message = NULL`,
+  and a gate never sets `exits.publication_observed = 'error'` while retries
+  remain (`publication_observed` stays unchanged, or becomes `'withdrawn'` when
+  the r11 empty-exception route withdrawal is confirmed).
+- **How it clears:** When a later `ObservationReport` acknowledges the target
+  generation (`max(op.desired_generation, nodes.desired_config_generation)`) and
+  satisfies the gate, `advanceNodeOperationsOnObservation` transitions
+  `agent_policy` and `data_path_probe` to `succeeded` (clearing `error_code`,
+  `error_message`, and `reason`). If `netbird_route_readback` is already
+  `succeeded`, `advanceNodeOperationsOnObservation` completes the operation
+  immediately (`status = 'succeeded'`, `exits.publication_observed = 'active'`);
+  otherwise it wakes any delayed `node.publication_changed` outbox event
+  (`available_at = clock_timestamp()`) so the next worker retry executes
+  `netbird_route_readback` and completes the operation.
+- **Retry and exhaustion budget:** `node.publication_changed` uses the worker
+  dispatcher's configured `worker_attempts` (default `10`, configurable in
+  `1..100`), `worker_backoff_seconds` (default `1s`), and
+  `worker_backoff_max_seconds` (default `300s`), where backoff doubles per retry
+  (`delay = min(1s * 2^(attempt-1), 300s)`) with uniform jitter in
+  `[delay/2, delay]` (`apps/worker/worker.go`). Across the default 10 attempts
+  (1 initial execution + 9 retries with unjittered caps `1, 2, 4, 8, 16, 32, 64,
+  128, 256` = `511s`), the cumulative retry window before exhaustion is
+  `~255.5s..511s` (~4.3 to 8.5 minutes) unless woken early by an acknowledging
+  observation. When `event.Attempt >= worker_attempts` and the gate is still
+  unsatisfied, `exits.Service.ExhaustGatedPublish` marks the gated step and the
+  operation `status = 'failed'` (preserving `error_code = 'NODE_NOT_SERVICEABLE'`,
+  `message = 'member_forwarding_unconfirmed'`, and the last gate `reason`) and
+  sets `exits.publication_observed = 'error'` (unless confirmed `'withdrawn'`
+  under the r11 empty-exception path). Non-gate failures (`DEPENDENCY_UNAVAILABLE`
+  adapter errors, `STATE_CONFLICT`) still mark the step `failed` and set
+  `exits.publication_observed = 'error'` immediately on the first failed attempt.
 
 The r11 gate applies only to an attachment made under the empty-generation
 exception (§5.2). The attachment basis is `empty_exception` when the most recent
