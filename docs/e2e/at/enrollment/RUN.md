@@ -56,8 +56,16 @@ The acceptance stack keeps `node` and `node2` for clean `Enroll` / `EnrollAt`
 first boots, `MachineIdentityFingerprints`, and `StartClonedIdentityFixture`.
 `JoinEnrolledIdentity` needs `node2` while that slot is still waiting, so the
 runner brings up a second fresh stack for `EnrollmentPeerInventory`. Counted
-usage across a real installer rerun stays blocked on devstack follow-up 13
-(ENR-05/ENR-06).
+usage and the installer rerun stay blocked on the product hooks named in the
+follow-up 13 recheck (ENR-05 owner w4-usage, ENR-06 owner packaging/installer).
+Devstack #219 did not export `HoldUsageAcknowledgements`, `UsageLedgerSnapshot`,
+`CountedMemberTraffic`, `RerunInstaller` or `ControlledReinstall`. The clone
+conflict stays blocked on a second lab `/24` (ENR-07, devstack follow-up 14):
+`StartClonedIdentityFixture` has no network argument, and this slot's lab
+`172.28.38.0/24` and origin `192.0.11.0/24` are each one compatibility domain.
+The production `ObserveEndpointTx` caller (#211) and `identity_conflict`
+projection (#217) are on this tree. The harness records `Observe` and
+`getNode` around the clone and does not invent a second network.
 
 Control, worker and both available nodes' console streams plus node agent,
 watchdog, resolver proxy and NetBird streams are scanned in memory for every
@@ -69,7 +77,12 @@ keys, full CSRs, proofs, session cookies and raw logs never enter public records
 Every previous check is retained with its run ID in `prior_checks`; historical
 attempts are not overwritten. Any current failed subcheck determines the blocked AT observation. A
 prior failed check prevents a later full pass until the orchestrator explicitly
-reviews its resolution. A partial readback cannot erase a prior failure.
+reviews its resolution. The bebfe230 browser-class 429 failures
+(`audit_read`, `issue_reinstall`, `incarnation_history`, `probe_process`) are
+that review: they stop blocking only when the current `rate_limit_review` check
+passes with `http_429` 0 and those checks pass. The failed rows stay in
+`prior_checks`. Any other prior failure still blocks. A partial readback cannot
+erase a prior failure.
 
 PR CI runs only formatting, vet, pinned staticcheck, offline harness tests and
 amd64/arm64 compilation. Manual workflow dispatch runs Docker acceptance, as
@@ -328,3 +341,41 @@ at-enrollment-lint: gofmt, vet, pinned staticcheck, offline checks and amd64/arm
 ```json
 {"containers": 0, "networks": 0, "volumes": 0, "images": 0}
 ```
+
+## Follow-up 3 — production caller, second /24, retained 429s
+
+HEAD at measurement was `99ab668` (`#219` follow-up 13, `#217` identity projection, `#211` `ObserveEndpointTx`). ENR-05 and ENR-06 stay blocked: those five symbols are not in `docs/e2e/RUN.md` or `tests/e2e`, matching the follow-up 13 recheck. The harness did not emulate them.
+
+`StartClonedIdentityFixture` still has no network argument. On base 12000 the running lab confirmed source `172.28.38.40` / `192.0.11.20` and clone `172.28.38.129` / `192.0.11.23`. Both pairs are one IPv4 `/24`. Trusted proxy remains `172.28.38.21/32`, and the agent dials control through the local resolver proxy, so `X-Forwarded-For` is not the compatibility domain. ENR-07 stays blocked for devstack follow-up 14. ENR-08's missing-caller gap is closed by `#211` and `#217`; this run did not measure a conflict row.
+
+Attempt `35e542f8-730e-4be0-8214-e4a9dd818c40` saw the same two browser 429s and failed the Go process because the review check used status `fail`. That directory is unchanged. The gate now records a recurring 429 as `blocked`, so the process can exit 0 and the deciding observation names the limiter.
+
+Run: `60a7102e-b824-4927-a576-62033f458157`, UTC
+`2026-10-30T23:05:38Z`–`2026-10-30T23:10:54Z`.
+Source: `99ab668e686712d5d0ad4e0c6b79d332fc6f9d25` (dirty), tree SHA-256
+`62e86bf6b54985af168edc6d49193a272c4442007b03074df8686e07f37be406`.
+Live test-binary SHA-256:
+`2884a259187ad5ecd78c400e6cb905ecde344dbaf7cf024194f700b638d4ba25`.
+
+| Cycle | control | worker | node |
+|---|---|---|---|
+| acceptance | `sha256:d2f3a7faa0c87483f5170778540105ab86ce35ace89a3f75a1852258423ca3ef` | `sha256:8a8db70d406b7aa4a316196d30bb8e32218f04bea94ff42416483d76306876b9` | `sha256:041966e57aeb3c66fa8c99fdb91e72acdc94aa3804003ba6ee87808835552cc7` |
+| join | `sha256:1f0db9fb88c7cb665af7cdfddc30e12898927125490c2eb9fdb0fb27027e6611` | `sha256:f029174cfd8ea0f00ec85b42ed80a4b15cbee0f4d1a9c3c7c0e5446461f26f46` | `sha256:add5aef7045e2cb5ef86efe96b5a1e097e8bfbef98d9a6a07965ece0a5dada86` |
+
+`Observe` before the clone finished booting did not return a row (`read_ok` false). After both stages were `enrolled`, and again after the short settle: `endpoint_rows` 1, `conflicts` 0, `mapping_frozen` false, same three fingerprints. `getNode` HTTP 200 projected `identity_conflict` `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}` before the fixture and after the settle. Provisioning was still `applying`, safety `failed`, forwarding false; that is not a freeze. Counts: AT06 254 passing / 1 blocked / 0 failed; AT07 15 passing / 7 blocked / 0 failed.
+
+```text
+fresh_teardown: exit 0
+fresh_startup: exit 0
+compile_probe: exit 0
+live_probe: exit 0
+join_teardown: exit 0
+join_startup: exit 0
+live_probe_join: exit 0
+final_teardown: exit 0
+AT06: blocked: HTTP 429 recurred (2) on limiter class browser, bucket BrowserRate 10/s burst 30. Owner: control. The bebfe230 review stays unresolved.
+AT07: blocked: ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone.
+records: docs/e2e/at/enrollment; run 60a7102e-b824-4927-a576-62033f458157
+```
+
+Runner exit 1. `make -f mk/at-enrollment.mk at-enrollment` exit 2. Final inventory `{containers:0,networks:0,volumes:0,images:0}`.
