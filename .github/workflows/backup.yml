@@ -54,4 +54,8 @@ jobs:
           go-version: "1.27.3"
           cache: true
       - name: Execute automated pgBackRest PITR restore drill
+        env:
+          # Per-run prefix shared by every container, volume, network, and image
+          # tag. Form is documented in docs/handover/restore-drill.md.
+          FVPN_BACKUP_DRILL_PREFIX: fvpn-w4-ops-backups-gha${{ github.run_id }}-${{ github.run_attempt }}
         run: make -f mk/backup.mk backup-drill
