@@ -140,9 +140,94 @@ Both final teardowns exited 0. Each attempt's final inventory was:
 
 Binding: `w4-enroll / 12000`, as assigned in shared RUN.md and #182.
 The initial 66000 records above and their archives remain unchanged historical
-evidence. Live observations and final gate tails follow after this run.
+evidence. This follow-up completed on the corrected slot.
 
 ENR-02 and ENR-03 were reviewed against contract revision 9 before requesting
 changes. See [API surface review](api-surface-review.md). The current missing
 exports are assigned to devstack follow-up 12 (ENR-04/07) and follow-up 13
 (ENR-05/06); no host-side replacement fixture is constructed.
+
+Run: `75dbb974-04d2-4e45-a6bd-cfe0d923bd2c`, UTC
+`2026-10-30T18:07:10Z`–`2026-10-30T18:09:56Z`.
+Source: `8a3964e5bdbc397cc5322c58acce9c91d36ab357` (clean at invocation), tree
+SHA-256 `0fef194960b8f9f7ef98d22e30ae086e182781c5c29222ccc4b1df7f30cd385e`.
+The evidence commit adds documentation/results only. Runtime image IDs:
+
+| Component | Immutable image ID |
+|---|---|
+| control | `sha256:14d606b2a2dabee749832f603179662161ebb9bf7804466817fe552ef9401592` |
+| worker | `sha256:057f3531233dc26c2bb6006ddba4f99c30f08fc166f128b76ecdf1c1ea8437b7` |
+| node and node2 | `sha256:228645164949bf932fb43eab692855229dad9755f63b27e7703df67c6a81398b` |
+
+Live test-binary SHA-256:
+`be16c1df64fddac681bd581257512fd2f5a283ddf0eda49bcc9a1296b493cdd2`.
+Both architecture artifact digests and manifest/signed-manifest digests are in
+`AT06.json`'s `serving_baseline` observation.
+
+Actual live Go probe output (exit 0):
+
+```text
+=== RUN   TestAT06_AT07_Live
+=== RUN   TestAT06_AT07_Live/AT06
+=== RUN   TestAT06_AT07_Live/AT07
+--- PASS: TestAT06_AT07_Live (89.77s)
+    --- PASS: TestAT06_AT07_Live/AT06 (61.07s)
+    --- PASS: TestAT06_AT07_Live/AT07 (25.21s)
+PASS
+```
+
+This is successful execution of all available probes, not a full AT pass.
+The record gate requires the missing evidence too. Actual target tail
+(runner exit 1, make exit 2):
+
+```text
+fresh_teardown: exit 0
+fresh_startup: exit 0
+compile_probe: exit 0
+live_probe: exit 0
+final_teardown: exit 0
+AT06: blocked: {'api_hash_matches': False, 'field': 'changes.after.token_hash', 'operation': 'listAuditEvents', 'owner': 'pki-enroll', 'request': 'ENR-02', 'resource_id': '01a18dff-1633-7ee4-a0c8-57652881a146'}
+AT07: blocked: ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported; API identity comparison alone is partial
+records: docs/e2e/at/enrollment; run 75dbb974-04d2-4e45-a6bd-cfe0d923bd2c
+make: *** [mk/at-enrollment.mk:12: at-enrollment] Error 1
+```
+
+The consumed/retry certificate hashes match and the incarnation is unchanged.
+The concurrent race returned one 201 and one 409 `ENROLLMENT_KEY_MISMATCH`.
+Revocation returned 401 `ENROLLMENT_TOKEN_REVOKED`; after 61 seconds natural
+expiry returned 401 `ENROLLMENT_TOKEN_EXPIRED`. Missing/false proof returned
+422 `VALIDATION_FAILED`, and token-only bootstrap failed with the client
+certificate-required TLS alert. For each replay/race resource, the admin audit
+API returned one committed consumption, with only `reason` in its change fields.
+Peer uniqueness for these own-key requests is unmeasured until ENR-04 is resolved.
+
+AT07's real `node` and `node2` joined using the documented shared hooks, with
+identical image IDs and distinct API Node/incarnation IDs. Both had bound peers.
+No key-fingerprint, cloned-identity, unACKed counted usage, installer/reinstall,
+old-certificate or preserved-usage assertion is inferred from those first boots.
+
+The 64 in-memory token/key patterns found zero matches in 14 log streams
+(31939 bytes), serialized current probe evidence (20040 bytes), and 30 existing
+public evidence files. Empty-but-present streams are recorded with 0 bytes;
+active agent/NetBird streams were also scanned. Missing files would have blocked
+rather than been counted as zero matches. Only aggregate scan counts escape.
+
+Actual final area gate tail, exit 0:
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment	0.007s
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK
+at-enrollment-lint: gofmt, vet, pinned staticcheck, offline checks and amd64/arm64 compilation passed
+```
+
+`make go-lint` exited 0 with empty stdout/stderr. Both Go build targets and the
+real serving baseline compile amd64/arm64; physical arm64 execution is not claimed.
+Final teardown exit 0; verified owned inventory:
+
+```json
+{"containers": 0, "networks": 0, "volumes": 0, "images": 0}
+```
