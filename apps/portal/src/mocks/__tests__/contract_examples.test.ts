@@ -365,6 +365,20 @@ describe('contracts/examples/valid/*.json (Deliverable 5 Contract Drift Guard)',
     );
     expect(ex.CheckoutSession).toHaveProperty('checkout_url');
     expect(ex.BillingPortalSession).toHaveProperty('portal_url');
+    expect(ex.FleetConfig).toEqual(
+      expect.objectContaining({
+        max_offline_lease_seconds: 86400,
+        default_max_offline_lease_seconds: 86400,
+        resource_version: expect.any(String),
+        updated_at: expect.any(String),
+      }),
+    );
+    expect(ex.FleetConfigUpdate).toEqual(
+      expect.objectContaining({
+        max_offline_lease_seconds: expect.any(Number),
+        reason: expect.any(String),
+      }),
+    );
     expect(ex.ErrorEnvelope.error).toEqual(
       expect.objectContaining({
         code: expect.any(String),

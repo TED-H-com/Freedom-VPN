@@ -663,4 +663,49 @@ export const en: Record<TranslationKey, string> = {
     'Target Update Receipt & Health Evidence',
   'admin.updates.rollbackHealth.noReceiptEvidenceNotice':
     'No current update receipt evidence reported (previous_release_id / health / candidate_health = null)',
+
+  // Follow-up 11: Operator Fleet Configuration Settings (D-065, §16.3)
+  'nav.admin.settings': 'Fleet Settings',
+  'admin.settings.title': 'Fleet Configuration & Offline Lease Ceiling (§16.3, D-065)',
+  'admin.settings.subtitle':
+    'Configure the maximum offline serving-lease duration (max_offline_lease_seconds) used by central when issuing or renewing node leases.',
+  'admin.settings.currentCardTitle':
+    'Current Fleet Configuration (GET /api/v1/admin/fleet-config)',
+  'admin.settings.currentSecondsLabel':
+    'Current Offline Lease Maximum (max_offline_lease_seconds)',
+  'admin.settings.defaultSecondsLabel':
+    'Recommended Default & §16.3 Ceiling (default_max_offline_lease_seconds)',
+  'admin.settings.updatedAtLabel': 'Last Updated (updated_at)',
+  'admin.settings.resourceVersionLabel': 'Resource Version / ETag (resource_version)',
+  'admin.settings.semanticsTitle': 'Lease Issuance Semantics & §16.3 Ceiling',
+  'admin.settings.semanticsNewLeasesOnly':
+    'This value applies only to serving leases issued or renewed after the change.',
+  'admin.settings.semanticsExistingLeases':
+    'Already issued leases keep their existing value until renewal (no retroactive shortening or extension; the §16.3 monotonic replay rule is unchanged).',
+  'admin.settings.semanticsCeilingNote':
+    '86400 seconds (24 hours) is the §16.3 ceiling, not a recommendation.',
+  'admin.settings.sub900Warning':
+    'Warning: Values below 900 seconds (15 minutes) significantly shorten offline survival grace during control-plane outages; the 60 s floor exists for lab and fault-injection tests (such as AT29). Nothing allowed by the API is blocked.',
+  'admin.settings.formTitle':
+    'Update Offline Lease Maximum (PUT /api/v1/admin/fleet-config)',
+  'admin.settings.leaseSecondsInputLabel':
+    'New Offline Lease Maximum Seconds (max_offline_lease_seconds, API range 60–86400 s)',
+  'admin.settings.reasonInputLabel':
+    'Change Reason (reason, mandatory 1–500 chars, recorded in audit log)',
+  'admin.settings.reasonPlaceholder': 'e.g. Shorten new leases for the AT29 lab.',
+  'admin.settings.submitBtn':
+    'Save Fleet Configuration (Send If-Match & Idempotency-Key)',
+  'admin.settings.savedBanner':
+    'Fleet configuration updated (HTTP 200 OK): max_offline_lease_seconds = {seconds} s (resource_version {version}).',
+  'admin.settings.auditLinkText':
+    'View fleet_config.update event with before/after values in Audit Events →',
+  'admin.settings.conflictBanner':
+    'Someone else changed this; reload (current_resource_version: {version}).',
+  'admin.settings.conflictReloadBtn': 'Reload Latest Configuration',
+  'admin.settings.fieldErrorSeconds':
+    'Field validation failed (422 VALIDATION_FAILED — max_offline_lease_seconds): value must be an integer between 60 and 86400 seconds.',
+  'admin.settings.fieldErrorReason':
+    'Field validation failed (422 VALIDATION_FAILED — reason): reason is mandatory and must be 1 to 500 characters.',
+  'admin.settings.fieldErrorGeneric':
+    'Field validation failed (422 VALIDATION_FAILED): check max_offline_lease_seconds (60–86400) and mandatory reason (1–500 chars).',
 };
