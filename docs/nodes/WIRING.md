@@ -511,14 +511,21 @@ operation owns this confirmed external withdrawal.
 
 ## Publication serving evidence and failure causes (SECOPS-11)
 
-A healthy baseline/tunnel ACK alone cannot set publication `active`. The current
-immutable report must acknowledge the requested nonzero generation, report
-member forwarding enabled, carry a nonexpired lease, and pass tunnel, lease,
-QoS and source-binding checks. Both observation-driven progress and the executor
-apply this rule. Missing serving evidence fails `data_path_probe` with
-`member_forwarding_unconfirmed`; the existing retry budget and terminal failure
-rules apply. This is agent-reported serving capability, not counted member traffic
-or a measurement of the watchdog/kernel. `CheckPublishable` is unchanged.
+The current immutable report must acknowledge the published generation, report
+`member_forwarding_enabled=true`, healthy data and ready provisioning, pass the
+tunnel and isolation/metering baseline, and contain no failed check; only when
+that same current incarnation's signed generation explicitly has zero device
+bindings may lease, QoS and source-binding checks be `not_run` without an armed
+member lease, while any binding retains the #109 requirement for all three to
+pass with a nonexpired lease (§5.2, §16.3, SECOPS-11).
+Both observation progress and worker execution apply this rule, rejecting stale
+reports or unknown binding counts for the exception and storing a fixed gate
+cause in the existing step `reason` (`stale_generation`, `forwarding_disabled`,
+`tunnel_not_passed`, `isolation_unconfirmed`, `readiness_unconfirmed`,
+`check_failed`, `serving_checks_unconfirmed`, or `lease_unconfirmed`) alongside
+`member_forwarding_unconfirmed`, with retry/exhaustion, `CheckPublishable` and
+member admission unchanged; this is agent-reported capability, not counted
+traffic or a measurement of the watchdog/kernel.
 
 Route failures store bounded causes such as `route_missing`, `route_disabled`,
 `publish_rejected:503`, `readback_failed:unconfirmed` and
@@ -526,8 +533,9 @@ Route failures store bounded causes such as `route_missing`, `route_disabled`,
 persisted. A publication with no attached groups is accepted as intent, but the
 real adapter refuses to issue a management route and records
 `no_distribution_groups`. Attach intended `group_ids` and submit a new publication
-command. The generic operations reader currently masks stored error text;
-allowlisted cause projection is requested from control-core.
+command. The generic operations reader exposes allowlisted error messages; projecting
+the additional stored publication gate `reason` requires a control-core reader
+allowlist update.
 
 Member entitlement recompilation includes `previous_exit_group_ids` when
 provided and every current envelope still carrying that member's device binding
