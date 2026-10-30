@@ -1,8 +1,8 @@
-# AT02 device-to-usage binding trace — Follow-up 4
+# AT02 device-to-usage binding trace — Follow-up 5
 
 The native admission gap is resolved in this run. [AT01](AT01.json) proves the
 shared issuer mapping; [AT02](AT02.json) proves the quota transaction, ownership
-gates, slot reuse and receipt validation. The current result is in AT02.json; the historical missing-conntrack result remains in history/follow-up-3. The fresh image includes conntrack and the harness requires coherent post-revoke serving. A and the final-slot winner have real counted forwarding; the loser
+gates, slot reuse and receipt validation. The current result is in AT02.json; the historical Follow-up 4 and Follow-up 3 records remain in history/follow-up-4 and history/follow-up-3. The fresh image includes conntrack and the harness requires coherent post-revoke serving. A and the final-slot winner have real counted forwarding; the loser
 has no selected exit and no origin response. Database authorization alone is
 not forwarding.
 

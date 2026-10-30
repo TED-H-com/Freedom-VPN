@@ -59,6 +59,11 @@ func (s *Service) SubmitObservation(
 	if report.ReportId == uuid.Nil {
 		return api.ObservationAccepted{}, apierr.New(apierr.MalformedRequest, "report_id is required")
 	}
+	for _, reason := range report.ForwardingBlockReasons {
+		if !reason.Valid() {
+			return api.ObservationAccepted{}, apierr.Newf(apierr.ValidationFailed, "invalid forwarding_block_reason %q", reason)
+		}
+	}
 	if err := validateDNSPolicyEvidence(report); err != nil {
 		return api.ObservationAccepted{}, err
 	}
@@ -390,10 +395,16 @@ func evaluateObservationEvidence(report api.ObservationReport) (api.SafetyStatus
 		})
 	}
 
-	// §8.1 / §5.1: safety_status=passed requires internet_only and meter_path checks to pass.
+	// §8.1 / §5.1 / D-067: safety_status=passed requires internet_only and meter_path checks to pass,
+	// except when member_forwarding_enabled is false with forwarding_block_reasons containing
+	// awaiting_member_grants (valid node lease, no member grants yet while bindings are desired;
+	// meter_path is absent or not_run, never failed).
+	awaitingMemberGrants := !forwarding &&
+		hasForwardingBlockReason(report, api.ForwardingBlockReasonAwaitingMemberGrants) &&
+		checkStatus[api.NodeCheckNameMeterPath] != api.HealthCheckStatusFailed
 	if safety == api.SafetyStatusPassed {
 		if checkStatus[api.NodeCheckNameInternetOnly] != api.HealthCheckStatusPassed ||
-			checkStatus[api.NodeCheckNameMeterPath] != api.HealthCheckStatusPassed {
+			(checkStatus[api.NodeCheckNameMeterPath] != api.HealthCheckStatusPassed && !awaitingMemberGrants) {
 			safety = api.SafetyStatusFailed
 			errs = append(errs, api.NodeError{
 				Code:       api.ErrorCode(apierr.NodeNotServiceable),
@@ -428,6 +439,15 @@ func evaluateObservationEvidence(report api.ObservationReport) (api.SafetyStatus
 	}
 
 	return safety, health, forwarding, errs
+}
+
+func hasForwardingBlockReason(report api.ObservationReport, target api.ForwardingBlockReason) bool {
+	for _, r := range report.ForwardingBlockReasons {
+		if r == target {
+			return true
+		}
+	}
+	return false
 }
 
 func isRevokeMemberOperation(kind, memberState string) bool {

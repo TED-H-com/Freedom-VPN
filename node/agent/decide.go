@@ -181,11 +181,11 @@ func Decide(in Input) Decision {
 	// A lease for another generation is not in force. The vocabulary has no
 	// lease_pending or lease_renewing. policy_missing is the existing token
 	// for a serving document this generation does not yet hold. lease_expired
-	// stays the anchored deadline of the lease for this generation.
-	// ForwardingBlockReason is a closed contract enum, so a provisional
-	// grant-less lease (D-067) also reports lease_expired. The lease check
-	// detail is the distinction until contracts revision 10 adds
-	// lease_grants_pending.
+	// is only the anchored deadline of the lease for this generation.
+	// A fresh same-generation lease with an empty member grant set, while
+	// device bindings are still desired (D-067), reports
+	// awaiting_member_grants. That lease is in force, so it is not
+	// lease_expired and its check does not use LEASE_EXPIRED.
 	leaseStale := leaseGenerationStale(in)
 	leaseOK := leaseInForce(in) && !leaseStale
 	grantsPending := grantsProvisional(in)
@@ -215,7 +215,13 @@ func Decide(in Input) Decision {
 	} else if leaseOK && in.DesiredOK {
 		qosOK = true
 		if len(in.Desired.DeviceBindings) > 0 && len(model.Bindings) == 0 {
-			add(api.ForwardingBlockReasonLeaseExpired)
+			// An empty grant set on an in-force lease is provisional.
+			// Grants that admit nobody stay on the existing token.
+			if grantsPending {
+				add(api.ForwardingBlockReasonAwaitingMemberGrants)
+			} else {
+				add(api.ForwardingBlockReasonLeaseExpired)
+			}
 			leaseOK = false
 			bindingOK = false
 			qosOK = false
@@ -308,15 +314,20 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 	qos := notRun(api.NodeCheckNameQos, at)
 	bind := notRun(api.NodeCheckNameSourceBinding, at)
 	if evaluateServing {
-		leaseCode := api.ErrorCodeLEASEEXPIRED
-		leaseDetail := "Serving lease is not in force."
-		if leaseGenerationStale(in) {
-			leaseCode = api.ErrorCodeSTALEGENERATION
-			leaseDetail = "Serving lease is not for the applied generation."
-		} else if grantsPending {
-			leaseDetail = leaseGrantsPendingDetail
+		switch {
+		case leaseGenerationStale(in):
+			lease = withDetail(chk(api.NodeCheckNameLease, false, api.ErrorCodeSTALEGENERATION, at), "Serving lease is not for the applied generation.")
+		case grantsPending && !leaseOK:
+			// The check stays failed so the detail is kept. No ErrorCode
+			// names a lease that is still in force, so the code is null
+			// and Decide does not append LEASE_EXPIRED to errors.
+			lease = withDetail(api.NodeCheck{
+				Name: api.NodeCheckNameLease, Status: api.HealthCheckStatusFailed, ObservedAt: at,
+				ErrorCode: presence.NewNullNullable[api.ErrorCode](),
+			}, leaseGrantsPendingDetail)
+		default:
+			lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at), "Serving lease is not in force.")
 		}
-		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, leaseCode, at), leaseDetail)
 		if leaseOK && in.LeaseRetryPending {
 			lease.Detail = sanitizeDetail("Lease renewal is waiting for Retry-After; the current lease remains in force.")
 		}
@@ -494,8 +505,9 @@ func provisioningOf(in Input, acked bool) api.ProvisioningState {
 	return api.ProvisioningStateApplying
 }
 
-// leaseGrantsPendingDetail is the lease check sentence for D-067. The
-// block reason stays lease_expired because that vocabulary is enumerated.
+// leaseGrantsPendingDetail is the lease check sentence for D-067.
+// The block reason is awaiting_member_grants. The sentence is the
+// distinction from a deadline that has passed.
 const leaseGrantsPendingDetail = "Serving lease has no member grants yet."
 
 // conntrackBoundDetail is the isolation sentence after the delete retry

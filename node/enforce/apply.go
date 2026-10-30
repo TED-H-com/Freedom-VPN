@@ -26,10 +26,12 @@ type ApplyResult struct {
 }
 
 // ConntrackDeleteError means the serving ruleset was left installed and one
-// or more revoke addresses were not deleted from conntrack. Pending is how
-// many of those addresses have not succeeded. It is never the addresses.
-// Unwrap is the *CheckError the agent already matches.
+// or more revoke addresses were not deleted from conntrack. Failed lists
+// each m.Revoke address whose conntrack -D did not succeed, in that order.
+// Pending is len(Failed). The error string is the fixed CheckError text
+// and carries no address. Unwrap is the *CheckError the agent already matches.
 type ConntrackDeleteError struct {
+	Failed  []netip.Addr
 	Pending int
 	err     error
 }
@@ -117,8 +119,9 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// replace the verified ruleset with the baseline. Counters and samples
 	// are taken from the verified listing before the deletes, so a failure
 	// still reports the generation that stayed installed. Every revoke
-	// address is attempted. The caller passes Revoke again on the next Apply,
-	// which retries whatever is still pending (§8.2).
+	// address is attempted. Failed lists the addresses whose conntrack -D
+	// did not succeed. The caller retries those addresses on the next
+	// Apply (§8.2).
 	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true}
 	rs, err := ParseRuleset(raw)
 	if err != nil {
@@ -132,14 +135,14 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	verified.Samples = samples
 	var cmdErrs []error
 	var other error
-	pending := 0
+	var failed []netip.Addr
 	for _, addr := range m.Revoke {
 		err := deleteConntrack(ctx, ex, addr)
 		if err == nil {
 			continue
 		}
-		pending++
 		if conntrackCommandFailed(err) {
+			failed = append(failed, addr)
 			cmdErrs = append(cmdErrs, err)
 			continue
 		}
@@ -147,8 +150,8 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			other = err
 		}
 	}
-	if len(cmdErrs) > 0 {
-		return verified, &ConntrackDeleteError{Pending: pending, err: errors.Join(cmdErrs...)}
+	if len(failed) > 0 {
+		return verified, &ConntrackDeleteError{Failed: failed, Pending: len(failed), err: errors.Join(cmdErrs...)}
 	}
 	if other != nil {
 		return verified, other

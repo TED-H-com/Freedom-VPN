@@ -189,6 +189,16 @@ func (h *Handlers) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen
 	}
 	return gen.GetNode200JSONResponse{Body: out, Headers: gen.GetNode200ResponseHeaders{ETag: &tag}}, nil
 }
+func (h *Handlers) ListNodeIncarnations(ctx context.Context, r gen.ListNodeIncarnationsRequestObject) (gen.ListNodeIncarnationsResponseObject, error) {
+	if e := h.ready(ctx); e != nil {
+		return nil, e
+	}
+	out, e := h.Runtime.Nodes.ListNodeIncarnations(ctx, r.NodeId, r.Params)
+	if e != nil {
+		return nil, e
+	}
+	return gen.ListNodeIncarnations200JSONResponse{Body: out}, nil
+}
 func (h *Handlers) ListMemberExits(ctx context.Context, _ gen.ListMemberExitsRequestObject) (gen.ListMemberExitsResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
 		return nil, e

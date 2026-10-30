@@ -94,6 +94,7 @@ type live struct {
 	run                                      string
 	runID                                    string
 	restartAfter                             time.Time
+	lastFirstByteAt                          time.Time
 	nodeRole                                 string
 	second                                   e2e.EnrolledNode
 	nativePeer                               string
