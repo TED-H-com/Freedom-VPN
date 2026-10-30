@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-10-30T10:07:10.327355Z",
-  "scope": "assigned prefix only; documented neutral devstack image cache left intact",
+  "checked_at": "2026-10-30T17:30:38.234903Z",
+  "scope": "only fvpn-w4-secops objects",
   "inventory": {
     "containers": {
       "command": [
@@ -47,7 +47,8 @@
     "images": {
       "command": [
         "docker",
-        "images",
+        "image",
+        "ls",
         "--filter",
         "reference=fvpn-w4-secops-*",
         "--format",

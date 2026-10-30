@@ -51,3 +51,7 @@ at-secops-native-scale:
 .PHONY: at-secops-followup5
 at-secops-followup5:
 	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup5_run.py
+
+.PHONY: at-secops-followup6
+at-secops-followup6:
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup6_run.py

@@ -1,0 +1,797 @@
+{
+  "schema_version": 1,
+  "run_started_at": "2026-10-30T03:59:31.913206335Z",
+  "run_finished_at": "2026-10-30T04:00:29.698901076Z",
+  "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+  "probe_source_sha256": "70ec48a1e07dce18dcc40367f24d719f2c7f1f46897a993d85b34da4631e77bb",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "c47824b8481142258ba0901dc1dfd654d9830b709f5b3cfd0280b3d52f030a03",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-amd64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T03:50:06Z",
+      "finished_at": "2026-10-30T03:50:06Z",
+      "elapsed_seconds": 0.515,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-amd64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "5f3ecbae780b964cb5cf446f48b89556e80a059732f2ed8137b582872b1d0e73",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-arm64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T03:50:06Z",
+      "finished_at": "2026-10-30T03:50:07Z",
+      "elapsed_seconds": 0.515,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-arm64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "name": "fvpn-agent",
+      "arch": "amd64",
+      "sha256": "95715132e9af6d8dc71f7c3246c6bb8d9ea1de20840aa1a6319160b3291a4725",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-control",
+      "arch": "amd64",
+      "sha256": "0a45271c04341ac4db0fed403faf03d55b734f812cfef36aaa86535809f38a08",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-idp",
+      "arch": "amd64",
+      "sha256": "47dd5a15196db004c03f9ead510c0596d6a746615b2b534649eceb975ac656ab",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "arch": "amd64",
+      "sha256": "f95e5f2040414ecad601e09fc7f6eb5f34dee9ee818e772771faa9f4673b7438",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-origin",
+      "arch": "amd64",
+      "sha256": "787c4e5a2ae2c4527751800f6605ef81058384361404e85ab9a532e6b9bd5a00",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "arch": "amd64",
+      "sha256": "73eaa123f9429c1c1c8982f9b09698c0f71f9ffc745080c6e5e30b542f3e8511",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "arch": "amd64",
+      "sha256": "b748fccbd73ac383adcfc0fb3ae48145a0da5530e7d65864b15c1346dab478af",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "arch": "amd64",
+      "sha256": "ac1af1516a90a5d0e1fa5396ccbb2086d179664964017d940f3c82e55c723e4e",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "arch": "amd64",
+      "sha256": "2893259424a52d04af984677a138dfbd5cd84dc2cde23e1d88942f36de1fbc56",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "arch": "amd64",
+      "sha256": "8e49611de4186110fd3ab4cacedbe82935fe81941e3c56db15e4035e973b9f6c",
+      "kind": "lab_build_binary"
+    },
+    {
+      "kind": "executed_isolated_restore_test_binary",
+      "arch": "amd64",
+      "sha256": "7e8757d56c569478b8d2b80fa5a9b45461d2aa6fb1b08d26508facdb5c1ac150"
+    }
+  ],
+  "image_digests": [
+    {
+      "image_id": "sha256:5f423c5e70b8149490599c3b7a428c764c5128476dd9cde1e00d4cb29507f0c2",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:703b033da49e227cc3dd96607ffa338f1444ae4eefeafc2bed1210bdc6c962dd",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:b82c974899207eb76b9dccdd7849f97162e4d06a7e1c5de54c7b2d6e89b118cf",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:6829ac95c2c0e83b6bda12c8dd4a25bc980101f88a1901ccde7b711a7b196f4a",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:734c400b2e5d3d04c87fb128dcbc58a4161b1e521a3d34ad43cd2c5cbb66c956",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:7c7700cd490c7b0d280ea7d12154fbb2ae6d4daf89f8a6e54e29de6c9613acb1",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
+      "service": "member"
+    }
+  ],
+  "policy_revision": "01a18af6-8a90-793e-aae9-1c3176207820",
+  "node_incarnation": "3b7abd62-26fa-41ee-9c76-d155747e43ba",
+  "stack": {
+    "status": "focused physical retry passed; full acceptance remains blocked",
+    "source_test_exit_code": 0,
+    "restore_driver_exit_code": 0,
+    "cleanup": {
+      "utc": "2026-10-30T04:03:53.419053Z",
+      "counts": {
+        "containers": 0,
+        "networks": 0,
+        "volumes": 0,
+        "images": 0
+      },
+      "commands": {
+        "containers": [
+          "docker",
+          "ps",
+          "-a",
+          "--filter",
+          "name=^fvpn-w4-secops-",
+          "--format",
+          "{{.Names}}"
+        ],
+        "networks": [
+          "docker",
+          "network",
+          "ls",
+          "--filter",
+          "name=^fvpn-w4-secops",
+          "--format",
+          "{{.Name}}"
+        ],
+        "volumes": [
+          "docker",
+          "volume",
+          "ls",
+          "--filter",
+          "name=^fvpn-w4-secops-",
+          "--format",
+          "{{.Name}}"
+        ],
+        "images": [
+          "docker",
+          "images",
+          "--filter",
+          "reference=fvpn-w4-secops-*",
+          "--format",
+          "{{.Repository}}:{{.Tag}}"
+        ]
+      },
+      "down_command": "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/e2e.mk e2e-down",
+      "down_exit_code": 0,
+      "other_prefixes_touched": false,
+      "neutral_cache_images_removed": false
+    }
+  },
+  "id": "AT30",
+  "spec": [
+    "§19.1",
+    "§19 AT30"
+  ],
+  "requirements": [
+    "DATA01",
+    "BILL01",
+    "MTR03"
+  ],
+  "status": "blocked",
+  "verdict": "blocked",
+  "expected": "An isolated DB/WAL restore replays previously ACKed node archives, reconciles provider and peers without duplicates or entitlement extension, and measures complete-service RPO/RTO.",
+  "actual": {
+    "component_status": "passed",
+    "component_suites": [
+      "member-ownership",
+      "restore-ledger",
+      "restore-cli",
+      "node-archive",
+      "node-replay",
+      "payment-reconciliation",
+      "peer-reconciliation"
+    ],
+    "full_stack_executed": true,
+    "full_acceptance_profile_executed": false,
+    "physical_restore_subset": "passed",
+    "cross_system_snapshot_boundary": "passed: ledger, entitlements, operation/request-correlated audit"
+  },
+  "blockers": [
+    "Provider/NetBird/revocation-journal reconciliation and actual node SQLite archive replay are outside the isolated physical subset. Complete-service RPO/RTO remain null."
+  ],
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT02_DeviceLimitRevokeOwnershipReadbackHTTP|TestAT04_SuspensionGrantGraceAndHTTPPreconditions|TestAPI01_ConcurrentHTTPReplayAndRealSessionRateLimit|TestBILL01_WorkerReconciliationRepairsMissedWebhook|TestMEM03_NetBirdLostCreateIdentityDriftAndPersistentBindings)$",
+      "./internal/members/httpadapter"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT30_RestoreSnapshotRecoveryReplayAndReplayUnavailable|TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination|TestAT15_DedupeOutOfOrderAckAndConflict|Test17_3_FreezeFencesInFlightIngest)$",
+      "./internal/usage"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestCLI_FreezeRecoveryCompleteAdjustAndAudit)$",
+      "./internal/usage/cmd/fvpn-usage-admin"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT30_LedgerEpochRestore|TestPurgeArchiveKeepsUnacked|TestIdentityAndLowerACK)$",
+      "./node/internal/usagestore"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestEpochMismatchFetchesCheckpoint|TestRestoreSchedulesAndClears)$",
+      "./node/internal/usageupload"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestBILL01_ReconciliationRepairsDroppedWebhookAndGraceExpires|TestAT04_CancelRefundRenewSuspendAndExactlyOneOutbox)$",
+      "./internal/billing"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT08_LostCreateResponsesDoNotDuplicate|TestAT08_DriftDuplicatesAndUnconfirmedWrites|TestMEM03_LostAuthorizationWrite)$",
+      "./internal/netbird"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/at-secops.mk",
+      "at-secops-pitr"
+    ],
+    [
+      "python3",
+      "tests/e2e/at/secops/pitr.py"
+    ]
+  ],
+  "operator_run": {
+    "status": "needs operator run",
+    "script": "operator-runs.md#at30"
+  },
+  "evidence": [
+    "pitr.json",
+    "pitr-source.json",
+    "pitr.md",
+    "pitr-attempts.json",
+    "components.json",
+    "requests.md",
+    "cleanup.json"
+  ],
+  "recovery": {
+    "archive_source": "original mTLS-uploaded events retained by test sender; not node SQLite archive",
+    "backup_label": "20261030-034936F",
+    "backup_lsn": {
+      "start": "0/6000028",
+      "stop": "0/6007310"
+    },
+    "backup_timestamp": {
+      "start": 1793332176,
+      "stop": 1793332181
+    },
+    "db_rpo_seconds": 1.026258,
+    "expected_restored_ack": "7",
+    "full_service_rpo_seconds": null,
+    "full_service_rto_seconds": null,
+    "post_target_audit_present": true,
+    "pre_and_post_grants_present": true,
+    "pre_target_audit_rows": 2,
+    "projector_owned_rows_written": [],
+    "source_ack": "10",
+    "source_watermark": "2026-10-30T03:49:42.86049Z",
+    "target_lsn": "0/7028020",
+    "target_time": "2026-10-30T03:49:41.834232Z"
+  },
+  "physical_restore_subset": {
+    "archive_source": "host-retained synthetic signed-node upload; not actual node SQLite archive",
+    "canonical_hashes_preserved": true,
+    "entitlements_unchanged": true,
+    "epoch_rotated": true,
+    "external_reconciliation": false,
+    "final_ack": "10",
+    "final_member_total_bytes": "3000",
+    "kind": "physical pgBackRest WAL/PITR and service replay",
+    "ledger_rows": 10,
+    "physical_boundary": {
+      "ack": "7",
+      "applied_migrations": 21,
+      "archive_mode": "off",
+      "audit_correlation": "grant resource -> operation -> request -> succeeded append-only audit",
+      "cryptographic_audit_chain": false,
+      "ledger_rows": 7,
+      "max_seen_seq": "7",
+      "post_target_audit_absent": true,
+      "post_target_events": 0,
+      "post_target_grant_absent": true,
+      "post_target_operation_absent": true,
+      "pre_target_audit_rows_unchanged": 2,
+      "pre_target_entitlement_end": "2026-10-30T05:10:16Z",
+      "pre_target_grant_present": true,
+      "pre_target_operation_present": true,
+      "promoted": true,
+      "sample_bytes": "2100",
+      "sample_rows": 7
+    },
+    "previous_ack": 10,
+    "protocol_seconds": 0.065009374,
+    "replayed_accepted": 3,
+    "replayed_duplicate": 7,
+    "restored_ack": "7",
+    "second_replay_duplicate": 10,
+    "status": "passed",
+    "utc": "2026-10-30T04:00:29.698901076Z",
+    "restore_stream_scan": {
+      "bytes": 19028,
+      "generic_findings": [],
+      "password_canary_matches": 0,
+      "scope": "pgBackRest restore, checklist, isolated PostgreSQL stdout/stderr and verifier output"
+    },
+    "source": {
+      "archive_source": "original mTLS-uploaded events retained by test sender; not node SQLite archive",
+      "backup_label": "20261030-040016F",
+      "backup_lsn": {
+        "start": "0/6000028",
+        "stop": "0/6006DA8"
+      },
+      "backup_timestamp": {
+        "start": 1793332816,
+        "stop": 1793332819
+      },
+      "db_rpo_seconds": 1.040352,
+      "expected_restored_ack": "7",
+      "full_service_rpo_seconds": null,
+      "full_service_rto_seconds": null,
+      "post_target_audit_present": true,
+      "pre_and_post_grants_present": true,
+      "pre_target_audit_rows": 2,
+      "projector_owned_rows_written": [],
+      "source_ack": "10",
+      "source_watermark": "2026-10-30T04:00:21.51213Z",
+      "target_lsn": "0/7012AD8",
+      "target_time": "2026-10-30T04:00:20.471778Z"
+    },
+    "network": "none",
+    "published_ports": [],
+    "repository_read_only": true,
+    "primary_overwrite_refused": true,
+    "restore_seconds": 5.316027398919687,
+    "isolated_subset_seconds": 5.7927225299645215,
+    "db_rpo_seconds": 1.040352,
+    "full_service_rpo_seconds": null,
+    "full_service_rto_seconds": null,
+    "checklist_sections": 6,
+    "checklist_sha256": "8883d1b1948a6bc4839de87609a0c74ecbd5b6d39d80eeafb8225d80f71fc32e",
+    "restore_image_digest": "sha256:7d79f0b812ae32f6e6e5805cfbcaddda0840ee36fe4425582308617b7cd07f16",
+    "verifier_sha256": "7e8757d56c569478b8d2b80fa5a9b45461d2aa6fb1b08d26508facdb5c1ac150",
+    "policy_revision": "01a18af6-8a90-793e-aae9-1c3176207820",
+    "node_incarnation": "3b7abd62-26fa-41ee-9c76-d155747e43ba",
+    "image_digests": [
+      {
+        "image_id": "sha256:5f423c5e70b8149490599c3b7a428c764c5128476dd9cde1e00d4cb29507f0c2",
+        "service": "postgres"
+      },
+      {
+        "image_id": "sha256:703b033da49e227cc3dd96607ffa338f1444ae4eefeafc2bed1210bdc6c962dd",
+        "service": "idp"
+      },
+      {
+        "image_id": "sha256:b82c974899207eb76b9dccdd7849f97162e4d06a7e1c5de54c7b2d6e89b118cf",
+        "service": "payment"
+      },
+      {
+        "image_id": "sha256:6829ac95c2c0e83b6bda12c8dd4a25bc980101f88a1901ccde7b711a7b196f4a",
+        "service": "origin"
+      },
+      {
+        "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+        "service": "netbird"
+      },
+      {
+        "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+        "service": "gateway"
+      },
+      {
+        "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+        "service": "coredns"
+      },
+      {
+        "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+        "service": "adguard"
+      },
+      {
+        "image_id": "sha256:734c400b2e5d3d04c87fb128dcbc58a4161b1e521a3d34ad43cd2c5cbb66c956",
+        "service": "control"
+      },
+      {
+        "image_id": "sha256:7c7700cd490c7b0d280ea7d12154fbb2ae6d4daf89f8a6e54e29de6c9613acb1",
+        "service": "worker"
+      },
+      {
+        "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
+        "service": "node"
+      },
+      {
+        "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
+        "service": "member"
+      }
+    ],
+    "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+    "expected": "ACK 7; earlier grant/audit retained; post-target writes absent; replay 3 accepted/7 duplicates; repeat 10 duplicates",
+    "actual": "all physical boundary and replay assertions passed",
+    "commands": [
+      [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        "name=^/fvpn-w4-secops-restore-pitr$",
+        "--format",
+        "{{.Names}}"
+      ],
+      [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        "name=^/fvpn-w4-secops-restore-pitr-init$",
+        "--format",
+        "{{.Names}}"
+      ],
+      [
+        "docker",
+        "volume",
+        "ls",
+        "--filter",
+        "name=^fvpn-w4-secops-restore-pitr-pg$",
+        "--format",
+        "{{.Name}}"
+      ],
+      [
+        "docker",
+        "images",
+        "--filter",
+        "reference=fvpn-w4-secops-restore-image:17",
+        "--format",
+        "{{.ID}}"
+      ],
+      [
+        "docker",
+        "build",
+        "--iidfile",
+        "<worktree>/.agent/secops/pitr-image.id",
+        "-t",
+        "fvpn-w4-secops-restore-image:17",
+        "deploy/backup/postgres"
+      ],
+      [
+        "python3",
+        "tests/e2e/at/secops/diskexec.py",
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<worktree>/.agent/secops/restore.test",
+        "./tests/e2e/at/secops"
+      ],
+      [
+        "deploy/backup/restore-pitr.sh",
+        "--image",
+        "sha256:7d79f0b812ae32f6e6e5805cfbcaddda0840ee36fe4425582308617b7cd07f16",
+        "--repo-volume",
+        "fvpn-w4-secops-pgbackrest-repo",
+        "--target-volume",
+        "fvpn-w4-secops-restore-pitr-pg",
+        "--primary-container",
+        "fvpn-w4-secops-postgres",
+        "--db-user",
+        "fvpn",
+        "--db-name",
+        "fvpn",
+        "--target-time",
+        "2026-10-30T04:00:20.471778Z",
+        "--isolated-container",
+        "fvpn-w4-secops-postgres"
+      ],
+      [
+        "deploy/backup/restore-pitr.sh",
+        "--image",
+        "sha256:7d79f0b812ae32f6e6e5805cfbcaddda0840ee36fe4425582308617b7cd07f16",
+        "--repo-volume",
+        "fvpn-w4-secops-pgbackrest-repo",
+        "--target-volume",
+        "fvpn-w4-secops-restore-pitr-pg",
+        "--primary-container",
+        "fvpn-w4-secops-postgres",
+        "--db-user",
+        "fvpn",
+        "--db-name",
+        "fvpn",
+        "--target-time",
+        "2026-10-30T04:00:20.471778Z",
+        "--isolated-container",
+        "fvpn-w4-secops-restore-pitr"
+      ],
+      [
+        "docker",
+        "inspect",
+        "fvpn-w4-secops-restore-pitr"
+      ],
+      [
+        "docker",
+        "exec",
+        "-i",
+        "--user",
+        "postgres",
+        "fvpn-w4-secops-restore-pitr",
+        "psql",
+        "-U",
+        "fvpn",
+        "-d",
+        "fvpn",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-v",
+        "restore_point=2026-10-30T04:00:20.471778Z"
+      ],
+      [
+        "docker",
+        "cp",
+        "fvpn-w4-secops-control:/var/lib/fvpn/vault",
+        "<worktree>/.agent/secops/pitr-vault-p8cdt9ch/vault"
+      ],
+      [
+        "docker",
+        "exec",
+        "fvpn-w4-secops-restore-pitr",
+        "mkdir",
+        "-p",
+        "/fixture",
+        "/output"
+      ],
+      [
+        "docker",
+        "cp",
+        "<worktree>/.agent/secops/pitr-vault-p8cdt9ch/vault",
+        "fvpn-w4-secops-restore-pitr:/fixture/vault"
+      ],
+      [
+        "docker",
+        "cp",
+        "<worktree>/.agent/e2e-state-w4-secops/secrets/postgres.password",
+        "fvpn-w4-secops-restore-pitr:/fixture/password"
+      ],
+      [
+        "docker",
+        "cp",
+        "<worktree>/.agent/secops/retained.json",
+        "fvpn-w4-secops-restore-pitr:/fixture/retained.json"
+      ],
+      [
+        "docker",
+        "cp",
+        "<worktree>/.agent/secops/pitr-manifest.json",
+        "fvpn-w4-secops-restore-pitr:/fixture/pitr-manifest.json"
+      ],
+      [
+        "docker",
+        "cp",
+        "<worktree>/.agent/secops/restore.test",
+        "fvpn-w4-secops-restore-pitr:/fixture/restore.test"
+      ],
+      [
+        "docker",
+        "exec",
+        "-e",
+        "FVPN_SECOPS_RESTORE=network-none",
+        "fvpn-w4-secops-restore-pitr",
+        "/fixture/restore.test",
+        "-test.v",
+        "-test.run",
+        "^TestAT30_IsolatedRestoreReplayer$",
+        "-test.timeout",
+        "2m"
+      ],
+      [
+        "docker",
+        "exec",
+        "fvpn-w4-secops-restore-pitr",
+        "cat",
+        "/output/restore.json"
+      ],
+      [
+        "docker",
+        "logs",
+        "fvpn-w4-secops-restore-pitr"
+      ],
+      [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        "name=^/fvpn-w4-secops-restore-pitr",
+        "--format",
+        "{{.Names}}"
+      ],
+      [
+        "docker",
+        "volume",
+        "ls",
+        "--filter",
+        "name=^fvpn-w4-secops-restore-pitr-pg$",
+        "--format",
+        "{{.Name}}"
+      ],
+      [
+        "docker",
+        "inspect",
+        "--format",
+        "{{.State.Health.Status}}",
+        "fvpn-w4-secops-postgres"
+      ],
+      [
+        "docker",
+        "images",
+        "--filter",
+        "reference=fvpn-w4-secops-restore-image:17",
+        "--format",
+        "{{.ID}}"
+      ]
+    ],
+    "timing_scope": "dev-host isolated copy promotion/checklist/service replay; not service RTO or hardware capacity",
+    "restore_objects_remaining": 0,
+    "primary_health_after": "healthy"
+  },
+  "previous_attempts": "pitr-attempts.json",
+  "follow_up_5": {
+    "reviewed_at": "2026-10-30T10:09:25Z",
+    "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+    "new_restore": false,
+    "note": "No new physical restore in this follow-up. Original PITR subset remains historical; full native archive/provider/peer reconciliation is still blocked."
+  }
+}

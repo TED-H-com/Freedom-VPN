@@ -91,3 +91,31 @@ class Followup5EvidenceTests(unittest.TestCase):
         self.assertEqual(body_verdict(rows[:2],8),'blocked')
         rows[-1]['passed']=False
         self.assertEqual(body_verdict(rows,8),'failed')
+
+class Followup6EvidenceTests(unittest.TestCase):
+    def test_admission_requires_simultaneous_product_snapshot(self):
+        from followup6_records import admission_pass
+        live={'phase':'profile','native_scale':{'status':'passed','peer_observations':[{'authorized':True,'identity_matched':True,'join_error':False}]*60}}
+        self.assertFalse(admission_pass(live))
+        live['simultaneous_cohort']={'users':20,'authorized':60,'binding_devices':60}
+        self.assertTrue(admission_pass(live))
+        live['simultaneous_cohort']['binding_devices']=59
+        self.assertFalse(admission_pass(live))
+
+    def test_protected_device_flow_file_is_not_a_zero_canary_scan(self):
+        from followup6_records import scans_pass
+        streams=[{'read_ok':True,'known_secret_matches':0,'device_flow_key_lines':0}]
+        transient=[{'present':True,'mode':'0:600','device_flow_keys':1}]
+        self.assertFalse(scans_pass(streams,transient,1))
+        transient[0]['device_flow_keys']=0
+        self.assertTrue(scans_pass(streams,transient,1))
+        self.assertFalse(scans_pass(streams,transient,2))
+
+    def test_anonymous_success_alone_does_not_prove_isolation(self):
+        from followup6_records import isolation_pass
+        row={'checks':[{'after_anonymous_requests':i,'admin_status':200,'lease_status':200} for i in (0,40,80,120)],'requests':[{'status':401,'code':'WEBHOOK_SIGNATURE_INVALID','retry_after':''}]*120}
+        self.assertFalse(isolation_pass(row))
+        row['requests'][-1]={'status':429,'code':'RATE_LIMITED','retry_after':'1'}
+        self.assertTrue(isolation_pass(row))
+        row['checks'][-1]['lease_status']=429
+        self.assertFalse(isolation_pass(row))
