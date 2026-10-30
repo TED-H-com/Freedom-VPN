@@ -80,6 +80,7 @@ func run(state string, reset bool, lay layout) error {
 		dns  []string
 		ips  []net.IP
 	}{
+		{"fault-proxy", []string{"localhost"}, []net.IP{net.ParseIP("127.0.0.1")}},
 		{"control", []string{"portal.example.invalid", "agent.example.invalid"}, nil},
 		{"idp", []string{"idp.example.invalid"}, nil},
 		{"payment", []string{"api.stripe.com"}, nil},
@@ -97,6 +98,14 @@ func run(state string, reset bool, lay layout) error {
 		}
 		if err := writeSecret(filepath.Join(dir, item.name+".key"), keyPEM); err != nil {
 			return err
+		}
+		if item.name == "fault-proxy" {
+			if err := writeSecret(filepath.Join(state, "node", "etc", "fault-proxy.crt"), certPEM); err != nil {
+				return err
+			}
+			if err := writeSecret(filepath.Join(state, "node", "etc", "fault-proxy.key"), keyPEM); err != nil {
+				return err
+			}
 		}
 		if item.name == "control" {
 			// The secrets directory is one read-only mount. A second mount of
@@ -170,6 +179,9 @@ func run(state string, reset bool, lay layout) error {
 		return err
 	}
 	agentCA := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+	if err := writeSecret(filepath.Join(state, "node", "etc", "agent-ca.pem"), agentCA); err != nil {
+		return err
+	}
 	if err := writeSecret(filepath.Join(state, "secrets", "agent-ca.pem"), agentCA); err != nil {
 		return err
 	}
@@ -238,7 +250,7 @@ func run(state string, reset bool, lay layout) error {
 	if err := members.Validate(); err != nil {
 		return err
 	}
-	dnsCfg := config.DNS{Upstreams: []string{lay.CoreDNSIP + ":53"}, BootstrapDNS: []string{lay.CoreDNSIP + ":53"}}
+	dnsCfg := config.DNS{FeedUpdateCadenceSeconds: 300, Upstreams: []string{lay.CoreDNSIP + ":53"}, BootstrapDNS: []string{lay.CoreDNSIP + ":53"}}
 	if err := dnsCfg.Validate(); err != nil {
 		return err
 	}
@@ -370,7 +382,7 @@ func writeAgentConfigs(state, originPrefix string) error {
 	enroll := cloneMap(base)
 	enroll["control_url"] = "https://portal.example.invalid:8443"
 	runCfg := cloneMap(base)
-	runCfg["control_url"] = "https://agent.example.invalid:9443"
+	runCfg["control_url"] = "https://127.0.0.1:9444"
 	runCfg["dns"] = map[string]any{"resolvers": []any{map[string]string{"id": "lab", "admin_url": "http://127.0.0.1:8080", "dns_addr": "127.0.0.1:53"}}, "resolver_credentials_file": "/etc/vpn-node/resolver-credentials.json"}
 	dir := filepath.Join(state, "node", "etc")
 	if err := writeJSON(filepath.Join(dir, "agent-enroll.json"), enroll); err != nil {

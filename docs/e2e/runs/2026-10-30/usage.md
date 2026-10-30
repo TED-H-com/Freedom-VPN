@@ -2,14 +2,14 @@
 
 Agent samples after native admitted traffic
 
-Status: blocked
+Status: pass
 
-Run: 742a2b14-355f-462e-be89-52ffb2c1993b
+Run: 22c14cd9-39fc-444b-a7c5-c04cf3ffbff6
 
-Source: 05d70d63890bb181937dabfe01b9e9a680d76086
+Source: 43176b8860bf90970e96b100c1ba4e957f09363d
 
 Spec: §10, §19 AT14, §19 AT15
 
 - member_usage: 200
-- note: No positive counted flow; no synthetic sample is submitted.
-- owner: w2-agent-core: positive counted-flow prerequisite; then w3-wire-usage sampler acceptance
+- member_total_bytes: 2631
+- source: real agent sampler after controlled-origin admission; no harness usage batch

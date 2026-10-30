@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-10-30T04:53:17.540049Z",
-  "scope": "only own prefix; no other namespace mutated",
+  "checked_at": "2026-10-30T07:57:55.480498Z",
+  "scope": "only assigned prefix; shared neutral devstack build cache left as documented",
   "inventory": {
     "containers": {
       "command": [
@@ -8,7 +8,7 @@
         "ps",
         "-a",
         "--filter",
-        "name=^/fvpn-w4-secops-",
+        "name=^fvpn-w4-secops-",
         "--format",
         "{{.Names}}"
       ],

@@ -398,5 +398,48 @@
     ],
     "physical_acceptance": "needs operator run",
     "conclusion": "DOC01-DOC13 remain resolved and DOC14 is corrected. The member guide retains platform, forwarding and propagation qualifications. Typed DNS evidence is admin-only. This documentation review makes no new serving, platform, UI or physical acceptance claim."
+  },
+  "follow_up_4": {
+    "reviewed_at": "2026-10-30T06:51:58.202463+00:00",
+    "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+    "method": "Read public-text delta from f7281ec to current #148; recheck DOC14 with TestHandover_OpenAPIClaims; preserve historical review sections.",
+    "findings_rechecked": 14,
+    "unresolved_documentation_findings": 0,
+    "new_mismatches": [],
+    "resolved_prs": [
+      138
+    ],
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "91143c1f1a23ceac9a2b9fb63bd20f5c8cb220ebaf6f95b6880f2d5e626a84b3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "832617e3700f11cbb5c3f3a5d26056ce7a3c8c692ae2b2601e9c5e6ac3f4e978"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "6f4ddb211ab07275356cec144ab86a3cd3cc275df5bf4f134b42161248f6f36c"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "4bae8b2cde96cbcf256df729060e73b2671953c3d7a8e5ee9f5dc4609b1f21d6"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "7359e96a343b2385f92b28dd4c10ff0040d5eb061421370863571ede2171c6f4"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "8161ad10e3df6396ab40d77765ae67b025b244d2709386652ab96467e31ca4c2"
+      }
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "DOC01–DOC14 remain resolved. Current README and guide qualify unmeasured flow cutoffs, native platforms, DNS propagation and hardware capacity. Member identity/quota text tracks #134/#139; admin typed DNS evidence is not promised in member views. Publication, native admission and limiter results do not certify traffic or capacity. Current live verdicts are in AT28–AT32 records."
   }
 }

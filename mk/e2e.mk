@@ -48,4 +48,4 @@ e2e-down:
 e2e-test:
 	$(MAKE) -f $(E2E_MK) e2e-down
 	$(MAKE) -f $(E2E_MK) e2e-up E2E_RESET=1
-	cd $(E2E_ROOT) && FVPN_E2E=1 FVPN_E2E_PREFIX=$(FVPN_E2E_PREFIX) FVPN_E2E_PORT_BASE=$(FVPN_E2E_PORT_BASE) FVPN_E2E_STATE=$(FVPN_E2E_STATE) go test -tags e2e -count=1 -timeout 40m ./tests/e2e
+	cd $(E2E_ROOT) && FVPN_E2E=1 FVPN_E2E_PREFIX=$(FVPN_E2E_PREFIX) FVPN_E2E_PORT_BASE=$(FVPN_E2E_PORT_BASE) FVPN_E2E_STATE=$(FVPN_E2E_STATE) go test -v -tags e2e -count=1 -timeout 40m ./tests/e2e
