@@ -1,0 +1,151 @@
+{
+  "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba",
+  "started_at": "2026-10-30T17:02:13Z",
+  "finished_at": "2026-10-30T17:02:16Z",
+  "source": {
+    "commit": "e4215bc151742774bbf957d2305246c514207de8",
+    "tree_sha256": "5e40bea111e14698dc95a939aa71097deb6cc495586110e393567fa5b72ee50d",
+    "dirty": false,
+    "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"
+  },
+  "prefix": "w4-enroll",
+  "port_base": 66000,
+  "image_digests": {},
+  "image_evidence": "unavailable: no stack has started",
+  "commands": [
+    {
+      "name": "fresh_teardown",
+      "started_at": "2026-10-30T17:02:13Z",
+      "finished_at": "2026-10-30T17:02:14Z",
+      "exit_code": 0
+    },
+    {
+      "name": "fresh_startup",
+      "started_at": "2026-10-30T17:02:14Z",
+      "finished_at": "2026-10-30T17:02:15Z",
+      "exit_code": 2
+    },
+    {
+      "name": "final_teardown",
+      "started_at": "2026-10-30T17:02:15Z",
+      "finished_at": "2026-10-30T17:02:16Z",
+      "exit_code": 0
+    }
+  ],
+  "test_binary_sha256": null,
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "images": 0
+  },
+  "id": "AT07",
+  "status": "blocked",
+  "actual": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+  "requirements": [
+    "ENR03",
+    "PKG01",
+    "DATA01"
+  ],
+  "spec": [
+    "§19 AT07",
+    "§6.1",
+    "§6.2",
+    "§6.3",
+    "§6.4"
+  ],
+  "checks": [
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:15Z"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT07",
+      "name": "certificate_identity_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT07",
+      "name": "certificate_identity_node2",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-07: no documented OS machine-id/NetBird key fingerprint observer"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-05: no documented usage acknowledgement hold and ledger snapshot hook"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-06: no documented real installer rerun hook"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-06: no documented controlled reinstall hook for the real node"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-03/ENR-05/ENR-06: history API and counted usage across reinstall required"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-07: no sanctioned cloned enrolled identity fixture; never copy it into a running container"
+    }
+  ],
+  "prior_checks": []
+}

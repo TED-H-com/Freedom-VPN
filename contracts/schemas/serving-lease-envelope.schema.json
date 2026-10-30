@@ -68,7 +68,7 @@
         },
         "max_offline_seconds": {
           "default": 86400,
-          "description": "configured_max_offline_lease; recommended default 24 hours (§16.3).",
+          "description": "Seconds copied from fleet configuration at issuance or renewal (§16.3).\nA later `PUT /admin/fleet-config` does not rewrite this field. 86400 is\nthe ceiling and the recommended default.\n",
           "maximum": 86400,
           "minimum": 60,
           "type": "integer"

@@ -40,6 +40,8 @@ var registry = map[string]func() any{
 	"CheckoutSession":             func() any { return new(CheckoutSession) },
 	"CheckoutSessionRequest":      func() any { return new(CheckoutSessionRequest) },
 	"DesiredStateEnvelope":        func() any { return new(DesiredStateEnvelope) },
+	"FleetConfig":                 func() any { return new(FleetConfig) },
+	"FleetConfigUpdate":           func() any { return new(FleetConfigUpdate) },
 	"Enrollment":                  func() any { return new(Enrollment) },
 	"EnrollmentCreated":           func() any { return new(EnrollmentCreated) },
 	"EnrollmentCreateRequest":     func() any { return new(EnrollmentCreateRequest) },

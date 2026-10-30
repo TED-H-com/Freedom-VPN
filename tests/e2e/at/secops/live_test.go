@@ -714,7 +714,13 @@ func (p *liveProbe) finish() {
 		if bytes.Contains(raw, []byte("PRIVATE KEY-----")) {
 			findings++
 		}
-		streams = append(streams, map[string]any{"stream": name, "bytes": len(raw), "read_ok": err == nil, "known_secret_matches": findings})
+		deviceFlowLines := 0
+		for _, line := range bytes.Split(raw, []byte("\n")) {
+			if bytes.Contains(line, []byte("user_code=")) || bytes.Contains(line, []byte("verification_uri")) || bytes.Contains(line, []byte("device_code=")) {
+				deviceFlowLines++
+			}
+		}
+		streams = append(streams, map[string]any{"stream": name, "bytes": len(raw), "read_ok": err == nil, "known_secret_matches": findings, "device_flow_key_lines": deviceFlowLines})
 		if findings > 0 {
 			p.t.Error("secret in stream " + name)
 		}
@@ -776,6 +782,9 @@ func (p *liveProbe) finish() {
 	}
 	if os.Getenv("FVPN_SECOPS_SCALE_ONLY") == "1" {
 		name = "native-scale-live.json"
+	}
+	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP6"); phase == "profile" || phase == "helper" {
+		name = "followup6-" + phase + "-live.json"
 	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {
 		p.t.Error("evidence write")

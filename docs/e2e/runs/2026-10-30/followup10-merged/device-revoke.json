@@ -1,0 +1,24 @@
+{
+  "id": "device-revoke",
+  "title": "Revoke one native device while its sibling keeps forwarding",
+  "spec": [
+    "§8",
+    "§10",
+    "§19 AT02",
+    "F3-02"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "owner",
+      "detail": "w3-devstack-e2e: revoked native route may withdraw before node ingress proof; no product defect is inferred"
+    },
+    {
+      "name": "gate",
+      "detail": "positive member flow prerequisite absent"
+    }
+  ],
+  "at": "2026-10-30T16:26:40Z",
+  "run_id": "3a129919-af3f-4bc9-b54a-8075eae8af45",
+  "source_commit": "79259af1facc1faa798fbb83cc20aa4e74539d1f"
+}

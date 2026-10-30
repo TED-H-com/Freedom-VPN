@@ -64,6 +64,8 @@ type Observation struct {
 // before the file is written.
 type Record struct {
 	RunID           string        `json:"run_id"`
+	Prefix          string        `json:"prefix,omitempty"`
+	PortBase        int           `json:"port_base,omitempty"`
 	Scope           string        `json:"scope"`
 	ID              string        `json:"id"`
 	Title           string        `json:"title"`
@@ -145,6 +147,9 @@ func Write(dir string, rec Record) error {
 	b.WriteString("At: " + rec.At + "\n\n")
 	b.WriteString("Run: " + rec.RunID + "\n\n")
 	b.WriteString("Scope: " + rec.Scope + "\n\n")
+	if rec.Prefix != "" {
+		fmt.Fprintf(&b, "Lab: %s, port base %d\n\n", rec.Prefix, rec.PortBase)
+	}
 	if rec.Expected != "" {
 		b.WriteString("Expected: " + rec.Expected + "\n\n")
 	}

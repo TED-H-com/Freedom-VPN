@@ -21,7 +21,10 @@ type Ruleset struct {
 	// accept as a timed host address: a prefix wider than /32, a port range,
 	// or any other shape. Verification fails closed on a tainted allow or
 	// probe set (§13.9).
-	Tainted    map[string]bool
+	Tainted map[string]bool
+	// SetFlags is the flags array nft reported for each set. Absence is
+	// empty. Verification rejects a flag the renderer does not emit.
+	SetFlags   map[string][]string
 	Flowtables []string
 	Classes    map[uuid.UUID]uint16
 	Raw        string
@@ -49,17 +52,25 @@ type RuleView struct {
 	Prios    []uint32
 	// Parsed match expressions. Verification uses these, not the raw JSON
 	// text, so a comment cannot impersonate an interface or a set (§8.2).
-	IIF           []string
-	OIF           []string
-	NegSets       []string
-	SaddrSets     []string
-	DaddrSets     []string
-	ConcatSets    []string
-	Dports        []uint16
-	L4Protos      []string
-	NFProto       string
-	CTEstablished bool
-	SNAT          string
+	IIF              []string
+	OIF              []string
+	NegSets          []string
+	NegSaddr         []string
+	NegDaddr         []string
+	SaddrSets        []string
+	DaddrSets        []string
+	ConcatSets       []string
+	Dports           []uint16
+	Sports           []uint16
+	Saddrs           []netip.Prefix
+	Daddrs           []netip.Prefix
+	L4Protos         []string
+	NFProto          string
+	CTEstablished    bool
+	CTNotEstablished bool
+	MatchMark        bool
+	DNAT             bool
+	SNAT             string
 }
 
 // setElement is one element of an nft set. Bounded is false when the element
@@ -98,14 +109,20 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 		Sets:     map[string]bool{},
 		Elements: map[string][]setElement{},
 		Tainted:  map[string]bool{},
+		SetFlags: map[string][]string{},
 		Raw:      string(raw),
 	}
+	// Chains are keyed by (family, table, name). A second object with the
+	// same identity is an error. A different family is not merged in: an
+	// `ip fvpn forward` policy must not hide the `inet` chain's policy.
+	seenChain := map[string]struct{}{}
 	for _, obj := range doc.Nftables {
 		switch {
 		case hasKey(obj, "flowtable"):
 			rs.Flowtables = append(rs.Flowtables, "flowtable")
 		case hasKey(obj, "chain"):
 			var c struct {
+				Family string      `json:"family"`
 				Table  string      `json:"table"`
 				Name   string      `json:"name"`
 				Type   string      `json:"type"`
@@ -119,6 +136,22 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			if c.Table != "" && c.Table != TableName {
 				continue
 			}
+			fam := c.Family
+			if fam == "" {
+				fam = TableFamily
+			}
+			if fam != TableFamily {
+				continue
+			}
+			table := c.Table
+			if table == "" {
+				table = TableName
+			}
+			key := fam + "\x00" + table + "\x00" + c.Name
+			if _, dup := seenChain[key]; dup {
+				return Ruleset{}, fmt.Errorf("duplicate chain %s %s %s", fam, table, c.Name)
+			}
+			seenChain[key] = struct{}{}
 			cv := rs.Chains[c.Name]
 			cv.Name = c.Name
 			cv.Type = c.Type
@@ -135,6 +168,7 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			rs.Chains[c.Name] = cv
 		case hasKey(obj, "rule"):
 			var head struct {
+				Family  string          `json:"family"`
 				Table   string          `json:"table"`
 				Chain   string          `json:"chain"`
 				Comment string          `json:"comment"`
@@ -144,6 +178,13 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 				return Ruleset{}, err
 			}
 			if head.Table != "" && head.Table != TableName {
+				continue
+			}
+			fam := head.Family
+			if fam == "" {
+				fam = TableFamily
+			}
+			if fam != TableFamily {
 				continue
 			}
 			rv := RuleView{Comment: head.Comment, Raw: string(head.Expr)}
@@ -192,6 +233,7 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 				Table string          `json:"table"`
 				Name  string          `json:"name"`
 				Elem  json.RawMessage `json:"elem"`
+				Flags json.RawMessage `json:"flags"`
 			}
 			if err := json.Unmarshal(obj["set"], &s); err != nil {
 				return Ruleset{}, err
@@ -199,7 +241,14 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			if s.Table != "" && s.Table != TableName {
 				continue
 			}
+			flags, err := parseSetFlags(s.Flags)
+			if err != nil {
+				return Ruleset{}, fmt.Errorf("set %s flags: %w", s.Name, err)
+			}
 			rs.Sets[s.Name] = true
+			if len(flags) > 0 {
+				rs.SetFlags[s.Name] = flags
+			}
 			elems, tainted, err := parseSetElems(s.Elem)
 			if err != nil {
 				return Ruleset{}, fmt.Errorf("set %s: %w", s.Name, err)
@@ -378,6 +427,9 @@ func walkExpr(v any, rv *RuleView) {
 		if _, ok := t["drop"]; ok {
 			rv.Verdict = "drop"
 		}
+		if _, ok := t["dnat"]; ok {
+			rv.DNAT = true
+		}
 		if c, ok := t["counter"]; ok {
 			switch cv := c.(type) {
 			case map[string]any:
@@ -456,6 +508,9 @@ func noteMatch(v any, rv *RuleView) {
 	right := m["right"]
 	if meta, ok := left["meta"].(map[string]any); ok {
 		key, _ := meta["key"].(string)
+		if key == "mark" {
+			rv.MatchMark = true
+		}
 		if name, ok := right.(string); ok && name != "" {
 			switch key {
 			case "iifname":
@@ -477,6 +532,12 @@ func noteMatch(v any, rv *RuleView) {
 			if name, ok := matchSet(right); ok {
 				if op == "!=" {
 					rv.NegSets = append(rv.NegSets, name)
+					if field == "saddr" {
+						rv.NegSaddr = append(rv.NegSaddr, name)
+					}
+					if field == "daddr" {
+						rv.NegDaddr = append(rv.NegDaddr, name)
+					}
 				}
 				if op == "==" && field == "saddr" {
 					rv.SaddrSets = append(rv.SaddrSets, name)
@@ -484,10 +545,21 @@ func noteMatch(v any, rv *RuleView) {
 				if op == "==" && field == "daddr" {
 					rv.DaddrSets = append(rv.DaddrSets, name)
 				}
+			} else if p, ok := matchPrefix(right); ok && op == "==" {
+				if field == "saddr" {
+					rv.Saddrs = append(rv.Saddrs, p)
+				}
+				if field == "daddr" {
+					rv.Daddrs = append(rv.Daddrs, p)
+				}
 			}
-		case "dport":
+		case "dport", "sport":
 			if n, ok := asUint(right); ok && n > 0 && n <= 65535 {
-				rv.Dports = append(rv.Dports, uint16(n))
+				if field == "sport" {
+					rv.Sports = append(rv.Sports, uint16(n))
+				} else {
+					rv.Dports = append(rv.Dports, uint16(n))
+				}
 			}
 			if proto, ok := payload["protocol"].(string); ok && proto != "" {
 				rv.L4Protos = append(rv.L4Protos, proto)
@@ -502,7 +574,11 @@ func noteMatch(v any, rv *RuleView) {
 		}
 	}
 	if ct, ok := left["ct"].(map[string]any); ok && ct["key"] == "state" && mentionsEstablished(right) {
-		rv.CTEstablished = true
+		if op == "!=" {
+			rv.CTNotEstablished = true
+		} else {
+			rv.CTEstablished = true
+		}
 	}
 }
 
@@ -514,6 +590,65 @@ func noteSNAT(v any, rv *RuleView) {
 	if addr, ok := m["addr"].(string); ok && addr != "" {
 		rv.SNAT = addr
 	}
+}
+
+func matchPrefix(right any) (netip.Prefix, bool) {
+	switch t := right.(type) {
+	case string:
+		if strings.HasPrefix(t, "@") {
+			return netip.Prefix{}, false
+		}
+		if p, err := netip.ParsePrefix(t); err == nil && p.Addr().Is4() {
+			return p.Masked(), true
+		}
+		if a, err := netip.ParseAddr(t); err == nil && a.Is4() {
+			return netip.PrefixFrom(a, 32), true
+		}
+	case map[string]any:
+		if pref, ok := t["prefix"].(map[string]any); ok {
+			return prefixFromMap(pref)
+		}
+		if _, ok := t["addr"]; ok {
+			return prefixFromMap(t)
+		}
+	}
+	return netip.Prefix{}, false
+}
+
+func prefixFromMap(m map[string]any) (netip.Prefix, bool) {
+	addr, _ := m["addr"].(string)
+	a, err := netip.ParseAddr(addr)
+	if err != nil || !a.Is4() {
+		return netip.Prefix{}, false
+	}
+	bits := 32
+	if n, ok := asUint(m["len"]); ok && n <= 32 {
+		bits = int(n)
+	}
+	p := netip.PrefixFrom(a, bits)
+	if !p.IsValid() {
+		return netip.Prefix{}, false
+	}
+	return p.Masked(), true
+}
+
+func parseSetFlags(raw json.RawMessage) ([]string, error) {
+	trimmed := bytes.TrimSpace(raw)
+	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) {
+		return nil, nil
+	}
+	var one string
+	if err := json.Unmarshal(trimmed, &one); err == nil {
+		if one == "" {
+			return nil, nil
+		}
+		return []string{one}, nil
+	}
+	var many []string
+	if err := json.Unmarshal(trimmed, &many); err != nil {
+		return nil, err
+	}
+	return many, nil
 }
 
 func matchSet(right any) (string, bool) {
@@ -545,7 +680,7 @@ func matchSet(right any) (string, bool) {
 func mentionsEstablished(v any) bool {
 	switch t := v.(type) {
 	case string:
-		return t == "established"
+		return t == "established" || t == "related"
 	case []any:
 		for _, child := range t {
 			if mentionsEstablished(child) {

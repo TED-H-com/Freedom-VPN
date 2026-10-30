@@ -334,5 +334,11 @@
     "pointer": "/update_interval_seconds",
     "keyword": "minimum",
     "note": "Minimum per-source refresh interval is 300 seconds (D-054)."
+  },
+  "FleetConfigUpdate.below-minimum.json": {
+    "kind": "schema",
+    "pointer": "/max_offline_lease_seconds",
+    "keyword": "minimum",
+    "note": "The test-lab floor is 60 seconds (D-065). Out of range is 422 VALIDATION_FAILED."
   }
 }

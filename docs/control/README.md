@@ -5,7 +5,9 @@ enrollment and provider webhooks. A separate TLS 1.3 listener verifies client
 certificates for ordinary Agent traffic. `internal/auth.AgentAuthenticator` then
 checks the current database identity and revocation state (§16.1). The binary
 fails closed until the PKI task supplies this verifier; it never trusts
-`X-Node-ID`, `X-Client-Cert` or forwarding headers.
+`X-Node-ID`, `X-Client-Cert` or forwarding headers as identity. Rate-limit
+connection principals on the public listener follow `trusted_proxies` below.
+The agent listener does not read them.
 
 `contracts/openapi.yaml` remains the source of all API operations. oapi-codegen
 v2.8.1 generates the standard-library strict server and embedded specification.
@@ -68,9 +70,36 @@ browser, agent, heartbeat, lease, or usage ingress tables. Enrollment and
 webhooks then take a second slot in a separate anonymous class table with the
 same cap and the same /64 key. The authenticated subject table is a further
 instance, keyed by node or session, with the same cap. An unparseable
-connection address is refused with 429 and occupies no slot (see
+connection address, including an unparseable `X-Forwarded-For` entry chosen
+from a trusted peer, is refused with 429 and occupies no slot (see
 [authentication](AUTH.md)). An mTLS request without a verified client
 certificate is HTTP 401 and occupies no slot in any table.
+
+`trusted_proxies` (default empty) is the list of CIDRs whose TCP peers may
+supply `X-Forwarded-For`. An empty list keeps every pre-authentication bucket
+on the TCP peer, so a forwarding header cannot choose a bucket. Production
+either terminates TLS on `fvpn-control` or sets `trusted_proxies` to the
+proxy's source addresses. A proxy that connects from several addresses is
+several CIDRs in that list: each source address as a /32, or one covering
+prefix that is still at least /8 for IPv4 or /32 for IPv6. `0.0.0.0/0`,
+`::/0`, and any shorter prefix are rejected, because trusting the world lets
+any peer choose its bucket. Write an IPv4 proxy as an IPv4 CIDR. When the TCP
+peer is inside a listed CIDR, the public listener walks `X-Forwarded-For`
+from the right, skips trusted hops, and stops after 64 entries. The chosen
+address is the connection principal for the per-class ingress tables, the
+anonymous table, and the browser login and session token buckets (IPv4 per
+address, IPv6 per /64). An address that falls inside a trusted CIDR is itself
+a hop, so the list is proxy addresses only. The agent listener does not read
+the header. Place it so nothing rewrites the client address in front of it;
+a certificate still authenticates the node, and ingress then keys the proxy
+address. Subject buckets stay on the node or session scope. The login
+concurrency gate remains one process-wide gate of `max_concurrent`. Access
+logs record the request ID, route, status, and duration. Prometheus
+labels are route, status, class, and limiter. The peer address is absent
+from both.
+`X-Real-IP` and RFC 7239 `Forwarded` are not read. Replicas do not share
+limiter state, so each replica applies its own budget and the deployment
+budget is the per-process budget times the replica count.
 
 When a table is full, a new principal is admitted only by evicting the
 least-recently-used bucket, and only when that bucket is idle with a full
@@ -111,20 +140,25 @@ incarnation field that differs from the certificate is HTTP 403
 `INCARNATION_MISMATCH`. `fvpn_control_rate_limited_total` counts HTTP 429
 responses only.
 
-Auth routes are additionally bounded per connection address. Limits are
-per process, with a bounded principal map; deployment replicas multiply capacity.
-If horizontally scaling, budget limits across replicas or add a shared limiter.
-A saturated limiter returns 429 with `Retry-After`, never acknowledges work.
+Auth routes are additionally bounded per connection principal (the TCP peer,
+or the client derived from `X-Forwarded-For` when that peer is listed in
+`trusted_proxies`). Limits are per process, with a bounded principal map;
+deployment replicas multiply capacity. If horizontally scaling, budget limits
+across replicas or add a shared limiter. A saturated limiter returns 429 with
+`Retry-After`, never acknowledges work.
 
 ## Configuration and startup
 
 `fvpn-control -config control.json [-migrate-on-start]` reads strict JSON and then
 `FVPN_<UPPERCASE_JSON_FIELD>` overrides. Lists and rate buckets use JSON values in
-the environment; durations are integer seconds. The defaults and complete typed
+the environment; durations are integer seconds. `trusted_proxies` defaults to
+an empty list. `FVPN_TRUSTED_PROXIES` is a JSON array of CIDRs, for example
+`["203.0.113.0/24","2001:db8:1::/48"]`. The defaults and complete typed
 setting list are in `internal/config/config.go`. `docs/control/config.example.json`
 contains only deployment placeholders. Database DSN and optional OIDC client
 secret are read from files; TLS key material is loaded from its file. Effective
 configuration redacts file paths and OIDC settings and never includes contents.
+`trusted_proxies` is not a secret and is left visible.
 Do not put DSNs or secret contents directly in configuration/environment values.
 The example includes all five domain files, in central config order:
 `members_config_file`, `dns_config_file`, `nodes_config_file`,

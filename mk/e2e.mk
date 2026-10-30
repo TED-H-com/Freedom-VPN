@@ -8,9 +8,9 @@
 # FVPN_E2E_PREFIX (default e2e) names runtime objects fvpn-<prefix>-*.
 # Shared build-cache images use neutral fvpn-devstack-* names.
 # FVPN_E2E_PORT_BASE (default 18000) is added to a fixed offset for each
-# loopback port. Legal bases are 18000+6000*n so two stacks cannot share a port.
+# loopback port. Legal bases are 6000+6000*n, n=0..9; existing slots stay fixed.
 # This task uses only prefix e2e and base 18000. Bases 24000, 30000, 36000,
-# 42000 and 48000 are reserved for W4 acceptance tasks.
+# Other slot owners are listed in docs/e2e/RUN.md.
 # The state directory is .agent/e2e-state-<prefix>.
 
 E2E_MK := $(lastword $(MAKEFILE_LIST))

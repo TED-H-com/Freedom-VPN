@@ -141,6 +141,23 @@ func newRig(t *testing.T) *rig {
 	return &rig{eng: eng, srv: srv, clock: clock, plane: plane, log: &buf, dir: dir}
 }
 
+// manualUsage drains the current sample and stops the background usage loops
+// before a test mutates counter fixtures or samples directly. Keep sampleOn and
+// loopCancel set so later Steps cannot restart Run; synchronous epoch switches
+// and the final handoff still use the meter normally.
+func (r *rig) manualUsage(t *testing.T) {
+	t.Helper()
+	if r.eng.meter == nil || !r.eng.sampleOn || r.eng.loopCancel == nil {
+		t.Fatal("usage sampling has not started")
+	}
+	if err := r.eng.meter.Barrier(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	r.eng.loopCancel()
+	r.eng.loops.Wait()
+	r.eng.meter.ResumeSampling()
+}
+
 func TestReadTokenIgnoresEnvironment(t *testing.T) {
 	t.Setenv("FVPN_ENROLLMENT_TOKEN", "from-env")
 	path := filepath.Join(t.TempDir(), "token")

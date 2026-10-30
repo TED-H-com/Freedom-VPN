@@ -4,6 +4,7 @@ package updates_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -41,7 +42,26 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 5 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 6 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+	}
+	// Record exact harness bytes as well as the product source commit. This
+	// remains reproducible when evidence and a capture fix share a final commit.
+	harnessFiles := map[string]string{}
+	paths, err := filepath.Glob(filepath.Join(root, "tests/e2e/at/updates/*.go"))
+	if err != nil {
+		t.Fatal("harness source listing failed")
+	}
+	for _, path := range paths {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal("harness source read failed")
+		}
+		harnessFiles[filepath.Base(path)] = fmt.Sprintf("%x", sha256.Sum256(raw))
+	}
+	harnessDirty := exec.Command("git", "diff", "--quiet", "HEAD", "--", "tests/e2e/at/updates").Run() != nil
+	harnessRaw, _ := json.Marshal(map[string]any{"files_sha256": harnessFiles, "differs_from_source_commit": harnessDirty})
+	for _, rec := range records {
+		rec.Observations = append(rec.Observations, at.Observation{Name: "harness_source", Detail: string(harnessRaw)})
 	}
 	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
 	defer func() {
@@ -49,7 +69,7 @@ func TestUpdatesFollowup(t *testing.T) {
 		requireFollowup5Evidence(records)
 		dir := filepath.Join(root, "docs", "e2e", "at", "updates")
 		var summary strings.Builder
-		fmt.Fprintf(&summary, "# Updates follow-up 5\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		fmt.Fprintf(&summary, "# Updates follow-up 6\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
 		for i := 23; i <= 27; i++ {
 			rec := records[fmt.Sprintf("AT%d", i)]
 			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
@@ -192,6 +212,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	if !ok {
 		return
 	}
+	s.recordedInjection(recoverBatch, good, bad, unrelated)
 	s.execute("AT27", true)
 	interrupted := s.journal(bad)
 	s.note("AT27", "interrupted_journal", interrupted)
@@ -223,6 +244,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	s.note("AT27", "central", target)
 	s.note("AT27", "confirmation_projection", s.projection())
 	recoverReceipt := s.receipts("AT27", recoverBatch)
+	s.recordedLastGood(bad, recoverReceipt)
 	s.note("AT27", "running_verified_candidate", s.running(bad))
 	// Recover may return the documented forwarding-blocked exit for an unpublished
 	// node. Require the same transaction, real healthy process and accepted result.
@@ -414,6 +436,7 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	}
 	time.Sleep(4 * time.Second)
 	_ = os.Remove(filepath.Join(dir, "updater-result.json"))
+	probe := s.beginProbeCapture(id)
 	if interrupt {
 		raw, err := os.ReadFile(filepath.Join(dir, "updater.json.done"))
 		var cfg map[string]any
@@ -430,9 +453,7 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	} else if err := s.r.writeUpdaterConfig(); err != nil {
 		s.r.t.Fatal("updater config failed")
 	}
-	probe := s.beginProbeCapture(id)
 	finished := s.wait(4*time.Minute, func() bool {
-		probe.capture()
 		_, resultErr := os.Stat(filepath.Join(dir, "updater-result.json"))
 		_, configErr := os.Stat(filepath.Join(dir, "updater.json"))
 		return resultErr == nil && os.IsNotExist(configErr)

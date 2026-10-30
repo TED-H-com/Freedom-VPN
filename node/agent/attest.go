@@ -120,7 +120,7 @@ func (e *Engine) answerHealth(ctx context.Context) {
 		return
 	}
 	e.refreshDesired()
-	if !e.probeFresh(ch) {
+	if !e.probeFresh(ch) || (ch.ProbeOmitted != nil && e.probedChallenge == nil) {
 		e.refreshProbe(ctx)
 		if !e.probeFresh(ch) {
 			return
@@ -133,7 +133,7 @@ func (e *Engine) answerHealth(ctx context.Context) {
 	if !e.anchorOK || !ok || !live.Same(ch) || !now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) {
 		return
 	}
-	if ch.Probe != nil && (e.probedChallenge == nil || !e.probedChallenge.Same(ch)) {
+	if (ch.Probe != nil || ch.ProbeOmitted != nil) && (e.probedChallenge == nil || !e.probedChallenge.Same(ch)) {
 		return
 	}
 	// Enforce or exception cleanup may have failed after the earlier Decide.
@@ -142,7 +142,7 @@ func (e *Engine) answerHealth(ctx context.Context) {
 	if e.cfg.AgentRelease == "" || !d.Publication.Valid() {
 		return
 	}
-	checks, ok := attestChecks(d, e.lastProbe)
+	checks, ok := attestChecks(d, e.lastProbe, e.probeOmitted != "")
 	if !ok {
 		return
 	}
@@ -196,7 +196,10 @@ func (e *Engine) healthAnswerReady() bool {
 }
 
 func (e *Engine) probeFresh(ch healthattest.Challenge) bool {
-	return e.lastProbe.Ran && e.probeAt.After(ch.IssuedAt)
+	// A validated omission is conclusive not_run evidence even when no
+	// tunnel probe ran. answerHealth separately checks the exact issuance;
+	// a rewritten challenge must not trigger another probe in this pass.
+	return (e.lastProbe.Ran || ch.ProbeOmitted != nil) && e.probeAt.After(ch.IssuedAt)
 }
 
 func sameUUID(got string, want uuid.UUID) bool {
@@ -210,17 +213,23 @@ func sameUUID(got string, want uuid.UUID) bool {
 	return id == want
 }
 
-func attestChecks(d Decision, probe ProbeResult) (healthattest.Checks, bool) {
+func attestChecks(d Decision, probe ProbeResult, omitted bool) (healthattest.Checks, bool) {
 	internet, okI := decisionStatus(d, api.NodeCheckNameInternetOnly)
 	dns, okD := decisionStatus(d, api.NodeCheckNameDnsPolicy)
 	tunnel, okT := decisionStatus(d, api.NodeCheckNameTunnelProbe)
 	if !okI || !okD || !okT || !internet.Valid() || !dns.Valid() || !tunnel.Valid() {
 		return healthattest.Checks{}, false
 	}
+	reason := tunnelReason(tunnel, probe.Detail)
+	if omitted {
+		// The shared attestation vocabulary already has this fixed token.
+		// NodeCheck.detail and its issuer refusal class never become Reason.
+		reason = "probe refused"
+	}
 	return healthattest.Checks{
 		InternetOnly: healthattest.Check{Status: internet, Reason: statusReason(internet, "baseline held", "baseline missing")},
 		DNSPolicy:    healthattest.Check{Status: dns, Reason: statusReason(dns, "policy in force", "policy not in force")},
-		TunnelProbe:  healthattest.Check{Status: tunnel, Reason: tunnelReason(tunnel, probe.Detail)},
+		TunnelProbe:  healthattest.Check{Status: tunnel, Reason: reason},
 	}, true
 }
 
