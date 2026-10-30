@@ -672,4 +672,178 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(auditRows).not.toHaveCount(0);
     await expect(page.getByTestId('audit-table')).toContainText('policy.activate');
   });
+
+  test('TestD065_OperatorFleetConfigSettings_UpdateAuditReload412ConflictAndRestore', async ({
+    page,
+    request,
+  }) => {
+    try {
+      // 1. Observe initial fleet-config via API and on /admin/settings
+      const initialGetRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      expect(initialGetRes.status()).toBe(200);
+      const initialConfig = (await initialGetRes.json()) as {
+        max_offline_lease_seconds: number;
+        default_max_offline_lease_seconds: number;
+        resource_version: string;
+        updated_at: string;
+      };
+      expect(initialConfig.max_offline_lease_seconds).toBe(86400);
+      expect(initialConfig.default_max_offline_lease_seconds).toBe(86400);
+
+      await page.goto('/admin/settings');
+      await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      await expect(page.getByTestId('nav-admin-settings')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText(
+        '86400 s',
+      );
+      await expect(page.getByTestId('fleet-config-default-seconds')).toHaveText(
+        '86400 s',
+      );
+      await expect(page.getByTestId('fleet-config-updated-at')).toContainText(/Z\)/);
+      await expect(page.getByTestId('fleet-config-semantics-copy')).toContainText(
+        '86400',
+      );
+
+      // Verify sub-900 s warning appears below 900 s without blocking submission
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('600');
+      await expect(page.getByTestId('fleet-config-sub-900-warning')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-submit-btn')).toBeEnabled();
+
+      // 2. Change max_offline_lease_seconds to 3600 with a reason and observe the 200 response
+      const updateReason = 'Shorten new leases for the AT29 lab.';
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('3600');
+      await expect(page.getByTestId('fleet-config-sub-900-warning')).toHaveCount(0);
+      await page.getByTestId('fleet-config-reason-input').fill(updateReason);
+
+      const put200Promise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'PUT',
+      );
+      await page.getByTestId('fleet-config-submit-btn').click();
+      const put200Res = await put200Promise;
+      expect(put200Res.status()).toBe(200);
+
+      await expect(page.getByTestId('fleet-config-saved-banner')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-saved-banner')).toContainText('3600');
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('3600 s');
+      await expect(page.getByTestId('fleet-config-audit-link')).toBeVisible();
+
+      // 3. Follow the audit link to /admin/audit?resource_type=fleet_config and observe the fleet_config.update row with before/after values
+      await page.getByTestId('fleet-config-audit-link').click();
+      await expect(page.getByTestId('admin-audit-page')).toBeVisible();
+      await expect(page.getByTestId('audit-resource-filter')).toHaveValue('fleet_config');
+      const auditRows = page.locator('[data-testid^="audit-row-"]');
+      await expect(auditRows.first()).toBeVisible();
+      await expect(auditRows).not.toHaveCount(0);
+      await expect(auditRows.first()).toContainText('fleet_config.update');
+      await expect(auditRows.first()).toContainText('86400');
+      await expect(auditRows.first()).toContainText('3600');
+      await expect(auditRows.first()).toContainText(updateReason);
+
+      // 4. Return to /admin/settings and reload to see the new value (3600)
+      await page.goto('/admin/settings');
+      await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      await page.reload();
+      await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('3600 s');
+      await expect(page.getByTestId('fleet-config-lease-seconds-input')).toHaveValue(
+        '3600',
+      );
+
+      // 5. Provoke a 412 RESOURCE_VERSION_CONFLICT by advancing the resource via API while the page holds the stale ETag
+      const midGetRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      expect(midGetRes.status()).toBe(200);
+      const midConfig = (await midGetRes.json()) as { resource_version: string };
+      const concurrentPutRes = await request.put(
+        `${BASE_URL}/api/v1/admin/fleet-config`,
+        {
+          headers: {
+            'If-Match': `"${midConfig.resource_version}"`,
+            'Idempotency-Key': `0195f100-0000-7000-8000-${Date.now().toString().slice(-12).padStart(12, '0')}`,
+            'Content-Type': 'application/json',
+          },
+          data: {
+            max_offline_lease_seconds: 1800,
+            reason: 'Concurrent operator update via API',
+          },
+        },
+      );
+      expect(concurrentPutRes.status()).toBe(200);
+      const concurrentUpdated = (await concurrentPutRes.json()) as {
+        resource_version: string;
+      };
+
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('7200');
+      await page.getByTestId('fleet-config-reason-input').fill('Attempt with stale ETag');
+
+      const put412Promise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'PUT',
+      );
+      await page.getByTestId('fleet-config-submit-btn').click();
+      const put412Res = await put412Promise;
+      expect(put412Res.status()).toBe(412);
+
+      await expect(page.getByTestId('fleet-config-conflict-banner')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-conflict-version')).toHaveText(
+        concurrentUpdated.resource_version,
+      );
+      await expect(page.getByTestId('conflict-dialog')).toBeVisible();
+
+      // Reload from conflict dialog to load the latest version (1800)
+      await page.getByTestId('conflict-reload-btn').click();
+      await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('1800 s');
+      await expect(page.getByTestId('fleet-config-etag')).toHaveText(
+        `ETag: "${concurrentUpdated.resource_version}"`,
+      );
+
+      // 6. Restore 86400 via the page and verify via both page and API
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('86400');
+      await page
+        .getByTestId('fleet-config-reason-input')
+        .fill('Restore default 86400 ceiling after E2E test.');
+      const restorePutPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'PUT',
+      );
+      await page.getByTestId('fleet-config-submit-btn').click();
+      const restorePutRes = await restorePutPromise;
+      expect(restorePutRes.status()).toBe(200);
+
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText(
+        '86400 s',
+      );
+      const finalGetRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      expect(finalGetRes.status()).toBe(200);
+      const finalConfig = (await finalGetRes.json()) as {
+        max_offline_lease_seconds: number;
+      };
+      expect(finalConfig.max_offline_lease_seconds).toBe(86400);
+    } finally {
+      const checkRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      if (checkRes.ok()) {
+        const current = (await checkRes.json()) as {
+          max_offline_lease_seconds: number;
+          resource_version: string;
+        };
+        if (current.max_offline_lease_seconds !== 86400) {
+          await request.put(`${BASE_URL}/api/v1/admin/fleet-config`, {
+            headers: {
+              'If-Match': `"${current.resource_version}"`,
+              'Idempotency-Key': `0195f100-ffff-7000-8000-${Date.now().toString().slice(-12).padStart(12, '0')}`,
+              'Content-Type': 'application/json',
+            },
+            data: {
+              max_offline_lease_seconds: 86400,
+              reason: 'Finally block restore 86400 ceiling.',
+            },
+          });
+        }
+      }
+    }
+  });
 });
