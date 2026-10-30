@@ -155,6 +155,9 @@ func (s *Service) SubmitObservation(
 			if code, err := ch.ErrorCode.Get(); err == nil {
 				entry["error_code"] = string(code)
 			}
+			if ch.Detail != nil {
+				entry["detail"] = *ch.Detail
+			}
 			checksMap[string(ch.Name)] = entry
 		}
 		checksObjJSON, err := json.Marshal(checksMap)

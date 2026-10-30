@@ -370,6 +370,9 @@ func (h *Handlers) Replay(ctx context.Context, name string, ref db.IdempotencyRe
 	switch name {
 	case "SubmitObservation", "SubmitUpdateResult", "RenewServingLease":
 		return h.replayAgentReceipt(ctx, name, ref)
+	case "CreateAdminGroup":
+		out, e := h.Runtime.Nodes.CreatedGroup(ctx, *ref.ResourceID)
+		return gen.CreateAdminGroup201JSONResponse{Body: out}, e
 	case "CreateEnrollment":
 		out, e := h.Runtime.Enrollment.GetEnrollment(ctx, *ref.ResourceID)
 		return gen.CreateEnrollment201JSONResponse{Body: api.EnrollmentCreated{Enrollment: out, SecretAvailable: false, Token: presence.NewNullNullable[string]()}}, e

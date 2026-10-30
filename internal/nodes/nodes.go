@@ -342,6 +342,7 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		}
 	}
 	detail.MemberGroupIds = groupIDs
+	detail.GroupIds = &groupIDs
 
 	return detail, FormatETag(resourceVer), nil
 }
