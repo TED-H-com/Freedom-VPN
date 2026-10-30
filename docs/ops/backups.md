@@ -214,8 +214,9 @@ Verify that the restored database schema matches the deployed central binaries (
 ```bash
 FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
 FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate up
+FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
 ```
-Confirm that every migration (`00001` through `00181`) reports `applied` and zero migrations report `pending`.
+Use the migration binary built from the deployed release and confirm `current_database` identifies the restored target. Every file in that release's `db/migrations/*.sql` must be applied on the restored target, and the final `fvpn-migrate status` must report no pending version. [`deploy/backup/test/review_proof.sh`](../../deploy/backup/test/review_proof.sh), run by `make -f mk/backup.mk backup-review-proof`, derives the expected versions and count from that glob and checks status on its isolated PITR target.
 
 ### Step 4: Run the Read-Only Post-Restore Checklist (`deploy/backup/post-restore-checklist.sql`)
 
@@ -277,15 +278,17 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
 
 1. **Re-apply Post-Restore Revocations and Suspensions (`§6.4`, `§9.2`, `§17.4 Step 1`, `SECOPS-05`)**:
    - Before enabling background workers or opening public traffic, cross-check Section `[5/6]` of `post-restore-checklist.sql` against out-of-band operator audit logs.
-   - Re-revoke any node incarnation (`POST /api/v1/admin/nodes/{node_id}/revoke`) or member device (`DELETE /api/v1/admin/members/{member_id}/devices/{device_id}`) that was revoked after `RESTORED_TO_UTC`. Never restore a revoked node's service identity to retrieve historical usage (`§17.4`).
-   - Re-apply any administrative member suspension (`POST /api/v1/admin/members/{member_id}/suspend`) or manual grant revocation executed after `RESTORED_TO_UTC`.
+   - Re-revoke any node incarnation with `POST /api/v1/admin/nodes/{node_id}/revoke`. Never restore a revoked node's service identity to retrieve historical usage (`§17.4`).
+   - For a member device revoked after `RESTORED_TO_UTC`, the owning member uses `DELETE /api/v1/member/devices/{device_id}` (`operationId: revokeMemberDevice` in [`contracts/openapi.yaml` v1.2.0](../../contracts/openapi.yaml)). It requires the owner's member session, CSRF token, path parameter `device_id`, and `Idempotency-Key`; there is no request body. It is not an admin endpoint. Keep the member administratively suspended until the recorded revocation is enforced if the owner cannot complete it.
+   - Re-apply administrative suspension with `PATCH /api/v1/admin/members/{member_id}` (`operationId: updateMember` in the same contract), an admin session, CSRF token, current `If-Match` ETag, and a fresh `Idempotency-Key`. Send `{"admin_suspended": true, "suspension_reason": "Reapply recorded post-restore suspension"}`. These are the exact `MemberPatch` fields for suspension: `admin_suspended` is boolean and `suspension_reason` is required when true (1–500 characters). Keep a member suspended while any recorded post-restore manual grant revocation remains unresolved; the contract exposes grant creation but no grant-revocation endpoint.
+   - Both member-device revocation and suspension return `202` with an operation. Start the worker in Step 7.2 to apply queued changes, then verify terminal success and observed enforcement before opening public traffic; administrators can inspect `GET /api/v1/admin/operations/{operation_id}` (`operationId: getAdminOperation`).
 2. **Start `fvpn-worker` and Reconcile Billing & Entitlements (`§9.3`, `§17.4 Step 2`)**:
    ```bash
    systemctl start fvpn-worker.service
    ```
    - `billing.reconcile` queries the payment provider for current subscriptions, invoices, and refunds, repairing any webhooks missed during the RPO window without duplicating charges (`BILL01`) and without clearing `members.admin_suspended` (`ENT02`).
 3. **Reconcile NetBird Overlay, Exit Publication Intents & DNS (`§5.2`, `§12.5`, `§17.4 Steps 3–4`)**:
-   - `node.reconcile` and `members.devicereconcile` read back observed NetBird peers, routes, and groups and converge them to central desired state, disabling any peer absent from restored `member_devices` or `node_incarnations` (fail-closed).
+   - `node.reconcile` and `members.reconcile` read back observed NetBird peers, routes, and groups and converge them to central desired state, disabling any peer absent from restored `member_devices` or `node_incarnations` (fail-closed).
    - For any exit node listed in Section `[3/6]` of `post-restore-checklist.sql` whose post-restore publication intent cannot be confirmed, keep `publication_intent` in `unpublished` or `disabled` (fail-closed).
    - Verify `dns_publication_heads` and resolver convergence (`dns.publish`).
 4. **Reconcile Fleet Update Batches & Node Releases (`§13.8`, `§17.4 Step 3`)**:
