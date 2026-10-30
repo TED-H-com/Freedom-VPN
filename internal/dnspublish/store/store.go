@@ -569,12 +569,12 @@ func writeAudit(ctx context.Context, tx pgx.Tx, operationID string, defID, revID
 	after := map[string]any{
 		"definition_id":       defID.String(),
 		"profile_revision_id": revID.String(),
-		"policy_generation":   gen.String(),
-		"document_sha256":     hash,
+		"generation":          gen.String(),
+		"content_sha256":      hash,
 		"status":              status,
 		"head":                head,
 	}
-	fields := []string{"definition_id", "profile_revision_id", "policy_generation", "document_sha256", "status", "head"}
+	fields := []string{"definition_id", "profile_revision_id", "generation", "content_sha256", "status", "head"}
 	for _, resource := range []api.ResourceRef{
 		{Type: api.ResourceTypePolicyDefinition, Id: defID},
 		{Type: api.ResourceTypePolicyRevision, Id: revID},
@@ -608,10 +608,10 @@ func noteOperation(ctx context.Context, tx pgx.Tx, operationID string, gen decst
 		return err
 	}
 	evidence, err := json.Marshal(map[string]string{
-		"policy_generation": gen.String(),
-		"document_sha256":   hash,
-		"status":            status,
-		"observed_at":       time.Now().UTC().Format(time.RFC3339Nano),
+		"generation":     gen.String(),
+		"content_sha256": hash,
+		"status":         status,
+		"observed_at":    time.Now().UTC().Format(time.RFC3339Nano),
 	})
 	if err != nil {
 		return err

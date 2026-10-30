@@ -41,6 +41,10 @@ type Fixture struct {
 	Bindings  []api.DeviceBinding
 	Policies  []api.MemberRatePolicy
 	Resolvers []string
+	// Resolver is the signed resolver-document reference. Nil omits it.
+	Resolver *api.ResolverDocumentRef
+	// Egress is the signed egress probe. Nil omits it and keeps the local target.
+	Egress *api.EgressProbe
 }
 
 type enrolled struct {
@@ -103,6 +107,10 @@ type Server struct {
 	sticky       bool
 	stickyRaw    []byte
 	stickyETag   string
+
+	// Resolver documents. TEST ONLY. A missing id is 404 NOT_FOUND.
+	docs       map[uuid.UUID][]byte
+	docFetches int
 
 	// Usage ledger. TEST ONLY knobs let the lab drive ACK, 503, 429 and a
 	// signed checkpoint. usageEpoch is the live central generation.
@@ -398,6 +406,54 @@ func (s *Server) BumpGeneration() {
 	s.mu.Unlock()
 }
 
+// SetResolverRef sets the signed resolver-document reference and bumps the
+// generation. Nil omits the reference. TEST ONLY.
+func (s *Server) SetResolverRef(ref *api.ResolverDocumentRef) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if ref == nil {
+		s.fixture.Resolver = nil
+	} else {
+		cp := *ref
+		s.fixture.Resolver = &cp
+	}
+	s.bump++
+}
+
+// SetEgressProbe sets the signed egress probe and bumps the generation.
+// Nil omits it. TEST ONLY.
+func (s *Server) SetEgressProbe(p *api.EgressProbe) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if p == nil {
+		s.fixture.Egress = nil
+	} else {
+		cp := *p
+		cp.Targets = append([]api.EgressProbeTarget(nil), p.Targets...)
+		s.fixture.Egress = &cp
+	}
+	s.bump++
+}
+
+// PutResolverBody serves body for GET /agent/resolver-documents/{id}.
+// The bytes are returned unchanged. TEST ONLY.
+func (s *Server) PutResolverBody(id uuid.UUID, body []byte) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.docs == nil {
+		s.docs = map[uuid.UUID][]byte{}
+	}
+	s.docs[id] = append([]byte(nil), body...)
+}
+
+// ResolverFetches is how many resolver-document GETs were attempted,
+// including 404s. TEST ONLY.
+func (s *Server) ResolverFetches() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.docFetches
+}
+
 // SetPublication changes the signed publication intent and bumps the
 // generation so a cached ETag cannot hide it. TEST ONLY.
 func (s *Server) SetPublication(intent api.PublicationIntent) {
@@ -443,6 +499,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if fail > 0 {
 		apierr.Write(w, r, apierr.New(apierr.DependencyUnavailable, "Test control is unavailable."))
+		return
+	}
+	if s.serveResolver(w, r) {
 		return
 	}
 	switch r.URL.Path {

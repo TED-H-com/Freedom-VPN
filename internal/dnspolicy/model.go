@@ -100,7 +100,7 @@ type ThreatFeedPayload struct {
 	LicenseStatus     LicenseStatus  `json:"license_status"`
 	PermittedUse      string         `json:"permitted_use"`
 	DistributionNotes string         `json:"distribution_notes"`
-	AttributionNotes  string         `json:"attribution_notes"`
+	AttributionNotes  *string        `json:"attribution_notes"`
 	URL               string         `json:"url"`
 	Format            SourceFormat   `json:"format"`
 	Category          SourceCategory `json:"category"`

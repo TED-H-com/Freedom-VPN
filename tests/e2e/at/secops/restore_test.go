@@ -66,7 +66,7 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 	}
 	actor := "00000000-0000-0000-0000-000000000003"
 	var entitlementBefore string
-	err = pool.QueryRow(ctx, `SELECT md5(string_agg(member_id::text||effective_service_end::text,',' ORDER BY member_id)) FROM entitlements`).Scan(&entitlementBefore)
+	err = pool.QueryRow(ctx, `SELECT string_agg(member_id::text||effective_service_end::text,',' ORDER BY member_id) FROM entitlements`).Scan(&entitlementBefore)
 	if err != nil {
 		t.Fatal("entitlement baseline")
 	}
@@ -110,7 +110,7 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 		t.Fatal("complete recovery")
 	}
 	var entitlementAfter string
-	err = pool.QueryRow(ctx, `SELECT md5(string_agg(member_id::text||effective_service_end::text,',' ORDER BY member_id)) FROM entitlements`).Scan(&entitlementAfter)
+	err = pool.QueryRow(ctx, `SELECT string_agg(member_id::text||effective_service_end::text,',' ORDER BY member_id) FROM entitlements`).Scan(&entitlementAfter)
 	if err != nil || entitlementBefore != entitlementAfter {
 		t.Fatal("entitlements extended during replay")
 	}

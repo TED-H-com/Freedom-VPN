@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "run_started_at": "2026-10-29T23:38:33Z",
-  "run_finished_at": "2026-10-29T23:41:28Z",
-  "source_revision": "bf10a2c719b95def9753a1d3c5512b15be3b14a0",
-  "probe_source_sha256": "35e2a03e5039bb9ee315638d8463d9a3da9ce679fccb62a1fd4c28ff20c4f849",
+  "run_started_at": "2026-10-30T02:06:39Z",
+  "run_finished_at": "2026-10-30T02:11:51Z",
+  "source_revision": "eebdbf7175f46ca21000b176afdc3808f8a8e58c",
+  "probe_source_sha256": "bf940ebdb897b271dc0f8104bcd15b7552a4da914f54a0a5e3ea9ce6690f37c3",
   "build_digests": [
     {
       "arch": "amd64",
       "kind": "acceptance_test_binary",
-      "sha256": "fed8a72f874b43f225f714eae50f9fd6ec916e7a5fcf9226fc3cb6ce1fb74c3d",
+      "sha256": "37c213b451529ec46c43b097fd24c72cf129979b8ef5e347ca2ce02667dc23e9",
       "command": [
         "go",
         "test",
@@ -19,8 +19,8 @@
         "<disk-scratch>/secops-amd64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:41:00Z",
-      "finished_at": "2026-10-29T23:41:01Z",
+      "started_at": "2026-10-30T02:10:53Z",
+      "finished_at": "2026-10-30T02:10:53Z",
       "elapsed_seconds": 0.515,
       "exit_code": 0,
       "scan": {
@@ -32,7 +32,7 @@
     {
       "arch": "arm64",
       "kind": "acceptance_test_binary",
-      "sha256": "f03eaf7e9bdc21a917f9241e8dd7c0b2da02ed96d1156f0d900097bc65d333a5",
+      "sha256": "e6aaf90e473739c6418ded64d4317c132dc7a2ef152fb8e83733e5ff3792a212",
       "command": [
         "go",
         "test",
@@ -43,9 +43,9 @@
         "<disk-scratch>/secops-arm64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:41:01Z",
-      "finished_at": "2026-10-29T23:41:01Z",
-      "elapsed_seconds": 0.465,
+      "started_at": "2026-10-30T02:10:53Z",
+      "finished_at": "2026-10-30T02:10:54Z",
+      "elapsed_seconds": 1.017,
       "exit_code": 0,
       "scan": {
         "stream": "build-arm64",
@@ -56,61 +56,61 @@
     {
       "name": "fvpn-agent",
       "arch": "amd64",
-      "sha256": "81c2b50976a406a4a0c9a19826136d9eb808ffb5e167435d3eb284bb7c70d451",
+      "sha256": "4fa1436c7b6caeae255520023b9a8c0e7ed84149adc1b20fb941d1cccad8a910",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-control",
       "arch": "amd64",
-      "sha256": "ee8f32bb0d969141a9e6c688400bb8597eda56f1ff5ee1542ff68e04de9cd963",
+      "sha256": "2bd2562f89d5d20e1ca6fbe6db2e17d9a7cbcf6b8667e03151f53fd1692a5458",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-idp",
       "arch": "amd64",
-      "sha256": "4d6789c51813a52f05b69e9ca02637885c76c20fc72234dcfad59a7aeb1aca6f",
+      "sha256": "0df6a6941dcaedb93e955feaf33a6c59cacbe7aa579cac08bc0323cd5e837d63",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-nbbootstrap",
       "arch": "amd64",
-      "sha256": "01343e0456dfdb3c2c05ce4eb1aa562eeb74b1e4a113ee46591ca0277f2ecd45",
+      "sha256": "7f2dd96020eab3ebdda8559fc36528661c114eba05a3ea2c1eae20fee0196879",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-origin",
       "arch": "amd64",
-      "sha256": "18e7d52e810a49f2684ec4720b4cd1dff57b4c17959c5f345fc56d47d1ecbedc",
+      "sha256": "36f103ab8d5415ab750799c5014a90cbd86e5fbf6b35330413c8145d1d1391e1",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-payment",
       "arch": "amd64",
-      "sha256": "0905b3e4b33dfb493384d114796f9a07a723b6bc6a9a63c7a89912079e163c1b",
+      "sha256": "afdd771873c6358d28ac52b57eae44177960321f0bab0669ed3cebe8bb7092f8",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-prepare",
       "arch": "amd64",
-      "sha256": "ee27ae1c56e0e6352aca152e47aff532d14c488feca195e4e5b7b112d68b3741",
+      "sha256": "63d1d807eeaac933d06bf34633c2449bc52b95dafa900dbd999b737259cf6c8a",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-updater",
       "arch": "amd64",
-      "sha256": "3d16e452c75f44d3c28bc419a816a12317001bbb4e7a13345b367ee6b28f8906",
+      "sha256": "8dc94be712fc0f9b53e889cc0a0efe04672003b0f6abaa9ea585e837afdedb8f",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-watchdog",
       "arch": "amd64",
-      "sha256": "78e266b854297a302a550ac20b327aa088834da1ce1305862969eafeb52104e3",
+      "sha256": "bc0d2e61d55cc88278373090234d1526384f63f33255a87a11ea93487f8395fe",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-worker",
       "arch": "amd64",
-      "sha256": "565d9520e621bf61834a64bfd12c35d8993f7618da5a956242c68641a7d75874",
+      "sha256": "b6131d45c6d8f852955c74b12409d79baba14535b6f21b29e630e0c832c82723",
       "kind": "lab_build_binary"
     }
   ],
@@ -120,15 +120,15 @@
       "service": "postgres"
     },
     {
-      "image_id": "sha256:b22046837b9be5fdb8ef83c37038563e2c53c454169994e87b757dac3331d416",
+      "image_id": "sha256:88351e674d39c94256cfcd143702180e490ceb37ea6c6c2d72336e52bf5226fa",
       "service": "idp"
     },
     {
-      "image_id": "sha256:2a97f3992ad8b49f3bae7030ad5d9dd09e35bcbf6c787d4f623946f71bc86a9f",
+      "image_id": "sha256:c95d19ecbcad14eae6af12e4ca642cf48975b1f777dab92a02986690fbed2e03",
       "service": "payment"
     },
     {
-      "image_id": "sha256:8bf73794511f75365afcd8b09b2566f7817c71d4246057ac52943bd7387eca02",
+      "image_id": "sha256:f74fbfeb2b79bb1a9c126f4ef0fba898a132f39f1a6d41b801fc4f2dc1c3b148",
       "service": "origin"
     },
     {
@@ -148,24 +148,24 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:fab64095a843c1f0adadc98a4166cea077fbaae6978860aa2e15067f5fcad662",
+      "image_id": "sha256:5163c6e10c28707aa48cc826a03278f2b1f4096575a46ed3187825d49e510e85",
       "service": "control"
     },
     {
-      "image_id": "sha256:fb52a786d05c602dd44f0b1a49d083a0a2dc0813adee213cabde2cf38a710420",
+      "image_id": "sha256:452bbca1f068d6d172b9c1bb79391e49ad0fd374b6c1f9c4b226d7ed33b5f9f5",
       "service": "worker"
     },
     {
-      "image_id": "sha256:2e1c318a53c7865e4300f1536a515730ef13a77c6088e2dd8faaf97708f284a2",
+      "image_id": "sha256:9b52c2f28e7c1b0860de06c838c441b770c648c0e550916043145e9d3e79bc1e",
       "service": "node"
     },
     {
-      "image_id": "sha256:2e1c318a53c7865e4300f1536a515730ef13a77c6088e2dd8faaf97708f284a2",
+      "image_id": "sha256:9b52c2f28e7c1b0860de06c838c441b770c648c0e550916043145e9d3e79bc1e",
       "service": "member"
     }
   ],
   "policy_revision": "1",
-  "node_incarnation": "13a81ca4-f5d2-4f9d-97fa-123e7eca2238",
+  "node_incarnation": "7b55fb09-4902-4d34-92b8-30397d011201",
   "stack": {
     "status": "running-stack-observed",
     "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
@@ -194,13 +194,13 @@
         "mk/e2e.mk",
         "e2e-up"
       ],
-      "started_at": "2026-10-29T23:38:33Z",
-      "finished_at": "2026-10-29T23:38:57Z",
-      "elapsed_seconds": 23.679,
+      "started_at": "2026-10-30T02:06:39Z",
+      "finished_at": "2026-10-30T02:07:05Z",
+      "elapsed_seconds": 25.625,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-up",
-        "bytes": 15055,
+        "bytes": 15065,
         "findings": []
       }
     },
@@ -217,18 +217,18 @@
         "2",
         "-count=1",
         "-timeout",
-        "8m",
+        "15m",
         "-run",
         "^TestAT28_AT31_LiveStack$",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-29T23:38:57Z",
-      "finished_at": "2026-10-29T23:40:35Z",
-      "elapsed_seconds": 97.627,
+      "started_at": "2026-10-30T02:07:05Z",
+      "finished_at": "2026-10-30T02:10:27Z",
+      "elapsed_seconds": 201.643,
       "exit_code": 0,
       "scan": {
         "stream": "live-probe",
-        "bytes": 1461,
+        "bytes": 1463,
         "findings": []
       },
       "status": "passed",
@@ -241,7 +241,7 @@
         {
           "name": "TestAT28_AT31_LiveStack",
           "result": "pass",
-          "elapsed_seconds": 97.29
+          "elapsed_seconds": 201.04
         }
       ],
       "package_results": {
@@ -253,9 +253,9 @@
         "python3",
         "tests/e2e/at/secops/restore.py"
       ],
-      "started_at": "2026-10-29T23:40:35Z",
-      "finished_at": "2026-10-29T23:40:38Z",
-      "elapsed_seconds": 3.521,
+      "started_at": "2026-10-30T02:10:27Z",
+      "finished_at": "2026-10-30T02:10:31Z",
+      "elapsed_seconds": 3.874,
       "exit_code": 0,
       "scan": {
         "stream": "isolated-restore",
@@ -270,9 +270,9 @@
         "mk/e2e.mk",
         "e2e-down"
       ],
-      "started_at": "2026-10-29T23:40:38Z",
-      "finished_at": "2026-10-29T23:41:00Z",
-      "elapsed_seconds": 22.063,
+      "started_at": "2026-10-30T02:10:31Z",
+      "finished_at": "2026-10-30T02:10:53Z",
+      "elapsed_seconds": 22.189,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-down",

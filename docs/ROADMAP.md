@@ -88,6 +88,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | done (#44) |
 | w2-agent-core follow-up 3: baseline safety separated from serving, unpublished generations acknowledged, data-path probe (publication deadlock, agent side) | WP05, WP07 | done (#75) |
 | w2-agent-core follow-up 4: health attestation producer — the running candidate agent answers the updater challenge from its own checks (D-053) | WP05, WP07 | done (#84) |
+| w2-agent-core follow-up 5 | Resolver-document consumer with digest/size verification and restart cache, dns_policy_evidence in observations (D-056); signed egress probe overriding the local target and sanitized check detail (D-058); fails closed without an injected DNS applier | done (#92) |
 | w1-deps-bump follow-up 1: golang.org/x/crypto GO-2026-5932 | WP01 | done (no change: GO-2026-5932 is the unused x/crypto/openpgp packages, no fixed release exists, govulncheck symbol scan clean) |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | done (#56; all screens on live endpoints, Playwright e2e against real control/worker in CI, dev stack seeds inputs and awaits product projection per D-050) |
 | w3-portal-live follow-up 3: dev-stack node readiness through the agent observation path (fixes main Portal CI after #62) | WP10 | done (#67) |
@@ -120,7 +121,9 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 9: baseline readiness without a management peer id (central side of the publication deadlock) | WP04, WP05, WP09 | done (#77) |
 | w3-wire-nodes follow-up 10: management peer discovery through one-off enrollment correlation groups (D-055), fenced worker discovery with terminal conflicts | WP04, WP05, WP09 | done (#83) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
+| w4-at-members follow-up 1 | Members harness re-run on main: native admission through the shared issuer (D-052), last-slot race, device isolation, usage receipts, billing permutations, D-054 feed readback; ten full ATs stay blocked on serving, forwarding and resolver-document delivery | done (#89) |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | harness merged (#63): AT28 passed live; AT29–AT32 blocked on the serving node, WAL archiving, the IdP identity fixture and operator runs |
+| w4-at-security-ops follow-up 1 | Secops harness D-050 rerun on main: grants and native admission through product inputs, 149 live checks and 342 supporting tests pass, AT28 passed; AT29/AT31 blocked on a counted serving flow (watchdog recovery_required, zero accept rules; 20-way sign-in burst all 429), AT30 on physical PITR, AT32 on physical runs | done (#90) |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
 | w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | done (#69) |
 | w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | harness merged (#73): AT23–AT27 blocked on the serving baseline and on the updater health check that fails for a not-yet-serving node (no last-good); arm64 needs an operator run |
@@ -134,6 +137,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w3-dns-publish follow-up 3: threat-feed content pipeline (D-054): bootstrap pin, cadence refresh with last-good, failure observations, Layer 3 rules published to the resolver document | WP08 | done (#79) |
+| w3-dns-publish follow-up 4 | Feed cadence default and null attribution (D-058), threat_feed_status projected from real refresh observations, resolver-document delivery reads for the nodes owner (D-056), revision 5 evidence names | done (#93) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.

@@ -1,76 +1,44 @@
-# AT02 device-to-usage binding trace
+# AT02 device-to-usage binding trace — Follow-up 1
 
-Status: **blocked**, with live admission and binding diagnostics in
-[AT02.json](AT02.json). Browser identities are real; the member container joins
-using its documented setup-key file. That peer is deliberately a machine-peer
-negative control, not a fabricated native user. Two simultaneous real-adapter
-admission calls test its fail-closed rejection. The mTLS upload uses the real
-node certificate and an explicitly unknown device to isolate the binding guard.
+The native admission gap is resolved in this run. [AT01](AT01.json) proves the
+shared issuer mapping; [AT02](AT02.json) proves the quota transaction, ownership
+gates, slot reuse and receipt validation. Complete AT02 remains **blocked** on a
+serving gateway positive control; database authorization is not forwarding.
 
-| Stage | Current code | What it establishes |
+| Stage | Product path | Live evidence |
 |---|---|---|
-| Exit peer observation | `apps/worker/jobs_nodes.go: NodeJobs`, `node.peer.observe` | Reads node observation, calls `EnsureNodePeer`, updates `node_incarnations.deployment_id/peer_id`, marks `peer_readback`. Creates no member device/binding. |
-| Member joins lab | `tests/e2e/scenarios_test.go: memberNetBird`; `deploy/devstack/entrypoint-member.sh` | Setup-key peer in staging. `netbird_up` is connectivity, not verified member ownership. |
-| Discovery | `apps/worker/jobs_members.go`, `devices.discover` → `internal/devices/netbird_adapter.go: Discover` | Skips blank `UserID`, ephemeral peers and missing `netbird_user_bindings.mapping_proof`; existing devices reconcile separately. |
-| Verified admission | `internal/devices/service.go: ObserveAndAuthorize`, `AuthorizeDevice` | Re-observes peer; requires cross-client proof, valid finite entitlement and final-slot lock. Atomically inserts `member_devices` and finite `device_bindings`, operation, audit, outbox. |
-| External application | `internal/devices/worker.go: SyncDevice` | Re-observes identity/IP, applies owned memberships, reads back and fences by resource/entitlement revision. `nodes` step still needs real ACK. |
-| Lab upload | `tests/e2e/scenarios_test.go: replayUsageBatch` | Generates a new unrelated device UUID; hard-codes binding revision 1 and a five-minute lookback. |
-| Ingest guard | `internal/usage/ingest.go: validateEventBindingsInTx` | Looks up device and revision in `device_bindings`; missing row gives `binding_not_found`. Also checks member equality and entire half-open event interval. |
+| Two OAuth clients | Shared `tests/e2e/internal/idplogin`; embedded Dex `netbird-dashboard` and `netbird-cli` | Portal login and real CLI device flow compare equal public subjects in memory. No token/subject is published. |
+| Identity discovery | `apps/worker/jobs_members.go: memberJob`, `devices.discover` → `internal/devices/netbird_adapter.go: Discover` → `identity.go: bindUser` | Production `netbird_user_bindings` writer creates `shared_issuer_public_subject:<issuer>` proof. No email linkage or seeded proof. |
+| Member admission | `internal/devices/service.go: ObserveAndAuthorize`, `AuthorizeDevice` | Re-observes actual native peer; verifies mapping and finite entitlement; locks member; commits device, binding, operation, audit and outbox together. |
+| Last-slot race | Two real contenders in reused lab member images; own worker paused only during the barrier | A has two of three devices. Two goroutines start together: one commits, one returns `ErrLimit`; count becomes three. Loser has no device row or paid group. |
+| Cross-owner access | HTTP list/delete and `devices.Service.Get` | A's list omits B's existing device; deleting it returns 404 without identifiers; service read is not found with an empty result. B remains authorized. |
+| Slot reuse | Member DELETE, then real-adapter admission | Count changes 3 → 2 → 3; former loser is admitted. No projection is hand-written. |
+| External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, but applied generation remains zero. |
+| Node identity | `apps/worker/jobs_nodes.go`, `node.peer.observe` | Node incarnation peer remains null. This separate path is not the writer of member devices. D-055 owns it. |
+| Usage negative control | Actual node mTLS, deliberately unknown device | Per-event `VALIDATION_FAILED / binding_not_found`. This remains the correct rejection. |
+| Usage positive control | Actual projected device/revision and interval wholly inside its binding | `accepted`, then `duplicate`; exactly one receipt and one sample. Synthetic bytes test ingest, not metering. |
 
-There are two independent fixture gaps: no verified member admission is driven,
-and the upload never selects the actual binding even if one exists. Fixing the
-member path alone leaves the random device UUID invalid. Fixing that UUID alone
-can still produce `interval_outside_binding_window` if a newly authorized
-binding is newer than the synthetic five-minute interval.
+The primary runner reuses the lab's unchanged member image and `user-auth`
+entrypoint for A1, A2, A3, A4 and B1. Extra clients have only the member image's
+NET_ADMIN/NET_RAW capabilities and tun device, no host ports or new network.
+All names use `fvpn-w4-members-*`; cleanup removes every extra client.
 
-The runner performs count probes; the following expanded diagnostic can be run through
-its own stack DB connection. Pass `peer` from NetBird readback (never a guessed
-name or overlay IP); `deployment` from this stack's members settings. The SQL
-below reports only counts/booleans, not identities or secrets:
+Read-only trace commands run against this task's isolated lab database:
 
 ```sql
-BEGIN TRANSACTION READ ONLY;
-SELECT count(*) AS node_peer_bindings
-FROM node_incarnations WHERE deployment_id=:'deployment' AND peer_id=:'peer';
-SELECT count(*) AS member_devices,
-       count(*) FILTER (WHERE status='authorized') AS authorized_devices
-FROM member_devices WHERE deployment_id=:'deployment' AND peer_id=:'peer';
-SELECT count(*) AS verified_member_mappings
-FROM netbird_user_bindings n
-JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id
-WHERE n.deployment_id=:'deployment' AND n.external_user_id=:'user'
-  AND n.mapping_proof<>'' AND i.stable_claim_ref<>'' AND i.binding_method<>''
-  AND n.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp();
-SELECT count(*) AS finite_device_bindings
-FROM device_bindings b JOIN member_devices d ON d.id=b.device_id
-WHERE d.deployment_id=:'deployment' AND d.peer_id=:'peer'
-  AND isfinite(b.valid_from) AND isfinite(b.valid_until)
-  AND b.valid_until>b.valid_from;
-SELECT count(*) AS matching_usage_bindings
-FROM device_bindings
-WHERE device_id=:'device_id'::uuid AND binding_revision=:'binding_revision'::numeric
-  AND member_id=:'member_id'::uuid
-  AND valid_from<=:'interval_start'::timestamptz
-  AND valid_until>=:'interval_end'::timestamptz;
-COMMIT;
+SELECT count(*) FROM netbird_user_bindings n
+JOIN identity_bindings i ON i.id=n.identity_binding_id
+WHERE n.external_user_id=i.subject
+  AND n.mapping_proof='shared_issuer_public_subject:'||i.issuer;
+SELECT status,count(*) FROM member_devices GROUP BY status;
+SELECT count(*) FROM device_bindings
+WHERE valid_from<=clock_timestamp() AND valid_until>clock_timestamp();
+SELECT desired_config_generation,applied_config_generation FROM nodes
+WHERE current_incarnation_id IS NOT NULL;
+SELECT count(*) FROM usage_events;
+SELECT count(*) FROM usage_samples;
 ```
 
-Use only `docker exec -i fvpn-w4-members-postgres psql -U fvpn -d fvpn` on this
-task's stack, with `-v ON_ERROR_STOP=1` and those locally obtained variables.
-Never use the shared admin DSN to run these lab probes. Record the observed
-NetBird peer's `UserID`-present boolean, device/binding counts, operation step
-statuses and rejected field/reason. Publish pseudonyms for correlating peers.
-
-Expected admitted member: node-peer count 0, verified mapping 1, authorized
-device 1, matching finite usage binding 1. Node-peer count 1 only proves the
-exit path. The quota loser must have no authorized device and must fail actual
-gateway traffic. A setup-key peer with blank user must remain unadmitted.
-
-Owner fix: [B2/B3](BLOCKERS.md). Existing lower-level regression commands (not
-substitutes for live AT02) are:
-
-```sh
-# Private disk TMPDIR/GOTMPDIR; dbtest creates and drops its own database.
-go test -tags integration -count=1 -p 1 -parallel 2 -v ./internal/devices \
-  -run 'TestAT01_VerifiedCrossClientMappingAndReadBack|TestAT02_LastSlotRaceIsolationAndRevoke'
-```
+Use `docker exec fvpn-w4-members-postgres psql -U fvpn -d fvpn -X` only.
+Never migrate or query the shared admin database for these checks. Full
+forwarding and the quota loser's actual gateway denial still await [B5](BLOCKERS.md).

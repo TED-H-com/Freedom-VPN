@@ -46,6 +46,10 @@ type Options struct {
 	Trust       *envelope.TrustStore
 	// Prober runs the data-path probe. Nil uses NetBird status.
 	Prober Prober
+	// DNS applies a verified resolver document. Nil fails a referenced
+	// document closed and does not open an AdGuard client. *dns.Applier
+	// is the production implementation; tests pass a fake.
+	DNS DNSApplier
 }
 
 // Engine is one agent process (§5, §16.3). It is not safe for concurrent Step.
@@ -129,6 +133,13 @@ type Engine struct {
 	// desiredSynced is set after one desired-state sync attempt, including a
 	// 304 or an error. A missing document before that attempt is not answered.
 	desiredSynced bool
+	dnsApply      DNSApplier
+	dnsDocument   bool
+	dnsFailed     bool
+	dnsCode       api.ErrorCode
+	dnsDetail     string
+	dnsEv         *api.DnsPolicyEvidence
+	probeSource   string
 }
 
 // Start opens the store, the trust bundle and the control client.
@@ -172,7 +183,7 @@ func Start(opt Options) (*Engine, error) {
 		cfg: opt.Config, store: store, client: opt.Client, plane: opt.Plane,
 		clock: opt.Clock, bootID: boot, trust: trust, hooks: opt.Hooks,
 		log: opt.Log, meterSource: opt.MeterSource, ownStore: ownStore, storageOK: true,
-		prober: opt.Prober,
+		prober: opt.Prober, dnsApply: opt.DNS,
 	}
 	if e.client == nil {
 		pool := x509.NewCertPool()
@@ -477,6 +488,8 @@ func (e *Engine) input() Input {
 		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
 		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
+		ProbeSource: e.probeSource,
+		DNSDocument: e.dnsDocument, DNSFailed: e.dnsFailed, DNSCode: e.dnsCode, DNSDetail: e.dnsDetail,
 	}
 }
 
@@ -487,9 +500,13 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		p = nb
 	}
 	published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
+	targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
+	e.probeSource = probeSourceDetail(source, bad)
 	e.lastProbe = p.Probe(ctx, ProbeRequest{
 		Published: published,
-		Egress:    e.cfg.EgressProbeTarget,
+		Targets:   targets,
+		Timeout:   timeout,
+		Rejected:  bad,
 		Ingress:   e.cfg.Datapath.MemberIngress,
 		Uplink:    e.cfg.Datapath.Uplink,
 	})
