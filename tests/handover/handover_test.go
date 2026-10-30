@@ -28,6 +28,15 @@ var ownedDocs = []string{
 	"docs/handover/operator-guide.md",
 	"docs/handover/member-guide.md",
 	"docs/ops/README.md",
+	"docs/reviews/README.md",
+	"docs/reviews/r3-d055-review.md",
+	"docs/reviews/r4-dnsfeeds-review.md",
+	"docs/reviews/r5-backups-review.md",
+	"docs/reviews/r6-d053-review.md",
+	"docs/reviews/r7-d052-review.md",
+	"docs/reviews/r8-d057-review.md",
+	"docs/reviews/r9-d062-review.md",
+	"docs/reviews/r10-d063-review.md",
 }
 
 var repoPathPrefixes = []string{
@@ -216,6 +225,9 @@ func verifyRepoPathClaim(t *testing.T, root, doc, claim string) {
 		if idx := strings.Index(prefix, "<"); idx >= 0 {
 			prefix = prefix[:idx]
 		}
+		if !strings.HasSuffix(prefix, "/") {
+			prefix = filepath.Dir(prefix)
+		}
 		prefix = filepath.Clean(filepath.Join(root, prefix))
 		if _, err := os.Stat(prefix); err != nil {
 			t.Errorf("%s: template path %q base directory does not exist: %v", doc, claim, err)
@@ -336,16 +348,21 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 	// Non-binary fvpn-* identifiers used in the specification and configuration,
 	// classified explicitly so nothing is skipped silently.
 	nonBinaryClassification := map[string]string{
-		"fvpn-admin":             "admin-session-cookie (__Host-fvpn-admin)",
-		"fvpn-member":            "member-session-cookie (__Host-fvpn-member)",
-		"fvpn-enrollment-v1":     "protocol-domain-separation-label",
-		"fvpn-release-trust-v1":  "protocol-domain-separation-label",
-		"fvpn-portal-prod":       "example-oidc-client-id",
-		"fvpn-portal-test":       "example-oidc-client-id",
-		"fvpn-enroll-peer":       "netbird-correlation-group-prefix (fvpn-enroll-peer-<hash>)",
-		"fvpn-unpublished-nodes": "netbird-shared-staging-group-name",
-		"fvpn-node":              "netbird-setup-key-prefix (fvpn-node-<node_id>-<incarnation_id>)",
-		"fvpn-updater-recover":   "systemd-oneshot-unit (fvpn-updater-recover.service)",
+		"fvpn-admin":                  "admin-session-cookie (__Host-fvpn-admin)",
+		"fvpn-member":                 "member-session-cookie (__Host-fvpn-member)",
+		"fvpn-enrollment-v1":          "protocol-domain-separation-label",
+		"fvpn-release-trust-v1":       "protocol-domain-separation-label",
+		"fvpn-portal-prod":            "example-oidc-client-id",
+		"fvpn-portal-test":            "example-oidc-client-id",
+		"fvpn-enroll-peer":            "netbird-correlation-group-prefix (fvpn-enroll-peer-<hash>)",
+		"fvpn-unpublished-nodes":      "netbird-shared-staging-group-name",
+		"fvpn-node":                   "netbird-setup-key-prefix (fvpn-node-<node_id>-<incarnation_id>)",
+		"fvpn-updater-recover":        "systemd-oneshot-unit (fvpn-updater-recover.service)",
+		"fvpn-w4-ops-backups":         "backup-drill-docker-prefix",
+		"fvpn-w4-ops-backups-primary": "backup-drill-container-name",
+		"fvpn-backup":                 "backup-systemd-unit-prefix",
+		"fvpn-postgres-entrypoint":    "backup-postgres-entrypoint-script",
+		"fvpn-oidc":                   "devstack-oidc-container-name",
 	}
 
 	tokenRE := regexp.MustCompile(`\b(fvpn-[a-z0-9-]+)(\.service)?\b`)
@@ -356,16 +373,19 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 			name := m[1]
 			suffix := m[2]
 			if suffix == ".service" {
-				// Systemd service units on the node live in node/agent/systemd/
+				// Systemd service units live in node/agent/systemd/ or deploy/backup/systemd/
 				// (central units fvpn-control.service and fvpn-worker.service are
 				// inline unit files in deploy.md corresponding to built binaries).
 				if _, ok := binaries[name]; ok {
 					checked++
 					continue
 				}
-				unitPath := filepath.Join(root, "node/agent/systemd", name+".service")
-				if _, err := os.Stat(unitPath); err != nil {
-					t.Errorf("%s: systemd unit %s.service neither matches a binary nor exists at %s", doc, name, unitPath)
+				nodeUnitPath := filepath.Join(root, "node/agent/systemd", name+".service")
+				backupUnitPath := filepath.Join(root, "deploy/backup/systemd", name+".service")
+				if _, err := os.Stat(nodeUnitPath); err != nil {
+					if _, err2 := os.Stat(backupUnitPath); err2 != nil {
+						t.Errorf("%s: systemd unit %s.service neither matches a binary nor exists under node/agent/systemd or deploy/backup/systemd", doc, name)
+					}
 				}
 				checked++
 				continue
@@ -565,4 +585,114 @@ func TestHandover_SQLBlocksClassified(t *testing.T) {
 			t.Errorf("%s SQL block #%d contains cluster DDL without -- [mechanical-check: cluster-role-ddl] marker", b.Doc, b.Index)
 		}
 	}
+}
+
+func TestHandover_ReviewsArchive(t *testing.T) {
+	root := repoRoot(t)
+	reviewsDir := filepath.Join(root, "docs", "reviews")
+	entries, err := os.ReadDir(reviewsDir)
+	if err != nil {
+		t.Fatalf("read docs/reviews: %v", err)
+	}
+
+	wantFiles := []string{
+		"README.md",
+		"r3-d055-review.md",
+		"r4-dnsfeeds-review.md",
+		"r5-backups-review.md",
+		"r6-d053-review.md",
+		"r7-d052-review.md",
+		"r8-d057-review.md",
+		"r9-d062-review.md",
+		"r10-d063-review.md",
+	}
+
+	var gotFiles []string
+	for _, e := range entries {
+		if e.IsDir() {
+			t.Errorf("unexpected subdirectory in docs/reviews: %s", e.Name())
+			continue
+		}
+		gotFiles = append(gotFiles, e.Name())
+	}
+	for _, want := range wantFiles {
+		if !slices.Contains(gotFiles, want) {
+			t.Errorf("docs/reviews missing expected file %q", want)
+		}
+	}
+
+	dateRE := regexp.MustCompile(`(?m)^-\s+\*\*Date:\*\*\s+(.+)$`)
+	modelRE := regexp.MustCompile(`(?m)^-\s+\*\*Reviewing model:\*\*\s+(.+)$`)
+	headerLine := "| Severity | Finding | Status | Closing PR |"
+
+	for _, name := range gotFiles {
+		rel := filepath.Join("docs", "reviews", name)
+		content := readOwnedDoc(t, root, rel)
+
+		if m := dateRE.FindStringSubmatch(content); m == nil || strings.TrimSpace(m[1]) == "" {
+			t.Errorf("%s: missing '- **Date:** ...' line", rel)
+		}
+		if m := modelRE.FindStringSubmatch(content); m == nil || strings.TrimSpace(m[1]) == "" {
+			t.Errorf("%s: missing '- **Reviewing model:** ...' line", rel)
+		}
+
+		idx := strings.Index(content, headerLine)
+		if idx < 0 {
+			t.Errorf("%s: missing findings table header %q", rel, headerLine)
+			continue
+		}
+
+		lines := strings.Split(content[idx:], "\n")
+		if len(lines) < 3 {
+			t.Errorf("%s: findings table after header has fewer than 3 lines", rel)
+			continue
+		}
+		sepCells := splitMarkdownRow(lines[1])
+		if len(sepCells) != 4 {
+			t.Errorf("%s: findings table separator row has %d columns, want 4: %q", rel, len(sepCells), lines[1])
+			continue
+		}
+
+		dataRows := 0
+		for _, line := range lines[2:] {
+			line = strings.TrimSpace(line)
+			if !strings.HasPrefix(line, "|") {
+				break
+			}
+			cells := splitMarkdownRow(line)
+			if len(cells) != 4 {
+				t.Errorf("%s: findings table row has %d columns, want 4: %q", rel, len(cells), line)
+				continue
+			}
+			sev, finding, status, closingPR := cells[0], cells[1], cells[2], cells[3]
+			if !slices.Contains([]string{"High", "Medium", "Low"}, sev) {
+				t.Errorf("%s: unexpected Severity %q in row %q", rel, sev, line)
+			}
+			if finding == "" {
+				t.Errorf("%s: empty Finding cell in row %q", rel, line)
+			}
+			if !slices.Contains([]string{"closed", "open"}, status) {
+				t.Errorf("%s: unexpected Status %q in row %q (want closed or open)", rel, status, line)
+			}
+			if closingPR == "" {
+				t.Errorf("%s: empty Closing PR cell in row %q", rel, line)
+			}
+			dataRows++
+		}
+		if dataRows == 0 {
+			t.Errorf("%s: findings table contains 0 data rows", rel)
+		}
+	}
+}
+
+func splitMarkdownRow(line string) []string {
+	line = strings.TrimSpace(line)
+	line = strings.TrimPrefix(line, "|")
+	line = strings.TrimSuffix(line, "|")
+	parts := strings.Split(line, "|")
+	out := make([]string, len(parts))
+	for i, p := range parts {
+		out[i] = strings.TrimSpace(p)
+	}
+	return out
 }

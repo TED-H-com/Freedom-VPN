@@ -14,6 +14,38 @@ import (
 	"github.com/google/uuid"
 )
 
+func TestRender_DeniedV4SpecialPurpose(t *testing.T) {
+	plan, err := Render(goldenModel(), State{}, TCState{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	line := deniedElementLine(plan.NFT)
+	if !strings.Contains(line, "192.88.99.0/24") {
+		t.Fatalf("@denied_v4 element line missing 192.88.99.0/24:\n%s", line)
+	}
+	for _, prefix := range []string{"192.31.196.0/24", "192.52.193.0/24", "192.175.48.0/24"} {
+		if strings.Contains(plan.NFT, prefix) {
+			t.Fatalf("@denied_v4 contains globally reachable %s", prefix)
+		}
+	}
+	base, err := RenderBaseline(probeModel(), State{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(deniedElementLine(base), "192.88.99.0/24") {
+		t.Fatal("baseline @denied_v4 missing 192.88.99.0/24")
+	}
+}
+
+func deniedElementLine(script string) string {
+	for _, line := range strings.Split(script, "\n") {
+		if strings.Contains(line, "add element") && strings.Contains(line, " denied_v4 ") {
+			return line
+		}
+	}
+	return ""
+}
+
 func TestRender_Golden(t *testing.T) {
 	plan, err := Render(goldenModel(), State{}, TCState{})
 	if err != nil {
@@ -674,13 +706,20 @@ func TestApply_ExternalReset(t *testing.T) {
 }
 
 type fakeExec struct {
-	nft     []string
-	tc      []string
-	handler func(name string, args []string) ([]byte, error)
+	nft        []string
+	tc         []string
+	handler    func(name string, args []string) ([]byte, error)
+	lookPath   func(name string) (string, error)
+	nftApplied bool
+	phase      string
 }
 
 func (f *fakeExec) NftBatch(_ context.Context, script string) error {
 	f.nft = append(f.nft, script)
+	f.nftApplied = true
+	// The conntrack tests use phase to tell loadTC from the post-apply QoS
+	// listing. Other tests leave phase empty and never read it.
+	f.phase = "verify"
 	return nil
 }
 
@@ -691,6 +730,13 @@ func (f *fakeExec) TCBatch(_ context.Context, script string) error {
 
 func (f *fakeExec) Output(_ context.Context, name string, args ...string) ([]byte, error) {
 	return f.handler(name, args)
+}
+
+func (f *fakeExec) LookPath(name string) (string, error) {
+	if f.lookPath != nil {
+		return f.lookPath(name)
+	}
+	return "/usr/sbin/" + name, nil
 }
 
 func assertGolden(t *testing.T, name, got string) {

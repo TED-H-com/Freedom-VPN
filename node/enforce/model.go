@@ -148,7 +148,8 @@ type Model struct {
 	HostV4 []netip.Prefix `json:"host_v4,omitempty"`
 	QoS    QoS            `json:"qos"`
 	// Revoke lists addresses whose conntrack entries are deleted after the
-	// ruleset is installed (§8.2).
+	// ruleset is installed and verified (§8.2). A delete failure leaves that
+	// ruleset in place. The next Apply that still lists the address retries.
 	Revoke []netip.Addr `json:"revoke,omitempty"`
 	// Probe is the short-lived synthetic-probe exception (§13.9). Nil removes
 	// it. The caller authenticates the test peer; this package matches SourceV4.
