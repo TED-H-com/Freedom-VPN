@@ -13,6 +13,10 @@ TEST_TARGETS += at-secops-test
 at-secops:
 	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py
 
+.PHONY: at-secops-followup3
+at-secops-followup3:
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --follow-up-3
+
 at-secops-components:
 	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --components-only
 
