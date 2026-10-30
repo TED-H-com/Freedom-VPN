@@ -1,0 +1,151 @@
+{
+  "id": "AT15",
+  "title": "用量批次冪等、亂序缺口、衝突稽核與簽章檢查點恢復 (Idempotent Usage Ingest, Contiguous ACK, Conflict Audit \u0026 Signed Checkpoint Recovery)",
+  "spec": "§10.4–§10.8, §17.3, §19.5 AT15",
+  "requirements": [
+    "MTR02",
+    "MTR03",
+    "MTR04",
+    "API01",
+    "DATA01"
+  ],
+  "status": "blocked",
+  "at": "2026-10-30T01:04:21Z",
+  "build": {
+    "git_commit": "912d976b03b9948ba308cd6e4e97d0f931574510",
+    "git_dirty": false,
+    "go_version": "go1.27.3",
+    "goos": "linux",
+    "goarch": "amd64",
+    "binaries": {
+      "fvpn-agent": "c7a86bc09070181cafbb68108ed19c3e7ab6c844827e440f2688b5cdae60501a",
+      "fvpn-control": "3e58851f703bbf405b25f986d876491ee03cdc73e4f1ad12ad11f329eb3f91a9",
+      "fvpn-updater": "407e51e37e40a5424701fc07143d7c7ec40d1dd1ed2eee178b2bafe0ebe9ac1b",
+      "fvpn-worker": "428a71d6717d313ce01a3ddd4c69a5f545ba2e432aa3330b29353385cd3b6d72"
+    }
+  },
+  "image_digests": {
+    "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "control": "sha256:7fc215c29ed67a8db53b7af1724513a3d698f9c5cd947288be5cb0675a6bb323",
+    "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+    "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "idp": "sha256:67a8a7204f14146dc8ff8d83e2255a1b6eaff96dc5ecde5d049b2d6bcd91638b",
+    "member": "sha256:0a22de69781c75194051a356c214e5c2195411c94715576c42e1cdc18253e85a",
+    "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "node": "sha256:0a22de69781c75194051a356c214e5c2195411c94715576c42e1cdc18253e85a",
+    "origin": "sha256:35195202c8f0b6791ba522d5ecf676416aceb609155cc1a04c3f9fa9ade5c038",
+    "payment": "sha256:fef6164a57492d7eee3f14b6094924db9395f50aaca74db522bc24329458cebf",
+    "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+    "worker": "sha256:f0472a2c96898a8a0607792697f381ff6b1bd1ae1da13b84f23abcd4b5efca90"
+  },
+  "policy_revision": "applied_config_generation=0; fair_use=01a18a50-62a0-7a1c-bce0-a3956873e6c2; dns_profile=01a18a56-0bb7-7524-82c3-5b31c4255f3e",
+  "node_incarnation": "01a18a49-4253-781f-9f9e-de9c6c24c5ec",
+  "expected": "POST /api/v1/agent/usage-batches enforces idempotent batch replay, per-event duplicate/conflict/rejected status, contiguous ACK watermark (highest_contiguous_seq \u0026 blocked_seq), \u003e2^53 decimal string precision, and Ed25519-signed GET /api/v1/agent/usage-checkpoint recovery.",
+  "actual": "Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on enrolled node 01a18a49-4020-71c6-ad22-893acd249a8b (incarnation 01a18a49-4253-781f-9f9e-de9c6c24c5ec) verified Ed25519 recovery signature, out-of-order seq {22,24} -\u003e gap fill seq 23 advancing highest_contiguous_seq to 24, batch replay, duplicate event, payload_sha256 conflict audit (usage_event_conflicts=5), rejected seq 26 blocked_seq=26 advancing to 27, and 409/403 error envelopes. Non-empty member UsageRecord ingestion on the unseeded live stack is blocked because device_bindings has 0 rows.",
+  "blockers": [
+    "Live non-empty member UsageRecord ingestion on the unseeded stack is blocked because validateEventBindingsInTx requires an active device_bindings row and entitlement interval, while device_bindings count=0 and plan creation returns HTTP 422."
+  ],
+  "commands": [
+    {
+      "command": "POST /api/v1/admin/policies (release_support) + POST /activate",
+      "exit_code": 0,
+      "output": "create=HTTP 201 revision_id=01a18a56-073d-7935-aca4-a37399e44c1c; activate=HTTP 422 RELEASE_NOT_APPROVED",
+      "at": "2026-10-30T01:04:16Z"
+    },
+    {
+      "command": "POST /api/v1/admin/policies (fair_use shadow) + POST /activate",
+      "exit_code": 0,
+      "output": "definition_id=01a18a56-100d-7df2-a752-3f52740b2a11 shadow_revision_id=01a18a56-100e-7c28-8902-553575514d02 create=HTTP 201 activate=HTTP 202",
+      "at": "2026-10-30T01:04:19Z"
+    },
+    {
+      "command": "PUT /api/v1/admin/nodes/01a18a49-4020-71c6-ad22-893acd249a8b/publication",
+      "exit_code": 0,
+      "output": "HTTP 422 NODE_NOT_SERVICEABLE: {\"error\":{\"code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"node does not satisfy serving baseline requirements\",\"request_id\":\"01a18a56-1b83-7802-8c0f-98bbc9d92e63\",\"retryable\":false,\"details\":{\"failed_checks\":[\"provisioning_state=applying (want ready)\"]}}}",
+      "at": "2026-10-30T01:04:21Z"
+    },
+    {
+      "command": "docker exec fvpn-w4-usage-node nft list chain inet fvpn forward",
+      "exit_code": 0,
+      "output": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\toifname \"fvnb0\" ct state established,related counter packets 0 bytes 0 accept\n\t\tiifname \"fvnb0\" counter packets 0 bytes 0 accept\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}",
+      "at": "2026-10-30T01:04:21Z"
+    },
+    {
+      "command": "mTLS GET https://agent.example.invalid:9443/api/v1/agent/usage-checkpoint (initial)",
+      "exit_code": 0,
+      "output": "HTTP 200 highest_contiguous_seq=21 ledger_epoch=c3cd0d36-1b5b-4000-bef6-ef8ed4c49653 recovery_record_null=true sig_verified=true",
+      "at": "2026-10-30T01:04:21Z"
+    },
+    {
+      "command": "mTLS POST /api/v1/agent/usage-batches (out-of-order seq 22, 24)",
+      "exit_code": 0,
+      "output": "HTTP 200 highest_contiguous_seq=22 results=[accepted,accepted]",
+      "at": "2026-10-30T01:04:22Z"
+    },
+    {
+      "command": "mTLS POST /api/v1/agent/usage-batches (fill gap seq 23 -\u003e contiguous ACK 24)",
+      "exit_code": 0,
+      "output": "HTTP 200 highest_contiguous_seq=24 status=accepted",
+      "at": "2026-10-30T01:04:23Z"
+    },
+    {
+      "command": "mTLS POST /api/v1/agent/usage-batches (seq 25, rejected seq 26, seq 27 -\u003e blocked_seq=26; valid seq 26 -\u003e highest_contiguous_seq=27)",
+      "exit_code": 0,
+      "output": "blocked: hcs=25 blocked_seq=26; unblocked: hcs=27 blocked_null=true",
+      "at": "2026-10-30T01:04:24Z"
+    }
+  ],
+  "observations": {
+    "active_policy_revisions": {
+      "dns_profile": "01a18a56-0bb7-7524-82c3-5b31c4255f3e",
+      "fair_use": "01a18a50-62a0-7a1c-bce0-a3956873e6c2"
+    },
+    "blocked_seq_on_rejection": "6",
+    "device_bindings_count": 0,
+    "large_download_bytes": "9007199254740995",
+    "large_upload_bytes": "9007199254740993",
+    "member_usage_total_bytes": "18014398509491988",
+    "node_id": "01a18a49-4020-71c6-ad22-893acd249a8b",
+    "node_incarnation_id": "01a18a49-4253-781f-9f9e-de9c6c24c5ec",
+    "node_publication_http": "422 NODE_NOT_SERVICEABLE",
+    "out_of_order_hcs_after_seq2": "3",
+    "out_of_order_hcs_before_seq2": "1",
+    "port_base": 48000,
+    "post_recovery_hcs": "7",
+    "recovery_new_epoch": "01a18a56-2efd-76f0-a99d-be7a0bf4607b",
+    "recovery_previous_epoch": "23b61f2f-6444-4d86-b0e6-6aee72c4998b",
+    "stack_prefix": "fvpn-w4-usage"
+  },
+  "mechanism_checks": [
+    {
+      "name": "LiveMTLSUsageCheckpointEd25519Verification",
+      "spec_ref": "§10.6, §17.3, MTR03, MTR04",
+      "status": "pass",
+      "summary": "Live mTLS GET /api/v1/agent/usage-checkpoint for node 01a18a49-4020-71c6-ad22-893acd249a8b verified against /etc/vpn-node/trust.json (purpose=recovery): ledger_epoch=c3cd0d36-1b5b-4000-bef6-ef8ed4c49653, recovery_record_id=null, highest_contiguous_seq=21."
+    },
+    {
+      "name": "LiveMTLSUsageBatchesContiguousAckConflictBlockedSeqAndErrorEnvelopes",
+      "spec_ref": "§10.4–§10.8, §14.6, MTR02, MTR03, MTR04",
+      "status": "pass",
+      "summary": "Live mTLS /api/v1/agent/usage-batches proved out-of-order seq {22,24} holding highest_contiguous_seq=22 with missing_ranges=[{23,23}], Idempotency-Key batch replay, duplicate retry, seq 23 gap fill advancing ACK to 24, payload_sha256 conflict audit (USAGE_EVENT_CONFLICT), rejected seq 26 reporting blocked_seq=26 then advancing to 27, and 409/403 whole-request guards."
+    },
+    {
+      "name": "ContiguousAckAndDecimalStringPrecisionAbove2Pow53",
+      "spec_ref": "§10.4, §10.6, §14.1, MTR03, MTR04",
+      "status": "pass",
+      "summary": "Out-of-order sequences {1, 3} hold highest_contiguous_seq at 1 with missing_ranges=[{2,2}] until seq 2 arrives (advancing to 3); 2^53+1 (9007199254740993) and 2^53+3 (9007199254740995) round-trip as exact decimal strings."
+    },
+    {
+      "name": "DuplicateBatchLostAckAndConflictBlockedSeq",
+      "spec_ref": "§10.5, §10.6, MTR03",
+      "status": "pass",
+      "summary": "Batch resends and lost-ACK retries never double-count bytes; conflicting payload_sha256 records usage_event_conflicts and rejected events set blocked_seq=6 while holding highest_contiguous_seq=5."
+    },
+    {
+      "name": "CentralDBRestoreSignedCheckpointAndReplayReconciliation",
+      "spec_ref": "§10.8, §17.3, MTR03, DATA01",
+      "status": "pass",
+      "summary": "FreezeIngest returns 503; BeginRecovery rotates ledger_epoch with a signed PurposeLedgerEpoch record; old epoch batches return 409 LEDGER_EPOCH_MISMATCH; Ed25519-verified PurposeRecovery checkpoint guides replay_unavailable tombstone reconciliation without inventing bytes."
+    }
+  ]
+}
