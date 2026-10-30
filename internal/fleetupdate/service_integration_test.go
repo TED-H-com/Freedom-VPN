@@ -166,6 +166,11 @@ func result(w *Work, state string) api.UpdateResult {
 	if terminal(state) {
 		r.FinishedAt.Set(now)
 	}
+	if state == "failed" {
+		// r9: a valid failed fixture always supplies a cause; negative tests
+		// explicitly clear it when exercising missing-error rejection.
+		r.ErrorCode.Set(api.ErrorCodeHEALTHCHECKFAILED)
+	}
 	return r
 }
 func payload(t *testing.T, r api.UpdateResult) []byte {
@@ -451,7 +456,9 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 		t.Fatal(ack, e)
 	}
 	v, e = l.s.NodeVersionView(l.ctx, i.NodeID)
-	if e != nil || *v.CurrentReleaseID != l.new {
+	// r9: an observation cannot replace accepted rollback evidence or clear
+	// recovery. The current failed result retains the reported revoked release.
+	if e != nil || *v.CurrentReleaseID != l.old || !v.RecoveryRequired || v.ReleaseServiceable || !v.Unconfirmed {
 		t.Fatal(v, e)
 	}
 }
@@ -589,7 +596,10 @@ func TestUPD02_ResultBindingExpiryAndRestore(t *testing.T) {
 		t.Fatal(e)
 	}
 	view, e := l.s.NodeVersionView(l.ctx, i.NodeID)
-	if e != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.new {
+	// The trusted restore high-water still prevents automatic downgrade, but
+	// neither that observation nor its delayed predecessor changes the release
+	// after this incarnation has accepted result evidence (r9).
+	if e != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.old {
 		t.Fatal(view, e)
 	}
 }

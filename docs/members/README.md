@@ -265,7 +265,8 @@ must already be canonical: lowercase scheme/host, no default port, no trailing
 slash, no query or fragment. Noncanonical input fails startup with the fixed
 `oidc_issuer` setting error. The `internal/members/issuer` package is the single
 source for issuer comparison: `issuer.Canonical` normalizes comparisons and
-`issuer.Validate` requires canonical configuration. Token-validation setup must
+`issuer.Validate` requires canonical configuration. Only literal trailing slashes
+are trimmed, and encoded bytes are preserved. Token-validation setup must
 import those helpers too (control follow-up 13 owns that integration).
 `NewIdentityDiscovery` canonicalizes direct
 callers with that helper. Both processes must use the same central setting and

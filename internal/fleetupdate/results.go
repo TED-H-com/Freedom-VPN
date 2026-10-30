@@ -113,11 +113,16 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 				}
 				return json.Unmarshal(oldAck, &ack)
 			}
-			_, e = tx.Exec(ctx, `INSERT INTO update_result_conflicts(result_id,conflicting_hash) VALUES($1,$2) ON CONFLICT DO NOTHING`, r.ResultId, digest)
+			tag, e := tx.Exec(ctx, `INSERT INTO update_result_conflicts(result_id,conflicting_hash) VALUES($1,$2) ON CONFLICT DO NOTHING`, r.ResultId, digest)
 			if e != nil {
 				return e
 			}
 			rejection = apierr.New(apierr.AckConflict, "Result ID already has different content")
+			if tag.RowsAffected() == 0 {
+				// §13.10.3: a conflicting hash and its audit are one atomic fact.
+				// Replaying that hash must not amplify the append-only audit log.
+				return nil
+			}
 			event, e := audit.NewEvent(audit.Entry{
 				Actor: audit.Actor{Type: api.AuditEventActorTypeNode, ID: i.NodeID}, Action: "update_result.conflict",
 				Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: i.NodeID}, Result: api.AuditEventResultFailed, RequestID: &requestID,
@@ -165,11 +170,14 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 			if isTerminal && (currentReleaseID == nil || finishedAt == nil || finishedAt.Before(r.StartedAt)) {
 				return apierr.New(apierr.ValidationFailed, "Terminal result requires actual version and completion time")
 			}
+			if r.State == api.UpdateResultStateFailed && errorCode == nil {
+				return apierr.New(apierr.ValidationFailed, "Failed result requires an error code")
+			}
 			// D-062(a): a failed pre-health stage cannot invent checks or claim the
 			// candidate as current. The baseline was captured at first authorization.
 			preHealthFailure := r.State == api.UpdateResultStateFailed && beforeHealth(stage)
 			if preHealthFailure {
-				if health != nil || errorCode == nil || j.attemptRelease == nil || !equalID(j.attemptRelease, currentReleaseID) {
+				if health != nil || j.attemptRelease == nil || !equalID(j.attemptRelease, currentReleaseID) {
 					return apierr.New(apierr.ValidationFailed, "Pre-health failure requires null health, an error and the unchanged attempt release")
 				}
 			} else if isTerminal && health == nil {
@@ -194,7 +202,11 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 				return e
 			}
 			currentJob := n.job != nil && *n.job == j.id && j.generation == n.generation
-			recovery := recoveryRequired || n.lastGood != nil && slices.Contains(revoked, *n.lastGood) || currentReleaseID != nil && slices.Contains(revoked, *currentReleaseID)
+			lastGood := n.lastGood
+			if success || r.State == api.UpdateResultStateRolledBack {
+				lastGood = currentReleaseID
+			}
+			recovery := recoveryRequired || lastGood != nil && slices.Contains(revoked, *lastGood) || currentReleaseID != nil && slices.Contains(revoked, *currentReleaseID)
 			if r.State == "rolled_back" {
 				previous, err := r.PreviousReleaseId.Get()
 				if err != nil || previous != j.releaseID || errorCode == nil {
@@ -273,10 +285,12 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 			}
 			applied := false
 			if !history && isTerminal && currentReleaseID != nil {
-				// §13.8: a pre-switch heartbeat may arrive after intent issuance.
-				// Only a strictly newer update generation advances actual version;
-				// same/newer-generation heartbeat evidence remains authoritative.
-				tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND s.observed_update_generation<$4::numeric`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", r.Generation.String())
+				// §13.8 / r9: a current terminal result owns the version even if a
+				// same-generation heartbeat seeded a different pre-result value.
+				// Preserve the newer-generation fence and avoid rewriting an
+				// already identical same-generation observation (ACK remains false).
+				tag, e := tx.Exec(ctx, `UPDATE nodes n SET current_release_id=$2,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 FROM fleet_node_state s WHERE n.id=$1 AND s.node_id=n.id AND s.observed_update_generation<=$4::numeric
+ AND (s.observed_update_generation<$4::numeric OR n.current_release_id IS DISTINCT FROM $2::uuid OR ($3 AND n.last_good_release_id IS DISTINCT FROM $2::uuid))`, i.NodeID, currentReleaseID, success || r.State == "rolled_back", r.Generation.String())
 				if e != nil {
 					return e
 				}
@@ -288,8 +302,8 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 					}
 				}
 			}
-			if recovery && !history {
-				if _, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=true WHERE node_id=$1`, i.NodeID); e != nil {
+			if !history && n.observedHighWater <= r.Generation {
+				if _, e = tx.Exec(ctx, `UPDATE fleet_node_state SET recovery_required=CASE WHEN $3 THEN $2 ELSE recovery_required OR $2 END WHERE node_id=$1`, i.NodeID, recovery, isTerminal); e != nil {
 					return e
 				}
 			}
