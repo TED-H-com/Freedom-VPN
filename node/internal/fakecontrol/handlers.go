@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -183,6 +184,17 @@ func (s *Server) signDesired(node, inc uuid.UUID) ([]byte, string, error) {
 	if resolvers == nil {
 		resolvers = []string{}
 	}
+	var resolverRef *api.ResolverDocumentRef
+	if f.Resolver != nil {
+		cp := *f.Resolver
+		resolverRef = &cp
+	}
+	var egress *api.EgressProbe
+	if f.Egress != nil {
+		cp := *f.Egress
+		cp.Targets = append([]api.EgressProbeTarget(nil), f.Egress.Targets...)
+		egress = &cp
+	}
 	bindings := f.Bindings
 	if bindings == nil {
 		bindings = []api.DeviceBinding{}
@@ -230,7 +242,53 @@ func (s *Server) signDesired(node, inc uuid.UUID) ([]byte, string, error) {
 		SupportedReleasePolicyId: uuid.MustParse("019a0000-0000-7000-8000-0000000000d1"),
 		Update:                   presence.NewNullNullable[api.UpdateIntent](),
 	}
+	if resolverRef != nil {
+		ds.Dns.ResolverDocument = presence.NewNullableWithValue(*resolverRef)
+	}
+	if egress != nil {
+		ds.EgressProbe = presence.NewNullableWithValue(*egress)
+	}
 	return s.sign(ds, s.desPriv, s.desID, corrupt)
+}
+
+const resolverPrefix = "/api/v1/agent/resolver-documents/"
+
+func (s *Server) serveResolver(w http.ResponseWriter, r *http.Request) bool {
+	if !strings.HasPrefix(r.URL.Path, resolverPrefix) {
+		return false
+	}
+	s.resolverDocument(w, r)
+	return true
+}
+
+func (s *Server) resolverDocument(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		apierr.Write(w, r, apierr.New(apierr.MethodNotAllowed, "Method not allowed."))
+		return
+	}
+	if _, _, ok := s.requireIdentity(w, r); !ok {
+		return
+	}
+	id, err := uuid.Parse(strings.TrimPrefix(r.URL.Path, resolverPrefix))
+	s.mu.Lock()
+	s.docFetches++
+	var body []byte
+	if err == nil && id != uuid.Nil && s.docs != nil {
+		if b, ok := s.docs[id]; ok {
+			body = append([]byte(nil), b...)
+		}
+	}
+	s.mu.Unlock()
+	if len(body) == 0 {
+		apierr.Write(w, r, apierr.New(apierr.NotFound, "Document was not found."))
+		return
+	}
+	sum := sha256.Sum256(body)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("ETag", `"sha256:`+hexEncode(sum[:])+`"`)
+	w.Header().Set("Cache-Control", "private, max-age=0")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(body)
 }
 
 func (s *Server) sign(doc any, priv ed25519.PrivateKey, keyID string, corrupt bool) ([]byte, string, error) {

@@ -76,6 +76,7 @@ func (e *Engine) evaluate(ctx context.Context) {
 			e.refreshProbe(ctx)
 		}
 	}
+	e.applyResolver(ctx)
 	e.decision = Decide(e.input())
 }
 

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
@@ -197,6 +198,38 @@ func quoteJSON(s string) string {
 	}
 	b.WriteByte('"')
 	return b.String()
+}
+
+func TestSignedEgressDialsTargets(t *testing.T) {
+	good := []byte(`{"management":{"connected":true},"relays":{"total":1,"available":1}}`)
+	var dialed []string
+	p := netbirdProber{
+		run: func(context.Context) ([]byte, error) { return good, nil },
+		dial: func(_ context.Context, addr string) error {
+			dialed = append(dialed, addr)
+			return nil
+		},
+	}
+	res := p.Probe(context.Background(), ProbeRequest{
+		Egress:  "192.0.2.10:443",
+		Targets: []string{"192.0.2.80:443", "[2001:db8::80]:443"},
+		Timeout: 2000 * time.Millisecond,
+	})
+	if res.Check != api.HealthCheckStatusPassed || len(dialed) != 2 || dialed[0] != "192.0.2.80:443" || dialed[1] != "[2001:db8::80]:443" {
+		t.Fatalf("dialed %v result %+v", dialed, res)
+	}
+	dialed = nil
+	p.run = func(context.Context) ([]byte, error) {
+		return []byte(`{"management":{"connected":false},"relays":{"total":1,"available":0}}`), nil
+	}
+	p.dial = func(context.Context, string) error {
+		t.Fatal("dialed while management is down")
+		return nil
+	}
+	res = p.Probe(context.Background(), ProbeRequest{Targets: []string{"192.0.2.80:443"}, Timeout: 2000 * time.Millisecond})
+	if res.Check != api.HealthCheckStatusFailed || res.Health != api.DataHealthFailed {
+		t.Fatalf("%+v", res)
+	}
 }
 
 func TestEgressProbeConfig(t *testing.T) {

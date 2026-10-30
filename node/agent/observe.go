@@ -121,6 +121,9 @@ func (e *Engine) report(at time.Time) (api.ObservationReport, error) {
 	rep.Update.JobId = presence.NewNullNullable[uuid.UUID]()
 	rep.Update.Stage = presence.NewNullNullable[api.UpdateStage]()
 	rep.Update.State = presence.NewNullNullable[api.UpdateJobState]()
+	if e.dnsEv != nil {
+		rep.DnsPolicyEvidence = presence.NewNullableWithValue(*e.dnsEv)
+	}
 	return rep, nil
 }
 
