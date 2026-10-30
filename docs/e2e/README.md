@@ -9,7 +9,7 @@ TEST ONLY.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `FVPN_E2E_PREFIX` | `e2e` | Every container, network, volume, and image is `fvpn-<prefix>-*`. |
+| `FVPN_E2E_PREFIX` | `e2e` | Runtime containers, networks and volumes use `fvpn-<prefix>-*`. |
 | `FVPN_E2E_PORT_BASE` | `18000` | Each loopback port is this base plus a fixed offset. |
 | `FVPN_E2E_STATE` | `.agent/e2e-state-<prefix>` | Git-ignored secrets and rendered config for that prefix. |
 
@@ -28,9 +28,12 @@ It does not match another prefix.
 | `24000`, `30000`, `36000`, `42000`, `48000` | Reserved for the W4 acceptance tasks. Do not start, stop, or reset those prefixes from this task. |
 | `54000`, `60000` | Legal and currently unassigned. Do not start them unless a task owns that slot. |
 
-Image names stay `fvpn-<prefix>-*` (`fvpn-e2e-postgres:17`, and the same shape
-for the other services). A shared `fvpn-devstack-*` tag would collide when
-two prefixes are up, so the prefix stays in the image name.
+Images use neutral `fvpn-devstack-*` tags, including
+`fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
+Bring-up pins locally built services to their immutable image IDs before
+starting Compose; a concurrent worktree moving a shared `:local` tag cannot
+change that run's selected image. Auxiliary update nodes use the running
+node's image ID. Teardown retains the shared images.
 
 ## Loopback ports
 
@@ -156,6 +159,8 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `release-register` | `fvpn-release` package, register, verify | §13.3, §13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
 | `lease-expiry` | stop control and read the forward chain again | §5, §19 AT29 |
+| `threat-feed-central` | approved bootstrap, wrong-pin rejection, audit, worker metrics, resolver document | §12.3, §12.5, §19 AT22 groundwork |
+| `threat-feed-node` | explicit node-delivery gap (D-056) | §12.5, §19 AT22 |
 | `revoke` | `POST /admin/nodes/{id}/revoke` | §5, §19 AT13 |
 
 AT07 (reinstall of an existing node) is not executed. A `pass` record is only
@@ -168,7 +173,7 @@ member total matches the uploaded bytes.
 Each scenario writes `docs/e2e/runs/<UTC date>/<id>.json` and a short `.md`
 summary. Every record in one run carries the same `run_id` and `source_commit`;
 the timestamp `at` is the scenario's write time. Replace a dated set only after
-all thirteen scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
+all fifteen scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
 reached a gap and recorded the response; it is not a pass. Observations are
 names and short details. Tokens, setup keys, passwords, DSNs, and home paths
 are redacted. Raw portal subjects and NetBird user ids are also redacted;
@@ -193,6 +198,37 @@ rows do not prove acceptance of publication, device admission, or an updater:
 - Its `update_results` fixture inserts an accepted result and policy refs for
   the succeeded update job. Those fields exercise portal rendering, including
   policy evidence; they are not a result submitted by a running updater.
+
+## Release and feed inputs
+
+Boot `0.1.0`, candidate `1.0.1`, and tamper target `1.0.2` each contain real
+agent, watchdog and updater binaries built from the recorded source commit
+for linux/amd64 and linux/arm64. Each manifest is signed, registered and
+verified. `release-register` records the SHA-256 of each canonical `signed`
+manifest object. Product version and runtime `agent_release` match; the boot
+release ID and both candidates are in the serving allowlist. `update-bad`
+changes the uploaded real archive only after verification.
+
+The node's lab service manager stops the boot agent and starts
+`<installed-release>/bin/fvpn-agent` with that release's identity/config. A
+repeated start is idempotent, as D-053 starts the candidate again after writing
+its challenge. The product agent alone may write `health-attest.json`; the
+harness never seeds health answers. A serving allowlist entry is insufficient
+to invoke the updater: the harness waits for `signed.update.release_id`.
+
+Prepare creates a deterministic hosts feed with ten unique synthetic entries,
+mixed case and a duplicate, and computes its `content_sha256`. The lab TLS
+origin serves it inside the isolated network. The scenario creates and
+activates a pinned `threat_feed`, then a referencing `dns_profile`, through the
+policy API. It polls the worker-owned content, refresh state, audit and
+resolver publication rows, and checks the worker's two feed metrics. A second
+revision with a wrong pin must fail bootstrap with `content_mismatch` and a
+`dns.feed.refresh_failed` audit. Last-good is per revision: the new revision
+stays null, while the prior approved content and resolver generation remain.
+The document digest and normalized embedded rules are checked without
+recording DNS queries. On-node feed delivery remains separately blocked on
+D-056 (contracts revision 5 and node application); the central result does not
+claim full AT22. No feed is fetched from the public Internet.
 
 ## Known limits
 

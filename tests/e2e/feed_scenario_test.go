@@ -48,6 +48,9 @@ func (r *runner) threatFeed(ctx context.Context, admin *session) {
 		}
 		resp, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/policies", body, map[string]string{"Idempotency-Key": uuid.NewString()})
 		note("create_"+code, httpDetail(resp, err))
+		if resp.Status >= 400 {
+			note("create_error", apiErrorText(resp.Body))
+		}
 		var v struct {
 			ID         uuid.UUID `json:"revision_id"`
 			Definition uuid.UUID `json:"definition_id"`
@@ -74,7 +77,7 @@ func (r *runner) threatFeed(ctx context.Context, admin *session) {
 	now := time.Now().UTC()
 	payload := map[string]any{
 		"provider": "TEST ONLY lab", "feed_code": "e2e-feed", "license_name": "TEST ONLY synthetic fixture", "license_url": "https://example.invalid/license",
-		"commercial_use_basis": "Synthetic TEST ONLY fixture authored for acceptance", "attribution": nil,
+		"commercial_use_basis": "Synthetic TEST ONLY fixture authored for acceptance", "attribution": "TEST ONLY synthetic acceptance fixture",
 		"source_url": fixture.URL, "format": "hosts", "categories": []string{"malware"}, "content_sha256": fixture.SHA,
 		"max_size_bytes": "4096", "valid_from": now.Add(-time.Minute), "valid_until": now.Add(2 * time.Hour), "update_interval_seconds": 300,
 	}
