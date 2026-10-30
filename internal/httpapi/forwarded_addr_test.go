@@ -3,6 +3,8 @@ package httpapi
 import (
 	"net"
 	"testing"
+
+	"github.com/TED-H-com/Freedom-VPN/internal/config"
 )
 
 func TestParseIPTextShapes(t *testing.T) {
@@ -45,6 +47,66 @@ func TestParseIPTextShapes(t *testing.T) {
 			}
 			if got := parseRemoteIP(tc.in); !tc.remote.Equal(got) {
 				t.Fatalf("remote %q = %v, want %v", tc.in, got, tc.remote)
+			}
+		})
+	}
+}
+
+func TestCompatibilityDomain(t *testing.T) {
+	trusted, err := config.ParseTrustedProxies([]string{"192.0.2.0/24", "2001:db8:feed::/48"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name       string
+		remoteAddr string
+		forwarded  []string
+		trusted    []*net.IPNet
+		want       string
+		wantOK     bool
+	}{
+		{
+			name:       "ipv4 coarsened to /24",
+			remoteAddr: "203.0.113.42:54321",
+			want:       "203.0.113.0/24",
+			wantOK:     true,
+		},
+		{
+			name:       "ipv6 coarsened to /48",
+			remoteAddr: "[2001:db8:abcd:1234::99]:54321",
+			want:       "2001:db8:abcd::/48",
+			wantOK:     true,
+		},
+		{
+			name:       "trusted proxy honours X-Forwarded-For",
+			remoteAddr: "192.0.2.10:443",
+			forwarded:  []string{"198.51.100.77, 192.0.2.11"},
+			trusted:    trusted,
+			want:       "198.51.100.0/24",
+			wantOK:     true,
+		},
+		{
+			name:       "untrusted peer ignores X-Forwarded-For",
+			remoteAddr: "203.0.113.99:443",
+			forwarded:  []string{"198.51.100.77"},
+			trusted:    trusted,
+			want:       "203.0.113.0/24",
+			wantOK:     true,
+		},
+		{
+			name:       "unparseable remote address rejected",
+			remoteAddr: "not-an-address",
+			want:       "",
+			wantOK:     false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := compatibilityDomain(tc.remoteAddr, tc.forwarded, tc.trusted)
+			if ok != tc.wantOK || got != tc.want {
+				t.Fatalf("compatibilityDomain(%q, %v) = (%q, %v), want (%q, %v)", tc.remoteAddr, tc.forwarded, got, ok, tc.want, tc.wantOK)
 			}
 		})
 	}

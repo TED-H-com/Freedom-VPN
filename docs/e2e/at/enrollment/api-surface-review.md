@@ -58,3 +58,31 @@ must not be described as absent. It still does not establish complete
 incarnation enumeration or preserved old-incarnation usage. **ENR-03 remains
 open for that narrower completeness/attribution question.** No reinstall or
 counted-usage step is claimed while its devstack hooks are absent.
+
+## Revision 10 and devstack follow-up 12 — 2026-10-30
+
+Measured on run `7615d23d-d572-4db1-a903-9610dd3bcef3`, source `efba7fb`,
+contract revision 10 (API 1.6.0). Run `9bb66c4e-e429-450b-8671-521d33926ede`
+measured the same two product surfaces on `746651e` before this branch
+contained devstack follow-up 12. Both runs agree.
+
+| Surface | What revision 10 / PR #204 now returns | Acceptance evidence recorded |
+|---|---|---|
+| `Enrollment.token_sha256` on `createEnrollment`, `getEnrollment`, `revokeEnrollment` | Required read-only `^[0-9a-f]{64}$`, SHA-256 of the exact plaintext token bytes. | Harness digest equal on create, pending get, consumed get, revoke response and revoked get. Plaintext absent from those admin bodies. |
+| `listAuditEvents` `enrollment.created` `changes.after.token_sha256` | The created event lists the digest. `enrollment.consumed` and `enrollment.revoked` do not carry `token_sha256` or plaintext. Property names ending in `_sha256` stay visible; `token` stays redacted. | `audit_token_hash` passed with `digest_only_on_created` true for the replay, race, revoked and reinstall enrollments. |
+| `listNodeIncarnations`, `GET /api/v1/admin/nodes/{node_id}/incarnations` | Newest first (`created_at DESC, id DESC`). Fields used: `current`, `state`, `retire_reason`, `usage.upload_bytes`, `usage.download_bytes`, `usage.through`. Default limit 50, max 100. 404 only when the Node row is absent. | Fresh Nodes, including both AT07 slots and the race winner, have count 1 and the id matches `getNode.current_incarnation_id` and `getEnrollment.node_incarnation_id`. After revoke (202) and a second bound enroll, count is 2, previous reason moves from `revocation` to `reinstall`, usage stays `"0"`/`"0"` with `through` null, `limit=100` returns 2, and a `limit=1` cursor round-trip has no duplicates. A pending enrollment's Node returns `items: []`. An unknown id returns 404. An active incarnation rejects another bound create with 409 `NODE_INCARNATION_ACTIVE`. |
+| `JoinEnrolledIdentity`, `EnrollmentPeerInventory` (devstack #204) | Own-key enroll inside a waiting slot, then NetBird setup-key/group/peer readback correlated to the `enrollment.consumed` operation id. | Second fresh stack. Race 201 + 409 `ENROLLMENT_KEY_MISMATCH`. Replay enroll 200, bootstrap 200, `joined` true. Inventory `complete`, peers 1, setup keys 1, uses 1, correlation groups 0. Second read unchanged. |
+| `MachineIdentityFingerprints`, `StartClonedIdentityFixture` (devstack #204) | Hashes only: OS machine-id, agent SPKI, NetBird X25519 public key. Clone copies durable identity before `node-clone` boots and `Observe` reads conflict/freeze rows. | `node` and `node2` hashes differ on all three fields and share image `sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27`. Clone and source hashes match, both stages `enrolled`. `endpoint_rows` 0, `conflicts` 0, `mapping_frozen` false. |
+
+ENR-02 and ENR-03 are closed by the rows above. ENR-04 and the fingerprint
+half of ENR-07 are closed. ENR-08 remains: the clone export reads the conflict
+and freeze columns, and those columns stayed empty. ENR-05 and ENR-06 remain
+because `HoldUsageAcknowledgements`, `UsageLedgerSnapshot`, `CountedMemberTraffic`,
+`RerunInstaller` and `ControlledReinstall` are not in `docs/e2e/RUN.md` on this
+source. `ForwardingBlockReason.awaiting_member_grants` (D-067) is present in
+revision 10 and is outside this harness.
+
+AT07 live nodes each have one incarnation and a usage checkpoint with accepted
+bytes `"0"` and `through` set (`2026-10-30T20:51:11.681114Z` and
+`2026-10-30T20:51:24.065428Z`). That is the documented checkpoint-with-no-samples
+shape. Counted historical usage across an installer rerun is still unmeasured.

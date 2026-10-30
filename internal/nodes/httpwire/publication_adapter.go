@@ -60,7 +60,7 @@ func (a *PublicationAdapter) PublishExit(ctx context.Context, p exits.PublishExi
 		return out, err
 	}
 	var incarnation uuid.UUID
-	err = a.runtime.Pool.QueryRow(ctx, `SELECT i.id FROM nodes n JOIN node_incarnations i ON i.id=n.current_incarnation_id JOIN exits e ON e.node_id=n.id WHERE n.id=$1 AND e.id=$2 AND i.peer_id=$3 AND i.deployment_id=$4 AND n.lifecycle_state='registered' AND i.revoked_at IS NULL`, p.NodeID, p.ExitID, p.PeerID, p.DeploymentID).Scan(&incarnation)
+	err = a.runtime.Pool.QueryRow(ctx, `SELECT i.id FROM nodes n JOIN node_incarnations i ON i.id=n.current_incarnation_id JOIN exits e ON e.node_id=n.id WHERE n.id=$1 AND e.id=$2 AND i.peer_id=$3 AND i.deployment_id=$4 AND n.lifecycle_state='registered' AND i.revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=i.id AND x.mapping_frozen)`, p.NodeID, p.ExitID, p.PeerID, p.DeploymentID).Scan(&incarnation)
 	if err != nil {
 		return out, err
 	}

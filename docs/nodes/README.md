@@ -464,3 +464,27 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
   - In `GET /api/v1/admin/nodes/{node_id}` (`NodeDetail`) and `GET /api/v1/admin/nodes` (`NodeSummary`), the node shows `provisioning_state: "ready"`, `safety_status: "passed"`, `data_health: "healthy"`, and `member_forwarding_observed: false`, while `node_observations.report_payload` retains `"forwarding_block_reasons": ["awaiting_member_grants"]`.
   - **Publication & Operations**: `exits.publication_intent` and `exits.publication_observed` remain unchanged; `PublicationDataPathFailure` returns `"forwarding_disabled"` because `member_forwarding_enabled == false`, so `node.publish` completes `agent_policy` once the desired generation is acknowledged with passed safety while keeping `data_path_probe` pending until member grants arrive and member forwarding is armed. Member/entitlement/device operations waiting on their `"nodes"` step advance to `succeeded` once the node acknowledges the target generation with `safety_status = "passed"` and `provisioning_state = "ready"`.
 
+---
+
+## 11. Cloned-Identity Conflict Detection, Roaming vs. Interleaving, and Mapping Freeze (D-072, §6.2, Follow-up 21)
+
+1. **Production Ingress Callers (`internal/httpapi/middleware.go`, `internal/nodes/httpwire/handlers.go`, `internal/nodes/httpwire/state.go`)**:
+   - On authenticated `agent-mtls` requests, `httpapi.New` stores the verified leaf certificate (`httpapi.ClientCertificate(ctx)`) and coarsened compatibility domain (`httpapi.ClientCompatibilityDomain(ctx)`) in request-local metadata.
+   - `Handlers.RenewServingLease` (`POST /api/v1/agent/lease-renewals`) and `Handlers.SubmitObservation` (`POST /api/v1/agent/observations`) call `Enrollment.ObserveEndpointTx` inside their per-request transaction before any automatic identity-mapping mutation.
+   - `GET /api/v1/agent/desired-state` and other GET routes perform no endpoint observation write.
+
+2. **Compatibility Domain Coarsening and Limitation**:
+   - Derived via `requestRateKey` (`X-Forwarded-For` honoured only when `RemoteAddr` belongs to configured `trusted_proxies`, otherwise `RemoteAddr`), coarsened to **IPv4 `/24`** and **IPv6 `/48`**, and hashed with SHA-256 into `node_identity_endpoints.endpoint_hash`.
+   - Raw addresses and CIDRs are never stored or logged.
+   - **Limitation**: Two clones operating behind the same IPv4 `/24` or IPv6 `/48` compatibility domain are not detected by this check.
+
+3. **Roaming vs. Interleaving (`DefaultIdentityActiveWindow = 120s`)**:
+   - `DefaultIdentityActiveWindow` is `120s`: larger than the 60s D-067 provisional lease renewal cap and the 30s heartbeat interval so an active or renewing node always refreshes inside the window, and shorter than a finite-member serving lease.
+   - **Roaming (`X → Y`)**: When `Y` is first observed while `X` was seen inside `activeWindow`, `X` remains mapped in `node_identity_endpoints`, `Y` is recorded as the candidate, and `Y` is promoted to `node_identity_endpoints` only once `X` has been quiet for a full `activeWindow`.
+   - **Interleaving Conflict**: When `X` is observed again while `Y` is still inside `activeWindow` (`X → Y → X`), when `Y` and `X` are both seen within one window twice, or when a third domain `Z` is observed while `X` and `Y` are inside the window, `ObserveEndpointTx` inserts one `node_identity_conflicts` row, sets `mapping_frozen = true`, and appends one `node.identity.conflict` audit event on `node:<node_id>` with `changes.after` containing only `incarnation_id`, `conflict_count`, and `observed_at` (later requests while frozen emit no second audit event). The HTTP request still returns its normal 2xx response (`200` for lease renewal, `202` for observation).
+
+4. **Terminal Freeze Effect and Reconciliation (`revokeNode` + Re-Enroll)**:
+   - While `mapping_frozen = true`, every automatic external identity mapping path (`node.peer.observe`, `node.peer.discover`, `node.provision.requested`, `netbird.Client.EnsureNodePeer`, `netbird.Client.DiscoverNodePeer`, and `PublicationAdapter.PublishExit`) skips mutation (no last-write-wins), and `SubmitObservationTx` forces the D-055 terminal state (`provisioning_state = 'failed'`, `safety_status = 'failed'`, `member_forwarding_observed = false`). This is intended because a cloned private key is a compromise.
+   - Operators reconcile a frozen node via `revokeNode` followed by re-enrollment (`createEnrollment` + `enrollNode`), which creates a new incarnation with no `node_identity_endpoints` row (unfrozen) while keeping the historical `node_identity_conflicts` rows attached to the retired incarnation.
+
+
