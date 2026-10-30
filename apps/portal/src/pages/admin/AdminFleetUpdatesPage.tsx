@@ -681,12 +681,11 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                 </div>
               </div>
 
-              {selectedTarget.state === 'rolled_back' &&
-                (() => {
-                  const rollbackHealth = extractTargetRollbackHealth(
-                    selectedTarget as UpdateTargetWithResult,
-                    batch.release_id,
-                  );
+              {(() => {
+                const rollbackHealth = extractTargetRollbackHealth(
+                  selectedTarget as UpdateTargetWithResult,
+                );
+                if (selectedTarget.state === 'rolled_back') {
                   return (
                     <div
                       style={{ marginTop: '0.85rem' }}
@@ -732,7 +731,8 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                               className="mono"
                               data-testid="target-detail-restored-release-id"
                             >
-                              {rollbackHealth.restoredReleaseId ?? '—'}
+                              {rollbackHealth.restoredReleaseId ??
+                                t('admin.updates.evidenceNotReported')}
                             </span>
                           </div>
                           {rollbackHealth.health == null ? (
@@ -811,7 +811,8 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                               className="mono"
                               data-testid="target-detail-previous-release-id"
                             >
-                              {rollbackHealth.previousReleaseId ?? '—'}
+                              {rollbackHealth.previousReleaseId ??
+                                t('admin.updates.evidenceNotReported')}
                             </span>
                           </div>
                           {rollbackHealth.candidateHealth == null ? (
@@ -863,7 +864,76 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                       </div>
                     </div>
                   );
-                })()}
+                }
+
+                if (!rollbackHealth.hasReceiptEvidence) {
+                  return (
+                    <div
+                      style={{
+                        marginTop: '0.85rem',
+                        padding: '0.6rem 0.75rem',
+                        background: '#ffffff',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                      }}
+                      data-testid="target-detail-no-receipt-evidence"
+                    >
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          marginBottom: '0.35rem',
+                        }}
+                      >
+                        {t('admin.updates.rollbackHealth.noReceiptEvidenceTitle')}
+                      </div>
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <span className="badge badge-warning">
+                          {t('admin.updates.rollbackHealth.noReceiptEvidenceNotice')}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                          gap: '0.5rem',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        <div>
+                          <span style={{ color: 'var(--color-text-muted)' }}>
+                            previous_release_id:{' '}
+                          </span>
+                          <span
+                            className="badge badge-warning mono"
+                            data-testid="target-detail-previous-release-id"
+                          >
+                            {t('admin.updates.evidenceNotReported')}
+                          </span>
+                        </div>
+                        <div data-testid="target-detail-restored-health-null">
+                          <span style={{ color: 'var(--color-text-muted)' }}>
+                            health:{' '}
+                          </span>
+                          <span className="badge badge-warning mono">
+                            {t('admin.updates.evidenceNotReported')}
+                          </span>
+                        </div>
+                        <div data-testid="target-detail-candidate-health-null">
+                          <span style={{ color: 'var(--color-text-muted)' }}>
+                            candidate_health:{' '}
+                          </span>
+                          <span className="badge badge-warning mono">
+                            {t('admin.updates.evidenceNotReported')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
             </div>
           )}
 

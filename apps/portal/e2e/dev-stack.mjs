@@ -48,10 +48,81 @@ const RELEASE_VECTOR_PATH = path.join(
 );
 const RELEASE_VECTOR = JSON.parse(fs.readFileSync(RELEASE_VECTOR_PATH, 'utf8'));
 
+const AT26_DIRECT_ROLLBACK_PATH = path.join(
+  REPO_ROOT,
+  'internal/fleetupdate/testdata/at26-direct-rollback.json',
+);
+const AT26_DIRECT_ROLLBACK = JSON.parse(
+  fs.readFileSync(AT26_DIRECT_ROLLBACK_PATH, 'utf8'),
+);
+
 // Deterministic UUID constants for seeded test data
 const PLAN_ID = 'b4fe029a-ecbf-4b1a-9ee7-de399791ae6e';
-const PLAN_REVISION_ID = '0195f100-0000-7000-8000-000000000101';
+const RELEASE_100_ID = 'cdb25ffa-5395-400c-ad3e-b32899f14bb8';
 const RELEASE_110_ID = RELEASE_VECTOR.envelope.signed.release_id; // 6d2797d0-b9a5-4724-96af-9b3039d351b1
+
+function canonicalizeJson(val) {
+  if (val === null || typeof val !== 'object') {
+    return JSON.stringify(val);
+  }
+  if (Array.isArray(val)) {
+    return `[${val.map((item) => canonicalizeJson(item)).join(',')}]`;
+  }
+  const keys = Object.keys(val).sort();
+  const entries = [];
+  for (const k of keys) {
+    if (val[k] !== undefined) {
+      entries.push(`${JSON.stringify(k)}:${canonicalizeJson(val[k])}`);
+    }
+  }
+  return `{${entries.join(',')}}`;
+}
+
+function buildSignedRelease100Record() {
+  const releaseSigningKey = crypto.createPrivateKey({
+    key: {
+      kty: 'OKP',
+      crv: 'Ed25519',
+      d: Buffer.from(RELEASE_VECTOR.seed_hex, 'hex').toString('base64url'),
+      x: Buffer.from(RELEASE_VECTOR.public_key_b64, 'base64').toString('base64url'),
+    },
+    format: 'jwk',
+  });
+  const signed = {
+    ...structuredClone(RELEASE_VECTOR.envelope.signed),
+    release_id: RELEASE_100_ID,
+    product_version: '1.0.0',
+    release_sequence: '41',
+    created_at: '2026-10-20T12:00:00Z',
+    rollback: {
+      ...structuredClone(RELEASE_VECTOR.envelope.signed.rollback),
+      allowed_release_ids: [],
+    },
+  };
+  const jcsBytes = Buffer.from(canonicalizeJson(signed), 'utf8');
+  const signatureB64 = crypto.sign(null, jcsBytes, releaseSigningKey).toString('base64');
+  const envelope = {
+    signatures: [
+      {
+        algorithm: 'ed25519',
+        key_id: RELEASE_VECTOR.key_id,
+        signature_b64: signatureB64,
+      },
+    ],
+    signed,
+  };
+  const envelopeJson = JSON.stringify(envelope);
+  const envelopeSha256 = crypto
+    .createHash('sha256')
+    .update(Buffer.from(canonicalizeJson(envelope), 'utf8'))
+    .digest('hex');
+  return {
+    envelope,
+    envelopeJson,
+    envelopeSha256,
+    signatureB64,
+  };
+}
 
 function getFreePort() {
   return new Promise((resolve, reject) => {
@@ -463,6 +534,16 @@ function createFakeNetBirdServer(tlsOptions) {
           user_id: '',
           ephemeral: false,
           ip: '100.64.0.11',
+        },
+      ],
+      [
+        'nb-peer-node-3',
+        {
+          id: 'nb-peer-node-3',
+          name: 'tw-tpe-02',
+          user_id: '',
+          ephemeral: false,
+          ip: '100.64.0.12',
         },
       ],
       [
@@ -1205,31 +1286,15 @@ async function enrollLiveNode(
   const meterEpochId = crypto.randomUUID();
   const leaseId = crypto.randomUUID();
   let lastObservedMs = 0;
-  let currentReleaseId = null;
-  let lastGoodReleaseId = null;
+  let currentReleaseId = RELEASE_100_ID;
+  let lastGoodReleaseId = RELEASE_100_ID;
+  let memberForwardingEnabled = true;
   let activeUpdateObs = {
     job_id: null,
     generation: null,
     state: null,
     stage: null,
   };
-
-  function canonicalizeJson(val) {
-    if (val === null || typeof val !== 'object') {
-      return JSON.stringify(val);
-    }
-    if (Array.isArray(val)) {
-      return `[${val.map((item) => canonicalizeJson(item)).join(',')}]`;
-    }
-    const keys = Object.keys(val).sort();
-    const entries = [];
-    for (const k of keys) {
-      if (val[k] !== undefined) {
-        entries.push(`${JSON.stringify(k)}:${canonicalizeJson(val[k])}`);
-      }
-    }
-    return `{${entries.join(',')}}`;
-  }
 
   function computeUpdateResultPayloadHash(bodyWithoutHash) {
     return crypto
@@ -1267,7 +1332,7 @@ async function enrollLiveNode(
       provisioning_state: 'ready',
       safety_status: 'passed',
       data_health: 'healthy',
-      member_forwarding_enabled: true,
+      member_forwarding_enabled: memberForwardingEnabled,
       forwarding_block_reasons: [],
       lease: {
         lease_id: leaseId,
@@ -1408,7 +1473,7 @@ async function enrollLiveNode(
       state: 'succeeded',
       stage: null,
       requested_release_id: intent.release_id,
-      previous_release_id: null,
+      previous_release_id: currentReleaseId,
       current_release_id: intent.release_id,
       manifest_sha256: intent.manifest_sha256,
       publication_intent: intent.publication_intent ?? 'published',
@@ -1453,11 +1518,68 @@ async function enrollLiveNode(
     }
     currentReleaseId = intent.release_id;
     lastGoodReleaseId = intent.release_id;
+    memberForwardingEnabled = true;
     activeUpdateObs = {
       job_id: intent.job_id,
       generation: String(intent.generation),
       state: 'succeeded',
       stage: null,
+    };
+    return JSON.parse(res.text);
+  }
+
+  async function submitRolledBackUpdateResult(intent, compiledConfigGen) {
+    const issuedMs = new Date(intent.issued_at).getTime();
+    const startedIso = new Date(issuedMs + 1000).toISOString();
+    const finishedIso = new Date(issuedMs + 2000).toISOString();
+    const templateWithoutHash = structuredClone(AT26_DIRECT_ROLLBACK);
+    delete templateWithoutHash.payload_hash;
+    const resultBodyWithoutHash = {
+      ...templateWithoutHash,
+      result_id: crypto.randomUUID(),
+      node_id: nodeId,
+      incarnation_id: incarnationId,
+      boot_id: bootId,
+      batch_id: intent.batch_id,
+      target_id: intent.target_id,
+      job_id: intent.job_id,
+      attempt: intent.attempt ?? 1,
+      generation: String(intent.generation),
+      requested_release_id: intent.release_id,
+      previous_release_id: intent.release_id,
+      current_release_id: RELEASE_100_ID,
+      manifest_sha256: intent.manifest_sha256,
+      publication_intent: intent.publication_intent ?? 'unpublished',
+      started_at: startedIso,
+      finished_at: finishedIso,
+      policy_generation: String(compiledConfigGen),
+    };
+    const payloadHash = computeUpdateResultPayloadHash(resultBodyWithoutHash);
+    const resultBody = {
+      ...resultBodyWithoutHash,
+      payload_hash: payloadHash,
+    };
+    const res = await httpsRequest(`${agentBaseUrl}/api/v1/agent/update-results`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resultBody),
+      ca: caPem,
+      cert: clientCertPem,
+      key: nodeKeyPem,
+    });
+    if (res.status !== 200 && res.status !== 202) {
+      throw new Error(
+        `POST /api/v1/agent/update-results (rolled_back) failed (${res.status}): ${res.text}`,
+      );
+    }
+    currentReleaseId = RELEASE_100_ID;
+    lastGoodReleaseId = RELEASE_100_ID;
+    memberForwardingEnabled = Boolean(resultBodyWithoutHash.member_forwarding_enabled);
+    activeUpdateObs = {
+      job_id: intent.job_id,
+      generation: String(intent.generation),
+      state: 'rolled_back',
+      stage: resultBodyWithoutHash.stage ?? 'report',
     };
     return JSON.parse(res.text);
   }
@@ -1470,6 +1592,7 @@ async function enrollLiveNode(
     submitObservation,
     fetchDesiredState,
     submitUpdateResult,
+    submitRolledBackUpdateResult,
   };
 }
 
@@ -1483,6 +1606,11 @@ function lastLines(text, count = 50) {
 
 async function runSeedStep(stepName, fn) {
   try {
+    if (process.env.PORTAL_DEV_STACK_INJECT_FAIL_STEP === stepName) {
+      throw new Error(
+        `Injected failure for diagnostics verification at step "${stepName}"`,
+      );
+    }
     return await fn();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -1544,6 +1672,7 @@ async function grantMemberEntitlementViaApi(
   adminAuth,
   caPem,
   memberId,
+  planRevisionId,
   validFrom,
   validUntil,
   reason,
@@ -1561,7 +1690,7 @@ async function grantMemberEntitlementViaApi(
       },
       body: JSON.stringify({
         source: 'admin_grant',
-        plan_revision_id: PLAN_REVISION_ID,
+        plan_revision_id: planRevisionId,
         valid_from: validFrom.toISOString(),
         valid_until: validUntil.toISOString(),
         reason,
@@ -1729,7 +1858,12 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
   );
 }
 
-async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
+async function pollLiveNodeReady(
+  pool,
+  liveNode,
+  label = 'liveNode',
+  expectedReleaseId = RELEASE_110_ID,
+) {
   const deadline = Date.now() + 15_000;
   let lastRow = null;
   while (Date.now() < deadline) {
@@ -1762,8 +1896,8 @@ async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
       lastRow.safety_status === 'passed' &&
       lastRow.control_status === 'online' &&
       lastRow.gen_caught_up === true &&
-      lastRow.current_release_id === RELEASE_110_ID &&
-      lastRow.last_good_release_id === RELEASE_110_ID &&
+      lastRow.current_release_id === expectedReleaseId &&
+      lastRow.last_good_release_id === expectedReleaseId &&
       !lastRow.has_pending_observe
     ) {
       return lastRow;
@@ -1771,8 +1905,8 @@ async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
     if (
       !lastRow?.has_pending_observe ||
       !lastRow?.gen_caught_up ||
-      lastRow?.current_release_id !== RELEASE_110_ID ||
-      lastRow?.last_good_release_id !== RELEASE_110_ID
+      lastRow?.current_release_id !== expectedReleaseId ||
+      lastRow?.last_good_release_id !== expectedReleaseId
     ) {
       await liveNode.submitObservation(lastRow?.target_gen || '1');
     }
@@ -1901,10 +2035,13 @@ async function seedDatabase(
   defaultMemberId,
   liveNode,
   secondaryNode,
+  rollbackNode,
   exitGroupId,
+  getWorkerLogs,
 ) {
   const enrolledNodeId = liveNode.nodeId;
   const secondaryNodeId = secondaryNode.nodeId;
+  const rollbackNodeId = rollbackNode.nodeId;
   const now = new Date();
   // Valid < 30d grant window (14d + 1h < MaxGrantDuration 2592000s, D-050)
   const periodStart = new Date(now.getTime() - 3600_000);
@@ -1915,6 +2052,42 @@ async function seedDatabase(
   const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
 
   await runSeedStep('seed-releases-and-fleet-config', async () => {
+    const r100 = buildSignedRelease100Record();
+    await pool.query(
+      `INSERT INTO releases(id, version, release_sequence, manifest_schema_version, manifest, manifest_hash, signature, signing_key_ref, component_versions)
+       VALUES ($1, '1.0.0', 41, 1, $2::jsonb, $3, $4, $5, $6::jsonb)
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        RELEASE_100_ID,
+        r100.envelopeJson,
+        Buffer.from(r100.envelopeSha256, 'hex'),
+        Buffer.from(r100.signatureB64, 'base64'),
+        RELEASE_VECTOR.key_id,
+        JSON.stringify(r100.envelope.signed.components),
+      ],
+    );
+    for (const art of r100.envelope.signed.artifacts) {
+      await pool.query(
+        `INSERT INTO artifacts(release_id, platform, arch, digest, size_bytes, installed_size_bytes, storage_ref)
+         VALUES ($1, 'ubuntu/24.04', $2, $3, $4::numeric, $5::numeric, $6)
+         ON CONFLICT (release_id, platform, arch) DO NOTHING`,
+        [
+          RELEASE_100_ID,
+          art.architecture,
+          Buffer.from(art.sha256, 'hex'),
+          art.size_bytes,
+          art.installed_size_bytes,
+          art.url,
+        ],
+      );
+    }
+    await pool.query(
+      `INSERT INTO release_verifications(release_id, manifest_url, state, verified_at)
+       VALUES ($1, 'https://releases.example.invalid/r41/manifest.json', 'verified', clock_timestamp())
+       ON CONFLICT (release_id) DO NOTHING`,
+      [RELEASE_100_ID],
+    );
+
     const manifestEnvelope = JSON.stringify(RELEASE_VECTOR.envelope);
     const manifestHash = Buffer.from(RELEASE_VECTOR.envelope_sha256, 'hex');
     const signatureBytes = Buffer.from(RELEASE_VECTOR.signature_b64, 'base64');
@@ -1960,12 +2133,12 @@ async function seedDatabase(
       `UPDATE fleet_config
        SET desired_release_id = $1,
            supported_release_policy = 'allowlist',
-           approved_release_ids = ARRAY[$1::uuid],
-           supported_release_ids = ARRAY[$1::uuid],
+           approved_release_ids = ARRAY[$1::uuid, $2::uuid],
+           supported_release_ids = ARRAY[$1::uuid, $2::uuid],
            support_generation = 1,
            resource_version = resource_version + 1
        WHERE id = '00000000-0000-0000-0000-000000000001'`,
-      [RELEASE_110_ID],
+      [RELEASE_100_ID, RELEASE_110_ID],
     );
   });
 
@@ -2003,28 +2176,6 @@ async function seedDatabase(
         ],
         minimum_rate: { down_bps: 2000000, up_bps: 1000000 },
         overrides: [],
-      },
-    },
-    {
-      defId: '0195f100-0000-7000-8000-000000000302',
-      revId: '0195f100-0000-7000-8000-000000000402',
-      type: 'plan',
-      code: 'standard-monthly',
-      reason: 'Initial Standard Monthly Plan',
-      payload: {
-        display_name: { 'zh-TW': '標準月費方案', en: 'Standard Monthly Plan' },
-        device_limit: 3,
-        exit_group_ids: [exitGroupId],
-        price: {
-          amount_minor: 19900,
-          currency: 'TWD',
-          billing_interval: 'month',
-          provider: 'stripe',
-          provider_price_ref: 'price_monthly_test',
-        },
-        rate_limit: null,
-        fair_use_revision_id: '0195f100-0000-7000-8000-000000000401',
-        dns_profile_revision_id: '0195f100-0000-7000-8000-000000000403',
       },
     },
     {
@@ -2102,10 +2253,10 @@ async function seedDatabase(
       code: 'fleet-release-support',
       reason: 'Initial Release Support Policy',
       payload: {
-        approved_release_ids: [RELEASE_110_ID],
+        approved_release_ids: [RELEASE_100_ID, RELEASE_110_ID],
         revoked_release_ids: [],
         minimum_serving_version: {
-          serving_release_ids: [RELEASE_110_ID],
+          serving_release_ids: [RELEASE_100_ID, RELEASE_110_ID],
         },
       },
     },
@@ -2187,30 +2338,80 @@ async function seedDatabase(
     }
   });
 
-  await runSeedStep('seed-plans', async () => {
-    await pool.query(
-      `INSERT INTO plans(id, code, resource_version)
-       VALUES ($1, 'standard-monthly', 1)
-       ON CONFLICT (id) DO NOTHING`,
-      [PLAN_ID],
-    );
-    await pool.query(
-      `INSERT INTO plan_revisions(id, plan_id, revision, device_limit, exit_group_ids, fup_policy_revision_id, provider, provider_price_ref, schema_version, payload)
-       VALUES ($1, $2, 1, 3, ARRAY[$3::uuid], '0195f100-0000-7000-8000-000000000401', 'stripe', 'price_monthly_test', 1, $4::jsonb)
-       ON CONFLICT (id) DO NOTHING`,
-      [
-        PLAN_REVISION_ID,
-        PLAN_ID,
-        exitGroupId,
-        JSON.stringify({
+  // Seed and activate the `plan` policy with a rate through the product API
+  // (`POST /api/v1/admin/policies` + `POST /api/v1/admin/policies/{definition_id}/activate`)
+  // so `plans` and `plan_revisions` carry `rate_limit` and the seeded member is included in desired state.
+  const seededPlan = await runSeedStep('seed-plan-policy-via-api', async () => {
+    const createRes = await httpsRequest(`${controlBaseUrl}/api/v1/admin/policies`, {
+      method: 'POST',
+      headers: {
+        Cookie: adminAuth.sessionCookie,
+        'X-CSRF-Token': adminAuth.csrfToken,
+        Origin: 'https://portal.example.invalid',
+        'Idempotency-Key': crypto.randomUUID(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 'plan',
+        code: 'standard-monthly',
+        schema_version: 1,
+        reason: 'Initial Standard Monthly Plan with rate_limit',
+        payload: {
           display_name: { 'zh-TW': '標準月費方案', en: 'Standard Monthly Plan' },
+          device_limit: 3,
+          exit_group_ids: [exitGroupId],
+          price: {
+            amount_minor: 19900,
+            currency: 'TWD',
+            billing_interval: 'month',
+            provider: 'stripe',
+            provider_price_ref: 'price_monthly_test',
+          },
+          rate_limit: {
+            down_bps: 100000000,
+            up_bps: 50000000,
+          },
+          fair_use_revision_id: '0195f100-0000-7000-8000-000000000401',
+          dns_profile_revision_id: '0195f100-0000-7000-8000-000000000403',
+        },
+      }),
+      ca: caPem,
+    });
+    if (createRes.status !== 201) {
+      throw new Error(
+        `POST /api/v1/admin/policies (type=plan) failed (${createRes.status}): ${createRes.text}`,
+      );
+    }
+    const createdRev = JSON.parse(createRes.text);
+    const planDefId = createdRev.definition_id;
+    const planRevId = createdRev.revision_id;
+
+    const actRes = await httpsRequest(
+      `${controlBaseUrl}/api/v1/admin/policies/${planDefId}/activate`,
+      {
+        method: 'POST',
+        headers: {
+          Cookie: adminAuth.sessionCookie,
+          'X-CSRF-Token': adminAuth.csrfToken,
+          Origin: 'https://portal.example.invalid',
+          'Idempotency-Key': crypto.randomUUID(),
+          'If-Match': '"1"',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          revision_id: planRevId,
+          reason: 'Activate Standard Monthly Plan with rate_limit',
         }),
-      ],
+        ca: caPem,
+      },
     );
-    await pool.query(
-      `UPDATE plans SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-      [PLAN_ID, PLAN_REVISION_ID],
-    );
+    if (actRes.status !== 202 && actRes.status !== 200) {
+      throw new Error(
+        `POST /api/v1/admin/policies/${planDefId}/activate (type=plan) failed (${actRes.status}): ${actRes.text}`,
+      );
+    }
+    await drainNodeAffectingOutbox(pool, 'seed-plan-policy-via-api');
+    return { definitionId: planDefId, revisionId: planRevId };
   });
 
   await runSeedStep('seed-member-billing-customer', async () => {
@@ -2236,6 +2437,7 @@ async function seedDatabase(
       adminAuth,
       caPem,
       defaultMemberId,
+      seededPlan.revisionId,
       periodStart,
       periodEnd,
       'TEST ONLY initial active entitlement grant',
@@ -2251,7 +2453,8 @@ async function seedDatabase(
   });
 
   await runSeedStep('seed-node-and-usage-fixtures', async () => {
-    await pollLiveNodeOnline(pool, liveNode, 'seed-node-and-usage-fixtures');
+    await pollLiveNodeOnline(pool, liveNode, 'seed-node-and-usage-fixtures-tpe01');
+    await pollLiveNodeOnline(pool, rollbackNode, 'seed-node-and-usage-fixtures-tpe02');
 
     await pool.query(
       `INSERT INTO usage_rollups(id, member_id, period, granularity, projection_generation, metering_version, upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end, estimated, gap, reconciliation_in_progress)
@@ -2270,6 +2473,31 @@ async function seedDatabase(
       liveNode,
       exitGroupId,
     );
+    await drainNodeAffectingOutbox(pool, 'publish-live-node-exit-via-api');
+
+    const desiredEnvelope = await liveNode.fetchDesiredState();
+    const desired = desiredEnvelope?.signed ?? {};
+    const memberRatePolicy = (desired.member_rate_policies || []).find(
+      (m) => m.member_id === defaultMemberId,
+    );
+    const memberDeviceBindings = (desired.device_bindings || []).filter(
+      (b) => b.member_id === defaultMemberId,
+    );
+    if (
+      !memberRatePolicy ||
+      memberRatePolicy.down_bps !== 100000000 ||
+      memberRatePolicy.up_bps !== 50000000 ||
+      memberDeviceBindings.length < 3
+    ) {
+      throw new Error(
+        `Expected defaultMemberId (${defaultMemberId}) in desired.member_rate_policies with rate 100M/50M and 3 device_bindings; got ratePolicy=${JSON.stringify(memberRatePolicy)}, bindings=${memberDeviceBindings.length}`,
+      );
+    }
+    if (getWorkerLogs().includes('plan_missing_rate')) {
+      throw new Error(
+        `Unexpected plan_missing_rate warning in fvpn-worker logs:\n${lastLines(getWorkerLogs(), 50)}`,
+      );
+    }
   });
 
   await runSeedStep('create-update-batch-and-report-result-via-api', async () => {
@@ -2315,18 +2543,45 @@ async function seedDatabase(
     const createdBatch = JSON.parse(batchRes.text);
     const batchId = createdBatch.batch_id;
 
+    // 1. Primary live node (tw-tpe-01) reports `succeeded` on RELEASE_110_ID
     const desiredEnvelope = await liveNode.fetchDesiredState();
     const updateIntent = desiredEnvelope?.signed?.update;
     const compiledConfigGen = String(desiredEnvelope?.signed?.config_generation ?? '1');
     if (!updateIntent || !updateIntent.job_id) {
       throw new Error(
-        `Expected update intent from GET /api/v1/agent/desired-state; got ${JSON.stringify(desiredEnvelope?.signed)}`,
+        `Expected update intent from GET /api/v1/agent/desired-state on liveNode; got ${JSON.stringify(desiredEnvelope?.signed)}`,
       );
     }
 
     await liveNode.submitUpdateResult(updateIntent, compiledConfigGen);
     await new Promise((r) => setTimeout(r, 10));
-    await pollLiveNodeReady(pool, liveNode, 'post-update-result-observation');
+    await pollLiveNodeReady(
+      pool,
+      liveNode,
+      'post-update-result-observation-tpe01',
+      RELEASE_110_ID,
+    );
+
+    // 2. Rollback node (tw-tpe-02) reports `rolled_back` modeled on internal/fleetupdate/testdata/at26-direct-rollback.json
+    const rbDesiredEnvelope = await rollbackNode.fetchDesiredState();
+    const rbUpdateIntent = rbDesiredEnvelope?.signed?.update;
+    const rbCompiledConfigGen = String(
+      rbDesiredEnvelope?.signed?.config_generation ?? '1',
+    );
+    if (!rbUpdateIntent || !rbUpdateIntent.job_id) {
+      throw new Error(
+        `Expected update intent from GET /api/v1/agent/desired-state on rollbackNode; got ${JSON.stringify(rbDesiredEnvelope?.signed)}`,
+      );
+    }
+
+    await rollbackNode.submitRolledBackUpdateResult(rbUpdateIntent, rbCompiledConfigGen);
+    await new Promise((r) => setTimeout(r, 10));
+    await pollLiveNodeReady(
+      pool,
+      rollbackNode,
+      'post-rollback-result-observation-tpe02',
+      RELEASE_100_ID,
+    );
 
     const pollDeadline = Date.now() + 15_000;
     let lastBatch = null;
@@ -2347,6 +2602,9 @@ async function seedDatabase(
         const liveTarget = (lastBatch.targets || []).find(
           (t) => t.node_id === enrolledNodeId,
         );
+        const rbTarget = (lastBatch.targets || []).find(
+          (t) => t.node_id === rollbackNodeId,
+        );
         const offlineTarget = (lastBatch.targets || []).find(
           (t) => t.node_id === secondaryNodeId,
         );
@@ -2357,11 +2615,21 @@ async function seedDatabase(
           liveTarget.policy_generation === compiledConfigGen &&
           Array.isArray(liveTarget.policy_refs) &&
           liveTarget.policy_refs.includes('0195f100-0000-7000-8000-000000000401') &&
+          rbTarget &&
+          rbTarget.state === 'rolled_back' &&
+          rbTarget.unconfirmed === false &&
+          rbTarget.previous_release_id === RELEASE_110_ID &&
+          rbTarget.current_release_id === RELEASE_100_ID &&
+          rbTarget.health?.tunnel_probe === 'passed' &&
+          rbTarget.candidate_health?.tunnel_probe === 'failed' &&
           offlineTarget &&
           offlineTarget.state === 'waiting_online' &&
           offlineTarget.unconfirmed === true &&
           offlineTarget.policy_generation === null &&
-          offlineTarget.policy_refs === null
+          offlineTarget.policy_refs === null &&
+          offlineTarget.previous_release_id === null &&
+          offlineTarget.health === null &&
+          offlineTarget.candidate_health === null
         ) {
           return lastBatch;
         }
@@ -2372,6 +2640,8 @@ async function seedDatabase(
       `Timed out waiting for update batch ${batchId} target projections; last=${JSON.stringify(lastBatch)}`,
     );
   });
+
+  return { seededPlan };
 }
 
 const MIME_TYPES = {
@@ -2394,9 +2664,13 @@ async function main() {
   let controlLogs = '';
   let workerLogs = '';
   let heartbeatTimer = null;
+  let heartbeatInFlight = false;
   let cleanedUp = false;
 
   const adminClient = new pg.Client({ connectionString: ADMIN_DSN });
+  adminClient.on('error', () => {
+    // Suppress unhandled client error events during teardown / backend termination
+  });
   await adminClient.connect();
   await adminClient.query(`CREATE DATABASE ${dbName}`);
 
@@ -2406,6 +2680,9 @@ async function main() {
     if (cleanedUp) return;
     cleanedUp = true;
     if (heartbeatTimer) clearInterval(heartbeatTimer);
+    for (let i = 0; i < 10 && heartbeatInFlight; i += 1) {
+      await new Promise((r) => setTimeout(r, 25));
+    }
     if (workerProc && !workerProc.killed) {
       workerProc.kill('SIGTERM');
     }
@@ -2416,9 +2693,19 @@ async function main() {
       await pool.end().catch(() => {});
     }
     try {
+      await adminClient.query(
+        `SELECT pg_terminate_backend(pid)
+         FROM pg_stat_activity
+         WHERE datname = $1 AND pid <> pg_backend_pid()`,
+        [dbName],
+      );
+    } catch {
+      // Tolerate backends that are already gone
+    }
+    try {
       await adminClient.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
     } catch {
-      // Ignore drop errors on exit
+      // Ignore drop errors on exit or if backends already terminated
     }
     await adminClient.end().catch(() => {});
     try {
@@ -2748,6 +3035,14 @@ async function main() {
     });
 
     pool = new pg.Pool({ connectionString: testDbDsn });
+    pool.on('error', () => {
+      // Prevent unhandled pg-pool error events (e.g. 57P01 administrator command) from crashing teardown
+    });
+    pool.on('connect', (client) => {
+      client.on('error', () => {
+        // Prevent checked-out client error events during teardown from crashing process
+      });
+    });
 
     const adminAuth = await runSeedStep('oidc-login-admin', async () =>
       performOidcLogin(
@@ -2845,7 +3140,29 @@ async function main() {
       return node;
     });
 
-    await seedDatabase(
+    nbController.setNextSetupKeyPeer({ id: 'nb-peer-node-3', name: 'tw-tpe-02' });
+    const rollbackNode = await runSeedStep('enroll-live-node-3', async () => {
+      const node = await enrollLiveNode(
+        controlBaseUrl,
+        agentBaseUrl,
+        adminAuth,
+        caPem,
+        tmpDir,
+        {
+          name: 'tw-tpe-02',
+          region: 'tw-tpe',
+          arch: 'amd64',
+          peerId: 'nb-peer-node-3',
+          memberGroupIds: [exitGroupId],
+          notes: 'Secondary Taipei rollback test node',
+          filePrefix: 'enrolled-node-3',
+        },
+      );
+      await drainNodeAffectingOutbox(pool, 'enroll-live-node-3');
+      return node;
+    });
+
+    const { seededPlan } = await seedDatabase(
       pool,
       adminId,
       adminAuth,
@@ -2854,13 +3171,19 @@ async function main() {
       defaultMemberId,
       liveNode,
       secondaryNode,
+      rollbackNode,
       exitGroupId,
+      () => workerLogs,
     );
     await runSeedStep('submit-initial-node-observation', async () => {
-      await pollLiveNodeReady(pool, liveNode, 'submit-initial-node-observation');
+      await pollLiveNodeReady(
+        pool,
+        liveNode,
+        'submit-initial-node-observation',
+        RELEASE_110_ID,
+      );
     });
 
-    let heartbeatInFlight = false;
     let holdNodeObservations = false;
     heartbeatTimer = setInterval(async () => {
       if (heartbeatInFlight || holdNodeObservations) return;
@@ -3025,6 +3348,7 @@ async function main() {
                     adminAuth,
                     caPem,
                     targetMemberId,
+                    seededPlan.revisionId,
                     vFrom,
                     vUntil,
                     'TEST ONLY E2E device test grant',
@@ -3245,12 +3569,29 @@ async function main() {
                 forwardHeaders['If-Match'] = req.headers['if-match'];
               }
 
+              let upstreamBody = reqBody ? reqBody : undefined;
+              if (
+                req.method === 'POST' &&
+                reqUrl.pathname === '/api/v1/member/checkout-sessions' &&
+                reqBody
+              ) {
+                try {
+                  const parsed = JSON.parse(reqBody);
+                  if (parsed.plan_id === PLAN_ID && seededPlan?.definitionId) {
+                    parsed.plan_id = seededPlan.definitionId;
+                    upstreamBody = JSON.stringify(parsed);
+                  }
+                } catch {
+                  // Keep original body if not valid JSON
+                }
+              }
+
               const upstreamRes = await httpsRequest(
                 `${controlBaseUrl}${reqUrl.pathname}${reqUrl.search}`,
                 {
                   method: req.method,
                   headers: forwardHeaders,
-                  body: reqBody ? reqBody : undefined,
+                  body: upstreamBody,
                   ca: caPem,
                 },
               );
@@ -3322,12 +3663,13 @@ async function main() {
       `[portal-dev-stack] Ready at ${portalBaseUrl} (control=${controlBaseUrl}, db=${dbName})`,
     );
   } catch (err) {
+    console.error('[portal-dev-stack] Fatal error:', err);
     console.error(
       `[portal-dev-stack] Diagnostic tail — last 50 lines of fvpn-control:\n${lastLines(controlLogs, 50)}\n` +
         `[portal-dev-stack] Diagnostic tail — last 50 lines of fvpn-worker:\n${lastLines(workerLogs, 50)}`,
     );
     await cleanup();
-    throw err;
+    process.exit(1);
   }
 }
 
