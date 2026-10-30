@@ -1,0 +1,62 @@
+{
+  "batch_id": "01a18b75-d44b-70f9-bfa0-08ffb5f0cab8",
+  "counts": {
+    "already_current": 0,
+    "applying": 0,
+    "cancelled": 0,
+    "checking": 0,
+    "downloading": 0,
+    "failed": 0,
+    "queued": 1,
+    "rolled_back": 0,
+    "succeeded": 0,
+    "superseded": 0,
+    "verifying": 0,
+    "waiting_online": 0
+  },
+  "created_at": "2026-10-30T06:18:37.514139Z",
+  "created_by": "01a18b73-acea-7e27-981f-855a58796199",
+  "next_cursor": null,
+  "operation_id": "01a18b75-d44b-7351-9da7-240b9156bbd2",
+  "reason": "TEST ONLY updates follow-up 4",
+  "release_id": "01a18b73-b4ad-7831-9682-b8154413fc2d",
+  "requires_service_restart": true,
+  "state": "running",
+  "target_count": 1,
+  "targets": [
+    {
+      "attempts": 1,
+      "candidate_health": null,
+      "current_job": {
+        "attempt": 1,
+        "error_code": null,
+        "finished_at": null,
+        "job_id": "01a18b75-d44b-7caf-9482-b1d165e43c5d",
+        "recovery_required": false,
+        "stage": null,
+        "started_at": null,
+        "state": "queued"
+      },
+      "current_release_id": "01a18b73-c450-7425-84ba-8439b1e461a1",
+      "execution_incarnation_id": "01a18b73-cb8e-73c3-9b0b-a0ab82f95c63",
+      "generation": "4",
+      "health": null,
+      "incarnation_at_snapshot": "01a18b73-cb8e-73c3-9b0b-a0ab82f95c63",
+      "last_observed_at": "2026-10-30T06:18:35.484142Z",
+      "last_result_at": null,
+      "needs_attention": false,
+      "node_id": "01a18b73-c8e7-7ae1-ae3c-191a2b0c798c",
+      "node_name": "TEST ONLY updates",
+      "online_at_snapshot": true,
+      "policy_generation": null,
+      "policy_refs": null,
+      "previous_release_id": null,
+      "retryable": false,
+      "state": "queued",
+      "target_id": "01a18b75-d44b-7905-bbb6-4aaea23259e2",
+      "unconfirmed": true
+    }
+  ],
+  "targets_url": "/api/v1/admin/update-batches/01a18b75-d44b-70f9-bfa0-08ffb5f0cab8",
+  "updated_at": "2026-10-30T06:18:37.516902Z"
+}

@@ -1,0 +1,61 @@
+{
+  "run_id": "9cb542dd-53af-4566-97e8-4365260847c5",
+  "scope": "Follow-up 4 requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT24",
+  "title": "Unconfirmed and needs-attention presentation",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "pass",
+  "at": "2026-10-30T06:20:24Z",
+  "expected": "Unconfirmed and needs-attention presentation",
+  "actual": "Product API showed unconfirmed before apply and needs_attention on the rejected candidate; no observation rows seeded",
+  "git": "136bd15d20359c64f2144cd3359f63ac28825988",
+  "node_incarnation": "01a18b73-cb8e-73c3-9b0b-a0ab82f95c63",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"e0e254955d5e08e843f5e213bc06c5da8f25e51dafbbf51ff40be0d15df95e64\",\"artifact_sha256_0.1.0_arm64\":\"005807f0073986b8509d041f407ef405e57184c92183cdb24a2ce40ada0e91a8\",\"artifact_sha256_1.0.1_amd64\":\"a645dc6f609a8e3b6d952ee8bccfb5836a47111f830e72abe2c0b662db6f6373\",\"artifact_sha256_1.0.1_arm64\":\"c1ba60702f1009c11f549d64fbb10d02e72d2272dc67bba8e493a2fe6808c999\",\"artifact_sha256_1.0.2_amd64\":\"0cb8a5a1802cf3e9de0e7e82c40e74df163acc74bf211889785578581a8fe741\",\"artifact_sha256_1.0.2_arm64\":\"db0d5dd41d5cba2a5050cfb305c47cba511cebd5b0f790dc9f76d73388e7778d\",\"manifest_sha256_0.1.0\":\"d621f1b7517bf66ce8e140a58f09cce364e5146ff489f3e3562c0fcb0207ae5f\",\"manifest_sha256_1.0.1\":\"de33fefc04f7db5a431d0bc86da9a56b3a4d55de72926411ea4afbbbbcb34601\",\"manifest_sha256_1.0.2\":\"7423345920df5deefbb9230954061e785d1efe40db00bf2f82e3154247d46294\",\"signed_manifest_sha256_0.1.0\":\"e826d5c1f044e0fd171e46aa8514ca5b1dc09e5fc8737cc0f6d811cf9765166e\",\"signed_manifest_sha256_1.0.1\":\"4c8e012ad4cf328a27e8ebfcaa0f22d83a1bb2b8b483c9c5ca6f95014697e67a\",\"signed_manifest_sha256_1.0.2\":\"80f45e666e25715d37a0e5263391baf4e0c12f874698996d3545cdf08eaf48d9\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a18b73-c8b8-7455-be33-cfe9b50332f8\""
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a18b73-b4ad-7831-9682-b8154413fc2d\",\"good\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"negative\":\"01a18b73-c450-7425-84ba-8439b1e461a1\"}"
+    },
+    {
+      "name": "before_apply",
+      "detail": "{\"state\":\"queued\",\"unconfirmed\":true,\"needs_attention\":false,\"current_release\":\"\",\"error_code\":\"\"}"
+    },
+    {
+      "name": "after_rejected_candidate",
+      "detail": "{\"state\":\"failed\",\"unconfirmed\":false,\"needs_attention\":true,\"current_release\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"error_code\":\"ARTIFACT_INVALID\"}"
+    },
+    {
+      "name": "central_result_receipts",
+      "detail": "[{\"payload\":{\"stage\":\"download\",\"state\":\"failed\",\"health\":null,\"job_id\":\"01a18b74-ed28-70af-b29c-a606c52b4e3d\",\"attempt\":1,\"boot_id\":\"b90ad2f8-d156-49be-81cf-927010f23577\",\"node_id\":\"01a18b73-c8e7-7ae1-ae3c-191a2b0c798c\",\"batch_id\":\"01a18b74-ed26-77d5-88be-f49192feff6d\",\"result_id\":\"c9cb60d1-37d4-5af6-ad2e-023081e10fc8\",\"target_id\":\"01a18b74-ed27-78a6-b5f5-302570c6aaae\",\"error_code\":\"ARTIFACT_INVALID\",\"generation\":\"2\",\"started_at\":\"2026-10-30T06:17:49Z\",\"finished_at\":\"2026-10-30T06:17:49Z\",\"payload_hash\":\"0ee4c32d01dd71c375f895564a3a518cc00d8041dd60ae4e2b2b202eb48eae57\",\"incarnation_id\":\"01a18b73-cb8e-73c3-9b0b-a0ab82f95c63\",\"manifest_sha256\":\"7423345920df5deefbb9230954061e785d1efe40db00bf2f82e3154247d46294\",\"usage_checkpoint\":null,\"policy_generation\":\"5\",\"recovery_required\":false,\"current_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"requested_release_id\":\"01a18b73-c450-7425-84ba-8439b1e461a1\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"c9cb60d1-37d4-5af6-ad2e-023081e10fc8\",\"received_at\":\"2026-10-30T06:17:50.522104115Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"2\",\"applied_to_current_observation\":true},\"payload_sha256\":\"0ee4c32d01dd71c375f895564a3a518cc00d8041dd60ae4e2b2b202eb48eae57\"}]"
+    },
+    {
+      "name": "product_journal_snapshot",
+      "detail": "{\"generation\":\"2\",\"job_id\":\"01a18b74-ed28-70af-b29c-a606c52b4e3d\",\"stage\":\"download\",\"state\":\"failed\",\"current_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"last_good_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"recovery_required\":false,\"last_result_state\":\"failed\",\"last_rejection\":null,\"health\":null,\"candidate_health_json\":null}"
+    }
+  ]
+}

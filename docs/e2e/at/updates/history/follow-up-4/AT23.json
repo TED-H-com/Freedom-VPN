@@ -1,0 +1,97 @@
+{
+  "run_id": "9cb542dd-53af-4566-97e8-4365260847c5",
+  "scope": "Follow-up 4 requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT23",
+  "title": "Good candidate and central confirmation",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "pass",
+  "at": "2026-10-30T06:20:24Z",
+  "expected": "Good candidate and central confirmation",
+  "actual": "Real 1.0.1 candidate answered D-053, locally_succeeded, then central succeeded and confirmed",
+  "git": "136bd15d20359c64f2144cd3359f63ac28825988",
+  "node_incarnation": "01a18b73-cb8e-73c3-9b0b-a0ab82f95c63",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"e0e254955d5e08e843f5e213bc06c5da8f25e51dafbbf51ff40be0d15df95e64\",\"artifact_sha256_0.1.0_arm64\":\"005807f0073986b8509d041f407ef405e57184c92183cdb24a2ce40ada0e91a8\",\"artifact_sha256_1.0.1_amd64\":\"a645dc6f609a8e3b6d952ee8bccfb5836a47111f830e72abe2c0b662db6f6373\",\"artifact_sha256_1.0.1_arm64\":\"c1ba60702f1009c11f549d64fbb10d02e72d2272dc67bba8e493a2fe6808c999\",\"artifact_sha256_1.0.2_amd64\":\"0cb8a5a1802cf3e9de0e7e82c40e74df163acc74bf211889785578581a8fe741\",\"artifact_sha256_1.0.2_arm64\":\"db0d5dd41d5cba2a5050cfb305c47cba511cebd5b0f790dc9f76d73388e7778d\",\"manifest_sha256_0.1.0\":\"d621f1b7517bf66ce8e140a58f09cce364e5146ff489f3e3562c0fcb0207ae5f\",\"manifest_sha256_1.0.1\":\"de33fefc04f7db5a431d0bc86da9a56b3a4d55de72926411ea4afbbbbcb34601\",\"manifest_sha256_1.0.2\":\"7423345920df5deefbb9230954061e785d1efe40db00bf2f82e3154247d46294\",\"signed_manifest_sha256_0.1.0\":\"e826d5c1f044e0fd171e46aa8514ca5b1dc09e5fc8737cc0f6d811cf9765166e\",\"signed_manifest_sha256_1.0.1\":\"4c8e012ad4cf328a27e8ebfcaa0f22d83a1bb2b8b483c9c5ca6f95014697e67a\",\"signed_manifest_sha256_1.0.2\":\"80f45e666e25715d37a0e5263391baf4e0c12f874698996d3545cdf08eaf48d9\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a18b73-c8b8-7455-be33-cfe9b50332f8\""
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a18b73-b4ad-7831-9682-b8154413fc2d\",\"good\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"negative\":\"01a18b73-c450-7425-84ba-8439b1e461a1\"}"
+    },
+    {
+      "name": "batch_response",
+      "detail": "\"202\""
+    },
+    {
+      "name": "batch_id",
+      "detail": "\"01a18b74-4751-74d6-9c30-dd195b7d230d\""
+    },
+    {
+      "name": "generation",
+      "detail": "\"2\""
+    },
+    {
+      "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "updater_finished",
+      "detail": "true"
+    },
+    {
+      "name": "product_outbox_flush_success",
+      "detail": "true"
+    },
+    {
+      "name": "product_outbox_flush_output",
+      "detail": "\"\""
+    },
+    {
+      "name": "journal",
+      "detail": "{\"txn_id\":\"01a18b74-73e9-70f8-b55a-c26d1ad72c5e\",\"stage\":\"locally_succeeded\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"last_good\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"attestations\":[{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.1\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_up\"}],\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+    },
+    {
+      "name": "running_verified_candidate",
+      "detail": "true"
+    },
+    {
+      "name": "central",
+      "detail": "{\"state\":\"succeeded\",\"unconfirmed\":false,\"needs_attention\":false,\"current_release\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"error_code\":\"\"}"
+    },
+    {
+      "name": "confirmation_projection",
+      "detail": "{\"current_job\":{\"state\":\"succeeded\",\"generation\":\"1\",\"last_result_at\":\"2026-10-30T06:17:07.697097+00:00\"},\"fleet_observed_at\":\"2026-10-30T06:17:37.881342+00:00\",\"fleet_received_at\":\"2026-10-30T06:17:37.888492+00:00\",\"fleet_update_generation\":\"1\",\"latest_node_observation\":{\"update\":{\"stage\":\"report\",\"state\":\"succeeded\",\"job_id\":\"01a18b74-4753-716b-9bf6-35cd77c54eac\",\"generation\":\"1\"},\"observed_at\":\"2026-10-30T06:17:37.881342+00:00\",\"received_at\":\"2026-10-30T06:17:37.888492+00:00\"}}"
+    },
+    {
+      "name": "central_result_receipts",
+      "detail": "[{\"payload\":{\"stage\":\"report\",\"state\":\"succeeded\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"01a18b74-4753-716b-9bf6-35cd77c54eac\",\"attempt\":1,\"boot_id\":\"b90ad2f8-d156-49be-81cf-927010f23577\",\"node_id\":\"01a18b73-c8e7-7ae1-ae3c-191a2b0c798c\",\"batch_id\":\"01a18b74-4751-74d6-9c30-dd195b7d230d\",\"result_id\":\"305941f1-79e9-594c-8635-6d37d5e8706c\",\"target_id\":\"01a18b74-4752-75f8-9658-6d55e7b05a9e\",\"error_code\":null,\"generation\":\"1\",\"started_at\":\"2026-10-30T06:17:07Z\",\"finished_at\":\"2026-10-30T06:17:07Z\",\"payload_hash\":\"96636dcd6d1206ec13131fe2f5fbc988665df1a50b806c93e656d3c4097b23ac\",\"incarnation_id\":\"01a18b73-cb8e-73c3-9b0b-a0ab82f95c63\",\"manifest_sha256\":\"de33fefc04f7db5a431d0bc86da9a56b3a4d55de72926411ea4afbbbbcb34601\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a18b74-740d-733e-b882-72cf903a5b20\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"99f38b6c-f5eb-4c00-82ba-0f0dae002a25\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"2\",\"recovery_required\":false,\"current_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"publication_intent\":\"unpublished\",\"previous_release_id\":null,\"requested_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"305941f1-79e9-594c-8635-6d37d5e8706c\",\"received_at\":\"2026-10-30T06:17:07.697993064Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"1\",\"applied_to_current_observation\":true},\"payload_sha256\":\"96636dcd6d1206ec13131fe2f5fbc988665df1a50b806c93e656d3c4097b23ac\"}]"
+    },
+    {
+      "name": "product_journal_snapshot",
+      "detail": "{\"generation\":\"1\",\"job_id\":\"01a18b74-4753-716b-9bf6-35cd77c54eac\",\"stage\":\"report\",\"state\":\"succeeded\",\"journal_stage\":\"locally_succeeded\",\"current_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"last_good_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"recovery_required\":false,\"last_result_state\":\"succeeded\",\"last_rejection\":null,\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health_json\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"}}"
+    }
+  ]
+}
