@@ -1,0 +1,123 @@
+{
+  "run_id": "e8a288c6-ffc3-41e8-ac7a-4c99cbc7e29f",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 6 requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT23",
+  "title": "Good candidate and central confirmation",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "blocked",
+  "at": "2026-10-30T17:03:51Z",
+  "expected": "Good candidate and central confirmation",
+  "actual": "Real 1.0.1 candidate answered D-053, locally_succeeded, then central succeeded and confirmed; follow-up 6 prerequisite/check incomplete: lab_probe_peer",
+  "git": "1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f",
+  "node_incarnation": "01a18dc0-1636-71a3-91d7-0e68becd0d2d",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"b9bc3f2971378881cacebb0658bea79b60ef853564ce034ffa62bdc234c3143c\",\"artifact_sha256_0.1.0_arm64\":\"808396375d7fe9b1c851d929107ca7ca7c5d144d0ea5bf272e8f85226ad99af4\",\"artifact_sha256_1.0.1_amd64\":\"e50adda0793845e8f467b5bef6ef6b73a836050354f998c33c2e2493890d71b3\",\"artifact_sha256_1.0.1_arm64\":\"43dded29c7d1094ff0d6f23d8240fab2f72ce959243af744aee6826d82c4e3f0\",\"artifact_sha256_1.0.2_amd64\":\"f7cc809fe6e491814735aab35ae2e41b1e1b09ba1c04290f8ca56b8da4242fbc\",\"artifact_sha256_1.0.2_arm64\":\"6ff68f12d1e816578744e5c078e299acf0fe223d2942ae7755250f78fdf64620\",\"manifest_sha256_0.1.0\":\"fc2247f6540c46038ee3515e510ce4dd4275f51dbdcf7dff440429586be373b8\",\"manifest_sha256_1.0.1\":\"e560a851ced703cd3d403874c227fa39328b61d3448b324b08bc40b07ea4c26c\",\"manifest_sha256_1.0.2\":\"51fff341e49a364daa3b393fa0105c280f52a1df2dff20cc5a3f253f97be68b0\",\"signed_manifest_sha256_0.1.0\":\"2b5725d5036972c847051957c748fd3c2351510c7abb92724d9fa7979347f797\",\"signed_manifest_sha256_1.0.1\":\"68c370d57fb8fb1587fbfbc77cb06607659b567e92b74148bfcbc6748b1d6a32\",\"signed_manifest_sha256_1.0.2\":\"677dceb9cfa633da9a1705704511b1895de5a8d8b0d89f38138c816b58633791\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a18dc0-08a0-7828-9582-8ad043d73b1c\""
+    },
+    {
+      "name": "unrelated_release",
+      "detail": "{\"digests\":{\"artifact_sha256_1.0.3_amd64\":\"f443291ee2df5fecc42637ceee22cbdb275d138f51799986dc9e96f801cfea6f\",\"artifact_sha256_1.0.3_arm64\":\"cc72e9b337dde14eaf643b9903dac5cafaeb430a073513135c90f3ca577de189\",\"manifest_sha256_1.0.3\":\"5e8ea6726cef33ec95f0bf495c3c7faa71a2fcfcaba8ed91c28cc48b6f8f4b30\",\"signed_manifest_sha256_1.0.3\":\"1b13a5f531da8e4a5c3964563fc2d31ebf8eef5c67863fa0bd54dee3b73dfee4\"},\"purpose\":\"TEST ONLY registered, never installed or made fleet default\",\"release_id\":\"01a18dc0-0ffd-7ee6-97aa-501960cd7f5b\",\"version\":\"1.0.3\"}"
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a18dbf-f498-7700-9009-119af99668bc\",\"good\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"negative\":\"01a18dc0-043d-76d3-95f8-81bb3a1e0cc5\"}"
+    },
+    {
+      "name": "batch_response",
+      "detail": "\"202\""
+    },
+    {
+      "name": "batch_id",
+      "detail": "\"01a18dc0-92c0-7a65-9ac4-d7d04998b9b2\""
+    },
+    {
+      "name": "generation",
+      "detail": "\"2\""
+    },
+    {
+      "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "probe_issuance",
+      "detail": "{\"actual_updater_config\":{\"agent_config\":\"/etc/vpn-node/agent-run.json\",\"boot_id\":\"a563bb49-ea06-433e-ae66-8ad5dd0a38dc\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a18dc0-1636-71a3-91d7-0e68becd0d2d\",\"meter_checkpoint\":\"/var/lib/vpn-node/e2e/meter.json\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a18dc0-1460-77c3-89d3-7777083df287\",\"platform\":{\"architecture\":\"amd64\",\"control_api_major\":1,\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"policy_schema\":1,\"state_schema\":1,\"updater_version\":\"1.0.0\",\"usage_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"agent_config_exists\":true,\"agent_config_path\":\"/etc/vpn-node/agent-run.json\",\"agent_diagnostics\":[],\"agent_handling\":\"No probe object issued; D-064 exception installation/refusal not exercised\",\"agent_log_readable\":true,\"authority_source\":\"node/agent/probeexc.go:66-71,125-127: matching challenge and another lock holder required; no probe installs nothing\",\"candidate_attestations\":null,\"config_load_invalid_probe_peer\":false,\"configurations_read_in_node\":{\"/etc/vpn-node/updater-recover.json\":{\"config\":{\"agent_config\":\"/etc/vpn-node/agent-run.json\",\"boot_id\":\"a563bb49-ea06-433e-ae66-8ad5dd0a38dc\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a18dc0-1636-71a3-91d7-0e68becd0d2d\",\"meter_checkpoint\":\"/var/lib/vpn-node/e2e/meter.json\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a18dc0-1460-77c3-89d3-7777083df287\",\"platform\":{\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"architecture\":\"amd64\",\"updater_version\":\"1.0.0\",\"control_api_major\":1,\"policy_schema\":1,\"usage_schema\":1,\"state_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"readable\":true},\"/var/lib/vpn-node/e2e/updater.json\":{\"readable\":false},\"/var/lib/vpn-node/e2e/updater.json.done\":{\"readable\":false}},\"finding\":\"no probe peer in lab\",\"fresh_challenges\":[],\"has_probe_peer\":false,\"omission_logs\":[],\"owner\":\"w3-devstack-e2e\",\"stderr_readable\":true}"
+    },
+    {
+      "name": "check_lab_probe_peer",
+      "detail": "false"
+    },
+    {
+      "name": "check_probe_inspection",
+      "detail": "true"
+    },
+    {
+      "name": "updater_finished",
+      "detail": "true"
+    },
+    {
+      "name": "product_outbox_flush_success",
+      "detail": "true"
+    },
+    {
+      "name": "product_outbox_flush_output",
+      "detail": "\"\""
+    },
+    {
+      "name": "journal",
+      "detail": "{\"txn_id\":\"01a18dc1-2916-71a8-b94c-9b7748b770df\",\"stage\":\"locally_succeeded\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"last_good\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"attestations\":[{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.1\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_up\"}],\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+    },
+    {
+      "name": "running_verified_candidate",
+      "detail": "true"
+    },
+    {
+      "name": "central",
+      "detail": "{\"state\":\"succeeded\",\"unconfirmed\":false,\"needs_attention\":false,\"current_release\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"error_code\":\"\"}"
+    },
+    {
+      "name": "confirmation_projection",
+      "detail": "{\"current_job\":{\"state\":\"succeeded\",\"generation\":\"1\",\"last_result_at\":\"2026-10-30T17:00:10.179618+00:00\"},\"fleet_observed_at\":\"2026-10-30T17:00:40.440597+00:00\",\"fleet_received_at\":\"2026-10-30T17:00:40.444661+00:00\",\"fleet_update_generation\":\"1\",\"latest_node_observation\":{\"update\":{\"stage\":\"report\",\"state\":\"succeeded\",\"job_id\":\"01a18dc0-92c2-72b6-8d19-d2c45a04668b\",\"generation\":\"1\"},\"observed_at\":\"2026-10-30T17:00:40.440597+00:00\",\"received_at\":\"2026-10-30T17:00:40.444661+00:00\"}}"
+    },
+    {
+      "name": "central_result_receipts",
+      "detail": "[{\"payload\":{\"stage\":\"report\",\"state\":\"succeeded\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"01a18dc0-92c2-72b6-8d19-d2c45a04668b\",\"attempt\":1,\"boot_id\":\"a563bb49-ea06-433e-ae66-8ad5dd0a38dc\",\"node_id\":\"01a18dc0-1460-77c3-89d3-7777083df287\",\"batch_id\":\"01a18dc0-92c0-7a65-9ac4-d7d04998b9b2\",\"result_id\":\"13110674-3565-5276-8167-98ffbbecfb35\",\"target_id\":\"01a18dc0-92c1-795d-980f-3f62c73fc4be\",\"error_code\":null,\"generation\":\"1\",\"started_at\":\"2026-10-30T17:00:08Z\",\"finished_at\":\"2026-10-30T17:00:10Z\",\"payload_hash\":\"0b45ad71ef4636b17b71af733a49df73f25ea05cea5582415a668995f560d9b5\",\"incarnation_id\":\"01a18dc0-1636-71a3-91d7-0e68becd0d2d\",\"manifest_sha256\":\"e560a851ced703cd3d403874c227fa39328b61d3448b324b08bc40b07ea4c26c\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a18dc1-2d1d-76a1-bb7a-29336b2866ba\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"e3c8e2d4-c7ef-4171-801d-ede799fd3ab3\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"4\",\"recovery_required\":false,\"current_release_id\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"publication_intent\":\"unpublished\",\"previous_release_id\":null,\"requested_release_id\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"13110674-3565-5276-8167-98ffbbecfb35\",\"received_at\":\"2026-10-30T17:00:10.180813465Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"1\",\"applied_to_current_observation\":true},\"payload_sha256\":\"0b45ad71ef4636b17b71af733a49df73f25ea05cea5582415a668995f560d9b5\"}]"
+    },
+    {
+      "name": "product_journal_snapshot",
+      "detail": "{\"generation\":\"1\",\"job_id\":\"01a18dc0-92c2-72b6-8d19-d2c45a04668b\",\"stage\":\"report\",\"state\":\"succeeded\",\"journal_stage\":\"locally_succeeded\",\"current_release_id\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"last_good_release_id\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"recovery_required\":false,\"last_result_state\":\"succeeded\",\"last_rejection\":null,\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health_json\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"}}"
+    },
+    {
+      "name": "first_result_last_good",
+      "detail": "{\"accepted_result_count\":1,\"expected_release\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"projection\":{\"current_release_id\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"generation\":\"1\",\"last_good_release_id\":\"01a18dbf-fc74-754a-9762-171eabd9fc2f\",\"observation_incarnation_id\":\"01a18dc0-1636-71a3-91d7-0e68becd0d2d\",\"received_at\":\"2026-10-30T17:00:40.444661+00:00\",\"recovery_required\":false}}"
+    },
+    {
+      "name": "check_first_result_last_good",
+      "detail": "true"
+    }
+  ]
+}

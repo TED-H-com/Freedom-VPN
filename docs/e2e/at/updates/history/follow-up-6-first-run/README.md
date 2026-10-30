@@ -1,0 +1,3 @@
+# Follow-up 6 first run
+
+Run `e8a288c6-ffc3-41e8-ac7a-4c99cbc7e29f`, source `1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f`, evidence `2026-10-30T17:03:51Z`. Prefix `w4-updates`, port base 42000; make exit 2. All original scenarios passed. Requested recorded c2/c3 differed from accepted-result authority; shared lab supplied no probe peer. Host challenge capture was unreadable because the updater journal is root-owned mode 0700. Replaced by an in-container read-only stream for the final fresh-stack run; no permissions or product state were changed. These records are retained as historical evidence, not the final capture.
