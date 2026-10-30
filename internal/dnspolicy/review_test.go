@@ -25,7 +25,7 @@ func TestReview_F02_ValidateSourceURLAndSSRFAddrBypasses(t *testing.T) {
 
 		for _, tc := range shouldBlock {
 			if _, blocked := isBlockedSSRFAddr(tc.addr); !blocked {
-				t.Errorf("TODO(review) [F-02]: isBlockedSSRFAddr(%q) = false (%s); want true", tc.addr, tc.name)
+				t.Errorf("[F-02]: isBlockedSSRFAddr(%q) = false (%s); want true", tc.addr, tc.name)
 			}
 		}
 	})
@@ -42,7 +42,7 @@ func TestReview_F02_ValidateSourceURLAndSSRFAddrBypasses(t *testing.T) {
 
 		for _, rawURL := range shouldReject {
 			if err := ValidateSourceURL(rawURL); err == nil {
-				t.Errorf("TODO(review) [F-02]: ValidateSourceURL(%q) = nil; want %s", rawURL, ErrCodeSourceInvalidURL)
+				t.Errorf("[F-02]: ValidateSourceURL(%q) = nil; want %s", rawURL, ErrCodeSourceInvalidURL)
 			}
 		}
 	})
@@ -58,7 +58,7 @@ func TestReview_F07_SourceRegistryUpdateFromReaderOverwritesLastGoodOnParseError
 		LicenseStatus:     LicenseCommercialApproved,
 		PermittedUse:      "TEST ONLY commercial simulation",
 		DistributionNotes: "Server-side resolver compilation",
-		AttributionNotes:  "Test Feed",
+		AttributionNotes:  new("Test Feed"),
 		URL:               "https://example.com/list.txt",
 		Format:            SourceFormatPlain,
 		Category:          CategoryMalware,
@@ -76,7 +76,7 @@ func TestReview_F07_SourceRegistryUpdateFromReaderOverwritesLastGoodOnParseError
 
 	src, _ := reg.Get("src-corrupt-test")
 	if err == nil || src.Version != "1" || len(src.Entries) != 1 || src.Entries[0].Domain != "initial-good.example.com" {
-		t.Errorf("TODO(review) [F-07]: UpdateFromReader accepted a body with ParseErrors>0 and overwrote LastGood (err=%v, version=%q, entries=%+v)",
+		t.Errorf("[F-07]: UpdateFromReader accepted a body with ParseErrors>0 and overwrote LastGood (err=%v, version=%q, entries=%+v)",
 			err, src.Version, src.Entries)
 	}
 }

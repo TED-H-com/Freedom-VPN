@@ -60,12 +60,14 @@ func TestReview_F01_TwoStepDilutionWipes100PercentOfPinnedRules(t *testing.T) {
 		step2, reason := Fetch(context.Background(), client, p, step1, now.Add(10*time.Minute), 50)
 
 		pinnedRemaining := 0
-		if step2 != nil {
+		// Rejection returns nil, so inspect the unchanged last-good input for retention.
+		// D-054 §4 requires retention, not a successful result on a rejected fetch.
+		if step1 != nil {
 			pinnedSet := make(map[string]bool, len(pinnedDomains))
 			for _, d := range pinnedDomains {
 				pinnedSet[d] = true
 			}
-			for _, e := range step2.Entries {
+			for _, e := range step1.Entries {
 				if pinnedSet[e.Domain] {
 					pinnedRemaining++
 				}
@@ -73,8 +75,8 @@ func TestReview_F01_TwoStepDilutionWipes100PercentOfPinnedRules(t *testing.T) {
 		}
 
 		if reason != "delta_breach" || step2 != nil || pinnedRemaining != len(pinnedDomains) {
-			t.Errorf("TODO(review) [F-01]: two-step dilution wiped %d/%d (100%%) of pinned bootstrap domains without triggering delta_breach (got reason=%q, pinnedRemaining=%d, step2Entries=%+v)",
-				len(pinnedDomains)-pinnedRemaining, len(pinnedDomains), reason, pinnedRemaining, step2.Entries)
+			t.Errorf("[F-01]: two-step dilution wiped %d/%d (100%%) of pinned bootstrap domains without triggering delta_breach (got reason=%q, pinnedRemaining=%d, step2Entries=%+v)",
+				len(pinnedDomains)-pinnedRemaining, len(pinnedDomains), reason, pinnedRemaining, step2)
 		}
 	})
 
@@ -101,7 +103,7 @@ func TestReview_F01_TwoStepDilutionWipes100PercentOfPinnedRules(t *testing.T) {
 
 		refreshed, reason := Fetch(context.Background(), client, p, approved, now.Add(5*time.Minute), 50)
 		if reason == "" && refreshed != nil {
-			t.Errorf("TODO(review) [F-01]: refresh accepted 505x addition growth and public-suffix/internal wildcard rules (co.uk, com.tw, router.home.arpa, intranet.corp) with IncludeSubdomains=true (got reason=%q, entries=%d)",
+			t.Errorf("[F-01]: refresh accepted 505x addition growth and public-suffix/internal wildcard rules (co.uk, com.tw, router.home.arpa, intranet.corp) with IncludeSubdomains=true (got reason=%q, entries=%d)",
 				reason, len(refreshed.Entries))
 		}
 	})
@@ -137,7 +139,7 @@ func TestReview_F02_SSRFGuardBypassesAndPortAndRedirectClassification(t *testing
 
 				got, reason := Fetch(context.Background(), client, p, nil, now, 50)
 				if dialed != "" || reason != "ssrf_refused" || got != nil {
-					t.Errorf("TODO(review) [F-02]: resolved address %s bypassed SSRF guard and reached dialContext (dialed=%q, reason=%q; want dialed=\"\", reason=\"ssrf_refused\")",
+					t.Errorf("[F-02]: resolved address %s bypassed SSRF guard and reached dialContext (dialed=%q, reason=%q; want dialed=\"\", reason=\"ssrf_refused\")",
 						tc.addr, dialed, reason)
 				}
 			})
@@ -157,7 +159,7 @@ func TestReview_F02_SSRFGuardBypassesAndPortAndRedirectClassification(t *testing
 
 		got, reason := Fetch(context.Background(), client, p, nil, now, 50)
 		if dialed != "" || reason != "ssrf_refused" || got != nil {
-			t.Errorf("TODO(review) [F-02]: non-443 port in source_url %q was not refused by SSRF guard (dialed=%q, reason=%q; want dialed=\"\", reason=\"ssrf_refused\")",
+			t.Errorf("[F-02]: non-443 port in source_url %q was not refused by SSRF guard (dialed=%q, reason=%q; want dialed=\"\", reason=\"ssrf_refused\")",
 				p.SourceUrl, dialed, reason)
 		}
 	})
@@ -178,7 +180,7 @@ func TestReview_F02_SSRFGuardBypassesAndPortAndRedirectClassification(t *testing
 		p := testPayload(body, now)
 		_, reason := Fetch(context.Background(), client, p, nil, now, 50)
 		if reason != "ssrf_refused" {
-			t.Errorf("TODO(review) [F-02]: HTTP redirect to metadata endpoint was classified as reason=%q instead of \"ssrf_refused\" because fetch.go overwrites CheckRedirect",
+			t.Errorf("[F-02]: HTTP redirect to metadata endpoint was classified as reason=%q instead of \"ssrf_refused\" because fetch.go overwrites CheckRedirect",
 				reason)
 		}
 	})
@@ -199,7 +201,7 @@ func TestReview_F03_ParserMemoryAmplificationAndMaxRulesMismatch(t *testing.T) {
 
 		got, reason := Fetch(context.Background(), client, p, nil, now, 50)
 		if reason != "parse_error" || got != nil {
-			t.Errorf("TODO(review) [F-03]: hosts parser split a 200KB single line into 100,001 fields and accepted the feed with ParseErrors=0 (reason=%q, skippedUnsupported=%d)",
+			t.Errorf("[F-03]: hosts parser split a 200KB single line into 100,001 fields and accepted the feed with ParseErrors=0 (reason=%q, skippedUnsupported=%d)",
 				reason, got.Metrics.SkippedUnsupported)
 		}
 	})
@@ -232,7 +234,7 @@ func TestReview_F03_ParserMemoryAmplificationAndMaxRulesMismatch(t *testing.T) {
 
 		got, reason := Fetch(context.Background(), client, p, nil, now, 50)
 		if len(compressedBytes) < 1024 && reason == "" && got != nil {
-			t.Errorf("TODO(review) [F-03]: %d-byte gzip response transparently expanded to %d bytes of newlines, allocated 200,002 slice headers in bytes.Split, and succeeded (reason=%q)",
+			t.Errorf("[F-03]: %d-byte gzip response transparently expanded to %d bytes of newlines, allocated 200,002 slice headers in bytes.Split, and succeeded (reason=%q)",
 				len(compressedBytes), len(expanded), reason)
 		}
 	})
@@ -249,7 +251,7 @@ func TestReview_F03_ParserMemoryAmplificationAndMaxRulesMismatch(t *testing.T) {
 
 		_, reason := Fetch(context.Background(), client, p, nil, now, 50)
 		if reason == "content_too_large" {
-			t.Errorf("TODO(review) [F-03]: Fetch ran full IDNA normalization and sorting on 15,000 rules (MaxRules=500000) before failing post-parse size check with %q; MaxRules should be bounded to fit MaxEmbeddedFeedBytes (~12k rules)",
+			t.Errorf("[F-03]: Fetch ran full IDNA normalization and sorting on 15,000 rules (MaxRules=500000) before failing post-parse size check with %q; MaxRules should be bounded to fit MaxEmbeddedFeedBytes (~12k rules)",
 				reason)
 		}
 	})

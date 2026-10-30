@@ -113,7 +113,7 @@ func TestD054_SEC02_ResolvedSSRFAndRedirectRefused(t *testing.T) {
 		return (&net.Dialer{}).DialContext(ctx, network, server.Listener.Addr().String())
 	}
 	client.Transport = tr
-	if c, reason := Fetch(context.Background(), client, p, nil, now, 50); c != nil || reason != "fetch_failed" || reached {
+	if c, reason := Fetch(context.Background(), client, p, nil, now, 50); c != nil || reason != "ssrf_refused" || reached {
 		t.Fatalf("redirect: %s reached=%v", reason, reached)
 	}
 }

@@ -169,6 +169,12 @@ func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time
 			if err := json.Unmarshal(entries, &previous.Entries); err != nil {
 				return err
 			}
+			if err := tx.QueryRow(ctx, `SELECT entries FROM dns_feed_contents WHERE feed_revision_id=$1 AND content_sha256=$2 AND kind='approved_snapshot'`, rev, candidate.payload.ContentSha256).Scan(&entries); err != nil {
+				return err
+			}
+			if err := json.Unmarshal(entries, &previous.ApprovedEntries); err != nil {
+				return err
+			}
 			candidate.previous = &previous
 		}
 		_, err = tx.Exec(ctx, `UPDATE dns_feed_refresh_state SET last_attempt_at=$2,attempt_token=$3,attempt_until=$4 WHERE feed_revision_id=$1`, rev, now, candidate.token, now.Add(time.Minute))
