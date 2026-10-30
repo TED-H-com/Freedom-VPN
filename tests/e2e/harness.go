@@ -481,6 +481,7 @@ type forwardView struct {
 	Present      bool
 	Policy       string
 	Baseline     bool
+	Generation   int
 	MemberAccept int
 	Excerpt      string
 }
@@ -520,6 +521,9 @@ func parseForwardChain(text string) forwardView {
 		if strings.Contains(trim, "fvpn_baseline=1") {
 			view.Baseline = true
 		}
+		if n, ok := forwardGeneration(trim); ok && n > view.Generation {
+			view.Generation = n
+		}
 		if memberAcceptRule(trim) {
 			view.MemberAccept++
 		}
@@ -537,6 +541,27 @@ func parseForwardChain(text string) forwardView {
 // memberAcceptRule counts a member-path accept on fvmb0. NetBird inserts
 // fvnb0 accepts into the same chain while the baseline marker is still set,
 // and the input and output chains are policy accept even when forward drops.
+func forwardGeneration(line string) (int, bool) {
+	const key = "fvpn_generation="
+	i := strings.Index(line, key)
+	if i < 0 {
+		return 0, false
+	}
+	n := 0
+	digits := false
+	for _, c := range line[i+len(key):] {
+		if c < '0' || c > '9' {
+			break
+		}
+		digits = true
+		n = n*10 + int(c-'0')
+	}
+	if !digits {
+		return 0, false
+	}
+	return n, true
+}
+
 func memberAcceptRule(line string) bool {
 	if strings.Contains(line, "policy ") || strings.Contains(line, "drop") || !strings.Contains(line, "accept") {
 		return false
