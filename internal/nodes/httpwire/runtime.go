@@ -89,14 +89,13 @@ func Open(ctx context.Context, pool *pgxpool.Pool, c config.Nodes, log *slog.Log
 		if e := fleet.ObserveReportTx(ctx, tx, fleetupdate.Identity{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId}, report); e != nil {
 			return e
 		}
-		if _, e := report.Netbird.PeerId.Get(); e == nil {
-			payload, e := canonjson.Marshal(map[string]any{"schema_version": 1, "report_id": report.ReportId})
-			if e != nil {
-				return e
-			}
-			return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: report.NodeIncarnationId, AggregateType: "node-incarnation", AggregateVersion: "1", EventType: "node.peer.observe", SchemaVersion: 1, Payload: payload})
+		// Baseline policy acknowledgements also progress without a management
+		// peer ID; the worker leaves peer_readback pending until one is confirmed.
+		payload, e := canonjson.Marshal(map[string]any{"schema_version": 1, "report_id": report.ReportId})
+		if e != nil {
+			return e
 		}
-		return nil
+		return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: report.NodeIncarnationId, AggregateType: "node-incarnation", AggregateVersion: "1", EventType: "node.peer.observe", SchemaVersion: 1, Payload: payload})
 	}))
 	return r, nil
 }
