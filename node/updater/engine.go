@@ -74,6 +74,9 @@ type Engine struct {
 	// lockHeld is true while this process already owns the update lock.
 	// Flush and Retain run from inside Run and must not take it again.
 	lockHeld bool
+	// Probe validation runs afresh under the updater lock for each issuance.
+	probeEnv      probeEnvironment
+	probeRefusals map[probeRefusal]bool
 }
 
 // Close closes the journal when this engine opened it.
