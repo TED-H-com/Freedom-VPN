@@ -219,6 +219,7 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 	classid := ClassID(minor)
 	up := usageCounter(dirUpload, m.Bindings[0].DeviceID)
 	dn := usageCounter(dirDownload, m.Bindings[0].DeviceID)
+	addr := m.Bindings[0].AllowedV4[0].Addr().String()
 	in := m.Datapath.MemberIngress
 	ul := m.Datapath.Uplink
 	timeout := map[string]any{"timeout": 30, "expires": 29}
@@ -237,11 +238,11 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 			ruleExpr("forward", matchPayload("==", "daddr", "@denied_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchPayload("==", "daddr", "@host_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", "@probe_v4"), matchConcat("@probe_dst_v4"), namedCounter(counterProbeUp), map[string]any{"accept": nil}),
-			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), namedCounter(up), manglePriority(classid), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", addr), namedCounter(up), manglePriority(classid), map[string]any{"accept": nil}),
 			ruleExpr("forward", matchPayload("!=", "daddr", "@allowed_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchCTState("!=", "established", "related"), namedCounter(counterNoDown), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "daddr", "@probe_v4"), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
-			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), namedCounter(dn), manglePriority(classid), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "daddr", addr), namedCounter(dn), manglePriority(classid), map[string]any{"accept": nil}),
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "input", "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}},
 			ruleExpr("input", matchMetaIface("iifname", in), map[string]any{"drop": nil}),
 			ruleExpr("input", matchPayload("==", "saddr", "100.64.0.0/10"), map[string]any{"drop": nil}),
