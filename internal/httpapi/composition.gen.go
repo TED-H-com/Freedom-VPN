@@ -629,8 +629,6 @@ func (c *Composite) RevokeEnrollment(ctx context.Context, r gen.RevokeEnrollment
 	}
 	return nil, errNotImplemented
 }
-
-// TODO(w3-wire-nodes follow-up): implement immutable member groups; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.
 func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -641,8 +639,6 @@ func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRe
 	}
 	return nil, errNotImplemented
 }
-
-// TODO(w3-wire-nodes follow-up): implement immutable member groups; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.
 func (c *Composite) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -903,8 +899,6 @@ func (c *Composite) SubmitObservation(ctx context.Context, r gen.SubmitObservati
 	}
 	return nil, errNotImplemented
 }
-
-// TODO(w3-wire-nodes follow-up): authorize and deliver issued resolver documents; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.
 func (c *Composite) GetResolverDocument(ctx context.Context, r gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {

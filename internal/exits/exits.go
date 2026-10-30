@@ -315,11 +315,17 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 
 	_, _, principal := nodes.ResolveAdminActor(ctx, p.Principal)
 
-	reqCanon, err := canonjson.Marshal(map[string]any{
+	requestFields := map[string]any{
 		"node_id":            p.NodeID.String(),
 		"publication_intent": string(p.Request.PublicationIntent),
 		"reason":             p.Request.Reason,
-	})
+	}
+	// Preserve pre-D-057 replay hashes when membership was omitted. An
+	// explicit empty replacement is a distinct command from omission.
+	if p.Request.GroupIds != nil {
+		requestFields["group_ids"] = *p.Request.GroupIds
+	}
+	reqCanon, err := canonjson.Marshal(requestFields)
 	if err != nil {
 		return api.Operation{}, "", err
 	}
@@ -491,6 +497,14 @@ func (s *Service) SetPublicationTx(ctx context.Context, tx pgx.Tx, p SetPublicat
 		}
 	}
 
+	groups := nodeDetail.MemberGroupIds
+	if p.Request.GroupIds != nil {
+		groups, err = replacePublicationGroups(ctx, tx, exitID, *p.Request.GroupIds)
+		if err != nil {
+			return api.Operation{}, "", err
+		}
+	}
+
 	now := s.now().UTC()
 	currentGen, err := strconv.ParseUint(currentGenStr, 10, 64)
 	if err != nil {
@@ -572,6 +586,7 @@ func (s *Service) SetPublicationTx(ctx context.Context, tx pgx.Tx, p SetPublicat
 			"publication_intent":   oldIntent,
 			"publication_observed": oldObserved,
 			"resource_version":     currentVerStr,
+			"group_ids":            nodeDetail.MemberGroupIds,
 		},
 		After: map[string]any{
 			"publication_intent":   string(p.Request.PublicationIntent),
@@ -579,6 +594,7 @@ func (s *Service) SetPublicationTx(ctx context.Context, tx pgx.Tx, p SetPublicat
 			"operation_id":         op.OperationId.String(),
 			"reason":               reason,
 			"resource_version":     newVer,
+			"group_ids":            groups,
 		},
 		Fields: []string{
 			"publication_intent",
@@ -586,6 +602,7 @@ func (s *Service) SetPublicationTx(ctx context.Context, tx pgx.Tx, p SetPublicat
 			"operation_id",
 			"reason",
 			"resource_version",
+			"group_ids",
 		},
 	})
 	if err != nil {

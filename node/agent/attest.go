@@ -80,14 +80,14 @@ func (e *Engine) evaluate(ctx context.Context) {
 	e.decision = Decide(e.input())
 }
 
-// answerHealthOnBoot answers at start only when a desired document is already
-// loaded or a sync has already been attempted. It does not probe when no
-// challenge is present, and it does not install member forwarding.
+// answerHealthOnBoot answers at start only when a verified desired document
+// is already in force. It does not probe when no challenge is present, and
+// it does not install member forwarding.
 func (e *Engine) answerHealthOnBoot(ctx context.Context) {
 	if _, ok := e.matchingChallenge(); !ok {
 		return
 	}
-	if e.desired == nil && !e.desiredSynced {
+	if !e.healthAnswerReady() {
 		return
 	}
 	e.refreshDesired()
@@ -108,9 +108,11 @@ func (e *Engine) answerHealth(ctx context.Context) {
 	if !now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) {
 		return
 	}
-	// A missing document before the first sync is not a final DNS failure.
-	// The updater accepts a binding failure immediately.
-	if e.desired == nil && !e.desiredSynced {
+	// Write only after a verified document is in hand. A transport error,
+	// a 304 with nothing loaded, or a body that fails verification leaves
+	// desired nil and writes nothing. The updater keeps polling until its
+	// deadline. That deadline, not a premature failed answer, is fail-closed.
+	if !e.healthAnswerReady() {
 		return
 	}
 	e.refreshDesired()
@@ -176,6 +178,13 @@ func (e *Engine) matchingChallenge() (healthattest.Challenge, bool) {
 		return healthattest.Challenge{}, false
 	}
 	return ch, true
+}
+
+// healthAnswerReady is a verified desired document from a completed sync.
+// Loading an in-force stored envelope counts: that sync finished in an
+// earlier process. A transport error does not.
+func (e *Engine) healthAnswerReady() bool {
+	return e.desired != nil && e.desiredSynced
 }
 
 func (e *Engine) probeFresh(ch healthattest.Challenge) bool {

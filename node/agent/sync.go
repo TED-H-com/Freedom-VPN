@@ -21,32 +21,40 @@ import (
 )
 
 func (e *Engine) syncDesired(ctx context.Context) error {
-	// A 304 and a transport error are still an attempt. Boot must not treat
-	// "no document yet" as a finished DNS failure before this runs.
-	defer func() { e.desiredSynced = true }()
-	body, etag, err := e.client.DesiredState(ctx, e.desiredETag)
+	// No verified document means no validator. If-None-Match is omitted,
+	// so an expired envelope stored from the previous process cannot 304.
+	match := ""
+	if e.desired != nil {
+		match = e.desiredETag
+	}
+	body, etag, err := e.client.DesiredState(ctx, match)
 	if errors.Is(err, controlclient.ErrNotModified) {
 		// A 304 is not a new document and does not move the lease (§14.7).
+		e.noteDesiredSync()
 		return nil
 	}
 	if isRevoked(err) {
 		e.markRevoked(ctx)
+		e.noteDesiredSync()
 		return nil
 	}
 	if err != nil {
+		// A transport error is not a completed sync. With no document in
+		// hand the updater keeps polling until its deadline.
+		if e.desired != nil {
+			e.noteDesiredSync()
+		}
 		e.log.Warn("desired state", "err", safeErr(err))
 		return nil
 	}
+	e.noteDesiredSync()
 	now, accept := e.verifyTime()
 	if !accept {
 		return nil
 	}
 	ds, err := verifyDesired(body, e.trust, now)
-	if err != nil || ds.NodeId != e.nodeID || ds.NodeIncarnationId != e.incID || ds.SchemaVersion != api.DesiredStateSchemaVersionN1 || !ds.ExpiresAt.After(ds.IssuedAt) || uint64(ds.ConfigGeneration) == 0 {
+	if err != nil || !desiredInForce(ds, e.nodeID, e.incID, now) {
 		e.log.Warn("desired state rejected")
-		return nil
-	}
-	if now.Before(ds.IssuedAt) || !now.Before(ds.ExpiresAt) {
 		return nil
 	}
 	gen := uint64(ds.ConfigGeneration)
@@ -340,6 +348,25 @@ func (e *Engine) syncBootstrap(ctx context.Context) error {
 	e.bootstrapLost = false
 	e.log.Info("bootstrap stored")
 	return nil
+}
+
+// noteDesiredSync records a desired-state response, or that a verified
+// document is already held. A transport error with desired == nil does
+// not call it.
+func (e *Engine) noteDesiredSync() {
+	e.desiredSynced = true
+}
+
+// desiredInForce is this node's document inside [IssuedAt, ExpiresAt).
+// The signature check is verifyDesired. The caller still has to do it.
+func desiredInForce(ds api.DesiredState, node, inc uuid.UUID, now time.Time) bool {
+	if ds.NodeId != node || ds.NodeIncarnationId != inc {
+		return false
+	}
+	if ds.SchemaVersion != api.DesiredStateSchemaVersionN1 || !ds.ExpiresAt.After(ds.IssuedAt) || uint64(ds.ConfigGeneration) == 0 {
+		return false
+	}
+	return !now.Before(ds.IssuedAt) && now.Before(ds.ExpiresAt)
 }
 
 func verifyDesired(raw []byte, ts *envelope.TrustStore, now time.Time) (api.DesiredState, error) {

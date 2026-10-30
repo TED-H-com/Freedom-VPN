@@ -36,6 +36,32 @@ func testPayload(body string, now time.Time) api.ThreatFeedPayload {
 	return api.ThreatFeedPayload{Provider: "TEST ONLY", FeedCode: "test-feed", LicenseName: "TEST ONLY", LicenseUrl: "https://example.com/license", CommercialUseBasis: "TEST ONLY permission for fixture use", SourceUrl: "https://example.com/feed", ContentSha256: digest(body), Format: api.ThreatFeedPayloadFormatDomainList, Categories: []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware}, MaxSizeBytes: 4096, ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(30 * 24 * time.Hour), UpdateIntervalSeconds: 300}
 }
 
+func TestD054_DNS01_AdditionsAndDomainIsolationAreIndependentGuards(t *testing.T) {
+	now := time.Now().UTC()
+	body := "a.example.com\n"
+	client := localFeed(t, &body)
+	p := testPayload(body, now)
+	approved, reason := Fetch(t.Context(), client, p, nil, now, 50)
+	if reason != "" {
+		t.Fatal(reason)
+	}
+	// Only valid ordinary domains: growth must fail independently of suffix checks.
+	body = "a.example.com\nb.example.com\nc.example.com\n"
+	if c, reason := Fetch(t.Context(), client, p, approved, now, 50); c != nil || reason != "delta_breach" {
+		t.Fatalf("unbounded additions: %+v %s", c, reason)
+	}
+	// Even a pinned bootstrap cannot block registration or local-name boundaries.
+	for _, domain := range []string{"co.uk", "com.tw", "github.io", "router.home.arpa", "host.corp", "host.lan", "host.internal", "host.local", "host.localhost"} {
+		t.Run(domain, func(t *testing.T) {
+			body = domain + "\n"
+			p := testPayload(body, now)
+			if c, reason := Fetch(t.Context(), client, p, nil, now, 50); c != nil || reason != "parse_error" {
+				t.Fatalf("unsafe pinned bootstrap: %+v %s", c, reason)
+			}
+		})
+	}
+}
+
 func TestD054_DNS01_BootstrapAndRefreshGuards(t *testing.T) {
 	now := time.Date(2026, 10, 29, 0, 0, 0, 0, time.UTC)
 	body := "A.example.com\nb.example.com\nc.example.com\nd.example.com\n"
@@ -113,7 +139,7 @@ func TestD054_SEC02_ResolvedSSRFAndRedirectRefused(t *testing.T) {
 		return (&net.Dialer{}).DialContext(ctx, network, server.Listener.Addr().String())
 	}
 	client.Transport = tr
-	if c, reason := Fetch(context.Background(), client, p, nil, now, 50); c != nil || reason != "fetch_failed" || reached {
+	if c, reason := Fetch(context.Background(), client, p, nil, now, 50); c != nil || reason != "ssrf_refused" || reached {
 		t.Fatalf("redirect: %s reached=%v", reason, reached)
 	}
 }

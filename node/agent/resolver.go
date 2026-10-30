@@ -81,6 +81,10 @@ func (e *Engine) applyResolver(ctx context.Context) {
 		e.noteResolver(ref, body, api.DnsPolicyEvidenceOutcomeFailed, api.ErrorCodeVALIDATIONFAILED, "Resolver document failed validation.")
 		return
 	}
+	if e.dnsCredDetail != "" {
+		e.noteResolver(ref, body, api.DnsPolicyEvidenceOutcomeFailed, api.ErrorCodeFORBIDDEN, e.dnsCredDetail)
+		return
+	}
 	if e.dnsApply == nil {
 		e.noteResolver(ref, body, api.DnsPolicyEvidenceOutcomeNotRun, api.ErrorCodeDEPENDENCYUNAVAILABLE, "Resolver policy did not run.")
 		return

@@ -290,6 +290,9 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		CurrentReleaseId:  presence.FromPointer(currentRelease),
 		LastGoodReleaseId: presence.FromPointer(lastGoodRelease),
 	}
+	if lastSeenAt != nil {
+		*lastSeenAt = lastSeenAt.UTC()
+	}
 	detail.LastSeenAt = presence.FromPointer(lastSeenAt)
 	if notes != "" {
 		detail.Notes = presence.FromPointer(&notes)
@@ -299,7 +302,10 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 	if v, err := decstr.Parse(resourceVer); err == nil {
 		detail.ResourceVersion = v
 	}
-	detail.CreatedAt = createdAt
+	detail.CreatedAt = createdAt.UTC()
+	if retiredAt != nil {
+		*retiredAt = retiredAt.UTC()
+	}
 	detail.RetiredAt = presence.FromPointer(retiredAt)
 
 	if len(capacityBytes) > 0 {
@@ -342,6 +348,7 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		}
 	}
 	detail.MemberGroupIds = groupIDs
+	detail.GroupIds = &groupIDs
 
 	return detail, FormatETag(resourceVer), nil
 }

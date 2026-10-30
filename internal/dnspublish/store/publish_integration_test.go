@@ -210,18 +210,18 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT status, observed_refs::text FROM operations WHERE id = $1`, uuid.MustParse(operationID(t, ev1))).Scan(&opStatus, &observed); err != nil {
 		t.Fatal(err)
 	}
-	if opStatus != "pending" || !strings.Contains(observed, stored.DocumentHash) {
-		t.Fatalf("operation status %s observed %s", opStatus, observed)
+	if opStatus != "running" {
+		t.Fatalf("publication must await desired_state_compile, got %s", opStatus)
 	}
 	var operationEvidence struct {
 		Document struct {
-			Generation    string `json:"generation"`
-			ContentSHA256 string `json:"content_sha256"`
+			Reference string `json:"reference"`
 		} `json:"dns_document"`
 	}
-	if err := json.Unmarshal([]byte(observed), &operationEvidence); err != nil || operationEvidence.Document.Generation != stored.PolicyGeneration.String() || operationEvidence.Document.ContentSHA256 != stored.DocumentHash {
-		t.Fatalf("revision 5 publication evidence: %v", err)
+	if err := json.Unmarshal([]byte(observed), &operationEvidence); err != nil || operationEvidence.Document.Reference != "dns_resolver_document:"+originalDocument.DocumentID.String() {
+		t.Fatalf("persisted publication read-back reference: %s %v", observed, err)
 	}
+
 	var audit string
 	if err := pool.QueryRow(ctx, `SELECT coalesce(string_agg(after_diff::text, ','), '') FROM audit_events WHERE action IN ('dns.publish', 'dns.withdraw')`).Scan(&audit); err != nil {
 		t.Fatal(err)

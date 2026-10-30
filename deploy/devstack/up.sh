@@ -69,7 +69,8 @@ tag() {
     fi
     docker tag "$digest" "$name"
 }
-tag "postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f" "fvpn-devstack-postgres:17"
+docker build --iidfile "$STATE/render/postgres.image" -t fvpn-devstack-postgres:17 "$ROOT/deploy/backup/postgres"
+export FVPN_E2E_IMAGE_POSTGRES=$(cat "$STATE/render/postgres.image")
 tag "nginx@sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce" "fvpn-devstack-nginx:1.30.0"
 tag "coredns/coredns@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97" "fvpn-devstack-coredns:1.12.0"
 tag "adguard/adguardhome@sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02" "fvpn-devstack-adguard:v0.107.59"
@@ -118,6 +119,18 @@ cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-
 cp "$ROOT/deploy/devstack/Dockerfile.node" "$ctx/Dockerfile"
 docker build --iidfile "$ctx/image.id" -t fvpn-devstack-node:local "$ctx"
 export FVPN_E2E_IMAGE_NODE=$(cat "$ctx/image.id")
+
+# Serve the actual built Portal at the public origin, including SPA returns.
+# A harness may supply an already-built directory; otherwise build this tree.
+if [ -n "${FVPN_E2E_PORTAL_DIST:-}" ]; then
+    portal_dist=$FVPN_E2E_PORTAL_DIST
+else
+    (cd "$ROOT/apps/portal" && npm ci --no-audit --no-fund && npm run build)
+    portal_dist=$ROOT/apps/portal/dist
+fi
+test -f "$portal_dist/index.html"
+mkdir -p "$STATE/portal"
+cp -R "$portal_dist/." "$STATE/portal/"
 
 $COMPOSE up -d postgres idp payment origin netbird gateway coredns adguard
 
