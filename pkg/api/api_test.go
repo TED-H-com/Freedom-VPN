@@ -58,6 +58,7 @@ var registry = map[string]func() any{
 	"MemberSelf":                  func() any { return new(MemberSelf) },
 	"MemberUsage":                 func() any { return new(MemberUsage) },
 	"NodeDetail":                  func() any { return new(NodeDetail) },
+	"NodeIncarnationList":         func() any { return new(NodeIncarnationList) },
 	"NodeList":                    func() any { return new(NodeList) },
 	"NodePatch":                   func() any { return new(NodePatch) },
 	"ObservationAccepted":         func() any { return new(ObservationAccepted) },

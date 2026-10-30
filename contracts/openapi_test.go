@@ -15,7 +15,7 @@ import (
 
 // specEndpoints is the endpoint table of §14.2 to §14.4, relative to /api/v1.
 var specEndpoints = []string{
-	// §14.2 Admin (27, including D-057 and D-065)
+	// §14.2 Admin (28, including D-057, D-065 and ENR-03)
 	"GET /admin/fleet-config",
 	"PUT /admin/fleet-config",
 	"GET /admin/groups",
@@ -25,6 +25,7 @@ var specEndpoints = []string{
 	"GET /admin/enrollments/{enrollment_id}",
 	"POST /admin/enrollments/{enrollment_id}/revoke",
 	"GET /admin/nodes/{node_id}",
+	"GET /admin/nodes/{node_id}/incarnations",
 	"PATCH /admin/nodes/{node_id}",
 	"PUT /admin/nodes/{node_id}/publication",
 	"POST /admin/nodes/{node_id}/revoke",
@@ -72,7 +73,8 @@ var specStatuses = map[string][]string{
 	"GET /admin/groups": {"200"}, "POST /admin/groups": {"201"}, "GET /agent/resolver-documents/{document_id}": {"200"},
 	"GET /admin/nodes": {"200"}, "POST /admin/enrollments": {"201"}, "GET /admin/enrollments/{enrollment_id}": {"200"},
 	"POST /admin/enrollments/{enrollment_id}/revoke": {"200"}, "GET /admin/nodes/{node_id}": {"200"},
-	"PATCH /admin/nodes/{node_id}": {"200", "202"}, "PUT /admin/nodes/{node_id}/publication": {"202"},
+	"GET /admin/nodes/{node_id}/incarnations": {"200"},
+	"PATCH /admin/nodes/{node_id}":            {"200", "202"}, "PUT /admin/nodes/{node_id}/publication": {"202"},
 	"POST /admin/nodes/{node_id}/revoke": {"202"}, "DELETE /admin/nodes/{node_id}": {"202"}, "GET /admin/members": {"200"},
 	"GET /admin/members/{member_id}": {"200"}, "PATCH /admin/members/{member_id}": {"200", "202"},
 	"POST /admin/members/{member_id}/grants": {"202"}, "GET /admin/policies": {"200"}, "POST /admin/policies": {"201"},
@@ -108,12 +110,12 @@ func operations(t *testing.T) []opInfo {
 	return ops
 }
 
-func TestAPI01_EndpointCountIs46(t *testing.T) {
+func TestAPI01_EndpointCountIs47(t *testing.T) {
 	ops := operations(t)
-	if len(ops) != 46 {
-		t.Fatalf("got %d operations, want 46 (§14.1, D-015/D-056/D-057/D-065)", len(ops))
+	if len(ops) != 47 {
+		t.Fatalf("got %d operations, want 47 (§14.1, D-015/D-056/D-057/D-065, ENR-03)", len(ops))
 	}
-	if len(specEndpoints) != 46 {
+	if len(specEndpoints) != 47 {
 		t.Fatalf("spec table has %d entries", len(specEndpoints))
 	}
 	var got []string
