@@ -669,6 +669,14 @@ func (r *runner) controlStop(ctx context.Context) {
 
 func (r *runner) revoke(ctx context.Context, admin *session, nodeID uuid.UUID) {
 	rec := Record{ID: "revoke", Title: "Operator revoke", Spec: []string{"§5", "§19 AT13"}, Status: StatusFail}
+	// Control-loss probes can outlast recent_auth_seconds. Reauthenticate
+	// through the normal OIDC flow; never extend or bypass the security window.
+	admin = r.mustAdmin(ctx)
+	recPathNote(&rec)("fresh_admin_auth", boolText(admin != nil))
+	if admin == nil {
+		r.record(rec)
+		return
+	}
 	detail, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String(), nil, nil)
 	if err != nil || detail.Status != 200 {
 		rec.Observations = append(rec.Observations, Observation{Name: "get", Detail: httpDetail(detail, err)})
