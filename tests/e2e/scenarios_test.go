@@ -21,6 +21,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -51,6 +52,7 @@ func TestE2E_Acceptance(t *testing.T) {
 	if admin == nil {
 		return
 	}
+	run.threatFeed(ctx, admin)
 	good, bad := run.releases(ctx, admin)
 	nodeID := run.enroll(ctx, admin)
 	run.desired(ctx)
@@ -69,6 +71,7 @@ type runner struct {
 	t              *testing.T
 	lab            *lab
 	dir            string
+	counts         map[Status]int
 	bad            bool
 	runID          string
 	sourceCommit   string
@@ -88,6 +91,11 @@ type runner struct {
 
 func (r *runner) record(rec Record) {
 	rec.RunID, rec.SourceCommit = r.runID, r.sourceCommit
+	if r.counts == nil {
+		r.counts = map[Status]int{}
+	}
+	r.counts[rec.Status]++
+	r.t.Logf("scenario %s: %s", rec.ID, rec.Status)
 	if rec.Status != StatusPass {
 		r.bad = true
 	}
@@ -97,6 +105,7 @@ func (r *runner) record(rec Record) {
 }
 
 func (r *runner) finish() {
+	r.t.Logf("acceptance summary: pass=%d blocked=%d fail=%d run=%s source=%s", r.counts[StatusPass], r.counts[StatusBlocked], r.counts[StatusFail], r.runID, r.sourceCommit)
 	if r.bad {
 		r.t.Error("one or more scenarios are blocked or failed; see docs/e2e/runs")
 	}
@@ -413,10 +422,10 @@ func (r *runner) usage(ctx context.Context, member *session) {
 func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.UUID) {
 	rec := Record{ID: "release-register", Title: "fvpn-release packages registered and verified", Spec: []string{"§13.3", "§13.4"}, Status: StatusFail}
 	var ids []uuid.UUID
-	for i, spec := range []struct{ product, seq, commit, build, byte string }{
-		{"0.1.0", "1", r.sourceCommit, "e2e-boot", ""},
-		{"1.0.1", "2", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "e2e-good", "good\n"},
-		{"1.0.2", "3", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "e2e-bad", "bad\n"},
+	for i, spec := range []struct{ product, seq, build string }{
+		{"0.1.0", "1", "e2e-boot"},
+		{"1.0.1", "2", "e2e-good"},
+		{"1.0.2", "3", "e2e-bad"},
 	} {
 		dir := r.t.TempDir()
 		pkg := filepath.Join(dir, "tree")
@@ -425,25 +434,17 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 			r.record(rec)
 			return
 		}
-		if err := os.WriteFile(filepath.Join(pkg, "bin", "marker"), []byte(spec.byte), 0o644); err != nil {
-			rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "write"})
-			r.record(rec)
-			return
-		}
 		installed := map[string]string{}
 		for _, arch := range []string{"amd64", "arm64"} {
-			if i == 0 {
-				// TEST ONLY boot release: package the same tree binaries the
-				// node image runs, so its release identity is not an update fixture.
-				for _, name := range []string{"agent", "watchdog", "updater"} {
-					cmd := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Join(pkg, "bin", "fvpn-"+name), "./node/"+name+"/cmd/fvpn-"+name)
-					cmd.Dir = r.lab.root
-					cmd.Env = append(os.Environ(), "GOOS=linux", "GOARCH="+arch, "CGO_ENABLED=0", "GOTOOLCHAIN=local")
-					if err := cmd.Run(); err != nil {
-						rec.Observations = append(rec.Observations, Observation{Name: "boot_build", Detail: arch + " " + name + " failed"})
-						r.record(rec)
-						return
-					}
+			// Both architectures contain real binaries built from this tree.
+			for _, name := range []string{"agent", "watchdog", "updater"} {
+				cmd := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Join(pkg, "bin", "fvpn-"+name), "./node/"+name+"/cmd/fvpn-"+name)
+				cmd.Dir = r.lab.root
+				cmd.Env = append(os.Environ(), "GOOS=linux", "GOARCH="+arch, "CGO_ENABLED=0", "GOTOOLCHAIN=local")
+				if err := cmd.Run(); err != nil {
+					rec.Observations = append(rec.Observations, Observation{Name: "binary_build", Detail: arch + " " + name + " failed"})
+					r.record(rec)
+					return
 				}
 			}
 			var size uint64
@@ -464,11 +465,25 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 				return
 			}
 		}
-		id, canonical, err := r.lab.signedRelease(dir, spec.product, spec.seq, spec.commit, spec.build, installed)
+		id, canonical, err := r.lab.signedRelease(dir, spec.product, spec.seq, r.sourceCommit, spec.build, installed)
 		if err != nil {
 			rec.Observations = append(rec.Observations, Observation{Name: "manifest", Detail: err.Error()})
 			r.record(rec)
 			return
+		}
+		var manifest struct {
+			Signed json.RawMessage `json:"signed"`
+		}
+		if err := json.Unmarshal(canonical, &manifest); err != nil {
+			r.t.Fatal(err)
+		}
+		digest, err := canonjson.HashHex(manifest.Signed)
+		if err != nil {
+			r.t.Fatal(err)
+		}
+		rec.Observations = append(rec.Observations, Observation{Name: "manifest_sha256_" + spec.product, Detail: digest})
+		if err := r.lab.candidateConfig(id, spec.product); err != nil {
+			r.t.Fatal(err)
 		}
 		if err := r.lab.uploadRelease(ctx, id, dir, canonical); err != nil {
 			rec.Observations = append(rec.Observations, Observation{Name: "upload", Detail: err.Error()})
@@ -665,6 +680,7 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		rec.Observations = append(rec.Observations, Observation{Name: w, Detail: boolText(words[w])})
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "health_json", Detail: emptyDash(journal.Health)})
+	rec.Observations = append(rec.Observations, Observation{Name: "health_attestation", Detail: emptyDash(journal.Attestation)})
 	rec.Observations = append(rec.Observations, Observation{Name: "error_code", Detail: emptyDash(journal.ErrorCode)})
 	rec.Observations = append(rec.Observations, Observation{Name: "result_last_error", Detail: emptyDash(journal.LastError)})
 	if excerpt := excerptMatching(blob, []string{"health_json", "error_code", "tunnel", "dns_policy", "internet_only", "HASH", "rollback", "last_error", "locally_succeeded"}, 6); excerpt != "" {
@@ -802,7 +818,7 @@ func (r *runner) writeUpdaterConfig() error {
 		"release_trust": "/etc/vpn-node/trust.json", "desired_trust": "/etc/vpn-node/trust.json",
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
 		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
-		"stop_command":     []string{"/bin/true"}, "start_command": []string{"/bin/true"},
+		"stop_command":     []string{"/usr/local/bin/agent-service.sh", "stop"}, "start_command": []string{"/usr/local/bin/agent-service.sh", "start"},
 		"result_url":               r.lab.agent + "/api/v1/agent/update-results",
 		"allowed_artifact_origins": []string{r.lab.agent},
 		"mtls_cert":                "/var/lib/vpn-node/identity/cert.pem",
@@ -1079,10 +1095,11 @@ func pickAutoGroup(groups []nbGroup) string {
 }
 
 type journalView struct {
-	Text      string
-	Health    string
-	ErrorCode string
-	LastError string
+	Text        string
+	Health      string
+	ErrorCode   string
+	LastError   string
+	Attestation string
 }
 
 func (r *runner) readJournal(releaseID string) journalView {
@@ -1124,6 +1141,17 @@ func (r *runner) readJournal(releaseID string) journalView {
 			var evStage, evDetail string
 			if rows.Scan(&seq, &evStage, &evDetail) == nil {
 				fmtLine("event seq=" + itoa(seq) + " stage=" + evStage + " detail=" + evDetail)
+				var detail map[string]json.RawMessage
+				if json.Unmarshal([]byte(evDetail), &detail) == nil && string(detail["kind"]) == `"health_attest"` {
+					safe := map[string]json.RawMessage{}
+					for _, key := range []string{"kind", "phase", "reason", "internet_only_reason", "dns_policy_reason", "tunnel_probe_reason", "agent_internet_only", "agent_dns_policy", "agent_tunnel_probe", "agent_version", "netbird_version", "published"} {
+						if v, ok := detail[key]; ok {
+							safe[key] = v
+						}
+					}
+					b, _ := json.Marshal(safe)
+					view.Attestation = string(b)
+				}
 			}
 		}
 		rows.Close()
@@ -1143,7 +1171,7 @@ func updaterBlockedNote(v journalView) string {
 	}
 	note := "journal health_json " + emptyDash(v.Health) + "; error_code " + emptyDash(v.ErrorCode) + "; result last_error " + emptyDash(v.LastError)
 	if strings.Contains(v.Health, `"internet_only":"failed"`) && strings.Contains(v.Health, `"dns_policy":"failed"`) && strings.Contains(v.Health, `"tunnel_probe":"failed"`) {
-		note += ". Stock NodeChecks Isolation, DNSPolicy and TunnelProbe return failed with no lab probe. locally_succeeded was not reached"
+		note += ". D-053 requires a live candidate agent attestation; missing or failed checks remain fail closed. Owners: w2-agent-core and w4-node-updater. locally_succeeded was not reached"
 	}
 	if v.ErrorCode == "ROLLBACK_FAILED" {
 		note += ". ROLLBACK_FAILED is the rollback decision when no last-good release can be restored"

@@ -375,7 +375,7 @@ func (l *lab) signedRelease(dir, product, sequence, commit, buildID string, inst
 	signed, _, err := release.BuildManifest(release.BuildInput{
 		ReleaseID: id.String(), ProductVersion: product, ReleaseSequence: sequence,
 		SourceCommit: commit, BuildID: buildID,
-		Components: api.ManifestComponents{NodeAgent: "1.0.0", NodeUpdater: "1.0.0", Netbird: "0.82.0", Enforcement: "1.0.0"},
+		Components: api.ManifestComponents{NodeAgent: product, NodeUpdater: "1.0.0", Netbird: "0.82.0", Enforcement: "1.0.0"},
 		Compatibility: api.ManifestCompatibility{
 			ControlApiMajor: 1, PolicySchemaVersions: []int{1}, UsageEventSchemaVersions: []int{1},
 			MinimumUpdaterVersion: "1.0.0", StateSchemaFrom: []int{1}, StateSchemaTo: 1,
@@ -638,4 +638,23 @@ func scanWords(blob string) map[string]bool {
 		out[w] = strings.Contains(blob, w)
 	}
 	return out
+}
+
+// candidateConfig binds runtime identity to the signed candidate. No health
+// response is seeded: only the running product agent may answer D-053.
+func (l *lab) candidateConfig(id uuid.UUID, version string) error {
+	raw, err := os.ReadFile(filepath.Join(l.state, "node", "etc", "agent-run.json"))
+	if err != nil {
+		return err
+	}
+	var cfg map[string]any
+	if err := json.Unmarshal(raw, &cfg); err != nil {
+		return err
+	}
+	cfg["release_id"], cfg["agent_release"] = id.String(), version
+	raw, err = json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	return writeAtomic(filepath.Join(l.state, "node", "var", "e2e", "agent-"+id.String()+".json"), raw)
 }
