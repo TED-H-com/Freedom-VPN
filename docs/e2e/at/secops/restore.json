@@ -8,15 +8,15 @@
   "kind": "logical snapshot restore and service replay",
   "ledger_rows": 10,
   "previous_ack": 10,
-  "protocol_seconds": 0.180266304,
+  "protocol_seconds": 0.043905202,
   "replayed_accepted": 5,
   "replayed_duplicate": 5,
   "restored_ack": "5",
   "second_replay_duplicate": 10,
   "status": "passed",
-  "utc": "2026-10-29T23:40:38.649071971Z",
-  "restore_seconds": 0.6992196759674698,
-  "isolated_subset_seconds": 3.224087342969142,
+  "utc": "2026-10-30T02:10:30.884902204Z",
+  "restore_seconds": 0.7048465929692611,
+  "isolated_subset_seconds": 3.1470113589894027,
   "network": "none",
   "published_ports": [],
   "commands": [
@@ -61,7 +61,7 @@
       "docker",
       "cp",
       "fvpn-w4-secops-control:/var/lib/fvpn/vault",
-      "<worktree>/.agent/secops/restore-vault-hiqjtyi9/vault"
+      "<worktree>/.agent/secops/restore-vault-micny83t/vault"
     ],
     [
       "docker",
@@ -92,7 +92,7 @@
       "-v",
       "<worktree>/.agent/e2e-state-w4-secops/secrets/postgres.password:/fixture/password:ro",
       "-v",
-      "<worktree>/.agent/secops/restore-vault-hiqjtyi9/vault:/fixture/vault",
+      "<worktree>/.agent/secops/restore-vault-micny83t/vault:/fixture/vault",
       "-v",
       "<worktree>/.agent/secops/retained.json:/fixture/retained.json:ro",
       "-v",

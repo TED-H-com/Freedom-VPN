@@ -535,11 +535,15 @@ func (l *lab) startAux(role, ip string, pause bool) (auxNode, error) {
 		}
 	}
 	_ = exec.Command("docker", "rm", "-f", name).Run()
+	image, err := exec.Command("docker", "inspect", "--format", "{{.Image}}", l.node).Output()
+	if err != nil {
+		return auxNode{}, fmt.Errorf("node image: %w", err)
+	}
 	cmd := exec.Command("docker", "run", "-d", "--name", name, "--privileged",
 		"--network", l.prefix, "--ip", ip,
 		"-v", etcDir+":/etc/vpn-node",
 		"-v", varDir+":/var/lib/vpn-node",
-		l.prefix+"-node:local")
+		strings.TrimSpace(string(image)))
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return auxNode{}, fmt.Errorf("docker run %s: %s", role, clip(string(out), 300))
 	}
