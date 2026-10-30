@@ -140,11 +140,20 @@ func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
 			}
 		}
 	}
-	for _, doc := range []string{"README.md", "operator-run.md", "requests.md"} {
+	for _, doc := range []string{"README.md", "RUN.md", "summary.md", "operator-run.md", "requests.md"} {
 		p := filepath.Join(evidenceDir, doc)
 		raw, err := os.ReadFile(p)
 		if err != nil || len(raw) == 0 {
 			t.Fatalf("missing or empty %s: %v", p, err)
+		}
+	}
+	histDir := filepath.Join(evidenceDir, "history/initial")
+	for _, id := range cases {
+		for _, ext := range []string{".json", ".md"} {
+			p := filepath.Join(histDir, id+ext)
+			if raw, err := os.ReadFile(p); err != nil || len(raw) == 0 {
+				t.Fatalf("missing or empty archived initial evidence %s: %v", p, err)
+			}
 		}
 	}
 }
