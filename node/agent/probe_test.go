@@ -71,6 +71,9 @@ func TestNetbirdProber(t *testing.T) {
 		if !res.Ran || res.Check != api.HealthCheckStatusPassed || res.Health != api.DataHealthHealthy || res.Detail != "overlay_up" {
 			t.Fatalf("%+v", res)
 		}
+		if res.NetbirdVersion != "" {
+			t.Fatalf("missing daemonVersion was invented: %q", res.NetbirdVersion)
+		}
 		if strings.Contains(res.Detail, "not-a-log-line") || strings.Contains(res.Detail, "example.invalid") {
 			t.Fatalf("detail leaked status: %s", res.Detail)
 		}
@@ -144,6 +147,56 @@ func TestNetbirdProber(t *testing.T) {
 			t.Fatalf("%+v", res)
 		}
 	})
+}
+
+func TestNetbirdVersion(t *testing.T) {
+	probe := func(body string) ProbeResult {
+		t.Helper()
+		p := netbirdProber{run: func(context.Context) ([]byte, error) { return []byte(body), nil }}
+		return p.Probe(context.Background(), ProbeRequest{})
+	}
+	ok := probe(`{"daemonVersion":"0.76.2","management":{"connected":true},"relays":{"total":1,"available":1}}`)
+	if ok.NetbirdVersion != "0.76.2" || ok.Check != api.HealthCheckStatusPassed {
+		t.Fatalf("%+v", ok)
+	}
+	dashed := probe(`{"daemonVersion":"0.0.0-test","management":{"connected":true},"relays":{"total":0,"available":0}}`)
+	if dashed.NetbirdVersion != "0.0.0-test" {
+		t.Fatalf("%+v", dashed)
+	}
+	for _, raw := range []string{
+		"https://netbird.example.invalid/v",
+		"0.76.2 latest",
+		"0.76.2\n0.76.3",
+		strings.Repeat("1", 65),
+		"1.2.3:80",
+	} {
+		res := probe(`{"daemonVersion":` + quoteJSON(raw) + `,"management":{"connected":true},"relays":{"total":1,"available":1}}`)
+		if res.NetbirdVersion != "" {
+			t.Fatalf("%q kept as %q", raw, res.NetbirdVersion)
+		}
+	}
+	down := probe(`{"daemonVersion":"0.76.2","management":{"connected":false},"relays":{"total":1,"available":0}}`)
+	if down.NetbirdVersion != "0.76.2" || down.Check != api.HealthCheckStatusFailed {
+		t.Fatalf("version is independent of the check: %+v", down)
+	}
+}
+
+func quoteJSON(s string) string {
+	var b strings.Builder
+	b.WriteByte('"')
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '\\', '"':
+			b.WriteByte('\\')
+			b.WriteByte(s[i])
+		case '\n':
+			b.WriteString(`\n`)
+		default:
+			b.WriteByte(s[i])
+		}
+	}
+	b.WriteByte('"')
+	return b.String()
 }
 
 func TestEgressProbeConfig(t *testing.T) {
