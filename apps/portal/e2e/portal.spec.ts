@@ -16,13 +16,18 @@ interface OperationPollPayload {
   }>;
 }
 
+interface OperationPollResult {
+  finalOp: OperationPollPayload;
+  polledStatuses: string[];
+}
+
 async function waitForOperationHeadline(
   page: Page,
   request: APIRequestContext,
   scope: 'admin' | 'member',
   expectedHeadline: string,
   expectedStatus = 'succeeded',
-): Promise<OperationPollPayload> {
+): Promise<OperationPollResult> {
   const banner = page.getByTestId('operation-banner');
   await expect(banner).toBeVisible();
   const opId = await banner.getAttribute('data-operation-id');
@@ -34,15 +39,43 @@ async function waitForOperationHeadline(
       : `${BASE_URL}/api/v1/admin/operations/${opId}`;
   const deadline = Date.now() + 14_000;
   let lastOp: OperationPollPayload | null = null;
+  const polledStatuses: string[] = [];
+
+  const initialDomStatus = await banner.getAttribute('data-operation-status');
+  if (initialDomStatus) {
+    polledStatuses.push(initialDomStatus);
+    if (expectedStatus === 'succeeded' && initialDomStatus === 'failed') {
+      const failRes = await request.get(endpoint);
+      const failBody = failRes.ok() ? await failRes.json() : null;
+      throw new Error(
+        `Operation ${opId} observed failed on initial banner render: ${JSON.stringify(failBody)}`,
+      );
+    }
+  }
+
   while (Date.now() < deadline) {
     const res = await request.get(endpoint);
     if (res.ok()) {
       lastOp = (await res.json()) as OperationPollPayload;
+      polledStatuses.push(lastOp.status);
+      const domStatus = await banner.getAttribute('data-operation-status');
+      if (domStatus) {
+        polledStatuses.push(domStatus);
+      }
+      const hasFailedStep = (lastOp.steps ?? []).some((s) => s.status === 'failed');
+      if (
+        expectedStatus === 'succeeded' &&
+        (lastOp.status === 'failed' || domStatus === 'failed' || hasFailedStep)
+      ) {
+        throw new Error(
+          `Operation ${opId} (${lastOp.kind}) was observed failed during polling (polledStatuses=${JSON.stringify(polledStatuses)}): ${JSON.stringify(lastOp)}`,
+        );
+      }
       if (lastOp.status === expectedStatus) {
         break;
       }
     }
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(50);
   }
 
   if (!lastOp || lastOp.status !== expectedStatus) {
@@ -54,7 +87,7 @@ async function waitForOperationHeadline(
   await expect(page.getByTestId('operation-status-headline')).toHaveText(
     expectedHeadline,
   );
-  return lastOp;
+  return { finalOp: lastOp, polledStatuses };
 }
 
 test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT04, AT06, AT23–AT24)', () => {
@@ -161,22 +194,26 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       await expect(page.getByTestId('device-quota-badge')).toContainText('3 / 3');
       await expect(page.getByTestId('device-limit-warning')).toBeVisible();
 
-      // 3. Revoke the first device (202 Accepted operation -> succeeded) and verify count drops to 2 / 3 (AT02)
+      // 3. Revoke the first device (202 Accepted operation -> succeeded, never observed failed at concurrency 4) and verify count drops to 2 / 3 (AT02)
       const firstDeviceId = seededDeviceIds[0];
       await page.getByTestId(`revoke-own-device-${firstDeviceId}`).click();
 
-      await waitForOperationHeadline(
+      const revokePoll = await waitForOperationHeadline(
         page,
         request,
         'member',
         '已套用（已取得實際觀測確認）',
       );
+      expect(revokePoll.polledStatuses.length).toBeGreaterThan(0);
+      expect(revokePoll.polledStatuses).not.toContain('failed');
+      expect(revokePoll.finalOp.status).toBe('succeeded');
+      expect(revokePoll.finalOp.steps?.map((s) => s.status)).not.toContain('failed');
       await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3');
       await expect(page.getByTestId(`device-status-${firstDeviceId}`)).toHaveText(
         'revoked',
       );
 
-      // 4. Switch to Admin view (/admin/members/{id}) and suspend the member with If-Match (AT04)
+      // 4. Switch to Admin view (/admin/members/{id}) and suspend the member with If-Match (AT04; never observed failed at concurrency 4)
       await page.goto(`/admin/members/${activeMemberId}`);
       await expect(page.getByTestId('admin-member-detail-page')).toBeVisible();
       await page
@@ -184,12 +221,16 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
         .fill('AT04 E2E compliance suspension check');
       await page.getByTestId('suspend-member-btn').click();
 
-      await waitForOperationHeadline(
+      const suspendPoll = await waitForOperationHeadline(
         page,
         request,
         'admin',
         '已套用（已取得實際觀測確認）',
       );
+      expect(suspendPoll.polledStatuses.length).toBeGreaterThan(0);
+      expect(suspendPoll.polledStatuses).not.toContain('failed');
+      expect(suspendPoll.finalOp.status).toBe('succeeded');
+      expect(suspendPoll.finalOp.steps?.map((s) => s.status)).not.toContain('failed');
       await expect(page.getByTestId('member-detail-entitlement-badge')).toHaveText(
         'suspended',
       );
@@ -810,12 +851,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       const auditRows = page.locator('[data-testid^="audit-row-"]');
       await expect(auditRows.first()).toBeVisible();
       await expect(auditRows).not.toHaveCount(0);
-      const updateAuditRow = auditRows.filter({ hasText: 'fleet_config.update' }).first();
-      await expect(updateAuditRow).toBeVisible();
-      await expect(updateAuditRow).toContainText('fleet_config.update');
-      await expect(updateAuditRow).toContainText('86400');
-      await expect(updateAuditRow).toContainText('3600');
-      await expect(updateAuditRow).toContainText(updateReason);
+      await expect(auditRows.first()).toContainText('fleet_config.update');
+      await expect(auditRows.first()).toContainText('86400');
+      await expect(auditRows.first()).toContainText('3600');
+      await expect(auditRows.first()).toContainText(updateReason);
 
       // 4. Return to /admin/settings and reload to see the new value (3600)
       await page.goto('/admin/settings');
