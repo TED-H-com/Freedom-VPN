@@ -151,10 +151,9 @@ FOR EACH ROW EXECUTE FUNCTION review_d057_drop_group()`)
 	w = f.putPublicationRaw(path, &[]uuid.UUID{group.GroupId}, api.PublicationIntentUnpublished)
 	ids := f.exitGroupIDs(report.NodeId)
 	if w.Code != http.StatusUnprocessableEntity || len(ids) != 1 {
-		// TODO(review): replacePublicationGroups counts member_groups, then deletes
-		// and inserts, without locking the group rows. A concurrent delete makes
-		// the insert's foreign key fail as a raw error (HTTP 500), not 422.
-		t.Fatalf("TODO(review): group removed between count and insert: status=%d body=%s membership=%v", w.Code, w.Body.String(), ids)
+		// Regression proof: group deletion between validation and insertion must
+		// return 422 and roll back the complete membership replacement.
+		t.Fatalf("group removed between count and insert: status=%d body=%s membership=%v", w.Code, w.Body.String(), ids)
 	}
 }
 

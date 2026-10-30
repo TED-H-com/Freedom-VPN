@@ -398,7 +398,9 @@ that are unpublished or offline. Creation replay returns the original immutable
 `PublicationRequest.group_ids` is handled by `exits.SetPublicationTx` under its
 existing node/exit locks and `If-Match`. Omission preserves membership, an empty
 array clears it, and a nonempty array replaces it. Unknown IDs return 422 with
-`/group_ids` detail before writes. Membership, publication, the single generation
+`/group_ids` detail. A group removed after validation produces the same field
+error through the membership foreign-key check, rolling back the entire change.
+Membership, publication, the single generation
 and version advance, operation, outbox and audit commit together (§5.2, §15.3).
 Node detail exposes the same sorted membership in `group_ids` and the legacy
 `member_group_ids`.
