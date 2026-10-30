@@ -19,6 +19,9 @@ if [ -f /etc/vpn-node/ca.pem ]; then
     update-ca-certificates >/dev/null 2>&1 || true
 fi
 export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+# D-061 refuses credentials unless the regular file is root-owned mode 0600.
+chown 0:0 /etc/vpn-node/resolver-credentials.json
+chmod 600 /etc/vpn-node/resolver-credentials.json
 cat /proc/sys/kernel/random/uuid > /etc/vpn-node/boot-id
 epoch=$(cat /proc/sys/kernel/random/uuid)
 epoch2=$(cat /proc/sys/kernel/random/uuid)

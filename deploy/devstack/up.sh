@@ -133,7 +133,7 @@ test -f "$portal_dist/index.html"
 mkdir -p "$STATE/portal"
 cp -R "$portal_dist/." "$STATE/portal/"
 
-$COMPOSE up -d postgres idp payment origin netbird gateway coredns adguard
+$COMPOSE up -d postgres idp payment origin netbird gateway coredns
 
 wait_exec() {
     name=$1
@@ -182,5 +182,5 @@ done
 
 $COMPOSE up -d control worker
 wait_http "https://127.0.0.1:${FVPN_E2E_PORT_CONTROL}/readyz" 90
-$COMPOSE up -d node member
+$COMPOSE up -d node adguard member
 echo "e2e stack is up"

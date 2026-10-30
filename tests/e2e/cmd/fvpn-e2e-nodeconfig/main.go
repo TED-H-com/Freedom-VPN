@@ -14,7 +14,11 @@ import (
 )
 
 func main() {
-	if err := prepare(); err != nil {
+	run := prepare
+	if len(os.Args) == 2 && os.Args[1] == "dns-probe" {
+		run = dnsProbe
+	}
+	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, "lab boot recovery configuration failed")
 		os.Exit(1)
 	}

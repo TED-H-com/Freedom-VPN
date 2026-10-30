@@ -61,6 +61,7 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
+		run.threatFeedNode(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
 		run.revoke(ctx, admin, nodeID)

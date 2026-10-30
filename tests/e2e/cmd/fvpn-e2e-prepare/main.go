@@ -217,7 +217,7 @@ func run(state string, reset bool, lay layout) error {
 		OnlineSeconds: 180, StuckSeconds: 600, ReconcileSeconds: 5, FetchSeconds: 20, DesiredStateSeconds: 600,
 		NetBirdURL: "https://netbird.example.invalid/api", NetBirdDeployment: "e2e",
 		NetBirdTokenFile: "/secrets/netbird.token",
-		DNSResolverIPv4:  []string{lay.AdGuardIP}, DNSResolverIPv6: []string{},
+		DNSResolverIPv4:  []string{lay.LabPrefix + ".40"}, DNSResolverIPv6: []string{},
 		ReleaseOrigins: []string{"https://releases.example.invalid"},
 	}
 	if err := nodes.Validate(); err != nil {
@@ -371,6 +371,7 @@ func writeAgentConfigs(state, originPrefix string) error {
 	enroll["control_url"] = "https://portal.example.invalid:8443"
 	runCfg := cloneMap(base)
 	runCfg["control_url"] = "https://agent.example.invalid:9443"
+	runCfg["dns"] = map[string]any{"resolvers": []any{map[string]string{"id": "lab", "admin_url": "http://127.0.0.1:8080", "dns_addr": "127.0.0.1:53"}}, "resolver_credentials_file": "/etc/vpn-node/resolver-credentials.json"}
 	dir := filepath.Join(state, "node", "etc")
 	if err := writeJSON(filepath.Join(dir, "agent-enroll.json"), enroll); err != nil {
 		return err
@@ -419,6 +420,9 @@ func writeAdGuard(state, coreDNS string) error {
 		return err
 	}
 	if err := writeSecret(filepath.Join(state, "secrets", "adguard.password"), []byte(password+"\n")); err != nil {
+		return err
+	}
+	if err := writeJSON(filepath.Join(state, "node", "etc", "resolver-credentials.json"), map[string]string{"username": "e2e", "password": password}); err != nil {
 		return err
 	}
 	// schema_version 29 is what v0.107.59 writes. A lower version runs the

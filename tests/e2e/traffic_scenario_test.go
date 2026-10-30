@@ -15,9 +15,17 @@ import (
 // countedFlow proves admission on this node, not merely an HTTP response on
 // another route. The member has no connection to the origin bridge.
 func (r *runner) countedFlow(ctx context.Context, note func(string, string)) bool {
-	before, ok := r.admissionBytes()
-	if !ok {
-		note("admission_counter", "unavailable")
+	defer func() {
+		heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
+		note("heartbeat", strings.TrimSpace(string(heartbeat)))
+	}()
+	ready, stopReady := context.WithTimeout(ctx, 90*time.Second)
+	var before uint64
+	var ok bool
+	found := waitUntil(ready, time.Second, func() bool { before, ok = r.admissionBytes(); return ok && r.lab.forwardChain().Generation > 0 })
+	stopReady()
+	if !found {
+		note("admission_counter", "unavailable after 90 seconds")
 		return false
 	}
 	wait, cancel := context.WithTimeout(ctx, 60*time.Second)
@@ -34,8 +42,6 @@ func (r *runner) countedFlow(ctx context.Context, note func(string, string)) boo
 	note("controlled_origin_http_200_and_counted", boolText(success))
 	note("admission_bytes_before", strconv.FormatUint(before, 10))
 	note("admission_bytes_after", strconv.FormatUint(after, 10))
-	heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
-	note("heartbeat", strings.TrimSpace(string(heartbeat)))
 	return success
 }
 
