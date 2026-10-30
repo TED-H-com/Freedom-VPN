@@ -9,8 +9,8 @@ An activated `dns_profile` becomes a canonical resolver document, with a new imm
 1. An admin activates a `dns_profile` revision. The policies store writes `policy.activated` and the existing compiled bundle.
 2. Migration `00180` inserts a second outbox row, `dns.publish`, for `payload.type = dns_profile` only. `policy.activated` stays available for desired-state compilation (§14.5). That trigger is the current fan-out. A later worker may fan out from the `policy.activated` handler instead.
 3. `worker.Domains` registers `dns()`. It loads `dns_config_file` and fails startup with `config.SettingError{Name: "dns_config_file"}` when that file is missing or invalid. The handler in `internal/dnspublish/store` loads the profile, the referenced domain rules, and the threat feeds’ persisted last-good entries, then calls `dnspublish.Compile`. The document package does not import a database driver.
-4. The RFC 8785 bytes and their SHA-256 are stored in `dns_resolver_documents`, keyed by `(profile_revision_id, policy_generation)` after migration `00181`. The revision id remains the id `desired_states.policy_refs` carries. Old content generations remain immutable and readable with `GetByGeneration`. `dns_publication_heads` points at the current document.
-5. `node/dns` converges every configured resolver or restores the previous configuration. The authenticated document endpoint and agent consumption are outside this area and are not wired in the current tree. Desired-state DNS generation reads the published heads; that reference alone does not apply a resolver document.
+4. The RFC 8785 bytes and their SHA-256 are stored in `dns_resolver_documents`, keyed by `(profile_revision_id, policy_generation)` after migration `00181`. The revision id remains the id `desired_states.policy_refs` carries. Old content generations remain immutable and readable by their document ID through `dnspublish.DocumentReader`; `GetByGeneration` remains available to existing callers. `dns_publication_heads` points at the current document.
+5. `node/dns` converges every configured resolver or restores the previous configuration. D-056 assigns authenticated document delivery and issued-reference authorization to the nodes owner, and consumption to the agent owner. The read API below supplies the reference and exact bytes. A publication reference alone is not applied resolver evidence.
 
 Upstreams and bootstrap servers are deployment configuration, not fields of the policy payload and not a built-in default (D-028). `dns_config_file` points at a JSON file: `upstreams` is a non-empty list of `host:port` values, each an IPv4 or IPv6 literal. `bootstrap_dns` uses the same form and may be empty, in which case the document copies `upstreams`. It is never a public resolver. [`config.example.json`](config.example.json) is TEST ONLY and uses documentation prefixes (`192.0.2.0/24`, `2001:db8::/32`). The same rules plus the same file produce the same bytes. A config change is a different document.
 
@@ -21,6 +21,22 @@ The document embeds normalized entries from each referenced feed’s persisted l
 Document generations are allocated above the global DNS maximum, serialized across workers. They are independent of the policy definition’s activation generation: a feed refresh never mutates the approved policy revision. An old activation cannot replace the current profile head. Embedded entries are capped at 512 KiB per feed; the complete canonical document retains its existing 1 MiB ceiling. Exceeding the combined ceiling fails publication without advancing its head. Large deployments need the separate authenticated artifact contract before raising this bound.
 
 The DNS handler does not mark `policy.activate` succeeded or complete `desired_state_compile`; the separate policies worker owns that step. It records `observed_refs.dns_document` with the hash and generation while the operation remains pending (§14.5). A committed publication or withdrawal appends `dns.publish` or `dns.withdraw` with `audit.NewEvent` for the policy definition and again for the profile revision (D-029). The actor is the system singleton, the result is `succeeded`, and the operation's request id is copied when that row has one. The diff stores the hash, generation, status, and whether the head moved. It does not store domain names.
+
+## Read API for delivery (D-056)
+
+`internal/dnspublish` exports `DocumentReader`, `PublishedDocument`, and `ErrDocumentNotFound`. Construct the PostgreSQL implementation with `internal/dnspublish/store.NewDocumentReader(pool)`; it needs no publisher/upstream configuration.
+
+```go
+reader := store.NewDocumentReader(pool)
+latest, err := reader.LatestPublished(ctx, profileDefinitionID)
+version, err := reader.GetByID(ctx, documentID)
+```
+
+Both methods return `PublishedDocument` with `DocumentID`, `ProfileRevisionID`, `Generation`, `ContentSHA256`, `SizeBytes`, and `Canonical`. These map to the contract's `document_id`, `profile_revision_id`, `generation`, `content_sha256`, and `size_bytes`; `Canonical` is the exact stored RFC 8785 body. The generation is the DNS document generation, not the policy definition or desired-state generation. `SizeBytes` is bounded to 1–1048576 bytes. Reads verify normalization, privacy, canonical byte equality and the SHA-256 before returning content.
+
+`LatestPublished` joins the active head to its exact revision, generation and hash in one database snapshot. It returns `ErrDocumentNotFound` when no head exists, the head is withdrawn, or its revision is no longer active (including while a replacement awaits publication). `GetByID` never follows a newer head and retains historical content after refresh or withdrawal. Missing IDs return the same sentinel. These are read-only operations with no fetch or publication side effects.
+
+The nodes owner must authorize an ID against the current or immediately previous desired-state generation actually issued to the requesting node before serving it. Unknown and unissued IDs map to 404 `NOT_FOUND`. Send `Canonical` verbatim, without JSON re-encoding or a newline; set `ETag: "sha256:<ContentSHA256>"` and `Cache-Control: private, max-age=0`. The agent verifies the signed reference's exact size/hash before applying. Neither lookup grants delivery authorization.
 
 ## Document
 
@@ -54,13 +70,13 @@ A head never moves to an older generation. Replaying the same revision and gener
 
 ## Evidence and dns_ok
 
-`node/dns.Evidence` is what the agent copies into its observation report:
+`node/dns.Evidence` is the internal evidence returned to the agent adapter:
 
 ```json
 {"policy_generation":"3","document_hash":"<64 hex>","applied_at":"...","verified":true,"feeds":[{"feed_code":"example-malware","content_sha256":"<64 hex>","rule_count":2}]}
 ```
 
-`NodeCheck` has no extra detail field. The agent reports `checks[name=dns_policy].status = passed` only when `Evidence.Verified` is true (`Evidence.DNSOK`). That check is the `dns_ok` advertisement. When `verified` is false the agent must not advertise `dns_ok` and must not report this generation in `applied_policy_refs`. `DNSPolicyCheckName` is the contract value `dns_policy`.
+Revision 5 adds `DnsPolicyEvidence` and `DnsFeedEvidence`. The agent owner maps `policy_generation` to `generation`, `document_hash` to `content_sha256`, adds the issued document ID, and maps the verified result to `outcome` and nullable `applied_at`. Existing per-feed `feed_code`, `content_sha256` and `rule_count` already match the contract; entries never appear in evidence. `NodeCheck.detail`, when present, must be bounded and redacted. The agent reports `checks[name=dns_policy].status = passed` only when `Evidence.Verified` is true (`Evidence.DNSOK`). That check is the `dns_ok` advertisement. When `verified` is false the agent must not advertise `dns_ok` and must not report this generation in `applied_policy_refs`. `DNSPolicyCheckName` is the contract value `dns_policy`.
 
 `applied_at` is the node clock in UTC. The hash is the SHA-256 of the canonical bytes, not of the generation.
 

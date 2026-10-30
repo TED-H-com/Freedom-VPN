@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -154,6 +155,13 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	reader := NewDocumentReader(pool)
+	if _, err := reader.LatestPublished(ctx, rev1.DefinitionID); !errors.Is(err, dnspublish.ErrDocumentNotFound) {
+		t.Fatalf("unpublished lookup: %v", err)
+	}
+	if _, err := reader.GetByID(ctx, uuid.New()); !errors.Is(err, dnspublish.ErrDocumentNotFound) {
+		t.Fatalf("unknown lookup: %v", err)
+	}
 	ev1 := loadPublishEvent(t, ctx, pool, 0)
 	receipt, err := pub.Handle(ctx, ev1)
 	if err != nil {
@@ -196,6 +204,8 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 		t.Fatalf("stored bytes do not match the canonical hash")
 	}
 
+	originalDocument := assertDocumentLookup(t, pool, reader, stored)
+
 	var opStatus, observed string
 	if err := pool.QueryRow(ctx, `SELECT status, observed_refs::text FROM operations WHERE id = $1`, uuid.MustParse(operationID(t, ev1))).Scan(&opStatus, &observed); err != nil {
 		t.Fatal(err)
@@ -229,6 +239,9 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if _, err := reader.LatestPublished(ctx, rev1.DefinitionID); !errors.Is(err, dnspublish.ErrDocumentNotFound) {
+		t.Fatalf("old head available while replacement is unpublished: %v", err)
+	}
 	ev2 := loadPublishEvent(t, ctx, pool, 1)
 	if _, err := pub.Handle(ctx, ev2); err != nil {
 		t.Fatal(err)
@@ -250,6 +263,10 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if head.ProfileRevisionID != rev2.RevisionID || head.Status != statusActive {
 		t.Fatalf("head did not advance: %+v", head.ProfileRevisionID)
 	}
+	secondDocument := assertDocumentLookup(t, pool, reader, second)
+	if secondDocument.DocumentID == originalDocument.DocumentID {
+		t.Fatal("new revision reused a document ID")
+	}
 	// Same content is a successful verification, but does not create a new
 	// content version, document generation, or refresh publication intent.
 	fixedNow = fixedNow.Add(6 * time.Hour)
@@ -260,6 +277,10 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	var refreshPublications int
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE event_type='dns.publish' AND payload->>'action'='feed_refresh'`).Scan(&refreshPublications); err != nil || refreshPublications != 0 {
 		t.Fatalf("unchanged refresh fanout: %d %v", refreshPublications, err)
+	}
+	unchanged := assertDocumentLookup(t, pool, reader, second)
+	if unchanged.DocumentID != secondDocument.DocumentID {
+		t.Fatal("same input changed document ID")
 	}
 	// A moved last-good produces a new immutable document on the same revision.
 	fixedNow = fixedNow.Add(6 * time.Hour)
@@ -295,6 +316,16 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if err != nil || historical.DocumentHash != second.DocumentHash || historical.Status != statusSuperseded {
 		t.Fatalf("retained generation: %+v %v", historical, err)
 	}
+	movedDocument := assertDocumentLookup(t, pool, reader, moved)
+	if movedDocument.DocumentID == secondDocument.DocumentID || movedDocument.Generation <= secondDocument.Generation || movedDocument.ContentSHA256 == secondDocument.ContentSHA256 {
+		t.Fatal("moved last-good did not create a new immutable reference")
+	}
+	for _, old := range []dnspublish.PublishedDocument{originalDocument, secondDocument} {
+		retained, err := reader.GetByID(ctx, old.DocumentID)
+		if err != nil || string(retained.Canonical) != string(old.Canonical) || retained.ContentSHA256 != old.ContentSHA256 || retained.Generation != old.Generation {
+			t.Fatalf("historical ID followed the head: %v", err)
+		}
+	}
 	second = moved
 	older, err := pub.GetByRevision(ctx, rev1.RevisionID)
 	if err != nil || older.Status != statusSuperseded {
@@ -328,6 +359,13 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	head, err = pub.Head(ctx, rev1.DefinitionID)
 	if err != nil || head.Status != statusWithdrawn || head.DocumentHash != second.DocumentHash {
 		t.Fatalf("withdrawn head status %s hash %s", head.Status, head.DocumentHash)
+	}
+	if _, err := reader.LatestPublished(ctx, rev1.DefinitionID); !errors.Is(err, dnspublish.ErrDocumentNotFound) {
+		t.Fatalf("withdrawn lookup: %v", err)
+	}
+	retained, err := reader.GetByID(ctx, movedDocument.DocumentID)
+	if err != nil || retained.ContentSHA256 != movedDocument.ContentSHA256 {
+		t.Fatalf("withdrawal erased immutable reference: %v", err)
 	}
 	if _, err := pub.Handle(ctx, ev2); err == nil {
 		t.Fatal("reactivating a withdrawn generation succeeded")
