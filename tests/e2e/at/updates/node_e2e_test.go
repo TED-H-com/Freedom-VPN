@@ -243,6 +243,16 @@ func (l *lab) journalForRelease(container, varDir, releaseID string) journalSnap
 		Scan(&view.Stage, &view.ErrorCode, &view.ErrorStage, &view.ErrorDetail, &view.Health, &view.RollbackRelease)
 	if err != nil {
 		view.ErrorDetail = "no txn for release"
+	}
+	// Pre-switch failures (hash, trust, platform, disk) are stored on the job.
+	// A txn exists only after prepare (§13.5).
+	var jobCode, jobPhase string
+	_ = db.QueryRowContext(ctx, `SELECT COALESCE(error_code,''), COALESCE(phase,'') FROM jobs WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, releaseID).Scan(&jobCode, &jobPhase)
+	if view.ErrorCode == "" {
+		view.ErrorCode = jobCode
+	}
+	if err != nil && jobCode == "" {
+		view.Text = "no txn for release job_phase=" + jobPhase
 		return view
 	}
 	_ = db.QueryRowContext(ctx, `SELECT COALESCE(value,'') FROM meta WHERE key='current_release_id'`).Scan(&view.Current)
@@ -262,14 +272,30 @@ func (l *lab) journalForRelease(container, varDir, releaseID string) journalSnap
 		view.Events = b.String()
 	}
 	_ = db.QueryRowContext(ctx, `SELECT COALESCE(sha256,'') FROM artifacts WHERE release_id=? ORDER BY verified_at DESC LIMIT 1`, releaseID).Scan(&view.ArtifactSHA)
-	view.Text = fmt.Sprintf("stage=%s error_code=%s error_stage=%s error_detail=%s health=%s current=%s last_good=%s rollback_release=%s artifact=%s",
-		view.Stage, view.ErrorCode, view.ErrorStage, view.ErrorDetail, view.Health, view.Current, view.LastGood, view.RollbackRelease, view.ArtifactSHA)
+	view.Text = fmt.Sprintf("stage=%s error_code=%s error_stage=%s error_detail=%s job_phase=%s health=%s current=%s last_good=%s rollback_release=%s artifact=%s",
+		view.Stage, view.ErrorCode, view.ErrorStage, view.ErrorDetail, jobPhase, view.Health, view.Current, view.LastGood, view.RollbackRelease, view.ArtifactSHA)
 	return view
 }
 
 func (l *lab) desiredHas(container, releaseID string) bool {
+	// serving_release_ids lists every allowlisted release, so a substring
+	// match is true before the agent has the batch's update intent (§13.4).
 	b, err := l.cat(container, "/var/lib/vpn-node/state/desired-state.json")
-	return err == nil && strings.Contains(string(b), releaseID)
+	if err != nil {
+		return false
+	}
+	var env struct {
+		Signed struct {
+			Update json.RawMessage `json:"update"`
+		} `json:"signed"`
+	}
+	if json.Unmarshal(b, &env) != nil || len(env.Signed.Update) == 0 || string(env.Signed.Update) == "null" {
+		return false
+	}
+	var intent struct {
+		ReleaseID string `json:"release_id"`
+	}
+	return json.Unmarshal(env.Signed.Update, &intent) == nil && intent.ReleaseID == releaseID
 }
 
 type issuedJob struct {
