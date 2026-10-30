@@ -19,7 +19,9 @@ import (
 
 func requireFollowup7Evidence(records map[string]*at.Record) {
 	for id, names := range map[string][]string{
+		"AT23": {"probe_inspection", "lab_probe_peer", "probe_traversal", "first_result_last_good"},
 		"AT24": {"pre_result_versions", "null_last_good_seed", "first_result_last_good", "recorded_versions", "offline_snapshot", "offline_completion", "new_node_inheritance"},
+		"AT25": {"probe_inspection", "lab_probe_peer", "failed_requires_cause"},
 		"AT26": {"revision7_empty_target", "revision7_rollback_target", "conflict_bounds"},
 		"AT27": {"pre_result_audits", "recorded_audits", "recorded_versions", "withheld_observation", "recorded_last_good", "stale_ack", "observation_authority"},
 	} {
@@ -32,7 +34,7 @@ func requireFollowup7Evidence(records map[string]*at.Record) {
 			}
 			if !passed {
 				records[id].Status = at.StatusBlocked
-				records[id].Actual += "; required follow-up 7 check incomplete: " + name
+				records[id].Actual += "; required follow-up 8 check incomplete: " + name
 			}
 		}
 	}
@@ -49,8 +51,10 @@ func (s *updatesFollowup) policyCriteria() {
 		"Heartbeats after acceptance can confirm those\nvalues, but cannot change current/last-good or clear recovery.",
 		"Once a result is accepted, seeding closes even for later jobs in that incarnation.",
 		"A mismatch in\neither release keeps `unconfirmed=true` by withholding that job's observation\ntimestamp; a later agreeing report can confirm it.",
-		"Each distinct unexpected\nrelease/reported-job pair gets one `update_observation.unexpected_release` audit",
-		"A later agreeing null\nlast-good permits the issued target to seed current, without establishing\nlast-good.",
+		"A generation-bearing heartbeat is attributed to the **node's current job only**\n(§13.2, §13.8; D-068, r13 M-1).",
+		"Before that incarnation's first accepted result, pre-result heartbeat seeding\nfills **only a null `nodes.current_release_id`**",
+		"On the current job, each distinct unexpected release/job pair\ngets one `update_observation.unexpected_release` audit",
+		"A\nlater agreeing null last-good permits the issued target to fill the null\n`current_release_id`, without establishing `last_good_release_id`.",
 	} {
 		at := strings.Index(string(raw), quote)
 		if at < 0 {
@@ -62,7 +66,7 @@ func (s *updatesFollowup) policyCriteria() {
 		s.note(id, "policy_quotes", quotes)
 	}
 	s.rec["AT24"].Expected = "Accepted 1.0.1 remains current before the later 1.0.2 result; offline batch targets complete consistently with real results; a new node inherits fleet default through its own job without changing the old snapshot"
-	s.rec["AT27"].Expected = "After acceptance an unexpected heartbeat preserves versions/recovery, creates no seeding audit and withholds confirmation; before acceptance each unexpected job/release is audited exactly once; stale ACK replay never restores the older job or desired generation"
+	s.rec["AT27"].Expected = "After acceptance an unexpected heartbeat preserves versions/recovery, creates no seeding audit and withholds confirmation; before acceptance each unexpected job/release on the current job is audited exactly once; stale ACK replay never restores the older job or desired generation"
 }
 
 // The product's configured online window expires naturally while the real
@@ -228,9 +232,19 @@ func testFollowup7Evidence(t *testing.T) {
 		records[id] = &at.Record{Status: at.StatusPass}
 	}
 	requireFollowup7Evidence(records)
-	for _, id := range []string{"AT24", "AT26", "AT27"} {
+	for _, id := range []string{"AT23", "AT24", "AT25", "AT26", "AT27"} {
 		if records[id].Status != at.StatusBlocked {
-			t.Fatalf("%s bypassed required follow-up 7 evidence", id)
+			t.Fatalf("%s bypassed required follow-up 8 evidence", id)
 		}
+	}
+	root, err := repoRoot()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &updatesFollowup{r: &runner{t: t, lab: &lab{root: root}}, rec: records}
+	s.policyCriteria()
+	raw := redactChallenge(json.RawMessage(`{"probe":{"peer_id":"secret-peer-id","source_v4":"100.64.0.9/32"}}`))
+	if strings.Contains(string(raw), "secret-peer-id") || !strings.Contains(string(raw), "[redacted]") {
+		t.Fatalf("peer_id was not redacted: %s", string(raw))
 	}
 }
