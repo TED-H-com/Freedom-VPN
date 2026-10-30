@@ -215,7 +215,13 @@ func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
 			}
 		}
 		if result == identityService || result == identityBlocked {
-			if e = db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return auditIdentity(ctx, tx, uuid.Nil, uuid.Nil, result) }); e != nil {
+			if e = db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+				changed, err := noteDiscoveryDecision(ctx, tx, a.DeploymentID, "user:"+user.ID, result)
+				if err != nil || !changed {
+					return err
+				}
+				return auditIdentity(ctx, tx, uuid.Nil, uuid.Nil, result)
+			}); e != nil {
 				return e
 			}
 		}
@@ -236,10 +242,16 @@ func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
 		}
 		if !verified {
 			c := entitlement.Command{Actor: entitlement.Actor{ID: uuid.MustParse("00000000-0000-0000-0000-000000000003"), Role: "system"}}
-			if e = s.recordDenial(ctx, c, Peer{DeploymentID: a.DeploymentID, ID: p.ID}, uuid.Nil, ErrUnmapped); e != nil {
+			if e = s.recordDiscoveryDenial(ctx, c, Peer{DeploymentID: a.DeploymentID, ID: p.ID}, uuid.Nil, ErrUnmapped); e != nil {
 				return e
 			}
 			continue
+		}
+		// Drop a stored denial so the same reason audits again if it returns.
+		if e = db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			return relaxDiscoveryDecision(ctx, tx, a.DeploymentID, "peer:"+p.ID)
+		}); e != nil {
+			return e
 		}
 		// Existing devices reconcile separately; revoked tombstones never rejoin.
 		var exists bool

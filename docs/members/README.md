@@ -206,6 +206,25 @@ renewed without rewriting their closed predecessors (§9.4, §15.2).
 `external_bindings`. All adapter writers for a deployment must use its shared
 PostgreSQL session advisory lock (namespace 119). Device synchronization uses a
 separate per-device lock. No database transaction spans NetBird HTTP calls.
+`SyncDevice` takes that per-device lock with non-blocking
+`pg_try_advisory_lock(hashtextextended(device_id, 120))`, and `SyncMember` takes
+the same form on `member:<member_id>` before it walks the member's devices, so
+`member.entitlement_changed` and `member.suspended` cannot interleave one member.
+Losing either lock returns `db.ErrLeaseLost`. An optimistic conflict
+(`entitlement.ErrConflict`, including a read-back that does not match the write)
+is the same kind of overlap. Both are returned to the dispatcher for retry and
+do not call `failOperations`, so the operation's `netbird` step stays `pending`
+or `running`. NetBird HTTP errors, invalid state, and database errors other than
+that conflict still mark the step `failed` with `DEPENDENCY_UNAVAILABLE`.
+Discovery emits `device.authorize` and `identity_binding.rejected` once per
+decision transition: the first time an unmapped peer or user is seen, and again
+only when the reason changes. The last reason is stored per peer and per
+external user in `external_bindings` under kind `discovery_decision`; a later
+pass with the same set adds no denial row. Admission replaces that stored
+reason, so the same denial audits again if it returns. The counter still
+increments on every pass. An unmapped peer has no domain row, so those audits
+stay on `fleet_config:00000000-0000-0000-0000-000000000001`.
+
 The reversible key is in `resource_type`; the resource UUID derives from the
 JCS SHA-256 of kind/key. External IDs are namespaced by kind. An all-zero stored
 hash with NULL observation time represents an **unconfirmed** adapter write;
