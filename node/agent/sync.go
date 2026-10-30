@@ -81,7 +81,7 @@ func (e *Engine) syncDesired(ctx context.Context) error {
 }
 
 func (e *Engine) syncLease(ctx context.Context) error {
-	if !e.needRenew() {
+	if e.leaseAttempted || e.clock.Mono() < e.leaseRetryAt || !e.needRenew() {
 		return nil
 	}
 	mono := e.clock.Mono()
@@ -106,20 +106,32 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	if e.lease != nil && e.lease.LeaseId != uuid.Nil {
 		req.CurrentLeaseId = presence.NewNullableWithValue(e.lease.LeaseId)
 	}
-	raw, err := e.client.RenewLease(ctx, reqID, req)
+	e.leaseAttempted = true
+	raw, err := e.client.RenewLeaseOnce(ctx, reqID, req)
 	if isRevoked(err) {
 		e.markRevoked(ctx)
 		return nil
 	}
 	if err != nil {
+		var status *controlclient.StatusError
+		if errors.As(err, &status) && status.RetryAfter > 0 {
+			remaining := status.RetryAfter
+			if !status.RetryAt.IsZero() {
+				remaining = max(0, time.Until(status.RetryAt))
+			}
+			e.leaseRetryAt = e.clock.Mono() + remaining
+			e.withdraw(context.WithoutCancel(ctx))
+			e.decision = Decide(e.input())
+		}
 		e.log.Warn("lease", "err", safeErr(err))
-		return nil
+		return ctx.Err()
 	}
+	e.leaseRetryAt = 0
 	return e.acceptLease(ctx, raw, mono, wall)
 }
 
 func (e *Engine) needRenew() bool {
-	if !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || e.leaseBehindApplied() {
+	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (e.applyError == nil && e.leaseBehindApplied()) {
 		return true
 	}
 	window := e.lease.ExpiresAt.Sub(e.lease.IssuedAt)
@@ -147,7 +159,7 @@ func (e *Engine) leaseBehindApplied() bool {
 // decision already computed: forwarding stays off, and the reason is not
 // lease_expired.
 func (e *Engine) renewAppliedLease(ctx context.Context) error {
-	if !e.leaseBehindApplied() {
+	if e.applyError != nil || e.dependencyMissing || !e.leaseBehindApplied() {
 		return nil
 	}
 	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {

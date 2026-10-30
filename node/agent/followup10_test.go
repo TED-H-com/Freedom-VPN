@@ -64,6 +64,7 @@ func TestReviewD063_HealthRechecksBaseline(t *testing.T) {
 			r.srv.SetPublication(api.PublicationIntentUnpublished)
 			enrollBoot(t, r)
 			stepOK(t, r)
+			holdUpdateLock(t, r)
 			p.failClear, p.failBaseline = tc.clear, tc.baseline
 			ch := probeChallenge(t, r, labProbe(), 0)
 			if tc.boot {
@@ -100,6 +101,7 @@ func TestReviewD063_ProbeChallengeInstalledOnce(t *testing.T) {
 			r.srv.SetPublication(api.PublicationIntentUnpublished)
 			enrollBoot(t, r)
 			stepOK(t, r)
+			holdUpdateLock(t, r)
 			ch := probeChallenge(t, r, labProbe(), 0)
 			if writeFails {
 				if err := os.Mkdir(attestPath(r), 0o700); err != nil {
@@ -137,6 +139,7 @@ func TestReviewD063_ProbeChallengeInstalledOnce(t *testing.T) {
 func TestReviewD063_ProbeIssuanceBounds(t *testing.T) {
 	r := newRig(t)
 	enrollBoot(t, r)
+	stepOK(t, r)
 	now := r.eng.trustedNow()
 	if maxProbeTargets != enforce.ProbeMaxDestinations {
 		t.Fatal("probe destination limits drifted")
@@ -187,6 +190,7 @@ func TestReviewD064_ProbeRequiresSameLiveChallenge(t *testing.T) {
 	r.srv.SetPublication(api.PublicationIntentUnpublished)
 	enrollBoot(t, r)
 	stepOK(t, r)
+	holdUpdateLock(t, r)
 	ch := probeChallenge(t, r, labProbe(), 0)
 	if err := os.Remove(filepath.Join(r.eng.cfg.JournalDir, healthattest.ChallengeFile)); err != nil {
 		t.Fatal(err)

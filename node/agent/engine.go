@@ -89,41 +89,45 @@ type Engine struct {
 	mu      sync.Mutex
 	tlsCert *tls.Certificate
 
-	nodeID         uuid.UUID
-	incID          uuid.UUID
-	enrolled       bool
-	revoked        bool
-	bootstrapLost  bool
-	desired        *api.DesiredState
-	desiredETag    string
-	desiredOK      bool
-	desiredExpired bool
-	lease          *api.ServingLease
-	leaseMono      time.Duration
-	leaseBoot      uuid.UUID
-	highestIssued  time.Time
-	leaseFresh     bool
-	anchor         timeanchor.Anchor
-	anchorOK       bool
-	baselineOK     bool
-	storageOK      bool
-	serving        bool
-	appliedGen     uint64
-	assignments    map[uuid.UUID]uint16
-	counters       map[string]enforce.CounterValue
-	addresses      []string
-	recoverBlocked bool
-	recovered      bool
-	latchBlocked   bool
-	outboxFull     bool
-	meterFailed    bool
-	decision       Decision
-	policyExpires  time.Duration
-	lastObs        time.Time
-	lastServing    bool
-	prober         Prober
-	lastProbe      ProbeResult
-	// probeAt is the wall time of the last probe. An answer is written only
+	nodeID            uuid.UUID
+	incID             uuid.UUID
+	enrolled          bool
+	revoked           bool
+	bootstrapLost     bool
+	desired           *api.DesiredState
+	desiredETag       string
+	desiredOK         bool
+	desiredExpired    bool
+	lease             *api.ServingLease
+	leaseMono         time.Duration
+	leaseBoot         uuid.UUID
+	highestIssued     time.Time
+	leaseFresh        bool
+	anchor            timeanchor.Anchor
+	anchorOK          bool
+	baselineOK        bool
+	storageOK         bool
+	serving           bool
+	appliedGen        uint64
+	assignments       map[uuid.UUID]uint16
+	counters          map[string]enforce.CounterValue
+	addresses         []string
+	recoverBlocked    bool
+	recovered         bool
+	latchBlocked      bool
+	outboxFull        bool
+	meterFailed       bool
+	applyError        *api.NodeError
+	dependencyMissing bool
+	leaseRetryAt      time.Duration
+	leaseAttempted    bool
+	decision          Decision
+	policyExpires     time.Duration
+	lastObs           time.Time
+	lastServing       bool
+	prober            Prober
+	lastProbe         ProbeResult
+	// probeAt is the trusted time of the last probe. An answer is written only
 	// when this is strictly after the challenge issued_at, so a cached probe
 	// cannot satisfy a challenge that did not exist yet.
 	probeAt time.Time
@@ -134,7 +138,8 @@ type Engine struct {
 	healthNonce string
 	healthSig   string
 	// probeChallenge records the issuance already installed by this process.
-	probeChallenge *healthattest.Challenge
+	probeChallenge  *healthattest.Challenge
+	probedChallenge *healthattest.Challenge
 	// desiredSynced is set when a verified document was loaded, or when this
 	// process received a desired-state response (200, 304, or revocation).
 	// A transport error with no document does not set it. A health answer
@@ -321,13 +326,20 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 // Boot installs the fail-closed baseline before any member forwarding (§8.2, §13.5).
 // A stored lease does not count as fresh until this process accepts one.
 func (e *Engine) Boot(ctx context.Context) error {
+	if p, ok := e.plane.(interface{ MissingExecutables() []string }); ok {
+		missing := p.MissingExecutables()
+		e.dependencyMissing = len(missing) != 0
+		for _, name := range missing {
+			e.log.Error("enforcement dependency unavailable", "executable", name)
+		}
+	}
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
 		return err
 	}
 	if err := e.plane.Baseline(ctx, dp); err != nil {
 		e.baselineOK = false
-		e.log.Error("baseline", "err", err.Error())
+		e.log.Error("baseline", "err", "baseline not installed")
 	} else {
 		e.baselineOK = true
 	}
@@ -340,6 +352,7 @@ func (e *Engine) Boot(ctx context.Context) error {
 	e.recoverOnce(ctx)
 	e.latch()
 	e.ensureUsage(ctx)
+	e.decision = Decide(e.input())
 	e.beat()
 	// A stored document that is still inside its validity window can be
 	// answered at start. A missing document, or one that expired while the
@@ -399,6 +412,7 @@ func signaled(ch <-chan os.Signal) bool {
 // forwarding stays off unless every gate in Decide passes.
 func (e *Engine) Step(ctx context.Context) error {
 	defer e.beat()
+	e.leaseAttempted = false
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -545,6 +559,7 @@ func (e *Engine) input() Input {
 		TestMode: e.cfg.TestMode, ExemptV4: exempt, ExtraDenied: extra, HostV4: host,
 		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
 		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
+		ApplyError: e.applyError, DependencyMissing: e.dependencyMissing, LeaseRetryPending: e.leaseRetryAt > 0,
 		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
 		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
@@ -572,7 +587,10 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 			Ingress:   e.cfg.Datapath.MemberIngress,
 			Uplink:    e.cfg.Datapath.Uplink,
 		})
-		e.probeAt = e.clock.Wall().UTC()
+		e.probeAt = e.trustedNow().UTC()
+		if !e.anchorOK {
+			e.probeAt = time.Time{}
+		}
 	})
 }
 
@@ -656,18 +674,25 @@ func (e *Engine) baseline(ctx context.Context) error {
 }
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
-	baselineOK, meterFailed := e.baselineOK, e.meterFailed
+	baselineOK, meterFailed, applyError := e.baselineOK, e.meterFailed, e.applyError
 	defer func() {
-		if baselineOK != e.baselineOK || meterFailed != e.meterFailed {
+		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError {
 			errs := e.decision.Errors
 			e.decision = Decide(e.input())
 			for _, err := range errs {
-				if err.Stage == "apply" || err.Code == api.ErrorCodeMETEREPOCHCHANGE {
+				if err.Code == api.ErrorCodeUPDATEBUSY || err.Code == api.ErrorCodeMETEREPOCHCHANGE {
 					e.decision.Errors = append(e.decision.Errors, err)
 				}
 			}
 		}
 	}()
+	// A previous failure remains reportable while we retry. Only the candidate
+	// decision omits it; successful read-back below clears the evidence.
+	if e.applyError != nil {
+		in := e.input()
+		in.ApplyError = nil
+		d = Decide(in)
+	}
 	if !d.Serve {
 		e.handoff(ctx)
 		e.serving = false
@@ -714,6 +739,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		return nil
 	}
 	e.serving = true
+	e.applyError = nil
 	e.expectServing.Store(true)
 	e.baselineOK = true
 	e.policyExpires = d.PolicyExpires
@@ -756,7 +782,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 }
 
 func (e *Engine) ackApplied(ctx context.Context, gen uint64) {
-	if gen == 0 || e.desired == nil || !e.desiredOK {
+	if gen == 0 || e.desired == nil || !e.desiredOK || e.applyError != nil || e.dependencyMissing {
 		return
 	}
 	if e.appliedGen == gen {
@@ -780,9 +806,10 @@ func (e *Engine) noteApply(err error) {
 			code = api.ErrorCode(ce.Reason)
 		}
 	}
-	e.decision.Errors = append(e.decision.Errors, api.NodeError{
+	e.applyError = &api.NodeError{
 		Code: code, Message: clipMsg(msg), ObservedAt: e.clock.Wall().UTC(), Stage: "apply",
-	})
+	}
+	e.decision.Errors = append(e.decision.Errors, *e.applyError)
 	e.log.Warn("apply", "err", msg)
 }
 

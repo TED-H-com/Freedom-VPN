@@ -71,8 +71,8 @@ func ValidateHealthAnswer(challenge, attestation []byte, now time.Time, nodeAgen
 func (e *Engine) evaluate(ctx context.Context) {
 	e.refreshProbe(ctx)
 	if ch, ok := e.matchingChallenge(); ok && !e.probeFresh(ch) {
-		now := e.clock.Wall().UTC()
-		if now.After(ch.IssuedAt) && now.Before(ch.ExpiresAt) {
+		now := e.trustedNow().UTC()
+		if e.anchorOK && now.After(ch.IssuedAt) && now.Before(ch.ExpiresAt) {
 			e.refreshProbe(ctx)
 		}
 	}
@@ -104,7 +104,11 @@ func (e *Engine) answerHealth(ctx context.Context) {
 	if !ok {
 		return
 	}
-	now := e.clock.Wall().UTC()
+	now := e.trustedNow().UTC()
+	if !e.anchorOK {
+		e.decision = Decide(e.input())
+		return
+	}
 	if !now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) {
 		return
 	}
@@ -125,11 +129,11 @@ func (e *Engine) answerHealth(ctx context.Context) {
 	// Re-read the authority after probing: replacement or expiry during the
 	// probe must not attach that result to a different issuance.
 	live, ok := e.matchingChallenge()
-	now = e.clock.Wall().UTC()
-	if !ok || !live.Same(ch) || !now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) {
+	now = e.trustedNow().UTC()
+	if !e.anchorOK || !ok || !live.Same(ch) || !now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) {
 		return
 	}
-	if ch.Probe != nil && (e.probeChallenge == nil || !e.probeChallenge.Same(ch)) {
+	if ch.Probe != nil && (e.probedChallenge == nil || !e.probedChallenge.Same(ch)) {
 		return
 	}
 	// Enforce or exception cleanup may have failed after the earlier Decide.

@@ -38,8 +38,12 @@ type Input struct {
 	Enrolled       bool
 	BaselineOK     bool
 	StorageOK      bool
-	BootstrapLost  bool
-	OutboxFull     bool
+	// ApplyError remains evidence until a serving apply succeeds.
+	ApplyError        *api.NodeError
+	DependencyMissing bool
+	LeaseRetryPending bool
+	BootstrapLost     bool
+	OutboxFull        bool
 	// MeterFailed is a meter-path failure. Only reason meter_path_invalid
 	// sets it. Usage caps and persist failures use the fields below so
 	// METER_PATH_INVALID keeps that meaning (§10.3, §10.8).
@@ -129,7 +133,7 @@ func Decide(in Input) Decision {
 	if in.Backend != "kernel" || in.MeterFailed {
 		add(api.ForwardingBlockReasonMeterPathInvalid)
 	}
-	if !in.BaselineOK {
+	if !in.BaselineOK || in.ApplyError != nil || in.DependencyMissing {
 		add(api.ForwardingBlockReasonSafetyCheckFailed)
 	}
 	pub := api.PublicationIntentUnpublished
@@ -167,8 +171,8 @@ func Decide(in Input) Decision {
 	// for a serving document this generation does not yet hold. lease_expired
 	// stays the anchored deadline of the lease for this generation.
 	leaseStale := leaseGenerationStale(in)
-	leaseOK := in.LeaseFresh && in.Lease != nil && in.LeaseMonoSent > 0 && !leaseStale
-	if leaseStale {
+	leaseOK := in.LeaseFresh && in.Lease != nil && in.LeaseMonoSent > 0 && !leaseStale && !in.LeaseRetryPending
+	if leaseStale || in.LeaseRetryPending {
 		add(api.ForwardingBlockReasonPolicyMissing)
 	} else if !leaseOK {
 		add(api.ForwardingBlockReasonLeaseExpired)
@@ -223,7 +227,7 @@ func Decide(in Input) Decision {
 		d.Model = enforce.Model{}
 		d.PolicyExpires = 0
 	}
-	if in.Desired != nil && in.DesiredOK && in.BaselineOK && in.Enrolled && !in.Revoked && !in.BootstrapLost {
+	if in.Desired != nil && in.DesiredOK && in.BaselineOK && in.Enrolled && !in.Revoked && !in.BootstrapLost && in.ApplyError == nil && !in.DependencyMissing {
 		d.Applied = uint64(in.Desired.ConfigGeneration)
 	}
 	evaluateServing := in.Desired != nil && published && in.DesiredOK && len(in.Desired.DeviceBindings) > 0
@@ -231,6 +235,13 @@ func Decide(in Input) Decision {
 	d.Safety = safetyOf(in, releaseChecked, releaseOK)
 	d.DataHealth = dataHealthOf(in)
 	d.Provisioning = provisioningOf(in, d.Applied > 0)
+	if in.ApplyError != nil {
+		d.Errors = append(d.Errors, *in.ApplyError)
+	}
+	if in.DependencyMissing {
+		d.Errors = append(d.Errors, api.NodeError{Code: api.ErrorCodeDEPENDENCYUNAVAILABLE,
+			Message: "enforcement executable unavailable", ObservedAt: at, Stage: "preflight"})
+	}
 	// ISOLATION_BASELINE_MISSING is report-only (§8.2, revision 3). It is
 	// carried on the observation and is not an HTTP response.
 	if !in.BaselineOK {
@@ -271,9 +282,22 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 			leaseCode = api.ErrorCodeSTALEGENERATION
 			leaseDetail = "Serving lease is not for the applied generation."
 		}
+		if in.LeaseRetryPending {
+			leaseCode = api.ErrorCodeRATELIMITED
+			leaseDetail = "Lease renewal is waiting for Retry-After."
+		}
 		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, leaseCode, at), leaseDetail)
 		qos = withDetail(chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "Rate policy could not be applied.")
 		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "No member binding was admitted.")
+	}
+	if in.ApplyError != nil || in.DependencyMissing {
+		code := api.ErrorCodeDEPENDENCYUNAVAILABLE
+		if in.ApplyError != nil {
+			code = in.ApplyError.Code
+		}
+		lease = chk(api.NodeCheckNameLease, false, code, at)
+		qos = chk(api.NodeCheckNameQos, false, code, at)
+		bind = chk(api.NodeCheckNameSourceBinding, false, code, at)
 	}
 	release := notRun(api.NodeCheckNameReleaseSupported, at)
 	if releaseChecked {
@@ -367,7 +391,7 @@ func safetyOf(in Input, releaseChecked, releaseOK bool) api.SafetyStatus {
 	leaseDeadline := !in.LeaseFresh || in.Lease == nil || in.LeaseMonoSent <= 0
 
 	hard := !in.BaselineOK || !in.StorageOK || in.UsagePersist || in.UsageDisk ||
-		in.Backend != "kernel" || in.MeterFailed
+		in.Backend != "kernel" || in.MeterFailed || in.ApplyError != nil || in.DependencyMissing
 	if releaseChecked && !releaseOK {
 		hard = true
 	}

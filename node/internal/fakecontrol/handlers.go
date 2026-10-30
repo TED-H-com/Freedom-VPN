@@ -328,7 +328,16 @@ func (s *Server) lease(w http.ResponseWriter, r *http.Request) {
 	if failLease {
 		s.leaseFail--
 	}
+	retry := time.Duration(0)
+	if s.leaseRetryN > 0 {
+		s.leaseRetryN--
+		retry = s.leaseRetryFor
+	}
 	s.mu.Unlock()
+	if retry > 0 {
+		apierr.Write(w, r, apierr.New(apierr.RateLimited, "Lease renewal is rate limited.").WithRetryAfter(retry))
+		return
+	}
 	if failLease {
 		apierr.Write(w, r, apierr.New(apierr.DependencyUnavailable, "Lease renewal is unavailable."))
 		return
