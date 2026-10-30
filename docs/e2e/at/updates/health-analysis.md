@@ -1,3 +1,8 @@
+> Historical first-pass analysis, before D-053 (#78/#84) and the real
+> candidate bundles (#88). The unconditional adapter failure described below
+> is superseded. See [follow-up 1](follow-up-1.md) and [current results](summary.md)
+> for the current code path and run. Line references below belong to that earlier source.
+
 # AT23–AT27 updater health finding
 
 The first-install `ROLLBACK_FAILED` is the correct fail-closed outcome after
