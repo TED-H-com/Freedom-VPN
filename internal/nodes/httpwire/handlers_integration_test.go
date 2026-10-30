@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -66,7 +67,7 @@ func setupRuntime(t *testing.T, runtime *httpwire.Runtime) *fixture {
 	t.Helper()
 	pool, identity := runtime.Pool, runtime.PKI
 	f := &fixture{t: t, r: runtime, p: auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: true, AuthenticatedAt: time.Now(), CSRFToken: "test-csrf"}}
-	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
+	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &audit.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -469,6 +470,8 @@ func TestAT29_HTTPSignedLeaseWindowAndReplay(t *testing.T) {
 	if _, _, e = envelope.Verify(raw, trust, envelope.PurposeLease, time.Now()); e != nil {
 		t.Fatal(e)
 	}
+	// TEST ONLY below-floor issuer fixture: D-065 PUT has a 60 s lab floor,
+	// so this 2 s window deliberately exercises the issuer beneath the API range.
 	if _, e = f.r.Pool.Exec(ctx, `UPDATE fleet_config SET max_offline_lease_seconds=2,resource_version=resource_version+1`); e != nil {
 		t.Fatal(e)
 	}
