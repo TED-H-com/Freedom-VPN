@@ -1,23 +1,19 @@
-# Follow-up 7 — measured lab subsets
+# Follow-up 8 — AT30 live central database restore & cross-system reconciliation
 
-Application base `fb3ea32` (#195); harness `443cbb0`; run `ab96acac-8713-485a-9c29-88f20110e2e5`. Shared development host, **not candidate hardware**. Source, build/image digests, policy revision, incarnations, UTC times and commands are in each JSON record.
+Application base `6b98422` (#207); harness `6350853010054cf656465e5e677c60dc29553cb5`; run `0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8`. Shared development host, **not candidate hardware**.
 
 | Measurement | Actual |
 |---|---|
-| Simultaneous native cohort | 20 users / 60 devices / 60 bindings |
-| Sequential admission wall time | 900.75031848 s |
-| Admission p50 / p95 / p99 | 14933.613 / 16653.033 / 17203.99 ms |
-| Counted peers during traffic | 60 / 60 |
-| Read p50 / p95 / p99 | 9.84 / 132.105 / 292.114 ms |
-| Read statuses / wrong member responses | {'200': 5960} / 0 |
-| Node telemetry samples / errors / cadence | 82 / 0 / 5 s |
-| Node CPU p95 (100%=one core) | 13.208400837956692% |
-| Peak memory / open FDs / conntrack | 114642944 bytes / 136 / 1738 |
-| Proxy and body-limit subset | passed |
-| Paid / grant / lease cutoff and recovery subsets | passed / passed / passed |
-| Fleet maximum restored to 86400 via API | True |
-| Ordinary log scan / protected artifact lifecycle | passed / passed |
+| `T0` pgBackRest full backup / restore target | `20261030-220248F` / `2026-10-30T22:02:57.160042Z` (LSN `0/7001278`) |
+| `L0` → `L1` central ACKed usage sequence (`N0` → `N1`) | `2` (`28014` B) → `5` (`78951` B) |
+| Node retained records at `T1` (`/var/lib/vpn-node/state/usage.db`) | `next_seq=6`, `acked_through=5`, `events=5`, `archived=5`, `outbox=0` (`node/agent/observe.go:111-116` reports zeroed `UsageOutboxStatus`; SQLite retains `archived` rows for 72h) |
+| 2-minute fail-safe negative (before `freeze` / `begin-recovery`) | `120.12 s`: central ACK stayed `2`, `max_seen_seq=6`, `usage_events=3` (events `3..5` skipped, `seq=6` stuck in node `outbox` due to `ErrAckRegress`) |
+| 5-step product restore protocol (`fvpn-usage-admin`) | `freeze` → `begin-recovery` (new `ledger_epoch=01a18eda-3ac3-7ae6-bd3c-9a8b8a4e8d18`) → node archive replay (`90.05 s`) → `complete-recovery` (`mode=normal`, `0` reconciling rollups) |
+| Usage replay (`L2` vs `L1` and `L0`) | **passed**: `5/5` events (`5/5` canonical SHA-256 matches, `78951` B), `0` lost, `0` double-counted, `0` gaps |
+| Pre-replay DB RPO (`T1 - T0`) / Post-replay service usage RPO | `116.651 s` / `0 s` |
+| Protocol RTO (Step 1 `freeze` → ready) / Total outage RTO | `105.94 s` / `111.51 s` |
+| Provider reconciliation (`Central L2` vs `P1`) | **passed**: `m1` converged to `canceled` + `refund=1` + `entitlement.state=expired` (`device_limit=3`) via `billing.reconcile`; `m2` stayed `active` (`entitlement_extended=False`) |
+| Unmapped NetBird peer discovery denial (#205) | **passed**: `identity_unmapped` audit count = `1` across multiple `devices.discover` sweeps |
+| `T0..T1` device revocation after restore (`peerM2D2`) | **blocked (`SECOPS-18`)**: `SyncDevice` re-authorized `peerM2D2` in NetBird from `T0` `member_devices.status='authorized'` (`l2_observed_authorized=True`, `l2_in_active_device_bindings=True`) |
 
-[Capacity](capacity.json) contains per-device bytes, fixed load profile, policies, usage watermarks, gateway inventory and the second-exit attempt. [Node telemetry](node-telemetry.json) contains the full fixed-cadence series. [Deadlines](deadlines.json) retains every fault sample and signed bound. [Limiter](limiter.json) retains exact response sequences and metrics. [D-066 scan](secret-scan.json) separates protected credentials from ordinary streams. The previous run is preserved byte-for-byte under [history/follow-up-6](history/follow-up-6/archive-index.json).
-
-All full AT28–AT32 cases remain **blocked** for the requirements listed in their records; physical hardware/platform/clock rows are **needs operator run**. SECOPS-04's API/config inputs and SECOPS-10's admission facility are delivered; this does not turn unmeasured transports or a refused provider state into passes. AT30 is unchanged; no new physical restore run or RTO/RPO claim. See [requests](requests.md) and [run instructions](RUN.md).
+Full details and command sequences are in [restore-reconcile.md](restore-reconcile.md) and [restore-reconcile.json](restore-reconcile.json). Follow-up 7 records are archived byte-for-byte under [history/follow-up-7](history/follow-up-7/archive-index.json). See [requests](requests.md) and [run instructions](RUN.md).
