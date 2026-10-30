@@ -12,6 +12,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +27,7 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/legacy"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var errNotImplemented = errors.New("operation not implemented")
@@ -103,6 +105,12 @@ func (w *bufferWriter) Write(b []byte) (int, error) {
 // Transport is deliberately allowlist-only logging. No request/response headers,
 // URLs, bodies, panic values or error strings enter access logs (§16.2, SEC02).
 func Transport(log *slog.Logger, next http.Handler) http.Handler {
+	return TransportWithMetrics(log, next, nil)
+}
+
+// TransportWithMetrics counts final responses, including recovered panics, using
+// only bounded route templates and status codes (§16.4, SEC02).
+func TransportWithMetrics(log *slog.Logger, next http.Handler, requests *prometheus.CounterVec) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = apierr.TrackResponse(w)
 		start := time.Now()
@@ -112,6 +120,12 @@ func Transport(log *slog.Logger, next http.Handler) http.Handler {
 			trace = ""
 		}
 		meta := &requestMeta{route: "unmatched", trace: trace, logger: log}
+		switch r.URL.Path {
+		case "/healthz", "/readyz", "/auth/login", "/auth/callback", "/auth/session":
+			meta.route = "GET " + r.URL.Path
+		case "/auth/logout":
+			meta.route = "POST /auth/logout"
+		}
 		ctx := context.WithValue(apierr.ContextWithRequestID(r.Context(), id), metaKey{}, meta)
 		r = r.WithContext(ctx)
 		b := &bufferWriter{header: make(http.Header)}
@@ -145,6 +159,9 @@ func Transport(log *slog.Logger, next http.Handler) http.Handler {
 		}
 		if log != nil {
 			log.InfoContext(ctx, "http request", "request_id", id, "route", meta.route, "status", b.status, "duration_ms", time.Since(start).Milliseconds())
+		}
+		if requests != nil {
+			requests.WithLabelValues(meta.route, strconv.Itoa(b.status)).Inc()
 		}
 	})
 }
