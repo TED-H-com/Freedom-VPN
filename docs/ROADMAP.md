@@ -113,6 +113,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | done (#69) |
 | w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | in progress |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
+| w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
