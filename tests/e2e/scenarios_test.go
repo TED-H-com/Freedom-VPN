@@ -96,6 +96,20 @@ func (r *runner) record(rec Record) {
 	}
 	r.counts[rec.Status]++
 	r.t.Logf("scenario %s: %s", rec.ID, rec.Status)
+	if rec.Status == StatusBlocked {
+		owners := map[string]string{
+			"publish":        "w3-wire-nodes: publication operation and production peer projection",
+			"member-traffic": "w3-wire-members: device admission; w3-wire-nodes: exit publication",
+			"forwarding":     "w2-agent-core and w3-wire-nodes: applied serving policy",
+			"usage":          "w3-wire-usage: exact usage acceptance after a serving binding exists",
+			"update-good":    "w4-node-updater and w2-agent-core: D-053 live candidate health",
+			"update-bad":     "w4-node-updater: tampered artifact rejection and recovery",
+			"lease-expiry":   "w2-agent-core: AT29 needs active forwarding before control loss",
+		}
+		if owner := owners[rec.ID]; owner != "" {
+			rec.Observations = append(rec.Observations, Observation{Name: "owner", Detail: owner})
+		}
+	}
 	if rec.Status != StatusPass {
 		r.bad = true
 	}
@@ -481,7 +495,12 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 		if err != nil {
 			r.t.Fatal(err)
 		}
-		rec.Observations = append(rec.Observations, Observation{Name: "manifest_sha256_" + spec.product, Detail: digest})
+		rec.Observations = append(rec.Observations, Observation{Name: "signed_manifest_sha256_" + spec.product, Detail: digest})
+		envelopeDigest, err := canonjson.HashHex(canonical)
+		if err != nil {
+			r.t.Fatal(err)
+		}
+		rec.Observations = append(rec.Observations, Observation{Name: "manifest_sha256_" + spec.product, Detail: envelopeDigest})
 		if err := r.lab.candidateConfig(id, spec.product); err != nil {
 			r.t.Fatal(err)
 		}
@@ -576,7 +595,14 @@ func (r *runner) updater(ctx context.Context, good, bad uuid.UUID) {
 		return
 	}
 	r.oneUpdate(ctx, "update-good", "Good release reaches a terminal updater state", []string{"§13", "§19 AT23", "§19 AT25"}, good, false)
-	if err := r.lab.putObject(ctx, "r/"+bad.String()+"/amd64.tar.zst", []byte("not-the-artifact\n")); err != nil {
+	artifact, err := os.ReadFile(filepath.Join(r.lab.state, "releases", "r", bad.String(), "amd64.tar.zst"))
+	if err == nil && len(artifact) > 0 {
+		artifact[len(artifact)/2] ^= 1 // Change one real byte, preserving artifact size.
+		err = r.lab.putObject(ctx, "r/"+bad.String()+"/amd64.tar.zst", artifact)
+	} else if err == nil {
+		err = errors.New("empty artifact")
+	}
+	if err != nil {
 		r.record(Record{ID: "update-bad", Title: "Bad release rejected", Spec: []string{"§13", "§19 AT27"}, Status: StatusFail,
 			Observations: []Observation{{Name: "overwrite", Detail: "failed"}}})
 		return
@@ -687,6 +713,9 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		rec.Observations = append(rec.Observations, Observation{Name: "journal_excerpt", Detail: excerpt})
 	}
 	switch {
+	case wantHash && words["locally_succeeded"]:
+		rec.Status = StatusFail
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "tampered artifact incorrectly accepted"})
 	case words["locally_succeeded"]:
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "locally_succeeded was observed"})
 		rec.Status = StatusPass

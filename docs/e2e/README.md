@@ -204,10 +204,11 @@ rows do not prove acceptance of publication, device admission, or an updater:
 Boot `0.1.0`, candidate `1.0.1`, and tamper target `1.0.2` each contain real
 agent, watchdog and updater binaries built from the recorded source commit
 for linux/amd64 and linux/arm64. Each manifest is signed, registered and
-verified. `release-register` records the SHA-256 of each canonical `signed`
-manifest object. Product version and runtime `agent_release` match; the boot
+verified. `release-register` records the SHA-256 of both each canonical manifest
+envelope (the registered digest) and its `signed` object. Product version and runtime `agent_release` match; the boot
 release ID and both candidates are in the serving allowlist. `update-bad`
-changes the uploaded real archive only after verification.
+flips one byte in the uploaded real archive after verification, preserving
+its length.
 
 The node's lab service manager stops the boot agent and starts
 `<installed-release>/bin/fvpn-agent` with that release's identity/config. A
@@ -232,91 +233,41 @@ claim full AT22. No feed is fetched from the public Internet.
 
 ## Known limits
 
-- arm64 is packaged and cross-compiled. This host does not boot an arm64 node.
-- There is one agent `control_url`. Enrollment uses the public listener and
-  the running agent uses the mTLS listener, via two config files.
-- The release fetcher rejects RFC1918, loopback, CGNAT, and documentation
-  ranges. Each stack's origin is `192.0.<3+slot>.10` on a bridge with
-  masquerade off. There is no central test allowance for the origin URL.
-- Activation of `release_support` does not by itself fill
-  `approved_release_ids`. The run writes both allowlist arrays in SQL so a
-  batch is not rejected as `RELEASE_NOT_APPROVED`, and it does not bump
-  `generation`, so `expected_generation` still matches the API.
-- Before enrollment the acceptance runner packages the tree-built agent,
-  watchdog, and updater for amd64 and arm64 as a TEST ONLY boot release
-  (`0.1.0`). It registers and verifies that release and both update fixtures,
-  sets the boot UUID in the node configs, and includes all three IDs in the
-  serving allowlist. `desired-state` records whether the boot ID is supported.
-  Previously the non-empty update allowlist excluded the node's unset release
-  ID, which correctly caused `release_supported=failed`. The `1.0.1` and
-  `1.0.2` update archives remain marker fixtures for the updater exercise.
-- Stripe's API host is fixed in the client. The lab publishes it as the
-  Docker alias `api.stripe.com` with a certificate for that name. The lab
-  seeds one plan whose provider is `stripe` and whose price id is `e2e-price`.
-- The lab seeds one plan revision that includes an exit group and passes that
-  `plan_revision_id` on the admin grant. The member container joins with
-  `netbird up` and no setup key. The portal session and the device flow both
-  sign in as `e2e-member` at the embedded issuer, and the harness unescapes
-  the HTML form action so the password POST keeps the `state` query. It does
-  not insert `member_devices`, `device_bindings`, or `netbird_user_bindings`.
-  An empty `netbird_user_bindings` table is recorded as `writer not yet merged`
-  while that writer is absent. The 2026-10-30 run recorded grant 202, checkout
-  201, device path `/oauth2/device`, login submitted, stage `netbird_up`, and
-  one peer of two with a NetBird user. `GET /api/v1/member/devices` was 200
-  with zero devices. `same_subject=true` confirms that the portal subject and
-  NetBird identity match before redaction. Stored row counts for this member
-  were `netbird_user_bindings=0`, `member_devices=0`, and `device_bindings=0`.
-  This is the missing production mapping writer, not an issuer mismatch.
-  No binding was projected and no flow was counted, so AT12 is not claimed.
-- After enroll the run calls `PUT /admin/nodes/{id}/publication` with intent
-  `published` and `If-Match`. The 2026-10-30 call returned 422
-  `NODE_NOT_SERVICEABLE` before an operation existed, with only
-  `provisioning_state=applying (want ready)` in `failed_checks`. The accepted
-  observation now reports `ready`, `safety_status=passed`, `data_health=healthy`,
-  `tunnel_probe=passed`, and applied generation `1`. The stored node still has
-  `provisioning_state=applying`, although desired and applied are both `1`.
-  Its incarnation peer id and the report's NetBird peer id are null, and there
-  are zero `node.peer.observe` events: the HTTP observer only enqueues that
-  worker job for a non-null peer id. The worker also requires that id before
-  its ready transition. This is the central wire-nodes blocker; the agent
-  baseline fix from PR #75 is visible. `publication_observed` stays absent,
-  so `agent_policy`, `netbird_route_readback`, and `data_path_probe` were not
-  reached. `publish` includes the stored row snapshot without seeding a fix.
-- `GET /api/v1/member/usage` is served. A usage batch is sent only when a
-  desired-state `device_bindings` row matches an authorized device and covers
-  the interval. The 2026-10-30 run did not send a batch. The member total
-  stayed 0, so AT14 and AT15 are not claimed.
-- A member accept rule is an `fvmb0` accept on the `inet fvpn` forward chain.
-  NetBird `fvnb0` accepts in that chain do not count, and neither does
-  `policy accept` on another chain. The 2026-10-30 forward chain stayed
-  `policy drop`, generation 0, with the baseline marker and zero member
-  accepts, so AT10 and AT29 are not claimed.
-- The 2026-10-30 enroll record shows the node signal log `Connected` after
-  join. An earlier lab run recorded a relay WebSocket 404 and one management
-  `RST_STREAM`; this run's evidence does not repeat that measurement.
-- Stock updater `NodeChecks` fail closed. While the node was not serving, the
-  2026-10-30 good-release journal `health_json` was
-  `{"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}`.
-  That update ended `recovery_required` with `ROLLBACK_FAILED`. The bad
-  release was rejected with `HASH_MISMATCH: content changed during resume`;
-  its record passes only the tampered-byte rejection observation. It has no
-  journal health row and proves no successful rollback. `locally_succeeded`
-  was not observed; full AT23, AT25, and AT27 completion is not claimed.
-  The harness waits for the release in `signed.update.release_id` before
-  invoking the updater; presence in `serving_release_ids` alone is insufficient.
-- The meter runs inside `fvpn-agent`. There is no separate meter or
-  time-anchor binary. `host_reserve_bps` is set in the generated agent file
-  because the binary has no default (D-034).
-- `docs/e2e/runs/<UTC date>/` is the latest run for that date. A later run on
-  the same UTC date replaces those files. The acceptance table for this
-  follow-up is `docs/e2e/runs/2026-10-30/`. `docs/e2e/runs/2026-10-29/` remains
-  the follow-up 2 run, including `parallel-stacks.md`. The first recorded run
-  of 2026-10-29 is the copy in `acc17fb`. A forward chain that stays on the
-  baseline is not an AT10 or AT29 pass.
-
-The final 2026-10-30 run is `6bf270e4-abb1-43ff-93eb-18d282fc7c2a`, from
-source commit `5477de091f449047193fdc9114cfca4ced5b36e6`. All thirteen scenarios
-completed: seven pass and six blocked, with no scenario labeled fail.
-`TestE2E_Acceptance` took 197.36 seconds and exited 1 (`make` exited 2),
-preserving the non-pass gate. These records replace the earlier attempts on
-that date; they are not a combination of runs.
+- arm64 binaries are built and packaged from the same tree. This host executes
+  only amd64; AT07 reinstall and existing-flow teardown are not measured.
+- The agent uses the public listener for enrollment and the mTLS listener when
+  running, through two config files. The meter is inside `fvpn-agent`;
+  `host_reserve_bps` is a required TEST ONLY value (D-034).
+- Artifact and feed fetchers reject private, loopback, overlay and documentation
+  addresses. The origin uses `192.0.<3+slot>.10` on an isolated bridge without
+  masquerading; no product SSRF allowance or public traffic is introduced.
+- The lab seeds catalogue inputs: a plan revision and exit group, a fake Stripe
+  price, and the release-support allowlist. Both approved and supported arrays
+  contain the registered boot and candidate IDs. D-050 remains binding: the
+  harness does not write member identity/device projections, node readiness,
+  publication, feed state, or resolver generation rows.
+- Production D-052 identity mapping and D-055 node peer discovery are now in
+  the tested main tree. The lab uses their writers and reports their observed
+  rows; it no longer treats those implementations as absent. A matching
+  subject alone is still insufficient evidence of device authorization.
+- Publication must complete its operation, including NetBird route read-back.
+  `ready` and a 202 response alone do not prove publication. See `publish` for
+  the exact stored node/observation values and each operation step.
+- Member forwarding counts only `fvmb0` accepts in the `inet fvpn` forward
+  chain. An `fvnb0` accept or an unrelated chain does not count. Exact usage
+  acceptance needs a projected desired-state binding covering the uploaded
+  interval. Control-loss acceptance needs active forwarding before the stop.
+- D-053's updater consumer and agent producer are both included. Candidate
+  checks must pass in the real runtime; a missing/failed answer remains
+  blocked and never becomes a synthetic success. No successful rollback is
+  claimed without a restorable last-good release and its health evidence.
+- Feed central publication is tested separately from node delivery. The latter
+  remains blocked on D-056, owned by contracts revision 5 and the node delivery
+  implementation. The fixture's 300-second source cadence and 60-second
+  blocked TTL are TEST ONLY settings, not new production defaults.
+- The separate portal driver retains the four fixture deviations listed above.
+  Those rows are not used by this acceptance runner and cannot clear its gates.
+- Dated evidence is replaced as a complete set. The 2026-10-29 directory remains
+  the earlier follow-up, including its parallel-stack proof; 2026-10-30 holds
+  the latest complete run. Records with `blocked` keep the acceptance command
+  non-zero and identify the responsible product area.
