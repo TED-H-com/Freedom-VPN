@@ -106,11 +106,18 @@ func TestAT28_AT31_LiveStack(t *testing.T) {
 	} else {
 		p.metadata["capacity_subset"] = map[string]any{"status": "blocked", "reason": "Follow-up 2: no capacity measurement without a counted serving flow; prior API diagnostics remain historical"}
 	}
-	p.ledger(admin, nodeClient, nodeB, members, devices)
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP3") != "1" {
+		p.ledger(admin, nodeClient, nodeB, members, devices)
+	} else {
+		p.metadata["physical_restore"] = "Historical Follow-up 2 record preserved; command and migration compatibility reviewed separately. No new restore or replay measurement."
+	}
 	if len(devices[0]) > 0 {
 		p.memberOperation(members)
 	}
 	p.revoke(admin, nodeClient, nodeB)
+	if os.Getenv("FVPN_SECOPS_LOGIN_BURST") == "1" {
+		p.loginThresholds(members)
+	}
 }
 
 func (p *liveProbe) open() {

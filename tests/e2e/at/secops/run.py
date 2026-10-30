@@ -14,6 +14,7 @@ import re
 import subprocess
 import tempfile
 import time
+from pitr_compatibility import review as review_pitr
 
 ROOT = Path(__file__).resolve().parents[4]
 HERE = Path(__file__).resolve().parent
@@ -24,6 +25,10 @@ PORT_BASE = '30000'
 
 # Reuse owner-maintained probes. This neither copies nor forks tests/e2e's lab.
 SUITES = [
+    ('login-d060', ['AT28', 'AT31'], './internal/httpapi', ['TestAT31_D060_LoginAddressBurstAndMetric']),
+    ('login-subject', ['AT28', 'AT31'], './internal/auth', ['TestSEC05_SubjectLoginLimitAndRequestedRole']),
+    ('publication-worker', ['AT29', 'AT31'], './internal/nodes/httpwire', ['TestSECOPS11_PublicationWorkerRequiresArmedMemberDataPath']),
+    ('publication-evidence', ['AT29', 'AT31'], './internal/nodes', ['TestSECOPS11_RecordedBaselineDoesNotProveServing']),
     ('boundary', ['AT28'], './tests/e2e/at/secops', ['TestAT28_AllContractRoleBoundaries', 'TestAT28_TransportSecretCanaries', 'TestAT28_RealMTLSTwoNodesExpiredRevokedAndForgedIDs']),
     ('sessions', ['AT28'], './internal/auth', ['TestAT28_OIDCVerificationAndSessions', 'TestAT28_RoleCookiesCoexistAndLogoutIndependently', 'TestAT28_BrowserSelectorRequiresBothCookies', 'TestID01_ScopedIdentitySessionRotationAndExpiry', 'TestAT01_AdminIdentityAndEverySessionAudited']),
     ('http-security', ['AT28'], './internal/httpapi', ['TestAT28_RolesAndFallback', 'TestAT28_CertificateIdentityAndForgedHeaders', 'TestAT28_CSRFSchemaSizeAndPreconditions', 'TestAT28_ErrorAndLogRedaction', 'TestAT28_BootstrapTransport', 'TestAT28_MemberOperationHTTPIsolation', 'TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets', 'TestAT28_BrowserRateAndConcurrencyRetryAfter', 'TestAPI01_IdempotencyReplayConflictConcurrentExpiry', 'TestAPI01_ETag']),
@@ -154,9 +159,28 @@ def write_json(path, data):
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
 
 
+def write_followup3_records(common, live):
+    login = live.get('concurrent_sign_in', {})
+    thresholds = [live.get(k, {}).get('passed', False) for k in ('login_subject_limit', 'login_41st_request')]
+    login_pass = login.get('authenticated') == 20 and login.get('wrong_member') == 0 and all(thresholds)
+    write_json(PUBLIC / 'limiter.json', dict(common, id='SECOPS-06', spec=['§19.1', '§19 AT28', '§19 AT31'],
+               status='passed' if login_pass else 'blocked', expected='20/20 distinct logins; subject completion 11 rejects; address request 41 rejects with Retry-After 1',
+               actual={k:live.get(k) for k in ('login_settings','concurrent_sign_in','login_subject_limit','login_41st_request')},
+               supersedes='followup1-login.json; defaults changed by D-060 / PR #106', commands=[common['stack'].get('live_probe',{}).get('command')]))
+    if not live.get('publication_negative'):
+        live = dict(live, publication_negative={'status': 'blocked', 'passed': False, 'reason': 'Publication request did not reach a worker operation; inspect request and immutable observation.', 'request': live.get('publication_request'), 'owner': 'w3-devstack-e2e: resolver and ready-baseline configuration'})
+    write_json(PUBLIC / 'publication.json', dict(common, id='SECOPS-11', spec=['§19 AT29', '§19 AT31'],
+               node_incarnation=live.get('agent_node_incarnation'),
+               status='blocked', negative_status='passed' if live.get('publication_negative',{}).get('passed') else 'blocked', positive_status='blocked',
+               expected='Unarmed publication fails data_path_probe with member_forwarding_unconfirmed; positive needs real armed observation and counted traffic',
+               actual={k:live.get(k) for k in ('publication_request','publication_operation','publication_negative','publication_positive','publication_observation_before','publication_observation_after','watchdog_state','flow_probe','counted_flow')},
+               commands=[common['stack'].get('live_probe',{}).get('command')]))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--components-only', action='store_true', help='Supporting tests only; never an acceptance pass.')
+    parser.add_argument('--follow-up-3', action='store_true', help='Remeasure D-060 and SECOPS-11; preserve and review historical PITR.')
     args = parser.parse_args()
     if os.getenv('FVPN_E2E_PREFIX', PREFIX) != PREFIX or os.getenv('FVPN_E2E_PORT_BASE', PORT_BASE) != PORT_BASE:
         parser.error('this task is assigned prefix w4-secops and port base 30000; no substitute is allowed')
@@ -170,6 +194,11 @@ def main():
     source_digest = hashlib.sha256(b''.join(p.read_bytes() for p in sorted(HERE.glob('*.go')))).hexdigest()
     records, builds = [], []
     started = utc()
+    if args.follow_up_3:
+        compatibility = review_pitr(ROOT, started)
+        write_json(PUBLIC / 'pitr-compatibility.json', compatibility)
+        if compatibility['status'] != 'passed':
+            raise SystemExit('PITR dependency/assertion changed; inspect compatibility record before deciding on a new drill')
     with tempfile.TemporaryDirectory(prefix='secops.', dir=ROOT / '.agent/tmp') as scratch:
         env = dict(os.environ, GOTOOLCHAIN='local', CGO_ENABLED='0', TMPDIR=scratch, GOTMPDIR=scratch,
                    E2E_RESET='1', FVPN_E2E_PREFIX=PREFIX, FVPN_E2E_PORT_BASE=PORT_BASE, FVPN_E2E_STATE=str(ROOT / '.agent/e2e-state-w4-secops'))
@@ -181,7 +210,10 @@ def main():
                 stack['reason'] = 'Assigned namespace is occupied or Docker inventory unavailable; no bring-up or teardown authorized by this runner.'
             else:
                 # Never attach a previous run's backup or evidence to this run.
-                for stale in (PUBLIC / 'live.json', PUBLIC / 'restore.json', PUBLIC / 'pitr.json', PUBLIC / 'pitr-source.json', PRIVATE / 'pitr-manifest.json', PRIVATE / 'retained.json'):
+                stale_paths = [PUBLIC / 'live.json']
+                if not args.follow_up_3:
+                    stale_paths += [PUBLIC / 'restore.json', PUBLIC / 'pitr.json', PUBLIC / 'pitr-source.json', PRIVATE / 'pitr-manifest.json', PRIVATE / 'retained.json']
+                for stale in stale_paths:
                     stale.unlink(missing_ok=True)
                 try:
                     up, raw = command('e2e-up', ['make', '-f', 'mk/e2e.mk', 'e2e-up'], env, 1200)
@@ -190,9 +222,11 @@ def main():
                         stack['reason'] = 'Assigned dev stack failed bring-up; private diagnostics retained.'
                     else:
                         live_command = ['go', 'test', '-json', '-tags', 'e2e,integration', '-p', '1', '-parallel', '2', '-count=1', '-timeout', '15m', '-run', '^TestAT28_AT31_LiveStack$', './tests/e2e/at/secops']
-                        probe, output = command('live-probe', live_command, dict(env, FVPN_SECOPS_LIVE='1', FVPN_SECOPS_LOGIN_BURST=login_burst), 960)
+                        probe, output = command('live-probe', live_command, dict(env, FVPN_SECOPS_LIVE='1', FVPN_SECOPS_LOGIN_BURST=login_burst, FVPN_SECOPS_FOLLOWUP3='1' if args.follow_up_3 else '0'), 960)
                         stack['live_probe'] = dict(probe, **summarize_go(output, ['TestAT28_AT31_LiveStack'], probe['exit_code']))
-                        if (PRIVATE / 'pitr-manifest.json').is_file() and (PRIVATE / 'retained.json').is_file():
+                        if args.follow_up_3:
+                            stack['isolated_restore'] = {'status': 'historical record preserved', 'compatibility': 'pitr-compatibility.json', 'new_restore_executed': False}
+                        elif (PRIVATE / 'pitr-manifest.json').is_file() and (PRIVATE / 'retained.json').is_file():
                             restore, _ = command('isolated-restore', ['python3', 'tests/e2e/at/secops/pitr.py'], env)
                             stack['isolated_restore'] = restore
                         else:
@@ -227,15 +261,24 @@ def main():
     common = dict(schema_version=1, run_started_at=started, run_finished_at=utc(), source_revision=revision,
                   probe_source_sha256=source_digest, build_digests=builds+deployed_builds, image_digests=live.get('image_digests', []),
                   policy_revision=live.get('policy_revision'), node_incarnation=live.get('node_incarnation'), stack=stack)
+    if args.follow_up_3:
+        write_followup3_records(common, live)
     write_json(PUBLIC / 'components.json', {'schema_version': 1, 'run_started_at': started, 'run_finished_at': utc(), 'suites': records})
     write_json(PUBLIC / 'secret-scan.json', {'schema_version': 1, 'scope': 'Captured component subprocess streams plus all twelve stack container stdout/stderr streams, produced node/member log files, and all audit_events rows. Known live secret canaries plus generic markers; not a claim about unexercised code paths.',
                'streams': [r['scan'] for r in records], 'stack_streams': live.get('secret_scan', []), 'canaries': live.get('known_secret_canaries'),
                'audit_rows': live.get('audit_rows_scanned'), 'full_stack_scan_status': 'passed' if live.get('secret_scan') and all(x['read_ok'] and not x['known_secret_matches'] for x in live['secret_scan']) else 'blocked'})
     for at, requirements in REQUIREMENTS.items():
+        if at == 'AT30' and args.follow_up_3:
+            # Keep its actual run timestamp, images, backup IDs and timings.
+            # Current component results are in components.json; no old backup
+            # can be attributed to the new stack or its incarnation.
+            continue
         related = [r for r in records if at in r['acceptance_cases']]
         component_status = 'failed' if any(r['status'] == 'failed' for r in related) else ('passed' if related and all(r['status'] == 'passed' for r in related) else 'blocked')
         status = 'passed' if at == 'AT28' and component_status == 'passed' and stack.get('live_probe', {}).get('status') == 'passed' and live.get('security_matrix_complete') else 'blocked'
         blockers = list(GAPS[at])
+        if component_status == 'failed':
+            blockers.insert(0, 'Supporting test failure: '+', '.join(r['id'] for r in related if r['status'] == 'failed')+'; see components.json and requests.md. A failed owner test is not a skipped precondition.')
         if not live or (at == 'AT28' and status != 'passed'):
             blockers.insert(0, 'A required live/component probe failed or was not executed; inspect live.json, components.json and private diagnostic logs.')
         if at == 'AT28' and live.get('device_idor_blocker'):
@@ -254,7 +297,7 @@ def main():
         if at == 'AT29':
             data['node_incarnation'] = live.get('agent_node_incarnation')
             data['policy_revision'] = live.get('node_after_publication', {}).get('config_generation', {}).get('applied')
-            data['serving'] = {k:live.get(k) for k in ('node_service_precondition','publication_request','publication_operation','forward_baseline_generation_zero','member_accept_rules','watchdog_heartbeat_present','counted_flow','flow_probe','serving_checks','node_after_publication','watchdog_state','configured_updater_recovery_file_present','short_node_lease_seconds')}
+            data['serving'] = {k:live.get(k) for k in ('node_service_precondition','publication_request','publication_operation','publication_negative','publication_positive','publication_observation_before','publication_observation_after','forward_baseline_generation_zero','member_accept_rules','watchdog_heartbeat_present','counted_flow','flow_probe','serving_checks','node_after_publication','watchdog_state','configured_updater_recovery_file_present','short_node_lease_seconds')}
         if at == 'AT30':
             data['recovery'] = live.get('recovery', {})
             if (PUBLIC / 'pitr.json').exists() and stack.get('isolated_restore',{}).get('exit_code') == 0:
@@ -262,6 +305,8 @@ def main():
                 data['evidence'].extend(['pitr.json', 'pitr-source.json'])
         if at == 'AT31':
             data['capacity'] = dict(profile='load-profile.json', full_profile_executed=False, candidate_hardware=False, measured_subset=live.get('capacity_subset'), grants=live.get('grant_projection'), requested_devices=60, authorized_devices=live.get('authorized_devices', 0), concurrent_sign_in=live.get('concurrent_sign_in'), synthetic_ledger_ack=live.get('usage_final_ack'), login_41st_request=live.get('login_41st_request'))
+            data['capacity']['login_subject_limit'] = live.get('login_subject_limit')
+            data['capacity']['login_settings'] = live.get('login_settings')
         if at == 'AT32':
             data['documentation_findings'] = [{'id': f['id'], 'status': f['status']} for f in review['findings']]
             data['evidence'].append('scope-review.json')

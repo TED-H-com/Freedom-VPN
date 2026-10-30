@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "run_started_at": "2026-10-30T03:45:59Z",
-  "run_finished_at": "2026-10-30T03:50:51Z",
-  "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
-  "probe_source_sha256": "873031a335e15a8a537c78d616a296b0dae475d3622002cb117b7e1061f542bf",
+  "run_started_at": "2026-10-30T04:38:31Z",
+  "run_finished_at": "2026-10-30T04:46:30Z",
+  "source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+  "probe_source_sha256": "8fdf89ebe1a909319231a8bec1188af9508152f5f42c58ad154e1f34c9af0297",
   "build_digests": [
     {
       "arch": "amd64",
       "kind": "acceptance_test_binary",
-      "sha256": "c47824b8481142258ba0901dc1dfd654d9830b709f5b3cfd0280b3d52f030a03",
+      "sha256": "071a68c5fcb70768c1a0c970beab9e530e88b92f9669bde207d9cbccfef9f2d0",
       "command": [
         "go",
         "test",
@@ -19,9 +19,9 @@
         "<disk-scratch>/secops-amd64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-30T03:50:06Z",
-      "finished_at": "2026-10-30T03:50:06Z",
-      "elapsed_seconds": 0.515,
+      "started_at": "2026-10-30T04:45:42Z",
+      "finished_at": "2026-10-30T04:45:42Z",
+      "elapsed_seconds": 0.565,
       "exit_code": 0,
       "scan": {
         "stream": "build-amd64",
@@ -32,7 +32,7 @@
     {
       "arch": "arm64",
       "kind": "acceptance_test_binary",
-      "sha256": "5f3ecbae780b964cb5cf446f48b89556e80a059732f2ed8137b582872b1d0e73",
+      "sha256": "d9f073ce4e9ed6ac68012761ab3fddc895896285a27a54e0660a9d0ecc4b3e12",
       "command": [
         "go",
         "test",
@@ -43,9 +43,9 @@
         "<disk-scratch>/secops-arm64.test",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-30T03:50:06Z",
-      "finished_at": "2026-10-30T03:50:07Z",
-      "elapsed_seconds": 0.515,
+      "started_at": "2026-10-30T04:45:42Z",
+      "finished_at": "2026-10-30T04:45:44Z",
+      "elapsed_seconds": 1.62,
       "exit_code": 0,
       "scan": {
         "stream": "build-arm64",
@@ -56,79 +56,79 @@
     {
       "name": "fvpn-agent",
       "arch": "amd64",
-      "sha256": "95715132e9af6d8dc71f7c3246c6bb8d9ea1de20840aa1a6319160b3291a4725",
+      "sha256": "5bd453f1c9e5be6d94e19b56c1f27ba878b34dfd74a6cfb739f0cc4be7c48f44",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-control",
       "arch": "amd64",
-      "sha256": "0a45271c04341ac4db0fed403faf03d55b734f812cfef36aaa86535809f38a08",
+      "sha256": "4ea8067b385767a7cad2ced5f26faa21627da8b4dd210a0a3eda89dffb26fde1",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-idp",
       "arch": "amd64",
-      "sha256": "47dd5a15196db004c03f9ead510c0596d6a746615b2b534649eceb975ac656ab",
+      "sha256": "4b6eca3bd63a40d51c78e012a79ae3c04691017dcbe713f5290ddb1b13dd95b2",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-nbbootstrap",
       "arch": "amd64",
-      "sha256": "f95e5f2040414ecad601e09fc7f6eb5f34dee9ee818e772771faa9f4673b7438",
+      "sha256": "dfa0747fbac68a5054bdbd5f268aaab4a68cf5ebb25adee5759fd43539fc27f0",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-origin",
       "arch": "amd64",
-      "sha256": "787c4e5a2ae2c4527751800f6605ef81058384361404e85ab9a532e6b9bd5a00",
+      "sha256": "e5ac49ea216a8167835cc24157515122ee4bebe6724868dc4027309c04a87522",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-payment",
       "arch": "amd64",
-      "sha256": "73eaa123f9429c1c1c8982f9b09698c0f71f9ffc745080c6e5e30b542f3e8511",
+      "sha256": "14716d6cbbd806e247962e5c24c0fd64fcbab3cda16b5d38f8a491894db196ec",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-e2e-prepare",
       "arch": "amd64",
-      "sha256": "b748fccbd73ac383adcfc0fb3ae48145a0da5530e7d65864b15c1346dab478af",
+      "sha256": "ee625a194f83fd641c23a539b3910df05499c8496e8431c899b3805aa5ba2b76",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-updater",
       "arch": "amd64",
-      "sha256": "ac1af1516a90a5d0e1fa5396ccbb2086d179664964017d940f3c82e55c723e4e",
+      "sha256": "988f938ef2334f9895ac5dda322797f2b2b241049cbfbcd566a1998789f8b758",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-watchdog",
       "arch": "amd64",
-      "sha256": "2893259424a52d04af984677a138dfbd5cd84dc2cde23e1d88942f36de1fbc56",
+      "sha256": "ffc2a002f06adf971a30f38ce9e8e37d350bd6bd028db36a8dc439fd2c614ca5",
       "kind": "lab_build_binary"
     },
     {
       "name": "fvpn-worker",
       "arch": "amd64",
-      "sha256": "8e49611de4186110fd3ab4cacedbe82935fe81941e3c56db15e4035e973b9f6c",
+      "sha256": "4867726f5f78e7e8d05e31489923ee02b4cc48dbc9c0df4e55d7a61edd6f82cd",
       "kind": "lab_build_binary"
     }
   ],
   "image_digests": [
     {
-      "image_id": "sha256:d95c58d0f1e21a87b1414c268af7fb5437e4b96ea17dc85e266e5ec0769a4a10",
+      "image_id": "sha256:1e3e3bdd61bb1520a5956f6b3118d2ac7a0518966b27e98200542832d29a9141",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:5e76d126ed93bcab6fbe218dbbf0e5e4e0ec7615ea3429186e0bc72f81d5e304",
+      "image_id": "sha256:69ab609b5282f649a4ac4d0f32196d9acb35b8772261ae14fd27ab3da270eed0",
       "service": "idp"
     },
     {
-      "image_id": "sha256:6d1277fb27747e43b04988fa72e676ffbc6ecb6970716e57c6b7ec33ec712470",
+      "image_id": "sha256:34d35993406ee96d4dddb933c14204c662f882493455dc8300fc8d2895f3a252",
       "service": "payment"
     },
     {
-      "image_id": "sha256:f547eeb5ab915df700b4b8b5909bc1caadd813868aaa82a06da99a43ea4e6616",
+      "image_id": "sha256:c61f18225a7fbbbcc552181fec0e39db8c6f9c2d74dc620d614efb97644cf2f2",
       "service": "origin"
     },
     {
@@ -148,24 +148,24 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:e8aa0699fc7966a47ae623e701003f31bf36deaa2dc4a0f4575564a11abe1102",
+      "image_id": "sha256:5ef4863ece845b7ba8876290bc5da138733c8a4e81e980655d051f782dfba5d3",
       "service": "control"
     },
     {
-      "image_id": "sha256:682e25bd995759d094cc52d79d07dd29cc75dd8fc61bc7b09578f22b770a1040",
+      "image_id": "sha256:e766673c925a6fe66fd9e8c266373129633f355b902e7545850ea6b73db22144",
       "service": "worker"
     },
     {
-      "image_id": "sha256:0cf25f42c8f133b33da54587637f8f8bbb71d915f2bff3bfeab530588c3a607e",
+      "image_id": "sha256:45023501f66c63353a38e0d1c9d8e24f59a3cf303204c43d487f6dd529529f87",
       "service": "node"
     },
     {
-      "image_id": "sha256:0cf25f42c8f133b33da54587637f8f8bbb71d915f2bff3bfeab530588c3a607e",
+      "image_id": "sha256:45023501f66c63353a38e0d1c9d8e24f59a3cf303204c43d487f6dd529529f87",
       "service": "member"
     }
   ],
   "policy_revision": "1",
-  "node_incarnation": "efe077ac-088f-4d5d-8f47-806e18928c82",
+  "node_incarnation": "ab275831-2763-44e0-82df-e9ad9c3d5af3",
   "stack": {
     "status": "running-stack-observed",
     "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
@@ -194,13 +194,13 @@
         "mk/e2e.mk",
         "e2e-up"
       ],
-      "started_at": "2026-10-30T03:45:59Z",
-      "finished_at": "2026-10-30T03:47:09Z",
-      "elapsed_seconds": 70.295,
+      "started_at": "2026-10-30T04:38:31Z",
+      "finished_at": "2026-10-30T04:39:01Z",
+      "elapsed_seconds": 29.995,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-up",
-        "bytes": 19675,
+        "bytes": 18653,
         "findings": []
       }
     },
@@ -222,13 +222,13 @@
         "^TestAT28_AT31_LiveStack$",
         "./tests/e2e/at/secops"
       ],
-      "started_at": "2026-10-30T03:47:09Z",
-      "finished_at": "2026-10-30T03:49:43Z",
-      "elapsed_seconds": 154.086,
+      "started_at": "2026-10-30T04:39:01Z",
+      "finished_at": "2026-10-30T04:45:20Z",
+      "elapsed_seconds": 379.09,
       "exit_code": 0,
       "scan": {
         "stream": "live-probe",
-        "bytes": 1463,
+        "bytes": 2601,
         "findings": []
       },
       "status": "passed",
@@ -241,7 +241,7 @@
         {
           "name": "TestAT28_AT31_LiveStack",
           "result": "pass",
-          "elapsed_seconds": 153.39
+          "elapsed_seconds": 378.68
         }
       ],
       "package_results": {
@@ -249,19 +249,9 @@
       }
     },
     "isolated_restore": {
-      "command": [
-        "python3",
-        "tests/e2e/at/secops/pitr.py"
-      ],
-      "started_at": "2026-10-30T03:49:43Z",
-      "finished_at": "2026-10-30T03:49:44Z",
-      "elapsed_seconds": 0.766,
-      "exit_code": 1,
-      "scan": {
-        "stream": "isolated-restore",
-        "bytes": 627,
-        "findings": []
-      }
+      "status": "historical record preserved",
+      "compatibility": "pitr-compatibility.json",
+      "new_restore_executed": false
     },
     "down": {
       "command": [
@@ -270,9 +260,9 @@
         "mk/e2e.mk",
         "e2e-down"
       ],
-      "started_at": "2026-10-30T03:49:44Z",
-      "finished_at": "2026-10-30T03:50:06Z",
-      "elapsed_seconds": 21.561,
+      "started_at": "2026-10-30T04:45:20Z",
+      "finished_at": "2026-10-30T04:45:42Z",
+      "elapsed_seconds": 21.523,
       "exit_code": 0,
       "scan": {
         "stream": "e2e-down",
@@ -323,7 +313,8 @@
     "full_acceptance_profile_executed": false
   },
   "blockers": [
-    "DOC01–DOC13 were resolved on main and re-reviewed. Physical three-origin/platform comparison and complete Wave 4 runtime evidence still need operator runs."
+    "DOC01–DOC13 were resolved on main and re-reviewed. Physical three-origin/platform comparison and complete Wave 4 runtime evidence still need operator runs.",
+    "DOC14: member guide Part II 2.2 names OpenAPI 1.1.1; current checked contract is 1.2.0. Documentation request only."
   ],
   "commands": [
     [
@@ -441,6 +432,10 @@
     {
       "id": "DOC13",
       "status": "resolved"
+    },
+    {
+      "id": "DOC14",
+      "status": "open"
     }
   ]
 }
