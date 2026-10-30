@@ -110,6 +110,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
 | w3-wire-nodes follow-up 8: retire the legacy withdraw handlers; node.revoke/node.retire through the publication executor | WP04, WP05, WP09 | done (#70) |
+| w3-wire-nodes follow-up 9: baseline readiness without a management peer id (central side of the publication deadlock) | WP04, WP05, WP09 | done (#77) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | harness merged (#63): AT28 passed live; AT29–AT32 blocked on the serving node, WAL archiving, the IdP identity fixture and operator runs |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
