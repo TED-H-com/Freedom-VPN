@@ -125,7 +125,7 @@ change for the same immutable identity increments the revision; unchanged
 discoveries preserve the revision and verification timestamp. A different
 member or identity for an existing external ID is an `identity_conflict`, and
 the existing row remains untouched. Migration
-`00182_identity_bindings_issuer_subject.sql` makes
+`00183_identity_bindings_issuer_subject.sql` makes
 `(issuer, subject)` unique across client scopes. Historical duplicates stop the
 migration with a duplicate-group count; it never merges members. Login must
 resolve and lock by that pair and preserve the original identity row and its

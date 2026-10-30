@@ -22,7 +22,7 @@ func TestD052_F04MigrationRefusesHistoricalDuplicateIdentities(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = provider.UpTo(t.Context(), 181); err != nil {
+	if _, err = provider.UpTo(t.Context(), 182); err != nil {
 		t.Fatal(err)
 	}
 	// Negative migration input only: conflicting historical rows, never a silent
