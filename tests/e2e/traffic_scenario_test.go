@@ -69,6 +69,15 @@ func (r *runner) noteAdmissionGate(ctx context.Context, admin *session, rec *Rec
 		return
 	}
 	defer conn.Close(ctx)
+	// The heartbeat can precede its asynchronous central projection. Wait for
+	// one coherent generation snapshot before recording the stored rows.
+	alignedCtx, stop := context.WithTimeout(ctx, 30*time.Second)
+	aligned := waitUntil(alignedCtx, time.Second, func() bool {
+		var same bool
+		return conn.QueryRow(alignedCtx, `SELECT n.desired_config_generation=n.applied_config_generation AND n.applied_config_generation=(SELECT s.policy_generation FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1) FROM nodes n WHERE n.id=$1`, r.nodeID).Scan(&same) == nil && same
+	})
+	stop()
+	note("stored_lease_matches_applied_and_desired_generation", boolText(aligned))
 	var raw []byte
 	err = conn.QueryRow(ctx, `SELECT jsonb_build_object(
  'desired_generation',n.desired_config_generation::text,
