@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-30T03:45:24.566360Z",
+  "local_source_revision": "2a2146890607a00285c4262686608dba2ac6ba2f",
+  "origin_main_revision": "4d02151b78ff95e3fb0a08bdfeccd33082da0e69",
+  "commands": [
+    "git fetch origin",
+    "git log --oneline origin/main | grep \"w2-control-core follow-up 10\"",
+    "git log --oneline origin/main | grep \"w3-devstack-e2e follow-up 7\""
+  ],
+  "control_followup_10_found": false,
+  "devstack_followup_7_found": false,
+  "merge_performed": false,
+  "decision": "Both owning follow-ups absent at the instructed check. Retain historical burst measurement; no recovery workaround."
+}

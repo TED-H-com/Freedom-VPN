@@ -32,6 +32,7 @@ export const zhTW = {
   'nav.admin.heading': '管理後台 (§18.1)',
   'nav.admin.overview': '總覽',
   'nav.admin.nodes': '節點列表',
+  'nav.admin.groups': '會員與出口群組',
   'nav.admin.addNode': '新增節點啟用碼',
   'nav.admin.updates': '發行與全部更新',
   'nav.admin.members': '會員列表與管理',
@@ -525,6 +526,69 @@ export const zhTW = {
   'admin.policies.createRevisionTitle': '建立政策修訂 (Create Policy Revision)',
   'admin.updates.manifestUrlLabel': 'Manifest URL (受信任儲存庫位址)',
   'admin.updates.manifestJsonLabel': 'Signed Manifest Envelope JSON',
+
+  // Follow-up 7: Member Groups Admin (D-057), Node Checks & Threat Feed Status (D-058)
+  'admin.groups.title': '會員與出口群組管理 (Member Groups, D-057)',
+  'admin.groups.subtitle':
+    '管理控制面邏輯會員／出口群組 (MemberGroup) 及其綁定出口數量。會員端介面絕不顯示內部群組 ID（§18.4, D-057）。',
+  'admin.groups.col.code': '群組代碼 (code)',
+  'admin.groups.col.name': '顯示名稱 (name)',
+  'admin.groups.col.groupId': '群組 ID (group_id)',
+  'admin.groups.col.exitCount': '已綁定出口數 (exit_count)',
+  'admin.groups.empty': '目前尚無群組紀錄',
+  'admin.groups.createTitle': '建立新群組 (POST /api/v1/admin/groups)',
+  'admin.groups.codeLabel': '群組代碼 (code，小寫英數字與連字號 2–64 字元)',
+  'admin.groups.nameLabel': '群組名稱 (name，1–120 字元)',
+  'admin.groups.createBtn': '建立群組',
+  'admin.groups.conflictError':
+    '群組代碼或名稱已存在 (409 STATE_CONFLICT)：請使用不重複的 code 與 name。',
+  'admin.groups.validationCodeError':
+    '群組代碼格式不符 (422 /code)：必須為 2–64 字元的小寫英數字與連字號。',
+  'admin.groups.validationNameError':
+    '群組名稱格式不符 (422 /name)：必須為 1–120 字元且不可空白。',
+
+  'admin.nodeDetail.attachedGroups.title': '出口綁定群組 (Exit Attached Groups, D-057)',
+  'admin.nodeDetail.attachedGroups.none': '尚未綁定任何群組',
+  'admin.nodeDetail.attachedGroups.selectLabel':
+    '選擇發布時一併替換的綁定群組 (PUT /publication group_ids，需 If-Match ETag)',
+  'admin.nodeDetail.attachedGroups.simulateConflictBtn':
+    '模擬他人同時修改出口發布／群組衝突 (觸發 PUT /publication 412)',
+
+  'admin.nodeDetail.checks.title': '節點本機安全與健康檢查明細 (Node Checks, D-058)',
+  'admin.nodeDetail.checks.col.name': '檢查項目 (name)',
+  'admin.nodeDetail.checks.col.status': '狀態 (status)',
+  'admin.nodeDetail.checks.col.errorCode': '錯誤碼 (error_code)',
+  'admin.nodeDetail.checks.col.detail': '檢查診斷細節 (detail, ≤500 字元)',
+  'admin.nodeDetail.checks.col.observedAt': '觀測時間 (observed_at)',
+  'admin.nodeDetail.checks.empty': '目前尚無節點檢查回報',
+
+  'admin.dns.threatFeedStatus.title':
+    '外部威脅情報名單同步與最後良好版本狀態 (Threat Feed Status, §12.5, D-058)',
+  'admin.dns.threatFeedStatus.bootstrapEmpty':
+    '初始空白狀態（尚未完成首次抓取，bootstrap-empty / last_result=never）',
+  'admin.dns.threatFeedStatus.lastGood':
+    '正常運作：使用最新驗證通過之最後良好版本 (last_good / last_result=success)',
+  'admin.dns.threatFeedStatus.failingRetainingLastGood':
+    '重新整理失敗：持續保留並使用上一版已驗證之最後良好版本 (failing — retaining last_good)',
+  'admin.dns.threatFeedStatus.failingNoLastGood':
+    '重新整理失敗且尚無已驗證之最後良好版本可用 (failing — no last_good available)',
+  'admin.dns.threatFeedStatus.col.feedCode': '名單定義 (code / name)',
+  'admin.dns.threatFeedStatus.col.state': '同步狀態說明',
+  'admin.dns.threatFeedStatus.col.approvedSha256':
+    '核准 SHA-256 (approved_content_sha256)',
+  'admin.dns.threatFeedStatus.col.lastGoodSha256':
+    '最後良好 SHA-256 ／ 規則數 ／ 經過秒數 (last_good)',
+  'admin.dns.threatFeedStatus.col.failures':
+    '連續失敗次數 ／ 最近錯誤 (consecutive_failures / last_error)',
+  'admin.dns.threatFeedStatus.col.schedule':
+    '最近嘗試時間 ／ 下次排程更新 (last_attempt_at / next_due_at)',
+
+  'admin.dns.threatFeedForm.updateIntervalLabel':
+    '名單自動更新間隔秒數 (update_interval_seconds，預設 21600，允許範圍 300–604800)',
+  'admin.dns.threatFeedForm.intervalOutOfRange':
+    '更新間隔秒數 (update_interval_seconds) 超出合約範圍：必須介於 300 至 604800 秒之間。',
+  'admin.dns.threatFeedForm.bypassClientCheckLabel':
+    '略過前端範圍攔截以測試後端 422 欄位驗證 (Send raw value to server)',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;

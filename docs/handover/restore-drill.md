@@ -42,30 +42,8 @@ These millisecond durations exclude rebuilding secrets, service settings, extern
 
 ### 2.3 Recorded Drill Timeline & Verified Command Outputs
 
-- **Migration inventory (20 applied through `00181`, verified by the physical drill) — Verify migrations on restored target (`fvpn-migrate status`)** `[Verified on dev/test stack]`:
-  ```text
-  current_database="fvpn_w4_handover_drill"
-  00001 applied
-  00002 applied
-  00003 applied
-  00004 applied
-  00005 applied
-  00006 applied
-  00100 applied
-  00101 applied
-  00110 applied
-  00111 applied
-  00120 applied
-  00121 applied
-  00130 applied
-  00131 applied
-  00140 applied
-  00150 applied
-  00160 applied
-  00161 applied
-  00180 applied
-  00181 applied
-  ```
+- **Migration invariant — Verify migrations on the restored target (`fvpn-migrate status`)**:
+  Every file in `db/migrations/*.sql` for the deployed release must be applied on the restored target, and `fvpn-migrate status` must report no pending version. Use the migration binary built from that same release and confirm `current_database` identifies the restored target. [`deploy/backup/test/review_proof.sh`](../../deploy/backup/test/review_proof.sh), run by `make -f mk/backup.mk backup-review-proof`, derives the expected versions and count from that glob and compares them with status from its isolated PITR target; no inventory is copied into this runbook. See Phase 2.2 for the operator commands.
 
 - **`2026-10-29T22:23:20.348Z` — Step 1: Freeze usage ingestion (`fvpn-usage-admin freeze`)** `[Verified on dev/test stack]`:
   ```bash
@@ -221,7 +199,9 @@ Execute every step in order during a real disaster recovery event or scheduled q
   ```bash
   FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
   FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate up
+  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
   ```
+  The connection must point to the checked restored candidate. Confirm every file in the deployed release's `db/migrations/*.sql` is applied on that target and the final status reports no pending version, as described in §2.3.
 
 - [ ] **2.3 Freeze Usage Ingestion Before Starting `fvpn-control` (`§17.3 Step 1`)** `[Verified on dev/test stack]`:
   ```bash
@@ -256,11 +236,11 @@ Execute every step in order during a real disaster recovery event or scheduled q
 
 ### Phase 4: Reconcile Payments and Member Entitlements (`§9.3`, `§17.4`)
 
-A point-in-time database restore may roll back webhook receipts (`billing_events`) or subscription state transitions that occurred between `restored_to` and the incident.
+A point-in-time database restore may roll back webhook receipts (`inbox_events`), billing history (`billing_records`), or subscription state transitions that occurred between `restored_to` and the incident.
 
 - [ ] **4.1 Verify Automatic Billing Reconciliation (`billing.reconcile`)**:
   `fvpn-worker` runs the `billing.reconcile` loop every `reconcile_seconds` (`900s` in production config). To trigger or verify reconciliation immediately:
-  1. Replay unacknowledged webhook events from the Stripe Dashboard (`Developers -> Webhooks -> Send/Resend`) covering `[restored_to - 1h, now]`. Webhook handling is idempotent by `provider_event_id` and never creates duplicate charges (`BILL01`).
+  1. Replay unacknowledged webhook events from the Stripe Dashboard (`Developers -> Webhooks -> Send/Resend`) covering `[restored_to - 1h, now]`. Webhook handling deduplicates by `(source, external_event_id)` in `inbox_events` and never creates duplicate charges (`BILL01`).
   2. Inspect `subscriptions`, `entitlements`, and `members` for any subscription updated during the RPO window:
      ```sql
      SELECT id, member_id, external_subscription_id, provider_status, paid_through, updated_at
@@ -268,7 +248,7 @@ A point-in-time database restore may roll back webhook receipts (`billing_events
      ORDER BY updated_at DESC LIMIT 50;
      ```
 - [ ] **4.2 Re-apply Post-Snapshot Admin Suspensions or Manual Grants (`§9.2`, `§9.3`, `§17.4`)**:
-  By design (`internal/billing/service.go`), payment reconciliation updates subscription periods but **never** clears an active administrative suspension (`members.status = 'suspended'`) or overwrites an active manual grant (`entitlement_grants`). If an operator manually suspended a member or issued a grant after `restored_to`, re-apply it via the Admin Portal (`/admin/members/{member_id}`) using a fresh `Idempotency-Key`.
+  Payment reconciliation (`internal/billing/service.go`, `internal/entitlement/store.go`) updates subscription periods but **never** clears an active administrative suspension (`members.admin_suspended = true`) or overwrites an active manual grant (`entitlement_grants`). Re-apply a post-snapshot suspension with `PATCH /api/v1/admin/members/{member_id}` (`operationId: updateMember`), an admin session, CSRF token, current `If-Match` ETag, and a fresh `Idempotency-Key`. The suspension body is `{"admin_suspended": true, "suspension_reason": "Reapply recorded post-snapshot suspension"}`; `suspension_reason` is required when suspending and must contain 1–500 characters. Re-issue a recorded manual grant with `POST /api/v1/admin/members/{member_id}/grants` (`operationId: createMemberGrant`), supplying its `source`, `valid_until`, and `reason` as defined in [`contracts/openapi.yaml`](../../contracts/openapi.yaml). Track returned operations through completion before treating external enforcement as restored.
 
 ### Phase 5: Reconcile NetBird Overlay, Node PKI, and DNS State (`§5.2`, `§6.4`, `§12.2`, `§17.4`)
 
@@ -277,16 +257,17 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
 - [ ] **5.1 Re-revoke Any Post-Snapshot Node Incarnations (`§6.4`, `§17.2`)**:
   Cross-check node revocation records against out-of-band operator logs. If any node was revoked or retired after `restored_to`, immediately invoke `POST /api/v1/admin/nodes/{node_id}/revoke` (or `DELETE /api/v1/admin/nodes/{node_id}`) so the node's mTLS certificate is revoked and its NetBird peer/route are removed.
 - [ ] **5.2 Verify NetBird Node & Member Peer Reconciliation (`node.reconcile`, `members.reconcile`)**:
-  `fvpn-worker` continuously runs `node.reconcile` (every `nodes.json:reconcile_seconds`) and `members.devicereconcile` (every `members.json:device_sync_seconds`). It calls `netbird.Client.ReadObservedState` and converges:
+  `fvpn-worker` continuously runs `node.reconcile` (every `nodes.json:reconcile_seconds`) and `members.reconcile` (every `members.json:device_sync_seconds`). It calls `netbird.Client.ReadObservedState` and converges:
   - Any NetBird peer that was authorized in NetBird during the RPO window but is absent from restored `member_devices` or `node_incarnations` is disabled/deleted in NetBird (fail-closed).
   - Any published exit node whose NetBird route or policy drifted is re-converged.
-  Verify zero stuck operations in the Admin Portal (`/admin/operations?state=failed`) or via SQL:
+  List failed and in-flight operations with SQL; investigate failures and operations that remain pending or running:
   ```sql
   SELECT id, kind, status, resource_type, resource_id, error_code, created_at
   FROM operations
   WHERE status IN ('pending', 'running', 'failed', 'partially_succeeded')
   ORDER BY created_at DESC;
   ```
+  For each returned ID, an authenticated administrator can retrieve details with `GET /api/v1/admin/operations/{operation_id}` (`operationId: getAdminOperation`). The contract has no operations-list endpoint. A `202` response to a mutation records acceptance; verify the operation's terminal result and observed state before declaring recovery complete.
 - [ ] **5.3 Verify AdGuard Home DNS Policy Convergence (`dns.publish`)**:
   Inspect published heads and their immutable resolver documents; confirm applied state separately by resolver read-back:
   ```sql

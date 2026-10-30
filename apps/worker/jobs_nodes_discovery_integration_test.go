@@ -35,6 +35,9 @@ type discoveryManagement struct {
 	beforePeerRead  func()
 	beforeKeyUpdate func()
 	peerDeleted     bool
+	// injectPeerOnGroupRead simulates the node enrolling after the setup-key
+	// snapshot and before the correlation-group read. Empty leaves GETs unchanged.
+	injectPeerOnGroupRead string
 }
 
 func (f *discoveryManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +47,7 @@ func (f *discoveryManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	respond := func(v any) { w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(v) }
 	path := strings.TrimPrefix(r.URL.Path, "/api/")
 	switch {
-	case path == "policies" || path == "routes":
+	case path == "policies" || path == "routes" || path == "dns/nameservers":
 		respond([]any{})
 	case path == "groups" && r.Method == "GET":
 		groups := []any{}
@@ -75,6 +78,16 @@ func (f *discoveryManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			_ = json.NewDecoder(r.Body).Decode(&g)
 			g["id"] = id
 			f.groups[id] = g
+		}
+		if r.Method == "GET" && f.injectPeerOnGroupRead != "" {
+			if name, _ := g["name"].(string); strings.HasPrefix(name, "fvpn-enroll-peer-") {
+				g["peers"] = []any{f.injectPeerOnGroupRead}
+				if f.key != nil {
+					f.key["used_times"] = 1
+					f.key["state"] = "overused"
+				}
+				f.injectPeerOnGroupRead = ""
+			}
 		}
 		respond(g)
 	case path == "setup-keys" && r.Method == "GET":
@@ -413,5 +426,32 @@ func TestAT07_D055_RevokeCleansBindingBeforeCentralProjection(t *testing.T) {
 	defer f.fake.mu.Unlock()
 	if !f.fake.peerDeleted || f.fake.key["revoked"] != true || len(f.fake.groups) != 1 {
 		t.Fatal("withdrawal lacks confirmed identity cleanup")
+	}
+}
+
+func TestAT07_D055_AmbiguousWithdrawalRetainsCorrelationAndAuditsFailure(t *testing.T) {
+	f := newDiscoveryWorker(t)
+	f.fake.useKey("TEST-peer", "TEST-second-peer")
+	f.revoke(t)
+	event := f.dispatch(t, "node.publication_changed")
+	f.dispatch(t, "node.publication_changed")
+	var succeeded, failed int
+	var dead bool
+	if err := f.r.Pool.QueryRow(t.Context(), `SELECT (SELECT count(*) FROM audit_events WHERE action='node.identity_withdrawn'),(SELECT count(*) FROM audit_events WHERE action='node.identity_withdrawal_failed' AND after_diff->>'reason'='multiple_group_peers'),(SELECT dead_lettered_at IS NOT NULL FROM outbox_events WHERE id=$1)`, event).Scan(&succeeded, &failed, &dead); err != nil || succeeded != 0 || failed != 2 || !dead {
+		t.Fatal("ambiguous withdrawal claimed completion", succeeded, failed, dead, err)
+	}
+	f.fake.mu.Lock()
+	defer f.fake.mu.Unlock()
+	if f.fake.peerDeleted {
+		t.Fatal("guessed a peer to delete")
+	}
+	retained := false
+	for _, group := range f.fake.groups {
+		if name, _ := group["name"].(string); strings.HasPrefix(name, "fvpn-enroll-peer-") {
+			retained = true
+		}
+	}
+	if !retained {
+		t.Fatal("discarded ambiguous correlation")
 	}
 }

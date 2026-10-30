@@ -53,6 +53,9 @@ func Fetch(ctx context.Context, client *http.Client, p api.ThreatFeedPayload, pr
 	if dnspolicy.ValidateSourceURL(p.SourceUrl) != nil {
 		return nil, "ssrf_refused"
 	}
+	if err := dnspolicy.ValidateAttributionNote(attributionNote(p)); err != nil {
+		return nil, "invalid_config"
+	}
 	if client == nil {
 		client = dnspolicy.NewSourceHTTPClient(dnspolicy.DefaultFetchTimeout, nil, nil)
 	}
@@ -159,4 +162,18 @@ func Fetch(ctx context.Context, client *http.Client, p api.ThreatFeedPayload, pr
 		Metrics: dnspolicy.SourceQualityMetrics{RuleCount: parsed.RuleCount, Delta: parsed.RuleCount - oldCount,
 			ParseErrors: parsed.ParseErrors, SkippedUnsupported: parsed.SkippedUnsupported,
 			LastUpdate: now.UTC(), SmokeTestResult: dnspolicy.SmokeTestUntested}}, ""
+}
+
+// attributionNote maps the contract member onto the source model. Null and
+// omission are both "no note". A present string, including a blank one, is
+// passed through so only a non-null blank note is rejected.
+func attributionNote(p api.ThreatFeedPayload) *string {
+	if !p.Attribution.IsSpecified() || p.Attribution.IsNull() {
+		return nil
+	}
+	value, err := p.Attribution.Get()
+	if err != nil {
+		return nil
+	}
+	return &value
 }

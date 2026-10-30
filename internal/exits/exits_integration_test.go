@@ -122,6 +122,7 @@ func submitAckObservation(
 	t *testing.T,
 	ctx context.Context,
 	nodesSvc *nodes.Service,
+	pool *pgxpool.Pool,
 	nodeID, incID, relID uuid.UUID,
 	now time.Time,
 	appliedGen uint64,
@@ -144,12 +145,25 @@ func submitAckObservation(
 	rep.SafetyStatus = api.SafetyStatusPassed
 	rep.DataHealth = api.DataHealthHealthy
 	rep.MemberForwardingEnabled = forwardingEnabled
+	if forwardingEnabled {
+		seed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET - publication lease"))
+		signer := desiredstate.NewKeySigner(desiredstate.SigningKey{KeyID: "TEST-lease", Purpose: envelope.PurposeLease, PrivateKey: ed25519.NewKeyFromSeed(seed[:])})
+		lease, err := leases.NewService(pool, signer, leases.WithClock(func() time.Time { return now })).Renew(ctx, nodeID, incID, api.LeaseRenewalRequest{RenewalRequestId: uuid.New(), NodeId: nodeID, NodeIncarnationId: incID, CurrentLeaseId: presence.NewNullNullable[uuid.UUID](), AppliedConfigGeneration: presence.NewNullableWithValue(gen)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		rep.Lease.LeaseId.Set(lease.Signed.LeaseId)
+		rep.Lease.ExpiresAt.Set(lease.Signed.ExpiresAt)
+	}
 	rep.Netbird.Backend = api.ObservationReportNetbirdBackendKernel
 	rep.Checks = []api.NodeCheck{
 		{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now,
 			ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
 		{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now,
 			ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+	}
+	for _, name := range []api.NodeCheckName{api.NodeCheckNameTunnelProbe, api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+		rep.Checks = append(rep.Checks, api.NodeCheck{Name: name, Status: api.HealthCheckStatusPassed, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()})
 	}
 	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, rep); err != nil {
 		t.Fatalf("SubmitObservation(gen=%d, fwd=%v): %v", appliedGen, forwardingEnabled, err)
@@ -214,7 +228,7 @@ func TestAT08_PublishHappyPathAndFailureRetryNoDuplicateRoute(t *testing.T) {
 	// 3. Failure branch 2: Node ACKs the compiled desired_config_generation, but NetBird fails.
 	desiredGen := uint64(detailAfterFail1.ConfigGeneration.Desired)
 	now = now.Add(5 * time.Second)
-	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, desiredGen, true)
+	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, desiredGen, true)
 
 	nb.SetPublishError(errors.New("netbird management API 503"))
 	failedOp2, err := exitsSvc.ExecuteOperation(ctx, pubOp.OperationId)
@@ -257,7 +271,7 @@ func TestAT08_PublishHappyPathAndFailureRetryNoDuplicateRoute(t *testing.T) {
 	_, _ = exitsSvc.ExecuteOperation(ctx, pubOp2.OperationId)
 	detailMid, _, _ := nodesSvc.GetNode(ctx, nodeID)
 	now = now.Add(5 * time.Second)
-	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, uint64(detailMid.ConfigGeneration.Desired), true)
+	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, uint64(detailMid.ConfigGeneration.Desired), true)
 	succOp2, err := exitsSvc.ExecuteOperation(ctx, pubOp2.OperationId)
 	if err != nil || succOp2.Status != api.OperationStatusSucceeded {
 		t.Fatalf("ExecuteOperation #2 = (%+v, %v), want succeeded", succOp2, err)
@@ -349,7 +363,7 @@ func TestAT13_UnpublishAndDisableWhenNodeOffline(t *testing.T) {
 	// The partially_succeeded operation now completes to succeeded!
 	detailOffline, _, _ := nodesSvc.GetNode(ctx, nodeID)
 	now = now.Add(10 * time.Second)
-	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, uint64(detailOffline.ConfigGeneration.Desired), false)
+	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, uint64(detailOffline.ConfigGeneration.Desired), false)
 
 	finalOp, err := nodesSvc.GetOperation(ctx, unpubOp.OperationId)
 	if err != nil {
@@ -374,7 +388,7 @@ func TestDisabledNode_NeverAutoReEnabledByHealthOrUpdate(t *testing.T) {
 	nodeID, incID, _, relID, _ := seedExitTestNode(t, ctx, pool, api.PublicationIntentDisabled, "withdrawn")
 
 	// Submit a completely healthy observation with applied_config_generation=1 and member_forwarding_enabled=false.
-	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, 1, false)
+	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, 1, false)
 
 	// Run worker reconciliation.
 	if _, err := worker.Reconcile(ctx); err != nil {
@@ -424,7 +438,7 @@ func TestReconcileNetBird_DetectsDrift(t *testing.T) {
 	_, _ = exitsSvc.ExecuteOperation(ctx, pubOp.OperationId)
 	d1, _, _ := nodesSvc.GetNode(ctx, nodeID)
 	now = now.Add(5 * time.Second)
-	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, uint64(d1.ConfigGeneration.Desired), true)
+	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, uint64(d1.ConfigGeneration.Desired), true)
 	if _, err := exitsSvc.ExecuteOperation(ctx, pubOp.OperationId); err != nil {
 		t.Fatalf("ExecuteOperation: %v", err)
 	}
@@ -535,7 +549,7 @@ func TestAudit_D029Conformance_NodesDesiredStateLeasesExits(t *testing.T) {
 
 	// 3. nodes.SubmitObservation (writes node:<uuid> audit row).
 	now = now.Add(5 * time.Second)
-	submitAckObservation(t, ctx, nodesSvc, nodeID, incID, relID, now, compiled.Generation, true)
+	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, compiled.Generation, true)
 	if _, err := exitsSvc.ExecuteOperation(ctx, pubOp.OperationId); err != nil {
 		t.Fatalf("ExecuteOperation: %v", err)
 	}

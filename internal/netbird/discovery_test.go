@@ -23,6 +23,10 @@ func discoveryFixture(t *testing.T) (*fake, *Client, SetupKey, string, string) {
 		case stableName("enroll-peer", "TEST-enrollment"):
 			correlation = id
 		}
+		// Tests mutate membership directly; omit optional response counts unless
+		// a case explicitly supplies them (including the adversarial mismatch).
+		delete(f.objects["groups"][id], "peers_count")
+		delete(f.objects["groups"][id], "resources_count")
 		if len(ids(f.objects["groups"][id]["peers"])) != 0 {
 			t.Fatal("new enrollment group was not empty")
 		}
@@ -65,7 +69,7 @@ func TestAT06_DiscoverNodePeerManagementCorrelation(t *testing.T) {
 }
 
 func TestAT06_DiscoveryConflictNeverBinds(t *testing.T) {
-	for _, scenario := range []string{"two_peers", "reused_key", "user_peer", "ephemeral_peer", "policy_group", "route_group", "revoked", "no_key_use", "changed_groups", "duplicate_groups"} {
+	for _, scenario := range []string{"two_peers", "reused_key", "user_peer", "ephemeral_peer", "policy_group", "route_group", "revoked", "changed_groups", "duplicate_groups"} {
 		t.Run(scenario, func(t *testing.T) {
 			f, c, key, _, correlation := discoveryFixture(t)
 			f.objects["setup-keys"][key.ID]["used_times"] = float64(1)
@@ -89,8 +93,6 @@ func TestAT06_DiscoveryConflictNeverBinds(t *testing.T) {
 				f.objects["setup-keys"][key.ID]["auto_groups"] = []any{correlation}
 			case "duplicate_groups":
 				f.objects["setup-keys"][key.ID]["auto_groups"] = append(f.objects["setup-keys"][key.ID]["auto_groups"].([]any), correlation)
-			case "no_key_use":
-				f.objects["setup-keys"][key.ID]["used_times"] = float64(0)
 			}
 			_, err := c.DiscoverNodePeer(t.Context(), "TEST-enrollment", NodePeer{NodeID: "TEST-node-id", IncarnationID: "TEST-incarnation"})
 			if !IsKind(err, Conflict) || DiscoveryReason(err) == "management_peer_unconfirmed" {
