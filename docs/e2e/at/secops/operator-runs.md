@@ -1,7 +1,6 @@
 # Remaining operator runs
 
-Every procedure below is **needs operator run**. It has not passed. Complete
-SECOPS-09 and prove counted member traffic before attempting outage assertions. Use the shared `deploy/devstack`
+Every procedure below is **needs operator run**. It has not passed. The selected native-exit and finite paid/grant repeated-HTTPS subsets now have automated evidence in `counted-flow.json` and `deadlines.json`. Prove a current counted flow before each remaining fault; do not reuse historical counters. Use the shared `deploy/devstack`
 implementation with an orchestrator-assigned instance; do not fork it. On this
 branch the only assigned instance is `w4-secops`, base `30000`. The automated physical restore uses a separate network-none container; no second
 networked restore slot or production hardware is allocated. Record UTC start/end, source commit,
@@ -71,8 +70,7 @@ files; prepare them privately for the additional manual steps.
 
 ## AT29
 
-1. The automated fixture sets a TEST ONLY node lease ceiling of 90 s through
-   fleet configuration input. Once serving works, create source inputs (API
+1. A short node-lease ceiling still needs a sanctioned product/lab configuration input: there is no public API setter, and this harness never writes fleet rows. The automated run uses the actual 86400-second ceiling and short signed member service ends. For the remaining short-node-lease matrix, obtain that hook first, then create source inputs (API
    grants and fake-provider payment/grace events), never projected entitlement
    or device rows. Wait for projections. Use a node lease of 90 s, a paid member service end at +30 s, a
    finite grace member ending at +45 s and a finite grant member ending at +60 s.
@@ -87,6 +85,7 @@ files; prepare them privately for the additional manual steps.
    docker exec fvpn-w4-secops-node nft -j list table inet fvpn
    docker exec fvpn-w4-secops-node cat /run/vpn-node/heartbeat
    docker stop fvpn-w4-secops-control
+   docker pause fvpn-w4-secops-worker
    docker exec fvpn-w4-secops-node touch /var/lib/vpn-node/e2e/pause-agent
    ```
 
@@ -110,6 +109,7 @@ files; prepare them privately for the additional manual steps.
 
    ```sh
    docker start fvpn-w4-secops-control
+   docker unpause fvpn-w4-secops-worker
    docker exec fvpn-w4-secops-node unlink /var/lib/vpn-node/e2e/pause-agent
    ```
 

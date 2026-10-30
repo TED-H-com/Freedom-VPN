@@ -441,5 +441,59 @@
     ],
     "physical_acceptance": "needs operator run",
     "conclusion": "DOC01–DOC14 remain resolved. Current README and guide qualify unmeasured flow cutoffs, native platforms, DNS propagation and hardware capacity. Member identity/quota text tracks #134/#139; admin typed DNS evidence is not promised in member views. Publication, native admission and limiter results do not certify traffic or capacity. Current live verdicts are in AT28–AT32 records."
+  },
+  "follow_up_5": {
+    "reviewed_at": "2026-10-30T09:29:11.712304Z",
+    "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+    "method": "Read member-guide changed sections since prior measured main plus existing role/scope/claim sources; retain physical platform qualifications. Compare current measurements once completed.",
+    "resolved_prior_findings": "DOC01–DOC14 remain attributed to their owner fixes; new source texts still correctly qualify real member platforms.",
+    "new_mismatches": [
+      {
+        "id": "DOC15",
+        "owner": "w4-handover and w3-devstack-e2e",
+        "files": [
+          "docs/handover/member-guide.md:121",
+          "docs/handover/member-guide.md:353",
+          "docs/e2e/RUN.md:207"
+        ],
+        "actual": "Current prose still cites missing conntrack or lease refresh as the current serving gate; #153 includes conntrack and this run already proves selected counted forwarding. Historical records remain valid but need explicit historical attribution.",
+        "request": "Link current counted-flow and post-revoke/deadline records, retaining unmeasured platform/clock/transport qualifications.",
+        "status": "documentation change requested"
+      }
+    ],
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "2b133ccac671824b38c4bd583c8e292ed4f6d6a3615265cd27c6ae5e678c862f"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "a894a152354e6b681ab46019833ecfbcc32af54a609d8d454dbd359da623294e"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "6f4ddb211ab07275356cec144ab86a3cd3cc275df5bf4f134b42161248f6f36c"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "4bae8b2cde96cbcf256df729060e73b2671953c3d7a8e5ee9f5dc4609b1f21d6"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "7359e96a343b2385f92b28dd4c10ff0040d5eb061421370863571ede2171c6f4"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "8161ad10e3df6396ab40d77765ae67b025b244d2709386652ab96467e31ca4c2"
+      },
+      {
+        "path": "docs/e2e/RUN.md",
+        "sha256": "017269d5e310adbd4ce02d0e4e9b85fceadbb374970bdd5b2b494ee3f9f4ee86"
+      }
+    ]
   }
 }
