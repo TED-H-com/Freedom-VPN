@@ -65,7 +65,7 @@ func TestE2E_Acceptance(t *testing.T) {
 		run.threatFeedTamper(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
-		run.revoke(ctx, admin, nodeID)
+		run.revoke(ctx, nodeID)
 	} else {
 		run.forwarding(run.lab.forwardChain())
 	}
@@ -667,11 +667,11 @@ func (r *runner) controlStop(ctx context.Context) {
 	r.record(rec)
 }
 
-func (r *runner) revoke(ctx context.Context, admin *session, nodeID uuid.UUID) {
+func (r *runner) revoke(ctx context.Context, nodeID uuid.UUID) {
 	rec := Record{ID: "revoke", Title: "Operator revoke", Spec: []string{"§5", "§19 AT13"}, Status: StatusFail}
 	// Control-loss probes can outlast recent_auth_seconds. Reauthenticate
 	// through the normal OIDC flow; never extend or bypass the security window.
-	admin = r.mustAdmin(ctx)
+	admin := r.mustAdmin(ctx)
 	recPathNote(&rec)("fresh_admin_auth", boolText(admin != nil))
 	if admin == nil {
 		r.record(rec)
