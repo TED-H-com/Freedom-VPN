@@ -1,1501 +1,856 @@
 {
   "schema_version": 1,
-  "follow_up": 5,
-  "run_id": "86e6106a-1be1-4003-9b0f-35a30e9cda12",
-  "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
-  "probe_source_sha256": "bb9e726e4997f6f59fbbb4d6ac2b007c75aa30ab1cf0fc65c4bb795d6df5ac52",
-  "started_at": "2026-10-30T09:26:55.383432456Z",
-  "finished_at": "2026-10-30T09:45:27.565293215Z",
-  "policy_revision": "1",
-  "node_incarnation": "01a18c23-076a-79fb-af87-c28a9ac798a0",
-  "secondary_node_incarnation": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-  "image_digests": [
-    {
-      "image_id": "sha256:bb6608e4f6f966c410892a7f8bc7f023a3ec2d35ac48c4ea6089e64f91062c66",
-      "service": "postgres"
-    },
-    {
-      "image_id": "sha256:54b557988efb2328e10fdd6945d53b7a23f111e634fd2cb5025c20af94633929",
-      "service": "idp"
-    },
-    {
-      "image_id": "sha256:9a761831f273a26f3ae8f58a8d565bde09f62267e90bd0380132e29a5d5b1618",
-      "service": "payment"
-    },
-    {
-      "image_id": "sha256:457fd978be9cc245b5e57c25a0a7d30bf11522e2df2901d25debb7b5c49eb1dd",
-      "service": "origin"
-    },
-    {
-      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "service": "netbird"
-    },
-    {
-      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "service": "gateway"
-    },
-    {
-      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
-      "service": "coredns"
-    },
-    {
-      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "service": "adguard"
-    },
-    {
-      "image_id": "sha256:7f15d6df60d770b59512b00ca98fa888bbae9d795bff04a395f8ac9f27c4d57f",
-      "service": "control"
-    },
-    {
-      "image_id": "sha256:fb3d6639726f7e1160b9145c4a132cfe945aa3d89211cb986056cd0150daff38",
-      "service": "worker"
-    },
-    {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "node-netns"
-    },
-    {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "node"
-    },
-    {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "member"
-    },
-    {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "member-secops-deadline-grant"
-    },
-    {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "member-secops-deadline-paid"
-    },
-    {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "member-secops-counted-b"
-    }
+  "follow_up": 6,
+  "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+  "started_at": "2026-10-30T17:03:09Z",
+  "finished_at": "2026-10-30T17:28:30Z",
+  "hardware": "shared development host, not candidate hardware",
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "50m",
+      "-run",
+      "^TestAT28_AT31_Followup6$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "50m",
+      "-run",
+      "^TestAT28_AT31_Followup6$",
+      "./tests/e2e/at/secops"
+    ]
   ],
+  "runs": {
+    "profile": {
+      "run_id": "89054df3-0973-4448-9065-5f1266d0558b",
+      "started_at": "2026-10-30T17:03:40.947704857Z",
+      "finished_at": "2026-10-30T17:19:41.891010532Z",
+      "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+      "probe_source_sha256": "d83cdbffbf8eee7833280a3f8f75dd445e8eb522d29eb466d8462bc541100394",
+      "policy_revision": "01a18dc4-6636-7311-96df-429b3ea651d8",
+      "node_incarnation": null,
+      "image_digests": [
+        {
+          "image_id": "sha256:666b159242219e77b2d7ab4d606254c2529dc9f9ba310eebda8fdb28e19822e5",
+          "service": "postgres"
+        },
+        {
+          "image_id": "sha256:355f0de1b0b2f7b9d675391fa173e9e320be2241e4de5187a7401c6ffc35fecb",
+          "service": "idp"
+        },
+        {
+          "image_id": "sha256:eaaff387083a80f2eb638ec8e90d3b6f3676b9490529e70f24e68dbf990c8814",
+          "service": "payment"
+        },
+        {
+          "image_id": "sha256:17bc1751939087ba90ce400acaa4564a2a02eeaea448e2d8a4b2fb174534ad66",
+          "service": "origin"
+        },
+        {
+          "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+          "service": "netbird"
+        },
+        {
+          "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+          "service": "gateway"
+        },
+        {
+          "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+          "service": "coredns"
+        },
+        {
+          "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+          "service": "adguard"
+        },
+        {
+          "image_id": "sha256:13e9ad3c8c6bfab02d0e114c81ecf5cc130647495abd016997a648150fa81251",
+          "service": "control"
+        },
+        {
+          "image_id": "sha256:f85ba9a01c94dab0f2fd63dc6813c8adfc2a2912cbd2415a66ca64afad1aed37",
+          "service": "worker"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "node-netns"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "node"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u19-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u19-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u19-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u18-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u18-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u18-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u17-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u17-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u17-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u16-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u16-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u16-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u15-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u15-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u15-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u14-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u14-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u14-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u13-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u13-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u13-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u12-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u12-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u12-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u11-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u11-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u11-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u10-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u10-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u10-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u09-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u09-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u09-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u08-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u08-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u08-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u07-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u07-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u07-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u06-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u06-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u06-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u05-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u05-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u05-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u04-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u04-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u04-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u03-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u03-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u03-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u02-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u02-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u02-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u01-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u01-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u01-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u00-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u00-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u00-p1"
+        }
+      ]
+    },
+    "helper": {
+      "run_id": "6bfaca25-e5a6-4fcb-8dfa-ad1e918cb546",
+      "started_at": "2026-10-30T17:20:58.987373081Z",
+      "finished_at": "2026-10-30T17:27:37.768373964Z",
+      "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+      "probe_source_sha256": "9d3b4f4bcf9bec21f3726b75720f9cc6dac8bd4d35535158524ee5ea11b7ce24",
+      "policy_revision": "01a18dd4-3d60-7904-afbd-5c76ccfde003",
+      "node_incarnation": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+      "image_digests": [
+        {
+          "image_id": "sha256:7ec95f1bb6c481f02fcab076f80abef730b34cc3eed20c1905b63f5f727eaee1",
+          "service": "postgres"
+        },
+        {
+          "image_id": "sha256:574a3c32b652071a679f0e31d5523732409936bdf18e6c58294456c2be560cf1",
+          "service": "idp"
+        },
+        {
+          "image_id": "sha256:36eaa67b92da3d5b03cfad80d9ac52f83f182c69b29c3665b41f3e67f3d5e43b",
+          "service": "payment"
+        },
+        {
+          "image_id": "sha256:25a9cf9d880adb64e84d5c60ebc3516972ac281be050c21a87ac9647562da6cf",
+          "service": "origin"
+        },
+        {
+          "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+          "service": "netbird"
+        },
+        {
+          "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+          "service": "gateway"
+        },
+        {
+          "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+          "service": "coredns"
+        },
+        {
+          "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+          "service": "adguard"
+        },
+        {
+          "image_id": "sha256:35bac72bf3dfa4ad402641b63b963764e66cf68fcdedd0a86176666ff4f3271e",
+          "service": "control"
+        },
+        {
+          "image_id": "sha256:2cd25e7ca47028387cc647a27c9cfca717f48b3db087a7239b5eb858f8291b34",
+          "service": "worker"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "node-netns"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "node"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u20-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u20-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u20-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u19-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u19-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u19-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u18-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u18-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u18-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u17-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u17-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u17-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u16-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u16-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u16-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u15-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u15-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u15-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u14-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u14-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u14-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u13-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u13-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u13-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u12-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u12-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u12-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u11-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u11-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u11-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u10-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u10-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u10-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u09-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u09-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u09-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u08-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u08-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u08-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u07-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u07-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u07-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u06-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u06-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u06-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u05-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u05-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u05-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u04-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u04-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u04-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u03-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u03-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u03-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u02-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u02-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u02-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u01-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u01-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u01-p3"
+        }
+      ]
+    }
+  },
   "build_digests": [
     {
-      "name": "fvpn-agent",
-      "sha256": "e58ce507f6e8cc6e90c1614daad37d62ac394bb2264615b780d1417cf4213f58",
-      "kind": "prepared application binary"
+      "arch": "amd64",
+      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
+      "sha256": "d6ff489ab36ccb649597bbd2fdd38195d5bc1ed51dbf80a78693577261773213"
     },
     {
-      "name": "fvpn-control",
-      "sha256": "ef97948f8d9bc326163f7b407c067d8a67f279215aa5ef2d232d61133d11a132",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-idp",
-      "sha256": "b079831f2ba6448fafca64d19005f39117e9dac44fd4378981c0fcdbfa94a2c2",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-nbbootstrap",
-      "sha256": "171dd8f5b28adfee27eaef82417e810480c5a241f9dff085df02f34832c6e469",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-nodeconfig",
-      "sha256": "f5cf21b2018e7e8135dbbdaa571bf69ee23604faa4d6435adebfcb462661cdd9",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-origin",
-      "sha256": "2f5e7744dc3abe4883f6265a1255a1c2734556f1c1398a7138459249309ceb43",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-payment",
-      "sha256": "825a8f62213dcaeae59cacf2ecd760d5216f1b8fea4fae8103ad896cfe21d0af",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-prepare",
-      "sha256": "d8a04949a3a789311e0c7c3896a333c91f89537ae6b92e8651d1d35989ad42ad",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-updater",
-      "sha256": "96825f58bc15c94f77d9e7000152c5545146818e3ba7533b6d2f4d6c24880c02",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-watchdog",
-      "sha256": "c1ff8ce46603a0458e905e26de6c9c4e63539faf42f0cbe14c9e6700bf0d6b61",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-worker",
-      "sha256": "47a86133875571c8da3455a7b83a2797a2cc4d84347dc4875521c5b18243d6e7",
-      "kind": "prepared application binary"
+      "arch": "arm64",
+      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
+      "sha256": "7d05ae15973b4ce8ba8dea8657b66dc21955cebd8353f79ff9fb97e3665deb67"
     }
   ],
-  "commands": [
-    "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/at-secops.mk at-secops-followup5"
-  ],
-  "hardware": "shared development host; not candidate hardware",
-  "id": "AT31-counted-subset",
-  "status": "blocked",
-  "expected": "20 members/60 authorized devices under the recorded mixed load; correct authorization and ledger; read p95 <500 ms, policy <=60 s, usage <=120 s, CPU/memory/IO and relay throughput recorded.",
+  "id": "SECOPS-10",
+  "expected": {
+    "users": 20,
+    "peers": 60,
+    "read_p95_ms_less_than": 500
+  },
+  "status": "passed",
   "actual": {
-    "admitted_deltas": {
-      "01a18c23-ce6c-7865-af78-3752cc919443": {
-        "download": "456974",
-        "upload": "310512"
+    "profile": {
+      "status": "passed",
+      "cohort": {
+        "users": 20,
+        "authorized": 60,
+        "binding_devices": 60
       },
-      "01a18c26-8ca0-754b-a9c7-a53c6387f72a": {
-        "download": "453957",
-        "upload": "307780"
-      }
-    },
-    "after_bytes": {
-      "01a18c23-ce6c-7865-af78-3752cc919443": {
-        "download": "460000",
-        "generation": "11",
-        "upload": "312644"
+      "login_latency": {
+        "samples": 20,
+        "p50_ms": 154.912,
+        "p95_ms": 170.872,
+        "p99_ms": 191.788
       },
-      "01a18c26-8ca0-754b-a9c7-a53c6387f72a": {
-        "download": "455471",
-        "generation": "11",
-        "upload": "308846"
-      }
-    },
-    "before_bytes": {
-      "01a18c23-ce6c-7865-af78-3752cc919443": {
-        "download": "3026",
-        "generation": "9",
-        "upload": "2132"
+      "admission_latency": {
+        "samples": 60,
+        "p50_ms": 14892.523,
+        "p95_ms": 16451.805,
+        "p99_ms": 18000.086
       },
-      "01a18c26-8ca0-754b-a9c7-a53c6387f72a": {
-        "download": "1514",
-        "generation": "9",
-        "upload": "1066"
-      }
-    },
-    "duration_seconds": 308.304922009,
-    "flow_requests": {
-      "01a18c23-ce6c-7865-af78-3752cc919443": {
-        "http_200": 300
+      "admission_wall_seconds": 904.359574395,
+      "helper_counts": null,
+      "control_read_latency": {
+        "samples": 600,
+        "p50_ms": 9.616,
+        "p95_ms": 16.413,
+        "p99_ms": 17.969
       },
-      "01a18c26-8ca0-754b-a9c7-a53c6387f72a": {
-        "http_200": 300
-      }
-    },
-    "hardware": "shared dev host; not candidate hardware",
-    "initial_flows": [
-      {
-        "admitted_bytes_delta": {
-          "download": "1513",
-          "upload": "1066"
-        },
-        "after_bytes": {
-          "download": "3026",
-          "generation": "9",
-          "upload": "2132"
-        },
-        "before_bytes": {
-          "download": "1513",
-          "generation": "9",
-          "upload": "1066"
-        },
-        "counted": true,
-        "counter_reads_ok": true,
-        "http_200": true,
-        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Selected",
-        "network_list_ok": true,
-        "order": [
-          "select advertised exit",
-          "route dev fvnb0",
-          "HTTPS 200",
-          "authenticated node-SNAT receipt",
-          "exact-device byte delta"
+      "control_read_status": "passed",
+      "reads_expected": 600,
+      "reads_observed": 600,
+      "reads_200": 600,
+      "foreign_devices": 0,
+      "exact_three_device_pages": 600,
+      "gateway_before": {
+        "aggregates": [
+          "workers",
+          "sh:",
+          "1:",
+          "ps:",
+          "not",
+          "found",
+          "0",
+          "tcp_total",
+          "37",
+          "tcp_state_06",
+          "30",
+          "tcp_state_0A",
+          "3",
+          "tcp_state_01",
+          "4",
+          "fd_entries",
+          "47"
         ],
-        "origin_authenticated": true,
-        "origin_node_snat": true,
-        "origin_probe_matches": true,
-        "origin_requests": 1,
-        "peer": {
-          "container_role": "member",
-          "device_id": "01a18c23-ce6c-7865-af78-3752cc919443"
-        },
-        "route_device": "fvnb0",
-        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.167.98 uid 0 \n    cache",
-        "selection_ok": true,
-        "selection_output": "Networks selected successfully.",
-        "utc": "2026-10-30T09:31:56.394539353Z"
+        "command": "docker exec own gateway sh: process count, /proc/net/tcp{,6} state counts and nginx fd entries",
+        "configured_worker_connections": 4096,
+        "configured_workers": 2,
+        "read_ok": true,
+        "source": "deploy/devstack/nginx.conf; process and network-namespace socket inventory, no private addresses",
+        "utc": "2026-10-30T17:03:41.175182013Z"
       },
-      {
-        "admitted_bytes_delta": {
-          "download": "1514",
-          "upload": "1066"
-        },
-        "after_bytes": {
-          "download": "1514",
-          "generation": "9",
-          "upload": "1066"
-        },
-        "before_bytes": {
-          "download": "0",
-          "generation": "9",
-          "upload": "0"
-        },
-        "counted": true,
-        "counter_reads_ok": true,
-        "http_200": true,
-        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Not Selected",
-        "network_list_ok": true,
-        "order": [
-          "select advertised exit",
-          "route dev fvnb0",
-          "HTTPS 200",
-          "authenticated node-SNAT receipt",
-          "exact-device byte delta"
+      "gateway_after": {
+        "aggregates": [
+          "workers",
+          "sh:",
+          "1:",
+          "ps:",
+          "not",
+          "found",
+          "0",
+          "tcp_total",
+          "9292",
+          "tcp_state_06",
+          "8891",
+          "tcp_state_0A",
+          "3",
+          "tcp_state_01",
+          "398",
+          "fd_entries",
+          "441"
         ],
-        "origin_authenticated": true,
-        "origin_node_snat": true,
-        "origin_probe_matches": true,
-        "origin_requests": 1,
-        "peer": {
-          "container_role": "member-secops-counted-b",
-          "device_id": "01a18c26-8ca0-754b-a9c7-a53c6387f72a"
-        },
-        "route_device": "fvnb0",
-        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.107.158 uid 0 \n    cache",
-        "selection_ok": true,
-        "selection_output": "Networks selected successfully.",
-        "utc": "2026-10-30T09:31:56.674955006Z"
-      }
-    ],
-    "native_peers": 2,
-    "policy_changes": [
-      {
-        "ack_seconds": 6.012995299,
-        "ack_within_60s": true,
-        "applied_generation": "10",
-        "counted_after": {
-          "admitted_bytes_delta": {
-            "download": "1513",
-            "upload": "1066"
-          },
-          "after_bytes": {
-            "download": "105914",
-            "generation": "10",
-            "upload": "71963"
-          },
-          "before_bytes": {
-            "download": "104401",
-            "generation": "10",
-            "upload": "70897"
-          },
-          "counted": true,
-          "counter_reads_ok": true,
-          "http_200": true,
-          "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Selected",
-          "network_list_ok": true,
-          "order": [
-            "select advertised exit",
-            "route dev fvnb0",
-            "HTTPS 200",
-            "authenticated node-SNAT receipt",
-            "exact-device byte delta"
-          ],
-          "origin_authenticated": true,
-          "origin_node_snat": true,
-          "origin_probe_matches": true,
-          "origin_requests": 1,
-          "peer": {
-            "container_role": "member",
-            "device_id": "01a18c23-ce6c-7865-af78-3752cc919443"
-          },
-          "route_device": "fvnb0",
-          "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.167.98 uid 0 \n    cache",
-          "selection_ok": true,
-          "selection_output": "Networks selected successfully.",
-          "utc": "2026-10-30T09:34:03.286781369Z"
-        },
-        "desired_generation": "10",
-        "http_status": 202,
-        "offset_seconds": 60.12583496
+        "command": "docker exec own gateway sh: process count, /proc/net/tcp{,6} state counts and nginx fd entries",
+        "configured_worker_connections": 4096,
+        "configured_workers": 2,
+        "read_ok": true,
+        "source": "deploy/devstack/nginx.conf; process and network-namespace socket inventory, no private addresses",
+        "utc": "2026-10-30T17:19:41.891003926Z"
       },
-      {
-        "ack_seconds": 1.006682632,
-        "ack_within_60s": true,
-        "applied_generation": "11",
-        "counted_after": {
-          "admitted_bytes_delta": {
-            "download": "1512",
-            "upload": "1066"
-          },
-          "after_bytes": {
-            "download": "288984",
-            "generation": "11",
-            "upload": "196469"
-          },
-          "before_bytes": {
-            "download": "287472",
-            "generation": "11",
-            "upload": "195403"
-          },
-          "counted": true,
-          "counter_reads_ok": true,
-          "http_200": true,
-          "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Selected",
-          "network_list_ok": true,
-          "order": [
-            "select advertised exit",
-            "route dev fvnb0",
-            "HTTPS 200",
-            "authenticated node-SNAT receipt",
-            "exact-device byte delta"
-          ],
-          "origin_authenticated": true,
-          "origin_node_snat": true,
-          "origin_probe_matches": true,
-          "origin_requests": 1,
-          "peer": {
-            "container_role": "member",
-            "device_id": "01a18c23-ce6c-7865-af78-3752cc919443"
-          },
-          "route_device": "fvnb0",
-          "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.167.98 uid 0 \n    cache",
-          "selection_ok": true,
-          "selection_output": "Networks selected successfully.",
-          "utc": "2026-10-30T09:36:04.846681156Z"
-        },
-        "desired_generation": "11",
-        "http_status": 202,
-        "offset_seconds": 186.682255922
-      }
-    ],
-    "portal_members": 20,
-    "read_p50_ms": 13.442,
-    "read_p95_ms": 23.074,
-    "read_p99_ms": 368.457,
-    "read_status_counts": {
-      "200": 6000
+      "gateway_worker_count_qualification": "Profile used ps, absent in the image; its worker count and mixed stderr tokens are invalid. The labeled TCP state/FD values remain valid. Helper uses /proc cmdline; manual /proc check returned 2. The separate mid-run sampler used the original ps command, so all its worker zeros are unavailable.",
+      "counted_peer_traffic": false,
+      "node_process_cgroup_telemetry": null,
+      "individual_helper_latencies": "not exposed by ScaleNativeMembers; only sequential profile has per-peer admission samples"
     },
-    "reads": 6000,
-    "relay_forced": false,
-    "requested_seconds": 300,
-    "resources": [
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.67%",
-        "MemPerc": "0.02%",
-        "MemUsage": "32.68MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "48.6MB / 3.42MB",
-        "PIDs": "25",
-        "elapsed_seconds": 1.1554e-05
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.12%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.39MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "56.2MB / 5.31MB",
-        "PIDs": "22",
-        "elapsed_seconds": 1.1554e-05
-      },
-      {
-        "BlockIO": "3.32MB / 860MB",
-        "CPUPerc": "2.41%",
-        "MemPerc": "0.09%",
-        "MemUsage": "168.1MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "6.93MB / 5.52MB",
-        "PIDs": "25",
-        "elapsed_seconds": 1.1554e-05
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 1.1554e-05
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.24%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "50MB / 4.98MB",
-        "PIDs": "25",
-        "elapsed_seconds": 12.023510466
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.11%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.64MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "56.5MB / 5.52MB",
-        "PIDs": "22",
-        "elapsed_seconds": 12.023510466
-      },
-      {
-        "BlockIO": "3.32MB / 934MB",
-        "CPUPerc": "0.96%",
-        "MemPerc": "0.09%",
-        "MemUsage": "175.3MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "7.67MB / 6.34MB",
-        "PIDs": "25",
-        "elapsed_seconds": 12.023510466
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 12.023510466
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "3.19%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35.79MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "51.3MB / 6.33MB",
-        "PIDs": "28",
-        "elapsed_seconds": 24.045968227
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.08%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.39MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "56.6MB / 5.57MB",
-        "PIDs": "22",
-        "elapsed_seconds": 24.045968227
-      },
-      {
-        "BlockIO": "3.32MB / 1.07GB",
-        "CPUPerc": "3.14%",
-        "MemPerc": "0.09%",
-        "MemUsage": "178.3MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "8.18MB / 7.04MB",
-        "PIDs": "25",
-        "elapsed_seconds": 24.045968227
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 24.045968227
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "2.09%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35.05MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "52.6MB / 7.69MB",
-        "PIDs": "28",
-        "elapsed_seconds": 36.06770552
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.20%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.39MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "56.8MB / 5.75MB",
-        "PIDs": "22",
-        "elapsed_seconds": 36.06770552
-      },
-      {
-        "BlockIO": "3.32MB / 1.15GB",
-        "CPUPerc": "4.65%",
-        "MemPerc": "0.10%",
-        "MemUsage": "179.8MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "8.83MB / 7.81MB",
-        "PIDs": "25",
-        "elapsed_seconds": 36.06770552
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 36.06770552
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.64%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35.49MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "53.7MB / 8.91MB",
-        "PIDs": "28",
-        "elapsed_seconds": 48.102969137
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.20%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.99MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "57.1MB / 5.94MB",
-        "PIDs": "22",
-        "elapsed_seconds": 48.102969137
-      },
-      {
-        "BlockIO": "3.32MB / 1.22GB",
-        "CPUPerc": "1.48%",
-        "MemPerc": "0.10%",
-        "MemUsage": "183.1MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "9.47MB / 8.6MB",
-        "PIDs": "25",
-        "elapsed_seconds": 48.102969137
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 48.102969137
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.46%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35.84MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "55.8MB / 11.2MB",
-        "PIDs": "28",
-        "elapsed_seconds": 60.12583496
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.10%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.49MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "57.4MB / 6.17MB",
-        "PIDs": "22",
-        "elapsed_seconds": 60.12583496
-      },
-      {
-        "BlockIO": "3.32MB / 1.36GB",
-        "CPUPerc": "4.69%",
-        "MemPerc": "0.10%",
-        "MemUsage": "188.6MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "10.5MB / 9.79MB",
-        "PIDs": "25",
-        "elapsed_seconds": 60.12583496
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 60.12583496
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.24%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.81MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "57MB / 12.6MB",
-        "PIDs": "28",
-        "elapsed_seconds": 78.461793297
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.09%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.49MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "57.7MB / 6.35MB",
-        "PIDs": "22",
-        "elapsed_seconds": 78.461793297
-      },
-      {
-        "BlockIO": "3.32MB / 1.43GB",
-        "CPUPerc": "1.14%",
-        "MemPerc": "0.10%",
-        "MemUsage": "190.9MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "11.2MB / 10.6MB",
-        "PIDs": "25",
-        "elapsed_seconds": 78.461793297
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 78.461793297
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "4.07%",
-        "MemPerc": "0.02%",
-        "MemUsage": "37.33MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "58.3MB / 13.9MB",
-        "PIDs": "28",
-        "elapsed_seconds": 90.489943673
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.15%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.9MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "58MB / 6.54MB",
-        "PIDs": "22",
-        "elapsed_seconds": 90.489943673
-      },
-      {
-        "BlockIO": "3.32MB / 1.5GB",
-        "CPUPerc": "1.09%",
-        "MemPerc": "0.10%",
-        "MemUsage": "191.3MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "11.8MB / 11.3MB",
-        "PIDs": "25",
-        "elapsed_seconds": 90.489943673
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 90.489943673
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "2.33%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.19MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "59.5MB / 15.2MB",
-        "PIDs": "28",
-        "elapsed_seconds": 102.51376127
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.12%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.84MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "58.3MB / 6.72MB",
-        "PIDs": "22",
-        "elapsed_seconds": 102.51376127
-      },
-      {
-        "BlockIO": "3.33MB / 1.57GB",
-        "CPUPerc": "4.65%",
-        "MemPerc": "0.10%",
-        "MemUsage": "191.5MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "12.4MB / 12MB",
-        "PIDs": "25",
-        "elapsed_seconds": 102.51376127
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 102.51376127
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "2.43%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.96MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "60.7MB / 16.4MB",
-        "PIDs": "28",
-        "elapsed_seconds": 114.538729701
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.10%",
-        "MemPerc": "0.01%",
-        "MemUsage": "20.08MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "58.3MB / 6.76MB",
-        "PIDs": "22",
-        "elapsed_seconds": 114.538729701
-      },
-      {
-        "BlockIO": "3.33MB / 1.68GB",
-        "CPUPerc": "2.99%",
-        "MemPerc": "0.10%",
-        "MemUsage": "193.7MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "12.9MB / 12.8MB",
-        "PIDs": "25",
-        "elapsed_seconds": 114.538729701
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 114.538729701
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "5.01%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35.21MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "62.1MB / 18MB",
-        "PIDs": "28",
-        "elapsed_seconds": 126.56273717
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.24%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.6MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "58.6MB / 6.96MB",
-        "PIDs": "22",
-        "elapsed_seconds": 126.56273717
-      },
-      {
-        "BlockIO": "3.33MB / 1.78GB",
-        "CPUPerc": "3.92%",
-        "MemPerc": "0.10%",
-        "MemUsage": "196.1MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "13.7MB / 13.6MB",
-        "PIDs": "25",
-        "elapsed_seconds": 126.56273717
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 126.56273717
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.36%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.11MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "63.3MB / 19.3MB",
-        "PIDs": "28",
-        "elapsed_seconds": 138.586872746
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.18%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.85MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "58.9MB / 7.15MB",
-        "PIDs": "22",
-        "elapsed_seconds": 138.586872746
-      },
-      {
-        "BlockIO": "3.33MB / 1.85GB",
-        "CPUPerc": "0.93%",
-        "MemPerc": "0.10%",
-        "MemUsage": "196.3MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "14.3MB / 14.3MB",
-        "PIDs": "25",
-        "elapsed_seconds": 138.586872746
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 138.586872746
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "2.70%",
-        "MemPerc": "0.02%",
-        "MemUsage": "37.26MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "64.5MB / 20.6MB",
-        "PIDs": "28",
-        "elapsed_seconds": 150.611723604
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.10%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.61MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "59.1MB / 7.33MB",
-        "PIDs": "22",
-        "elapsed_seconds": 150.611723604
-      },
-      {
-        "BlockIO": "3.33MB / 1.93GB",
-        "CPUPerc": "0.89%",
-        "MemPerc": "0.10%",
-        "MemUsage": "197MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "14.9MB / 15.2MB",
-        "PIDs": "25",
-        "elapsed_seconds": 150.611723604
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 150.611723604
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.15%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.28MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "65.9MB / 22MB",
-        "PIDs": "28",
-        "elapsed_seconds": 162.634670452
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.12%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.61MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "59.4MB / 7.53MB",
-        "PIDs": "22",
-        "elapsed_seconds": 162.634670452
-      },
-      {
-        "BlockIO": "3.33MB / 2GB",
-        "CPUPerc": "3.89%",
-        "MemPerc": "0.11%",
-        "MemUsage": "197.8MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "15.6MB / 15.9MB",
-        "PIDs": "25",
-        "elapsed_seconds": 162.634670452
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 162.634670452
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.50%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.64MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "67.1MB / 23.3MB",
-        "PIDs": "28",
-        "elapsed_seconds": 174.658725004
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.26%",
-        "MemPerc": "0.01%",
-        "MemUsage": "20.6MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "59.4MB / 7.58MB",
-        "PIDs": "22",
-        "elapsed_seconds": 174.658725004
-      },
-      {
-        "BlockIO": "3.33MB / 2.13GB",
-        "CPUPerc": "3.57%",
-        "MemPerc": "0.11%",
-        "MemUsage": "200.2MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "16.1MB / 16.6MB",
-        "PIDs": "25",
-        "elapsed_seconds": 174.658725004
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 174.658725004
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.37%",
-        "MemPerc": "0.02%",
-        "MemUsage": "34.59MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "68.6MB / 25MB",
-        "PIDs": "28",
-        "elapsed_seconds": 186.682255922
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.10%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.61MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "59.7MB / 7.77MB",
-        "PIDs": "22",
-        "elapsed_seconds": 186.682255922
-      },
-      {
-        "BlockIO": "3.33MB / 2.21GB",
-        "CPUPerc": "0.87%",
-        "MemPerc": "0.11%",
-        "MemUsage": "200.9MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "16.9MB / 17.5MB",
-        "PIDs": "25",
-        "elapsed_seconds": 186.682255922
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 186.682255922
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.53%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.25MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "69.8MB / 26.3MB",
-        "PIDs": "28",
-        "elapsed_seconds": 200.034811089
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.14%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.86MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "60MB / 7.96MB",
-        "PIDs": "22",
-        "elapsed_seconds": 200.034811089
-      },
-      {
-        "BlockIO": "3.33MB / 2.28GB",
-        "CPUPerc": "1.06%",
-        "MemPerc": "0.11%",
-        "MemUsage": "201.6MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "17.5MB / 18.3MB",
-        "PIDs": "25",
-        "elapsed_seconds": 200.034811089
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 200.034811089
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "5.02%",
-        "MemPerc": "0.02%",
-        "MemUsage": "40.76MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "71.1MB / 27.6MB",
-        "PIDs": "29",
-        "elapsed_seconds": 212.058716857
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.07%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.61MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "60.3MB / 8.14MB",
-        "PIDs": "22",
-        "elapsed_seconds": 212.058716857
-      },
-      {
-        "BlockIO": "3.33MB / 2.35GB",
-        "CPUPerc": "2.39%",
-        "MemPerc": "0.11%",
-        "MemUsage": "206.9MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "18.2MB / 19MB",
-        "PIDs": "30",
-        "elapsed_seconds": 212.058716857
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 212.058716857
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.48%",
-        "MemPerc": "0.02%",
-        "MemUsage": "35.87MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "72.3MB / 28.9MB",
-        "PIDs": "28",
-        "elapsed_seconds": 224.08273471
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.16%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.61MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "60.6MB / 8.33MB",
-        "PIDs": "22",
-        "elapsed_seconds": 224.08273471
-      },
-      {
-        "BlockIO": "3.33MB / 2.45GB",
-        "CPUPerc": "3.55%",
-        "MemPerc": "0.11%",
-        "MemUsage": "203.7MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "18.8MB / 19.8MB",
-        "PIDs": "25",
-        "elapsed_seconds": 224.08273471
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 224.08273471
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.72%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.86MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "73.6MB / 30.3MB",
-        "PIDs": "28",
-        "elapsed_seconds": 236.108102455
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "2.60%",
-        "MemPerc": "0.01%",
-        "MemUsage": "20.12MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "60.9MB / 8.51MB",
-        "PIDs": "22",
-        "elapsed_seconds": 236.108102455
-      },
-      {
-        "BlockIO": "3.33MB / 2.56GB",
-        "CPUPerc": "3.10%",
-        "MemPerc": "0.11%",
-        "MemUsage": "204.5MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "19.4MB / 20.6MB",
-        "PIDs": "25",
-        "elapsed_seconds": 236.108102455
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 236.108102455
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "3.92%",
-        "MemPerc": "0.02%",
-        "MemUsage": "37.82MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "74.9MB / 31.7MB",
-        "PIDs": "28",
-        "elapsed_seconds": 248.132936938
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.19%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.62MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "60.9MB / 8.56MB",
-        "PIDs": "22",
-        "elapsed_seconds": 248.132936938
-      },
-      {
-        "BlockIO": "3.33MB / 2.63GB",
-        "CPUPerc": "4.88%",
-        "MemPerc": "0.11%",
-        "MemUsage": "206MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "20.1MB / 21.3MB",
-        "PIDs": "25",
-        "elapsed_seconds": 248.132936938
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 248.132936938
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "1.86%",
-        "MemPerc": "0.02%",
-        "MemUsage": "36.63MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "76.2MB / 33.1MB",
-        "PIDs": "28",
-        "elapsed_seconds": 260.155794435
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.14%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.62MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "61.2MB / 8.75MB",
-        "PIDs": "22",
-        "elapsed_seconds": 260.155794435
-      },
-      {
-        "BlockIO": "3.33MB / 2.67GB",
-        "CPUPerc": "1.14%",
-        "MemPerc": "0.11%",
-        "MemUsage": "207.3MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "20.6MB / 22MB",
-        "PIDs": "25",
-        "elapsed_seconds": 260.155794435
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 260.155794435
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "2.43%",
-        "MemPerc": "0.02%",
-        "MemUsage": "38.96MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "77.5MB / 34.5MB",
-        "PIDs": "28",
-        "elapsed_seconds": 272.178983799
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.08%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.62MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "61.5MB / 8.93MB",
-        "PIDs": "22",
-        "elapsed_seconds": 272.178983799
-      },
-      {
-        "BlockIO": "3.33MB / 2.71GB",
-        "CPUPerc": "0.91%",
-        "MemPerc": "0.11%",
-        "MemUsage": "208.1MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "21.3MB / 22.8MB",
-        "PIDs": "25",
-        "elapsed_seconds": 272.178983799
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 272.178983799
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "3.99%",
-        "MemPerc": "0.02%",
-        "MemUsage": "38.98MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "78.6MB / 35.7MB",
-        "PIDs": "29",
-        "elapsed_seconds": 284.20211532
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.17%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.62MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "61.7MB / 9.12MB",
-        "PIDs": "22",
-        "elapsed_seconds": 284.20211532
-      },
-      {
-        "BlockIO": "3.33MB / 2.75GB",
-        "CPUPerc": "1.34%",
-        "MemPerc": "0.11%",
-        "MemUsage": "210.3MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "22MB / 23.7MB",
-        "PIDs": "25",
-        "elapsed_seconds": 284.20211532
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 284.20211532
-      },
-      {
-        "BlockIO": "32.8kB / 0B",
-        "CPUPerc": "2.34%",
-        "MemPerc": "0.02%",
-        "MemUsage": "38.17MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-control",
-        "NetIO": "80MB / 37.1MB",
-        "PIDs": "29",
-        "elapsed_seconds": 296.226069806
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.10%",
-        "MemPerc": "0.01%",
-        "MemUsage": "19.62MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-worker",
-        "NetIO": "62MB / 9.3MB",
-        "PIDs": "22",
-        "elapsed_seconds": 296.226069806
-      },
-      {
-        "BlockIO": "3.33MB / 2.82GB",
-        "CPUPerc": "0.95%",
-        "MemPerc": "0.11%",
-        "MemUsage": "208.9MiB / 183.7GiB",
-        "Name": "fvpn-w4-secops-postgres",
-        "NetIO": "22.6MB / 24.4MB",
-        "PIDs": "25",
-        "elapsed_seconds": 296.226069806
-      },
-      {
-        "BlockIO": "0B / 0B",
-        "CPUPerc": "0.00%",
-        "MemPerc": "0.00%",
-        "MemUsage": "0B / 0B",
-        "Name": "fvpn-w4-secops-node",
-        "NetIO": "0B / 0B",
-        "PIDs": "0",
-        "elapsed_seconds": 296.226069806
-      }
-    ],
-    "source": "real kernel admission and real agent sampling; synthetic node B ledger excluded",
-    "started_at": "2026-10-30T09:32:57.144540852Z",
-    "status": "measured subset; full AT31 remains blocked",
-    "udp": false,
-    "usage_visibility": {
-      "ledger": {
-        "events": 62,
-        "checkpoint": {
-          "max_seen_seq": "62",
-          "highest_contiguous_seq": "62"
-        },
-        "highest_seq": "62",
-        "actual_samples": 123,
-        "sample_records": "123"
-      },
-      "ledger_read_ok": true,
-      "rows": [
-        {
-          "device_id": "01a18c23-ce6c-7865-af78-3752cc919443",
-          "device_ledger_bytes": "772644",
-          "http_status": 200,
-          "observed_latency_upper_bound_seconds": 4.366587747,
-          "sample_interval_end": "2026-10-30T09:38:01.089130Z",
-          "sample_read_ok": true,
-          "usage": {
-            "aggregate_as_of": "2026-10-30T09:38:01.446353Z",
-            "days": [],
-            "fair_use": {
-              "applying": false,
-              "as_of": "2026-10-30T09:38:01.446353Z",
-              "rate": null,
-              "reason": null,
-              "resets_at": "2026-11-01T00:00:00Z",
-              "state": "normal",
-              "tier_index": null,
-              "tier_name": null
-            },
-            "granularity": "month",
-            "last_observed_at": "2026-10-30T09:38:01.08913Z",
-            "metering_version": "forward_admission_v1",
-            "period_end": "2026-11-01T00:00:00Z",
-            "period_id": "2026-10",
-            "period_start": "2026-10-01T00:00:00Z",
-            "quality": {
-              "estimated": false,
-              "gap": false,
-              "reconciliation_in_progress": false
-            },
-            "totals": {
-              "download_bytes": "460200",
-              "total_bytes": "772944",
-              "upload_bytes": "312744"
-            }
-          },
-          "visible": true,
-          "within_120_seconds": true
-        },
-        {
-          "device_id": "01a18c26-8ca0-754b-a9c7-a53c6387f72a",
-          "device_ledger_bytes": "764317",
-          "http_status": 200,
-          "observed_latency_upper_bound_seconds": 4.37052886,
-          "sample_interval_end": "2026-10-30T09:38:01.089130Z",
-          "sample_read_ok": true,
-          "usage": {
-            "aggregate_as_of": "2026-10-30T09:38:01.446353Z",
-            "days": [],
-            "fair_use": {
-              "applying": false,
-              "as_of": "2026-10-30T09:38:01.446353Z",
-              "rate": null,
-              "reason": null,
-              "resets_at": "2026-11-01T00:00:00Z",
-              "state": "normal",
-              "tier_index": null,
-              "tier_name": null
-            },
-            "granularity": "month",
-            "last_observed_at": "2026-10-30T09:38:01.08913Z",
-            "metering_version": "forward_admission_v1",
-            "period_end": "2026-11-01T00:00:00Z",
-            "period_id": "2026-10",
-            "period_start": "2026-10-01T00:00:00Z",
-            "quality": {
-              "estimated": false,
-              "gap": false,
-              "reconciliation_in_progress": false
-            },
-            "totals": {
-              "download_bytes": "455471",
-              "total_bytes": "764317",
-              "upload_bytes": "308846"
-            }
-          },
-          "visible": true,
-          "within_120_seconds": true
-        }
-      ],
-      "scope": "actual node samples and member usage API, watermark-to-read upper bound; excludes node B synthetic ledger; browser rendering unmeasured"
-    },
-    "warmup_seconds": 60,
-    "wrong_member_responses": 0,
-    "resource_quality": {
-      "node_docker_samples": 25,
-      "unavailable_node_samples": 25,
-      "status": "unavailable",
-      "qualification": "0B / 0B is unavailable telemetry, never evidence of a zero-memory node; no candidate-hardware capacity inference."
-    },
-    "measurement_window_note": "Requests run for the fixed 300 seconds after 60-second warmup; the enclosing collector includes final resource collection and readback. Byte deltas include diagnostic policy requests and protocol overhead.",
-    "usage_accounting_scope": "Stored contiguous checkpoint and receipt/sample counts are observed completeness checks, not a claim about unobserved events. First member also has the separately identified node-B synthetic usage event."
+    "helper": {
+      "status": "passed",
+      "cohort": {
+        "users": 20,
+        "authorized": 60,
+        "binding_devices": 60
+      },
+      "login_latency": {
+        "samples": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      },
+      "admission_latency": {
+        "samples": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      },
+      "admission_wall_seconds": 300.386272648,
+      "helper_counts": {
+        "Users": 20,
+        "Peers": 60,
+        "IdentityMatches": 60,
+        "Authorized": 60,
+        "ScannedLogs": 60,
+        "ProtectedLogs": 60,
+        "SimultaneousAuthorized": 60
+      },
+      "control_read_latency": {
+        "samples": 600,
+        "p50_ms": 10.721,
+        "p95_ms": 47.604,
+        "p99_ms": 56.136
+      },
+      "control_read_status": "passed",
+      "reads_expected": 600,
+      "reads_observed": 600,
+      "reads_200": 600,
+      "foreign_devices": 0,
+      "exact_three_device_pages": 600,
+      "gateway_before": {
+        "aggregates": [
+          "workers",
+          "2",
+          "tcp_total",
+          "36",
+          "tcp_state_06",
+          "29",
+          "tcp_state_0A",
+          "3",
+          "tcp_state_01",
+          "4",
+          "fd_entries",
+          "47"
+        ],
+        "command": "docker exec own gateway sh: process count, /proc/net/tcp{,6} state counts and nginx fd entries",
+        "configured_worker_connections": 4096,
+        "configured_workers": 2,
+        "read_ok": true,
+        "source": "deploy/devstack/nginx.conf; process and network-namespace socket inventory, no private addresses",
+        "utc": "2026-10-30T17:20:59.300065312Z"
+      },
+      "gateway_after": {
+        "aggregates": [
+          "workers",
+          "2",
+          "tcp_total",
+          "7740",
+          "tcp_state_06",
+          "7352",
+          "tcp_state_0A",
+          "3",
+          "tcp_state_01",
+          "385",
+          "fd_entries",
+          "429"
+        ],
+        "command": "docker exec own gateway sh: process count, /proc/net/tcp{,6} state counts and nginx fd entries",
+        "configured_worker_connections": 4096,
+        "configured_workers": 2,
+        "read_ok": true,
+        "source": "deploy/devstack/nginx.conf; process and network-namespace socket inventory, no private addresses",
+        "utc": "2026-10-30T17:27:37.768366211Z"
+      },
+      "gateway_worker_count_qualification": "Profile used ps, absent in the image; its worker count and mixed stderr tokens are invalid. The labeled TCP state/FD values remain valid. Helper uses /proc cmdline; manual /proc check returned 2. The separate mid-run sampler used the original ps command, so all its worker zeros are unavailable.",
+      "counted_peer_traffic": false,
+      "node_process_cgroup_telemetry": null,
+      "individual_helper_latencies": "not exposed by ScaleNativeMembers; only sequential profile has per-peer admission samples"
+    }
   },
-  "native_scale": {
-    "owner": "w3-devstack-e2e follow-up 10",
-    "reason": "not present on measured main; retain historical 50/60 admission; drive a two-member counted subset",
-    "status": "blocked"
-  },
-  "qualification": "Per-device counted bytes on the admitted cohort only. Full 20×3/second-node/forced-relay/UDP/candidate-hardware profile is not inferred."
+  "qualification": "Admission subset only; no serving node or per-peer counted traffic in either phase. Prior two-device counted run remains history/follow-up-5/capacity.json."
 }

@@ -371,6 +371,8 @@ func (h *Handlers) Replay(ctx context.Context, name string, ref db.IdempotencyRe
 		return nil, e
 	}
 	switch name {
+	case "UpdateFleetConfig":
+		return h.replayFleetConfig(ctx, ref)
 	case "SubmitObservation", "SubmitUpdateResult", "RenewServingLease":
 		return h.replayAgentReceipt(ctx, name, ref)
 	case "CreateAdminGroup":
