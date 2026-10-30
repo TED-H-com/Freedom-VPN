@@ -103,9 +103,9 @@ func (s *server) hook(w http.ResponseWriter, r *http.Request) {
 		obj := map[string]any{"id": c.ID, "customer": c.Customer, "subscription": "sub_" + c.ID, "client_reference_id": c.Checkout, "metadata": map[string]string{"fvpn_checkout_id": c.Checkout}}
 		switch v.Type {
 		case "checkout.session.completed":
-		case "customer.subscription.updated", "customer.subscription.deleted":
+		case "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted":
 			obj["id"] = "sub_" + c.ID
-		case "invoice.paid":
+		case "invoice.paid", "invoice.payment_failed":
 			obj["id"] = "in_" + c.ID
 			obj["parent"] = map[string]any{"subscription_details": map[string]string{"subscription": "sub_" + c.ID}}
 		case "charge.refunded":
