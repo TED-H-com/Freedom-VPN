@@ -49,6 +49,7 @@ var redactPatterns = []*regexp.Regexp{
 	mustCompile("gh", "p_", `[A-Za-z0-9]+`),
 	mustCompile("gh", "o_", `[A-Za-z0-9]+`),
 	regexp.MustCompile(`(?s)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----`),
+	regexp.MustCompile(`(?i)user_code=[^[:space:]&"']+`),
 	regexp.MustCompile(`(?i)"(token|setup_key|password|secret|authorization|seed_b64|api_key)"[[:space:]]*:[[:space:]]*"[^"]*"`),
 }
 

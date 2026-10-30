@@ -196,8 +196,13 @@ func TestAPI01_NodeRunnerSeedsCoalescesAndStops(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if len(built.Runners) != 1 || len(built.Jobs) != 12 || built.Jobs["node.publication_changed"] == nil {
+	if len(built.Runners) != 1 || len(built.Jobs) != 10 || built.Jobs["node.publication_changed"] == nil {
 		t.Fatal("incomplete node build")
+	}
+	for _, legacy := range []string{"node.routes.withdraw", "node.peer.withdraw"} {
+		if built.Jobs[legacy] != nil {
+			t.Fatal("legacy withdrawal handler still registered", legacy)
+		}
 	}
 	var count int
 	if e = pool.QueryRow(t.Context(), `SELECT count(*) FROM outbox_events`).Scan(&count); e != nil || count != 0 {

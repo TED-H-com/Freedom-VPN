@@ -12,9 +12,10 @@ func TestRedact_StripsSecrets(t *testing.T) {
 	live := "sk_" + "live_abc"
 	gh := "gh" + "p_abc"
 	key := "-----BEGIN " + "OPENSSH PRIVATE KEY-----\nsecret\n-----END " + "OPENSSH PRIVATE KEY-----"
-	in := "path=" + home + "/key postgres://fvpn:s3cret@db/fvpn Bearer tok \"setup_key\":\"abc\" " + live + " " + gh + "\n" + key
+	code := "user_" + "code=AAAA-BBBB"
+	in := "path=" + home + "/key postgres://fvpn:s3cret@db/fvpn Bearer tok \"setup_key\":\"abc\" " + live + " " + gh + " " + code + "\n" + key
 	out := Redact(in)
-	for _, banned := range []string{home, "s3cret", "Bearer tok", "abc", "sk_" + "live_", "gh" + "p_", "BEGIN " + "OPENSSH"} {
+	for _, banned := range []string{home, "s3cret", "Bearer tok", "abc", "sk_" + "live_", "gh" + "p_", "BEGIN " + "OPENSSH", "AAAA-BBBB"} {
 		if strings.Contains(out, banned) {
 			t.Fatalf("redaction left %q in %s", banned, out)
 		}
