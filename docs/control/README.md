@@ -56,10 +56,13 @@ the high-impact rule conservatively (§16.1). Unknown fields in allowlisted writ
 schemas fail before domain code. Semantic domain constraints listed in
 `docs/contracts/README.md` remain each owning service's responsibility.
 
-Pre-authentication ingress buckets also bound credential/database work per direct
-peer and route class. Rate buckets and concurrency gates are separate for browser, agent control,
-heartbeat, lease and usage traffic; anonymous enrollment/webhooks have another
-bucket. Auth routes are additionally bounded per direct peer address. Limits are
+Pre-authentication ingress buckets also bound credential/database work per
+connection address and route class. IPv4 is one principal per address and IPv6
+is one principal per /64; an unparseable connection address is refused with 429
+(see [authentication](AUTH.md)). Rate buckets and concurrency gates are separate
+for browser, agent control, heartbeat, lease and usage traffic; anonymous
+enrollment and webhooks have another bucket on that same address key. Auth
+routes are additionally bounded per connection address. Limits are
 per process, with a bounded principal map; deployment replicas multiply capacity.
 If horizontally scaling, budget limits across replicas or add a shared limiter.
 A saturated limiter returns 429 with `Retry-After`, never acknowledges work.

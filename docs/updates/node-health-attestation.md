@@ -44,6 +44,25 @@ The updater fills this before the check-stage `Services.Start`. Times are UTC RF
 
 `components` are the versions the manifest of `release_id` declares. `node_agent` and `netbird` are what the attestation must echo as the running versions. `node_updater` and `enforcement` are there so the agent can see the declared versions. During `checking`, the process running the updater is still the previous release's binary, or the supervisor binary. The updater does not compare that process with `components.node_updater`. It checks the candidate tree hash instead. `enforcement` has no attested running version; the tree hash covers it too.
 
+### Optional synthetic probe (D-063)
+
+When updater `probe_peer` is configured, `Issue` copies it into the challenge's optional `probe` member. Without configuration, `probe` is omitted. The request is a dedicated NetBird test peer, not a member identity:
+
+| Member | Issuer limit |
+|---|---|
+| `peer_id` | Required nonblank opaque NetBird peer ID, at most 128 bytes, no ASCII control characters. |
+| `source_v4` | One usable IPv4 `/32`, the dedicated peer's overlay address. No bare address, IPv6, wider prefix, unspecified, loopback, link-local, multicast or reserved source. |
+| `destinations` | Required array of 1–4 exact destination sockets, even when resolver DNS is requested. |
+| `destinations[].addr_v4` | One public IPv4 `/32`, outside `enforce.SpecDeniedV4()`; no RFC1918, CGNAT/overlay (`100.64.0.0/10`), loopback, link-local/metadata (`169.254.169.254` included), documentation, benchmark, multicast, reserved or other specification-denied ranges. |
+| `destinations[].proto`, `.port` | Exactly `tcp` or `udp`, with port 1–65535. |
+| `resolver_dns` | Optional boolean, false by default. Requests TCP/UDP port 53 to the agent's configured resolvers; it supplies no arbitrary resolver address. |
+
+The updater sets `issued_at = now` and `expires_at = issued_at + HealthChallengeTTL` (45s). It never backdates issuance to bypass the consumer's strict `now.After(issued_at)` condition. The agent may install only after issuance and before expiry; it must reject a challenge span over 300s and cap exception expiry at both `expires_at` and `issued_at + 300s`, never installation time plus 300s. The shared issuer also refuses a probe-bearing input with TTL over 300s. Times, nonce, probe fields and destination order survive the file round trip. `Same` compares the entire probe as well as the challenge binding, and issuance copies the probe so later configuration mutation cannot change that binding. A `tunnel_probe: passed` answer still requires the exact nonce. Consumption rejects the challenge even when its probe is otherwise valid.
+
+Ownership: the updater validates the static configuration and issues the request for candidate and rollback health. The agent authenticates the dedicated peer against its runtime state, rejects member peer IDs and source/destination addresses matching member bindings, rejects node/host or additionally denied ranges, bounds the grant, and installs/removes the nftables exception (D-063, §13.9). The updater has no live member/host inventory and does not install networking rules or infer that issuance means installation. Member forwarding stays blocked during the check; publication intent is unchanged. The grant and probe counters are separate from member traffic and usage. A missing or refused grant cannot itself establish forwarding health.
+
+Privacy: probe configuration values belong only in protected configuration and the mode-0600 challenge, not in logs, attestation reasons or journal event diagnostics. Issuer validation reports the fixed `updater: invalid probe_peer`; malformed configuration JSON reports `updater: invalid config JSON`. Neither includes a peer ID, source, destination list, protocol value or rejected JSON value. Existing attestation reason vocabulary still applies.
+
 ## Attestation
 
 The agent writes one answer for the challenge it just read. Echo the challenge ids and the nonce. `node_id` is required so the updater can compare node ids. `published` is the agent's latest publication intent, one of `published`, `unpublished`, `disabled`. It is a report. The updater does not open the gate from it.

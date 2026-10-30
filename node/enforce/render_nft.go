@@ -36,7 +36,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		// The node's SNAT address is host material even when HostV4 omitted it.
 		host = mergePrefixes(append(host, netip.PrefixFrom(m.Datapath.SNAT, 32)))
 	}
-	probeSec, err := probeSeconds(m)
+	probeSec, holdProbe, err := probeSeconds(m, state)
 	if err != nil {
 		return RenderPlan{}, err
 	}
@@ -93,7 +93,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	flushOrFill("denied_v4", prefixList(denied))
 	flushOrFill("host_v4", prefixList(host))
 	flushOrFill("resolver_v4", addrList(resolvers))
-	if m.Probe != nil {
+	if m.Probe != nil && !holdProbe {
 		flushOrFill(setProbeV4, probeSourceElement(m.Probe.SourceV4.Addr(), probeSec))
 		if len(m.Probe.Destinations) > 0 {
 			flushOrFill(setProbeDstV4, probeDestElements(m.Probe.Destinations, probeSec))
@@ -246,7 +246,7 @@ func RenderBaseline(m Model, state State) (string, error) {
 			return "", err
 		}
 	}
-	probeSec, err := probeSeconds(m)
+	probeSec, holdProbe, err := probeSeconds(m, state)
 	if err != nil {
 		return "", err
 	}
@@ -302,9 +302,11 @@ func RenderBaseline(m Model, state State) (string, error) {
 		if m.Probe.ResolverDNS {
 			flushFill("resolver_v4", addrList(resolvers))
 		}
-		flushFill(setProbeV4, probeSourceElement(m.Probe.SourceV4.Addr(), probeSec))
-		if len(m.Probe.Destinations) > 0 {
-			flushFill(setProbeDstV4, probeDestElements(m.Probe.Destinations, probeSec))
+		if !holdProbe {
+			flushFill(setProbeV4, probeSourceElement(m.Probe.SourceV4.Addr(), probeSec))
+			if len(m.Probe.Destinations) > 0 {
+				flushFill(setProbeDstV4, probeDestElements(m.Probe.Destinations, probeSec))
+			}
 		}
 	}
 	replaceChain(&b, state, "forward", fmt.Sprintf("type filter hook forward priority %d; policy drop;", HookPriorityFilter))
@@ -356,15 +358,33 @@ const (
 	setProbeDstV4 = "probe_dst_v4"
 )
 
-func probeSeconds(m Model) (uint32, error) {
+// probeSeconds is the kernel timeout for this render. hold is true when the
+// probe sets are already installed and this render must not replace their
+// elements: a fresh ProbeMaxSeconds window would extend the original
+// ExpiresAt, and State has no remaining lifetime to cap against (§13.9).
+func probeSeconds(m Model, state State) (sec uint32, hold bool, err error) {
 	if m.Probe == nil {
-		return 0, nil
+		return 0, false, nil
 	}
-	sec, ok := probeTimeout(m.Probe.ExpiresAt, m.Now)
-	if !ok || sec > ProbeMaxSeconds {
-		return 0, fmt.Errorf("probe expiration is not admissible")
+	got, ok := probeTimeout(m.Probe.ExpiresAt, m.Now)
+	if !ok || got > ProbeMaxSeconds {
+		return 0, false, fmt.Errorf("probe expiration is not admissible")
 	}
-	return sec, nil
+	sec = got
+	if m.Probe.TimeoutCeilSeconds > 0 && uint64(sec) > m.Probe.TimeoutCeilSeconds {
+		sec = uint32(m.Probe.TimeoutCeilSeconds)
+	}
+	live := state.hasSet(setProbeV4) || state.hasSet(setProbeDstV4)
+	if live && state.ProbeRemain > 0 && sec > state.ProbeRemain {
+		sec = state.ProbeRemain
+	}
+	if sec == 0 {
+		return 0, false, fmt.Errorf("probe expiration is not admissible")
+	}
+	// Sets already exist and nothing records how much of the original window
+	// is left. Do not flush them and install another full ProbeMaxSeconds.
+	hold = live && state.ProbeRemain == 0 && m.Probe.TimeoutCeilSeconds == 0 && sec >= ProbeMaxSeconds
+	return sec, hold, nil
 }
 
 func writeProbeDNS(b *strings.Builder, in, up string) {

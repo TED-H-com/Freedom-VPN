@@ -132,6 +132,9 @@ fi
 test -f "$portal_dist/index.html"
 mkdir -p "$STATE/portal"
 cp -R "$portal_dist/." "$STATE/portal/"
+# Only public static assets are readable by the unprivileged nginx worker.
+find "$STATE/portal" -type d -exec chmod 755 {} +
+find "$STATE/portal" -type f -exec chmod 644 {} +
 
 $COMPOSE up -d postgres idp payment origin netbird gateway coredns
 

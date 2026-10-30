@@ -134,9 +134,10 @@ response; 202 is acceptance, never completion.
 | Result payload hash or authorized manifest differs | `HASH_MISMATCH` |
 | No recorded job authorization, expired start or expired pre-apply progress | `AUTHORIZATION_EXPIRED`; acquire fresh intent |
 | Same result ID, same canonical payload | Return the exact stored ACK, including original received time |
-| Same result ID, different canonical payload | Commit conflict hash and audit, return 409 `ACK_CONFLICT`; preserve original ACK |
+| Same result ID, different canonical payload | Commit each distinct conflict hash and its audit once, return 409 `ACK_CONFLICT`; preserve original ACK |
 | Terminal result lacks actual version or finish time | Reject; no success counted |
 | Pre-health failed result has null health, an error code and the unchanged attempt release | Accept as failed, with needs_attention; never count success |
+| Failed result lacks an error code at any stage | `VALIDATION_FAILED` with a durable rejection receipt; do not change the job or serving version |
 | Failed result at/after check, or another terminal result, lacks health | Reject; no completion inferred |
 | Succeeded/already_current without target version, all health checks, state schema or durable usage checkpoint | Reject; no success counted |
 | Rolled back to unsupported/revoked release | `MINIMUM_VERSION_VIOLATION`, persist recovery attention; forwarding stays forbidden |
@@ -144,8 +145,8 @@ response; 202 is acceptance, never completion.
 | Older applying/checking job finishes | Finish that job's ledger, ACK as history, leave newest pointer/generation intact |
 | Superseded/terminal job reports late, progress goes backwards, or already_current arrives after download began | Append history; preserve terminal ledger/current pointer |
 | Validated succeeded/failed/rolled_back result for the current job arrives while its ledger is still queued | Commit the terminal job/target state and normal current-result ACK; no earlier progress delivery is required |
-| Current terminal result with a strictly greater update generation than the observation | Advance actual and last-good release when supported by result evidence, even if a routine pre-switch heartbeat arrived after authorization |
-| Heartbeat already carries the same or a newer update generation | Save result and ACK; preserve the heartbeat observation and return `applied_to_current_observation=false` |
+| Current terminal result with a greater generation, or differing versions at the same generation | Advance actual and last-good release according to result evidence, even if a heartbeat seeded another version before the result |
+| Same-generation heartbeat already supplied identical versions, or the observed high-water is newer | Save result and ACK without rewriting the version; `applied_to_current_observation=false` |
 | Report claims forwarding while disabled, disruptive, unsupported or recovery-required | `NODE_NOT_SERVICEABLE`; never rewrite publication intent |
 
 All accepted results, their ACK, generation-conditional observation, job evidence,
@@ -158,8 +159,9 @@ The updater can deliver only its durable terminal result after completing the
 local transaction (§13.6, §13.10.3; AT26). A current `rolled_back` result therefore
 closes a queued target with its restored release, original failure code and the
 existing attention/counting rules. `accepted_as_history=false` does not imply
-`applied_to_current_observation=true`: an equal/newer generation heartbeat remains
-authoritative. A later authenticated observation clears `unconfirmed` normally.
+`applied_to_current_observation=true`: identical same-generation values need no
+rewrite, and the newer-generation fence remains in force. A later authenticated
+observation with the matching job, generation and versions clears `unconfirmed`.
 
 Heartbeat ingestion does not promote job phases. Result acceptance is independent
 of that optional progress path. The base SQL guard permits rollback only from
@@ -215,8 +217,11 @@ For heartbeat integration, prefer `ObserveReportTx` using the existing
 receipt time plus authenticated job/generation and observed time; it adds no wire
 sequence field. `ObserveTx`/`Observe` are also available to integrations that
 already maintain a trustworthy monotonic per-incarnation observation sequence.
-Old sequences/generations cannot overwrite newer actual versions. A revoked
-reported last-good flags recovery. Missing observations stay unconfirmed.
+Old sequences/generations cannot overwrite newer actual versions. Before the
+incarnation's first accepted result, a bound observation may seed the installed
+versions and flag a revoked last-good for recovery. After an accepted result,
+observations preserve the accepted versions and recovery; disagreements stay
+unconfirmed. Missing observations stay unconfirmed.
 
 If an agent reports a generation ahead of restored central state (§17.4), intent
 retrieval refuses automatic first-sync/downgrade. An explicit new batch allocates
@@ -404,6 +409,50 @@ semantics as the standalone domain; it must also replay stored errors as errors,
 never deserialize them into a success ACK. Authentication and rate limiting
 remain core-owned. Current rate-limit middleware already emits Retry-After.
 
+## Result and observation authority (r9 / D-062)
+
+Accepted results own serving versions and recovery for their authorized job,
+attempt and generation (§13.8). Heartbeats after acceptance can confirm those
+values, but cannot change current/last-good or clear recovery. A mismatch in
+either release keeps `unconfirmed=true` by withholding that job's observation
+timestamp; a later agreeing report can confirm it. A null `update.job_id` leaves
+the high-water and versions unchanged, just like a null generation. Proofs:
+`TestReviewR9_D062_ObservationGenerationAndServingRelease`,
+`TestReviewR9_D062_JoblessAndInvalidVocabulary`, and
+`TestReviewR9_D062_RecoveryAndRetryAttemptAuthority`.
+
+Version seeding is explicitly limited to incarnations with no accepted result
+receipt. The wire path additionally requires a validated job and its exact
+generation; it cannot seed from a jobless report. Once a result is accepted,
+seeding closes even for later jobs in that incarnation. A current terminal
+result can correct an earlier same-generation seed. The trusted sequence
+adapter also retains its separate restore high-water behavior, without moving
+versions after acceptance. `TestReviewR9_D062_PreResultSeedAndTerminalAuthority`
+and `TestUPD02_ResultBindingExpiryAndRestore` cover these bounds. No schema
+relaxation or new projection column is needed.
+
+A conflicting result records one row and one audit per
+`(result_id, conflicting_hash)` in the same transaction. Replaying that hash
+still returns `ACK_CONFLICT` with the original result untouched, and adds neither
+row nor audit. Different hashes remain distinct evidence. This is the bound in
+`TestReviewR9_D062_ResultIdentityReplayAndReceiptBounds`; its four distinct
+hashes plus five repeated submissions produce four rows and four audits.
+
+Every `failed` result requires an `error_code`, including `check`, later stages
+and a null stage. Missing causes return permanent 422 `VALIDATION_FAILED` through
+the existing bounded rejection receipt; replay returns the same rejection and
+cannot change the job or version. `TestReviewR9_D062_EvidenceCompleteness` proves
+the check-stage case; `TestReviewR9_D062_FailedRequiresErrorAtEveryStage` covers
+every generated stage plus null, including durable rejection replay.
+
+The domain validates any non-null observation `update.state` and `update.stage`
+with the generated contract enum validators before projecting the receipt.
+Unknown values return `VALIDATION_FAILED` and the caller's observation
+transaction rolls back, including confirmation, even if the generation is null.
+`TestReviewR9_D062_ObservationGenerationAndServingRelease` and
+`TestReviewR9_D062_JoblessAndInvalidVocabulary` test the domain path independently
+of the HTTP validator, including an invalid stage with a valid state.
+
 ## Target result evidence (contract revision 7)
 
 The admin batch GET projects three fields onto each `UpdateTarget` from its
@@ -442,7 +491,8 @@ receipt fences using real domain commands and isolated databases (D-050).
 ## Null update generations (D-062)
 
 A heartbeat's null `update.generation` means no update state, regardless of any
-other update metadata. It neither claims generation zero nor confirms, fails or
+other update metadata. A null `update.job_id` also cannot attest update state.
+Neither claims generation zero nor confirms, fails or
 demotes a target. It records the receipt time while preserving current/last-good
 versions and the monotonic generation high-water mark. A subsequent heartbeat
 with the authorized job's generation can confirm that target; a larger generation
@@ -450,7 +500,9 @@ cannot confirm an older target either.
 
 `VersionView.ObservedGeneration` is nullable. Node view, `GetBatch` and `Evidence`
 share a predicate requiring a non-null generation exactly equal to the job's
-and a matching incarnation and sufficiently recent receipt. The job's observation
+and a matching incarnation and sufficiently recent receipt. Only the report's
+exact job can gain a matching timestamp, so an older retry attempt at the same
+generation cannot confirm the current attempt. The job's observation
 timestamp must also match that receipt; reports below a job's generation never
 advance its observation evidence. A null receipt after
 local success therefore leaves the target succeeded but unconfirmed; it cannot

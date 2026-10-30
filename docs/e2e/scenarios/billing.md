@@ -74,3 +74,14 @@ refund and canceled subscription produce `expired` with
 `effective_service_end=null`. Paid invoice bounds remain stored as financial
 history. The harness asserts service withdrawal rather than erasure of those
 facts. There is one invoice and two immutable refund rows (250 and 750).
+
+## Additional event hooks (follow-up 8)
+
+`POST /e2e/event` also accepts `customer.subscription.created` and
+`invoice.payment_failed`. Both require the same `X-E2E-Secret`, a real checkout,
+and a stored snapshot. They use the same Stripe API version, subscription/invoice
+linkage and HMAC signature envelope as the existing events. The hook returns the
+exact signed body string; callers must not re-encode it. Provider truth remains
+authoritative: a failed-payment event cannot manufacture or revoke a paid period
+by itself. Unit coverage verifies both event types with the production signature
+verifier and parser, including rejection after body tampering.
