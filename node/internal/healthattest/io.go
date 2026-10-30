@@ -65,7 +65,22 @@ func (c Challenge) Same(o Challenge) bool {
 	return c.TxnID == o.TxnID && c.Nonce == o.Nonce && c.ReleaseID == o.ReleaseID &&
 		c.NodeID == o.NodeID && c.IncarnationID == o.IncarnationID && c.BootID == o.BootID &&
 		c.IssuedAt.Equal(o.IssuedAt) && c.ExpiresAt.Equal(o.ExpiresAt) &&
-		c.Components == o.Components && c.Consumed == o.Consumed
+		c.Components == o.Components && c.Consumed == o.Consumed && probeSame(c.Probe, o.Probe)
+}
+
+func probeSame(a, b *ChallengeProbe) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	if a.PeerID != b.PeerID || a.SourceV4 != b.SourceV4 || a.ResolverDNS != b.ResolverDNS || len(a.Destinations) != len(b.Destinations) {
+		return false
+	}
+	for i := range a.Destinations {
+		if a.Destinations[i] != b.Destinations[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // WriteChallenge writes the challenge atomically, mode 0600.

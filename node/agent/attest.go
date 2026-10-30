@@ -124,10 +124,11 @@ func (e *Engine) answerHealth(ctx context.Context) {
 		}
 		refreshed = true
 	}
-	// A fresh probe keeps the decision this step already computed. Decide
-	// only when that result is missing or the probe had to be run again.
-	// Answering does not call enforce and does not change publication.
-	if _, has := decisionStatus(e.decision, api.NodeCheckNameTunnelProbe); refreshed || !has {
+	// A fresh probe keeps the decision this step already computed, unless
+	// the in-force resolver document is not the one this process applied.
+	// Reusing that pass would attest dns_policy before Apply. Answering
+	// does not call enforce and does not change publication.
+	if _, has := decisionStatus(e.decision, api.NodeCheckNameTunnelProbe); refreshed || !has || e.namedDNSUnapplied() {
 		e.decision = Decide(e.input())
 	}
 	d := e.decision
