@@ -36,6 +36,9 @@ def main():
                 raise SystemExit("gofmt required: live_test.go.txt")
             subprocess.run(["go", "vet", "-tags", "e2e", "./tests/e2e"],
                            cwd=ROOT, env=env, check=True)
+            subprocess.run(["go", "test", "-tags", "e2e", "-count=1",
+                            "./tests/e2e", "-run", "^TestUpdatesFollowupEvidence$"],
+                           cwd=ROOT, env=env, check=True)
             # Staticcheck's parser does not honor Go's virtual source files.
             # Analyze an ephemeral copy under our owned path (and thus within
             # tests/e2e/internal's import boundary), never modify shared files.
@@ -56,7 +59,7 @@ def main():
                 env["FVPN_E2E"] = "1"
             commands = [["go", "test", "-tags", "e2e", "-count=1", "-v",
                          "-timeout", "45m", "-p", "1", "./tests/e2e", "-run",
-                         "^TestUpdatesFollowup$" if mode == "live" else "^$"]]
+                         "^TestUpdatesFollowup$" if mode == "live" else "^TestUpdatesFollowupEvidence$"]]
         for command in commands:
             result = subprocess.run(command, cwd=ROOT, env=env, check=False)
             if result.returncode:

@@ -82,3 +82,68 @@ The current default unpublished tunnel probe checks the NetBird management and
 relay status unless an egress target is configured. It does not prove member
 traffic through a published exit. Physical forwarding and metering coverage
 remain with the broader acceptance tasks.
+
+## Requests to orchestrator
+
+1. **w2-agent-core and w3-wire-fleet — carry the real update observation.**
+   The good candidate reaches `locally_succeeded`, answers all five checks and
+   receives a central `succeeded` result, but later heartbeats leave the target
+   `unconfirmed`. `node/agent/observe.go:120` initializes update generation,
+   job, stage and state to null. `internal/fleetupdate/serving.go:125` reads the
+   null generation as zero; `serving.go:149` ignores that older generation once
+   the accepted result has advanced fleet state. The confirmation condition at
+   `internal/fleetupdate/progress.go:230` correctly requires a subsequent
+   observation. Populate the authenticated observation from durable updater
+   state; do not synthesize confirmation in this harness or weaken the central
+   ordering check. The records include later node receipts alongside the stale
+   fleet receipt and terminal result time.
+
+2. **w4-node-updater and w3-wire-fleet — reconcile rollback result health and
+   rollback allowlist semantics.** The failed candidate and restored agent both
+   answer real D-053 challenges. Local rollback restores healthy last-good,
+   but the result remains pending instead of completing the central target.
+   `node/updater/apply.go:305` checks the restored release, while
+   `node/internal/updatejournal/txn.go:145` deliberately preserves the first
+   candidate health in `health_json`. `node/updater/apply.go:403` sends that
+   candidate failure as the rolled-back result's health. Central requires healthy
+   rollback evidence at `internal/fleetupdate/results.go:191`. Preserve the
+   candidate failure for diagnosis and agree on how the restored release's
+   successful checks reach central.
+
+   Separately, the shared real-release builder uses `allowed_release_ids=[]`
+   (`tests/e2e/harness.go:385`). The updater explicitly treats an empty list as
+   no additional restriction (`node/updater/health.go:144`), while central
+   unconditionally requires membership (`internal/fleetupdate/results.go:191`).
+   Both conditions independently explain rejection of these rollback results.
+   Align the product interpretation and, if needed, parameterize the shared
+   release helper; this task did not fork or re-sign its manifests to hide the
+   disagreement.
+
+   Preserve the actionable central rejection in the updater's diagnostics:
+   `node/updater/host.go:447` maps non-202/non-409 HTTP responses to
+   `STORE_UNAVAILABLE`, and `node/updater/result.go:218` leaves the first rejected
+   result pending and stops the flush. The live evidence distinguishes the HTTP
+   status from this generic local error. This is not evidence of a database
+   outage.
+
+3. **w4-node-updater and w3-wire-fleet — accept honest preflight failure
+   evidence.** The final make-target run's failed-download outbox payload has
+   `health=null`. It records `ARTIFACT_INVALID` on the wire (the intentional
+   normalization at `node/updater/revoke.go:291`); its local job retains
+   `HASH_MISMATCH`. `node/updater/engine.go:699` constructs this failure without
+   health. Central rejects every terminal result with absent health at
+   `internal/fleetupdate/results.go:144`, returning HTTP 422. Agree on valid
+   preflight-failure evidence without fabricating passed checks. The rejected
+   first result stays pending, so later recovery and rollback results cannot
+   be delivered by the normal sequential flush. Consequently the central
+   target remains queued, `unconfirmed=true`, `needs_attention=false`.
+
+The [delivery payload evidence](result-delivery.md) records the final run's
+sanitized outbox fields. The separate [rollback diagnostic](rollback-delivery-finding.md)
+comes from the earlier run, where rollback preceded tampering and independently
+reached central rejection. This distinguishes the rollback contract mismatch
+from the first pending failure's effect on delivery in the final run.
+
+The unpublished node's original unconditional health-adapter blocker is resolved
+by D-053. The remaining requests concern real observation and result delivery;
+no `node/updater`, agent, central service or contract file was modified here.

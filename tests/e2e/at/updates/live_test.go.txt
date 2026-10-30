@@ -174,12 +174,12 @@ func TestUpdatesFollowup(t *testing.T) {
 		if journal.JobError == "HASH_MISMATCH" && journal.Stage == "" && neverInstalled && s.running(good) && target.State == "failed" {
 			s.pass("AT25", "A byte-tampered real archive produced HASH_MISMATCH before a transaction or executable was installed; last-good still running")
 		} else {
-			s.block("AT25", "w4-node-updater: tampered artifact rejection or central result incomplete")
+			s.block("AT25", "w4-node-updater / w3-wire-fleet: inspect HASH_MISMATCH and absent candidate executable; failed-result delivery did not reach central failed state")
 		}
 		if pending.Unconfirmed && target.NeedsAttention && target.State == "failed" {
 			s.pass("AT24", "Product API showed unconfirmed before apply and needs_attention on the rejected candidate; no observation rows seeded")
 		} else {
-			s.block("AT24", "w3-wire-fleet: unconfirmed/needs_attention projection not observed")
+			s.block("AT24", "w4-node-updater / w3-wire-fleet: unconfirmed is visible, but rejected failure results leave needs_attention false")
 		}
 	}
 	if err := lab.putObject(ctx, object, originalArchive); err != nil {
@@ -221,7 +221,9 @@ func TestUpdatesFollowup(t *testing.T) {
 	s.note("AT27", "central", target)
 	s.note("AT27", "confirmation_projection", s.projection())
 	s.note("AT27", "running_verified_candidate", s.running(bad))
-	if err == nil && blockedAtInterruption && interrupted.Stage == "final_sampled" && interrupted.TxnID != "" && interrupted.TxnID == journal.TxnID && journal.Stage == "locally_succeeded" && journal.allPassed() && s.running(bad) && target.State == "succeeded" && !target.Unconfirmed {
+	// Recover may return the documented forwarding-blocked exit for an unpublished
+	// node. Require the same transaction, real healthy process and accepted result.
+	if updatesRecoveryComplete(interrupted, journal, blockedAtInterruption, s.running(bad), target) {
 		s.pass("AT27", "SIGKILL interrupted apply at final_sampled; production recover completed the same transaction with candidate D-053 health and central confirmation")
 	} else {
 		s.block("AT27", "w4-node-updater / w2-agent-core / w3-wire-fleet: see interrupted/recovered journal and observation evidence; complete recovery requires central confirmation")
@@ -557,4 +559,35 @@ func (s *updatesFollowup) projection() json.RawMessage {
 		return json.RawMessage(`{"error":"projection query failed"}`)
 	}
 	return json.RawMessage(raw)
+}
+
+// Publication can keep forwarding blocked after successful recovery. Classify
+// the journal and authenticated central evidence, not the recover exit alone.
+func updatesRecoveryComplete(before, after updatesJournal, blocked, running bool, target updatesTarget) bool {
+	return blocked && before.Stage == "final_sampled" && before.TxnID != "" && before.TxnID == after.TxnID && after.Stage == "locally_succeeded" && after.allPassed() && running && target.State == "succeeded" && !target.Unconfirmed
+}
+
+func TestUpdatesFollowupEvidence(t *testing.T) {
+	before := updatesJournal{TxnID: "test-transaction", Stage: "final_sampled"}
+	after := updatesJournal{TxnID: before.TxnID, Stage: "locally_succeeded", Health: map[string]string{
+		"processes": "passed", "identity_and_state": "passed", "internet_only": "passed", "dns_policy": "passed", "tunnel_probe": "passed",
+	}}
+	accepted := updatesTarget{State: "succeeded"}
+	if !updatesRecoveryComplete(before, after, true, true, accepted) {
+		t.Fatal("healthy confirmed recovery with forwarding kept blocked must pass")
+	}
+	pending := accepted
+	pending.Unconfirmed = true
+	if updatesRecoveryComplete(before, after, true, true, pending) {
+		t.Fatal("local recovery alone cannot confirm central acceptance")
+	}
+	unrelated := after
+	unrelated.TxnID = "another-transaction"
+	if updatesRecoveryComplete(before, unrelated, true, true, accepted) {
+		t.Fatal("another transaction cannot prove recovery of the interrupted one")
+	}
+	after.Health["tunnel_probe"] = "not_run"
+	if updatesRecoveryComplete(before, after, true, true, accepted) {
+		t.Fatal("not_run is not healthy recovery")
+	}
 }
