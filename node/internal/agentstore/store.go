@@ -111,7 +111,7 @@ func fmtTime(t time.Time) string {
 	return t.UTC().Format(time.RFC3339Nano)
 }
 
-const schemaVersion = 1
+const schemaVersion = 2
 
 func (s *Store) migrate(ctx context.Context) error {
 	var v int
@@ -190,16 +190,31 @@ func (s *Store) migrate(ctx context.Context) error {
 			last_error TEXT NOT NULL DEFAULT '',
 			created_at TEXT NOT NULL,
 			accepted_at TEXT NOT NULL DEFAULT '')`,
-		fmt.Sprintf(`PRAGMA user_version = %d`, schemaVersion),
 	}
 	applied := fmtTime(time.Now().UTC())
 	return s.tx(ctx, func(tx *sql.Tx) error {
-		for _, stmt := range stmts {
-			if _, err := tx.ExecContext(ctx, stmt); err != nil {
-				return fmt.Errorf("agentstore: migrate: %w", err)
+		if v < 1 {
+			for _, stmt := range stmts {
+				if _, err := tx.ExecContext(ctx, stmt); err != nil {
+					return fmt.Errorf("agentstore: migrate: %w", err)
+				}
+			}
+			if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations (version, name, applied_at) VALUES (1, 'agent_core', ?)`, applied); err != nil {
+				return err
 			}
 		}
-		_, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations (version, name, applied_at) VALUES (1, 'agent_core', ?)`, applied)
+		if v < 2 {
+			if _, err := tx.ExecContext(ctx, `CREATE TABLE resolver_cache (
+				document_id TEXT PRIMARY KEY,
+				content_sha256 TEXT NOT NULL,
+				body BLOB NOT NULL)`); err != nil {
+				return fmt.Errorf("agentstore: migrate: %w", err)
+			}
+			if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations (version, name, applied_at) VALUES (2, 'resolver_cache', ?)`, applied); err != nil {
+				return err
+			}
+		}
+		_, err := tx.ExecContext(ctx, `PRAGMA user_version = 2`)
 		return err
 	})
 }

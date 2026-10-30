@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"io"
 	"net"
+	"net/netip"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,12 +28,20 @@ const (
 // does not install a member allow.
 type ProbeRequest struct {
 	Published bool
-	// Egress is host:port. Empty means desired state and the agent config
-	// name no target. The signed DesiredState schema has no probe field, so
-	// the engine passes cfg.egress_probe_target until the contract grows one.
-	Egress  string
-	Ingress string
-	Uplink  string
+	// Egress is one host:port from agent.json. Targets, when non-empty,
+	// replace it. A non-null signed egress_probe fills Targets and leaves
+	// Egress empty (D-058).
+	Egress string
+	// Targets are host:port values, IPv6 bracketed. Empty with Egress empty
+	// means no egress leg.
+	Targets []string
+	// Timeout is the dial limit for each target. Zero uses 2000 ms.
+	Timeout time.Duration
+	// Rejected means a signed probe was present and unusable. The probe
+	// does not dial the local target in its place.
+	Rejected bool
+	Ingress  string
+	Uplink   string
 }
 
 // ProbeResult is the outcome of one probe. Ran is false only when the
@@ -101,19 +111,32 @@ func newNetbirdProber(cfg Config) netbirdProber {
 }
 
 func (p netbirdProber) Probe(ctx context.Context, req ProbeRequest) ProbeResult {
-	ctx, cancel := context.WithTimeout(ctx, probeTimeout)
-	defer cancel()
-	raw, err := p.read(ctx)
+	readCtx, cancel := context.WithTimeout(ctx, probeTimeout)
+	raw, err := p.read(readCtx)
+	cancel()
 	st, statusOK := nbStatus{}, false
 	if err == nil {
 		if jerr := json.Unmarshal(raw, &st); jerr == nil {
 			statusOK = true
 		}
 	}
-	egressNamed := req.Egress != ""
+	targets := req.Targets
+	if len(targets) == 0 && req.Egress != "" {
+		targets = []string{req.Egress}
+	}
+	egressNamed := req.Rejected || len(targets) > 0
 	egressOK := false
-	if egressNamed && statusOK && st.Management.Connected {
-		egressOK = p.dialAddr(ctx, req.Egress) == nil
+	if egressNamed && !req.Rejected && statusOK && st.Management.Connected {
+		egressOK = true
+		timeout := req.Timeout
+		if timeout <= 0 {
+			timeout = probeTimeout
+		}
+		for _, addr := range targets {
+			if p.dialAddr(ctx, addr, timeout) != nil {
+				egressOK = false
+			}
+		}
 	}
 	memberOK := false
 	if req.Published {
@@ -168,7 +191,12 @@ func (p netbirdProber) read(ctx context.Context) ([]byte, error) {
 	return cmd.Output()
 }
 
-func (p netbirdProber) dialAddr(ctx context.Context, addr string) error {
+func (p netbirdProber) dialAddr(ctx context.Context, addr string, timeout time.Duration) error {
+	if timeout <= 0 {
+		timeout = probeTimeout
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	if p.dial != nil {
 		return p.dial(ctx, addr)
 	}
@@ -206,3 +234,67 @@ func readLimited(r io.Reader) ([]byte, error) {
 }
 
 var errProbeTooBig = errString("agent: netbird status is too large")
+
+// egressTargets chooses the dial list. A non-null signed egress_probe on an
+// in-force desired state replaces the local host:port. Absent, null, or a
+// desired state that is not in force keeps the local target.
+func egressTargets(ds *api.DesiredState, desiredOK bool, local string) (targets []string, timeout time.Duration, source string, bad bool) {
+	if ds != nil && desiredOK {
+		if ep, err := ds.EgressProbe.Get(); err == nil {
+			list, limit, ok := signedEgress(ep)
+			if !ok {
+				return nil, 0, "signed", true
+			}
+			return list, limit, "signed", false
+		}
+	}
+	if local != "" {
+		return []string{local}, probeTimeout, "local", false
+	}
+	return nil, 0, "none", false
+}
+
+func signedEgress(ep api.EgressProbe) ([]string, time.Duration, bool) {
+	if len(ep.Targets) < 1 || len(ep.Targets) > 4 {
+		return nil, 0, false
+	}
+	timeout := 2000 * time.Millisecond
+	if ep.TimeoutMs != nil {
+		if *ep.TimeoutMs < 100 || *ep.TimeoutMs > 10000 {
+			return nil, 0, false
+		}
+		timeout = time.Duration(*ep.TimeoutMs) * time.Millisecond
+	}
+	seen := map[string]struct{}{}
+	out := make([]string, 0, len(ep.Targets))
+	for _, t := range ep.Targets {
+		if t.Protocol != api.EgressProbeTargetProtocolTcp {
+			return nil, 0, false
+		}
+		addr, err := netip.ParseAddr(t.Address)
+		if err != nil || addr.Zone() != "" || t.Port < 1 || t.Port > 65535 {
+			return nil, 0, false
+		}
+		host := net.JoinHostPort(addr.String(), strconv.Itoa(t.Port))
+		if _, ok := seen[host]; ok {
+			return nil, 0, false
+		}
+		seen[host] = struct{}{}
+		out = append(out, host)
+	}
+	return out, timeout, true
+}
+
+func probeSourceDetail(source string, bad bool) string {
+	if bad {
+		return "Signed egress probe was rejected."
+	}
+	switch source {
+	case "signed":
+		return "Egress probe used the signed targets."
+	case "local":
+		return "Egress probe used the local target."
+	default:
+		return "Egress probe used no extra target."
+	}
+}

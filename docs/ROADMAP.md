@@ -88,6 +88,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | done (#44) |
 | w2-agent-core follow-up 3: baseline safety separated from serving, unpublished generations acknowledged, data-path probe (publication deadlock, agent side) | WP05, WP07 | done (#75) |
 | w2-agent-core follow-up 4: health attestation producer — the running candidate agent answers the updater challenge from its own checks (D-053) | WP05, WP07 | done (#84) |
+| w2-agent-core follow-up 5 | Resolver-document consumer with digest/size verification and restart cache, dns_policy_evidence in observations (D-056); signed egress probe overriding the local target and sanitized check detail (D-058); fails closed without an injected DNS applier | done (#92) |
 | w1-deps-bump follow-up 1: golang.org/x/crypto GO-2026-5932 | WP01 | done (no change: GO-2026-5932 is the unused x/crypto/openpgp packages, no fixed release exists, govulncheck symbol scan clean) |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | done (#56; all screens on live endpoints, Playwright e2e against real control/worker in CI, dev stack seeds inputs and awaits product projection per D-050) |
 | w3-portal-live follow-up 3: dev-stack node readiness through the agent observation path (fixes main Portal CI after #62) | WP10 | done (#67) |
@@ -136,6 +137,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w3-dns-publish follow-up 3: threat-feed content pipeline (D-054): bootstrap pin, cadence refresh with last-good, failure observations, Layer 3 rules published to the resolver document | WP08 | done (#79) |
+| w3-dns-publish follow-up 4 | Feed cadence default and null attribution (D-058), threat_feed_status projected from real refresh observations, resolver-document delivery reads for the nodes owner (D-056), revision 5 evidence names | done (#93) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.

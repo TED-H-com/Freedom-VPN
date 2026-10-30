@@ -12,7 +12,7 @@ Each feed in `internal/dnspolicy` (`ListSource`) records:
 - `source_id`: Stable identifier (e.g., `src_urlhaus_domains`).
 - `version` & `content_sha256`: Upstream version/ETag and exact SHA-256 of raw feed bytes.
 - `license` & `license_status`: License identifier and approval state (`pending_decision`, `approved`, `rejected`).
-- `commercial_use_allowed`, `redistribution_notes`, `attribution_notes`: Governance metadata required by §12.3.
+- `permitted_use`, `distribution_notes`, `attribution_notes`: Governance metadata required by §12.3. D-058d preserves null attribution through the policy/source conversion; a supplied attribution string must still be non-blank.
 - `https_url`: Fixed `https://` endpoint passed through `ValidateSourceURL` (rejects `http://`, embedded credentials, IP literals, `localhost`, `.localhost`, `.local`, and `.internal` to prevent SSRF) and fetched via `NewSourceHTTPClient` (which disables environment proxies, refuses all HTTP redirects in `CheckRedirect`, resolves DNS via `net.DefaultResolver.LookupNetIP` in `Transport.DialContext`, rejects any resolved address in loopback, RFC1918, CGNAT `100.64.0.0/10`, link-local, multicast, unspecified, ULA, or documentation prefixes before connecting, and dials the verified IP directly).
 - `format`: Supported parser format:
   - `plain_domains`: One domain per line (`#` comments ignored).
@@ -33,13 +33,14 @@ Each feed in `internal/dnspolicy` (`ListSource`) records:
 5. A transaction moves `dns_feed_refresh_state.last_good_content`, clears failures, appends `dns.feed.refreshed` with hash/count, and enqueues affected active profiles for publication. Failure leaves last-good untouched, increments consecutive failures and appends `dns.feed.refresh_failed` against the revision with the system actor and only a reason code. A crash or lost job lease leaves recoverable attempt state; it cannot commit stale content. Same-event replay does not refetch or duplicate the observation.
 6. The publisher embeds the last-good entries as Layer 3 rules. No last-good means no publication. A changed hash produces a new immutable document generation; unchanged content and inputs preserve bytes and generation. Resolver syntax/read-back/wire smoke tests run at apply time. Feed parse metrics record `smoke_test_result=untested`: ingestion is not evidence of real resolver enforcement.
 
-### Parameter registry (D-054)
+### Parameter registry (D-054, D-058d)
 
 Optional values live alongside upstreams in `dns_config_file`; no new required setting is introduced. Existing files remain valid.
 
 | Parameter | Default / bound | Meaning |
 |---|---|---|
 | `feed_update_cadence_seconds` | 21600 (6h), range 300–604800 | Product cadence, 待實測. Effective interval is the greater of this and the approved revision’s `update_interval_seconds`, respecting the source’s polling limit. |
+| `update_interval_seconds` | 21600 (6h) when omitted, range 300–604800 | Revision payload cadence. Materialized before validation, hashing and persistence; explicit zero/null is rejected. Stored legacy omissions receive the same default before compilation and scheduling. |
 | `feed_max_removal_percent` | 50, range 0–50 | Maximum percentage of previous rules removable in one refresh. Zero forbids any removal. |
 | `max_size_bytes` | Required in the revision; capped at 32,000,000 bytes | Counts decompressed response bytes, with a one-byte overflow check. |
 | `MaxEmbeddedFeedBytes` | 524288 bytes | Hard ceiling for a normalized feed’s JSON entries; stricter than the legacy ingest limits. |
@@ -58,7 +59,21 @@ TEST ONLY upstream above; it is not a public resolver default. Feed validity is 
 
 ### Operator runbook: `dns.feed.refresh_failed`
 
-Read the revision’s audit events and the following projection (use a read-only database role until the admin observation contract is added):
+Read `GET /api/v1/admin/policies?type=threat_feed` and the revision’s audit events. `threat_feed_status` describes only the active revision. It is explicitly null for other policy types or a definition without an active revision. New drafts and previous revisions cannot supply its status.
+
+The projection distinguishes the immutable `approved_content_sha256` from `last_good_content_sha256`, with rule count, last successful verification time and integer age in seconds encoded as a decimal string. Before bootstrap, all last-good fields are null. `last_attempt_at` records the most recently started attempt; `last_result` describes the last **completed** attempt (`never`, `success`, or `failed`), including while a new attempt runs. `next_due_at` is the persisted next attempt time, null before scheduling a completed attempt. Failures preserve last-good, increment `consecutive_failures` and supply a bounded public error code and constant redacted message. Recovery clears both error fields and the failure count.
+
+| Internal audit reason | Public `last_error_code` |
+|---|---|
+| `fetch_failed`, `http_status`, `read_failed` | `DEPENDENCY_UNAVAILABLE` |
+| `content_mismatch` | `HASH_MISMATCH` |
+| `oversize`, `content_too_large` | `PAYLOAD_TOO_LARGE` |
+| `invalid_config`, `invalid_size`, `outside_validity`, `ssrf_refused`, `parse_error`, `zero_rules`, `delta_breach` | `VALIDATION_FAILED` |
+| Any unrecognized reason | `INTERNAL_ERROR` |
+
+Messages never contain an upstream error, body, entry or URL. A failing feed with last-good reports “Feed refresh failed; retaining last-good content.” An empty feed reports “Feed refresh failed; no last-good content is available.” These are control-plane observations, not evidence that a node applied the content.
+
+For detailed parse metrics or historical revisions, operators can also use a read-only database role:
 
 ```sql
 SELECT r.id AS feed_revision_id, r.payload->>'feed_code' AS feed_code,
@@ -80,7 +95,7 @@ WHERE r.type = 'threat_feed';
 
 `fvpn_dns_feed_refresh_total{feed_code,result}` counts committed refresh observations; `result=success` or a bounded failure code. Counters reset on process restart. `fvpn_dns_feed_last_good_age_seconds{feed_code}` is seconds since the last successful verification and advances between attempts; it is `+Inf` before bootstrap, restored from persisted observations on startup, and the maximum age if active definitions share a feed code. Alert on failures, consecutive failures and stale/absent last-good. Inspect each revision in the database when codes overlap. Audit and persisted state are authoritative across worker restarts. Scheduler storage failures fail the supervised runner and worker health instead of being silently ignored.
 
-After repairing an upstream, allow the next cadence attempt; activation of a new revision triggers bootstrap immediately. Do not write the projection tables manually. The admin read endpoint, portal evidence and a devstack-hosted approved feed fixture require orchestrator follow-up. Production fetching keeps the SSRF guard enabled; tests inject a transport to local `httptest` TLS fixtures, with no public feed traffic.
+After repairing an upstream, allow the next cadence attempt; activation of a new revision triggers bootstrap immediately. Do not write the projection tables manually. Portal presentation and the devstack-hosted approved feed fixture are owned by their respective follow-ups; the admin status read is available through the policy list. Production fetching keeps the SSRF guard enabled; tests inject a transport to local `httptest` TLS fixtures, with no public feed traffic.
 
 ## 2. Candidate Threat & Category Feeds (`待決策`)
 
