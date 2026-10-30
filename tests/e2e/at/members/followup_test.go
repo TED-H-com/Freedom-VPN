@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 )
 
@@ -70,9 +71,10 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			r.Status = "pass"
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-a-%' ORDER BY code LIMIT 1`).Scan(&l.groupA)
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-b-%' ORDER BY code LIMIT 1`).Scan(&l.groupB)
-			if l.groupA != uuid.Nil && l.groupB != uuid.Nil {
+			if os.Getenv("FVPN_AT_MEMBERS_OBSERVE_ONLY") != "1" && l.groupA != uuid.Nil && l.groupB != uuid.Nil {
 				l.publication(&r)
 			}
+			l.restartReadback(&r)
 			l.servingPrecondition(&r)
 			l.routeReadback(&r)
 		case "AT20":
@@ -83,7 +85,9 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			r.check("central resolver document readback", "record stored publication versus node delivery", fmt.Sprintf("central_documents=%d", docs), "SELECT dns_resolver_documents", docs > 0)
 			l.resolverEvidence(&r)
 		case "AT22":
-			l.feedLastGood(&r)
+			if os.Getenv("FVPN_AT_MEMBERS_OBSERVE_ONLY") != "1" {
+				l.feedLastGood(&r)
+			}
 		}
 		l.write(&r)
 		if r.Status == "fail" {
@@ -185,4 +189,28 @@ func (l *live) feedLastGood(r *record) {
 	answer := l.dnsLocal("feed-01.example.invalid", "1", "udp")
 	r.check("node last-good block response", "controlled positive name remains NXDOMAIN after invalid feed update", answer, "node loopback DNS after actual 300-second failed refresh; not a native member DNS claim", strings.Contains(answer, `"rcode":3`))
 	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision.")
+}
+
+// The stock service hook resumes only the agent for independent DNS checks. It
+// does not fix the entrypoint or restart NetBird/watchdog, nor prove reboot.
+func (l *live) restartReadback(r *record) {
+	raw, err := l.inside("node", "cat", "/var/lib/vpn-node/e2e/status.json")
+	var state struct {
+		Stage string `json:"stage"`
+	}
+	_ = json.Unmarshal(raw, &state)
+	_, identityErr := l.inside("node", "test", "-s", "/var/lib/vpn-node/identity/node.json")
+	r.check("restart entrypoint stage", "record stage independently of stored disabled intent", fmt.Sprintf("read_ok=%t; stage=%s; enrolled_identity_present=%t", err == nil, state.Stage, identityErr == nil), "read node entrypoint status; test existing identity file; no key export", err == nil)
+	if state.Stage != "waiting_token" || identityErr != nil {
+		return
+	}
+	r.block("F2-05: node restart returns to waiting_token with a durable enrolled identity; entrypoint-node.sh has no resume branch. Agent/tunnel/watchdog recovery is not proven. The shared Service(start) workaround below is only for independent DNS evidence, not a reboot or forwarding pass.")
+	stack, openErr := e2e.OpenStack()
+	if openErr != nil {
+		r.block("shared Service hook unavailable")
+		return
+	}
+	defer stack.Close()
+	started := stack.Service(l.ctx, "start", "/usr/local")
+	r.check("documented agent-only workaround", "service hook starts/idempotently retains agent; no reboot claim", fmt.Sprintf("started=%t", started == nil), "e2e.Stack.Service(ctx, start, /usr/local); NetBird/watchdog not replaced", started == nil)
 }

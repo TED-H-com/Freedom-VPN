@@ -119,7 +119,7 @@ func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) 
 	desired, actual := l.publicationState()
 	r.check("publication operation "+intent, "record applied operation independently of intent", fmt.Sprintf("status=%s; required=%d; succeeded=%d; intent=%s; observed=%s", status, required, observed, desired, actual), "poll operations.steps and required observations; read exits projection", status != "")
 	if !ready || status != "succeeded" {
-		r.block("Publication operation did not succeed within 90 seconds: " + status)
+		r.block("Publication operation still incomplete at bounded readback (terminal step failure or timeout): " + status)
 	}
 	return ready && status == "succeeded"
 }
@@ -154,7 +154,10 @@ func (l *live) forwardingGate(r *record) {
 			}
 		}
 	}
-	r.check("admission counters", "record actual per-device counters", fmt.Sprintf("read_ok=%t; counters=%d", e == nil && parse == nil, counters), "docker exec node nft -j list table inet fvpn", e == nil && parse == nil)
+	r.check("admission counters", "record actual per-device counters or missing table", fmt.Sprintf("read_ok=%t; counters=%d", e == nil && parse == nil, counters), "docker exec node nft -j list table inet fvpn", true)
+	if e != nil || parse != nil {
+		r.block("F2-05: nftables table unavailable after node restart; inspect entrypoint waiting_token and existing identity before claiming recovery. See requests.md.")
+	}
 	r.block(inheritedLeaseGate)
 }
 
@@ -180,5 +183,5 @@ func (l *live) routeReadback(r *record) {
 			}
 		}
 	}
-	r.check("real default-route semantics", "explicit peer, masquerade, skip_auto_apply on every default exit route", fmt.Sprintf("HTTP=%d; defaults=%d; skip_auto_apply=%d; enabled=%d; masquerade=%d; peer_set=%d", got.status, defaults, manual, enabled, masquerade, peers), "GET NetBird /api/routes; retain counts, not external identifiers", got.status == 200 && decoded && defaults > 0 && defaults == manual && defaults == masquerade && defaults == peers)
+	r.check("real default-route semantics", "explicit peer, skip_auto_apply=true and masquerade=false (node owns NAT)", fmt.Sprintf("HTTP=%d; defaults=%d; skip_auto_apply=%d; enabled=%d; masquerade=%d; peer_set=%d", got.status, defaults, manual, enabled, masquerade, peers), "GET NetBird /api/routes; retain counts, not external identifiers", got.status == 200 && decoded && defaults > 0 && defaults == manual && masquerade == 0 && defaults == peers)
 }

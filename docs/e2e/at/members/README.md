@@ -36,10 +36,15 @@ entrypoint. The inherited lease gate blocks traffic claims.
 
 `at-members-readback` records current projections, independent A/B publication
 commands, disable/restart persistence, NetBird route semantics, and resolver
-application. It then runs a real 300-second feed-refresh failure experiment on
+application. After recording the entrypoint restart blocker, the documented agent-only service
+hook permits independent DNS work; this does not certify reboot recovery. It
+then runs a real 300-second feed-refresh failure experiment on
 a self-authored TEST ONLY source and verifies last-good preservation. It restores
 the feed bytes and generated DNS cadence settings. The target is a **partial**
-path; its successful exit does not pass a full AT.
+path; its successful exit does not pass a full AT. `FVPN_AT_MEMBERS_OBSERVE_ONLY=1`
+rechecks observations without repeating publication mutations or the scheduled
+feed experiment. Earlier publication checks, including harness expectation
+failures, remain in `prior_checks` with their timestamps.
 
 JSON records include UTC times, commands, expected/actual results, source and
 binary/image digests, release artifact hashes, policy revisions and node

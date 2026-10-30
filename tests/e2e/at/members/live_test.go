@@ -418,6 +418,9 @@ func (l *live) write(r *record) {
 	for _, s := range r.Steps {
 		r.Observations = append(r.Observations, e2e.Observation{Name: s.Name, Detail: fmt.Sprintf("%s; expected: %s; actual: %s; command: %s", s.Status, s.Expected, s.Actual, s.Command)})
 	}
+	if len(r.PriorChecks) > 0 {
+		r.Observations = append(r.Observations, e2e.Observation{Name: "prior attempts", Detail: fmt.Sprintf("%d prior checks retained with UTC times in JSON prior_checks; see RUN.md for corrected ETag/route expectations and restart blocker", len(r.PriorChecks))})
+	}
 	for _, b := range r.Blockers {
 		r.Observations = append(r.Observations, e2e.Observation{Name: "blocked", Detail: b})
 	}

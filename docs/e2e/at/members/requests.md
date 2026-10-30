@@ -117,3 +117,28 @@ Windows/macOS/iOS/Android, physical arm64, second physical NAT and candidate
 production hardware remain **needs operator run** under [OPERATORS.md](OPERATORS.md).
 Commercial feed approval is a business decision; the licensed source exercised
 here is explicitly self-authored TEST ONLY data.
+
+## F2-05 — enrolled node restart waits for another token
+
+Owner: **devstack**, `deploy/devstack/entrypoint-node.sh`, the unconditional
+`waiting_token`/enrollment block before watchdog, agent and NetBird startup.
+Observed in AT08's restart test, on the same node incarnation used by the other
+cases. The durable identity file exists, but `/var/lib/vpn-node/e2e/status.json`
+says `waiting_token` and `nft list table inet fvpn` fails because no agent
+reinstalled its baseline. Persisted `publication_intent=disabled` alone does not
+prove a rebooted, connected node enforced disable.
+
+Reproduce: enroll normally, issue disable through PUT publication, then
+`docker restart fvpn-w4-members-node`; reattach its AdGuard sidecar and inspect
+status, existing identity, daemon readiness and nft table. The entrypoint always
+requires `enrollment.token`, which the enrollment path consumes. Add an existing
+identity boot branch that starts the normal watchdog/agent/NetBird supervision
+without a second token or a new incarnation. Re-run disable/reboot and verify
+fresh observations plus real denial after the positive-flow gate is fixed.
+
+Documented partial workaround: `e2e.Stack.Service(ctx, "start", "/usr/local")`
+starts the agent so independent resolver-document checks can continue. It does
+not recreate NetBird/watchdog supervision or pass reboot recovery. In this run
+that restart also obtained a later member-bearing lease; it does not fix renewal
+after desired/member changes during uninterrupted operation. The original
+empty-member lease evidence remains in AT01/AT02 and AT08's prior checks.
