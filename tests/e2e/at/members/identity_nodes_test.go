@@ -14,37 +14,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// TEST ONLY catalogue data; entitlement and publication changes go through HTTP.
-// This is the documented devstack fixture seam, not a device/identity bypass.
-func (l *live) seedPlan() {
-	l.plan, l.planRev, l.groupA, l.groupB = uuid.New(), uuid.New(), uuid.New(), uuid.New()
-	planB := uuid.New()
-	l.planRevB = uuid.New()
-	tx, err := l.pool.Begin(l.ctx)
-	if err != nil {
-		l.t.Fatal("plan transaction")
-	}
-	defer func() { _ = tx.Rollback(l.ctx) }()
-	for _, q := range []struct {
-		sql  string
-		args []any
-	}{
-		{`INSERT INTO member_groups(id,code,name) VALUES($1,$2,$3),($4,$5,$6)`, []any{l.groupA, "at-A-" + l.run, "TEST ONLY A " + l.run, l.groupB, "at-B-" + l.run, "TEST ONLY B " + l.run}},
-		{`INSERT INTO plans(id,code) VALUES($1,$2)`, []any{l.plan, "at-plan-" + l.run}},
-		{`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,provider,provider_price_ref,schema_version,payload) VALUES($1,$2,1,3,$3,'stripe','e2e-price',1,'{"display_name":{"zh-TW":"TEST ONLY"}}')`, []any{l.planRev, l.plan, []uuid.UUID{l.groupA}}},
-		{`UPDATE plans SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, []any{l.plan, l.planRev}},
-		{`INSERT INTO plans(id,code) VALUES($1,$2)`, []any{planB, "at-plan-B-" + l.run}},
-		{`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,provider,provider_price_ref,schema_version,payload) VALUES($1,$2,1,3,$3,'stripe','e2e-price',1,'{"display_name":{"zh-TW":"TEST ONLY B"}}')`, []any{l.planRevB, planB, []uuid.UUID{l.groupB}}},
-		{`UPDATE plans SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, []any{planB, l.planRevB}},
-	} {
-		if _, err = tx.Exec(l.ctx, q.sql, q.args...); err != nil {
-			l.t.Fatal("TEST ONLY plan fixture rejected")
-		}
-	}
-	if tx.Commit(l.ctx) != nil {
-		l.t.Fatal("plan commit")
-	}
-}
 func (l *live) grant(b *browser, until time.Time) response {
 	rev := l.planRev
 	if b == l.b {
@@ -60,7 +29,12 @@ func (l *live) patchMember(b *browser, body any) response {
 	return l.api(l.admin, "PATCH", path, body, h)
 }
 func (l *live) policy(kind string, payload any) (response, uuid.UUID) {
-	r := l.api(l.admin, "POST", "/api/v1/admin/policies", map[string]any{"type": kind, "schema_version": 1, "code": "at-" + l.run + "-" + uuid.NewString()[:8], "reason": "TEST ONLY acceptance", "payload": payload}, commandHeaders())
+	code := "at-" + l.run + "-" + uuid.NewString()[:8]
+	// Revise the one lab DNS profile; the D-056 hook has no per-node profile selector.
+	if kind == "dns_profile" {
+		_ = l.pool.QueryRow(l.ctx, `SELECT code FROM policy_definitions WHERE type='dns_profile' ORDER BY id LIMIT 1`).Scan(&code)
+	}
+	r := l.api(l.admin, "POST", "/api/v1/admin/policies", map[string]any{"type": kind, "schema_version": 1, "code": code, "reason": "TEST ONLY acceptance", "payload": payload}, commandHeaders())
 	var v struct {
 		RevisionID uuid.UUID `json:"revision_id"`
 	}
@@ -79,6 +53,9 @@ func (l *live) activate(rev uuid.UUID) response {
 	return l.api(l.admin, "POST", "/api/v1/admin/policies/"+id.String()+"/activate", map[string]any{"revision_id": rev, "reason": "TEST ONLY acceptance"}, h)
 }
 func (l *live) enrollment(r *record) {
+	if !l.prepare(r) {
+		return
+	}
 	// §6.4, AT05: this lab has only the installer node runtime. Check both
 	// delivery token contracts without claiming two unused reservations booted.
 	for _, delivery := range []api.EnrollmentDelivery{api.EnrollmentDeliveryInstaller, api.EnrollmentDeliveryPreinstalled} {
@@ -121,11 +98,12 @@ func (l *live) enrollment(r *record) {
 	}
 	out, err := l.docker("inspect", "--format", "{{.Config.Image}}", l.name("node"))
 	r.check("runtime inventory", "one actual node image", fmt.Sprintf("node_image_inspected=%t; node_containers=1", err == nil && len(out) > 0), "docker inspect fvpn-w4-members-node", err == nil)
-	r.block("Running lab has one installer node runtime; preinstalled/cloud-init boot flavours and their package provenance are absent. A preinstalled reservation is not a boot test. No active release-support policy exists, and an empty serving allowlist is correctly rejected by the API. The shared runner currently inserts a non-contract empty policy directly; this suite does not bypass policy validation.")
+	r.block("Running lab has one installer node runtime; preinstalled/cloud-init boot flavours and their package provenance are absent. A preinstalled reservation is not a boot test. The signed boot release and nonempty support policy are created through the shared PrepareServingBaseline hook; arm64 is cross-built only.")
 }
 func (l *live) identity(r *record) {
 	again := l.login("AT-member-A-"+l.run, "member")
 	r.check("same-client stable identity", "same member UUID across browser sessions", fmt.Sprintf("same_member=%t; distinct_members=%t", again.member == l.a.member, l.a.member != l.b.member), "shared Dex password form; /auth/login?role=member; GET /auth/session", again.member == l.a.member && l.a.member != l.b.member)
+	l.publish(r, []uuid.UUID{l.groupA})
 	g := l.grant(l.a, time.Now().UTC().Add(time.Hour))
 	r.check("finite entitlement command", "202 accepted, not applied", detail(g), "POST /admin/members/{A}/grants", g.status == 202)
 	me := l.api(l.a, "GET", "/api/v1/member/me", nil, nil)
@@ -147,80 +125,60 @@ func (l *live) identity(r *record) {
 	r.check("browser sign-out", "session unauthenticated", fmt.Sprintf("logout=%d; authenticated=%t", logout.status, s.Authenticated), "POST /auth/logout; GET /auth/session", logout.status >= 200 && logout.status < 400 && !s.Authenticated)
 	before := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1`, l.a.member)
 	r.check("native device precondition", "observe real member device count", fmt.Sprintf("member_A_devices=%d", before), "SELECT count(*) FROM member_devices WHERE member_id=A", true)
-	r.block("Selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake require an applied exit and successful forwarding baseline, checked separately in AT08. Platform script: OPERATORS.md.")
+	l.forwardingGate(r)
 }
 func (l *live) nodeMutation(method, suffix string, body any) response {
 	path := "/api/v1/admin/nodes/" + l.node.String()
-	old := l.api(l.admin, "GET", path, nil, nil)
-	h := commandHeaders()
-	h["If-Match"] = old.headers.Get("ETag")
-	return l.api(l.admin, method, path+suffix, body, h)
+	var got response
+	// Heartbeats advance resource_version. A 412 has no effect; refresh the ETag
+	// and retry this setup command with a fresh key, never bypass If-Match.
+	for range 3 {
+		old := l.api(l.admin, "GET", path, nil, nil)
+		h := commandHeaders()
+		h["If-Match"] = old.headers.Get("ETag")
+		got = l.api(l.admin, method, path+suffix, body, h)
+		if got.status != 412 {
+			return got
+		}
+	}
+	return got
 }
 func (l *live) publication(r *record) {
 	if l.node == uuid.Nil {
-		r.block("installer node did not enroll")
+		r.block("No enrolled node")
 		return
 	}
-	patch := l.nodeMutation("PATCH", "", map[string]any{"name": "TEST ONLY renamed", "region": "TEST", "member_group_ids": []uuid.UUID{l.groupA}})
-	r.check("classify and rename", "200 or 202", detail(patch), "PATCH /admin/nodes/{id} with If-Match", patch.status == 200 || patch.status == 202)
-	pub := l.nodeMutation("PUT", "/publication", map[string]string{"publication_intent": "published", "reason": "TEST ONLY group A"})
-	r.check("publication readiness", "record command result", detail(pub), "PUT /admin/nodes/{id}/publication", pub.status != 0)
-	if pub.status != 202 {
-		r.block("Publication precondition: " + detail(pub))
+	l.publish(r, []uuid.UUID{l.groupA})
+	intentBefore, _ := l.publicationState()
+	if intentBefore != "published" {
+		l.resolverEvidence(r)
+		return
 	}
-	_ = l.wait(30*time.Second, func() bool {
-		var observed string
-		_ = l.pool.QueryRow(l.ctx, `SELECT publication_observed FROM exits WHERE node_id=$1`, l.node).Scan(&observed)
-		return observed == "active"
-	})
-	var intent, observed string
-	_ = l.pool.QueryRow(l.ctx, `SELECT publication_intent,publication_observed FROM exits WHERE node_id=$1`, l.node).Scan(&intent, &observed)
-	r.check("desired versus observed", "both independently recorded", fmt.Sprintf("intent=%s; observed=%s", intent, observed), "GET /admin/nodes/{id}; database readback", intent != "")
-	chain, chainErr := l.inside("node", "nft", "-j", "list", "table", "inet", "fvpn")
-	var rules struct {
-		NFTables []json.RawMessage `json:"nftables"`
-	}
-	_ = json.Unmarshal(chain, &rules)
-	accepts := 0
-	for _, line := range rules.NFTables {
-		var row struct {
-			Rule struct {
-				Chain string           `json:"chain"`
-				Expr  []map[string]any `json:"expr"`
-			} `json:"rule"`
-		}
-		_ = json.Unmarshal(line, &row)
-		if row.Rule.Chain == "forward" {
-			for _, expr := range row.Rule.Expr {
-				if _, ok := expr["accept"]; ok {
-					accepts++
-				}
-			}
-		}
-	}
-	r.check("real gateway rule readback", "record forward-chain accept count", fmt.Sprintf("nft_read_ok=%t; forward_accept_rules=%d", chainErr == nil, accepts), "docker exec node nft -j list table inet fvpn", chainErr == nil)
 	routes := l.nb("GET", "/routes", nil)
-	var routeList []map[string]any
-	_ = json.Unmarshal(routes.body, &routeList)
-	pending := l.count(`SELECT count(*) FROM operations WHERE resource_id=$1 AND status='pending'`, l.node)
-	r.check("NetBird readback and operations", "actual routes and pending operations", fmt.Sprintf("routes=%d; pending_operations=%d; HTTP=%d", len(routeList), pending, routes.status), "GET NetBird /api/routes; SELECT operations", routes.status == 200)
-	if observed != "active" {
-		r.block("Publication cannot reach active; observed state remains " + observed + "; no applied forwarding baseline. See operation evidence; publication worker is present on this build.")
-	}
-	disable := l.nodeMutation("PUT", "/publication", map[string]string{"publication_intent": "disabled", "reason": "TEST ONLY disable persistence"})
-	r.check("disable command", "202", detail(disable), "PUT publication=disabled", disable.status == 202)
+	var list []map[string]any
+	_ = json.Unmarshal(routes.body, &list)
+	a := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupA)
+	b := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupB)
+	r.check("A-only publication readback", "one A attachment, zero B; NetBird routes readable", fmt.Sprintf("A=%d; B=%d; routes=%d; HTTP=%d", a, b, len(list), routes.status), "read exit_groups; GET NetBird /api/routes", a == 1 && b == 0 && routes.status == 200)
+	l.forwardingGate(r)
+	l.publicationCommand(r, "published", []uuid.UUID{l.groupB})
+	regroup := l.count(`SELECT count(*) FROM exit_groups g JOIN exits e ON e.id=g.exit_id WHERE e.node_id=$1 AND g.group_id=$2`, l.node, l.groupB)
+	r.check("regroup projection", "group B attached", fmt.Sprintf("B=%d", regroup), "PUT group_ids=[B]; read product attachment", regroup == 1)
+	l.publicationCommand(r, "disabled", []uuid.UUID{l.groupB})
 	_, err := l.docker("restart", l.name("node"))
+	// D-061 lab sidecar shares the node network namespace. Reattach after restart.
+	_, dnsRestart := l.docker("restart", l.name("adguard"))
+	r.check("resolver sidecar namespace restored", "restart succeeds", fmt.Sprintf("restart_ok=%t", dnsRestart == nil), "docker restart fvpn-w4-members-adguard after node restart", dnsRestart == nil)
 	r.check("node restart", "restart succeeds", fmt.Sprintf("restart_ok=%t", err == nil), "docker restart fvpn-w4-members-node", err == nil)
-	persists := l.wait(20*time.Second, func() bool {
-		_ = l.pool.QueryRow(l.ctx, `SELECT publication_intent FROM exits WHERE node_id=$1`, l.node).Scan(&intent)
-		return intent == "disabled"
-	})
-	r.check("disabled persists", "disabled intent after reconnect/restart", intent, "SELECT publication_intent after node restart", persists)
-	r.block("Group A/B gateway isolation and applied disable cannot be certified without a previously serving exit (native user admission is recorded in AT01/AT02). Restart above checks persisted administrative intent only.")
+	intent, observed := l.publicationState()
+	r.check("disabled persists", "disabled intent after node restart", fmt.Sprintf("intent=%s; observed=%s", intent, observed), "read publication after reconnect/restart", intent == "disabled")
+	// Restore the API intent for independent DNS checks; no lease is forged.
+	l.publicationCommand(r, "published", []uuid.UUID{l.groupA})
 }
 func (l *live) exits(r *record) {
 	n := l.count(`SELECT count(*) FROM nodes WHERE current_incarnation_id IS NOT NULL`)
 	out, err := l.inside("member", "netbird", "routes", "list")
 	r.check("exit inventory", "record active node count and client routes", fmt.Sprintf("enrolled_nodes=%d; routes_command_ok=%t; route_output_bytes=%d", n, err == nil, len(out)), "SELECT enrolled nodes; docker exec member netbird routes list", n >= 1)
-	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic.", n))
+	r.block(inheritedLeaseGate)
+	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the inherited positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
 }

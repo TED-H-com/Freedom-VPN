@@ -2,7 +2,7 @@
 
 The JSON records are the authority for executed subchecks. These procedures
 specify full acceptance, including steps blocked by the observed prerequisites
-in [BLOCKERS.md](BLOCKERS.md). They do not authorize editing the shared lab or
+in [requests.md](requests.md). They do not authorize editing the shared lab or
 substituting mock identity, payment or forwarding evidence.
 
 ## Common setup and evidence (§19.1)
@@ -11,7 +11,7 @@ Use only the assigned `w4-members` stack, base `24000`, and
 `.agent/e2e-state-w4-members`. Bring it up fresh once. Do not use `e2e-test` after
 fixture creation: that target tears down and recreates the stack. Do not run the
 existing whole scenario runner as a setup hook: it also performs updates,
-control-stop and node revocation. Request a documented setup-only seam.
+control-stop and node revocation. Use `e2e.PrepareServingBaseline` before any enrollment token, then the D-057 group/policy/publication APIs. Keep one active DNS definition and revise it through the policy API; use a controlled positive allow rule in the initial profile.
 
 Provision TEST ONLY members A (active, group A), B (active, group B), C
 (pending/expired). Prices, grace, full-refund rule, rate policy and blocked DNS
@@ -166,7 +166,8 @@ used, explicitly record emulator/version, host architecture and its limits.
 
 ## AT08 — publication, groups, disable (§5.2, §7.2)
 
-Begin with an unpublished ready node. Publish only for A using the contract
+Begin with an unpublished ready node. Create groups through `POST /admin/groups`, set plan `exit_group_ids`, and
+publish only for A using `PublicationRequest.group_ids` in the contract
 publication command and current ETag. Record the 202 operation while pending;
 poll until required policy/route/data-path observations agree. Read the NetBird
 route back: one peer, `0.0.0.0/0`, `skip_auto_apply=true`, intended group only.
