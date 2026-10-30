@@ -235,21 +235,45 @@ func (s *Service) SubmitObservation(
 			lastGoodReleaseID = nil
 		}
 		provisioning := report.ProvisioningState
+		var staleGenerationGrace bool
 		if provisioning == api.ProvisioningStateReady {
 			// §5.1 / §6.1: baseline readiness needs safety and a generation ACK,
 			// not a management peer ID. A reported ID still requires read-back;
 			// absent IDs must not block unpublished/disabled baseline readiness.
-			// Once the incarnation has reached provisioning_state='ready', an in-flight
-			// observation for an already-applied generation with safety_status='passed'
-			// does not downgrade provisioning_state back to 'applying' when central
-			// concurrently advances desired_config_generation.
+			// Once the incarnation has reached provisioning_state='ready', at most one
+			// in-flight observation for an already-applied generation with
+			// safety_status='passed' may preserve provisioning_state='ready' when central
+			// concurrently advances desired_config_generation; a second stale report
+			// below desired_config_generation downgrades provisioning_state to 'applying'.
 			var acknowledged, bound bool
-			if err := tx.QueryRow(ctx, `SELECT ($2::numeric>0 AND ($2::numeric>=n.desired_config_generation OR n.provisioning_state='ready')),i.peer_id IS NOT NULL FROM nodes n JOIN node_incarnations i ON i.id=$3 WHERE n.id=$1`, authNodeID, appliedGenStr, authIncarnationID).Scan(&acknowledged, &bound); err != nil {
+			if err := tx.QueryRow(ctx, `
+				SELECT
+					$2::numeric > 0 AND (
+						$2::numeric >= n.desired_config_generation
+						OR (
+							n.provisioning_state = 'ready'
+							AND $2::numeric >= n.applied_config_generation
+							AND NOT coalesce((
+								SELECT (ae.after_diff->>'stale_generation_grace')::boolean
+								FROM audit_events ae
+								WHERE ae.resource = 'node:' || n.id::text
+								  AND ae.action = 'node.observation_applied'
+								ORDER BY ae.occurred_at DESC, ae.id DESC
+								LIMIT 1
+							), false)
+						)
+					),
+					$2::numeric > 0 AND $2::numeric < n.desired_config_generation AND n.provisioning_state = 'ready',
+					i.peer_id IS NOT NULL
+				FROM nodes n
+				JOIN node_incarnations i ON i.id = $3
+				WHERE n.id = $1`, authNodeID, appliedGenStr, authIncarnationID).Scan(&acknowledged, &staleGenerationGrace, &bound); err != nil {
 				return err
 			}
 			_, peerErr := report.Netbird.PeerId.Get()
 			if effectiveSafety != api.SafetyStatusPassed || !acknowledged || (s.observeVersion != nil && peerErr == nil && !bound) {
 				provisioning = api.ProvisioningStateApplying
+				staleGenerationGrace = false
 			}
 		}
 		// D-055: an ambiguous management correlation is terminal for this
@@ -300,6 +324,9 @@ func (s *Service) SubmitObservation(
 				"safety_status":             string(effectiveSafety),
 				"data_health":               string(effectiveHealth),
 				"provisioning_state":        string(provisioning),
+			}
+			if staleGenerationGrace && provisioning == api.ProvisioningStateReady {
+				afterObsMap["stale_generation_grace"] = true
 			}
 			if _, ok := isPendingIsolationApplyError(report, effectiveForwarding); ok {
 				afterObsMap["isolation_error_code"] = string(api.ErrorCodeISOLATIONPOLICYINVALID)
@@ -744,20 +771,31 @@ func advanceNodeOperationsOnObservation(
 					JOIN exits ex2 ON ex2.node_id = n2.id
 					WHERE n2.id <> $1
 					  AND n2.lifecycle_state = 'registered'
+					  AND n2.control_status = 'online'
+					  AND n2.last_observed_at IS NOT NULL
+					  AND n2.last_observed_at >= $3::timestamptz - ($4::bigint * interval '1 millisecond')
+					  AND n2.last_seen_at IS NOT NULL
+					  AND n2.last_seen_at >= $2::timestamptz - ($4::bigint * interval '1 millisecond')
 					  AND (coalesce(n2.member_forwarding_observed, false) OR n2.safety_status = 'passed')
 					  AND n2.recent_errors @> '[{"code":"ISOLATION_POLICY_INVALID","stage":"apply"}]'::jsonb
-					  AND (
-						NOT EXISTS (SELECT 1 FROM exit_groups eg2 WHERE eg2.exit_id = ex2.id)
-						OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
-						OR EXISTS (
-							SELECT 1
-							FROM exit_groups eg2
-							WHERE eg2.exit_id = ex2.id
-							  AND (
-								(e.projection->'exit_group_ids') ? eg2.group_id::text
-								OR eg2.group_id = ANY(m.member_group_ids)
-							  )
-						)
+					  AND EXISTS (
+						SELECT 1
+						FROM exit_groups eg2
+						WHERE eg2.exit_id = ex2.id
+						  AND (
+							(e.projection->'exit_group_ids') ? eg2.group_id::text
+							OR eg2.group_id = ANY(m.member_group_ids)
+							OR (
+								jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
+								AND EXISTS (
+									SELECT 1
+									FROM entitlement_grants eg_m
+									JOIN plan_revisions pr_m ON pr_m.id = eg_m.plan_revision_id
+									WHERE eg_m.member_id = m.id
+									  AND eg2.group_id = ANY(pr_m.exit_group_ids)
+								)
+							)
+						  )
 					  )
 				)
 			FROM operations o
@@ -786,8 +824,7 @@ func advanceNodeOperationsOnObservation(
 				)
 			  )
 			  AND (
-				NOT EXISTS (SELECT 1 FROM exits ex JOIN exit_groups eg ON eg.exit_id = ex.id WHERE ex.node_id = $1)
-				OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
+				jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
 				OR EXISTS (
 					SELECT 1
 					FROM exits ex
@@ -800,7 +837,7 @@ func advanceNodeOperationsOnObservation(
 				)
 			  )
 			ORDER BY o.id ASC
-			FOR UPDATE OF o`, nodeID, now)
+			FOR UPDATE OF o`, nodeID, now, report.ObservedAt.UTC(), DefaultStaleTimeout.Milliseconds())
 		if err != nil {
 			return err
 		}
