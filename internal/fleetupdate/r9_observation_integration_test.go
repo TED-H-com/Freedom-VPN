@@ -72,7 +72,14 @@ func TestReviewR9_D062_JoblessAndInvalidVocabulary(t *testing.T) {
 
 func TestReviewR9_D062_PreResultSeedAndTerminalAuthority(t *testing.T) {
 	l := newLabState(t)
-	i := l.node("arm64", "unpublished", "registered", true)
+	i := Identity{NodeID: uuid.Must(uuid.NewV7())}
+	if _, err := l.s.pool.Exec(l.ctx, `INSERT INTO nodes(id,lifecycle_state) VALUES($1,'enrolling')`, i.NodeID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := l.s.pool.Exec(l.ctx, `INSERT INTO exits(node_id,display_name,region,publication_intent) VALUES($1,'TEST ONLY fresh seed node','test','unpublished')`, i.NodeID); err != nil {
+		t.Fatal(err)
+	}
+	i = l.enroll(i, "arm64")
 	b := l.batch(l.new)
 	w := l.intent(i)
 	r, svc := reviewObservation(t, l, i)
@@ -80,15 +87,15 @@ func TestReviewR9_D062_PreResultSeedAndTerminalAuthority(t *testing.T) {
 	r.Update.JobId.Set(w.Intent.JobId)
 	r.Update.State.Set(api.UpdateJobStateChecking)
 	r.Update.Stage.Set(api.UpdateStageCheck)
-	// No accepted result for this incarnation yet: the explicit, bound seed
-	// path can reconcile current with agreeing last-good (r12 H-3). A terminal result still wins.
+	// No accepted result for this fresh incarnation yet: the explicit, bound seed
+	// path fills a null current_release_id when last-good agrees (D-068). A terminal result still wins.
 	r.CurrentReleaseId.Set(l.new)
-	r.LastGoodReleaseId.Set(l.old)
+	r.LastGoodReleaseId.SetNull()
 	if _, err := svc.SubmitObservation(l.ctx, i.NodeID, i.IncarnationID, r); err != nil {
 		t.Fatal(err)
 	}
 	seeded, err := l.s.NodeVersionView(l.ctx, i.NodeID)
-	if err != nil || seeded.CurrentReleaseID == nil || *seeded.CurrentReleaseID != l.new {
+	if err != nil || seeded.CurrentReleaseID == nil || *seeded.CurrentReleaseID != l.new || seeded.LastGoodReleaseID != nil {
 		t.Fatal(seeded, err)
 	}
 	rolled := d062Result(t, l, w, "rollback")

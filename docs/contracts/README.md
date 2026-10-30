@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 46 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 47 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -113,7 +113,7 @@ malformed public key, and missing revocation timestamp.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs46`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs47`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -242,7 +242,7 @@ meanings and where those codes may appear are in [Revision 8](#revision-8).
 ## Browser role selector (D-032)
 
 `GET /auth/session` and `POST /auth/logout` are existing browser routes outside
-`/api/v1` and outside the 46-endpoint API. Their query parameter is recorded in
+`/api/v1` and outside the 47-endpoint API. Their query parameter is recorded in
 `openapi.yaml` under `x-fvpn-browser-auth`:
 
 | Parameter | Type | Presence | Cookies |
@@ -254,6 +254,49 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 10
+
+API version **1.6.0**. The endpoint count is **47**. No `ErrorCode` was added.
+`Enrollment` gains required read-only `token_sha256`. The only new operation
+is `GET /admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`).
+`ForwardingBlockReason` gains `awaiting_member_grants` immediately after
+`lease_expired`. There is no `listEnrollments` operation; `token_sha256` is
+on `Enrollment`, which `getEnrollment` and the creation response already return.
+
+`token_sha256` is the lowercase hex SHA-256 of the one-time enrollment token.
+The plaintext is returned once, on creation, and never again (§6.1). It is not
+`bound_public_key_sha256`. `enrollment.created` records that digest in
+`changes.after`.
+
+### Audit redaction
+
+`AuditEvent` and `changes` are redacted configuration history (§16.4). Property
+names ending in `_sha256` are digests and are never redacted. That includes
+`token_sha256`. `sensitive()` in `internal/audit/audit.go` matches the
+substring `token` after stripping underscores, so `token_sha256` is sensitive
+today. `Diff` then omits the key, and `redact` would replace a stored value
+with `[REDACTED]` on read. pki-enroll must exempt names ending in `_sha256`
+before that substring check. The contract rule is the exemption, not a new
+error code.
+
+`listNodeIncarnations` is a synchronous 200 page. An unknown node is 404. A
+known node with no consumed enrollment is an empty page. Ordering is newest
+`created_at`, then `incarnation_id`. Usage on an old incarnation stays on that
+incarnation.
+
+`lease_expired` means the node lease for this generation is past its anchored
+deadline. `awaiting_member_grants` (D-067) means the node holds a valid node
+lease whose member grant set is empty while the desired generation carries
+member bindings, and the agent renews on a bounded schedule. The observation
+example is
+[ObservationReport.awaiting-member-grants.json](../../contracts/examples/valid/ObservationReport.awaiting-member-grants.json).
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| ENR-02 | `Enrollment.token_sha256`; `enrollment.created` `changes.after.token_sha256` | pki-enroll audit writer and enrollment read |
+| ENR-03 | `NodeIncarnation`, `NodeIncarnationList`; `listNodeIncarnations` | w3-wire-nodes read model; usage ledger join |
+| D-067 | `ForwardingBlockReason.awaiting_member_grants` | w2-agent-core follow-up 16 emits it; portal copy and the nodes read model adopt it afterwards |
 
 ## Revision 9
 
@@ -659,7 +702,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the current count of 46 (including D-015 and D-065);
+1. Find the requirement in the spec. New endpoints change the current count of 47 (including D-015, D-065 and ENR-03);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -696,6 +739,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /admin/enrollments/{enrollment_id}` | `getEnrollment` | adminSession | 200 | §14.2 | ENR01 ENR02 |
 | `POST /admin/enrollments/{enrollment_id}/revoke` | `revokeEnrollment` | adminSession + csrfToken | 200 | §14.2, §6.4 | ENR02 |
 | `GET /admin/nodes/{node_id}` | `getNode` | adminSession | 200 | §14.2, §5 | NODE02 EXIT01 |
+| `GET /admin/nodes/{node_id}/incarnations` | `listNodeIncarnations` | adminSession | 200 | §14.2, §6.2, §15.3 | NODE02 DATA01 ENR02 |
 | `PATCH /admin/nodes/{node_id}` | `updateNode` | adminSession + csrfToken | 200,202 | §14.2, §14.5 | NODE03 FUP04 API01 |
 | `DELETE /admin/nodes/{node_id}` | `retireNode` | adminSession + csrfToken | 202 | §14.2, §5.2, §15.1 | NODE03 DATA01 |
 | `PUT /admin/nodes/{node_id}/publication` | `setNodePublication` | adminSession + csrfToken | 202 | §14.2, §5.2 | EXIT01 EXIT03 ENR04 NODE03 |
@@ -823,6 +867,9 @@ unchanged.
   Enrollment responses remain secret-free. The enrollment service owns atomic
   delivery consumption, deadlines, and secret redaction; provider key expiry
   remains distinct from both delivery and enrollment-token deadlines (§6.4).
+  Audit redaction is separate: property names ending in `_sha256` are digests
+  and are never redacted. `enrollment.created` therefore keeps `token_sha256`
+  in `changes.after` (revision 10).
 - AT07 reinstallation: optional `EnrollmentCreateRequest.node_id` binds to an
   existing Node. The enrollment service checks that its previous incarnation
   is revoked (otherwise 409 `NODE_INCARNATION_ACTIVE`) and it is not retired

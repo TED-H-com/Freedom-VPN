@@ -599,3 +599,34 @@ Member entitlement recompilation includes `previous_exit_group_ids` when
 provided and every current envelope still carrying that member's device binding
 or rate policy. This removes access on nodes in removed groups even when an older
 producer supplies only new groups (D-052 F-02).
+
+## Revocation completion under pending isolation errors and lease readiness (Follow-up 18)
+
+When an accepted `ObservationReport` on `applied_config_generation >= desired_config_generation`
+carries an `ISOLATION_POLICY_INVALID` apply error while member forwarding remains active
+(for example, a pending `conntrack -D` flow flush after the serving ruleset is verified,
+r13 M-3), `SubmitObservation` degrades `data_health` to `degraded`, withholds publication
+serving evidence (`PublicationDataPathFailure = "isolation_unconfirmed"`), and holds the
+`"nodes"` step of matching member/entitlement/device operations in `pending` with
+`error_code = "ISOLATION_POLICY_INVALID"`, `error_message = "member_forwarding_unconfirmed"`,
+`reason = "conntrack_delete_pending"`, and a correlated `node.revoke_isolation_pending`
+(`result = "failed"`) audit event. The `"nodes"` step completes and emits
+`node.revoke_isolation_resolved` (`result = "succeeded"`) only when either (a) a subsequent
+observation on the target generation clears the `ISOLATION_POLICY_INVALID` error
+(`resolution = "conntrack_delete_succeeded"`), or (b) the node fails closed after exhausting
+its bounded retry (`member_forwarding_enabled = false`, `safety_status = "failed"`,
+`provisioning_state = "applying"`, `internet_only = "passed"`,
+`resolution = "node_failed_closed"`).
+
+For serving leases (`POST /api/v1/agent/lease-renewals`, `leases.Service.RenewTx`), member
+grants are included only when `lifecycle_state == 'registered'`,
+`publication_intent == 'published'`, and `provisioning_state == 'ready'`. A registered,
+published node with compiled `device_bindings > 0` that is not yet `ready` receives a
+grant-less lease (`members: []`) on `config_generation == desired_config_generation`; once
+its ready observation is ingested, the next `RenewTx` carries the member grants on that
+same `config_generation`. Once an incarnation has reached `provisioning_state = 'ready'`,
+an in-flight observation for an already-applied generation with `safety_status = 'passed'`
+does not downgrade `provisioning_state` back to `'applying'` when central concurrently
+advances `desired_config_generation`, preventing avoidable grant-less lease windows across
+policy recompilations.
+

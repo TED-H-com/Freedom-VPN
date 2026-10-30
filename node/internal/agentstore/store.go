@@ -111,7 +111,64 @@ func fmtTime(t time.Time) string {
 	return t.UTC().Format(time.RFC3339Nano)
 }
 
-const schemaVersion = 2
+const schemaVersion = 3
+
+// migrateAppliedAddressIdentity rebuilds applied_address so each row is
+// (addr, device_id, member_id). Rows that predate the identity columns
+// keep the address and use the nil UUID for both ids. A nil identity is
+// not deleted while that address is still bound: the row cannot name the
+// device that held it.
+func migrateAppliedAddressIdentity(ctx context.Context, tx *sql.Tx) error {
+	var table string
+	err := tx.QueryRowContext(ctx, `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'applied_address'`).Scan(&table)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	rows, err := tx.QueryContext(ctx, `PRAGMA table_info(applied_address)`)
+	if err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	defer rows.Close()
+	hasDevice := false
+	for rows.Next() {
+		var cid, notnull, pk int
+		var name, ctype string
+		var dflt sql.NullString
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt, &pk); err != nil {
+			return fmt.Errorf("agentstore: migrate: %w", err)
+		}
+		if name == "device_id" {
+			hasDevice = true
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	if hasDevice {
+		return nil
+	}
+	if _, err := tx.ExecContext(ctx, `CREATE TABLE applied_address_next (
+		addr TEXT NOT NULL,
+		device_id TEXT NOT NULL,
+		member_id TEXT NOT NULL,
+		PRIMARY KEY (addr, device_id, member_id))`); err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO applied_address_next (addr, device_id, member_id)
+		SELECT addr, '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000' FROM applied_address`); err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	if _, err := tx.ExecContext(ctx, `DROP TABLE applied_address`); err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	if _, err := tx.ExecContext(ctx, `ALTER TABLE applied_address_next RENAME TO applied_address`); err != nil {
+		return fmt.Errorf("agentstore: migrate: %w", err)
+	}
+	return nil
+}
 
 func (s *Store) migrate(ctx context.Context) error {
 	var v int
@@ -181,7 +238,10 @@ func (s *Store) migrate(ctx context.Context) error {
 			packets INTEGER NOT NULL,
 			bytes INTEGER NOT NULL)`,
 		`CREATE TABLE applied_address (
-			addr TEXT PRIMARY KEY)`,
+			addr TEXT NOT NULL,
+			device_id TEXT NOT NULL,
+			member_id TEXT NOT NULL,
+			PRIMARY KEY (addr, device_id, member_id))`,
 		`CREATE TABLE outbox (
 			report_id TEXT PRIMARY KEY,
 			payload BLOB NOT NULL,
@@ -214,7 +274,19 @@ func (s *Store) migrate(ctx context.Context) error {
 				return err
 			}
 		}
-		_, err := tx.ExecContext(ctx, `PRAGMA user_version = 2`)
+		if v < 3 {
+			// A database created above already has device and member columns.
+			// An older file has addr alone and must be rebuilt in place.
+			if v >= 1 {
+				if err := migrateAppliedAddressIdentity(ctx, tx); err != nil {
+					return err
+				}
+			}
+			if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations (version, name, applied_at) VALUES (3, 'applied_address_identity', ?)`, applied); err != nil {
+				return err
+			}
+		}
+		_, err := tx.ExecContext(ctx, `PRAGMA user_version = 3`)
 		return err
 	})
 }

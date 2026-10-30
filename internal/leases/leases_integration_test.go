@@ -14,7 +14,13 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
+	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/internal/exits"
+	"github.com/TED-H-com/Freedom-VPN/internal/members"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/pki"
+	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -520,5 +526,321 @@ func TestLeases_RenewTx_CallerTransactionAndD030Eligibility(t *testing.T) {
 	}
 	if len(committedEnv.Signed.Members) != 1 || committedEnv.Signed.Members[0].MemberId != memberID {
 		t.Fatalf("RenewTx Members = %+v, want [%s]", committedEnv.Signed.Members, memberID)
+	}
+}
+
+func TestLeases_ReadinessGateAndSameGenerationGrantRecovery(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := t.Context()
+	now := time.Now().UTC().Truncate(time.Second)
+
+	// 1. Create group, enroll node via enrollment service, and publish exit via exits service (D-050: no SQL into projector tables).
+	vault, ca := pkitest.Authority(t)
+	identity, err := pki.NewService(pool, ca, vault, pki.TestRenewalOverlap)
+	if err != nil {
+		t.Fatalf("pki.NewService: %v", err)
+	}
+	enrollSvc, err := enrollment.NewService(pool, ca, identity, vault, vault, enrollment.Config{BootstrapValidity: enrollment.TestBootstrapValidity})
+	if err != nil {
+		t.Fatalf("enrollment.NewService: %v", err)
+	}
+	nodesSvc := nodes.NewService(pool, nodes.WithClock(func() time.Time { return now }))
+
+	adminID := uuid.New()
+	var grp api.MemberGroup
+	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var gErr error
+		grp, gErr = nodesSvc.CreateGroupTx(ctx, tx, "admin:"+adminID.String(), nil, api.MemberGroupCreate{
+			Code: "grp-readiness-lease",
+			Name: "Readiness Lease Group",
+		})
+		return gErr
+	}); err != nil {
+		t.Fatalf("CreateGroupTx: %v", err)
+	}
+
+	created, err := enrollSvc.CreateEnrollment(ctx, enrollment.Command{Principal: "admin:" + adminID.String(), Key: uuid.New()}, api.EnrollmentCreateRequest{
+		Delivery: api.EnrollmentDeliveryInstaller,
+	})
+	if err != nil {
+		t.Fatalf("CreateEnrollment: %v", err)
+	}
+	token, err := created.Token.Get()
+	if err != nil {
+		t.Fatalf("Token.Get: %v", err)
+	}
+	csrReq, _ := pkitest.Request(t)
+	enrolled, err := enrollSvc.Enroll(ctx, token, csrReq)
+	if err != nil {
+		t.Fatalf("Enroll: %v", err)
+	}
+	nodeID := enrolled.Response.NodeId
+	incID := enrolled.Response.NodeIncarnationId
+
+	// SeedDesiredStateSigner + FakeEntitlementReader with 1 active member + 1 device binding (> 0).
+	memberID := uuid.New()
+	deviceID := uuid.New()
+	planID := uuid.New()
+	planRevID := uuid.New()
+	if _, err := pool.Exec(ctx, `INSERT INTO members (id, email, display_name, status) VALUES ($1, 'readiness@example.com', 'readiness', 'active')`, memberID); err != nil {
+		t.Fatalf("insert member: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO plans (id, code) VALUES ($1, 'plan-readiness')`, planID); err != nil {
+		t.Fatalf("insert plan: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO plan_revisions (id, plan_id, revision, device_limit, exit_group_ids, schema_version, payload) VALUES ($1, $2, 1, 3, $3, 1, '{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, planRevID, planID, []uuid.UUID{grp.GroupId}); err != nil {
+		t.Fatalf("insert plan_revision: %v", err)
+	}
+	entStore, err := entitlement.NewStore(entitlement.TestConfig())
+	if err != nil {
+		t.Fatalf("entitlement.NewStore: %v", err)
+	}
+	entStore.Now = func() time.Time { return now }
+	membersSvc := &members.Service{Pool: pool, Entitlements: entStore}
+	validFrom := now.Add(-1 * time.Hour)
+	validUntil := now.Add(12 * time.Hour)
+	if _, err := membersSvc.Grant(ctx, entitlement.Command{
+		Actor: entitlement.Actor{Role: "admin", ID: adminID, RequestID: uuid.New()},
+		Key:   uuid.New(),
+	}, memberID, api.GrantCreateRequest{
+		Source:         api.GrantSourceAdminGrant,
+		ValidFrom:      &validFrom,
+		ValidUntil:     validUntil,
+		Reason:         "TEST ONLY readiness lease contract",
+		PlanRevisionId: &planRevID,
+	}); err != nil {
+		t.Fatalf("members.Grant: %v", err)
+	}
+
+	dsSeed := sha256.Sum256([]byte("TEST ONLY - NOT A SECRET - desired-state-key-readiness"))
+	dsPriv := ed25519.NewKeyFromSeed(dsSeed[:])
+	dsSigner := desiredstate.NewKeySigner(desiredstate.SigningKey{
+		KeyID:      "ds-key-readiness-1",
+		Purpose:    envelope.PurposeDesiredState,
+		PrivateKey: dsPriv,
+	})
+	dsEntReader := desiredstate.NewFakeEntitlementReader(desiredstate.MemberEntitlement{
+		MemberID:            memberID,
+		GroupIDs:            []uuid.UUID{grp.GroupId},
+		ValidFrom:           validFrom,
+		EffectiveServiceEnd: validUntil,
+		PlanDownBps:         100000000,
+		PlanUpBps:           50000000,
+		Bindings: []desiredstate.MemberDeviceBinding{{
+			DeviceID:        deviceID,
+			NetbirdPeerID:   "TEST ONLY peer",
+			AllowedIPv4:     []string{"100.64.0.10/32"},
+			BindingRevision: 1,
+			ValidFrom:       validFrom,
+			ValidUntil:      validUntil,
+		}},
+	})
+	compiler := desiredstate.NewCompiler(pool, dsSigner,
+		desiredstate.WithEntitlementReader(dsEntReader),
+		desiredstate.WithPolicyReader(desiredstate.NewFakePolicyReader(desiredstate.PolicySnapshot{})),
+		desiredstate.WithClock(func() time.Time { return now }),
+	)
+	exitsSvc := exits.NewService(pool, compiler, nil, exits.WithClock(func() time.Time { return now }))
+
+	// Compile initial unpublished generation (gen 1) and submit baseline observation so SetPublication succeeds.
+	comp1, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile gen 1: %v", err)
+	}
+	bootID := uuid.New()
+	baseReport := func(gen decstr.U64, prov api.ProvisioningState, safety api.SafetyStatus, health api.DataHealth, tunnelStatus api.HealthCheckStatus) api.ObservationReport {
+		now = now.Add(time.Second)
+		rep := api.ObservationReport{
+			NodeId:                  nodeID,
+			NodeIncarnationId:       incID,
+			ReportId:                uuid.New(),
+			ObservedAt:              now,
+			AgentVersion:            "1.0.0",
+			BootId:                  bootID,
+			AppliedConfigGeneration: presence.NewNullableWithValue(gen),
+			AppliedBindingRevision:  presence.NewNullNullable[decstr.U64](),
+			AppliedPolicyRefs:       presence.NewNullNullable[api.PolicyRefs](),
+			CurrentReleaseId:        presence.NewNullNullable[uuid.UUID](),
+			LastGoodReleaseId:       presence.NewNullNullable[uuid.UUID](),
+			DnsPolicyEvidence:       presence.NewNullNullable[api.DnsPolicyEvidence](),
+			ProvisioningState:       prov,
+			SafetyStatus:            safety,
+			DataHealth:              health,
+			MemberForwardingEnabled: false,
+			ForwardingBlockReasons:  []api.ForwardingBlockReason{},
+			Errors:                  []api.NodeError{},
+			Checks: []api.NodeCheck{
+				{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+				{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+				{Name: api.NodeCheckNameTunnelProbe, Status: tunnelStatus, ObservedAt: now, ErrorCode: presence.NewNullNullable[api.ErrorCode]()},
+			},
+			Usage: api.UsageOutboxStatus{
+				BlockedSeq:      presence.NewNullNullable[decstr.U64](),
+				LedgerEpoch:     presence.NewNullNullable[uuid.UUID](),
+				MeterEpochId:    presence.NewNullNullable[uuid.UUID](),
+				OldestUnackedAt: presence.NewNullNullable[time.Time](),
+			},
+		}
+		rep.Update.Generation = presence.NewNullNullable[decstr.U64]()
+		rep.Update.JobId = presence.NewNullNullable[uuid.UUID]()
+		rep.Update.Stage = presence.NewNullNullable[api.UpdateStage]()
+		rep.Update.State = presence.NewNullNullable[api.UpdateJobState]()
+		rep.Netbird.Backend = api.ObservationReportNetbirdBackendKernel
+		rep.Netbird.PeerId.SetNull()
+		rep.Netbird.Version.SetNull()
+		rep.Lease.LeaseId.SetNull()
+		rep.Lease.ExpiresAt.SetNull()
+		return rep
+	}
+	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, baseReport(comp1.Envelope.Signed.ConfigGeneration, api.ProvisioningStateReady, api.SafetyStatusPassed, api.DataHealthDegraded, api.HealthCheckStatusNotRun)); err != nil {
+		t.Fatalf("SubmitObservation baseline: %v", err)
+	}
+
+	_, etag, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode: %v", err)
+	}
+	groupIDs := []uuid.UUID{grp.GroupId}
+	if _, _, err := exitsSvc.SetPublication(ctx, exits.SetPublicationParams{
+		NodeID:         nodeID,
+		Principal:      "admin:" + adminID.String(),
+		IdempotencyKey: uuid.New(),
+		IfMatch:        etag,
+		Request: api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentPublished,
+			Reason:            "TEST ONLY publish for lease readiness contract",
+			GroupIds:          &groupIDs,
+		},
+	}); err != nil {
+		t.Fatalf("SetPublication: %v", err)
+	}
+
+	// Compile published desired state (desired bindings == 1).
+	compPub, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile published: %v", err)
+	}
+	pubGen := compPub.Envelope.Signed.ConfigGeneration
+	if compPub.Envelope.Signed.PublicationIntent != api.PublicationIntentPublished || len(compPub.Envelope.Signed.DeviceBindings) != 1 {
+		t.Fatalf("compiled desired state = (intent=%s, bindings=%d), want (published, 1)", compPub.Envelope.Signed.PublicationIntent, len(compPub.Envelope.Signed.DeviceBindings))
+	}
+
+	// Simulate cold node restart before readiness (AT09 / F4-01): first observation after restart has failed tunnel_probe,
+	// so central projects provisioning_state='applying' and safety_status='failed' on generation pubGen.
+	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, baseReport(pubGen, api.ProvisioningStateApplying, api.SafetyStatusFailed, api.DataHealthDegraded, api.HealthCheckStatusFailed)); err != nil {
+		t.Fatalf("SubmitObservation post-restart not ready: %v", err)
+	}
+	detailNotReady, _, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode after restart: %v", err)
+	}
+	if detailNotReady.ProvisioningState != api.ProvisioningStateApplying {
+		t.Fatalf("ProvisioningState after restart = %s, want applying", detailNotReady.ProvisioningState)
+	}
+
+	leaseSigner, _ := testLeaseSignerAndTrustStore(t, now)
+	leaseSvc := NewService(pool, leaseSigner, WithClock(func() time.Time { return now }))
+
+	// Contract part 1: registered, published, desired bindings > 0, not yet ready -> grant-less lease on generation pubGen.
+	var grantlessEnv api.ServingLeaseEnvelope
+	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var rErr error
+		grantlessEnv, rErr = leaseSvc.RenewTx(ctx, tx, nodeID, incID, api.LeaseRenewalRequest{
+			RenewalRequestId:        uuid.New(),
+			NodeId:                  nodeID,
+			NodeIncarnationId:       incID,
+			AppliedConfigGeneration: presence.NewNullableWithValue(pubGen),
+			CurrentLeaseId:          presence.NewNullNullable[uuid.UUID](),
+		})
+		return rErr
+	}); err != nil {
+		t.Fatalf("RenewTx while not ready: %v", err)
+	}
+	if grantlessEnv.Signed.ConfigGeneration != pubGen {
+		t.Fatalf("grantless lease ConfigGeneration = %d, want %d", grantlessEnv.Signed.ConfigGeneration, pubGen)
+	}
+	if len(grantlessEnv.Signed.Members) != 0 {
+		t.Fatalf("grantless lease Members = %+v, want empty slice [] while node is not ready", grantlessEnv.Signed.Members)
+	}
+
+	// Contract part 2: node becomes ready on the same generation pubGen; next RenewTx carries the member grants on the same generation.
+	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, baseReport(pubGen, api.ProvisioningStateReady, api.SafetyStatusPassed, api.DataHealthHealthy, api.HealthCheckStatusPassed)); err != nil {
+		t.Fatalf("SubmitObservation ready: %v", err)
+	}
+	detailReady, _, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode after ready: %v", err)
+	}
+	if detailReady.ProvisioningState != api.ProvisioningStateReady || detailReady.SafetyStatus != api.SafetyStatusPassed {
+		t.Fatalf("node state after ready observation = (%s, %s), want (ready, passed)", detailReady.ProvisioningState, detailReady.SafetyStatus)
+	}
+
+	var populatedEnv api.ServingLeaseEnvelope
+	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var rErr error
+		populatedEnv, rErr = leaseSvc.RenewTx(ctx, tx, nodeID, incID, api.LeaseRenewalRequest{
+			RenewalRequestId:        uuid.New(),
+			NodeId:                  nodeID,
+			NodeIncarnationId:       incID,
+			AppliedConfigGeneration: presence.NewNullableWithValue(pubGen),
+			CurrentLeaseId:          presence.NewNullableWithValue(grantlessEnv.Signed.LeaseId),
+		})
+		return rErr
+	}); err != nil {
+		t.Fatalf("RenewTx after ready: %v", err)
+	}
+	if populatedEnv.Signed.ConfigGeneration != grantlessEnv.Signed.ConfigGeneration {
+		t.Fatalf("populated lease ConfigGeneration = %d, want same generation %d", populatedEnv.Signed.ConfigGeneration, grantlessEnv.Signed.ConfigGeneration)
+	}
+	if len(populatedEnv.Signed.Members) != 1 || populatedEnv.Signed.Members[0].MemberId != memberID {
+		t.Fatalf("populated lease Members = %+v, want [%s]", populatedEnv.Signed.Members, memberID)
+	}
+
+	// Contract part 3 (isolation timeline regression): when central advances desired_config_generation
+	// while an already-ready incarnation reports safety_status=passed for the prior generation,
+	// central must not downgrade provisioning_state to 'applying' and issue a grant-less lease on the new generation.
+	compNext1, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile next 1: %v", err)
+	}
+	compNext2, err := compiler.Compile(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("Compile next 2: %v", err)
+	}
+	genNext1 := compNext1.Envelope.Signed.ConfigGeneration
+	genNext2 := compNext2.Envelope.Signed.ConfigGeneration
+	if genNext2 <= genNext1 {
+		t.Fatalf("expected genNext2 (%d) > genNext1 (%d)", genNext2, genNext1)
+	}
+
+	// In-flight observation for genNext1 arrives while desired_config_generation is already genNext2.
+	if _, err := nodesSvc.SubmitObservation(ctx, nodeID, incID, baseReport(genNext1, api.ProvisioningStateReady, api.SafetyStatusPassed, api.DataHealthHealthy, api.HealthCheckStatusPassed)); err != nil {
+		t.Fatalf("SubmitObservation in-flight genNext1: %v", err)
+	}
+	detailInFlight, _, err := nodesSvc.GetNode(ctx, nodeID)
+	if err != nil {
+		t.Fatalf("GetNode after in-flight observation: %v", err)
+	}
+	if detailInFlight.ProvisioningState != api.ProvisioningStateReady {
+		t.Fatalf("in-flight observation downgraded ProvisioningState to %s, want ready", detailInFlight.ProvisioningState)
+	}
+
+	// Agent syncs genNext2 and calls RenewTx before sending its genNext2 observation.
+	var nextGenLease api.ServingLeaseEnvelope
+	if err := db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var rErr error
+		nextGenLease, rErr = leaseSvc.RenewTx(ctx, tx, nodeID, incID, api.LeaseRenewalRequest{
+			RenewalRequestId:        uuid.New(),
+			NodeId:                  nodeID,
+			NodeIncarnationId:       incID,
+			AppliedConfigGeneration: presence.NewNullableWithValue(genNext2),
+			CurrentLeaseId:          presence.NewNullableWithValue(populatedEnv.Signed.LeaseId),
+		})
+		return rErr
+	}); err != nil {
+		t.Fatalf("RenewTx on genNext2: %v", err)
+	}
+	if nextGenLease.Signed.ConfigGeneration != genNext2 || len(nextGenLease.Signed.Members) != 1 || nextGenLease.Signed.Members[0].MemberId != memberID {
+		t.Fatalf("RenewTx on genNext2 = (gen=%d, members=%+v), want (gen=%d, member=%s)", nextGenLease.Signed.ConfigGeneration, nextGenLease.Signed.Members, genNext2, memberID)
 	}
 }

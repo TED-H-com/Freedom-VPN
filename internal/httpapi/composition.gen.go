@@ -227,6 +227,19 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				ListNodeIncarnations(context.Context, gen.ListNodeIncarnationsRequestObject) (gen.ListNodeIncarnationsResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: ListNodeIncarnations")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				SetNodePublication(context.Context, gen.SetNodePublicationRequestObject) (gen.SetNodePublicationResponseObject, error)
 			}); ok {
 				n++
@@ -787,6 +800,17 @@ func (c *Composite) UpdateNode(ctx context.Context, r gen.UpdateNodeRequestObjec
 			UpdateNode(context.Context, gen.UpdateNodeRequestObject) (gen.UpdateNodeResponseObject, error)
 		}); ok {
 			return h.UpdateNode(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+func (c *Composite) ListNodeIncarnations(ctx context.Context, r gen.ListNodeIncarnationsRequestObject) (gen.ListNodeIncarnationsResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			ListNodeIncarnations(context.Context, gen.ListNodeIncarnationsRequestObject) (gen.ListNodeIncarnationsResponseObject, error)
+		}); ok {
+			return h.ListNodeIncarnations(ctx, r)
 		}
 	}
 	return nil, errNotImplemented

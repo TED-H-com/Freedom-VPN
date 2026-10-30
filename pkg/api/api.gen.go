@@ -868,6 +868,7 @@ func (e FleetConfigDefaultMaxOfflineLeaseSeconds) Valid() bool {
 
 // Defines values for ForwardingBlockReason.
 const (
+	ForwardingBlockReasonAwaitingMemberGrants   ForwardingBlockReason = "awaiting_member_grants"
 	ForwardingBlockReasonClockUntrusted         ForwardingBlockReason = "clock_untrusted"
 	ForwardingBlockReasonDiskLow                ForwardingBlockReason = "disk_low"
 	ForwardingBlockReasonIdentityInvalid        ForwardingBlockReason = "identity_invalid"
@@ -888,6 +889,8 @@ const (
 // Valid indicates whether the value is a known member of the ForwardingBlockReason enum.
 func (e ForwardingBlockReason) Valid() bool {
 	switch e {
+	case ForwardingBlockReasonAwaitingMemberGrants:
+		return true
 	case ForwardingBlockReasonClockUntrusted:
 		return true
 	case ForwardingBlockReasonDiskLow:
@@ -1247,6 +1250,45 @@ func (e NodeCheckName) Valid() bool {
 	case NodeCheckNameStorage:
 		return true
 	case NodeCheckNameTunnelProbe:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for NodeIncarnationRetireReason.
+const (
+	NodeIncarnationRetireReasonReinstall    NodeIncarnationRetireReason = "reinstall"
+	NodeIncarnationRetireReasonRevocation   NodeIncarnationRetireReason = "revocation"
+	NodeIncarnationRetireReasonSupersession NodeIncarnationRetireReason = "supersession"
+)
+
+// Valid indicates whether the value is a known member of the NodeIncarnationRetireReason enum.
+func (e NodeIncarnationRetireReason) Valid() bool {
+	switch e {
+	case NodeIncarnationRetireReasonReinstall:
+		return true
+	case NodeIncarnationRetireReasonRevocation:
+		return true
+	case NodeIncarnationRetireReasonSupersession:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for NodeIncarnationState.
+const (
+	NodeIncarnationStateActive  NodeIncarnationState = "active"
+	NodeIncarnationStateRetired NodeIncarnationState = "retired"
+)
+
+// Valid indicates whether the value is a known member of the NodeIncarnationState enum.
+func (e NodeIncarnationState) Valid() bool {
+	switch e {
+	case NodeIncarnationStateActive:
+		return true
+	case NodeIncarnationStateRetired:
 		return true
 	default:
 		return false
@@ -2393,7 +2435,11 @@ type AgentBootstrap struct {
 // Architecture Supported node CPU architectures (§3.2).
 type Architecture string
 
-// AuditEvent Redacted audit event (§9.1, §16.4). Configuration history, never member browsing history.
+// AuditEvent Redacted audit event (§9.1, §16.4). Configuration history, never member
+// browsing history. `enrollment.created` puts `token_sha256` in
+// `changes.after`: the lowercase hex SHA-256 of the one-time token, the
+// same value as `Enrollment.token_sha256`. Property names ending in
+// `_sha256` are digests and are never redacted.
 type AuditEvent struct {
 	// Action Dotted action name, for example `node.publish`.
 	Action string `json:"action"`
@@ -2403,7 +2449,9 @@ type AuditEvent struct {
 	} `json:"actor"`
 	AuditEventId openapi_types.UUID `json:"audit_event_id"`
 
-	// Changes Redacted before/after differences. Never secrets, tokens or full payment payloads.
+	// Changes Redacted before/after differences. Never secrets, tokens or full
+	// payment payloads. Property names ending in `_sha256` are digests
+	// and are never redacted, including `token_sha256`.
 	Changes struct {
 		After  nullable.Nullable[map[string]interface{}] `json:"after"`
 		Before nullable.Nullable[map[string]interface{}] `json:"before"`
@@ -2857,7 +2905,9 @@ type EnrollResponse struct {
 // EnrollResponseNext defines model for EnrollResponse.Next.
 type EnrollResponseNext string
 
-// Enrollment Enrollment without the token (§6.1, §15.3).
+// Enrollment Enrollment without the token (§6.1, §15.3). Returned by `getEnrollment`
+// and as `EnrollmentCreated.enrollment`. This API has no `listEnrollments`
+// operation; the same object is the enrollment record wherever it appears.
 type Enrollment struct {
 	// BoundPublicKeySha256 SHA-256 of the DER SubjectPublicKeyInfo bound at first use.
 	BoundPublicKeySha256 nullable.Nullable[string]    `json:"bound_public_key_sha256"`
@@ -2886,6 +2936,12 @@ type Enrollment struct {
 	Region            nullable.Nullable[string]             `json:"region"`
 	RevokedAt         nullable.Nullable[time.Time]          `json:"revoked_at"`
 	State             EnrollmentState                       `json:"state"`
+
+	// TokenSha256 Lowercase hex SHA-256 of the one-time enrollment token. This is the
+	// only form the database keeps (`node_enrollments.token_hash`). The
+	// plaintext is returned once, on creation, and never again (§6.1).
+	// It is not `bound_public_key_sha256`, which is the CSR key.
+	TokenSha256 *string `json:"token_sha256,omitempty"`
 }
 
 // EnrollmentCreateRequest defines model for EnrollmentCreateRequest.
@@ -2911,7 +2967,9 @@ type EnrollmentCreateRequest struct {
 // replays return `token: null` and `secret_available: false`. If the token
 // was lost, revoke the enrollment and create a new one.
 type EnrollmentCreated struct {
-	// Enrollment Enrollment without the token (§6.1, §15.3).
+	// Enrollment Enrollment without the token (§6.1, §15.3). Returned by `getEnrollment`
+	// and as `EnrollmentCreated.enrollment`. This API has no `listEnrollments`
+	// operation; the same object is the enrollment record wherever it appears.
 	Enrollment      Enrollment `json:"enrollment"`
 	SecretAvailable bool       `json:"secret_available"`
 
@@ -3295,6 +3353,12 @@ type FleetReleaseState struct {
 }
 
 // ForwardingBlockReason Why member forwarding is off on the node (fail-closed reasons).
+// `lease_expired` is the anchored deadline of the node lease for this
+// generation: the lease is no longer in force. `awaiting_member_grants`
+// (D-067) is different: the node holds a valid node lease whose member
+// grant set is empty while the desired generation carries member bindings.
+// The agent renews on a bounded schedule. Do not report `lease_expired`
+// for that provisional lease.
 type ForwardingBlockReason string
 
 // GrantCreateRequest defines model for GrantCreateRequest.
@@ -3802,6 +3866,110 @@ type NodeError struct {
 	Message    string    `json:"message"`
 	ObservedAt time.Time `json:"observed_at"`
 	Stage      string    `json:"stage"`
+}
+
+// NodeIncarnation One historical incarnation (§6.2, §15.3). Columns: `node_incarnations.id`,
+// `created_at`, `revoked_at`, `public_key_fingerprint`;
+// `nodes.current_incarnation_id` and `nodes.lifecycle_state`;
+// `node_enrollments.id` and `consumed_at` where
+// `node_enrollments.incarnation_id` equals this row. Product consumption
+// always writes that enrollment link (`internal/enrollment/service.go`).
+// `created_at` is `node_incarnations.created_at`. `bound_at` is
+// `node_enrollments.consumed_at` (the CSR accept time; the incarnation row
+// is inserted in that same transaction, and there is no earlier unbound
+// incarnation row). `retired_at` is `node_incarnations.revoked_at`, not
+// `nodes.retired_at`. `bound_public_key_sha256` is the lowercase hex of
+// `public_key_fingerprint`, the same SHA-256 of the DER
+// SubjectPublicKeyInfo as on `Enrollment`. `current` is true when
+// `nodes.current_incarnation_id` equals this id. Revocation does not clear
+// that pointer, so a retired incarnation can still be current until a
+// reinstall replaces it.
+type NodeIncarnation struct {
+	// BoundAt When the enrollment was consumed and this incarnation was inserted.
+	BoundAt time.Time `json:"bound_at"`
+
+	// BoundPublicKeySha256 SHA-256 of the DER SubjectPublicKeyInfo bound at consumption.
+	BoundPublicKeySha256 string    `json:"bound_public_key_sha256"`
+	CreatedAt            time.Time `json:"created_at"`
+
+	// Current True when this id is `nodes.current_incarnation_id`.
+	Current bool `json:"current"`
+
+	// EnrollmentId Enrollment that created this incarnation (`node_enrollments.id`).
+	EnrollmentId  openapi_types.UUID                             `json:"enrollment_id"`
+	IncarnationId openapi_types.UUID                             `json:"incarnation_id"`
+	RetireReason  nullable.Nullable[NodeIncarnationRetireReason] `json:"retire_reason"`
+
+	// RetiredAt `node_incarnations.revoked_at`. Null while the incarnation is active.
+	RetiredAt nullable.Nullable[time.Time] `json:"retired_at"`
+
+	// State Derived incarnation lifecycle. The node schemas do not expose an
+	// incarnation-state enum, and `node_incarnations` has no state column.
+	// `active` means `revoked_at` is null (partial unique index
+	// `node_incarnations_active_key` in `db/migrations/00002_nodes.sql`).
+	// `retired` means `revoked_at` is not null. `internal/nodes/observations.go`
+	// treats a non-null `revoked_at` as revoked and a current-pointer mismatch
+	// as superseded; those are request errors, not extra stored states.
+	// `LifecycleState` is the node, not the incarnation.
+	State NodeIncarnationState `json:"state"`
+
+	// Usage Ledger total for this incarnation only (§10, §19 AT07). It never moves
+	// to another incarnation. `upload_bytes` and `download_bytes` are the sum
+	// of accepted `usage_samples.upload_bytes` and `download_bytes` whose
+	// `usage_events.incarnation_id` is this incarnation. Rejections and
+	// conflicts are not included. `through` is
+	// `usage_checkpoints.updated_at` for that `(node_id, incarnation_id)`,
+	// null when that checkpoint row does not exist. Bytes are zero when no
+	// accepted sample exists. A sum above 18446744073709551615 is a failure,
+	// not a truncated total.
+	Usage NodeIncarnationUsage `json:"usage"`
+}
+
+// NodeIncarnationList Cursor page of incarnations, newest `created_at` first, then
+// `incarnation_id` descending. `limit` defaults to 50 and is at most 100.
+type NodeIncarnationList struct {
+	Items      []NodeIncarnation         `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
+}
+
+// NodeIncarnationRetireReason Why a retired incarnation stopped. There is no retire-reason column.
+// Derive it from the nodes domain, in this order, and leave it null while
+// `revoked_at` is null. `reinstall`: another `node_incarnations` row for
+// the same node has a later `created_at` (`internal/enrollment/service.go`,
+// the AT07 authorized reinstall that requires the previous incarnation to
+// be revoked before the new row is inserted). `revocation`: no later
+// incarnation, and `nodes.lifecycle_state` is `revoked` or `retired`
+// (`internal/enrollment/revoke.go` `revokeNode` sets `revoked_at` for both
+// `node.revoked` and `node.retired`). `supersession`: `revoked_at` is set
+// and the row is not explained by those two rules
+// (`internal/nodes/observations.go`, "superseded by a newer incarnation").
+type NodeIncarnationRetireReason string
+
+// NodeIncarnationState Derived incarnation lifecycle. The node schemas do not expose an
+// incarnation-state enum, and `node_incarnations` has no state column.
+// `active` means `revoked_at` is null (partial unique index
+// `node_incarnations_active_key` in `db/migrations/00002_nodes.sql`).
+// `retired` means `revoked_at` is not null. `internal/nodes/observations.go`
+// treats a non-null `revoked_at` as revoked and a current-pointer mismatch
+// as superseded; those are request errors, not extra stored states.
+// `LifecycleState` is the node, not the incarnation.
+type NodeIncarnationState string
+
+// NodeIncarnationUsage Ledger total for this incarnation only (§10, §19 AT07). It never moves
+// to another incarnation. `upload_bytes` and `download_bytes` are the sum
+// of accepted `usage_samples.upload_bytes` and `download_bytes` whose
+// `usage_events.incarnation_id` is this incarnation. Rejections and
+// conflicts are not included. `through` is
+// `usage_checkpoints.updated_at` for that `(node_id, incarnation_id)`,
+// null when that checkpoint row does not exist. Bytes are zero when no
+// accepted sample exists. A sum above 18446744073709551615 is a failure,
+// not a truncated total.
+type NodeIncarnationUsage struct {
+	DownloadBytes decstr.U64 `json:"download_bytes"`
+
+	// Through Time of the last accepted usage checkpoint for this incarnation.
+	Through     nullable.Nullable[time.Time] `json:"through"`
+	UploadBytes decstr.U64                   `json:"upload_bytes"`
 }
 
 // NodeList defines model for NodeList.
@@ -5508,6 +5676,15 @@ type UpdateNodeParams struct {
 	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
 	// header: 400 MALFORMED_REQUEST.
 	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// ListNodeIncarnationsParams defines parameters for ListNodeIncarnations.
+type ListNodeIncarnationsParams struct {
+	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Page size. Default 50, maximum 100 (§14.1, recommended default).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // SetNodePublicationParams defines parameters for SetNodePublication.

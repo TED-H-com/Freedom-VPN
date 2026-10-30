@@ -81,7 +81,19 @@ func (e *Engine) syncDesired(ctx context.Context) error {
 }
 
 func (e *Engine) syncLease(ctx context.Context) error {
-	if e.leaseAttempted || e.clock.Mono() < e.leaseRetryAt || !e.needRenew() {
+	if e.leaseAttempted || e.clock.Mono() < e.leaseRetryAt {
+		return nil
+	}
+	// A grant-less lease is not renewed before its scheduled slot. A
+	// generation change still renews in this step.
+	if e.leaseProvisional() && !e.leaseBehindApplied() && e.clock.Mono() < e.provisionalRetryAt {
+		return nil
+	}
+	if !e.leaseProvisional() {
+		e.provisionalStreak = 0
+		e.provisionalRetryAt = 0
+	}
+	if !e.needRenew() {
 		return nil
 	}
 	mono := e.clock.Mono()
@@ -136,12 +148,89 @@ func (e *Engine) needRenew() bool {
 	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (e.applyError == nil && e.leaseBehindApplied()) {
 		return true
 	}
+	// D-067: an in-force same-generation lease with no member grants, while
+	// desired state still names device bindings, is provisional. The lead
+	// of a lease that carries grants is unchanged.
+	if e.leaseProvisional() {
+		return e.provisionalRetryAt == 0 || e.clock.Mono() >= e.provisionalRetryAt
+	}
 	window := e.lease.ExpiresAt.Sub(e.lease.IssuedAt)
 	deadline, ok := timeanchor.MemberDeadline(e.leaseMono, window)
 	if !ok {
 		return true
 	}
 	return timeanchor.Remaining(deadline, e.clock.Mono()) <= e.renewLead(window)+leadJitter(e.renewLead(window))
+}
+
+// leaseProvisional is an in-force lease for this desired generation whose
+// grant set is empty while device bindings are still desired. It does not
+// look at admission, so a binding that fails closed for another reason is
+// not a reason to renew.
+func (e *Engine) leaseProvisional() bool {
+	if !e.leaseFresh || e.lease == nil || e.desired == nil || !e.desiredOK {
+		return false
+	}
+	if len(e.desired.DeviceBindings) == 0 || len(e.lease.Members) > 0 {
+		return false
+	}
+	if uint64(e.lease.ConfigGeneration) != uint64(e.desired.ConfigGeneration) {
+		return false
+	}
+	window := e.lease.ExpiresAt.Sub(e.lease.IssuedAt)
+	deadline, ok := timeanchor.MemberDeadline(e.leaseMono, window)
+	if !ok || e.leaseMono <= 0 {
+		return false
+	}
+	return timeanchor.Remaining(deadline, e.clock.Mono()) > 0
+}
+
+// provisionalRenewCap is the longest gap between grant-less renewals.
+// The first wait is one heartbeat. Later waits double until this cap.
+const provisionalRenewCap = 60 * time.Second
+
+func (e *Engine) heartbeatInterval() time.Duration {
+	sec := e.cfg.HeartbeatSeconds
+	if sec <= 0 {
+		sec = 10
+	}
+	return time.Duration(sec) * time.Second
+}
+
+// provisionalWait is the delay after the streak-th provisional lease.
+// Streak 1 waits one heartbeat, including when that is longer than the cap.
+// Each later wait doubles and then stops at provisionalRenewCap.
+func (e *Engine) provisionalWait(streak int) time.Duration {
+	hb := e.heartbeatInterval()
+	if streak < 1 {
+		streak = 1
+	}
+	wait := hb
+	for i := 1; i < streak; i++ {
+		if wait >= provisionalRenewCap/2 {
+			return provisionalRenewCap
+		}
+		wait *= 2
+	}
+	if streak > 1 && wait > provisionalRenewCap {
+		return provisionalRenewCap
+	}
+	return wait
+}
+
+// noteProvisionalSchedule arms the next grant-less renewal, or clears the
+// schedule when this lease carries grants or nothing is bound.
+func (e *Engine) noteProvisionalSchedule() {
+	if !e.leaseProvisional() {
+		e.provisionalStreak = 0
+		e.provisionalRetryAt = 0
+		return
+	}
+	mono := e.clock.Mono()
+	if mono <= 0 {
+		return
+	}
+	e.provisionalStreak++
+	e.provisionalRetryAt = mono + e.provisionalWait(e.provisionalStreak)
 }
 
 // leaseBehindApplied is a stored lease whose config generation is not the
@@ -213,6 +302,7 @@ func (e *Engine) acceptLease(ctx context.Context, raw []byte, monoSent time.Dura
 		if sameBoot {
 			// Same lease id keeps the original monotonic send time (§16.3).
 			e.leaseFresh = true
+			e.noteProvisionalSchedule()
 		}
 		return nil
 	}
@@ -244,6 +334,7 @@ func (e *Engine) acceptLease(ctx context.Context, raw []byte, monoSent time.Dura
 		e.storageOK = false
 		return err
 	}
+	e.noteProvisionalSchedule()
 	return nil
 }
 

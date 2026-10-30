@@ -369,4 +369,46 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
      - In `shadow` mode (or normal tier `0`), `eval` carries `EnforcedTierIndex = 0`, `Reason = "normal"`, and any shadow `WouldApply*` fields while effective `DownBps`/`UpBps` remain $\min(\text{plan\_rate}, \text{node\_member\_rate\_cap})$.
    - `nodeCapacityRatePair(nodeCap)` combines `nodeCap.DownBps`/`UpBps` with optional `nodeCap.MemberDownBpsCap`/`MemberUpBpsCap` so both total node bandwidth and per-member node caps bound the member rate policy.
 
+---
+
+## 9. Operation Completion Under Pending Isolation Errors & Readiness/Lease Contract, Follow-up 18
+
+### 9.1 Revoke Operation Completion Under Pending `ISOLATION_POLICY_INVALID` Apply Errors (r13 M-3)
+
+1. **Problem & Invariant (§5.2, §8.1, §14.5)**:
+   - When a node applies a new policy generation that removes a member or device binding, the node installs and verifies the serving nftables/tc ruleset first and then flushes established conntrack flows (`conntrack -D`) for the revoked overlay addresses.
+   - While bounded `conntrack -D` retries are in progress on the node, the agent reports `member_forwarding_enabled = true`, `safety_status = "passed"`, `provisioning_state = "ready"`, all checks `passed`, and an apply error `ISOLATION_POLICY_INVALID` (`stage = "apply"`, `"conntrack delete pending; serving ruleset verified"`).
+   - Central **never** completes the `"nodes"` step of a revoke operation (`member.device_revoke`, `member.grant_revoke`, `member.suspend`, or `member.update` on close/suspend) while the node's latest accepted observation for the target generation carries a pending `ISOLATION_POLICY_INVALID` apply error.
+
+2. **Node State, Operation Read Model, and Audit While Pending**:
+   - `evaluateObservationEvidence` (`internal/nodes/observations.go`) degrades `nodes.data_health` from `healthy` to `degraded` whenever `ISOLATION_POLICY_INVALID` is present in `report.Errors`, and `publicationForwardingFailure` (`internal/nodes/publication_evidence.go`) returns `"isolation_unconfirmed"`.
+   - `advanceNodeOperationsOnObservation` keeps the operation's `"nodes"` step in `status = "pending"` and records:
+     - `steps.nodes.error_code = "ISOLATION_POLICY_INVALID"`
+     - `steps.nodes.error_message = "member_forwarding_unconfirmed"` (in the `operations.IsBoundedFailureCause` allowlist so both `operations.Store.Get` for admins and `nodes.GetOperation` / `nodes.GetMemberOperation` / `nodes.ListMemberOperations` surface it, while `operations.Store.Get` for members surfaces `ErrorCode = "ISOLATION_POLICY_INVALID"` with the redacted step failure prompt)
+     - `steps.nodes.reason = "conntrack_delete_pending"`
+     - `observed_refs.nodes_isolation_pending = "report:<report_id>:gen:<gen>:error:ISOLATION_POLICY_INVALID"`
+   - `SubmitObservation` records `"isolation_error_code": "ISOLATION_POLICY_INVALID"` and `"isolation_error_reason": "conntrack_delete_pending"` on the `node.observation_applied` audit event and appends a correlated `node.revoke_isolation_pending` (`result = "failed"`, `operation_id = <op_id>`) audit event on the affected resource.
+
+3. **Completion Rules**:
+   - The `"nodes"` step transitions to `succeeded` (clearing `error_code`, `error_message`, `reason`, and `nodes_isolation_pending`) and appends a correlated `node.revoke_isolation_resolved` (`result = "succeeded"`) audit event only when no other registered node in the member's exit group still reports a pending `ISOLATION_POLICY_INVALID` error while forwarding, and either:
+     1. **Next clean observation (`resolution = "conntrack_delete_succeeded"`)**: the node submits an observation for `applied_config_generation >= desired_config_generation` with `safety_status = "passed"`, `provisioning_state = "ready"`, and no `ISOLATION_POLICY_INVALID` apply error; or
+     2. **Node fails closed (`resolution = "node_failed_closed"`)**: the node exhausts its bounded conntrack retry and fails closed (`member_forwarding_enabled = false`, `safety_status = "failed"`, `provisioning_state = "applying"`, `internet_only = "passed"`), disabling member forwarding on the node and withdrawing its publication readiness.
+
+### 9.2 Readiness and Serving Lease Contract (Members F4-01 / AT09, Isolation Finding 1)
+
+1. **Readiness Gate on `RenewTx` (`internal/leases/leases.go`)**:
+   - `RenewTx` includes member lease grants iff `lifecycle_state == "registered" && publication_intent == "published" && provisioning_state == "ready"`.
+   - When a registered, published node has a compiled `DesiredState` with `device_bindings > 0` but is not yet `ready` (`provisioning_state != "ready"`, e.g. on the first tick after a cold restart before its tunnel/baseline probe observation is accepted), `RenewTx` issues a valid signed lease on `config_generation == desired_config_generation` with `members: []` (zero member grants).
+   - Once `SubmitObservation` accepts a ready observation (`provisioning_state = "ready"`, `safety_status = "passed"`) on that generation, the next `RenewTx` issues a lease on the **same** `config_generation` populated with the active member grants (`TestLeases_ReadinessGateAndSameGenerationGrantRecovery`).
+
+2. **Preserving `provisioning_state = "ready"` Across Concurrent Generation Bumps**:
+   - Initial baseline readiness for a node incarnation requires `applied_config_generation >= desired_config_generation` and `safety_status = "passed"`.
+   - Once the current incarnation has achieved `nodes.provisioning_state = "ready"`, an in-flight observation for an already-applied generation (`applied_config_generation > 0`) that still passes safety (`safety_status = "passed"`) does **not** downgrade `nodes.provisioning_state` back to `"applying"` when central concurrently advances `desired_config_generation` (`TestReadiness_PreservedAcrossConcurrentDesiredGenerationAdvance`).
+   - Generation lag continues to be enforced by `applied_config_generation < desired_config_generation` in `CheckPublishable` and `PublicationDataPathFailure` (`"stale_generation"`), while avoiding artificial grant-less lease windows when the agent renews its lease for a newly compiled generation before sending that generation's observation.
+
+3. **Separation of Baseline Readiness (`provisioning_state` / `safety_status`) from Serving Checks**:
+   - Per §5.1 and §8.1, `safety_status` and `provisioning_state` reflect the isolation and policy baseline (`internet_only`, `meter_path`, `tunnel_probe`, policy/release/DNS/storage baseline), whereas active member traffic forwarding is reflected by `member_forwarding_observed` and `PublicationDataPathFailure` (`"check_failed"` / `"serving_checks_unconfirmed"`).
+   - Serving checks (`lease`, `qos`, `source_binding`) intentionally do not flip `provisioning_state` to `"applying"` or `safety_status` to `"failed"`: because `RenewTx` requires `provisioning_state == "ready"` to issue member grants, downgrading `provisioning_state` on `lease: LEASE_EXPIRED` would deadlock recovery from a grant-less lease.
+
+
 
