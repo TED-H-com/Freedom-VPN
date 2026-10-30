@@ -10,9 +10,9 @@ The runner requires a positive native admission counter increment, then polls
 longer injects a 3000-byte fixture batch. This checks native sampling and arrival;
 exact-byte reconciliation and replay remain separate usage-harness cases.
 
-See [usage evidence](../runs/2026-10-30/usage.md). The current member has a real
-desired-state binding, but the agent retains its initial empty-member lease.
-There is no admitted flow. This scenario is blocked by **w2-agent-core lease
-refresh**, before w3-wire-usage sample acceptance. The record distinguishes
-that prerequisite from an observed usage API failure; the member usage API
-itself answers 200.
+See [usage evidence](../runs/2026-10-30/usage.md). Follow-up 9 selects the
+API-published NetBird exit explicitly, then proves a controlled-origin admission
+counter increase before polling the usage API. The former empty-member lease
+gate is fixed by agent follow-up 9 (#146); an unselected native exit was the
+next lab-owned stop. Records identify sampler/API failures separately from a
+missing counted-flow prerequisite.

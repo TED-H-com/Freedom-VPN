@@ -300,6 +300,7 @@ func probeBaselineWithCustomElems(m Model, probeV4Elems, probeDstElems []any) []
 			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterProbeDown, "packets": 0, "bytes": 0}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_v4", "elem": probeV4Elems}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_dst_v4", "elem": probeDstElems}},
+			resolverSetFixture(m),
 		},
 	}
 	raw, err := json.Marshal(doc)

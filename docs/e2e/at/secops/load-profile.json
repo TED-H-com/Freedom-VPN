@@ -52,6 +52,6 @@
     "Android"
   ],
   "fixture_protocol": "D-050: admin grants for 20 real member sessions, 3 native user peers per member admitted by devices.discover; never hand-write projected tables",
-  "current_lab_hook_limit": 1,
-  "required_scale_hook": "SECOPS-10"
+  "current_lab_hook_limit": 60,
+  "required_scale_hook": "Available in #143: tests/e2e/native_exports.go StartNativePeer/JoinNativeMember (20 users \u00d7 3 peers); actual admission counts in live.json.native_scale, not inferred from the hook bound."
 }
