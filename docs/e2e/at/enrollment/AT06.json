@@ -1,0 +1,466 @@
+{
+  "run_id": "9db51ea3-d807-449e-a812-cfad739db675",
+  "started_at": "2026-10-30T17:02:23Z",
+  "finished_at": "2026-10-30T17:02:24Z",
+  "source": {
+    "commit": "e4215bc151742774bbf957d2305246c514207de8",
+    "tree_sha256": "5e40bea111e14698dc95a939aa71097deb6cc495586110e393567fa5b72ee50d",
+    "dirty": true,
+    "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"
+  },
+  "prefix": "w4-enroll",
+  "port_base": 66000,
+  "image_digests": {},
+  "image_evidence": "unavailable: no stack has started",
+  "commands": [
+    {
+      "name": "fresh_teardown",
+      "started_at": "2026-10-30T17:02:23Z",
+      "finished_at": "2026-10-30T17:02:23Z",
+      "exit_code": 0
+    },
+    {
+      "name": "fresh_startup",
+      "started_at": "2026-10-30T17:02:24Z",
+      "finished_at": "2026-10-30T17:02:24Z",
+      "exit_code": 2
+    },
+    {
+      "name": "final_teardown",
+      "started_at": "2026-10-30T17:02:24Z",
+      "finished_at": "2026-10-30T17:02:24Z",
+      "exit_code": 0
+    }
+  ],
+  "test_binary_sha256": null,
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "images": 0
+  },
+  "id": "AT06",
+  "status": "blocked",
+  "actual": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+  "requirements": [
+    "ENR01",
+    "ENR02",
+    "SEC01"
+  ],
+  "spec": [
+    "§19 AT06",
+    "§6.1",
+    "§6.2",
+    "§6.3",
+    "§6.4"
+  ],
+  "checks": [
+    {
+      "at": "AT06",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:24Z"
+    },
+    {
+      "at": "AT06",
+      "name": "response_dropped",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "same_holder_retry",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "one_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "consumed_binding",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "single_consumption_audit",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "incarnation_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-03: admin API exposes current incarnation, not complete incarnation count/history"
+    },
+    {
+      "at": "AT06",
+      "name": "peer_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-04: no documented own-key enrollment join and complete correlated peer readback hook"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_token_hash",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-02: enrollment audit writer exposes reason only; token hash evidence unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "different_key_race",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "race_winner_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "expired_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "revoked_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "token_only",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "invalid_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "bootstrap_requires_mtls",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "retry_no_store",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_control/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_worker/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/agent.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/watchdog.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-service.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-up.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/resolver-proxy.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable"
+    }
+  ],
+  "prior_checks": [
+    {
+      "at": "AT06",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:15Z",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "response_dropped",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "same_holder_retry",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "one_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "consumed_binding",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "single_consumption_audit",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "incarnation_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-03: admin API exposes current incarnation, not complete incarnation count/history",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "peer_uniqueness",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-04: no documented own-key enrollment join and complete correlated peer readback hook",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "audit_token_hash",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-02: enrollment audit writer exposes reason only; token hash evidence unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "csr_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "different_key_race",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "race_winner_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "expired_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "revoked_token",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "token_only",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "invalid_proof",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "bootstrap_requires_mtls",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "retry_no_store",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_control/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_worker/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/console",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/agent.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/watchdog.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-service.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/netbird-up.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT06",
+      "name": "secret_scan_node/resolver-proxy.log",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    }
+  ]
+}

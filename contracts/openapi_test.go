@@ -15,7 +15,9 @@ import (
 
 // specEndpoints is the endpoint table of §14.2 to §14.4, relative to /api/v1.
 var specEndpoints = []string{
-	// §14.2 Admin (25, including D-057)
+	// §14.2 Admin (27, including D-057 and D-065)
+	"GET /admin/fleet-config",
+	"PUT /admin/fleet-config",
 	"GET /admin/groups",
 	"POST /admin/groups",
 	"GET /admin/nodes",
@@ -66,6 +68,7 @@ var specEndpoints = []string{
 
 // specStatuses holds the success statuses listed in §14.2 to §14.4.
 var specStatuses = map[string][]string{
+	"GET /admin/fleet-config": {"200"}, "PUT /admin/fleet-config": {"200"},
 	"GET /admin/groups": {"200"}, "POST /admin/groups": {"201"}, "GET /agent/resolver-documents/{document_id}": {"200"},
 	"GET /admin/nodes": {"200"}, "POST /admin/enrollments": {"201"}, "GET /admin/enrollments/{enrollment_id}": {"200"},
 	"POST /admin/enrollments/{enrollment_id}/revoke": {"200"}, "GET /admin/nodes/{node_id}": {"200"},
@@ -105,12 +108,12 @@ func operations(t *testing.T) []opInfo {
 	return ops
 }
 
-func TestAPI01_EndpointCountIs44(t *testing.T) {
+func TestAPI01_EndpointCountIs46(t *testing.T) {
 	ops := operations(t)
-	if len(ops) != 44 {
-		t.Fatalf("got %d operations, want 44 (§14.1, D-015/D-056/D-057)", len(ops))
+	if len(ops) != 46 {
+		t.Fatalf("got %d operations, want 46 (§14.1, D-015/D-056/D-057/D-065)", len(ops))
 	}
-	if len(specEndpoints) != 44 {
+	if len(specEndpoints) != 46 {
 		t.Fatalf("spec table has %d entries", len(specEndpoints))
 	}
 	var got []string
@@ -260,6 +263,7 @@ func TestAPI01_IdempotencyAndPreconditions(t *testing.T) {
 		"PATCH /admin/nodes/{node_id}": true, "PUT /admin/nodes/{node_id}/publication": true,
 		"POST /admin/nodes/{node_id}/revoke": true, "DELETE /admin/nodes/{node_id}": true,
 		"PATCH /admin/members/{member_id}": true, "POST /admin/policies/{definition_id}/activate": true,
+		"PUT /admin/fleet-config": true,
 	}
 	for _, o := range operations(t) {
 		adminOrMember := strings.HasPrefix(o.path, "/admin/") || strings.HasPrefix(o.path, "/member/")

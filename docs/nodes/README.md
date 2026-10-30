@@ -6,6 +6,29 @@ This document describes the central node management subsystem implemented in:
 - `internal/desiredstate` — Per-node desired-state compiler (`Compile`, `CompileTx`, `ReSign`, `GetDesiredState`, `RecompileBatch`), member rate policy delegation (`fup.BuildNodeMemberRatePolicy`), and outbox burst coalescing.
 - `internal/exits` — Exit publication commands (`SetPublication`, `SetPublicationTx`), multi-step operation execution (`ExecuteOperation`), NetBird adapter integration with `external_bindings` idempotency, and NetBird read-back reconciliation (`ReconcileNetBird`).
 - `internal/leases` — Serving lease calculation (`ComputeMemberLeaseEnd`, `Renew`), Ed25519 envelope signing (`lease` purpose), and replay-safe persistence (`serving_leases`, `serving_lease_members`).
+- `internal/nodes/httpwire` — Admin fleet configuration (`GET`/`PUT /api/v1/admin/fleet-config`, D-065) and the HTTP adapters described in [WIRING.md](WIRING.md).
+
+### Admin fleet configuration (D-065, §14.5, §16.3)
+
+`GET /api/v1/admin/fleet-config` returns `max_offline_lease_seconds`, the read-only
+`default_max_offline_lease_seconds` (86400), `resource_version`, `updated_at`, and
+the strong ETag `"<resource_version>"`. `PUT` accepts the new maximum and a required
+`reason`, using that ETag in `If-Match` and a UUID `Idempotency-Key`; it returns 200
+after the local write and one `fleet_config.update` audit event commit together.
+The event is visible through `GET /api/v1/admin/audit-events`, with before/after
+maximums, the admin actor and reason, and null `operation_id`. Same-key replay
+returns the original response and ETag, even after subsequent writes.
+
+The value applies only to leases issued or renewed after the write. Already
+issued leases and their replays keep their original value, expiry and signature.
+60 seconds is a lab floor; 86400 seconds is the §16.3 ceiling. The portal must
+warn below 900 seconds. Operators and harnesses use this API rather than writing
+`fleet_config` directly. The command increments `resource_version` under the
+singleton row lock shared with release updates, and never changes the fleet's
+release generation or support policy. Missing `If-Match` returns 428; a stale
+ETag returns 412 with `current_resource_version`; a reused key with different
+content returns 409; the shared request validator rejects values outside
+60..86400 with 422.
 
 ---
 

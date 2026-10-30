@@ -155,3 +155,9 @@ from the first pending failure's effect on delivery in the final run.
 The unpublished node's original unconditional health-adapter blocker is resolved
 by D-053. The remaining requests concern real observation and result delivery;
 no `node/updater`, agent, central service or contract file was modified here.
+
+## Follow-up 6 mapping
+
+Run `a83d5d64-505c-488c-b560-5a777566702e`, source `1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f`, evidence `2026-10-30T17:10:45Z`. Prefix `w4-updates`, port base 42000.
+
+Fresh case c now passes (F5-01 resolved). Original AT23–AT27 scenarios and follow-up 4 extensions pass. Extended AT23/AT25 remain blocked on shared probe setup (F5-02 reopened); AT24/AT27 on the requested recorded c2/c3 expectations (F6-02). AT26 passes. Make exit 2. See [current summary](summary.md), [raw pre-result evidence](pre-result.json), [probe evidence](probe-issuance.json), and [requests](requests.md).

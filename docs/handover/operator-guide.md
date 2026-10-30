@@ -124,15 +124,15 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
   -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}"
 ```
 
-### 2.3 OpenAPI Contract Inventory (`44` Operations) (`#164`, `docs/contracts/README.md`, `docs/nodes/WIRING.md`, `pkg/apierr/apierr.go`)
+### 2.3 OpenAPI Contract Inventory (`46` Operations) (`#164`, `docs/contracts/README.md`, `docs/nodes/WIRING.md`, `pkg/apierr/apierr.go`)
 
-`contracts/openapi.yaml` (OpenAPI `1.4.0`, revision 8) defines **44 HTTP operations** across `/api/v1`, all wired in `apps/control` on `main`:
+`contracts/openapi.yaml` (OpenAPI `1.5.0`, revision 9) defines **46 HTTP operations** across `/api/v1`. Forty-four are wired in `apps/control` on `main`. `getFleetConfig` and `updateFleetConfig` (`GET`/`PUT /api/v1/admin/fleet-config`, D-065) are defined and not implemented in this revision:
 - **Member Groups (`GET /api/v1/admin/groups`, `POST /api/v1/admin/groups`, `D-057`, `D-059`)**:
   `CreateAdminGroup` writes an immutable `member_groups` row (unique `code` and `name`), records a typed `group.create` audit event on `member_group:<id>`, and stores the idempotent `201 MemberGroup` receipt in one transaction (`replay` returns the original `201` body). `ListAdminGroups` orders by `code`, supports exact `code` filtering and cursor pagination, and counts every attached exit in `exit_count` (including unpublished or offline exits).
 - **Authenticated Resolver Document Delivery (`GET /api/v1/agent/resolver-documents/{document_id}`, `D-056`)**:
   `GetResolverDocument` authorizes the mTLS-authenticated node's current incarnation and current or immediately previous desired-state generation before consulting `nodes.ResolverDocumentSource` (`store.NewDocumentReader(pool)`). Unknown and unissued document IDs both return `404 NOT_FOUND`. Validated responses stream the exact canonical RFC 8785 JSON bytes (`<= 1 MiB`) with `ETag: "sha256:<hex>"`. See §5.1 below and [node wiring](../nodes/WIRING.md) for signed issuance and periodic reconciliation.
-- **Node Enforcement Verification Reasons in `ErrorCode` (`#164`, OpenAPI `1.4.0` revision 8, `docs/contracts/README.md`, `pkg/apierr/apierr.go`, `apps/portal/src/api/errors.ts`)**:
-  Revision 8 adds the nine `node/enforce` verification reasons to the `ErrorCode` enum alongside the existing `METER_PATH_INVALID`, `ISOLATION_BASELINE_MISSING`, and `METER_EPOCH_CHANGE` codes (12 enforcement reasons in total): `ISOLATION_POLICY_INVALID`, `GENERATION_MISMATCH`, `HOOK_PRIORITY_MISMATCH`, `COUNTER_ORDER_INVALID`, `FLOWTABLE_BYPASS`, `DEVICE_CLASS_MISSING`, `QOS_CLASS_MISSING`, `MARK_SEMANTICS_VIOLATED`, and `PROBE_UNBOUNDED`. These codes are mirrored as report-only constants in `pkg/apierr` (without HTTP status mappings) and mapped to operator messages in `apps/portal/src/api/errors.ts`; they appear in `ObservationReport.errors[].code` (`NodeError.code`) and in the `error_code` field of the `source_binding`, `qos`, `lease`, `internet_only`, and `meter` entries of `ObservationReport.checks`, and are never returned as a browser-facing HTTP `Error.code`.
+- **Node Enforcement Verification Reasons in `ErrorCode` (contract revision 8 (#164), `docs/contracts/README.md`, `pkg/apierr/apierr.go`, `apps/portal/src/api/errors.ts`)**:
+  Contract revision 8 (#164) adds the nine `node/enforce` verification reasons to the `ErrorCode` enum alongside the existing `METER_PATH_INVALID`, `ISOLATION_BASELINE_MISSING`, and `METER_EPOCH_CHANGE` codes (12 enforcement reasons in total): `ISOLATION_POLICY_INVALID`, `GENERATION_MISMATCH`, `HOOK_PRIORITY_MISMATCH`, `COUNTER_ORDER_INVALID`, `FLOWTABLE_BYPASS`, `DEVICE_CLASS_MISSING`, `QOS_CLASS_MISSING`, `MARK_SEMANTICS_VIOLATED`, and `PROBE_UNBOUNDED`. These codes are mirrored as report-only constants in `pkg/apierr` (without HTTP status mappings) and mapped to operator messages in `apps/portal/src/api/errors.ts`; they appear in `ObservationReport.errors[].code` (`NodeError.code`) and in the `error_code` field of the `source_binding`, `qos`, `lease`, `internet_only`, and `meter` entries of `ObservationReport.checks`, and are never returned as a browser-facing HTTP `Error.code`.
 
 ---
 
@@ -517,7 +517,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID
     "reason": "7-day courtesy access while billing issue is resolved"
   }'
 ```
-*(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 44-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or asynchronous withdrawal can be requested via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
+*(Note: Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. There is no HTTP `DELETE` endpoint for grants in the 46-operation OpenAPI contract; grants expire automatically at `valid_until` via `members.reconcile`, or asynchronous withdrawal can be requested via `PATCH /api/v1/admin/members/{member_id}` with `"admin_suspended": true`.)*
 
 ### 7.3 Identity Continuity, Client Rotation and Duplicate Pre-Check (`D-052`, `#134`, `#137`, `#139`, `docs/control/AUTH.md`, `docs/members/README.md`)
 

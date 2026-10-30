@@ -194,6 +194,11 @@ func newLimiter(max int) *limiter {
 	return &limiter{entries: map[string]*bucketEntry{}, max: max}
 }
 
+// limiterNow is the clock for token refill and idle eviction. Production
+// leaves it as time.Now. A test replaces it so eligibility for eviction does
+// not depend on how fast the requests run, and restores it when the test ends.
+var limiterNow = time.Now
+
 // allow spends one token or returns how long the caller should wait.
 // At capacity it evicts only the least-recently-used bucket, and only when
 // that bucket is idle with a full token count or has been idle for more
@@ -205,7 +210,7 @@ func newLimiter(max int) *limiter {
 func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	now := time.Now()
+	now := limiterNow()
 	e, ok := l.entries[key]
 	if !ok {
 		if len(l.entries) >= l.max && !l.evictIdle(now) {
@@ -314,6 +319,10 @@ func New(c *Composite, o Options) (http.Handler, error) {
 	if o.Config.MaxRatePrincipals < 1 {
 		return nil, errors.New("rate capacity required")
 	}
+	proxies, e := config.ParseTrustedProxies(o.Config.TrustedProxies)
+	if e != nil {
+		return nil, e
+	}
 	subjects := newLimiter(o.Config.MaxRatePrincipals)
 	anonymousLim := newLimiter(o.Config.MaxRatePrincipals)
 	ingress := make(map[string]*limiter, len(rateClasses))
@@ -399,7 +408,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				return
 			}
 		}
-		peer, peerOK := connectionRateKey(r.RemoteAddr)
+		peer, peerOK := requestRateKey(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies, !o.AgentListener)
 		if !peerOK {
 			// Do not insert an empty host. Unparseable connection addresses
 			// would otherwise share one bucket and could fill the principal map.
@@ -647,8 +656,8 @@ func matchingIdentity(v any, p auth.Principal) bool {
 }
 
 // BrowserRoutes bounds login discovery/token work and session bootstrap. The key
-// is the connection address (IPv4 per address, IPv6 per /64). Untrusted proxy
-// forwarding headers are ignored.
+// is the connection principal (IPv4 per address, IPv6 per /64). X-Forwarded-For
+// is read only when the TCP peer is inside trusted_proxies.
 func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 	return BrowserRoutesWithMetrics(c, next, nil)
 }
@@ -665,7 +674,10 @@ const ipv6RatePrefixBits = 64
 // not an IP connection address; the caller fails that request closed and
 // does not store a key.
 func connectionRateKey(remoteAddr string) (string, bool) {
-	ip := parseRemoteIP(remoteAddr)
+	return rateKeyFromIP(parseRemoteIP(remoteAddr))
+}
+
+func rateKeyFromIP(ip net.IP) (string, bool) {
 	if ip == nil {
 		return "", false
 	}
@@ -677,6 +689,78 @@ func connectionRateKey(remoteAddr string) (string, bool) {
 		return "", false
 	}
 	return prefix.String(), true
+}
+
+// maxForwardedHops is the number of X-Forwarded-For entries read from the
+// right. Entries further left are not parsed.
+const maxForwardedHops = 64
+
+// requestRateKey is the connection principal for a public-listener request.
+// The TCP peer is the principal unless useForwarded is set and that peer
+// belongs to a trusted proxy network. Then the principal is the rightmost
+// X-Forwarded-For entry that is not itself a trusted hop. A missing header,
+// a chain of only trusted hops, or a peer outside the trusted networks keeps
+// the TCP peer. An unparseable TCP peer or an unparseable chosen entry
+// returns ok false. RFC 7239 Forwarded and X-Real-IP are not read.
+// The agent listener passes useForwarded false: ingress stays on the TCP peer.
+func requestRateKey(remoteAddr string, forwarded []string, trusted []*net.IPNet, useForwarded bool) (string, bool) {
+	if !useForwarded || len(trusted) == 0 {
+		return connectionRateKey(remoteAddr)
+	}
+	peer := parseRemoteIP(remoteAddr)
+	if peer == nil {
+		return "", false
+	}
+	if !ipInNets(peer, trusted) {
+		return rateKeyFromIP(peer)
+	}
+	for _, entry := range rightmostForwarded(forwarded, maxForwardedHops) {
+		ip := parseForwardedIP(entry)
+		if ip == nil {
+			return "", false
+		}
+		if ipInNets(ip, trusted) {
+			continue
+		}
+		return rateKeyFromIP(ip)
+	}
+	return rateKeyFromIP(peer)
+}
+
+func ipInNets(ip net.IP, nets []*net.IPNet) bool {
+	if v4 := ip.To4(); v4 != nil {
+		ip = v4
+	}
+	for _, n := range nets {
+		if n.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
+// rightmostForwarded returns at most limit entries, rightmost first.
+// Header values are in on-the-wire order: a later value was appended and is
+// further to the right. Only the examined suffix is scanned.
+func rightmostForwarded(values []string, limit int) []string {
+	if limit < 1 || len(values) == 0 {
+		return nil
+	}
+	out := make([]string, 0, min(limit, 8))
+	for i := len(values) - 1; i >= 0 && len(out) < limit; i-- {
+		s := values[i]
+		end := len(s)
+		for len(out) < limit {
+			comma := strings.LastIndexByte(s[:end], ',')
+			entry := strings.TrimSpace(s[comma+1 : end])
+			out = append(out, entry)
+			if comma < 0 {
+				break
+			}
+			end = comma
+		}
+	}
+	return out
 }
 
 // parseRemoteIP reads the host from a connection address. net.SplitHostPort
@@ -696,6 +780,16 @@ func parseRemoteIP(remoteAddr string) net.IP {
 		host = host[:i]
 	}
 	return net.ParseIP(host)
+}
+
+// parseForwardedIP reads one X-Forwarded-For entry. A bracketed address with
+// no port ("[2001:db8::1]") is an address. A TCP RemoteAddr in that form stays
+// unparseable: connection addresses carry a port.
+func parseForwardedIP(entry string) net.IP {
+	if len(entry) >= 2 && entry[0] == '[' && entry[len(entry)-1] == ']' {
+		entry = entry[1 : len(entry)-1]
+	}
+	return parseRemoteIP(entry)
 }
 
 // splitUnbracketedIPv6 accepts "address:port" when the address contains a
@@ -733,13 +827,19 @@ func BrowserRoutesWithMetrics(c config.Config, next http.Handler, rateLimited *p
 	}
 	lim := newLimiter(c.MaxRatePrincipals)
 	gate := make(chan struct{}, c.MaxConcurrent)
+	proxies, proxyErr := config.ParseTrustedProxies(c.TrustedProxies)
+	if proxyErr != nil {
+		// Startup validation rejects a bad list. A handler built without it
+		// keeps the TCP peer and does not honor a forwarding header.
+		proxies = nil
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = apierr.TrackResponse(w)
 		class := "login"
 		if r.URL.Path == "/auth/session" || r.URL.Path == "/auth/logout" {
 			class = "session"
 		}
-		host, ok := connectionRateKey(r.RemoteAddr)
+		host, ok := requestRateKey(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies, true)
 		if !ok {
 			if rateLimited != nil {
 				rateLimited.WithLabelValues(class, "address").Inc()
