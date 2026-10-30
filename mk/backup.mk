@@ -11,11 +11,11 @@ VERIFY_TARGETS += backup-lint backup-test
 # Runs bash -n over all backup shell scripts (plus shellcheck/shfmt if installed),
 # and runs gofmt, go vet, and pinned staticcheck v0.8.2 over tests/backup.
 backup-lint:
-	@for f in deploy/backup/*.sh deploy/backup/postgres/*.sh; do \
+	@for f in deploy/backup/*.sh deploy/backup/postgres/*.sh deploy/backup/test/*.sh; do \
 		if [ -f "$$f" ]; then bash -n "$$f"; fi; \
 	done
-	@if command -v shellcheck >/dev/null 2>&1; then shellcheck deploy/backup/*.sh deploy/backup/postgres/*.sh; fi
-	@if command -v shfmt >/dev/null 2>&1; then shfmt -d deploy/backup/*.sh deploy/backup/postgres/*.sh; fi
+	@if command -v shellcheck >/dev/null 2>&1; then shellcheck deploy/backup/*.sh deploy/backup/postgres/*.sh deploy/backup/test/*.sh; fi
+	@if command -v shfmt >/dev/null 2>&1; then shfmt -d deploy/backup/*.sh deploy/backup/postgres/*.sh deploy/backup/test/*.sh; fi
 	@test -z "$$(gofmt -l $$(git ls-files --cached --others --exclude-standard 'tests/backup/*.go' 'tests/backup/**/*.go'))" || { echo 'gofmt required'; exit 1; }
 	@$(backup-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet ./tests/backup/...
 	@$(backup-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet -tags integration ./tests/backup/...
@@ -58,3 +58,7 @@ backup-drill-clean:
 	clean_matching network docker network rm; \
 	docker images --format '{{.Repository}}:{{.Tag}}' > "$$list"; \
 	clean_matching image docker rmi -f
+
+.PHONY: backup-review-proof
+backup-review-proof:
+	@$(backup-with-disk-tmp) bash deploy/backup/test/review_proof.sh
