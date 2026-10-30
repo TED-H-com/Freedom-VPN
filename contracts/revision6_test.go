@@ -16,8 +16,9 @@ import (
 
 func TestAPI01_Revision6VersionAndDecisions(t *testing.T) {
 	doc := loadDoc(t)
-	if doc.Info.Version != "1.2.0" {
-		t.Fatal("API version must be 1.2.0")
+	// Revision 7 advances info.version to 1.3.0. This test still pins revision 6's decisions.
+	if doc.Info.Version != "1.3.0" {
+		t.Fatal("API version must be 1.3.0")
 	}
 	if n := len(doc.Paths.Map()); n == 0 {
 		t.Fatal("paths missing")
