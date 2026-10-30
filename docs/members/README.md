@@ -110,11 +110,37 @@ Hosted URLs and provider payloads never appear in those audit rows.
 ## Devices and observed evidence
 
 Native NetBird clients create their peers by SSO; NetBird REST cannot create
-WireGuard identities. Discovery reads peers through `internal/netbird`, requires
-an already verified `netbird_user_bindings`/`identity_bindings` proof, and admits
-under the member lock. It never links by email, display name or assumed equality
-of pairwise subjects. Setup-key/server peers and ephemeral peers are excluded.
-The competing final slot is serialized in PostgreSQL.
+WireGuard identities. D-052 selects one OIDC issuer with **public subjects** for
+both the portal and NetBird clients (§2 [S36], §15.2). `devices.discover` lists
+users through `internal/netbird` (`GET /api/users`), excludes service and blocked
+users, and matches the observed user ID to `identity_bindings.subject` under the
+central `oidc_issuer`. It uses the same issuer that validates portal tokens;
+there is no second issuer setting in the members file.
+
+Discovery writes `netbird_user_bindings` with
+`mapping_proof = "shared_issuer_public_subject:" + oidc_issuer`, the verified
+identity-binding UUID, and revision 1. The member lock and binding write share
+one transaction. Provider reads finish before that transaction begins. A proof
+change for the same immutable identity increments the revision; unchanged
+discoveries preserve the revision and verification timestamp. A different
+member or identity for an existing external ID is an `identity_conflict`, and
+the existing row remains untouched. Ambiguous client-scoped identities also
+fail closed. Native peers are admitted under the member lock after the proof
+exists; the competing final slot is serialized in PostgreSQL.
+
+Pairwise/unknown subjects fail closed as `identity_unmapped`. Never fix them by
+matching email or display name; configure public subjects at the shared IdP.
+Setup-key/server peers and ephemeral peers are excluded. The device contract
+has no unmapped-identity reason field, so a peer without a verified mapping is
+excluded from `GET /member/devices`. That endpoint reads worker projections and
+does not perform provider I/O. Discovery logs a bounded reason for unmapped and
+conflicting identities and increments the worker metric
+`fvpn_netbird_identity_discovery_total{result=...}`. Results are `created`,
+`unchanged`, `proof_updated`, `identity_unmapped`, `identity_conflict`,
+`service_user` or `blocked_user`; each discovery observation counts again.
+Subjects, emails, names, issuer URLs and provider IDs are not metric labels or
+discovery log fields. Subsequent authorization read-back rechecks the user and
+proof; stale or blocked identities cannot grant access.
 
 `devices.NetBirdAdapter` implements the existing narrow `devices.Adapter`.
 `EnsureMemberDevice` verifies the actual user, including service/blocked/unsafe
@@ -160,7 +186,7 @@ not claim/discard unrelated rows.
 | `netbird.device_sync` | Independently reconcile the referenced device and persist version-fenced observation. |
 | `billing.reconcile` | Page known subscriptions into synthetic inbox events; run/page identity deduplicates retries. |
 | `members.reconcile` | Sweep finite deadlines, create missing first-login projections and repair member device drift. |
-| `devices.discover` | Observe native peers and admit only verified, entitled identities within quota. |
+| `devices.discover` | Observe native users, persist D-052 public-subject proofs, then admit only verified, entitled native peers within quota. |
 
 `RunMemberSchedule` enqueues billing reconciliation and member/device maintenance
 at the configured intervals, including at startup. Time-slot and page identities
@@ -177,6 +203,15 @@ Set `members_config_file` in the central configuration, or
 The referenced strict JSON file has these keys; none of its business settings
 has a production default. See [config.example.json](config.example.json) for
 **TEST ONLY** values and secret-file placeholders.
+
+The existing central `oidc_issuer` is also passed into member identity discovery
+by both domain builders. Both processes must use the same central setting and
+the NetBird deployment must authenticate against that issuer with public
+subjects. [central.config.example.json](central.config.example.json) is the
+central configuration fragment to combine with the full control/worker example;
+it is not a standalone configuration or another issuer setting in the members
+JSON file. The IdP's public-subject policy is deployment configuration, not an
+email-based linking fallback.
 
 | Keys | Purpose |
 |---|---|
@@ -200,9 +235,11 @@ business/legal decision, not the usage retention default (§16.4).
 
 ## Manual work and acceptance boundaries
 
-Shared-issuer setup and an independent cross-client identity proof remain
-required before inserting a verified NetBird user binding. Existing identity
-rows are consumed, not inferred or manufactured. Plan changes and refunds use
+Shared-issuer/public-subject setup is required by D-052. Once a member has logged
+in, discovery produces the NetBird binding; operators do not seed binding rows.
+Existing verified login identities are consumed, not manufactured. Conflicting
+historical mappings require operator investigation and are never reassigned by
+discovery. Plan changes and refunds use
 the provider's operator workflow and the policy area's immutable plan revisions;
 there are no extra HTTP commands for them. Reconciliation imports authoritative
 invoice/refund state. A provider price change outside a pinned subscription
