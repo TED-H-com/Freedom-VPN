@@ -242,6 +242,13 @@ func (j *Journal) RecordEvent(ctx context.Context, txnID, detail string) error {
 		return err
 	}
 	defer func() { _ = tx.Rollback() }()
+	if err := j.recordEventTx(ctx, tx, txnID, detail); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (j *Journal) recordEventTx(ctx context.Context, tx *sql.Tx, txnID, detail string) error {
 	cur, err := scanTxn(tx.QueryRowContext(ctx, txnSelect+` WHERE txn_id = ?`, txnID))
 	if err != nil {
 		return err
@@ -257,7 +264,7 @@ func (j *Journal) RecordEvent(ctx context.Context, txnID, detail string) error {
 	if _, err := tx.ExecContext(ctx, `UPDATE txns SET updated_at = ? WHERE txn_id = ?`, now, txnID); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return nil
 }
 
 const txnSelect = `SELECT txn_id, job_id, attempt, generation, release_id, manifest_sha256, previous_release_id, last_good_release_id,

@@ -26,6 +26,7 @@ type Input struct {
 	TTL           time.Duration
 	Components    Components
 	Probe         *ChallengeProbe
+	ProbeOmitted  *ProbeOmission
 }
 
 // Issue builds a challenge with a fresh 256-bit nonce. The caller writes it.
@@ -42,6 +43,9 @@ func Issue(in Input) (Challenge, error) {
 	if in.Probe != nil && in.TTL > 300*time.Second {
 		return Challenge{}, errors.New("healthattest: probe ttl exceeds limit")
 	}
+	if in.ProbeOmitted != nil && (in.Probe != nil || !in.ProbeOmitted.Valid()) {
+		return Challenge{}, errors.New("healthattest: invalid probe omission")
+	}
 	if in.Components.NodeAgent == "" || in.Components.Netbird == "" || in.Components.NodeUpdater == "" || in.Components.Enforcement == "" {
 		return Challenge{}, errors.New("healthattest: component version")
 	}
@@ -51,6 +55,11 @@ func Issue(in Input) (Challenge, error) {
 	}
 	now := in.Now.UTC()
 	var probe *ChallengeProbe
+	var omitted *ProbeOmission
+	if in.ProbeOmitted != nil {
+		copy := *in.ProbeOmitted
+		omitted = &copy
+	}
 	if in.Probe != nil {
 		copy := *in.Probe
 		copy.Destinations = append([]ChallengeProbeDest(nil), in.Probe.Destinations...)
@@ -67,6 +76,7 @@ func Issue(in Input) (Challenge, error) {
 		ExpiresAt:     now.Add(in.TTL),
 		Components:    in.Components,
 		Probe:         probe,
+		ProbeOmitted:  omitted,
 	}, nil
 }
 
@@ -76,7 +86,14 @@ func (c Challenge) Same(o Challenge) bool {
 	return c.TxnID == o.TxnID && c.Nonce == o.Nonce && c.ReleaseID == o.ReleaseID &&
 		c.NodeID == o.NodeID && c.IncarnationID == o.IncarnationID && c.BootID == o.BootID &&
 		c.IssuedAt.Equal(o.IssuedAt) && c.ExpiresAt.Equal(o.ExpiresAt) &&
-		c.Components == o.Components && c.Consumed == o.Consumed && probeSame(c.Probe, o.Probe)
+		c.Components == o.Components && c.Consumed == o.Consumed && probeSame(c.Probe, o.Probe) && omissionSame(c.ProbeOmitted, o.ProbeOmitted)
+}
+
+func omissionSame(a, b *ProbeOmission) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return *a == *b
 }
 
 func probeSame(a, b *ChallengeProbe) bool {
@@ -96,6 +113,9 @@ func probeSame(a, b *ChallengeProbe) bool {
 
 // WriteChallenge writes the challenge atomically, mode 0600.
 func WriteChallenge(dir string, c Challenge) error {
+	if c.ProbeOmitted != nil && (c.Probe != nil || !c.ProbeOmitted.Valid()) {
+		return &rejectError{Reason: ReasonMalformed}
+	}
 	return writeJSON(filepath.Join(dir, ChallengeFile), c)
 }
 
@@ -109,6 +129,9 @@ func WriteAttestation(dir string, a Attestation) error {
 func ReadChallenge(dir string) (Challenge, os.FileInfo, error) {
 	var c Challenge
 	info, err := readJSON(filepath.Join(dir, ChallengeFile), &c)
+	if err == nil && c.ProbeOmitted != nil && (c.Probe != nil || !c.ProbeOmitted.Valid()) {
+		err = &rejectError{Reason: ReasonMalformed}
+	}
 	return c, info, err
 }
 
