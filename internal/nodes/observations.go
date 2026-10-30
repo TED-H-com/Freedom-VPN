@@ -217,12 +217,16 @@ func (s *Service) SubmitObservation(
 			lastGoodReleaseID = nil
 		}
 		provisioning := report.ProvisioningState
-		if s.observeVersion != nil && provisioning == api.ProvisioningStateReady {
-			var bound bool
-			if err := tx.QueryRow(ctx, `SELECT peer_id IS NOT NULL FROM node_incarnations WHERE id=$1`, authIncarnationID).Scan(&bound); err != nil {
+		if provisioning == api.ProvisioningStateReady {
+			// §5.1 / §6.1: baseline readiness needs safety and a generation ACK,
+			// not a management peer ID. A reported ID still requires read-back;
+			// absent IDs must not block unpublished/disabled baseline readiness.
+			var acknowledged, bound bool
+			if err := tx.QueryRow(ctx, `SELECT $2::numeric>0 AND $2::numeric>=n.desired_config_generation,i.peer_id IS NOT NULL FROM nodes n JOIN node_incarnations i ON i.id=$3 WHERE n.id=$1`, authNodeID, appliedGenStr, authIncarnationID).Scan(&acknowledged, &bound); err != nil {
 				return err
 			}
-			if !bound {
+			_, peerErr := report.Netbird.PeerId.Get()
+			if effectiveSafety != api.SafetyStatusPassed || !acknowledged || (s.observeVersion != nil && peerErr == nil && !bound) {
 				provisioning = api.ProvisioningStateApplying
 			}
 		}
@@ -267,7 +271,7 @@ func (s *Service) SubmitObservation(
 				"applied_config_generation": appliedGenStr,
 				"safety_status":             string(effectiveSafety),
 				"data_health":               string(effectiveHealth),
-				"provisioning_state":        string(report.ProvisioningState),
+				"provisioning_state":        string(provisioning),
 			})
 			if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 				ID:            obsAuditID,
