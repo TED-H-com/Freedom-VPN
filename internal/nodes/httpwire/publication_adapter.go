@@ -36,13 +36,26 @@ func (a *PublicationAdapter) check(deployment string) error {
 
 // SQL/provider errors must not become public operation error messages.
 func publicationError(err *error) {
-	if *err != nil {
-		*err = errors.New("NetBird publication evidence unavailable")
+	if *err == nil {
+		return
 	}
+	var provider *netbird.Error
+	var classified exits.PublicationEvidenceError
+	if errors.As(*err, &provider) {
+		return
+	} // error contains only kind/status
+	if errors.As(*err, &classified) {
+		*err = exits.PublicationEvidenceError(exits.PublicationFailureCause(classified, "readback"))
+		return
+	}
+	*err = exits.PublicationEvidenceError("adapter_unavailable")
 }
 
 func (a *PublicationAdapter) PublishExit(ctx context.Context, p exits.PublishExitSpec) (out exits.PublishedRouteEvidence, err error) {
 	defer publicationError(&err)
+	if len(p.MemberGroupIDs) == 0 {
+		return out, exits.PublicationEvidenceError("no_distribution_groups")
+	}
 	if err = a.check(p.DeploymentID); err != nil {
 		return out, err
 	}
@@ -98,7 +111,7 @@ func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment strin
 	for _, candidate := range observed.Routes {
 		if candidate.NetworkID == name || externalID != "" && candidate.ID == externalID {
 			if route != nil || candidate.NetworkID != name {
-				return out, errors.New("ambiguous exit route")
+				return out, exits.PublicationEvidenceError("route_ambiguous")
 			}
 			copy := candidate
 			route = &copy
@@ -108,18 +121,18 @@ func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment strin
 		return exits.ObservedExitState{Exists: false, ExternalID: externalID, ObservedRef: "netbird:exit:" + exitID.String() + ":absent"}, nil
 	}
 	if route.Network != "0.0.0.0/0" || route.Masquerade || !route.SkipAutoApply {
-		return out, errors.New("exit route does not preserve the serving contract")
+		return out, exits.PublicationEvidenceError("route_contract_mismatch")
 	}
 	var peer string
 	if err = a.runtime.Pool.QueryRow(ctx, `SELECT i.peer_id FROM exits e JOIN nodes n ON n.id=e.node_id JOIN node_incarnations i ON i.id=n.current_incarnation_id WHERE e.id=$1 AND i.deployment_id=$2`, exitID, deployment).Scan(&peer); err != nil || route.Peer != peer {
-		return out, errors.New("exit route peer mismatch")
+		return out, exits.PublicationEvidenceError("route_peer_mismatch")
 	}
 	bindings := nodes.NetBirdBindings{Pool: a.runtime.Pool}
 	groups := make([]string, 0, len(route.Groups))
 	for _, group := range route.Groups {
 		binding, ok, e := bindings.FindExternal(ctx, deployment, "groups", group)
 		if e != nil || !ok || !strings.HasPrefix(binding.InternalID, "paid:") {
-			return out, errors.New("exit route group evidence unavailable")
+			return out, exits.PublicationEvidenceError("group_evidence_unavailable")
 		}
 		id, e := uuid.Parse(strings.TrimPrefix(binding.InternalID, "paid:"))
 		if e != nil {
@@ -137,7 +150,7 @@ func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment strin
 		return out, err
 	}
 	if route.Enabled && (len(groups) == 0 || !slices.Equal(groups, expected)) {
-		return out, errors.New("exit route groups differ from publication intent")
+		return out, exits.PublicationEvidenceError("route_groups_mismatch")
 	}
 	// Hash actual read-back in the exits service's projection, never copy its
 	// desired hash as evidence. Policy/group writes were also read back by Client.
