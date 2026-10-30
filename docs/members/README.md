@@ -1,6 +1,6 @@
 # Member and billing HTTP/worker integration
 
-The member area implements ten strict operations and ten durable worker event
+The member area implements ten strict operations and nine durable worker event
 handlers. It uses the real control authentication/CSRF/idempotency boundary,
 PostgreSQL transactions, payment inbox and NetBird adapter (§9, §14.3–§14.5,
 §15.2, §15.4, §16.1). Integration tests run signed OIDC login through the actual
@@ -16,7 +16,7 @@ the common transport on both API listeners. It retains the original bounded
 `Stripe-Signature`; `httpapi.RawBody(ctx)` supplies the original request bytes.
 There is no post-construction server wrapper or per-domain call in `main`.
 
-The worker domain returns the ten job handlers, a `WithMembers` context decorator
+The worker domain returns the nine job handlers, a `WithMembers` context decorator
 and a supervised `RunMemberSchedule` runner. Both binaries require valid
 `members_config_file` settings and readable dependencies at startup; missing
 configuration no longer leaves a serving process with 503 member routes.
@@ -178,7 +178,6 @@ not claim/discard unrelated rows.
 
 | Event | Action |
 |---|---|
-| `billing.session_requested` | Legacy events only; no new checkout or portal request emits this event. The existing unowned worker registration remains a recovery compatibility path pending removal by its owner. |
 | `billing.inbox_received` | Process exactly `inbox_id`; fetch authoritative provider state, append evidence and recompute rights. |
 | `member.entitlement_changed` | Sync every member device from current state, then compile affected node policies. |
 | `member.suspended` | Idempotently sync current member state and compile affected node policies. |
@@ -193,7 +192,9 @@ at the configured intervals, including at startup. Time-slot and page identities
 deduplicate concurrent schedulers. Work is paged at 100 rows. Failed inbox work
 uses dispatcher backoff when invoked by its outbox event; standalone `ProcessOne`
 retains its bounded retry delay. Unknown event types and unsupported schema
-versions are never acknowledged. Investigate dead letters before explicit retry;
+versions are never acknowledged. Legacy `billing.session_requested` rows take
+the observable unknown-event dead-letter path (D-038); checkout is synchronous.
+Investigate dead letters before explicit retry;
 there is no silent reset of failed work.
 
 ## Configuration
