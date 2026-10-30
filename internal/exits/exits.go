@@ -315,12 +315,17 @@ func (s *Service) SetPublication(ctx context.Context, p SetPublicationParams) (a
 
 	_, _, principal := nodes.ResolveAdminActor(ctx, p.Principal)
 
-	reqCanon, err := canonjson.Marshal(map[string]any{
+	requestFields := map[string]any{
 		"node_id":            p.NodeID.String(),
 		"publication_intent": string(p.Request.PublicationIntent),
 		"reason":             p.Request.Reason,
-		"group_ids":          p.Request.GroupIds,
-	})
+	}
+	// Preserve pre-D-057 replay hashes when membership was omitted. An
+	// explicit empty replacement is a distinct command from omission.
+	if p.Request.GroupIds != nil {
+		requestFields["group_ids"] = *p.Request.GroupIds
+	}
+	reqCanon, err := canonjson.Marshal(requestFields)
 	if err != nil {
 		return api.Operation{}, "", err
 	}
