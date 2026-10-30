@@ -3,6 +3,7 @@ package enforce
 import (
 	"encoding/json"
 	"fmt"
+	"net/netip"
 	"strings"
 	"testing"
 	"time"
@@ -250,6 +251,7 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterProbeDown, "packets": 0, "bytes": 0}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_v4", "elem": []any{elemVal("100.64.8.1", timeout)}}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_dst_v4", "elem": []any{elemVal(map[string]any{"concat": []any{"1.2.3.4", "tcp", 80}}, timeout)}}},
+			resolverSetFixture(m),
 		},
 	}
 	raw, err := json.Marshal(doc)
@@ -286,6 +288,7 @@ func probeBaselineFixture(m Model, bounded bool) []byte {
 			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterProbeDown, "packets": 0, "bytes": 0}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_v4", "elem": []any{elemVal("100.64.8.1", timeout)}}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_dst_v4", "elem": []any{elemVal(map[string]any{"concat": []any{"1.2.3.4", "tcp", 80}}, timeout)}}},
+			resolverSetFixture(m),
 		},
 	}
 	raw, err := json.Marshal(doc)
@@ -293,6 +296,14 @@ func probeBaselineFixture(m Model, bounded bool) []byte {
 		panic(err)
 	}
 	return raw
+}
+
+func resolverSetFixture(m Model) map[string]any {
+	elems := make([]any, 0, len(m.Resolvers))
+	for _, addr := range m.Resolvers {
+		elems = append(elems, elemVal(addr.String(), nil))
+	}
+	return map[string]any{"set": map[string]any{"table": "fvpn", "name": "resolver_v4", "elem": elems}}
 }
 
 func appendForwardAccept(raw []byte) []byte {
@@ -342,6 +353,92 @@ func namedCounter(name string) map[string]any {
 
 func manglePriority(classid uint32) map[string]any {
 	return map[string]any{"mangle": map[string]any{"key": map[string]any{"meta": map[string]any{"key": "priority"}}, "value": classid}}
+}
+
+func TestVerify_ProbeDNSAcceptIsNarrow(t *testing.T) {
+	m := smallModel()
+	m.Probe = probeModel().Probe
+	plan, err := Render(m, State{}, TCState{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw := probeServingFixture(m, plan.Assignments, true)
+	if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		t.Fatal(err)
+	}
+	in, ul := m.Datapath.MemberIngress, m.Datapath.Uplink
+	wide := appendNft(raw, ruleExpr("forward",
+		matchMetaIface("iifname", in),
+		matchMetaIface("oifname", ul),
+		matchPayload("==", "saddr", "@probe_v4"),
+		namedCounter(counterProbeUp),
+		map[string]any{"accept": nil},
+	))
+	err = VerifyServing(wide, m, plan.Assignments)
+	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "wider than the DNS or tuple exception") {
+		t.Fatalf("serving wide accept: %v", err)
+	}
+	base := probeBaselineFixture(m, true)
+	if err := VerifyBaseline(base, m); err != nil {
+		t.Fatal(err)
+	}
+	twoPort := appendNft(base, ruleExpr("forward",
+		matchMetaIface("iifname", in),
+		matchMetaIface("oifname", ul),
+		matchPayload("==", "saddr", "@probe_v4"),
+		matchPayload("==", "daddr", "@resolver_v4"),
+		matchDport("tcp", 53),
+		matchDport("tcp", 80),
+		namedCounter(counterProbeUp),
+		map[string]any{"accept": nil},
+	))
+	err = VerifyBaseline(twoPort, m)
+	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "wider than the DNS or tuple exception") {
+		t.Fatalf("two-port accept: %v", err)
+	}
+	extra := appendNft(raw, map[string]any{"set": map[string]any{
+		"table": "fvpn", "name": "resolver_v4",
+		"elem": []any{elemVal("203.0.113.53", nil)},
+	}})
+	err = VerifyServing(extra, m, plan.Assignments)
+	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "resolver_v4 is not exactly the configured resolvers") || strings.Contains(err.Error(), "203.0.113.53") || strings.Contains(err.Error(), "198.51.100.53") {
+		t.Fatalf("extra resolver: %v", err)
+	}
+	swapped := m
+	cp := *m.Probe
+	swapped.Probe = &cp
+	swapped.Resolvers = []netip.Addr{mustAddr("198.51.100.54")}
+	err = VerifyBaseline(base, swapped)
+	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "resolver_v4 is not exactly the configured resolvers") || strings.Contains(err.Error(), "198.51.100") {
+		t.Fatalf("resolver mismatch: %v", err)
+	}
+	if strings.Count(string(base), `"udp"`) != 1 {
+		t.Fatalf("udp markers=%d", strings.Count(string(base), `"udp"`))
+	}
+	bothTCP := []byte(strings.Replace(string(base), `"udp"`, `"tcp"`, 1))
+	err = VerifyBaseline(bothTCP, m)
+	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "one tcp and one udp port 53") {
+		t.Fatalf("both tcp: %v", err)
+	}
+}
+
+func appendNft(raw []byte, obj any) []byte {
+	var doc struct {
+		Nftables []json.RawMessage `json:"nftables"`
+	}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		panic(err)
+	}
+	body, err := json.Marshal(obj)
+	if err != nil {
+		panic(err)
+	}
+	doc.Nftables = append(doc.Nftables, body)
+	out, err := json.Marshal(doc)
+	if err != nil {
+		panic(err)
+	}
+	return out
 }
 
 func elemVal(val any, extra map[string]any) map[string]any {
