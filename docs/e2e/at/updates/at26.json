@@ -9,10 +9,93 @@
     "API01"
   ],
   "status": "blocked",
-  "at": "2026-10-30T00:00:16Z",
+  "at": "2026-10-30T00:28:30Z",
   "expected": "One batch per Idempotency-Key. A different body is 409. Unstarted work is superseded. A stale ACK is history and does not overwrite current. A completed safe switch is blocked on health.",
   "actual": "",
-  "git": "433f621cbaf427c3a31fd375899b73591e41d668",
-  "images": "fvpn-w4-updates-node:local bd7f05b30cf7; fvpn-w4-updates-worker:local 2aec0292ecca; fvpn-w4-updates-control:local a16f12ce181e; fvpn-w4-updates-origin:local 54a5efcd9fd3; fvpn-w4-updates-payment:local 0c1a30526707; fvpn-w4-updates-idp:local abc41c5800a0; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
-  "observations": null
+  "git": "80c2971e3ad964f4cdb097da61aec80cbb08dab6",
+  "images": "fvpn-w4-updates-node:local a59961894d3a; fvpn-w4-updates-worker:local 37db66b36e2c; fvpn-w4-updates-control:local 831cbd9da1b1; fvpn-w4-updates-origin:local a284069da6c8; fvpn-w4-updates-idp:local 51e3274256ee; fvpn-w4-updates-payment:local 740e16c55514; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
+  "policy_revision": "unset",
+  "node_incarnation": "01a18a33-cc39-7585-8deb-a50b5f93b1fc",
+  "commands": [
+    "POST /api/v1/admin/update-batches (same Idempotency-Key twice, then a different body)",
+    "POST /api/v1/agent/update-results applying, then a newer batch, then the old terminal result"
+  ],
+  "observations": [
+    {
+      "name": "first",
+      "detail": "http 202 - batch=01a18a33-f045-7603-afba-4bc85d23636d"
+    },
+    {
+      "name": "replay",
+      "detail": "http 202 - batch=01a18a33-f045-7603-afba-4bc85d23636d"
+    },
+    {
+      "name": "conflict",
+      "detail": "http 409 IDEMPOTENCY_CONFLICT"
+    },
+    {
+      "name": "idempotency_table",
+      "detail": ""
+    },
+    {
+      "name": "one_batch",
+      "detail": "01a18a33-f045-7603-afba-4bc85d23636d"
+    },
+    {
+      "name": "safe_switch",
+      "detail": "blocked: stock NodeChecks cannot pass with the CLI health adapter, so a completed safe switch is not claimed"
+    },
+    {
+      "name": "applying_batch",
+      "detail": "http 202 -"
+    },
+    {
+      "name": "job",
+      "detail": "01a18a34-450a-7642-a819-815dbd676499 generation=3 attempt=1"
+    },
+    {
+      "name": "applying_post",
+      "detail": "http 202 {\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":false,\"observed_update_generation\":\"2\",\"received_at\":\"2026-10-30T00:27:27.91436599Z\",\"result_id\":\"01a1… \u003cnil\u003e"
+    },
+    {
+      "name": "newer_batch",
+      "detail": "http 202 -"
+    },
+    {
+      "name": "old_job_state_after_newer_batch",
+      "detail": "applying"
+    },
+    {
+      "name": "superseded_rows",
+      "detail": "01a18a33-c89b-717f-af32-7db2baa9fa71 superseded; 01a18a33-f123-7e96-8c40-65a958af2adf superseded; 01a18a33-f123-7e96-8c40-65a958af2adf superseded; 01a18a33-f5fc-7ba3-8083-879527014544 superseded; 01a18a34-4025-7cfb-9fe0-b688eb175905 superseded; 01a18a33-fa3e-7e90-8a68-1559b1503e8f superseded; 01a18a…"
+    },
+    {
+      "name": "stale_post",
+      "detail": "http 202 {\"accepted\":true,\"accepted_as_history\":true,\"applied_to_current_observation\":false,\"observed_update_generation\":\"2\",\"received_at\":\"2026-10-30T00:27:28.00122621Z\",\"result_id\":\"01a18a34-555b-7de6-82a1-5eba8f6ee0e2\"} \u003cnil\u003e"
+    },
+    {
+      "name": "accepted_as_history",
+      "detail": "true"
+    },
+    {
+      "name": "applied_to_current",
+      "detail": "false"
+    },
+    {
+      "name": "current_release_before",
+      "detail": "01a18a33-dc7e-75e7-aa9a-f0d506a207a2"
+    },
+    {
+      "name": "current_release_after",
+      "detail": "01a18a33-dc7e-75e7-aa9a-f0d506a207a2"
+    },
+    {
+      "name": "history_vs_current",
+      "detail": "history=true current_unchanged=true"
+    },
+    {
+      "name": "stale_ack_clause",
+      "detail": "holds"
+    }
+  ]
 }

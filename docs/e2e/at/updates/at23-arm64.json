@@ -8,23 +8,33 @@
     "NODE01"
   ],
   "status": "needs_operator_run",
-  "at": "2026-10-30T00:00:16Z",
+  "at": "2026-10-30T00:28:30Z",
   "expected": "arm64 is packaged and manifest-listed. A physical arm64 node and the three join sources need an operator.",
   "actual": "arm64 updater cross-built; node image in this lab is amd64 only",
-  "git": "433f621cbaf427c3a31fd375899b73591e41d668",
-  "images": "fvpn-w4-updates-node:local bd7f05b30cf7; fvpn-w4-updates-worker:local 2aec0292ecca; fvpn-w4-updates-control:local a16f12ce181e; fvpn-w4-updates-origin:local 54a5efcd9fd3; fvpn-w4-updates-payment:local 0c1a30526707; fvpn-w4-updates-idp:local abc41c5800a0; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
+  "git": "80c2971e3ad964f4cdb097da61aec80cbb08dab6",
+  "images": "fvpn-w4-updates-node:local a59961894d3a; fvpn-w4-updates-worker:local 37db66b36e2c; fvpn-w4-updates-control:local 831cbd9da1b1; fvpn-w4-updates-origin:local a284069da6c8; fvpn-w4-updates-idp:local 51e3274256ee; fvpn-w4-updates-payment:local 740e16c55514; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
+  "policy_revision": "unset",
+  "node_incarnation": "01a18a33-cc39-7585-8deb-a50b5f93b1fc",
   "commands": [
     "GOOS=linux GOARCH=arm64 go build ./node/updater/cmd/fvpn-updater",
     "see docs/e2e/at/updates/operator-run.md"
   ],
   "observations": [
     {
+      "name": "manifest_arm64_sha",
+      "detail": "eb5d03bcea96fc50155a402270646ba8dba4cc443182e40669319f3235317777"
+    },
+    {
+      "name": "manifest_amd64_sha",
+      "detail": "f47af399eabe3fe03c8b2715e42de60fe00056d508728619d68dfda202d107ca"
+    },
+    {
       "name": "updater_arm64_sha256",
-      "detail": "5e7c9402aa3794a9cffe33c8e23a6bb36c4ad081e17e27c6c6f3fbbd2ff711f7"
+      "detail": "9eaf078d259bf6d0c39d2772b642e73a2c2280d9d6fdcd2fe72d8ce5d80a1a74"
     },
     {
       "name": "emulation",
-      "detail": "Unable to find image 'ubuntu:24.04' locally\n24.04: Pulling from library/ubuntu\ne2d2bb84d022: Pulling fs layer\n2238dc1b4376: Download complete\ne2d2bb84d022: Download complete\ne2d2bb84d022: Pull complet… exit status 255"
+      "detail": "exec /fvpn-updater: exec format error exit status 255"
     },
     {
       "name": "hardware",

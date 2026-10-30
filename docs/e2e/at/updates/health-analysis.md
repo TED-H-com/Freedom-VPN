@@ -34,11 +34,14 @@ not change `node/updater`:
   `node/updater/decide.go:229` requires all five to pass.
 - `node/updater/apply.go:212` records health; `apply.go:214` begins rollback
   on failure. `apply.go:217` sets `last_good` only after a successful check.
-- `node/updater/revoke.go:179` selects a safe retained rollback candidate;
-  `node/updater/decide.go:33` returns `ROLLBACK_FAILED` without a last-good
-  release. `node/updater/apply.go:238` sends an empty rollback target to
-  recovery before the restore `SwitchSymlink` at `apply.go:266`. This
-  journal does not establish a failed attempt to restore a symlink.
+- `node/updater/revoke.go:179` selects a safe retained rollback candidate,
+  excluding the failed candidate at `revoke.go:196`. With no other retained
+  release, `revoke.go:229` returns `ROLLBACK_FAILED` directly; the candidate
+  validation loop does not run. `node/updater/decide.go:33` also rejects a
+  missing/invalid last-good when called. `node/updater/apply.go:238` sends
+  an empty rollback target to recovery before the restore `SwitchSymlink`
+  at `apply.go:266`. This journal does not establish a failed attempt to
+  restore a symlink.
 - `node/updater/engine.go:835` separately gates forwarding on the latest
   publication intent and serving/revocation policy. Health success need
   not publish an unpublished or disabled node.
