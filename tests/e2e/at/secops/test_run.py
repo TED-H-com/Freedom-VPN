@@ -1,6 +1,7 @@
 import json
 import unittest
-from run import scan, summarize_go
+from unittest.mock import patch
+from run import scan, summarize_go, write_followup3_records
 
 
 class EvidenceTests(unittest.TestCase):
@@ -38,6 +39,19 @@ class EvidenceTests(unittest.TestCase):
 
     def test_non_json_diagnostics_cannot_create_pass(self):
         self.assertEqual(summarize_go(b'PASS\n', ['TestAT28'], 0)['status'], 'blocked')
+
+    def test_early_publication_refusal_cannot_pass_later_worker_gate(self):
+        live = {'publication_request': {'status': 422, 'code': 'NODE_NOT_SERVICEABLE'},
+                'agent_node_incarnation': 'TEST ONLY agent incarnation'}
+        with patch('run.write_json') as writer:
+            write_followup3_records({'stack': {}, 'node_incarnation': 'TEST ONLY other node'}, live)
+        records = {call.args[1]['id']: call.args[1] for call in writer.call_args_list}
+        publication = records['SECOPS-11']
+        self.assertEqual(publication['negative_status'], 'blocked')
+        self.assertEqual(publication['node_incarnation'], live['agent_node_incarnation'])
+        self.assertIsNone(publication['actual']['publication_operation'])
+        self.assertFalse(publication['actual']['publication_negative']['passed'])
+        self.assertEqual(records['SECOPS-06']['status'], 'blocked')
 
 
 if __name__ == '__main__':

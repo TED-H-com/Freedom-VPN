@@ -2404,6 +2404,33 @@ export interface components {
             policy_generation?: string | null;
             /** @description Applied policy revision references for the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. An explicit empty array means known evidence with no policy references. */
             policy_refs?: string[] | null;
+            /**
+             * Format: uuid
+             * @description previous_release_id from the target's latest current accepted result
+             *     (the result applied as the current observation, D-050). History
+             *     results (superseded generation) never populate this member. Null
+             *     when the target has no current result. On rolled_back this is the
+             *     candidate release (D-062).
+             */
+            previous_release_id?: string | null;
+            /**
+             * @description health from the target's latest current accepted result (the result
+             *     applied as the current observation, D-050). History results
+             *     (superseded generation) never populate this member. Null when the
+             *     target has no current result, or when that result carried health
+             *     null (for example ARTIFACT_INVALID before any check ran, D-062).
+             *     On rolled_back these are the restored release's checks.
+             */
+            health?: components["schemas"]["UpdateHealth"] | null;
+            /**
+             * @description candidate_health from the target's latest current accepted result
+             *     when that result is rolled_back and carried the candidate's checks
+             *     (D-062 d, D-050). History results (superseded generation) never
+             *     populate this member. Null unless that current result is rolled_back
+             *     and carried the candidate's checks. The schema still accepts this
+             *     member on other states; the fleet-update projector enforces the rule.
+             */
+            candidate_health?: components["schemas"]["UpdateHealth"] | null;
             /** Format: date-time */
             last_result_at: string | null;
             /** Format: date-time */

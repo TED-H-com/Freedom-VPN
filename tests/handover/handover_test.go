@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 // ownedDocs lists the handover, ops, and root Markdown files owned by
@@ -69,6 +71,50 @@ func stripFencedCodeBlocks(md string) string {
 	return re.ReplaceAllString(md, "")
 }
 
+func TestHandover_OpenAPIClaims(t *testing.T) {
+	root := repoRoot(t)
+	var contract struct {
+		Info  struct{ Version string }        `yaml:"info"`
+		Paths map[string]map[string]yaml.Node `yaml:"paths"`
+	}
+	if err := yaml.Unmarshal([]byte(readOwnedDoc(t, root, "contracts/openapi.yaml")), &contract); err != nil {
+		t.Fatal(err)
+	}
+	if contract.Info.Version == "" {
+		t.Fatal("OpenAPI info.version is empty")
+	}
+	operations := 0
+	for _, path := range contract.Paths {
+		for method := range path {
+			if slices.Contains([]string{"get", "put", "post", "delete", "patch", "options", "head", "trace"}, method) {
+				operations++
+			}
+		}
+	}
+	if operations == 0 {
+		t.Fatal("OpenAPI contains no operations")
+	}
+	member := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	if !strings.Contains(member, "OpenAPI `"+contract.Info.Version+"`") {
+		t.Errorf("member guide must state OpenAPI info.version %q", contract.Info.Version)
+	}
+	versionRE := regexp.MustCompile("OpenAPI `([0-9]+\\.[0-9]+\\.[0-9]+)`")
+	countRE := regexp.MustCompile("([0-9]+)(?:-operation OpenAPI| HTTP operations|` Operations|` operations)")
+	for _, doc := range ownedDocs {
+		content := readOwnedDoc(t, root, doc)
+		for _, match := range versionRE.FindAllStringSubmatch(content, -1) {
+			if match[1] != contract.Info.Version {
+				t.Errorf("%s: OpenAPI version %s, want %s", doc, match[1], contract.Info.Version)
+			}
+		}
+		for _, match := range countRE.FindAllStringSubmatch(content, -1) {
+			if match[1] != strconv.Itoa(operations) {
+				t.Errorf("%s: operation count %s, want %d", doc, match[1], operations)
+			}
+		}
+	}
+}
+
 func TestHandover_MarkdownLinks(t *testing.T) {
 	root := repoRoot(t)
 	linkRE := regexp.MustCompile(`\[([^\]]+)\]\(([^)\s]+)\)`)
@@ -102,7 +148,7 @@ func TestHandover_MarkdownLinks(t *testing.T) {
 func TestHandover_RepoPathsInBackticks(t *testing.T) {
 	root := repoRoot(t)
 	backtickRE := regexp.MustCompile("`([^`\\n]+)`")
-	cmdBuildPathRE := regexp.MustCompile(`\./((?:apps|node|internal|packaging|tests)/[A-Za-z0-9_./-]+)`)
+	cmdBuildPathRE := regexp.MustCompile("(?:^|[[:space:]`])\\./((?:apps|node|internal|packaging|tests)/[A-Za-z0-9_./-]+)")
 
 	checked := 0
 	for _, doc := range ownedDocs {
@@ -290,6 +336,8 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 	// Non-binary fvpn-* identifiers used in the specification and configuration,
 	// classified explicitly so nothing is skipped silently.
 	nonBinaryClassification := map[string]string{
+		"fvpn-admin":             "admin-session-cookie (__Host-fvpn-admin)",
+		"fvpn-member":            "member-session-cookie (__Host-fvpn-member)",
 		"fvpn-enrollment-v1":     "protocol-domain-separation-label",
 		"fvpn-release-trust-v1":  "protocol-domain-separation-label",
 		"fvpn-portal-prod":       "example-oidc-client-id",

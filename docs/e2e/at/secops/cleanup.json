@@ -1,50 +1,61 @@
 {
-  "utc": "2026-10-30T04:03:53.419053Z",
-  "counts": {
-    "containers": 0,
-    "networks": 0,
-    "volumes": 0,
-    "images": 0
-  },
-  "commands": {
-    "containers": [
-      "docker",
-      "ps",
-      "-a",
-      "--filter",
-      "name=^fvpn-w4-secops-",
-      "--format",
-      "{{.Names}}"
-    ],
-    "networks": [
-      "docker",
-      "network",
-      "ls",
-      "--filter",
-      "name=^fvpn-w4-secops",
-      "--format",
-      "{{.Name}}"
-    ],
-    "volumes": [
-      "docker",
-      "volume",
-      "ls",
-      "--filter",
-      "name=^fvpn-w4-secops-",
-      "--format",
-      "{{.Name}}"
-    ],
-    "images": [
-      "docker",
-      "images",
-      "--filter",
-      "reference=fvpn-w4-secops-*",
-      "--format",
-      "{{.Repository}}:{{.Tag}}"
-    ]
-  },
-  "down_command": "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/e2e.mk e2e-down",
-  "down_exit_code": 0,
-  "other_prefixes_touched": false,
-  "neutral_cache_images_removed": false
+  "checked_at": "2026-10-30T04:53:17.540049Z",
+  "scope": "only own prefix; no other namespace mutated",
+  "inventory": {
+    "containers": {
+      "command": [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        "name=^/fvpn-w4-secops-",
+        "--format",
+        "{{.Names}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    },
+    "networks": {
+      "command": [
+        "docker",
+        "network",
+        "ls",
+        "--filter",
+        "name=^fvpn-w4-secops",
+        "--format",
+        "{{.Name}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    },
+    "volumes": {
+      "command": [
+        "docker",
+        "volume",
+        "ls",
+        "--filter",
+        "name=^fvpn-w4-secops-",
+        "--format",
+        "{{.Name}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    },
+    "images": {
+      "command": [
+        "docker",
+        "images",
+        "--filter",
+        "reference=fvpn-w4-secops-*",
+        "--format",
+        "{{.Repository}}:{{.Tag}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    }
+  }
 }

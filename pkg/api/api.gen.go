@@ -4821,13 +4821,29 @@ type UpdateStage string
 
 // UpdateTarget One node of the batch snapshot (§15.4 update_targets). incarnation_at_snapshot is immutable; execution_incarnation_id binds once.
 type UpdateTarget struct {
-	Attempts   int                                 `json:"attempts"`
-	CurrentJob nullable.Nullable[UpdateJobSummary] `json:"current_job"`
+	Attempts int `json:"attempts"`
+
+	// CandidateHealth candidate_health from the target's latest current accepted result
+	// when that result is rolled_back and carried the candidate's checks
+	// (D-062 d, D-050). History results (superseded generation) never
+	// populate this member. Null unless that current result is rolled_back
+	// and carried the candidate's checks. The schema still accepts this
+	// member on other states; the fleet-update projector enforces the rule.
+	CandidateHealth nullable.Nullable[UpdateHealth]     `json:"candidate_health,omitzero"`
+	CurrentJob      nullable.Nullable[UpdateJobSummary] `json:"current_job"`
 
 	// CurrentReleaseId Last observed actual release (not the requested one).
 	CurrentReleaseId       nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
 	ExecutionIncarnationId nullable.Nullable[openapi_types.UUID] `json:"execution_incarnation_id"`
 	Generation             decstr.U64                            `json:"generation"`
+
+	// Health health from the target's latest current accepted result (the result
+	// applied as the current observation, D-050). History results
+	// (superseded generation) never populate this member. Null when the
+	// target has no current result, or when that result carried health
+	// null (for example ARTIFACT_INVALID before any check ran, D-062).
+	// On rolled_back these are the restored release's checks.
+	Health nullable.Nullable[UpdateHealth] `json:"health,omitzero"`
 
 	// IncarnationAtSnapshot Null for nodes that had not finished enrollment at snapshot time.
 	IncarnationAtSnapshot nullable.Nullable[openapi_types.UUID] `json:"incarnation_at_snapshot"`
@@ -4845,7 +4861,14 @@ type UpdateTarget struct {
 
 	// PolicyRefs Applied policy revision references for the node in the accepted result that produced the current target evidence (§13.10.3, D-048). Absent or null means no accepted result or unknown history; never infer zero or borrow the newest desired state. An explicit empty array means known evidence with no policy references.
 	PolicyRefs nullable.Nullable[[]openapi_types.UUID] `json:"policy_refs,omitzero"`
-	Retryable  bool                                    `json:"retryable"`
+
+	// PreviousReleaseId previous_release_id from the target's latest current accepted result
+	// (the result applied as the current observation, D-050). History
+	// results (superseded generation) never populate this member. Null
+	// when the target has no current result. On rolled_back this is the
+	// candidate release (D-062).
+	PreviousReleaseId nullable.Nullable[openapi_types.UUID] `json:"previous_release_id,omitzero"`
+	Retryable         bool                                  `json:"retryable"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`

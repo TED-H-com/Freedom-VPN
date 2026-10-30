@@ -571,7 +571,7 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 		}
 		for name, p := range v.s.Properties {
 			if p.Value != nil && p.Value.Nullable && !req[name] {
-				if (v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs")) ||
+				if (v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs" || name == "previous_release_id" || name == "health" || name == "candidate_health")) ||
 					(v.path == "DnsServiceConfig#" && name == "resolver_document") ||
 					(v.path == "ObservationReport#" && name == "dns_policy_evidence") ||
 					(v.path == "DesiredState#" && name == "egress_probe") ||

@@ -242,6 +242,9 @@ func (p *liveProbe) concurrentLogins(members []*liveSession) {
 		p.metadata["login_41st_request"] = map[string]any{"status": "blocked on control follow-up 10 / D-060", "expected_status": 429, "actual_status": nil, "retry_after": nil, "remeasured": false}
 		return
 	}
+	p.loginDefaults()
+	p.loginRefill(41)
+	metricsBefore := p.loginMetrics()
 	type outcome struct {
 		client        *http.Client
 		authenticated bool
@@ -249,6 +252,7 @@ func (p *liveProbe) concurrentLogins(members []*liveSession) {
 		lastHTTP      int
 		wrong         bool
 		millis        float64
+		requests      []loginHTTPRecord
 	}
 	outcomes := make([]outcome, len(members))
 	start := make(chan struct{})
@@ -275,6 +279,7 @@ func (p *liveProbe) concurrentLogins(members []*liveSession) {
 					o.wrong = v.Authenticated && v.MemberID != m.member
 				}
 			}
+			o.requests = trace.responses
 			outcomes[i] = o
 		})
 	}
@@ -284,6 +289,7 @@ func (p *liveProbe) concurrentLogins(members []*liveSession) {
 	codes := map[int]int{}
 	lastCodes := map[int]int{}
 	latencies := []float64{}
+	requests := [][]loginHTTPRecord{}
 	req, _ := http.NewRequest("GET", livePublic, nil)
 	for _, o := range outcomes {
 		if o.authenticated {
@@ -295,13 +301,14 @@ func (p *liveProbe) concurrentLogins(members []*liveSession) {
 		codes[o.status]++
 		lastCodes[o.lastHTTP]++
 		latencies = append(latencies, o.millis)
+		requests = append(requests, o.requests)
 		for _, c := range o.client.Jar.Cookies(req.URL) {
 			p.secrets = append(p.secrets, []byte(c.Value))
 		}
 	}
-	p.metadata["concurrent_sign_in"] = map[string]any{"attempts": len(members), "authenticated": success, "wrong_member": wrong, "session_http_status": codes, "last_login_http_status": lastCodes, "login_wall_ms": latencies, "issuer": "embedded Dex, separate cookie jars; no shared assume slot", "zero_status": "login walker did not complete; not a measured session HTTP response"}
-	if wrong > 0 {
-		p.t.Error("concurrent Dex login confused member identity")
+	p.metadata["concurrent_sign_in"] = map[string]any{"attempts": len(members), "authenticated": success, "wrong_member": wrong, "session_http_status": codes, "last_login_http_status": lastCodes, "login_wall_ms": latencies, "requests_by_identity": requests, "metrics_before": metricsBefore, "metrics_after": p.loginMetrics(), "barrier_started": true, "issuer": "embedded Dex, separate cookie jars; no shared assume slot", "zero_status": "login walker did not complete; not a measured session HTTP response", "supersedes": "followup1-login.json; D-060 / PR #106"}
+	if wrong > 0 || success != len(members) {
+		p.t.Error("D-060 concurrent Dex login did not complete every distinct member identity")
 	}
 	time.Sleep(8 * time.Second)
 }
@@ -320,6 +327,7 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 	p.check("enrolled node detail", detail, 200, "")
 	p.metadata["agent_node_incarnation"] = view.CurrentIncarnationId
 	p.metadata["node_service_precondition"] = map[string]any{"lifecycle": view.LifecycleState, "provisioning": view.ProvisioningState, "data_health": view.DataHealth, "safety": view.SafetyStatus, "publication": view.PublicationIntent, "observed_publication": view.PublicationObserved, "config_generation": view.ConfigGeneration, "management_peer_bound": view.NetbirdPeerId.IsSpecified() && !view.NetbirdPeerId.IsNull()}
+	p.metadata["publication_observation_before"] = p.publicationObservation(node)
 	r := p.call(admin, "PUT", "/api/v1/admin/nodes/"+node.String()+"/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, GroupIds: &[]uuid.UUID{p.groupID}, Reason: "TEST ONLY serving precondition"}, map[string]string{"If-Match": detail.header.Get("ETag")})
 	p.metadata["publication_request"] = map[string]any{"status": r.status, "code": r.code}
 	if r.status == 202 {
@@ -337,10 +345,18 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 			time.Sleep(2 * time.Second)
 		}
 		steps := []map[string]any{}
+		negativePassed := false
 		for _, step := range op.Steps {
-			steps = append(steps, map[string]any{"name": step.Name, "status": step.Status})
+			steps = append(steps, map[string]any{"name": step.Name, "status": step.Status, "error_code": step.ErrorCode, "message": step.Message, "required": step.Required, "observed_at": step.ObservedAt})
+			message, _ := step.Message.Get()
+			code, _ := step.ErrorCode.Get()
+			negativePassed = negativePassed || (step.Name == "data_path_probe" && step.Status == api.OperationStepStatusFailed && message == "member_forwarding_unconfirmed" && code == api.ErrorCodeNODENOTSERVICEABLE)
 		}
-		p.metadata["publication_operation"] = map[string]any{"status": op.Status, "steps": steps}
+		p.metadata["publication_operation"] = map[string]any{"operation_id": op.OperationId, "status": op.Status, "steps": steps}
+		p.metadata["publication_negative"] = map[string]any{"expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", "passed": negativePassed && op.Status == api.OperationStatusFailed, "owner_fix": "wire-nodes follow-up 12 / PR #109"}
+		if os.Getenv("FVPN_SECOPS_FOLLOWUP3") == "1" && !negativePassed {
+			p.t.Error("SECOPS-11 unarmed lab publication did not fail with member_forwarding_unconfirmed")
+		}
 	}
 	// Read back after publication. A completed operation still does not prove
 	// this native member's packets traverse forward_admission_v1.
@@ -349,6 +365,7 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 		_ = json.Unmarshal(detail.body, &view)
 	}
 	p.metadata["node_after_publication"] = map[string]any{"publication": view.PublicationIntent, "observed_publication": view.PublicationObserved, "config_generation": view.ConfigGeneration, "data_health": view.DataHealth, "provisioning": view.ProvisioningState}
+	p.metadata["publication_observation_after"] = p.publicationObservation(node)
 	raw, err := p.docker("node", "nft", "list", "chain", "inet", "fvpn", "forward")
 	p.metadata["forward_chain_observed"] = err == nil
 	p.metadata["forward_baseline_generation_zero"] = bytes.Contains(raw, []byte("fvpn_generation=0"))
@@ -375,6 +392,7 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 	_, recoverErr := p.docker("node", "test", "-f", "/var/lib/vpn-node/e2e/updater.json")
 	p.metadata["configured_updater_recovery_file_present"] = recoverErr == nil
 	p.flowProbe(accepts, heartbeat["serving"] == "1")
+	p.metadata["publication_positive"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e follow-up 7", "precondition": "real agent forwarding observation passes PublicationForwardingEvidence; watchdog serving=1; admitted device counter advances", "counted_flow": p.metadata["counted_flow"], "reason": "No serving fixture or forged agent observation is permitted (D-050)."}
 	p.metadata["serving_probe"] = "API state is insufficient: require admitted device, timed member allowset, selected native exit, and increasing node forward-admission counter for the controlled flow."
 	checks := []map[string]any{}
 	for _, check := range view.Checks {
@@ -384,21 +402,6 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 	if heartbeat["reason"] == "recovery_required" && recoverErr != nil {
 		p.metadata["serving_blocker"] = "Fresh node boot invokes updater recover with missing /var/lib/vpn-node/e2e/updater.json; watchdog reports recovery_required, serving=0, policy_expires_mono_ns=0. writeAgentConfigs must provide a persistent boot recovery config separate from the updater run trigger."
 	}
-}
-
-// One transport per login goroutine; only status codes are retained, never URLs,
-// credentials, auth codes or response bodies.
-type loginStatusTransport struct {
-	base http.RoundTripper
-	last int
-}
-
-func (t *loginStatusTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	resp, err := t.base.RoundTrip(r)
-	if resp != nil {
-		t.last = resp.StatusCode
-	}
-	return resp, err
 }
 
 func (p *liveProbe) flowProbe(accepts int, serving bool) {

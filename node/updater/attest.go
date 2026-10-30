@@ -39,6 +39,9 @@ func (e *Engine) attestWindow() AttestWindow {
 	if a.Poll <= 0 {
 		a.Poll = HealthAttestPoll
 	}
+	if a.TTL <= 0 {
+		a.TTL = HealthChallengeTTL
+	}
 	if a.TTL <= a.Wait {
 		a.TTL = a.Wait + a.Poll
 	}
@@ -312,6 +315,9 @@ func (e *Engine) nodeChecks() *NodeChecks {
 // issueChallenge writes one live challenge for this check. A file that was
 // already at the attestation path is not an answer (D-053).
 func (e *Engine) issueChallenge(ctx context.Context, txn updatejournal.Txn, releaseID, phase string) error {
+	if err := validateProbePeer(e.ProbePeer); err != nil {
+		return err
+	}
 	m := e.manifestOf(ctx, releaseID)
 	if m == nil {
 		e.noteHealth(ctx, txn.TxnID, e.blankHealth(ctx, releaseID), healthattest.ReasonManifestUnavailable, phase)
@@ -328,6 +334,7 @@ func (e *Engine) issueChallenge(ctx context.Context, txn updatejournal.Txn, rele
 		TxnID: txn.TxnID, ReleaseID: releaseID,
 		NodeID: e.Node.ID.String(), IncarnationID: e.Node.Incarnation.String(), BootID: e.Node.BootID.String(),
 		Now: e.now(), TTL: e.attestWindow().TTL,
+		Probe: e.ProbePeer,
 		Components: healthattest.Components{
 			NodeAgent: m.Components.NodeAgent, Netbird: m.Components.Netbird,
 			NodeUpdater: m.Components.NodeUpdater, Enforcement: m.Components.Enforcement,

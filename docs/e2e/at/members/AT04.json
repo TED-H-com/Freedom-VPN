@@ -1,4 +1,5 @@
 {
+  "complete": true,
   "id": "AT04",
   "title": "Expiry, cancellation, refunds and suspension",
   "spec": [
@@ -9,215 +10,376 @@
   "status": "blocked",
   "observations": [
     {
-      "name": "finite short entitlement",
-      "detail": "pass; expected: 202; active before real clock expiry; actual: HTTP 202 ; state=active; command: POST finite TEST ONLY grant, 12 seconds"
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
     },
     {
-      "name": "real expiry boundary",
-      "detail": "pass; expected: effective interval ends without extending; actual: expired=true; elapsed_after_end_seconds=9; command: wait on real UTC clock; poll product entitlements.state projection"
+      "name": "provider event customer.subscription.updated",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
     },
     {
-      "name": "manual suspension",
-      "detail": "pass; expected: 202; actual: HTTP 202 ; command: PATCH member admin_suspended=true with If-Match"
+      "name": "cancel and partial refund event",
+      "detail": "pass; expected: 202 then reconciled; actual: HTTP 202 ; command: update provider truth; POST signed event"
     },
     {
-      "name": "grant does not clear suspension",
-      "detail": "pass; expected: 202; remains suspended; actual: HTTP 202 ; state=suspended; command: POST second finite grant; read effective entitlement"
+      "name": "reconciled cancel_at_period_end",
+      "detail": "pass; expected: one exact paid interval; state=cancel_at_period_end; refund=250; actual: {\"invoices\": 1, \"revision\": \"3\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:52:04+00:00\", \"entitlement\": \"cancel_at_period_end\", \"paid_through\": \"2026-10-30T05:53:03+00:00\", \"refund_total\": 250, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": true, \"effective_service_end\": \"2026-10-30T05:53:03+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
-      "name": "member view model",
-      "detail": "pass; expected: 200 with admin_suspended=true; actual: HTTP=200; suspended_flag=true; command: GET /member/me after suspend"
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
     },
     {
-      "name": "lifecycle inbox customer.subscription.updated",
-      "detail": "pass; expected: authenticated lifecycle event accepted, no payment truth inferred; actual: HTTP 202 ; command: POST exact signed lifecycle event"
+      "name": "provider event charge.refunded",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
     },
     {
-      "name": "lifecycle inbox customer.subscription.deleted",
-      "detail": "pass; expected: authenticated lifecycle event accepted, no payment truth inferred; actual: HTTP 202 ; command: POST exact signed lifecycle event"
+      "name": "full refund event",
+      "detail": "pass; expected: 202 then reconciled; actual: HTTP 202 ; command: POST full refund truth and exact signed event"
     },
     {
-      "name": "lifecycle inbox charge.refunded",
-      "detail": "pass; expected: authenticated lifecycle event accepted, no payment truth inferred; actual: HTTP 202 ; command: POST exact signed lifecycle event"
+      "name": "reconciled expired",
+      "detail": "pass; expected: one exact paid interval; state=expired; refund=1000; actual: {\"invoices\": 1, \"revision\": \"4\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:52:04+00:00\", \"entitlement\": \"expired\", \"paid_through\": \"2026-10-30T05:53:03+00:00\", \"refund_total\": 1000, \"last_reconciled\": true, \"provider_status\": \"canceled\", \"cancel_at_period_end\": true, \"effective_service_end\": null}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
-      "name": "lifecycle inbox invoice.paid",
-      "detail": "pass; expected: authenticated lifecycle event accepted, no payment truth inferred; actual: HTTP 202 ; command: POST exact signed lifecycle event"
+      "name": "refund audit history",
+      "detail": "pass; expected: one invoice retained; two refund deltas; actual: invoices=1; refunds=2; command: read immutable billing_records after cumulative 250/1000 refund"
     },
     {
-      "name": "lifecycle snapshot subscriptions",
-      "detail": "pass; expected: record actual authoritative fixture availability; actual: HTTP=404; objects=0; command: GET controlled provider authoritative snapshot/list"
+      "name": "provider event customer.subscription.deleted",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
     },
     {
-      "name": "lifecycle snapshot invoices",
-      "detail": "pass; expected: record actual authoritative fixture availability; actual: HTTP=200; objects=0; command: GET controlled provider authoritative snapshot/list"
+      "name": "cancellation deletion replay",
+      "detail": "pass; expected: 202; reconciled without restoring service; actual: HTTP 202 ; command: POST customer.subscription.deleted after canceled truth"
     },
     {
-      "name": "lifecycle snapshot refunds",
-      "detail": "pass; expected: record actual authoritative fixture availability; actual: HTTP=200; objects=0; command: GET controlled provider authoritative snapshot/list"
+      "name": "checkout command replay",
+      "detail": "pass; expected: 201 and same hosted session; actual: first=201; replay=201; same_session=true; command: POST /member/checkout-sessions twice with same Idempotency-Key"
+    },
+    {
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
+    },
+    {
+      "name": "provider event checkout.session.completed",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "short real paid period",
+      "detail": "pass; expected: 202 then active; actual: HTTP 202 ; command: actual checkout and provider paid interval ending in 45 seconds"
+    },
+    {
+      "name": "reconciled active",
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:53:22+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T04:55:06+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T04:55:06+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+    },
+    {
+      "name": "real paid expiry",
+      "detail": "pass; expected: product projection expires at real UTC boundary; actual: expired=true; seconds_after_end=4; command: poll entitlement.state without changing any clock"
+    },
+    {
+      "name": "manual suspension before payment",
+      "detail": "pass; expected: 202; actual: HTTP 202 ; command: PATCH member with If-Match"
+    },
+    {
+      "name": "checkout command replay",
+      "detail": "pass; expected: 201 and same hosted session; actual: first=201; replay=201; same_session=true; command: POST /member/checkout-sessions twice with same Idempotency-Key"
+    },
+    {
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
+    },
+    {
+      "name": "provider event invoice.paid",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "successful payment while suspended",
+      "detail": "pass; expected: 202 then reconciled; actual: HTTP 202 ; command: POST real paid event after manual suspension"
+    },
+    {
+      "name": "reconciled suspended",
+      "detail": "pass; expected: one exact paid interval; state=suspended; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:54:13+00:00\", \"entitlement\": \"suspended\", \"paid_through\": \"2026-10-30T05:55:12+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T05:55:12+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+    },
+    {
+      "name": "member screen state",
+      "detail": "pass; expected: 200; admin_suspended true despite paid interval; actual: HTTP=200; suspended=true; command: GET /member/me after successful paid reconciliation"
     },
     {
       "name": "blocked",
-      "detail": "No successful paid snapshot (AT03) or serving data path (AT08; native admission is now attempted in AT01/AT02). A grant surviving suspension is not proof of successful-payment precedence. Existing TCP/UDP stop latency, cancellation/refund timing, every-node enforcement and rendered member screen need those prerequisites."
+      "detail": "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
+    },
+    {
+      "name": "blocked",
+      "detail": "Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts."
     },
     {
       "name": "provenance",
-      "detail": "source=3262e1a764f67c9168ef6b6e36746edb012b629d; applied generation=0; incarnation=01a18a79-ed50-7d25-856d-0f5de751a390; image/binary digests in JSON"
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=23; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-30T01:45:04Z",
+  "at": "2026-10-30T04:54:12Z",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "3ce91db255ceb05fa6bbdfe74c4d79e98a3c5b0a9fc10719ddd01f71104d2311",
+    "artifact_sha256_0.1.0_arm64": "8a3c751ffffc75471e56304f49bb4953e001e66693795afa71d63188aa5db1f9",
+    "manifest_sha256_0.1.0": "83084d298022708e93c7440710c579168c19b7f52bb5099bae8e2c6cc0330ae7",
+    "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
+  },
   "build": {
-    "source_commit": "3262e1a764f67c9168ef6b6e36746edb012b629d",
+    "source_commit": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
+      "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
-      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
+      "idp": "sha256:320b23fdef36cfa4692098eb7322651d2564940b2bd9391e41b1ae7f2ee6616c",
+      "member": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
-      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
-      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
+      "node": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "origin": "sha256:93fec27d47887eb12e0460bb04cb062f1f52fa07ecd53f02c0e28c978152f631",
+      "payment": "sha256:5035fa31f764486a80b630b2ce67b2596746c961b16e20d1b5d75aa07c48dec1",
+      "postgres": "sha256:2e5105c206622fbd0a47cd1c6f461a6c6b0cd1c5283c582e3e81b9e36a4f78ca",
+      "worker": "sha256:c2e2a7edccfa35211ba46a593f98485d6658b87b1574b9133264ebc487b937a3"
     },
     "binary_sha256": {
-      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
-      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
-      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
-      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
+      "fvpn-agent": "836a17206778bfd2a3a16c315a463ff9a2ea930ab7e5c62e984a5aa8ae89fdfc",
+      "fvpn-control": "0a0a546c77f29adefdb129fad60029289a7ad10e062dd4c7b30978b8c483aca7",
+      "fvpn-updater": "4a211f3b0c0058a05b8caca5987389eb16266ae982b762a1521cbf95c4dcee35",
+      "fvpn-worker": "3e6ed00a1fda21e79cc7da44b6bb092207d5adfbb5367ef0c18036031a4bd798"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       }
     }
   },
-  "policy_revision": "0",
-  "active_policy_revisions": {},
-  "node_incarnation": "01a18a79-ed50-7d25-856d-0f5de751a390",
+  "policy_revision": "23",
+  "active_policy_revisions": {
+    "dns_profile": "01a18b24-8e3f-7e27-aba2-cbfda5fb9612",
+    "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
+    "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
+    "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b"
+  },
+  "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
   "steps": [
     {
-      "name": "finite short entitlement",
+      "name": "authoritative provider truth",
       "status": "pass",
-      "expected": "202; active before real clock expiry",
-      "actual": "HTTP 202 ; state=active",
-      "command": "POST finite TEST ONLY grant, 12 seconds",
-      "at": "2026-10-30T01:45:04Z"
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-30T04:54:13Z"
     },
     {
-      "name": "real expiry boundary",
+      "name": "provider event customer.subscription.updated",
       "status": "pass",
-      "expected": "effective interval ends without extending",
-      "actual": "expired=true; elapsed_after_end_seconds=9",
-      "command": "wait on real UTC clock; poll product entitlements.state projection",
-      "at": "2026-10-30T01:45:24Z"
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T04:54:13Z"
     },
     {
-      "name": "manual suspension",
+      "name": "cancel and partial refund event",
+      "status": "pass",
+      "expected": "202 then reconciled",
+      "actual": "HTTP 202 ",
+      "command": "update provider truth; POST signed event",
+      "at": "2026-10-30T04:54:15Z"
+    },
+    {
+      "name": "reconciled cancel_at_period_end",
+      "status": "pass",
+      "expected": "one exact paid interval; state=cancel_at_period_end; refund=250",
+      "actual": "{\"invoices\": 1, \"revision\": \"3\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:52:04+00:00\", \"entitlement\": \"cancel_at_period_end\", \"paid_through\": \"2026-10-30T05:53:03+00:00\", \"refund_total\": 250, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": true, \"effective_service_end\": \"2026-10-30T05:53:03+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T04:54:15Z"
+    },
+    {
+      "name": "authoritative provider truth",
+      "status": "pass",
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-30T04:54:15Z"
+    },
+    {
+      "name": "provider event charge.refunded",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T04:54:16Z"
+    },
+    {
+      "name": "full refund event",
+      "status": "pass",
+      "expected": "202 then reconciled",
+      "actual": "HTTP 202 ",
+      "command": "POST full refund truth and exact signed event",
+      "at": "2026-10-30T04:54:18Z"
+    },
+    {
+      "name": "reconciled expired",
+      "status": "pass",
+      "expected": "one exact paid interval; state=expired; refund=1000",
+      "actual": "{\"invoices\": 1, \"revision\": \"4\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:52:04+00:00\", \"entitlement\": \"expired\", \"paid_through\": \"2026-10-30T05:53:03+00:00\", \"refund_total\": 1000, \"last_reconciled\": true, \"provider_status\": \"canceled\", \"cancel_at_period_end\": true, \"effective_service_end\": null}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T04:54:18Z"
+    },
+    {
+      "name": "refund audit history",
+      "status": "pass",
+      "expected": "one invoice retained; two refund deltas",
+      "actual": "invoices=1; refunds=2",
+      "command": "read immutable billing_records after cumulative 250/1000 refund",
+      "at": "2026-10-30T04:54:18Z"
+    },
+    {
+      "name": "provider event customer.subscription.deleted",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T04:54:18Z"
+    },
+    {
+      "name": "cancellation deletion replay",
+      "status": "pass",
+      "expected": "202; reconciled without restoring service",
+      "actual": "HTTP 202 ",
+      "command": "POST customer.subscription.deleted after canceled truth",
+      "at": "2026-10-30T04:54:20Z"
+    },
+    {
+      "name": "checkout command replay",
+      "status": "pass",
+      "expected": "201 and same hosted session",
+      "actual": "first=201; replay=201; same_session=true",
+      "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
+      "at": "2026-10-30T04:54:22Z"
+    },
+    {
+      "name": "authoritative provider truth",
+      "status": "pass",
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-30T04:54:22Z"
+    },
+    {
+      "name": "provider event checkout.session.completed",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T04:54:23Z"
+    },
+    {
+      "name": "short real paid period",
+      "status": "pass",
+      "expected": "202 then active",
+      "actual": "HTTP 202 ",
+      "command": "actual checkout and provider paid interval ending in 45 seconds",
+      "at": "2026-10-30T04:54:25Z"
+    },
+    {
+      "name": "reconciled active",
+      "status": "pass",
+      "expected": "one exact paid interval; state=active; refund=0",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:53:22+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T04:55:06+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T04:55:06+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T04:54:25Z"
+    },
+    {
+      "name": "real paid expiry",
+      "status": "pass",
+      "expected": "product projection expires at real UTC boundary",
+      "actual": "expired=true; seconds_after_end=4",
+      "command": "poll entitlement.state without changing any clock",
+      "at": "2026-10-30T04:55:10Z"
+    },
+    {
+      "name": "manual suspension before payment",
       "status": "pass",
       "expected": "202",
       "actual": "HTTP 202 ",
-      "command": "PATCH member admin_suspended=true with If-Match",
-      "at": "2026-10-30T01:45:25Z"
+      "command": "PATCH member with If-Match",
+      "at": "2026-10-30T04:55:12Z"
     },
     {
-      "name": "grant does not clear suspension",
+      "name": "checkout command replay",
       "status": "pass",
-      "expected": "202; remains suspended",
-      "actual": "HTTP 202 ; state=suspended",
-      "command": "POST second finite grant; read effective entitlement",
-      "at": "2026-10-30T01:45:26Z"
+      "expected": "201 and same hosted session",
+      "actual": "first=201; replay=201; same_session=true",
+      "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
+      "at": "2026-10-30T04:55:13Z"
     },
     {
-      "name": "member view model",
+      "name": "authoritative provider truth",
       "status": "pass",
-      "expected": "200 with admin_suspended=true",
-      "actual": "HTTP=200; suspended_flag=true",
-      "command": "GET /member/me after suspend",
-      "at": "2026-10-30T01:45:27Z"
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-30T04:55:14Z"
     },
     {
-      "name": "lifecycle inbox customer.subscription.updated",
+      "name": "provider event invoice.paid",
       "status": "pass",
-      "expected": "authenticated lifecycle event accepted, no payment truth inferred",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-30T04:55:14Z"
+    },
+    {
+      "name": "successful payment while suspended",
+      "status": "pass",
+      "expected": "202 then reconciled",
       "actual": "HTTP 202 ",
-      "command": "POST exact signed lifecycle event",
-      "at": "2026-10-30T01:45:27Z"
+      "command": "POST real paid event after manual suspension",
+      "at": "2026-10-30T04:55:16Z"
     },
     {
-      "name": "lifecycle inbox customer.subscription.deleted",
+      "name": "reconciled suspended",
       "status": "pass",
-      "expected": "authenticated lifecycle event accepted, no payment truth inferred",
-      "actual": "HTTP 202 ",
-      "command": "POST exact signed lifecycle event",
-      "at": "2026-10-30T01:45:28Z"
+      "expected": "one exact paid interval; state=suspended; refund=0",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T04:54:13+00:00\", \"entitlement\": \"suspended\", \"paid_through\": \"2026-10-30T05:55:12+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T05:55:12+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-30T04:55:16Z"
     },
     {
-      "name": "lifecycle inbox charge.refunded",
+      "name": "member screen state",
       "status": "pass",
-      "expected": "authenticated lifecycle event accepted, no payment truth inferred",
-      "actual": "HTTP 202 ",
-      "command": "POST exact signed lifecycle event",
-      "at": "2026-10-30T01:45:29Z"
-    },
-    {
-      "name": "lifecycle inbox invoice.paid",
-      "status": "pass",
-      "expected": "authenticated lifecycle event accepted, no payment truth inferred",
-      "actual": "HTTP 202 ",
-      "command": "POST exact signed lifecycle event",
-      "at": "2026-10-30T01:45:29Z"
-    },
-    {
-      "name": "lifecycle snapshot subscriptions",
-      "status": "pass",
-      "expected": "record actual authoritative fixture availability",
-      "actual": "HTTP=404; objects=0",
-      "command": "GET controlled provider authoritative snapshot/list",
-      "at": "2026-10-30T01:45:30Z"
-    },
-    {
-      "name": "lifecycle snapshot invoices",
-      "status": "pass",
-      "expected": "record actual authoritative fixture availability",
-      "actual": "HTTP=200; objects=0",
-      "command": "GET controlled provider authoritative snapshot/list",
-      "at": "2026-10-30T01:45:30Z"
-    },
-    {
-      "name": "lifecycle snapshot refunds",
-      "status": "pass",
-      "expected": "record actual authoritative fixture availability",
-      "actual": "HTTP=200; objects=0",
-      "command": "GET controlled provider authoritative snapshot/list",
-      "at": "2026-10-30T01:45:31Z"
+      "expected": "200; admin_suspended true despite paid interval",
+      "actual": "HTTP=200; suspended=true",
+      "command": "GET /member/me after successful paid reconciliation",
+      "at": "2026-10-30T04:55:16Z"
     }
   ],
   "blockers": [
-    "No successful paid snapshot (AT03) or serving data path (AT08; native admission is now attempted in AT01/AT02). A grant surviving suspension is not proof of successful-payment precedence. Existing TCP/UDP stop latency, cancellation/refund timing, every-node enforcement and rendered member screen need those prerequisites."
+    "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01.",
+    "Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts."
   ]
 }

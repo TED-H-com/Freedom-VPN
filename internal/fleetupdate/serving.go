@@ -62,8 +62,11 @@ func (s *Service) NodeVersionView(ctx context.Context, nodeID uuid.UUID) (Versio
 	return v, nil
 }
 
-// Observation is called by the heartbeat owner after identity validation. Seq is
-// monotonic within the incarnation, independent of device wall-clock time.
+// Observation is the trusted sequence adapter, including restore reconciliation.
+// Sequence is monotonic within the incarnation, independent of device wall-clock
+// time. HTTP callers must use ObserveReportTx, which requires a bound job to
+// advance a generation and identifies the exact attempt. Trusted sequence
+// callers can only confirm the current job at its matching generation.
 type Observation struct {
 	Sequence, AppliedUpdateGeneration   decstr.U64
 	CurrentReleaseID, LastGoodReleaseID *uuid.UUID
@@ -75,6 +78,10 @@ func (s *Service) Observe(ctx context.Context, i Identity, o Observation) error 
 	return commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error { return s.ObserveTx(ctx, tx, i, o) })
 }
 func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observation) error {
+	return s.observeTx(ctx, tx, i, o, nil)
+}
+
+func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observation, jobID *uuid.UUID) error {
 	if e := s.lock(ctx, tx); e != nil {
 		return e
 	}
@@ -88,27 +95,40 @@ func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	if o.Sequence == 0 || o.ObservedAt.IsZero() {
 		return apierr.New(apierr.ValidationFailed, "Observation sequence and time are required")
 	}
-	var recovery bool
-	if e = tx.QueryRow(ctx, `SELECT coalesce($1::uuid=ANY(revoked_release_ids),false) FROM fleet_config`, o.LastGoodReleaseID).Scan(&recovery); e != nil {
+	// D-062 / r9: heartbeat seeding ends at the first accepted result for this
+	// incarnation. Thereafter only results can change serving version/recovery.
+	var accepted, recovery bool
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM update_results WHERE node_id=$1 AND incarnation_id=$2 AND ack->>'accepted'='true'),
+ coalesce($3::uuid=ANY(revoked_release_ids),false) FROM fleet_config`, i.NodeID, i.IncarnationID, o.LastGoodReleaseID).Scan(&accepted, &recovery); e != nil {
 		return e
 	}
 	if o.ReceivedAt.IsZero() {
 		o.ReceivedAt = time.Now().UTC()
 	}
 	tag, e := tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,observation_seq,observed_update_generation,last_observed_at,received_at,recovery_required) VALUES($1,$2,$3::numeric,$4::numeric,$5,$7,$6)
- ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,observation_seq=excluded.observation_seq,observed_update_generation=excluded.observed_update_generation,last_observed_at=excluded.last_observed_at,received_at=excluded.received_at,recovery_required=excluded.recovery_required
- WHERE (fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR fleet_node_state.observation_seq<excluded.observation_seq) AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery, o.ReceivedAt)
+ ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,observation_seq=excluded.observation_seq,observed_update_generation=excluded.observed_update_generation,last_observed_at=excluded.last_observed_at,received_at=excluded.received_at,recovery_required=fleet_node_state.recovery_required OR excluded.recovery_required
+ WHERE (fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR fleet_node_state.observation_seq<excluded.observation_seq) AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery && !accepted, o.ReceivedAt)
 	if e != nil {
 		return e
 	}
 	if tag.RowsAffected() == 0 {
 		return nil
 	}
-	_, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,last_good_release_id=$3,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, o.CurrentReleaseID, o.LastGoodReleaseID)
-	if e != nil {
-		return e
+	agrees := equalID(n.current, o.CurrentReleaseID) && equalID(n.lastGood, o.LastGoodReleaseID)
+	if !accepted {
+		_, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,last_good_release_id=$3,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, o.CurrentReleaseID, o.LastGoodReleaseID)
+		if e != nil {
+			return e
+		}
+		agrees = true
 	}
-	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=$2 WHERE node_id=$1 AND execution_incarnation_id=$3 AND generation<=$4::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.AppliedUpdateGeneration.String())
+	if jobID == nil {
+		// Trusted sequence adapters predate the wire job ID. Only the current
+		// job may be confirmed by that adapter, never an earlier retry attempt.
+		jobID = n.job
+	}
+	// A disagreement invalidates confirmation without changing accepted values.
+	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=CASE WHEN $5 THEN $2::timestamptz ELSE NULL END WHERE id=$6 AND node_id=$1 AND execution_incarnation_id=$3 AND generation=$4::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.AppliedUpdateGeneration.String(), agrees, jobID)
 	return e
 }
 
@@ -121,6 +141,12 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if r.NodeId != i.NodeID || r.NodeIncarnationId != i.IncarnationID {
 		return apierr.New(apierr.IncarnationMismatch, "Observation differs from mTLS identity")
 	}
+	if state, err := r.Update.State.Get(); err == nil && !state.Valid() {
+		return apierr.New(apierr.ValidationFailed, "Unknown observation update state")
+	}
+	if stage, err := r.Update.Stage.Get(); err == nil && !stage.Valid() {
+		return apierr.New(apierr.ValidationFailed, "Unknown observation update stage")
+	}
 	if e := s.lock(ctx, tx); e != nil {
 		return e
 	}
@@ -129,8 +155,10 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 		return e
 	}
 	generation, generationErr := r.Update.Generation.Get()
-	if generationErr != nil {
-		// D-062(e): this receipt has no update state. Preserve the high-water
+	jobID, jobErr := r.Update.JobId.Get()
+	if generationErr != nil || jobErr != nil {
+		// D-062(e) / r9: without both generation and job identity this receipt
+		// cannot attest update state. Preserve the high-water
 		// mark and actual version, but record its arrival so it cannot confirm
 		// a target using a previous generation-bearing heartbeat.
 		n, err := s.readNode(ctx, tx, i.NodeID)
@@ -147,7 +175,7 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
  AND (fleet_node_state.last_observed_at IS NULL OR excluded.last_observed_at>fleet_node_state.last_observed_at))`, i.NodeID, r.ObservedAt, received)
 		return err
 	}
-	if jobID, err := r.Update.JobId.Get(); err == nil {
+	{
 		j, e := readJob(ctx, tx, jobID)
 		if e != nil {
 			return e
@@ -187,5 +215,5 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if value, err := r.LastGoodReleaseId.Get(); err == nil {
 		lastGoodReleaseID = &value
 	}
-	return s.ObserveTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt, ReceivedAt: received})
+	return s.observeTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt, ReceivedAt: received}, &jobID)
 }

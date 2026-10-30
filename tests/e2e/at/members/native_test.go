@@ -43,12 +43,12 @@ func (l *live) native(r *record, b *browser, service string) string {
 		before[p.ID] = true
 	}
 	if service != "member" {
-		_, err := l.docker("run", "-d", "--name", l.name(service), "--network", "fvpn-w4-members", "--cap-add", "NET_ADMIN", "--cap-add", "NET_RAW", "--device", "/dev/net/tun:/dev/net/tun", "--mount", "type=bind,src="+filepath.Join(l.state, "node/etc/ca.pem")+",dst=/etc/vpn-node/ca.pem,readonly", "--entrypoint", "/usr/local/bin/entrypoint-member.sh", "fvpn-w4-members-node:local")
+		container, err := l.hook.StartNativePeer(l.ctx, strings.TrimPrefix(service, "member-"))
 		if err != nil {
-			r.block("Extra native client could not reuse the lab image/entrypoint: " + service)
+			r.block("Shared StartNativePeer hook failed: " + service)
 			return ""
 		}
-		l.t.Cleanup(func() { l.cleanupDocker("rm", "-f", l.name(service)) })
+		l.t.Cleanup(func() { l.cleanupDocker("rm", "-fv", container); l.cleanupDocker("volume", "rm", container) })
 	}
 	if _, err := l.inside(service, "touch", "/var/lib/vpn-node/e2e/user-auth"); err != nil {
 		r.block("Native user-auth trigger unavailable: " + service)
@@ -218,5 +218,5 @@ func (l *live) devices(r *record) {
 	restored := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
 	r.check("revoke releases exactly one slot", "202; 3 to 2 to 3; former loser admitted", fmt.Sprintf("revoke_HTTP=%d; after_revoke=%d; admitted=%t; final_authorized=%d", revoke.status, freed, err == nil, restored), "DELETE A2 through member API; ObserveAndAuthorize former loser", revoke.status == 202 && freed == 2 && err == nil && restored == 3)
 	_, _ = l.docker("unpause", l.name("worker"))
-	r.block("Transaction, ownership and paid-group checks do not prove real gateway denial. AT08 must establish an applied exit and successful winner flow before the loser's no-exit result can be certified.")
+	l.forwardingGate(r)
 }

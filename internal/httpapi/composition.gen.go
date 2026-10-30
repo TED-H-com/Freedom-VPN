@@ -589,6 +589,7 @@ func Compose(sets ...any) (*Composite, error) {
 	}
 	return c, nil
 }
+
 func (c *Composite) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsRequestObject) (gen.ListAuditEventsResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -599,6 +600,7 @@ func (c *Composite) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsRe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreateEnrollment(ctx context.Context, r gen.CreateEnrollmentRequestObject) (gen.CreateEnrollmentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -609,6 +611,7 @@ func (c *Composite) CreateEnrollment(ctx context.Context, r gen.CreateEnrollment
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetEnrollment(ctx context.Context, r gen.GetEnrollmentRequestObject) (gen.GetEnrollmentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -619,6 +622,7 @@ func (c *Composite) GetEnrollment(ctx context.Context, r gen.GetEnrollmentReques
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RevokeEnrollment(ctx context.Context, r gen.RevokeEnrollmentRequestObject) (gen.RevokeEnrollmentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -629,6 +633,7 @@ func (c *Composite) RevokeEnrollment(ctx context.Context, r gen.RevokeEnrollment
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -639,6 +644,7 @@ func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -649,6 +655,7 @@ func (c *Composite) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroup
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListMembers(ctx context.Context, r gen.ListMembersRequestObject) (gen.ListMembersResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -659,6 +666,7 @@ func (c *Composite) ListMembers(ctx context.Context, r gen.ListMembersRequestObj
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetMember(ctx context.Context, r gen.GetMemberRequestObject) (gen.GetMemberResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -669,6 +677,7 @@ func (c *Composite) GetMember(ctx context.Context, r gen.GetMemberRequestObject)
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) UpdateMember(ctx context.Context, r gen.UpdateMemberRequestObject) (gen.UpdateMemberResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -679,6 +688,7 @@ func (c *Composite) UpdateMember(ctx context.Context, r gen.UpdateMemberRequestO
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreateMemberGrant(ctx context.Context, r gen.CreateMemberGrantRequestObject) (gen.CreateMemberGrantResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -689,6 +699,7 @@ func (c *Composite) CreateMemberGrant(ctx context.Context, r gen.CreateMemberGra
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListNodes(ctx context.Context, r gen.ListNodesRequestObject) (gen.ListNodesResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -699,6 +710,7 @@ func (c *Composite) ListNodes(ctx context.Context, r gen.ListNodesRequestObject)
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RetireNode(ctx context.Context, r gen.RetireNodeRequestObject) (gen.RetireNodeResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -709,6 +721,7 @@ func (c *Composite) RetireNode(ctx context.Context, r gen.RetireNodeRequestObjec
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen.GetNodeResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -719,6 +732,7 @@ func (c *Composite) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (ge
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) UpdateNode(ctx context.Context, r gen.UpdateNodeRequestObject) (gen.UpdateNodeResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -729,6 +743,7 @@ func (c *Composite) UpdateNode(ctx context.Context, r gen.UpdateNodeRequestObjec
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) SetNodePublication(ctx context.Context, r gen.SetNodePublicationRequestObject) (gen.SetNodePublicationResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -739,6 +754,7 @@ func (c *Composite) SetNodePublication(ctx context.Context, r gen.SetNodePublica
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RevokeNode(ctx context.Context, r gen.RevokeNodeRequestObject) (gen.RevokeNodeResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -749,6 +765,7 @@ func (c *Composite) RevokeNode(ctx context.Context, r gen.RevokeNodeRequestObjec
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetAdminOperation(ctx context.Context, r gen.GetAdminOperationRequestObject) (gen.GetAdminOperationResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -759,6 +776,7 @@ func (c *Composite) GetAdminOperation(ctx context.Context, r gen.GetAdminOperati
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListPolicies(ctx context.Context, r gen.ListPoliciesRequestObject) (gen.ListPoliciesResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -769,6 +787,7 @@ func (c *Composite) ListPolicies(ctx context.Context, r gen.ListPoliciesRequestO
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreatePolicyRevision(ctx context.Context, r gen.CreatePolicyRevisionRequestObject) (gen.CreatePolicyRevisionResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -779,6 +798,7 @@ func (c *Composite) CreatePolicyRevision(ctx context.Context, r gen.CreatePolicy
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ActivatePolicyRevision(ctx context.Context, r gen.ActivatePolicyRevisionRequestObject) (gen.ActivatePolicyRevisionResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -789,6 +809,7 @@ func (c *Composite) ActivatePolicyRevision(ctx context.Context, r gen.ActivatePo
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListReleases(ctx context.Context, r gen.ListReleasesRequestObject) (gen.ListReleasesResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -799,6 +820,7 @@ func (c *Composite) ListReleases(ctx context.Context, r gen.ListReleasesRequestO
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RegisterRelease(ctx context.Context, r gen.RegisterReleaseRequestObject) (gen.RegisterReleaseResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -809,6 +831,7 @@ func (c *Composite) RegisterRelease(ctx context.Context, r gen.RegisterReleaseRe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreateUpdateBatch(ctx context.Context, r gen.CreateUpdateBatchRequestObject) (gen.CreateUpdateBatchResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -819,6 +842,7 @@ func (c *Composite) CreateUpdateBatch(ctx context.Context, r gen.CreateUpdateBat
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetUpdateBatch(ctx context.Context, r gen.GetUpdateBatchRequestObject) (gen.GetUpdateBatchResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -829,6 +853,7 @@ func (c *Composite) GetUpdateBatch(ctx context.Context, r gen.GetUpdateBatchRequ
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RetryUpdateBatch(ctx context.Context, r gen.RetryUpdateBatchRequestObject) (gen.RetryUpdateBatchResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -839,6 +864,7 @@ func (c *Composite) RetryUpdateBatch(ctx context.Context, r gen.RetryUpdateBatch
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ConsumeAgentBootstrap(ctx context.Context, r gen.ConsumeAgentBootstrapRequestObject) (gen.ConsumeAgentBootstrapResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -849,6 +875,7 @@ func (c *Composite) ConsumeAgentBootstrap(ctx context.Context, r gen.ConsumeAgen
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RenewAgentCertificate(ctx context.Context, r gen.RenewAgentCertificateRequestObject) (gen.RenewAgentCertificateResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -859,6 +886,7 @@ func (c *Composite) RenewAgentCertificate(ctx context.Context, r gen.RenewAgentC
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetDesiredState(ctx context.Context, r gen.GetDesiredStateRequestObject) (gen.GetDesiredStateResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -869,6 +897,7 @@ func (c *Composite) GetDesiredState(ctx context.Context, r gen.GetDesiredStateRe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) EnrollNode(ctx context.Context, r gen.EnrollNodeRequestObject) (gen.EnrollNodeResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -879,6 +908,7 @@ func (c *Composite) EnrollNode(ctx context.Context, r gen.EnrollNodeRequestObjec
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RenewServingLease(ctx context.Context, r gen.RenewServingLeaseRequestObject) (gen.RenewServingLeaseResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -889,6 +919,7 @@ func (c *Composite) RenewServingLease(ctx context.Context, r gen.RenewServingLea
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) SubmitObservation(ctx context.Context, r gen.SubmitObservationRequestObject) (gen.SubmitObservationResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -899,6 +930,7 @@ func (c *Composite) SubmitObservation(ctx context.Context, r gen.SubmitObservati
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetResolverDocument(ctx context.Context, r gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -909,6 +941,7 @@ func (c *Composite) GetResolverDocument(ctx context.Context, r gen.GetResolverDo
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) SubmitUpdateResult(ctx context.Context, r gen.SubmitUpdateResultRequestObject) (gen.SubmitUpdateResultResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -919,6 +952,7 @@ func (c *Composite) SubmitUpdateResult(ctx context.Context, r gen.SubmitUpdateRe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBatchRequestObject) (gen.SubmitUsageBatchResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -929,6 +963,7 @@ func (c *Composite) SubmitUsageBatch(ctx context.Context, r gen.SubmitUsageBatch
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetUsageCheckpoint(ctx context.Context, r gen.GetUsageCheckpointRequestObject) (gen.GetUsageCheckpointResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -939,6 +974,7 @@ func (c *Composite) GetUsageCheckpoint(ctx context.Context, r gen.GetUsageCheckp
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreateBillingPortalSession(ctx context.Context, r gen.CreateBillingPortalSessionRequestObject) (gen.CreateBillingPortalSessionResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -949,6 +985,7 @@ func (c *Composite) CreateBillingPortalSession(ctx context.Context, r gen.Create
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) CreateCheckoutSession(ctx context.Context, r gen.CreateCheckoutSessionRequestObject) (gen.CreateCheckoutSessionResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -959,6 +996,7 @@ func (c *Composite) CreateCheckoutSession(ctx context.Context, r gen.CreateCheck
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListMemberDevices(ctx context.Context, r gen.ListMemberDevicesRequestObject) (gen.ListMemberDevicesResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -969,6 +1007,7 @@ func (c *Composite) ListMemberDevices(ctx context.Context, r gen.ListMemberDevic
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) RevokeMemberDevice(ctx context.Context, r gen.RevokeMemberDeviceRequestObject) (gen.RevokeMemberDeviceResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -979,6 +1018,7 @@ func (c *Composite) RevokeMemberDevice(ctx context.Context, r gen.RevokeMemberDe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ListMemberExits(ctx context.Context, r gen.ListMemberExitsRequestObject) (gen.ListMemberExitsResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -989,6 +1029,7 @@ func (c *Composite) ListMemberExits(ctx context.Context, r gen.ListMemberExitsRe
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetMemberSelf(ctx context.Context, r gen.GetMemberSelfRequestObject) (gen.GetMemberSelfResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -999,6 +1040,7 @@ func (c *Composite) GetMemberSelf(ctx context.Context, r gen.GetMemberSelfReques
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetMemberOperation(ctx context.Context, r gen.GetMemberOperationRequestObject) (gen.GetMemberOperationResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -1009,6 +1051,7 @@ func (c *Composite) GetMemberOperation(ctx context.Context, r gen.GetMemberOpera
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) GetMemberUsage(ctx context.Context, r gen.GetMemberUsageRequestObject) (gen.GetMemberUsageResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -1019,6 +1062,7 @@ func (c *Composite) GetMemberUsage(ctx context.Context, r gen.GetMemberUsageRequ
 	}
 	return nil, errNotImplemented
 }
+
 func (c *Composite) ReceiveProviderWebhook(ctx context.Context, r gen.ReceiveProviderWebhookRequestObject) (gen.ReceiveProviderWebhookResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {

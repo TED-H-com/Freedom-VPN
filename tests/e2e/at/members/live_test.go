@@ -64,12 +64,15 @@ type buildInfo struct {
 	BinaryVCS map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
+	Complete bool `json:"complete"`
 	e2e.Record
+	ReleaseDigests   map[string]string `json:"release_digests,omitempty"`
 	FollowupBuild    *buildInfo        `json:"followup_build,omitempty"`
 	Build            buildInfo         `json:"build"`
 	PolicyRevision   string            `json:"policy_revision"`
 	PolicyReferences map[string]string `json:"active_policy_revisions"`
 	NodeIncarnation  string            `json:"node_incarnation"`
+	PriorChecks      []step            `json:"prior_checks,omitempty"`
 	Steps            []step            `json:"steps"`
 	Blockers         []string          `json:"blockers"`
 	Operator         string            `json:"operator_status,omitempty"`
@@ -89,6 +92,9 @@ type live struct {
 	nativePeer                               string
 	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
+	baseline                                 e2e.ServingBaseline
+	hook                                     *e2e.Stack
+	paid                                     *paidSession
 }
 
 func repository(t *testing.T) string {
@@ -115,11 +121,17 @@ func TestATMembers_Live(t *testing.T) {
 	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
 	l.open()
+	var err error
+	l.hook, err = e2e.OpenStack()
+	if err != nil {
+		t.Fatal("shared stack hook unavailable")
+	}
+	defer l.hook.Close()
 	l.admin = l.login("e2e-admin", "admin")
 	l.a = l.login("AT-member-A-"+l.run, "member")
 	l.b = l.login("AT-member-B-"+l.run, "member")
 	l.c = l.login("AT-member-C-"+l.run, "member")
-	l.seedPlan()
+
 	// Cases share a single fresh stack. Each gathers its own evidence and leaves
 	// faults restored before the next; no failure suppresses independent cases.
 	for _, task := range []struct {
@@ -131,6 +143,7 @@ func TestATMembers_Live(t *testing.T) {
 		t.Run(task.id, func(t *testing.T) {
 			r := l.newRecord(task.id)
 			task.run(&r)
+			r.Complete = true
 			l.write(&r)
 			if r.Status != e2e.StatusPass {
 				t.Errorf("%s: %s; see docs/e2e/at/members/%s.json", task.id, r.Status, task.id)
@@ -368,7 +381,16 @@ func (r *record) block(reason string) {
 	}
 }
 func (l *live) write(r *record) {
+	if !r.Complete {
+		copy := *r
+		copy.Status = e2e.StatusBlocked
+		copy.Blockers = append(append([]string{}, r.Blockers...), "Run in progress; this is an incremental record, not a full AT result.")
+		r = &copy
+	}
 	r.Observations = nil
+	if len(l.baseline.Digests) > 0 {
+		r.ReleaseDigests = l.baseline.Digests
+	}
 	r.PolicyReferences = map[string]string{}
 	rows, err := l.pool.Query(l.ctx, `SELECT type,active_revision_id::text FROM policy_definitions WHERE active_revision_id IS NOT NULL ORDER BY type`)
 	if err == nil {
@@ -395,6 +417,9 @@ func (l *live) write(r *record) {
 	}
 	for _, s := range r.Steps {
 		r.Observations = append(r.Observations, e2e.Observation{Name: s.Name, Detail: fmt.Sprintf("%s; expected: %s; actual: %s; command: %s", s.Status, s.Expected, s.Actual, s.Command)})
+	}
+	if len(r.PriorChecks) > 0 {
+		r.Observations = append(r.Observations, e2e.Observation{Name: "prior attempts", Detail: fmt.Sprintf("%d prior checks retained with UTC times in JSON prior_checks; see RUN.md for corrected ETag/route expectations and restart blocker", len(r.PriorChecks))})
 	}
 	for _, b := range r.Blockers {
 		r.Observations = append(r.Observations, e2e.Observation{Name: "blocked", Detail: b})
