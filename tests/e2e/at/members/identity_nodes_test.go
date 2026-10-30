@@ -139,7 +139,9 @@ func (l *live) publication(r *record) {
 		r.block("No enrolled node")
 		return
 	}
-	if !l.publish(r, []uuid.UUID{l.groupA}) {
+	l.publish(r, []uuid.UUID{l.groupA})
+	intentBefore, _ := l.publicationState()
+	if intentBefore != "published" {
 		l.resolverEvidence(r)
 		return
 	}

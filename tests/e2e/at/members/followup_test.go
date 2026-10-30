@@ -37,9 +37,6 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 		t.Fatal("prior run node unavailable")
 	}
 	ids := []string{"AT02", "AT08", "AT20", "AT22"}
-	if os.Getenv("FVPN_AT_MEMBERS_FEED_READBACK") == "1" {
-		ids = []string{"AT22"}
-	}
 	for _, id := range ids {
 		var r record
 		raw, err := os.ReadFile(filepath.Join(l.root, "docs/e2e/at/members", id+".json"))
@@ -65,7 +62,13 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			observations := l.count(`SELECT count(*) FROM device_authorization_observations WHERE observed_authorized`)
 			r.check("post-worker projection readback", "record native proofs, devices and desired/applied separately", fmt.Sprintf("verified_proofs=%d; authorized_devices=%d; observed_authorized=%d; desired_generation=%s; applied_generation=%s", proofs, devices, observations, desired, applied), "read product projections after worker resumes; no projection fixtures", proofs >= 2 && devices >= 4)
 		case "AT08":
+			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-a-%' ORDER BY code LIMIT 1`).Scan(&l.groupA)
+			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-b-%' ORDER BY code LIMIT 1`).Scan(&l.groupB)
+			if l.groupA != uuid.Nil && l.groupB != uuid.Nil {
+				l.publication(&r)
+			}
 			l.servingPrecondition(&r)
+			l.routeReadback(&r)
 		case "AT20":
 			for i, b := range r.Blockers {
 				r.Blockers[i] = strings.ReplaceAll(b, "No admitted member DNS/forwarding path", "Native member admission is proven in AT01/AT02, but native DNS is disabled and no applied member DNS/forwarding path exists")
@@ -74,11 +77,7 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			r.check("central resolver document readback", "record stored publication versus node delivery", fmt.Sprintf("central_documents=%d", docs), "SELECT dns_resolver_documents", docs > 0)
 			l.resolverEvidence(&r)
 		case "AT22":
-			if os.Getenv("FVPN_AT_MEMBERS_FEED_READBACK") == "1" {
-				l.feedReadback(&r)
-			} else {
-				l.feedLastGood(&r)
-			}
+			l.feedLastGood(&r)
 		}
 		l.write(&r)
 		if r.Status == "fail" {
@@ -116,7 +115,7 @@ func (l *live) feedLastGood(r *record) {
 		return
 	}
 	r.check("TEST ONLY feed cadence", "300 seconds through normal settings; restored afterwards", "worker restarted; cadence=300", "set generated DNS config feed_update_cadence_seconds=300; restart own worker", true)
-	raw := []byte("# TEST ONLY self-authored feed; no third-party source\nfeed-one.example.invalid\nfeed-two.example.invalid\n")
+	raw := []byte("# TEST ONLY self-authored feed; no third-party source\nfeed-01.example.invalid\nlab.example.invalid\n")
 	sum := sha256.Sum256(raw)
 	hash := hex.EncodeToString(sum[:])
 	object := "at-members/feed-" + l.run + ".txt"
@@ -150,6 +149,8 @@ func (l *live) feedLastGood(r *record) {
 		r.block("D-054 worker could not bootstrap the controlled feed: " + reason + ". Last-good cannot be tested without a verified initial snapshot.")
 		return
 	}
+	beforeDNS := l.dnsLocal("feed-01.example.invalid", "1", "udp")
+	r.check("feed positive DNS control", "known controlled upstream name resolves before feed activation", beforeDNS, "node loopback query controlled feed-01.example.invalid before feed profile", strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`))
 	profile, pid := l.policy("dns_profile", map[string]any{"profile_code": "at-members-feed", "display_name": map[string]string{"zh-TW": "TEST ONLY feed"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []uuid.UUID{rev}})
 	r.check("feed profile creation", "record reference validation result", detail(profile), "POST DNS profile referencing approved feed", profile.status != 0)
 	if profile.status == 201 && pid != uuid.Nil {
@@ -175,80 +176,7 @@ func (l *live) feedLastGood(r *record) {
 	}
 	r.Blockers = filtered
 	l.resolverEvidence(r)
-	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. AT22 remains blocked on the inherited missing desired-state resolver reference (w3-wire-nodes/internal/desiredstate), real member URL flow and remaining file/raw-usage/backup retention coverage. Commercial feed approval remains a business decision.")
-}
-
-// Inspect the existing scheduled experiment without forcing its projection or
-// clock. Also isolate a schema-valid null-attribution feed from an attributed
-// positive control. This hook is useful after a bounded run exposed a blocker.
-func (l *live) feedReadback(r *record) {
-	var rev uuid.UUID
-	var raw []byte
-	if l.pool.QueryRow(l.ctx, `SELECT r.id,r.payload FROM policy_revisions r JOIN policy_definitions d ON d.active_revision_id=r.id WHERE r.type='threat_feed' AND r.payload->>'provider'='TEST ONLY self-authored' ORDER BY r.created_at LIMIT 1`).Scan(&rev, &raw) != nil {
-		r.block("prior controlled feed experiment unavailable")
-		return
-	}
-	var payload map[string]any
-	if json.Unmarshal(raw, &payload) != nil {
-		r.block("prior feed payload unavailable")
-		return
-	}
-	// Replace the earlier combined publication assertion with the explicit API
-	// precondition and attributed positive control; re-read last-good below.
-	kept := r.Steps[:0]
-	for _, s := range r.Steps {
-		if s.Name != "feed document publication" && s.Name != "real scheduled last-good retention" {
-			kept = append(kept, s)
-		}
-	}
-	r.Steps = kept
-	r.Status = "blocked"
-	for _, s := range kept {
-		if s.Status == "fail" {
-			r.Status = "fail"
-		}
-	}
-	profile := func(feed uuid.UUID) (response, uuid.UUID) {
-		return l.policy("dns_profile", map[string]any{"profile_code": "at-members-feed-" + uuid.NewString()[:8], "display_name": map[string]string{"zh-TW": "TEST ONLY feed"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []uuid.UUID{feed}})
-	}
-	negative, _ := profile(rev)
-	attributionGate := strings.Contains(string(negative.body), "attribution_notes")
-	r.check("null attribution reference precondition", "observe feed accepted but referencing profile rejected", fmt.Sprintf("HTTP=%d; code=%s; attribution_notes_required=%t", negative.status, negative.code, attributionGate), "POST DNS profile referencing approved feed with schema-valid attribution=null", negative.status != 0)
-	if negative.status == 422 && attributionGate {
-		r.block("B9: contract permits threat_feed.attribution=null and creating/activating it succeeds, but a referencing dns_profile returns 422 VALIDATION_FAILED because internal/policies/store.go:buildAndValidateDNSProfileTx passes blank AttributionNotes to internal/dnspolicy/sources.go:ListSource.ValidateMetadata. Owner policies/DNS; accept the contract-null attribution or request a contract revision. Workaround below uses explicit TEST ONLY attribution.")
-	}
-	var good, reason string
-	var failures int
-	err := l.pool.QueryRow(l.ctx, `SELECT coalesce(last_good_content,''),coalesce(last_error_code,''),consecutive_failures FROM dns_feed_refresh_state WHERE feed_revision_id=$1`, rev).Scan(&good, &reason, &failures)
-	rows := l.count(`SELECT count(*) FROM dns_feed_contents WHERE feed_revision_id=$1`, rev)
-	pin, _ := payload["content_sha256"].(string)
-	r.check("scheduled last-good readback", "empty/invalid-list failure preserves pin and one immutable content row", fmt.Sprintf("read_ok=%t; error=%s; hash_preserved=%t; content_rows=%d; failures=%d", err == nil, reason, good == pin, rows, failures), "read actual refresh after 300-second cadence; no clock/SQL projection changes", err == nil && (reason == "zero_rules" || reason == "parse_error") && good == pin && rows == 1 && failures > 0)
-	// Restore the self-authored origin bytes and create a new approved revision
-	// with explicit attribution. Original immutable history is retained.
-	source, _ := payload["source_url"].(string)
-	object := strings.TrimPrefix(source, "https://releases.example.invalid/")
-	restored := l.request(nil, "PUT", "https://releases.example.invalid/e2e/object?name="+object, []byte("# TEST ONLY self-authored feed; no third-party source\nfeed-one.example.invalid\nfeed-two.example.invalid\n"), map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
-	r.check("origin restoration", "204 original self-authored bytes restored", detail(restored), "PUT controlled origin", restored.status == 204)
-	payload["attribution"] = "TEST ONLY self-authored"
-	payload["feed_code"] = "at-members-attributed-" + l.run
-	created, attributed := l.policy("threat_feed", payload)
-	r.check("attributed feed workaround", "201", detail(created), "POST new immutable threat_feed with explicit attribution", created.status == 201)
-	if attributed == uuid.Nil {
-		return
-	}
-	activation := l.activate(attributed)
-	r.check("attributed feed activation", "202", detail(activation), "POST policy activate", activation.status == 202)
-	fetched := l.wait(40*time.Second, func() bool {
-		return l.count(`SELECT count(*) FROM dns_feed_contents WHERE feed_revision_id=$1`, attributed) == 1
-	})
-	pos, pid := profile(attributed)
-	r.check("attributed profile workaround", "201 with valid feed reference", fmt.Sprintf("%s; feed_fetched=%t", detail(pos), fetched), "POST DNS profile with explicit-attribution feed", pos.status == 201 && fetched)
-	if pid != uuid.Nil {
-		activated := l.activate(pid)
-		published := l.wait(30*time.Second, func() bool {
-			return l.count(`SELECT count(*) FROM dns_resolver_documents WHERE profile_revision_id=$1`, pid) > 0
-		})
-		r.check("attributed feed document publication", "202 then durable resolver document", fmt.Sprintf("activation=%d; published=%t", activated.status, published), "activate profile; read running worker publication", activated.status == 202 && published)
-	}
-	r.block("Node resolver-document delivery remains blocked on w3-contracts-r5 then nodes/agent follow-ups. Central feed last-good and document publication do not establish resolver enforcement or a full AT22 privacy pass.")
+	answer := l.dnsLocal("feed-01.example.invalid", "1", "udp")
+	r.check("node last-good block response", "controlled positive name remains NXDOMAIN after invalid feed update", answer, "node loopback DNS after actual 300-second failed refresh; not a native member DNS claim", strings.Contains(answer, `"rcode":3`))
+	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision.")
 }

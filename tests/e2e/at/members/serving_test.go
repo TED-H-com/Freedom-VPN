@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
@@ -107,10 +108,11 @@ func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) 
 	}
 	_ = json.Unmarshal(got.body, &command)
 	var status string
+	var failedStep bool
 	var required, observed int
 	ready := l.wait(90*time.Second, func() bool {
-		err := l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE id=$1`, command.ID).Scan(&status)
-		return err == nil && (status == "succeeded" || status == "failed")
+		err := l.pool.QueryRow(l.ctx, `SELECT status,EXISTS(SELECT 1 FROM jsonb_each(steps) s(k,v) WHERE v->>'status'='failed') FROM operations WHERE id=$1`, command.ID).Scan(&status, &failedStep)
+		return err == nil && (status == "succeeded" || status == "failed" || failedStep)
 	})
 	// Operation completion requires read-back evidence (base F-02), not merely 202.
 	_ = l.pool.QueryRow(l.ctx, `SELECT count(*) FILTER(WHERE (v->>'required')::boolean),count(*) FILTER(WHERE (v->>'required')::boolean AND v->>'status'='succeeded') FROM operations o CROSS JOIN LATERAL jsonb_each(o.steps) s(k,v) WHERE o.id=$1`, command.ID).Scan(&required, &observed)
@@ -154,4 +156,29 @@ func (l *live) forwardingGate(r *record) {
 	}
 	r.check("admission counters", "record actual per-device counters", fmt.Sprintf("read_ok=%t; counters=%d", e == nil && parse == nil, counters), "docker exec node nft -j list table inet fvpn", e == nil && parse == nil)
 	r.block(inheritedLeaseGate)
+}
+
+func (l *live) routeReadback(r *record) {
+	got := l.nb("GET", "/routes", nil)
+	var routes []netbird.Route
+	decoded := json.Unmarshal(got.body, &routes) == nil
+	defaults, manual, enabled, masquerade, peers := 0, 0, 0, 0, 0
+	for _, route := range routes {
+		if route.Network == "0.0.0.0/0" {
+			defaults++
+			if route.SkipAutoApply {
+				manual++
+			}
+			if route.Enabled {
+				enabled++
+			}
+			if route.Masquerade {
+				masquerade++
+			}
+			if route.Peer != "" {
+				peers++
+			}
+		}
+	}
+	r.check("real default-route semantics", "explicit peer, masquerade, skip_auto_apply on every default exit route", fmt.Sprintf("HTTP=%d; defaults=%d; skip_auto_apply=%d; enabled=%d; masquerade=%d; peer_set=%d", got.status, defaults, manual, enabled, masquerade, peers), "GET NetBird /api/routes; retain counts, not external identifiers", got.status == 200 && decoded && defaults > 0 && defaults == manual && defaults == masquerade && defaults == peers)
 }

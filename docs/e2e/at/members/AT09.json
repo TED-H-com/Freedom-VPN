@@ -1,4 +1,5 @@
 {
+  "complete": true,
   "id": "AT09",
   "title": "Exit selection, NAT, relay and MTU",
   "spec": [
@@ -10,7 +11,7 @@
   "observations": [
     {
       "name": "exit inventory",
-      "detail": "pass; expected: record active node count and client routes; actual: enrolled_nodes=1; routes_command_ok=true; route_output_bytes=23; command: SELECT enrolled nodes; docker exec member netbird routes list"
+      "detail": "pass; expected: record active node count and client routes; actual: enrolled_nodes=1; routes_command_ok=true; route_output_bytes=112; command: SELECT enrolled nodes; docker exec member netbird routes list"
     },
     {
       "name": "blocked",
@@ -18,95 +19,96 @@
     },
     {
       "name": "blocked",
-      "detail": "Observed 1 enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic."
+      "detail": "Observed 1 enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the inherited positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic."
     },
     {
       "name": "provenance",
-      "detail": "source=6d1795403cb14c8ea3681aedd84f6341c3fee474; applied generation=13; incarnation=01a18b1b-d5dc-78ab-accd-8c8d70449bef; image/binary digests in JSON"
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=30; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
     },
     {
       "name": "operator",
       "detail": "needs operator run; see OPERATORS.md"
     }
   ],
-  "at": "2026-10-30T04:47:00Z",
+  "at": "2026-10-30T04:56:51Z",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "14940002cfc263523bbafa01d74fc44efd479e1f8b5fa7253bdaa7e4ddfe3b63",
-    "artifact_sha256_0.1.0_arm64": "5986c94b55231f05d2db056b980f6254a2a4bc0e6519d833f6068dc6a47a4e73",
-    "manifest_sha256_0.1.0": "ea66fb787aca48daa5e7b6864020bb6e5a38ea1e32e7b0ad25c58b29d04a9280",
-    "signed_manifest_sha256_0.1.0": "f3b8b22e77fbf3848598c7ecfe3d26e7f8168cd39e902de510a7eb7438051ae0"
+    "artifact_sha256_0.1.0_amd64": "3ce91db255ceb05fa6bbdfe74c4d79e98a3c5b0a9fc10719ddd01f71104d2311",
+    "artifact_sha256_0.1.0_arm64": "8a3c751ffffc75471e56304f49bb4953e001e66693795afa71d63188aa5db1f9",
+    "manifest_sha256_0.1.0": "83084d298022708e93c7440710c579168c19b7f52bb5099bae8e2c6cc0330ae7",
+    "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
   },
   "build": {
-    "source_commit": "6d1795403cb14c8ea3681aedd84f6341c3fee474",
+    "source_commit": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:a14a1151fa1d1c791b9742bd539eb438b5ef98d10caa8e5b95b79726b9e65c62",
+      "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:977c0b9a9c7d4392a10555b29d5e79a7ab57acac38db7af954976a9d41c49560",
-      "member": "sha256:1f7f76f61f989ef3d945b0dddb69aba9bd4622c8391b4c888f0128aea408749f",
+      "idp": "sha256:320b23fdef36cfa4692098eb7322651d2564940b2bd9391e41b1ae7f2ee6616c",
+      "member": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:1f7f76f61f989ef3d945b0dddb69aba9bd4622c8391b4c888f0128aea408749f",
-      "origin": "sha256:7ab7273564355f144996d4e3042e819ed0bb3bbd7f37231faee28d3f089add14",
-      "payment": "sha256:59241ddb26ea4870e4245676a38aef43868320b7e804256edc3f22a810ad8349",
-      "postgres": "sha256:3609bb7895b34d55d6549fc8a5a2bee751ed1ed265cb40d582fa0ff83a1b6c21",
-      "worker": "sha256:775fd38d9792de9d84051aa7e61904d6c3b99618f073e62f6c3fb2bbb2f3f259"
+      "node": "sha256:279af8e653e7cf8a939d42192c988a974d0cdbcf0db5bbe16f095ce701398c3e",
+      "origin": "sha256:93fec27d47887eb12e0460bb04cb062f1f52fa07ecd53f02c0e28c978152f631",
+      "payment": "sha256:5035fa31f764486a80b630b2ce67b2596746c961b16e20d1b5d75aa07c48dec1",
+      "postgres": "sha256:2e5105c206622fbd0a47cd1c6f461a6c6b0cd1c5283c582e3e81b9e36a4f78ca",
+      "worker": "sha256:c2e2a7edccfa35211ba46a593f98485d6658b87b1574b9133264ebc487b937a3"
     },
     "binary_sha256": {
-      "fvpn-agent": "cab9ae36a8be6226b46c6f27fde8bcb212e259a0a49049c03aedf4c61a6a35df",
-      "fvpn-control": "330fb84eff41856cb2e8a0c7d27363aa7420a42b523f3ff5893d506120c679da",
-      "fvpn-updater": "520e13ba04ec103ba3d7ebde0814775b756911983332c3d4626faa45568be28c",
-      "fvpn-worker": "a4cc07360d9bad12042ae427759a24e443eb589ba10bd4b5c45826084729f643"
+      "fvpn-agent": "836a17206778bfd2a3a16c315a463ff9a2ea930ab7e5c62e984a5aa8ae89fdfc",
+      "fvpn-control": "0a0a546c77f29adefdb129fad60029289a7ad10e062dd4c7b30978b8c483aca7",
+      "fvpn-updater": "4a211f3b0c0058a05b8caca5987389eb16266ae982b762a1521cbf95c4dcee35",
+      "fvpn-worker": "3e6ed00a1fda21e79cc7da44b6bb092207d5adfbb5367ef0c18036031a4bd798"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
-        "vcs.time": "2026-10-30T04:30:48Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
-        "vcs.time": "2026-10-30T04:30:48Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
-        "vcs.time": "2026-10-30T04:30:48Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
-        "vcs.time": "2026-10-30T04:30:48Z"
+        "vcs.revision": "4ebf248f02d95da663223d2b922e8a8f21c59a6c",
+        "vcs.time": "2026-10-30T04:48:38Z"
       }
     }
   },
-  "policy_revision": "13",
+  "policy_revision": "30",
   "active_policy_revisions": {
-    "dns_profile": "01a18b1b-c1c5-7e02-a3cd-80c83419e0ed",
-    "fair_use": "01a18b1b-bd00-7c67-bafd-186bf4945667",
-    "plan": "01a18b1b-cb4a-7e18-9533-acbf74789692",
-    "release_support": "01a18b1b-b5bc-70bd-953d-b5d5daced6d8"
+    "dns_profile": "01a18b24-8e3f-7e27-aba2-cbfda5fb9612",
+    "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
+    "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
+    "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b"
   },
-  "node_incarnation": "01a18b1b-d5dc-78ab-accd-8c8d70449bef",
+  "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
   "steps": [
     {
       "name": "exit inventory",
       "status": "pass",
       "expected": "record active node count and client routes",
-      "actual": "enrolled_nodes=1; routes_command_ok=true; route_output_bytes=23",
+      "actual": "enrolled_nodes=1; routes_command_ok=true; route_output_bytes=112",
       "command": "SELECT enrolled nodes; docker exec member netbird routes list",
-      "at": "2026-10-30T04:47:00Z"
+      "at": "2026-10-30T04:56:51Z"
     }
   ],
   "blockers": [
     "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01.",
-    "Observed 1 enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic."
+    "Observed 1 enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the inherited positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic."
   ],
   "operator_status": "needs operator run"
 }

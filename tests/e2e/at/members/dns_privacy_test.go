@@ -94,7 +94,7 @@ func (l *live) dnsRules(r *record) {
 		UserRules []string `json:"user_rules"`
 	}
 	var err error
-	applied := func() bool {
+	applied := l.wait(45*time.Second, func() bool {
 		var raw []byte
 		raw, err = l.resolver("/control/filtering/status")
 		_ = json.Unmarshal(raw, &status)
@@ -104,7 +104,7 @@ func (l *live) dnsRules(r *record) {
 			}
 		}
 		return false
-	}()
+	})
 	var compileStatus string
 	_ = l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE kind='policy.activate' ORDER BY created_at DESC LIMIT 1`).Scan(&compileStatus)
 	r.check("policy operation versus resolver", "record compilation operation separately from application", "latest_policy_operation="+compileStatus, "SELECT operations.status for policy.activate", compileStatus != "")
@@ -113,10 +113,10 @@ func (l *live) dnsRules(r *record) {
 		actual := l.dns(q.name, q.typ, "udp")
 		r.check("wire DNS "+q.name+" type "+q.typ, "record actual controlled resolver answer (management path)", actual, "docker exec member probe dns controlled-resolver", actual != "probe unavailable")
 	}
-	l.resolverEvidence(r)
 	if !applied {
-		r.block(inheritedResolverGate)
+		r.block("Requested block rule was absent after the bounded resolver application wait; typed evidence below identifies the stage.")
 	}
+	l.resolverEvidence(r)
 	r.block("Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
 }
 func (l *live) dnsFailure(r *record) {
@@ -220,7 +220,7 @@ func (l *live) resolverEvidence(r *record) {
 	present := getErr == nil && node.DnsPolicyEvidence.IsSpecified() && !node.DnsPolicyEvidence.IsNull()
 	var document bool
 	if present {
-		document = l.count(`SELECT count(*) FROM dns_resolver_documents WHERE id=$1`, evidence.DocumentId) > 0
+		document = l.count(`SELECT count(*) FROM dns_resolver_documents WHERE id=$1 AND profile_revision_id=(SELECT active_revision_id FROM policy_definitions WHERE type='dns_profile' ORDER BY id LIMIT 1)`, evidence.DocumentId) > 0
 	}
 	code, _ := evidence.ErrorCode.Get()
 	r.check("typed DNS evidence", "record exact issued-document application, or explicit null", fmt.Sprintf("HTTP=%d; decoded=%t; specified=%t; null=%t; present=%t; outcome=%s; error_code=%s; issued_document_matches=%t", got.status, decode == nil, node.DnsPolicyEvidence.IsSpecified(), node.DnsPolicyEvidence.IsNull(), present, evidence.Outcome, code, document), "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document", got.status == 200 && decode == nil)
