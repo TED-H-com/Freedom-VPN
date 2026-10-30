@@ -1,7 +1,6 @@
 // Command fvpn-e2e-payment answers the Stripe calls the control plane makes
 // against https://api.stripe.com (§9). The hostname override is a compose
-// alias. List endpoints stay empty so reconciliation has nothing to dial
-// until a checkout exists.
+// alias. Authenticated TEST ONLY hooks supply linked provider truth.
 package main
 
 import (
@@ -25,6 +24,8 @@ func main() {
 	addr := flag.String("addr", ":443", "listen address")
 	cert := flag.String("cert", "", "TLS certificate")
 	keyFile := flag.String("key", "", "TLS private key")
+	hookFile := flag.String("hook-secret-file", "", "TEST ONLY fixture hook secret")
+	webhookFile := flag.String("webhook-secret-file", "", "TEST ONLY webhook signing secret")
 	apiKeyFile := flag.String("api-key-file", "", "expected bearer token")
 	flag.Parse()
 	if *cert == "" || *keyFile == "" || *apiKeyFile == "" {
@@ -36,7 +37,13 @@ func main() {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-payment: api key")
 		os.Exit(1)
 	}
-	s := &server{apiKey: strings.TrimSpace(string(raw)), sessions: map[string]session{}}
+	hook, hookErr := os.ReadFile(*hookFile)
+	webhook, webhookErr := os.ReadFile(*webhookFile)
+	if hookErr != nil || webhookErr != nil || len(strings.TrimSpace(string(hook))) == 0 || len(strings.TrimSpace(string(webhook))) == 0 {
+		fmt.Fprintln(os.Stderr, "fvpn-e2e-payment: hook secrets required")
+		os.Exit(2)
+	}
+	s := &server{apiKey: strings.TrimSpace(string(raw)), hookKey: strings.TrimSpace(string(hook)), webhookKey: strings.TrimSpace(string(webhook)), sessions: map[string]session{}, truth: map[string]snapshot{}}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -55,19 +62,27 @@ func main() {
 }
 
 type session struct {
-	ID, URL string
-	Expires int64
-	Created int64
+	ID, URL                         string
+	Expires                         int64
+	Created                         int64
+	Checkout, Price, Customer, Form string
 }
 
 type server struct {
-	mu       sync.Mutex
-	apiKey   string
-	sessions map[string]session
+	mu                  sync.Mutex
+	apiKey              string
+	hookKey, webhookKey string
+	truth               map[string]snapshot
+	refunds             map[string][]refund
+	sessions            map[string]session
 }
 
 func (s *server) route(w http.ResponseWriter, r *http.Request) {
-	if subtle.ConstantTimeCompare([]byte(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")), []byte(s.apiKey)) != 1 {
+	if strings.HasPrefix(r.URL.Path, "/e2e/") {
+		s.hook(w, r)
+		return
+	}
+	if !strings.HasPrefix(r.Header.Get("Authorization"), "Bearer ") || s.apiKey == "" || subtle.ConstantTimeCompare([]byte(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")), []byte(s.apiKey)) != 1 {
 		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": map[string]string{"message": "unauthorized"}})
 		return
 	}
@@ -79,15 +94,15 @@ func (s *server) route(w http.ResponseWriter, r *http.Request) {
 		s.getCheckout(w, r, strings.TrimPrefix(path, "/v1/checkout/sessions/"))
 	case r.Method == http.MethodPost && path == "/v1/billing_portal/sessions":
 		s.createPortal(w, r)
-	case r.Method == http.MethodGet && (path == "/v1/subscriptions" || path == "/v1/invoices" || path == "/v1/refunds" || strings.HasSuffix(path, "/lines")):
-		writeJSON(w, http.StatusOK, map[string]any{"object": "list", "data": []any{}, "has_more": false})
+	case r.Method == http.MethodGet:
+		s.readTruth(w, r)
 	default:
 		writeJSON(w, http.StatusNotFound, map[string]any{"error": map[string]string{"message": "unknown"}})
 	}
 }
 
 func (s *server) createCheckout(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	if err := r.ParseForm(); err != nil || r.PostForm.Get("metadata[fvpn_checkout_id]") == "" || r.PostForm.Get("line_items[0][price]") == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"error": map[string]string{"message": "form"}})
 		return
 	}
@@ -102,11 +117,20 @@ func (s *server) createCheckout(w http.ResponseWriter, r *http.Request) {
 			expires = n
 		}
 	}
-	item := session{ID: id, URL: "https://payments.example.invalid/checkout", Expires: expires}
+	customer := r.PostForm.Get("customer")
+	if customer == "" {
+		customer = "cus_" + id
+	}
+	item := session{ID: id, URL: "https://payments.example.invalid/checkout", Expires: expires, Created: time.Now().Unix(), Checkout: r.PostForm.Get("metadata[fvpn_checkout_id]"), Price: r.PostForm.Get("line_items[0][price]"), Customer: customer, Form: r.PostForm.Encode()}
 	key := r.Header.Get("Idempotency-Key")
 	s.mu.Lock()
 	if key != "" {
 		if old, ok := s.sessions["idem:"+key]; ok {
+			if old.Form != item.Form {
+				s.mu.Unlock()
+				writeJSON(w, 409, map[string]string{"error": "idempotency conflict"})
+				return
+			}
 			item = old
 		} else {
 			s.sessions[id] = item
