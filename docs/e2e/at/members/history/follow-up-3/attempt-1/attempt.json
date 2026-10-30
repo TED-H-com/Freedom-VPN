@@ -1,0 +1,25 @@
+{
+  "run_id": "c2eb408c-7d5e-4ef0-893b-348f101a448e",
+  "source_commit": "ac93203dbabc05aa3c1c70f644370a205a704f16",
+  "outcome": "interrupted harness defect",
+  "stop_utc": "2026-10-30T07:02:23.087187Z",
+  "reason": "Full run UUID put the payment order suffix past the shared idplogin 40-character key limit; two intended independent identities collapsed. Retain short fixture key separately from full run UUID. No product fix or projection write.",
+  "completed": [
+    "AT05",
+    "AT01",
+    "AT02"
+  ],
+  "in_progress": [
+    "AT03"
+  ],
+  "not_executed": [
+    "AT04",
+    "AT08",
+    "AT09",
+    "AT20",
+    "AT21",
+    "AT22"
+  ],
+  "manual_observation": "After unsuccessful AT01 selection, a read-only route inventory and native route select returned HTTP 200 at the controlled origin. AT02 independently selected the route and recorded counted forwarding; no node/kernel configuration changed.",
+  "observer_note": "The aggregate observer protocol changed to ETH_P_ALL during this attempt; AT01/AT02 retain their earlier ETH_P_IP observations. The attempt was stopped before a later trace used the changed probe."
+}

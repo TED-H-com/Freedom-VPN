@@ -11,14 +11,10 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
-	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 )
-
-const inheritedLeaseGate = "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
-const inheritedResolverGate = "Inherited from docs/e2e/followup7-verification.md (same run): w3-wire-nodes/internal/desiredstate omits resolver_document from signed desired state; node mTLS document GET is 404 and typed dns_policy_evidence is null despite an eligible central document. D-056/D-061 application and node last-good proof remain blocked; see requests.md F2-02."
 
 // §19.1, AT05: only API input and the shared signed-release hook seed the lab.
 // D-050/D-057: catalogues and all business projections are product-owned.
@@ -108,11 +104,10 @@ func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) 
 	}
 	_ = json.Unmarshal(got.body, &command)
 	var status string
-	var failedStep bool
 	var required, observed int
 	ready := l.wait(90*time.Second, func() bool {
-		err := l.pool.QueryRow(l.ctx, `SELECT status,EXISTS(SELECT 1 FROM jsonb_each(steps) s(k,v) WHERE v->>'status'='failed') FROM operations WHERE id=$1`, command.ID).Scan(&status, &failedStep)
-		return err == nil && (status == "succeeded" || status == "failed" || failedStep)
+		err := l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE id=$1`, command.ID).Scan(&status)
+		return err == nil && (status == "succeeded" || status == "failed" || status == "partially_succeeded")
 	})
 	// Operation completion requires read-back evidence (base F-02), not merely 202.
 	_ = l.pool.QueryRow(l.ctx, `SELECT count(*) FILTER(WHERE (v->>'required')::boolean),count(*) FILTER(WHERE (v->>'required')::boolean AND v->>'status'='succeeded') FROM operations o CROSS JOIN LATERAL jsonb_each(o.steps) s(k,v) WHERE o.id=$1`, command.ID).Scan(&required, &observed)
@@ -139,28 +134,6 @@ func (l *live) publish(r *record, groups []uuid.UUID) bool {
 	r.check("finite capacity and classification", "200 or 202", detail(patch), "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps", patch.status == 200 || patch.status == 202)
 	return l.publicationCommand(r, "published", groups)
 }
-func (l *live) forwardingGate(r *record) {
-	// Inherit the already diagnosed gate; one bounded readback captures this run.
-	var raw []byte
-	err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('desired',n.desired_config_generation::text,'applied',n.applied_config_generation::text,'lease',(SELECT jsonb_build_object('generation',s.policy_generation::text,'member_count',jsonb_array_length(s.envelope->'signed'->'members'),'issued_at',s.issued_at,'expires_at',s.expires_at) FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1)) FROM nodes n WHERE n.id=$1`, l.node).Scan(&raw)
-	r.check("current serving prerequisite", "record desired/applied and lease members", string(raw), "read nodes and latest serving_leases; no projection writes", err == nil)
-	chain, e := l.inside("node", "nft", "-j", "list", "table", "inet", "fvpn")
-	state, parse := enforce.ParseState(chain)
-	counters := 0
-	if e == nil && parse == nil {
-		for k := range state.Counters {
-			if strings.HasPrefix(k, "u_") || strings.HasPrefix(k, "d_") {
-				counters++
-			}
-		}
-	}
-	r.check("admission counters", "record actual per-device counters or missing table", fmt.Sprintf("read_ok=%t; counters=%d", e == nil && parse == nil, counters), "docker exec node nft -j list table inet fvpn", true)
-	if e != nil || parse != nil {
-		r.block("F2-05: nftables table unavailable after node restart; inspect entrypoint waiting_token and existing identity before claiming recovery. See requests.md.")
-	}
-	r.block(inheritedLeaseGate)
-}
-
 func (l *live) routeReadback(r *record) {
 	got := l.nb("GET", "/routes", nil)
 	var routes []netbird.Route

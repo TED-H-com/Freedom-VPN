@@ -192,10 +192,12 @@ func (l *live) devices(r *record) {
 	close(out)
 	wins, limits, other := 0, 0, 0
 	loser := ""
+	winner := ""
 	for o := range out {
 		switch {
 		case o.err == nil:
 			wins++
+			winner = o.peer
 		case errors.Is(o.err, devices.ErrLimit):
 			limits++
 			loser = o.peer
@@ -212,6 +214,23 @@ func (l *live) devices(r *record) {
 	loserRows := l.count(`SELECT count(*) FROM member_devices WHERE peer_id=$1`, loser)
 	observed, e := svc.Adapter.ObservePeer(l.ctx, "e2e", loser)
 	r.check("loser authorization readback", "no device/binding or paid group", fmt.Sprintf("member_device_rows=%d; paid_group=%t; read_ok=%t", loserRows, observed.Authorized, e == nil), "SELECT loser device; real NetBird group membership readback", loserRows == 0 && !observed.Authorized && e == nil)
+	_, _ = l.docker("unpause", l.name("worker"))
+	l.forwardingGate(r)
+	l.traceForwarding(r, "member", first)
+	winnerService := "member-a3"
+	if winner == contenders[1] {
+		winnerService = "member-a4"
+	}
+	l.traceForwarding(r, winnerService, l.awaitDevice(winner))
+	loserService := "member-a3"
+	if loser == contenders[1] {
+		loserService = "member-a4"
+	}
+	l.traceForwarding(r, loserService, uuid.Nil)
+	if _, err = l.docker("pause", l.name("worker")); err != nil {
+		r.block("Could not re-pause worker for slot reuse")
+		return
+	}
 	revoke := l.api(l.a, "DELETE", "/api/v1/member/devices/"+second.String(), nil, commandHeaders())
 	freed := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
 	_, err = svc.ObserveAndAuthorize(l.ctx, admissionCommand(), "e2e", loser)
@@ -219,4 +238,5 @@ func (l *live) devices(r *record) {
 	r.check("revoke releases exactly one slot", "202; 3 to 2 to 3; former loser admitted", fmt.Sprintf("revoke_HTTP=%d; after_revoke=%d; admitted=%t; final_authorized=%d", revoke.status, freed, err == nil, restored), "DELETE A2 through member API; ObserveAndAuthorize former loser", revoke.status == 202 && freed == 2 && err == nil && restored == 3)
 	_, _ = l.docker("unpause", l.name("worker"))
 	l.forwardingGate(r)
+	l.revocationReadback(r)
 }

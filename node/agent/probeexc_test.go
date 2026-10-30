@@ -227,14 +227,9 @@ func TestProbeException_CapsExpiryAndRefusesUnsafe(t *testing.T) {
 	enrollBoot(t, r)
 	stepOK(t, r)
 	now := r.eng.trustedNow()
-	long := healthattest.Challenge{ExpiresAt: now.Add(10 * time.Minute), Probe: labProbe()}
-	p, ok := r.eng.challengeProbe(long, now)
-	if !ok {
-		t.Fatal("long challenge was refused")
-	}
-	cap := now.Add(time.Duration(enforce.ProbeMaxSeconds) * time.Second)
-	if p.ExpiresAt.After(cap) || p.ExpiresAt.Before(now.Add(299*time.Second)) || p.ExpiresAt.After(long.ExpiresAt) {
-		t.Fatalf("expiry %s cap %s deadline %s", p.ExpiresAt, cap, long.ExpiresAt)
+	long := healthattest.Challenge{IssuedAt: now.Add(-time.Second), ExpiresAt: now.Add(10 * time.Minute), Probe: labProbe()}
+	if _, ok := r.eng.challengeProbe(long, now); ok {
+		t.Fatal("challenge exceeding the issuance window was installed")
 	}
 	r.eng.desired.DeviceBindings = []api.DeviceBinding{{
 		PeerId:      "member-peer",
@@ -253,23 +248,23 @@ func TestProbeException_CapsExpiryAndRefusesUnsafe(t *testing.T) {
 		{PeerID: "peer-probe", SourceV4: "100.64.8.1/32", Destinations: []healthattest.ChallengeProbeDest{{AddrV4: "1.2.3.4/32", Proto: "tcp", Port: 0}}},
 	}
 	for _, bad := range refused {
-		ch := healthattest.Challenge{ExpiresAt: now.Add(30 * time.Second), Probe: &bad}
+		ch := healthattest.Challenge{IssuedAt: now.Add(-time.Second), ExpiresAt: now.Add(30 * time.Second), Probe: &bad}
 		if _, ok := r.eng.challengeProbe(ch, now); ok {
 			t.Fatalf("installed %+v", bad)
 		}
 	}
-	short := healthattest.Challenge{ExpiresAt: now.Add(200 * time.Millisecond), Probe: labProbe()}
+	short := healthattest.Challenge{IssuedAt: now.Add(-time.Second), ExpiresAt: now.Add(200 * time.Millisecond), Probe: labProbe()}
 	if _, ok := r.eng.challengeProbe(short, now); ok {
 		t.Fatal("subsecond expiry was installed")
 	}
-	past := healthattest.Challenge{ExpiresAt: now.Add(-time.Second), Probe: labProbe()}
+	past := healthattest.Challenge{IssuedAt: now.Add(-time.Second), ExpiresAt: now.Add(-time.Second), Probe: labProbe()}
 	if _, ok := r.eng.challengeProbe(past, now); ok {
 		t.Fatal("past expiry was installed")
 	}
 	dnsOnly := labProbe()
 	dnsOnly.Destinations = nil
 	dnsOnly.ResolverDNS = true
-	req := healthattest.Challenge{ExpiresAt: now.Add(30 * time.Second), Probe: dnsOnly}
+	req := healthattest.Challenge{IssuedAt: now.Add(-time.Second), ExpiresAt: now.Add(30 * time.Second), Probe: dnsOnly}
 	exc, ok := r.eng.challengeProbe(req, now)
 	if !ok {
 		t.Fatal("resolver DNS request was refused")

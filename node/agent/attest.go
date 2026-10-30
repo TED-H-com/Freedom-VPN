@@ -116,22 +116,25 @@ func (e *Engine) answerHealth(ctx context.Context) {
 		return
 	}
 	e.refreshDesired()
-	refreshed := false
 	if !e.probeFresh(ch) {
 		e.refreshProbe(ctx)
 		if !e.probeFresh(ch) {
 			return
 		}
-		refreshed = true
 	}
-	// A fresh probe keeps the decision this step already computed, unless
-	// the in-force resolver document is not the one this process applied.
-	// Reusing that pass would attest dns_policy before Apply. Answering
-	// does not call enforce and does not change publication.
-	if _, has := decisionStatus(e.decision, api.NodeCheckNameTunnelProbe); refreshed || !has || e.namedDNSUnapplied() {
-		e.decision = Decide(e.input())
+	// Re-read the authority after probing: replacement or expiry during the
+	// probe must not attach that result to a different issuance.
+	live, ok := e.matchingChallenge()
+	now = e.clock.Wall().UTC()
+	if !ok || !live.Same(ch) || !now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) {
+		return
 	}
-	d := e.decision
+	if ch.Probe != nil && (e.probeChallenge == nil || !e.probeChallenge.Same(ch)) {
+		return
+	}
+	// Enforce or exception cleanup may have failed after the earlier Decide.
+	// Recompute health without losing operational apply errors in the report.
+	d := Decide(e.input())
 	if e.cfg.AgentRelease == "" || !d.Publication.Valid() {
 		return
 	}

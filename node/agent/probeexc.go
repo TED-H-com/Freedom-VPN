@@ -8,19 +8,18 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
-	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
-// withProbeException installs the §13.9 exception for the probe that answers
-// a challenge, then removes it with the same plane call and a nil probe.
-// A challenge that does not name a probe, or that names one this process
-// will not render, runs the probe with no exception. The Apply result is
-// discarded: probe_up and probe_down are diagnostic counters and are not
-// copied into the agent counter map or member usage. A crash skips the
-// clear and leaves the kernel timeout.
+// Keep this agent-side bound aligned with enforce.ProbeMaxDestinations.
+const maxProbeTargets = 4
+
+// withProbeException installs at most once per live challenge, and clears
+// before answering it. Diagnostic counters never enter member usage, but
+// resets of member counters must still reach the meter.
 func (e *Engine) withProbeException(ctx context.Context, run func()) {
 	ch, ok := e.matchingChallenge()
-	if !ok || ch.Probe == nil {
+	if !ok || ch.Probe == nil || (e.healthNonce == ch.Nonce && e.probeFresh(ch)) {
 		run()
 		return
 	}
@@ -32,16 +31,24 @@ func (e *Engine) withProbeException(ctx context.Context, run func()) {
 }
 
 func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Challenge) (func(), bool) {
+	// D-064: the updater holds the update lock throughout its health wait.
+	// The live challenge, not that lock, authorizes this bounded exception.
+	e.prepareProbe(ctx)
+	live, ok := e.matchingChallenge()
+	if !ok || !live.Same(ch) || (e.probeChallenge != nil && e.probeChallenge.Nonce == ch.Nonce) {
+		return nil, false
+	}
 	now := e.trustedNow()
 	exc, ok := e.challengeProbe(ch, now)
 	if !ok {
 		e.log.Warn("probe exception", "err", "not installed")
 		return nil, false
 	}
-	serving := e.serving && e.decision.Serve && e.decision.Model.Generation != 0
+	d := e.decision
+	serving := e.serving && !e.latchBlocked && !e.recoverBlocked && d.Serve && d.Model.Generation != 0
 	var model enforce.Model
 	if serving {
-		model = e.decision.Model
+		model = d.Model
 		model.Now = now
 		model.Probe = exc
 		if _, err := enforce.Render(model, enforce.State{}, enforce.TCState{}); err != nil {
@@ -56,39 +63,61 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 			return nil, false
 		}
 	}
-	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 3, 50*time.Millisecond)
-	if err != nil {
-		e.log.Warn("probe exception", "err", "not installed")
-		return nil, false
-	}
+	// Remember the issuance even if apply fails after writing kernel state.
+	// A later step must not reinstall or extend the same authorization.
+	e.probeChallenge = &ch
 	if err := e.applyProbeModel(ctx, serving, model); err != nil {
-		lock.Release()
 		e.log.Warn("probe exception", "err", "not installed")
 		return nil, false
 	}
 	return func() {
-		defer lock.Release()
 		bare := model
 		bare.Probe = nil
+		// A latch or lease can change while the probe runs. Never put the
+		// old member model back when removing the exception.
+		e.prepareProbe(ctx)
+		if serving && (!e.serving || !e.decision.Serve) {
+			serving = false
+			bare, _ = e.baselineProbeModel(e.trustedNow(), nil)
+		}
 		if err := e.applyProbeModel(ctx, serving, bare); err != nil {
+			e.baselineOK = false
+			e.serving = false
+			e.expectServing.Store(false)
+			e.policyExpires = 0
+			e.lastProbe.Check = api.HealthCheckStatusFailed
+			e.lastProbe.Health = api.DataHealthFailed
+			e.lastProbe.Detail = "probe_clear_failed"
 			e.log.Warn("probe exception", "err", "not removed")
 		}
 	}, true
 }
 
-// applyProbeModel calls Apply while serving and ApplyBaselineModel otherwise.
-// It does not store counters. ApplyBaseline is left to the watchdog and to
-// the steady fail-closed path.
+// prepareProbe refreshes the serving gates before a probe can touch the
+// plane. Losing a gate first withdraws members onto the baseline.
+func (e *Engine) prepareProbe(ctx context.Context) {
+	e.latch()
+	e.decision = Decide(e.input())
+	if e.serving && !e.decision.Serve {
+		e.withdraw(ctx)
+		e.decision = Decide(e.input())
+	}
+}
+
+// applyProbeModel calls Apply while serving and BaselineModel otherwise.
+// Only member reset evidence is retained; probe counters are diagnostic.
 func (e *Engine) applyProbeModel(ctx context.Context, serving bool, m enforce.Model) error {
 	if serving {
-		prev := map[string]enforce.CounterValue{}
-		for name, c := range e.counters {
-			if name == "probe_up" || name == "probe_down" {
-				continue
+		prev := usageOnly(e.counters)
+		res, err := e.plane.Apply(ctx, m, prev)
+		if len(res.Resets) > 0 {
+			if e.kernel != nil {
+				e.kernel.noteApply(prev, res.Resets, usageOnly(res.Counters), e.expectServing.Load())
+				e.switchEpoch(ctx)
+			} else {
+				e.noteResetsWithoutKernel(prev, res.Resets, usageOnly(res.Counters), e.expectServing.Load())
 			}
-			prev[name] = c
 		}
-		_, err := e.plane.Apply(ctx, m, prev)
 		return err
 	}
 	return e.plane.BaselineModel(ctx, m)
@@ -139,7 +168,7 @@ func (e *Engine) resolverAddrs() []netip.Addr {
 // false instead of widening a prefix, substituting a peer, or omitting expiry.
 func (e *Engine) challengeProbe(ch healthattest.Challenge, now time.Time) (*enforce.ProbeException, bool) {
 	req := ch.Probe
-	if req == nil || !probePeerOK(req.PeerID) {
+	if req == nil || !probePeerOK(req.PeerID) || len(req.Destinations) > maxProbeTargets {
 		return nil, false
 	}
 	src, err := netip.ParsePrefix(strings.TrimSpace(req.SourceV4))
@@ -160,7 +189,7 @@ func (e *Engine) challengeProbe(ch healthattest.Challenge, now time.Time) (*enfo
 		if (d.Proto != "tcp" && d.Proto != "udp") || d.Port == 0 || unusableV4(p.Addr()) {
 			return nil, false
 		}
-		if e.nodeLocal(p.Addr()) && probeAdminPort(d.Port) {
+		if e.memberCollision(req.PeerID, p.Addr()) || (e.nodeLocal(p.Addr()) && probeAdminPort(d.Port)) {
 			return nil, false
 		}
 		dests = append(dests, enforce.ProbeDestination{AddrV4: p, Proto: d.Proto, Port: d.Port})
@@ -168,23 +197,24 @@ func (e *Engine) challengeProbe(ch healthattest.Challenge, now time.Time) (*enfo
 	if len(dests) == 0 && !req.ResolverDNS {
 		return nil, false
 	}
-	if ch.ExpiresAt.IsZero() || now.IsZero() {
+	if ch.IssuedAt.IsZero() || ch.ExpiresAt.IsZero() || now.IsZero() || !now.After(ch.IssuedAt) {
 		return nil, false
 	}
 	exp := ch.ExpiresAt
-	capAt := now.Add(time.Duration(enforce.ProbeMaxSeconds) * time.Second)
+	capAt := ch.IssuedAt.Add(time.Duration(enforce.ProbeMaxSeconds) * time.Second)
 	if exp.After(capAt) {
-		exp = capAt
+		return nil, false
 	}
 	if !exp.After(now) || exp.Sub(now) < time.Second {
 		return nil, false
 	}
 	return &enforce.ProbeException{
-		PeerID:       req.PeerID,
-		SourceV4:     src,
-		Destinations: dests,
-		ResolverDNS:  req.ResolverDNS,
-		ExpiresAt:    exp.UTC(),
+		PeerID:             req.PeerID,
+		SourceV4:           src,
+		Destinations:       dests,
+		ResolverDNS:        req.ResolverDNS,
+		ExpiresAt:          exp.UTC(),
+		TimeoutCeilSeconds: uint64(exp.Sub(now) / time.Second),
 	}, true
 }
 

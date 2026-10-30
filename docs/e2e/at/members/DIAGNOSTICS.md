@@ -1,3 +1,8 @@
+# Historical first-pass diagnostics
+
+Current diagnoses and closed findings are in [requests.md](requests.md).
+The older observation below is retained, not asserted for Follow-up 3.
+
 # Component diagnostics, not live acceptance
 
 Executed 2026-10-29 UTC on the task worktree. All 13 selected existing tests

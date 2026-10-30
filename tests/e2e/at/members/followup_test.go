@@ -14,7 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 )
 
@@ -37,7 +36,7 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 	if l.pool.QueryRow(ctx, `SELECT id,current_incarnation_id FROM nodes WHERE current_incarnation_id IS NOT NULL ORDER BY created_at DESC LIMIT 1`).Scan(&l.node, &l.inc) != nil {
 		t.Fatal("prior run node unavailable")
 	}
-	ids := []string{"AT02", "AT08", "AT20", "AT22"}
+	ids := []string{"AT02", "AT03", "AT04", "AT08", "AT20", "AT22"}
 	for _, id := range ids {
 		var r record
 		raw, err := os.ReadFile(filepath.Join(l.root, "docs/e2e/at/members", id+".json"))
@@ -56,24 +55,44 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 		r.FollowupBuild = &l.build
 		switch id {
 		case "AT02":
+			l.revocationReadback(&r)
 			devices := l.count(`SELECT count(*) FROM member_devices WHERE status='authorized'`)
 			proofs := l.count(`SELECT count(*) FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id WHERE n.external_user_id=i.subject AND n.mapping_proof='shared_issuer_public_subject:'||i.issuer`)
 			var desired, applied string
 			_ = l.pool.QueryRow(ctx, `SELECT desired_config_generation::text,applied_config_generation::text FROM nodes WHERE id=$1`, l.node).Scan(&desired, &applied)
 			observations := l.count(`SELECT count(*) FROM device_authorization_observations WHERE observed_authorized`)
 			r.check("post-worker projection readback", "record native proofs, devices and desired/applied separately", fmt.Sprintf("verified_proofs=%d; authorized_devices=%d; observed_authorized=%d; desired_generation=%s; applied_generation=%s", proofs, devices, observations, desired, applied), "read product projections after worker resumes; no projection fixtures", proofs >= 2 && devices >= 4)
+		case "AT03", "AT04":
+			l.revocationReadback(&r)
+			for i := range r.Forwarding {
+				o := &r.Forwarding[i]
+				if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
+					o.FirstUnconfirmedHop = "node forward-chain baseline: ctbase increases, zero member accept rules, no origin response; missing conntrack after revocation (F3-02)"
+					kept := r.Blockers[:0]
+					for _, b := range r.Blockers {
+						if !strings.HasPrefix(b, "F3-01:") {
+							kept = append(kept, b)
+						}
+					}
+					r.Blockers = kept
+				}
+			}
 		case "AT08":
 			// Re-execute independent publication checks after bounded ETag retry.
 			// Preserve the original attempt, including any 412, with its UTC time.
 			r.PriorChecks = append(r.PriorChecks, r.Steps...)
 			r.Steps = nil
 			r.Blockers = nil
-			r.Status = "pass"
+			r.Status = "blocked"
+			r.block("Partial publication readback; original complete AT checks remain in prior_checks. Full forwarding and group isolation are not passed by this supplement.")
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-a-%' ORDER BY code LIMIT 1`).Scan(&l.groupA)
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-b-%' ORDER BY code LIMIT 1`).Scan(&l.groupB)
-			if os.Getenv("FVPN_AT_MEMBERS_OBSERVE_ONLY") != "1" && l.groupA != uuid.Nil && l.groupB != uuid.Nil {
-				l.publication(&r)
-			}
+			// Primary suite already exercised mutation/restart. A supplement
+			// observes completion; it must not turn a retryable intermediate
+			// publication step into a new full acceptance pass.
+			var publication []byte
+			err := l.pool.QueryRow(ctx, `SELECT coalesce(jsonb_agg(jsonb_build_object('status',status,'steps',steps) ORDER BY created_at),'[]'::jsonb) FROM operations WHERE kind IN ('node.publish','node.disable')`).Scan(&publication)
+			r.check("publication completion readback", "record terminal/current step evidence without a new command", string(publication), "read product operation history; no publication mutation", err == nil)
 			l.restartReadback(&r)
 			l.servingPrecondition(&r)
 			l.routeReadback(&r)
@@ -139,8 +158,15 @@ func (l *live) feedLastGood(r *record) {
 		return
 	}
 	now := time.Now().UTC()
-	created, rev := l.policy("threat_feed", map[string]any{"provider": "TEST ONLY self-authored", "feed_code": "at-members-" + l.run, "license_name": "TEST ONLY acceptance fixture", "license_url": "https://releases.example.invalid/at-members/license.txt", "commercial_use_basis": "TEST ONLY self-authored synthetic names; permission for this acceptance fixture; no commercial source approval claimed", "attribution": "TEST ONLY self-authored", "source_url": "https://releases.example.invalid/" + object, "format": "domain_list", "categories": []string{"malware"}, "content_sha256": hash, "max_size_bytes": "4096", "valid_from": now.Add(-time.Minute), "valid_until": now.Add(time.Hour), "update_interval_seconds": 300})
-	r.check("feed source and licensing record", "201 with explicit TEST ONLY basis and pin", detail(created), "POST /admin/policies threat_feed", created.status == 201)
+	feedPayload := map[string]any{"provider": "TEST ONLY self-authored", "feed_code": "at-members-" + l.run, "license_name": "TEST ONLY acceptance fixture", "license_url": "https://releases.example.invalid/at-members/license.txt", "commercial_use_basis": "TEST ONLY self-authored synthetic names; permission for this acceptance fixture; no commercial source approval claimed", "attribution": nil, "source_url": "https://releases.example.invalid/" + object, "format": "domain_list", "categories": []string{"malware"}, "content_sha256": hash, "max_size_bytes": "4096", "valid_from": now.Add(-time.Minute), "valid_until": now.Add(time.Hour), "update_interval_seconds": 300}
+	for _, note := range []string{"", " \t "} {
+		feedPayload["attribution"] = note
+		rejected, _ := l.policy("threat_feed", feedPayload)
+		r.check("blank attribution rejected", "422 for blank or whitespace notes", detail(rejected), "POST threat_feed with blank attribution", rejected.status == 422)
+	}
+	feedPayload["attribution"] = nil
+	created, rev := l.policy("threat_feed", feedPayload)
+	r.check("feed source and licensing record", "201 with attribution:null, TEST ONLY basis and pin", detail(created), "POST /admin/policies threat_feed", created.status == 201)
 	if rev == uuid.Nil {
 		return
 	}
@@ -162,7 +188,7 @@ func (l *live) feedLastGood(r *record) {
 	beforeDNS := l.dnsLocal("feed-01.example.invalid", "1", "udp")
 	r.check("feed positive DNS control", "known controlled upstream name resolves before feed activation", beforeDNS, "node loopback query controlled feed-01.example.invalid before feed profile", strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`))
 	profile, pid := l.policy("dns_profile", map[string]any{"profile_code": "at-members-feed", "display_name": map[string]string{"zh-TW": "TEST ONLY feed"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []uuid.UUID{rev}})
-	r.check("feed profile creation", "record reference validation result", detail(profile), "POST DNS profile referencing approved feed", profile.status != 0)
+	r.check("feed profile creation", "record reference validation result", detail(profile), "POST DNS profile referencing approved feed", profile.status == 201)
 	if profile.status == 201 && pid != uuid.Nil {
 		_ = l.activate(pid)
 	}
@@ -191,26 +217,21 @@ func (l *live) feedLastGood(r *record) {
 	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision.")
 }
 
-// The stock service hook resumes only the agent for independent DNS checks. It
-// does not fix the entrypoint or restart NetBird/watchdog, nor prove reboot.
+// F2-05: restart must resume through the unchanged entrypoint, without a token.
 func (l *live) restartReadback(r *record) {
-	raw, err := l.inside("node", "cat", "/var/lib/vpn-node/e2e/status.json")
-	var state struct {
-		Stage string `json:"stage"`
-	}
-	_ = json.Unmarshal(raw, &state)
-	_, identityErr := l.inside("node", "test", "-s", "/var/lib/vpn-node/identity/node.json")
-	r.check("restart entrypoint stage", "record stage independently of stored disabled intent", fmt.Sprintf("read_ok=%t; stage=%s; enrolled_identity_present=%t", err == nil, state.Stage, identityErr == nil), "read node entrypoint status; test existing identity file; no key export", err == nil)
-	if state.Stage != "waiting_token" || identityErr != nil {
-		return
-	}
-	r.block("F2-05: node restart returns to waiting_token with a durable enrolled identity; entrypoint-node.sh has no resume branch. Agent/tunnel/watchdog recovery is not proven. The shared Service(start) workaround below is only for independent DNS evidence, not a reboot or forwarding pass.")
-	stack, openErr := e2e.OpenStack()
-	if openErr != nil {
-		r.block("shared Service hook unavailable")
-		return
-	}
-	defer stack.Close()
-	started := stack.Service(l.ctx, "start", "/usr/local")
-	r.check("documented agent-only workaround", "service hook starts/idempotently retains agent; no reboot claim", fmt.Sprintf("started=%t", started == nil), "e2e.Stack.Service(ctx, start, /usr/local); NetBird/watchdog not replaced", started == nil)
+	var stage string
+	resumed := l.wait(45*time.Second, func() bool {
+		raw, _ := l.inside("node", "cat", "/var/lib/vpn-node/e2e/status.json")
+		var state struct {
+			Stage string `json:"stage"`
+		}
+		_ = json.Unmarshal(raw, &state)
+		stage = state.Stage
+		return stage == "enrolled" && (l.restartAfter.IsZero() || l.count(`SELECT count(*) FROM node_observations WHERE node_id=$1 AND received_at>$2`, l.node, l.restartAfter) > 0)
+	})
+	_, tokenErr := l.inside("node", "test", "-e", "/var/lib/vpn-node/e2e/enrollment.token")
+	_, nftErr := l.inside("node", "nft", "-j", "list", "table", "inet", "fvpn")
+	var current uuid.UUID
+	err := l.pool.QueryRow(l.ctx, `SELECT current_incarnation_id FROM nodes WHERE id=$1`, l.node).Scan(&current)
+	r.check("durable restart without token", "enrolled, same incarnation, nft readable, token absent", fmt.Sprintf("resumed=%t; stage=%s; same_incarnation=%t; nft_readable=%t; token_absent=%t", resumed, stage, current == l.inc, nftErr == nil, tokenErr != nil), "docker restart node; poll entrypoint and product incarnation; no Service workaround", resumed && err == nil && current == l.inc && nftErr == nil && tokenErr != nil)
 }

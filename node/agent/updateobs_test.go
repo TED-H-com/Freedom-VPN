@@ -3,6 +3,7 @@ package agent
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"path/filepath"
@@ -129,7 +130,7 @@ func TestUpdateObservation_RecoveryRequired(t *testing.T) {
 	r.eng.cfg.UpdaterJournal = path
 	rep := mustReport(t, r, context.Background())
 	// Snapshot maps journal stage recovery_required to API stage rollback and state failed.
-	assertUpdate(t, rep, 11, job, api.UpdateStageRollback, api.UpdateJobStateFailed, current, last)
+	assertUpdate(t, rep, 11, job, api.UpdateStageRollback, api.UpdateJobStateFailed, r.eng.cfg.ReleaseUUID(), last)
 }
 
 func TestUpdateObservation_DeadlineDoesNotBlockOrReuse(t *testing.T) {
@@ -314,4 +315,29 @@ func genErr(rep api.ObservationReport) error {
 func idErr[T any](n presence.Nullable[T]) error {
 	_, err := n.Get()
 	return err
+}
+
+func TestReviewD063_CompletedJournalNeedsValidJobID(t *testing.T) {
+	r := newRig(t)
+	job := uuid.MustParse("019a0000-0000-7000-8000-0000000000a1")
+	release := uuid.MustParse("019a0000-0000-7000-8000-0000000000b1")
+	path := succeededJournal(t, t.TempDir(), job, 42, release)
+	db, err := sql.Open("sqlite", "file:"+path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	for _, q := range []string{"UPDATE jobs SET job_id = 'invalid'", "UPDATE txns SET job_id = 'invalid'"} {
+		if _, err := db.Exec(q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.eng.cfg.UpdaterJournal = path
+	rep := mustReport(t, r, context.Background())
+	if got, err := rep.CurrentReleaseId.Get(); err != nil || got != r.eng.cfg.ReleaseUUID() {
+		t.Fatalf("invalid job overrode running release: %v %v", got, err)
+	}
+	if _, err := rep.Update.JobId.Get(); !errors.Is(err, presence.ErrNull) {
+		t.Fatalf("invalid job ID reported: %v", err)
+	}
 }

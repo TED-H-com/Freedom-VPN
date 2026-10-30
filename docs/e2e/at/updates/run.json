@@ -1,0 +1,38 @@
+{
+  "run_id": "9cb542dd-53af-4566-97e8-4365260847c5",
+  "at": "2026-10-30T06:20:24Z",
+  "source_commit": "136bd15d20359c64f2144cd3359f63ac28825988",
+  "base_main": "0ceb190",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "make_target": "make -f mk/at-updates.mk at-updates",
+  "make_exit_code": 0,
+  "go_test_exit_code": 0,
+  "results": {
+    "AT23": "pass",
+    "AT24": "pass",
+    "AT25": "pass",
+    "AT26": "pass",
+    "AT27": "pass"
+  },
+  "manifest_and_artifact_digests": {
+    "artifact_sha256_0.1.0_amd64": "e0e254955d5e08e843f5e213bc06c5da8f25e51dafbbf51ff40be0d15df95e64",
+    "artifact_sha256_0.1.0_arm64": "005807f0073986b8509d041f407ef405e57184c92183cdb24a2ce40ada0e91a8",
+    "artifact_sha256_1.0.1_amd64": "a645dc6f609a8e3b6d952ee8bccfb5836a47111f830e72abe2c0b662db6f6373",
+    "artifact_sha256_1.0.1_arm64": "c1ba60702f1009c11f549d64fbb10d02e72d2272dc67bba8e493a2fe6808c999",
+    "artifact_sha256_1.0.2_amd64": "0cb8a5a1802cf3e9de0e7e82c40e74df163acc74bf211889785578581a8fe741",
+    "artifact_sha256_1.0.2_arm64": "db0d5dd41d5cba2a5050cfb305c47cba511cebd5b0f790dc9f76d73388e7778d",
+    "manifest_sha256_0.1.0": "d621f1b7517bf66ce8e140a58f09cce364e5146ff489f3e3562c0fcb0207ae5f",
+    "manifest_sha256_1.0.1": "de33fefc04f7db5a431d0bc86da9a56b3a4d55de72926411ea4afbbbbcb34601",
+    "manifest_sha256_1.0.2": "7423345920df5deefbb9230954061e785d1efe40db00bf2f82e3154247d46294",
+    "signed_manifest_sha256_0.1.0": "e826d5c1f044e0fd171e46aa8514ca5b1dc09e5fc8737cc0f6d811cf9765166e",
+    "signed_manifest_sha256_1.0.1": "4c8e012ad4cf328a27e8ebfcaa0f22d83a1bb2b8b483c9c5ca6f95014697e67a",
+    "signed_manifest_sha256_1.0.2": "80f45e666e25715d37a0e5263391baf4e0c12f874698996d3545cdf08eaf48d9"
+  },
+  "initial_run": {
+    "run_id": "0e3b86ce-0dcd-4287-8fde-a872a8d1fe6e",
+    "make_exit_code": 2,
+    "evidence": "history/follow-up-4-rate-limit/README.md"
+  },
+  "scope": "Follow-up 4 scenarios; amd64 live, amd64 and arm64 real candidate builds; original section 19 matrix remains broader"
+}
