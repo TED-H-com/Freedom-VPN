@@ -1,47 +1,62 @@
-# Forwarding observation — Follow-up 3
+# Follow-up 4 forwarding observation
 
-Run `f81a8365-7839-4756-bee2-9bb2a5506cdd`, source `ac93203dbabc05aa3c1c70f644370a205a704f16`. Full binary/image and probe digests are in [AT01.json](AT01.json) and [AT02.json](AT02.json). Times below are UTC.
+Run `d89eda32-84ef-4582-b669-053d5d9abadd`; UTC timestamps, source/test/probe hashes, image digests, policy
+revisions and both incarnations are in each linked JSON. Only controlled-origin
+TCP/443 aggregate packet counts are retained; no payload or credentials.
 
-Initial counted forwarding and current-generation leases work on this main; the first real device revocation later exposes a missing lab dependency. No application, policy projection, route on the host, or node firewall was changed by the harness. The missing step in the earlier shared forwarding driver is native exit selection under `skip_auto_apply=true`.
+The normal serving path now counts member traffic. The native client waits for
+the advertised route and explicitly selects the `fvpn-exit-...` network matching
+the intended node's real peer, preserving `skip_auto_apply=true`. A positive
+requires the exact CA-verified origin response, authenticated origin receipt
+from that node's SNAT address, and increases in that device's upload and download
+counters. The shared forwarding driver's selection requirement is confirmed by
+[RUN.md](../../RUN.md#native-exit-selection-and-traffic-trace); this harness also
+uses bounded advertisement polling, covering the shared driver's documented
+immediate-discovery timing limit.
 
-| Observation | Before | After |
-|---|---|---|
-| AT01 controlled-origin route | `eth0` | `fvnb0`, table `netbird` |
-| Device upload bytes | 0 | 2214 |
-| Device download bytes | 0 | 2411 |
-| Forward-chain generation / member accept rules | 5 / 6 | unchanged during the bounded request |
-| Origin receipt | no request yet | CA-verified HTTPS 200, exact controlled `ok` body |
+| Case | Counted positive transfers | Other observed transfers |
+|---|---:|---|
+| [AT01](AT01.json) | 2 | Before/after Linux pause/unpause |
+| [AT02](AT02.json) | 5 | Race loser and revoked peer: no origin receipt |
+| [AT03](AT03.json) | 1 | Device admitted through actual paid reconciliation |
+| [AT04](AT04.json) | 6 | Six new-connection denials after refund/expiry/suspension; persistent timing in summary |
+| [AT08](AT08.json) | 2 | Four unauthorized/disabled denials, including after restart |
+| [AT09](AT09.json) | 3 | One failed second-exit recovery transfer, preserved |
 
-The first positive trace began at `2026-10-30T07:07:58Z`. The member `fvnb0` and node `fvmb0`/`fvup0` packet observations each saw 9 packets toward the origin and 7 back. The origin observer in this trace ended early and saw no packets; the exact TLS response proves application receipt independently. AT02 also records a positive origin-interface observation. This is a bounded functional transfer, not a throughput or metering-accuracy benchmark.
+AT02's transaction outcomes are one winner/one quota error and 3→2→3 slots.
+After DELETE the former loser and a sibling carry counted traffic, revoked
+source conntrack is empty, accepted health agrees, and the agent PID is
+unchanged. No restart/state clear or D-050 repair is used. This passes §19 AT02's
+stated quota/ownership/withdrawal basis. The strict post-revoke node-ingress drop
+measurement is the [shared devstack limitation](../../runs/2026-10-30/followup10-run3/device-revoke.md),
+not a claim made here. The updater-only probe is not used as member traffic.
 
-The first full-suite attempt initially attempted selection before the route was available to the native client. Its route remained `eth0`, no origin response arrived and device counters stayed zero. The corrected harness waits for the advertised route before selecting through `netbird routes select`; it then polls the product lease separately. The earlier unsuccessful trace is retained in [attempt 1](history/follow-up-3/attempt-1/AT01.json).
+## Open restart condition: F4-01
 
-**Owner: devstack**, `tests/e2e/traffic_scenario_test.go:countedFlow` (and the calling member-traffic scenario). That driver performs `wget` without selecting an advertised exit. Add bounded native route-availability/selection before the controlled transfer, retaining `skip_auto_apply=true`. Evidence points to the member route-selection hop; it does not justify changing the agent or bypassing the node firewall. Once selected, no stop is observed: member → node ingress → node uplink → origin and return are counted.
+Owner: **w2-agent-core**, with **w3-wire-nodes** lease issuance. After a counted
+node2 flow, the second attempt stops the node, resolver and namespace holder.
+The offline transfer has zero origin receipts. On restart, the same incarnation
+gets a fresh generation-23 lease at `17:37:24.662928Z` with zero member grants;
+its expiry is the following day. The preceding generation-23 lease had seven.
+The node fails the 90-second fresh-serving gate and reports `lease_expired`.
 
-The `forwarding` arrays retain interface routes, counter snapshots, aggregate packet observations and origin response per transfer. `elapsed_ms` is the actual capture window; no claim is made that an early-ended observer proves packet absence. Source identities, keys, credentials and raw packets are omitted.
+At `17:38:54Z`, the selected member route uses `fvnb0`. Five TCP attempts reach
+node2 `fvmb0`; its generation is 0 before and after, member accept rules are 0,
+`ctbase` increases from 0 to 300 bytes, device counters do not increase, and the
+origin receives nothing. **The first stopping point is the node forward-chain
+baseline**, not the member route or the origin. The primary node subsequently
+still carries a counted transfer.
 
-AT01 also repeats the counted transfer after pausing/unpausing the member container. A real network move and Windows/macOS/iOS/Android remain **needs operator run**. AT02 distinguishes the admitted client from the quota loser: no selected exit or successful controlled transfer for the loser, with a contemporaneous counted positive control.
+AT20's independent DNS revision then changes the desired generation to 24,
+receives a seven-member lease at `17:39:36.696084Z`, and observes forwarding
+true. Later read-only evidence must not pass the failed AT09 recovery. The
+source points to `needRenew` retaining a fresh same-generation empty grant
+lease until its renewal lead, with `Decide` labelling the empty admitted model
+`lease_expired`; `RenewTx` gates grants on readiness. This is a supported
+inference, not a claimed internal branch trace. Exact reproduction and requested
+bounded refresh behavior are in [requests.md](requests.md#f4-01--empty-member-lease-after-second-exit-restart).
 
-## Later stop after the first revocation
-
-At `07:09:36Z`, AT02 revoked A2 and admitted the former loser through the
-production service. The first `HEALTH_CHECK_FAILED / apply failed` observation
-arrived at `07:09:39.760469Z`. The node image has no `conntrack` executable;
-`node/enforce/apply.go:deleteConntrack` invokes it for dropped addresses.
-No package was installed and no enforcement rule was changed by the harness.
-
-AT03's paid-member transfer at `07:12:14Z` had a selected `fvnb0` route, but
-node ingress `fvmb0` saw five SYN packets while `fvup0` saw none. The node's
-forward chain was generation 0, with zero member accept rules. Its `ctbase`
-increased **0 → 300 bytes**, and the device counters remained **0 / 0**.
-No origin receipt occurred. This first stop is the **node's fail-closed forward
-chain**, following revocation failure, not the original member route selection
-or lease-generation gap. Owner: **devstack**, add the required conntrack utility
-to `deploy/devstack/Dockerfile.node`; details and reproduction are F3-02 in
-[requests.md](requests.md). The existing agent error is retained separately from
-its misleading all-passed check list and empty forwarding-block reason list.
-
-The earlier AT02 pass covered the quota/winner/loser checks before the apply
-failure was observed. Its supplemental dependency observation changes the
-complete AT02 result to blocked, preserving every original passing check.
-AT03/04 and subsequent A/B publication traffic remain blocked by this condition.
+Attempt 1 used only an agent-container restart, leaving namespace holders alive,
+and its immediate recovery sample raced fresh readiness. That distinct earlier
+result remains [archived](history/follow-up-4/attempt-1/AT09.json). No fault,
+failed assertion or silent later pass is substituted for the second attempt.

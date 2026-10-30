@@ -1,0 +1,75 @@
+{
+  "run_id": "13ccb8ab-9edf-4b0a-90f9-c3758ad4ec5f",
+  "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
+  "recorded_at": "2026-10-30T17:16:26.711310Z",
+  "suite_seconds": 936.455,
+  "make_exit": 2,
+  "go_exit": 1,
+  "cases": [
+    {
+      "at": "AT01",
+      "status": "blocked",
+      "complete": true
+    },
+    {
+      "at": "AT02",
+      "status": "pass",
+      "complete": true
+    },
+    {
+      "at": "AT03",
+      "status": "pass",
+      "complete": true
+    },
+    {
+      "at": "AT04",
+      "status": "blocked",
+      "complete": true
+    },
+    {
+      "at": "AT05",
+      "status": "blocked",
+      "complete": true
+    },
+    {
+      "at": "AT08",
+      "status": "blocked",
+      "complete": true
+    },
+    {
+      "at": "AT09",
+      "status": "blocked",
+      "complete": true
+    },
+    {
+      "at": "AT20",
+      "status": "blocked",
+      "complete": true
+    },
+    {
+      "at": "AT21",
+      "status": "fail",
+      "complete": true
+    },
+    {
+      "at": "AT22",
+      "status": "blocked",
+      "complete": true
+    }
+  ],
+  "commands": [
+    "FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up",
+    "make -f mk/at-members.mk at-members"
+  ],
+  "harness_findings": [
+    "AT08 stopped polling at documented partial withdrawal before late agent ACK; subsequent success retained in AT08-late-operation.json.",
+    "AT09 selected-node probe began before fresh restart health; local generation 0 transitioned to 16 during capture, no origin response. Stopping agent container alone does not remove its namespace holders.",
+    "AT21 DNS sync policy command 403 after recent-auth window; second attempt reauthenticates per case without configuration change."
+  ],
+  "up_exit": 0,
+  "down_exit": 0,
+  "binding": {
+    "prefix": "w4-members",
+    "port_base": 24000
+  }
+}

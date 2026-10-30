@@ -1,9 +1,8 @@
-# AT02 device-to-usage binding trace — Follow-up 3
+# AT02 device-to-usage binding trace — Follow-up 4
 
 The native admission gap is resolved in this run. [AT01](AT01.json) proves the
 shared issuer mapping; [AT02](AT02.json) proves the quota transaction, ownership
-gates, slot reuse and receipt validation. Complete AT02 remains **blocked** after revocation by missing lab conntrack
-(F3-02). A and the final-slot winner have real counted forwarding; the loser
+gates, slot reuse and receipt validation. The current result is in AT02.json; the historical missing-conntrack result remains in history/follow-up-3. The fresh image includes conntrack and the harness requires coherent post-revoke serving. A and the final-slot winner have real counted forwarding; the loser
 has no selected exit and no origin response. Database authorization alone is
 not forwarding.
 
@@ -15,7 +14,7 @@ not forwarding.
 | Last-slot race | Two real contenders in reused lab member images; own worker paused only during the barrier | A has two of three devices. Two goroutines start together: one commits, one returns `ErrLimit`; count becomes three. Loser has no device row or paid group. |
 | Cross-owner access | HTTP list/delete and `devices.Service.Get` | A's list omits B's existing device; deleting it returns 404 without identifiers; service read is not found with an empty result. B remains authorized. |
 | Slot reuse | Member DELETE, then real-adapter admission | Count changes 3 → 2 → 3; former loser is admitted. No projection is hand-written. |
-| External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, and desired/applied generations are recorded with current-generation leases; post-revoke apply failure is separate. |
+| External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, and desired/applied generations are recorded with current-generation leases; post-revoke health must agree with counted sibling/replacement traffic. |
 | Node identity | `apps/worker/jobs_nodes.go`, `node.peer.observe` | This node identity path is separate from the native member identity/device writer; never substitute a node peer for a member device. |
 | Usage negative control | Actual node mTLS, deliberately unknown device | Per-event `VALIDATION_FAILED / binding_not_found`. This remains the correct rejection. |
 | Usage positive control | Actual projected device/revision and interval wholly inside its binding | `accepted`, then `duplicate`; exactly one receipt and one sample. Synthetic bytes test ingest, not metering. |
@@ -44,5 +43,23 @@ SELECT count(*) FROM usage_samples;
 Use `docker exec fvpn-w4-members-postgres psql -U fvpn -d fvpn -X` only.
 Never migrate or query the shared admin database for these checks. The
 positive/negative packet path is in [forwarding-observation.md](forwarding-observation.md).
-Post-revoke recovery awaits [F3-02](requests.md); original transaction and usage
-checks remain intact.
+The missing-conntrack finding is retired by the fresh image and live post-revoke
+proof. Earlier failed observations remain in the archived attempts.
+
+## Complete-case assertion boundary (§19 AT02)
+
+The race loser must lack a paid group/device and receive no origin response.
+After the member DELETE and production-adapter admission of that former loser,
+the harness waits for a newer real generation without the old binding and with
+the replacement. It requires counted sibling/replacement transfers, no origin
+receipt from the revoked peer, empty revoked-source conntrack, a continuous
+agent PID and forwarding health without block reasons. The second attempt also
+measures the old device's positive flow immediately before revocation.
+
+This satisfies the stated quota/ownership/withdrawal assertions. It does not
+claim a measured post-revoke kernel-ingress drop: the native client withdraws
+its route first. That separate limitation is retained in the shared
+[device-revoke record](../../runs/2026-10-30/followup10-run3/device-revoke.md).
+No stale route is restored and no agent restart, state clearing or projection
+repair is used to make this case pass. The dedicated updater probe does not
+appear in any of these member-device counts.
