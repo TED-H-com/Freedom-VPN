@@ -1,9 +1,9 @@
-# Wave 4 member acceptance — Follow-up 3
+# Wave 4 member acceptance — Follow-up 4
 
 Run only the assigned `w4-members / 24000` stack. [RUN.md](RUN.md) records both
 fresh attempts; [summary.md](summary.md) lists current AT outcomes and
 [requests.md](requests.md) names the remaining owners. Prior evidence is
-preserved under [history/follow-up-2](history/follow-up-2/RUN.md).
+preserved under [history/follow-up-3](history/follow-up-3/RUN.md).
 
 ```sh
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
@@ -34,7 +34,8 @@ counter snapshots and concurrent bounded packet observations inside the member,
 node and origin containers. The observer keeps only counts by interface and
 direction for the controlled TCP connection; no packet body, URL history or
 credential is retained. Both a CA-verified origin response and increases in the
-specific device's upload/download counters are required for counted forwarding.
+specific device's upload/download counters, plus authenticated origin receipt
+from the selected node's SNAT address, are required for counted forwarding.
 See [forwarding-observation.md](forwarding-observation.md).
 
 DNS policy revisions reuse one active definition. Node-mTLS document digests

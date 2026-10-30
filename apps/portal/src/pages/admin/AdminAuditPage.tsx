@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { apiClient, type ResourceType } from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useI18n } from '../../i18n';
 
 export function AdminAuditPage(): React.ReactElement {
   const { t } = useI18n();
-  const [resourceFilter, setResourceFilter] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialResourceFilter = searchParams.get('resource_type') || 'all';
+  const [resourceFilter, setResourceFilter] = useState(initialResourceFilter);
   const [search, setSearch] = useState('');
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([]);
+
+  useEffect(() => {
+    const paramFilter = searchParams.get('resource_type') || 'all';
+    if (paramFilter !== resourceFilter) {
+      setResourceFilter(paramFilter);
+      setCursor(undefined);
+      setCursorHistory([]);
+    }
+  }, [searchParams, resourceFilter]);
 
   const auditQuery = useQuery({
     queryKey: ['admin', 'audit', resourceFilter, cursor],
@@ -53,19 +65,34 @@ export function AdminAuditPage(): React.ReactElement {
             </label>
             <select
               id="audit-resource-filter"
+              data-testid="audit-resource-filter"
               value={resourceFilter}
               onChange={(e) => {
-                setResourceFilter(e.target.value);
+                const next = e.target.value;
+                setResourceFilter(next);
                 setCursor(undefined);
                 setCursorHistory([]);
+                if (next === 'all') {
+                  setSearchParams({});
+                } else {
+                  setSearchParams({ resource_type: next });
+                }
               }}
             >
               <option value="all">{t('admin.nodes.filter.all')}</option>
               <option value="node">node</option>
               <option value="enrollment">enrollment</option>
+              <option value="exit">exit</option>
               <option value="member">member</option>
+              <option value="member_device">member_device</option>
+              <option value="entitlement_grant">entitlement_grant</option>
               <option value="policy">policy</option>
+              <option value="policy_definition">policy_definition</option>
+              <option value="policy_revision">policy_revision</option>
+              <option value="release">release</option>
               <option value="update_batch">update_batch</option>
+              <option value="fleet_config">fleet_config</option>
+              <option value="member_group">member_group</option>
               <option value="admin_identity">admin_identity</option>
             </select>
           </div>

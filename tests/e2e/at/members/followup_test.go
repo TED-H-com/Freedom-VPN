@@ -33,10 +33,10 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
 	l.open()
 	l.admin = l.login("e2e-admin", "admin")
-	if l.pool.QueryRow(ctx, `SELECT id,current_incarnation_id FROM nodes WHERE current_incarnation_id IS NOT NULL ORDER BY created_at DESC LIMIT 1`).Scan(&l.node, &l.inc) != nil {
+	if l.pool.QueryRow(ctx, `SELECT id,current_incarnation_id FROM nodes WHERE current_incarnation_id IS NOT NULL ORDER BY created_at ASC LIMIT 1`).Scan(&l.node, &l.inc) != nil {
 		t.Fatal("prior run node unavailable")
 	}
-	ids := []string{"AT02", "AT03", "AT04", "AT08", "AT20", "AT22"}
+	ids := []string{"AT02", "AT03", "AT04", "AT08", "AT09", "AT20", "AT22"}
 	for _, id := range ids {
 		var r record
 		raw, err := os.ReadFile(filepath.Join(l.root, "docs/e2e/at/members", id+".json"))
@@ -64,27 +64,16 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			r.check("post-worker projection readback", "record native proofs, devices and desired/applied separately", fmt.Sprintf("verified_proofs=%d; authorized_devices=%d; observed_authorized=%d; desired_generation=%s; applied_generation=%s", proofs, devices, observations, desired, applied), "read product projections after worker resumes; no projection fixtures", proofs >= 2 && devices >= 4)
 		case "AT03", "AT04":
 			l.revocationReadback(&r)
-			for i := range r.Forwarding {
-				o := &r.Forwarding[i]
-				if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
-					o.FirstUnconfirmedHop = "node forward-chain baseline: ctbase increases, zero member accept rules, no origin response; missing conntrack after revocation (F3-02)"
-					kept := r.Blockers[:0]
-					for _, b := range r.Blockers {
-						if !strings.HasPrefix(b, "F3-01:") {
-							kept = append(kept, b)
-						}
+			if id == "AT04" {
+				for i, b := range r.Blockers {
+					if strings.HasPrefix(b, "Paid periods, cancellation/refunds") {
+						r.Blockers[i] = "The full case additionally needs member UDP withdrawal timing and rendered suspended/expired member screens. Individual TCP observations retain their actual pass/fail; no earlier timing or failed check is removed."
 					}
-					r.Blockers = kept
 				}
 			}
 		case "AT08":
-			// Re-execute independent publication checks after bounded ETag retry.
-			// Preserve the original attempt, including any 412, with its UTC time.
-			r.PriorChecks = append(r.PriorChecks, r.Steps...)
-			r.Steps = nil
-			r.Blockers = nil
-			r.Status = "blocked"
-			r.block("Partial publication readback; original complete AT checks remain in prior_checks. Full forwarding and group isolation are not passed by this supplement.")
+			// Append observation-only checks; preserve primary failed/blocked/pass state.
+
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-a-%' ORDER BY code LIMIT 1`).Scan(&l.groupA)
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-b-%' ORDER BY code LIMIT 1`).Scan(&l.groupB)
 			// Primary suite already exercised mutation/restart. A supplement
@@ -96,6 +85,8 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			l.restartReadback(&r)
 			l.servingPrecondition(&r)
 			l.routeReadback(&r)
+		case "AT09":
+			l.restartLeaseReadback(&r)
 		case "AT20":
 			for i, b := range r.Blockers {
 				r.Blockers[i] = strings.ReplaceAll(b, "No admitted member DNS/forwarding path", "Native member admission is proven in AT01/AT02, but native DNS is disabled and no applied member DNS/forwarding path exists")
@@ -104,6 +95,7 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			r.check("central resolver document readback", "record stored publication versus node delivery", fmt.Sprintf("central_documents=%d", docs), "SELECT dns_resolver_documents", docs > 0)
 			l.resolverEvidence(&r)
 		case "AT22":
+			l.secondPrivacy(&r)
 			if os.Getenv("FVPN_AT_MEMBERS_OBSERVE_ONLY") != "1" {
 				l.feedLastGood(&r)
 			}
