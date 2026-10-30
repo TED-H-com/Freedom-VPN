@@ -53,8 +53,7 @@ func (p SystemPlane) ConntrackLookPath() error {
 
 // FlushConntrack deletes conntrack entries for addrs without installing a
 // serving ruleset. Failed is the subset whose -D did not succeed. The
-// serving Apply path still passes Revoke into enforce until that error
-// carries the same subset.
+// serving Apply path persists that same subset from ConntrackDeleteError.Failed.
 func (p SystemPlane) FlushConntrack(ctx context.Context, addrs []netip.Addr) ([]netip.Addr, error) {
 	if err := enforce.RequireConntrack(p.executor()); err != nil {
 		return append([]netip.Addr(nil), addrs...), err

@@ -22,6 +22,11 @@ export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 # D-061 refuses credentials unless the regular file is root-owned mode 0600.
 chown 0:0 /etc/vpn-node/resolver-credentials.json
 chmod 600 /etc/vpn-node/resolver-credentials.json
+# TEST ONLY durable OS identity: distinct fresh slots; cloned images preserve it.
+if [ ! -s /etc/vpn-node/machine-id ]; then
+    tr -d '-' < /proc/sys/kernel/random/uuid > /etc/vpn-node/machine-id
+fi
+cp /etc/vpn-node/machine-id /etc/machine-id
 cat /proc/sys/kernel/random/uuid > /etc/vpn-node/boot-id
 epoch=$(cat /proc/sys/kernel/random/uuid)
 epoch2=$(cat /proc/sys/kernel/random/uuid)

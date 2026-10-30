@@ -81,11 +81,17 @@ func planRevokes(pending, prev []addrID, bindings []enforce.Binding) []netip.Add
 	return out
 }
 
-// pendingAfterFailure keeps the identities whose addresses were queued for
-// deletion. A re-admitted (addr, device, member) is not kept, so the next
-// tick does not run conntrack -D against that device. Identities are the
-// whole queued set until enforce reports the failed subset.
-func pendingAfterFailure(pending, prev []addrID, bindings []enforce.Binding) []addrID {
+// pendingAfterFailure keeps the queued identities whose conntrack -D failed.
+// failed is ConntrackDeleteError.Failed. A re-admitted (addr, device, member)
+// is not kept. Every other address of that revoke set is retired.
+func pendingAfterFailure(pending, prev []addrID, bindings []enforce.Binding, failed []netip.Addr) []addrID {
+	if len(failed) == 0 {
+		return nil
+	}
+	failSet := map[netip.Addr]struct{}{}
+	for _, addr := range failed {
+		failSet[addr] = struct{}{}
+	}
 	revoke := map[netip.Addr]bool{}
 	for _, addr := range planRevokes(pending, prev, bindings) {
 		revoke[addr] = true
@@ -93,7 +99,7 @@ func pendingAfterFailure(pending, prev []addrID, bindings []enforce.Binding) []a
 	var out []addrID
 	seen := map[addrID]bool{}
 	keep := func(id addrID) {
-		if !revoke[id.Addr] || seen[id] {
+		if _, ok := failSet[id.Addr]; !ok || !revoke[id.Addr] || seen[id] {
 			return
 		}
 		seen[id] = true
@@ -269,8 +275,8 @@ func (e *Engine) clearConntrackBlock(ctx context.Context) {
 }
 
 // flushPendingConntrack retries deletes without installing a serving
-// ruleset. Planes that do not expose a flusher stay failed closed; the
-// Apply path is what reports a failed subset once enforce grows one.
+// ruleset. Planes that do not expose a flusher stay failed closed. The
+// failed subset is what stays pending, as on the serving Apply path.
 func (e *Engine) flushPendingConntrack(ctx context.Context) bool {
 	if len(e.pendingRevoke) == 0 {
 		return true

@@ -1,0 +1,27 @@
+{
+  "id": "usage",
+  "title": "Agent samples after native admitted traffic",
+  "spec": [
+    "§10",
+    "§19 AT14",
+    "§19 AT15"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "member_usage",
+      "detail": "200"
+    },
+    {
+      "name": "member_total_bytes",
+      "detail": "2630"
+    },
+    {
+      "name": "source",
+      "detail": "real agent sampler after controlled-origin admission; no harness usage batch"
+    }
+  ],
+  "at": "2026-10-30T19:27:21Z",
+  "run_id": "fa5650f3-d238-496e-b7d4-718ce705fefb",
+  "source_commit": "a36bb84f1dafc7526c021177026b4d558e273cd0"
+}
