@@ -2,6 +2,9 @@ package agent
 
 import (
 	"context"
+	"errors"
+	"net/netip"
+	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 )
@@ -40,6 +43,42 @@ func (p SystemPlane) MissingExecutables() []string {
 		missing = append(missing, "conntrack")
 	}
 	return missing
+}
+
+// ConntrackLookPath reports whether conntrack is still installed. The agent
+// calls it after the boot preflight. A later failure fails closed at once.
+func (p SystemPlane) ConntrackLookPath() error {
+	return enforce.RequireConntrack(p.executor())
+}
+
+// FlushConntrack deletes conntrack entries for addrs without installing a
+// serving ruleset. Failed is the subset whose -D did not succeed. The
+// serving Apply path persists that same subset from ConntrackDeleteError.Failed.
+func (p SystemPlane) FlushConntrack(ctx context.Context, addrs []netip.Addr) ([]netip.Addr, error) {
+	if err := enforce.RequireConntrack(p.executor()); err != nil {
+		return append([]netip.Addr(nil), addrs...), err
+	}
+	var failed []netip.Addr
+	for _, addr := range addrs {
+		if err := flushOneConntrack(ctx, p.executor(), addr); err != nil {
+			failed = append(failed, addr)
+		}
+	}
+	return failed, nil
+}
+
+func flushOneConntrack(ctx context.Context, ex enforce.Executor, addr netip.Addr) error {
+	if !addr.IsValid() {
+		return errors.New("agent: revoke address is invalid")
+	}
+	for _, flag := range []string{"-s", "-d"} {
+		_, err := ex.Output(ctx, "conntrack", "-D", flag, addr.String())
+		if err == nil || strings.Contains(err.Error(), "flow entries") {
+			continue
+		}
+		return err
+	}
+	return nil
 }
 
 // Apply installs the model. On a verification failure enforce itself rolls

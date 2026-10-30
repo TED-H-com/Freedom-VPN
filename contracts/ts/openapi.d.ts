@@ -39,7 +39,8 @@ export interface paths {
          * Create a single-node enrollment
          * @description Creates one enrollment with a reserved Node (§6.1, §18.2). The one-time
          *     token is returned only in the first response; the database stores only its
-         *     hash. A retry with the same Idempotency-Key and payload returns the same
+         *     SHA-256, and `Enrollment.token_sha256` is that digest in lowercase hex.
+         *     A retry with the same Idempotency-Key and payload returns the same
          *     enrollment with `secret_available=false` and `token=null` (§14.5). Creating
          *     an enrollment is the authorization to join; there is no further manual
          *     admission step (ENR01). Optional node_id authorizes reinstallation onto
@@ -65,7 +66,8 @@ export interface paths {
         };
         /**
          * Get an enrollment
-         * @description Expiry, binding and usage state. The raw token is never returned (§14.2).
+         * @description Expiry, binding and usage state (§14.2, §6.1). The raw token is never
+         *     returned. `token_sha256` is the stored SHA-256 of that token.
          */
         get: operations["getEnrollment"];
         put?: never;
@@ -131,6 +133,31 @@ export interface paths {
          *     state.
          */
         patch: operations["updateNode"];
+        trace?: never;
+    };
+    "/admin/nodes/{node_id}/incarnations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a node's incarnations
+         * @description Every incarnation the node has ever had, newest first (§14.2, §6.2,
+         *     §15.3, §19 AT07). Read-only. An unknown node is 404. A node that exists
+         *     and has never consumed an enrollment returns an empty page. Usage on
+         *     each item is that incarnation's own ledger total and never moves to a
+         *     later incarnation. There is no stored incarnation-state or retire-reason
+         *     column; both are derived as `NodeIncarnation` describes.
+         */
+        get: operations["listNodeIncarnations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/admin/nodes/{node_id}/publication": {
@@ -437,6 +464,8 @@ export interface paths {
          * List audit events
          * @description Paginated, redacted audit events filtered by resource, actor, period
          *     `[occurred_from, occurred_to)` or request_id (§14.2, §16.4). Read-only.
+         *     `enrollment.created` carries `token_sha256` in `changes.after`. Property
+         *     names ending in `_sha256` are digests and are never redacted.
          */
         get: operations["listAuditEvents"];
         put?: never;
@@ -1470,7 +1499,11 @@ export interface components {
             member_group_ids?: string[];
             notes?: string;
         };
-        /** @description Enrollment without the token (§6.1, §15.3). */
+        /**
+         * @description Enrollment without the token (§6.1, §15.3). Returned by `getEnrollment`
+         *     and as `EnrollmentCreated.enrollment`. This API has no `listEnrollments`
+         *     operation; the same object is the enrollment record wherever it appears.
+         */
         Enrollment: {
             /** Format: uuid */
             enrollment_id: string;
@@ -1499,6 +1532,13 @@ export interface components {
             node_incarnation_id: string | null;
             /** @description SHA-256 of the DER SubjectPublicKeyInfo bound at first use. */
             bound_public_key_sha256: string | null;
+            /**
+             * @description Lowercase hex SHA-256 of the one-time enrollment token. This is the
+             *     only form the database keeps (`node_enrollments.token_hash`). The
+             *     plaintext is returned once, on creation, and never again (§6.1).
+             *     It is not `bound_public_key_sha256`, which is the CSR key.
+             */
+            readonly token_sha256: string;
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */
@@ -1516,6 +1556,107 @@ export interface components {
             /** @description One-time, high-entropy (at least 256 bits, base64url) enrollment token. Secret; never logged. */
             token: string | null;
             secret_available: boolean;
+        };
+        /**
+         * @description Derived incarnation lifecycle. The node schemas do not expose an
+         *     incarnation-state enum, and `node_incarnations` has no state column.
+         *     `active` means `revoked_at` is null (partial unique index
+         *     `node_incarnations_active_key` in `db/migrations/00002_nodes.sql`).
+         *     `retired` means `revoked_at` is not null. `internal/nodes/observations.go`
+         *     treats a non-null `revoked_at` as revoked and a current-pointer mismatch
+         *     as superseded; those are request errors, not extra stored states.
+         *     `LifecycleState` is the node, not the incarnation.
+         * @enum {string}
+         */
+        NodeIncarnationState: "active" | "retired";
+        /**
+         * @description Why a retired incarnation stopped. There is no retire-reason column.
+         *     Derive it from the nodes domain, in this order, and leave it null while
+         *     `revoked_at` is null. `reinstall`: another `node_incarnations` row for
+         *     the same node has a later `created_at` (`internal/enrollment/service.go`,
+         *     the AT07 authorized reinstall that requires the previous incarnation to
+         *     be revoked before the new row is inserted). `revocation`: no later
+         *     incarnation, and `nodes.lifecycle_state` is `revoked` or `retired`
+         *     (`internal/enrollment/revoke.go` `revokeNode` sets `revoked_at` for both
+         *     `node.revoked` and `node.retired`). `supersession`: `revoked_at` is set
+         *     and the row is not explained by those two rules
+         *     (`internal/nodes/observations.go`, "superseded by a newer incarnation").
+         * @enum {string}
+         */
+        NodeIncarnationRetireReason: "reinstall" | "revocation" | "supersession";
+        /**
+         * @description Ledger total for this incarnation only (§10, §19 AT07). It never moves
+         *     to another incarnation. `upload_bytes` and `download_bytes` are the sum
+         *     of accepted `usage_samples.upload_bytes` and `download_bytes` whose
+         *     `usage_events.incarnation_id` is this incarnation. Rejections and
+         *     conflicts are not included. `through` is
+         *     `usage_checkpoints.updated_at` for that `(node_id, incarnation_id)`,
+         *     null when that checkpoint row does not exist. Bytes are zero when no
+         *     accepted sample exists. A sum above 18446744073709551615 is a failure,
+         *     not a truncated total.
+         */
+        NodeIncarnationUsage: {
+            upload_bytes: string;
+            download_bytes: string;
+            /**
+             * Format: date-time
+             * @description Time of the last accepted usage checkpoint for this incarnation.
+             */
+            through: string | null;
+        };
+        /**
+         * @description One historical incarnation (§6.2, §15.3). Columns: `node_incarnations.id`,
+         *     `created_at`, `revoked_at`, `public_key_fingerprint`;
+         *     `nodes.current_incarnation_id` and `nodes.lifecycle_state`;
+         *     `node_enrollments.id` and `consumed_at` where
+         *     `node_enrollments.incarnation_id` equals this row. Product consumption
+         *     always writes that enrollment link (`internal/enrollment/service.go`).
+         *     `created_at` is `node_incarnations.created_at`. `bound_at` is
+         *     `node_enrollments.consumed_at` (the CSR accept time; the incarnation row
+         *     is inserted in that same transaction, and there is no earlier unbound
+         *     incarnation row). `retired_at` is `node_incarnations.revoked_at`, not
+         *     `nodes.retired_at`. `bound_public_key_sha256` is the lowercase hex of
+         *     `public_key_fingerprint`, the same SHA-256 of the DER
+         *     SubjectPublicKeyInfo as on `Enrollment`. `current` is true when
+         *     `nodes.current_incarnation_id` equals this id. Revocation does not clear
+         *     that pointer, so a retired incarnation can still be current until a
+         *     reinstall replaces it.
+         */
+        NodeIncarnation: {
+            /** Format: uuid */
+            incarnation_id: string;
+            state: components["schemas"]["NodeIncarnationState"];
+            /**
+             * Format: uuid
+             * @description Enrollment that created this incarnation (`node_enrollments.id`).
+             */
+            enrollment_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description When the enrollment was consumed and this incarnation was inserted.
+             */
+            bound_at: string;
+            /**
+             * Format: date-time
+             * @description `node_incarnations.revoked_at`. Null while the incarnation is active.
+             */
+            retired_at: string | null;
+            retire_reason: (string & components["schemas"]["NodeIncarnationRetireReason"]) | null;
+            /** @description SHA-256 of the DER SubjectPublicKeyInfo bound at consumption. */
+            bound_public_key_sha256: string;
+            /** @description True when this id is `nodes.current_incarnation_id`. */
+            current: boolean;
+            usage: components["schemas"]["NodeIncarnationUsage"];
+        };
+        /**
+         * @description Cursor page of incarnations, newest `created_at` first, then
+         *     `incarnation_id` descending. `limit` defaults to 50 and is at most 100.
+         */
+        NodeIncarnationList: {
+            items: components["schemas"]["NodeIncarnation"][];
+            next_cursor: string | null;
         };
         PlanRef: {
             /**
@@ -2577,7 +2718,13 @@ export interface components {
             target_ids?: string[];
             reason: string;
         };
-        /** @description Redacted audit event (§9.1, §16.4). Configuration history, never member browsing history. */
+        /**
+         * @description Redacted audit event (§9.1, §16.4). Configuration history, never member
+         *     browsing history. `enrollment.created` puts `token_sha256` in
+         *     `changes.after`: the lowercase hex SHA-256 of the one-time token, the
+         *     same value as `Enrollment.token_sha256`. Property names ending in
+         *     `_sha256` are digests and are never redacted.
+         */
         AuditEvent: {
             /** Format: uuid */
             audit_event_id: string;
@@ -2598,7 +2745,11 @@ export interface components {
             operation_id: string | null;
             /** @enum {string} */
             result: "succeeded" | "failed" | "denied";
-            /** @description Redacted before/after differences. Never secrets, tokens or full payment payloads. */
+            /**
+             * @description Redacted before/after differences. Never secrets, tokens or full
+             *     payment payloads. Property names ending in `_sha256` are digests
+             *     and are never redacted, including `token_sha256`.
+             */
             changes: {
                 before: {
                     [key: string]: unknown;
@@ -3057,9 +3208,15 @@ export interface components {
         };
         /**
          * @description Why member forwarding is off on the node (fail-closed reasons).
+         *     `lease_expired` is the anchored deadline of the node lease for this
+         *     generation: the lease is no longer in force. `awaiting_member_grants`
+         *     (D-067) is different: the node holds a valid node lease whose member
+         *     grant set is empty while the desired generation carries member bindings.
+         *     The agent renews on a bounded schedule. Do not report `lease_expired`
+         *     for that provisional lease.
          * @enum {string}
          */
-        ForwardingBlockReason: "not_published" | "identity_invalid" | "provisioning_incomplete" | "policy_missing" | "policy_expired" | "lease_expired" | "clock_untrusted" | "safety_check_failed" | "meter_path_invalid" | "meter_storage_failed" | "outbox_full" | "disk_low" | "release_not_supported" | "update_in_progress" | "recovery_required";
+        ForwardingBlockReason: "not_published" | "identity_invalid" | "provisioning_incomplete" | "policy_missing" | "policy_expired" | "lease_expired" | "awaiting_member_grants" | "clock_untrusted" | "safety_check_failed" | "meter_path_invalid" | "meter_storage_failed" | "outbox_full" | "disk_low" | "release_not_supported" | "update_in_progress" | "recovery_required";
         /** @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at. */
         ObservationReport: {
             /**
@@ -4143,6 +4300,41 @@ export interface operations {
             412: components["responses"]["PreconditionFailed"];
             422: components["responses"]["UnprocessableEntity"];
             428: components["responses"]["PreconditionRequired"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listNodeIncarnations: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1). */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Page size. Default 50, maximum 100 (§14.1, recommended default). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                node_id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of incarnations, newest first. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NodeIncarnationList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalError"];
             503: components["responses"]["ServiceUnavailable"];

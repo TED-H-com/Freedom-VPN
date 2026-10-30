@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 )
@@ -65,6 +67,11 @@ func (l *live) twoExits(r *record) {
 	l.traceForwarding(r, "member", device)
 	restore = l.useSecond()
 	l.traceForwarding(r, "member", device)
+	beforeResp := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+	var beforeNode api.NodeDetail
+	_ = json.Unmarshal(beforeResp.body, &beforeNode)
+	desiredBefore := beforeNode.ConfigGeneration.Desired
+	appliedBefore, _ := beforeNode.ConfigGeneration.Applied.Get()
 	// Observe native failure behavior; do not presume automatic failover.
 	// Stop all holders of the exit namespace: stopping only the agent
 	// leaves kernel forwarding alive in node2-netns/adguard.
@@ -98,16 +105,118 @@ func (l *live) twoExits(r *record) {
 	_, dnsErr := l.docker("start", l.name("node2-adguard"))
 	_, resume := l.docker("start", l.name("node2"))
 	r.check("second exit resume", "start succeeds", fmt.Sprintf("started=%t", resume == nil && nsErr == nil && dnsErr == nil), "docker start assigned node2", resume == nil && nsErr == nil && dnsErr == nil)
+	var readyAt time.Time
+	var provisionalAdmin map[string]any
 	ready := l.wait(90*time.Second, func() bool {
-		var observed bool
-		err := l.pool.QueryRow(l.ctx, `SELECT received_at>$2 AND (report_payload->>'member_forwarding_enabled')::boolean FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, l.node, resumedAt).Scan(&observed)
-		return err == nil && observed && l.counters(device).MemberAcceptRules > 0
+		var observed, forwarding bool
+		err := l.pool.QueryRow(l.ctx, `SELECT received_at>$2,(report_payload->>'member_forwarding_enabled')::boolean FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, l.node, resumedAt).Scan(&observed, &forwarding)
+		if err == nil && observed && !forwarding && provisionalAdmin == nil {
+			provisionalAdmin = l.adminNodeSummary()
+		}
+		if err == nil && observed && forwarding && l.counters(device).MemberAcceptRules > 0 {
+			readyAt = time.Now().UTC()
+			return true
+		}
+		return false
 	})
-	r.check("second exit fresh serving after restart", "new accepted serving observation and nonempty kernel rules", fmt.Sprintf("ready=%t; restart_at=%s", ready, resumedAt.Format(time.RFC3339Nano)), "poll post-restart node observation and kernel rules; never trust stale pre-restart central row", ready)
+	r.check("second exit fresh serving after restart", "new accepted serving observation and nonempty kernel rules", fmt.Sprintf("ready=%t; restart_at=%s; ready_at=%s; ready_seconds=%.3f", ready, resumedAt.Format(time.RFC3339Nano), readyAt.Format(time.RFC3339Nano), readyAt.Sub(resumedAt).Seconds()), "poll post-restart node observation and kernel rules; never trust stale pre-restart central row", ready)
 	l.forwardingGate(r)
-	l.traceForwarding(r, "member", device)
+	l.lastFirstByteAt = time.Time{}
+	counted := l.traceForwarding(r, "member", device)
+	firstByteAt := l.lastFirstByteAt
+	l.recordRestartRecovery(r, desiredBefore, appliedBefore, resumedAt, readyAt, firstByteAt, provisionalAdmin, counted)
 	l.resolverEvidence(r)
 	restore()
 	l.traceForwarding(r, "member", device)
 	r.block("F4-03: two real exits and selected-node SNAT/counts are measured. Direct/forced relay, UDP/QUIC and PMTU baseline fixtures, four native platforms and a physical second NAT still need operator runs; see OPERATORS.md. No fastest-exit claim.")
+}
+
+func (l *live) adminNodeSummary() map[string]any {
+	got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+	var node api.NodeDetail
+	if got.status != 200 || json.Unmarshal(got.body, &node) != nil {
+		return nil
+	}
+	return summarizeNodeDetail(node)
+}
+
+func summarizeNodeDetail(node api.NodeDetail) map[string]any {
+	applied, _ := node.ConfigGeneration.Applied.Get()
+	forwarding, _ := node.MemberForwardingObserved.Get()
+	var leaseCheck map[string]any
+	for _, c := range node.Checks {
+		if c.Name == api.NodeCheckNameLease {
+			code, _ := c.ErrorCode.Get()
+			detail := ""
+			if c.Detail != nil {
+				detail = *c.Detail
+			}
+			leaseCheck = map[string]any{"status": c.Status, "error_code": code, "detail": detail, "observed_at": c.ObservedAt}
+			break
+		}
+	}
+	return map[string]any{
+		"desired_generation":         node.ConfigGeneration.Desired,
+		"applied_generation":         applied,
+		"provisioning_state":         node.ProvisioningState,
+		"publication_intent":         node.PublicationIntent,
+		"publication_observed":       node.PublicationObserved,
+		"safety_status":              node.SafetyStatus,
+		"member_forwarding_observed": forwarding,
+		"lease_check":                leaseCheck,
+	}
+}
+
+func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore decstr.U64, resumedAt, readyAt, firstByteAt time.Time, provisionalAdmin map[string]any, counted bool) {
+	afterResp := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+	var afterNode api.NodeDetail
+	decoded := afterResp.status == 200 && json.Unmarshal(afterResp.body, &afterNode) == nil
+	desiredAfter := afterNode.ConfigGeneration.Desired
+	appliedAfter, _ := afterNode.ConfigGeneration.Applied.Get()
+	fwdAfter, _ := afterNode.MemberForwardingObserved.Get()
+	sameGeneration := decoded && desiredBefore != 0 && desiredAfter == desiredBefore && appliedAfter == desiredBefore && appliedBefore == desiredBefore
+	leases, observations, queryOK := l.nodeLeaseTimeline(l.node, r.At)
+	var leaseRows []struct {
+		IssuedAt     time.Time `json:"issued_at"`
+		Generation   string    `json:"generation"`
+		MemberGrants int       `json:"member_grants"`
+	}
+	_ = json.Unmarshal(leases, &leaseRows)
+	postRestartPopulated := false
+	for _, row := range leaseRows {
+		if !row.IssuedAt.Before(resumedAt) && row.Generation == desiredBefore.String() && row.MemberGrants > 0 {
+			postRestartPopulated = true
+		}
+	}
+	firstByteSeconds := 0.0
+	if !firstByteAt.IsZero() {
+		firstByteSeconds = firstByteAt.Sub(resumedAt).Seconds()
+	}
+	readySeconds := 0.0
+	if !readyAt.IsZero() {
+		readySeconds = readyAt.Sub(resumedAt).Seconds()
+	}
+	summary, _ := json.Marshal(map[string]any{
+		"desired_before":             desiredBefore,
+		"applied_before":             appliedBefore,
+		"desired_after":              desiredAfter,
+		"applied_after":              appliedAfter,
+		"same_desired_generation":    sameGeneration,
+		"resumed_at":                 resumedAt.Format(time.RFC3339Nano),
+		"serving_ready_at":           readyAt.Format(time.RFC3339Nano),
+		"serving_ready_seconds":      readySeconds,
+		"first_counted_byte_at":      firstByteAt.Format(time.RFC3339Nano),
+		"first_counted_byte_seconds": firstByteSeconds,
+		"provisional_admin_node":     provisionalAdmin,
+		"recovered_admin_node":       summarizeNodeDetail(afterNode),
+		"leases":                     json.RawMessage(leases),
+		"observations":               json.RawMessage(observations),
+	})
+	r.check(
+		"same-generation D-067 restart recovery and lease sequence",
+		"forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
+		string(summary),
+		"GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer",
+		sameGeneration && fwdAfter && postRestartPopulated && counted && !firstByteAt.IsZero() && firstByteSeconds > 0 && firstByteSeconds <= 90 && queryOK,
+	)
 }

@@ -868,7 +868,8 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 func TestHandover_Followup7Claims(t *testing.T) {
 	root := repoRoot(t)
 
-	// 1. Parse contracts/openapi.yaml for operation count (46) and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
+	// 1. Parse contracts/openapi.yaml for the live operation count and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
+	// Revision 10 advanced the count from 46 to 47 (listNodeIncarnations). This test still pins follow-up 7's fleet-config decisions.
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -895,8 +896,8 @@ func TestHandover_Followup7Claims(t *testing.T) {
 			}
 		}
 	}
-	if opCount != 46 {
-		t.Fatalf("contracts/openapi.yaml operation count = %d, want 46", opCount)
+	if opCount != 47 {
+		t.Fatalf("contracts/openapi.yaml operation count = %d, want 47", opCount)
 	}
 	if _, ok := spec.Paths["/admin/fleet-config"]; !ok {
 		t.Fatal("contracts/openapi.yaml missing /admin/fleet-config path")
@@ -906,10 +907,10 @@ func TestHandover_Followup7Claims(t *testing.T) {
 		t.Fatalf("FleetConfigUpdate.max_offline_lease_seconds bounds = %d..%d, want 60..86400", fcProp.Minimum, fcProp.Maximum)
 	}
 
-	// 2. Verify operator-guide.md fleet-config section, all 46 wired operations, and PR #173..#182 catch-up claims.
+	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"all 46 HTTP operations are wired in `apps/control` on `main`",
+		"Forty-six are wired in `apps/control` on `main`",
 		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
 		"D-065",
 		"/api/v1/admin/fleet-config",

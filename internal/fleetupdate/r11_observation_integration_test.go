@@ -22,11 +22,51 @@ func r11Versions(t *testing.T, l *lab, i Identity, current, lastGood uuid.UUID) 
 	}
 }
 
-// §13.2, §13.8: target seeding is permitted, but cannot become last-good by
-// repeating a heartbeat. Only an accepted terminal result establishes that.
+// §13.2, §13.8 / D-068: pre-result target seeding fills only a null
+// current_release_id (when reported last-good agrees with recorded null
+// last-good) and never overwrites a non-null current_release_id or promotes a
+// heartbeat claim to last_good_release_id. Only an accepted terminal result
+// advances a non-null current release or establishes last-good.
 func TestReviewR11_PreResultTargetSeedPreservesLastGood(t *testing.T) {
 	l := newLabState(t)
-	i := l.node("amd64", "unpublished", "registered", true)
+	// Part 1: non-null current_release_id (l.old) is never overwritten by a heartbeat.
+	iRecorded := l.node("amd64", "unpublished", "registered", true)
+	bRecorded := l.batch(l.new)
+	wRecorded := l.intent(iRecorded)
+	rRec, svcRec := reviewObservation(t, l, iRecorded)
+	rRec.Update.JobId.Set(wRecorded.Intent.JobId)
+	rRec.Update.Generation.Set(wRecorded.Intent.Generation)
+	rRec.Update.State.Set(api.UpdateJobStateChecking)
+	rRec.Update.Stage.Set(api.UpdateStageCheck)
+	submitRecorded := func(current, lastGood uuid.UUID, unconfirmed bool) {
+		t.Helper()
+		rRec.ReportId = uuid.New()
+		rRec.ObservedAt = rRec.ObservedAt.Add(time.Second)
+		rRec.CurrentReleaseId.Set(current)
+		rRec.LastGoodReleaseId.Set(lastGood)
+		if _, err := svcRec.SubmitObservation(l.ctx, iRecorded.NodeID, iRecorded.IncarnationID, rRec); err != nil {
+			t.Fatal(err)
+		}
+		r11Versions(t, l, iRecorded, l.old, l.old)
+		if target := l.get(bRecorded.BatchId).Targets[0]; target.Unconfirmed != unconfirmed || target.State != "queued" {
+			t.Fatal("observation confirmation must not promote the job or overwrite non-null current", target)
+		}
+	}
+	submitRecorded(l.new, l.old, true)  // Non-null current is preserved; target disagreement stays unconfirmed.
+	submitRecorded(l.new, l.new, true)  // Target membership does not establish last-good.
+	submitRecorded(l.old, l.old, false) // Recorded boot/last-good release confirms the in-flight job.
+
+	// Part 2: fresh incarnation with null current_release_id and null last_good_release_id
+	// seeds current_release_id from an agreeing null last-good, but cannot promote
+	// the seeded current release to last_good_release_id without an accepted result.
+	i := Identity{NodeID: uuid.Must(uuid.NewV7())}
+	if _, err := l.s.pool.Exec(l.ctx, `INSERT INTO nodes(id,lifecycle_state) VALUES($1,'enrolling')`, i.NodeID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := l.s.pool.Exec(l.ctx, `INSERT INTO exits(node_id,display_name,region,publication_intent) VALUES($1,'TEST ONLY fresh seed node','test','unpublished')`, i.NodeID); err != nil {
+		t.Fatal(err)
+	}
+	i = l.enroll(i, "arm64")
 	b := l.batch(l.new)
 	w := l.intent(i)
 	r, svc := reviewObservation(t, l, i)
@@ -34,25 +74,34 @@ func TestReviewR11_PreResultTargetSeedPreservesLastGood(t *testing.T) {
 	r.Update.Generation.Set(w.Intent.Generation)
 	r.Update.State.Set(api.UpdateJobStateChecking)
 	r.Update.Stage.Set(api.UpdateStageCheck)
-	submit := func(current, lastGood uuid.UUID, unconfirmed bool) {
+	submitFresh := func(current uuid.UUID, lastGood *uuid.UUID, unconfirmed bool) {
 		t.Helper()
 		r.ReportId = uuid.New()
 		r.ObservedAt = r.ObservedAt.Add(time.Second)
 		r.CurrentReleaseId.Set(current)
-		r.LastGoodReleaseId.Set(lastGood)
+		if lastGood == nil {
+			r.LastGoodReleaseId.SetNull()
+		} else {
+			r.LastGoodReleaseId.Set(*lastGood)
+		}
 		if _, err := svc.SubmitObservation(l.ctx, i.NodeID, i.IncarnationID, r); err != nil {
 			t.Fatal(err)
 		}
-		r11Versions(t, l, i, current, l.old)
-		if target := l.get(b.BatchId).Targets[0]; target.Unconfirmed != unconfirmed || target.State != "queued" {
-			t.Fatal("observation confirmation must not promote the job", target)
+		v, err := l.s.NodeVersionView(l.ctx, i.NodeID)
+		if err != nil || !equalID(v.CurrentReleaseID, &l.new) || v.LastGoodReleaseID != nil || v.RecoveryRequired {
+			t.Fatalf("fresh seed versions: %+v, err=%v", v, err)
+		}
+		for _, target := range l.get(b.BatchId).Targets {
+			if target.NodeId == i.NodeID && (target.Unconfirmed != unconfirmed || target.State != "queued") {
+				t.Fatal("observation confirmation must not promote the job", target)
+			}
 		}
 	}
-	submit(l.new, l.old, false) // The current target is a valid pre-result seed.
-	submit(l.new, l.new, true)  // Target membership does not establish last-good.
-	submit(l.new, l.new, true)  // Nor does the version seeded by the previous report.
-	submit(l.old, l.old, false) // The recorded boot/last-good release remains valid.
-	submit(l.new, l.old, false)
+	submitFresh(l.new, nil, false)   // Null current is seeded when null last-good agrees.
+	submitFresh(l.new, &l.new, true) // Target membership does not establish last-good.
+	submitFresh(l.new, &l.new, true) // Nor does the version seeded by the previous report.
+	submitFresh(l.old, nil, true)    // Once current is non-null, a heartbeat cannot overwrite it with l.old.
+	submitFresh(l.new, nil, false)   // Agreeing with seeded current and null last-good re-confirms.
 	if l.scalar(`SELECT count(*) FROM update_results WHERE node_id=$1`, i.NodeID) != 0 {
 		t.Fatal("the seed must precede every result")
 	}

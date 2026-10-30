@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "follow_up": 6,
+  "checked_at": "2026-10-30T17:07:23.766795Z",
+  "local_source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+  "roadmap": [
+    "00e1d0c roadmap: w2-agent-core follow-up 13 merged (#171)",
+    "631f6d4 roadmap: w2-agent-core follow-up 10 merged (#171)",
+    "e0a84fb roadmap: w3-devstack-e2e follow-up 10 merged (#170)",
+    "ea5e3e7 roadmap: w2-control-core follow-up 17 merged (#169)",
+    "cbb9430 roadmap: w2-updater follow-up 11 merged (#168)",
+    "b4d212d roadmap: w2-fleet-update follow-up 8 merged (#167)",
+    "7653373 roadmap: w2-agent-core follow-up 12 merged (#166)",
+    "5ee3a05 roadmap: w4-at-security-ops follow-up 5 merged (#165)",
+    "23d5005 roadmap: w3-contracts-r10 merged (#164)",
+    "ea860cc roadmap: w4-handover follow-up 5 merged (#163)",
+    "446b6b0 roadmap: w2-agent-core follow-up 11 merged (#162)",
+    "5c58d32 roadmap: w2-control-core follow-up 16 merged (#161)",
+    "afcaa1d roadmap: w3-wire-nodes follow-up 16 merged (#160)",
+    "cc1303a roadmap: w1-netlab follow-up 6 merged (#159)",
+    "3fe72ca roadmap: w4-at-updates follow-up 5 merged (#158)",
+    "73e0200 roadmap: w4-handover follow-up 4 merged (#157)",
+    "b2c4c0f roadmap: w1-netlab follow-up 5 merged (#156)",
+    "84e099c roadmap: w2-fleet-update follow-up 7 merged (#155)"
+  ],
+  "commands": [
+    "git fetch origin",
+    "gh pr list --state merged --limit 20 --json number,title,mergedAt",
+    "git log --oneline origin/main -25",
+    "git diff 5ee3a05..HEAD --name-only -- deploy/backup docs/handover/restore-drill.md docs/ops/backups.md"
+  ],
+  "merged": {
+    "devstack_followup_10": 170,
+    "control_followup_17": 169,
+    "agent_followup_12": 166,
+    "agent_followup_13": 171,
+    "fleet_update_followup_8": 167,
+    "updater_followup_11": 168
+  },
+  "absent_on_measured_main": [
+    "netlab follow-up 7",
+    "control follow-up 18",
+    "contract revision 9 D-065"
+  ],
+  "backup_files_changed_since_165": [],
+  "source_pinning": "No merge during either live phase. These entries describe the checked main used for both fresh stacks.",
+  "history": "history/follow-up-5/dependencies.json",
+  "requests": {
+    "SECOPS-04": "grace prepare option requested; short fleet lease blocked on D-065",
+    "SECOPS-05": "unchanged; no backup changes since #165",
+    "SECOPS-10": "resolved admission subset after #170: two fresh 20x3 cohorts with 60 current bindings; full mixed-flow AT31 remains open",
+    "SECOPS-16": "open: #170 gateway diagnostics have zero key lines, but all 60 protected sequential pre-delete files contain a recognized device-flow key; helper watcher also observes 60 positive streams",
+    "trusted_proxy": "control follow-up 18 untrusted proxy row not on measured source"
+  }
+}

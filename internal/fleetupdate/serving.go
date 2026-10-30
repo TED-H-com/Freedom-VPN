@@ -129,18 +129,18 @@ func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 			if err != nil {
 				return err
 			}
-			if n.job != nil && equalID(effectiveJob, n.job) && equalID(j.incarnation, &i.IncarnationID) && j.issued != nil {
+			if n.job != nil && equalID(effectiveJob, n.job) && equalID(j.incarnation, &i.IncarnationID) && j.issued != nil && j.state != "superseded" && j.state != "superseded_incarnation" {
 				targetRelease = &j.releaseID
 			}
 		}
-		// §13.2, §13.8 / r12 H-3: target seeding needs the reported job to be
-		// current and issued to this incarnation, preserving the attempt's
-		// pre-switch release snapshot. Last-good must agree before any write.
+		// §13.2, §13.8 / D-068: pre-result heartbeat seeding fills only a null
+		// current_release_id (a fresh incarnation with no record). A non-null
+		// current release advances only through an accepted UpdateResult.
 		expected := func(id *uuid.UUID) bool {
 			return id != nil && (equalID(id, targetRelease) || equalID(id, n.current) || equalID(id, n.lastGood))
 		}
-		if expected(o.CurrentReleaseID) && equalID(n.lastGood, o.LastGoodReleaseID) && !equalID(n.current, o.CurrentReleaseID) {
-			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, o.CurrentReleaseID); e != nil {
+		if n.current == nil && expected(o.CurrentReleaseID) && equalID(n.lastGood, o.LastGoodReleaseID) {
+			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,resource_version=resource_version+1 WHERE id=$1 AND current_release_id IS NULL`, i.NodeID, o.CurrentReleaseID); e != nil {
 				return e
 			}
 			agrees = equalID(n.lastGood, o.LastGoodReleaseID)
@@ -202,6 +202,13 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if e := tx.QueryRow(ctx, `SELECT received_at FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND report_id=$3`, i.NodeID, i.IncarnationID, r.ReportId).Scan(&received); e != nil {
 		return e
 	}
+	n, err := s.readNode(ctx, tx, i.NodeID)
+	if err != nil {
+		return err
+	}
+	if err = authenticate(ctx, tx, n, i); err != nil {
+		return err
+	}
 	generation, generationErr := r.Update.Generation.Get()
 	jobID, jobErr := r.Update.JobId.Get()
 	if generationErr != nil || jobErr != nil {
@@ -209,13 +216,6 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 		// cannot attest update state. Preserve the high-water
 		// mark and actual version, but record its arrival so it cannot confirm
 		// a target using a previous generation-bearing heartbeat.
-		n, err := s.readNode(ctx, tx, i.NodeID)
-		if err != nil {
-			return err
-		}
-		if err = authenticate(ctx, tx, n, i); err != nil {
-			return err
-		}
 		_, err = tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,last_observed_at,received_at)
  VALUES($1,NULL,$2,$3) ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=NULL,
  last_observed_at=excluded.last_observed_at,received_at=excluded.received_at
@@ -230,6 +230,12 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 		}
 		if j.nodeID != i.NodeID || j.incarnation == nil || *j.incarnation != i.IncarnationID || j.generation != generation {
 			return apierr.New(apierr.StaleGeneration, "Observation job and generation do not match")
+		}
+		// D-068 / r13 M-1: a heartbeat is attributed only to the node's current,
+		// non-superseded job. Observations carrying a superseded attempt's job id
+		// (including same-generation retries) are ignored by the fleet state row.
+		if n.job == nil || *n.job != jobID || j.state == "superseded" || j.state == "superseded_incarnation" {
+			return nil
 		}
 	}
 	var seqText, genText string

@@ -673,18 +673,32 @@ func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 	p.check("revoked certificate refuses desired state", p.call(node, "GET", liveAgent+"/api/v1/agent/desired-state", nil, nil), 403, "IDENTITY_REVOKED")
 }
 func (p *liveProbe) finish() {
+	for key := range p.metadata {
+		if strings.HasPrefix(key, "private_") {
+			delete(p.metadata, key)
+		}
+	}
 	p.metadata["finished_at"] = time.Now().UTC()
 	p.metadata["checks"] = p.observations
 	p.metadata["security_matrix_complete"] = p.securityComplete
 	p.metadata["projector_owned_rows_written"] = []string{}
 	p.metadata["go_test_failed"] = p.t.Failed()
-	for _, file := range []string{"key.pem", "setup.key"} {
-		raw, er := p.docker("node", "cat", "/var/lib/vpn-node/identity/"+file)
-		if er == nil {
-			p.secrets = append(p.secrets, bytes.TrimSpace(raw))
+	for _, nodeSvc := range []string{"node", "node2"} {
+		for _, file := range []string{"key.pem", "setup.key"} {
+			raw, er := p.docker(nodeSvc, "cat", "/var/lib/vpn-node/identity/"+file)
+			if er == nil {
+				p.secrets = append(p.secrets, bytes.TrimSpace(raw))
+			}
 		}
 	}
 	services := []string{"postgres", "idp", "payment", "origin", "netbird", "gateway", "coredns", "adguard", "control", "worker", "node-netns", "node", "member"}
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" {
+		for _, service := range []string{"node2-netns", "node2-adguard", "node2"} {
+			if exec.CommandContext(p.t.Context(), "docker", "inspect", livePrefix+service).Run() == nil {
+				services = append(services, service)
+			}
+		}
+	}
 	extra, inventoryErr := exec.CommandContext(p.t.Context(), "docker", "ps", "-a", "--filter", "name=^fvpn-w4-secops-member-", "--format", "{{.Names}}").Output()
 	if inventoryErr != nil {
 		p.t.Error("native peer log inventory failed")
@@ -734,7 +748,7 @@ func (p *liveProbe) finish() {
 		}
 	}
 	for _, service := range services {
-		if service != "node" && service != "member" && !strings.HasPrefix(service, "member-") {
+		if service != "node" && service != "node2" && service != "member" && !strings.HasPrefix(service, "member-") {
 			continue
 		}
 		listing, err := p.docker(service, "find", "/var/lib/vpn-node/e2e", "/var/log/netbird", "-type", "f", "-name", "*.log")
@@ -777,6 +791,9 @@ func (p *liveProbe) finish() {
 		}
 	}
 	name := "live.json"
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" {
+		name = "followup7-live.json"
+	}
 	if os.Getenv("FVPN_SECOPS_PITR") == "1" {
 		name = "pitr-source.json"
 	}

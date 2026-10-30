@@ -43,8 +43,15 @@ type Input struct {
 	DependencyMissing bool
 	LeaseRetryPending bool
 	RevocationPending bool
-	BootstrapLost     bool
-	OutboxFull        bool
+	// ConntrackBlocked is a missing conntrack binary or a pending delete
+	// that passed its retry bound. Isolation fails closed. A transient
+	// pending delete leaves this false and keeps the serving ruleset.
+	ConntrackBlocked bool
+	// ConntrackDetail is the internet_only sentence when ConntrackBlocked.
+	// It names no address.
+	ConntrackDetail string
+	BootstrapLost   bool
+	OutboxFull      bool
 	// MeterFailed is a meter-path failure. Only reason meter_path_invalid
 	// sets it. Usage caps and persist failures use the fields below so
 	// METER_PATH_INVALID keeps that meaning (§10.3, §10.8).
@@ -138,7 +145,7 @@ func Decide(in Input) Decision {
 	if in.Backend != "kernel" || in.MeterFailed {
 		add(api.ForwardingBlockReasonMeterPathInvalid)
 	}
-	if !in.BaselineOK || in.ApplyError != nil || in.DependencyMissing {
+	if !in.BaselineOK || in.ApplyError != nil || in.DependencyMissing || in.ConntrackBlocked {
 		add(api.ForwardingBlockReasonSafetyCheckFailed)
 	}
 	pub := api.PublicationIntentUnpublished
@@ -174,9 +181,14 @@ func Decide(in Input) Decision {
 	// A lease for another generation is not in force. The vocabulary has no
 	// lease_pending or lease_renewing. policy_missing is the existing token
 	// for a serving document this generation does not yet hold. lease_expired
-	// stays the anchored deadline of the lease for this generation.
+	// is only the anchored deadline of the lease for this generation.
+	// A fresh same-generation lease with an empty member grant set, while
+	// device bindings are still desired (D-067), reports
+	// awaiting_member_grants. That lease is in force, so it is not
+	// lease_expired and its check does not use LEASE_EXPIRED.
 	leaseStale := leaseGenerationStale(in)
 	leaseOK := leaseInForce(in) && !leaseStale
+	grantsPending := grantsProvisional(in)
 	if leaseStale {
 		add(api.ForwardingBlockReasonPolicyMissing)
 	} else if !leaseOK {
@@ -203,7 +215,13 @@ func Decide(in Input) Decision {
 	} else if leaseOK && in.DesiredOK {
 		qosOK = true
 		if len(in.Desired.DeviceBindings) > 0 && len(model.Bindings) == 0 {
-			add(api.ForwardingBlockReasonLeaseExpired)
+			// An empty grant set on an in-force lease is provisional.
+			// Grants that admit nobody stay on the existing token.
+			if grantsPending {
+				add(api.ForwardingBlockReasonAwaitingMemberGrants)
+			} else {
+				add(api.ForwardingBlockReasonLeaseExpired)
+			}
 			leaseOK = false
 			bindingOK = false
 			qosOK = false
@@ -236,14 +254,23 @@ func Decide(in Input) Decision {
 		d.Applied = uint64(in.Desired.ConfigGeneration)
 	}
 	evaluateServing := in.Desired != nil && published && in.DesiredOK && len(in.Desired.DeviceBindings) > 0
-	d.Checks = checks(in, at, releaseOK, releaseChecked, bindingOK, qosOK, leaseOK, evaluateServing)
+	d.Checks = checks(in, at, releaseOK, releaseChecked, bindingOK, qosOK, leaseOK, grantsPending, evaluateServing)
 	d.Safety = safetyOf(in, releaseChecked, releaseOK)
 	d.DataHealth = dataHealthOf(in)
 	d.Provisioning = provisioningOf(in, d.Applied > 0)
 	if in.ApplyError != nil {
 		d.Errors = append(d.Errors, *in.ApplyError)
 	}
-	if in.RevocationPending {
+	if in.ConntrackBlocked {
+		msg := in.ConntrackDetail
+		if msg == "" {
+			msg = conntrackBoundDetail
+		}
+		d.Errors = append(d.Errors, api.NodeError{
+			Code: api.ErrorCode(enforce.ReasonIsolation), Stage: "apply", ObservedAt: at,
+			Message: msg,
+		})
+	} else if in.RevocationPending {
 		d.Errors = append(d.Errors, api.NodeError{
 			Code: api.ErrorCode(enforce.ReasonIsolation), Stage: "apply", ObservedAt: at,
 			Message: "conntrack delete pending; serving ruleset verified",
@@ -282,18 +309,25 @@ func Decide(in Input) Decision {
 	return d
 }
 
-func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK, leaseOK, evaluateServing bool) []api.NodeCheck {
+func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK, leaseOK, grantsPending, evaluateServing bool) []api.NodeCheck {
 	lease := notRun(api.NodeCheckNameLease, at)
 	qos := notRun(api.NodeCheckNameQos, at)
 	bind := notRun(api.NodeCheckNameSourceBinding, at)
 	if evaluateServing {
-		leaseCode := api.ErrorCodeLEASEEXPIRED
-		leaseDetail := "Serving lease is not in force."
-		if leaseGenerationStale(in) {
-			leaseCode = api.ErrorCodeSTALEGENERATION
-			leaseDetail = "Serving lease is not for the applied generation."
+		switch {
+		case leaseGenerationStale(in):
+			lease = withDetail(chk(api.NodeCheckNameLease, false, api.ErrorCodeSTALEGENERATION, at), "Serving lease is not for the applied generation.")
+		case grantsPending && !leaseOK:
+			// The check stays failed so the detail is kept. No ErrorCode
+			// names a lease that is still in force, so the code is null
+			// and Decide does not append LEASE_EXPIRED to errors.
+			lease = withDetail(api.NodeCheck{
+				Name: api.NodeCheckNameLease, Status: api.HealthCheckStatusFailed, ObservedAt: at,
+				ErrorCode: presence.NewNullNullable[api.ErrorCode](),
+			}, leaseGrantsPendingDetail)
+		default:
+			lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at), "Serving lease is not in force.")
 		}
-		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, leaseCode, at), leaseDetail)
 		if leaseOK && in.LeaseRetryPending {
 			lease.Detail = sanitizeDetail("Lease renewal is waiting for Retry-After; the current lease remains in force.")
 		}
@@ -315,9 +349,19 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 	} else if in.Desired == nil || !in.DesiredExpired {
 		release = withDetail(chk(api.NodeCheckNameReleaseSupported, false, api.ErrorCodeMINIMUMVERSIONVIOLATION, at), "Release is not in the serving set.")
 	}
+	isoOK := in.BaselineOK && !in.ConntrackBlocked
+	isoCode := api.ErrorCodeISOLATIONBASELINEMISSING
+	isoDetail := "Isolation baseline is not in force."
+	if in.BaselineOK && in.ConntrackBlocked {
+		isoCode = api.ErrorCodeISOLATIONPOLICYINVALID
+		isoDetail = in.ConntrackDetail
+		if isoDetail == "" {
+			isoDetail = conntrackBoundDetail
+		}
+	}
 	return []api.NodeCheck{
 		dnsCheck(in, at),
-		withDetail(chk(api.NodeCheckNameInternetOnly, in.BaselineOK, api.ErrorCodeISOLATIONBASELINEMISSING, at), "Isolation baseline is not in force."),
+		withDetail(chk(api.NodeCheckNameInternetOnly, isoOK, isoCode, at), isoDetail),
 		lease,
 		withDetail(chk(api.NodeCheckNameMeterPath, in.Backend == "kernel" && !in.MeterFailed, api.ErrorCodeMETERPATHINVALID, at), "Meter path is not available."),
 		withDetail(chk(api.NodeCheckNamePolicySignature, in.DesiredOK, api.ErrorCodeSIGNATUREINVALID, at), "Desired state is not signed for this node."),
@@ -413,7 +457,8 @@ func safetyOf(in Input, releaseChecked, releaseOK bool) api.SafetyStatus {
 	leaseDeadline := !in.LeaseFresh || in.Lease == nil || in.LeaseMonoSent <= 0
 
 	hard := !in.BaselineOK || !in.StorageOK || in.UsagePersist || in.UsageDisk ||
-		in.Backend != "kernel" || in.MeterFailed || in.ApplyError != nil || in.DependencyMissing
+		in.Backend != "kernel" || in.MeterFailed || in.ApplyError != nil || in.DependencyMissing ||
+		in.ConntrackBlocked
 	if releaseChecked && !releaseOK {
 		hard = true
 	}
@@ -458,6 +503,29 @@ func provisioningOf(in Input, acked bool) api.ProvisioningState {
 		return api.ProvisioningStateReady
 	}
 	return api.ProvisioningStateApplying
+}
+
+// leaseGrantsPendingDetail is the lease check sentence for D-067.
+// The block reason is awaiting_member_grants. The sentence is the
+// distinction from a deadline that has passed.
+const leaseGrantsPendingDetail = "Serving lease has no member grants yet."
+
+// conntrackBoundDetail is the isolation sentence after the delete retry
+// bound, and the fallback when a missing binary did not set its own.
+const conntrackBoundDetail = "Conntrack delete exceeded the retry bound."
+
+// conntrackMissingDetail is the isolation sentence when LookPath fails
+// after preflight. It names no path.
+const conntrackMissingDetail = "Conntrack is not installed."
+
+// grantsProvisional is a fresh same-generation lease whose member grant
+// set is empty while this desired generation still has device bindings.
+// The node lease deadline is still in the future. Admission is separate.
+func grantsProvisional(in Input) bool {
+	if in.Desired == nil || !in.DesiredOK || in.Lease == nil || !in.LeaseFresh || !leaseInForce(in) || leaseGenerationStale(in) {
+		return false
+	}
+	return len(in.Desired.DeviceBindings) > 0 && len(in.Lease.Members) == 0
 }
 
 // Renewal backoff cannot change the signed lease's monotonic deadline.

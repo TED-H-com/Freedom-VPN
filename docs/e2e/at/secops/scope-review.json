@@ -526,7 +526,7 @@
       },
       {
         "path": "docs/handover/README.md",
-        "sha256": "18ebdf82ace421a91fa21d3c2f69f229baa9021b506f2f40a0bc0249a038fda5"
+        "sha256": "7557bd0ca9dde49c87d9c9a49f73564b4a96455d54cd367e2887999d5b43a0d9"
       },
       {
         "path": "docs/handover/deploy.md",
@@ -538,15 +538,15 @@
       },
       {
         "path": "docs/handover/operator-guide.md",
-        "sha256": "0255ec035ade94b17958239eb2370c2aeaa09ce88b0658c793c44ec399ba90b1"
+        "sha256": "c091cc1e6c0f38c134158bca8df51fed67738aa587ec2eeda44df4c971dda008"
       },
       {
         "path": "docs/handover/member-guide.md",
-        "sha256": "9b6919098de112f1f5670947af3b1b3dd57bc59323a323a517e37a23129fcc09"
+        "sha256": "34cd613cc514cd9e8b8d3f8b07e01801e4e7badf10d3415dece8935c264a232f"
       },
       {
         "path": "docs/ops/README.md",
-        "sha256": "d9ff048bed4185ad4f71ec92157f97a98498fef680691bb8cb1168537beb4739"
+        "sha256": "fcd9132ef3a07b67f8f86d4ffe1e062561e3c4333c75e0e431eae732c00a551f"
       }
     ],
     "doc15_handover_half": {
@@ -558,5 +558,61 @@
       "status": "resolved in w4-handover follow-up 6",
       "resolution": "docs/handover/member-guide.md attributes the prior blocked AT02/AT03/AT04/AT08 records historically to members follow-up 3 (#151) and early devstack follow-up 9 (#153), links the current scoped evidence in security-ops follow-up 5 (#165: counted-flow.json, post-revoke.json, deadlines.json, capacity.json) and devstack follow-up 10 (#170: device-revoke.md, second-exit hook), and preserves the grace, clock, platform, and transport qualifications. docs/e2e/RUN.md:207 remains w3-devstack-e2e's half."
     }
+  },
+  "follow_up_7": {
+    "reviewed_at": "2026-10-30T19:20:00Z",
+    "application_base": "fb3ea32",
+    "scope": "Read public README/member guide/operator guide, changed handover claims, and portal i18n text after #185/#188/#191 (D-065 fleet configuration operator view and contract revision 10). Physical platform and candidate-hardware rows stay needs operator run.",
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "fbfc108f72c6553df274418a347a4cf0197ef180806f8a2c8850772cac4c455e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "34cd613cc514cd9e8b8d3f8b07e01801e4e7badf10d3415dece8935c264a232f"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "c091cc1e6c0f38c134158bca8df51fed67738aa587ec2eeda44df4c971dda008"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "d10e51d3b76408be9badd23be4d86b6c783cd83d1b0a10c6887684aa172f133f"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "fcd9132ef3a07b67f8f86d4ffe1e062561e3c4333c75e0e431eae732c00a551f"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "cecc87cc73a000439386deb33bfc304fb180c33e1022ef7222f3a68505b55a4e"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "24346c735001114b92e35805ddf7e8e725bed71d71fabf26d03090a1606099ff"
+      }
+    ],
+    "decisions": [
+      "D-065 fleet API and finite-grace preparation are now inputs; only measured signed/counted cutoff is a pass.",
+      "D-066 protected transient credentials are a separate class from ordinary logs/captures/readable files.",
+      "60 native admissions and dev-host numbers cannot certify production hardware or forced relay."
+    ],
+    "evidence": [
+      "capacity.json",
+      "deadlines.json",
+      "limiter.json",
+      "secret-scan.json"
+    ],
+    "new_requests": [
+      {
+        "id": "DOC16",
+        "owner": "w4-handover",
+        "status": "open",
+        "file": "docs/handover/member-guide.md",
+        "section": "Measurement status, both languages",
+        "reason": "#180/#188 cites mutable secops counted-flow/deadlines/capacity paths as Follow-up 5 evidence with fixed two-device numbers; those root records change each run. Pin the cited #165 values to history/follow-up-5/ (or the exact commit). Keep guest wall-clock rollback distinct from component clock tests."
+      }
+    ]
   }
 }
