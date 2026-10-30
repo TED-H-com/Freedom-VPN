@@ -167,6 +167,9 @@ func servingInput() Input {
 		AnchorOK: true, Backend: "kernel", ReleaseID: rel,
 		Enrolled: true, BaselineOK: true, StorageOK: true,
 		HostReserveBPS: 1_000_000,
+		ProbeRan:       true,
+		ProbeCheck:     api.HealthCheckStatusPassed,
+		ProbeHealth:    api.DataHealthHealthy,
 	}
 }
 

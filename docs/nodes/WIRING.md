@@ -122,7 +122,7 @@ generation and node operation steps still require agent observations (§14.5).
 |---|---|
 | `node.publication_changed` | Validates the operation/node and current claim, then runs the exits executor for publish/unpublish/disable/revoke/retire. Publication requires agent policy ACK, route/group/policy read-back and stored data-path probe evidence before `active`/`succeeded`. Withdrawal removes the route/access policy even offline; an absent agent ACK stays unconfirmed. Revoke/retire additionally require confirmed setup-key revocation and peer deletion in `netbird_identity_cleanup` before finalization. |
 | `node.provision.requested` | `CreateNodeSetupKey(operation_id)` locates the stable name and saved ID before creation. The adapter ensures staging group, creates one-off/usage_limit=1/non-ephemeral key with 86400-second external expiry, and GETs it to verify settings. Only then is bounded AES-GCM ciphertext stored and `netbird_setup` advanced. |
-| `node.peer.observe` | Loads the immutable authenticated report; `EnsureNodePeer` GETs the reported peer and validates server/non-ephemeral identity. The one-time deployment/peer binding and provisioning steps commit after read-back. Frozen mappings and revoked/current-incarnation changes are denied. |
+| `node.peer.observe` | Every accepted, deduplicated observation enqueues this job, including a null management peer ID. A present ID goes through `EnsureNodePeer` read-back before binding and advancing `peer_readback`; an absent ID skips NetBird and leaves that step pending. Baseline readiness and `node_policy` advance from the current report's passed safety and acknowledged generation. Frozen mappings and revoked/current-incarnation changes are denied. |
 | `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
 | `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
@@ -133,6 +133,22 @@ multiple processes and event-created successors. Runners only enqueue; the share
 dispatcher claims and completes work. Enqueue failures return to the supervisor;
 cancellation stops the runner. Reconciliation never guesses success for
 stuck/offline jobs.
+
+Readiness describes the node's fail-closed baseline and acknowledgement of its
+desired generation (§5.1, §6.1); it is separate from management peer discovery
+and member admission. An unpublished or disabled node may report `ready`,
+`safety_status=passed`, `data_health=healthy|degraded`, forwarding off and a null
+`netbird.peer_id`; `lease`, `qos` and `source_binding` may remain `not_run`.
+The store retains readiness when the baseline checks pass and a nonzero applied
+generation acknowledges the current desired generation. The worker requires
+this report to remain the latest observation before recording `node_policy`.
+Failed safety or missing/behind generation stays `applying`. A reported peer ID
+still requires management read-back; a later null report never clears an existing
+binding. Null IDs neither trigger NetBird calls nor fabricate `peer_readback`
+completion. Device/member admission still requires its verified peer bindings;
+`CheckPublishable`, serving eligibility and publication execution/probe gates
+are unchanged. Management-side discovery of a node peer from node/incarnation
+identity is still needed when the agent cannot report that ID.
 
 `nodes.NetBirdBindings` aliases `devices.NetBirdBindings`, sharing the
 [member/device binding convention](../members/README.md#netbird-binding-and-lock-namespace-convention):

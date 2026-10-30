@@ -41,6 +41,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const testOrigin = "https://portal.example.invalid"
@@ -68,6 +69,7 @@ type fixture struct {
 	config                config.Config
 	app                   *control.Application
 	logs                  bytes.Buffer
+	identityMetrics       *prometheus.Registry
 }
 type probePayment struct {
 	*billing.FakeProvider
@@ -126,6 +128,11 @@ func newFixture(t *testing.T) *fixture {
 	f.exec(`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,provider,provider_price_ref,schema_version,payload) VALUES($1,$2,1,3,$3,'fake','TEST-ONLY-price',1,'{"display_name":{"zh-TW":"測試方案"}}')`, f.revision, f.plan, []uuid.UUID{f.group})
 	f.exec(`UPDATE plans SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, f.plan, f.revision)
 	f.idp = newIDP(t)
+	f.identityMetrics = prometheus.NewRegistry()
+	adapter.Identity, err = devices.NewIdentityDiscovery(f.idp.server.URL, f.identityMetrics, slog.New(slog.NewTextHandler(&f.logs, nil)))
+	if err != nil {
+		t.Fatal(err)
+	}
 	browser, err := auth.NewBrowser(t.Context(), auth.BrowserConfig{Issuer: f.idp.server.URL, ClientID: "TEST-ONLY-portal", Origin: testOrigin, AdminClaim: "roles", AdminValue: "admin", MFAAMR: []string{"mfa"}, Idle: time.Hour, Absolute: 2 * time.Hour, LoginTTL: time.Minute, RecentAuth: time.Hour}, auth.PostgresStore{Pool: pool}, f.idp.server.Client())
 	if err != nil {
 		t.Fatal(err)
@@ -142,6 +149,7 @@ func newFixture(t *testing.T) *fixture {
 	}
 	c := config.Defaults()
 	c.PublicOrigin = testOrigin
+	c.OIDCIssuer = f.idp.server.URL
 	c.BrowserRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = c.BrowserRate
 	c.AnonymousRate = c.BrowserRate
@@ -239,11 +247,20 @@ func (f *fixture) drain() {
 		f.t.Fatalf("undelivered work %d (%s %s)", n, typ, code)
 	}
 }
-func (f *fixture) bind(s browserSession, user, peer, ip string) {
-	f.exec(`INSERT INTO netbird_user_bindings(member_id,deployment_id,external_user_id,identity_binding_id,mapping_proof,revision,verified_at) SELECT $1,'TEST-ONLY',$2,canonical_identity_ref,'TEST ONLY verified cross-client proof',1,clock_timestamp() FROM members WHERE id=$1 ON CONFLICT(deployment_id,external_user_id) DO NOTHING`, s.id, user)
+
+// Seed native-provider inputs only. Discovery owns both binding projections (D-050).
+func (f *fixture) seedPeer(s browserSession, peer, ip string) {
+	f.t.Helper()
+	var subject string
+	if err := f.pool.QueryRow(f.t.Context(), `SELECT i.subject FROM identity_bindings i JOIN members m ON m.canonical_identity_ref=i.id WHERE m.id=$1`, s.id).Scan(&subject); err != nil {
+		f.t.Fatal(err)
+	}
+	f.seedNative(subject, peer, ip, false, false)
+}
+func (f *fixture) seedNative(user, peer, ip string, service, blocked bool) {
 	f.netbird.mu.Lock()
 	defer f.netbird.mu.Unlock()
-	f.netbird.objects["users"][user] = map[string]any{"id": user, "auto_groups": []string{}, "is_service_user": false, "is_blocked": false}
+	f.netbird.objects["users"][user] = map[string]any{"id": user, "auto_groups": []string{}, "is_service_user": service, "is_blocked": blocked}
 	f.netbird.objects["peers"][peer] = map[string]any{"id": peer, "name": "TEST ONLY device", "user_id": user, "ip": ip, "ephemeral": false}
 }
 
@@ -361,6 +378,7 @@ type netbirdFake struct {
 	objects        map[string]map[string]map[string]any
 	serial, writes int
 	stale          bool
+	onUsersRead    func() error
 }
 
 func newNetBird(t *testing.T) (*netbirdFake, *httptest.Server) {
@@ -412,6 +430,12 @@ func (f *netbirdFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method == "GET" {
+		if kind == "users" && f.onUsersRead != nil {
+			if err := f.onUsersRead(); err != nil {
+				w.WriteHeader(503)
+				return
+			}
+		}
 		if id != "" {
 			obj, ok := bucket[id]
 			if !ok {

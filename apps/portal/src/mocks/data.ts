@@ -497,6 +497,12 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
   const batch = clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateBatch);
   const templateTarget = batch.targets[0];
   if (templateTarget) {
+    templateTarget.policy_generation = '128';
+    templateTarget.policy_refs = [
+      PRIMARY_FUP_DEFINITION_ID,
+      PRIMARY_DNS_RULESET_DEFINITION_ID,
+    ];
+
     const rolledBackTarget = clone(templateTarget);
     rolledBackTarget.target_id = '9648dcdb-c82e-4611-8608-06895697e0b1';
     rolledBackTarget.node_id = SAFETY_FAILED_NODE_ID;
@@ -506,6 +512,8 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
     rolledBackTarget.retryable = true;
     rolledBackTarget.needs_attention = true;
     rolledBackTarget.unconfirmed = false;
+    rolledBackTarget.policy_generation = '127';
+    rolledBackTarget.policy_refs = [];
     if (rolledBackTarget.current_job) {
       rolledBackTarget.current_job.state = 'rolled_back';
       rolledBackTarget.current_job.error_code = 'HEALTH_CHECK_FAILED';
@@ -523,6 +531,8 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
     waitingOfflineTarget.retryable = true;
     waitingOfflineTarget.needs_attention = false;
     waitingOfflineTarget.unconfirmed = true;
+    waitingOfflineTarget.policy_generation = null;
+    waitingOfflineTarget.policy_refs = null;
 
     batch.targets = [templateTarget, rolledBackTarget, waitingOfflineTarget];
     batch.target_count = 3;
