@@ -124,6 +124,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
 | w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
+| w3-dns-publish follow-up 3: threat-feed content pipeline (D-054): bootstrap pin, cadence refresh with last-good, failure observations, Layer 3 rules published to the resolver document | WP08 | done (#79) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
