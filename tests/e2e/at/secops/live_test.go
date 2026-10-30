@@ -48,6 +48,7 @@ const liveAgent = "https://agent.example.invalid:9443"
 type liveSession struct {
 	client       *http.Client
 	csrf, member string
+	cred         idplogin.Cred
 }
 type liveReply struct {
 	status int
@@ -56,13 +57,16 @@ type liveReply struct {
 	header http.Header
 }
 type liveProbe struct {
-	t            *testing.T
-	root, state  string
-	tr           *http.Transport
-	db           *pgx.Conn
-	observations []map[string]any
-	metadata     map[string]any
-	secrets      [][]byte
+	t                     *testing.T
+	root, state           string
+	tr                    *http.Transport
+	db                    *pgx.Conn
+	observations          []map[string]any
+	metadata              map[string]any
+	secrets               [][]byte
+	groupID, planRevision uuid.UUID
+	bindings              map[uuid.UUID]api.DeviceBinding
+	securityComplete      bool
 }
 
 // This probe consumes the existing dev-stack state and documented IdP/enrollment
@@ -87,17 +91,23 @@ func TestAT28_AT31_LiveStack(t *testing.T) {
 		time.Sleep(2 * time.Second)
 	}
 	p.metadata["members_authenticated"] = len(members)
+	p.securityComplete = true
 	p.roles(admin, members[0])
+	p.planInputs()
+	p.grantMembers(admin, members)
 	p.releaseSupport()
 	nodeA := p.enrollAgent(admin)
 	nodeB, nodeClient := p.enrollHost(admin)
 	p.identities(admin, nodeClient, nodeB, nodeA)
-	devices := p.seedMembers(members)
+	devices := p.admitMember(members)
 	p.ownership(admin, members, devices)
 	p.serving(admin, nodeA)
+	p.concurrentLogins(members)
 	p.load(members)
 	p.ledger(nodeClient, nodeB, members, devices)
-	p.memberOperation(members)
+	if len(devices[0]) > 0 {
+		p.memberOperation(members)
+	}
 	p.revoke(admin, nodeClient, nodeB)
 }
 
@@ -232,6 +242,8 @@ func (p *liveProbe) login(subject, role string) *liveSession {
 	if json.Unmarshal(r.body, &v) != nil || !v.Authenticated || v.Role != role {
 		p.t.Fatalf("live OIDC session failed: role=%s status=%d code=%s authenticated=%t returned_role=%s", role, r.status, r.code, v.Authenticated, v.Role)
 	}
+	s.cred = cred
+	p.secrets = append(p.secrets, []byte(cred.Password))
 	s.csrf = r.header.Get("X-CSRF-Token")
 	s.member = v.Member
 	p.secrets = append(p.secrets, []byte(s.csrf))
@@ -285,7 +297,7 @@ func (p *liveProbe) roles(admin, member *liveSession) {
 }
 func (p *liveProbe) enrollment(admin *liveSession, name string) (api.EnrollmentCreated, string) {
 	key := uuid.NewString()
-	body := map[string]string{"delivery": "installer", "name": name, "region": "TEST ONLY lab"}
+	body := map[string]any{"delivery": "installer", "name": name, "region": "TEST ONLY lab", "member_group_ids": []uuid.UUID{p.groupID}}
 	r := p.call(admin, "POST", "/api/v1/admin/enrollments", body, map[string]string{"Idempotency-Key": key})
 	p.check("create enrollment "+name, r, 201, "")
 	var e api.EnrollmentCreated
@@ -304,7 +316,7 @@ func (p *liveProbe) enrollment(admin *liveSession, name string) (api.EnrollmentC
 	if json.Unmarshal(replay.body, &repeat) != nil || repeat.Enrollment.EnrollmentId != e.Enrollment.EnrollmentId || repeat.SecretAvailable || bytes.Contains(replay.body, []byte(token)) {
 		p.t.Error("enrollment replay leaked secret or duplicated resource")
 	}
-	body["name"] += " changed"
+	body["name"] = name + " changed"
 	p.check("enrollment idempotency conflict", p.call(admin, "POST", "/api/v1/admin/enrollments", body, map[string]string{"Idempotency-Key": key}), 409, "IDEMPOTENCY_CONFLICT")
 	return e, token
 }
@@ -475,44 +487,6 @@ func (p *liveProbe) identities(admin, node *liveSession, b api.EnrollResponse, a
 	_ = admin
 }
 
-// Synthetic authorized devices are SQL fixtures, not NetBird peers. The finite
-// entitlement and member lock precede authorization (db F-05/F-06, §9.4).
-func (p *liveProbe) seedMembers(members []*liveSession) [][]uuid.UUID {
-	devices := make([][]uuid.UUID, len(members))
-	ctx := p.t.Context()
-	for i, m := range members {
-		tx, err := p.db.Begin(ctx)
-		if err != nil {
-			p.t.Fatal("fixture transaction")
-		}
-		_, err = tx.Exec(ctx, `UPDATE members SET status='active',resource_version=resource_version+1 WHERE id=$1`, m.member)
-		if err == nil {
-			_, err = tx.Exec(ctx, `INSERT INTO entitlements(member_id,revision,device_limit,valid_from,effective_service_end) VALUES($1,1,3,now()-interval '1 hour',now()+interval '1 hour') ON CONFLICT(member_id) DO UPDATE SET revision=entitlements.revision+1,device_limit=3,valid_from=EXCLUDED.valid_from,effective_service_end=EXCLUDED.effective_service_end`, m.member)
-		}
-		for j := range 3 {
-			if err != nil {
-				break
-			}
-			id := uuid.New()
-			devices[i] = append(devices[i], id)
-			peer := fmt.Sprintf("secops-synthetic-%02d-%d", i, j)
-			_, err = tx.Exec(ctx, `INSERT INTO member_devices(id,member_id,deployment_id,peer_id,status,authorized_at) VALUES($1,$2,'e2e',$3,'authorized',now())`, id, m.member, peer)
-			if err == nil {
-				_, err = tx.Exec(ctx, `INSERT INTO device_bindings(device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref) VALUES($1,$2,'e2e-overlay',$3::inet,1,now()-interval '1 hour',now()+interval '1 hour',$4)`, id, m.member, fmt.Sprintf("100.64.50.%d", i*3+j+1), peer)
-			}
-		}
-		if err != nil {
-			_ = tx.Rollback(ctx)
-			p.t.Fatal("finite device fixture failed")
-		}
-		if tx.Commit(ctx) != nil {
-			p.t.Fatal("fixture commit")
-		}
-	}
-	p.metadata["authorized_devices"] = 60
-	p.metadata["device_fixture"] = "SQL authorized records with finite TEST ONLY entitlement; not 60 connected NetBird peers"
-	return devices
-}
 func (p *liveProbe) ownership(admin *liveSession, members []*liveSession, devices [][]uuid.UUID) {
 	for i, m := range members {
 		r := p.call(m, "GET", "/api/v1/member/devices", nil, nil)
@@ -526,7 +500,12 @@ func (p *liveProbe) ownership(admin *liveSession, members []*liveSession, device
 		}
 		time.Sleep(550 * time.Millisecond)
 	}
-	p.check("foreign device revoke", p.call(members[1], "DELETE", "/api/v1/member/devices/"+devices[0][0].String(), nil, nil), 404, "")
+	if len(devices[0]) > 0 {
+		p.check("foreign device revoke", p.call(members[1], "DELETE", "/api/v1/member/devices/"+devices[0][0].String(), nil, nil), 404, "")
+	} else {
+		p.securityComplete = false
+		p.metadata["device_idor_blocker"] = "No product-admitted member A device; no invented foreign UUID positive control"
+	}
 	r := p.call(members[0], "GET", "/api/v1/member/usage?member_id="+members[1].member, nil, nil)
 	p.check("usage remains caller scoped with foreign query", r, 200, "")
 	if bytes.Contains(r.body, []byte(members[1].member)) {
@@ -534,29 +513,6 @@ func (p *liveProbe) ownership(admin *liveSession, members []*liveSession, device
 	}
 	p.check("member PATCH needs If-Match", p.call(admin, "PATCH", "/api/v1/admin/members/"+members[0].member, map[string]any{"admin_suspended": true}, nil), 428, "")
 	p.check("member PATCH stale ETag", p.call(admin, "PATCH", "/api/v1/admin/members/"+members[0].member, map[string]any{"admin_suspended": true}, map[string]string{"If-Match": "\"0\""}), 412, "")
-}
-func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
-	r := p.call(admin, "GET", "/api/v1/admin/nodes/"+node.String(), nil, nil)
-	p.check("enrolled node detail", r, 200, "")
-	pub := p.call(admin, "PUT", "/api/v1/admin/nodes/"+node.String()+"/publication", map[string]string{"publication_intent": "published", "reason": "TEST ONLY acceptance"}, map[string]string{"If-Match": r.header.Get("ETag")})
-	var nodeView api.NodeDetail
-	_ = json.Unmarshal(r.body, &nodeView)
-	p.metadata["node_service_precondition"] = map[string]any{"lifecycle": nodeView.LifecycleState, "provisioning": nodeView.ProvisioningState, "data_health": nodeView.DataHealth, "safety": nodeView.SafetyStatus, "publication": nodeView.PublicationIntent, "observed_publication": nodeView.PublicationObserved, "config_generation": nodeView.ConfigGeneration}
-	p.metadata["publication_request"] = map[string]any{"status": pub.status, "code": pub.code}
-	time.Sleep(6 * time.Second)
-	raw, err := p.docker("node", "nft", "list", "chain", "inet", "fvpn", "forward")
-	p.metadata["forward_chain_observed"] = err == nil
-	p.metadata["forward_baseline_generation_zero"] = bytes.Contains(raw, []byte("fvpn_generation=0"))
-	accepts := 0
-	for _, line := range strings.Split(string(raw), "\n") {
-		if strings.Contains(line, "fvmb0") && strings.Contains(line, "accept") {
-			accepts++
-		}
-	}
-	p.metadata["member_accept_rules"] = accepts
-	hb, err := p.docker("node", "cat", "/run/vpn-node/heartbeat")
-	p.metadata["watchdog_heartbeat_present"] = err == nil && len(hb) > 0
-	p.metadata["serving_probe"] = "AT29 requires a passing established TCP/UDP positive control and nonzero serving generation; baseline fail-closed does not prove deadline stop"
 }
 func (p *liveProbe) load(members []*liveSession) {
 	// Fixed diagnostic subset, not the unexecuted 300-second mixed/relay profile.
@@ -597,7 +553,7 @@ func (p *liveProbe) load(members []*liveSession) {
 			}
 		}
 	}
-	p.metadata["capacity_subset"] = map[string]any{"profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; 60 SQL authorized device rows", "duration_seconds": time.Since(start).Seconds(), "requests": len(latencies), "http_status_counts": codes, "read_p50_ms": latencies[len(latencies)/2], "read_p95_ms": latencies[(len(latencies)*95+99)/100-1], "read_p99_ms": latencies[(len(latencies)*99+99)/100-1], "wrong_member_responses": wrong, "resource_snapshot_after_load": samples, "simultaneous_oidc": false, "relay_load": false, "policy_latency_seconds": nil, "usage_latency_seconds": nil}
+	p.metadata["capacity_subset"] = map[string]any{"profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; product-admitted device count recorded separately", "duration_seconds": time.Since(start).Seconds(), "requests": len(latencies), "http_status_counts": codes, "read_p50_ms": latencies[len(latencies)/2], "read_p95_ms": latencies[(len(latencies)*95+99)/100-1], "read_p99_ms": latencies[(len(latencies)*99+99)/100-1], "wrong_member_responses": wrong, "resource_snapshot_after_load": samples, "simultaneous_oidc": false, "separate_concurrent_oidc_probe": true, "capacity_claim": false, "relay_load": false, "policy_latency_seconds": nil, "usage_latency_seconds": nil}
 	if wrong != 0 {
 		p.t.Error("load ownership violation")
 	}
@@ -618,11 +574,21 @@ func (p *liveProbe) load(members []*liveSession) {
 	time.Sleep(3 * time.Second)
 }
 func (p *liveProbe) ledger(node *liveSession, b api.EnrollResponse, members []*liveSession, devices [][]uuid.UUID) {
+	if len(p.bindings) == 0 {
+		p.metadata["ledger_blocker"] = "No product-projected binding; no usage batch sent"
+		return
+	}
 	now := time.Now().UTC().Truncate(time.Second)
+	for _, binding := range p.bindings {
+		if now.Add(-10*time.Second).Before(binding.ValidFrom) || now.After(binding.ValidUntil) {
+			p.metadata["ledger_blocker"] = "Projected binding does not cover the proposed retained window"
+			return
+		}
+	}
 	records := []api.UsageRecord{}
 	for i, m := range members {
 		for _, d := range devices[i] {
-			records = append(records, api.UsageRecord{MemberId: uuid.MustParse(m.member), DeviceId: d, BindingRevision: 1, PeriodId: api.PeriodId(now.Format("2006-01")), UploadBytes: 100, DownloadBytes: 200})
+			records = append(records, api.UsageRecord{MemberId: uuid.MustParse(m.member), DeviceId: d, BindingRevision: p.bindings[d].BindingRevision, PeriodId: api.PeriodId(now.Format("2006-01")), UploadBytes: 100, DownloadBytes: 200})
 		}
 	}
 	batch := api.UsageBatchRequest{NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, LedgerEpoch: presence.NewNullNullable[uuid.UUID](), Events: []api.UsageEvent{}}
@@ -683,6 +649,33 @@ func (p *liveProbe) ledger(node *liveSession, b api.EnrollResponse, members []*l
 		p.t.Fatal("private retained fixture")
 	}
 	p.metadata["recovery"] = recovery
+	var ledgerRows int
+	if p.db.QueryRow(p.t.Context(), `SELECT count(*) FROM usage_events WHERE node_id=$1 AND incarnation_id=$2`, b.NodeId, b.NodeIncarnationId).Scan(&ledgerRows) != nil || ledgerRows != 10 {
+		p.t.Error("ledger receipt count")
+	}
+	p.metadata["synthetic_ledger_rows"] = ledgerRows
+	visibleStart := time.Now()
+	var total decstr.U64
+	for time.Since(visibleStart) < 60*time.Second {
+		v := p.call(members[0], "GET", "/api/v1/member/usage", nil, nil)
+		var page struct {
+			Totals struct {
+				Total decstr.U64 `json:"total_bytes"`
+			} `json:"totals"`
+		}
+		if v.status == 200 && json.Unmarshal(v.body, &page) == nil {
+			total = page.Totals.Total
+		}
+		if total == 3000 {
+			break
+		}
+		time.Sleep(2 * time.Second)
+	}
+	p.metadata["synthetic_usage_visibility"] = map[string]any{"total_bytes": total, "expected_bytes": decstr.U64(3000), "poll_seconds": time.Since(visibleStart).Seconds(), "exact": total == 3000, "kernel_sampling": false}
+	if total != 3000 {
+		p.t.Error("synthetic usage projection did not converge")
+	}
+
 }
 func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 	// Revoke only B after retaining its batch; isolated restore predates revocation.
@@ -694,6 +687,8 @@ func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 func (p *liveProbe) finish() {
 	p.metadata["finished_at"] = time.Now().UTC()
 	p.metadata["checks"] = p.observations
+	p.metadata["security_matrix_complete"] = p.securityComplete
+	p.metadata["projector_owned_rows_written"] = []string{}
 	p.metadata["go_test_failed"] = p.t.Failed()
 	for _, file := range []string{"key.pem", "setup.key"} {
 		raw, er := p.docker("node", "cat", "/var/lib/vpn-node/identity/"+file)
