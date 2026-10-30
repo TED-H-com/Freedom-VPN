@@ -100,6 +100,50 @@ func TestSEC01_ConfigValidationAndRedaction(t *testing.T) {
 		t.Fatal("lease permits overlap")
 	}
 }
+func TestTrustedProxiesValidation(t *testing.T) {
+	base := Defaults()
+	base.DatabaseURLFile = "secrets/database"
+	if err := base.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	for _, cidr := range []string{"0.0.0.0/0", "::/0", "10.0.0.0/7", "2001:db8::/31", "0.0.0.0/1", "::/0"} {
+		c := base
+		c.TrustedProxies = []string{cidr}
+		err := c.Validate()
+		if err == nil || !strings.Contains(err.Error(), "trusting the world") || !strings.Contains(err.Error(), cidr) {
+			t.Fatalf("%s: %v", cidr, err)
+		}
+	}
+	c := base
+	c.TrustedProxies = []string{"10.0.0.0/8", "192.0.2.9/32", "2001:db8::/32", "2001:db8:1:2::/64"}
+	if err := c.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	for _, cidr := range []string{"192.0.2.1", "not-a-cidr", "::ffff:192.0.2.1/128"} {
+		bad := base
+		bad.TrustedProxies = []string{cidr}
+		if err := bad.Validate(); err == nil {
+			t.Fatalf("%s accepted", cidr)
+		}
+	}
+	p := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(p, []byte(`{"database_url_file":"database","trusted_proxies":["192.0.2.1/32","2001:db8:1::/48"]}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := Load(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(loaded.TrustedProxies) != 2 || loaded.TrustedProxies[0] != "192.0.2.1/32" {
+		t.Fatal(loaded.TrustedProxies)
+	}
+	t.Setenv("FVPN_TRUSTED_PROXIES", `["203.0.113.0/24"]`)
+	over, err := Load(p)
+	if err != nil || len(over.TrustedProxies) != 1 || over.TrustedProxies[0] != "203.0.113.0/24" {
+		t.Fatal(over.TrustedProxies, err)
+	}
+}
+
 func TestAPI01_ConfigFileAndEnv(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "config.json")
 	if e := os.WriteFile(p, []byte(`{"database_url_file":"database","session_idle_seconds":10}`), 0600); e != nil {
