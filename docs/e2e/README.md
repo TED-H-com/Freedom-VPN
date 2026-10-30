@@ -203,7 +203,9 @@ rows do not prove acceptance of publication, device admission, or an updater:
 
 Boot `0.1.0`, candidate `1.0.1`, and tamper target `1.0.2` each contain real
 agent, watchdog and updater binaries built from the recorded source commit
-for linux/amd64 and linux/arm64. Each manifest is signed, registered and
+for linux/amd64 and linux/arm64, plus immutable version/source metadata.
+Distinct artifact digests prevent the tamper target from reusing the good
+candidate’s verified download cache. Each manifest is signed, registered and
 verified. `release-register` records the SHA-256 of both each canonical manifest
 envelope (the registered digest) and its `signed` object. Product version and runtime `agent_release` match; the boot
 release ID and both candidates are in the serving allowlist. `update-bad`

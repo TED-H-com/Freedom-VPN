@@ -436,6 +436,7 @@ func (r *runner) usage(ctx context.Context, member *session) {
 func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.UUID) {
 	rec := Record{ID: "release-register", Title: "fvpn-release packages registered and verified", Spec: []string{"§13.3", "§13.4"}, Status: StatusFail}
 	var ids []uuid.UUID
+	seenArtifacts := map[string]bool{}
 	for i, spec := range []struct{ product, seq, build string }{
 		{"0.1.0", "1", "e2e-boot"},
 		{"1.0.1", "2", "e2e-good"},
@@ -447,6 +448,16 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 			rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "mkdir"})
 			r.record(rec)
 			return
+		}
+		// Immutable release metadata makes each product version a distinct real
+		// bundle; otherwise the updater can reuse a previous verified blob and
+		// never exercise the tampered origin for the negative case.
+		metadata, err := json.Marshal(map[string]string{"product_version": spec.product, "source_commit": r.sourceCommit, "purpose": "TEST ONLY acceptance"})
+		if err != nil {
+			r.t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(pkg, "release.json"), metadata, 0o644); err != nil {
+			r.t.Fatal(err)
 		}
 		installed := map[string]string{}
 		for _, arch := range []string{"amd64", "arm64"} {
@@ -490,6 +501,17 @@ func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.U
 		}
 		if err := json.Unmarshal(canonical, &manifest); err != nil {
 			r.t.Fatal(err)
+		}
+		var signed api.ReleaseManifest
+		if err := json.Unmarshal(manifest.Signed, &signed); err != nil {
+			r.t.Fatal(err)
+		}
+		for _, artifact := range signed.Artifacts {
+			rec.Observations = append(rec.Observations, Observation{Name: "artifact_sha256_" + spec.product + "_" + string(artifact.Architecture), Detail: artifact.Sha256})
+			if seenArtifacts[artifact.Sha256] {
+				r.t.Fatal("release artifacts must be distinct to exercise the tampered download")
+			}
+			seenArtifacts[artifact.Sha256] = true
 		}
 		digest, err := canonjson.HashHex(manifest.Signed)
 		if err != nil {
