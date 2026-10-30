@@ -36,7 +36,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 1 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4–§13.12"}, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 1 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
 	}
 	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
 	defer func() {
@@ -133,9 +133,12 @@ func TestUpdatesFollowup(t *testing.T) {
 	s.note("AT23", "running_verified_candidate", running)
 	confirmed := s.confirm(batch, "succeeded")
 	s.note("AT23", "central", confirmed)
+	s.note("AT23", "confirmation_projection", s.projection())
 	localGood := goodJournal.Stage == "locally_succeeded" && goodJournal.Current == good.String() && goodJournal.LastGood == good.String() && running
 	if localGood && goodJournal.allPassed() && confirmed.State == "succeeded" && !confirmed.Unconfirmed {
 		s.pass("AT23", "Real 1.0.1 candidate answered D-053, locally_succeeded, then central succeeded and confirmed")
+	} else if localGood && goodJournal.allPassed() && confirmed.State == "succeeded" {
+		s.block("AT23", "w2-agent-core / w3-wire-fleet: local D-053 success and central succeeded, but later agent observations do not confirm the update generation")
 	} else {
 		s.block("AT23", "w4-node-updater / w3-wire-fleet: good update or central confirmation prerequisite incomplete")
 	}
@@ -144,47 +147,6 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.block("AT26", "w4-node-updater: last-good prerequisite absent")
 		s.block("AT27", "w4-node-updater: last-good prerequisite absent")
 		return
-	}
-
-	// TEST ONLY failure stimulus: a real TCP probe to a closed port inside the
-	// owned node. Only this candidate's runtime config changes. The agent must
-	// observe the failed dial and answer the challenge itself; no health writes.
-	config := filepath.Join(lab.state, "node", "var", "e2e", "agent-"+boot.String()+".json")
-	original, err := os.ReadFile(config)
-	if err != nil {
-		t.Fatal("negative candidate config unavailable")
-	}
-	var cfg map[string]any
-	if json.Unmarshal(original, &cfg) != nil {
-		t.Fatal("candidate config invalid")
-	}
-	cfg["egress_probe_target"] = "127.0.0.1:1"
-	changed, _ := json.MarshalIndent(cfg, "", "  ")
-	if err := writeAtomic(config, changed); err != nil {
-		t.Fatal("negative probe configuration failed")
-	}
-	defer func() {
-		if err := writeAtomic(config, original); err != nil {
-			t.Error("restore candidate config failed")
-		}
-	}()
-	rollbackBatch, ok := s.batch("AT26", boot)
-	if ok {
-		s.note("AT26", "failure_stimulus", "TEST ONLY: candidate TCP egress probe dials its own closed loopback port; no forced health values or journal writes")
-		s.execute("AT26", false)
-		journal := s.journal(boot)
-		s.note("AT26", "journal", journal)
-		s.note("AT26", "last_good_process_restored", s.running(good))
-		target := s.confirm(rollbackBatch, "rolled_back")
-		s.note("AT26", "central", target)
-		if journal.Stage == "rolled_back" && journal.Current == good.String() && journal.LastGood == good.String() && journal.candidateFailed() && journal.rollbackPassed() && s.running(good) && target.State == "rolled_back" {
-			s.pass("AT26", "Candidate reported a genuine tunnel_probe failure; updater restored and health-checked 1.0.1 last-good; central rolled_back")
-		} else {
-			s.block("AT26", "w4-node-updater / w2-agent-core: genuine health failure did not produce a verified last-good rollback")
-		}
-	}
-	if err := writeAtomic(config, original); err != nil {
-		t.Fatal("restore candidate config failed")
 	}
 
 	archivePath := filepath.Join(lab.state, "releases", "r", bad.String(), "amd64.tar.zst")
@@ -231,11 +193,14 @@ func TestUpdatesFollowup(t *testing.T) {
 	s.execute("AT27", true)
 	interrupted := s.journal(bad)
 	s.note("AT27", "interrupted_journal", interrupted)
-	s.note("AT27", "members_blocked_at_interruption", lab.forwardChain().MemberAccept == 0)
+	forward := lab.forwardChain()
+	blockedAtInterruption := forward.Present && forward.Policy == "drop" && forward.MemberAccept == 0
+	s.note("AT27", "members_blocked_at_interruption", blockedAtInterruption)
 	// The process died at a real service boundary, after final_sampled was
 	// durable. Restore normal hooks, then let production Recover read its journal.
 	done := filepath.Join(lab.state, "node", "var", "e2e", "updater.json.done")
 	raw, err = os.ReadFile(done)
+	var cfg map[string]any
 	if err != nil || json.Unmarshal(raw, &cfg) != nil {
 		t.Fatal("recovery config unavailable")
 	}
@@ -254,12 +219,67 @@ func TestUpdatesFollowup(t *testing.T) {
 	s.note("AT27", "recovered_journal", journal)
 	target := s.confirm(recoverBatch, "succeeded")
 	s.note("AT27", "central", target)
+	s.note("AT27", "confirmation_projection", s.projection())
 	s.note("AT27", "running_verified_candidate", s.running(bad))
-	if interrupted.Stage == "final_sampled" && interrupted.TxnID != "" && interrupted.TxnID == journal.TxnID && journal.Stage == "locally_succeeded" && journal.allPassed() && s.running(bad) && target.State == "succeeded" && !target.Unconfirmed {
+	if err == nil && blockedAtInterruption && interrupted.Stage == "final_sampled" && interrupted.TxnID != "" && interrupted.TxnID == journal.TxnID && journal.Stage == "locally_succeeded" && journal.allPassed() && s.running(bad) && target.State == "succeeded" && !target.Unconfirmed {
 		s.pass("AT27", "SIGKILL interrupted apply at final_sampled; production recover completed the same transaction with candidate D-053 health and central confirmation")
 	} else {
-		s.block("AT27", "w4-node-updater / w3-wire-fleet: interrupted transaction recovery or central confirmation incomplete")
+		s.block("AT27", "w4-node-updater / w2-agent-core / w3-wire-fleet: see interrupted/recovered journal and observation evidence; complete recovery requires central confirmation")
 	}
+	lastGood := good
+	if journal.Stage == "locally_succeeded" && journal.Current == bad.String() && s.running(bad) {
+		lastGood = bad
+	}
+	// TEST ONLY failure stimulus: a real TCP probe to a closed port inside the
+	// owned node. Only this candidate's runtime config changes. The agent must
+	// observe the failed dial and answer the challenge itself; no health writes.
+	config := filepath.Join(lab.state, "node", "var", "e2e", "agent-"+boot.String()+".json")
+	original, err := os.ReadFile(config)
+	if err != nil {
+		t.Fatal("negative candidate config unavailable")
+	}
+	cfg = map[string]any{}
+	if json.Unmarshal(original, &cfg) != nil {
+		t.Fatal("candidate config invalid")
+	}
+	cfg["egress_probe_target"] = "127.0.0.1:1"
+	changed, _ := json.MarshalIndent(cfg, "", "  ")
+	if err := writeAtomic(config, changed); err != nil {
+		t.Fatal("negative probe configuration failed")
+	}
+	defer func() {
+		if err := writeAtomic(config, original); err != nil {
+			t.Error("restore candidate config failed")
+		}
+	}()
+	rollbackBatch, ok := s.batch("AT26", boot)
+	if ok {
+		s.note("AT26", "failure_stimulus", "TEST ONLY: candidate TCP egress probe dials its own closed loopback port; no forced health values or journal writes")
+		s.execute("AT26", false)
+		journal := s.journal(boot)
+		s.note("AT26", "journal", journal)
+		s.note("AT26", "expected_last_good_release", lastGood)
+		s.note("AT26", "last_good_process_restored", s.running(lastGood))
+		target := s.confirm(rollbackBatch, "rolled_back")
+		s.note("AT26", "central", target)
+		manifestRaw, manifestErr := os.ReadFile(filepath.Join(lab.state, "releases", "r", boot.String(), "manifest.json"))
+		var manifest api.ReleaseManifestEnvelope
+		if manifestErr != nil || json.Unmarshal(manifestRaw, &manifest) != nil {
+			t.Fatal("rollback manifest read failed")
+		}
+		s.note("AT26", "rollback_allowed_release_ids", manifest.Signed.Rollback.AllowedReleaseIds)
+		if journal.Stage == "rolled_back" && journal.Current == lastGood.String() && journal.LastGood == lastGood.String() && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) && target.State == "rolled_back" {
+			s.pass("AT26", "Candidate reported a genuine tunnel_probe failure; updater restored and health-checked the real last-good; central rolled_back")
+		} else if journal.Stage == "rolled_back" && journal.candidateFailed() && journal.rollbackPassed() && s.running(lastGood) {
+			s.block("AT26", "w4-node-updater / w3-wire-fleet: candidate failed and last-good rollback is recorded locally, but central rollback acceptance is incomplete; inspect journal and result outbox")
+		} else {
+			s.block("AT26", "w4-node-updater / w2-agent-core: expected candidate-failure and healthy last-good rollback evidence incomplete")
+		}
+	}
+	if err := writeAtomic(config, original); err != nil {
+		t.Fatal("restore candidate config failed")
+	}
+
 }
 
 type updatesFollowup struct {
@@ -396,6 +416,7 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 		return resultErr == nil && os.IsNotExist(configErr)
 	})
 	s.note(id, "updater_finished", finished)
+	s.r.t.Logf("%s updater finished=%t interrupt=%t", id, finished, interrupt)
 	raw, _ := os.ReadFile(filepath.Join(dir, "updater-result.json"))
 	var result struct {
 		ExitCode int `json:"exit_code"`
@@ -405,6 +426,9 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	}
 	if !finished {
 		s.r.t.Fatal("updater did not finish; evidence remains blocked")
+	}
+	if !interrupt {
+		s.flush(id)
 	}
 }
 
@@ -488,4 +512,49 @@ func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
 		view.Attestations = append(view.Attestations, safe)
 	}
 	return view
+}
+
+// Flush uses the product outbox sender. Rejections remain pending; no result or
+// acknowledgement is synthesized. Preflight errors can return before Run flushes.
+func (s *updatesFollowup) flush(id string) {
+	started := time.Now().UTC()
+	output, err := exec.CommandContext(s.ctx, "docker", "exec", s.r.lab.node, "fvpn-updater", "flush", "-config", "/var/lib/vpn-node/e2e/updater.json.done").CombinedOutput()
+	s.note(id, "product_outbox_flush_success", err == nil)
+	s.note(id, "product_outbox_flush_output", strings.TrimSpace(string(output)))
+	// Preserve only the HTTP route's status/time, never raw service logs.
+	logs, logErr := exec.CommandContext(s.ctx, "docker", "logs", "--tail", "120", s.r.lab.control).CombinedOutput()
+	if logErr == nil {
+		for _, line := range strings.Split(string(logs), "\n") {
+			var entry struct {
+				At     time.Time `json:"time"`
+				Route  string    `json:"route"`
+				Status int       `json:"status"`
+			}
+			if json.Unmarshal([]byte(line), &entry) == nil && entry.Route == "POST /api/v1/agent/update-results" && !entry.At.Before(started) {
+				s.note(id, "result_delivery_http", map[string]any{"at": entry.At, "status": entry.Status})
+			}
+		}
+	}
+}
+
+func (s *updatesFollowup) projection() json.RawMessage {
+	conn, err := s.r.lab.db(s.ctx)
+	if err != nil {
+		return json.RawMessage(`{"error":"observation database unavailable"}`)
+	}
+	defer conn.Close(s.ctx)
+	var raw []byte
+	err = conn.QueryRow(s.ctx, `SELECT jsonb_build_object(
+      'fleet_update_generation',s.observed_update_generation::text,
+      'fleet_observed_at',s.last_observed_at,'fleet_received_at',s.received_at,
+      'latest_node_observation',(SELECT jsonb_build_object('observed_at',o.observed_at,
+         'received_at',o.received_at,'update',o.report_payload->'update')
+         FROM node_observations o WHERE o.node_id=s.node_id ORDER BY o.received_at DESC LIMIT 1),
+      'current_job',(SELECT jsonb_build_object('state',j.state,'generation',j.generation::text,
+         'last_result_at',j.last_result_at) FROM update_jobs j WHERE j.id=s.current_job_id))
+      FROM fleet_node_state s WHERE s.node_id=$1`, s.r.nodeID).Scan(&raw)
+	if err != nil {
+		return json.RawMessage(`{"error":"projection query failed"}`)
+	}
+	return json.RawMessage(raw)
 }

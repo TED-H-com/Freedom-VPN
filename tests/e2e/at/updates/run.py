@@ -7,6 +7,7 @@ signing, registration, enrollment and service hooks use its existing helpers.
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -33,11 +34,21 @@ def main():
             formatted = subprocess.check_output(["gofmt", "-l", str(DRIVER)], cwd=ROOT)
             if formatted:
                 raise SystemExit("gofmt required: live_test.go.txt")
-            commands = [
-                ["go", "vet", "-tags", "e2e", "./tests/e2e"],
-                ["go", "run", "honnef.co/go/tools/cmd/staticcheck@v0.8.2",
-                 "-tags", "e2e", "./tests/e2e"],
-            ]
+            subprocess.run(["go", "vet", "-tags", "e2e", "./tests/e2e"],
+                           cwd=ROOT, env=env, check=True)
+            # Staticcheck's parser does not honor Go's virtual source files.
+            # Analyze an ephemeral copy under our owned path (and thus within
+            # tests/e2e/internal's import boundary), never modify shared files.
+            with tempfile.TemporaryDirectory(prefix=".lint-", dir=DRIVER.parent) as copy:
+                for source in (ROOT / "tests/e2e").glob("*.go"):
+                    shutil.copyfile(source, Path(copy) / source.name)
+                shutil.copyfile(DRIVER, Path(copy) / "at_updates_followup_test.go")
+                env.pop("GOFLAGS")
+                result = subprocess.run([
+                    "go", "run", "honnef.co/go/tools/cmd/staticcheck@v0.8.2",
+                    "-tags", "e2e", "./" + str(Path(copy).relative_to(ROOT))
+                ], cwd=ROOT, env=env, check=False)
+                return result.returncode
         else:
             if mode == "live":
                 if env.get("FVPN_E2E_PREFIX") != "w4-updates" or env.get("FVPN_E2E_PORT_BASE") != "42000":
