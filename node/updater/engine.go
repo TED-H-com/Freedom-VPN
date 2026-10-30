@@ -35,21 +35,25 @@ type claimed struct {
 
 // Engine runs one node's update transactions (§13.4 to §13.9).
 type Engine struct {
-	Layout        Layout
-	Node          Node
-	Platform      Platform
-	ReleaseTrust  *envelope.TrustStore
-	DesiredTrust  *envelope.TrustStore
-	Source        Source
-	HTTP          *http.Client
-	Meter         Meter
-	Services      ServiceManager
-	Health        HealthChecks
-	Gate          Gate
-	Migrator      Migrator
-	Sender        ResultSink
-	Journal       *updatejournal.Journal
-	Download      DownloadConfig
+	Layout       Layout
+	Node         Node
+	Platform     Platform
+	ReleaseTrust *envelope.TrustStore
+	DesiredTrust *envelope.TrustStore
+	Source       Source
+	HTTP         *http.Client
+	Meter        Meter
+	Services     ServiceManager
+	Health       HealthChecks
+	Gate         Gate
+	Migrator     Migrator
+	Sender       ResultSink
+	Journal      *updatejournal.Journal
+	Download     DownloadConfig
+	// Attest is the challenge window for isolation, DNS and the tunnel probe
+	// (D-053). Zero values use HealthAttestWait, HealthAttestPoll and
+	// HealthChallengeTTL. The updater config cannot set it.
+	Attest        AttestWindow
 	Hooks         Hooks
 	Now           func() time.Time
 	Sleep         func(time.Duration)

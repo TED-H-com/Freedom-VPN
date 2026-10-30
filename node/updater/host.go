@@ -106,9 +106,9 @@ func LoadConfig(path string) (Config, error) {
 	return c, nil
 }
 
-// Engine builds the node engine. Health checks are NodeChecks, which fail
-// closed for isolation, DNS and the tunnel probe until the agent supplies
-// its own (§13.9). Service commands that are empty fail closed at stop.
+// Engine builds the node engine. Isolation, DNS and the tunnel probe come
+// from a challenge-bound attestation in the journal directory (D-053, §13.9).
+// Service commands that are empty fail closed at stop.
 func (c Config) Engine() (*Engine, error) {
 	rel, err := readTrust(c.ReleaseTrust)
 	if err != nil {
@@ -148,7 +148,7 @@ func (c Config) Engine() (*Engine, error) {
 		HTTP:           client,
 		Meter:          FileMeter{Path: c.MeterCheckpoint},
 		Services:       CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
-		Health:         NodeChecks{},
+		Health:         &NodeChecks{Journal: c.Layout.Journal, Node: node, rt: &checkRT{}},
 		Gate:           gate,
 		Migrator:       noMigrator{},
 		Sender:         sender,
