@@ -4,8 +4,6 @@ package e2e
 
 import (
 	"context"
-	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
@@ -15,34 +13,25 @@ import (
 // countedFlow proves admission on this node, not merely an HTTP response on
 // another route. The member has no connection to the origin bridge.
 func (r *runner) countedFlow(ctx context.Context, note func(string, string)) bool {
+	r.trafficOwner = "w2-agent-core: device admission counters absent after bounded readiness poll; see accepted serving checks"
 	defer func() {
 		heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
 		note("heartbeat", strings.TrimSpace(string(heartbeat)))
 	}()
 	ready, stopReady := context.WithTimeout(ctx, 90*time.Second)
-	var before uint64
 	var ok bool
-	found := waitUntil(ready, time.Second, func() bool { before, ok = r.admissionBytes(); return ok && r.lab.forwardChain().Generation > 0 })
+	found := waitUntil(ready, time.Second, func() bool { _, ok = r.admissionBytes(); return ok && r.lab.forwardChain().Generation > 0 })
 	stopReady()
 	if !found {
 		note("admission_counter", "unavailable after 90 seconds")
 		return false
 	}
-	wait, cancel := context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
-	var after uint64
-	success := waitUntil(wait, 2*time.Second, func() bool {
-		probe, stop := context.WithTimeout(wait, 8*time.Second)
-		defer stop()
-		cmd := exec.CommandContext(probe, "docker", "exec", r.lab.member, "wget", "--timeout=5", "--tries=1", "--ca-certificate=/etc/vpn-node/ca.pem", "-qO-", r.lab.releases+"/healthz")
-		body, err := cmd.Output()
-		after, ok = r.admissionBytes()
-		return err == nil && strings.TrimSpace(string(body)) == "ok" && ok && after > before
-	})
-	note("controlled_origin_http_200_and_counted", boolText(success))
-	note("admission_bytes_before", strconv.FormatUint(before, 10))
-	note("admission_bytes_after", strconv.FormatUint(after, 10))
-	return success
+	if !r.selectExit(ctx, note) {
+		r.trafficOwner = "w3-devstack-e2e: native client exit selection; see route and NetBird network evidence"
+		note("owner", r.trafficOwner)
+		return false
+	}
+	return r.tracedFetch(ctx, note)
 }
 
 func (r *runner) admissionBytes() (uint64, bool) {
@@ -99,6 +88,6 @@ func (r *runner) noteAdmissionGate(ctx context.Context, admin *session, rec *Rec
 	note("desired_generation", generation)
 	note("desired_publication_intent", intent)
 	if !r.flowCounted {
-		note("traffic", "not claimed; no admission counter increment. Inspect lease generation/member count versus desired bindings.")
+		note("traffic", "not claimed; no admission counter increment. Inspect route selection, tunnel captures and named rule counters.")
 	}
 }
