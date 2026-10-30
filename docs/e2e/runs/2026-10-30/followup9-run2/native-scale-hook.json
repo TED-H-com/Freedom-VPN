@@ -1,0 +1,23 @@
+{
+  "id": "native-scale-hook",
+  "title": "Native scale hook smoke: distinct users and peers",
+  "spec": [
+    "§8",
+    "§19 AT12",
+    "SECOPS-10"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "counts",
+      "detail": "{\"Users\":2,\"Peers\":4,\"IdentityMatches\":4,\"Authorized\":4}"
+    },
+    {
+      "name": "scope",
+      "detail": "2 users x 2 native peers validates the hook; 20 x 3 load is not executed or claimed. The same existing compose/network/image is used."
+    }
+  ],
+  "at": "2026-10-30T07:28:13Z",
+  "run_id": "65712989-0b05-4117-9a50-689499cd31be",
+  "source_commit": "43176b8860bf90970e96b100c1ba4e957f09363d"
+}

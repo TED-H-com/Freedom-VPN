@@ -1,0 +1,87 @@
+{
+  "id": "update-good",
+  "title": "Good release reaches a terminal updater state",
+  "spec": [
+    "§13",
+    "§19 AT23",
+    "§19 AT25"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "2"
+    },
+    {
+      "name": "target_count",
+      "detail": "3"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "running_candidate_executable",
+      "detail": "true"
+    },
+    {
+      "name": "exit_code",
+      "detail": "0"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "true"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "false"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"}"
+    },
+    {
+      "name": "health_attestation",
+      "detail": "{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.1\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"published\",\"tunnel_probe_reason\":\"overlay_up\"}"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "journal_excerpt",
+      "detail": "stage=locally_succeeded error_code= error_stage= error_detail= | health_json {\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"} | event seq=8 stage=checking detail={\"kind\":\"health_attest\",\"phase\":\"candidate\",\"statuses\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\" | event seq=9 stage=locally_succeeded detail="
+    },
+    {
+      "name": "note",
+      "detail": "locally_succeeded was observed"
+    }
+  ],
+  "at": "2026-10-30T07:31:17Z",
+  "run_id": "65712989-0b05-4117-9a50-689499cd31be",
+  "source_commit": "43176b8860bf90970e96b100c1ba4e957f09363d"
+}

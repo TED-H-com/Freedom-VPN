@@ -1,0 +1,51 @@
+{
+  "id": "threat-feed-node",
+  "title": "Issued resolver document is applied and blocks a synthetic name",
+  "spec": [
+    "§12.5",
+    "§19 AT22",
+    "D-061"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "credential_owner_mode",
+      "detail": "0:600"
+    },
+    {
+      "name": "agent_run_dns",
+      "detail": "{\n    \"resolver_credentials_file\": \"/etc/vpn-node/resolver-credentials.json\",\n    \"resolvers\": [\n      {\n        \"admin_url\": \"http://127.0.0.1:8080\",\n        \"dns_addr\": \"127.0.0.1:53\",\n        \"id\": \"lab\"\n      }\n    ]\n  }"
+    },
+    {
+      "name": "desired_resolver_reference",
+      "detail": "{\"content_sha256\":\"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a\",\"document_id\":\"01a18bb2-bede-7ce8-9068-e9b0d87dfc2b\",\"generation\":\"2\",\"profile_revision_id\":\"01a18bb2-b5a5-7849-a835-a29d7cbbfcbb\",\"size_bytes\":1174}"
+    },
+    {
+      "name": "dns_policy_evidence",
+      "detail": "{\"applied_at\":\"2026-10-30T07:25:50.874719273Z\",\"content_sha256\":\"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a\",\"document_id\":\"01a18bb2-bede-7ce8-9068-e9b0d87dfc2b\",\"error_code\":null,\"feeds\":[{\"content_sha256\":\"c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174\",\"feed_code\":\"e2e-feed\",\"rule_count\":10}],\"generation\":\"2\",\"outcome\":\"applied\"}"
+    },
+    {
+      "name": "admin_node",
+      "detail": "200"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "resolver_document_response",
+      "detail": "HTTP/1.1 200 OK"
+    },
+    {
+      "name": "mtls_body_matches_signed_digest_and_size",
+      "detail": "true"
+    },
+    {
+      "name": "resolver_readback",
+      "detail": "{\"admin_http\":200,\"query_log_enabled\":false,\"query_log_file_enabled\":false,\"rule_count\":16,\"rules_sha256\":\"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8\",\"statistics_enabled\":false,\"synthetic_answer_count\":0,\"synthetic_blocked\":true}"
+    }
+  ],
+  "at": "2026-10-30T07:25:51Z",
+  "run_id": "65712989-0b05-4117-9a50-689499cd31be",
+  "source_commit": "43176b8860bf90970e96b100c1ba4e957f09363d"
+}
