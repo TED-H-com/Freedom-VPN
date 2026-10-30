@@ -244,9 +244,13 @@ func TestAT12_CrossMemberDNS(t *testing.T) {
 	rec.Status = isolation.StatusFail
 	rec.Expected = "Only TCP and UDP 53 to the designated resolver succeed. Peer, SSH, agent API, arbitrary overlay and a spoofed source are denied."
 	rec.Actual = "not finished"
+	var all []probeResult
 	t.Cleanup(func() {
 		stopCaptures()
 		_, _, _ = dockerExec("ip", "netns", "exec", "fv-fwd", "ip", "addr", "del", "100.64.7.7/32", "dev", "fv-ff")
+		if err := isolation.WriteExtra(evidenceDir(), "lab-AT12-matrix.txt", matrixText(all)); err != nil {
+			t.Errorf("matrix evidence: %v", err)
+		}
 		finish(t, rec)
 	})
 	flush(t)
@@ -256,9 +260,33 @@ func TestAT12_CrossMemberDNS(t *testing.T) {
 	if applyModel(t, m).Admitted != 3 {
 		fail(t, &rec, "admitted set")
 	}
+	// Host-originated UDP controls must arrive at each peer's ingress capture.
+	// Stop them before the member deny matrix; they are not member forwarding.
+	var captureEvidence strings.Builder
+	for _, peer := range []struct{ ns, ip string }{{"fv-a1", "100.64.1.1"}, {"fv-a2", "100.64.1.2"}, {"fv-b1", "100.64.2.1"}} {
+		path := "/scratch/cap-at12-control-" + peer.ns + ".txt"
+		startCapture(t, peer.ns, "fv-wg0", "udp dst port 8080", path)
+		mustExec(t, "python3", "-c", "import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.sendto(b'control',('"+peer.ip+"',8080)); s.close()")
+		if !waitLog(t, path, peer.ip+".8080", 3*time.Second) {
+			fail(t, &rec, "ingress capture positive control missing for %s", peer.ns)
+		}
+		stopCaptures()
+		fmt.Fprintf(&captureEvidence, "positive control %s direction=in:\n%s\n", peer.ns, captureBody(t, path))
+	}
+	t.Cleanup(func() {
+		if err := isolation.WriteExtra(evidenceDir(), "lab-AT12-captures.txt", captureEvidence.String()); err != nil {
+			t.Errorf("capture evidence: %v", err)
+		}
+	})
 	startCapture(t, "fv-lan", "fv-ll", "ip", "/scratch/cap-at12-lan.txt")
+	startCapture(t, "fv-a1", "fv-wg0", "dst port 8080", "/scratch/cap-at12-a1.txt")
 	startCapture(t, "fv-a2", "fv-wg0", "dst port 8080", "/scratch/cap-at12-a2.txt")
-	time.Sleep(200 * time.Millisecond)
+	startCapture(t, "fv-b1", "fv-wg0", "dst port 8080", "/scratch/cap-at12-b1.txt")
+	startCapture(t, "fv-inet", "fv-ii", "(dst host 198.51.100.53 and dst port 8080) or (dst host 203.0.113.10 and (tcp dst port 80 or icmp))", "/scratch/cap-at12-inet.txt")
+	// Retain the old filter and an explicit outbound view to explain the old
+	// false positive without weakening the target-ingress assertions.
+	startDirectionalCapture(t, "fv-a2", "fv-wg0", "inout", "dst port 8080", "/scratch/cap-at12-a2-both.txt")
+	startDirectionalCapture(t, "fv-a2", "fv-wg0", "out", "dst port 8080", "/scratch/cap-at12-a2-out.txt")
 	denied := runProbe(t, []probeCase{
 		{"a1-to-a2", "fv-a1", "tcp", "100.64.1.2", 8080, "", "deny", 800, "", "", "", ""},
 		{"a1-to-b1", "fv-a1", "tcp", "100.64.2.1", 8080, "", "deny", 800, "", "", "", ""},
@@ -270,33 +298,47 @@ func TestAT12_CrossMemberDNS(t *testing.T) {
 		{"rogue", "fv-rogue", "tcp", "203.0.113.10", 80, "", "deny", 800, "", "", "", ""},
 		{"spoof", "fv-fwd", "icmp", "203.0.113.10", 0, "100.64.7.7", "deny", 800, "", "", "", ""},
 	})
+	all = append(all, denied...)
 	stopCaptures()
-	for _, path := range []string{"/scratch/cap-at12-lan.txt", "/scratch/cap-at12-a2.txt"} {
-		if strings.TrimSpace(captureBody(t, path)) != "" {
-			fail(t, &rec, "denied target capture %s was not empty", path)
+	var reached []string
+	for _, target := range []string{"lan", "a1", "a2", "b1", "inet"} {
+		body := captureBody(t, "/scratch/cap-at12-"+target+".txt")
+		fmt.Fprintf(&captureEvidence, "deny matrix %s direction=in packets=%d:\n%s\n", target, len(strings.FieldsFunc(strings.TrimSpace(body), func(r rune) bool { return r == '\n' })), body)
+		if strings.TrimSpace(body) != "" {
+			reached = append(reached, target)
 		}
+	}
+	both := captureBody(t, "/scratch/cap-at12-a2-both.txt")
+	outbound := captureBody(t, "/scratch/cap-at12-a2-out.txt")
+	fmt.Fprintf(&captureEvidence, "a2 direction=inout (original filter):\n%s\na2 direction=out:\n%s\n", both, outbound)
+	if len(reached) > 0 {
+		fail(t, &rec, "denied packets reached target ingress: %s", strings.Join(reached, ", "))
+	}
+	if !strings.Contains(outbound, " > 100.64.1.1.8080:") || strings.TrimSpace(both) != strings.TrimSpace(outbound) {
+		fail(t, &rec, "a2 bidirectional capture was not explained by the outbound probe; see lab-AT12-captures.txt")
 	}
 	dns := runProbe(t, []probeCase{
 		{"dns-udp", "fv-a1", "dns", "198.51.100.53", 53, "", "allow", 800, "", "", "", ""},
 		{"dns-tcp", "fv-a1", "tcp", "198.51.100.53", 53, "", "allow", 800, "", "", "", ""},
 	})
+	all = append(all, dns...)
 	allow := runProbe(t, []probeCase{
 		{"a1-inet", "fv-a1", "tcp", "203.0.113.10", 80, "", "allow", 800, "", "", "", ""},
 		{"a2-inet", "fv-a2", "tcp", "203.0.113.10", 80, "", "allow", 800, "", "", "", ""},
 		{"b1-inet", "fv-b1", "tcp", "203.0.113.10", 80, "", "allow", 800, "", "", "", ""},
 	})
+	all = append(all, allow...)
 	local := mustExec(t, "python3", "-c", "import socket; s=socket.create_connection(('127.0.0.1',2222),2); s.close(); print('local-ok')")
 	if !strings.Contains(local, "local-ok") {
 		fail(t, &rec, "host listener on 127.0.0.1:2222 failed")
 	}
-	all := append(append(denied, dns...), allow...)
-	_ = isolation.WriteExtra(evidenceDir(), "lab-AT12-matrix.txt", matrixText(all))
 	if bad := mismatches(all); bad != "" {
 		fail(t, &rec, "matrix:\n%s", bad)
 	}
 	rec.Status = isolation.StatusPass
 	rec.Actual = "Two members and two devices of member A: peer, management, overlay, rogue and spoofed source denied. TCP and UDP 53 to 198.51.100.53 allowed. Host 127.0.0.1:2222 stayed up. Mechanism lab only."
 	rec.Observations = []isolation.Observation{
+		{Name: "capture_direction", Detail: "a2 inout equals out (a2-to-a1 SYN); a1/a2/b1/lan/inet ingress empty; three peer ingress positive controls observed; see lab-AT12-captures.txt"},
 		{Name: "resolver", Detail: "198.51.100.53 tcp/53 udp/53 allow; tcp/8080 deny"},
 		{Name: "spoof_source", Detail: "100.64.7.7 denied"},
 		{Name: "members", Detail: "fv-a1 fv-a2 fv-b1"},
