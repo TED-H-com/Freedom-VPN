@@ -1,140 +1,29 @@
 {
   "schema_version": 1,
-  "run_started_at": "2026-10-30T06:49:14Z",
-  "run_finished_at": "2026-10-30T07:10:35Z",
-  "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
-  "probe_source_sha256": "a4cba1800eedd63667ba6ad2fc25f3c9beaf241f5bd805e2a24bfa6c24f404d2",
-  "build_digests": [
-    {
-      "arch": "amd64",
-      "kind": "acceptance_test_binary",
-      "sha256": "fabfd3fc2a8f1ca836cd0b2a558641e462abe8764cc8e55b8f7d1e2ebe620355",
-      "command": [
-        "go",
-        "test",
-        "-c",
-        "-tags",
-        "e2e,integration",
-        "-o",
-        "<disk-scratch>/secops-amd64.test",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T07:10:02Z",
-      "finished_at": "2026-10-30T07:10:02Z",
-      "elapsed_seconds": 0.565,
-      "exit_code": 0,
-      "scan": {
-        "stream": "build-amd64",
-        "bytes": 0,
-        "findings": []
-      }
-    },
-    {
-      "arch": "arm64",
-      "kind": "acceptance_test_binary",
-      "sha256": "411e156413f84571e911cc1392bc244f65097fad86f4d0024f7d3c7750dba058",
-      "command": [
-        "go",
-        "test",
-        "-c",
-        "-tags",
-        "e2e,integration",
-        "-o",
-        "<disk-scratch>/secops-arm64.test",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T07:10:02Z",
-      "finished_at": "2026-10-30T07:10:03Z",
-      "elapsed_seconds": 0.816,
-      "exit_code": 0,
-      "scan": {
-        "stream": "build-arm64",
-        "bytes": 0,
-        "findings": []
-      }
-    },
-    {
-      "name": "fvpn-agent",
-      "arch": "amd64",
-      "sha256": "63edcdc3bddf776c0339a2abd15c887dd78884b981623cf6b2d655837c8653f2",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-control",
-      "arch": "amd64",
-      "sha256": "2b154dc0ed4d6660f6442adc31ee98fb41d8197402efeb2bbd6f06e05c37688b",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-idp",
-      "arch": "amd64",
-      "sha256": "2870689df549ec1fc4a0e45aea31c02a63de12639dd6a45c9fe92dec303ab00c",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-nbbootstrap",
-      "arch": "amd64",
-      "sha256": "47204de0fe0fed434f949eea5e80b1b4520dacbf05042d21ec543efd7f401b15",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-nodeconfig",
-      "arch": "amd64",
-      "sha256": "0c46ddde8307089ac13830ce14216c4c622f62eb958b2b144f34004fe1583260",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-origin",
-      "arch": "amd64",
-      "sha256": "494bfb4c6091274599949a2b40dd82b77b5d9c4e89ece925c29ab5aa187c9128",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-payment",
-      "arch": "amd64",
-      "sha256": "2f68952576b77fb478fa49357e51a3c0469a48d2f223a327758829ea94f65b78",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-prepare",
-      "arch": "amd64",
-      "sha256": "ab75bd85ca372afa1de472738d2ff04472f4cca32819217dc84b4917ac13bf9f",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-updater",
-      "arch": "amd64",
-      "sha256": "3eb93fcd6a80641b7ae4206445fa192b89c5ce214456c6c3559b62388ad5b566",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-watchdog",
-      "arch": "amd64",
-      "sha256": "9bc41ae23435391df06bd267e22e6ba64d2a4a8114f5e3ec9d41f8ab9b46f448",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-worker",
-      "arch": "amd64",
-      "sha256": "1bd5aeaed7d7cf079a5f41a4af06bfde38e660bd02db994af80af45231d56fc5",
-      "kind": "lab_build_binary"
-    }
-  ],
+  "follow_up": 5,
+  "run_id": "86e6106a-1be1-4003-9b0f-35a30e9cda12",
+  "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+  "probe_source_sha256": "bb9e726e4997f6f59fbbb4d6ac2b007c75aa30ab1cf0fc65c4bb795d6df5ac52",
+  "started_at": "2026-10-30T09:26:55.383432456Z",
+  "finished_at": "2026-10-30T09:45:27.565293215Z",
+  "policy_revision": "1",
+  "node_incarnation": "01a18c23-076a-79fb-af87-c28a9ac798a0",
+  "secondary_node_incarnation": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
   "image_digests": [
     {
-      "image_id": "sha256:a680945078c4343b63f36902000807cd0ab61f0d5fb112a35b675710aaae769b",
+      "image_id": "sha256:bb6608e4f6f966c410892a7f8bc7f023a3ec2d35ac48c4ea6089e64f91062c66",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:263ebda4d921cb783a2a5eb2cfe887b1ca8137de4b8e3c80bdc5679e8f7e4d6d",
+      "image_id": "sha256:54b557988efb2328e10fdd6945d53b7a23f111e634fd2cb5025c20af94633929",
       "service": "idp"
     },
     {
-      "image_id": "sha256:7cc5e6683541e475eafd2abc1ff2b3c25d41f7f7d8f09c152513b6f00812d22e",
+      "image_id": "sha256:9a761831f273a26f3ae8f58a8d565bde09f62267e90bd0380132e29a5d5b1618",
       "service": "payment"
     },
     {
-      "image_id": "sha256:2a097fd81544c6228c0c5370d99b0f84c768285ac21e805b920981020f721f6d",
+      "image_id": "sha256:457fd978be9cc245b5e57c25a0a7d30bf11522e2df2901d25debb7b5c49eb1dd",
       "service": "origin"
     },
     {
@@ -154,361 +43,116 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:e5310d1b54ae0bf3fdabac32f783a7c3fccc8d351d1fb4177720c190506df1a7",
+      "image_id": "sha256:7f15d6df60d770b59512b00ca98fa888bbae9d795bff04a395f8ac9f27c4d57f",
       "service": "control"
     },
     {
-      "image_id": "sha256:274e7c37268cfaddfad906d9b3b2895757d3835fd13fe419a876c58ca8f3da96",
+      "image_id": "sha256:fb3d6639726f7e1160b9145c4a132cfe945aa3d89211cb986056cd0150daff38",
       "service": "worker"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
       "service": "node-netns"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
       "service": "node"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
       "service": "member"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u16-p3"
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-grant"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u16-p2"
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-paid"
     },
     {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u16-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u15-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u15-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u15-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u14-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u14-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u14-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u13-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u13-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u13-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u12-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u12-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u12-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u11-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u11-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u11-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u10-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u10-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u10-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u09-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u09-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u09-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u08-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u08-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u08-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u07-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u07-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u07-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u06-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u06-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u06-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u05-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u05-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u05-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u04-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u04-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u04-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u03-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u03-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u03-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u02-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u02-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u02-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u01-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u01-p2"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u01-p1"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u00-p3"
-    },
-    {
-      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
-      "service": "member-secops-u00-p2"
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-counted-b"
     }
   ],
-  "policy_revision": "1",
-  "node_incarnation": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-  "stack": {
-    "status": "running-stack-observed",
-    "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
-    "inventory_before": {
-      "containers": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "networks": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "volumes": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "images": {
-        "exit_code": 0,
-        "count": 0
-      }
+  "build_digests": [
+    {
+      "name": "fvpn-agent",
+      "sha256": "e58ce507f6e8cc6e90c1614daad37d62ac394bb2264615b780d1417cf4213f58",
+      "kind": "prepared application binary"
     },
-    "up": {
-      "command": [
-        "make",
-        "-f",
-        "mk/e2e.mk",
-        "e2e-up"
-      ],
-      "started_at": "2026-10-30T06:49:14Z",
-      "finished_at": "2026-10-30T06:49:36Z",
-      "elapsed_seconds": 21.672,
-      "exit_code": 0,
-      "scan": {
-        "stream": "e2e-up",
-        "bytes": 19841,
-        "findings": []
-      }
+    {
+      "name": "fvpn-control",
+      "sha256": "ef97948f8d9bc326163f7b407c067d8a67f279215aa5ef2d232d61133d11a132",
+      "kind": "prepared application binary"
     },
-    "live_probe": {
-      "command": [
-        "go",
-        "test",
-        "-json",
-        "-tags",
-        "e2e,integration",
-        "-p",
-        "1",
-        "-parallel",
-        "2",
-        "-count=1",
-        "-timeout",
-        "55m",
-        "-run",
-        "^TestAT28_AT31_Followup4$",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T06:49:36Z",
-      "finished_at": "2026-10-30T07:09:17Z",
-      "elapsed_seconds": 1181.085,
-      "exit_code": 1,
-      "scan": {
-        "stream": "live-probe",
-        "bytes": 9097,
-        "findings": []
-      },
-      "status": "failed",
-      "required_tests": [
-        "TestAT28_AT31_Followup4"
-      ],
-      "missing": [],
-      "skipped": [],
-      "tests": [
-        {
-          "name": "TestAT28_AT31_Followup4",
-          "result": "fail",
-          "elapsed_seconds": 1180.64
-        }
-      ],
-      "package_results": {
-        "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "fail"
-      }
+    {
+      "name": "fvpn-e2e-idp",
+      "sha256": "b079831f2ba6448fafca64d19005f39117e9dac44fd4378981c0fcdbfa94a2c2",
+      "kind": "prepared application binary"
     },
-    "isolated_restore": {
-      "status": "historical record preserved",
-      "compatibility": "historical; no new compatibility assertion in Follow-up 4",
-      "new_restore_executed": false
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "sha256": "171dd8f5b28adfee27eaef82417e810480c5a241f9dff085df02f34832c6e469",
+      "kind": "prepared application binary"
     },
-    "down": {
-      "command": [
-        "make",
-        "-f",
-        "mk/e2e.mk",
-        "e2e-down"
-      ],
-      "started_at": "2026-10-30T07:09:17Z",
-      "finished_at": "2026-10-30T07:10:02Z",
-      "elapsed_seconds": 45.076,
-      "exit_code": 0,
-      "scan": {
-        "stream": "e2e-down",
-        "bytes": 3056,
-        "findings": []
-      }
+    {
+      "name": "fvpn-e2e-nodeconfig",
+      "sha256": "f5cf21b2018e7e8135dbbdaa571bf69ee23604faa4d6435adebfcb462661cdd9",
+      "kind": "prepared application binary"
     },
-    "inventory_after": {
-      "containers": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "networks": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "volumes": {
-        "exit_code": 0,
-        "count": 0
-      },
-      "images": {
-        "exit_code": 0,
-        "count": 0
-      }
+    {
+      "name": "fvpn-e2e-origin",
+      "sha256": "2f5e7744dc3abe4883f6265a1255a1c2734556f1c1398a7138459249309ceb43",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "sha256": "825a8f62213dcaeae59cacf2ecd760d5216f1b8fea4fae8103ad896cfe21d0af",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "sha256": "d8a04949a3a789311e0c7c3896a333c91f89537ae6b92e8651d1d35989ad42ad",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "sha256": "96825f58bc15c94f77d9e7000152c5545146818e3ba7533b6d2f4d6c24880c02",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "sha256": "c1ff8ce46603a0458e905e26de6c9c4e63539faf42f0cbe14c9e6700bf0d6b61",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "sha256": "47a86133875571c8da3455a7b83a2797a2cc4d84347dc4875521c5b18243d6e7",
+      "kind": "prepared application binary"
     }
+  ],
+  "commands": [
+    "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/at-secops.mk at-secops-followup5"
+  ],
+  "hardware": "shared development host; not candidate hardware",
+  "id": "SECOPS-15",
+  "status": "passed",
+  "usage_status": "passed",
+  "other_class_status": {
+    "browser": "passed",
+    "agent": "passed",
+    "heartbeat": "passed",
+    "lease": "passed",
+    "enrollment": "passed",
+    "webhook": "passed"
   },
-  "id": "SECOPS-06",
-  "follow_up": 4,
-  "status": "blocked",
-  "login_status": "resolved",
-  "expected": "heartbeat/lease request 6; usage/anonymous request 11; 429 RATE_LIMITED, Retry-After 1, matching class metric; valid 8 MiB usage accepted, >8 MiB refused 413",
+  "expected": "At cap−1 and cap: size accepted then documented validation/identity/domain response; cap+1: 413 PAYLOAD_TOO_LARGE",
   "actual": {
     "rate_classes": {
       "anonymous_shared": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.009014037,
+        "elapsed_seconds": 0.010581184,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
@@ -531,83 +175,83 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:19.309044595Z"
+            "utc": "2026-10-30T09:30:13.264249257Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 2,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:19.309938649Z"
+            "utc": "2026-10-30T09:30:13.265134758Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:19.310977845Z"
+            "utc": "2026-10-30T09:30:13.265958386Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 4,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:19.311652445Z"
+            "utc": "2026-10-30T09:30:13.266840997Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:19.312327689Z"
+            "utc": "2026-10-30T09:30:13.267504367Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 6,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:19.312994908Z"
+            "utc": "2026-10-30T09:30:13.268497075Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 7,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:19.31367279Z"
+            "utc": "2026-10-30T09:30:13.269592838Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 8,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:19.314342541Z"
+            "utc": "2026-10-30T09:30:13.270614337Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 9,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:19.315009476Z"
+            "utc": "2026-10-30T09:30:13.271586925Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 10,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:19.315764387Z"
+            "utc": "2026-10-30T09:30:13.272513872Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T06:55:19.316561188Z"
+            "utc": "2026-10-30T09:30:13.273445129Z"
           }
         ]
       },
       "enrollment": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.012018429,
+        "elapsed_seconds": 0.010577439,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
@@ -629,83 +273,83 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.112531028Z"
+            "utc": "2026-10-30T09:30:01.068137976Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 2,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.113664081Z"
+            "utc": "2026-10-30T09:30:01.068972624Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.114694145Z"
+            "utc": "2026-10-30T09:30:01.069900097Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 4,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.1157017Z"
+            "utc": "2026-10-30T09:30:01.070760155Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.116635663Z"
+            "utc": "2026-10-30T09:30:01.071514351Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 6,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.117567753Z"
+            "utc": "2026-10-30T09:30:01.072190151Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 7,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.119037088Z"
+            "utc": "2026-10-30T09:30:01.072843403Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 8,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.120042586Z"
+            "utc": "2026-10-30T09:30:01.073646841Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 9,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.120840641Z"
+            "utc": "2026-10-30T09:30:01.074577014Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 10,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:55:07.121595742Z"
+            "utc": "2026-10-30T09:30:01.075994007Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T06:55:07.122256002Z"
+            "utc": "2026-10-30T09:30:01.077199265Z"
           }
         ]
       },
       "heartbeat": {
         "actual_first_rejection": 6,
-        "elapsed_seconds": 0.003177168,
+        "elapsed_seconds": 0.004552217,
         "expected_first_rejection": 6,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
@@ -722,42 +366,42 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:54:54.923530797Z"
+            "utc": "2026-10-30T09:29:48.866765984Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 2,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:54:54.923849351Z"
+            "utc": "2026-10-30T09:29:48.867376433Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:54:54.924133634Z"
+            "utc": "2026-10-30T09:29:48.867958282Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 4,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:54:54.924349368Z"
+            "utc": "2026-10-30T09:29:48.868522764Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T06:54:54.924623701Z"
+            "utc": "2026-10-30T09:29:48.868942041Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 6,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T06:54:54.924821909Z"
+            "utc": "2026-10-30T09:29:48.869252635Z"
           }
         ]
       },
@@ -769,7 +413,7 @@
       },
       "lease": {
         "actual_first_rejection": 6,
-        "elapsed_seconds": 0.007659705,
+        "elapsed_seconds": 0.016176043,
         "expected_first_rejection": 6,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
@@ -789,42 +433,42 @@
             "index": 1,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:01.017341033Z"
+            "utc": "2026-10-30T09:29:54.969332301Z"
           },
           {
             "code": "",
             "index": 2,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:01.018669647Z"
+            "utc": "2026-10-30T09:29:54.972050545Z"
           },
           {
             "code": "",
             "index": 3,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:01.01968373Z"
+            "utc": "2026-10-30T09:29:54.97339681Z"
           },
           {
             "code": "",
             "index": 4,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:01.020722101Z"
+            "utc": "2026-10-30T09:29:54.974388312Z"
           },
           {
             "code": "",
             "index": 5,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:01.021779127Z"
+            "utc": "2026-10-30T09:29:54.975283998Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 6,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T06:55:01.022533282Z"
+            "utc": "2026-10-30T09:29:54.975624037Z"
           }
         ]
       },
@@ -840,7 +484,7 @@
       "source": "one host transport address; node B certificate; real agent uses node A identity",
       "usage": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.035695213,
+        "elapsed_seconds": 0.0835879,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
@@ -864,77 +508,77 @@
             "index": 1,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.417003821Z"
+            "utc": "2026-10-30T09:30:19.441437033Z"
           },
           {
             "code": "",
             "index": 2,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.421072541Z"
+            "utc": "2026-10-30T09:30:19.45139913Z"
           },
           {
             "code": "",
             "index": 3,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.423704699Z"
+            "utc": "2026-10-30T09:30:19.459424461Z"
           },
           {
             "code": "",
             "index": 4,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.426472687Z"
+            "utc": "2026-10-30T09:30:19.468289327Z"
           },
           {
             "code": "",
             "index": 5,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.430137688Z"
+            "utc": "2026-10-30T09:30:19.474405972Z"
           },
           {
             "code": "",
             "index": 6,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.43255315Z"
+            "utc": "2026-10-30T09:30:19.4792767Z"
           },
           {
             "code": "",
             "index": 7,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.434504651Z"
+            "utc": "2026-10-30T09:30:19.485063729Z"
           },
           {
             "code": "",
             "index": 8,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.436769414Z"
+            "utc": "2026-10-30T09:30:19.489504707Z"
           },
           {
             "code": "",
             "index": 9,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.439107964Z"
+            "utc": "2026-10-30T09:30:19.494067199Z"
           },
           {
             "code": "",
             "index": 10,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T06:55:25.44138195Z"
+            "utc": "2026-10-30T09:30:19.502789965Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T06:55:25.442024288Z"
+            "utc": "2026-10-30T09:30:19.503872428Z"
           }
         ]
       },
@@ -942,10 +586,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.40773147Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.422038339Z",
           "results": [
             {
               "error": null,
@@ -957,10 +601,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.417993678Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.443015024Z",
           "results": [
             {
               "error": null,
@@ -972,10 +616,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.421659896Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.453090781Z",
           "results": [
             {
               "error": null,
@@ -987,10 +631,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.424386145Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.460624027Z",
           "results": [
             {
               "error": null,
@@ -1002,10 +646,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.427843283Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.470860505Z",
           "results": [
             {
               "error": null,
@@ -1017,10 +661,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.430571502Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.475799397Z",
           "results": [
             {
               "error": null,
@@ -1032,10 +676,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.432843804Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.481137806Z",
           "results": [
             {
               "error": null,
@@ -1047,10 +691,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.434808234Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.486154278Z",
           "results": [
             {
               "error": null,
@@ -1062,10 +706,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.437233923Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.490622825Z",
           "results": [
             {
               "error": null,
@@ -1077,10 +721,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
-          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
-          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
-          "received_at": "2026-10-30T06:55:25.439416644Z",
+          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
+          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
+          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+          "received_at": "2026-10-30T09:30:19.49550561Z",
           "results": [
             {
               "error": null,
@@ -1093,7 +737,7 @@
       "usage_body_limits": [
         {
           "actual_status": 200,
-          "bytes": 1048576,
+          "bytes": 8388607,
           "code": "",
           "expected_status": 200,
           "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
@@ -1101,21 +745,12 @@
           "valid_json": true
         },
         {
-          "actual_status": 400,
-          "bytes": 1048577,
-          "code": "MALFORMED_REQUEST",
-          "expected_status": 200,
-          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
-          "passed": false,
-          "valid_json": true
-        },
-        {
-          "actual_status": 400,
+          "actual_status": 200,
           "bytes": 8388608,
-          "code": "MALFORMED_REQUEST",
+          "code": "",
           "expected_status": 200,
           "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
-          "passed": false,
+          "passed": true,
           "valid_json": true
         },
         {
@@ -1130,7 +765,7 @@
       ],
       "webhook": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.009414603,
+        "elapsed_seconds": 0.010714179,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
@@ -1153,92 +788,264 @@
             "index": 1,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.214228185Z"
+            "utc": "2026-10-30T09:30:07.167966064Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 2,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.215336807Z"
+            "utc": "2026-10-30T09:30:07.169174501Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 3,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.216138947Z"
+            "utc": "2026-10-30T09:30:07.170196874Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 4,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.216864868Z"
+            "utc": "2026-10-30T09:30:07.171040249Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 5,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.217630937Z"
+            "utc": "2026-10-30T09:30:07.171737921Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 6,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.218341961Z"
+            "utc": "2026-10-30T09:30:07.17259084Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 7,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.219029401Z"
+            "utc": "2026-10-30T09:30:07.173362053Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 8,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.219658932Z"
+            "utc": "2026-10-30T09:30:07.17406084Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 9,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.220323306Z"
+            "utc": "2026-10-30T09:30:07.174784933Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 10,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T06:55:13.22098151Z"
+            "utc": "2026-10-30T09:30:07.175479859Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T06:55:13.22164719Z"
+            "utc": "2026-10-30T09:30:07.176457842Z"
           }
         ]
       }
     },
-    "login_settings": {
-      "login_rate": {
-        "per_second": 1,
-        "burst": 40
+    "other_body_boundaries": [
+      {
+        "actual_status": 201,
+        "baseline_status": 201,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048575,
+        "class": "browser",
+        "code": "",
+        "expected_status": 201,
+        "passed": true
       },
-      "login_subject_per_minute": 10,
-      "max_concurrent": 128,
-      "mutated": false,
-      "source": "prepared central.json plus named container environment overrides"
-    },
-    "concurrent_sign_in": {
+      {
+        "actual_status": 201,
+        "baseline_status": 201,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048576,
+        "class": "browser",
+        "code": "",
+        "expected_status": 201,
+        "passed": true
+      },
+      {
+        "actual_status": 413,
+        "baseline_status": 201,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048577,
+        "class": "browser",
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "passed": true
+      },
+      {
+        "actual_status": 400,
+        "baseline_status": 410,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048575,
+        "class": "agent",
+        "code": "MALFORMED_REQUEST",
+        "expected_status": 400,
+        "passed": true
+      },
+      {
+        "actual_status": 400,
+        "baseline_status": 410,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048576,
+        "class": "agent",
+        "code": "MALFORMED_REQUEST",
+        "expected_status": 400,
+        "passed": true
+      },
+      {
+        "actual_status": 413,
+        "baseline_status": 410,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048577,
+        "class": "agent",
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "passed": true
+      },
+      {
+        "actual_status": 403,
+        "baseline_status": 403,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048575,
+        "class": "heartbeat",
+        "code": "INCARNATION_MISMATCH",
+        "expected_status": 403,
+        "passed": true
+      },
+      {
+        "actual_status": 403,
+        "baseline_status": 403,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048576,
+        "class": "heartbeat",
+        "code": "INCARNATION_MISMATCH",
+        "expected_status": 403,
+        "passed": true
+      },
+      {
+        "actual_status": 413,
+        "baseline_status": 403,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048577,
+        "class": "heartbeat",
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "passed": true
+      },
+      {
+        "actual_status": 200,
+        "baseline_status": 200,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048575,
+        "class": "lease",
+        "code": "",
+        "expected_status": 200,
+        "passed": true
+      },
+      {
+        "actual_status": 200,
+        "baseline_status": 200,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048576,
+        "class": "lease",
+        "code": "",
+        "expected_status": 200,
+        "passed": true
+      },
+      {
+        "actual_status": 413,
+        "baseline_status": 200,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048577,
+        "class": "lease",
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "passed": true
+      },
+      {
+        "actual_status": 401,
+        "baseline_status": 401,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048575,
+        "class": "enrollment",
+        "code": "ENROLLMENT_TOKEN_INVALID",
+        "expected_status": 401,
+        "passed": true
+      },
+      {
+        "actual_status": 401,
+        "baseline_status": 401,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048576,
+        "class": "enrollment",
+        "code": "ENROLLMENT_TOKEN_INVALID",
+        "expected_status": 401,
+        "passed": true
+      },
+      {
+        "actual_status": 413,
+        "baseline_status": 401,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048577,
+        "class": "enrollment",
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "passed": true
+      },
+      {
+        "actual_status": 401,
+        "baseline_status": 401,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048575,
+        "class": "webhook",
+        "code": "WEBHOOK_SIGNATURE_INVALID",
+        "expected_status": 401,
+        "passed": true
+      },
+      {
+        "actual_status": 401,
+        "baseline_status": 401,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048576,
+        "class": "webhook",
+        "code": "WEBHOOK_SIGNATURE_INVALID",
+        "expected_status": 401,
+        "passed": true
+      },
+      {
+        "actual_status": 413,
+        "baseline_status": 401,
+        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
+        "bytes": 1048577,
+        "class": "webhook",
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "passed": true
+      }
+    ],
+    "login": {
       "attempts": 20,
       "authenticated": 20,
       "barrier_started": true,
@@ -1247,26 +1054,26 @@
         "200": 20
       },
       "login_wall_ms": [
-        450.846,
-        449.911,
-        468.317,
-        464.14,
-        468.289,
-        406.126,
-        464.97,
-        450.506,
-        368.265,
-        469.908,
-        472.885,
-        413.407,
-        448.528,
-        384.513,
-        443.392,
-        424.977,
-        373.248,
-        465.137,
-        441.27,
-        231.479
+        811.277,
+        804.985,
+        775.437,
+        744.752,
+        774.489,
+        794.692,
+        716.944,
+        800.744,
+        768.612,
+        552.837,
+        775.845,
+        797.151,
+        751.634,
+        725.656,
+        799.53,
+        775.935,
+        719.099,
+        808.071,
+        806.721,
+        789.55
       ],
       "metrics_after": {
         "address": 0,
@@ -1279,462 +1086,462 @@
       "requests_by_identity": [
         [
           {
-            "utc": "2026-10-30T06:56:10.711051932Z",
+            "utc": "2026-10-30T09:31:23.807878102Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35cf-79e5-8797-60760041b3b1"
+            "request_id": "01a18c26-511c-795b-ab33-722bfbe274c5"
           },
           {
-            "utc": "2026-10-30T06:56:11.148385247Z",
+            "utc": "2026-10-30T09:31:24.606330993Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3756-71dd-bcc9-9f908b5c4d06"
+            "request_id": "01a18c26-53cc-7f09-9f76-988d70eec5db"
           },
           {
-            "utc": "2026-10-30T06:56:11.150435918Z",
+            "utc": "2026-10-30T09:31:24.608610089Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-378d-734e-a54b-9bddeb259abf"
+            "request_id": "01a18c26-543f-7585-9698-bc482df90839"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711636786Z",
+            "utc": "2026-10-30T09:31:23.810060733Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35ce-7496-85fb-f16d76a1fcfe"
+            "request_id": "01a18c26-511f-74e4-b387-5860dc0c4914"
           },
           {
-            "utc": "2026-10-30T06:56:11.147501782Z",
+            "utc": "2026-10-30T09:31:24.599725981Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3749-7b43-a1e7-104805b9c15c"
+            "request_id": "01a18c26-53a4-71bf-955d-7e7d60aae6aa"
           },
           {
-            "utc": "2026-10-30T06:56:11.150411561Z",
+            "utc": "2026-10-30T09:31:24.604067889Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-378c-73b7-92c6-93ea74bc2833"
+            "request_id": "01a18c26-5438-7df4-9ce6-a08d6dbad8dc"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711237118Z",
+            "utc": "2026-10-30T09:31:23.808373583Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35cf-7d26-a33d-c333207e5052"
+            "request_id": "01a18c26-511c-72c8-929b-8816758ef193"
           },
           {
-            "utc": "2026-10-30T06:56:11.165901069Z",
+            "utc": "2026-10-30T09:31:24.570542488Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3763-73cc-b88c-b63fb1866b6f"
+            "request_id": "01a18c26-536d-7926-8f27-e1d6930fd5e3"
           },
           {
-            "utc": "2026-10-30T06:56:11.168581647Z",
+            "utc": "2026-10-30T09:31:24.574029396Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-379e-7ef8-94e3-3b323e000b9b"
+            "request_id": "01a18c26-541b-7eff-a09c-d7e6361f8d20"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713738876Z",
+            "utc": "2026-10-30T09:31:23.807589324Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d4-7056-90dc-e0e2711589bf"
+            "request_id": "01a18c26-511b-7407-b50e-1c3eb19a5c8f"
           },
           {
-            "utc": "2026-10-30T06:56:11.161702958Z",
+            "utc": "2026-10-30T09:31:24.539494217Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3716-7623-8f80-fafbb2e1631e"
+            "request_id": "01a18c26-53b6-7f11-9731-990d0f871b3d"
           },
           {
-            "utc": "2026-10-30T06:56:11.16405505Z",
+            "utc": "2026-10-30T09:31:24.542414678Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-379a-7a97-b7d6-6082d925f0a3"
+            "request_id": "01a18c26-53fc-7d6c-9611-e036cc4398f7"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.714013742Z",
+            "utc": "2026-10-30T09:31:23.807454129Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d4-76d6-b014-60a7850e330f"
+            "request_id": "01a18c26-5119-742c-ab1d-9b4c7b0c9319"
           },
           {
-            "utc": "2026-10-30T06:56:11.166020685Z",
+            "utc": "2026-10-30T09:31:24.569135855Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3735-74cd-a1be-2516fd97ae80"
+            "request_id": "01a18c26-53b4-76d2-97e6-bae1602ba0d3"
           },
           {
-            "utc": "2026-10-30T06:56:11.168886266Z",
+            "utc": "2026-10-30T09:31:24.572439065Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-379f-7557-9228-b5763298d562"
+            "request_id": "01a18c26-541a-7203-aad4-ea557864ce1f"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713810273Z",
+            "utc": "2026-10-30T09:31:23.810058103Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d4-7c8b-b3d0-89c23b7cdd08"
+            "request_id": "01a18c26-511e-7b13-aa1e-d05ee824b71e"
           },
           {
-            "utc": "2026-10-30T06:56:11.103474837Z",
+            "utc": "2026-10-30T09:31:24.5900652Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36c6-7f02-a990-dce7a2b33b45"
+            "request_id": "01a18c26-5362-7517-9323-d3b2245e92ca"
           },
           {
-            "utc": "2026-10-30T06:56:11.106367542Z",
+            "utc": "2026-10-30T09:31:24.59320733Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-3761-7016-85a7-8c9169aca52d"
+            "request_id": "01a18c26-542f-7b61-abe3-569029efcd62"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713937911Z",
+            "utc": "2026-10-30T09:31:23.807399224Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d3-7976-9a94-2c7eb3c6f894"
+            "request_id": "01a18c26-511a-7879-bffb-2f5ac8dccc52"
           },
           {
-            "utc": "2026-10-30T06:56:11.162492299Z",
+            "utc": "2026-10-30T09:31:24.512023386Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3737-7129-bd49-0cb165ff62bc"
+            "request_id": "01a18c26-5366-76b4-80a3-a32935f2a345"
           },
           {
-            "utc": "2026-10-30T06:56:11.166570566Z",
+            "utc": "2026-10-30T09:31:24.517539096Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-379b-7e8b-9cc0-378e864095eb"
+            "request_id": "01a18c26-53e2-7442-8901-9740df3b26ac"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713849582Z",
+            "utc": "2026-10-30T09:31:23.808375277Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d3-761a-a365-5d3b8f1bb98b"
+            "request_id": "01a18c26-511e-77e8-87a9-b5e6133778b7"
           },
           {
-            "utc": "2026-10-30T06:56:11.14833125Z",
+            "utc": "2026-10-30T09:31:24.595525964Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36e0-7321-9466-64774f58d89d"
+            "request_id": "01a18c26-53ea-7113-9e07-af13229e914b"
           },
           {
-            "utc": "2026-10-30T06:56:11.15048925Z",
+            "utc": "2026-10-30T09:31:24.59863659Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-378c-7f2d-8c3d-f6afbb0e5f7b"
+            "request_id": "01a18c26-5434-7953-9916-5f07a106a99e"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711147846Z",
+            "utc": "2026-10-30T09:31:23.807471836Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35cd-7b0b-ac40-64b9890ecd1d"
+            "request_id": "01a18c26-5118-7a44-9329-ffef4c5f1db0"
           },
           {
-            "utc": "2026-10-30T06:56:11.065617484Z",
+            "utc": "2026-10-30T09:31:24.563071544Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36a6-7092-9765-eab1b111db68"
+            "request_id": "01a18c26-5378-73b5-8577-f8a03f5da098"
           },
           {
-            "utc": "2026-10-30T06:56:11.068267454Z",
+            "utc": "2026-10-30T09:31:24.565205957Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-373a-7b5d-807c-91f3ac2916f6"
+            "request_id": "01a18c26-5414-7418-807a-3bfd78f6ebcf"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711211979Z",
+            "utc": "2026-10-30T09:31:23.80593592Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35ce-70bb-bdb4-0525eebc624e"
+            "request_id": "01a18c26-5119-7aa8-b725-fc88c0cc8dec"
           },
           {
-            "utc": "2026-10-30T06:56:11.167474424Z",
+            "utc": "2026-10-30T09:31:24.347423149Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36e2-7ca9-b8b2-f2117df98fa6"
+            "request_id": "01a18c26-5227-7bbc-8736-5dcc15b77729"
           },
           {
-            "utc": "2026-10-30T06:56:11.169600579Z",
+            "utc": "2026-10-30T09:31:24.350619451Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-37a0-7796-b965-1419cd7caf77"
+            "request_id": "01a18c26-533c-7e0d-9a9f-371aef8f7e88"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711983211Z",
+            "utc": "2026-10-30T09:31:23.802669211Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d0-7a1a-bc2e-1bfb2e1e0568"
+            "request_id": "01a18c26-5117-7e83-9be7-70a1f70224d0"
           },
           {
-            "utc": "2026-10-30T06:56:11.170486554Z",
+            "utc": "2026-10-30T09:31:24.570499125Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-376d-723c-b4e3-a9724613c978"
+            "request_id": "01a18c26-5351-7de3-ad6e-dd35581a045d"
           },
           {
-            "utc": "2026-10-30T06:56:11.172298397Z",
+            "utc": "2026-10-30T09:31:24.572638802Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-37a3-7757-9d85-128b43335699"
+            "request_id": "01a18c26-541b-7999-beee-bcceacc129d9"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711223863Z",
+            "utc": "2026-10-30T09:31:23.808381171Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35cf-703c-9f48-f8737b2762a0"
+            "request_id": "01a18c26-511e-7308-be52-30607b00acfc"
           },
           {
-            "utc": "2026-10-30T06:56:11.110687351Z",
+            "utc": "2026-10-30T09:31:24.591885152Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36f5-7d71-b1e2-3147993c45f9"
+            "request_id": "01a18c26-53de-7e94-b629-a06582fa6dba"
           },
           {
-            "utc": "2026-10-30T06:56:11.113376146Z",
+            "utc": "2026-10-30T09:31:24.595562695Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-3767-7f2a-853c-06008d687a84"
+            "request_id": "01a18c26-5431-71d5-801c-7eb587d025d0"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713898922Z",
+            "utc": "2026-10-30T09:31:23.807845035Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d2-762f-9ba9-53d0b251d17c"
+            "request_id": "01a18c26-511a-75bd-9396-02fcc00f1bbe"
           },
           {
-            "utc": "2026-10-30T06:56:11.14616814Z",
+            "utc": "2026-10-30T09:31:24.546217331Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36f0-7cb7-8cae-73021a34011d"
+            "request_id": "01a18c26-5334-7c62-a089-12f8f047d425"
           },
           {
-            "utc": "2026-10-30T06:56:11.149552286Z",
+            "utc": "2026-10-30T09:31:24.549433744Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-378b-73b3-ada6-9d15c1ff2e58"
+            "request_id": "01a18c26-5403-7916-a7fd-b631a28ab1db"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711037254Z",
+            "utc": "2026-10-30T09:31:23.802933028Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35ce-7c15-b93c-17a089787d48"
+            "request_id": "01a18c26-5118-73d5-bdd9-78af988eb1d2"
           },
           {
-            "utc": "2026-10-30T06:56:11.08199203Z",
+            "utc": "2026-10-30T09:31:24.520217738Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36ca-70f1-85e9-68591a47510b"
+            "request_id": "01a18c26-5304-745a-b222-7ddac6d2a664"
           },
           {
-            "utc": "2026-10-30T06:56:11.08445112Z",
+            "utc": "2026-10-30T09:31:24.52245467Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-374a-7d4d-9802-6afc5f72f18c"
+            "request_id": "01a18c26-53e9-733b-a46a-df006dd83742"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713976569Z",
+            "utc": "2026-10-30T09:31:23.810866527Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d5-70a6-931b-bac22444e9d6"
+            "request_id": "01a18c26-511d-7c3b-b8f3-5a1369a6f33f"
           },
           {
-            "utc": "2026-10-30T06:56:11.141062055Z",
+            "utc": "2026-10-30T09:31:24.594324786Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-371b-70dc-a9ed-1dd206526ac1"
+            "request_id": "01a18c26-53ef-73a0-9617-c23fa4b332b8"
           },
           {
-            "utc": "2026-10-30T06:56:11.1436661Z",
+            "utc": "2026-10-30T09:31:24.597286876Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-3786-71dd-ac61-cb2a4e3bca08"
+            "request_id": "01a18c26-5433-7665-acc1-a7dc494049a4"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713739783Z",
+            "utc": "2026-10-30T09:31:23.80341622Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d1-7644-a714-6045f135f412"
+            "request_id": "01a18c26-5118-7dd1-adc3-e14819ca2fb6"
           },
           {
-            "utc": "2026-10-30T06:56:11.122557559Z",
+            "utc": "2026-10-30T09:31:24.570575147Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-372a-78d4-b7e2-c581ce5078b9"
+            "request_id": "01a18c26-5343-7572-8103-4ce96083180b"
           },
           {
-            "utc": "2026-10-30T06:56:11.12416364Z",
+            "utc": "2026-10-30T09:31:24.574051596Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-3773-7571-b162-3183907f5a79"
+            "request_id": "01a18c26-541c-7511-9522-42ecf54e7352"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711133008Z",
+            "utc": "2026-10-30T09:31:23.807520642Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35cf-757e-9f87-bd1191a8dcbe"
+            "request_id": "01a18c26-5119-7782-9cde-39b30dcc15de"
           },
           {
-            "utc": "2026-10-30T06:56:11.070702067Z",
+            "utc": "2026-10-30T09:31:24.512714657Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-36ee-76d8-99cc-d12bf11340b5"
+            "request_id": "01a18c26-52aa-70f2-85d7-3485ab7fc05b"
           },
           {
-            "utc": "2026-10-30T06:56:11.073001198Z",
+            "utc": "2026-10-30T09:31:24.517054523Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-373f-77ba-80e0-181355fd67c9"
+            "request_id": "01a18c26-53e3-7264-83dd-2572a66368ff"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.713767677Z",
+            "utc": "2026-10-30T09:31:23.807854974Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d1-7db8-840a-6a2ebd2dfe8e"
+            "request_id": "01a18c26-511a-7263-ae93-bbde13f2d562"
           },
           {
-            "utc": "2026-10-30T06:56:11.162492054Z",
+            "utc": "2026-10-30T09:31:24.602720836Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-3741-74bf-a8ef-e11cbbae191a"
+            "request_id": "01a18c26-52f4-7977-9744-60a3ae130f74"
           },
           {
-            "utc": "2026-10-30T06:56:11.166042351Z",
+            "utc": "2026-10-30T09:31:24.604866006Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-379b-7b22-a700-19ef04b49bae"
+            "request_id": "01a18c26-543b-7c35-a3a3-c3ffdd12dad0"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.711079627Z",
+            "utc": "2026-10-30T09:31:23.803315332Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35d0-7465-ba9a-719105437f34"
+            "request_id": "01a18c26-5118-7731-8928-302f7f9430f1"
           },
           {
-            "utc": "2026-10-30T06:56:11.138262553Z",
+            "utc": "2026-10-30T09:31:24.60112877Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-370e-7a66-9a8d-a1175f159750"
+            "request_id": "01a18c26-5394-78a6-8f5a-3afde722f3eb"
           },
           {
-            "utc": "2026-10-30T06:56:11.143128636Z",
+            "utc": "2026-10-30T09:31:24.604914851Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-3783-7c7b-8915-774d77f675b8"
+            "request_id": "01a18c26-543a-77b2-97fc-f2ceda621db2"
           }
         ],
         [
           {
-            "utc": "2026-10-30T06:56:10.708646181Z",
+            "utc": "2026-10-30T09:31:23.80004457Z",
             "method": "GET",
             "path": "/auth/login",
             "status": 302,
-            "request_id": "01a18b98-35cb-7586-ad19-cb71d9b3fbc0"
+            "request_id": "01a18c26-5115-72df-b1ca-dd83460ea35e"
           },
           {
-            "utc": "2026-10-30T06:56:10.928851352Z",
+            "utc": "2026-10-30T09:31:24.583973961Z",
             "method": "GET",
             "path": "/auth/callback",
             "status": 303,
-            "request_id": "01a18b98-362d-7277-8a10-e51554636fef"
+            "request_id": "01a18c26-53bb-70b7-9543-7acaa9ad5e5e"
           },
           {
-            "utc": "2026-10-30T06:56:10.931602644Z",
+            "utc": "2026-10-30T09:31:24.586094702Z",
             "method": "GET",
             "path": "/auth/session",
             "status": 200,
-            "request_id": "01a18b98-36b2-7275-9f1b-a999b8129f23"
+            "request_id": "01a18c26-5429-71d4-b95d-8c72ca2de048"
           }
         ]
       ],
@@ -1744,34 +1551,7 @@
       "supersedes": "followup1-login.json; D-060 / PR #106",
       "wrong_member": 0,
       "zero_status": "login walker did not complete; not a measured session HTTP response"
-    },
-    "login_subject_limit": null,
-    "login_41st_request": null
+    }
   },
-  "supersedes": "followup3-limiter.json: login remains resolved; per-class inference superseded by #145 PascalCase classification fix; IPv6 /64 #141",
-  "commands": [
-    [
-      "go",
-      "test",
-      "-json",
-      "-tags",
-      "e2e,integration",
-      "-p",
-      "1",
-      "-parallel",
-      "2",
-      "-count=1",
-      "-timeout",
-      "55m",
-      "-run",
-      "^TestAT28_AT31_Followup4$",
-      "./tests/e2e/at/secops"
-    ]
-  ],
-  "runtime_settings": "runtime-settings.json",
-  "login_threshold_history": {
-    "record": "followup3-limiter.json",
-    "status": "resolved historical measurement; not remeasured after the combined run stopped",
-    "reason": "20/20 landing/session burst succeeded in this run; the later threshold calls were not reached."
-  }
+  "history": "followup4-limiter.json; previous usage failure superseded only by a passed current usage triplet"
 }

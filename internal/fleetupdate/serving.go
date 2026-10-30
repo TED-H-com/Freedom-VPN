@@ -115,47 +115,48 @@ func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	if tag.RowsAffected() == 0 {
 		return nil
 	}
+	effectiveJob := jobID
+	if effectiveJob == nil {
+		// Only trusted sequence adapters lack a reported job. The wire adapter
+		// returns before observeTx when either job or generation is absent.
+		effectiveJob = n.job
+	}
 	agrees := equalID(n.current, o.CurrentReleaseID) && equalID(n.lastGood, o.LastGoodReleaseID)
 	if !accepted {
 		var targetRelease *uuid.UUID
-		if n.job != nil {
-			j, err := readJob(ctx, tx, *n.job)
+		if effectiveJob != nil {
+			j, err := readJob(ctx, tx, *effectiveJob)
 			if err != nil {
 				return err
 			}
-			if equalID(j.incarnation, &i.IncarnationID) {
+			if n.job != nil && equalID(effectiveJob, n.job) && equalID(j.incarnation, &i.IncarnationID) && j.issued != nil {
 				targetRelease = &j.releaseID
 			}
 		}
-		// §13.2, §13.8 / r11: before a result, only the current job target or
-		// an already recorded version may seed current. A heartbeat cannot
-		// establish last-good: even a target needs accepted health evidence.
+		// §13.2, §13.8 / r12 H-3: target seeding needs the reported job to be
+		// current and issued to this incarnation, preserving the attempt's
+		// pre-switch release snapshot. Last-good must agree before any write.
 		expected := func(id *uuid.UUID) bool {
 			return id != nil && (equalID(id, targetRelease) || equalID(id, n.current) || equalID(id, n.lastGood))
 		}
-		if expected(o.CurrentReleaseID) && !equalID(n.current, o.CurrentReleaseID) {
+		if expected(o.CurrentReleaseID) && equalID(n.lastGood, o.LastGoodReleaseID) && !equalID(n.current, o.CurrentReleaseID) {
 			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, o.CurrentReleaseID); e != nil {
 				return e
 			}
 			agrees = equalID(n.lastGood, o.LastGoodReleaseID)
 		}
-		if n.job != nil {
+		if effectiveJob != nil {
 			for _, id := range []*uuid.UUID{o.CurrentReleaseID, o.LastGoodReleaseID} {
 				if id != nil && !expected(id) {
-					if e = auditUnexpectedRelease(ctx, tx, i, *n.job, *id); e != nil {
+					if e = auditUnexpectedRelease(ctx, tx, i, *effectiveJob, *id); e != nil {
 						return e
 					}
 				}
 			}
 		}
 	}
-	if jobID == nil {
-		// Trusted sequence adapters predate the wire job ID. Only the current
-		// job may be confirmed by that adapter, never an earlier retry attempt.
-		jobID = n.job
-	}
 	// A disagreement invalidates confirmation without changing accepted values.
-	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=CASE WHEN $5 THEN $2::timestamptz ELSE NULL END WHERE id=$6 AND node_id=$1 AND execution_incarnation_id=$3 AND generation=$4::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.AppliedUpdateGeneration.String(), agrees, jobID)
+	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=CASE WHEN $5 THEN $2::timestamptz ELSE NULL END WHERE id=$6 AND node_id=$1 AND execution_incarnation_id=$3 AND generation=$4::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.AppliedUpdateGeneration.String(), agrees, effectiveJob)
 	return e
 }
 

@@ -85,6 +85,15 @@ const (
 	MeterPathInvalid         Code = "METER_PATH_INVALID"
 	IsolationBaselineMissing Code = "ISOLATION_BASELINE_MISSING"
 	MeterEpochChange         Code = "METER_EPOCH_CHANGE"
+	IsolationPolicyInvalid   Code = "ISOLATION_POLICY_INVALID"
+	GenerationMismatch       Code = "GENERATION_MISMATCH"
+	HookPriorityMismatch     Code = "HOOK_PRIORITY_MISMATCH"
+	CounterOrderInvalid      Code = "COUNTER_ORDER_INVALID"
+	FlowtableBypass          Code = "FLOWTABLE_BYPASS"
+	DeviceClassMissing       Code = "DEVICE_CLASS_MISSING"
+	QosClassMissing          Code = "QOS_CLASS_MISSING"
+	MarkSemanticsViolated    Code = "MARK_SEMANTICS_VIOLATED"
+	ProbeUnbounded           Code = "PROBE_UNBOUNDED"
 	DeviceLimitReached       Code = "DEVICE_LIMIT_REACHED"
 	EnrollmentTokenInvalid   Code = "ENROLLMENT_TOKEN_INVALID"
 	EnrollmentTokenExpired   Code = "ENROLLMENT_TOKEN_EXPIRED"
@@ -156,6 +165,15 @@ var specs = []Spec{
 	{MeterPathInvalid, http.StatusUnprocessableEntity, false, "§10.3", true, "Metering hook, interface or binding generation is not valid; member forwarding stops."},
 	{IsolationBaselineMissing, 0, false, "§14.4, §16.3", true, "Isolation baseline is missing; member forwarding is off; node report only."},
 	{MeterEpochChange, 0, false, "§14.4, §17.3", true, "Meter epoch changed; event sequence continues within the incarnation; node report only."},
+	{IsolationPolicyInvalid, 0, false, "§13.11", true, "The allow/deny policy itself does not match; node report only."},
+	{GenerationMismatch, 0, false, "§13.11", true, "The kernel ruleset is not the requested generation; node report only."},
+	{HookPriorityMismatch, 0, false, "§8.2", true, "A base chain hook or priority drifted; node report only."},
+	{CounterOrderInvalid, 0, false, "§10.2, §16.3", true, "An accept can skip the per-device counters, including an established/related accept placed before the lease check; node report only."},
+	{FlowtableBypass, 0, false, "§10.3", true, "A flowtable or offload could bypass the counters; node report only."},
+	{DeviceClassMissing, 0, false, "§13.11", true, "A device binding has no counter or class; node report only."},
+	{QosClassMissing, 0, false, "§11.4, §11.5", true, "The HTB parent or a member class is missing or wrong; node report only."},
+	{MarkSemanticsViolated, 0, false, "§11.4", true, "A rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF; node report only."},
+	{ProbeUnbounded, 0, false, "§13.9", true, "A synthetic-probe set element has no kernel timeout, so the exception would outlive the health check; node report only."},
 	{DeviceLimitReached, http.StatusConflict, false, "§9.4, MEM02", false, "Authorizing another device would exceed the plan device limit."},
 	{EnrollmentTokenInvalid, http.StatusUnauthorized, false, "§6.1, ENR02", false, "Enrollment token is unknown or malformed."},
 	{EnrollmentTokenExpired, http.StatusUnauthorized, false, "§6.4, ENR02", false, "Enrollment token has expired."},

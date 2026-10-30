@@ -81,9 +81,9 @@ func TestReviewR9_D062_PreResultSeedAndTerminalAuthority(t *testing.T) {
 	r.Update.State.Set(api.UpdateJobStateChecking)
 	r.Update.Stage.Set(api.UpdateStageCheck)
 	// No accepted result for this incarnation yet: the explicit, bound seed
-	// path can reconcile installed versions. A terminal result still wins.
+	// path can reconcile current with agreeing last-good (r12 H-3). A terminal result still wins.
 	r.CurrentReleaseId.Set(l.new)
-	r.LastGoodReleaseId.Set(l.new)
+	r.LastGoodReleaseId.Set(l.old)
 	if _, err := svc.SubmitObservation(l.ctx, i.NodeID, i.IncarnationID, r); err != nil {
 		t.Fatal(err)
 	}
