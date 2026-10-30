@@ -6,6 +6,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -99,7 +100,7 @@ func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	// incarnation. Thereafter only results can change serving version/recovery.
 	var accepted, recovery bool
 	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM update_results WHERE node_id=$1 AND incarnation_id=$2 AND ack->>'accepted'='true'),
- coalesce($3::uuid=ANY(revoked_release_ids),false) FROM fleet_config`, i.NodeID, i.IncarnationID, o.LastGoodReleaseID).Scan(&accepted, &recovery); e != nil {
+ coalesce($3::uuid=ANY(revoked_release_ids),false) FROM fleet_config`, i.NodeID, i.IncarnationID, n.lastGood).Scan(&accepted, &recovery); e != nil {
 		return e
 	}
 	if o.ReceivedAt.IsZero() {
@@ -116,11 +117,37 @@ func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	}
 	agrees := equalID(n.current, o.CurrentReleaseID) && equalID(n.lastGood, o.LastGoodReleaseID)
 	if !accepted {
-		_, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,last_good_release_id=$3,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, o.CurrentReleaseID, o.LastGoodReleaseID)
-		if e != nil {
-			return e
+		var targetRelease *uuid.UUID
+		if n.job != nil {
+			j, err := readJob(ctx, tx, *n.job)
+			if err != nil {
+				return err
+			}
+			if equalID(j.incarnation, &i.IncarnationID) {
+				targetRelease = &j.releaseID
+			}
 		}
-		agrees = true
+		// §13.2, §13.8 / r11: before a result, only the current job target or
+		// an already recorded version may seed current. A heartbeat cannot
+		// establish last-good: even a target needs accepted health evidence.
+		expected := func(id *uuid.UUID) bool {
+			return id != nil && (equalID(id, targetRelease) || equalID(id, n.current) || equalID(id, n.lastGood))
+		}
+		if expected(o.CurrentReleaseID) && !equalID(n.current, o.CurrentReleaseID) {
+			if _, e = tx.Exec(ctx, `UPDATE nodes SET current_release_id=$2,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, o.CurrentReleaseID); e != nil {
+				return e
+			}
+			agrees = equalID(n.lastGood, o.LastGoodReleaseID)
+		}
+		if n.job != nil {
+			for _, id := range []*uuid.UUID{o.CurrentReleaseID, o.LastGoodReleaseID} {
+				if id != nil && !expected(id) {
+					if e = auditUnexpectedRelease(ctx, tx, i, *n.job, *id); e != nil {
+						return e
+					}
+				}
+			}
+		}
 	}
 	if jobID == nil {
 		// Trusted sequence adapters predate the wire job ID. Only the current
@@ -130,6 +157,26 @@ func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	// A disagreement invalidates confirmation without changing accepted values.
 	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=CASE WHEN $5 THEN $2::timestamptz ELSE NULL END WHERE id=$6 AND node_id=$1 AND execution_incarnation_id=$3 AND generation=$4::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.AppliedUpdateGeneration.String(), agrees, jobID)
 	return e
+}
+
+// The fleet lock held by observeTx serializes this check and append, including
+// concurrent reports. D-029: one immutable audit per unexpected release/job,
+// regardless of heartbeat count or which version field contained the release.
+func auditUnexpectedRelease(ctx context.Context, tx pgx.Tx, i Identity, jobID, releaseID uuid.UUID) error {
+	var recorded bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM audit_events WHERE resource=$1 AND action='update_observation.unexpected_release' AND after_diff->>'job_id'=$2 AND after_diff->>'release_id'=$3)`, "node:"+i.NodeID.String(), jobID.String(), releaseID.String()).Scan(&recorded); err != nil || recorded {
+		return err
+	}
+	requestID := commandtx.RequestID(ctx)
+	event, err := audit.NewEvent(audit.Entry{
+		Actor: audit.Actor{Type: api.AuditEventActorTypeNode, ID: i.NodeID}, Action: "update_observation.unexpected_release",
+		Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: i.NodeID}, Result: api.AuditEventResultFailed, RequestID: &requestID,
+		After: map[string]any{"job_id": jobID, "release_id": releaseID}, Fields: []string{"job_id", "release_id"},
+	})
+	if err != nil {
+		return err
+	}
+	return audit.AppendEvent(ctx, tx, event)
 }
 
 // ObserveReportTx adapts the existing HTTP ObservationReport without adding a
