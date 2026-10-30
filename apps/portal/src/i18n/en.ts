@@ -708,4 +708,19 @@ export const en: Record<TranslationKey, string> = {
     'Field validation failed (422 VALIDATION_FAILED — reason): reason is mandatory and must be 1 to 500 characters.',
   'admin.settings.fieldErrorGeneric':
     'Field validation failed (422 VALIDATION_FAILED): check max_offline_lease_seconds (60–86400) and mandatory reason (1–500 chars).',
+
+  // Follow-up 14: Provisional Lease Waiting Copy (D-067, D-071) & Identity Conflict (D-072)
+  'admin.nodeDetail.provisionalLease.waitingCopy':
+    'Waiting for member grants; the node renews automatically (within 60 s)',
+  'admin.nodeDetail.provisionalLease.waitingStatus': 'waiting',
+  'admin.nodeDetail.leaseExpired.failureCopy':
+    'Node serving lease has expired; member forwarding has stopped.',
+  'admin.nodeDetail.identityConflict.none': 'No identity conflict',
+  'admin.nodeDetail.identityConflict.frozenBadge': 'Identity mapping frozen',
+  'admin.nodeDetail.identityConflict.countLabel':
+    'Conflict count (conflict_count): {count}',
+  'admin.nodeDetail.identityConflict.lastAtLabel':
+    'Last conflict at (last_conflict_at): {time}',
+  'admin.nodeDetail.identityConflict.resolutionText':
+    'Revoke this node and enrol it again; there is no automatic unfreeze',
 };
