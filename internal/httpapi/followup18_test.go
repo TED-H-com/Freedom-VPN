@@ -348,22 +348,25 @@ func TestFollowup18_IngressAndAgentListener(t *testing.T) {
 		h := fixtureConfig(t, p, true, nil, c)
 		body := fmt.Sprintf(`{"renewal_request_id":%q,"node_id":%q,"node_incarnation_id":%q,"current_lease_id":null,"applied_config_generation":null}`,
 			"019a0000-0000-7000-8000-000000000001", p.NodeID, p.IncarnationID)
-		send := func(remote, xff string) *httptest.ResponseRecorder {
+		send := func(remote, xff string, raw []byte) *httptest.ResponseRecorder {
 			r := httptest.NewRequest(http.MethodPost, "/api/v1/agent/lease-renewals", strings.NewReader(body))
 			r.RemoteAddr = remote
 			r.Header.Set("Content-Type", "application/json")
 			r.Header.Set("X-Forwarded-For", xff)
-			r.TLS = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{}}}}
+			r.TLS = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{Raw: raw}}}}
 			w := httptest.NewRecorder()
 			h.ServeHTTP(w, r)
 			return w
 		}
-		if w := send("10.0.0.1:443", "198.51.100.1"); w.Code != http.StatusNotImplemented {
+		if w := send("10.0.0.1:443", "198.51.100.1", []byte("cert-a")); w.Code != http.StatusNotImplemented {
 			t.Fatal(w.Code, w.Body.String())
 		}
-		followup18Limited(t, send("10.0.0.1:443", "198.51.100.2"), "Authentication request rate exceeded.")
-		if w := send("10.0.0.2:443", "198.51.100.3"); w.Code != http.StatusNotImplemented {
-			t.Fatal("a second agent peer shared the proxy bucket via the header", w.Code, w.Body.String())
+		followup18Limited(t, send("10.0.0.1:443", "198.51.100.2", []byte("cert-a")), "Authentication request rate exceeded.")
+		if w := send("10.0.0.2:443", "198.51.100.1", []byte("cert-b")); w.Code != http.StatusNotImplemented {
+			t.Fatal("a second certificate shared the first certificate bucket via the header", w.Code, w.Body.String())
+		}
+		if w := send("10.0.0.2:443", "198.51.100.9", []byte("cert-a")); w.Code != http.StatusTooManyRequests {
+			t.Fatal("same certificate from another address did not share the ingress bucket", w.Code, w.Body.String())
 		}
 		nets, err := config.ParseTrustedProxies(c.TrustedProxies)
 		if err != nil {
