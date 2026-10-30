@@ -8,43 +8,15 @@
   "status": "blocked",
   "observations": [
     {
-      "name": "table_before",
-      "detail": "true"
-    },
-    {
-      "name": "policy_before",
-      "detail": "drop"
-    },
-    {
-      "name": "member_accept_before",
-      "detail": "0"
-    },
-    {
-      "name": "table_after",
-      "detail": "true"
-    },
-    {
-      "name": "policy_after",
-      "detail": "drop"
-    },
-    {
-      "name": "member_accept_after",
-      "detail": "0"
-    },
-    {
       "name": "note",
-      "detail": "the forward chain had no member accept rule before the stop, so AT29 is not claimed"
-    },
-    {
-      "name": "control_restarted",
-      "detail": "true"
+      "detail": "No positive counted flow before fault; control stop is not injected."
     },
     {
       "name": "owner",
       "detail": "w2-agent-core: AT29 needs active forwarding before control loss"
     }
   ],
-  "at": "2026-10-30T03:12:43Z",
-  "run_id": "5de03570-0436-477d-9847-6f6984432bd8",
-  "source_commit": "a7a712aab8a67fcc33514a9ac76cb877a90c8143"
+  "at": "2026-10-30T04:22:23Z",
+  "run_id": "dc2f6353-89ec-434c-bc68-567066d9fe51",
+  "source_commit": "b15ff057cd5e91e227477de6a09d977931fa62d8"
 }

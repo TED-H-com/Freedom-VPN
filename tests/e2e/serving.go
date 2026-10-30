@@ -33,7 +33,17 @@ type ServingBaseline struct {
 // cookie client and its CSRF token. FVPN_E2E_STATE selects the prepared stack.
 // Call before delivering an enrollment token. candidates adds two real bundles
 // for update tests. The helper never writes database rows or readiness values.
+type BaselineOptions struct {
+	Candidates            bool
+	Rollback              ReleaseOptions
+	IncludeBootInRollback bool
+}
+
 func PrepareServingBaseline(ctx context.Context, client *http.Client, csrf string, candidates bool) (ServingBaseline, error) {
+	return PrepareServingBaselineWithOptions(ctx, client, csrf, BaselineOptions{Candidates: candidates})
+}
+
+func PrepareServingBaselineWithOptions(ctx context.Context, client *http.Client, csrf string, options BaselineOptions) (ServingBaseline, error) {
 	out := ServingBaseline{Digests: map[string]string{}}
 	if client == nil || csrf == "" {
 		return out, fmt.Errorf("admin client and CSRF required")
@@ -49,7 +59,7 @@ func PrepareServingBaseline(ctx context.Context, client *http.Client, csrf strin
 		return out, err
 	}
 	specs := []struct{ version, sequence, build string }{{"0.1.0", "1", "e2e-boot"}}
-	if candidates {
+	if options.Candidates {
 		specs = append(specs, struct{ version, sequence, build string }{"1.0.1", "2", "e2e-good"}, struct{ version, sequence, build string }{"1.0.2", "3", "e2e-bad"})
 	}
 	ids := []uuid.UUID{}
@@ -59,7 +69,11 @@ func PrepareServingBaseline(ctx context.Context, client *http.Client, csrf strin
 		if err != nil {
 			return out, err
 		}
-		id, raw, err := l.buildRelease(ctx, dir, spec.version, spec.sequence, strings.TrimSpace(string(commit)), spec.build)
+		rollback := options.Rollback
+		if options.IncludeBootInRollback && i > 0 {
+			rollback.AllowedReleaseIDs = RollbackAllowlist(out.Boot, rollback.AllowedReleaseIDs...)
+		}
+		id, raw, err := l.buildRelease(ctx, dir, spec.version, spec.sequence, strings.TrimSpace(string(commit)), spec.build, rollback)
 		if err == nil {
 			err = l.uploadRelease(ctx, id, dir, raw)
 		}
@@ -136,7 +150,7 @@ func PrepareServingBaseline(ctx context.Context, client *http.Client, csrf strin
 	return out, err
 }
 
-func (l *lab) buildRelease(ctx context.Context, dir, product, sequence, commit, build string) (uuid.UUID, []byte, error) {
+func (l *lab) buildRelease(ctx context.Context, dir, product, sequence, commit, build string, options ...ReleaseOptions) (uuid.UUID, []byte, error) {
 	pkg := filepath.Join(dir, "tree")
 	if err := os.MkdirAll(filepath.Join(pkg, "bin"), 0755); err != nil {
 		return uuid.Nil, nil, err
@@ -169,7 +183,7 @@ func (l *lab) buildRelease(ctx context.Context, dir, product, sequence, commit, 
 			return uuid.Nil, nil, err
 		}
 	}
-	return l.signedRelease(dir, product, sequence, commit, build, installed)
+	return l.signedRelease(dir, product, sequence, commit, build, installed, options...)
 }
 
 // createPolicy uses only the policy API, including resource-version readback.

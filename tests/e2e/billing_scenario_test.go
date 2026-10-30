@@ -62,7 +62,7 @@ func (r *runner) catalogue(ctx context.Context, admin *session) {
 		note("dns_profile", r.planError)
 		return
 	}
-	payload := map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY e2e", "en": "TEST ONLY e2e"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{r.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "e2e-price"}, "rate_limit": nil, "fair_use_revision_id": fair, "dns_profile_revision_id": r.profileID}
+	payload := map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY e2e", "en": "TEST ONLY e2e"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{r.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "e2e-price"}, "rate_limit": map[string]any{"down_bps": 100000000, "up_bps": 100000000}, "fair_use_revision_id": fair, "dns_profile_revision_id": r.profileID}
 	r.planRevID, r.planID, err = r.lab.createPolicy(ctx, admin, "plan", "e2e-lab", payload)
 	if err != nil {
 		r.planError = err.Error()
@@ -200,7 +200,7 @@ func (r *runner) billing(ctx context.Context, _ *session) {
 		var rows []byte
 		ok := waitUntil(wait, time.Second, func() bool {
 			var matched bool
-			err := conn.QueryRow(wait, `SELECT s.last_reconciled_at IS NOT NULL AND s.cancel_at_period_end=$2 AND (($5 AND s.paid_from=$3 AND s.paid_through=$4) OR (NOT $5 AND s.paid_from IS NULL AND s.paid_through IS NULL)) AND (SELECT coalesce(sum(amount_minor),0) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='refund')=$6 AND e.state=ANY($7::text[]) FROM subscriptions s JOIN entitlements e ON e.member_id=s.member_id WHERE s.member_id=$1`, member.memberID, canceled, start, end, paid, refund, func() []string {
+			err := conn.QueryRow(wait, `SELECT s.last_reconciled_at IS NOT NULL AND s.cancel_at_period_end=$2 AND (s.paid_from=$3 AND s.paid_through=$4) AND ($5 OR e.effective_service_end IS NULL) AND (SELECT coalesce(sum(amount_minor),0) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='refund')=$6 AND e.state=ANY($7::text[]) FROM subscriptions s JOIN entitlements e ON e.member_id=s.member_id WHERE s.member_id=$1`, member.memberID, canceled, start, end, paid, refund, func() []string {
 				if !paid {
 					return []string{"pending_payment", "expired"}
 				}
@@ -224,6 +224,7 @@ func (r *runner) billing(ctx context.Context, _ *session) {
 		return
 	}
 	note("first_full_paid_period_reconciled", "true")
+	note("refund_semantics", "Paid invoice facts remain; a full refund revokes effective service rather than erasing history.")
 	note("period_start", start.Format(time.RFC3339))
 	note("period_end", end.Format(time.RFC3339))
 	snapshot["cancel_at_period_end"] = true

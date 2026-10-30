@@ -5,7 +5,7 @@
     "§5.2",
     "§14.2"
   ],
-  "status": "blocked",
+  "status": "pass",
   "observations": [
     {
       "name": "agent_baseline_observed",
@@ -13,7 +13,7 @@
     },
     {
       "name": "stored_rows",
-      "detail": "{\"node\": {\"peer_id\": \"dbi0jv78k4c000fu06bg\", \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}, {\"name\": \"tunnel_probe\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T03:08:05.184550749Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 2}"
+      "detail": "{\"node\": {\"peer_id\": \"dbi1kqn8k4c000ckaga0\", \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:18:12.609971186Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 2}"
     },
     {
       "name": "control_status",
@@ -92,16 +92,28 @@
       "detail": "passed"
     },
     {
+      "name": "capacity_patch",
+      "detail": "202"
+    },
+    {
+      "name": "capacity_input",
+      "detail": "TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model"
+    },
+    {
+      "name": "request",
+      "detail": "{\"publication_intent\":\"published\",\"group_ids\":[\"01a18b06-eb96-7761-acb7-2684164d00bf\"],\"reason\":\"e2e acceptance publish\"}; If-Match=\"9\""
+    },
+    {
       "name": "put",
       "detail": "202"
     },
     {
       "name": "operation_id",
-      "detail": "a3570157-7c4d-42e5-ac77-5524c3df565d"
+      "detail": "0874aa84-f8bd-4604-84e6-53d3c3b68fa6"
     },
     {
       "name": "operation_status",
-      "detail": "running"
+      "detail": "succeeded"
     },
     {
       "name": "operation_kind",
@@ -117,7 +129,7 @@
     },
     {
       "name": "step_netbird_route_readback",
-      "detail": "failed DEPENDENCY_UNAVAILABLE Step failed; quote the operation ID."
+      "detail": "succeeded"
     },
     {
       "name": "node_after",
@@ -149,7 +161,7 @@
     },
     {
       "name": "publication_observed",
-      "detail": "error"
+      "detail": "active"
     },
     {
       "name": "config_desired",
@@ -217,7 +229,7 @@
     },
     {
       "name": "forward_generation",
-      "detail": "0"
+      "detail": "3"
     },
     {
       "name": "member_accept_rules",
@@ -225,14 +237,10 @@
     },
     {
       "name": "note",
-      "detail": "publication did not succeed: agent_policy NODE_NOT_SERVICEABLE Step failed; quote the operation ID."
-    },
-    {
-      "name": "owner",
-      "detail": "w3-wire-nodes: publication operation and production peer projection"
+      "detail": "node.publish succeeded and publication_observed is active"
     }
   ],
-  "at": "2026-10-30T03:12:06Z",
-  "run_id": "5de03570-0436-477d-9847-6f6984432bd8",
-  "source_commit": "a7a712aab8a67fcc33514a9ac76cb877a90c8143"
+  "at": "2026-10-30T04:18:22Z",
+  "run_id": "dc2f6353-89ec-434c-bc68-567066d9fe51",
+  "source_commit": "b15ff057cd5e91e227477de6a09d977931fa62d8"
 }

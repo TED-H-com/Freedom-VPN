@@ -100,3 +100,109 @@ legacy assumption endpoint for D-052 subject comparison.
 
 Always finish with `make -f mk/e2e.mk e2e-down` and verify the prefix has no
 containers, networks or volumes left. Neutral shared build-cache images stay.
+
+## Follow-up 7: importable stack helpers
+
+AT packages under `tests/e2e` can import
+`github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack` with `-tags e2e`.
+The package delegates to the acceptance implementation; no source overlay or
+`.go.txt` copy is needed. Prepare/start the harness's assigned prefix first.
+This task's commands use only `FVPN_E2E_PREFIX=e2e` and port base `18000`.
+
+```go
+stack, err := labstack.Open()
+if err != nil { t.Fatal(err) }
+defer stack.Close()
+admin, err := stack.Login(t.Context(), "e2e-admin", "admin")
+if err != nil { t.Fatal(err) }
+baseline, err := labstack.PrepareServingBaselineWithOptions(
+    t.Context(), admin.Client, admin.CSRF,
+    labstack.BaselineOptions{Candidates: true},
+)
+if err != nil { t.Fatal(err) }
+node, err := stack.Enroll(t.Context(), admin, "TEST ONLY harness exit")
+if err != nil { t.Fatal(err) }
+_ = baseline
+_ = node
+```
+
+`PrepareServingBaseline` retains its existing signature. Both entry points
+build/sign/register the real boot and optional candidate bundles for amd64 and
+arm64, poll verification, configure the release identities, and activate a
+non-empty `release_support` policy through the product API. They must run before
+enrollment. `EnrolledNode` means enrollment/bootstrap/join completed; poll node
+readiness and publication separately. Set a finite `capacity` with `PATCH
+/admin/nodes/{id}` and a finite plan `rate_limit`; the agent cannot render QoS
+without those inputs. The acceptance uses TEST ONLY 200 Mbps node capacity,
+100 Mbps member caps and a 100 Mbps plan.
+
+For individual candidates use `Stack.BuildRelease`, `RegisterRelease` and
+`CandidateConfig`. `BuiltRelease.ManifestSHA256` is the canonical envelope
+hash. `ReleaseOptions.AllowedReleaseIDs` controls manifest rollback
+compatibility, independently of the serving policy. Its default encodes `[]`
+(D-034e: no additional restriction). For a restricted candidate use:
+
+```go
+options := labstack.ReleaseOptions{
+    AllowedReleaseIDs: labstack.RollbackAllowlist(lastGoodID, otherCompatibleID),
+}
+release, err := stack.BuildRelease(ctx, directory, "1.0.3", "4", "TEST-ONLY", options)
+if err != nil { t.Fatal(err) }
+if err := stack.RegisterRelease(ctx, admin, release); err != nil { t.Fatal(err) }
+if err := stack.CandidateConfig(release.ID, "1.0.3"); err != nil { t.Fatal(err) }
+```
+
+The caller owns `directory` and deletes it after upload/registration. The
+combined baseline helper also offers `IncludeBootInRollback` to include its
+new boot ID in each candidate's explicitly restricted list. `ActivatePolicy`
+creates, activates with If-Match, and polls policy revisions. `Call` accepts
+product `/api/v1/` paths using the authenticated session. Never log session
+cookies, CSRF values, manifest signing keys or native user credentials.
+
+`Stack.Service(ctx, "start", releaseDirectory)` and `Service(ctx, "stop", "")`
+operate only on the stack node. `PauseAgent(ctx, true)` persists the pause marker
+so the entrypoint does not restart a stopped agent; pass false to resume. The
+boot agent's recovery config is `/etc/vpn-node/updater-recover.json`, created
+inside the node after enrollment from its real node/incarnation/boot IDs.
+The one-shot `/var/lib/vpn-node/e2e/updater.json` remains the updater-run trigger
+and is renamed after use. Recovery is never disabled or treated as success on
+an error.
+
+## SECOPS-10 native scale hook
+
+Use the existing stack and a real API-created plan revision with a device limit
+of at least three:
+
+```go
+ctx, cancel := context.WithTimeout(t.Context(), 45*time.Minute)
+defer cancel()
+counts, err := stack.ScaleNativeMembers(ctx, admin, planRevisionID, "secops", 20, 3)
+if err != nil { t.Fatal(err) }
+if counts.Users != 20 || counts.Authorized != 60 || counts.IdentityMatches != 60 {
+    t.Fatalf("native scale incomplete: %+v", counts)
+}
+```
+
+The hook creates 20 distinct embedded-issuer users and 60 native NetBird peers.
+Each peer has its own container namespace, NetBird state and socket, using the
+existing network and running node's immutable image. The entrypoint's
+`FVPN_E2E_MEMBER_NAME` supplies a distinct hostname. Each join compares that
+exact peer's NetBird user ID with the member's portal subject, then polls the
+product mapping and `/member/devices` authorization with a four-minute bound.
+Only aggregate counts escape the hook. No second Compose deployment or setup
+key masquerading as a member is used. `StartNativePeer` and `JoinNativeMember`
+are available separately. Prefix teardown removes all additional peer
+containers and volumes. Acceptance runs only a **2 users × 2 peers smoke**;
+this does not claim 20 × 3 capacity or fairness.
+
+## SECOPS-04 deadline faults
+
+First prove a native controlled-origin HTTP response and an increase in that
+device's `u_`/`d_` admission counters. Only then inject a short paid/grace/grant
+deadline through product/provider inputs and pause the agent if required.
+Read the resulting signed lease deadline before waiting for withdrawal; retain
+the positive and negative counters. An initial fail-closed baseline cannot pass
+this case. The lab does not alter projector-owned rows, forge leases, or move
+the host clock. Clock rollback requires a disposable guest VM and remains an
+operator test. The current missing lease refresh prevents this prerequisite;
+acceptance records the dependent expiry test as blocked without injecting it.

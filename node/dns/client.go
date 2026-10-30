@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -221,6 +222,15 @@ func (a *Applier) call(ctx context.Context, t Target, method, path string, body,
 	}
 	resp, err := a.http.Do(req)
 	if err != nil {
+		if errors.Is(err, errAdminRedirect) {
+			// net/http attaches the redirect Location to this error. Keep the
+			// same status-and-path sentence as any other non-2xx (§16.4).
+			code := 0
+			if resp != nil {
+				code = resp.StatusCode
+			}
+			return fmt.Errorf("HTTP %d from %s %s", code, method, path)
+		}
 		return err
 	}
 	defer resp.Body.Close()
@@ -240,6 +250,17 @@ func (a *Applier) call(ctx context.Context, t Target, method, path string, body,
 	return nil
 }
 
+// errAdminRedirect is the CheckRedirect sentinel. call replaces the wrapped
+// error, which carries the Location, with the fixed HTTP sentence.
+var errAdminRedirect = errors.New("dns: redirect refused")
+
+// refuseAdminRedirect rejects every redirect, including a same-host port
+// change. That matches node/internal/controlclient refuseRedirect. Both the
+// load path and the SIGHUP reload path build the applier through newHTTPClient.
+func refuseAdminRedirect(*http.Request, []*http.Request) error {
+	return errAdminRedirect
+}
+
 func newHTTPClient() *http.Client {
-	return &http.Client{Timeout: 10 * time.Second}
+	return &http.Client{Timeout: 10 * time.Second, CheckRedirect: refuseAdminRedirect}
 }

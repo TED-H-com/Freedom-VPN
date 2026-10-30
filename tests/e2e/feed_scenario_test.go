@@ -20,7 +20,7 @@ import (
 func (r *runner) threatFeed(ctx context.Context, admin *session) {
 	rec := Record{ID: "threat-feed-central", Title: "Approved feed bootstrap, wrong pin and resolver publication", Spec: []string{"§12.3", "§12.5", "§19 AT22"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
-	r.record(Record{ID: "threat-feed-node", Title: "Feed delivery and enforcement on the node", Spec: []string{"§12.5", "§19 AT22"}, Status: StatusBlocked, Observations: []Observation{{Name: "owner", Detail: "D-056: w3-wire-nodes follow-up 11 must deliver signed resolver references and credentials; w2-agent-core supplies application/readback. Central resolver publication alone does not prove on-node enforcement."}}})
+
 	note := recPathNote(&rec)
 	var fixture struct {
 		SHA   string `json:"content_sha256"`
@@ -165,6 +165,17 @@ func (r *runner) threatFeed(ctx context.Context, admin *session) {
 	note("metrics_after_bad_pin", afterMetrics)
 	note("scope", "Last-good is per revision: the rejected new revision stays null; the prior approved content and resolver generation remain intact. No on-node claim.")
 	if rejected && badGood == "null" && failures > 0 && audits > 0 && successes > 0 && normalized && kept && strings.Contains(beforeMetrics, `result="success"} 1`) && strings.Contains(beforeMetrics, "fvpn_dns_feed_last_good_age_seconds{") && strings.Contains(afterMetrics, `result="content_mismatch"} 1`) {
+		if !activate(good, feedDef, "restore_good_feed") {
+			return
+		}
+		eligible := poll(func() bool {
+			var ok bool
+			return conn.QueryRow(ctx, `SELECT active_revision_id=$1 AND dns_profile_feeds_eligible($2,clock_timestamp()) FROM policy_definitions WHERE id=$3`, good, profile, feedDef).Scan(&ok) == nil && ok
+		})
+		note("approved_feed_restored_for_node", boolText(eligible))
+		if !eligible {
+			return
+		}
 		rec.Status = StatusPass
 	}
 }
