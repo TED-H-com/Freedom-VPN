@@ -4,6 +4,7 @@ package updates_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -42,6 +43,25 @@ func TestUpdatesFollowup(t *testing.T) {
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
 		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 6 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+	}
+	// Record exact harness bytes as well as the product source commit. This
+	// remains reproducible when evidence and a capture fix share a final commit.
+	harnessFiles := map[string]string{}
+	paths, err := filepath.Glob(filepath.Join(root, "tests/e2e/at/updates/*.go"))
+	if err != nil {
+		t.Fatal("harness source listing failed")
+	}
+	for _, path := range paths {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal("harness source read failed")
+		}
+		harnessFiles[filepath.Base(path)] = fmt.Sprintf("%x", sha256.Sum256(raw))
+	}
+	harnessDirty := exec.Command("git", "diff", "--quiet", "HEAD", "--", "tests/e2e/at/updates").Run() != nil
+	harnessRaw, _ := json.Marshal(map[string]any{"files_sha256": harnessFiles, "differs_from_source_commit": harnessDirty})
+	for _, rec := range records {
+		rec.Observations = append(rec.Observations, at.Observation{Name: "harness_source", Detail: string(harnessRaw)})
 	}
 	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
 	defer func() {
