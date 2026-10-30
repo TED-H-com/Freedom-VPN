@@ -132,6 +132,11 @@ type Engine struct {
 	// when this is strictly after the challenge issued_at, so a cached probe
 	// cannot satisfy a challenge that did not exist yet.
 	probeAt time.Time
+	// Keep omission evidence after the updater consumes its sidecars. Only a
+	// newer probe-bearing or omission-bearing challenge supersedes it.
+	probeOmitted        string
+	probeOmittedAt      time.Time
+	probeEvidenceIssued time.Time
 	// healthNonce and healthSig remember the last answer this process wrote.
 	// A restart leaves them empty, so the next answer is a new file. An
 	// attestation already on disk when the challenge appeared is not evidence
@@ -567,8 +572,8 @@ func (e *Engine) input() Input {
 		RevocationPending: len(e.pendingRevoke) > 0,
 		OutboxFull:        e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
-		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
-		ProbeSource: e.probeSource,
+		ProbeRan: e.lastProbe.Ran && e.probeOmitted == "", ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
+		ProbeSource: e.probeSource, ProbeOmitted: e.probeOmitted, ProbeOmittedAt: e.probeOmittedAt,
 		DNSDocument: e.dnsDocument, DNSFailed: e.dnsFailed, DNSCode: e.dnsCode, DNSDetail: e.dnsDetail,
 	}
 }
@@ -597,6 +602,32 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 			e.probeAt = time.Time{}
 		}
 	})
+	e.noteProbeOmission()
+}
+
+// noteProbeOmission retains only the shared reader's fixed reason, never the
+// peer ID. Re-read the challenge after the probe to bind this evidence to the
+// same live issuance. A plain overlay check cannot supersede a refused probe.
+func (e *Engine) noteProbeOmission() {
+	ch, ok := e.matchingChallenge()
+	now := e.trustedNow().UTC()
+	if !ok || !e.anchorOK || e.probedChallenge == nil || !ch.Same(*e.probedChallenge) ||
+		!now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) || !ch.IssuedAt.After(e.probeEvidenceIssued) {
+		return
+	}
+	if ch.Probe == nil && ch.ProbeOmitted == nil {
+		return
+	}
+	e.probeEvidenceIssued = ch.IssuedAt
+	e.probeOmitted = ""
+	e.probeOmittedAt = time.Time{}
+	if ch.ProbeOmitted != nil {
+		e.probeOmitted = ch.ProbeOmitted.Reason
+		e.probeOmittedAt = now
+	}
+	// The node may stay non-serving across this change; do not wait for the
+	// serving-state trigger to publish the new check evidence.
+	e.lastObs = time.Time{}
 }
 
 // verifyTime reports the time used to check a signed document.

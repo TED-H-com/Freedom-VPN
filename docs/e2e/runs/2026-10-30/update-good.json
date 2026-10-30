@@ -25,8 +25,36 @@
       "detail": "true"
     },
     {
+      "name": "probe_not_member",
+      "detail": "true"
+    },
+    {
+      "name": "probe_route_selected",
+      "detail": "true"
+    },
+    {
+      "name": "probe_config_scope",
+      "detail": "one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant"
+    },
+    {
       "name": "running_candidate_executable",
       "detail": "true"
+    },
+    {
+      "name": "probe_agent_config",
+      "detail": "/etc/vpn-node/agent-run.json"
+    },
+    {
+      "name": "updater_log_readable",
+      "detail": "true"
+    },
+    {
+      "name": "probe_omission_count",
+      "detail": "0"
+    },
+    {
+      "name": "invalid_probe_peer",
+      "detail": "false"
     },
     {
       "name": "exit_code",
@@ -77,11 +105,27 @@
       "detail": "stage=locally_succeeded error_code= error_stage= error_detail= | health_json {\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"} | event seq=8 stage=checking detail={\"kind\":\"health_attest\",\"phase\":\"candidate\",\"statuses\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\" | event seq=9 stage=locally_succeeded detail="
     },
     {
+      "name": "probe_traffic",
+      "detail": "{\"attempts\":1311,\"authenticated_udp_replies\":24}"
+    },
+    {
+      "name": "probe_window",
+      "detail": "{\"samples\":843,\"grant_samples\":3,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":44,\"probe_up_bytes\":1848,\"probe_down_bytes\":1848,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
+    },
+    {
+      "name": "probe_origin_receipt",
+      "detail": "{\"probe_id\":\"3abe1f67-9ec2-479d-b61f-b1b3dbc70b06\",\"requests\":24,\"source_address\":\"192.0.3.20\"}"
+    },
+    {
+      "name": "probe_traversal_verified",
+      "detail": "true"
+    },
+    {
       "name": "note",
       "detail": "locally_succeeded was observed"
     }
   ],
-  "at": "2026-10-30T07:49:13Z",
-  "run_id": "22c14cd9-39fc-444b-a7c5-c04cf3ffbff6",
-  "source_commit": "43176b8860bf90970e96b100c1ba4e957f09363d"
+  "at": "2026-10-30T16:37:02Z",
+  "run_id": "3a129919-af3f-4bc9-b54a-8075eae8af45",
+  "source_commit": "79259af1facc1faa798fbb83cc20aa4e74539d1f"
 }

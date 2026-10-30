@@ -206,8 +206,8 @@ func TestAnonymousAddressBurstUsesIPv6Prefix(t *testing.T) {
 		t.Fatal("ipv4 did not keep a per-address bucket")
 	}
 
-	// Both the ingress key and the anonymous key land in one map, so one
-	// parsed address needs two principal slots. A refused address must not take either.
+	// The anonymous ingress table and the anonymous class table are separate,
+	// so one parsed address takes one slot in each. A refused address must not take either.
 	c.MaxRatePrincipals = 2
 	h, err = New(sets, Options{Config: c})
 	if err != nil {

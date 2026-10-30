@@ -170,45 +170,125 @@ func TransportWithMetrics(log *slog.Logger, next http.Handler, requests *prometh
 	})
 }
 
-type bucketState struct {
-	tokens float64
-	at     time.Time
+// bucketEntry is one token bucket on an intrusive LRU list. head is the most
+// recently used entry and tail is the least recently used.
+type bucketEntry struct {
+	tokens    float64
+	at        time.Time
+	perSecond float64
+	burst     float64
+	key       string
+	prev      *bucketEntry
+	next      *bucketEntry
 }
+
 type limiter struct {
 	mu      sync.Mutex
-	entries map[string]bucketState
+	entries map[string]*bucketEntry
+	head    *bucketEntry
+	tail    *bucketEntry
 	max     int
 }
 
+func newLimiter(max int) *limiter {
+	return &limiter{entries: map[string]*bucketEntry{}, max: max}
+}
+
+// allow spends one token or returns how long the caller should wait.
+// At capacity it evicts only the least-recently-used bucket, and only when
+// that bucket is idle with a full token count or has been idle for more
+// than an hour. The check is O(1). A live bucket stays, and the new
+// principal is refused. The tail has had the longest time to refill. Ingress
+// tables each use one rate. The subject table mixes class rates, so a fuller
+// bucket can sit behind a slower tail; that tail stays until it is full or
+// an hour old.
 func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := time.Now()
-	s, ok := l.entries[key]
+	e, ok := l.entries[key]
 	if !ok {
-		if len(l.entries) >= l.max {
-			for k, v := range l.entries {
-				if now.Sub(v.at) > time.Hour {
-					delete(l.entries, k)
-				}
-			}
-			if len(l.entries) >= l.max {
-				return time.Second
-			}
+		if len(l.entries) >= l.max && !l.evictIdle(now) {
+			return time.Second
 		}
-		s = bucketState{float64(b.Burst), now}
-	}
-	s.tokens = math.Min(float64(b.Burst), s.tokens+now.Sub(s.at).Seconds()*b.PerSecond)
-	s.at = now
-	delay := time.Duration(0)
-	if s.tokens < 1 {
-		delay = time.Duration(math.Ceil((1 - s.tokens) / b.PerSecond * float64(time.Second)))
+		e = &bucketEntry{
+			tokens:    float64(b.Burst),
+			at:        now,
+			perSecond: b.PerSecond,
+			burst:     float64(b.Burst),
+			key:       key,
+		}
+		l.entries[key] = e
+		l.pushFront(e)
 	} else {
-		s.tokens--
+		l.moveFront(e)
 	}
-	l.entries[key] = s
-	return delay
+	e.tokens = math.Min(float64(b.Burst), e.tokens+now.Sub(e.at).Seconds()*b.PerSecond)
+	e.at = now
+	e.perSecond = b.PerSecond
+	e.burst = float64(b.Burst)
+	if e.tokens < 1 {
+		return time.Duration(math.Ceil((1 - e.tokens) / b.PerSecond * float64(time.Second)))
+	}
+	e.tokens--
+	return 0
 }
+
+// evictIdle drops the tail when it has refilled to its burst after going
+// idle, or when it has been idle for more than an hour.
+func (l *limiter) evictIdle(now time.Time) bool {
+	e := l.tail
+	if e == nil {
+		return false
+	}
+	elapsed := now.Sub(e.at)
+	refilled := math.Min(e.burst, e.tokens+elapsed.Seconds()*e.perSecond)
+	fullIdle := e.burst > 0 && refilled >= e.burst && elapsed > 0
+	if !fullIdle && elapsed <= time.Hour {
+		return false
+	}
+	l.remove(e)
+	delete(l.entries, e.key)
+	return true
+}
+
+func (l *limiter) pushFront(e *bucketEntry) {
+	e.prev = nil
+	e.next = l.head
+	if l.head != nil {
+		l.head.prev = e
+	} else {
+		l.tail = e
+	}
+	l.head = e
+}
+
+func (l *limiter) remove(e *bucketEntry) {
+	if e.prev != nil {
+		e.prev.next = e.next
+	} else {
+		l.head = e.next
+	}
+	if e.next != nil {
+		e.next.prev = e.prev
+	} else {
+		l.tail = e.prev
+	}
+	e.prev = nil
+	e.next = nil
+}
+
+func (l *limiter) moveFront(e *bucketEntry) {
+	if l.head == e {
+		return
+	}
+	l.remove(e)
+	l.pushFront(e)
+}
+
+// rateClasses are the D-060 route classes. Each class has its own ingress
+// table, so an anonymous sweep cannot fill a browser or agent table.
+var rateClasses = []string{"browser", "agent", "heartbeat", "lease", "usage", "anonymous"}
 
 type Options struct {
 	Config        config.Config
@@ -231,10 +311,14 @@ func New(c *Composite, o Options) (http.Handler, error) {
 	if e != nil {
 		return nil, e
 	}
-	lim := &limiter{entries: map[string]bucketState{}, max: o.Config.MaxRatePrincipals}
-	ingress := &limiter{entries: map[string]bucketState{}, max: o.Config.MaxRatePrincipals}
-	if lim.max < 1 {
+	if o.Config.MaxRatePrincipals < 1 {
 		return nil, errors.New("rate capacity required")
+	}
+	subjects := newLimiter(o.Config.MaxRatePrincipals)
+	anonymousLim := newLimiter(o.Config.MaxRatePrincipals)
+	ingress := make(map[string]*limiter, len(rateClasses))
+	for _, class := range rateClasses {
+		ingress[class] = newLimiter(o.Config.MaxRatePrincipals)
 	}
 	var mids []gen.StrictMiddlewareFunc
 	if o.Commands != nil {
@@ -256,7 +340,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Malformed request."))
 	}})
 	gates := map[string]chan struct{}{}
-	for _, class := range []string{"browser", "agent", "heartbeat", "lease", "usage", "anonymous"} {
+	for _, class := range rateClasses {
 		gates[class] = make(chan struct{}, o.Config.MaxConcurrent)
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -295,68 +379,76 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			r = r.WithContext(context.WithValue(r.Context(), metaKey{}, m))
 		}
 		m.route = r.Method + " /api/v1" + route.Path
-		ingressClass, _, _ := classify(op, o.Config)
+		class, bounds, bodyLimit := classify(op, o.Config)
+		// A peer without a verified client certificate never occupies a
+		// limiter slot. Per-node buckets are created only after this succeeds.
+		var p auth.Principal
+		if mtls {
+			if o.Agents == nil || r.TLS == nil || len(r.TLS.VerifiedChains) == 0 || len(r.TLS.VerifiedChains[0]) == 0 {
+				apierr.Write(w, r, apierr.New(apierr.Unauthenticated, "Verified client certificate required."))
+				return
+			}
+			var authErr error
+			p, authErr = o.Agents.AuthenticateAgent(r.Context(), r.TLS.VerifiedChains[0][0])
+			if authErr != nil {
+				apierr.Write(w, r, authErr)
+				return
+			}
+			if p.Role != auth.Agent || p.NodeID == uuid.Nil || p.IncarnationID == uuid.Nil {
+				apierr.Write(w, r, apierr.New(apierr.Unauthenticated, "Invalid machine identity."))
+				return
+			}
+		}
 		peer, peerOK := connectionRateKey(r.RemoteAddr)
 		if !peerOK {
 			// Do not insert an empty host. Unparseable connection addresses
 			// would otherwise share one bucket and could fill the principal map.
 			if o.RateLimited != nil {
-				o.RateLimited.WithLabelValues(ingressClass, "address").Inc()
+				o.RateLimited.WithLabelValues(class, "address").Inc()
 			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(time.Second))
 			return
 		}
-		if delay := ingress.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
+		// The table is already per class, so the key is the connection principal.
+		if delay := ingress[class].allow(peer, o.Config.IngressRate); delay > 0 {
 			if o.RateLimited != nil {
-				o.RateLimited.WithLabelValues(ingressClass, "address").Inc()
+				o.RateLimited.WithLabelValues(class, "address").Inc()
 			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
-		var p auth.Principal
-		if tag == "admin" || tag == "member" {
+		if !mtls && (tag == "admin" || tag == "member") {
+			var authErr error
 			if o.Sessions == nil {
-				e = apierr.New(apierr.Unauthenticated, "Sign in required.")
+				authErr = apierr.New(apierr.Unauthenticated, "Sign in required.")
 			} else {
-				p, e = o.Sessions.AuthenticateSession(r)
+				p, authErr = o.Sessions.AuthenticateSession(r)
 			}
-			if e == nil && (string(p.Role) != tag || p.ID == uuid.Nil) {
-				e = apierr.New(apierr.Forbidden, "Role is not allowed.")
+			if authErr == nil && (string(p.Role) != tag || p.ID == uuid.Nil) {
+				authErr = apierr.New(apierr.Forbidden, "Role is not allowed.")
 			}
-			if e == nil && tag == "admin" && !p.MFAVerified {
-				e = apierr.New(apierr.Forbidden, "Administrator MFA required.")
+			if authErr == nil && tag == "admin" && !p.MFAVerified {
+				authErr = apierr.New(apierr.Forbidden, "Administrator MFA required.")
 			}
-		} else if mtls {
-			if o.Agents == nil || r.TLS == nil || len(r.TLS.VerifiedChains) == 0 || len(r.TLS.VerifiedChains[0]) == 0 {
-				e = apierr.New(apierr.Unauthenticated, "Verified client certificate required.")
-			} else {
-				p, e = o.Agents.AuthenticateAgent(r.Context(), r.TLS.VerifiedChains[0][0])
-				if e == nil && (p.Role != auth.Agent || p.NodeID == uuid.Nil || p.IncarnationID == uuid.Nil) {
-					e = apierr.New(apierr.Unauthenticated, "Invalid machine identity.")
-				}
+			if authErr != nil {
+				apierr.Write(w, r, authErr)
+				return
 			}
-		}
-		if e != nil {
-			apierr.Write(w, r, e)
-			return
 		}
 		r = r.WithContext(auth.WithPrincipal(r.Context(), p))
-		class, bounds, bodyLimit := classify(op, o.Config)
-		key := p.Scope()
 		if p.Role == "" {
-			key = "anonymous:" + peer
-		}
-		bucket := lim
-		if p.Role == "" {
-			bucket = ingress
-		}
-		if delay := bucket.allow(class+":"+key, bounds); delay > 0 {
-			if o.RateLimited != nil {
-				limiterKind := "subject"
-				if p.Role == "" {
-					limiterKind = "address"
+			// Enrollment and webhooks use this table, separate from every
+			// ingress table, so they cannot starve an authenticated class.
+			if delay := anonymousLim.allow(peer, bounds); delay > 0 {
+				if o.RateLimited != nil {
+					o.RateLimited.WithLabelValues(class, "address").Inc()
 				}
-				o.RateLimited.WithLabelValues(class, limiterKind).Inc()
+				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
+				return
+			}
+		} else if delay := subjects.allow(class+":"+p.Scope(), bounds); delay > 0 {
+			if o.RateLimited != nil {
+				o.RateLimited.WithLabelValues(class, "subject").Inc()
 			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
 			return
@@ -365,6 +457,9 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		case gates[class] <- struct{}{}:
 			defer func() { <-gates[class] }()
 		default:
+			if o.RateLimited != nil {
+				o.RateLimited.WithLabelValues(class, "concurrency").Inc()
+			}
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request concurrency exceeded.").WithRetryAfter(time.Second))
 			return
 		}
@@ -429,7 +524,10 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		}
 		if mtls && len(raw) > 0 {
 			var body any
-			_ = json.Unmarshal(raw, &body)
+			if err := json.Unmarshal(raw, &body); err != nil {
+				apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Invalid JSON document."))
+				return
+			}
 			if !matchingIdentity(body, p) {
 				apierr.Write(w, r, apierr.New(apierr.IncarnationMismatch, "Request identity differs from the certificate."))
 				return
@@ -502,31 +600,18 @@ func classify(op *openapi3.Operation, c config.Config) (string, config.Bucket, i
 
 // checkJSONDocument accepts one JSON value. Bodies up to canonjson.MaxBytes
 // must be the signed-document subset; that bound stays 1 MiB. A larger body
-// is still inside its class cap (usage, 8 MiB) and is checked with one
-// decoder read limited to that cap. Trailing data is rejected. The canonical
-// bytes are not kept: identity matching reads the parsed body.
+// is still inside its class cap (usage, 8 MiB) and is checked by
+// walkJSONDocument, which applies the same subset rules without a second
+// copy of the body. Identity matching reads the parsed body.
 func checkJSONDocument(raw []byte, limit int64) error {
+	if limit < int64(len(raw)) {
+		return errors.New("json: body exceeds class limit")
+	}
 	if int64(len(raw)) <= canonjson.MaxBytes {
 		_, err := canonjson.Canonicalize(raw)
 		return err
 	}
-	if limit < int64(len(raw)) {
-		return errors.New("json: body exceeds class limit")
-	}
-	dec := json.NewDecoder(io.LimitReader(bytes.NewReader(raw), limit))
-	var doc json.RawMessage
-	if err := dec.Decode(&doc); err != nil {
-		return err
-	}
-	var trailing json.RawMessage
-	err := dec.Decode(&trailing)
-	if errors.Is(err, io.EOF) {
-		return nil
-	}
-	if err == nil {
-		return errors.New("json: trailing value")
-	}
-	return err
+	return walkJSONDocument(raw)
 }
 
 func matchingIdentity(v any, p auth.Principal) bool {
@@ -646,7 +731,7 @@ func BrowserRoutesWithMetrics(c config.Config, next http.Handler, rateLimited *p
 	if rate.PerSecond <= 0 || rate.Burst < 1 {
 		rate = config.Defaults().LoginRate
 	}
-	lim := &limiter{entries: map[string]bucketState{}, max: c.MaxRatePrincipals}
+	lim := newLimiter(c.MaxRatePrincipals)
 	gate := make(chan struct{}, c.MaxConcurrent)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = apierr.TrackResponse(w)

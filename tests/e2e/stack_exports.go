@@ -109,6 +109,15 @@ func (s *Stack) ActivatePolicy(ctx context.Context, admin BrowserSession, kind, 
 // Enroll issues a real installer token, triggers the standard entrypoint, and
 // waits for the real bootstrap/NetBird join. It never exports the identity key.
 func (s *Stack) Enroll(ctx context.Context, admin BrowserSession, name string) (EnrolledNode, error) {
+	return s.EnrollAt(ctx, admin, name, "node")
+}
+
+// EnrollAt targets the primary node or StartSecondExit's isolated node2.
+func (s *Stack) EnrollAt(ctx context.Context, admin BrowserSession, name, slot string) (EnrolledNode, error) {
+	if slot != "node" && slot != "node2" {
+		return EnrolledNode{}, fmt.Errorf("unknown lab node slot")
+	}
+	container := s.lab.prefix + "-" + slot
 	resp, err := s.Call(ctx, admin, "POST", "/api/v1/admin/enrollments", api.EnrollmentCreateRequest{Delivery: api.EnrollmentDeliveryInstaller, Name: &name}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	var out api.EnrollmentCreated
 	if err != nil || resp.Status != 201 || json.Unmarshal(resp.Body, &out) != nil {
@@ -118,7 +127,7 @@ func (s *Stack) Enroll(ctx context.Context, admin BrowserSession, name string) (
 	if err != nil || !out.SecretAvailable {
 		return EnrolledNode{}, fmt.Errorf("enrollment secret absent")
 	}
-	dir := filepath.Join(s.lab.state, "node", "var", "e2e")
+	dir := filepath.Join(s.lab.state, slot, "var", "e2e")
 	if err = os.MkdirAll(dir, 0700); err != nil {
 		return EnrolledNode{}, err
 	}
@@ -127,10 +136,10 @@ func (s *Stack) Enroll(ctx context.Context, admin BrowserSession, name string) (
 	}
 	wait, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
-	if !waitUntil(wait, time.Second, func() bool { return s.lab.stage(s.lab.node, "/var/lib/vpn-node/e2e/netbird.json") == "netbird_up" }) {
+	if !waitUntil(wait, time.Second, func() bool { return s.lab.stage(container, "/var/lib/vpn-node/e2e/netbird.json") == "netbird_up" }) {
 		return EnrolledNode{}, fmt.Errorf("enrollment/join timed out")
 	}
-	raw, err := s.lab.docker(s.lab.node, "cat", "/var/lib/vpn-node/identity/node.json")
+	raw, err := s.lab.docker(container, "cat", "/var/lib/vpn-node/identity/node.json")
 	var identity struct {
 		Node        uuid.UUID `json:"node_id"`
 		Incarnation uuid.UUID `json:"node_incarnation_id"`
