@@ -135,7 +135,12 @@ staging group; no real group/account identifier is embedded here.
 The D-015 `POST /agent/bootstrap` contract now carries authenticated one-time
 setup delivery. Reinstall accepts an existing `node_id` only after the current
 incarnation is revoked; a retired Node stays terminal. The embedded domain
-migration `00111_pki_reinstall.sql` enables this guarded transition. The base F-16
+migration `00111_pki_reinstall.sql` enables this guarded transition, and
+`00187_identity_roaming_and_readiness_grace.sql` persists per-incarnation roaming
+candidate state (`candidate_hash`, `candidate_first_seen_at`,
+`candidate_last_seen_at`) on `node_identity_endpoints` for multi-replica
+cloned-identity conflict detection (D-073) alongside the incarnation-scoped
+stale-generation readiness grace timestamp (`node_incarnations.stale_generation_grace_at`, D-075). The base F-16
 guard already permits the first deployment/peer binding after NetBird read-back.
 
 See [node wiring](../nodes/WIRING.md) for the mounted APIs, worker configuration,

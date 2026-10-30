@@ -210,12 +210,20 @@ or raw forwarding header:
   refreshes inside the window) and shorter than a finite-member serving lease.
   A single switch `X → Y` (`Y` first seen while `X` was seen inside `activeWindow`)
   is treated as **roaming**: `X` remains the mapped `endpoint_hash` in
-  `node_identity_endpoints`, `Y` is tracked as the candidate, and `Y` is promoted
-  to `node_identity_endpoints` only once `X` has been quiet for a full
-  `activeWindow`. **Interleaving**—`X` seen again while `Y` is still inside
-  `activeWindow` (`X → Y → X`), `Y` and `X` both seen within one window twice, or
-  a third incompatible domain `Z` seen while `X` and `Y` are inside the window—records
-  one row in `node_identity_conflicts`, sets `mapping_frozen = true` (enforced
+  `node_identity_endpoints`, `Y` is persisted as the roaming candidate on the
+  same `node_identity_endpoints` row (`candidate_hash`, `candidate_first_seen_at`,
+  `candidate_last_seen_at`; migration `00187_identity_roaming_and_readiness_grace.sql`,
+  D-073), and `Y` is promoted to `node_identity_endpoints.endpoint_hash` only
+  once `X` has been quiet for a full `activeWindow`. Because `ObserveEndpointTx`
+  reads and writes candidate state inside the request transaction under
+  `SELECT … FOR UPDATE` on the `node_identity_endpoints` row (after an atomic
+  `INSERT … ON CONFLICT (incarnation_id) DO NOTHING`), multi-replica
+  `fvpn-control` deployments and process restarts evaluate roaming and
+  interleaving identically without in-memory state. **Interleaving**—`X` seen
+  again while `Y` is still inside `activeWindow` (`X → Y → X`), `Y` and `X` both
+  seen within one window twice, or a third incompatible domain `Z` seen while `X`
+  and `Y` are inside the window—records one row in `node_identity_conflicts`,
+  sets `mapping_frozen = true` while clearing `candidate_*` (enforced
   irreversibly by database trigger `pki_mapping_frozen`), and emits one
   `node.identity.conflict` audit event on `node:<node_id>` with `changes.after`
   containing only `incarnation_id`, `conflict_count`, and `observed_at` (no
