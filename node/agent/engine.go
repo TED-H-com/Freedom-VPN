@@ -149,6 +149,7 @@ type Engine struct {
 	dnsCode       api.ErrorCode
 	dnsDetail     string
 	dnsEv         *api.DnsPolicyEvidence
+	appliedDNS    appliedDNS
 	probeSource   string
 	// updateSnapReason is the last updater-journal snapshot class. A repeat
 	// of the same class is not logged again. Success clears it.
@@ -509,18 +510,24 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 	return err
 }
 
-func (e *Engine) input() Input {
+func (e *Engine) trustedNow() time.Time {
 	_, _ = e.verifyTime()
-	dp, _ := e.cfg.DatapathValue()
-	exempt, _ := parsePrefixes(e.cfg.TestExemptV4)
-	extra, _ := parsePrefixes(e.cfg.ExtraDeniedV4)
-	host, _ := parsePrefixes(e.cfg.HostV4)
 	now := e.clock.Wall()
 	if e.anchorOK {
 		if t, err := e.anchor.TrustedNow(e.bootID, e.clock, timeanchor.DefaultBackwardSkew, timeanchor.DefaultForwardSkew); err == nil {
 			now = t
 		}
 	}
+	return now
+}
+
+func (e *Engine) input() Input {
+	e.guardNamedDNS()
+	dp, _ := e.cfg.DatapathValue()
+	exempt, _ := parsePrefixes(e.cfg.TestExemptV4)
+	extra, _ := parsePrefixes(e.cfg.ExtraDeniedV4)
+	host, _ := parsePrefixes(e.cfg.HostV4)
+	now := e.trustedNow()
 	return Input{
 		Now: now, MonoNow: e.clock.Mono(), Datapath: dp,
 		Desired: e.desired, DesiredOK: e.desiredOK, DesiredExpired: e.desiredExpired,

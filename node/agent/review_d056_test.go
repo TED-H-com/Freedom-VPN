@@ -115,12 +115,9 @@ func TestReviewD056_ForgedETagDoesNotHideTheNewDocument(t *testing.T) {
 }
 
 func TestReviewD056_HealthAnswerBeforeDNSApply(t *testing.T) {
-	// TODO(review): a revoked Step calls evaluate, and applyResolver returns
-	// before it records the resolver document (resolver.go:62). dnsCheck then
-	// passes dns_policy whenever no document flag is set and desired state is
-	// in force (decide.go:286). answerHealth writes that pass. The lease path
-	// returns at engine.go:426 before evaluate, and answerHealth may Decide
-	// again from those cleared flags.
+	// A named resolver document is dns_policy passed only after this process
+	// records that id and digest as applied. A revoked step does not Apply
+	// again, and a lease revoke before evaluate has not Applied at all.
 	t.Run("revoked step", func(t *testing.T) {
 		r := newRig(t)
 		r.eng.prober = &verProbe{version: "0.76.2"}
@@ -142,9 +139,12 @@ func TestReviewD056_HealthAnswerBeforeDNSApply(t *testing.T) {
 		r.eng.revoked = true
 		stepOK(t, r)
 		att := requireAttest(t, r, ch)
-		if dnsApply.calls == 1 && att.Checks.DNSPolicy.Status == api.HealthCheckStatusPassed {
-			t.Fatalf("TODO(review): revoked step attested dns_policy %s (%q) for document %s with no further Apply (calls=%d dnsDocument=%v)",
-				att.Checks.DNSPolicy.Status, att.Checks.DNSPolicy.Reason, ref.DocumentId, dnsApply.calls, r.eng.dnsDocument)
+		if dnsApply.calls != 1 || att.Checks.DNSPolicy.Status != api.HealthCheckStatusFailed || att.Checks.DNSPolicy.Reason != "policy not in force" {
+			t.Fatalf("revoked step dns_policy %s (%q) calls=%d", att.Checks.DNSPolicy.Status, att.Checks.DNSPolicy.Reason, dnsApply.calls)
+		}
+		ev := mustEvidence(t, r)
+		if ev.Outcome != api.DnsPolicyEvidenceOutcomeFailed || ev.DocumentId != ref.DocumentId || ev.ContentSha256 != ref.ContentSha256 {
+			t.Fatalf("evidence %+v", ev)
 		}
 	})
 
@@ -169,9 +169,8 @@ func TestReviewD056_HealthAnswerBeforeDNSApply(t *testing.T) {
 		r.eng.markRevoked(context.Background())
 		r.eng.answerHealth(context.Background())
 		att := requireAttest(t, r, ch)
-		if dnsApply.calls == 0 && att.Checks.DNSPolicy.Status == api.HealthCheckStatusPassed {
-			t.Fatalf("TODO(review): lease-revoked branch attested dns_policy %s (%q) for document %s before Apply (calls=%d)",
-				att.Checks.DNSPolicy.Status, att.Checks.DNSPolicy.Reason, ref.DocumentId, dnsApply.calls)
+		if dnsApply.calls != 0 || att.Checks.DNSPolicy.Status != api.HealthCheckStatusFailed || att.Checks.DNSPolicy.Reason != "policy not in force" {
+			t.Fatalf("lease revoke dns_policy %s (%q) calls=%d", att.Checks.DNSPolicy.Status, att.Checks.DNSPolicy.Reason, dnsApply.calls)
 		}
 	})
 }
