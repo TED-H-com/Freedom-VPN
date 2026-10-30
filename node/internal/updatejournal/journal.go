@@ -413,6 +413,13 @@ func (j *Journal) SetPointers(ctx context.Context, p Pointers) error {
 		return err
 	}
 	defer func() { _ = tx.Rollback() }()
+	if err := setPointers(ctx, tx, p); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func setPointers(ctx context.Context, tx *sql.Tx, p Pointers) error {
 	if p.CurrentRelease != "" {
 		if err := setMeta(ctx, tx, metaCurrentRelease, p.CurrentRelease); err != nil {
 			return err
@@ -423,7 +430,7 @@ func (j *Journal) SetPointers(ctx context.Context, p Pointers) error {
 			return err
 		}
 	}
-	return tx.Commit()
+	return nil
 }
 
 // GateRecord is the latest applied publication intent and the forwarding

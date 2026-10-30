@@ -2,7 +2,9 @@ package dbtest
 
 import (
 	"net/url"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -42,6 +44,74 @@ func Test15_5_IsolatedDSN(t *testing.T) {
 	} {
 		if _, err := isolatedDSN(dsn, name); err == nil {
 			t.Fatal("accepted unsafe test URL")
+		}
+	}
+}
+
+func TestDatabaseNameRoundTrip(t *testing.T) {
+	created := time.Unix(1_700_000_000, 123).UTC()
+	first, err := databaseName(created)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := databaseName(created)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first == second {
+		t.Fatal("names reused random entropy")
+	}
+	if len(first) >= 63 || len(second) >= 63 {
+		t.Fatalf("name length %d %d", len(first), len(second))
+	}
+	for _, name := range []string{first, second} {
+		got, ok := createdAt(name)
+		if !ok || !got.Equal(time.Unix(created.Unix(), 0).UTC()) {
+			t.Fatalf("parsed %s as %v ok=%v", name, got, ok)
+		}
+		if legacyNamePattern.MatchString(name) {
+			t.Fatalf("new name matched legacy pattern: %s", name)
+		}
+		random := strings.SplitN(name, "_", 3)[2]
+		if len(random) != 32 {
+			t.Fatalf("random entropy %q", random)
+		}
+	}
+	if _, err := databaseName(time.Unix(-1, 0)); err == nil {
+		t.Fatal("accepted a negative creation time")
+	}
+}
+
+func TestSweepCandidate(t *testing.T) {
+	created := time.Unix(1_700_000_000, 0).UTC()
+	name, err := databaseName(created)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy := "fvpn_" + strings.Repeat("ab", 16)
+	now := created.Add(time.Hour)
+	if sweepCandidate(name, now, time.Hour, false) {
+		t.Fatal("name exactly one hour old was eligible")
+	}
+	if !sweepCandidate(name, now.Add(time.Second), time.Hour, false) {
+		t.Fatal("name older than one hour was kept")
+	}
+	if sweepCandidate(name, created.Add(30*time.Minute), time.Hour, true) {
+		t.Fatal("young name was eligible")
+	}
+	if sweepCandidate(legacy, now, time.Hour, false) {
+		t.Fatal("legacy name was eligible without the flag")
+	}
+	if !sweepCandidate(legacy, now, time.Hour, true) {
+		t.Fatal("legacy name was kept with the flag")
+	}
+	for _, foreign := range []string{
+		"postgres", "template0", "template1", "fvpn_do_not_touch",
+		"fvpn_", "fvpn_" + strings.Repeat("ab", 15), strings.ToUpper(legacy),
+		"fvpn_t" + strings.ToUpper("65f00000") + "_" + strings.Repeat("ab", 16),
+	} {
+		if sweepCandidate(foreign, now, 0, true) {
+			t.Fatalf("non-matching name was eligible: %s", foreign)
 		}
 	}
 }

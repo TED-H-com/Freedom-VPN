@@ -128,6 +128,9 @@ func TestValidateRejections(t *testing.T) {
 
 func TestRoundTripModeAndPreseededFile(t *testing.T) {
 	dir := t.TempDir()
+	if err := os.Chmod(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
 	ch, at, now, versions := validPair(t)
 	if err := WriteChallenge(dir, ch); err != nil {
 		t.Fatal(err)

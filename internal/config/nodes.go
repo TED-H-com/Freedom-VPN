@@ -7,31 +7,34 @@ import (
 	"net/netip"
 	"net/url"
 	"os"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
 // Nodes is separately provisioned because PKI lifetimes are business decisions,
 // not implicit production defaults (§6.4, §21).
 type Nodes struct {
-	ProviderDirectory     string   `json:"provider_directory"`
-	CACertificateFile     string   `json:"ca_certificate_file"`
-	CAKeyID               string   `json:"ca_key_id"`
-	CertificateSeconds    int      `json:"certificate_seconds"`
-	RenewalOverlapSeconds int      `json:"renewal_overlap_seconds"`
-	BootstrapSeconds      int      `json:"bootstrap_seconds"`
-	InstallerSeconds      int      `json:"installer_seconds"`
-	PreinstalledSeconds   int      `json:"preinstalled_seconds"`
-	AuthorizationSeconds  int      `json:"authorization_seconds"`
-	OnlineSeconds         int      `json:"online_seconds"`
-	StuckSeconds          int      `json:"stuck_seconds"`
-	ReconcileSeconds      int      `json:"reconcile_seconds"`
-	FetchSeconds          int      `json:"fetch_seconds"`
-	DesiredStateSeconds   int      `json:"desired_state_seconds"`
-	NetBirdURL            string   `json:"netbird_url"`
-	NetBirdDeployment     string   `json:"netbird_deployment"`
-	NetBirdTokenFile      string   `json:"netbird_token_file"`
-	DNSResolverIPv4       []string `json:"dns_resolver_ipv4"`
-	DNSResolverIPv6       []string `json:"dns_resolver_ipv6"`
-	ReleaseOrigins        []string `json:"release_origins"`
+	EgressProbe           *api.EgressProbe `json:"egress_probe,omitempty"`
+	ProviderDirectory     string           `json:"provider_directory"`
+	CACertificateFile     string           `json:"ca_certificate_file"`
+	CAKeyID               string           `json:"ca_key_id"`
+	CertificateSeconds    int              `json:"certificate_seconds"`
+	RenewalOverlapSeconds int              `json:"renewal_overlap_seconds"`
+	BootstrapSeconds      int              `json:"bootstrap_seconds"`
+	InstallerSeconds      int              `json:"installer_seconds"`
+	PreinstalledSeconds   int              `json:"preinstalled_seconds"`
+	AuthorizationSeconds  int              `json:"authorization_seconds"`
+	OnlineSeconds         int              `json:"online_seconds"`
+	StuckSeconds          int              `json:"stuck_seconds"`
+	ReconcileSeconds      int              `json:"reconcile_seconds"`
+	FetchSeconds          int              `json:"fetch_seconds"`
+	DesiredStateSeconds   int              `json:"desired_state_seconds"`
+	NetBirdURL            string           `json:"netbird_url"`
+	NetBirdDeployment     string           `json:"netbird_deployment"`
+	NetBirdTokenFile      string           `json:"netbird_token_file"`
+	DNSResolverIPv4       []string         `json:"dns_resolver_ipv4"`
+	DNSResolverIPv6       []string         `json:"dns_resolver_ipv6"`
+	ReleaseOrigins        []string         `json:"release_origins"`
 }
 
 func LoadNodes(path string) (Nodes, error) {
@@ -83,5 +86,5 @@ func (c Nodes) Validate() error {
 			return errors.New("invalid node IPv6 resolver")
 		}
 	}
-	return nil
+	return validateNodeEgressProbe(c.EgressProbe)
 }
