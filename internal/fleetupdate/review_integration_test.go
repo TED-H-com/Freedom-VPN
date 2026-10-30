@@ -36,18 +36,18 @@ func TestAT23_ResultAfterRoutineHeartbeat(t *testing.T) {
 				t.Fatal(receipt, err)
 			}
 			ack := l.report(i, w, "succeeded")
-			// r11: a heartbeat can seed current, but only a result can advance
-			// last-good. Even a same-generation success must write that evidence;
-			// a result below the restore high-water still cannot move either.
+			// D-068: a non-null current release advances only through an accepted
+			// result, while a result below the restore high-water mark cannot
+			// move either current or last-good.
 			if ack.AppliedToCurrentObservation != (observed <= 1) || ack.ObservedUpdateGeneration != max(observed, 1) {
 				t.Fatal(ack)
 			}
-			lastGood := l.new
+			wantVersion := l.new
 			if observed > w.Intent.Generation {
-				lastGood = l.old
+				wantVersion = l.old
 			}
 			view, err := l.s.NodeVersionView(l.ctx, i.NodeID)
-			if err != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.new || view.LastGoodReleaseID == nil || *view.LastGoodReleaseID != lastGood {
+			if err != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != wantVersion || view.LastGoodReleaseID == nil || *view.LastGoodReleaseID != wantVersion {
 				t.Fatal(view, err)
 			}
 		})

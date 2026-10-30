@@ -95,9 +95,24 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
    first remaining address. At most 64 entries are examined. A missing header,
    or a window of only trusted hops, keeps the TCP peer. A later header line
    was appended by the next hop and is further to the right than an earlier
-   line. Entries are trimmed. A port suffix (`198.51.100.7:443`) or brackets
-   (`[2001:db8::1]`, `[2001:db8::1]:443`) is parsed as an address. The source
-   port is not part of the key. `X-Real-IP` and RFC 7239 `Forwarded` are not
+   line. Entries are trimmed. A forwarding entry and `RemoteAddr` share one
+   parser. A bracketed address with no port (`[2001:db8::1]`) is a forwarding
+   entry; the same text is not a connection address, because `RemoteAddr`
+   carries a port. Bracketed input strips the brackets and any zone
+   identifier, then calls `net.ParseIP`. It never splits a colon inside the
+   brackets. `[2001:db8::1]:443` is host plus port. Unbracketed input with
+   more than one colon calls `net.ParseIP` on the full string first. A
+   trailing `:port` is removed only when that parse fails: eight hextets plus
+   a port (`2001:db8:1:2:3:4:5:6:443`), or an IPv4-mapped address written with
+   a port (`::ffff:192.0.2.77:44`). An unbracketed string that parses is that
+   address, so `1::2:3:4:5:6` is `1:0:0:2:3:4:5:6` and is not the host
+   `1::2:3:4:5`. Go's IPv6 `RemoteAddr` is `[ip]:port`, so the TCP peer still
+   uses the bracketed form. Eight hextets written with a zero-width `::`
+   (`2001:db8:1::2:3:4:5:6` for `2001:db8:1:2:3:4:5:6`) are that address.
+   `net.ParseIP` rejects the zero-width marker; accepting it, before any port
+   split, keeps the last hextet in the host. The `/64` stays
+   `2001:db8:1:2::/64` and does not move into a trusted `2001:db8:1::/64`.
+   The source port is not part of the key. `X-Real-IP` and RFC 7239 `Forwarded` are not
    read, including from a trusted peer. `Forwarded` has a structured grammar
    that is easy to mis-parse into a bucket the client chose; the proxies in
    this deployment append `X-Forwarded-For`. A trusted proxy that sends only
@@ -106,7 +121,8 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
    IPv6 is one bucket per /64 prefix, so one subscriber prefix cannot fill
    `max_rate_principals` (default 10000) with a distinct bucket per /128.
    There is no prefix-length setting. Bracketed (`[2001:db8:0:1::1]:443`) and
-   unbracketed (`2001:db8:0:1::1:443`) forms of the same address share that key.
+   unbracketed (`2001:db8:0:1::1:443`) forms share that /64 key: the unbracketed
+   string parses as an address whose last hextet is inside the same /64.
    A zone identifier is not part of the key. Login routes (`/auth/login`,
    `/auth/callback`, and any other auth path, including `/auth/token`) use
    `"login:" + key`. `/auth/session` and `/auth/logout` use `"session:" + key`,
@@ -123,9 +139,17 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
    principal. Login and session routes still share one map and distinguish
    `login:` and `session:` keys. The agent listener does not read
    `X-Forwarded-For`, even when its TCP peer is listed in `trusted_proxies`.
-   It must not sit behind an address-rewriting proxy. If it does, client
-   certificates still authenticate the node and ingress keys are the proxy
-   address. mTLS subject keys stay the route class plus the node scope.
+   A request with no verified client certificate is HTTP 401 and occupies no
+   slot. A verified chain keys that class's ingress bucket by the SHA-256 of
+   the leaf certificate's DER (`r.TLS.VerifiedChains[0][0].Raw`), computed in
+   memory, and takes the class concurrency slot, both before
+   `AuthenticateAgent`. A failed authentication has already spent the token.
+   The fingerprint is the rate-bucket key. The concurrency pool stays one
+   pool per class of `max_concurrent`, which bounds how many of those lookups
+   run together. A forwarding header does not choose either. mTLS subject
+   keys stay the route class plus the node scope. The certificate
+   authenticates the node, so a proxy in front of this listener does not move
+   the ingress bucket.
    The login and session token buckets use this principal. The login
    concurrency gate stays one process-wide gate of `max_concurrent`.
    Production members commonly share a single source address behind
@@ -163,19 +187,30 @@ cap. Authenticated subjects use another table, keyed by node or session. That
 subject key does not use `X-Forwarded-For`. On the public listener the
 pre-authentication address is the connection principal above, including a
 client taken from `X-Forwarded-For` when the TCP peer is a configured trusted
-proxy. The agent listener always keys ingress by the TCP peer. On the
-agent listener, machine authentication runs before any insert, so a request
-without a verified client certificate occupies no slot. IPv6 keying stays /64.
-One /48 contains 65,536 /64s and can fill the anonymous ingress table and the
-anonymous class table (10,000 principals each at the default cap). It inserts
-nothing into the other class tables. At capacity a new principal is admitted by
-evicting the least-recently-used bucket when that bucket is idle with a full
-token count, or has been idle for more than one hour. The check is that one
-bucket. A bucket that is still short of tokens stays, and the new principal is
-HTTP 429 with `Retry-After` of one second. Ingress tables and the anonymous
-class table each use one rate. The subject table mixes class rates, so a fuller
-bucket can sit behind a slower tail; that tail stays until it is full or an hour
-old.
+proxy. On the agent listener the ingress key is the SHA-256 of the verified
+leaf, taken before `AuthenticateAgent`. A request without a verified client
+certificate occupies no slot. A failed authentication has spent the ingress
+token. IPv6 keying stays /64. The anonymous ingress table and the anonymous
+class table also keep a /48 budget beside that /64 key. One /48 may hold at
+most half of `max_rate_principals` /64 buckets, and at least one when the cap
+is one. At the default cap of 10,000 that budget is 5,000. A new /64 whose
+/48 is already at the budget is HTTP 429, is not inserted, and does not evict
+another prefix. An existing key in that /48 still spends a token. IPv4 is not
+grouped. The budget is only on the anonymous class, so a /48 sweep inserts
+nothing into the browser, agent, heartbeat, lease, usage, or subject tables.
+At capacity a new principal is admitted by scanning eight least-recently-used
+buckets from the tail and evicting the first that is idle with a full token
+count, or has been idle for more than one hour. The window is a constant, so
+the scan stays O(1). One depleted tail cannot hide a newer bucket inside that
+window that has already refilled. More than eight depleted buckets sitting at
+the tail can still refuse a newcomer while a full bucket waits further toward
+the head. A table that finds no eligible bucket returns HTTP 429 with
+`Retry-After` of one second and inserts nothing. That is the bound on a full
+table refusing newcomers: a single short tail no longer blocks the next seven
+idle buckets, and one /48 cannot own the anonymous tables. Ingress tables and
+the anonymous class table each use one rate. The subject table mixes class
+rates. The eight-bucket window is what lets a full browser bucket leave ahead
+of a slower heartbeat tail.
 
 ## Request body limits
 
@@ -207,16 +242,33 @@ Checks run in this order:
    unescaping, nesting at most `canonjson.MaxDepth` (256), and integers within
    ±(2^53−1) with no fraction, exponent, leading zero, or negative zero.
    Trailing data is rejected. The walk retains the nesting depth and the keys
-   of objects that are still open. Failure is HTTP 400 `MALFORMED_REQUEST`
+   of objects that are still open. On an agent mTLS body the same walk reads
+   every `node_id`, `node_incarnation_id`, and `incarnation_id`, including
+   nested usage events. There is no second `json.Unmarshal` into an `any`
+   tree for that comparison. A walk failure is HTTP 400 `MALFORMED_REQUEST`
    (`Invalid JSON document.`).
-3. **Schema.** kin-openapi validation failure is HTTP 422 `VALIDATION_FAILED`.
-   Webhook bodies are excluded; the provider's JSON is not a contract schema.
-4. **Identity.** For agent mTLS, `json.Unmarshal` failure is HTTP 400
-   `MALFORMED_REQUEST` (`Invalid JSON document.`) and is decided before the
-   comparison. Every `node_id`, `node_incarnation_id`, and `incarnation_id` in
-   the parsed body, including nested usage events, must match the certificate.
-   A mismatch is HTTP 403 `INCARNATION_MISMATCH`. The comparison uses the
-   parsed value.
+3. **Schema.** A body of at most 1 MiB, and a larger body whose schema uses a
+   keyword the streaming checker does not cover, is validated by
+   `openapi3filter.ValidateRequest`, which decodes the body into an `any`
+   tree. A body above 1 MiB whose schema the streaming checker covers
+   (object, array, string, integer, boolean, null, required properties,
+   `additionalProperties`, item and length bounds, numeric bounds, `uuid`,
+   `date-time`, and enum) is checked during the walk, and `ExcludeRequestBody`
+   skips that tree. `SubmitUsageBatch` is in that set. A schema that uses
+   `oneOf`, `anyOf`, `allOf`, `not`, a discriminator, `uniqueItems`,
+   `multipleOf`, `patternProperties`, `if`, `prefixItems`, exclusive bounds,
+   `const`, another format, or an unresolved reference stays on
+   `openapi3filter` and does allocate the tree. Webhook bodies are excluded;
+   the provider's JSON is not a contract schema. Schema failure is HTTP 422
+   `VALIDATION_FAILED` (`Request does not match the API schema.`). A syntax
+   failure stays HTTP 400 and is decided before the schema result. An
+   operation with no owner returns HTTP 501 after these checks and does not
+   decode the body again in the generated handler. An operation that has an
+   owner still decodes into its generated struct inside the handler.
+4. **Identity.** The fields the walk read must match the certificate. A
+   non-string value in one of those fields is a mismatch. The comparison does
+   not build a second document. A mismatch after a successful schema check is
+   HTTP 403 `INCARNATION_MISMATCH`.
 
 The production config requires HTTPS issuer/origin. Tests use a local signed-token
 httptest provider with PKCE validation and negative signature, issuer, audience,
