@@ -404,11 +404,18 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 	if state == api.UpdateResultStateRolledBack {
 		prev = txn.ReleaseID
 	}
+	var candidateHealth *api.UpdateHealth
+	if state == api.UpdateResultStateRolledBack {
+		candidateHealth, err = decodeHealth(txn.CandidateHealth)
+		if err != nil {
+			return err
+		}
+	}
 	in := resultInput{
 		Claimed: c, State: state, Stage: journalStageAPI(txn.Stage), Code: code,
 		Current: current, Previous: prev, Recovery: recovery, Forwarding: forwarding,
 		Started: started, Finished: finished, Schema: schemaAtLeast1(schema),
-		Health: health, Checkpoint: cp,
+		Health: health, CandidateHealth: candidateHealth, Checkpoint: cp,
 	}
 	if txn.Stage == updatejournal.StageRolledBack && !txn.Destructive {
 		in.Stage = api.UpdateStage(txn.ErrorStage)

@@ -70,7 +70,17 @@ func status(args []string, stdout, stderr io.Writer) int {
 	}
 	enc := json.NewEncoder(stdout)
 	enc.SetIndent("", "  ")
-	if err := enc.Encode(snapshot); err != nil {
+	output := struct {
+		updatejournal.SnapshotState
+		WireCandidateHealth json.RawMessage `json:"candidate_health,omitempty"`
+	}{SnapshotState: snapshot}
+	if snapshot.State == "rolled_back" {
+		output.WireCandidateHealth = snapshot.CandidateHealth
+		if len(output.WireCandidateHealth) == 0 {
+			output.WireCandidateHealth = json.RawMessage("null")
+		}
+	}
+	if err := enc.Encode(output); err != nil {
 		fmt.Fprintln(stderr, "fvpn-updater: write status failed")
 		return 1
 	}
