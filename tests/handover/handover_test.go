@@ -730,14 +730,15 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 	}
 
 	requiredMemberLinks := []string{
-		"../e2e/at/secops/counted-flow.json",
-		"../e2e/at/secops/post-revoke.json",
-		"../e2e/at/secops/deadlines.json",
-		"../e2e/at/secops/capacity.json",
+		"../e2e/at/secops/history/follow-up-5/counted-flow.json",
+		"../e2e/at/secops/history/follow-up-5/post-revoke.json",
+		"../e2e/at/secops/history/follow-up-5/deadlines.json",
+		"../e2e/at/secops/history/follow-up-5/capacity.json",
+		"ab96acac-8713-485a-9c29-88f20110e2e5",
 		"../e2e/runs/2026-10-30/followup10-run3/device-revoke.md",
 		"../e2e/requests.md",
 		"StartSecondExit",
-		"grace_seconds",
+		"FVPN_E2E_GRACE_SECONDS",
 		"clock_settime",
 	}
 	for _, link := range requiredMemberLinks {
@@ -910,7 +911,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"Forty-six are wired in `apps/control` on `main`",
+		"All 47 are wired in `apps/control` on `main`",
 		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
 		"D-065",
 		"/api/v1/admin/fleet-config",
@@ -1018,5 +1019,362 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	reviewsREADME := readOwnedDoc(t, root, "docs/reviews/README.md")
 	if !strings.Contains(reviewsREADME, "r13-r12-fixes-review.md") || !strings.Contains(reviewsREADME, "12496fd") {
 		t.Error("docs/reviews/README.md missing r13-r12-fixes-review archive entry")
+	}
+}
+
+func TestHandover_Followup8Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify OpenAPI 1.7.0 revision 11 carries listNodeIncarnations, Enrollment.token_sha256, and awaiting_member_grants.
+	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read contracts/openapi.yaml: %v", err)
+	}
+	var spec struct {
+		Paths      map[string]map[string]any `yaml:"paths"`
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]any `yaml:"properties"`
+				Enum       []string       `yaml:"enum"`
+			} `yaml:"schemas"`
+		} `yaml:"components"`
+	}
+	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
+		t.Fatalf("parse contracts/openapi.yaml: %v", err)
+	}
+	if _, ok := spec.Paths["/admin/nodes/{node_id}/incarnations"]; !ok {
+		t.Fatal("contracts/openapi.yaml missing /admin/nodes/{node_id}/incarnations path")
+	}
+	if _, ok := spec.Components.Schemas["Enrollment"].Properties["token_sha256"]; !ok {
+		t.Fatal("contracts/openapi.yaml Enrollment schema missing token_sha256")
+	}
+	if !slices.Contains(spec.Components.Schemas["ForwardingBlockReason"].Enum, "awaiting_member_grants") {
+		t.Fatal("contracts/openapi.yaml ForwardingBlockReason enum missing awaiting_member_grants")
+	}
+
+	// 2. Verify all 47 revision 11 operations are wired on main (no "Forty-six" or "46 of 47" wording remains).
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	handoverREADME := readOwnedDoc(t, root, "docs/handover/README.md")
+	opsREADME := readOwnedDoc(t, root, "docs/ops/README.md")
+	for name, doc := range map[string]string{
+		"docs/handover/operator-guide.md": operatorGuide,
+		"docs/handover/README.md":         handoverREADME,
+		"docs/ops/README.md":              opsREADME,
+	} {
+		for _, stale := range []string{"Forty-six", "forty-six", "46 of 47", "not implemented in this revision"} {
+			if strings.Contains(doc, stale) {
+				t.Errorf("%s still contains stale unwired operation wording %q", name, stale)
+			}
+		}
+	}
+
+	// 3. Verify operator-guide.md pins for control follow-up 19/20 (#190/#215), revision 11 (#191/#195/#200/#213),
+	// D-067 (#193/#198/#201/#202/#206/#216), D-068 (#189), updater follow-up 12 (#192), and secops follow-up 7 (#203).
+	for _, token := range []string{
+		"All 47 are wired in `apps/control` on `main`",
+		"#186", "#187", "#189", "#190", "#191", "#192", "#193", "#194", "#195", "#196", "#197", "#198", "#199", "#200", "#201", "#202", "#203",
+		// Control follow-up 19/20 (#190, #215): parse rule, certificate-key, LRU tail walk, /48 reserve-of-one budget, single-walk body identity.
+		"bracketed input",
+		"an unbracketed multi-colon string is parsed whole before a trailing port is removed",
+		"eight hextets written with a zero-width `::` (`2001:db8:1::2:3:4:5:6`) are `2001:db8:1:2:3:4:5:6`, `/64` `2001:db8:1:2::/64`",
+		"one `/48` may hold every slot except a reserve of one",
+		"no verified chain is `401 UNAUTHENTICATED` before the limiter",
+		"a verified leaf keys ingress by its `urn:fvpn:node:<uuid>` URI SAN (`node:<uuid>`)",
+		"and `sha256(leaf.Raw)` is the key only for a verified leaf without that SAN",
+		"spent the token",
+		"eviction walks from the tail to the first bucket idle at full tokens or idle for more than an hour, bounded by `max_rate_principals`",
+		"single streaming walk (no `json.Unmarshal` of the body)",
+		"sets `ExcludeRequestBody`",
+		"returns `501 NOT_IMPLEMENTED` without a third decode",
+		"order for a large body is `400 MALFORMED_REQUEST` syntax, `422 VALIDATION_FAILED` schema, `403 INCARNATION_MISMATCH` identity",
+		// Contract revision 11 (#191, #195, #200, #213): incarnations, token_sha256, awaiting_member_grants.
+		"GET /api/v1/admin/nodes/{node_id}/incarnations",
+		"listNodeIncarnations",
+		"retire_reason",
+		"\"reinstall\"",
+		"\"revocation\"",
+		"\"supersession\"",
+		"token_sha256",
+		"enrollment.created",
+		"changes.after.token_sha256",
+		"awaiting_member_grants",
+		// Agent follow-up 15-18 (#193, #198, #202, #216 — D-067) & conntrack retry bound.
+		"D-067",
+		"**provisional** and renews after **one heartbeat**, then **doubling**, capped at **`60 s`**",
+		"Serving lease has no member grants yet.",
+		"**twelve consecutive failed `conntrack -D` attempts**",
+		"member_forwarding_enabled=false",
+		"safety_status=failed",
+		"ConntrackDeleteError{Pending, Failed}",
+		"(addr, device_id, member_id)",
+		// Fleet-update follow-up 9 (#189 — D-068).
+		"D-068",
+		"advances **only** through an accepted `UpdateResult`",
+		"**only when `nodes.current_release_id` is `NULL`**",
+		"superseded attempt's `job_id`",
+		"do not move the batch read model",
+		// Updater follow-up 12 (#192).
+		"blankHealth",
+		"probe_omission/<txn_id>/<nonce>",
+		"cleanTxnNotes",
+		// Secops follow-up 7 (#203) verdicts & numbers.
+		"ab96acac-8713-485a-9c29-88f20110e2e5",
+		"subset passed, case blocked on",
+		"5,960/5,960",
+		"60/60",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 8 token %q", token)
+		}
+	}
+
+	// 4. Verify deploy.md and calibration.md pins for #190, #192, #193, #200, #203, #215.
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"#190", "#192", "#193", "#200", "#202", "#215",
+		"bracketed input is never split, an unbracketed multi-colon string is parsed whole before a trailing port is removed, and eight hextets written with a zero-width `::` (`2001:db8:1::2:3:4:5:6`) are `2001:db8:1:2:3:4:5:6`, `/64` `2001:db8:1:2::/64`",
+		"the agent-listener ingress key is the verified leaf certificate's `urn:fvpn:node:<uuid>` URI SAN",
+		"so an address-rewriting proxy does not choose the bucket",
+		"twelve consecutive failed `conntrack -D` attempts",
+		"blankHealth",
+		"token_sha256",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 8 token %q", token)
+		}
+	}
+
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#190", "#192", "#193", "#198", "#200", "#203", "#215",
+		"D-067",
+		"awaiting_member_grants",
+		"Serving lease has no member grants yet.",
+		"renews after one heartbeat, then doubling, capped at `60 s`",
+		"bracketed input is never split, an unbracketed multi-colon string is parsed whole before a trailing port is removed, and eight hextets written with a zero-width `::` `2001:db8:1::2:3:4:5:6` are `2001:db8:1:2:3:4:5:6`, `/64` `2001:db8:1:2::/64`",
+		"one `/48` may hold every slot except a reserve of one",
+		"no verified chain is `401 UNAUTHENTICATED` before the limiter",
+		"a verified leaf keys ingress by its `urn:fvpn:node:<uuid>` URI SAN (`node:<uuid>`), so every still-usable serial of a node shares one burst during renewal overlap, and `sha256(leaf.Raw)` is the key only for a verified leaf without that SAN",
+		"eviction walks from the tail to the first bucket idle at full tokens or idle for more than an hour, bounded by `max_rate_principals`",
+		"identity is read during the single streaming walk (no `json.Unmarshal` of the body)",
+		"sets `ExcludeRequestBody`",
+		"returns `501 NOT_IMPLEMENTED` without a third decode; order for a large body is `400` syntax, `422` schema, `403` identity",
+		"blankHealth",
+		"ab96acac-8713-485a-9c29-88f20110e2e5",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 8 token %q", token)
+		}
+	}
+
+	// 5. Verify DOC16 in member-guide.md (no mutable root counted-flow/post-revoke links) and live sha256 pins in scope-review.json follow_up_7.files.
+	memberGuide := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	for _, forbidden := range []string{
+		"(../e2e/at/secops/counted-flow.json)",
+		"(../e2e/at/secops/post-revoke.json)",
+	} {
+		if strings.Contains(memberGuide, forbidden) {
+			t.Errorf("docs/handover/member-guide.md still links follow-up 5 evidence to mutable root path %s", forbidden)
+		}
+	}
+	if !strings.Contains(memberGuide, "DOC16") || !strings.Contains(memberGuide, "ab96acac-8713-485a-9c29-88f20110e2e5") {
+		t.Error("docs/handover/member-guide.md missing DOC16 or follow-up 7 run ID ab96acac-8713-485a-9c29-88f20110e2e5")
+	}
+
+	var scopeReview struct {
+		FollowUp7 struct {
+			Files []struct {
+				Path   string `json:"path"`
+				SHA256 string `json:"sha256"`
+			} `json:"files"`
+			NewRequests []struct {
+				ID     string `json:"id"`
+				Status string `json:"status"`
+			} `json:"new_requests"`
+		} `json:"follow_up_7"`
+	}
+	rawScope := readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")
+	if err := json.Unmarshal([]byte(rawScope), &scopeReview); err != nil {
+		t.Fatalf("unmarshal docs/e2e/at/secops/scope-review.json: %v", err)
+	}
+	if len(scopeReview.FollowUp7.Files) != 7 {
+		t.Fatalf("docs/e2e/at/secops/scope-review.json follow_up_7.files count = %d, want 7", len(scopeReview.FollowUp7.Files))
+	}
+	for _, entry := range scopeReview.FollowUp7.Files {
+		raw, err := os.ReadFile(filepath.Join(root, entry.Path))
+		if err != nil {
+			t.Errorf("read %s: %v", entry.Path, err)
+			continue
+		}
+		sum := sha256.Sum256(raw)
+		got := hex.EncodeToString(sum[:])
+		if got != entry.SHA256 {
+			t.Errorf("docs/e2e/at/secops/scope-review.json follow_up_7 sha256 for %s = %s, want %s", entry.Path, entry.SHA256, got)
+		}
+	}
+	if len(scopeReview.FollowUp7.NewRequests) == 0 || scopeReview.FollowUp7.NewRequests[0].ID != "DOC16" || !strings.HasPrefix(scopeReview.FollowUp7.NewRequests[0].Status, "resolved") {
+		t.Errorf("docs/e2e/at/secops/scope-review.json follow_up_7.new_requests DOC16 status = %+v, want resolved", scopeReview.FollowUp7.NewRequests)
+	}
+}
+
+func TestHandover_Followup9Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify OpenAPI 1.7.0 revision 11 (#213) schema elements: ErrorCode.AWAITING_MEMBER_GRANTS (D-071)
+	// and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
+	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read contracts/openapi.yaml: %v", err)
+	}
+	var spec struct {
+		Info struct {
+			Version string `yaml:"version"`
+		} `yaml:"info"`
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]any `yaml:"properties"`
+				Enum       []string       `yaml:"enum"`
+				AllOf      []struct {
+					Properties map[string]any `yaml:"properties"`
+				} `yaml:"allOf"`
+			} `yaml:"schemas"`
+		} `yaml:"components"`
+	}
+	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
+		t.Fatalf("parse contracts/openapi.yaml: %v", err)
+	}
+	if spec.Info.Version != "1.7.0" {
+		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.7.0", spec.Info.Version)
+	}
+	if !slices.Contains(spec.Components.Schemas["ErrorCode"].Enum, "AWAITING_MEMBER_GRANTS") {
+		t.Fatal("contracts/openapi.yaml ErrorCode enum missing AWAITING_MEMBER_GRANTS")
+	}
+	hasIdentityConflict := false
+	for _, part := range spec.Components.Schemas["NodeDetail"].AllOf {
+		if _, ok := part.Properties["identity_conflict"]; ok {
+			hasIdentityConflict = true
+		}
+	}
+	if !hasIdentityConflict {
+		t.Fatal("contracts/openapi.yaml NodeDetail schema missing identity_conflict")
+	}
+	for _, field := range []string{"mapping_frozen", "conflict_count", "last_conflict_at"} {
+		if _, ok := spec.Components.Schemas["NodeIdentityConflict"].Properties[field]; !ok {
+			t.Fatalf("contracts/openapi.yaml NodeIdentityConflict schema missing %s", field)
+		}
+	}
+
+	// 2. Verify no owned Markdown file still contains "revision 10" or "1.6.0".
+	for _, rel := range ownedDocs {
+		doc := readOwnedDoc(t, root, rel)
+		for _, stale := range []string{"revision 10", "Revision 10", "1.6.0"} {
+			if strings.Contains(doc, stale) {
+				t.Errorf("%s still contains stale contract version/revision string %q", rel, stale)
+			}
+		}
+	}
+
+	// 3. Verify operator-guide.md pins for follow-up 9: revision 11 (#213), reading the provisional window
+	// (D-067/D-071/#206/#216), cloned-identity runbook (D-072/#211/#213), revoke nodes step outcomes (D-070/#206),
+	// worker contention (#205/#208), control follow-up 20 (#215), and acceptance cross-references (#204/#207/#210/#212/#214).
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"OpenAPI `1.7.0`, revision 11",
+		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
+		"D-070", "D-071", "D-072",
+		// Provisional window (D-067, D-071, #206, #213, #216).
+		"ErrorCode.AWAITING_MEMBER_GRANTS",
+		"the `lease`, `qos`, and `source_binding` checks as `failed` with `AWAITING_MEMBER_GRANTS`",
+		"one `errors[]` entry at `stage=lease`",
+		"ProvisionalGrantlessLeaseSeconds = 60",
+		"`D-067` backstop, `#206`",
+		"expires such a grant-less lease after **`60 s`**",
+		"This is not an incident; `LEASE_EXPIRED` / `lease_expired` is.",
+		"persists beyond a few minutes, check desired bindings",
+		"member's entitlement",
+		// Cloned or duplicated node identity (D-072, #211, #213) runbook.
+		"Cloned or Duplicated Node Identity Runbook (`D-072`",
+		"ObserveEndpointTx",
+		"IPv4 `/24`",
+		"IPv6 `/48`",
+		"DefaultIdentityActiveWindow = 120 * time.Second",
+		"Roaming rule (`X → Y`, not a conflict)",
+		"Interleaving rule (conflict)",
+		"node_identity_conflicts",
+		"mapping_frozen = true",
+		"pki_mapping_frozen",
+		"provisioning_state = 'failed'",
+		"safety_status = 'failed'",
+		"member_forwarding_observed = false",
+		"node.identity.conflict",
+		"NodeDetail.identity_conflict",
+		"conflict_count",
+		"last_conflict_at",
+		"D-055",
+		"revokeNode",
+		"starts unfrozen (`mapping_frozen = false`)",
+		"There is no unfreeze operation.",
+		"Two clones behind the **same** IPv4 `/24` or IPv6 `/48` compatibility domain are not detected by this check.",
+		// Revoke nodes step outcomes (D-070, #206, #216).
+		"conntrack_delete_pending",
+		"conntrack_delete_succeeded",
+		"node_failed_closed",
+		"A second registered node of the exit group still reporting a pending `{code: \"ISOLATION_POLICY_INVALID\", stage: \"apply\"}` error while forwarding holds the `\"nodes\"` step",
+		"migrated with nil `DeviceID`/`MemberID`",
+		// Worker contention is not failure (#205, #208).
+		"Worker Contention Is Not Failure (`#205`, `#208`",
+		"Operations are **never** marked `failed` because two worker goroutines handled the same member concurrently.",
+		"pg_try_advisory_lock(hashtextextended(device_id, 120))",
+		"discovery_decision",
+		"attributed to `fleet_config:00000000-0000-0000-0000-000000000001` (`fleet_config`), never to an invented member",
+		"operations are never observed `failed` in the live suite",
+		// Control follow-up 20 (#215) exact sentences.
+		"In each `anonymous` table (`ingress[anonymous]` and `anonClass`), one `/48` may hold every slot except a reserve of one (`max_rate_principals` defaults to `10000`, so `9999` `/64`s; a cap of one still allows that slot). A new `/64` in a `/48` that already has keys returns `429 RATE_LIMITED` with `Retry-After: 1` once only that reserve remains, without inserting or evicting, and another `/48` or an IPv4 address can take the reserve. On the agent mTLS listener, no verified chain is `401 UNAUTHENTICATED` before the limiter; a verified leaf keys ingress by its `urn:fvpn:node:<uuid>` URI SAN (`node:<uuid>`), so every still-usable serial of a node shares one burst during renewal overlap, and `sha256(leaf.Raw)` is the key only for a verified leaf without that SAN (`gates[class]` is taken before `AuthenticateAgent`, and a failed authentication has spent the token). When the table is full, eviction walks from the tail to the first bucket idle at full tokens or idle for more than an hour, bounded by `max_rate_principals`; a table with no eligible bucket returns `429`.",
+		// Acceptance cross-references (#204, #207, #210, #212, #214).
+		"c359fa37-61e0-4469-9f73-5a1e60949c3b",
+		"passes `AT10` with counted positives on every destination case",
+		"**subset passed, case blocked** on designed gaps with owners",
+		"`AT13` `60 s` whole-node expiry",
+		"finite-member expiry under control loss pass",
+		"105/105",
+		"d50da75fd14fc72c",
+		"2393df75-6261-42bc-99b4-df3c57c4b741",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 9 token %q", token)
+		}
+	}
+
+	// 4. Verify calibration.md and ops/README.md pins for follow-up 9.
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#206", "#213", "#215", "#216",
+		"D-071",
+		"AWAITING_MEMBER_GRANTS",
+		"ProvisionalGrantlessLeaseSeconds = 60",
+		"expires such a grant-less lease after `60 s`",
+		"one `/48` may hold every slot except a reserve of one",
+		"a verified leaf keys ingress by its `urn:fvpn:node:<uuid>` URI SAN (`node:<uuid>`), so every still-usable serial of a node shares one burst during renewal overlap, and `sha256(leaf.Raw)` is the key only for a verified leaf without that SAN",
+		"eviction walks from the tail to the first bucket idle at full tokens or idle for more than an hour, bounded by `max_rate_principals`",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 9 token %q", token)
+		}
+	}
+
+	opsREADME := readOwnedDoc(t, root, "docs/ops/README.md")
+	for _, token := range []string{
+		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
+		"c359fa37-61e0-4469-9f73-5a1e60949c3b",
+		"passes `AT10` with counted positives on every destination case",
+		"**subset passed, case blocked** on designed gaps with owners",
+		"`AT13` `60 s` whole-node expiry through `PUT /api/v1/admin/fleet-config` and finite-member expiry under control loss pass",
+		"105/105",
+		"d50da75fd14fc72c",
+		"2393df75-6261-42bc-99b4-df3c57c4b741",
+	} {
+		if !strings.Contains(opsREADME, token) {
+			t.Errorf("docs/ops/README.md missing expected follow-up 9 token %q", token)
+		}
 	}
 }

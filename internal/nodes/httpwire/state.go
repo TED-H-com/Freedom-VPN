@@ -175,9 +175,19 @@ func (h *Handlers) RenewServingLease(ctx context.Context, r gen.RenewServingLeas
 	var out api.ServingLeaseEnvelope
 	var e error
 	if tx, err := httpapi.Transaction(ctx); err == nil {
+		if e = h.observeAgentEndpointTx(ctx, tx); e != nil {
+			return nil, e
+		}
 		out, e = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
 	} else {
-		out, e = svc.Renew(ctx, p.NodeID, p.IncarnationID, *r.Body)
+		e = db.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
+				return err
+			}
+			var err error
+			out, err = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
+			return err
+		})
 	}
 	if e != nil {
 		return nil, e

@@ -1,34 +1,38 @@
-# Enrollment acceptance requests — follow-up 1
+# Enrollment acceptance requests — follow-up 2
 
 Current binding: `w4-enroll / 12000`. D-050 applies to every request. The
 initial 66000 attempts are immutable history, not the current binding.
 
 | ID | State | Owner | Exact remaining evidence / question |
 |---|---|---|---|
-| ENR-01 | closed | orchestrator / devstack #182 | #182 explicitly assigns legal base 12000 to w4-enroll. All active pins use 12000; 6000 remains reserved. |
-| ENR-02 | open product question | pki-enroll | Does `listAuditEvents` (`GET /api/v1/admin/audit-events`, enrollment resource) expose the stored enrollment-token SHA-256 in an approved `changes.before/after` field? Revision 9 allows arbitrary change properties but declares no token-hash field; `appendDomainAudit` writes only `reason`, and audit redaction treats token-named keys as sensitive. Which approved digest field satisfies §19 AT06 “token hash 紀錄” and §6.1 “資料庫只保存雜湊”? See the live field inventory when available. |
-| ENR-03 | open product question | w3-wire-nodes | Which operation/field exposes complete incarnation history/count and retained usage by Node/incarnation for §19 AT06 “同一 incarnation” and §19 AT07 “歷史 Node 保留” / “歷史用量”? `getNode.current_incarnation_id`, `getEnrollment.node_incarnation_id`, member period usage totals and the agent-only checkpoint provide partial identity/usage evidence; revision 9 declares no complete admin incarnation collection or per-incarnation usage ledger read. Live `node.peer_discovered` audit fields do include `incarnation_id` and `peer_id`; can that audited history meet the complete-history criterion, and where is retained usage attribution exposed? Please identify the existing approved surface or specify the missing public read contract. |
-| ENR-04 | blocked; follow-up 12 | devstack | Export/document `JoinEnrolledIdentity`, `EnrollmentPeerInventory` for the harness's exact own-key requests, normal one-time bootstrap and complete correlated peer readback. No zero-peer result before joining can prove one-peer idempotence. |
-| ENR-05 | blocked; follow-up 13 | devstack | Export/document `HoldUsageAcknowledgements`, `UsageLedgerSnapshot`, `CountedMemberTraffic`. Need counted traffic, nonempty unACKed ledger, immutable hashes/decimal sequence numbers and actual contiguous ACKs across installer rerun. |
-| ENR-06 | blocked; follow-up 13 | devstack | Export/document `RerunInstaller`, `ControlledReinstall`. Need the real installer, preserved identity/ledger, new authorized token/incarnation, old-cert mTLS rejection and historical Node/usage readback. |
-| ENR-07 | blocked; follow-up 12 | devstack | Export/document `MachineIdentityFingerprints`, `StartClonedIdentityFixture`. Need actual key/machine fingerprints and sanctioned cloned-image conflict evidence; no manual copy into a live node. |
+| ENR-01 | closed | orchestrator / devstack #182 | #182 assigns legal base 12000 to w4-enroll. Active pins use 12000. |
+| ENR-02 | closed | pki-enroll #195 | Contract revision 10 `Enrollment.token_sha256` (`^[0-9a-f]{64}$`) is SHA-256 of the exact plaintext token. Run `7615d23d-d572-4db1-a903-9610dd3bcef3` matched the harness digest on create, get, revoke and `enrollment.created` `changes.after.token_sha256`. Consumed and revoked events omit the field. Plaintext was absent from admin reads and the log streams. |
+| ENR-03 | closed | w3-wire-nodes #200 | `GET /api/v1/admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`). The same run: a fresh Node has one current incarnation equal to `getNode.current_incarnation_id` and `getEnrollment.node_incarnation_id`; the same-holder retry and the two-key race left the count at one; after `revokeNode` (202) and a second bound enroll, the list is newest-first with count 2, the previous row `retired` / `reinstall` (it was `revocation` before the replacement), usage `"0"`/`"0"` unchanged, cursor round-trip with no duplicates, and 404 for an unknown Node. |
+| ENR-04 | closed | devstack follow-up 12 #204 | `JoinEnrolledIdentity` and `EnrollmentPeerInventory` ran on a second fresh stack. Discarded-response race: HTTP 201 and 409 `ENROLLMENT_KEY_MISMATCH`. Replay joined (enroll 200, bootstrap 200). Inventory `complete`: one setup key, `setup_key_uses` 1, one projected peer, `correlation_groups` 0. A second read stayed at one peer. |
+| ENR-05 | blocked; follow-up 13 | devstack | Export/document `HoldUsageAcknowledgements`, `UsageLedgerSnapshot`, `CountedMemberTraffic`. Need counted traffic, nonempty unACKed ledger, immutable hashes/decimal sequence numbers and actual contiguous ACKs across installer rerun. Not merged on the source used for run `7615d23d`. |
+| ENR-06 | blocked; follow-up 13 | devstack | Export/document `RerunInstaller`, `ControlledReinstall`. Need the real installer, preserved identity/ledger, new authorized token/incarnation, old-cert mTLS rejection and historical Node/usage readback. Not merged on the source used for run `7615d23d`. |
+| ENR-07 | closed | devstack follow-up 12 #204 | `MachineIdentityFingerprints` returned distinct machine-id, agent SPKI and NetBird public-key hashes for `node` and `node2`. `StartClonedIdentityFixture` copied the enrolled source and both stages reached `enrolled` with equal hashes. The conflict-row remainder is ENR-08. |
+| ENR-08 | open product gap | PKI/enrollment + node identity adapter | `StartClonedIdentityFixture.Observe` read `node_identity_conflicts` and `node_identity_endpoints.mapping_frozen` for the source incarnation. Run `7615d23d` observed `endpoint_rows` 0, `conflicts` 0, `mapping_frozen` false while source and clone shared one identity and both stages were `enrolled`. Devstack follow-up 12 records the same gap: `ObserveEndpoint` has no production caller. Need that caller to write the conflict row and freeze mapping. The harness already consumes the export and does not manufacture rows. |
 
-[API surface review](api-surface-review.md) names each reviewed revision-9
-operation and field and distinguishes identity binding, immutable audit,
-aggregate usage and historical ledger evidence. Existing APIs are used first.
-No SQL read, row repair, fake observation or ad hoc identity copy is proposed.
+[API surface review](api-surface-review.md) names the revision 9 reads, the
+revision 10 fields that closed ENR-02 and ENR-03, and the follow-up 12 exports
+measured here. No SQL read, row repair, fake observation or ad hoc identity
+copy is proposed.
 
-The current merged lab exports `Enroll`, `StartSecondExit`, `EnrollAt`,
-`PauseAgent`, and durable restart. These support two clean first boots and
-normal identity readback; durable restart is not a real installer rerun or an
-ACK hold. Shared hook documentation: [RUN.md](../../RUN.md).
+The merged lab, as of source `efba7fb`, exports `Enroll`, `StartSecondExit`,
+`EnrollAt`, `PauseAgent`, durable restart, `JoinEnrolledIdentity`,
+`EnrollmentPeerInventory`, `MachineIdentityFingerprints` and
+`StartClonedIdentityFixture`. It does not export the ENR-05/ENR-06 names.
+Shared hook documentation: [RUN.md](../../RUN.md).
 
-Live run `75dbb974-04d2-4e45-a6bd-cfe0d923bd2c` confirms ENR-01 closed:
-fresh startup and the live probe both exit 0. For both AT06 enrollment
-resources, the audit API returns created/consumed events with only `reason` in
-changes, so ENR-02 is confirmed against responses. Both AT07 nodes expose
-current identity and a bound peer, and their node audit streams include
-peer-discovery incarnation fields. ENR-03 is limited to complete history/count
-and historical usage attribution, not a claim that no identity/audit API exists.
-The exact export names above remain absent in the merged source used for this
-run. No failing subcheck was observed; complete ATs remain blocked.
+Live run `7615d23d-d572-4db1-a903-9610dd3bcef3` is the closure measurement.
+Run `9bb66c4e-e429-450b-8671-521d33926ede` measured the same token-hash and
+incarnation checks on `746651e` before follow-up 12 was in this branch. Run
+`bebfe230-26d4-4e3d-b052-81d258d04e07` retains the 429 failures. No current
+subcheck failed on `7615d23d`. Complete ATs remain blocked.
+
+## Devstack follow-up 13 recheck (2026-10-30)
+
+Rechecked on devstack parent `52dc770`. ENR-05 stays blocked. `node/internal/usageupload` still acknowledges every batch. There is no withhold-only-acks switch and no approved read-only ledger snapshot with immutable event hashes, decimal sequence and epoch identity, and the contiguous ACK watermark across restart. `PauseAgent` is not that hook. Do not edit or delete outbox rows. Owner: w4-usage, then devstack. Symbols: `HoldUsageAcknowledgements(ctx, slot, hold)`, `UsageLedgerSnapshot(ctx, slot)`, `CountedMemberTraffic`.
+
+ENR-06 stays blocked. `packaging/` is only the release archive. There is no installer invocation or disposable Ubuntu service entry point to wrap. A container restart, key erasure, or copied identity rows are not that proof. Owner: packaging/installer, then devstack. Symbols: `RerunInstaller(ctx, slot)`, `ControlledReinstall(ctx, slot, enrollment)`.

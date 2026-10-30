@@ -1,5 +1,6 @@
 {
   "id": "AT15",
+  "run_id": "9d561888",
   "title": "用量批次冪等、亂序缺口、衝突稽核與簽章檢查點恢復 (Idempotent Usage Ingest, Contiguous ACK, Conflict Audit \u0026 Signed Checkpoint Recovery)",
   "spec": "§10.4–§10.8, §17.3, §19.5 AT15",
   "requirements": [
@@ -9,125 +10,148 @@
     "API01",
     "DATA01"
   ],
-  "status": "blocked",
-  "at": "2026-10-30T01:04:21Z",
+  "status": "pass",
+  "at": "2026-10-30T21:31:27Z",
   "build": {
-    "git_commit": "912d976b03b9948ba308cd6e4e97d0f931574510",
+    "git_commit": "3caa49cb3337bfc8fe69a9d3234e863dc0ed7765",
     "git_dirty": false,
     "go_version": "go1.27.3",
     "goos": "linux",
     "goarch": "amd64",
     "binaries": {
-      "fvpn-agent": "c7a86bc09070181cafbb68108ed19c3e7ab6c844827e440f2688b5cdae60501a",
-      "fvpn-control": "3e58851f703bbf405b25f986d876491ee03cdc73e4f1ad12ad11f329eb3f91a9",
-      "fvpn-updater": "407e51e37e40a5424701fc07143d7c7ec40d1dd1ed2eee178b2bafe0ebe9ac1b",
-      "fvpn-worker": "428a71d6717d313ce01a3ddd4c69a5f545ba2e432aa3330b29353385cd3b6d72"
+      "fvpn-agent": "94c577cf210c0d57f0abf99118caa7b0f4d72a1fd154cc3aa8c09fc0efddfe23",
+      "fvpn-control": "d7f6a624bf20047bbe050b33ddee1d8e699024777c8b8934d4f060bed1a2d121",
+      "fvpn-updater": "151872564ffe24a88409fb7995cd7708e68543402f07a5e6034a8d337279df8e",
+      "fvpn-worker": "5c8039331a53fcc57f63f8fe8c4431f0b1d9636be8df2da50e7dc44c0923c0d8"
     }
   },
   "image_digests": {
     "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-    "control": "sha256:7fc215c29ed67a8db53b7af1724513a3d698f9c5cd947288be5cb0675a6bb323",
+    "control": "sha256:bebb90905c8a462136b453f0c8960feb23cb4700d745639068c4b2d089200b7e",
     "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
     "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-    "idp": "sha256:67a8a7204f14146dc8ff8d83e2255a1b6eaff96dc5ecde5d049b2d6bcd91638b",
-    "member": "sha256:0a22de69781c75194051a356c214e5c2195411c94715576c42e1cdc18253e85a",
+    "idp": "sha256:e8bb30032eb9c3840405d85687fc9b5482f6bccfe10ad8c2a056f410f9a37020",
+    "member": "sha256:25f7762c209878d7e2d4948125c4b693d933454c78a477e9105ba011b34baa06",
     "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-    "node": "sha256:0a22de69781c75194051a356c214e5c2195411c94715576c42e1cdc18253e85a",
-    "origin": "sha256:35195202c8f0b6791ba522d5ecf676416aceb609155cc1a04c3f9fa9ade5c038",
-    "payment": "sha256:fef6164a57492d7eee3f14b6094924db9395f50aaca74db522bc24329458cebf",
-    "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-    "worker": "sha256:f0472a2c96898a8a0607792697f381ff6b1bd1ae1da13b84f23abcd4b5efca90"
+    "node": "sha256:25f7762c209878d7e2d4948125c4b693d933454c78a477e9105ba011b34baa06",
+    "origin": "sha256:2349300c08227c7544af63629f864d428412eaf37154ea361358e06cd6061f19",
+    "payment": "sha256:071f609f2b474c67d683241c4e645f964a4d593d6066142e7cd13daeccca4740",
+    "postgres": "sha256:3469398b2ad99e12de8e3a2c92152b917902a8cb8579cd7f9469c58123c7d6cd",
+    "worker": "sha256:0a3c52020423a5050081e29f67907c6b67a585709c79175cccb3baf73e9bbb29"
   },
-  "policy_revision": "applied_config_generation=0; fair_use=01a18a50-62a0-7a1c-bce0-a3956873e6c2; dns_profile=01a18a56-0bb7-7524-82c3-5b31c4255f3e",
-  "node_incarnation": "01a18a49-4253-781f-9f9e-de9c6c24c5ec",
-  "expected": "POST /api/v1/agent/usage-batches enforces idempotent batch replay, per-event duplicate/conflict/rejected status, contiguous ACK watermark (highest_contiguous_seq \u0026 blocked_seq), \u003e2^53 decimal string precision, and Ed25519-signed GET /api/v1/agent/usage-checkpoint recovery.",
-  "actual": "Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on enrolled node 01a18a49-4020-71c6-ad22-893acd249a8b (incarnation 01a18a49-4253-781f-9f9e-de9c6c24c5ec) verified Ed25519 recovery signature, out-of-order seq {22,24} -\u003e gap fill seq 23 advancing highest_contiguous_seq to 24, batch replay, duplicate event, payload_sha256 conflict audit (usage_event_conflicts=5), rejected seq 26 blocked_seq=26 advancing to 27, and 409/403 error envelopes. Non-empty member UsageRecord ingestion on the unseeded live stack is blocked because device_bindings has 0 rows.",
-  "blockers": [
-    "Live non-empty member UsageRecord ingestion on the unseeded stack is blocked because validateEventBindingsInTx requires an active device_bindings row and entitlement interval, while device_bindings count=0 and plan creation returns HTTP 422."
-  ],
+  "policy_revision": "applied_config_generation=68; dns_profile=01a18eb6-339e-7a3b-ba55-2f765bcc4ed4; domain_rule_set=01a18eb6-2f38-7cef-867b-b76516973103; fair_use=01a18e58-f7c4-76f8-b879-9bd03fbaea55; plan=01a18eb6-4060-7b2d-ba8b-0d73f503e881; release_support=01a18e52-a293-7e1b-b22e-ed9f7341ab29",
+  "node_incarnation": "01a18e52-b696-70ca-8f8c-c9cb0c48342c",
+  "expected": "POST /api/v1/agent/usage-batches enforces idempotent batch replay, per-event duplicate/conflict/rejected status, contiguous ACK watermark (highest_contiguous_seq \u0026 blocked_seq), \u003e2^53 decimal string precision, and Ed25519-signed GET /api/v1/agent/usage-checkpoint recovery with fvpn-usage-admin freeze/begin-recovery/complete-recovery.",
+  "actual": "Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on serving node 01a18e52-b663-70aa-858c-12d0cd359d20 (incarnation 01a18e52-b696-70ca-8f8c-c9cb0c48342c) verified real agent-uploaded ledger events (1..97), bound member UsageRecord ingestion, out-of-order {98,100} -\u003e gap fill 99 advancing highest_contiguous_seq to 100, batch/event replay with zero double-counting, payload_sha256 conflict audit (rows=2), rejected \u003e2^53 event blocked_seq=102 advancing to 103, and live §17.3 ledger recovery via fvpn-usage-admin (freeze 503, begin-recovery epoch 01a18e96-de19-7b88-b05a-b8b6af754868 -\u003e 01a18eb9-f7e5-768b-a228-6798c0824bab, replay_unavailable seq 104 tombstone, and complete-recovery).",
   "commands": [
     {
-      "command": "POST /api/v1/admin/policies (release_support) + POST /activate",
+      "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
       "exit_code": 0,
-      "output": "create=HTTP 201 revision_id=01a18a56-073d-7935-aca4-a37399e44c1c; activate=HTTP 422 RELEASE_NOT_APPROVED",
-      "at": "2026-10-30T01:04:16Z"
+      "output": "boot_release_id=01a18e52-9e0b-7931-a7c2-33cf5959fce2 support_revision_id=01a18e52-a293-7e1b-b22e-ed9f7341ab29 digests=0",
+      "at": "2026-10-30T21:27:46Z"
     },
     {
-      "command": "POST /api/v1/admin/policies (fair_use shadow) + POST /activate",
+      "command": "POST /api/v1/admin/groups",
       "exit_code": 0,
-      "output": "definition_id=01a18a56-100d-7df2-a752-3f52740b2a11 shadow_revision_id=01a18a56-100e-7c28-8902-553575514d02 create=HTTP 201 activate=HTTP 202",
-      "at": "2026-10-30T01:04:19Z"
+      "output": "HTTP 201 group_id=01a18e52-a4e3-7981-983d-bcb37866f801",
+      "at": "2026-10-30T21:27:46Z"
     },
     {
-      "command": "PUT /api/v1/admin/nodes/01a18a49-4020-71c6-ad22-893acd249a8b/publication",
+      "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
       "exit_code": 0,
-      "output": "HTTP 422 NODE_NOT_SERVICEABLE: {\"error\":{\"code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"node does not satisfy serving baseline requirements\",\"request_id\":\"01a18a56-1b83-7802-8c0f-98bbc9d92e63\",\"retryable\":false,\"details\":{\"failed_checks\":[\"provisioning_state=applying (want ready)\"]}}}",
-      "at": "2026-10-30T01:04:21Z"
+      "output": "dns_rev=01a18eb6-339e-7a3b-ba55-2f765bcc4ed4 fair_use_shadow_rev=01a18eb6-3807-7351-848f-452c32f360a3 plan_rev=01a18eb6-4060-7b2d-ba8b-0d73f503e881",
+      "at": "2026-10-30T21:27:51Z"
     },
     {
-      "command": "docker exec fvpn-w4-usage-node nft list chain inet fvpn forward",
+      "command": "PATCH /api/v1/admin/nodes/{id} + PUT /publication + JoinNativeMember(memberA, memberB) + netbird networks select fvpn-exit-3b8c7fda8e7fc29ea530aef8",
       "exit_code": 0,
-      "output": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\toifname \"fvnb0\" ct state established,related counter packets 0 bytes 0 accept\n\t\tiifname \"fvnb0\" counter packets 0 bytes 0 accept\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}",
-      "at": "2026-10-30T01:04:21Z"
+      "output": "node_id=01a18e52-b663-70aa-858c-12d0cd359d20 exit_id=01a18e52-b663-70ab-aac1-f1979b9a59f4 exit_net_id=fvpn-exit-3b8c7fda8e7fc29ea530aef8 deviceA=01a18e53-b028-7001-8905-4d739aee9610 deviceB=01a18e5f-5ae3-71c9-9ffe-67613fefcdf3 routedA=true routedB=true heartbeat=\"v1\\nboot_id 8ff08acd-e3cb-4ba4-afc6-43f4fb01a723\\nmono_ns 750725531469496\\nwall_unix_ns 1793395686334648342\\npolicy_expires_mono_ns 830627769642324\\nbaseline_ok 1\\nserving 1\\ngeneration 67\\nreason serving\"",
+      "at": "2026-10-30T21:28:08Z"
     },
     {
-      "command": "mTLS GET https://agent.example.invalid:9443/api/v1/agent/usage-checkpoint (initial)",
+      "command": "Baseline counted HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
       "exit_code": 0,
-      "output": "HTTP 200 highest_contiguous_seq=21 ledger_epoch=c3cd0d36-1b5b-4000-bef6-ef8ed4c49653 recovery_record_null=true sig_verified=true",
-      "at": "2026-10-30T01:04:21Z"
+      "output": "counted=true generation=67 delta_up=1066 delta_down=1516 origin_src=198.51.100.20",
+      "at": "2026-10-30T21:28:08Z"
     },
     {
-      "command": "mTLS POST /api/v1/agent/usage-batches (out-of-order seq 22, 24)",
+      "command": "mTLS GET https://agent.example.invalid:9443/api/v1/agent/usage-checkpoint (after real agent uploads)",
       "exit_code": 0,
-      "output": "HTTP 200 highest_contiguous_seq=22 results=[accepted,accepted]",
-      "at": "2026-10-30T01:04:22Z"
+      "output": "HTTP 200 highest_contiguous_seq=97 ledger_epoch=01a18e96-de19-7b88-b05a-b8b6af754868 recovery_record_null=false sig_verified=true",
+      "at": "2026-10-30T21:31:46Z"
     },
     {
-      "command": "mTLS POST /api/v1/agent/usage-batches (fill gap seq 23 -\u003e contiguous ACK 24)",
+      "command": "mTLS POST /api/v1/agent/usage-batches (out-of-order {98,100}, gap fill 99, conflict 100, blocked 102-\u003e103, 409/403 guards)",
       "exit_code": 0,
-      "output": "HTTP 200 highest_contiguous_seq=24 status=accepted",
-      "at": "2026-10-30T01:04:23Z"
+      "output": "b1_hcs=98 b2_hcs=100 conflict_rows=2 blocked_seq=102 unblocked_hcs=103",
+      "at": "2026-10-30T21:31:56Z"
     },
     {
-      "command": "mTLS POST /api/v1/agent/usage-batches (seq 25, rejected seq 26, seq 27 -\u003e blocked_seq=26; valid seq 26 -\u003e highest_contiguous_seq=27)",
+      "command": "fvpn-usage-admin freeze + begin-recovery + mTLS GET /usage-checkpoint + POST /usage-batches (replay_unavailable) + complete-recovery",
       "exit_code": 0,
-      "output": "blocked: hcs=25 blocked_seq=26; unblocked: hcs=27 blocked_null=true",
-      "at": "2026-10-30T01:04:24Z"
+      "output": "frozen_http=503 old_epoch=01a18e96-de19-7b88-b05a-b8b6af754868 new_epoch=01a18eb9-f7e5-768b-a228-6798c0824bab reconcile_hcs=104 freeze={\n  \"actor\": \"01a18e52-951b-7a14-b69b-a8d5bc2683f4\",\n  \"reason\": \"TEST ONLY AT15 freeze\",\n  \"status\": \"frozen\"\n} begin={\n  \"recovery_id\": \"01a18eb9-f7e5-768a-b0be-2058b475b7f6\",\n  \"previous_ledger_epoch\": \"01a18e96-de19-7b88-b05a-b8b6af754868\",\n  \"new_ledger_epoch\": \"01a18eb9-f7e5-768b-a228-6798c0824bab\",\n  \"mode\": \"reconciling\",\n  \"reason\": \"TEST ONLY AT15 begin recovery\",\n  \"actor\": \"01a18e52-951b-7a14-b69b-a8d5bc2683f4\",\n  \"signed_record\": {\n    \"signed\": {\n      \"actor\": \"01a18e52-951b-7a14-b69b-a8d5bc2683f4\",\n      \"affected_since\": \"2026-10-01T00:00:00Z\",\n      \"created_at\": \"2026-10-30T21:31:54.725423191Z\",\n      \"new_ledger_epoch\": \"01a18eb9-f7e5-768b-a228-6798c0824bab\",\n      \"previous_ledger_epoch\": \"01a18e96-de19-7b88-b05a-b8b6af754868\",\n      \"reason\": \"TEST ONLY AT15 begin recovery\",\n      \"recovery_id\": \"01a18eb9-f7e5-768a-b0be-2058b475b7f6\",\n      \"restored_to\": \"2026-10-30T21:31:54.725423191Z\",\n      \"stream_count\": 5\n    },\n    \"signatures\": [\n      {\n        \"key_id\": \"01a18e33-0392-7bad-b453-856a46c4978b\",\n        \"algorithm\": \"ed25519\",\n        \"signature_b64\": \"b4i7e0YMlIe9rl63VLwDzHednYs/on81UnCNc3YyrBtpi6FXpIbFCJLFz4hmQlwR1xLaJTEPVNfSjGGw09xfDQ==\"\n      }\n    ]\n  },\n  \"recomputed_streams\": 5,\n  \"created_at\": \"2026-10-30T21:31:54.725423191Z\"\n} complete={\n  \"actor\": \"01a18e52-951b-7a14-b69b-a8d5bc2683f4\",\n  \"status\": \"normal\"\n}",
+      "at": "2026-10-30T21:31:56Z"
     }
   ],
   "observations": {
     "active_policy_revisions": {
-      "dns_profile": "01a18a56-0bb7-7524-82c3-5b31c4255f3e",
-      "fair_use": "01a18a50-62a0-7a1c-bce0-a3956873e6c2"
+      "dns_profile": "01a18eb6-339e-7a3b-ba55-2f765bcc4ed4",
+      "domain_rule_set": "01a18eb6-2f38-7cef-867b-b76516973103",
+      "fair_use": "01a18e58-f7c4-76f8-b879-9bd03fbaea55",
+      "plan": "01a18eb6-4060-7b2d-ba8b-0d73f503e881",
+      "release_support": "01a18e52-a293-7e1b-b22e-ed9f7341ab29"
     },
     "blocked_seq_on_rejection": "6",
-    "device_bindings_count": 0,
+    "bootstrap_transfer": {
+      "after_download_bytes": "15149",
+      "after_upload_bytes": "10900",
+      "before_download_bytes": "13633",
+      "before_upload_bytes": "9834",
+      "counted": true,
+      "delta_download_bytes": "1516",
+      "delta_upload_bytes": "1066",
+      "expected_snat": "198.51.100.20",
+      "generation": "67",
+      "http_200": true,
+      "member_fvnb0_rx_bytes_delta": 1856,
+      "member_fvnb0_tx_bytes_delta": 1408,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 1544,
+      "node_fvup0_l3_tx_bytes_delta": 1094,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "198.51.100.20",
+      "probe_id": "34738aad-6021-45ad-969c-b930c09842eb",
+      "requests": 1
+    },
+    "device_a_id": "01a18e53-b028-7001-8905-4d739aee9610",
+    "device_b_id": "01a18e5f-5ae3-71c9-9ffe-67613fefcdf3",
+    "exit_id": "01a18e52-b663-70ab-aac1-f1979b9a59f4",
+    "exit_network_id": "fvpn-exit-3b8c7fda8e7fc29ea530aef8",
+    "group_id": "01a18e52-a4e3-7981-983d-bcb37866f801",
     "large_download_bytes": "9007199254740995",
     "large_upload_bytes": "9007199254740993",
+    "live_final_highest_contiguous_seq": "104",
+    "live_recovery_epoch_after": "01a18eb9-f7e5-768b-a228-6798c0824bab",
+    "live_recovery_epoch_before": "01a18e96-de19-7b88-b05a-b8b6af754868",
     "member_usage_total_bytes": "18014398509491988",
-    "node_id": "01a18a49-4020-71c6-ad22-893acd249a8b",
-    "node_incarnation_id": "01a18a49-4253-781f-9f9e-de9c6c24c5ec",
-    "node_publication_http": "422 NODE_NOT_SERVICEABLE",
+    "node_id": "01a18e52-b663-70aa-858c-12d0cd359d20",
+    "node_incarnation_id": "01a18e52-b696-70ca-8f8c-c9cb0c48342c",
     "out_of_order_hcs_after_seq2": "3",
     "out_of_order_hcs_before_seq2": "1",
     "port_base": 48000,
     "post_recovery_hcs": "7",
-    "recovery_new_epoch": "01a18a56-2efd-76f0-a99d-be7a0bf4607b",
-    "recovery_previous_epoch": "23b61f2f-6444-4d86-b0e6-6aee72c4998b",
+    "recovery_new_epoch": "01a18eb9-fea3-745b-889a-e8dc6ac7b9b2",
+    "recovery_previous_epoch": "198f2e46-eb1e-4e6a-93e9-e9cf4769e045",
+    "run_id": "9d561888",
     "stack_prefix": "fvpn-w4-usage"
   },
   "mechanism_checks": [
     {
-      "name": "LiveMTLSUsageCheckpointEd25519Verification",
-      "spec_ref": "§10.6, §17.3, MTR03, MTR04",
+      "name": "LiveMTLSUsageBatchesContiguousAckConflictBlockedSeqAndRecoveryMode",
+      "spec_ref": "§10.4–§10.8, §17.3, MTR02, MTR03, MTR04",
       "status": "pass",
-      "summary": "Live mTLS GET /api/v1/agent/usage-checkpoint for node 01a18a49-4020-71c6-ad22-893acd249a8b verified against /etc/vpn-node/trust.json (purpose=recovery): ledger_epoch=c3cd0d36-1b5b-4000-bef6-ef8ed4c49653, recovery_record_id=null, highest_contiguous_seq=21."
-    },
-    {
-      "name": "LiveMTLSUsageBatchesContiguousAckConflictBlockedSeqAndErrorEnvelopes",
-      "spec_ref": "§10.4–§10.8, §14.6, MTR02, MTR03, MTR04",
-      "status": "pass",
-      "summary": "Live mTLS /api/v1/agent/usage-batches proved out-of-order seq {22,24} holding highest_contiguous_seq=22 with missing_ranges=[{23,23}], Idempotency-Key batch replay, duplicate retry, seq 23 gap fill advancing ACK to 24, payload_sha256 conflict audit (USAGE_EVENT_CONFLICT), rejected seq 26 reporting blocked_seq=26 then advancing to 27, and 409/403 whole-request guards."
+      "summary": "Live mTLS /api/v1/agent/usage-batches and fvpn-usage-admin verified bound member UsageRecord ingestion, out-of-order {98,100}-\u003e99 contiguous ACK, idempotent batch/event replay with zero double-counting, payload_sha256 conflict audit, rejected \u003e2^53 blocked_seq=102-\u003e103, freeze (503), begin-recovery epoch bump (01a18e96-de19-7b88-b05a-b8b6af754868-\u003e01a18eb9-f7e5-768b-a228-6798c0824bab), replay_unavailable tombstone (seq 104), and complete-recovery."
     },
     {
       "name": "ContiguousAckAndDecimalStringPrecisionAbove2Pow53",

@@ -85,6 +85,9 @@ func (c *Client) ensureNode(ctx context.Context, n NodePeer) (Peer, error) {
 	if !valid(n.NodeID, n.IncarnationID, n.PeerID) {
 		return Peer{}, failure(Invalid)
 	}
+	if err := checkDiscoveryFence(ctx); err != nil {
+		return Peer{}, err
+	}
 	o, e := c.get(ctx, "peers", n.PeerID)
 	if e != nil {
 		return Peer{}, e
@@ -92,6 +95,9 @@ func (c *Client) ensureNode(ctx context.Context, n NodePeer) (Peer, error) {
 	p := convert[Peer](o)
 	if p.UserID != "" || p.Ephemeral {
 		return Peer{}, failure(Conflict)
+	}
+	if err := checkDiscoveryFence(ctx); err != nil {
+		return Peer{}, err
 	}
 	if e = c.recordPeer(ctx, "node:"+n.NodeID+":"+n.IncarnationID, p, n); e != nil {
 		return Peer{}, e

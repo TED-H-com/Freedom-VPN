@@ -133,7 +133,7 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		}
 		if !exists {
 			var active bool
-			if e = r.Pool.QueryRow(ctx, `SELECT n.lifecycle_state='registered' AND n.current_incarnation_id=$2 AND i.revoked_at IS NULL FROM nodes n JOIN node_incarnations i ON i.node_id=n.id AND i.id=$2 WHERE n.id=$1`, p.NodeID, p.IncarnationID).Scan(&active); e != nil {
+			if e = r.Pool.QueryRow(ctx, `SELECT n.lifecycle_state='registered' AND n.current_incarnation_id=$2 AND i.revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=i.id AND x.mapping_frozen) FROM nodes n JOIN node_incarnations i ON i.node_id=n.id AND i.id=$2 WHERE n.id=$1`, p.NodeID, p.IncarnationID).Scan(&active); e != nil {
 				return "", e
 			}
 			if !active {
@@ -198,7 +198,15 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 			if nb == nil {
 				return "", errors.New("NetBird adapter required")
 			}
-			peer, e = nb.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: report.NodeId.String(), IncarnationID: report.NodeIncarnationId.String(), PeerID: peerID})
+			fencedCtx := netbird.WithDiscoveryFence(ctx, func(ctx context.Context) error {
+				return commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+					return discoveryActive(ctx, tx, r, nodeDiscovery{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId, OperationID: op})
+				})
+			})
+			peer, e = nb.EnsureNodePeer(fencedCtx, netbird.NodePeer{NodeID: report.NodeId.String(), IncarnationID: report.NodeIncarnationId.String(), PeerID: peerID})
+			if errors.Is(e, errDiscoveryInactive) {
+				return "observation:" + payload.ReportID.String(), nil
+			}
 			if e != nil {
 				return "", e
 			}

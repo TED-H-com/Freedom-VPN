@@ -582,7 +582,7 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 					(v.path == "ObservationReport#" && name == "dns_policy_evidence") ||
 					(v.path == "DesiredState#" && name == "egress_probe") ||
 					(v.path == "PolicyDefinition#" && name == "threat_feed_status") ||
-					(v.path == "NodeDetail#/allOf/1" && name == "dns_policy_evidence") ||
+					(v.path == "NodeDetail#/allOf/1" && (name == "dns_policy_evidence" || name == "identity_conflict")) ||
 					(v.path == "UpdateResult#" && name == "candidate_health") {
 					continue
 				}
