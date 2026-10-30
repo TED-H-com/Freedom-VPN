@@ -1,0 +1,22 @@
+{
+  "id": "lease-expiry",
+  "title": "Control stop leaves forwarding off",
+  "spec": [
+    "§5",
+    "§19 AT29"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "note",
+      "detail": "No positive counted flow before fault; control stop is not injected."
+    },
+    {
+      "name": "owner",
+      "detail": "w3-devstack-e2e: native client exit selection; see route and NetBird network evidence"
+    }
+  ],
+  "at": "2026-10-30T16:37:17Z",
+  "run_id": "3a129919-af3f-4bc9-b54a-8075eae8af45",
+  "source_commit": "79259af1facc1faa798fbb83cc20aa4e74539d1f"
+}

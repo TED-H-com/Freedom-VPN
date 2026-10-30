@@ -11,6 +11,7 @@ Shared setup calls and probe commands are documented in [RUN.md](RUN.md).
 |---|---|---|
 | `FVPN_E2E_PREFIX` | `e2e` | Runtime containers, networks and volumes use `fvpn-<prefix>-*`. |
 | `FVPN_E2E_PORT_BASE` | `18000` | Each loopback port is this base plus a fixed offset. |
+| `FVPN_E2E_GRACE_SECONDS` | `0` | Prepare-time payment grace; see restart semantics in RUN.md. |
 | `FVPN_E2E_STATE` | `.agent/e2e-state-<prefix>` | Git-ignored secrets and rendered config for that prefix. |
 
 Legal port bases are `6000 + 6000*n` for `n` from 0 through 9; `66000`
@@ -299,24 +300,22 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
   the latest complete run. Records with `blocked` keep the acceptance command
   non-zero and identify the responsible owner.
 
-## Latest complete run — follow-up 10
+## Latest complete run — follow-up 11
 
-See [followup10-verification.md](followup10-verification.md) for fresh-stack run
-counts, source commits and real-release digests. The dated root records are one
-complete merged-tree run; `followup10-run1/`, `followup10-run2/` and
-`followup10-run3/` retain the original three complete runs. Exploratory
-attempts are excluded. [Owner requests](requests.md) distinguish resolved lab
-findings from remaining measurement limits. The previous follow-up's
-[verification](followup9-verification.md) remains historical evidence.
+[Follow-up 11 verification](followup11-verification.md) records the fresh run
+`76f0725c-2264-4021-a553-60f6c921e32b`, source `1b2f358` on product base
+`5555772`: **26 pass / 1 blocked / 0 fail**, Go exit 1 / make exit 2.
+All 27 dated root record pairs belong to that run. The original follow-up 10
+sets and its merged-tree run remain archived; their
+[verification](followup10-verification.md) is historical evidence.
 
-The latest merged-tree run `3a129919-af3f-4bc9-b54a-8075eae8af45` on `79259af`
-is **21 pass / 5 blocked / 0 fail** (Go 1 / make 2). Both update scenarios pass,
-including #154 probe issuance with zero omissions and measured §13.9 traversal.
-Member traffic saw no advertised exit at the lab's one-time selection check;
-a later read showed it available but unselected. The lab owns bounded
-route-discovery polling. `member-traffic`, `usage`, `forwarding`, `device-revoke`
-and `lease-expiry` remain blocked without a positive counted flow; no agent
-forwarding defect is inferred from this run. See [owner requests](requests.md).
+Gateway client principals, finite-grace prepare, all ten layout slots and node
+resource sampling are verified. Bounded native route discovery now enables
+counted member traffic, usage and expiry withdrawal. The stale native client
+keeps its route and carries a counted flow while paused before DELETE, but the
+post-DELETE node capture is empty. The independent ingress fixture remains
+blocked with devstack/netlab; no kernel drop is claimed. See
+[owner requests](requests.md) for exact evidence and harness adoption steps.
 
 ## Node image prerequisites (F3-02)
 
