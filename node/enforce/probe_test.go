@@ -233,14 +233,18 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 			ruleExpr("forward", matchPayload("!=", "saddr", "@allowed_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", "@probe_v4"), matchPayload("==", "daddr", "@resolver_v4"), matchDport("tcp", 53), namedCounter(counterProbeUp), map[string]any{"accept": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", "@probe_v4"), matchPayload("==", "daddr", "@resolver_v4"), matchDport("udp", 53), namedCounter(counterProbeUp), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchPayload("==", "daddr", "@resolver_v4"), namedCounter(counterBadDNS), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchPayload("==", "daddr", "@denied_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchPayload("==", "daddr", "@host_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", "@probe_v4"), matchConcat("@probe_dst_v4"), namedCounter(counterProbeUp), map[string]any{"accept": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), namedCounter(up), manglePriority(classid), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchPayload("!=", "daddr", "@allowed_v4"), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchCTState("!=", "established", "related"), namedCounter(counterNoDown), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "daddr", "@probe_v4"), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), namedCounter(dn), manglePriority(classid), map[string]any{"accept": nil}),
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "input", "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}},
 			ruleExpr("input", matchMetaIface("iifname", in), map[string]any{"drop": nil}),
+			ruleExpr("input", matchPayload("==", "saddr", "100.64.0.0/10"), map[string]any{"drop": nil}),
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "output", "type": "filter", "hook": "output", "prio": -150, "policy": "accept"}},
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "postrouting", "type": "nat", "hook": "postrouting", "prio": 100, "policy": "accept"}},
 			ruleExpr("postrouting", matchMetaIface("oifname", ul), map[string]any{"snat": map[string]any{"addr": m.Datapath.SNAT.String()}}),
@@ -344,7 +348,15 @@ func matchConcat(set string) map[string]any {
 }
 
 func matchEstablished() map[string]any {
-	return map[string]any{"match": map[string]any{"op": "in", "left": map[string]any{"ct": map[string]any{"key": "state"}}, "right": []any{"established", "related"}}}
+	return matchCTState("in", "established", "related")
+}
+
+func matchCTState(op string, states ...string) map[string]any {
+	right := make([]any, len(states))
+	for i, s := range states {
+		right[i] = s
+	}
+	return map[string]any{"match": map[string]any{"op": op, "left": map[string]any{"ct": map[string]any{"key": "state"}}, "right": right}}
 }
 
 func namedCounter(name string) map[string]any {
