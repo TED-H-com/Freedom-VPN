@@ -146,6 +146,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w3-dns-publish follow-up 3: threat-feed content pipeline (D-054): bootstrap pin, cadence refresh with last-good, failure observations, Layer 3 rules published to the resolver document | WP08 | done (#79) |
 | w3-dns-publish follow-up 4 | Feed cadence default and null attribution (D-058), threat_feed_status projected from real refresh observations, resolver-document delivery reads for the nodes owner (D-056), revision 5 evidence names | done (#93) |
+| w3-dns-publish follow-up 5 | D-025 review r4 fixes (F-01–F-07): removal deltas checked against last-good and the approved snapshot with bounded additions and public-suffix wildcard boundaries; SSRF guard (TCP 443 only, special/zoned IPv6, redirects classified ssrf_refused); streaming bounded feed parser; activation operations carry dns_feed_refresh/dns_document steps and never succeed on a failed refresh or publish; lineage fan-out with generation fencing; atomic observations and outbox receipts; migration 00182; proofs kept in CI | done (#101) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.
