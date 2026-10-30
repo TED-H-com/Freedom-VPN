@@ -44,6 +44,7 @@ func transfer() {
 	}}
 	defer tr.CloseIdleConnections()
 	req, _ := http.NewRequestWithContext(ctx, "GET", "https://releases.example.invalid/healthz", nil)
+	req.Header.Set("X-E2E-Probe", os.Args[2])
 	res, err := (&http.Client{Transport: tr, Timeout: 6 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}).Do(req)
 	if err != nil {
 		return

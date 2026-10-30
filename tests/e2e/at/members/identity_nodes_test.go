@@ -204,13 +204,6 @@ func (l *live) publication(r *record) {
 	intent, observed := l.publicationState()
 	r.check("disabled persists", "disabled intent after node restart", fmt.Sprintf("intent=%s; observed=%s", intent, observed), "read publication after reconnect/restart", intent == "disabled")
 	// Restore the API intent for independent DNS checks; no lease is forged.
-	l.publicationCommand(r, "published", []uuid.UUID{l.groupA})
+	l.publish(r, []uuid.UUID{l.groupA})
 }
-func (l *live) exits(r *record) {
-	n := l.count(`SELECT count(*) FROM nodes WHERE current_incarnation_id IS NOT NULL`)
-	out, err := l.inside("member", "netbird", "routes", "list")
-	r.check("exit inventory", "record active node count and client routes", fmt.Sprintf("enrolled_nodes=%d; routes_command_ok=%t; route_output_bytes=%d", n, err == nil, len(out)), "SELECT enrolled nodes; docker exec member netbird routes list", n >= 1)
-	l.forwardingGate(r)
-	l.routeReadback(r)
-	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The shared stack has one runnable node and no exported second-node enrollment hook; SEEDED_NODE_2_ID in docs/e2e/README.md is a synthetic fixture forbidden by D-050. Single-exit native selection/skip_auto_apply is recorded in forwarding traces. Two-exit switch/death, relay/direct, UDP/QUIC and PMTU fixtures are unavailable; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
-}
+func (l *live) exits(r *record) { l.twoExits(r) }

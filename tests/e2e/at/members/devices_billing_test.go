@@ -222,6 +222,22 @@ func (l *live) entitlements(r *record) {
 		r.check("cancel and partial refund event", "202 then reconciled", detail(got), "update provider truth; POST signed event", got.status == 202 && l.processed(ev))
 		l.paidReadback(r, p, "cancel_at_period_end", 250)
 	}
+	// Two separate native devices keep a persistent TCP connection on each exit.
+	var secondMonitor *flowMonitor
+	if l.secondExit(r) {
+		peer := l.native(r, l.c, "member-paid2")
+		device := l.awaitDevice(peer)
+		restore := l.useSecond()
+		l.forwardingGate(r)
+		if device != uuid.Nil && l.traceForwarding(r, "member-paid2", device) {
+			secondMonitor = l.startFlow(r, "member-paid2")
+		}
+		restore()
+	}
+	var paidDevice uuid.UUID
+	_ = l.pool.QueryRow(l.ctx, `SELECT id FROM member_devices WHERE member_id=$1 AND status='authorized' ORDER BY created_at LIMIT 1`, l.c.member).Scan(&paidDevice)
+	l.forwardingGate(r)
+	l.traceForwarding(r, "member-paid", paidDevice)
 	monitor := l.startFlow(r, "member-paid")
 	refundAt := time.Now().UTC()
 	p.snapshot["refund_minor"] = 1000
@@ -239,6 +255,14 @@ func (l *live) entitlements(r *record) {
 		r.check("cancellation deletion replay", "202; reconciled without restoring service", detail(got), "POST customer.subscription.deleted after canceled truth", got.status == 202 && l.processed(deleted) && l.entitlementState(l.c) == "expired")
 	}
 	l.finishFlow(r, monitor, refundAt)
+	l.finishFlow(r, secondMonitor, refundAt)
+	l.traceForwarding(r, "member-paid", uuid.Nil)
+	if l.second.NodeID != uuid.Nil {
+		restore := l.useSecond()
+		l.traceForwarding(r, "member-paid2", uuid.Nil)
+		l.publicationCommand(r, "disabled", []uuid.UUID{l.groupA})
+		restore()
+	}
 	// Expiry runs on a fresh, paid subscription so no grant masks the boundary.
 	expiryMember := l.login("AT-expiry-"+l.run, "member")
 	ep := l.checkout(r, expiryMember, time.Now().Add(45*time.Second))
@@ -262,6 +286,6 @@ func (l *live) entitlements(r *record) {
 		screen := l.api(suspended, "GET", "/api/v1/member/me", nil, nil)
 		r.check("member screen state", "200; admin_suspended true despite paid interval", fmt.Sprintf("HTTP=%d; suspended=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after successful paid reconciliation", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
 	}
-	r.block("Shared origin only serves HTTPS; no controlled persistent UDP echo/flow endpoint or second runnable exit is present. Existing TCP full-refund withdrawal is measured separately; all-node UDP/expiry/suspension flow timing remains unproved. Owner: devstack fixture hooks.")
-	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts.")
+	r.block("F4-04: persistent TCP refund withdrawal is attempted on both real exits. The shared UDP/4443 hook is an authenticated updater-only probe, not a member echo service; do not count it as member traffic. Member UDP plus expiry/suspension flow timing remains unproved. Owner: w3-devstack-e2e traffic fixtures.")
+	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. All-event TCP/UDP stop latency and rendered suspended/expired member screens still need the remaining flow and platform fixtures; OPERATORS.md retains the exact scripts.")
 }

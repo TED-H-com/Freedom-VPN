@@ -65,6 +65,7 @@ type buildInfo struct {
 	BinaryVCS  map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
+	Nodes      map[string]string       `json:"node_incarnations,omitempty"`
 	Complete   bool                    `json:"complete"`
 	Forwarding []forwardingObservation `json:"forwarding,omitempty"`
 	e2e.Record
@@ -93,6 +94,8 @@ type live struct {
 	run                                      string
 	runID                                    string
 	restartAfter                             time.Time
+	nodeRole                                 string
+	second                                   e2e.EnrolledNode
 	nativePeer                               string
 	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
@@ -155,6 +158,12 @@ func TestATMembers_Live(t *testing.T) {
 		})
 	}
 }
+func (l *live) nodeContainer() string {
+	if l.nodeRole != "" {
+		return l.nodeRole
+	}
+	return "node"
+}
 func (l *live) open() {
 	if l.runID == "" {
 		l.runID = uuid.NewString()
@@ -215,6 +224,12 @@ func (l *live) open() {
 		}
 		l.build.Images[s] = strings.TrimSpace(string(out))
 	}
+	for _, name := range []string{"node2", "node2-netns", "node2-adguard"} {
+		if raw, e := l.docker("inspect", "--format", "{{.Image}}", l.name(name)); e == nil {
+			l.build.Images[name] = strings.TrimSpace(string(raw))
+		}
+	}
+
 	for _, name := range []string{"fvpn-control", "fvpn-worker", "fvpn-agent", "fvpn-updater"} {
 		raw, err := os.ReadFile(filepath.Join(l.root, ".agent/e2e-build", name))
 		if err == nil {
@@ -402,6 +417,16 @@ func (l *live) write(r *record) {
 		r = &copy
 	}
 	r.Observations = nil
+	r.Build.Images = l.build.Images
+	if r.Nodes == nil {
+		r.Nodes = map[string]string{}
+	}
+	if l.inc != uuid.Nil {
+		r.Nodes[l.nodeContainer()] = l.inc.String()
+	}
+	if l.second.NodeID != uuid.Nil {
+		r.Nodes["node2"] = l.second.IncarnationID.String()
+	}
 	if len(l.baseline.Digests) > 0 {
 		r.ReleaseDigests = l.baseline.Digests
 	}
