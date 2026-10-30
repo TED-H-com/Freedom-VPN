@@ -133,7 +133,8 @@ func TestAT28_AllContractRoleBoundaries(t *testing.T) {
 			})
 		}
 	}
-	if operations != 44 || protected != 42 {
+	// D-065 / contracts revision 9 adds the two admin fleet-config operations.
+	if operations != 46 || protected != 44 {
 		t.Fatalf("contract coverage changed: operations=%d protected=%d", operations, protected)
 	}
 	t.Logf("contract operations=%d protected=%d; enrollment and provider webhook use distinct credential checks", operations, protected)
