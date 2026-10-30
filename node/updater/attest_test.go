@@ -360,8 +360,8 @@ func TestUPD_D053_RollbackAnswersItsOwnChallenge(t *testing.T) {
 	if txn.Stage != updatejournal.StageRolledBack || txn.ErrorCode != string(apierr.HealthCheckFailed) {
 		t.Fatalf("stage %s code %s", txn.Stage, txn.ErrorCode)
 	}
-	if !strings.Contains(string(txn.Health), `"tunnel_probe":"failed"`) {
-		t.Fatalf("candidate health was replaced: %s", txn.Health)
+	if !strings.Contains(string(txn.CandidateHealth), `"tunnel_probe":"failed"`) {
+		t.Fatalf("candidate health was replaced: %s", txn.CandidateHealth)
 	}
 	if !detailsContain(t, txn.TxnID, w, `"phase":"rollback"`) || !detailsContain(t, txn.TxnID, w, `"phase":"candidate"`) {
 		t.Fatal("rollback health was not recorded beside the candidate failure")
