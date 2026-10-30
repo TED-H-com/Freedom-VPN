@@ -54,6 +54,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater: node updater, update journal, release packaging | WP09 | done (#18) |
 | w2-agent-core: node agent, watchdog, control client, time anchor | WP05 | done (#25) |
 | w2-usage-agent: node meter, usage store, upload with contiguous ACK | WP07 | done (#24) |
+| w2-usage-agent follow-up 1: read-only `fvpn-agent usage snapshot [-json]` of the local ledger (epochs, sequences, ACK watermark, per-event canonical hashes); torn-free single read transaction, byte-identical repeats, exit codes 2/3/4/5; AT07 withheld-ACK restart proof; lab contract `UsageLedgerSnapshot` for ENR-05 | WP07 | done (#225) |
 | w2-db-fixes-2: isolated migration CLI test, contract-conformant retention audit rows, one-time incarnation binding | WP03 | done (#14) |
 | w3-toolchain: Go 1.27.3 in go.mod and every CI pin | WP01 | done (#19) |
 | r2-control-review: adversarial review of the merged control plane (read-only) | WP04, WP06 | done (7 blockers, 7 majors, 2 minors → owner follow-ups) |
