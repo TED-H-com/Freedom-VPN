@@ -85,7 +85,7 @@ func Open(ctx context.Context, pool *pgxpool.Pool, c config.Nodes, log *slog.Log
 	if e != nil {
 		return nil, e
 	}
-	r := &Runtime{Pool: pool, PKI: identity, Enrollment: enroll, Releases: rel, Fleet: fleet, Provider: provider, Config: c}
+	r := &Runtime{ResolverDocuments: NewResolverDocumentSource(pool), Pool: pool, PKI: identity, Enrollment: enroll, Releases: rel, Fleet: fleet, Provider: provider, Config: c}
 	r.Nodes = nodes.NewService(pool, nodes.WithVersionObserver(func(ctx context.Context, tx pgx.Tx, report api.ObservationReport) error {
 		if e := fleet.ObserveReportTx(ctx, tx, fleetupdate.Identity{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId}, report); e != nil {
 			return e

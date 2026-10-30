@@ -16,11 +16,11 @@ import (
 
 type unexpectedDocumentSource struct{ t *testing.T }
 
-func (s unexpectedDocumentSource) LatestPublished(context.Context, nodes.Querier, uuid.UUID) (nodes.ResolverDocument, error) {
+func (s unexpectedDocumentSource) LatestPublished(context.Context, uuid.UUID) (nodes.ResolverDocument, error) {
 	s.t.Fatal("unauthorized request consulted publisher")
 	return nodes.ResolverDocument{}, nil
 }
-func (s unexpectedDocumentSource) DocumentByID(context.Context, nodes.Querier, uuid.UUID) (nodes.ResolverDocument, error) {
+func (s unexpectedDocumentSource) DocumentByID(context.Context, uuid.UUID) (nodes.ResolverDocument, error) {
 	s.t.Fatal("unauthorized request consulted publisher")
 	return nodes.ResolverDocument{}, nil
 }

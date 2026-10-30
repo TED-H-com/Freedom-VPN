@@ -20,11 +20,11 @@ type ResolverDocument struct {
 	Canonical []byte
 }
 
-// ResolverDocumentSource reads publisher-owned documents using the caller's DB
-// snapshot. Missing documents return pgx.ErrNoRows. Nodes never rebuild DNS content.
+// ResolverDocumentSource reads publisher-owned documents. Each lookup returns
+// one coherent reference and byte snapshot. Missing documents return pgx.ErrNoRows.
 type ResolverDocumentSource interface {
-	LatestPublished(context.Context, Querier, uuid.UUID) (ResolverDocument, error)
-	DocumentByID(context.Context, Querier, uuid.UUID) (ResolverDocument, error)
+	LatestPublished(context.Context, uuid.UUID) (ResolverDocument, error)
+	DocumentByID(context.Context, uuid.UUID) (ResolverDocument, error)
 }
 
 // ValidateResolverDocument checks the signed metadata against the exact stored bytes.
@@ -107,7 +107,7 @@ func (s *Service) ResolverDocumentForNode(ctx context.Context, source ResolverDo
 	if source == nil {
 		return ResolverDocument{}, errors.New("resolver document source required")
 	}
-	doc, err := source.DocumentByID(ctx, s.pool, document)
+	doc, err := source.DocumentByID(ctx, document)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ResolverDocument{}, missing
 	}

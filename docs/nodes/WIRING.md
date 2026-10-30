@@ -431,9 +431,13 @@ Integration boundary: `ResolveDocumentInputs` prepares nullable resolver and
 probe inputs, but the production desired-state compiler currently has no
 before-signing input or after-persistence hook. The patch and ownership request
 are in the follow-up report; the `egress_probe` setting is validated but is not
-yet emitted by that compiler. The DNS owner is adding read-only latest/by-ID
-document APIs; `ResolverDocumentSource` keeps this code independent of that
-implementation. Until those seams are merged and wired, newly compiled states
+yet emitted by that compiler. The runtime now adapts the DNS owner's
+`store.NewDocumentReader(pool)` through `ResolverDocumentSource`, using exported
+`LatestPublished` and `GetByID` reads without copying SQL or publication logic.
+Each read supplies one coherent immutable reference/byte snapshot; the input
+callback compares its revision and generation to the compiler's transactional
+policy snapshot and rejects a concurrent mismatch. Until the compiler and core
+cache-header seams are merged and wired, newly compiled states
 have no resolver-document reference, so their fetches correctly return 404. The
 prepared input reader accepts a single active fleet DNS profile and fails closed
 on ambiguous multiple profiles; a per-node assignment rule needs an explicit

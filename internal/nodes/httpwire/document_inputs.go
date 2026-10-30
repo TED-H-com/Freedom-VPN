@@ -37,7 +37,7 @@ func (r *Runtime) ResolveDocumentInputs(ctx context.Context, tx pgx.Tx, state *a
 	if r.ResolverDocuments == nil {
 		return errors.New("resolver document source required")
 	}
-	document, err := r.ResolverDocuments.LatestPublished(ctx, tx, definitions[0])
+	document, err := r.ResolverDocuments.LatestPublished(ctx, definitions[0])
 	if errors.Is(err, pgx.ErrNoRows) {
 		return apierr.New(apierr.DependencyUnavailable, "Node DNS profile has no published resolver document.")
 	}
