@@ -19,6 +19,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -642,6 +643,19 @@ func (s *Service) ExecuteOperation(ctx context.Context, opID uuid.UUID) (api.Ope
 		return op, nil
 	}
 
+	unlock, err := s.lockPublication(ctx, op.Resource.Id)
+	if err != nil {
+		return api.Operation{}, err
+	}
+	defer unlock()
+	op, err = nodes.GetOperation(ctx, s.pool, opID)
+	if err != nil {
+		return api.Operation{}, err
+	}
+	if op.Status == api.OperationStatusSucceeded || op.Status == api.OperationStatusSuperseded {
+		return op, nil
+	}
+
 	nodeID := op.Resource.Id
 	switch string(op.Kind) {
 	case nodes.OpKindPublish:
@@ -722,11 +736,21 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		if appliedGen < desiredGen {
 			cause = "stale_generation"
 		}
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), err.Error(), cause)
+		return s.failGatedPublish(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), err.Error(), cause)
 	}
 
 	if err := s.markStepSucceeded(ctx, opID, nodes.StepAgentPolicy, fmt.Sprintf("node:%s:gen:%s:safety:passed", nodeID, appliedGenStr), now); err != nil {
 		return api.Operation{}, err
+	}
+
+	// §5.2: route attachment follows the current generation's data-path gate,
+	// including the first member-bearing generation after an empty publication.
+	cause, err := s.publicationGateCause(ctx, nodeID, desiredGen)
+	if err != nil {
+		return api.Operation{}, err
+	}
+	if cause != "" {
+		return s.failGatedPublish(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed", cause)
 	}
 
 	// Step 2: Consult external_bindings and publish route via NetBird adapter, then read back (§5.2 step 2-3).
@@ -811,24 +835,14 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		return api.Operation{}, err
 	}
 
-	// SECOPS-11: healthy baseline/tunnel checks do not prove member serving.
-	// Check the issued generation before allowing not_run serving checks for an
-	// empty binding list; populated generations retain the full armed-path gate.
-	var rawReport []byte
-	err = s.pool.QueryRow(ctx, `SELECT o.report_payload FROM node_observations o JOIN nodes n ON n.id=o.node_id AND n.current_incarnation_id=o.incarnation_id AND n.last_observed_at=o.observed_at WHERE n.id=$1 ORDER BY o.received_at DESC,o.id DESC LIMIT 1`, nodeID).Scan(&rawReport)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return api.Operation{}, err
-	}
-	var report api.ObservationReport
-	if err != nil || json.Unmarshal(rawReport, &report) != nil {
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed")
-	}
-	cause, err := nodes.PublicationDataPathFailure(ctx, s.pool, report, desiredGen, now)
+	// A compile or a newer observation can arrive during management I/O. Close
+	// the route again if that changed the gate; never finalize stale evidence.
+	cause, err = s.publicationGateCause(ctx, nodeID, desiredGen)
 	if err != nil {
 		return api.Operation{}, err
 	}
 	if cause != "" {
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed", cause)
+		return s.failGatedPublish(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed", cause)
 	}
 
 	if err := s.markStepSucceeded(ctx, opID, nodes.StepDataPathProbe, fmt.Sprintf("node:%s:probe:passed", nodeID), now); err != nil {
@@ -836,7 +850,7 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 	}
 
 	// Complete operation and mark exit publication_observed = 'active'.
-	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		if _, err := tx.Exec(ctx, `
 			UPDATE operations
 			SET status = 'succeeded',
@@ -848,14 +862,7 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 			WHERE id = $1`, opID, now, appliedGenStr); err != nil {
 			return err
 		}
-		if _, err := tx.Exec(ctx, `
-			UPDATE exits
-			SET publication_observed = 'active',
-			    resource_version = resource_version + 1
-			WHERE id = $1`, exitID); err != nil {
-			return err
-		}
-		return nil
+		return s.publicationObservedTx(ctx, tx, opID, nodeID, "active", "")
 	})
 	if err != nil {
 		return api.Operation{}, err
@@ -1169,7 +1176,7 @@ func (s *Service) NodeService() *nodes.Service {
 }
 
 func (s *Service) markStepSucceeded(ctx context.Context, opID uuid.UUID, stepName string, refValue string, now time.Time) error {
-	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	return commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var (
 			status     string
 			stepsBytes []byte
@@ -1238,8 +1245,12 @@ func (s *Service) failPublishStep(
 	errMsg string,
 	gateReason ...string,
 ) (api.Operation, error) {
+	return s.failPublishStepOutcome(ctx, opID, nodeID, stepName, errCode, errMsg, false, gateReason...)
+}
+
+func (s *Service) failPublishStepOutcome(ctx context.Context, opID, nodeID uuid.UUID, stepName, errCode, errMsg string, confirmedWithdrawn bool, gateReason ...string) (api.Operation, error) {
 	now := s.now().UTC()
-	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var (
 			status     string
 			stepsBytes []byte
@@ -1289,9 +1300,9 @@ func (s *Service) failPublishStep(
 		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE exits
-			SET publication_observed = 'error',
+			SET publication_observed = CASE WHEN $2::boolean THEN publication_observed ELSE 'error' END,
 			    resource_version = resource_version + 1
-			WHERE node_id = $1`, nodeID); err != nil {
+			WHERE node_id = $1`, nodeID, confirmedWithdrawn); err != nil {
 			return err
 		}
 		return nil

@@ -576,6 +576,10 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		return CompiledDesiredState{}, err
 	}
 
+	if err := nodes.QueuePublicationGateTx(ctx, tx, nodeID, issuedAt, true); err != nil {
+		return CompiledDesiredState{}, err
+	}
+
 	if c.documentIssued != nil {
 		if err := c.documentIssued(ctx, tx, desired); err != nil {
 			return CompiledDesiredState{}, err
@@ -796,6 +800,9 @@ func (c *Compiler) GetDesiredState(
 		if err != nil {
 			return GetDesiredStateResult{}, err
 		}
+		if err := nodes.CheckPublicationDelivery(ctx, c.pool, compiled.Envelope.Signed); err != nil {
+			return GetDesiredStateResult{}, err
+		}
 		if etagMatches(ifNoneMatch, compiled.ETag) {
 			return GetDesiredStateResult{
 				NotModified: true,
@@ -812,17 +819,17 @@ func (c *Compiler) GetDesiredState(
 		return GetDesiredStateResult{}, err
 	}
 
-	if etagMatches(ifNoneMatch, etag) {
-		return GetDesiredStateResult{
-			NotModified: true,
-			ETag:        etag,
-		}, nil
-	}
-
 	var env api.DesiredStateEnvelope
 	if err := json.Unmarshal(envBytes, &env); err != nil {
 		return GetDesiredStateResult{}, err
 	}
+	if err := nodes.CheckPublicationDelivery(ctx, c.pool, env.Signed); err != nil {
+		return GetDesiredStateResult{}, err
+	}
+	if etagMatches(ifNoneMatch, etag) {
+		return GetDesiredStateResult{NotModified: true, ETag: etag}, nil
+	}
+
 	return GetDesiredStateResult{
 		NotModified: false,
 		ETag:        etag,

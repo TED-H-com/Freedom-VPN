@@ -527,6 +527,31 @@ cause in the existing step `reason` (`stale_generation`, `forwarding_disabled`,
 member admission unchanged; this is agent-reported capability, not counted
 traffic or a measurement of the watchdog/kernel.
 
+Publication route admission is checked for every signed generation (§5.2, r11).
+After a route has been created, compilation durably queues a system
+`node.publish` operation through the existing `node.publication_changed` worker;
+a newer observation also queues recovery when no live operation already owns it.
+The gate runs before `PublishExit` and again after management read-back. An old
+ACK (`stale_generation`) or unverified serving checks
+(`serving_checks_unconfirmed`) withdraws the existing route and confirms its
+absence/disabled state before setting `publication_observed=withdrawn`.
+`publication_intent` remains `published`. A new envelope carrying bindings is
+withheld from agent reads with retryable `DEPENDENCY_UNAVAILABLE` until that
+withdrawal is confirmed, so a delayed worker cannot deliver member admission on
+the previous generation's attached route.
+
+A current ACK with the complete serving evidence re-attaches the route and
+records `publication_observed=active` after read-back. The existing step `reason`
+records the fixed gate cause; confirmed withdrawal evidence is kept in the
+operation's `observed_refs`, and both observed-state transitions append D-029
+`node.publish` audit events against the exit with only intent, observed state and
+fixed reason fields. A terminal operation is never reset: a recovery observation
+creates a fresh operation, while duplicate claims/read-backs reuse external IDs
+and avoid duplicate transitions/audits. Publication executors serialize external
+route work per node with a session advisory lock; no SQL transaction waits on
+NetBird. An external withdrawal failure remains `error` and keeps envelope
+delivery blocked under the existing retry/dead-letter budget.
+
 Route failures store bounded causes such as `route_missing`, `route_disabled`,
 `publish_rejected:503`, `readback_failed:unconfirmed` and
 `no_distribution_groups`; no upstream body, URL or untrusted error text is
