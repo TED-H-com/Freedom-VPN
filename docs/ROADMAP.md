@@ -116,7 +116,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
-| w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | in progress |
+| w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
