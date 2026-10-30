@@ -1,0 +1,53 @@
+{
+  "id": "lab-AT10",
+  "title": "Mechanism: host and upstream isolation during apply and interface change",
+  "spec": [
+    "§19 AT10",
+    "ISO01",
+    "ISO02"
+  ],
+  "status": "pass",
+  "at": "2026-10-29T23:40:47Z",
+  "build": "c1ac4393f6c206783f06034d73f2915d675bd917",
+  "image_digests": [
+    "fvpn-w4-at-isolation:lab sha256:fb7de817d87b65403435999fd8676cf58e6acb3769a2023d6da0b2fdd7120d46"
+  ],
+  "policy_revision": "generation 3000-3020",
+  "node_incarnation": "mechanism-lab",
+  "expected": "Protected IPv4 destinations stay denied while the ruleset is regenerated and a lab veth appears. The controlled Internet endpoint stays reachable. The probe holds at least ten attempts per second and records no allow.",
+  "actual": "20 regenerations, interface flap, rate 86.5 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.",
+  "commands": [
+    "FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-up",
+    "FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-at-isolation FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at"
+  ],
+  "observations": [
+    {
+      "name": "attempts",
+      "detail": "266"
+    },
+    {
+      "name": "seconds",
+      "detail": "3.076"
+    },
+    {
+      "name": "rate_per_s",
+      "detail": "86.48"
+    },
+    {
+      "name": "regenerations",
+      "detail": "20"
+    },
+    {
+      "name": "flap",
+      "detail": "veth fv-px 198.18.0.0/30 inside the lab container"
+    },
+    {
+      "name": "internet",
+      "detail": "203.0.113.10:80 allowed"
+    },
+    {
+      "name": "scope",
+      "detail": "mechanism lab; product status is AT10.json"
+    }
+  ]
+}

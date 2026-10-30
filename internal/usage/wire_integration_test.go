@@ -733,7 +733,9 @@ func TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination(t *testing
 	}
 
 	foundPurge := false
+	foundFreeze := false
 	foundBeginRecovery := false
+	foundCompleteRecovery := false
 	for _, item := range allAudit {
 		if item.Action == "usage.corrupt_test" {
 			t.Fatalf("malformed audit row must be skipped, never returned")
@@ -748,12 +750,38 @@ func TestAT30_HTTPRecoveryFreezeEpochRotationReplayAndAuditPagination(t *testing
 				t.Fatalf("expected retention.purge system role actor.id to be nil UUID, got %v (err=%v)", actorID, err)
 			}
 		}
-		if item.Action == "usage_ledger.begin_recovery" {
-			foundBeginRecovery = true
+		switch item.Action {
+		case "usage_ledger.freeze", "usage_ledger.begin_recovery", "usage_ledger.complete_recovery":
+			if item.Resource.Type != api.ResourceTypeFleetConfig || uuid.UUID(item.Resource.Id).String() != "00000000-0000-0000-0000-000000000001" {
+				t.Fatalf("%s resource = %+v, want fleet_config:00000000-0000-0000-0000-000000000001 (D-051)", item.Action, item.Resource)
+			}
+			afterMap, err := item.Changes.After.Get()
+			if err != nil {
+				t.Fatalf("%s missing changes.after metadata: %v", item.Action, err)
+			}
+			if got, _ := afterMap["usage_ledger_id"].(string); got != "00000000-0000-0000-0000-000000000130" {
+				t.Fatalf("%s changes.after.usage_ledger_id = %q, want 00000000-0000-0000-0000-000000000130", item.Action, got)
+			}
+			if item.Action == "usage_ledger.freeze" {
+				foundFreeze = true
+			}
+			if item.Action == "usage_ledger.begin_recovery" {
+				foundBeginRecovery = true
+				if got, _ := afterMap["recovery_id"].(string); got != recState.RecoveryID.String() {
+					t.Fatalf("usage_ledger.begin_recovery recovery_id = %q, want %s", got, recState.RecoveryID)
+				}
+			}
+			if item.Action == "usage_ledger.complete_recovery" {
+				foundCompleteRecovery = true
+				if got, _ := afterMap["recovery_id"].(string); got != recState.RecoveryID.String() {
+					t.Fatalf("usage_ledger.complete_recovery recovery_id = %q, want %s", got, recState.RecoveryID)
+				}
+			}
 		}
 	}
-	if !foundPurge || !foundBeginRecovery {
-		t.Fatalf("expected retention.purge (%v) and usage_ledger.begin_recovery (%v) in paginated audit events", foundPurge, foundBeginRecovery)
+	if !foundPurge || !foundFreeze || !foundBeginRecovery || !foundCompleteRecovery {
+		t.Fatalf("expected retention.purge (%v), usage_ledger.freeze (%v), usage_ledger.begin_recovery (%v), and usage_ledger.complete_recovery (%v) in paginated audit events",
+			foundPurge, foundFreeze, foundBeginRecovery, foundCompleteRecovery)
 	}
 }
 

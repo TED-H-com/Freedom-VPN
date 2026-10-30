@@ -1,0 +1,28 @@
+# lab-AT12
+
+Mechanism: cross-member, management plane and DNS exceptions
+
+Status: fail
+
+Spec: §19 AT12, ISO01, ISO04, DNS03
+
+UTC: 2026-10-29T23:40:52Z
+
+Build: c1ac4393f6c206783f06034d73f2915d675bd917
+
+Image digests:
+
+- fvpn-w4-at-isolation:lab sha256:fb7de817d87b65403435999fd8676cf58e6acb3769a2023d6da0b2fdd7120d46
+
+Policy revision: generation 12
+
+Node incarnation: mechanism-lab
+
+Expected: Only TCP and UDP 53 to the designated resolver succeed. Peer, SSH, agent API, arbitrary overlay and a spoofed source are denied.
+
+Actual: denied target capture /scratch/cap-at12-a2.txt was not empty
+
+Commands:
+
+- `FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-up`
+- `FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-at-isolation FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at`

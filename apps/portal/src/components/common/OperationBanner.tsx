@@ -49,9 +49,11 @@ export function OperationBanner({
 }: OperationBannerProps): React.ReactElement | null {
   const { t } = useI18n();
   const [polledOp, setPolledOp] = useState<OperationResource | null>(operation);
+  const [pollAttempt, setPollAttempt] = useState(0);
 
   useEffect(() => {
     setPolledOp(operation);
+    setPollAttempt(0);
   }, [operation]);
 
   useEffect(() => {
@@ -59,6 +61,8 @@ export function OperationBanner({
       return;
     }
     let cancelled = false;
+    const delayMs =
+      pollAttempt === 0 ? 60 : Math.min(2000, 120 * Math.pow(2, pollAttempt - 1));
     const timer = setTimeout(async () => {
       try {
         const updated =
@@ -67,20 +71,26 @@ export function OperationBanner({
             : await apiClient.getOperation(polledOp.operation_id);
         if (!cancelled) {
           setPolledOp(updated);
-          if (isTerminalOperationStatus(updated.status) && onTerminal) {
-            onTerminal(updated);
+          if (isTerminalOperationStatus(updated.status)) {
+            if (onTerminal) {
+              onTerminal(updated);
+            }
+          } else {
+            setPollAttempt((prev) => prev + 1);
           }
         }
       } catch {
-        // Keep current operation view if a single poll fails
+        if (!cancelled) {
+          setPollAttempt((prev) => prev + 1);
+        }
       }
-    }, 60);
+    }, delayMs);
 
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [polledOp, scope, onTerminal]);
+  }, [polledOp, pollAttempt, scope, onTerminal]);
 
   const current = polledOp ?? operation;
   if (!current) {
@@ -90,13 +100,14 @@ export function OperationBanner({
   const isRunningOrPending =
     current.status === 'pending' || current.status === 'running' || isPolling;
   const isPartial = current.status === 'partially_succeeded';
+  const isSuperseded = current.status === 'superseded';
   const isSucceeded = current.status === 'succeeded' && !isPolling;
 
   const alertClass = isRunningOrPending
     ? 'alert alert-info'
     : isSucceeded
       ? 'alert alert-success'
-      : isPartial
+      : isPartial || isSuperseded
         ? 'alert alert-warning'
         : 'alert alert-danger';
 
@@ -123,7 +134,9 @@ export function OperationBanner({
                 ? t('op.completedApplied')
                 : isPartial
                   ? t('op.partiallySucceeded')
-                  : t('op.failed')}
+                  : isSuperseded
+                    ? t('op.superseded')
+                    : t('op.failed')}
           </strong>
           {hasOfflineRouteWithdrawnWarning(current) && (
             <p

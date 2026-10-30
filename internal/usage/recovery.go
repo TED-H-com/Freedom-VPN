@@ -80,15 +80,16 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 		}
 		actID, actType := auditActor(actor)
 		afterBytes, _ := json.Marshal(map[string]any{
-			"mode":   string(LedgerModeFrozen),
-			"reason": reason,
-			"actor":  actor,
+			"usage_ledger_id": ledgerStateSingletonID,
+			"mode":            string(LedgerModeFrozen),
+			"reason":          reason,
+			"actor":           actor,
 		})
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         actID,
 			ActorType:     actType,
 			Action:        "usage_ledger.freeze",
-			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + fleetConfigSingletonID,
 			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
@@ -275,6 +276,7 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 
 		actID, actType := auditActor(req.Actor)
 		afterBytes, _ := json.Marshal(map[string]any{
+			"usage_ledger_id":       ledgerStateSingletonID,
 			"recovery_id":           recoveryID.String(),
 			"previous_ledger_epoch": prevEpoch.String(),
 			"new_ledger_epoch":      newEpoch.String(),
@@ -287,7 +289,7 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 			Actor:         actID,
 			ActorType:     actType,
 			Action:        "usage_ledger.begin_recovery",
-			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + fleetConfigSingletonID,
 			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),
@@ -354,16 +356,21 @@ func (s *Service) CompleteRecovery(ctx context.Context, actor string) error {
 			return fmt.Errorf("usage: set ledger mode normal: %w", err)
 		}
 		actID, actType := auditActor(actor)
-		afterBytes, _ := json.Marshal(map[string]any{
-			"mode":         string(LedgerModeNormal),
-			"ledger_epoch": state.LedgerEpoch.String(),
-			"actor":        actor,
-		})
+		afterMap := map[string]any{
+			"usage_ledger_id": ledgerStateSingletonID,
+			"mode":            string(LedgerModeNormal),
+			"ledger_epoch":    state.LedgerEpoch.String(),
+			"actor":           actor,
+		}
+		if state.ActiveRecoveryID != nil {
+			afterMap["recovery_id"] = state.ActiveRecoveryID.String()
+		}
+		afterBytes, _ := json.Marshal(afterMap)
 		if err := db.AppendAudit(ctx, tx, db.AuditEvent{
 			Actor:         actID,
 			ActorType:     actType,
 			Action:        "usage_ledger.complete_recovery",
-			Resource:      string(api.ResourceTypeFleetConfig) + ":" + ledgerStateSingletonID,
+			Resource:      string(api.ResourceTypeFleetConfig) + ":" + fleetConfigSingletonID,
 			Result:        string(api.AuditEventResultSucceeded),
 			SchemaVersion: 1,
 			Before:        []byte(`{}`),

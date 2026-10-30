@@ -1,0 +1,123 @@
+{
+  "purpose": "Preserve the first corrected full-run API sample when final validation is repeated; unchanged workload and limits, no best-run selection.",
+  "samples": [
+    {
+      "started_at": "2026-10-29T23:34:45.831714338Z",
+      "finished_at": "2026-10-29T23:36:23.092084818Z",
+      "capacity_subset": {
+        "duration_seconds": 12.505825865,
+        "http_status_counts": {
+          "200": 200
+        },
+        "policy_latency_seconds": null,
+        "profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; 60 SQL authorized device rows",
+        "read_p50_ms": 11.13,
+        "read_p95_ms": 379.531,
+        "read_p99_ms": 380.032,
+        "relay_load": false,
+        "requests": 200,
+        "resource_snapshot_after_load": [
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.21%",
+            "MemPerc": "0.02%",
+            "MemUsage": "30.8MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-control",
+            "NetIO": "2.14MB / 1.63MB",
+            "PIDs": "28"
+          },
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.21%",
+            "MemPerc": "0.01%",
+            "MemUsage": "16.87MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-worker",
+            "NetIO": "688kB / 964kB",
+            "PIDs": "21"
+          },
+          {
+            "BlockIO": "500kB / 148MB",
+            "CPUPerc": "0.72%",
+            "MemPerc": "0.05%",
+            "MemUsage": "101MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-postgres",
+            "NetIO": "1.79MB / 1.09MB",
+            "PIDs": "23"
+          },
+          {
+            "BlockIO": "8.19kB / 1.52MB",
+            "CPUPerc": "1.43%",
+            "MemPerc": "0.02%",
+            "MemUsage": "38.98MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-node",
+            "NetIO": "86.1kB / 127kB",
+            "PIDs": "44"
+          }
+        ],
+        "simultaneous_oidc": false,
+        "usage_latency_seconds": null,
+        "wrong_member_responses": 0
+      },
+      "context": "Root/area lint and cross-compilation were running concurrently on this shared development host."
+    },
+    {
+      "started_at": "2026-10-29T23:38:57.982116062Z",
+      "finished_at": "2026-10-29T23:40:34.772569147Z",
+      "capacity_subset": {
+        "duration_seconds": 12.098381422,
+        "http_status_counts": {
+          "200": 200
+        },
+        "policy_latency_seconds": null,
+        "profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; 60 SQL authorized device rows",
+        "read_p50_ms": 5.868,
+        "read_p95_ms": 14.093,
+        "read_p99_ms": 14.357,
+        "relay_load": false,
+        "requests": 200,
+        "resource_snapshot_after_load": [
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.49%",
+            "MemPerc": "0.02%",
+            "MemUsage": "33.11MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-control",
+            "NetIO": "2.1MB / 1.59MB",
+            "PIDs": "26"
+          },
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.18%",
+            "MemPerc": "0.01%",
+            "MemUsage": "16.93MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-worker",
+            "NetIO": "697kB / 969kB",
+            "PIDs": "21"
+          },
+          {
+            "BlockIO": "319kB / 149MB",
+            "CPUPerc": "1.23%",
+            "MemPerc": "0.05%",
+            "MemUsage": "100.4MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-postgres",
+            "NetIO": "1.78MB / 1.08MB",
+            "PIDs": "23"
+          },
+          {
+            "BlockIO": "0B / 1.29MB",
+            "CPUPerc": "0.45%",
+            "MemPerc": "0.02%",
+            "MemUsage": "38.17MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-node",
+            "NetIO": "83.9kB / 125kB",
+            "PIDs": "49"
+          }
+        ],
+        "simultaneous_oidc": false,
+        "usage_latency_seconds": null,
+        "wrong_member_responses": 0
+      },
+      "context": "Final verification of unchanged live Go probes. Shared development host; prior sample retained, no best-run selection."
+    }
+  ]
+}
