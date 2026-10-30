@@ -15,6 +15,12 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) >= 2 && os.Args[1] == "probe-client" {
+		run = probeClient
+	}
+	if len(os.Args) == 2 && os.Args[1] == "probe-watch" {
+		run = probeWatch
+	}
 	if len(os.Args) == 2 && os.Args[1] == "dns-probe" {
 		run = dnsProbe
 	}
