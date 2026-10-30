@@ -116,8 +116,8 @@ const schemaVersion = 3
 // migrateAppliedAddressIdentity rebuilds applied_address so each row is
 // (addr, device_id, member_id). Rows that predate the identity columns
 // keep the address and use the nil UUID for both ids. A nil identity is
-// not deleted while that address is still bound: the row cannot name the
-// device that held it.
+// not the device that later binds the address, so the agent queues
+// conntrack -D and keeps that identity until the delete succeeds.
 func migrateAppliedAddressIdentity(ctx context.Context, tx *sql.Tx) error {
 	var table string
 	err := tx.QueryRowContext(ctx, `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'applied_address'`).Scan(&table)

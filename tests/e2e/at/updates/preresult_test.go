@@ -218,7 +218,7 @@ func (s *updatesFollowup) preResultInjection(batch api.UpdateBatchAccepted, boot
 	nullOK := response.Status == 202 && after.text("current_release_id") == target.String() && string(after["last_good_release_id"]) == "null" && s.acceptedResultCount() == 0 && complete && len(counts) == 3
 	evidence["agreeing_null_last_good"] = map[string]any{"request": report, "http_status": response.Status, "response": json.RawMessage(response.Body), "projection": after, "batch_api_response": s.target(batch).BatchJSON, "audit_pages": pages, "audit_counts": counts}
 	s.note("AT24", "check_null_last_good_seed", nullOK)
-	evidence["policy"] = "docs/updates/central-lifecycle.md:427-465; fleet follow-up 8 requires agreeing last-good; fresh case (c) boot is unexpected and audited once"
+	evidence["policy"] = "docs/updates/central-lifecycle.md:434-504 (D-068); pre-result heartbeat seeding fills only a null nodes.current_release_id on the current non-superseded job when last_good agrees; fresh case (c) boot is unexpected and audited once"
 	evidence["steps"] = steps
 	for _, id := range []string{"AT24", "AT27"} {
 		s.note(id, "pre_result_injection", evidence)
@@ -312,7 +312,7 @@ func (s *updatesFollowup) recordedInjection(batch api.UpdateBatchAccepted, recor
 		steps = append(steps, map[string]any{"case": scenario.name, "heartbeats": requests, "audit_pages": pages, "audit_counts": counts, "expected_audit_counts": expected, "audit_matches": matches})
 	}
 	for _, id := range []string{"AT24", "AT27"} {
-		s.note(id, "recorded_pre_result_injection", map[string]any{"before": before, "accepted_results_before": count, "recorded_release_id": recorded, "target_release_id": target, "unrelated_release_id": unrelated, "job_id": intent.JobId, "generation": intent.Generation, "steps": steps, "policy": "docs/updates/central-lifecycle.md:467 closes seeding after first accepted result, even for later jobs"})
+		s.note(id, "recorded_pre_result_injection", map[string]any{"before": before, "accepted_results_before": count, "recorded_release_id": recorded, "target_release_id": target, "unrelated_release_id": unrelated, "job_id": intent.JobId, "generation": intent.Generation, "steps": steps, "policy": "docs/updates/central-lifecycle.md:454,506 (D-068): a non-null current_release_id advances only through an accepted result, and once a result is accepted, seeding closes even for later jobs in that incarnation"})
 		s.note(id, "check_recorded_versions", valid)
 		s.note(id, "check_recorded_audits", auditsOK)
 		s.note(id, "check_withheld_observation", withheldOK)

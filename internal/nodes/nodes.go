@@ -161,10 +161,22 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 			n.drift,
 			n.resource_version::text,
 			n.created_at,
-			n.retired_at
+			n.retired_at,
+			ie.mapping_frozen,
+			coalesce(ic.conflict_count, 0),
+			ic.last_conflict_at
 		FROM nodes n
 		LEFT JOIN exits e ON e.node_id = n.id
 		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
+		LEFT JOIN node_identity_endpoints ie ON ie.incarnation_id = n.current_incarnation_id
+		LEFT JOIN LATERAL (
+			SELECT
+				count(*)::int AS conflict_count,
+				max(observed_at) AS last_conflict_at
+			FROM node_identity_conflicts
+			WHERE n.current_incarnation_id IS NOT NULL
+			  AND incarnation_id = n.current_incarnation_id
+		) ic ON ie.incarnation_id IS NOT NULL
 		WHERE n.id = $1`
 
 	var (
@@ -201,6 +213,9 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		resourceVer              string
 		createdAt                time.Time
 		retiredAt                *time.Time
+		ieMappingFrozen          *bool
+		conflictCount            int
+		lastConflictAt           *time.Time
 	)
 
 	err := q.QueryRow(ctx, sqlQuery, nodeID).Scan(
@@ -237,6 +252,9 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		&resourceVer,
 		&createdAt,
 		&retiredAt,
+		&ieMappingFrozen,
+		&conflictCount,
+		&lastConflictAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -249,6 +267,17 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 	detail.Region.SetNull()
 	detail.Notes.SetNull()
 	detail.Capacity.SetNull()
+	detail.IdentityConflict.SetNull()
+	if currentIncarnationID != nil && ieMappingFrozen != nil {
+		if lastConflictAt != nil {
+			*lastConflictAt = lastConflictAt.UTC()
+		}
+		detail.IdentityConflict.Set(api.NodeIdentityConflict{
+			MappingFrozen:  *ieMappingFrozen,
+			ConflictCount:  conflictCount,
+			LastConflictAt: presence.FromPointer(lastConflictAt),
+		})
+	}
 	detail.Update, err = updateSummary(ctx, q, nodeID)
 	if err != nil {
 		return api.NodeDetail{}, "", err

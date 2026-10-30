@@ -140,14 +140,20 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
    `login:` and `session:` keys. The agent listener does not read
    `X-Forwarded-For`, even when its TCP peer is listed in `trusted_proxies`.
    A request with no verified client certificate is HTTP 401 and occupies no
-   slot. A verified chain keys that class's ingress bucket by the SHA-256 of
-   the leaf certificate's DER (`r.TLS.VerifiedChains[0][0].Raw`), computed in
-   memory, and takes the class concurrency slot, both before
-   `AuthenticateAgent`. A failed authentication has already spent the token.
-   The fingerprint is the rate-bucket key. The concurrency pool stays one
-   pool per class of `max_concurrent`, which bounds how many of those lookups
-   run together. A forwarding header does not choose either. mTLS subject
-   keys stay the route class plus the node scope. The certificate
+   slot. A verified chain keys that class's ingress bucket before
+   `AuthenticateAgent`, and takes the class concurrency slot before that
+   lookup. The key is the node id in the leaf's `urn:fvpn:node:<uuid>` URI
+   SAN, the same SAN `CA.Issue` writes, read from the certificate the TLS
+   handshake already verified. Every still-usable serial of that node shares
+   one burst, including certificates kept alive for `RenewalOverlapSeconds`.
+   There is no database read on this path. A verified leaf with no canonical
+   node URN keeps the SHA-256 of its DER (`r.TLS.VerifiedChains[0][0].Raw`).
+   That fingerprint is only the separator for those leaves: it stops them
+   collapsing into one bucket, and it does not join a real node's bucket.
+   A failed authentication has already spent the token. The concurrency pool
+   stays one pool per class of `max_concurrent`, which bounds how many of
+   those lookups run together. A forwarding header does not choose either.
+   mTLS subject keys stay the route class plus the node scope. The certificate
    authenticates the node, so a proxy in front of this listener does not move
    the ingress bucket.
    The login and session token buckets use this principal. The login
@@ -187,30 +193,33 @@ cap. Authenticated subjects use another table, keyed by node or session. That
 subject key does not use `X-Forwarded-For`. On the public listener the
 pre-authentication address is the connection principal above, including a
 client taken from `X-Forwarded-For` when the TCP peer is a configured trusted
-proxy. On the agent listener the ingress key is the SHA-256 of the verified
-leaf, taken before `AuthenticateAgent`. A request without a verified client
-certificate occupies no slot. A failed authentication has spent the ingress
-token. IPv6 keying stays /64. The anonymous ingress table and the anonymous
-class table also keep a /48 budget beside that /64 key. One /48 may hold at
-most half of `max_rate_principals` /64 buckets, and at least one when the cap
-is one. At the default cap of 10,000 that budget is 5,000. A new /64 whose
-/48 is already at the budget is HTTP 429, is not inserted, and does not evict
-another prefix. An existing key in that /48 still spends a token. IPv4 is not
-grouped. The budget is only on the anonymous class, so a /48 sweep inserts
-nothing into the browser, agent, heartbeat, lease, usage, or subject tables.
-At capacity a new principal is admitted by scanning eight least-recently-used
-buckets from the tail and evicting the first that is idle with a full token
-count, or has been idle for more than one hour. The window is a constant, so
-the scan stays O(1). One depleted tail cannot hide a newer bucket inside that
-window that has already refilled. More than eight depleted buckets sitting at
-the tail can still refuse a newcomer while a full bucket waits further toward
-the head. A table that finds no eligible bucket returns HTTP 429 with
-`Retry-After` of one second and inserts nothing. That is the bound on a full
-table refusing newcomers: a single short tail no longer blocks the next seven
-idle buckets, and one /48 cannot own the anonymous tables. Ingress tables and
-the anonymous class table each use one rate. The subject table mixes class
-rates. The eight-bucket window is what lets a full browser bucket leave ahead
-of a slower heartbeat tail.
+proxy. On the agent listener the ingress key is the node URN on the verified
+leaf, or the leaf fingerprint when that URN is absent, taken before
+`AuthenticateAgent`. A request without a verified client certificate occupies
+no slot. A failed authentication has spent the ingress token. IPv6 keying
+stays /64. The anonymous ingress table and the anonymous class table also
+keep a /48 group beside that /64 key. One /48 may hold every slot except a
+reserve of one (`anonymousGroupReserve`, not a config key). At the default
+cap of 10,000 that is 9,999 /64s. A cap of one still allows that single slot.
+A new /64 in a /48 that already has keys is HTTP 429 once only the reserve
+remains. It is not inserted and it does not evict another prefix. An existing
+key in that /48 still spends a token. Another /48, or an IPv4 address, can
+take the reserved slot. IPv4 is not grouped. The reserve is only on the
+anonymous class, so a /48 sweep inserts nothing into the browser, agent,
+heartbeat, lease, usage, or subject tables, and it cannot fill the anonymous
+tables so tightly that an unrelated address has no slot. There is no separate
+config key for the reserve. `max_rate_principals` (default 10,000) remains
+the cap. At capacity a new principal is admitted by walking from the tail
+and evicting the first bucket that is idle with a full token count, or has
+been idle for more than one hour. The walk stops at that bucket. It continues
+through a run of depleted tail buckets until it finds one or the table ends,
+so eight depleted buckets cannot hide a full one. The long walk happens only
+when the table is full and the tail is depleted, and it is bounded by
+`max_rate_principals`. A table that finds no eligible bucket returns HTTP 429
+with `Retry-After` of one second and inserts nothing. Ingress tables and the
+anonymous class table each use one rate. The subject table mixes class rates.
+The full-table walk is what lets a full browser bucket leave ahead of any
+number of slower heartbeat tails.
 
 ## Request body limits
 

@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	e2e "github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -332,6 +333,30 @@ type runner struct {
 	t             *testing.T
 	lab           *lab
 	nodeID, incID uuid.UUID
+	probe         *e2e.UpdaterProbe
+}
+
+func (l *lab) putObject(ctx context.Context, name string, body []byte) error {
+	secret, err := l.secret("origin.secret")
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, l.releases+"/e2e/object?name="+name, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("X-E2E-Secret", secret)
+	client := &http.Client{Transport: l.transport, Timeout: 60 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("origin HTTP %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func (r *runner) enroll(ctx context.Context, admin *session) {
@@ -399,6 +424,10 @@ func (r *runner) writeUpdaterConfig() error {
 				cfg[key] = value
 			}
 		}
+	}
+	if r.probe != nil && r.lab.nodeSlot() == "node" {
+		cfg["probe_peer"] = r.probe.Config
+		cfg["agent_config"] = r.probe.AgentConfig
 	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {

@@ -1,45 +1,23 @@
-# Requests to orchestrator — follow-up 7
+# Requests to orchestrator — follow-up 8
 
-Run `71078ab8-edf8-4d23-af72-ea247f704011`, source `c8d4a00cf1bf594b20016263c2cfc3c164d92bc9`, evidence `2026-10-30T18:09:36Z`. Prefix `w4-updates`, port base 42000.
+Run `71f2aa37-b0b9-4568-abe0-2ba7665377e4`, source `bc93ce430ebe8a50e5dfdaf4121352047fe89249` (on `main` `52dc77026cb168df5684ae2ccd5cbcadb4dbaeff`), evidence `2026-10-30T20:59:15Z`. Prefix `w4-updates`, port base 42000.
 
-AT24/AT26/AT27 pass. Make exit **2** solely for retained AT23/AT25, which
-remain blocked on F5-02 and were not rerun.
+All five scenarios (`AT23`–`AT27`) **pass** in a single fresh-stack run. Make exit **0**.
 
-## Open: F5-02 — probe-peer export
+## Resolved: F5-02 — probe-peer export (#204)
 
-**Owner: w3-devstack-e2e follow-up 12 (probe-peer export).** Export the existing
-shared dedicated peer setup/config and read-only observer. AT23 and AT25 keep
-the follow-up 6 records and original run IDs/timestamps. No host access to the
-0700 journal, peer construction, alias agent config or synthetic challenge is
-used to bypass this prerequisite. Rerun AT23/AT25 in follow-up 8 after the
-export lands. [Retained probe evidence](probe-issuance.json).
+**Closed by `w3-devstack-e2e` follow-up 12 (PR #204).** `Stack.SetupUpdaterProbe` and `UpdaterProbe.Observe` are now exported by `tests/e2e` and wired into `tests/e2e/at/updates/{lab_test.go,probe_test.go,live_test.go}`:
 
-## Resolved: F6-02 — corrected recorded c2/c3 expectations (#TBD)
+- **AT23** observes D-063 issuance both through the in-node read-only journal stream (`configured_probe_issued=true`, 0 omission diagnostics, no host read of the `0700` journal, raw `peer_id` redacted in published evidence) and through `UpdaterProbe.Observe(ctx)` (`verified=true`, `authenticated_udp_replies=14`, origin receipt `requests=14` from node SNAT `192.0.7.20`, `grant_samples=4`, `max_timeout_seconds=44`, `probe_up_bytes=1078`, `probe_down_bytes=1078`, `member_bytes_before=0`, `member_bytes_after=0`, `elements_after=0`).
+- **AT25** runs with `probe_peer` and `agent_config` configured in `updater.json` and both observers active. The byte-tampered archive fails preflight with `HASH_MISMATCH` (`stage=""`) before `stageCheck`, so `fresh_challenges=[]` and `probe_observer` records `grant_samples=0`, `authenticated_udp_replies=0`, `elements_after=0`. As recorded in [probe-issuance.md](probe-issuance.md) and [AT25.md](AT25.md), the D-063/D-064 probe scope does not apply to an archive that never passes preflight.
 
-The orchestrator confirmed the earlier expectations were a misreading.
-Accepted results own current/last-good and recovery; later heartbeats only
-confirm. Once any result is accepted, seeding closes for later jobs in that
-incarnation. Live c2/c3 retain accepted 1.0.1, withhold the observation timestamp
-and leave unconfirmed=true, with **zero** seeding-path unexpected-release
-audits. Fresh-incarnation unexpected claims still produce exactly one audit
-per job/release despite repetition. A fresh agreeing null last-good permits
-current seeding without establishing last-good. [Policy quotes and exact
-observations](pre-result.md), [raw evidence](pre-result.json).
+## Resolved: F6-02 — corrected recorded c2/c3 expectations (#186, D-068 #189)
 
-The implementation remains unchanged: `internal/fleetupdate/serving.go:125`
-limits seeding/audits to before first acceptance, `:142` requires agreeing
-last-good, and `:159` withholds mismatching job observation timestamps.
-AT24 now also proves offline result completion and post-batch inheritance
-through a separate successful first_sync job, while preserving the original
-denominator. [Raw inheritance evidence](inheritance.json).
+Closed in follow-up 7 (**#186**) and re-verified on current `main` with fleet-update follow-up 9 (**#189**, **D-068**). Under D-068, pre-result heartbeat seeding fills only a null `nodes.current_release_id` on the node's current non-superseded job when `last_good_release_id` agrees, a non-null `current_release_id` advances only through an accepted result, and once any result is accepted, seeding closes for later jobs in that incarnation. All fresh (`a`, `b`, `c`, `agreeing_null_last_good`) and recorded (`c1`, `c2`, `c3`) assertions in `preresult_test.go` and `restated_test.go` hold unchanged; the verbatim policy quotes and line citations in `restated_test.go` and `preresult_test.go` were updated to match `docs/updates/central-lifecycle.md:425-506`. See [pre-result.md](pre-result.md) and [pre-result.json](pre-result.json).
 
-Replace **#TBD** with this follow-up's PR number when merging.
+## Remaining full-§19 scope items outside this focused follow-up
 
-## Earlier resolved findings
+No blocker remains for the follow-up 8 scenario set (`AT23`–`AT27` all pass, exit 0). The broader §19 items noted in earlier follow-ups remain outside this harness scope:
 
-F5-01 remains resolved: fresh case c's unrecorded boot release gets one audit;
-no boot provenance is fabricated. The real first result establishes last-good.
-The #170 agent_config path correction remains recorded in follow-up 6; F6-01
-was never observed. #129 terminal rollback and #136 target evidence are freshly
-verified by AT26, including candidate failure, restored health, current ACK
-and later authenticated confirmation. No product changes were made.
+- **Owner: `w3-devstack-e2e` / `w2-fleet-update` (broader §19 AT24 snapshot population):** `TestUpdatesFollowup` proves offline target catch-up (`online_at_snapshot=0 -> waiting_online -> succeeded`) and post-batch `node2` inheritance through its own `first_sync` job while `original_target_count=1` is unchanged. A third pre-existing `enrolling` node at snapshot time (to exercise `skipped_enrolling` in the same batch snapshot alongside an online and an offline ready node) is not part of this focused follow-up.
+- **Owner: operator hardware evidence (`docs/e2e/at/updates/operator-run.md`):** Both `linux/amd64` and `linux/arm64` release artifacts are compiled, signed, and registered by `PrepareServingBaseline` in every run; executing `fvpn-updater` and `fvpn-agent` on a physical or VM `arm64` Ubuntu 24.04 host remains an operator run item (`at23-arm64.md`).
