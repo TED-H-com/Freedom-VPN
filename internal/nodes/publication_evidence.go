@@ -100,11 +100,10 @@ func publicationForwardingFailure(report api.ObservationReport, now time.Time, e
 }
 
 // hasIsolationApplyError reports whether report carries an ISOLATION_POLICY_INVALID
-// error from the node's enforcement apply/isolation path (for example, a pending
-// or failed conntrack flow flush after ruleset verification, §5.2, §8.1).
+// error at stage "apply" from the node's enforcement/conntrack apply path (§5.2, §8.1, D-070).
 func hasIsolationApplyError(report api.ObservationReport) (api.NodeError, bool) {
 	for _, e := range report.Errors {
-		if e.Code == api.ErrorCodeISOLATIONPOLICYINVALID && (e.Stage == "apply" || e.Stage == "isolation" || e.Stage == "") {
+		if e.Code == api.ErrorCodeISOLATIONPOLICYINVALID && e.Stage == "apply" {
 			return e, true
 		}
 	}
@@ -112,15 +111,52 @@ func hasIsolationApplyError(report api.ObservationReport) (api.NodeError, bool) 
 }
 
 // isPendingIsolationApplyError reports whether report carries an ISOLATION_POLICY_INVALID
-// apply error while member forwarding remains active or the node reports a pending
-// conntrack flow delete before failing closed.
+// apply error (keyed on code + stage, D-070) while member forwarding remains active
+// or safety_status is still passed (pending conntrack flow delete under the retry bound).
 func isPendingIsolationApplyError(report api.ObservationReport, effectiveForwarding bool) (api.NodeError, bool) {
 	isoErr, ok := hasIsolationApplyError(report)
 	if !ok {
 		return api.NodeError{}, false
 	}
-	if effectiveForwarding || (report.SafetyStatus == api.SafetyStatusPassed && report.ProvisioningState == api.ProvisioningStateReady) {
+	if effectiveForwarding || report.SafetyStatus == api.SafetyStatusPassed {
 		return isoErr, true
 	}
 	return api.NodeError{}, false
+}
+
+// isFailClosedIsolationApplyError reports whether report matches the agent's
+// fail-closed conntrack observation shape (D-070): member_forwarding_enabled=false,
+// safety_status=failed, forwarding_block_reasons contains safety_check_failed,
+// check internet_only failed with ISOLATION_POLICY_INVALID, and the
+// ISOLATION_POLICY_INVALID apply error is present in errors.
+func isFailClosedIsolationApplyError(report api.ObservationReport, effectiveSafety api.SafetyStatus, effectiveForwarding bool) bool {
+	if effectiveForwarding || effectiveSafety != api.SafetyStatusFailed {
+		return false
+	}
+	if _, ok := isPendingIsolationApplyError(report, effectiveForwarding); ok {
+		return false
+	}
+	if _, ok := hasIsolationApplyError(report); !ok {
+		return false
+	}
+	if !hasForwardingBlockReason(report, api.ForwardingBlockReasonSafetyCheckFailed) {
+		return false
+	}
+	for _, e := range report.Errors {
+		if e.Code == api.ErrorCodeISOLATIONBASELINEMISSING {
+			return false
+		}
+	}
+	var internetOnlyFailedIso bool
+	for _, ch := range report.Checks {
+		if ch.Name != api.NodeCheckNameInternetOnly {
+			continue
+		}
+		code, err := ch.ErrorCode.Get()
+		if ch.Status != api.HealthCheckStatusFailed || err != nil || code != api.ErrorCodeISOLATIONPOLICYINVALID {
+			return false
+		}
+		internetOnlyFailedIso = true
+	}
+	return internetOnlyFailedIso
 }
