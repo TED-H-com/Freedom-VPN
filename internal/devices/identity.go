@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/url"
-	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	issuerform "github.com/TED-H-com/Freedom-VPN/internal/members/issuer"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -36,10 +35,11 @@ type IdentityDiscovery struct {
 // NewIdentityDiscovery takes the central oidc_issuer, never a separate issuer
 // setting. The worker registers this collector on its existing /metrics registry.
 func NewIdentityDiscovery(issuer string, registry prometheus.Registerer, logger *slog.Logger) (*IdentityDiscovery, error) {
-	u, err := url.Parse(issuer)
-	if err != nil || issuer != strings.TrimSpace(issuer) || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
-		return nil, errors.New("oidc_issuer required for NetBird identity discovery")
+	canonical, err := issuerform.Canonical(issuer)
+	if err != nil {
+		return nil, err
 	}
+	issuer = canonical
 	if logger == nil {
 		logger = slog.Default()
 	}
@@ -69,7 +69,13 @@ func (d *IdentityDiscovery) record(ctx context.Context, result string) {
 // binding writes share one transaction; no provider I/O runs under that lock.
 func (a *NetBirdAdapter) bindUser(ctx context.Context, external string) (string, error) {
 	result := identityUnmapped
-	err := db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) (retErr error) {
+		var member, identity uuid.UUID
+		defer func() {
+			if retErr == nil {
+				retErr = auditIdentity(ctx, tx, member, identity, result)
+			}
+		}()
 		type candidate struct{ identity, member uuid.UUID }
 		rows, err := tx.Query(ctx, `SELECT i.id,i.member_id FROM identity_bindings i WHERE i.issuer=$1 AND i.subject=$2 AND i.stable_claim_ref='sub' AND i.binding_method='oidc' AND i.verified_at<=clock_timestamp() ORDER BY i.id LIMIT 2`, a.Identity.issuer, external)
 		if err != nil {
@@ -96,6 +102,7 @@ func (a *NetBirdAdapter) bindUser(ctx context.Context, external string) (string,
 			return nil
 		}
 		c := matches[0]
+		member, identity = c.member, c.identity
 		var open bool
 		if err = tx.QueryRow(ctx, `SELECT status<>'closed' FROM members WHERE id=$1 FOR UPDATE`, c.member).Scan(&open); err != nil || !open {
 			return err
