@@ -4,15 +4,11 @@ Sampled usage visible with exact bytes
 
 Status: blocked
 
-Run: 5852f09a-30e8-45bc-8983-b5f212e33640
+Run: 5de03570-0436-477d-9847-6f6984432bd8
 
-Source: 5eb716e1a36ced17b8013646c9282c92746c81da
+Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
 
 Spec: §10, §19 AT14, §19 AT15
 
-- member_usage: 200
-- batch: not sent
-- member_total_bytes: 0
-- note: no device binding was projected, so no usage batch was sent
-- owner: w3-wire-usage: exact usage acceptance after a serving binding exists
-
+- member: no session
+- owner: w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance
