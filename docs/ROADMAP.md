@@ -87,6 +87,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-members follow-up 3: production `netbird_user_bindings` writer (D-052) — shared-issuer public-subject discovery, read-only NetBird user list, native peer admission through the product | WP06 | done (#76) |
 | w3-wire-members follow-up 5 | D-052 review fixes: 00183 UNIQUE(issuer, subject) with loud duplicate refusal, canonical issuer package, review proofs green on main, standalone members lint gate | done (#125) |
 | w3-wire-members follow-up 6 | 00186: client_scope becomes mutable diagnostic metadata (trigger keeps id/member_id/issuer/subject immutable); rotation stores the new scope with one proof_updated audit; Up/Down round-trip proven | done (#134) |
+| w3-wire-members follow-up 7 | issuer.Canonical trims only literal trailing slashes of the escaped path; a percent-encoded slash is preserved (r9 Low); review table ported; Validate unchanged | done (#139) |
 | w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | done (#41) |
 | w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | done (#40) |
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | done (#44) |
