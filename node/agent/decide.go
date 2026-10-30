@@ -42,6 +42,7 @@ type Input struct {
 	ApplyError        *api.NodeError
 	DependencyMissing bool
 	LeaseRetryPending bool
+	RevocationPending bool
 	BootstrapLost     bool
 	OutboxFull        bool
 	// MeterFailed is a meter-path failure. Only reason meter_path_invalid
@@ -171,8 +172,8 @@ func Decide(in Input) Decision {
 	// for a serving document this generation does not yet hold. lease_expired
 	// stays the anchored deadline of the lease for this generation.
 	leaseStale := leaseGenerationStale(in)
-	leaseOK := in.LeaseFresh && in.Lease != nil && in.LeaseMonoSent > 0 && !leaseStale && !in.LeaseRetryPending
-	if leaseStale || in.LeaseRetryPending {
+	leaseOK := leaseInForce(in) && !leaseStale
+	if leaseStale {
 		add(api.ForwardingBlockReasonPolicyMissing)
 	} else if !leaseOK {
 		add(api.ForwardingBlockReasonLeaseExpired)
@@ -238,6 +239,12 @@ func Decide(in Input) Decision {
 	if in.ApplyError != nil {
 		d.Errors = append(d.Errors, *in.ApplyError)
 	}
+	if in.RevocationPending {
+		d.Errors = append(d.Errors, api.NodeError{
+			Code: api.ErrorCode(enforce.ReasonIsolation), Stage: "apply", ObservedAt: at,
+			Message: "conntrack delete pending; serving ruleset verified",
+		})
+	}
 	if in.DependencyMissing {
 		d.Errors = append(d.Errors, api.NodeError{Code: api.ErrorCodeDEPENDENCYUNAVAILABLE,
 			Message: "enforcement executable unavailable", ObservedAt: at, Stage: "preflight"})
@@ -282,11 +289,10 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 			leaseCode = api.ErrorCodeSTALEGENERATION
 			leaseDetail = "Serving lease is not for the applied generation."
 		}
-		if in.LeaseRetryPending {
-			leaseCode = api.ErrorCodeRATELIMITED
-			leaseDetail = "Lease renewal is waiting for Retry-After."
-		}
 		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, leaseCode, at), leaseDetail)
+		if leaseOK && in.LeaseRetryPending {
+			lease.Detail = sanitizeDetail("Lease renewal is waiting for Retry-After; the current lease remains in force.")
+		}
 		qos = withDetail(chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "Rate policy could not be applied.")
 		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "No member binding was admitted.")
 	}
@@ -436,6 +442,15 @@ func provisioningOf(in Input, acked bool) api.ProvisioningState {
 		return api.ProvisioningStateReady
 	}
 	return api.ProvisioningStateApplying
+}
+
+// Renewal backoff cannot change the signed lease's monotonic deadline.
+func leaseInForce(in Input) bool {
+	if !in.LeaseFresh || in.Lease == nil || in.LeaseMonoSent <= 0 || in.MonoNow < in.LeaseMonoSent {
+		return false
+	}
+	deadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, in.Lease.ExpiresAt.Sub(in.Lease.IssuedAt))
+	return ok && timeanchor.Remaining(deadline, in.MonoNow) > 0
 }
 
 // leaseGenerationStale is true when both documents name a generation and

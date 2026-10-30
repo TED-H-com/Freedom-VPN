@@ -120,8 +120,10 @@ func (e *Engine) syncLease(ctx context.Context) error {
 				remaining = max(0, time.Until(status.RetryAt))
 			}
 			e.leaseRetryAt = e.clock.Mono() + remaining
-			e.withdraw(context.WithoutCancel(ctx))
 			e.decision = Decide(e.input())
+			if !e.decision.Serve {
+				e.withdraw(context.WithoutCancel(ctx))
+			}
 		}
 		e.log.Warn("lease", "err", safeErr(err))
 		return ctx.Err()
