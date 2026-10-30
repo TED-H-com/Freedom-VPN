@@ -546,23 +546,25 @@ func (e *Engine) input() Input {
 }
 
 func (e *Engine) refreshProbe(ctx context.Context) {
-	p := e.prober
-	if p == nil {
-		nb := newNetbirdProber(e.cfg)
-		p = nb
-	}
-	published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
-	targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
-	e.probeSource = probeSourceDetail(source, bad)
-	e.lastProbe = p.Probe(ctx, ProbeRequest{
-		Published: published,
-		Targets:   targets,
-		Timeout:   timeout,
-		Rejected:  bad,
-		Ingress:   e.cfg.Datapath.MemberIngress,
-		Uplink:    e.cfg.Datapath.Uplink,
+	e.withProbeException(ctx, func() {
+		p := e.prober
+		if p == nil {
+			nb := newNetbirdProber(e.cfg)
+			p = nb
+		}
+		published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
+		targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
+		e.probeSource = probeSourceDetail(source, bad)
+		e.lastProbe = p.Probe(ctx, ProbeRequest{
+			Published: published,
+			Targets:   targets,
+			Timeout:   timeout,
+			Rejected:  bad,
+			Ingress:   e.cfg.Datapath.MemberIngress,
+			Uplink:    e.cfg.Datapath.Uplink,
+		})
+		e.probeAt = e.clock.Wall().UTC()
 	})
-	e.probeAt = e.clock.Wall().UTC()
 }
 
 // verifyTime reports the time used to check a signed document.
