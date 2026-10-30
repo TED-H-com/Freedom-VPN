@@ -20,6 +20,7 @@ import type {
   UpdateBatchAccepted,
   UpdateBatchCreateRequest,
 } from '../api/types';
+import type { UpdateTargetWithResult } from '../api/view-models';
 import { normalizeAndValidateDomain } from '../lib/dns';
 import {
   buildMemberSelfForPersona,
@@ -39,6 +40,23 @@ let opCounter = 500;
 export function resetMockState(persona: MockPersona = 'admin'): void {
   state = createInitialMockState(persona);
   opCounter = 500;
+}
+
+export function setMockRolledBackCandidateHealth(mode: 'populated' | 'null'): void {
+  const target = state.updateBatch.targets.find((t) => t.state === 'rolled_back') as
+    | UpdateTargetWithResult
+    | undefined;
+  if (!target) return;
+  const source = structuredClone(CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateResultRolledBack);
+  if (mode === 'null') {
+    source.candidate_health =
+      CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateResultNullCandidateHealth.candidate_health ??
+      null;
+  }
+  target.previous_release_id = source.previous_release_id;
+  target.health = source.health;
+  target.candidate_health = source.candidate_health ?? null;
+  target.last_result = source;
 }
 
 export function setMockPersona(persona: MockPersona): void {
