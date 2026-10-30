@@ -14,7 +14,8 @@ stable managed name. Duplicate matches or a renamed bound resource fail with
 
 | Operation | Semantics and exact calls |
 |---|---|
-| `EnsureNodePeer(NodePeer)` | `GET /peers/{id}`; validate a non-ephemeral machine peer without a user ID, record node/incarnation mapping. The authenticated node reports its peer ID. REST cannot create a WireGuard peer; setup-key enrollment creates it. No name/email/IP matching. |
+| `EnsureNodePeer(NodePeer)` | `GET /peers/{id}`; validate a non-ephemeral machine peer without a user ID, record node/incarnation mapping. The ID may come from a bound observation or D-055 discovery; the native agent may report null. REST cannot create a WireGuard peer; setup-key enrollment creates it. No name/email/IP matching. |
+| `DiscoverNodePeer(enrollmentID, NodePeer)` | Under the deployment lock, read the one-off key and its dedicated correlation group; require exactly one peer and `used_times=1`, then GET that peer and require a non-ephemeral machine identity (`user_id=""`). Reject policy/route references to the group. Record the node/incarnation binding, detach the temporary auto-group from the key with PUT/GET, empty the group with PUT/GET, delete it and confirm GET 404. A repeated call resumes cleanup and returns the same binding. |
 | `EnsureMemberDevice(MemberDevice)` | `GET /peers/{id}`, `GET /users`; require the expected external user, non-service/non-blocked user, no user auto-groups and non-ephemeral peer. Record verified member/user and device/peer bindings. Does not grant access. |
 | `EnsurePaidGroup(groupID)` | `GET /groups`, `GET /groups/{id}`, then `POST /groups` if absent or `PUT /groups/{id}` for drift, then GET. First creation is empty. Existing peer memberships are preserved. |
 | `PublishExit(Exit)` | Verify node and paid groups. Reconcile a one-node destination group and minimal ICMP policy with `/groups` and `/policies`; then `GET /routes`, `POST /routes` or `PUT /routes/{id}`, and `GET /routes/{id}`. Fixed single-peer IPv4 default route, enabled, metric 9999, no masquerade, no automatic application. |
@@ -22,8 +23,8 @@ stable managed name. Duplicate matches or a renamed bound resource fail with
 | `ApplyDeviceAuthorization(device, paidGroupIDs)` | Reverify member identity for grants; revocation of a known immutable device binding remains possible even if its upstream user was blocked/deleted. Read all groups; replace only this peer's memberships in the reserved `fvpn-paid-*` namespace, using `PUT /groups/{id}` and GET. Remove obsolete memberships before adding new ones. Preserve all other peers. Empty desired set revokes paid exit and DNS distribution. |
 | `DeletePeer(bindingKey)` | Read binding, `GET /routes` to reject deleting a published routing peer (direct or via peer groups); `DELETE /peers/{id}`, then GET 404. Remove mapping only after confirmed absence. Withdraw before delete. |
 | `ReadObservedState()` | Fresh `GET /peers`, `/groups`, `/routes`, `/policies`, `/dns/nameservers`; return those observations plus UTC observation time. Never substitute desired state or the binding cache. This is a sequential snapshot, not an upstream transaction. |
-| `CreateNodeSetupKey(enrollmentID)` | Reconcile `fvpn-unpublished-nodes`; `GET /setup-keys` and known ID; `POST /setup-keys` only if absent, then GET. `type=one-off`, `usage_limit=1`, `expires_in=86400`, `ephemeral=false`, no extra DNS labels, only unpublished-node auto-group. |
-| `RevokeNodeSetupKey(enrollmentID)` | Locate key; `PUT /setup-keys/{id}` with `revoked=true` and its existing auto-groups; GET verifies revoked. Never un-revoke. Does not disconnect enrolled peers. |
+| `CreateNodeSetupKey(enrollmentID)` | Reconcile the shared `fvpn-unpublished-nodes` and the initially empty `stableName("enroll-peer", enrollmentID)` correlation group; `GET /setup-keys` and known ID; `POST /setup-keys` only if absent, then GET. `type=one-off`, `usage_limit=1`, `expires_in=86400`, `ephemeral=false`, no extra DNS labels, exactly those two auto-groups. The correlation group grants no access and must never be referenced by a policy or route. |
+| `RevokeNodeSetupKey(enrollmentID)` | Locate key; `PUT /setup-keys/{id}` with `revoked=true` and its existing auto-groups; GET verifies revoked; detach and remove the correlation group using the same confirmed cleanup as discovery, including when the key is already absent. Never un-revoke. Does not disconnect enrolled peers. |
 | `RemoveDefaultPolicy()` | `GET /groups`, `/policies`; remove the initial `Default` policy referencing `All` and confirm GET 404. Reject any unexpected policy referencing `All`, even if disabled. Call before enrolling members. |
 | `BootstrapAccess(AccessConfig)` | Verify resolver peer addresses using `GET /peers/{id}`. Reconcile resolver/admin/ops groups, unidirectional TCP/UDP 53 rules from paid groups to resolver peers, and an admin-to-ops TCP rule with explicit ports. `POST/PUT /dns/nameservers` plus GET publishes a primary resolver group only to paid groups. No domains, search domains or public fallback. |
 
@@ -61,16 +62,17 @@ by the two-device group-concurrency test here.
 | `DesiredHash` | SHA-256 of the canonical normalized desired request; only confirmed state gets a nonempty value |
 | `LastObservedAt` | UTC time of successful independent read-back; zero means write known, unconfirmed |
 | `routes` / exit ID | `exits` → route |
-| `groups` / `paid:<group ID>`, `exit:<exit ID>`, `unpublished-nodes`, resolver/admin/ops keys | controlled group resources |
+| `groups` / `paid:<group ID>`, `exit:<exit ID>`, `unpublished-nodes`, `enroll-peer:<enrollment attempt ID>`, resolver/admin/ops keys | controlled group resources |
 | `policies` / `exit:<exit ID>`, `dns:tcp`, `dns:udp`, `ops` | controlled policy resources |
 | `dns/nameservers` / `resolvers` | resolver distribution resource |
 | `peers` / `node:<node ID>:<incarnation ID>` | `node_incarnations.NetBird peer ref` |
 | `peers` / `device:<device ID>` | `member_devices` external peer ref; bidirectional uniqueness prevents rebinding |
 | `users` / member ID | adapter check of the verified `netbird_user_bindings` mapping |
 | `setup-keys` / enrollment attempt ID | provisioning job's external key ID; no secret |
+| `groups` / `enroll-peer:<enrollment attempt ID>` cleanup | temporary management-plane correlation; removed only after binding or revocation and confirmed group deletion |
 
 The memory implementation is for tests/dev, with both internal and external
-uniqueness. A DB implementation remains a later task. All workers sharing a
+uniqueness. `nodes.NetBirdBindings` persists production mappings in `external_bindings`. All workers sharing a
 deployment must share a lock implementation. `Lock` covers the read/modify/write
 sequence for **all** objects in a deployment, so adding two different devices
 to one paid group cannot overwrite one another. Implement a durable worker
@@ -107,11 +109,7 @@ bound ID releases that binding only after a confirmed 404 and empty name lookup.
 Unexpected HTTP response shapes and read-back mismatches are `Unconfirmed`.
 
 Comparisons project request fields, normalize peer/group objects into sorted
-ID sets and omit response counters/timestamps/IDs. The local canonical encoder
-implements RFC 8785 for this adapter's limited schema: ASCII object keys,
-valid Unicode values, booleans and safe integers. Fractions, unsafe integers
-and non-ASCII keys are rejected. Replace it with `pkg/canonjson` once that
-shared package exists, preserving the hash vectors; it is not a signing API.
+ID sets and omit response counters/timestamps/IDs. Canonical hashing uses the shared `pkg/canonjson`; it is not a signing API.
 Bindings are evidence hints, not a substitute for GET. Paid memberships are
 re-read directly; successful membership changes refresh the known group binding
 hash. A cached hash must never be treated as authorization. A paid target must
@@ -155,9 +153,7 @@ this secret over HTTP must set `Cache-Control: no-store` (§16.2).
 
 Production shared OIDC issuer, cross-client subject proof and admin MFA remain
 to be selected and exercised. The local embedded provider is dev-only and is
-not asserted to be a reusable Portal issuer. The DB-backed binding store,
-quota/entitlement transaction, outbox, generation fencing and node incarnation
-uniqueness need central-service integration. After restore, run observations,
+not asserted to be a reusable Portal issuer. The node worker uses the DB-backed binding store, outbox claims and incarnation fences. These central proofs do not replace live data-path evidence. After restore, run observations,
 reconcile mappings and revoke uncertain access; never republish solely because
 an older backup says it was enabled (§17.4). Operators must reserve the managed
 namespace: upstream has no CAS, so concurrent dashboard edits to these objects
@@ -166,3 +162,19 @@ cannot be made safe by a process-local lock.
 Routes-to-Networks migration is pending an exit-node replacement upstream.
 Automatic app-name display, native app behavior, direct/relay/MTU behavior,
 resolver failover and G2 isolation are 待實測. See the G1 evidence and checklist.
+
+## Enrollment correlation and cleanup (D-055)
+
+Discovery never correlates a node by its hostname, address or observation timing.
+Zero peers/unused key returns `NotFound` for bounded worker retry. Multiple peers,
+more than one key use, user ownership, ephemeral peers, conflicting bindings or
+policy/route references return `Conflict` with a fixed safe reason. Central
+records terminal operation/audit evidence without inventing a peer binding.
+The per-attempt group is `fvpn-enroll-peer-` plus the stable hash; the shared
+`fvpn-unpublished-nodes` group and its peer membership survive cleanup. Binding
+precedes cleanup so a crash cannot lose the proof; revoked keys always reject
+discovery. A consumed one-off key may be `overused` or expired with exactly one
+use. Neither discovery nor cleanup publishes a node or admits a member.
+See [the adapter lifecycle and tests](../../internal/netbird/DISCOVERY.md) and
+[worker fencing](../nodes/WIRING.md). Local HTTP fakes are TEST ONLY; native-client
+and network behavior still requires lab evidence.

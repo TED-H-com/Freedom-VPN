@@ -31,8 +31,9 @@ at a third-party Internet host.
 Expected: the arm64 node downloads only the arm64 artifact. Success is a
 real version plus health confirmation (§13.9, §13.10). A health failure
 with `ROLLBACK_FAILED` and empty `last_good` does not establish an
-architecture pass. The stock CLI adapter always fails three checks even
-on a published node; see [health-analysis.md](health-analysis.md).
+architecture pass. The running candidate must answer the updater-issued D-053 challenge from its
+own checks. See [follow-up-1.md](follow-up-1.md); the older
+[health-analysis.md](health-analysis.md) is historical.
 
 ## 2. Three join sources (AT05 precondition of AT23)
 
@@ -75,14 +76,13 @@ when acceptance fails.
 Every assigned AT23–AT27 record must be `pass` for a zero exit. All records
 are written before the gate reports blocked/failed or missing cases.
 Auxiliary hardware or diagnostic records cannot replace an assigned AT.
-The current product blockers therefore produce a nonzero exit, including
-when individual snapshot, idempotency or failure-path observations hold.
+The follow-up labels are scoped as described in [follow-up-1.md](follow-up-1.md);
+original §19 coverage and physical hardware remain separate requirements.
 
-The disk-reserve fault uses a signed **TEST ONLY** release declaring
-`required_free_bytes=1125899906842624` (1 PiB). This exercises the real
-free-space preflight on disk-backed paths without allocating that space.
-It does not prove an ENOSPC failure during writes. No test scratch uses
-tmpfs. Database writes seed only the documented release-support policy
-and release allowlists; node state and update observations are produced
-through enrollment, signed desired state, updater execution and result
-APIs, following D-050.
+The current driver calls the devstack real build/sign/register helpers through
+an owned Go test overlay. It deliberately fails a real candidate TCP egress
+probe and kills the updater at a real service-stop boundary. It never edits
+health attestations or journal contents. All temporary files use disk-backed
+scratch. Database writes seed only the documented release-support policy and
+release allowlists; node state and update observations come from the product
+APIs and agent, following D-050.

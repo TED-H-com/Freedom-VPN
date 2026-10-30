@@ -48,7 +48,7 @@ type Challenge struct {
 }
 
 // Check is one agent-reported §13.9 result. Status is a HealthCheckStatus.
-// Reason is a short operator string, not a log of names or packets.
+// Reason uses the fixed vocabulary in checkReason, never names or packets.
 type Check struct {
 	Status api.HealthCheckStatus `json:"status"`
 	Reason string                `json:"reason"`
@@ -89,6 +89,7 @@ const (
 	ReasonIncarnationMismatch  Reason = "incarnation_mismatch"
 	ReasonBootMismatch         Reason = "boot_mismatch"
 	ReasonGeneratedBeforeIssue Reason = "generated_before_issue"
+	ReasonGeneratedInFuture    Reason = "generated_in_future"
 	ReasonExpired              Reason = "expired"
 	ReasonAgentVersion         Reason = "agent_version_mismatch"
 	ReasonNetbirdVersion       Reason = "netbird_version_mismatch"
@@ -99,6 +100,7 @@ const (
 	ReasonMalformed            Reason = "malformed"
 	ReasonConsumed             Reason = "consumed"
 	ReasonBadMode              Reason = "bad_mode"
+	ReasonBadOwner             Reason = "bad_owner"
 	ReasonSymlink              Reason = "symlink"
 	ReasonTooLarge             Reason = "too_large"
 	ReasonPreseeded            Reason = "attestation_precedes_challenge"

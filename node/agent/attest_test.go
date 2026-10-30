@@ -321,3 +321,75 @@ func readFile(t *testing.T, path string) []byte {
 	}
 	return b
 }
+
+func TestHealthAttest_RestartAnswersStoredDesired(t *testing.T) {
+	r := newRig(t)
+	r.eng.prober = &verProbe{version: "0.76.2"}
+	r.srv.SetPublication(api.PublicationIntentUnpublished)
+	if err := r.eng.Enroll(context.Background(), "token-test-only"); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.Boot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.Step(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	cfg := r.eng.cfg
+	boot := r.eng.bootID.String()
+	log := r.eng.log
+	if err := r.eng.Close(); err != nil {
+		t.Fatal(err)
+	}
+	cand, err := Start(Options{
+		Config: cfg, Clock: r.clock, Plane: r.plane, Log: log,
+		MeterSource: staticSource{boot: boot},
+		Prober:      &verProbe{version: "0.76.2"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cand.Close()
+	r.eng = cand
+	ch := issueChallenge(t, r, nil)
+	if err := cand.Boot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if cand.desired == nil || cand.desiredETag == "" || !cand.desiredSynced {
+		t.Fatalf("stored desired not in force: nil=%v etag=%q synced=%v", cand.desired == nil, cand.desiredETag, cand.desiredSynced)
+	}
+	att := requireAttest(t, r, ch)
+	if att.Checks.DNSPolicy.Status != api.HealthCheckStatusPassed || att.Checks.DNSPolicy.Reason != "policy in force" {
+		t.Fatalf("dns %+v", att.Checks.DNSPolicy)
+	}
+}
+
+func TestHealthAttest_LoadedDocumentPastExpiryAnswersFailed(t *testing.T) {
+	r := newRig(t)
+	r.eng.prober = &verProbe{version: "0.76.2"}
+	r.srv.SetPublication(api.PublicationIntentUnpublished)
+	if err := r.eng.Enroll(context.Background(), "token-test-only"); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.Boot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.Step(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.desired == nil || r.eng.desiredETag == "" {
+		t.Fatal("no verified desired")
+	}
+	r.clock.Advance(2 * time.Hour)
+	ch := issueChallenge(t, r, nil)
+	if err := r.eng.Step(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.desired == nil {
+		t.Fatal("expiry cleared the verified document")
+	}
+	att := requireAttest(t, r, ch)
+	if att.Checks.DNSPolicy.Status != api.HealthCheckStatusFailed || att.Checks.DNSPolicy.Reason != "policy not in force" {
+		t.Fatalf("dns %+v", att.Checks.DNSPolicy)
+	}
+}
