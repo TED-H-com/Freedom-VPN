@@ -101,9 +101,9 @@ func (l *live) dnsRules(r *record) {
 		r.check("wire DNS "+q.name+" type "+q.typ, "record actual controlled resolver answer (management path)", actual, "docker exec member probe dns controlled-resolver", actual != "probe unavailable")
 	}
 	if !applied {
-		r.block("After central publication and a 20-second apply window, activated policy is not present in real AdGuard user_rules. Node desired-state publication does not configure this shared lab resolver; no resolver apply credentials/hook are supplied. Responses above are precondition observations, not passing block/cache semantics.")
+		r.block("After central publication and a 20-second apply window, activated policy is not present in real AdGuard user_rules. The resolver document is not delivered to the node/AdGuard. Owners: w3-contracts-r5, then nodes/agent delivery follow-ups. Responses above are precondition observations, not passing block/cache semantics.")
 	}
-	r.block("No admitted member DNS/forwarding path and no controlled CNAME/HTTPS/SVCB/rebinding zone fixtures. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
+	r.block("Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
 }
 func (l *live) dnsFailure(r *record) {
 	raw, err := l.resolver("/control/dns_info")

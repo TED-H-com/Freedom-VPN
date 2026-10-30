@@ -65,6 +65,7 @@ type buildInfo struct {
 }
 type record struct {
 	e2e.Record
+	FollowupBuild    *buildInfo        `json:"followup_build,omitempty"`
 	Build            buildInfo         `json:"build"`
 	PolicyRevision   string            `json:"policy_revision"`
 	PolicyReferences map[string]string `json:"active_policy_revisions"`
@@ -357,6 +358,7 @@ func (r *record) block(reason string) {
 	}
 }
 func (l *live) write(r *record) {
+	r.Observations = nil
 	r.PolicyReferences = map[string]string{}
 	rows, err := l.pool.Query(l.ctx, `SELECT type,active_revision_id::text FROM policy_definitions WHERE active_revision_id IS NOT NULL ORDER BY type`)
 	if err == nil {
