@@ -231,10 +231,12 @@ func (r *probeFixture) originProbe(ctx context.Context, method, id string) (stri
 
 // UpdaterProbe is a dedicated non-member peer. Config is the exact probe_peer
 // value for an updater invocation; AgentConfig must accompany it. Neither is a
-// credential. Do not record the raw peer ID in public evidence.
+// credential. Notes are non-secret setup observations and omit the peer ID.
+// Do not record the raw peer ID in public evidence.
 type UpdaterProbe struct {
 	Config      map[string]any
 	AgentConfig string
+	Notes       []Observation
 	fixture     *probeFixture
 }
 type probeFixture struct {
@@ -266,11 +268,53 @@ func (s *Stack) SetupUpdaterProbe(ctx context.Context, slot string, node Enrolle
 		return nil, fmt.Errorf("probe target identity mismatch")
 	}
 	f := &probeFixture{lab: &l, incID: node.IncarnationID}
-	var failure string
-	if !f.prepareProbe(ctx, func(k, v string) { failure = k + ": " + v }) {
+	var notes []Observation
+	if !f.prepareProbe(ctx, func(k, v string) { notes = append(notes, Observation{Name: k, Detail: v}) }) {
+		failure := "no detail"
+		if len(notes) > 0 {
+			last := notes[len(notes)-1]
+			failure = last.Name + ": " + last.Detail
+		}
 		return nil, fmt.Errorf("probe setup incomplete: %s", failure)
 	}
-	return &UpdaterProbe{Config: f.probePeer, AgentConfig: "/etc/vpn-node/agent-run.json", fixture: f}, nil
+	peer, _ := f.probePeer["peer_id"].(string)
+	safe := make([]Observation, 0, len(notes))
+	for _, n := range notes {
+		if peer != "" && strings.Contains(n.Detail, peer) {
+			continue
+		}
+		safe = append(safe, n)
+	}
+	return &UpdaterProbe{Config: f.probePeer, AgentConfig: "/etc/vpn-node/agent-run.json", Notes: safe, fixture: f}, nil
+}
+
+// configuredProbeIssued reports whether a fresh health-challenge document
+// carries the configured probe. The raw peer ID is not retained by the caller.
+func configuredProbeIssued(raw []byte, configured map[string]any) bool {
+	if len(raw) == 0 || len(raw) > 8192 || configured == nil {
+		return false
+	}
+	var doc struct {
+		Probe json.RawMessage `json:"probe"`
+	}
+	if json.Unmarshal(raw, &doc) != nil || len(doc.Probe) == 0 || string(doc.Probe) == "null" {
+		return false
+	}
+	want, err := json.Marshal(configured)
+	if err != nil {
+		return false
+	}
+	return jsonEqual(doc.Probe, want)
+}
+
+func jsonEqual(a, b []byte) bool {
+	var left, right any
+	if json.Unmarshal(a, &left) != nil || json.Unmarshal(b, &right) != nil {
+		return false
+	}
+	x, e1 := json.Marshal(left)
+	y, e2 := json.Marshal(right)
+	return e1 == nil && e2 == nil && bytes.Equal(x, y)
 }
 
 // Observe starts traffic plus a read-only nft observer before the real updater

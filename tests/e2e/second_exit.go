@@ -111,7 +111,8 @@ func (s *Stack) startSecondExit(ctx context.Context, clone bool) error {
 	if clone {
 		// Source is stopped and target has not booted. Pipe archives directly into
 		// the private target mounts; never print/store an archive in evidence.
-		for _, copy := range []struct{ source, target string }{{"/var/lib/vpn-node/.", "var"}, {"/etc/netbird/.", "netbird"}, {"/opt/vpn-node/.", "opt"}} {
+		// The client stores its X25519 identity in /var/lib/netbird, not /etc/netbird.
+		for _, copy := range []struct{ source, target string }{{"/var/lib/vpn-node/.", "var"}, {"/var/lib/netbird/.", "netbird"}, {"/opt/vpn-node/.", "opt"}} {
 			read := exec.CommandContext(ctx, "docker", "cp", s.lab.node+":"+copy.source, "-")
 			write := exec.CommandContext(ctx, "docker", "run", "--rm", "-i", "--name", name+"-copy", "--network", "none", "--mount", "type=bind,src="+filepath.Join(base, copy.target)+",dst=/copy", "--entrypoint", "tar", strings.TrimSpace(string(image)), "-xf", "-", "-C", "/copy")
 			pipe, err := read.StdoutPipe()
@@ -134,5 +135,11 @@ func (s *Stack) startSecondExit(ctx context.Context, clone bool) error {
 			_ = os.Remove(filepath.Join(base, "var/e2e", file))
 		}
 	}
-	return run("run", "-d", "--name", name, "--privileged", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "etc")+",dst=/etc/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "var")+",dst=/var/lib/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "netbird")+",dst=/etc/netbird", "--mount", "type=bind,src="+filepath.Join(base, "opt")+",dst=/opt/vpn-node", strings.TrimSpace(string(image)))
+	// A clean second exit keeps an empty directory off the client's state path.
+	// The clone bind-mounts the copied profile where the client reads it.
+	netbirdDest := "/etc/netbird"
+	if clone {
+		netbirdDest = "/var/lib/netbird"
+	}
+	return run("run", "-d", "--name", name, "--privileged", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "etc")+",dst=/etc/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "var")+",dst=/var/lib/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "netbird")+",dst="+netbirdDest, "--mount", "type=bind,src="+filepath.Join(base, "opt")+",dst=/opt/vpn-node", strings.TrimSpace(string(image)))
 }

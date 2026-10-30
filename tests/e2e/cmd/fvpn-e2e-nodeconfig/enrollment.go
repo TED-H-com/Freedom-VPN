@@ -60,7 +60,7 @@ func enrollmentGenerate() error {
 	if err != nil {
 		return err
 	}
-	req := api.EnrollRequest{EnrollmentRequestId: uuid.New(), NodeIncarnationId: uuid.New(), CsrPem: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csr})), Platform: api.NodePlatform{Arch: api.Architecture(runtime.GOARCH), Os: "ubuntu", OsVersion: "24.04"}}
+	req := api.EnrollRequest{EnrollmentRequestId: uuid.New(), NodeIncarnationId: uuid.New(), CsrPem: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csr})), Platform: api.NodePlatform{Arch: api.Architecture(runtime.GOARCH), Os: api.NodePlatformOsUbuntu, OsVersion: "24.04"}}
 	raw, err := os.ReadFile("/etc/vpn-node/agent-enroll.json")
 	if err != nil {
 		return err
@@ -72,29 +72,38 @@ func enrollmentGenerate() error {
 		return fmt.Errorf("agent config")
 	}
 	req.AgentRelease = cfg.Release
+	req.Proof, err = enrollmentProof(req, key)
+	if err != nil {
+		return err
+	}
 	b, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-	var fields map[string]any
-	_ = json.Unmarshal(b, &fields)
-	delete(fields, "proof")
-	b, err = canonjson.Marshal(fields)
-	if err != nil {
-		return err
-	}
-	sum := sha256.Sum256(b)
-	sig, err := ecdsa.SignASN1(rand.Reader, key, sum[:])
-	if err != nil {
-		return err
-	}
-	req.Proof = base64.StdEncoding.EncodeToString(sig)
-	b, err = json.Marshal(req)
 	if err != nil {
 		return err
 	}
 	return os.WriteFile(in.Directory+"/request.json", b, 0600)
 }
+
+// enrollmentProof signs the same RFC 8785 document the enrollment service
+// verifies: the typed request without the proof member, not a JSON map.
+func enrollmentProof(req api.EnrollRequest, key *ecdsa.PrivateKey) (string, error) {
+	raw, err := canonjson.Marshal(struct {
+		RequestID     uuid.UUID        `json:"enrollment_request_id"`
+		IncarnationID uuid.UUID        `json:"node_incarnation_id"`
+		CSR           string           `json:"csr_pem"`
+		Platform      api.NodePlatform `json:"platform"`
+		Release       string           `json:"agent_release"`
+	}{req.EnrollmentRequestId, req.NodeIncarnationId, req.CsrPem, req.Platform, req.AgentRelease})
+	if err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(raw)
+	sig, err := ecdsa.SignASN1(rand.Reader, key, sum[:])
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(sig), nil
+}
+
 func enrollmentJoin() error {
 	var in struct {
 		KeyFile, RequestFile, TokenFile string

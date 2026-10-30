@@ -42,6 +42,9 @@ func main() {
 	if len(os.Args) == 2 && os.Args[1] == "identity-fingerprints" {
 		run = identityFingerprints
 	}
+	if len(os.Args) == 2 && os.Args[1] == "probe-issued" {
+		run = probeIssued
+	}
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, "lab boot recovery configuration failed")
 		os.Exit(1)

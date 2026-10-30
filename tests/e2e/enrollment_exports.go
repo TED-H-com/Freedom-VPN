@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -77,7 +78,11 @@ func (s *Stack) GenerateEnrollmentIdentity(ctx context.Context, slot, name strin
 	if err != nil {
 		return EnrolledIdentityInput{}, err
 	}
-	if s.lab.stage(container, "/var/lib/vpn-node/e2e/status.json") != "waiting_token" {
+	wait, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+	if !waitUntil(wait, time.Second, func() bool {
+		return s.lab.stage(container, "/var/lib/vpn-node/e2e/status.json") == "waiting_token"
+	}) {
 		return EnrolledIdentityInput{}, fmt.Errorf("harness enrollment requires a waiting slot")
 	}
 	dir := "/var/lib/vpn-node/e2e/harness/" + name
@@ -124,6 +129,7 @@ func (s *Stack) JoinEnrolledIdentity(ctx context.Context, slot string, input Enr
 
 type EnrollmentPeers struct {
 	EnrollmentID         uuid.UUID `json:"enrollment_id"`
+	OperationID          uuid.UUID `json:"operation_id"`
 	NodeID               uuid.UUID `json:"node_id"`
 	IncarnationID        uuid.UUID `json:"incarnation_id"`
 	EnrollmentState      string    `json:"enrollment_state"`
@@ -150,6 +156,23 @@ func (s *Stack) EnrollmentPeerInventory(ctx context.Context, admin BrowserSessio
 	out.NodeID = en.NodeId
 	out.IncarnationID, _ = en.NodeIncarnationId.Get()
 	out.EnrollmentState = string(en.State)
+	resp, err = s.Call(ctx, admin, "GET", "/api/v1/admin/audit-events?resource_type=enrollment&resource_id="+id.String()+"&limit=100", nil, nil)
+	var audits api.AuditEventList
+	if err != nil || resp.Status != 200 || json.Unmarshal(resp.Body, &audits) != nil {
+		return out, fmt.Errorf("enrollment audit HTTP %d", resp.Status)
+	}
+	for _, ev := range audits.Items {
+		if ev.Action != "enrollment.consumed" {
+			continue
+		}
+		op, opErr := ev.OperationId.Get()
+		if opErr == nil && uuid.UUID(op) != uuid.Nil {
+			out.OperationID = uuid.UUID(op)
+		}
+	}
+	if out.OperationID == uuid.Nil {
+		return out, fmt.Errorf("enrollment operation unavailable")
+	}
 	resp, err = s.Call(ctx, admin, "GET", "/api/v1/admin/nodes/"+en.NodeId.String(), nil, nil)
 	var detail api.NodeDetail
 	if err != nil || resp.Status != 200 || json.Unmarshal(resp.Body, &detail) != nil {
@@ -164,7 +187,9 @@ func (s *Stack) EnrollmentPeerInventory(ctx context.Context, admin BrowserSessio
 	if err = f.netbirdAPI(ctx, "GET", "/setup-keys", nil, &keys); err != nil {
 		return out, err
 	}
-	sum := sha256.Sum256([]byte(id.String()))
+	// CreateNodeSetupKey names the key and correlation group from the
+	// provisioning operation id, not the enrollment id.
+	sum := sha256.Sum256([]byte(out.OperationID.String()))
 	suffix := hex.EncodeToString(sum[:12])
 	for _, k := range keys {
 		if k.Name == "fvpn-enroll-"+suffix {
@@ -173,10 +198,8 @@ func (s *Stack) EnrollmentPeerInventory(ctx context.Context, admin BrowserSessio
 		}
 	}
 	var groups []struct {
-		Name  string `json:"name"`
-		Peers []struct {
-			ID string `json:"id"`
-		} `json:"peers"`
+		Name  string    `json:"name"`
+		Peers nbPeerIDs `json:"peers"`
 	}
 	if err = f.netbirdAPI(ctx, "GET", "/groups", nil, &groups); err != nil {
 		return out, err
@@ -188,8 +211,8 @@ func (s *Stack) EnrollmentPeerInventory(ctx context.Context, admin BrowserSessio
 	for _, g := range groups {
 		if g.Name == "fvpn-enroll-peer-"+suffix {
 			out.CorrelationGroups++
-			for _, p := range g.Peers {
-				ids[p.ID] = true
+			for _, id := range g.Peers {
+				ids[id] = true
 			}
 		}
 	}
@@ -207,6 +230,40 @@ func (s *Stack) EnrollmentPeerInventory(ctx context.Context, admin BrowserSessio
 			out.ProjectedPeerPresent = true
 		}
 	}
-	out.Complete = out.SetupKeys == 1 && out.SetupKeyUses == out.Peers && out.Peers == len(ids) && out.ProjectedPeerPresent
+	// Peer discovery removes the empty correlation group after it binds the
+	// peer. A remaining group must not name any other peer.
+	out.Complete = out.SetupKeys == 1 && out.SetupKeyUses == 1 && out.Peers == 1 && len(ids) == 1 && out.ProjectedPeerPresent && out.CorrelationGroups <= 1
 	return out, nil
+}
+
+// nbPeerIDs accepts NetBird group peers as strings or {"id": "..."} objects.
+type nbPeerIDs []string
+
+func (p *nbPeerIDs) UnmarshalJSON(raw []byte) error {
+	*p = nil
+	if string(raw) == "null" {
+		return nil
+	}
+	var items []json.RawMessage
+	if err := json.Unmarshal(raw, &items); err != nil {
+		return err
+	}
+	for _, item := range items {
+		var id string
+		if json.Unmarshal(item, &id) == nil {
+			if id == "" {
+				return fmt.Errorf("group peer id unavailable")
+			}
+			*p = append(*p, id)
+			continue
+		}
+		var obj struct {
+			ID string `json:"id"`
+		}
+		if json.Unmarshal(item, &obj) != nil || obj.ID == "" {
+			return fmt.Errorf("group peer id unavailable")
+		}
+		*p = append(*p, obj.ID)
+	}
+	return nil
 }

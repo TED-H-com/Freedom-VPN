@@ -12,7 +12,9 @@ func (r *runner) prepareProbe(ctx context.Context, note func(string, string)) bo
 	}
 	r.probe = p
 	r.probePeer = p.Config
-	note("probe_config_scope", "dedicated non-member peer /32 and isolated origin UDP 4443; exported setup")
+	for _, n := range p.Notes {
+		note(n.Name, n.Detail)
+	}
 	return true
 }
 func (r *runner) startProbeCapture(ctx context.Context, note func(string, string)) func() bool {

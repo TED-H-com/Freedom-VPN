@@ -31,21 +31,33 @@ func identityFingerprints() error {
 	if err != nil {
 		return err
 	}
-	raw, err = os.ReadFile("/etc/netbird/config.json")
+	raw, err = os.ReadFile("/var/lib/netbird/default.json")
+	if err != nil {
+		return fmt.Errorf("native key unavailable")
+	}
+	pub, err := netbirdPublicKey(raw)
 	if err != nil {
 		return err
 	}
-	var cfg struct{ PrivateKey string }
-	if json.Unmarshal(raw, &cfg) != nil {
-		return fmt.Errorf("native key unavailable")
+	return json.NewEncoder(os.Stdout).Encode(map[string]string{"machine_id_sha256": digest([]byte(strings.TrimSpace(string(machine)))), "agent_spki_sha256": digest(cert.RawSubjectPublicKeyInfo), "netbird_public_key_sha256": digest(pub)})
+}
+
+// netbirdPublicKey reads the client's durable profile. Only the X25519 public
+// key is returned; the private scalar never leaves this process.
+func netbirdPublicKey(raw []byte) ([]byte, error) {
+	var cfg struct {
+		PrivateKey string
+	}
+	if json.Unmarshal(raw, &cfg) != nil || cfg.PrivateKey == "" {
+		return nil, fmt.Errorf("native key unavailable")
 	}
 	key, err := base64.StdEncoding.DecodeString(cfg.PrivateKey)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("native key unavailable")
 	}
 	priv, err := ecdh.X25519().NewPrivateKey(key)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("native key unavailable")
 	}
-	return json.NewEncoder(os.Stdout).Encode(map[string]string{"machine_id_sha256": digest([]byte(strings.TrimSpace(string(machine)))), "agent_spki_sha256": digest(cert.RawSubjectPublicKeyInfo), "netbird_public_key_sha256": digest(priv.PublicKey().Bytes())})
+	return priv.PublicKey().Bytes(), nil
 }

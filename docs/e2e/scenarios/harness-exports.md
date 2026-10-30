@@ -10,7 +10,7 @@ enrollment, publication and grants. No projector-owned rows are written.
 
 | Check | Required observation |
 |---|---|
-| update-good | Shared probe setup; real updater issuance; timed exception elements, authenticated origin replies, nonzero probe counters, unchanged member counters, elements removed |
+| update-good | Shared probe setup and its non-secret notes; real updater issuance with `configured_probe_issued` true; timed exception elements, authenticated origin replies, nonzero probe counters, unchanged member counters, elements removed |
 | update-bad | Real tampered candidate rejected before health; no challenge requirement for this earlier failure |
 | export-native-streams | Two independent native joins; bounded final per-stream inventories, mode 0600/root, one recognized device-flow key line, successful deletion; foreign container refused |
 | export-enrollment | Two harness keys race one code; one success/one rejection; successful response deliberately discarded; byte-identical replay completes one-time mTLS bootstrap and native join; complete correlated peer readback count one |

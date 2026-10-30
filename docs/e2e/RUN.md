@@ -473,14 +473,14 @@ prepared stack prefix. The smoke procedure is in
 | Export | Inputs and result |
 |---|---|
 | `SetupUpdaterProbe(ctx, slot, EnrolledNode)` | `node` or `node2`; creates one dedicated setup-key peer and narrow transport route for this exact enrolled incarnation. Returns `*UpdaterProbe`. Call once per slot/fresh stack. |
-| `UpdaterProbe.Config`, `.AgentConfig` | Exact `probe_peer` JSON-compatible value and `/etc/vpn-node/agent-run.json`; put both into the actual updater invocation (including recovery invocations that should exercise health). Config contains public peer/address information, no setup key. Do not publish the raw peer ID. |
+| `UpdaterProbe.Config`, `.AgentConfig`, `.Notes` | Exact `probe_peer` JSON-compatible value and `/etc/vpn-node/agent-run.json`; put both into the actual updater invocation (including recovery invocations that should exercise health). Config contains public peer/address information, no setup key. `Notes` are the non-secret setup observations (`probe_not_member`, `probe_route_selected`, scope). Do not publish the raw peer ID. |
 | `UpdaterProbe.Observe(ctx)` | Returns a collector. Start before the real updater; call once after completion, including errors. Generates authenticated lab traffic and reads nft state. `ProbeObservation.Verified` requires bounded exception elements, replies/origin receipt, probe counters, unchanged member counters and removal. It never writes a challenge, attestation or nft rule. |
 | `GenerateEnrollmentIdentity(ctx, slot, name)` | Optional stack-local P-256 key, CSR and immutable signed request generator for a fresh waiting slot. Returns only `EnrolledIdentityInput` paths. Harnesses may stage their own equivalent files. |
 | `StageEnrollmentToken(ctx, slot, input, token)` | Stages a real API-issued token via stdin into root-owned 0600 storage; never an argument/log. The caller must not record the token. |
 | `JoinEnrolledIdentity(ctx, slot, input)` | Reads the caller's PKCS8 key, exact signed `api.EnrollRequest` (with CSR), and token at container paths under `/var/lib/vpn-node/e2e/harness/`. `DiscardResponse=true` consumes then discards a successful response before persistence/bootstrap. Replay with the same files; `Join=true` consumes the normal one-time mTLS bootstrap and joins NetBird. Returns only statuses, error code, request digest and public node/incarnation IDs. No agent or central database rows are manufactured. |
-| `EnrollmentPeerInventory(ctx, admin, enrollmentID)` | Complete remote key/group/peer collections plus enrollment/node API readback. Correlates deterministic enrollment key/group names and the projected peer. Returns counts, one-off usage and `Complete`; missing correlation never becomes a successful zero count. This does not supply ENR-03's missing full incarnation-history API. |
-| `MachineIdentityFingerprints(ctx, slot)` | SHA-256 of trimmed OS machine-id text, DER agent SPKI and raw NetBird X25519 public key; hashes computed inside the node. No private key, certificate or native config is returned. |
-| `StartClonedIdentityFixture(ctx, "node")` | Requires unused `node-clone`; stops source, copies durable state/identity/native configuration into private mounts before clone boot, then resumes source. Returns a fixture with `Observe(ctx)` for hashes, entrypoint stages and actual read-only conflict/freeze rows. Never publish this clone. Prefix teardown removes it. |
+| `EnrollmentPeerInventory(ctx, admin, enrollmentID)` | Complete remote key/group/peer collections plus enrollment, audit and node API readback. The setup-key and correlation-group names are the product's `fvpn-enroll-<hash>` and `fvpn-enroll-peer-<hash>` of the `enrollment.consumed` operation id, not the enrollment id. Group peers may be id strings or objects. `Complete` requires that operation's one-off key used once, exactly one projected peer, and at most one correlation group. Discovery deletes that group after binding, so a zero group count after a successful readback is the cleaned state, not a missing correlation. A missing collection or operation id is an error, not a successful zero. This does not supply ENR-03's missing full incarnation-history API. |
+| `MachineIdentityFingerprints(ctx, slot)` | SHA-256 of trimmed OS machine-id text, DER agent SPKI and raw NetBird X25519 public key. The native key is read from the client profile `/var/lib/netbird/default.json` inside the node. No private key, certificate or native config is returned. |
+| `StartClonedIdentityFixture(ctx, "node")` | Requires unused `node-clone`; stops source, copies durable state, identity and `/var/lib/netbird` into private mounts before clone boot, then resumes source. The clone bind-mounts that profile at `/var/lib/netbird`. A clean `StartSecondExit` still leaves the image's `/var/lib/netbird` writable. Returns a fixture with `Observe(ctx)` for hashes, entrypoint stages and actual read-only conflict/freeze rows. Never publish this clone. Prefix teardown removes it. |
 | `NativePeer.Stream`, `NativeScale.Streams` | Final per-stream scan inventory, at most 60 entries for 20×3. Contains synthetic stream name, `scanned/missing/error/not_started`, `NativeLogScan` (including `DeviceFlowKeys`), fixed safe error class and deletion outcome. A nonzero count is not a clean scan; missing/error is not zero. `JoinNativeMember` returns scanner/deletion errors instead of discarding them. |
 
 Probe example (the caller keeps its existing updater invocation):
@@ -499,8 +499,11 @@ evidence := collect()
 
 The observer is bounded to 180 seconds and must surround the health phase.
 An artifact hash failure occurs before health and cannot prove D-063 issuance;
-use a separate valid candidate for that assertion. Source/destination guards
-remain the product validator's responsibility and are never relaxed by the lab.
+use a separate valid candidate for that assertion. The dev-stack update-good
+record adds `configured_probe_issued`: true only when the in-node watcher sees
+a fresh `health-challenge.json` `probe` object equal to `UpdaterProbe.Config`.
+The watcher prints that boolean and does not copy the peer ID out. Source/destination guards remain the
+product validator's responsibility and are never relaxed by the lab.
 
 Protected native device-flow files are separate streams from gateway logs,
 container logs and captures. Their final scan happens before deletion even when

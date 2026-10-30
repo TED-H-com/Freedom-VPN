@@ -99,7 +99,9 @@ func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, sub
 		deletion := exec.CommandContext(scanCtx, "docker", "exec", container, "rm", "-f", logPath).Run()
 		out.Stream.Deleted = deletion == nil
 		if deletion != nil {
-			out.Stream.Error = "protected_delete_failed"
+			if out.Stream.Error == "" {
+				out.Stream.Error = "protected_delete_failed"
+			}
 			err = errors.Join(err, fmt.Errorf("protected native stream deletion failed"))
 		}
 	}()
