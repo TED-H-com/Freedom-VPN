@@ -162,7 +162,7 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	start := func(name string) *processLog {
+	start := func(name, metricsAddress string) *processLog {
 		t.Helper()
 		binary := filepath.Join(dir, name)
 		build := exec.CommandContext(t.Context(), "go", "build", "-o", binary, "./apps/"+strings.TrimPrefix(name, "fvpn-")+"/cmd/"+name)
@@ -171,7 +171,7 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 			t.Fatalf("build: %v\n%s", e, output)
 		}
 		cmd := exec.Command(binary, "-config", path)
-		cmd.Env = env
+		cmd.Env = append([]string{"FVPN_METRICS_ADDRESS=" + metricsAddress}, env...)
 		logs := &processLog{}
 		cmd.Stdout = logs
 		cmd.Stderr = logs
@@ -213,7 +213,7 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 		return &http.Client{Transport: transport, Timeout: time.Second}
 	}
 	publicClient := clientFor(nil, nil)
-	controlLogs := start("fvpn-control")
+	controlLogs := start("fvpn-control", cfg.MetricsAddress)
 	waitUntil(t, func() bool {
 		res, e := publicClient.Get("https://" + cfg.PublicAddress + "/readyz")
 		if e != nil {
@@ -252,7 +252,8 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 		t.Fatal("binary enrollment", res.StatusCode, e)
 	}
 	agentClient := clientFor(&enrolled, private)
-	workerLogs := start("fvpn-worker")
+	// Choose the worker's metrics port after control has bound its own listener.
+	workerLogs := start("fvpn-worker", loopbackAddress(t))
 	waitUntil(t, func() bool {
 		req, e := http.NewRequestWithContext(t.Context(), "POST", "https://"+cfg.AgentAddress+"/api/v1/agent/bootstrap", nil)
 		if e != nil {

@@ -1,0 +1,99 @@
+{
+  "id": "at27",
+  "title": "Version targets, minimum version, disabled stays disabled",
+  "spec": [
+    "§5",
+    "§13.2",
+    "§19 AT27",
+    "UPD03",
+    "UPD04",
+    "UPD05",
+    "EXIT03"
+  ],
+  "status": "blocked",
+  "at": "2026-10-30T00:28:30Z",
+  "expected": "desired != current does not by itself open forwarding. A release outside the allowlist is not a new target. Disabled stays disabled across reboot. Safe last-good restore of forwarding needs a serving node.",
+  "actual": "disabled intent disabled -\u003e disabled; below-minimum batch http 422 RELEASE_NOT_APPROVED",
+  "git": "80c2971e3ad964f4cdb097da61aec80cbb08dab6",
+  "images": "fvpn-w4-updates-node:local a59961894d3a; fvpn-w4-updates-worker:local 37db66b36e2c; fvpn-w4-updates-control:local 831cbd9da1b1; fvpn-w4-updates-origin:local a284069da6c8; fvpn-w4-updates-idp:local 51e3274256ee; fvpn-w4-updates-payment:local 740e16c55514; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea",
+  "policy_revision": "unset",
+  "node_incarnation": "01a18a33-cc39-7585-8deb-a50b5f93b1fc",
+  "commands": [
+    "PUT /api/v1/admin/nodes/{id}/publication",
+    "GET node publication; docker restart disabled; POST batch for a release removed from the allowlist; nft list chain inet fvpn forward"
+  ],
+  "observations": [
+    {
+      "name": "publish_attempt",
+      "detail": "http 422 NODE_NOT_SERVICEABLE etag=\"6\" intent=unpublished"
+    },
+    {
+      "name": "disable",
+      "detail": "http 202 - etag=\"2\" intent=disabled"
+    },
+    {
+      "name": "disabled_restart",
+      "detail": "fvpn-w4-updates-disabled \u003cnil\u003e"
+    },
+    {
+      "name": "disabled_lifecycle",
+      "detail": "registered"
+    },
+    {
+      "name": "disabled_intent_before",
+      "detail": "disabled"
+    },
+    {
+      "name": "disabled_intent_after",
+      "detail": "disabled"
+    },
+    {
+      "name": "disabled_stays_disabled",
+      "detail": "true"
+    },
+    {
+      "name": "below_minimum_batch",
+      "detail": "http 422 RELEASE_NOT_APPROVED"
+    },
+    {
+      "name": "primary_publication",
+      "detail": "unpublished"
+    },
+    {
+      "name": "primary_desired",
+      "detail": "01a18a33-dc6d-7a1a-ae03-020686765c27"
+    },
+    {
+      "name": "primary_current",
+      "detail": "01a18a33-dc7e-75e7-aa9a-f0d506a207a2"
+    },
+    {
+      "name": "primary_last_good",
+      "detail": "-"
+    },
+    {
+      "name": "serving_ids",
+      "detail": "5"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "11"
+    },
+    {
+      "name": "forward_chain",
+      "detail": "absent"
+    },
+    {
+      "name": "traffic",
+      "detail": "not claimed; the lab node has no member accept rules"
+    },
+    {
+      "name": "desired_ne_current",
+      "detail": "service was already not forwarding; this run does not show a serving node staying up"
+    },
+    {
+      "name": "last_good_restore",
+      "detail": "blocked: no last_good release was confirmed because health checks fail closed"
+    }
+  ]
+}
