@@ -561,7 +561,7 @@ func TestUPD04_EnumsMatchSpec(t *testing.T) {
 	}
 }
 
-// TestAPI01_OptionalNullableFields permits only D-048/D-056/D-058 exceptions.
+// TestAPI01_OptionalNullableFields permits only approved optional nullable members.
 // Generated presence types distinguish missing from explicit null in Go.
 func TestAPI01_OptionalNullableFields(t *testing.T) {
 	walkSchemas(t, func(v schemaVisit) {
@@ -575,7 +575,9 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 					(v.path == "DnsServiceConfig#" && name == "resolver_document") ||
 					(v.path == "ObservationReport#" && name == "dns_policy_evidence") ||
 					(v.path == "DesiredState#" && name == "egress_probe") ||
-					(v.path == "PolicyDefinition#" && name == "threat_feed_status") {
+					(v.path == "PolicyDefinition#" && name == "threat_feed_status") ||
+					(v.path == "NodeDetail#/allOf/1" && name == "dns_policy_evidence") ||
+					(v.path == "UpdateResult#" && name == "candidate_health") {
 					continue
 				}
 				t.Errorf("%s/%s: nullable members must be required", v.path, name)

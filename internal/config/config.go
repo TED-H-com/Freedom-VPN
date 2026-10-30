@@ -55,6 +55,8 @@ type Config struct {
 	LeaseRate               Bucket   `json:"lease_rate"`
 	UsageRate               Bucket   `json:"usage_rate"`
 	AnonymousRate           Bucket   `json:"anonymous_rate"`
+	LoginRate               Bucket   `json:"login_rate"`
+	LoginSubjectPerMinute   int      `json:"login_subject_per_minute"`
 	WorkerConcurrency       int      `json:"worker_concurrency"`
 	WorkerLeaseSeconds      int      `json:"worker_lease_seconds"`
 	WorkerJobSeconds        int      `json:"worker_job_seconds"`
@@ -77,7 +79,17 @@ func Defaults() Config {
 		ReadTimeoutSeconds: 15, WriteTimeoutSeconds: 30, IdleTimeoutSeconds: 60, ShutdownSeconds: 30,
 		BrowserBodyBytes: 1 << 20, AgentBodyBytes: 1 << 20, UsageBodyBytes: 8 << 20, WebhookBodyBytes: 1 << 20, MaxConcurrent: 128, MaxRatePrincipals: 10000,
 		IngressRate: Bucket{20, 60}, BrowserRate: Bucket{10, 30}, AgentRate: Bucket{5, 10}, HeartbeatRate: Bucket{1, 5}, LeaseRate: Bucket{1, 5}, UsageRate: Bucket{2, 10}, AnonymousRate: Bucket{2, 10},
+		LoginRate: Bucket{1, 40}, LoginSubjectPerMinute: 10,
 		WorkerConcurrency: 4, WorkerLeaseSeconds: 60, WorkerJobSeconds: 40, WorkerPollSeconds: 1, WorkerAttempts: 10, WorkerBackoffSeconds: 1, WorkerBackoffMaxSeconds: 300,
+	}
+}
+
+// LoginSubjectBucket converts the per-subject login completion limit (per minute)
+// into a token bucket with matching burst and per-second refill rate.
+func (c Config) LoginSubjectBucket() Bucket {
+	return Bucket{
+		PerSecond: float64(c.LoginSubjectPerMinute) / 60.0,
+		Burst:     c.LoginSubjectPerMinute,
 	}
 }
 
@@ -143,10 +155,13 @@ func (c Config) Validate() error {
 			return fmt.Errorf("invalid positive bound: %s", t.Field(i).Tag.Get("json"))
 		}
 	}
-	for _, b := range []Bucket{c.IngressRate, c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate} {
+	for _, b := range []Bucket{c.IngressRate, c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate, c.LoginRate} {
 		if b.PerSecond <= 0 || b.PerSecond > 100000 || b.Burst < 1 || b.Burst > 100000 {
 			return errors.New("invalid rate bucket")
 		}
+	}
+	if c.LoginSubjectPerMinute < 1 || c.LoginSubjectPerMinute > 100000 {
+		return errors.New("invalid rate bucket")
 	}
 	if c.WorkerJobSeconds >= c.WorkerLeaseSeconds || c.WorkerLeaseSeconds > 86400 || c.WorkerBackoffSeconds > c.WorkerBackoffMaxSeconds || c.WorkerBackoffMaxSeconds > 86400 || c.WorkerConcurrency > 1000 || c.SessionIdleSeconds > c.SessionAbsoluteSeconds {
 		return errors.New("inconsistent timeout or worker bounds")

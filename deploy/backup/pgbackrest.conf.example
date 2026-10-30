@@ -41,19 +41,18 @@ repo1-retention-full-type=time
 repo1-retention-full=35
 repo1-retention-diff=14
 repo1-retention-archive-type=full
-repo1-retention-archive=35
+# Archive retention follows the retained full backups; do not set a separate count.
 
 # Compression, concurrency, and logging:
 compress-type=zst
 compress-level=3
 process-max=2
 start-fast=y
-delta=y
 log-level-console=info
 log-level-file=detail
 log-path=/var/log/pgbackrest
 spool-path=/var/spool/pgbackrest
-archive-async=y
+archive-async=n
 
 [fvpn]
 pg1-path=/var/lib/postgresql/17/main

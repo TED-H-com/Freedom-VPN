@@ -116,6 +116,11 @@ func Servers(ctx context.Context, d Dependencies, domains ...Domain) (*Applicati
 	if e := d.Metrics.Register(requests); e != nil {
 		return nil, e
 	}
+	rateLimited := prometheus.NewCounterVec(prometheus.CounterOpts{Name: "fvpn_control_rate_limited_total", Help: "Control HTTP 429 responses by endpoint class and limiter."}, []string{"class", "limiter"})
+	if e := d.Metrics.Register(rateLimited); e != nil {
+		return nil, e
+	}
+	d.Browser.SetRateLimit(c.LoginSubjectPerMinute, c.MaxRatePrincipals, rateLimited)
 	wrap := func(h http.Handler) http.Handler {
 		for i := len(middleware) - 1; i >= 0; i-- {
 			h = middleware[i](h)
@@ -123,7 +128,7 @@ func Servers(ctx context.Context, d Dependencies, domains ...Domain) (*Applicati
 		return h
 	}
 	commands := &httpapi.Commands{Pool: d.Pool, Retention: time.Duration(c.IdempotencySeconds) * time.Second}
-	base := httpapi.Options{Config: c, Sessions: d.Browser, Agents: agents, Commands: commands}
+	base := httpapi.Options{Config: c, Sessions: d.Browser, Agents: agents, Commands: commands, RateLimited: rateLimited}
 	publicAPI, e := httpapi.New(handlers, base)
 	if e != nil {
 		return nil, e
@@ -147,7 +152,7 @@ func Servers(ctx context.Context, d Dependencies, domains ...Domain) (*Applicati
 	}
 	authMux := http.NewServeMux()
 	d.Browser.Register(authMux)
-	authRoutes := httpapi.BrowserRoutes(c, authMux)
+	authRoutes := httpapi.BrowserRoutesWithMetrics(c, authMux, rateLimited)
 	root := func(api http.Handler, isAgent bool) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Cache-Control", "no-store")

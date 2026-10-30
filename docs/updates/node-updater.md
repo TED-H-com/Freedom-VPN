@@ -12,6 +12,8 @@ The central fleet orchestration, the agent process and the installer are separat
 fvpn-updater run     -config updater.json
 fvpn-updater recover -config updater.json
 fvpn-updater flush   -config updater.json
+fvpn-updater status  -config updater.json
+fvpn-updater status  -journal /var/lib/vpn-node/update-journal/journal.db
 fvpn-updater version
 ```
 
@@ -19,7 +21,7 @@ fvpn-updater version
 
 | Exit | Meaning |
 |---|---|
-| 0 | The journal does not require forwarding to stay off. `help` and `version` also exit 0. |
+| 0 | The journal does not require forwarding to stay off. `help` and `version` also exit 0. `status` exits 0 when it reads successfully, including when the snapshot says recovery is required. |
 | 2 | Only `ErrMembersBlocked`. Members must stay blocked. |
 | 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
 | 64 | Usage, an unknown command, a bad flag, or a missing `-config`. |
@@ -68,7 +70,7 @@ A newer generation while the job is queued, downloading or verifying supersedes 
 
 ### Rollback decision (§13.9)
 
-Rollback chooses the newest retained release that passes the checks below. Newest is `release_sequence`, then `installed_at`, then release id. Retained means a release the journal still records and whose tree retention has not removed. A revoked release is never selected and is never installed. The checks, in this order, are: a tree is present and its hash matches, the manifest signature verifies, the release is not revoked, the release is in the serving set, and the state schema is readable by that release. When the failed candidate's `rollback.allowed_release_ids` is non-empty, the target must also be in that list. The serving set and the allow list fail closed: missing either one is `MINIMUM_VERSION_VIOLATION`. An empty allow list adds no extra restriction. `StateReadableByPrevious` does not mark a schema readable when the journal schema is not that release's schema. A health check past the 8-attempt cap starts a rollback. It does not jump straight to recovery.
+Rollback chooses the newest retained release that passes the checks below. Newest is `release_sequence`, then `installed_at`, then release id. Retained means a release the journal still records and whose tree retention has not removed. A revoked release is never selected and is never installed. The checks, in this order, are: a tree is present and its hash matches, the manifest signature verifies, the release is not revoked, the release is in the serving set, and the state schema is readable by that release. When the failed candidate's `rollback.allowed_release_ids` is non-empty, the target must also be in that list. A release missing from the serving set or from a non-empty allow list is `MINIMUM_VERSION_VIOLATION`. An empty allow list adds no extra restriction (D-034e). `StateReadableByPrevious` does not mark a schema readable when the journal schema is not that release's schema. A health check past the 8-attempt cap starts a rollback. It does not jump straight to recovery.
 
 A currently installed release named by the persisted signed set is unhealthy. The updater stops that service, switches to the newest non-revoked release, issues a fresh recovery transaction UUID and rollback challenge, starts the target, and verifies its bound answer. A failed check stops the target and keeps forwarding blocked. `current` still names the selected tree, `last_good` stays unchanged, and `previous_release_id` names the revoked release. When no such release exists, the outcome is `recovery_required`, member forwarding stays blocked, and the revoked release does not pass the gate. The unsigned agent list still refuses installation. It does not, by itself, roll the current release back, so a legacy envelope keeps today's behaviour. The persisted signed set is a monotonic union: an id is never removed, an older `config_generation` cannot shrink it, and an absent member does not update it.
 
@@ -92,7 +94,9 @@ On a destructive rollback the updater stops the candidate, writes a new challeng
 
 A passing check commits `last_good`, the state-schema marker, and `locally_succeeded` in one SQLite transaction. Verified rollback likewise commits `last_good` with `rolled_back`, so recovery cannot observe a promoted pointer with the earlier in-flight stage. Member forwarding is still the latest publication intent plus the serving policy (§13.9 服務狀態恢復). The attestation's `published` field does not open the gate. Health does not publish an unpublished or disabled exit, and a release outside the serving set stays blocked.
 
-`txns.health_json` is the first health report, the candidate's. Later stages do not replace it. Schema `user_version` stays 1. Reasons that do not fit `UpdateHealth` are an append-only `txn_events` row, `kind` `health_attest`. Rollback health is a second row with `phase` `rollback`. The `UpdateResult.health` object (§13.10.3) is the candidate report: statuses only. When no retained release can be restored, the terminal code is `ROLLBACK_FAILED` and the candidate statuses and reasons remain. When `last_good` is restored and its own check passes, the stage is `rolled_back` and the transaction error stays `HEALTH_CHECK_FAILED`.
+D-062 separates candidate evidence from the restored release's evidence. `txns.health_json` is the latest observed profile. `candidate_health_json` retains the latest candidate profile when rollback starts; subsequent rollback checks change only `health_json`. A resumed candidate challenge may replace the earlier candidate profile. Reasons remain in append-only `txn_events` rows (`kind: health_attest`, `phase: candidate` or `rollback`). A `rolled_back` result sends the restored release's checks in `health`, keeps the candidate failure in `error_code` (for example `HEALTH_CHECK_FAILED`), names the restored release in `current_release_id`, and names the candidate in `previous_release_id`. Candidate health is available locally through `status`; it is not a wire member. When no retained release can be restored, the terminal code is `ROLLBACK_FAILED` and candidate evidence remains in the journal.
+
+A terminal `failed` result before any health profile ran has `health: null`, an error code and `finished_at`; `current_release_id` names the release still current. For example, a tampered artifact reports `ARTIFACT_INVALID` with the unchanged current release. Once checks have run, a failed result carries the latest observed health. Health is never manufactured to satisfy result acceptance.
 
 Which component versions are verifiable at which stage:
 
@@ -119,17 +123,44 @@ These windows are code constants. The updater config cannot set them. They are s
 
 The journal is SQLite in WAL mode with `synchronous=FULL`, one connection, at `/var/lib/vpn-node/update-journal/journal.db` (mode 0600, directory 0700). `synchronous=FULL` is the journal fsync. The order of filesystem flushes around it is 待實測.
 
-Tables: `meta`, `jobs`, `releases`, `txns`, `txn_events`, `artifacts`, `result_outbox`, `result_history`. Schema version is `PRAGMA user_version`. A newer version is refused.
+Tables: `meta`, `jobs`, `releases`, `txns`, `txn_events`, `artifacts`, `result_outbox`, `result_history`. Schema version is `PRAGMA user_version = 2`. A newer version is refused. The transactional v1 upgrade adds `candidate_health_json`, delivery diagnostics and retry deadlines, and result-history stage. It copies the old candidate profile into its separate column and reconstructs restored health only from a recorded rollback event; missing evidence stays null. Existing outbox payloads, result IDs and hashes are immutable through migration. A previously sealed result may therefore be permanently rejected under the corrected central rules; its evidence is retained and later results can still be delivered.
 
 `txns.stage` is the stage above. `destructive` sticks once set. `txn_events` is the append-only history. Releases are immutable. `current` and `last_good` are meta pointers.
 
 The result outbox stores the canonical JSON and `payload_hash` (`canonjson.HashHex` of the result without `payload_hash`). `result_id` is UUIDv5 over `fvpn-update-result|<job>|<attempt>|<state>` so a replay sends the same id. UUIDv7 is not replay-stable. The same id and hash is a no-op. A different hash is `ACK_CONFLICT` and is kept, not resent. A late duplicate ACK is a no-op.
 
-`POST /agent/update-results` is answered with 202 in the contract. 409 is a conflict. Anything else leaves the row pending.
+`POST /agent/update-results` is answered with 202 in the contract. A 409 marks `conflict`. Other 4xx responses except 429 mark `rejected`; both states retain the exact payload for diagnostics, stop resending it, and allow later pending results to flush in insertion order. HTTP status, a recognized API error code, attempt time and local error code are stored separately (`last_http_status`, `last_api_code`, `last_attempt_at`, `last_error`). Arbitrary response messages and unknown codes are not stored. Only transport failures and 5xx map to `STORE_UNAVAILABLE`. A 429 stays pending with `RATE_LIMITED` and a durable `retry_not_before`: `Retry-After` accepts delay seconds or an HTTP date. Missing/malformed headers defer one second. Flush returns without sleeping until that deadline, including after restart; later results wait behind a retryable failure. Other unexpected responses remain pending as protocol errors. A successful flush means its pending batch was processed; inspect rejection diagnostics to distinguish central acceptance from permanent rejection.
 
 Sidecar files next to the database (not inside it): `identity.snap` (identity tree hash) and `immutable.snap` / `immutable.record` (pointers and the state-schema marker). Both are taken after migration and before services start, and again for the pointers before rollback health runs against the selected tree. They are health-check snapshots, not completion markers; the terminal SQLite transaction records verified `last_good`. The mutable state directory is not in that record. `epoch-<txn>` is the new meter epoch for that transaction. It lives in the journal directory, not under state, and it is removed when the transaction completes. `FileMeter.OpenEpoch` does not write a sidecar. The check and rollback counters and `forwarding.blocked` are the other durable sidecars. `health-challenge.json` and `health-attest.json` are short-lived. The updater removes both after it records health. If the remove fails, it rewrites the challenge with `consumed: true`, which a later validation rejects. The next check overwrites the challenge with a new nonce.
 
 The single-updater lock is `/var/lib/vpn-node/update.lock`, a kernel `flock(LOCK_EX|LOCK_NB)` held by `node/internal/nodelock`. The descriptor stays open until `Release`. Holder metadata (`pid`, `boot_id`, `start_time`) is written only after the lock is held. `start_time` is field 22 of `/proc/<pid>/stat` (clock ticks since boot), counted after the last `)` of the command name. A stale pid, a different boot id, or the same pid with a different start time does not steal a lock the kernel still holds, and the file is not removed on contention. A live flock is `UPDATE_BUSY`. A held lock whose record is stale is also `UPDATE_BUSY`, and the error names the reason (`boot id`, `pid`, `process` or `start time`). The agent, the installer and the updater take that same lock.
+
+## Read-only status and agent observations (D-062e)
+
+`fvpn-updater status` emits a JSON snapshot. With no flags it reads the default journal database. `-journal` accepts an existing database **file**, not a directory; `-config` selects the journal path from an updater config. The flags are mutually exclusive. No engine, service command, migration, directory creation or updater lock is needed.
+
+The agent can import `node/internal/updatejournal` and call:
+
+```go
+snapshot, err := updatejournal.Snapshot(ctx, journalPath)
+```
+
+`journalPath` is the full path to `journal.db`. `Snapshot` uses SQLite `mode=ro`, `query_only`, and one read transaction for a consistent WAL view while the updater writes or holds its flock. The caller's deadline or a one-second bound (`SnapshotTimeout`), whichever is sooner, limits the read; lock waits are capped at 50ms. Missing, unreadable or unsupported databases return an error. The agent must treat that as unavailable evidence, not successful completion. Versions 1 and 2 can be observed without migration; v1 rolled-back health is null because its old column held candidate health.
+
+| JSON field / Go field | Meaning |
+|---|---|
+| `generation` / `Generation` | Latest job/result generation as a decimal string; null for an empty journal. |
+| `job_id` / `JobID` | Job associated with that generation. |
+| `stage`, `state` / `Stage`, `State` | API vocabulary for local progress or terminal result; empty before any job. |
+| `journal_stage` / `JournalStage` | Exact local transaction stage, when one exists. |
+| `current_release_id`, `last_good_release_id` / `CurrentRelease`, `LastGoodRelease` | Durable journal pointers, not an assertion that the process is healthy. |
+| `recovery_required` / `RecoveryRequired` | Persisted recovery gate or latest transaction requiring recovery. |
+| `last_result_state` / `LastResultState` | Latest local result state from pending, rejected or acknowledged evidence; not an acceptance flag. |
+| `last_rejection` / `LastRejection` | Null or the latest permanent rejection/conflict: result ID, HTTP status, API code, local code and attempt time. |
+| `health` / `Health` | Latest profile for the selected transaction, null before checks. |
+| `candidate_health_json` / `CandidateHealth` | Separate candidate profile for diagnosis, null before candidate checks. |
+
+Generations are compared as unsigned decimal integers without floating point or signed SQLite casts. A newer open job takes precedence over an older terminal result; the older result state and rejection remain separately visible. Acknowledged history retains its result stage. The snapshot describes local durable evidence and never claims central completion.
 
 ## Download and verify (§13.4)
 
@@ -186,4 +217,4 @@ Identity and the usage outbox are not rewritten by the update or the rollback (�
 - D-047. Release trees contain only regular files and directories. `ExtractArchive` rejects symlinks, hard links and devices. `fvpn-release` rejects them at pack time. A `./` directory entry is the archive root. Any other `.` or `..` segment is rejected.
 - D-034g. Usage and flag errors exit 64. Exit 2 means only `ErrMembersBlocked`.
 - F-15. `SigningKey.TrustStore` uses `envelope.NewNodeTrustStore`. `fvpn-release verify` uses `envelope.ParseNodeTrustStoreJSON`. `CheckArtifact` rejects duplicate matching platform entries.
-- D-053. Isolation, DNS and the tunnel probe come from the running candidate agent, bound to a per-transaction challenge in the journal directory. No config field, environment variable or pre-existing file can mark them passed. The attestation carries `node_id` so the node ids can be compared; the agent's `published` value is `published`, `unpublished` or `disabled`, and the updater never opens the gate from that field. Unknown JSON fields are rejected. The files are regular, mode 0600, not symlinks, and at most 64KiB. The journal directory is private (created as 0700), is not a symlink, and belongs to the effective user. Each check reason belongs to the fixed vocabulary documented in the file contract and is at most 160 bytes. `not_run` is a known status and is `failed` for the updater. `generated_at` must be strictly after `issued_at` and strictly before `expires_at`, and the updater's clock must still be before `expires_at`. A timestamp more than 2s ahead of the updater clock is rejected. Only an all-passed valid answer ends polling early; failed or not_run answers may converge during the wait window. A file present before the challenge is ignored. Equal modification times count as "not after"; a rewrite is a new inode, a later modification time, a different size, or a different SHA-256. `health_json` keeps the first report. Reasons go to `txn_events`. The rollback order is stop, then the restored release's challenge, then start. The wait, poll and TTL above are 待實測. The 8-attempt and 3-rollback caps stay.
+- D-053. Isolation, DNS and the tunnel probe come from the running candidate agent, bound to a per-transaction challenge in the journal directory. No config field, environment variable or pre-existing file can mark them passed. The attestation carries `node_id` so the node ids can be compared; the agent's `published` value is `published`, `unpublished` or `disabled`, and the updater never opens the gate from that field. Unknown JSON fields are rejected. The files are regular, mode 0600, not symlinks, and at most 64KiB. The journal directory is private (created as 0700), is not a symlink, and belongs to the effective user. Each check reason belongs to the fixed vocabulary documented in the file contract and is at most 160 bytes. `not_run` is a known status and is `failed` for the updater. `generated_at` must be strictly after `issued_at` and strictly before `expires_at`, and the updater's clock must still be before `expires_at`. A timestamp more than 2s ahead of the updater clock is rejected. Only an all-passed valid answer ends polling early; failed or not_run answers may converge during the wait window. A file present before the challenge is ignored. Equal modification times count as "not after"; a rewrite is a new inode, a later modification time, a different size, or a different SHA-256. `health_json` keeps the latest report and D-062 retains the candidate profile separately in `candidate_health_json`. Reasons go to `txn_events`. The rollback order is stop, then the restored release's challenge, then start. The wait, poll and TTL above are 待實測. The 8-attempt and 3-rollback caps stay.
