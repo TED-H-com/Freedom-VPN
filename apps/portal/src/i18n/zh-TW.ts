@@ -251,7 +251,14 @@ export const zhTW = {
   'admin.updates.col.bucket': '互斥進度桶 (Bucket)',
   'admin.updates.col.policyEvidence': '套用政策證據 (policy_generation / policy_refs)',
   'admin.updates.col.error': '錯誤碼 ／ 最後回報時間',
-  'admin.updates.evidenceNotReported': '未回報 (not reported)',
+  'admin.updates.col.actions': '詳情',
+  'admin.updates.evidenceNotReported': '尚未回報 (not yet reported)',
+  'admin.updates.inspectTargetBtn': '檢視目標詳情',
+  'admin.updates.targetDetailTitle': '更新批次目標節點詳情與政策證據 (D-048)：{hostname}',
+  'admin.updates.targetDetailPolicyGenLabel':
+    '候選版本已確認政策世代 (policy_generation)',
+  'admin.updates.targetDetailPolicyRefsLabel': '候選版本已確認政策參照 (policy_refs)',
+  'admin.nodeDetail.updateEvidenceTitle': '節點更新批次目標與政策證據 (§13.12, D-048)',
 
   // Admin Members (§9.2, §18.1)
   'admin.members.title': '會員列表與資格管理 (§9.2, §18.1)',

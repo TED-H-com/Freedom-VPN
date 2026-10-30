@@ -6,19 +6,20 @@ import (
 	"errors"
 	"net/url"
 	"os"
-	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// New creates and migrates a fresh fvpn_<random> database. Cleanup uses an
-// independent context so a failed/canceled test still drops its own database.
-// It never changes cluster roles or other databases. No DSN is printed.
+// New creates and migrates a fresh fvpn_t<unix hex>_<random> database. Cleanup
+// uses an independent context so a failed or canceled test still drops its own
+// database. It never changes cluster roles or other databases. No DSN is printed.
+// When FVPN_TEST_DB_SWEEP=1, the first call in a process also sweeps idle leaked
+// databases older than one hour.
 func New(t testing.TB) *pgxpool.Pool {
 	t.Helper()
 	pool, _ := newDatabase(t, true)
@@ -63,7 +64,10 @@ func newDatabase(t testing.TB, migrate bool) (*pgxpool.Pool, string) {
 	if dsn == "" {
 		t.Skip("integration test requires FVPN_TEST_DATABASE_URL (PostgreSQL 17 admin DSN)")
 	}
-	name := "fvpn_" + strings.ReplaceAll(uuid.NewString(), "-", "")
+	name, err := databaseName(time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
 	isolated, err := isolatedDSN(dsn, name)
 	if err != nil {
 		t.Fatal(err)
@@ -74,6 +78,7 @@ func newDatabase(t testing.TB, migrate bool) (*pgxpool.Pool, string) {
 	if err != nil {
 		t.Fatal("open test database admin connection:", err)
 	}
+	maybeSweep(t, admin)
 	quoted := pgx.Identifier{name}.Sanitize()
 	if _, err = admin.Exec(ctx, "CREATE DATABASE "+quoted); err != nil {
 		admin.Close()
@@ -112,4 +117,22 @@ func newDatabase(t testing.TB, migrate bool) (*pgxpool.Pool, string) {
 		}
 	}
 	return pool, isolated
+}
+
+// maybeSweep runs Sweep at most once per process. A failure is reported on the
+// test that first opened a database; later tests do not retry it.
+var sweepOnce sync.Once
+
+func maybeSweep(t testing.TB, admin *pgxpool.Pool) {
+	t.Helper()
+	if os.Getenv("FVPN_TEST_DB_SWEEP") != "1" {
+		return
+	}
+	sweepOnce.Do(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		if _, err := Sweep(ctx, admin, time.Hour); err != nil {
+			t.Errorf("dbtest sweep: %v", err)
+		}
+	})
 }

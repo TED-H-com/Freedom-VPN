@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-// writeAcceptance saves every record before rejecting incomplete acceptance.
+// WriteAcceptance saves every record before rejecting incomplete acceptance.
 // Extra diagnostic records do not substitute for any assigned AT (§19).
-func writeAcceptance(dir string, records map[string]*Record) error {
+func WriteAcceptance(dir string, records map[string]*Record) error {
 	var failures []error
 	ids := make([]string, 0, len(records))
 	for id := range records {
@@ -30,7 +30,7 @@ func writeAcceptance(dir string, records map[string]*Record) error {
 			failures = append(failures, fmt.Errorf("write %s: %w", id, err))
 		}
 	}
-	for _, id := range []string{"at23", "at24", "at25", "at26", "at27"} {
+	for _, id := range []string{"AT23", "AT24", "AT25", "AT26", "AT27"} {
 		rec := records[id]
 		if rec == nil {
 			failures = append(failures, fmt.Errorf("%s: missing assigned AT", id))
@@ -63,6 +63,8 @@ type Observation struct {
 // Record is one acceptance case (§19). Paths, tokens and DSNs are redacted
 // before the file is written.
 type Record struct {
+	RunID           string        `json:"run_id"`
+	Scope           string        `json:"scope"`
 	ID              string        `json:"id"`
 	Title           string        `json:"title"`
 	Spec            []string      `json:"spec"`
@@ -91,7 +93,7 @@ var redactPatterns = []*regexp.Regexp{
 	mustCompile("gh", "p_", `[A-Za-z0-9]+`),
 	mustCompile("gh", "o_", `[A-Za-z0-9]+`),
 	regexp.MustCompile(`(?s)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----`),
-	regexp.MustCompile(`(?i)"(token|setup_key|password|secret|authorization|seed_b64|api_key)"[[:space:]]*:[[:space:]]*"[^"]*"`),
+	regexp.MustCompile(`(?i)"(token|setup_key|password|secret|authorization|seed_b64|api_key|subject|sub)"[[:space:]]*:[[:space:]]*"[^"]*"`),
 }
 
 // Redact removes secret-shaped substrings from evidence text.
@@ -141,6 +143,8 @@ func Write(dir string, rec Record) error {
 		b.WriteString("Spec: " + strings.Join(rec.Spec, ", ") + "\n\n")
 	}
 	b.WriteString("At: " + rec.At + "\n\n")
+	b.WriteString("Run: " + rec.RunID + "\n\n")
+	b.WriteString("Scope: " + rec.Scope + "\n\n")
 	if rec.Expected != "" {
 		b.WriteString("Expected: " + rec.Expected + "\n\n")
 	}

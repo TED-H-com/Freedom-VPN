@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.PORTAL_E2E_BASE_URL || 'http://127.0.0.1:4173';
-const SEEDED_BATCH_ID = '85ef720a-31a0-4250-90d2-4b92c58695bc';
 const SEEDED_NODE_2_ID = '0195f100-0000-7000-8000-000000000202';
 
 test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT04, AT06, AT23–AT24)', () => {
@@ -262,57 +261,96 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
   }) => {
     const nodesRes = await request.get(`${BASE_URL}/api/v1/admin/nodes`);
     const nodesJson = (await nodesRes.json()) as {
-      items: Array<{ node_id: string; name?: string | null }>;
+      items: Array<{
+        node_id: string;
+        name?: string | null;
+        update?: { batch_id?: string | null } | null;
+      }>;
     };
     const enrolledNode =
       nodesJson.items.find((n) => n.name === 'tw-tpe-01-updated') ??
       nodesJson.items.find((n) => n.name === 'tw-tpe-01') ??
+      nodesJson.items.find((n) => n.node_id !== SEEDED_NODE_2_ID) ??
       nodesJson.items[0];
     const enrolledNodeId = enrolledNode!.node_id;
+    const activeBatchId = enrolledNode?.update?.batch_id;
+    expect(activeBatchId).toBeTruthy();
 
-    // 1. Navigate to the seeded fleet update batch on /admin/updates
-    await page.goto(`/admin/updates?batch_id=${SEEDED_BATCH_ID}`);
+    // 1. Navigate to /admin/updates (auto-discovers active batch from real update-batch API)
+    await page.goto(`/admin/updates?batch_id=${activeBatchId}`);
     await expect(page.getByTestId('admin-fleet-updates-page')).toBeVisible();
     await expect(page.getByTestId('update-batch-progress-card')).toBeVisible();
 
-    // 2. Verify 12-bucket target accounting and verified success count
+    // 2. Verify 12-bucket target accounting and verified success count from the real batch
     await expect(page.getByTestId('bucket-sum-check')).toContainText('2 / 2');
     await expect(page.getByTestId('verified-success-summary')).toContainText('1');
     await expect(page.getByTestId('bucket-succeeded')).toContainText('1');
-    await expect(page.getByTestId('bucket-failed')).toContainText('1');
+    await expect(page.getByTestId('bucket-waiting_online')).toContainText('1');
 
-    // 3. Verify per-target `needs_attention`, `unconfirmed`, and D-048 `policy_generation` / `policy_refs` evidence
-    await expect(
-      page.getByTestId(`target-needs-attention-${SEEDED_NODE_2_ID}`),
-    ).toBeVisible();
+    // 3. Verify per-target `unconfirmed` and D-048 `policy_generation` / `policy_refs` evidence on target rows
     await expect(
       page.getByTestId(`target-unconfirmed-${SEEDED_NODE_2_ID}`),
     ).toBeVisible();
     await expect(page.getByTestId(`target-policy-gen-${enrolledNodeId}`)).toContainText(
-      '2',
+      /[1-9][0-9]*/,
     );
     await expect(page.getByTestId(`target-policy-refs-${enrolledNodeId}`)).toContainText(
       '0195f100-0000-7000-8000-000000000401',
     );
     await expect(page.getByTestId(`target-policy-gen-${SEEDED_NODE_2_ID}`)).toContainText(
-      '未回報 (not reported)',
+      '尚未回報 (not yet reported)',
     );
     await expect(
       page.getByTestId(`target-policy-refs-${SEEDED_NODE_2_ID}`),
-    ).toContainText('未回報 (not reported)');
+    ).toContainText('尚未回報 (not yet reported)');
 
-    // 4. Verify locale switching (zh-TW <-> en) and accessible labels
+    // 4. Verify Target Detail panel (D-048) for both the confirmed live target and unconfirmed offline target
+    await page.getByTestId(`inspect-target-${enrolledNodeId}`).click();
+    await expect(page.getByTestId('batch-target-detail-panel')).toBeVisible();
+    await expect(page.getByTestId('target-detail-node-id')).toContainText(enrolledNodeId);
+    await expect(page.getByTestId('target-detail-policy-gen')).toContainText(
+      /[1-9][0-9]*/,
+    );
+    await expect(page.getByTestId('target-detail-policy-refs')).toContainText(
+      '0195f100-0000-7000-8000-000000000401',
+    );
+
+    await page.getByTestId(`inspect-target-${SEEDED_NODE_2_ID}`).click();
+    await expect(page.getByTestId('target-detail-node-id')).toContainText(
+      SEEDED_NODE_2_ID,
+    );
+    await expect(page.getByTestId('target-detail-policy-gen')).toContainText(
+      '尚未回報 (not yet reported)',
+    );
+    await expect(page.getByTestId('target-detail-policy-refs')).toContainText(
+      '尚未回報 (not yet reported)',
+    );
+
+    // 5. Verify locale switching (zh-TW <-> en) on target rows and target detail panel
     await page.getByTestId('locale-switcher').selectOption('en');
-    await expect(
-      page.getByTestId(`target-needs-attention-${SEEDED_NODE_2_ID}`),
-    ).toContainText('Needs Attention');
     await expect(
       page.getByTestId(`target-unconfirmed-${SEEDED_NODE_2_ID}`),
     ).toContainText('Unconfirmed');
     await expect(page.getByTestId(`target-policy-gen-${SEEDED_NODE_2_ID}`)).toContainText(
-      'not reported',
+      'Not yet reported',
+    );
+    await expect(page.getByTestId('target-detail-policy-gen')).toContainText(
+      'Not yet reported',
+    );
+    await expect(page.getByTestId('target-detail-policy-refs')).toContainText(
+      'Not yet reported',
     );
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
+
+    // 6. Navigate to the node detail view and verify update-target policy evidence (D-048)
+    await page.goto(`/admin/nodes/${enrolledNodeId}`);
+    await expect(page.getByTestId('node-update-target-evidence-section')).toBeVisible();
+    await expect(page.getByTestId('node-detail-target-policy-gen')).toContainText(
+      /[1-9][0-9]*/,
+    );
+    await expect(page.getByTestId('node-detail-target-policy-refs')).toContainText(
+      '0195f100-0000-7000-8000-000000000401',
+    );
   });
 
   test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page }) => {

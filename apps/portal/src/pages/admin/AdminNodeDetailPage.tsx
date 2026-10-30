@@ -42,6 +42,16 @@ export function AdminNodeDetailPage(): React.ReactElement {
 
   const node = nodeQuery.data?.data;
   const etag = nodeQuery.data?.etag ?? null;
+  const nodeBatchId = node?.update?.batch_id ?? null;
+
+  const nodeBatchQuery = useQuery({
+    queryKey: ['admin', 'update-batch', nodeBatchId],
+    queryFn: () => apiClient.getUpdateBatch(nodeBatchId!),
+    enabled: Boolean(nodeBatchId),
+  });
+  const nodeUpdateTarget =
+    nodeBatchQuery.data?.targets.find((target) => target.node_id === node?.node_id) ??
+    null;
 
   const [syncedNodeKey, setSyncedNodeKey] = useState<string>('');
   const currentNodeKey = node ? `${node.node_id}:${node.resource_version}` : '';
@@ -377,6 +387,113 @@ export function AdminNodeDetailPage(): React.ReactElement {
           </table>
         </div>
       </section>
+
+      {/* Node Update Batch Target & Policy Evidence (§13.12, D-048) */}
+      {(node.update || nodeUpdateTarget) && (
+        <section className="card" data-testid="node-update-target-evidence-section">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}
+          >
+            <div>
+              <h2>{t('admin.nodeDetail.updateEvidenceTitle')}</h2>
+              <p className="page-subtitle mono" style={{ fontSize: '0.8rem' }}>
+                batch_id: {node.update?.batch_id ?? '-'} · generation:{' '}
+                {nodeUpdateTarget?.generation ?? node.update?.generation ?? '0'} · state:{' '}
+                {nodeUpdateTarget?.state ?? node.update?.state ?? '-'}
+              </p>
+            </div>
+            {node.update?.batch_id && (
+              <Link
+                to={`/admin/updates?batch_id=${encodeURIComponent(node.update.batch_id)}`}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.8rem' }}
+                data-testid="node-detail-batch-link"
+              >
+                {node.update.batch_id} →
+              </Link>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '0.75rem',
+              marginTop: '0.75rem',
+            }}
+          >
+            <div
+              style={{
+                padding: '0.6rem 0.75rem',
+                background: '#f8fafc',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--color-border)',
+              }}
+              data-testid="node-detail-target-policy-gen"
+            >
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--color-text-muted)',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                {t('admin.updates.targetDetailPolicyGenLabel')}
+              </div>
+              <div className="mono">
+                {nodeUpdateTarget?.policy_generation != null ? (
+                  <span className="badge badge-info">
+                    {nodeUpdateTarget.policy_generation}
+                  </span>
+                ) : (
+                  <span className="badge badge-warning">
+                    {t('admin.updates.evidenceNotReported')}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '0.6rem 0.75rem',
+                background: '#f8fafc',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--color-border)',
+              }}
+              data-testid="node-detail-target-policy-refs"
+            >
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--color-text-muted)',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                {t('admin.updates.targetDetailPolicyRefsLabel')}
+              </div>
+              <div className="mono" style={{ wordBreak: 'break-all' }}>
+                {nodeUpdateTarget?.policy_refs != null ? (
+                  <span className="badge badge-info">
+                    {nodeUpdateTarget.policy_refs.length > 0
+                      ? nodeUpdateTarget.policy_refs.join(', ')
+                      : 'none (0)'}
+                  </span>
+                ) : (
+                  <span className="badge badge-warning">
+                    {t('admin.updates.evidenceNotReported')}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Publication vs Revoke Machine Identity actions (§5.2, §18.3) */}
       <section className="card">

@@ -274,7 +274,17 @@ export const en: Record<TranslationKey, string> = {
   'admin.updates.col.policyEvidence':
     'Applied Policy Evidence (policy_generation / policy_refs)',
   'admin.updates.col.error': 'Error Code / Last Reported',
-  'admin.updates.evidenceNotReported': 'not reported',
+  'admin.updates.col.actions': 'Details',
+  'admin.updates.evidenceNotReported': 'Not yet reported',
+  'admin.updates.inspectTargetBtn': 'Inspect Target',
+  'admin.updates.targetDetailTitle':
+    'Update Batch Target Detail & Policy Evidence (D-048): {hostname}',
+  'admin.updates.targetDetailPolicyGenLabel':
+    'Candidate Confirmed Policy Generation (policy_generation)',
+  'admin.updates.targetDetailPolicyRefsLabel':
+    'Candidate Confirmed Policy Refs (policy_refs)',
+  'admin.nodeDetail.updateEvidenceTitle':
+    'Node Update Target & Policy Evidence (§13.12, D-048)',
 
   // Admin Members (§9.2, §18.1)
   'admin.members.title': 'Members & Entitlement Management (§9.2, §18.1)',

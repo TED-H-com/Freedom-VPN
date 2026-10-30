@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   apiClient,
@@ -29,6 +29,7 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
   const initialBatchId = searchParams.get('batch_id') ?? MOCK_FALLBACK_BATCH_ID;
   const [activeBatchId, setActiveBatchId] = useState<string>(initialBatchId);
   const [batchLookupInput, setBatchLookupInput] = useState<string>(initialBatchId);
+  const [selectedTargetNodeId, setSelectedTargetNodeId] = useState<string>('');
   const [targetsCursor, setTargetsCursor] = useState<string | undefined>(undefined);
   const [targetsCursorHistory, setTargetsCursorHistory] = useState<
     Array<string | undefined>
@@ -56,11 +57,29 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
     queryFn: () => apiClient.listPolicies({ type: 'release_support' }),
   });
 
+  const nodesForBatchDiscoveryQuery = useQuery({
+    queryKey: ['admin', 'nodes', 'all', 'all'],
+    queryFn: () => apiClient.listNodes(),
+    enabled: !activeBatchId,
+  });
+
   const batchQuery = useQuery({
     queryKey: ['admin', 'update-batch', activeBatchId, targetsCursor],
     queryFn: () => apiClient.getUpdateBatch(activeBatchId, { cursor: targetsCursor }),
     enabled: Boolean(activeBatchId),
   });
+
+  useEffect(() => {
+    if (!activeBatchId && nodesForBatchDiscoveryQuery.data) {
+      const discovered = nodesForBatchDiscoveryQuery.data.items.find(
+        (n) => n.update?.batch_id,
+      )?.update?.batch_id;
+      if (discovered) {
+        setActiveBatchId(discovered);
+        setBatchLookupInput(discovered);
+      }
+    }
+  }, [activeBatchId, nodesForBatchDiscoveryQuery.data]);
 
   useEffect(() => {
     const items = releasesQuery.data?.items ?? [];
@@ -83,6 +102,7 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
   if (
     releasesQuery.isLoading ||
     !releasesQuery.data ||
+    (!activeBatchId && nodesForBatchDiscoveryQuery.isLoading) ||
     (Boolean(activeBatchId) && batchQuery.isLoading)
   ) {
     return (
@@ -95,6 +115,10 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
   const releases = releasesQuery.data.items;
   const fleet = releasesQuery.data.fleet;
   const batch = batchQuery.data ?? null;
+  const selectedTarget =
+    batch?.targets.find((target) => target.node_id === selectedTargetNodeId) ??
+    batch?.targets[0] ??
+    null;
 
   const selectedRelease =
     releases.find((r) => r.release_id === selectedReleaseId) ?? releases[0];
@@ -109,7 +133,11 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
   const handleRunAllUpdate = async () => {
     setError(null);
     try {
-      const targetGen = expectedGeneration.trim() || batch?.targets[0]?.generation || '0';
+      const targetGen =
+        expectedGeneration.trim() ||
+        fleet.generation ||
+        batch?.targets[0]?.generation ||
+        '0';
       const created = await apiClient.createUpdateBatch({
         release_id: selectedRelease?.release_id ?? selectedReleaseId,
         scope: 'all_nodes',
@@ -402,6 +430,7 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                   <th>{t('admin.updates.col.bucket')}</th>
                   <th>{t('admin.updates.col.policyEvidence')}</th>
                   <th>{t('admin.updates.col.error')}</th>
+                  <th>{t('admin.updates.col.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -506,11 +535,142 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                       {target.current_job?.error_code ?? '-'} (
                       {target.last_result_at ?? target.last_observed_at ?? 'pending'})
                     </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                        data-testid={`inspect-target-${target.node_id}`}
+                        onClick={() => setSelectedTargetNodeId(target.node_id)}
+                      >
+                        {t('admin.updates.inspectTargetBtn')}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {selectedTarget && (
+            <div
+              className="card"
+              style={{
+                marginTop: '1rem',
+                background: '#f8fafc',
+                border: '1px solid var(--color-border)',
+              }}
+              data-testid="batch-target-detail-panel"
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: 0 }}>
+                    {t('admin.updates.targetDetailTitle', {
+                      hostname: selectedTarget.node_name ?? selectedTarget.node_id,
+                    })}
+                  </h3>
+                  <div
+                    className="mono"
+                    style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}
+                    data-testid="target-detail-node-id"
+                  >
+                    node_id: {selectedTarget.node_id} · generation:{' '}
+                    {selectedTarget.generation} · state:{' '}
+                    <span data-testid="target-detail-state">{selectedTarget.state}</span>
+                  </div>
+                </div>
+                <Link
+                  to={`/admin/nodes/${selectedTarget.node_id}`}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.8rem' }}
+                  data-testid="target-detail-node-link"
+                >
+                  {selectedTarget.node_name} →
+                </Link>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                  gap: '0.75rem',
+                }}
+              >
+                <div
+                  style={{
+                    padding: '0.6rem 0.75rem',
+                    background: '#ffffff',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                  data-testid="target-detail-policy-gen"
+                >
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--color-text-muted)',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    {t('admin.updates.targetDetailPolicyGenLabel')}
+                  </div>
+                  <div className="mono">
+                    {selectedTarget.policy_generation != null ? (
+                      <span className="badge badge-info">
+                        {selectedTarget.policy_generation}
+                      </span>
+                    ) : (
+                      <span className="badge badge-warning">
+                        {t('admin.updates.evidenceNotReported')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: '0.6rem 0.75rem',
+                    background: '#ffffff',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                  data-testid="target-detail-policy-refs"
+                >
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--color-text-muted)',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    {t('admin.updates.targetDetailPolicyRefsLabel')}
+                  </div>
+                  <div className="mono" style={{ wordBreak: 'break-all' }}>
+                    {selectedTarget.policy_refs != null ? (
+                      <span className="badge badge-info">
+                        {selectedTarget.policy_refs.length > 0
+                          ? selectedTarget.policy_refs.join(', ')
+                          : 'none (0)'}
+                      </span>
+                    ) : (
+                      <span className="badge badge-warning">
+                        {t('admin.updates.evidenceNotReported')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {(targetsCursorHistory.length > 0 || batch.next_cursor) && (
             <div
