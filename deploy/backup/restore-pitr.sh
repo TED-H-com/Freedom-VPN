@@ -26,7 +26,14 @@ PRIMARY_DIR="${FVPN_PRIMARY_PGDATA:-}"
 REPO_PATH=""
 DB_USER="${FVPN_BACKUP_DB_USER:-fvpn}"
 DB_NAME="${FVPN_BACKUP_DB_NAME:-fvpn}"
-CIPHER_PASS="${FVPN_PGBACKREST_CIPHER_PASS:-}"
+# Export names, never secret values, on Docker argv. Native pgBackRest env wins.
+PGBACKREST_REPO1_CIPHER_PASS="${PGBACKREST_REPO1_CIPHER_PASS:-${FVPN_PGBACKREST_CIPHER_PASS:-}}"
+if [[ -n "$PGBACKREST_REPO1_CIPHER_PASS" ]]; then
+	export PGBACKREST_REPO1_CIPHER_PASS
+	export PGBACKREST_REPO1_CIPHER_TYPE="${PGBACKREST_REPO1_CIPHER_TYPE:-aes-256-cbc}"
+else
+	unset PGBACKREST_REPO1_CIPHER_PASS
+fi
 
 usage() {
 	cat >&2 <<'EOF'
@@ -186,30 +193,39 @@ if [[ -n "$TARGET_DIR" ]]; then
 	RESOLVED_TARGET="$(realpath -m "$TARGET_DIR")"
 	if [[ -n "$PRIMARY_DIR" ]]; then
 		RESOLVED_PRIMARY="$(realpath -m "$PRIMARY_DIR")"
-		if [[ "$RESOLVED_TARGET" == "$RESOLVED_PRIMARY" ]]; then
+		if [[ "$RESOLVED_TARGET/" == "${RESOLVED_PRIMARY%/}/"* ]]; then
 			echo "restore-pitr.sh: refusing to restore over live primary directory '${TARGET_DIR}'" >&2
 			exit 2
 		fi
 	fi
 	if [[ -n "${PGDATA:-}" ]]; then
 		RESOLVED_PGDATA="$(realpath -m "$PGDATA")"
-		if [[ "$RESOLVED_TARGET" == "$RESOLVED_PGDATA" ]]; then
+		if [[ "$RESOLVED_TARGET/" == "${RESOLVED_PGDATA%/}/"* ]]; then
 			echo "restore-pitr.sh: refusing to restore over active PGDATA '${PGDATA}'" >&2
 			exit 2
 		fi
 	fi
-	if [[ -f "${TARGET_DIR}/postmaster.pid" ]]; then
-		echo "restore-pitr.sh: refusing to restore over a live PostgreSQL instance (postmaster.pid found in '${TARGET_DIR}')" >&2
+	if [[ -e "${TARGET_DIR}/postmaster.pid" || -e "${TARGET_DIR}/PG_VERSION" ]]; then
+		echo "restore-pitr.sh: refusing to restore over a live PostgreSQL instance (postmaster.pid or PG_VERSION found in '${TARGET_DIR}')" >&2
 		exit 2
 	fi
 	if [[ -d "$TARGET_DIR" ]] && [[ -n "$(ls -A "$TARGET_DIR" 2>/dev/null)" ]]; then
 		echo "restore-pitr.sh: target directory '${TARGET_DIR}' is not empty; refusing to overwrite" >&2
 		exit 2
 	fi
+	# Even without an explicit primary path, never create a copy inside a cluster.
+	ANCESTOR="$(dirname "$RESOLVED_TARGET")"
+	while [[ "$ANCESTOR" != / ]]; do
+		if [[ -e "$ANCESTOR/PG_VERSION" || -e "$ANCESTOR/postmaster.pid" ]]; then
+			echo "restore-pitr.sh: refusing target inside an existing PostgreSQL directory" >&2
+			exit 2
+		fi
+		ANCESTOR="$(dirname "$ANCESTOR")"
+	done
 	mkdir -p "$TARGET_DIR"
 	chmod 0700 "$TARGET_DIR"
 
-	EXTRA_ARGS=(--pg1-path="$TARGET_DIR")
+	EXTRA_ARGS=(--pg1-path="$TARGET_DIR" --no-delta)
 	if [[ -n "$REPO_PATH" ]]; then
 		EXTRA_ARGS+=(--repo1-path="$REPO_PATH")
 	fi
@@ -245,19 +261,22 @@ fi
 
 docker volume create "$TARGET_VOLUME" >/dev/null
 
-# Prepare cipher flags if repository encryption is configured.
-CIPHER_ARGS=()
-if [[ -n "$CIPHER_PASS" ]]; then
-	CIPHER_ARGS=(--repo1-cipher-type=aes-256-cbc "--repo1-cipher-pass=${CIPHER_PASS}")
-fi
+# Forward repository options, including credentials, as environment names only.
+REPO_ENV=()
+while IFS= read -r key; do
+	REPO_ENV+=(-e "$key")
+done < <(compgen -e | LC_ALL=C sort | grep '^PGBACKREST_REPO1_' || true)
+# --repo-volume explicitly selects a local repository copy. Environment options
+# for its remote source stay available, but cannot redirect this restore.
+REPO_ARGS=(--repo1-type=posix --repo1-path=/var/lib/pgbackrest)
 
 # Step 1: Run pgbackrest restore in a one-shot network-none container with the backup repo mounted read-only (:ro).
 RESTORE_HELPER="${ISOLATED_CONTAINER}-init"
-docker rm -f "$RESTORE_HELPER" >/dev/null 2>&1 || true
 docker run --rm \
 	--name "$RESTORE_HELPER" \
 	--network none \
 	--entrypoint /bin/bash \
+	"${REPO_ENV[@]}" \
 	-v "${TARGET_VOLUME}:/var/lib/postgresql/data" \
 	-v "${REPO_VOLUME}:/var/lib/pgbackrest:ro" \
 	"$IMAGE" \
@@ -265,17 +284,20 @@ docker run --rm \
 		set -euo pipefail
 		stanza="$1"
 		shift
+		if [[ -n "$(find /var/lib/postgresql/data -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+			echo "restore-pitr.sh: refusing non-empty target volume (including PG_VERSION/postmaster.pid)" >&2
+			exit 2
+		fi
 		chown postgres:postgres /var/lib/postgresql/data
 		chmod 0700 /var/lib/postgresql/data
-		find /var/lib/postgresql/data -mindepth 1 -delete
 		exec runuser -u postgres -- pgbackrest \
 			--stanza="$stanza" \
 			--pg1-path=/var/lib/postgresql/data \
-			--repo1-path=/var/lib/pgbackrest \
+			--no-delta \
 			--log-path=/tmp \
 			"$@" \
 			restore
-	' _ "$STANZA" "${CIPHER_ARGS[@]}" "${PGBACKREST_TARGET_ARGS[@]}"
+	' _ "$STANZA" "${REPO_ARGS[@]}" "${PGBACKREST_TARGET_ARGS[@]}"
 
 # Step 2: Start the isolated PostgreSQL container with --network none and zero host ports.
 # PostgreSQL replays archived WAL from /var/lib/pgbackrest:ro up to the PITR target and promotes.
@@ -284,7 +306,9 @@ docker run -d \
 	--network none \
 	-e FVPN_PG_ISOLATED_RESTORE=1 \
 	-e FVPN_PGBACKREST_STANZA="$STANZA" \
-	-e FVPN_PGBACKREST_CIPHER_PASS="$CIPHER_PASS" \
+	"${REPO_ENV[@]}" \
+	-e PGBACKREST_REPO1_TYPE=posix \
+	-e PGBACKREST_REPO1_PATH=/var/lib/pgbackrest \
 	-e POSTGRES_USER="$DB_USER" \
 	-e POSTGRES_DB="$DB_NAME" \
 	-e POSTGRES_HOST_AUTH_METHOD=trust \

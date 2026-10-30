@@ -5,6 +5,8 @@ on:
     paths:
       - "deploy/backup/**"
       - "docs/ops/backups.md"
+      - "docs/handover/restore-drill.md"
+      - "docs/handover/deploy.md"
       - "docs/ops/backups/**"
       - "docs/ops/README.md"
       - "mk/backup.mk"
@@ -14,12 +16,19 @@ on:
     paths:
       - "deploy/backup/**"
       - "docs/ops/backups.md"
+      - "docs/handover/restore-drill.md"
+      - "docs/handover/deploy.md"
       - "docs/ops/backups/**"
       - "docs/ops/README.md"
       - "mk/backup.mk"
       - ".github/workflows/backup.yml"
       - "tests/backup/**"
   workflow_dispatch:
+    inputs:
+      record_evidence:
+        description: Write dated drill evidence for review
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -57,5 +66,18 @@ jobs:
         env:
           # Per-run prefix shared by every container, volume, network, and image
           # tag. Form is documented in docs/handover/restore-drill.md.
+          FVPN_BACKUP_DRILL_RECORD: ${{ github.event_name == 'workflow_dispatch' && inputs.record_evidence && '1' || '0' }}
           FVPN_BACKUP_DRILL_PREFIX: fvpn-w4-ops-backups-gha${{ github.run_id }}-${{ github.run_attempt }}
         run: make -f mk/backup.mk backup-drill
+
+      - name: Run adversarial backup proof
+        run: make -f mk/backup.mk backup-review-proof
+
+      - name: Upload manually recorded evidence
+        if: github.event_name == 'workflow_dispatch' && inputs.record_evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-drill-evidence
+          path: |
+            docs/ops/backups/drill-*.json
+            docs/ops/backups/drill-*.md
