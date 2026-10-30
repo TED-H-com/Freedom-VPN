@@ -369,6 +369,14 @@ func (s *Server) SetClockOffset(d time.Duration) {
 	s.mu.Unlock()
 }
 
+// SetClock supplies signed server time from the test's clock. Nil restores
+// wall time. SetClockOffset still applies, for explicit skew scenarios.
+func (s *Server) SetClock(now func() time.Time) {
+	s.mu.Lock()
+	s.nowFn = now
+	s.mu.Unlock()
+}
+
 // Revoke makes later mTLS calls return 403 IDENTITY_REVOKED.
 func (s *Server) Revoke() {
 	s.mu.Lock()

@@ -44,6 +44,9 @@ func (p *verProbe) Probe(_ context.Context, req ProbeRequest) ProbeResult {
 
 func TestHealthAttest_AnswersMatchingChallenge(t *testing.T) {
 	r := newRig(t)
+	// Signed lease time, challenge issuance, producer and validator share one
+	// clock. Real setup time must not advance only the signed-time anchor.
+	r.srv.SetClock(r.clock.Wall)
 	p := &verProbe{version: "0.76.2"}
 	r.eng.prober = p
 	r.srv.SetPublication(api.PublicationIntentUnpublished)
@@ -64,6 +67,9 @@ func TestHealthAttest_AnswersMatchingChallenge(t *testing.T) {
 		t.Fatal(err)
 	}
 	att := requireAttest(t, r, ch)
+	if !att.GeneratedAt.Equal(r.clock.Wall()) {
+		t.Fatalf("producer and challenge clocks differ: generated=%s validator=%s", att.GeneratedAt, r.clock.Wall())
+	}
 	if att.Published != api.PublicationIntentUnpublished {
 		t.Fatalf("published %s", att.Published)
 	}
