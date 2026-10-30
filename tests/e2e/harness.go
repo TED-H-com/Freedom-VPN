@@ -656,5 +656,5 @@ func (l *lab) candidateConfig(id uuid.UUID, version string) error {
 	if err != nil {
 		return err
 	}
-	return writeAtomic(filepath.Join(l.state, "node", "var", "e2e", "agent-"+id.String()+".json"), raw)
+	return os.WriteFile(filepath.Join(l.state, "node", "var", "e2e", "agent-"+id.String()+".json"), raw, 0o600)
 }
