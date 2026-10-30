@@ -500,7 +500,7 @@ func (l *lab) startAux(role, ip string, pause bool) (auxNode, error) {
 	if err := os.MkdirAll(filepath.Join(varDir, "e2e"), 0o755); err != nil {
 		return auxNode{}, err
 	}
-	if err := copyTree(filepath.Join(l.state, "node", "etc"), etcDir); err != nil {
+	if err := copyEtc(filepath.Join(l.state, "node", "etc"), etcDir); err != nil {
 		return auxNode{}, err
 	}
 	if pause {
@@ -530,11 +530,32 @@ func (l *lab) removeAux(names ...string) {
 	}
 }
 
-func copyTree(src, dst string) error {
-	cmd := exec.Command("cp", "-a", src, dst)
-	out, err := cmd.CombinedOutput()
+// copyEtc clones the lab node config for an auxiliary container. boot-id is
+// skipped: the entrypoint rewrites it, and the running primary stores it as
+// root mode 0600, which the test user cannot read (§19.1 lab bind mounts).
+func copyEtc(src, dst string) error {
+	if err := os.MkdirAll(dst, 0o755); err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(src)
 	if err != nil {
-		return fmt.Errorf("copy etc: %s", clip(string(out), 200))
+		return err
+	}
+	for _, ent := range entries {
+		if ent.IsDir() || ent.Name() == "boot-id" {
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(src, ent.Name()))
+		if err != nil {
+			return fmt.Errorf("copy etc %s: %w", ent.Name(), err)
+		}
+		mode := os.FileMode(0o644)
+		if info, statErr := ent.Info(); statErr == nil {
+			mode = info.Mode().Perm()
+		}
+		if err := os.WriteFile(filepath.Join(dst, ent.Name()), b, mode); err != nil {
+			return err
+		}
 	}
 	return nil
 }

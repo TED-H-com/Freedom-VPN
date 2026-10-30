@@ -176,6 +176,7 @@ func (s *suite) breakf(format string, args ...any) {
 
 func (s *suite) obs(id, name, detail string) {
 	s.rec[id].Observations = append(s.rec[id].Observations, Observation{Name: name, Detail: detail})
+	s.logf("%s %s %s", id, name, clip(detail, 160))
 }
 
 func (s *suite) cmd(id, command string) {

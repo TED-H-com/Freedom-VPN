@@ -311,6 +311,7 @@ func (s *suite) waitRelease(container, varDir, release string) bool {
 }
 
 func (s *suite) runRelease(container, varDir string, node nodeIdentity, release, arch, trust, staging, releases string, stop []string, timeout time.Duration) updaterRun {
+	s.logf("updater %s release %s arch %s", container, release, arch)
 	seen := s.waitRelease(container, varDir, release)
 	if !seen {
 		s.logf("desired state never contained %s", release)
@@ -554,6 +555,7 @@ func (s *suite) faults() {
 }
 
 func (s *suite) preSwitch(label string, release uuid.UUID, mutate func() error, arch, trust, staging, releases string, stop []string, timeout time.Duration, want string) {
+	s.logf("fault %s", label)
 	admin := s.admin()
 	if admin == nil {
 		return
