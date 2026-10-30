@@ -1,0 +1,12 @@
+# /etc/systemd/system/fvpn-backup-verify.timer
+# Runs the isolated backup verification daily at 03:00 UTC (§17.2).
+[Unit]
+Description=Daily Freedom VPN Central PostgreSQL Backup Restore Verification Timer
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target

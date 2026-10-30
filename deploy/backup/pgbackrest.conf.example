@@ -1,0 +1,102 @@
+# =============================================================================
+# Freedom VPN — pgBackRest Configuration Example (`/etc/pgbackrest/pgbackrest.conf`)
+# Spec references: §3.1, §15.4, §16.2, §16.4, §17.2, AT30 (SECOPS-05)
+# Pinned tool version: pgBackRest 2.60.0 (2.60.0-1.pgdg13+1)
+# =============================================================================
+#
+# Key & secret separation contract (§16.2, §17.2):
+#   1. The central signing vault (`/var/lib/fvpn/vault`) is NEVER stored inside
+#      PostgreSQL or inside the pgBackRest repository.
+#   2. The pgBackRest repository encryption passphrase (`repo1-cipher-pass`) and
+#      object-store credentials (`repo1-s3-key`, `repo1-s3-key-secret`) are kept
+#      outside PostgreSQL and outside `/var/lib/fvpn/vault` in a restricted
+#      root/postgres-only environment file (`/etc/fvpn/secrets/pgbackrest-repo.env`,
+#      mode `0600`) injected via `PGBACKREST_REPO1_CIPHER_PASS`,
+#      `PGBACKREST_REPO1_S3_KEY`, and `PGBACKREST_REPO1_S3_KEY_SECRET`.
+#   3. Never commit real passphrases, S3 keys, or production hostnames.
+#
+# =============================================================================
+# PROFILE A: Production Object-Store Repository (S3-Compatible, Encrypted)
+# =============================================================================
+
+[global]
+repo1-type=s3
+repo1-path=/fvpn-central-pg17
+repo1-s3-bucket=fvpn-prod-db-backups.example.com
+repo1-s3-endpoint=s3.ap-northeast-1.amazonaws.com
+repo1-s3-region=ap-northeast-1
+repo1-s3-uri-style=host
+repo1-s3-verify-tls=y
+# Credentials and encryption key are supplied via environment variables in
+# /etc/fvpn/secrets/pgbackrest-repo.env (PGBACKREST_REPO1_S3_KEY,
+# PGBACKREST_REPO1_S3_KEY_SECRET, PGBACKREST_REPO1_CIPHER_PASS) or IAM role:
+repo1-s3-key-type=auto
+repo1-cipher-type=aes-256-cbc
+
+# Retention policy (§16.4, §17.2):
+# Retain 35 days of full backups (aligning with the 35-day raw usage retention
+# baseline in §16.4) and 14 differential backups so any point within the window
+# is recoverable via base backup + continuous WAL archive (RPO <= 15 minutes).
+repo1-retention-full-type=time
+repo1-retention-full=35
+repo1-retention-diff=14
+repo1-retention-archive-type=full
+repo1-retention-archive=35
+
+# Compression, concurrency, and logging:
+compress-type=zst
+compress-level=3
+process-max=2
+start-fast=y
+delta=y
+log-level-console=info
+log-level-file=detail
+log-path=/var/log/pgbackrest
+spool-path=/var/spool/pgbackrest
+archive-async=y
+
+[fvpn]
+pg1-path=/var/lib/postgresql/17/main
+pg1-port=5432
+pg1-user=postgres
+pg1-database=fvpn
+pg1-socket-path=/var/run/postgresql
+
+[global:archive-push]
+compress-level=3
+process-max=2
+
+[global:archive-get]
+process-max=2
+
+
+# =============================================================================
+# PROFILE B: Lab / Devstack Mounted-Volume Repository (POSIX, TEST ONLY)
+# =============================================================================
+# Used by `deploy/backup/postgres/Dockerfile` and `tests/backup` PITR drills when
+# a local Docker volume is mounted at `/var/lib/pgbackrest`.
+#
+# [global]
+# repo1-type=posix
+# repo1-path=/var/lib/pgbackrest
+# repo1-retention-full-type=count
+# repo1-retention-full=7
+# repo1-retention-diff=7
+# compress-type=zst
+# process-max=2
+# start-fast=y
+# archive-async=n
+# log-level-console=warn
+# log-level-file=info
+# log-path=/var/log/pgbackrest
+# spool-path=/var/spool/pgbackrest
+# # Optional TEST ONLY encryption for local drill verification:
+# # repo1-cipher-type=aes-256-cbc
+# # repo1-cipher-pass=TEST ONLY - NOT A SECRET
+#
+# [fvpn]
+# pg1-path=/var/lib/postgresql/data
+# pg1-port=5432
+# pg1-user=fvpn
+# pg1-database=fvpn
+# pg1-socket-path=/var/run/postgresql
