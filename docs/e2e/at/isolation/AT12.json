@@ -8,27 +8,27 @@
     "DNS03"
   ],
   "status": "blocked",
-  "at": "2026-10-29T23:49:51Z",
-  "build": "fa5bdcc936b9291c1e583174a72a56db18a5a233",
+  "at": "2026-10-30T00:05:53Z",
+  "build": "4737a6ec3533f230dddb61a5b5e2a18b7dddd580",
   "image_digests": [
-    "fvpn-w4-isolation-node:local sha256:9cc6ddc7ec2faf0a73b8190234716ea2c1a5f82c2824dd5500eb0d48a5ed5aa3",
-    "fvpn-w4-isolation-control:local sha256:d10dd8a7d73bf9af31211e979e4c6da22cd96a1d91aee54b5a789b2f3126d5a1",
-    "fvpn-w4-isolation-worker:local sha256:ca2de9ddc95352a83391609fac4e82abcbbc5e942d40a8f8956f056eed4e40af",
-    "fvpn-w4-at-isolation:lab absent"
+    "fvpn-w4-isolation-node:local sha256:2cc222d56f879cc2b5bc89e84dafd79846bd2ce40ddcfd198ca52798ee0324d6",
+    "fvpn-w4-isolation-control:local sha256:efe9e6457c91705dea08fd77832443b49cdd2f422e537279f03d5c8257fff8d3",
+    "fvpn-w4-isolation-worker:local sha256:c3d52b195907476c2da539bc2462cb5bef09dbd08f9d21d1ad846a37b8a0136e",
+    "fvpn-w4-isolation-lab:lab absent"
   ],
   "policy_revision": "1",
-  "node_incarnation": "01a18a11-b7b6-7f02-ad95-3d99d6ae8d45",
+  "node_incarnation": "01a18a20-6816-7b31-8533-3d15704d446c",
   "expected": "Peer, SSH, agent API, DNS admin, arbitrary overlay and a spoofed source are refused. TCP and UDP 53 to the designated resolvers succeed and nothing else on those hosts does (§19 AT12, ISO01, ISO04, DNS03).",
   "actual": "PUT publication 422 NODE_NOT_SERVICEABLE failed_checks=[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"] members=1 member container",
   "commands": [
     "FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 make -f mk/e2e.mk e2e-up",
     "FVPN_E2E=1 FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 go test -tags e2e -count=1 -timeout 25m -p 1 -parallel 1 ./tests/e2e/at/isolation",
-    "FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-test"
+    "make -f mk/at-isolation.mk at-isolation"
   ],
   "observations": [
     {
       "name": "node_id",
-      "detail": "01a18a11-b671-7cd3-8087-377f58e10c89"
+      "detail": "01a18a20-6449-7a97-a553-facb665b7600"
     },
     {
       "name": "publication_observed",
@@ -104,7 +104,7 @@
     },
     {
       "name": "stack_targets",
-      "detail": "containers=fvpn-w4-isolation-member,fvpn-w4-isolation-node,fvpn-w4-isolation-worker,fvpn-w4-isolation-control,fvpn-w4-isolation-adguard,fvpn-w4-isolation-gateway,fvpn-w4-isolation-origin,fvpn-w4-isolation-postgres,fvpn-w4-isolation-coredns,fvpn-w4-isolation-netbird,fvpn-w4-isolation-payment,fvpn-w4-isolation-idp lab_prefix=172.28.33 origin_ip=192.0.6.10 node_dummy=192.0.2.20"
+      "detail": "containers=fvpn-w4-isolation-member,fvpn-w4-isolation-node,fvpn-w4-isolation-worker,fvpn-w4-isolation-control,fvpn-w4-isolation-adguard,fvpn-w4-isolation-gateway,fvpn-w4-isolation-origin,fvpn-w4-isolation-postgres,fvpn-w4-isolation-coredns,fvpn-w4-isolation-netbird,fvpn-w4-isolation-idp,fvpn-w4-isolation-payment lab_prefix=172.28.33 origin_ip=192.0.6.10 node_dummy=192.0.2.20"
     },
     {
       "name": "exit_probes",
@@ -136,7 +136,7 @@
     },
     {
       "name": "mechanism_lab",
-      "detail": "lab-AT10 pass; lab-AT11 pass; lab-AT12 fail; lab-AT13 pass"
+      "detail": "lab-AT10 pass; lab-AT11 pass; lab-AT12 pass; lab-AT13 pass"
     },
     {
       "name": "operator_platforms",
@@ -188,7 +188,7 @@
     },
     {
       "name": "publication_error_body",
-      "detail": "{\"error\":{\"code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"node does not satisfy serving baseline requirements\",\"request_id\":\"01a18a11-e6e4-7a43-b7d1-4d8c38843c8a\",\"retryable\":false,\"details\":{\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}}}"
+      "detail": "{\"error\":{\"code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"node does not satisfy serving baseline requirements\",\"request_id\":\"01a18a20-9482-7e1c-bdbf-0274c17c58fc\",\"retryable\":false,\"details\":{\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}}}"
     }
   ]
 }

@@ -28,6 +28,10 @@ const (
 	// ledgerStateSingletonID is the fixed UUID of the usage_ledger_state singleton row.
 	ledgerStateSingletonID = "00000000-0000-0000-0000-000000000130"
 
+	// fleetConfigSingletonID is the fixed UUID of the fleet_config singleton row
+	// used as the audit resource for usage ledger recovery lifecycle events (Decision D-051).
+	fleetConfigSingletonID = "00000000-0000-0000-0000-000000000001"
+
 	// ErrCodeUint64Overflow is the detail/log code attached to InternalError when a
 	// rollup or adjusted byte total exceeds math.MaxUint64 on read (§10.4).
 	ErrCodeUint64Overflow = "usage_uint64_overflow"
