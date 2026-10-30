@@ -1,0 +1,598 @@
+{
+  "run_id": "46c64443-af2d-4295-a3a9-5e6c69bc4828",
+  "source_commit": "c8d4a00cf1bf594b20016263c2cfc3c164d92bc9",
+  "at": "2026-10-30T17:57:42Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "harness_source": {
+    "differs_from_source_commit": false,
+    "files_sha256": {
+      "authority_test.go": "468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21",
+      "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
+      "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
+      "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
+      "lab_test.go": "cd471a5cf47e726ad8a3600b39f4e443df88acfd370680fef9ffdd8a12edd4b2",
+      "live_test.go": "71b6c5af3f3dad8d5c5bc822d5e0f80ec8b9c1ce4e70a3981ac59d1663cfbd51",
+      "preresult_test.go": "b29ad4399f58f0345fdb083a1598c49a15d2acf0ec1752994128afd55f8a4b06",
+      "probe_test.go": "6aef8573b323614681290df15a26f461e16020cd4b537204e69b8d9e9ed5ffa0",
+      "restated_test.go": "de0c397ff62ad3bb6cc4ec5f1c2b18ebeffbba7635d496310f17e8c1383d7edf"
+    }
+  },
+  "offline_window_seconds": 180,
+  "offline_batch_accepted": {
+    "batch_id": "01a18df4-1237-736d-bb56-ffb55f62e493",
+    "created_at": "2026-10-30T17:55:45.33426Z",
+    "fleet_default_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "fleet_generation": "4",
+    "offline_at_snapshot": 1,
+    "online_at_snapshot": 0,
+    "operation_id": "01a18df4-1237-7870-b5b4-eaea07b7ec8b",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "state": "accepted",
+    "status_url": "/api/v1/admin/update-batches/01a18df4-1237-736d-bb56-ffb55f62e493",
+    "target_count": 1
+  },
+  "offline_batch_api": {
+    "batch_id": "01a18df4-1237-736d-bb56-ffb55f62e493",
+    "counts": {
+      "already_current": 0,
+      "applying": 0,
+      "cancelled": 0,
+      "checking": 0,
+      "downloading": 0,
+      "failed": 0,
+      "queued": 0,
+      "rolled_back": 0,
+      "succeeded": 0,
+      "superseded": 0,
+      "verifying": 0,
+      "waiting_online": 1
+    },
+    "created_at": "2026-10-30T17:55:45.33426Z",
+    "created_by": "01a18dee-3ffa-74d5-84c1-37a27fa779e3",
+    "next_cursor": null,
+    "operation_id": "01a18df4-1237-7870-b5b4-eaea07b7ec8b",
+    "reason": "TEST ONLY updates follow-up 7",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "requires_service_restart": true,
+    "state": "waiting",
+    "target_count": 1,
+    "targets": [
+      {
+        "attempts": 1,
+        "candidate_health": null,
+        "current_job": {
+          "attempt": 1,
+          "error_code": null,
+          "finished_at": null,
+          "job_id": "01a18df4-1238-7a12-8df2-4514ff8e140c",
+          "recovery_required": false,
+          "stage": null,
+          "started_at": null,
+          "state": "waiting_online"
+        },
+        "current_release_id": "01a18dee-4f8d-74fd-9758-66b8c9f9c0fa",
+        "execution_incarnation_id": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "generation": "3",
+        "health": null,
+        "incarnation_at_snapshot": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "last_observed_at": "2026-10-30T17:52:44.756965Z",
+        "last_result_at": null,
+        "needs_attention": false,
+        "node_id": "01a18dee-690b-761f-96a5-4dc3e46fe4d4",
+        "node_name": "TEST ONLY updates",
+        "online_at_snapshot": false,
+        "policy_generation": null,
+        "policy_refs": null,
+        "previous_release_id": null,
+        "retryable": false,
+        "state": "waiting_online",
+        "target_id": "01a18df4-1238-7304-b3bb-ef81c28fefa6",
+        "unconfirmed": true
+      }
+    ],
+    "targets_url": "/api/v1/admin/update-batches/01a18df4-1237-736d-bb56-ffb55f62e493",
+    "updated_at": "2026-10-30T17:55:45.338051Z"
+  },
+  "online_issued_batch_api": {
+    "batch_id": "01a18df4-1237-736d-bb56-ffb55f62e493",
+    "counts": {
+      "already_current": 0,
+      "applying": 0,
+      "cancelled": 0,
+      "checking": 0,
+      "downloading": 0,
+      "failed": 0,
+      "queued": 1,
+      "rolled_back": 0,
+      "succeeded": 0,
+      "superseded": 0,
+      "verifying": 0,
+      "waiting_online": 0
+    },
+    "created_at": "2026-10-30T17:55:45.33426Z",
+    "created_by": "01a18dee-3ffa-74d5-84c1-37a27fa779e3",
+    "next_cursor": null,
+    "operation_id": "01a18df4-1237-7870-b5b4-eaea07b7ec8b",
+    "reason": "TEST ONLY updates follow-up 7",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "requires_service_restart": true,
+    "state": "running",
+    "target_count": 1,
+    "targets": [
+      {
+        "attempts": 1,
+        "candidate_health": null,
+        "current_job": {
+          "attempt": 1,
+          "error_code": null,
+          "finished_at": null,
+          "job_id": "01a18df4-1238-7a12-8df2-4514ff8e140c",
+          "recovery_required": false,
+          "stage": null,
+          "started_at": null,
+          "state": "queued"
+        },
+        "current_release_id": "01a18dee-4f8d-74fd-9758-66b8c9f9c0fa",
+        "execution_incarnation_id": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "generation": "3",
+        "health": null,
+        "incarnation_at_snapshot": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "last_observed_at": "2026-10-30T17:55:47.555345Z",
+        "last_result_at": null,
+        "needs_attention": false,
+        "node_id": "01a18dee-690b-761f-96a5-4dc3e46fe4d4",
+        "node_name": "TEST ONLY updates",
+        "online_at_snapshot": false,
+        "policy_generation": null,
+        "policy_refs": null,
+        "previous_release_id": null,
+        "retryable": false,
+        "state": "queued",
+        "target_id": "01a18df4-1238-7304-b3bb-ef81c28fefa6",
+        "unconfirmed": true
+      }
+    ],
+    "targets_url": "/api/v1/admin/update-batches/01a18df4-1237-736d-bb56-ffb55f62e493",
+    "updated_at": "2026-10-30T17:55:47.497581Z"
+  },
+  "catchup_batch_api": {
+    "batch_id": "01a18df4-1237-736d-bb56-ffb55f62e493",
+    "counts": {
+      "already_current": 0,
+      "applying": 0,
+      "cancelled": 0,
+      "checking": 0,
+      "downloading": 0,
+      "failed": 0,
+      "queued": 0,
+      "rolled_back": 0,
+      "succeeded": 1,
+      "superseded": 0,
+      "verifying": 0,
+      "waiting_online": 0
+    },
+    "created_at": "2026-10-30T17:55:45.33426Z",
+    "created_by": "01a18dee-3ffa-74d5-84c1-37a27fa779e3",
+    "next_cursor": null,
+    "operation_id": "01a18df4-1237-7870-b5b4-eaea07b7ec8b",
+    "reason": "TEST ONLY updates follow-up 7",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "requires_service_restart": true,
+    "state": "completed",
+    "target_count": 1,
+    "targets": [
+      {
+        "attempts": 1,
+        "candidate_health": null,
+        "current_job": {
+          "attempt": 1,
+          "error_code": null,
+          "finished_at": "2026-10-30T17:56:26.158909Z",
+          "job_id": "01a18df4-1238-7a12-8df2-4514ff8e140c",
+          "recovery_required": false,
+          "stage": "report",
+          "started_at": "2026-10-30T17:56:26.158909Z",
+          "state": "succeeded"
+        },
+        "current_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "execution_incarnation_id": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "generation": "3",
+        "health": {
+          "dns_policy": "passed",
+          "identity_and_state": "passed",
+          "internet_only": "passed",
+          "processes": "passed",
+          "tunnel_probe": "passed"
+        },
+        "incarnation_at_snapshot": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "last_observed_at": "2026-10-30T17:56:56.403076Z",
+        "last_result_at": "2026-10-30T17:56:26.158909Z",
+        "needs_attention": false,
+        "node_id": "01a18dee-690b-761f-96a5-4dc3e46fe4d4",
+        "node_name": "TEST ONLY updates",
+        "online_at_snapshot": false,
+        "policy_generation": "18",
+        "policy_refs": [
+          "01a18dee-5d37-7717-bc9b-bac81b085bf5"
+        ],
+        "previous_release_id": "01a18dee-4f8d-74fd-9758-66b8c9f9c0fa",
+        "retryable": false,
+        "state": "succeeded",
+        "target_id": "01a18df4-1238-7304-b3bb-ef81c28fefa6",
+        "unconfirmed": false
+      }
+    ],
+    "targets_url": "/api/v1/admin/update-batches/01a18df4-1237-736d-bb56-ffb55f62e493",
+    "updated_at": "2026-10-30T17:56:26.160757Z"
+  },
+  "catchup_result_receipts": [
+    {
+      "payload": {
+        "stage": "report",
+        "state": "succeeded",
+        "health": {
+          "processes": "passed",
+          "dns_policy": "passed",
+          "tunnel_probe": "passed",
+          "internet_only": "passed",
+          "identity_and_state": "passed"
+        },
+        "job_id": "01a18df4-1238-7a12-8df2-4514ff8e140c",
+        "attempt": 1,
+        "boot_id": "59c12e7b-2b8b-4f8b-aad9-4e703062548e",
+        "node_id": "01a18dee-690b-761f-96a5-4dc3e46fe4d4",
+        "batch_id": "01a18df4-1237-736d-bb56-ffb55f62e493",
+        "result_id": "1377419c-b77d-5ada-883c-1a778c5024d2",
+        "target_id": "01a18df4-1238-7304-b3bb-ef81c28fefa6",
+        "error_code": null,
+        "generation": "3",
+        "started_at": "2026-10-30T17:56:24Z",
+        "finished_at": "2026-10-30T17:56:26Z",
+        "payload_hash": "06da9b1365b7875c906445abc6985cafdeff366a1ab6ec0131f3854f75a6ed32",
+        "incarnation_id": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "manifest_sha256": "957b8c9b3a1661b8020c8602c695d7c693e849a96b7ff5176d58ce9c81e42df2",
+        "usage_checkpoint": {
+          "new_meter_epoch_id": "01a18df4-b082-7f2e-80f5-bdb53011a2da",
+          "central_acked_through": "0",
+          "closed_meter_epoch_id": "a6f50242-ad76-49b9-acc7-791c1ef261ae",
+          "last_durable_event_seq": "0"
+        },
+        "policy_generation": "18",
+        "recovery_required": false,
+        "current_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "publication_intent": "unpublished",
+        "previous_release_id": "01a18dee-4f8d-74fd-9758-66b8c9f9c0fa",
+        "requested_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "state_schema_version": 1,
+        "member_forwarding_enabled": false
+      },
+      "response": {
+        "accepted": true,
+        "result_id": "1377419c-b77d-5ada-883c-1a778c5024d2",
+        "received_at": "2026-10-30T17:56:26.159992422Z",
+        "accepted_as_history": false,
+        "observed_update_generation": "3",
+        "applied_to_current_observation": true
+      },
+      "payload_sha256": "06da9b1365b7875c906445abc6985cafdeff366a1ab6ec0131f3854f75a6ed32"
+    }
+  ],
+  "new_node_intent": {
+    "attempt": 1,
+    "authorization_valid_until": "2026-10-30T18:02:04.392893Z",
+    "batch_id": "01a18df5-3325-733e-82d9-02a3010c0888",
+    "generation": "1",
+    "incarnation_id": "01a18df5-32c6-7277-975a-09e9a94c6fe4",
+    "issued_at": "2026-10-30T17:56:59.303637Z",
+    "job_id": "01a18df5-3326-7268-8160-7f0f0f81a5bc",
+    "manifest_sha256": "957b8c9b3a1661b8020c8602c695d7c693e849a96b7ff5176d58ce9c81e42df2",
+    "manifest_url": "https://releases.example.invalid/r/01a18dee-58cf-75e9-a7a7-662b323d18f3/manifest.json",
+    "node_id": "01a18df5-31ee-75de-b2e1-f0d8cbd17012",
+    "publication_intent": "unpublished",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "target_id": "01a18df5-3325-733f-aac9-bf046ae6c839"
+  },
+  "new_node_before_result_batch_api": {
+    "batch_id": "01a18df5-3325-733e-82d9-02a3010c0888",
+    "counts": {
+      "already_current": 0,
+      "applying": 0,
+      "cancelled": 0,
+      "checking": 0,
+      "downloading": 0,
+      "failed": 0,
+      "queued": 1,
+      "rolled_back": 0,
+      "succeeded": 0,
+      "superseded": 0,
+      "verifying": 0,
+      "waiting_online": 0
+    },
+    "created_at": "2026-10-30T17:56:59.300268Z",
+    "created_by": "00000000-0000-0000-0000-000000000003",
+    "next_cursor": null,
+    "operation_id": "01a18df5-3325-7345-8039-96d13d463004",
+    "reason": "first_sync",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "requires_service_restart": true,
+    "state": "running",
+    "target_count": 1,
+    "targets": [
+      {
+        "attempts": 1,
+        "candidate_health": null,
+        "current_job": {
+          "attempt": 1,
+          "error_code": null,
+          "finished_at": null,
+          "job_id": "01a18df5-3326-7268-8160-7f0f0f81a5bc",
+          "recovery_required": false,
+          "stage": null,
+          "started_at": null,
+          "state": "queued"
+        },
+        "current_release_id": null,
+        "execution_incarnation_id": "01a18df5-32c6-7277-975a-09e9a94c6fe4",
+        "generation": "1",
+        "health": null,
+        "incarnation_at_snapshot": "01a18df5-32c6-7277-975a-09e9a94c6fe4",
+        "last_observed_at": "2026-10-30T17:56:59.375331Z",
+        "last_result_at": null,
+        "needs_attention": false,
+        "node_id": "01a18df5-31ee-75de-b2e1-f0d8cbd17012",
+        "node_name": "TEST ONLY post-batch inherited node",
+        "online_at_snapshot": true,
+        "policy_generation": null,
+        "policy_refs": null,
+        "previous_release_id": null,
+        "retryable": false,
+        "state": "queued",
+        "target_id": "01a18df5-3325-733f-aac9-bf046ae6c839",
+        "unconfirmed": true
+      }
+    ],
+    "targets_url": "/api/v1/admin/update-batches/01a18df5-3325-733e-82d9-02a3010c0888",
+    "updated_at": "2026-10-30T17:57:04.393808Z"
+  },
+  "new_node_batch_api": {
+    "batch_id": "01a18df5-3325-733e-82d9-02a3010c0888",
+    "counts": {
+      "already_current": 0,
+      "applying": 0,
+      "cancelled": 0,
+      "checking": 0,
+      "downloading": 0,
+      "failed": 0,
+      "queued": 0,
+      "rolled_back": 0,
+      "succeeded": 1,
+      "superseded": 0,
+      "verifying": 0,
+      "waiting_online": 0
+    },
+    "created_at": "2026-10-30T17:56:59.300268Z",
+    "created_by": "00000000-0000-0000-0000-000000000003",
+    "next_cursor": null,
+    "operation_id": "01a18df5-3325-7345-8039-96d13d463004",
+    "reason": "first_sync",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "requires_service_restart": true,
+    "state": "completed",
+    "target_count": 1,
+    "targets": [
+      {
+        "attempts": 1,
+        "candidate_health": null,
+        "current_job": {
+          "attempt": 1,
+          "error_code": null,
+          "finished_at": "2026-10-30T17:57:11.986207Z",
+          "job_id": "01a18df5-3326-7268-8160-7f0f0f81a5bc",
+          "recovery_required": false,
+          "stage": "report",
+          "started_at": "2026-10-30T17:57:11.986207Z",
+          "state": "succeeded"
+        },
+        "current_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "execution_incarnation_id": "01a18df5-32c6-7277-975a-09e9a94c6fe4",
+        "generation": "1",
+        "health": {
+          "dns_policy": "passed",
+          "identity_and_state": "passed",
+          "internet_only": "passed",
+          "processes": "passed",
+          "tunnel_probe": "passed"
+        },
+        "incarnation_at_snapshot": "01a18df5-32c6-7277-975a-09e9a94c6fe4",
+        "last_observed_at": "2026-10-30T17:57:42.26648Z",
+        "last_result_at": "2026-10-30T17:57:11.986207Z",
+        "needs_attention": false,
+        "node_id": "01a18df5-31ee-75de-b2e1-f0d8cbd17012",
+        "node_name": "TEST ONLY post-batch inherited node",
+        "online_at_snapshot": true,
+        "policy_generation": "2",
+        "policy_refs": [
+          "01a18dee-5d37-7717-bc9b-bac81b085bf5"
+        ],
+        "previous_release_id": null,
+        "retryable": false,
+        "state": "succeeded",
+        "target_id": "01a18df5-3325-733f-aac9-bf046ae6c839",
+        "unconfirmed": false
+      }
+    ],
+    "targets_url": "/api/v1/admin/update-batches/01a18df5-3325-733e-82d9-02a3010c0888",
+    "updated_at": "2026-10-30T17:57:11.988996Z"
+  },
+  "new_node_result_receipts": [
+    {
+      "payload": {
+        "stage": "report",
+        "state": "succeeded",
+        "health": {
+          "processes": "passed",
+          "dns_policy": "passed",
+          "tunnel_probe": "passed",
+          "internet_only": "passed",
+          "identity_and_state": "passed"
+        },
+        "job_id": "01a18df5-3326-7268-8160-7f0f0f81a5bc",
+        "attempt": 1,
+        "boot_id": "87c11d03-99b4-47cd-8b42-4bea83e81c4d",
+        "node_id": "01a18df5-31ee-75de-b2e1-f0d8cbd17012",
+        "batch_id": "01a18df5-3325-733e-82d9-02a3010c0888",
+        "result_id": "0bfc1f38-02aa-53a2-946d-bff3b92d13ad",
+        "target_id": "01a18df5-3325-733f-aac9-bf046ae6c839",
+        "error_code": null,
+        "generation": "1",
+        "started_at": "2026-10-30T17:57:11Z",
+        "finished_at": "2026-10-30T17:57:11Z",
+        "payload_hash": "e87c7c7caebbf1c6c6dfe109e234e8659303c1ec9e9b40c4449ca781aa55f3ba",
+        "incarnation_id": "01a18df5-32c6-7277-975a-09e9a94c6fe4",
+        "manifest_sha256": "957b8c9b3a1661b8020c8602c695d7c693e849a96b7ff5176d58ce9c81e42df2",
+        "usage_checkpoint": {
+          "new_meter_epoch_id": "01a18df5-638f-7f24-883d-a41e0c38c95d",
+          "central_acked_through": "0",
+          "closed_meter_epoch_id": "8d415df8-85ca-416c-b46e-a5a932e439b9",
+          "last_durable_event_seq": "0"
+        },
+        "policy_generation": "2",
+        "recovery_required": false,
+        "current_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "publication_intent": "unpublished",
+        "previous_release_id": null,
+        "requested_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "state_schema_version": 1,
+        "member_forwarding_enabled": false
+      },
+      "response": {
+        "accepted": true,
+        "result_id": "0bfc1f38-02aa-53a2-946d-bff3b92d13ad",
+        "received_at": "2026-10-30T17:57:11.987040677Z",
+        "accepted_as_history": false,
+        "observed_update_generation": "1",
+        "applied_to_current_observation": true
+      },
+      "payload_sha256": "e87c7c7caebbf1c6c6dfe109e234e8659303c1ec9e9b40c4449ca781aa55f3ba"
+    }
+  ],
+  "new_node_journal": {
+    "txn_id": "01a18df5-6376-7941-91db-29d5ef683e02",
+    "stage": "locally_succeeded",
+    "error": "",
+    "job_error": "",
+    "current": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "last_good": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "health": {
+      "dns_policy": "passed",
+      "identity_and_state": "passed",
+      "internet_only": "passed",
+      "processes": "passed",
+      "tunnel_probe": "passed"
+    },
+    "candidate_health": {
+      "dns_policy": "passed",
+      "identity_and_state": "passed",
+      "internet_only": "passed",
+      "processes": "passed",
+      "tunnel_probe": "passed"
+    },
+    "attestations": [
+      {
+        "agent_dns_policy": "passed",
+        "agent_internet_only": "passed",
+        "agent_tunnel_probe": "passed",
+        "agent_version": "1.0.2",
+        "dns_policy_reason": "policy in force",
+        "internet_only_reason": "baseline held",
+        "kind": "health_attest",
+        "netbird_version": "0.82.0",
+        "phase": "candidate",
+        "published": "unpublished",
+        "tunnel_probe_reason": "overlay_up"
+      }
+    ],
+    "outbox_state": "",
+    "outbox_status": "",
+    "outbox_error": ""
+  },
+  "original_batch_after_inheritance": {
+    "batch_id": "01a18df4-1237-736d-bb56-ffb55f62e493",
+    "counts": {
+      "already_current": 0,
+      "applying": 0,
+      "cancelled": 0,
+      "checking": 0,
+      "downloading": 0,
+      "failed": 0,
+      "queued": 0,
+      "rolled_back": 0,
+      "succeeded": 1,
+      "superseded": 0,
+      "verifying": 0,
+      "waiting_online": 0
+    },
+    "created_at": "2026-10-30T17:55:45.33426Z",
+    "created_by": "01a18dee-3ffa-74d5-84c1-37a27fa779e3",
+    "next_cursor": null,
+    "operation_id": "01a18df4-1237-7870-b5b4-eaea07b7ec8b",
+    "reason": "TEST ONLY updates follow-up 7",
+    "release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "requires_service_restart": true,
+    "state": "completed",
+    "target_count": 1,
+    "targets": [
+      {
+        "attempts": 1,
+        "candidate_health": null,
+        "current_job": {
+          "attempt": 1,
+          "error_code": null,
+          "finished_at": "2026-10-30T17:56:26.158909Z",
+          "job_id": "01a18df4-1238-7a12-8df2-4514ff8e140c",
+          "recovery_required": false,
+          "stage": "report",
+          "started_at": "2026-10-30T17:56:26.158909Z",
+          "state": "succeeded"
+        },
+        "current_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+        "execution_incarnation_id": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "generation": "3",
+        "health": {
+          "dns_policy": "passed",
+          "identity_and_state": "passed",
+          "internet_only": "passed",
+          "processes": "passed",
+          "tunnel_probe": "passed"
+        },
+        "incarnation_at_snapshot": "01a18dee-6acf-7132-b140-adbabe96d878",
+        "last_observed_at": "2026-10-30T17:57:26.726448Z",
+        "last_result_at": "2026-10-30T17:56:26.158909Z",
+        "needs_attention": false,
+        "node_id": "01a18dee-690b-761f-96a5-4dc3e46fe4d4",
+        "node_name": "TEST ONLY updates",
+        "online_at_snapshot": false,
+        "policy_generation": "18",
+        "policy_refs": [
+          "01a18dee-5d37-7717-bc9b-bac81b085bf5"
+        ],
+        "previous_release_id": "01a18dee-4f8d-74fd-9758-66b8c9f9c0fa",
+        "retryable": false,
+        "state": "succeeded",
+        "target_id": "01a18df4-1238-7304-b3bb-ef81c28fefa6",
+        "unconfirmed": false
+      }
+    ],
+    "targets_url": "/api/v1/admin/update-batches/01a18df4-1237-736d-bb56-ffb55f62e493",
+    "updated_at": "2026-10-30T17:56:26.160757Z"
+  },
+  "provenance": {
+    "scope": "first_sync",
+    "first_sync_node_id": "01a18df5-31ee-75de-b2e1-f0d8cbd17012",
+    "original_target_count": 1,
+    "fleet_default_release_id": "01a18dee-58cf-75e9-a7a7-662b323d18f3",
+    "new_node_in_original_snapshot": false,
+    "new_node_created_after_original_batch": true
+  }
+}

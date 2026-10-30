@@ -58,7 +58,9 @@ func TestUpdatesFollowup(t *testing.T) {
 		}
 		harnessFiles[filepath.Base(path)] = fmt.Sprintf("%x", sha256.Sum256(raw))
 	}
-	harnessDirty := exec.Command("git", "diff", "--quiet", "HEAD", "--", "tests/e2e/at/updates").Run() != nil
+	harnessDiff := exec.Command("git", "diff", "--quiet", "HEAD", "--", "tests/e2e/at/updates")
+	harnessDiff.Dir = root
+	harnessDirty := harnessDiff.Run() != nil
 	harnessRaw, _ := json.Marshal(map[string]any{"files_sha256": harnessFiles, "differs_from_source_commit": harnessDirty})
 	for _, rec := range records {
 		rec.Observations = append(rec.Observations, at.Observation{Name: "harness_source", Detail: string(harnessRaw)})

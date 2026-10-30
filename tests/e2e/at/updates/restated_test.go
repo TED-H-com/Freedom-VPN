@@ -119,7 +119,7 @@ func (s *updatesFollowup) offlineBatch(recorded, target uuid.UUID, oldResult jso
 	response := s.nodePOST("/api/v1/agent/update-results", old)
 	after := s.readJSON(query, s.r.nodeID)
 	afterView := s.target(batch)
-	staleOK := response.Status == 200 && sameJSON(response.Body, originalACK) && sameJSON(before, after) && s.acceptedResultCount() == count && afterView.State == "waiting_online"
+	staleOK := response.Status == 202 && sameJSON(response.Body, originalACK) && sameJSON(before, after) && s.acceptedResultCount() == count && afterView.State == "waiting_online"
 	s.note("AT27", "stale_ack_replay", map[string]any{"request": old, "http_status": response.Status, "response": json.RawMessage(response.Body), "original_ack": originalACK, "before": before, "after": after, "new_batch_api": afterView.BatchJSON})
 	s.note("AT27", "check_stale_ack", staleOK)
 	resume()
