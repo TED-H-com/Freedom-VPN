@@ -55,6 +55,12 @@ func (r *runner) deviceRevoke(ctx context.Context) {
 		note("gate", "two counted flows not established")
 		return
 	}
+	revokedAddr, _ := r.lab.docker(container, "ip", "-o", "-4", "addr", "show", "fvnb0")
+	revokedSource := overlayIPv4(revokedAddr)
+	if revokedSource == "" {
+		note("gate", "revoked tunnel address missing before pause")
+		return
+	}
 	if err := s.PauseNativeControl(ctx, container, true); err != nil {
 		note("gate", "cannot pause native NetBird control service")
 		return
@@ -195,11 +201,21 @@ func (r *runner) deviceRevoke(ctx context.Context) {
 		note("delete_to_first_observed_drop_ms", fmt.Sprintf("%.3f", seconds*1000-float64(start.UnixNano())/1e6))
 		note("timing_scope", "first captured post-apply drop, not an upper-bound stop SLA or pass criterion")
 	}
-	siblingOK := r.countedFlow(ctx, label("sibling_after"))
-	note("member_accept_after", itoa(r.lab.forwardChain().MemberAccept))
 	ctEmpty := ctErr == nil && !strings.Contains(string(ct), "src="+source)
+	// The paused client's fvnb0 route can disappear with the NetBird peer, so
+	// this wget often never reaches fvmb0. It documents that withdrawal. The
+	// pass criterion is the injected frame below, not this request.
 	blocked := fetchErr != nil && len(body) == 0 && decoded && arrival.Requests == 0 && len(packets) == 2 && end.Counters["ctunku"].Packets > st.Counters["ctunku"].Packets && ok && after == frozen && ctEmpty
 	note("revoked_flow_dropped", boolText(blocked))
+	if !blocked && !strings.Contains(string(routeAfter), "dev fvnb0") {
+		note("stale_client_route", "native exit route withdrawn before the post-delete wget; that request is not the ingress proof")
+		note("delete_to_first_observed_drop_ms", "not observed; route withdrawal stopped the client request before node ingress")
+	}
+	revokedProof, admittedProof, injectOK := r.proveRevokedIngress(ctx, note, revokedSource, peer.DeviceID)
+	note("revoked_inject_ok", boolText(revokedProof))
+	note("admitted_inject_ok", boolText(admittedProof))
+	siblingOK := r.countedFlow(ctx, label("sibling_after"))
+	note("member_accept_after", itoa(r.lab.forwardChain().MemberAccept))
 	note("sibling_counted", boolText(siblingOK))
 	// Reuse the freed slot through another real native login, never projection
 	// repair. This also exercises serving apply after conntrack withdrawal.
@@ -225,11 +241,96 @@ func (r *runner) deviceRevoke(ctx context.Context) {
 	same := bytes.Equal(pid, pidAfter)
 	note("same_agent_pid", boolText(same))
 	note("member_accept_after_replacement", itoa(r.lab.forwardChain().MemberAccept))
-	if !blocked && !strings.Contains(string(routeAfter), "dev fvnb0") {
-		note("gate", "native exit route withdrawn before post-delete request: zero node ingress/drop increments; counter freeze, no origin receipt and sibling/replacement success are partial evidence only")
-		note("delete_to_first_observed_drop_ms", "not observed; route withdrawal stopped traffic before node ingress")
+	// Injected frames are the strict post-withdrawal proof. A missing inject
+	// or a counter/capture contradiction is a failure, not a blocked gap.
+	if !injectOK {
+		rec.Status = StatusFail
+		return
 	}
-	if blocked && siblingOK && same && replacementOK {
+	if revokedProof && admittedProof && siblingOK && same && replacementOK {
 		rec.Status = StatusPass
+		return
 	}
+	rec.Status = StatusFail
+}
+
+func (r *runner) proveRevokedIngress(ctx context.Context, note func(string, string), revokedSource string, revokedDevice uuid.UUID) (revokedOK, admittedOK, ran bool) {
+	s := &Stack{lab: r.lab}
+	dest := r.originIP()
+	if dest == "" {
+		note("inject_error", "origin address missing")
+		return false, false, false
+	}
+	revoked, err := s.ObserveMemberIngress(ctx, revokedSource, dest)
+	noteIngress(note, "revoked_inject", revoked, err)
+	if err != nil {
+		return false, false, true
+	}
+	ctunku, ctOK := ingressCounterDelta(revoked.Before, revoked.After, "ctunku")
+	revokedUp := "u_" + strings.ReplaceAll(revokedDevice.String(), "-", "")
+	revokedOK = ctOK && ctunku.Packets == 1 &&
+		deviceCountersHeld(revoked.Before, revoked.After, "") &&
+		revoked.Mechanism == "tun-mirred" && revoked.LinkType == 65534 &&
+		revoked.SourcePort == 40000 && revoked.DestPort == 9 &&
+		captureEmpty(revoked.UplinkCapture) && captureEmpty(revoked.OriginCapture) &&
+		revoked.Before[revokedUp] == revoked.After[revokedUp]
+	note("revoked_inject_ctunku_packets", fmt.Sprint(ctunku.Packets))
+	note("revoked_inject_device_counters_held", boolText(deviceCountersHeld(revoked.Before, revoked.After, "")))
+	sibRaw, _ := r.lab.docker(r.lab.member, "ip", "-o", "-4", "addr", "show", "fvnb0")
+	sibling := overlayIPv4(sibRaw)
+	if sibling == "" || r.usageDevice == uuid.Nil {
+		note("inject_error", "admitted sibling tunnel address missing")
+		return revokedOK, false, true
+	}
+	admitted, err := s.ObserveMemberIngress(ctx, sibling, dest)
+	noteIngress(note, "admitted_inject", admitted, err)
+	if err != nil {
+		return revokedOK, false, true
+	}
+	upName := "u_" + strings.ReplaceAll(r.usageDevice.String(), "-", "")
+	// UDP/9 at the origin can return ICMP unreachable. That related packet is
+	// the same device's download counter, not another device's admission.
+	downName := "d_" + strings.TrimPrefix(upName, "u_")
+	up, upOK := ingressCounterDelta(admitted.Before, admitted.After, upName)
+	down, _ := ingressCounterDelta(admitted.Before, admitted.After, downName)
+	ctAfter, ctAfterOK := ingressCounterDelta(admitted.Before, admitted.After, "ctunku")
+	admittedOK = upOK && up.Packets == 1 && ctAfterOK && ctAfter.Packets == 0 &&
+		deviceCountersHeld(admitted.Before, admitted.After, upName, downName) &&
+		admitted.Mechanism == "tun-mirred" && admitted.LinkType == 65534 &&
+		captureSawDatagram(admitted.UplinkCapture) && captureSawDatagram(admitted.OriginCapture)
+	note("admitted_inject_counter", upName)
+	note("admitted_inject_u_packets", fmt.Sprint(up.Packets))
+	note("admitted_inject_d_packets", fmt.Sprint(down.Packets))
+	note("admitted_inject_ctunku_packets", fmt.Sprint(ctAfter.Packets))
+	return revokedOK, admittedOK, true
+}
+
+func noteIngress(note func(string, string), prefix string, proof MemberIngressProof, err error) {
+	if err != nil {
+		note(prefix+"_error", err.Error())
+	}
+	raw, _ := json.Marshal(proof.Deltas)
+	note(prefix+"_mechanism", proof.Mechanism)
+	note(prefix+"_link_type", fmt.Sprint(proof.LinkType))
+	note(prefix+"_source", proof.Source)
+	note(prefix+"_dest", proof.Dest)
+	note(prefix+"_deltas", string(raw))
+	note(prefix+"_uplink", trimCapture(proof.UplinkCapture))
+	note(prefix+"_origin", trimCapture(proof.OriginCapture))
+}
+
+func trimCapture(text string) string {
+	text = strings.TrimSpace(text)
+	if len(text) > 2000 {
+		return text[:2000] + "\ntruncated"
+	}
+	return text
+}
+
+func overlayIPv4(raw []byte) string {
+	match := regexp.MustCompile(`inet (100\.[0-9.]+)/`).FindStringSubmatch(string(raw))
+	if len(match) != 2 {
+		return ""
+	}
+	return match[1]
 }

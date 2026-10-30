@@ -199,10 +199,31 @@ Mechanism comparison in that same test:
 
 The measured line is `SUMMARY INGRESS fv-fh=veth-mirred type=1 nonadmitted_ctunku=1 nonadmitted_uplink=0 admitted_u_019a00000000700080000000000000a1=1 admitted_uplink=1 afpacket_ctunku=0 raw_tun=1 raw_veth=1 wg_separate=2 wg_ctunku=0`.
 
+## Tables outside `inet fvpn`
+
+`nft -j list ruleset` is the listing `VerifyServing` reads. `loadState` still reads `nft -j list table inet fvpn`, and the renderer still writes only that table. A chain in another table or family is not merged into the `inet fvpn` model.
+
+Every base chain of one hook runs, in priority order. `accept` and `continue` end the current chain only. `drop` and `reject` end the hook. An earlier base chain that only matches, counts, logs, accepts, or continues does not stop a later `inet fvpn` drop, so `VerifyServing` tolerates that chain at any priority. `input` and `output` are host hooks; forwarded member traffic does not cross them, and a drop or a rewrite there is tolerated. Family `arp` is not member IP traffic and is tolerated. An `ingress` or `egress` chain is tolerated when it names a device that is neither the member ingress nor the uplink.
+
+On `prerouting`, `forward`, and `postrouting` (families `ip`, `ip6`, `inet`, and `bridge`), and on `ingress` or `egress` of the member ingress or the uplink (including a chain with no device), any other statement fails closed. That covers a payload rewrite (`ip saddr set`, `ip6 saddr set`), `meta mark` or `ct mark` set, `notrack`, NAT, `queue`, `drop`, `reject`, and a `jump` or `goto` into a chain that does any of those. A base-chain policy of `drop` or `reject` is the same failure. The priority does not matter: an earlier rewrite changes the address `fvpn` matches, and a later drop discards a packet `fvpn` must forward. Both would let a verifier that only saw `inet fvpn` call the node serving.
+
+The reason is one of the existing codes. A mark write is `MARK_SEMANTICS_VIOLATED`. A `flow` or `xt` statement, or a flowtable hooked to member traffic, is `FLOWTABLE_BYPASS`. Anything else in the list is `ISOLATION_POLICY_INVALID`. The detail names the base chain that brings the packet into that table:
+
+```text
+table fvobs family inet hook prerouting priority -200 chain pre statement mangle
+```
+
+`Apply` installs the `inet fvpn` baseline and returns that error. It does not delete the other table.
+
+The lab proof is `TestForeign_TableBeforeFvpn`. Table `inet fvobs` forward priority -200 policy accept, with one accept rule, left `fvpn-netlab verify` at exit 0. A non-admitted inject of `100.64.9.9` to `203.0.113.10` UDP 39998 incremented `ctunku` and the `fv-ih` capture stayed empty, which is the `inet fvpn` drop still applying. Adding prerouting priority -200 `ip saddr 100.64.9.9 ip saddr set 100.64.1.1` in that same table made verify and apply exit 3 with `ISOLATION_POLICY_INVALID` and the detail above. The serving generation was not left installed (`fvpn_baseline=1`). `inet fvobs` was still present. Deleting that table and applying again returned exit 0.
+
+The measured line is `SUMMARY FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1`.
+
 ## Decisions
 
 - D-019: usage is the inner IPv4 total length admitted at the forward hook (§10.2). Bytes later dropped by HTB are not subtracted. "Delivered bytes" is not a ledger rule. The lab counters are the meter definition for the node agent.
 - Serving forward rules bind the member interface and the uplink. Upload uses `oifname` uplink. Download uses `iifname` uplink. The baseline drop does not.
+- A base chain outside `inet fvpn` that only accepts, continues, counts, or logs does not bypass the `fvpn` drop. A chain on a hook member traffic crosses that rewrites, marks, offloads, or drops fails `VerifyServing` closed. The agent still writes only `inet fvpn`. The measurement is `## Tables outside inet fvpn`.
 - D-063: the synthetic probe is an optional `Model.Probe`. Nil removes it through the same render path. The kernel element timeout is the authorization, capped by `ProbeMaxSeconds` and by `TimeoutCeilSeconds` or the remaining lifetime already in the kernel. At most four destinations, none overlapping a member binding. `Verify` fails closed on a wide prefix, an unparsed element, an original timeout above the ceiling, or a remaining lifetime past the model window. `probe_up` and `probe_down` are not member usage. The agent authenticates the test peer before it supplies the `/32`.
 - Clock-step expiry (§16.3) stays under 待實測. The kernel set-timeout evidence is accepted for Gate G2. This lab does not call `date -s` and does not change the host clock.
 - §11.7 production windows remain a recommended starting point. The short window is what CI runs.
