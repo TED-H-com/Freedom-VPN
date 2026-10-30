@@ -287,9 +287,24 @@ latest policy. Accepted old-job history and conflict payloads cannot overwrite
 accepted evidence. `Evidence(targetID)` exposes the accepted job's policy generation
 and references, including integers beyond JavaScript's safe range.
 
-The revision 3 generated `UpdateTarget` has no policy-generation/reference fields,
-and UpdateResult does not carry policy_refs. `GetBatch` retains its generated
-contract return type. The contract owner must add nullable `policy_generation`
-(decimal string) and `policy_refs` (UUID array) to UpdateTarget before the node HTTP
-adapter can expose this evidence in batch targets. No undeclared wire fields are
-added by this domain.
+Contract revision 4 exposes nullable `UpdateTarget.policy_generation` and
+`policy_refs`; the batch page projects the accepted result, never newest desired
+state. Missing accepted result/history yields null.
+
+## Harness result delivery corrections (D-062)
+
+Terminal `failed` reports before stage `check` may omit health: preflight/download
+failures have no candidate attestation. They retain actual release, completion
+time and error evidence, mark the job/target failed and need attention. Unknown
+or post-check failure stages and all succeeded/already-current/rolled-back
+results still require health. The whitelist uses node-local stages, not job state.
+
+Rollback must restore a healthy, serving, unrevoked and schema-compatible release.
+An empty manifest rollback allowlist adds no restriction (D-034e); a nonempty
+list restricts further. The harness's failed candidate health remains invalid
+until replaced by the restored release's attestation.
+
+A routine observation with null `update.generation` updates observation evidence
+without comparing against or lowering the stored update generation. It cannot
+confirm a job: job observation evidence advances only for reports that actually
+carry at least that job's generation. Null does not mean generation zero.
