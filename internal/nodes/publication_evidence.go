@@ -72,6 +72,9 @@ func publicationForwardingFailure(report api.ObservationReport, now time.Time, e
 	if report.SafetyStatus != api.SafetyStatusPassed || checks[api.NodeCheckNameInternetOnly] != api.HealthCheckStatusPassed || checks[api.NodeCheckNameMeterPath] != api.HealthCheckStatusPassed {
 		return "isolation_unconfirmed"
 	}
+	if _, ok := hasIsolationApplyError(report); ok {
+		return "isolation_unconfirmed"
+	}
 	if report.DataHealth != api.DataHealthHealthy || report.ProvisioningState != api.ProvisioningStateReady {
 		return "readiness_unconfirmed"
 	}
@@ -94,4 +97,30 @@ func publicationForwardingFailure(report api.ObservationReport, now time.Time, e
 		}
 	}
 	return ""
+}
+
+// hasIsolationApplyError reports whether report carries an ISOLATION_POLICY_INVALID
+// error from the node's enforcement apply/isolation path (for example, a pending
+// or failed conntrack flow flush after ruleset verification, §5.2, §8.1).
+func hasIsolationApplyError(report api.ObservationReport) (api.NodeError, bool) {
+	for _, e := range report.Errors {
+		if e.Code == api.ErrorCodeISOLATIONPOLICYINVALID && (e.Stage == "apply" || e.Stage == "isolation" || e.Stage == "") {
+			return e, true
+		}
+	}
+	return api.NodeError{}, false
+}
+
+// isPendingIsolationApplyError reports whether report carries an ISOLATION_POLICY_INVALID
+// apply error while member forwarding remains active or the node reports a pending
+// conntrack flow delete before failing closed.
+func isPendingIsolationApplyError(report api.ObservationReport, effectiveForwarding bool) (api.NodeError, bool) {
+	isoErr, ok := hasIsolationApplyError(report)
+	if !ok {
+		return api.NodeError{}, false
+	}
+	if effectiveForwarding || (report.SafetyStatus == api.SafetyStatusPassed && report.ProvisioningState == api.ProvisioningStateReady) {
+		return isoErr, true
+	}
+	return api.NodeError{}, false
 }
