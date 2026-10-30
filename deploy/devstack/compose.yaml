@@ -1,5 +1,6 @@
 # Dev stack for an end-to-end acceptance run (§3, §5–§8, §10, §13, §17).
-# Every object name is fvpn-<FVPN_E2E_PREFIX>-*. Bridges do not masquerade, so
+# Runtime objects use fvpn-<FVPN_E2E_PREFIX>-*; shared images use fvpn-devstack-*.
+# Bridges do not masquerade, so
 # containers have no working path to the public Internet, and published ports
 # are bound to 127.0.0.1 only. Container addresses are per port-base slot so
 # two stacks can be up together. The release origin stays on 192.0.<3+slot>.10
@@ -35,7 +36,7 @@ volumes:
 
 services:
   postgres:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-postgres:17
+    image: ${FVPN_E2E_IMAGE_POSTGRES:-fvpn-devstack-postgres:17}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-postgres
     environment:
       POSTGRES_USER: fvpn
@@ -57,7 +58,7 @@ services:
     restart: "no"
 
   idp:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-idp:local
+    image: ${FVPN_E2E_IMAGE_IDP:-fvpn-devstack-idp:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-idp
     command:
       - -addr
@@ -106,7 +107,7 @@ services:
     restart: "no"
 
   payment:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-payment:local
+    image: ${FVPN_E2E_IMAGE_PAYMENT:-fvpn-devstack-payment:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-payment
     command:
       - -addr
@@ -134,7 +135,7 @@ services:
     restart: "no"
 
   origin:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-origin:local
+    image: ${FVPN_E2E_IMAGE_ORIGIN:-fvpn-devstack-origin:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-origin
     command:
       - -addr
@@ -165,7 +166,7 @@ services:
     restart: "no"
 
   netbird:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-netbird:0.82.0
+    image: ${FVPN_E2E_IMAGE_NETBIRD:-fvpn-devstack-netbird:0.82.0}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-netbird
     entrypoint: ["/go/bin/netbird-server"]
     command: ["--config", "/etc/netbird/config.yaml"]
@@ -190,7 +191,7 @@ services:
     restart: "no"
 
   gateway:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-nginx:1.30.0
+    image: ${FVPN_E2E_IMAGE_NGINX:-fvpn-devstack-nginx:1.30.0}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-gateway
     entrypoint: ["nginx", "-g", "daemon off;"]
     ports:
@@ -209,7 +210,7 @@ services:
     restart: "no"
 
   coredns:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-coredns:1.12.0
+    image: ${FVPN_E2E_IMAGE_COREDNS:-fvpn-devstack-coredns:1.12.0}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-coredns
     command: ["-conf", "/etc/coredns/Corefile"]
     volumes:
@@ -220,7 +221,7 @@ services:
     restart: "no"
 
   adguard:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-adguard:v0.107.59
+    image: ${FVPN_E2E_IMAGE_ADGUARD:-fvpn-devstack-adguard:v0.107.59}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-adguard
     command: ["--no-check-update", "--no-permcheck", "-c", "/opt/adguardhome/conf/AdGuardHome.yaml", "-w", "/opt/adguardhome/work"]
     volumes:
@@ -234,7 +235,7 @@ services:
     restart: "no"
 
   control:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-control:local
+    image: ${FVPN_E2E_IMAGE_CONTROL:-fvpn-devstack-control:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-control
     command: ["-config", "/etc/fvpn/central.json", "-migrate-on-start"]
     environment:
@@ -266,7 +267,7 @@ services:
     restart: "no"
 
   worker:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-worker:local
+    image: ${FVPN_E2E_IMAGE_WORKER:-fvpn-devstack-worker:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-worker
     command: ["-config", "/etc/fvpn/central.json"]
     environment:
@@ -289,7 +290,7 @@ services:
     restart: "no"
 
   node:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-node:local
+    image: ${FVPN_E2E_IMAGE_NODE:-fvpn-devstack-node:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-node
     privileged: true
     environment:
@@ -311,7 +312,7 @@ services:
     restart: "no"
 
   member:
-    image: fvpn-${FVPN_E2E_PREFIX:-e2e}-node:local
+    image: ${FVPN_E2E_IMAGE_NODE:-fvpn-devstack-node:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-member
     entrypoint: ["/usr/local/bin/entrypoint-member.sh"]
     cap_add: [NET_ADMIN, NET_RAW]
