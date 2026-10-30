@@ -1753,6 +1753,31 @@ async function pollMemberEntitlementActive(pool, memberId, label) {
   );
 }
 
+async function ensureDevicesDiscoverEnqueued(pool) {
+  const existing = await pool.query(
+    `SELECT EXISTS(
+       SELECT 1 FROM outbox_events
+       WHERE delivered_at IS NULL
+         AND dead_lettered_at IS NULL
+         AND event_type = 'devices.discover'
+     ) AS has_pending`,
+  );
+  if (existing.rows[0]?.has_pending) {
+    return;
+  }
+  const id = crypto.randomUUID();
+  const runId = crypto.randomUUID();
+  await pool.query(
+    `INSERT INTO outbox_events (id, aggregate_id, aggregate_type, aggregate_version, event_type, schema_version, payload, available_at)
+     VALUES ($1, $2, 'member_maintenance', 1, 'devices.discover', 1, $3::jsonb, clock_timestamp())`,
+    [
+      id,
+      runId,
+      JSON.stringify({ run_id: runId, after: '00000000-0000-0000-0000-000000000000' }),
+    ],
+  );
+}
+
 async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label) {
   const deadline = Date.now() + 15_000;
   let lastIds = [];
@@ -1780,8 +1805,10 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
     );
     lastIds = res.rows.map((r) => r.id);
     if (lastBinding && lastIds.length >= expectedCount) {
+      await drainNodeAffectingOutbox(pool, `pollMemberAuthorizedDevices:${label}`);
       return lastIds.slice(0, expectedCount);
     }
+    await ensureDevicesDiscoverEnqueued(pool);
     await new Promise((r) => setTimeout(r, 200));
   }
   const diagRes = await pool.query(
@@ -1800,6 +1827,11 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
 const NODE_AFFECTING_OUTBOX_EVENTS = [
   'device.authorized',
   'device.revoked',
+  'netbird.device_sync',
+  'devices.discover',
+  'members.reconcile',
+  'billing.inbox_received',
+  'billing.reconcile',
   'member.entitlement_changed',
   'member.suspended',
   'policy.activated',
@@ -2888,8 +2920,8 @@ async function main() {
           portal_ttl_seconds: 60,
           billing_lease_seconds: 60,
           max_webhook_bytes: 65536,
-          reconcile_seconds: 1,
-          device_sync_seconds: 1,
+          reconcile_seconds: 3600,
+          device_sync_seconds: 3600,
           netbird_url: `https://127.0.0.1:${nbPort}/api`,
           netbird_deployment: 'nb-dev',
           netbird_token_file: nbTokenFile,
@@ -3000,6 +3032,10 @@ async function main() {
       usage_rate: { per_second: 1000, burst: 1000 },
       lease_rate: { per_second: 1000, burst: 1000 },
       anonymous_rate: { per_second: 1000, burst: 1000 },
+      worker_concurrency: 1,
+      worker_lease_seconds: 60,
+      worker_job_seconds: 40,
+      worker_attempts: 10,
       worker_poll_seconds: 1,
       worker_backoff_seconds: 1,
       worker_backoff_max_seconds: 2,
@@ -3249,8 +3285,14 @@ async function main() {
               OR n.safety_status <> 'passed') AS state_not_ready,
              EXISTS(
                SELECT 1 FROM operations
-               WHERE kind IN ('node.publish', 'node.unpublish', 'node.disable')
+               WHERE (
+                 kind IN ('node.publish', 'node.unpublish', 'node.disable', 'node.update', 'node.revoke', 'node.retire')
                  AND status IN ('pending', 'running', 'partially_succeeded')
+               ) OR (
+                 resource_type IN ('member', 'entitlement_grant', 'member_device')
+                 AND status IN ('pending', 'running', 'failed', 'partially_succeeded')
+                 AND steps->'nodes'->>'status' IN ('pending', 'running', 'failed')
+               )
              ) AS has_pending_op,
              EXISTS(
                SELECT 1 FROM outbox_events
@@ -3321,6 +3363,8 @@ async function main() {
                     member_group_ids: [exitGroupId],
                   },
                 );
+                await drainNodeAffectingOutbox(pool, 'reset-member-journey');
+                await pollLiveNodeReady(pool, liveNode, 'reset-member-journey');
                 nbController.objects.users.set(sub, {
                   id: sub,
                   auto_groups: [],
@@ -3369,6 +3413,8 @@ async function main() {
                 );
                 const targetMemberId = roleSessions.member.session.member_id;
                 await pollMemberEntitlementActive(pool, targetMemberId, 'stripe-webhook');
+                await drainNodeAffectingOutbox(pool, 'stripe-webhook');
+                await pollLiveNodeReady(pool, liveNode, 'stripe-webhook');
                 res.writeHead(whRes.status, { 'Content-Type': 'application/json' });
                 res.end(whRes.text);
                 return;
@@ -3409,6 +3455,7 @@ async function main() {
                     targetMemberId,
                     'seed-member-devices',
                   );
+                  await drainNodeAffectingOutbox(pool, 'seed-member-devices-grant');
                 }
 
                 const existingRes = await pool.query(
@@ -3449,6 +3496,8 @@ async function main() {
                   3,
                   'seed-member-devices',
                 );
+                await drainNodeAffectingOutbox(pool, 'seed-member-devices');
+                await pollLiveNodeReady(pool, liveNode, 'seed-member-devices');
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ device_ids: deviceIds }));
                 return;
