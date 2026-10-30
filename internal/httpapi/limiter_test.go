@@ -152,3 +152,71 @@ func TestAT31_D060_LoginAddressBurstAndMetric(t *testing.T) {
 		t.Fatalf("rate_limited_total{class=login,limiter=address} = %v, want 1", got)
 	}
 }
+
+func TestAnonymousAddressBurstUsesIPv6Prefix(t *testing.T) {
+	c := config.Defaults()
+	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	// Unauthenticated routes key the class bucket on the connection address.
+	// Hold every class bucket to one token so the assertion does not depend on
+	// which classified rate the route selects.
+	slow := config.Bucket{PerSecond: 0.0001, Burst: 1}
+	c.AnonymousRate = slow
+	c.AgentRate = slow
+	c.BrowserRate = slow
+	c.MaxRatePrincipals = 100
+	sets, err := Compose()
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err := New(sets, Options{Config: c})
+	if err != nil {
+		t.Fatal(err)
+	}
+	post := func(remote string, header map[string]string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/agent/enroll", strings.NewReader(`{}`))
+		req.RemoteAddr = remote
+		req.Header.Set("Content-Type", "application/json")
+		for k, v := range header {
+			req.Header.Set(k, v)
+		}
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		return rec
+	}
+	first := post("[2001:db8:9:1::1]:443", nil)
+	if first.Code == http.StatusTooManyRequests {
+		t.Fatal(first.Code, first.Body.String())
+	}
+	same := post("[2001:db8:9:1::2]:443", map[string]string{"X-Forwarded-For": "198.51.100.9"})
+	if same.Code != http.StatusTooManyRequests || same.Header().Get("Retry-After") == "" || !strings.Contains(same.Body.String(), "RATE_LIMITED") {
+		t.Fatal("same /64", same.Code, same.Header().Get("Retry-After"), same.Body.String())
+	}
+	bare := post("2001:db8:9:1::3:443", nil)
+	if bare.Code != http.StatusTooManyRequests {
+		t.Fatal("unbracketed address in the same /64", bare.Code, bare.Body.String())
+	}
+	other := post("[2001:db8:9:2::1]:443", map[string]string{"X-Forwarded-For": "2001:db8:9:1::1"})
+	if other.Code == http.StatusTooManyRequests {
+		t.Fatal("different /64 or forwarded header was trusted", other.Code, other.Body.String())
+	}
+	if post("192.0.2.10:9", nil).Code == http.StatusTooManyRequests {
+		t.Fatal("ipv4 shared the ipv6 prefix bucket")
+	}
+	if post("192.0.2.10:10", nil).Code != http.StatusTooManyRequests {
+		t.Fatal("ipv4 did not keep a per-address bucket")
+	}
+
+	// Both the ingress key and the anonymous key land in one map, so one
+	// parsed address needs two principal slots. A refused address must not take either.
+	c.MaxRatePrincipals = 2
+	h, err = New(sets, Options{Config: c})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w := post("not-an-address", nil); w.Code != http.StatusTooManyRequests || w.Header().Get("Retry-After") == "" {
+		t.Fatal("unparseable", w.Code, w.Header().Get("Retry-After"), w.Body.String())
+	}
+	if w := post("192.0.2.40:9", nil); w.Code == http.StatusTooManyRequests {
+		t.Fatal("unparseable address occupied a principal slot", w.Code, w.Body.String())
+	}
+}
