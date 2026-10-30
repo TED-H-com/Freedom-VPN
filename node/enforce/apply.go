@@ -72,6 +72,10 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{Plan: plan, Resets: resets}, err
 	}
+	// Admission already drops an address that left allowed_v4, before any
+	// established or related accept. A conntrack failure here must not
+	// replace the verified ruleset with the baseline. The caller passes
+	// Revoke again on the next Apply, which retries the delete (§8.2).
 	for _, addr := range m.Revoke {
 		if err := deleteConntrack(ctx, ex, addr); err != nil {
 			return ApplyResult{Plan: plan, Resets: resets}, err
@@ -218,7 +222,22 @@ func deleteConntrack(ctx context.Context, ex Executor, addr netip.Addr) error {
 		if err == nil || conntrackEmpty(err) {
 			continue
 		}
-		return err
+		// The command text names the address. The reported error must not.
+		return checkf(ReasonIsolation, "conntrack delete failed after the serving ruleset was verified")
+	}
+	return nil
+}
+
+// RequireConntrack reports whether the conntrack binary is installed.
+// The agent calls it at startup. A missing binary is ReasonIsolation and
+// the detail does not include a path.
+func RequireConntrack(ex Executor) error {
+	if ex == nil {
+		return checkf(ReasonIsolation, "conntrack is not installed")
+	}
+	path, err := ex.LookPath("conntrack")
+	if err != nil || strings.TrimSpace(path) == "" {
+		return checkf(ReasonIsolation, "conntrack is not installed")
 	}
 	return nil
 }

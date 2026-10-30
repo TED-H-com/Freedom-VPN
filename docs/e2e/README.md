@@ -232,7 +232,8 @@ its challenge. The product agent alone may write `health-attest.json`; the
 harness never seeds health answers. A serving allowlist entry is insufficient
 to invoke the updater: the harness waits for `signed.update.release_id`.
 
-Prepare creates a deterministic hosts feed with ten unique synthetic entries,
+The lab worker explicitly configures `feed_update_cadence_seconds=300`
+(TEST ONLY); its production default remains six hours. Prepare creates a deterministic hosts feed with ten unique synthetic entries,
 mixed case and a duplicate, and computes its `content_sha256`. The lab TLS
 origin serves it inside the isolated network. The scenario creates and
 activates a pinned `threat_feed`, then a referencing `dns_profile`, through the
@@ -251,8 +252,10 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
 
 - arm64 binaries are built and packaged from the same tree. This host executes
   only amd64; AT07 reinstall and existing-flow teardown are not measured.
-- The agent uses the public listener for enrollment and the mTLS listener when
-  running, through two config files. The meter is inside `fvpn-agent`;
+- The agent uses the public listener for enrollment and a TEST ONLY loopback
+  mTLS proxy when running, through two config files. The proxy authenticates
+  to control with the enrolled node identity and can corrupt only resolver
+  response bytes through a private local marker. The meter is inside `fvpn-agent`;
   `host_reserve_bps` is a required TEST ONLY value (D-034).
 - Artifact and feed fetchers reject private, loopback, overlay and documentation
   addresses. The origin uses `192.0.<3+slot>.10` on an isolated bridge without
@@ -274,8 +277,11 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
 - D-057 publication uses real groups and checks the operation's data-path step,
   including `member_forwarding_unconfirmed`. HTTP 202 and route readback alone
   cannot complete it. Native D-052 identity authorization is a separate gate.
-  The latest verification records whether agent follow-up 9 is present and
-  compares the lease with the applied generation and actual admission counters.
+  Agent follow-up 9 (#146) and wire-nodes follow-up 15 (#148) are included.
+  The harness explicitly selects the published NetBird exit: default-route
+  networks are not selected by the pinned native CLI. The latest verification
+  compares lease/applied generations and actual admission counters, with a
+  [hop-by-hop trace](followup9-forwarding-trace.md).
   Exact member counts, deadlines and heartbeat remain in `member-traffic`.
 - Only a native controlled-origin request with a device admission counter
   increment can pass forwarding. Usage must come from the real sampler. Expiry
@@ -297,9 +303,11 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
   the latest complete run. Records with `blocked` keep the acceptance command
   non-zero and identify the responsible product area.
 
-## Latest complete run — follow-up 8
+## Latest complete run — follow-up 9
 
-See [followup8-verification.md](followup8-verification.md) for fresh-stack run
-counts, source commits and real-release digests. The dated records are one
-complete run; exploratory runs are excluded. The previous follow-up's
-[verification](followup7-verification.md) remains historical evidence.
+See [followup9-verification.md](followup9-verification.md) for fresh-stack run
+counts, source commits and real-release digests. The dated root records are one
+complete run; subdirectories retain the first two complete runs. Exploratory
+attempts are excluded. [Owner requests](requests.md) distinguish resolved lab
+findings from remaining measurement limits. The previous follow-up's
+[verification](followup8-verification.md) remains historical evidence.

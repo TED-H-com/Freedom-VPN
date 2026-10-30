@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -113,6 +114,7 @@ func command(name string, args []string, stderr io.Writer) int {
 		return 1
 	}
 	defer eng.Close()
+	eng.Log = slog.New(slog.NewJSONHandler(stderr, nil))
 	ctx := context.Background()
 	var runErr error
 	switch name {

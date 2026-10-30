@@ -28,6 +28,12 @@ reconcile that was missing in follow-up 7.
 `threat-feed-tamper` is a separate result. It records the positive delivery gate,
 current last-good readback, whether a fault was injected, and its owner. A central
 wrong-pin failure is never substituted for corrupted node-mTLS response evidence.
-It remains blocked until a response corruption hook can present changed bytes
-under the authentic signed digest and show failed evidence with unchanged
-last-good rules. No signed reference or projector row is fabricated.
+The TEST ONLY loopback mTLS proxy now changes one response byte while preserving
+its length under the authentic signed reference. The source gains one synthetic
+rule; the worker refreshes it on its normal cadence and issues the next document.
+Pass requires `fault_injected=true`, projected `failed/HASH_MISMATCH`, unchanged
+last-good rule hash and continued synthetic blocking, then `applied` for the
+same new document with eleven feed rules after the marker is removed (the
+resolver also has its separate baseline rules). Neither the
+signed reference nor any projector/cache row is fabricated. Hook details are in
+[RUN.md](../RUN.md#test-only-resolver-transport-fault).

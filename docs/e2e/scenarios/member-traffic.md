@@ -16,7 +16,7 @@ expires.
 See [member traffic](../runs/2026-10-30/member-traffic.md),
 [forwarding](../runs/2026-10-30/forwarding.md) and
 [lease expiry](../runs/2026-10-30/lease-expiry.md). The D-057 group/publication
-prerequisite now passes. The current lease-refresh blocker is described below.
+prerequisite is checked independently. The current traffic trace is linked below.
 Resolver enforcement separately requires an issued D-056 document reference;
 a central feed document is not an on-node ACK.
 
@@ -36,11 +36,11 @@ same device's admission counters increase. The persistent boot recovery config
 is created from real enrollment IDs; it is separate from the one-shot updater
 trigger. Missing/failed recovery still blocks forwarding.
 
-The current remaining blocker is `node/agent` lease renewal: the agent retains
-its initial lease (generation 1, zero members, 24-hour deadline) after publication
-and member binding advance desired state. The bounded probe sees `serving 0`,
-`policy_expires_mono_ns 0`, `reason lease_expired`, and no admission counters.
-`needRenew()` does not consider the changed desired/member generation.
-**Owner: w2-agent-core.** The runner records the exact stored lease, desired
-counts, current node HTTP response/checks and heartbeat, and does not restart
-the process to force renewal. No counted flow, usage or expiry success is claimed.
+Agent follow-up 9 (#146) renews the lease for the applied generation. The next
+missing hop was lab-owned: NetBird's native client left the published exit
+`Not Selected`, so the controlled-origin request followed `eth0`. Explicitly
+selecting the published exit changes the route to `fvnb0`. The harness now does
+this before probing and records before/after routes, addresses, packet headers,
+per-rule named counters, allowlist timeouts, conntrack and origin arrival.
+See [follow-up 9 trace](../followup9-forwarding-trace.md) for measured deltas and
+[first-class owner requests](../requests.md) for any remaining product gate.
