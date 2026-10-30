@@ -21,10 +21,14 @@ export function AdminOverviewPage(): React.ReactElement {
     queryKey: ['admin', 'members', 'all'],
     queryFn: () => apiClient.listMembers(),
   });
+  const activeBatchId =
+    MOCK_FALLBACK_BATCH_ID ??
+    nodesQuery.data?.items.find((n) => n.update?.batch_id)?.update?.batch_id ??
+    null;
   const batchQuery = useQuery({
-    queryKey: ['admin', 'update-batch', MOCK_FALLBACK_BATCH_ID],
-    queryFn: () => apiClient.getUpdateBatch(MOCK_FALLBACK_BATCH_ID!),
-    enabled: Boolean(MOCK_FALLBACK_BATCH_ID),
+    queryKey: ['admin', 'update-batch', activeBatchId],
+    queryFn: () => apiClient.getUpdateBatch(activeBatchId!),
+    enabled: Boolean(activeBatchId),
   });
 
   if (nodesQuery.error || membersQuery.error) {
