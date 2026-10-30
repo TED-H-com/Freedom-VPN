@@ -697,6 +697,9 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		Code int `json:"exit_code"`
 	}
 	_ = json.Unmarshal(result, &exit)
+	executable, _ := r.lab.docker(r.lab.node, "sh", "-c", `test -s /var/lib/vpn-node/e2e/agent.pid && readlink /proc/$(cat /var/lib/vpn-node/e2e/agent.pid)/exe`)
+	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/bin/fvpn-agent"
+	rec.Observations = append(rec.Observations, Observation{Name: "running_candidate_executable", Detail: boolText(candidateRunning)})
 	journal := r.readJournal(releaseID.String())
 	outLog, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
 	blob := journal.Text + "\n" + string(outLog)
