@@ -319,7 +319,12 @@ TEST ONLY `/32` controlled-origin route via the actual enrolled node. This does
 not alter the product's published exit, member groups, devices or bindings.
 The peer selects that narrow route. The updater receives its real peer ID,
 overlay source `/32`, and isolated origin `/32` UDP/4443 in `probe_peer`.
-The existing validator remains authoritative; no denied-range exception is added.
+The updater config explicitly sets `agent_config` to
+`/etc/vpn-node/agent-run.json`; the default `agent.json` is not the lab's runtime
+file. The #154 validator reads that file's control/resolver endpoints and the
+node's actual interfaces at load, engine creation and challenge issuance. The
+isolated origin must differ from every node/control/resolver address. The
+existing validator remains authoritative; no denied-range exception is added.
 
 `fvpn-e2e-nodeconfig probe-client <synthetic UUID>` sends bounded authenticated
 UDP echo requests from that peer; `probe-watch` only reads nftables snapshots.

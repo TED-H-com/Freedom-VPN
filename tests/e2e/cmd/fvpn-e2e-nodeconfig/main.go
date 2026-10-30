@@ -58,6 +58,7 @@ func prepare() error {
 		Platform:     updater.Platform{OSID: "ubuntu", OSVersion: "24.04", Architecture: runtime.GOARCH, UpdaterVersion: "1.0.0", ControlAPIMajor: 1, PolicySchema: 1, UsageSchema: 1, StateSchema: 1},
 		ReleaseTrust: "/etc/vpn-node/trust.json", DesiredTrust: "/etc/vpn-node/trust.json", DesiredState: "/var/lib/vpn-node/state/desired-state.json",
 		MeterCheckpoint: "/var/lib/vpn-node/e2e/meter.json",
+		AgentConfig:     "/etc/vpn-node/agent-run.json",
 		StopCommand:     []string{"/usr/local/bin/agent-service.sh", "stop"}, StartCommand: []string{"/usr/local/bin/agent-service.sh", "start"},
 		ResultURL: "https://agent.example.invalid:9443/api/v1/agent/update-results", AllowedArtifactOrigins: []string{"https://agent.example.invalid:9443"},
 		MTLSCert: "/var/lib/vpn-node/identity/cert.pem", MTLSKey: "/var/lib/vpn-node/identity/key.pem", MTLSCA: "/etc/vpn-node/ca.pem",

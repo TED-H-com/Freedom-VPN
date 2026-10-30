@@ -311,10 +311,20 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
 
 See [followup10-verification.md](followup10-verification.md) for fresh-stack run
 counts, source commits and real-release digests. The dated root records are one
-complete run; subdirectories retain the first two complete runs. Exploratory
+complete merged-tree run; `followup10-run1/`, `followup10-run2/` and
+`followup10-run3/` retain the original three complete runs. Exploratory
 attempts are excluded. [Owner requests](requests.md) distinguish resolved lab
 findings from remaining measurement limits. The previous follow-up's
 [verification](followup9-verification.md) remains historical evidence.
+
+The latest merged-tree run `3a129919-af3f-4bc9-b54a-8075eae8af45` on `79259af`
+is **21 pass / 5 blocked / 0 fail** (Go 1 / make 2). Both update scenarios pass,
+including #154 probe issuance with zero omissions and measured §13.9 traversal.
+Member traffic saw no advertised exit at the lab's one-time selection check;
+a later read showed it available but unselected. The lab owns bounded
+route-discovery polling. `member-traffic`, `usage`, `forwarding`, `device-revoke`
+and `lease-expiry` remain blocked without a positive counted flow; no agent
+forwarding defect is inferred from this run. See [owner requests](requests.md).
 
 ## Node image prerequisites (F3-02)
 

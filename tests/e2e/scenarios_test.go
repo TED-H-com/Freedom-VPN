@@ -599,7 +599,17 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/bin/fvpn-agent"
 	rec.Observations = append(rec.Observations, Observation{Name: "running_candidate_executable", Detail: boolText(candidateRunning)})
 	journal := r.readJournal(releaseID.String())
-	outLog, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
+	outLog, outLogErr := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
+	probeOmissions := strings.Count(string(outLog), "health challenge probe omitted")
+	if !wantHash {
+		recPathNote(&rec)("probe_agent_config", "/etc/vpn-node/agent-run.json")
+		recPathNote(&rec)("updater_log_readable", boolText(outLogErr == nil))
+		recPathNote(&rec)("probe_omission_count", itoa(probeOmissions))
+		recPathNote(&rec)("invalid_probe_peer", boolText(strings.Contains(string(outLog), "updater: invalid probe_peer")))
+		if refusal := excerptMatching(string(outLog), []string{"health challenge probe omitted", "updater: invalid probe_peer"}, 3); refusal != "" {
+			recPathNote(&rec)("probe_refusal", refusal)
+		}
+	}
 	blob := journal.Text + "\n" + string(outLog)
 	words := scanWords(blob)
 	rec.Observations = append(rec.Observations, Observation{Name: "exit_code", Detail: itoa(exit.Code)})
@@ -614,7 +624,7 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		rec.Observations = append(rec.Observations, Observation{Name: "journal_excerpt", Detail: excerpt})
 	}
 	if finishProbe != nil {
-		probeOK = finishProbe()
+		probeOK = finishProbe() && outLogErr == nil && probeOmissions == 0
 		finishProbe = nil
 	}
 	switch {
@@ -776,6 +786,7 @@ func (r *runner) writeUpdaterConfig() error {
 		"release_trust": "/etc/vpn-node/trust.json", "desired_trust": "/etc/vpn-node/trust.json",
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
 		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+		"agent_config":     "/etc/vpn-node/agent-run.json",
 		"stop_command":     []string{"/usr/local/bin/agent-service.sh", "stop"}, "start_command": []string{"/usr/local/bin/agent-service.sh", "start"},
 		"result_url":               r.lab.agent + "/api/v1/agent/update-results",
 		"allowed_artifact_origins": []string{r.lab.agent},

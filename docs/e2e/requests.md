@@ -1,21 +1,45 @@
 # Dev-stack owner requests — follow-up 10
 
-Current evidence: [verification](followup10-verification.md) and three complete
-fresh-stack sets on product base `27d9229` (PR #153). The dated root is run 3.
+Current evidence: [merged-tree verification](followup10-verification.md#merged-tree-run--send-back-f10b),
+run `3a129919-af3f-4bc9-b54a-8075eae8af45` on merged product tree `79259af`:
+**21 pass / 5 blocked / 0 fail**, Go exit 1 / make exit 2, teardown 0.
+The dated root contains this complete run. `followup10-run1/`,
+`followup10-run2/` and `followup10-run3/` preserve the original three runs.
+
+## Merged-tree route discovery timing — lab owner
+
+Owner: **w3-devstack-e2e**. [Member traffic](runs/2026-10-30/member-traffic.md)
+records `No networks available.` at the immediate exit-selection check, followed
+by `expected exactly one API-published exit`; its origin route still uses `eth0`.
+Stored applied/desired/lease generations are all 5 with heartbeat `serving 1`.
+At `16:29:28Z`, a later read-only check on the same client shows the default exit
+available but `Not Selected`. The single availability check ran before the
+route appeared; this evidence does not establish a product forwarding defect.
+
+**Request:** add bounded route-discovery polling before explicit selection and
+re-run the positive flow. In this run `member-traffic`, `usage`, `forwarding`,
+`device-revoke` and `lease-expiry` remain blocked at that prerequisite. No
+revocation DELETE or control-stop fault is injected without a counted flow.
+The existing device-revoke owner string describes its later historical gate;
+the current record's actual gate is `positive member flow prerequisite absent`.
+No route/group/projector row was repaired during this send-back.
 
 ## F3-02 — missing executable resolved; strict ingress measurement remains open
+
+The original three runs below remain historical proof; the merged run did not
+reach this scenario beyond its positive-flow prerequisite.
 
 Owner of the remaining measurement: **w3-devstack-e2e**. The fresh image has
 `/usr/sbin/conntrack`. Member DELETE returns `202`;
 a newer serving generation is applied, the agent PID stays unchanged, the
 sibling keeps a counted flow and a replacement native device also carries a
-counted flow. The [record](runs/2026-10-30/device-revoke.md) retains the accepted
+counted flow. The [original run 3 record](runs/2026-10-30/followup10-run3/device-revoke.md) retains the accepted
 observation, ready/passed row, counters and conntrack result. The old missing
 executable no longer prevents serving apply. Harness owners should rebuild the
 current image rather than install a package at runtime or skip conntrack deletion.
 
-The complete `device-revoke` case is **blocked** because
-NetBird withdraws the revoked client's advertised route before the captured
+In the original three runs, the complete `device-revoke` case is **blocked**
+because NetBird withdraws the revoked client's advertised route before the captured
 post-apply request. The observed route uses `eth0`, the client has no exit network, node
 `fvmb0` captures zero matching packets and `ctunku` does not increase. Revoked
 upload/download counters freeze, conntrack is empty, origin receipt is zero,
@@ -42,12 +66,19 @@ The [update-good record](runs/2026-10-30/update-good.md) is
 **pass**. A non-member setup-key peer selects a dedicated
 origin `/32` route. Its separate transport policy targets only the enrolled node;
 no member device, grant, binding or publication row is created for it.
-The original updater destination validator remains in force; unit checks accept
-the isolated origin and still reject documentation and overlay destinations.
+The #154 issuer validator remains in force. The lab explicitly supplies
+`agent_config=/etc/vpn-node/agent-run.json`; unit checks exercise the actual
+LoadConfig contract with control/resolver endpoints and local interface inventory.
+The isolated origin is accepted; documentation/CGNAT destinations, missing agent
+configuration and control/resolver collisions are refused. The live updater
+reports `probe_omission_count=0`, `invalid_probe_peer=false`, and a successful
+candidate executable with updater exit 0.
 
-Measured window: `{"samples":673,"grant_samples":3,"source_elements":1,"destination_elements":1,"max_timeout_seconds":44,"probe_up_bytes":1078,"probe_down_bytes":1078,"member_bytes_before":15044,"member_bytes_after":15044,"elements_after":0}`.
-Measured requests: `{"attempts":944,"authenticated_udp_replies":14}`.
-The origin reports the node's SNAT source. Both diagnostic counters must advance,
+Measured window: `{"samples":843,"grant_samples":3,"source_elements":1,"destination_elements":1,"max_timeout_seconds":44,"probe_up_bytes":1848,"probe_down_bytes":1848,"member_bytes_before":0,"member_bytes_after":0,"elements_after":0}`.
+Measured requests: `{"attempts":1311,"authenticated_udp_replies":24}`.
+The origin records 24 authenticated requests from the node's SNAT source.
+Member totals were 0 → 0; this establishes no member accounting change during
+the probe, not a positive member-flow proof. Both diagnostic counters must advance,
 member upload/download totals must stay unchanged, and source/destination elements
 must be empty after the answer. The nftables JSON timeout unit is seconds;
 the check requires at most 45. Only the product installs/removes the exception

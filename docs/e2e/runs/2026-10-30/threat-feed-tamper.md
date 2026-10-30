@@ -4,9 +4,9 @@ Corrupted resolver response retains node last-good and recovers
 
 Status: pass
 
-Run: 14231a83-130d-40fb-a9b4-0d3851520b67
+Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
 
-Source: 2eeda9df03749b942c6f5afde6a7bc3a2ba8fce3
+Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
 
 Spec: §12.5, §19 AT22
 
@@ -14,9 +14,9 @@ Spec: §12.5, §19 AT22
 - last_good_before: {"admin_http":200,"query_log_enabled":false,"query_log_file_enabled":false,"rule_count":16,"rules_sha256":"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8","statistics_enabled":false,"synthetic_answer_count":0,"synthetic_blocked":true}
 - source_change: approved source adds one synthetic rule; wait for its configured 300-second refresh cadence
 - fault_injected: true
-- transport_fault: {"corrupted_sha256":"567f57ef81726f5c9dcd4c2bdc86d239777ec36d469dfad3b3c716c54d7fc3b1","document_id":"01a18c6e-6c5c-709d-a0a2-fda7a7d5dabb","fault_injected":true,"http_status":200,"original_sha256":"902faeee2f51333c81a57317d8637395452acb65952a71966ddfd4f3f83e9455","responses":2,"size_bytes":1238}
-- rejected_evidence: {"applied_at":null,"content_sha256":"567f57ef81726f5c9dcd4c2bdc86d239777ec36d469dfad3b3c716c54d7fc3b1","document_id":"01a18c6e-6c5c-709d-a0a2-fda7a7d5dabb","error_code":"HASH_MISMATCH","feeds":[],"generation":"3","outcome":"failed"}
+- transport_fault: {"corrupted_sha256":"567f57ef81726f5c9dcd4c2bdc86d239777ec36d469dfad3b3c716c54d7fc3b1","document_id":"01a18dab-8976-76e2-a5d0-ee8ff2c3be09","fault_injected":true,"http_status":200,"original_sha256":"902faeee2f51333c81a57317d8637395452acb65952a71966ddfd4f3f83e9455","responses":2,"size_bytes":1238}
+- rejected_evidence: {"applied_at":null,"content_sha256":"567f57ef81726f5c9dcd4c2bdc86d239777ec36d469dfad3b3c716c54d7fc3b1","document_id":"01a18dab-8976-76e2-a5d0-ee8ff2c3be09","error_code":"HASH_MISMATCH","feeds":[],"generation":"3","outcome":"failed"}
 - last_good_during_fault: {"admin_http":200,"query_log_enabled":false,"query_log_file_enabled":false,"rule_count":16,"rules_sha256":"b41cd722654313b510451934b2f59fd90f12ac3996dc44312ecfb43a157d3ae8","statistics_enabled":false,"synthetic_answer_count":0,"synthetic_blocked":true}
 - last_good_unchanged: true
-- recovered_evidence: {"applied_at":"2026-10-30T10:50:18.373868362Z","content_sha256":"902faeee2f51333c81a57317d8637395452acb65952a71966ddfd4f3f83e9455","document_id":"01a18c6e-6c5c-709d-a0a2-fda7a7d5dabb","error_code":null,"feeds":[{"content_sha256":"6fc90b883869a9d03e200a0b014521d0b04c290d2ede553a3c028b53e4e319d5","feed_code":"e2e-feed","rule_count":11}],"generation":"3","outcome":"applied"}
+- recovered_evidence: {"applied_at":"2026-10-30T16:36:39.700082196Z","content_sha256":"902faeee2f51333c81a57317d8637395452acb65952a71966ddfd4f3f83e9455","document_id":"01a18dab-8976-76e2-a5d0-ee8ff2c3be09","error_code":null,"feeds":[{"content_sha256":"6fc90b883869a9d03e200a0b014521d0b04c290d2ede553a3c028b53e4e319d5","feed_code":"e2e-feed","rule_count":11}],"generation":"3","outcome":"applied"}
 - resolver_after_recovery: {"admin_http":200,"query_log_enabled":false,"query_log_file_enabled":false,"rule_count":17,"rules_sha256":"79231a4738bf6d4430427b961953da912f1204eb8ce49cbdcd42d834405ddadb","statistics_enabled":false,"synthetic_answer_count":0,"synthetic_blocked":true}

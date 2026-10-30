@@ -1,6 +1,6 @@
 # Follow-up 10 verification — 2026-10-30
 
-Three complete fresh stacks use `e2e` / `18000` and product base `27d9229` (follow-up 9, PR #153). Each starts with teardown and a fresh prepare/build. Runtime images are pinned to immutable IDs. No product, contract, migration, module or workflow change is included. The root dated records contain run 3 only; `followup10-run1/` and `followup10-run2/` retain the earlier complete sets. Every set has 26 matching JSON/Markdown pairs and one run/source identity.
+Three complete fresh stacks use `e2e` / `18000` and product base `27d9229` (follow-up 9, PR #153). Each starts with teardown and a fresh prepare/build. Runtime images are pinned to immutable IDs. No product, contract, migration, module or workflow change is included. The original three sets are archived under `followup10-run1/`, `followup10-run2/` and `followup10-run3/`. The dated root contains the merged-tree run described below. Every set has 26 matching JSON/Markdown pairs and one run/source identity.
 
 | Run | Source | Run ID | Pass / blocked / fail | Go / make exit | Go seconds |
 |---|---|---|---|---|---:|
@@ -16,32 +16,32 @@ acceptance commands.
 
 | Scenario | Run 1 | Run 2 | Run 3 | Record / owner for blocked result |
 |---|---|---|---|---|
-| `admin-login` | pass | pass | pass | [record](runs/2026-10-30/admin-login.md); — |
-| `backup` | pass | pass | pass | [record](runs/2026-10-30/backup.md); — |
-| `billing` | pass | pass | pass | [record](runs/2026-10-30/billing.md); — |
-| `control-metrics` | pass | pass | pass | [record](runs/2026-10-30/control-metrics.md); — |
-| `desired-state` | pass | pass | pass | [record](runs/2026-10-30/desired-state.md); — |
-| `device-revoke` | blocked | blocked | blocked | [record](runs/2026-10-30/device-revoke.md); w3-devstack-e2e: revoked native route may withdraw before node ingress proof; no product defect is inferred |
-| `enroll-bootstrap` | pass | pass | pass | [record](runs/2026-10-30/enroll-bootstrap.md); — |
-| `forwarding` | pass | pass | pass | [record](runs/2026-10-30/forwarding.md); — |
-| `gateway-privacy` | pass | pass | pass | [record](runs/2026-10-30/gateway-privacy.md); — |
-| `lease-expiry` | pass | pass | pass | [record](runs/2026-10-30/lease-expiry.md); — |
-| `member-traffic` | pass | pass | pass | [record](runs/2026-10-30/member-traffic.md); — |
-| `native-scale-hook` | pass | pass | pass | [record](runs/2026-10-30/native-scale-hook.md); — |
-| `node-restart` | pass | pass | pass | [record](runs/2026-10-30/node-restart.md); — |
-| `portal-billing-return` | pass | pass | pass | [record](runs/2026-10-30/portal-billing-return.md); — |
-| `publish` | pass | pass | pass | [record](runs/2026-10-30/publish.md); — |
-| `release-register` | pass | pass | pass | [record](runs/2026-10-30/release-register.md); — |
-| `revoke` | pass | pass | pass | [record](runs/2026-10-30/revoke.md); — |
-| `second-exit` | pass | pass | pass | [record](runs/2026-10-30/second-exit.md); — |
-| `serving-catalogue` | pass | pass | pass | [record](runs/2026-10-30/serving-catalogue.md); — |
-| `stack-health` | pass | pass | pass | [record](runs/2026-10-30/stack-health.md); — |
-| `threat-feed-central` | pass | pass | pass | [record](runs/2026-10-30/threat-feed-central.md); — |
-| `threat-feed-node` | pass | pass | pass | [record](runs/2026-10-30/threat-feed-node.md); — |
-| `threat-feed-tamper` | pass | pass | pass | [record](runs/2026-10-30/threat-feed-tamper.md); — |
-| `update-bad` | pass | pass | pass | [record](runs/2026-10-30/update-bad.md); — |
-| `update-good` | pass | pass | pass | [record](runs/2026-10-30/update-good.md); — |
-| `usage` | pass | pass | pass | [record](runs/2026-10-30/usage.md); — |
+| `admin-login` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/admin-login.md); — |
+| `backup` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/backup.md); — |
+| `billing` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/billing.md); — |
+| `control-metrics` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/control-metrics.md); — |
+| `desired-state` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/desired-state.md); — |
+| `device-revoke` | blocked | blocked | blocked | [record](runs/2026-10-30/followup10-run3/device-revoke.md); w3-devstack-e2e: revoked native route may withdraw before node ingress proof; no product defect is inferred |
+| `enroll-bootstrap` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/enroll-bootstrap.md); — |
+| `forwarding` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/forwarding.md); — |
+| `gateway-privacy` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/gateway-privacy.md); — |
+| `lease-expiry` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/lease-expiry.md); — |
+| `member-traffic` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/member-traffic.md); — |
+| `native-scale-hook` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/native-scale-hook.md); — |
+| `node-restart` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/node-restart.md); — |
+| `portal-billing-return` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/portal-billing-return.md); — |
+| `publish` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/publish.md); — |
+| `release-register` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/release-register.md); — |
+| `revoke` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/revoke.md); — |
+| `second-exit` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/second-exit.md); — |
+| `serving-catalogue` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/serving-catalogue.md); — |
+| `stack-health` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/stack-health.md); — |
+| `threat-feed-central` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/threat-feed-central.md); — |
+| `threat-feed-node` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/threat-feed-node.md); — |
+| `threat-feed-tamper` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/threat-feed-tamper.md); — |
+| `update-bad` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/update-bad.md); — |
+| `update-good` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/update-good.md); — |
+| `usage` | pass | pass | pass | [record](runs/2026-10-30/followup10-run3/usage.md); — |
 
 ## Revocation and replacement observations
 
@@ -153,3 +153,162 @@ EXIT=0
 ```
 
 No shipped Python helper or dependency changed; the workflow is unchanged. `git diff --check` and the §8 hygiene grep are empty. Each run’s `e2e-down` exits 0 and the own-prefix container/network/volume/runtime-image inventories are empty. No push, merge, rebase or tag was made.
+
+## Merged-tree run — send-back f10b
+
+One fresh complete stack on `79259af` includes the orchestrator's merge of
+#154–#163. Product code is unchanged. The record's `source_commit` is that
+merge commit; the lab-only test/config/observer fixes in this hand-off were
+present during the run and are committed together with its evidence. Their
+`git diff --binary HEAD -- tests/e2e` SHA-256 at run start was
+`60064bf48d3b44c1d696964d518f3ca3538d19038bcc7e713b37ed6ea560ff40`.
+
+| Run ID | Product source | Pass / blocked / fail | Go / make exit | Go seconds | Down exit |
+|---|---|---|---|---:|---:|
+| `3a129919-af3f-4bc9-b54a-8075eae8af45` | `79259af` | 21 / 5 / 0 | 1 / 2 | 796.728 | 0 |
+
+All 26 dated root JSON/Markdown pairs belong to this run. Four statuses changed
+from pass to blocked: `member-traffic`, `usage`, `forwarding`, `lease-expiry`.
+`device-revoke` remains blocked, now at its positive-flow prerequisite.
+The acceptance command is nonzero because blocked scenarios fail its gate.
+
+| Scenario | Original run 3 | Merged tree | Record / blocked owner |
+|---|---|---|---|
+| `admin-login` | pass | pass | [record](runs/2026-10-30/admin-login.md); — |
+| `backup` | pass | pass | [record](runs/2026-10-30/backup.md); — |
+| `billing` | pass | pass | [record](runs/2026-10-30/billing.md); — |
+| `control-metrics` | pass | pass | [record](runs/2026-10-30/control-metrics.md); — |
+| `desired-state` | pass | pass | [record](runs/2026-10-30/desired-state.md); — |
+| `device-revoke` | blocked | blocked | [record](runs/2026-10-30/device-revoke.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `enroll-bootstrap` | pass | pass | [record](runs/2026-10-30/enroll-bootstrap.md); — |
+| `forwarding` | pass | blocked | [record](runs/2026-10-30/forwarding.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `gateway-privacy` | pass | pass | [record](runs/2026-10-30/gateway-privacy.md); — |
+| `lease-expiry` | pass | blocked | [record](runs/2026-10-30/lease-expiry.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `member-traffic` | pass | blocked | [record](runs/2026-10-30/member-traffic.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `native-scale-hook` | pass | pass | [record](runs/2026-10-30/native-scale-hook.md); — |
+| `node-restart` | pass | pass | [record](runs/2026-10-30/node-restart.md); — |
+| `portal-billing-return` | pass | pass | [record](runs/2026-10-30/portal-billing-return.md); — |
+| `publish` | pass | pass | [record](runs/2026-10-30/publish.md); — |
+| `release-register` | pass | pass | [record](runs/2026-10-30/release-register.md); — |
+| `revoke` | pass | pass | [record](runs/2026-10-30/revoke.md); — |
+| `second-exit` | pass | pass | [record](runs/2026-10-30/second-exit.md); — |
+| `serving-catalogue` | pass | pass | [record](runs/2026-10-30/serving-catalogue.md); — |
+| `stack-health` | pass | pass | [record](runs/2026-10-30/stack-health.md); — |
+| `threat-feed-central` | pass | pass | [record](runs/2026-10-30/threat-feed-central.md); — |
+| `threat-feed-node` | pass | pass | [record](runs/2026-10-30/threat-feed-node.md); — |
+| `threat-feed-tamper` | pass | pass | [record](runs/2026-10-30/threat-feed-tamper.md); — |
+| `update-bad` | pass | pass | [record](runs/2026-10-30/update-bad.md); — |
+| `update-good` | pass | pass | [record](runs/2026-10-30/update-good.md); — |
+| `usage` | pass | blocked | [record](runs/2026-10-30/usage.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+
+### Member-flow prerequisite and owner
+
+At `2026-10-30T16:26:40Z`, member traffic records
+`netbird_networks_before_selection="No networks available."` and
+`exit_selection="expected exactly one API-published exit"`. The controlled-origin
+route still uses `eth0`. The node's stored applied/desired/lease generations
+are all `5`, and its heartbeat says `serving 1`; the earlier admin detail in the
+same record still had applied `3` and publication observed `withdrawn`.
+This is a sequence of snapshots, not one atomic projection read.
+
+A read-only check at `2026-10-30T16:29:28Z` during this same run returned exit 0:
+
+```text
+Available Networks:
+  - ID: fvpn-exit-efe234da22858407926c372f
+    Network: 0.0.0.0/0
+    Status: Not Selected
+```
+
+The lab checks route availability only once before selecting it. This run
+therefore identifies a lab route-discovery timing gap, owned by
+**w3-devstack-e2e**; it does not establish an agent forwarding defect or a counted
+member flow. `usage` submits no synthetic sample, `device-revoke` performs no
+DELETE, and `lease-expiry` injects no fault without that prerequisite. The
+historical revoked-source drop/timing gap remains open separately. No route or
+product projection was repaired during this run.
+
+### #154 issuer validation and actual exception
+
+`updater.LoadConfig` still validates `probe_peer`, as do engine construction and
+challenge issuance. The corrected unit test supplies a temporary agent config
+and literal control/result/resolver endpoints, and selects a non-local source
+using the actual interface inventory. The isolated origin is accepted;
+documentation/CGNAT destinations, an unavailable agent config, and
+control/resolver collisions remain refused. No network traffic or validator
+exception is used by that test.
+
+Both boot recovery and the updater-run config explicitly set
+`agent_config=/etc/vpn-node/agent-run.json`. In the stack, that file specifies
+control `https://127.0.0.1:9444`, resolver admin `http://127.0.0.1:8080` and DNS
+`127.0.0.1:53`. The node's IPv4 addresses were `127.0.0.1`, `172.28.30.40`,
+`192.0.3.20` and `100.121.145.172`. The real synthetic peer source was
+`100.121.131.241/32`; its only destination was TEST ONLY isolated origin
+`192.0.3.10/32`, UDP 4443. The result endpoint remained
+`https://agent.example.invalid:9443/api/v1/agent/update-results`.
+
+The [update-good record](runs/2026-10-30/update-good.md) reports
+`updater_log_readable=true`, `probe_omission_count=0`,
+`invalid_probe_peer=false`, `probe_traversal_verified=true`,
+`running_candidate_executable=true`, `locally_succeeded=true`, updater exit `0`.
+This proves issuance and observed traffic, not merely successful config loading.
+
+Probe window:
+
+```json
+{"samples":843,"grant_samples":3,"source_elements":1,"destination_elements":1,"max_timeout_seconds":44,"probe_up_bytes":1848,"probe_down_bytes":1848,"member_bytes_before":0,"member_bytes_after":0,"elements_after":0}
+```
+
+Authenticated peer traffic:
+
+```json
+{"attempts":1311,"authenticated_udp_replies":24}
+```
+
+The origin received 24 requests from the node's SNAT address `192.0.3.20`.
+The source/destination sets were present in three samples, with one element each
+and at most 44 seconds remaining; both counters reached 1,848 bytes and the sets
+were empty after the answer. Member bytes were `0 → 0`; this confirms no member
+counter change during the exception, but does not replace the missing positive
+member-flow proof. No challenge nonce, raw subject, key or token is copied.
+[update-bad](runs/2026-10-30/update-bad.md) also passes: updater exit `1`,
+`HASH_MISMATCH=true`, tampered real bytes rejected.
+
+### Merged-run release digests
+
+| Version | Manifest envelope SHA-256 | Signed-object SHA-256 |
+|---|---|---|
+| 0.1.0 | `3723f5d100f170f78da485a43562284e3b923ab856df0edee17703bcd5e82464` | `0a044e8632b786a5d2ba664e2c78772c2c777c2a33f49628d5515cce32813922` |
+| 1.0.1 | `3c345b7501565b4ed9596ef44bb7b1da2d7abf680edb55cc045234767d432b76` | `d3891203abfbde92fa12c32a0547f66ec975238cc502fd9b6457492a2ae7ba1e` |
+| 1.0.2 | `6f970df2c17abc54bd73ee8e58efe33dcf8cc09f640c085c3403c0bf3b9b74a6` | `b59adbf4b6d5a819314107b8aeddab0738885d63b3860f94f2021a136abf1c03` |
+
+The release-register record retains all six artifact digests. Both architectures
+were cross-compiled; arm64 execution is not claimed.
+
+### Merged-tree self-check and teardown
+
+| Command | Exit |
+|---|---:|
+| `go vet ./tests/e2e/...` | 0 |
+| `go test ./tests/e2e/cmd/...` | 0 |
+| `make go-lint` | 0 |
+| `make -f mk/e2e.mk e2e-lint` | 0 |
+| `make go-build` (linux/amd64 and linux/arm64) | 0 |
+| `make -f mk/e2e.mk e2e-test` (Go 1; 21 pass / 5 blocked / 0 fail) | 2 |
+| `make -f mk/e2e.mk e2e-down` | 0 |
+
+Acceptance tail:
+
+```text
+acceptance summary: pass=21 blocked=5 fail=0 run=3a129919-af3f-4bc9-b54a-8075eae8af45 source=79259af1facc1faa798fbb83cc20aa4e74539d1f
+--- FAIL: TestE2E_Acceptance (796.71s)
+FAIL github.com/TED-H-com/Freedom-VPN/tests/e2e 796.728s
+MAKE_EXIT=2
+```
+
+An earlier startup attempt could not bind port 18444 and never entered Go
+acceptance. It is excluded from the run table; make exited 2 and teardown 0.
+The unrelated listener was left untouched. The complete run began only after
+the port was free. Final own-prefix container/network/volume/runtime-image
+inventories are empty; shared services were left alone. No additional merge,
+push, rebase, tag or PR was made for this send-back.

@@ -41,6 +41,22 @@
       "detail": "true"
     },
     {
+      "name": "probe_agent_config",
+      "detail": "/etc/vpn-node/agent-run.json"
+    },
+    {
+      "name": "updater_log_readable",
+      "detail": "true"
+    },
+    {
+      "name": "probe_omission_count",
+      "detail": "0"
+    },
+    {
+      "name": "invalid_probe_peer",
+      "detail": "false"
+    },
+    {
       "name": "exit_code",
       "detail": "0"
     },
@@ -90,15 +106,15 @@
     },
     {
       "name": "probe_traffic",
-      "detail": "{\"attempts\":944,\"authenticated_udp_replies\":14}"
+      "detail": "{\"attempts\":1311,\"authenticated_udp_replies\":24}"
     },
     {
       "name": "probe_window",
-      "detail": "{\"samples\":673,\"grant_samples\":3,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":44,\"probe_up_bytes\":1078,\"probe_down_bytes\":1078,\"member_bytes_before\":15044,\"member_bytes_after\":15044,\"elements_after\":0}"
+      "detail": "{\"samples\":843,\"grant_samples\":3,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":44,\"probe_up_bytes\":1848,\"probe_down_bytes\":1848,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
     },
     {
       "name": "probe_origin_receipt",
-      "detail": "{\"probe_id\":\"190a8ae2-3725-4fee-8dab-f2eb10e2ae09\",\"requests\":14,\"source_address\":\"192.0.3.20\"}"
+      "detail": "{\"probe_id\":\"3abe1f67-9ec2-479d-b61f-b1b3dbc70b06\",\"requests\":24,\"source_address\":\"192.0.3.20\"}"
     },
     {
       "name": "probe_traversal_verified",
@@ -109,7 +125,7 @@
       "detail": "locally_succeeded was observed"
     }
   ],
-  "at": "2026-10-30T10:50:38Z",
-  "run_id": "14231a83-130d-40fb-a9b4-0d3851520b67",
-  "source_commit": "2eeda9df03749b942c6f5afde6a7bc3a2ba8fce3"
+  "at": "2026-10-30T16:37:02Z",
+  "run_id": "3a129919-af3f-4bc9-b54a-8075eae8af45",
+  "source_commit": "79259af1facc1faa798fbb83cc20aa4e74539d1f"
 }

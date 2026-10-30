@@ -2,14 +2,14 @@
 
 Agent samples after native admitted traffic
 
-Status: pass
+Status: blocked
 
-Run: 14231a83-130d-40fb-a9b4-0d3851520b67
+Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
 
-Source: 2eeda9df03749b942c6f5afde6a7bc3a2ba8fce3
+Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
 
 Spec: §10, §19 AT14, §19 AT15
 
 - member_usage: 200
-- member_total_bytes: 2632
-- source: real agent sampler after controlled-origin admission; no harness usage batch
+- note: No positive counted flow; no synthetic sample is submitted.
+- owner: w3-devstack-e2e: native client exit selection; see route and NetBird network evidence
