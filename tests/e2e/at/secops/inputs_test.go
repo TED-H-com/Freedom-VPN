@@ -49,7 +49,7 @@ func (p *liveProbe) planInputs(admin *liveSession) {
 	// intentionally answers NXDOMAIN. This is an API input, not a DNS bypass.
 	rules := p.policyInput(admin, "domain_rule_set", map[string]any{"rules": []any{map[string]any{"rule_id": uuid.New(), "profile_id": nil, "domain": "blocked.example.invalid", "include_subdomains": true, "action": "block", "reason": "admin_rule", "revision": "1"}}})
 	dns := p.policyInput(admin, "dns_profile", map[string]any{"profile_code": "secops-input", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "domain_rule_set_revision_ids": []uuid.UUID{rules}, "threat_feed_revision_ids": []string{}, "block_response": "nxdomain", "blocked_ttl_seconds": 60})
-	p.planRevision = p.policyInput(admin, "plan", map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{p.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "TEST-ONLY-secops"}, "rate_limit": map[string]any{"down_bps": 100000000, "up_bps": 100000000}, "fair_use_revision_id": fup, "dns_profile_revision_id": dns})
+	p.planRevision = p.policyInput(admin, "plan", map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{p.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "e2e-price"}, "rate_limit": map[string]any{"down_bps": 100000000, "up_bps": 100000000}, "fair_use_revision_id": fup, "dns_profile_revision_id": dns})
 	p.metadata["sql_input_fixtures"] = []string{}
 	p.metadata["policy_revision"] = p.planRevision
 }

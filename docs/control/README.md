@@ -30,12 +30,14 @@ message or details.
 ## Request boundary
 
 Order: central UUID v7 and isolated client trace context → buffered panic recovery
-and security headers → contract route/listener classification and per-peer ingress
-limits → session or machine
-authentication → role/MFA checks → per-principal rate and concurrency buckets →
-Origin/CSRF and recent admin authentication → required key/If-Match headers →
-class body cap (413 above it) → JSON well-formedness (400) → schema validation (422) → machine identity consistency
-→ generated strict binding → command transaction/replay → domain handler.
+and security headers → contract route/listener classification → on the agent
+listener, machine authentication (a request without a verified client certificate
+is HTTP 401 and is inserted into no limiter table) → per-class ingress limits →
+session authentication on browser routes → role/MFA checks → per-principal rate
+and concurrency buckets → Origin/CSRF and recent admin authentication → required
+key/If-Match headers → class body cap (413 above it) → JSON well-formedness (400)
+→ schema validation (422) → machine identity consistency → generated strict
+binding → command transaction/replay → domain handler.
 
 Access logs contain only central request ID, normalized route template, status
 and duration. They exclude every request/response header, URL/query, body, panic
@@ -56,33 +58,58 @@ the high-impact rule conservatively (§16.1). Unknown fields in allowlisted writ
 schemas fail before domain code. Semantic domain constraints listed in
 `docs/contracts/README.md` remain each owning service's responsibility.
 
-Pre-authentication ingress buckets also bound credential/database work per
-connection address and route class. IPv4 is one principal per address and IPv6
-is one principal per /64; an unparseable connection address is refused with 429
-(see [authentication](AUTH.md)). Rate buckets and concurrency gates are separate
-for browser, agent control, heartbeat, lease and usage traffic; anonymous
-enrollment and webhooks have another bucket on that same address key. The
-loaded operation ids `EnrollNode` and `ReceiveProviderWebhook` use the
-anonymous class, `SubmitObservation` uses heartbeat, `RenewServingLease` uses
-lease, and `SubmitUsageBatch` uses usage. Body caps are separate from those
-rate buckets. Browser writes use `browser_body_bytes` (default 1 MiB). Agent
-control, heartbeat, lease renewal, and anonymous enrollment use
-`agent_body_bytes` (default 1 MiB). Provider webhooks use
-`webhook_body_bytes` (default 1 MiB). Usage batches use `usage_body_bytes`
-(default 8 MiB). A body larger than its class cap is HTTP 413
-`PAYLOAD_TOO_LARGE` (`Request body exceeds the configured limit.`) and the
+Pre-authentication ingress is one table per route class (`browser`, `agent`,
+`heartbeat`, `lease`, `usage`, `anonymous`). Each table holds
+`max_rate_principals` connection principals (default 10,000). IPv4 is one
+principal per address and IPv6 is one principal per /64 (D-060). One IPv6 /48
+contains 65,536 /64s, so a single /48 can fill the anonymous ingress table
+with the default 10,000 principals. That sweep inserts nothing into the
+browser, agent, heartbeat, lease, or usage ingress tables. Enrollment and
+webhooks then take a second slot in a separate anonymous class table with the
+same cap and the same /64 key. The authenticated subject table is a further
+instance, keyed by node or session, with the same cap. An unparseable
+connection address is refused with 429 and occupies no slot (see
+[authentication](AUTH.md)). An mTLS request without a verified client
+certificate is HTTP 401 and occupies no slot in any table.
+
+When a table is full, a new principal is admitted only by evicting the
+least-recently-used bucket, and only when that bucket is idle with a full
+token count or has been idle for more than one hour. The decision looks at
+that one bucket. A bucket that is still short of tokens stays, and the new
+principal receives HTTP 429 with `Retry-After` of one second. Because the
+tail is the oldest bucket, it has had the longest time to refill. Ingress
+tables and the anonymous class table each use one rate. The subject table
+mixes class rates, so a fuller bucket can sit behind a slower tail; that tail
+stays until it is full or an hour old.
+
+Rate buckets and concurrency gates stay separate for browser, agent control,
+heartbeat, lease, and usage traffic. The loaded operation ids `EnrollNode`
+and `ReceiveProviderWebhook` use the anonymous class, `SubmitObservation`
+uses heartbeat, `RenewServingLease` uses lease, and `SubmitUsageBatch` uses
+usage. Body caps are separate from those rate buckets. Browser writes use
+`browser_body_bytes` (default 1 MiB). Agent control, heartbeat, lease
+renewal, and anonymous enrollment use `agent_body_bytes` (default 1 MiB).
+Provider webhooks use `webhook_body_bytes` (default 1 MiB). Usage batches use
+`usage_body_bytes` (default 8 MiB). A body larger than its class cap is HTTP
+413 `PAYLOAD_TOO_LARGE` (`Request body exceeds the configured limit.`) and the
 extra byte is not parsed. A body within the cap then passes a JSON
 well-formedness check, except webhook bodies, which stay raw for provider
 signature verification. Up to `canonjson.MaxBytes` (1 MiB, the signed
 canonical-document bound) the check is `canonjson.Canonicalize`. Above that
-bound, and only through the class cap, one `json.Decoder` over a
-`LimitReader` accepts a single JSON value and rejects trailing data. A
-failure is HTTP 400 `MALFORMED_REQUEST` (`Invalid JSON document.`). Schema
+bound, through the class cap, a streaming walk in `internal/httpapi` applies
+the same rules: valid UTF-8, no byte order mark, no unescaped control
+character (including NUL), no lone UTF-16 surrogate in a `\u` escape, no
+duplicate key at any object level after unescaping, nesting at most
+`canonjson.MaxDepth` (256), and integers within ±(2^53−1) with no fraction,
+exponent, leading zero, or negative zero. Trailing data is rejected. The walk
+retains the nesting depth and the keys of objects that are still open.
+Failure is HTTP 400 `MALFORMED_REQUEST` (`Invalid JSON document.`). Schema
 validation follows (422 `VALIDATION_FAILED`). Machine-identity comparison
-then reads the parsed body, including nested usage events, and returns 403
-`INCARNATION_MISMATCH` when a node or incarnation field differs from the
-certificate. `fvpn_control_rate_limited_total` counts HTTP 429 responses
-only.
+then reads the parsed body, including nested usage events. A `json.Unmarshal`
+failure is the same HTTP 400 and is decided before the comparison. A node or
+incarnation field that differs from the certificate is HTTP 403
+`INCARNATION_MISMATCH`. `fvpn_control_rate_limited_total` counts HTTP 429
+responses only.
 
 Auth routes are additionally bounded per connection address. Limits are
 per process, with a bounded principal map; deployment replicas multiply capacity.
@@ -124,7 +151,9 @@ The control metrics listener serves plain HTTP `GET /metrics` on `metrics_addres
 (default `127.0.0.1:9091`, loopback IP literals only), using the registry shared
 with domain builds. It exports `fvpn_control_http_requests_total{route,status}`
 with bounded normalized route labels and `fvpn_control_rate_limited_total{class,limiter}`
-(`limiter` in `{"address","subject"}`) for HTTP 429 responses (D-060). Startup
+(`limiter` in `{"address","subject","concurrency"}`) for HTTP 429 responses (D-060).
+The per-class API concurrency gate uses `limiter="concurrency"`. Login and session
+concurrency refusals on `/auth/*` use `limiter="address"`. Startup
 logs record the actual bound address, including an ephemeral port when configured
 as zero. Metrics starts and drains with the other listeners; a listener failure
 stops the application. Control and worker need distinct metrics ports when hosted
@@ -156,8 +185,12 @@ repository-wide Go workflow should use at least this patched release; the shared
 minimum directive remains unchanged for the orchestrator to coordinate.
 
 Ingress and authenticated traffic use separate bounded limiter instances (§14.6).
-`max_rate_principals` bounds each instance independently; unauthenticated IP
-rotation cannot consume or evict authenticated principal buckets. Existing
-heartbeat/lease/usage classes retain independent per-principal keys. Every
-framework 429 includes `Retry-After`, including `/auth/*` rate and concurrency
-rejections. These remain process-local limits.
+Each class has its own ingress table, enrollment and webhooks have a separate
+anonymous class table, and authenticated subjects have another. `max_rate_principals`
+bounds each instance independently. One IPv6 /48 (65,536 /64s) can fill only the
+anonymous tables, up to `max_rate_principals` /64s in each (default 10,000), and
+cannot evict a browser, agent, heartbeat, lease, usage, or subject bucket.
+Existing heartbeat/lease/usage classes retain independent per-principal keys.
+Every framework 429 includes `Retry-After`, including `/auth/*` rate and
+concurrency rejections and the API concurrency gate. These remain process-local
+limits.

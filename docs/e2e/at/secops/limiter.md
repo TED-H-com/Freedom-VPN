@@ -1,29 +1,31 @@
-# SECOPS-06: class buckets passed; usage size boundary blocked
+# SECOPS-15 body boundary retest: passed
 
-Source `9b17127c888f94191d759617c99fe1225078a092`. Unmodified settings are in [runtime settings](runtime-settings.json).
+Usage at 8 MiB; other route classes at 1 MiB. D-060 burst checks retain thresholds and metrics.
 
-| Class / probe | First rejection | Retry-After | Metric delta |
-|---|---:|---|---:|
-| heartbeat | 6 | `1` | 1 |
-| lease | 6 | `1` | 1 |
-| usage | 11 | `1` | 1 |
-| enrollment | 11 | `1` | 1 |
-| webhook | 11 | `1` | 1 |
-| anonymous_shared | 11 | `1` | 1 |
+| Class | Bytes | Expected | Actual | Code |
+|---|---:|---:|---:|---|
+| usage | 8388607 | 200 | 200 |  |
+| usage | 8388608 | 200 | 200 |  |
+| usage | 8388609 | 413 | 413 | PAYLOAD_TOO_LARGE |
+| browser | 1048575 | 201 | 201 |  |
+| browser | 1048576 | 201 | 201 |  |
+| browser | 1048577 | 413 | 413 | PAYLOAD_TOO_LARGE |
+| agent | 1048575 | 400 | 400 | MALFORMED_REQUEST |
+| agent | 1048576 | 400 | 400 | MALFORMED_REQUEST |
+| agent | 1048577 | 413 | 413 | PAYLOAD_TOO_LARGE |
+| heartbeat | 1048575 | 403 | 403 | INCARNATION_MISMATCH |
+| heartbeat | 1048576 | 403 | 403 | INCARNATION_MISMATCH |
+| heartbeat | 1048577 | 413 | 413 | PAYLOAD_TOO_LARGE |
+| lease | 1048575 | 200 | 200 |  |
+| lease | 1048576 | 200 | 200 |  |
+| lease | 1048577 | 413 | 413 | PAYLOAD_TOO_LARGE |
+| enrollment | 1048575 | 401 | 401 | ENROLLMENT_TOKEN_INVALID |
+| enrollment | 1048576 | 401 | 401 | ENROLLMENT_TOKEN_INVALID |
+| enrollment | 1048577 | 413 | 413 | PAYLOAD_TOO_LARGE |
+| webhook | 1048575 | 401 | 401 | WEBHOOK_SIGNATURE_INVALID |
+| webhook | 1048576 | 401 | 401 | WEBHOOK_SIGNATURE_INVALID |
+| webhook | 1048577 | 413 | 413 | PAYLOAD_TOO_LARGE |
 
-All refusals above are 429 RATE_LIMITED with the matching class/limiter label. Enrollment and provider webhook share the anonymous address bucket. Observations use schema-invalid `{}` to avoid fabricated telemetry; lease and usage payloads are valid.
+Other-class cap tests include an actual node-A observation under node-B identity (403), invalid enrollment credentials, unsigned webhook, and whitespace on a bodyless bootstrap route (400). These are size-path tests, not successful forged observations. The usage body is schema-valid with legal trailing JSON whitespace. Duplicate ledger evidence is retained.
 
-| Valid usage body bytes | Expected HTTP | Actual HTTP |
-|---:|---:|---:|
-| 1048576 | 200 | 200 |
-| 1048577 | 200 | 400 |
-| 8388608 | 200 | 400 |
-| 8388609 | 413 | 413 |
-
-Bodies contain the same valid event plus legal trailing JSON spaces. The optional Idempotency-Key header is absent. The 1 MiB canonicalization boundary conflicts with the configured 8 MiB usage limit (SECOPS-15). Ten small uploads returned one accepted and nine duplicate results; one ledger row remains.
-
-The barrier-started login completed **20/20**, with zero wrong identities. GET / and session responses were 200 for all 20. This resolves SECOPS-14 landing behavior, not browser-render/platform acceptance.
-
-Login completion 11 / Retry-After 4 and initiation 41 / Retry-After 1 remain the attributed [Follow-up 3 measurement](followup3-limiter.json). The combined run stopped during native scale before repeating those late calls. IPv6 /64 remains component verified; the live source uses IPv4 loopback.
-
-[JSON record](limiter.json) includes UTC, commands, digests and response/metric evidence. Follow-up 3 per-class assumptions are superseded by #145; the earlier login conclusion remains resolved.
+[Current JSON](limiter.json); [superseded Follow-up 4 measurement](followup4-limiter.json).

@@ -112,6 +112,7 @@ type Engine struct {
 	assignments       map[uuid.UUID]uint16
 	counters          map[string]enforce.CounterValue
 	addresses         []string
+	pendingRevoke     []netip.Addr
 	recoverBlocked    bool
 	recovered         bool
 	latchBlocked      bool
@@ -529,7 +530,10 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 		e.counters[name] = enforce.CounterValue{Packets: c.Packets, Bytes: c.Bytes}
 	}
 	e.addresses, err = e.store.Addresses(ctx)
-	return err
+	if err != nil {
+		return err
+	}
+	return e.loadRevocations(ctx)
 }
 
 func (e *Engine) trustedNow() time.Time {
@@ -560,7 +564,8 @@ func (e *Engine) input() Input {
 		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
 		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
 		ApplyError: e.applyError, DependencyMissing: e.dependencyMissing, LeaseRetryPending: e.leaseRetryAt > 0,
-		OutboxFull: e.outboxFull, MeterFailed: e.meterFailed,
+		RevocationPending: len(e.pendingRevoke) > 0,
+		OutboxFull:        e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
 		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
 		ProbeSource: e.probeSource,
@@ -675,8 +680,13 @@ func (e *Engine) baseline(ctx context.Context) error {
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	baselineOK, meterFailed, applyError := e.baselineOK, e.meterFailed, e.applyError
+	storageOK, revocationPending := e.storageOK, len(e.pendingRevoke) > 0
 	defer func() {
-		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError {
+		if revocationPending != (len(e.pendingRevoke) > 0) {
+			// Publish the new pending/cleared condition on this tick.
+			e.lastObs = time.Time{}
+		}
+		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || revocationPending != (len(e.pendingRevoke) > 0) {
 			errs := e.decision.Errors
 			e.decision = Decide(e.input())
 			for _, err := range errs {
@@ -723,14 +733,15 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	defer lock.Release()
 	model := d.Model
-	model.Revoke = droppedAddrs(e.addresses, model)
+	model.Revoke = mergeRevocations(e.pendingRevoke, droppedAddrs(e.addresses, model))
 	prev := map[string]enforce.CounterValue{}
 	for name, c := range e.counters {
 		prev[name] = c
 	}
 	wasServing := e.expectServing.Load()
 	res, err := e.plane.Apply(ctx, model, prev)
-	if err != nil {
+	pending := err != nil && res.Verified && enforce.IsConntrackDeleteFailure(err)
+	if err != nil && !pending {
 		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
@@ -743,10 +754,11 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	e.expectServing.Store(true)
 	e.baselineOK = true
 	e.policyExpires = d.PolicyExpires
-	e.appliedGen = model.Generation
-	if err := e.store.MarkApplied(ctx, model.Generation); err != nil {
-		e.storageOK = false
-		e.log.Warn("applied generation", "err", err.Error())
+	e.ackApplied(ctx, model.Generation)
+	if pending {
+		e.saveRevocations(ctx, model.Revoke)
+	} else {
+		e.saveRevocations(ctx, nil)
 	}
 	if res.Plan.Assignments != nil {
 		e.assignments = res.Plan.Assignments
@@ -754,27 +766,35 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			e.storageOK = false
 		}
 	}
-	e.counters = map[string]enforce.CounterValue{}
-	stored := map[string]agentstore.Counter{}
-	for name, c := range res.Counters {
-		e.counters[name] = c
-		stored[name] = agentstore.Counter{Packets: c.Packets, Bytes: c.Bytes}
-	}
-	if err := e.store.SaveCounters(ctx, stored); err != nil {
-		e.storageOK = false
+	// A verified conntrack failure returns Plan/Resets without a counter
+	// snapshot. Keep the previous snapshot until the sampler or a full apply
+	// reads the counters; absence of a snapshot is not a counter reset.
+	if !pending || res.Counters != nil {
+		e.counters = cloneCounters(res.Counters)
+		stored := map[string]agentstore.Counter{}
+		for name, c := range res.Counters {
+			stored[name] = agentstore.Counter{Packets: c.Packets, Bytes: c.Bytes}
+		}
+		if err := e.store.SaveCounters(ctx, stored); err != nil {
+			e.storageOK = false
+		}
 	}
 	e.addresses = bindingAddrs(model)
 	if err := e.store.SaveAddresses(ctx, e.addresses); err != nil {
 		e.storageOK = false
 	}
 	e.setMeterBindings(model.Bindings)
+	post := res.Counters
+	if pending && post == nil {
+		post = prev
+	}
 	if e.kernel != nil {
 		if err := e.kernel.capture(ctx); err != nil {
 			e.log.Warn("meter state", "err", err.Error())
 		}
-		e.kernel.noteApply(prev, res.Resets, res.Counters, wasServing)
+		e.kernel.noteApply(prev, res.Resets, post, wasServing)
 	} else {
-		e.noteResetsWithoutKernel(prev, res.Resets, res.Counters, wasServing)
+		e.noteResetsWithoutKernel(prev, res.Resets, post, wasServing)
 	}
 	e.resumeSampling()
 	e.switchEpoch(ctx)

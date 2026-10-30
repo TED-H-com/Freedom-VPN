@@ -189,7 +189,8 @@ func TestAT26_DirectRollbackPreservesEvidenceFences(t *testing.T) {
 				l.batch(w.Intent.ReleaseId)
 				newer = l.intent(i)
 				wantState = api.UpdateJobState("superseded")
-				if err := l.s.Observe(l.ctx, i, Observation{Sequence: 2, AppliedUpdateGeneration: newer.Intent.Generation, CurrentReleaseID: &newer.Intent.ReleaseId, LastGoodReleaseID: &newer.Intent.ReleaseId, ObservedAt: time.Now().UTC()}); err != nil {
+				// H-3: seed the new current target with agreeing recorded last-good.
+				if err := l.s.Observe(l.ctx, i, Observation{Sequence: 2, AppliedUpdateGeneration: newer.Intent.Generation, CurrentReleaseID: &newer.Intent.ReleaseId, LastGoodReleaseID: &l.old, ObservedAt: time.Now().UTC()}); err != nil {
 					t.Fatal(err)
 				}
 			case "terminal":

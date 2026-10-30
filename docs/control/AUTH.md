@@ -103,9 +103,10 @@ and can never be disabled (startup validation rejects zero burst or zero refill)
    request is not placed in a shared empty-host bucket and does not occupy a
    principal slot. The same 429 increments
    `fvpn_control_rate_limited_total{class,limiter="address"}`.
-   The anonymous enrollment and webhook address burst, and the
-   pre-authentication ingress bucket, derive their address key the same way
-   (`anonymous:` and `ingress:` prefixes in `internal/httpapi`).
+   The anonymous class table and each class's ingress table derive that same
+   address key (IPv4 per address, IPv6 per /64). Each table is its own map, so
+   the key inside a table is the connection principal. Login and session routes
+   still share one map and distinguish `login:` and `session:` keys.
    Production members commonly share a single source address behind
    carrier-grade NAT or enterprise gateways, and one OIDC sign-in takes two
    requests (`GET /auth/login` plus `GET /auth/callback`); a burst of 40 allows
@@ -122,9 +123,27 @@ Every HTTP 429 from either limiter includes `Retry-After` and the fixed
 `RATE_LIMITED` error code (`apierr.RateLimited`), and increments
 `fvpn_control_rate_limited_total{class,limiter}` on the control Prometheus
 registry (`class="login"` or `"session"`, `limiter="address"` or `"subject"`).
-The same counter, with the route class and `limiter="address"` or
-`"subject"`, records API 429 responses. It does not move for a body-size
-413 or a JSON 400.
+The same counter records API 429 responses. An address or subject refusal uses
+`limiter="address"` or `limiter="subject"` with the route class. A refusal from
+the per-class concurrency gate uses `limiter="concurrency"` with that route
+class. The counter does not move for a body-size 413 or a JSON 400.
+
+API ingress is one table per class (`browser`, `agent`, `heartbeat`, `lease`,
+`usage`, `anonymous`), each capped at `max_rate_principals` (default 10,000).
+Enrollment and webhooks also use a separate anonymous class table with the same
+cap. Authenticated subjects use another table, keyed by node or session. On the
+agent listener, machine authentication runs before any insert, so a request
+without a verified client certificate occupies no slot. IPv6 keying stays /64.
+One /48 contains 65,536 /64s and can fill the anonymous ingress table and the
+anonymous class table (10,000 principals each at the default cap). It inserts
+nothing into the other class tables. At capacity a new principal is admitted by
+evicting the least-recently-used bucket when that bucket is idle with a full
+token count, or has been idle for more than one hour. The check is that one
+bucket. A bucket that is still short of tokens stays, and the new principal is
+HTTP 429 with `Retry-After` of one second. Ingress tables and the anonymous
+class table each use one rate. The subject table mixes class rates, so a fuller
+bucket can sit behind a slower tail; that tail stays until it is full or an hour
+old.
 
 ## Request body limits
 
@@ -149,16 +168,23 @@ Checks run in this order:
    keeps the capped bytes for the provider signature. Every other JSON body
    of at most `canonjson.MaxBytes` (1 MiB) must pass `canonjson.Canonicalize`.
    That 1 MiB bound is the signed-document limit and stays there. A larger
-   body, which the usage cap allows through 8 MiB, is read with one
-   `json.Decoder` over a `LimitReader` at the class cap. The decoder accepts
-   one JSON value and rejects trailing data. Failure is HTTP 400
-   `MALFORMED_REQUEST` (`Invalid JSON document.`).
+   body, which the usage cap allows through 8 MiB, is checked by a streaming
+   walk in `internal/httpapi` with the same rules: valid UTF-8, no byte order
+   mark, no unescaped control character (including NUL), no lone UTF-16
+   surrogate in a `\u` escape, no duplicate key at any object level after
+   unescaping, nesting at most `canonjson.MaxDepth` (256), and integers within
+   ±(2^53−1) with no fraction, exponent, leading zero, or negative zero.
+   Trailing data is rejected. The walk retains the nesting depth and the keys
+   of objects that are still open. Failure is HTTP 400 `MALFORMED_REQUEST`
+   (`Invalid JSON document.`).
 3. **Schema.** kin-openapi validation failure is HTTP 422 `VALIDATION_FAILED`.
    Webhook bodies are excluded; the provider's JSON is not a contract schema.
-4. **Identity.** For agent mTLS, every `node_id`, `node_incarnation_id`, and
-   `incarnation_id` in the parsed body, including nested usage events, must
-   match the certificate. A mismatch is HTTP 403 `INCARNATION_MISMATCH`.
-   The comparison uses the parsed value. It does not use canonical bytes.
+4. **Identity.** For agent mTLS, `json.Unmarshal` failure is HTTP 400
+   `MALFORMED_REQUEST` (`Invalid JSON document.`) and is decided before the
+   comparison. Every `node_id`, `node_incarnation_id`, and `incarnation_id` in
+   the parsed body, including nested usage events, must match the certificate.
+   A mismatch is HTTP 403 `INCARNATION_MISMATCH`. The comparison uses the
+   parsed value.
 
 The production config requires HTTPS issuer/origin. Tests use a local signed-token
 httptest provider with PKCE validation and negative signature, issuer, audience,
