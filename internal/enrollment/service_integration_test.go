@@ -340,8 +340,17 @@ func TestAT28_AuthenticationRenewalAndPermanentRevocation(t *testing.T) {
 	expectCode(t, err, apierr.IdentityRevoked)
 	_, err = f.s.Enroll(ctx, nullableValue(c.Token), r)
 	expectCode(t, err, apierr.IdentityRevoked)
-	if count(t, f, "outbox_events") != 3 || count(t, f, "operations") != 2 {
+	if count(t, f, "outbox_events") != 2 || count(t, f, "operations") != 2 {
 		t.Fatal("revocation work missing or duplicated")
+	}
+	var wired bool
+	err = f.pool.QueryRow(ctx, `SELECT o.desired_generation=n.desired_config_generation AND o.kind='node.revoke'
+		AND o.steps->'agent_policy'->>'required'='true' AND o.steps->'netbird_route_readback'->>'required'='true'
+		AND o.steps->'netbird_identity_cleanup'->>'required'='true' AND o.steps->'data_path_probe'->>'status'='not_required'
+		AND EXISTS(SELECT 1 FROM outbox_events e WHERE e.event_type='node.publication_changed' AND e.aggregate_id=n.id AND e.payload->>'operation_id'=o.id::text)
+		FROM operations o JOIN nodes n ON n.id=o.resource_id WHERE o.id=$1`, revoked.OperationID).Scan(&wired)
+	if err != nil || !wired {
+		t.Fatal("standard revocation work missing", wired, err)
 	}
 	if _, err = f.pool.Exec(ctx, `UPDATE nodes SET lifecycle_state='registered',resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err == nil {
 		t.Fatal("terminal node revived")

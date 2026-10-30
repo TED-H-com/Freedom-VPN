@@ -41,6 +41,4 @@ jobs:
         if: always()
         run: |
           FVPN_E2E_PREFIX=w4-isolation FVPN_E2E_PORT_BASE=36000 make -f mk/e2e.mk e2e-down || true
-          FVPN_LAB_PREFIX=fvpn-w4-at-isolation make -f mk/netlab.mk netlab-down || true
-          docker rmi fvpn-w4-at-isolation:lab >/dev/null 2>&1 || true
-          rm -f /tmp/fvpn-w4-at-isolation-fvpn-netlab
+          make -f mk/at-isolation.mk at-isolation-lab-down || true

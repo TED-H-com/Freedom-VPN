@@ -305,8 +305,10 @@ func bootstrap(client *http.Client, api, state string) error {
 	var users []struct {
 		ID            string   `json:"id"`
 		Name          string   `json:"name"`
+		Email         string   `json:"email"`
 		Role          string   `json:"role"`
 		IsServiceUser bool     `json:"is_service_user"`
+		IsBlocked     bool     `json:"is_blocked"`
 		AutoGroups    []string `json:"auto_groups"`
 	}
 	if json.Unmarshal(raw, &users) != nil {
@@ -376,7 +378,74 @@ func bootstrap(client *http.Client, api, state string) error {
 	if _, err := call(client, http.MethodGet, api+"/groups", adapter, nil); err != nil {
 		return err
 	}
-	return nil
+	return ensureMemberUser(client, api, ownerToken, nb)
+}
+
+// ensureMemberUser creates one ordinary embedded-IdP user for the lab member
+// peer. The password is the server's generated secret and stays in the state
+// directory. A setup-key peer has no user id, so devices.discover skips it.
+func ensureMemberUser(client *http.Client, api, ownerToken, nb string) error {
+	const email = "e2e-member@example.invalid"
+	const name = "e2e-member"
+	raw, err := call(client, http.MethodGet, api+"/users", ownerToken, nil)
+	if err != nil {
+		return err
+	}
+	var users []struct {
+		ID            string   `json:"id"`
+		Name          string   `json:"name"`
+		Email         string   `json:"email"`
+		Role          string   `json:"role"`
+		IsServiceUser bool     `json:"is_service_user"`
+		IsBlocked     bool     `json:"is_blocked"`
+		AutoGroups    []string `json:"auto_groups"`
+	}
+	if json.Unmarshal(raw, &users) != nil {
+		return fmt.Errorf("users")
+	}
+	path := filepath.Join(nb, "member-user.json")
+	found := ""
+	for _, u := range users {
+		if u.Email != email && u.Name != name {
+			continue
+		}
+		if found != "" {
+			return fmt.Errorf("duplicate member user")
+		}
+		if u.IsServiceUser || u.IsBlocked || u.Role != "user" || len(u.AutoGroups) != 0 {
+			return fmt.Errorf("unexpected member user permissions")
+		}
+		found = u.ID
+	}
+	if found != "" {
+		if strings.TrimSpace(mustRead(path)) == "" {
+			return fmt.Errorf("member user password unavailable; reset the lab")
+		}
+		return nil
+	}
+	raw, err = call(client, http.MethodPost, api+"/users", ownerToken, map[string]any{
+		"name": name, "email": email, "role": "user", "is_service_user": false, "auto_groups": []any{},
+	})
+	if err != nil {
+		return err
+	}
+	var created struct {
+		ID       string `json:"id"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if json.Unmarshal(raw, &created) != nil || created.ID == "" || created.Password == "" {
+		return errors.New("member user password missing")
+	}
+	emailOut := created.Email
+	if emailOut == "" {
+		emailOut = email
+	}
+	saved, err := json.Marshal(map[string]string{"id": created.ID, "email": emailOut, "password": created.Password})
+	if err != nil {
+		return err
+	}
+	return writeSecret(path, string(saved))
 }
 
 func mustRead(path string) string {
