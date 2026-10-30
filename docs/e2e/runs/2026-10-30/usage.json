@@ -1,6 +1,6 @@
 {
   "id": "usage",
-  "title": "Sampled usage visible with exact bytes",
+  "title": "Agent samples after native admitted traffic",
   "spec": [
     "§10",
     "§19 AT14",
@@ -9,15 +9,19 @@
   "status": "blocked",
   "observations": [
     {
-      "name": "member",
-      "detail": "no session"
+      "name": "member_usage",
+      "detail": "200"
+    },
+    {
+      "name": "note",
+      "detail": "No positive counted flow; no synthetic sample is submitted."
     },
     {
       "name": "owner",
-      "detail": "w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance"
+      "detail": "w2-agent-core: positive counted-flow prerequisite; then w3-wire-usage sampler acceptance"
     }
   ],
-  "at": "2026-10-30T03:12:06Z",
-  "run_id": "5de03570-0436-477d-9847-6f6984432bd8",
-  "source_commit": "a7a712aab8a67fcc33514a9ac76cb877a90c8143"
+  "at": "2026-10-30T04:20:14Z",
+  "run_id": "dc2f6353-89ec-434c-bc68-567066d9fe51",
+  "source_commit": "b15ff057cd5e91e227477de6a09d977931fa62d8"
 }

@@ -5,10 +5,6 @@ package e2e
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"io"
-	"net/http"
-	"net/http/cookiejar"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +12,6 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
-	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
@@ -25,117 +20,16 @@ import (
 // insert member_devices, device_bindings, or netbird_user_bindings.
 func (r *runner) memberNetBird(ctx context.Context, member *session, portalSub string, note func(name, detail string)) {
 	r.usageReady = false
-	note("join", "embedded IdP user, same subject as the portal session")
-	trigger := filepath.Join(r.lab.state, "member", "var", "e2e", "user-auth")
-	if err := os.MkdirAll(filepath.Dir(trigger), 0o755); err != nil {
-		note("member_netbird", "trigger directory")
-		return
-	}
-	if writeAtomic(trigger, []byte("1\n")) != nil {
-		note("member_netbird", "trigger file")
-		return
-	}
-	cred, err := readMemberUser(filepath.Join(r.lab.state, "netbird", "member-user.json"))
+	peer, err := (&Stack{lab: r.lab}).JoinNativeMember(ctx, BrowserSession{Client: member.http, CSRF: member.csrf, MemberID: member.memberID}, "e2e-member", r.lab.member, "fvpn-member-e2e")
+	note("join", "embedded IdP native user; exact peer user id compared with portal subject")
+	note("same_subject", boolText(peer.IdentityMatched && portalSub != ""))
+	note("device_authorized", boolText(peer.Authorized))
 	if err != nil {
-		note("member_netbird", "member user unavailable")
+		note("member_netbird", err.Error())
 		return
 	}
-	logPath := filepath.Join(r.lab.state, "member", "var", "e2e", "netbird-up.log")
-	defer func() {
-		_ = os.Remove(logPath)
-		_, _ = r.lab.docker(r.lab.member, "rm", "-f", "/var/lib/vpn-node/e2e/netbird-up.log")
-	}()
-
-	loginWait, loginCancel := context.WithTimeout(ctx, 3*time.Minute)
-	defer loginCancel()
-	var flowURL string
-	_ = waitUntil(loginWait, time.Second, func() bool {
-		if u := deviceFlowURL(r.memberUpLog()); u != "" {
-			flowURL = u
-			return true
-		}
-		stage := r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json")
-		return stage == "netbird_up" || stage == "netbird_failed"
-	})
-	if flowURL != "" {
-		note("device_flow_path", emptyDash(deviceFlowPath(flowURL)))
-		r.submitDeviceLogin(ctx, flowURL, cred, note)
-	} else {
-		note("member_netbird", "device flow url absent")
-		if excerpt := excerptMatching(scrubDeviceURL(r.memberUpLog()), []string{"error", "fail", "login", "sso", "device"}, 4); excerpt != "" {
-			note("member_up_excerpt", excerpt)
-		}
-	}
-
-	upWait, upCancel := context.WithTimeout(ctx, 90*time.Second)
-	defer upCancel()
-	up := waitUntil(upWait, 2*time.Second, func() bool {
-		return r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json") == "netbird_up"
-	})
-	note("member_netbird", emptyDash(r.lab.stage(r.lab.member, "/var/lib/vpn-node/e2e/status.json")))
-	withUser, total, peerIDs, peerNote := r.netbirdUserPeers(ctx)
-	note("netbird_user_id", emptyDash(cred.ID))
-	note("peer_user_id", emptyDash(peerIDs))
-	note("same_subject", boolText(portalSub != "" && (portalSub == cred.ID || containsCSV(peerIDs, portalSub))))
-	note("peers_with_user", itoa(withUser))
-	note("peer_total", itoa(total))
-	if peerNote != "" {
-		note("peer_read", peerNote)
-	}
-	if !up {
-		note("member_stage", "not up")
-	}
+	note("member_netbird", "netbird_up")
 	r.awaitMemberBinding(ctx, member, note)
-}
-
-// memberUpLog reads the NetBird up log. The member process creates it as
-// root mode 0600, so a host read can fail while docker exec still works.
-func (r *runner) memberUpLog() string {
-	raw, err := os.ReadFile(filepath.Join(r.lab.state, "member", "var", "e2e", "netbird-up.log"))
-	if err == nil && len(raw) > 0 {
-		return string(raw)
-	}
-	raw, err = r.lab.docker(r.lab.member, "cat", "/var/lib/vpn-node/e2e/netbird-up.log")
-	if err != nil || len(raw) == 0 {
-		return ""
-	}
-	return string(raw)
-}
-
-func (r *runner) submitDeviceLogin(ctx context.Context, flowURL string, cred memberUserFile, note func(string, string)) {
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		note("member_netbird", "cookie jar")
-		return
-	}
-	client := &http.Client{Transport: r.lab.transport, Jar: jar, Timeout: 20 * time.Second, CheckRedirect: idplogin.RedirectLimit(20)}
-	loginCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-	defer cancel()
-	status, loginErr := completeDeviceLogin(loginCtx, client, flowURL, cred.Email, cred.Password)
-	note("device_flow_status", itoa(status))
-	if loginErr != nil {
-		note("device_login", clipText(scrubDeviceURL(loginErr.Error()), 180))
-		return
-	}
-	note("device_login", "submitted")
-}
-
-type memberUserFile struct {
-	ID       string `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func readMemberUser(path string) (memberUserFile, error) {
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		return memberUserFile{}, err
-	}
-	var cred memberUserFile
-	if json.Unmarshal(raw, &cred) != nil || cred.Email == "" || cred.Password == "" {
-		return memberUserFile{}, errors.New("member user unavailable")
-	}
-	return cred, nil
 }
 
 func (r *runner) notePortalSubject(ctx context.Context, memberID string, note func(string, string)) string {
@@ -176,49 +70,6 @@ func containsCSV(list, item string) bool {
 		}
 	}
 	return false
-}
-
-func (r *runner) netbirdUserPeers(ctx context.Context) (withUser, total int, userIDs, note string) {
-	token, err := r.lab.secret("netbird.token")
-	if err != nil {
-		return 0, 0, "", "token unavailable"
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.lab.netbird+"/api/peers", nil)
-	if err != nil {
-		return 0, 0, "", "request"
-	}
-	req.Header.Set("Authorization", "Token "+token)
-	client := &http.Client{Transport: r.lab.transport, Timeout: 20 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return 0, 0, "", "unreachable"
-	}
-	defer resp.Body.Close()
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if err != nil || resp.StatusCode != 200 {
-		return 0, 0, "", "HTTP " + itoa(resp.StatusCode)
-	}
-	var peers []struct {
-		UserID string `json:"user_id"`
-	}
-	if json.Unmarshal(raw, &peers) != nil {
-		return 0, 0, "", "decode"
-	}
-	seen := map[string]bool{}
-	var ids []string
-	for _, peer := range peers {
-		total++
-		id := strings.TrimSpace(peer.UserID)
-		if id == "" {
-			continue
-		}
-		withUser++
-		if !seen[id] {
-			seen[id] = true
-			ids = append(ids, id)
-		}
-	}
-	return withUser, total, strings.Join(ids, ","), ""
 }
 
 func (r *runner) awaitMemberBinding(ctx context.Context, member *session, note func(string, string)) {
@@ -277,9 +128,6 @@ func (r *runner) awaitMemberBinding(ctx context.Context, member *session, note f
 		return
 	}
 	r.usageDevice = binding.Device
-	r.usageRevision = binding.Revision
-	r.usageFrom = binding.From
-	r.usageUntil = binding.Until
 	r.usageReady = true
 	note("binding", "projected")
 }

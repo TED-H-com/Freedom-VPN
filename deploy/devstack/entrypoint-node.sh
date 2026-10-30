@@ -5,21 +5,23 @@ set -eu
 umask 077
 mkdir -p /run/vpn-node /var/lib/vpn-node/state /var/lib/vpn-node/identity \
     /var/lib/vpn-node/update-journal /var/lib/vpn-node/e2e /opt/vpn-node /var/log/netbird /etc/vpn-node
+# Rename only this container's origin-facing interface. The real NetBird
+# interface is fvmb0; no dummy interface can prove member forwarding.
 if ! ip link show fvup0 >/dev/null 2>&1; then
-    ip link add fvup0 type dummy
-    ip addr add 192.0.2.20/32 dev fvup0
+    uplink=$(ip -o -4 addr show | awk '$4 ~ /^192[.]0[.]/ {print $2; exit}')
+    test -n "$uplink"
+    ip link set "$uplink" down
+    ip link set "$uplink" name fvup0
     ip link set fvup0 up
-fi
-if ! ip link show fvmb0 >/dev/null 2>&1; then
-    ip link add fvmb0 type dummy
-    ip addr add 100.64.0.2/32 dev fvmb0
-    ip link set fvmb0 up
 fi
 if [ -f /etc/vpn-node/ca.pem ]; then
     cp /etc/vpn-node/ca.pem /usr/local/share/ca-certificates/lab-ca.crt
     update-ca-certificates >/dev/null 2>&1 || true
 fi
 export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+# D-061 refuses credentials unless the regular file is root-owned mode 0600.
+chown 0:0 /etc/vpn-node/resolver-credentials.json
+chmod 600 /etc/vpn-node/resolver-credentials.json
 cat /proc/sys/kernel/random/uuid > /etc/vpn-node/boot-id
 epoch=$(cat /proc/sys/kernel/random/uuid)
 epoch2=$(cat /proc/sys/kernel/random/uuid)
@@ -33,6 +35,7 @@ if ! fvpn-agent enroll -config /etc/vpn-node/agent-enroll.json -token-file /var/
     printf '%s\n' '{"stage":"enroll_failed"}' > /var/lib/vpn-node/e2e/status.json
     exit 1
 fi
+fvpn-e2e-nodeconfig
 printf '%s\n' '{"stage":"enrolled"}' > /var/lib/vpn-node/e2e/status.json
 fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/watchdog.log 2>&1 &
 (
@@ -75,7 +78,7 @@ fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/wa
     done
     if netbird up --setup-key-file /var/lib/vpn-node/identity/setup.key \
         --management-url https://netbird.example.invalid:443 \
-        --interface-name fvnb0 --disable-dns --disable-ipv6 \
+        --interface-name fvmb0 --disable-dns --disable-ipv6 --disable-firewall \
         --log-level warn --log-file console >/var/lib/vpn-node/e2e/netbird-up.log 2>&1; then
         printf '%s\n' '{"stage":"netbird_up"}' > /var/lib/vpn-node/e2e/netbird.json
     else

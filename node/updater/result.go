@@ -29,19 +29,20 @@ func resultID(jobID string, attempt int, state api.UpdateResultState) uuid.UUID 
 }
 
 type resultInput struct {
-	Claimed    claimed
-	State      api.UpdateResultState
-	Stage      api.UpdateStage
-	Code       apierr.Code
-	Current    string
-	Previous   string
-	Recovery   bool
-	Forwarding bool
-	Started    time.Time
-	Finished   time.Time
-	Schema     int
-	Health     *api.UpdateHealth
-	Checkpoint *api.UpdateUsageCheckpoint
+	Claimed         claimed
+	State           api.UpdateResultState
+	Stage           api.UpdateStage
+	Code            apierr.Code
+	Current         string
+	Previous        string
+	Recovery        bool
+	Forwarding      bool
+	Started         time.Time
+	Finished        time.Time
+	Schema          int
+	Health          *api.UpdateHealth
+	CandidateHealth *api.UpdateHealth
+	Checkpoint      *api.UpdateUsageCheckpoint
 }
 
 func buildResult(in resultInput) (payload []byte, hash string, id uuid.UUID, err error) {
@@ -84,6 +85,9 @@ func buildResult(in resultInput) (payload []byte, hash string, id uuid.UUID, err
 		StateSchemaVersion:      schema,
 		TargetId:                c.Intent.TargetId,
 		UsageCheckpoint:         presence.FromPointer(in.Checkpoint),
+	}
+	if in.State == api.UpdateResultStateRolledBack {
+		res.CandidateHealth = presence.FromPointer(in.CandidateHealth)
 	}
 	raw, err := json.Marshal(res)
 	if err != nil {
@@ -207,6 +211,12 @@ func (e *Engine) flushLocked(ctx context.Context) error {
 		if !ent.RetryNotBefore.IsZero() && e.now().Before(ent.RetryNotBefore) {
 			return &DeliveryError{HTTPStatus: ent.LastHTTPStatus, APICode: ent.LastAPICode,
 				RetryAt: ent.RetryNotBefore, Op: transient(apierr.RateLimited, "result retry deferred")}
+		}
+		if ent.State == string(api.UpdateResultStateRolledBack) {
+			ent, err = e.Journal.PopulateCandidateHealth(ctx, ent.ResultID)
+			if err != nil {
+				return err
+			}
 		}
 		ack, conflict, err := e.Sender.Submit(ctx, ent.Payload)
 		if conflict {
@@ -353,11 +363,11 @@ func decodeHealth(raw []byte) (*api.UpdateHealth, error) {
 	if len(raw) == 0 {
 		return nil, nil
 	}
-	var h api.UpdateHealth
+	var h *api.UpdateHealth
 	if err := json.Unmarshal(raw, &h); err != nil {
 		return nil, err
 	}
-	return &h, nil
+	return h, nil
 }
 
 // schemaAtLeast1 satisfies the result schema (minimum 1) when the node has
