@@ -14,7 +14,7 @@ Use Go 1.27.3, `GOTOOLCHAIN=local`, `CGO_ENABLED=0`. Supply connection strings
 through the environment/secret manager; never commit them or pass them as CLI
 arguments. `FVPN_DATABASE_URL` is the migration/development database;
 `FVPN_TEST_DATABASE_URL` is an admin connection used only to create isolated
-`fvpn_<random>` databases. Neither tool prints a DSN.
+`fvpn_t<unix-seconds hex>_<random>` databases. Neither tool prints a DSN.
 
 ```sh
 make go-verify
@@ -38,6 +38,18 @@ method retains the original URL. The CLI prints a quoted `current_database`
 line for both `up` and `status`; the CLI regression checks that identity, the
 isolated migration versions, and the absence of public tables (including
 `goose_db_version`) in the admin database before and after running it.
+
+With `FVPN_TEST_DB_SWEEP=1` (set by `make -f mk/db.mk db-test`), the first
+`dbtest.New` in a process drops idle databases named
+`fvpn_t<unix-seconds hex>_<32 hex>` whose encoded creation time is strictly
+older than one hour. The drop is `DROP DATABASE … WITH (FORCE)` only after
+`pg_stat_activity` shows zero connections in that same statement batch; a
+database that still has a connection is skipped. Idle legacy names
+`fvpn_<32 hex>` are dropped only when `FVPN_TEST_DB_SWEEP_LEGACY=1`. The sweep
+never drops the admin database, template databases, or any name outside those
+two patterns. Run it by hand with `make -f mk/db.mk db-test-sweep` (one-hour
+threshold; the legacy switch stays off unless you export it).
+
 With the test variable unset, tagged tests skip with
 a clear prerequisite message; ordinary `go test ./...` never opens a database.
 Tests never create roles, modify the shared admin database, or start containers.

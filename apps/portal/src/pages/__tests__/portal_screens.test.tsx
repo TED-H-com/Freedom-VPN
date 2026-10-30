@@ -182,10 +182,25 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
       PRIMARY_FUP_DEFINITION_ID,
     );
     expect(screen.getByTestId(`target-policy-gen-${OFFLINE_NODE_ID}`)).toHaveTextContent(
-      '未回報 (not reported)',
+      '尚未回報 (not yet reported)',
     );
     expect(screen.getByTestId(`target-policy-refs-${OFFLINE_NODE_ID}`)).toHaveTextContent(
-      '未回報 (not reported)',
+      '尚未回報 (not yet reported)',
+    );
+
+    // Target detail panel defaults to first target (PRIMARY_NODE_ID) and switches on Inspect Target click
+    expect(screen.getByTestId('batch-target-detail-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('target-detail-policy-gen')).toHaveTextContent('128');
+    expect(screen.getByTestId('target-detail-policy-refs')).toHaveTextContent(
+      PRIMARY_FUP_DEFINITION_ID,
+    );
+
+    await user.click(screen.getByTestId(`inspect-target-${OFFLINE_NODE_ID}`));
+    expect(screen.getByTestId('target-detail-policy-gen')).toHaveTextContent(
+      '尚未回報 (not yet reported)',
+    );
+    expect(screen.getByTestId('target-detail-policy-refs')).toHaveTextContent(
+      '尚未回報 (not yet reported)',
     );
 
     // Run one-action Update All Nodes -> 202 accepted banner
