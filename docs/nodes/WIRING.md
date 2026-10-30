@@ -121,8 +121,9 @@ generation and node operation steps still require agent observations (§14.5).
 | Event | Durable evidence and external calls |
 |---|---|
 | `node.publication_changed` | Validates the operation/node and current claim, then runs the exits executor for publish/unpublish/disable/revoke/retire. Publication requires agent policy ACK, route/group/policy read-back and stored data-path probe evidence before `active`/`succeeded`. Withdrawal removes the route/access policy even offline; an absent agent ACK stays unconfirmed. Revoke/retire additionally require confirmed setup-key revocation and peer deletion in `netbird_identity_cleanup` before finalization. |
-| `node.provision.requested` | `CreateNodeSetupKey(operation_id)` locates the stable name and saved ID before creation. The adapter ensures staging group, creates one-off/usage_limit=1/non-ephemeral key with 86400-second external expiry, and GETs it to verify settings. Only then is bounded AES-GCM ciphertext stored and `netbird_setup` advanced. |
-| `node.peer.observe` | Every accepted, deduplicated observation enqueues this job, including a null management peer ID. A present ID goes through `EnsureNodePeer` read-back before binding and advancing `peer_readback`; an absent ID skips NetBird and leaves that step pending. Baseline readiness and `node_policy` advance from the current report's passed safety and acknowledged generation. Frozen mappings and revoked/current-incarnation changes are denied. |
+| `node.provision.requested` | `CreateNodeSetupKey(operation_id)` locates the stable name and saved ID before creation. The adapter ensures the shared staging group plus an empty per-enrollment correlation group (D-055), creates a one-off/usage_limit=1/non-ephemeral key with 86400-second external expiry, and GETs it to verify settings. Only then is bounded AES-GCM ciphertext stored and `netbird_setup` advanced; the same transaction seeds/coalesces `node.peer.discover`. |
+| `node.peer.observe` | Every deduplicated observation enqueues this job. A reported or previously bound ID goes through `EnsureNodePeer` read-back; an absent, unbound ID schedules/coalesces discovery. Baseline readiness and `node_policy` still depend on the latest report's safety and generation ACK. Frozen/revoked incarnations are acknowledged without external work. |
+| `node.peer.discover` | D-055 management-only correlation via `DiscoverNodePeer(operation_id, node/incarnation)`, under the deployment lock and claim/identity fence. Confirmed binding and temporary-group cleanup precede the central `peer_id`, audit evidence and `peer_readback` commit. No hostname, address or timing inference. |
 | `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
 | `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
@@ -144,11 +145,45 @@ generation acknowledges the current desired generation. The worker requires
 this report to remain the latest observation before recording `node_policy`.
 Failed safety or missing/behind generation stays `applying`. A reported peer ID
 still requires management read-back; a later null report never clears an existing
-binding. Null IDs neither trigger NetBird calls nor fabricate `peer_readback`
+binding. Null IDs schedule discovery without fabricating `peer_readback`
 completion. Device/member admission still requires its verified peer bindings;
 `CheckPublishable`, serving eligibility and publication execution/probe gates
-are unchanged. Management-side discovery of a node peer from node/incarnation
-identity is still needed when the agent cannot report that ID.
+are unchanged. D-055 now discovers the management peer even when the agent
+cannot report that ID.
+
+The adapter creates `fvpn-enroll-peer-<hash>` with the stable enrollment operation
+ID and records its group binding as `enroll-peer:<operation_id>`. It is empty at
+creation and is never a policy or route group. The setup key's `auto_groups` must
+contain exactly that group and `fvpn-unpublished-nodes`. Discovery requires one
+group peer, one setup-key use, and a non-ephemeral peer without a user owner.
+The adapter records the normal `node:<node>:<incarnation>` binding, detaches the
+correlation group from the consumed key, empties and deletes it with read-back;
+the shared staging group and membership remain. An interrupted cleanup resumes
+from the recorded binding. Revocation also removes the correlation group and
+cleans adapter bindings even if the central incarnation projection was interrupted.
+
+A single `node.peer.discover` event per incarnation is seeded by successful key
+provisioning and by an unbound null-peer observation; the fleet lock coalesces
+both sources. It uses `worker_attempts`, `worker_backoff_seconds` and
+`worker_backoff_max_seconds` from the existing dispatcher. An unused key or zero
+peers retries with bounded backoff. Exhaustion leaves a failed `peer_readback`
+step/operation and a dead letter; later heartbeats cannot reset that budget.
+Multiple peers, repeated key use, a user/ephemeral peer, or a policy/route-linked
+correlation group produces a permanent mapping freeze for this incarnation,
+failed node provisioning/safety, a safe reason on the operation and an audit
+row. That event is acknowledged as a persisted terminal classification, never a
+successful peer binding. Heartbeats remain accepted but cannot erase the freeze
+or diagnostic. Operator recovery requires revocation and an authorized new
+incarnation; no automatic unfreeze occurs. Each discovery rechecks the current,
+unrevoked enrollment under the claim before management calls and before recording
+the adapter binding, then fences the central projection again after read-back.
+A consumed key may have management state `overused` (the one-off limit has been
+reached) or expire while the peer remains enrolled; exactly one use is accepted,
+while a revoked key is rejected. See the [adapter protocol](../../internal/netbird/DISCOVERY.md).
+Previously issued one-group keys cannot prove this correlation retroactively;
+those attempts require explicit revocation and a new authorized enrollment.
+The lab must consume the product-issued two-group key, not a manually supplied
+setup key or a peer mapping inferred from a name/address.
 
 `nodes.NetBirdBindings` aliases `devices.NetBirdBindings`, sharing the
 [member/device binding convention](../members/README.md#netbird-binding-and-lock-namespace-convention):

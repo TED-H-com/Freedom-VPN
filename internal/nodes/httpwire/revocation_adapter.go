@@ -105,7 +105,7 @@ func (a *RevocationAdapter) cleanup(ctx context.Context) ([]uuid.UUID, []uuid.UU
 		remote     string
 		deployment string
 	}
-	rows, err := a.runtime.Pool.Query(ctx, `SELECT id,peer_id,deployment_id FROM node_incarnations WHERE node_id=$1 AND revoked_at IS NOT NULL AND peer_id IS NOT NULL ORDER BY id`, a.operation.Resource.Id)
+	rows, err := a.runtime.Pool.Query(ctx, `SELECT id,coalesce(peer_id,''),coalesce(deployment_id,'') FROM node_incarnations WHERE node_id=$1 AND revoked_at IS NOT NULL ORDER BY id`, a.operation.Resource.Id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,13 +118,18 @@ func (a *RevocationAdapter) cleanup(ctx context.Context) ([]uuid.UUID, []uuid.UU
 	}
 	confirmed := []uuid.UUID{}
 	for _, peer := range peers {
-		if peer.deployment != a.runtime.Config.NetBirdDeployment {
+		if peer.deployment != "" && peer.deployment != a.runtime.Config.NetBirdDeployment {
 			return nil, nil, errors.New("identity cleanup deployment mismatch")
 		}
 		binding := "node:" + a.operation.Resource.Id.String() + ":" + peer.id.String()
-		if _, err = a.client.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: a.operation.Resource.Id.String(), IncarnationID: peer.id.String(), PeerID: peer.remote}); err != nil && !netbird.IsKind(err, netbird.NotFound) {
-			return nil, nil, err
+		if peer.remote != "" {
+			if _, err = a.client.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: a.operation.Resource.Id.String(), IncarnationID: peer.id.String(), PeerID: peer.remote}); err != nil && !netbird.IsKind(err, netbird.NotFound) {
+				return nil, nil, err
+			}
 		}
+		// D-055: discovery may have persisted its adapter binding before a
+		// crash or revocation fenced the central peer_id update. Cleanup must
+		// also remove that binding, under the same deployment lock.
 		if err = a.client.DeletePeer(ctx, binding); err != nil {
 			return nil, nil, err
 		}

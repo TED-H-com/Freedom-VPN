@@ -112,6 +112,18 @@ Unpublished, the probe reads NetBird overlay reachability: `netbird status --jso
 
 Once publication is `published`, the same overlay and egress legs run, and both datapath interfaces (`member_ingress` and `uplink`) must exist. Missing interfaces are `degraded` and the check `failed`, so forwarding stays off. That is the member forwarding path this process can see without an nft exception. A dedicated authenticated test peer with a source, destination, and port allowlist (§13.9) is not installed here. `node/enforce` owns that exception. The lab has no NetBird daemon. It sets `netbird_status_file` to a fixture. `test_mode` does not skip the probe. The registered profile (retries and the stable window) is still 待實測. The agent runs the probe once per step.
 
+## Health attestation (D-053)
+
+The updater writes `health-challenge.json` in `journal_dir`, the same directory as `forwarding.blocked`. On start, and again on every step while that file is present, the agent answers with `health-attest.json` when the challenge names this node, this incarnation, and this boot id, and when this process's `release_id` is the challenge's candidate release. Any other challenge is ignored. The write is `healthattest.WriteAttestation`: a temporary file, mode 0600, fsync, rename over `health-attest.json`, then a directory fsync. The answer echoes the challenge transaction, nonce, and ids. `agent_version` is this process's `agent_release`. `netbird_version` is `daemonVersion` from the NetBird status document the probe just read. It is not copied from the challenge's `components.netbird`. A missing field, a URL, a space, a control character, or a token longer than 64 bytes is reported as an empty version. `published` is the latest publication intent (`published`, `unpublished`, or `disabled`). The file does not change that intent and does not open member forwarding.
+
+The three statuses are this step's own `internet_only`, `dns_policy`, and `tunnel_probe` results, including when publication is `unpublished` or `disabled`. The probe is the data-path probe above, with `Published` false unless the intent is `published`, so member interfaces are not required and member forwarding stays closed. Reasons are short fixed strings (`baseline held`, `policy in force`, or the probe token `overlay_up`, `overlay_partial`, or `overlay_down`). They do not carry DNS names, URLs, or peer lists.
+
+The agent answers only after two freshness checks. The probe's wall time must be strictly after `issued_at`, and desired state must already have been evaluated: a document loaded from the store, or one sync attempt (a 304 and a transport error both count). A missing document before that first attempt is not answered. A placeholder `not_run` or a DNS failure written in that gap would end the updater's wait, because a file that validates is accepted immediately. `generated_at` is this process's wall clock and must fall strictly inside `(issued_at, expires_at)`. An expired challenge, a challenge that is not yet valid, or a consumed challenge is not answered. The same nonce and the same results are not rewritten. A new nonce, a changed result, or a missing file is a new rename, including after a process restart, so an attestation that was already on disk when the challenge appeared is replaced. A write error is logged and does not fail the step. A missing challenge does not fail the start.
+
+Timing follows the updater constants. They are code defaults, the updater config cannot change them, and they are 待實測, not a verified SLO. `HealthAttestWait` is 30s per check attempt. `HealthAttestPoll` is 250ms. `HealthChallengeTTL` is 45s, so `expires_at` is `issued_at` plus 45s. The answer has to land inside both the 45s lifetime and the 30s wait. `Run` answers on boot when a stored desired document is already in force, then runs the first step, and both of those happen before the poll sleep. After that the step interval is the minimum of `heartbeat_seconds` and `poll_seconds`. Both default to 10s, which is inside the 30s wait. The lab sets both to 1s. The 8-attempt cap and the 3-rollback cap are unchanged. The attempt that crosses the cap does not issue a candidate challenge.
+
+Failure semantics. A wrong release, boot, incarnation, or node leaves any existing answer untouched. An empty observed NetBird version is still written when the other binding fields are ready; `healthattest.Validate` then returns `netbird_version_mismatch`, which is not evidence, and the updater keeps reading until the deadline. A real `failed` status, and a `not_run` that means the check truly did not run, are written as themselves. Both end that attempt: `not_run` is `failed` for the updater. The agent does not send `not_run` while a result is still in flight. A passing attestation does not publish the node and does not install a member allow.
+
 The heartbeat file is line-oriented, version `v1`:
 
 ```text
@@ -130,7 +142,7 @@ reason <token or ->
 
 ## Watchdog (§16.3)
 
-The watchdog reads the heartbeat, the monotonic clock, and whether table `inet fvpn` exists. It applies `enforce.ApplyBaseline` when the heartbeat is missing, older than `watchdog_stale_seconds` (default 30), from another boot, or when the baseline is gone or the policy deadline has passed. A healthy reading does not render serving rules and does not restart a kernel timeout. Its own restart therefore does not restart a deadline. If both processes die, nft element timeouts still expire members. The watchdog does not take the node lock; fail-closed outranks a busy flock.
+The watchdog reads the heartbeat, the monotonic clock, and whether table `inet fvpn` exists. It applies `enforce.ApplyBaseline` when the heartbeat is missing, older than `watchdog_stale_seconds` (default 30), from another boot, or when the baseline is gone or the policy deadline has passed. A healthy reading does not render serving rules and does not restart a kernel timeout. Its own restart therefore does not restart a deadline. If both processes die, nft element timeouts still expire members. The watchdog does not take the node lock; fail-closed outranks a busy flock. It does not read `health-challenge.json` and it does not answer one. During `checking` the updater starts the candidate agent, and that process answers from boot and from its step loop. The watchdog is not required for the answer.
 
 ## Usage ledger
 
@@ -154,7 +166,7 @@ Updater:
 - Latch: `forwarding.blocked` in the journal directory. `agent.ForwardingBlocked(journalDir)` is true while the file exists.
 - Recover: the agent runs `updater_recover recover -config updater_config` once at boot (empty command skips it). Exit 0 clears the block. Exit 2, or any other failure, keeps members blocked. The agent does not import the updater package.
 - Desired state: read the verified envelope at `desired_state_path` (default `/var/lib/vpn-node/state/desired-state.json`). The agent is the only writer, and only after verification.
-- Health: stock updater checks do not know isolation or the tunnel. The agent reports those on the observation, not through the updater.
+- Health: the candidate agent writes `health-attest.json` for a live `health-challenge.json` in the journal directory (D-053). See Health attestation above. The file does not open the updater's gate. Stock updater checks still do not observe isolation or the tunnel on their own.
 
 ## Configuration
 
@@ -209,6 +221,7 @@ Updater:
 - `ISOLATION_BASELINE_MISSING` and `METER_EPOCH_CHANGE` are report-only observation codes. `HEALTH_CHECK_FAILED` is not used as their stand-in.
 - `host_reserve_bps` missing or zero exits 64 before the kernel or the network. A zero that still reaches `Decide` fails closed and is not replaced.
 - Usage caps do not reuse `METER_PATH_INVALID`. A clean hand-off does not recount admission bytes.
+- A health attestation reports the checks this process just ran. It does not open member forwarding, does not change publication intent, and is ignored when the challenge names another release, boot, incarnation, or node. The watchdog does not answer it.
 
 ## 待實測
 

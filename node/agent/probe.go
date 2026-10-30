@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -41,6 +42,10 @@ type ProbeResult struct {
 	Health api.DataHealth
 	// Detail is a short token. It is not a URL and not a key.
 	Detail string
+	// NetbirdVersion is daemonVersion from the status document this probe
+	// just read. Empty means the field was missing or not a safe token.
+	// It is never copied from a health challenge.
+	NetbirdVersion string
 }
 
 // Prober runs the data-path probe. Tests substitute a fake.
@@ -49,7 +54,11 @@ type Prober interface {
 }
 
 type nbStatus struct {
-	Management struct {
+	// DaemonVersion is the NetBird field name (daemonVersion). The probe
+	// reads it from the same document as management and relays. It does
+	// not shell out a second time and does not log the document.
+	DaemonVersion string `json:"daemonVersion"`
+	Management    struct {
 		Connected bool `json:"connected"`
 	} `json:"management"`
 	Relays struct {
@@ -117,7 +126,30 @@ func (p netbirdProber) Probe(ctx context.Context, req ProbeRequest) ProbeResult 
 	} else if health == api.DataHealthDegraded {
 		detail = "overlay_partial"
 	}
-	return ProbeResult{Ran: true, Check: check, Health: health, Detail: detail}
+	version := ""
+	if statusOK {
+		version = netbirdVersion(st.DaemonVersion)
+	}
+	return ProbeResult{Ran: true, Check: check, Health: health, Detail: detail, NetbirdVersion: version}
+}
+
+// netbirdVersion keeps a version token that can be written into an
+// attestation. A URL, a space, a control character, or a string longer
+// than 64 bytes becomes empty so the status document cannot carry a name
+// or a key into the health file. Empty fails the updater's version check
+// closed; the probe does not invent a version.
+func netbirdVersion(raw string) string {
+	s := strings.TrimSpace(raw)
+	if s == "" || len(s) > 64 {
+		return ""
+	}
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c < 0x21 || c > 0x7e || c == '/' || c == ':' {
+			return ""
+		}
+	}
+	return s
 }
 
 func (p netbirdProber) read(ctx context.Context) ([]byte, error) {
