@@ -116,6 +116,19 @@ type Engine struct {
 	lastServing    bool
 	prober         Prober
 	lastProbe      ProbeResult
+	// probeAt is the wall time of the last probe. An answer is written only
+	// when this is strictly after the challenge issued_at, so a cached probe
+	// cannot satisfy a challenge that did not exist yet.
+	probeAt time.Time
+	// healthNonce and healthSig remember the last answer this process wrote.
+	// A restart leaves them empty, so the next answer is a new file. An
+	// attestation already on disk when the challenge appeared is not evidence
+	// until that rename.
+	healthNonce string
+	healthSig   string
+	// desiredSynced is set after one desired-state sync attempt, including a
+	// 304 or an error. A missing document before that attempt is not answered.
+	desiredSynced bool
 }
 
 // Start opens the store, the trust bundle and the control client.
@@ -297,6 +310,10 @@ func (e *Engine) Boot(ctx context.Context) error {
 	e.latch()
 	e.ensureUsage(ctx)
 	e.beat()
+	// A stored desired document can be answered at start. A missing document
+	// before the first sync is not a DNS result yet: a binding failure would
+	// end the updater's wait before Step corrects it.
+	e.answerHealthOnBoot(ctx)
 	return nil
 }
 
@@ -337,11 +354,11 @@ func (e *Engine) Step(ctx context.Context) error {
 	e.latch()
 	if e.revoked {
 		e.withdraw(ctx)
-		e.refreshProbe(ctx)
-		e.decision = Decide(e.input())
+		e.evaluate(ctx)
 		e.publishMeterEpoch()
 		_ = e.observe(ctx)
 		_ = e.flush(ctx)
+		e.answerHealth(ctx)
 		return nil
 	}
 	if !e.enrolled {
@@ -356,6 +373,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	}
 	if e.revoked {
 		e.withdraw(ctx)
+		e.answerHealth(ctx)
 		return nil
 	}
 	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
@@ -363,6 +381,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	}
 	if e.revoked {
 		e.withdraw(ctx)
+		e.answerHealth(ctx)
 		return nil
 	}
 	_ = e.syncCert(ctx)
@@ -376,14 +395,14 @@ func (e *Engine) Step(ctx context.Context) error {
 	if pending, err := e.store.Pending(ctx); err == nil {
 		e.outboxFull = len(pending) >= 32
 	}
-	e.refreshProbe(ctx)
-	e.decision = Decide(e.input())
+	e.evaluate(ctx)
 	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
 		return err
 	}
 	e.publishMeterEpoch()
 	_ = e.observe(ctx)
 	_ = e.flush(ctx)
+	e.answerHealth(ctx)
 	return nil
 }
 
@@ -474,6 +493,7 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		Ingress:   e.cfg.Datapath.MemberIngress,
 		Uplink:    e.cfg.Datapath.Uplink,
 	})
+	e.probeAt = e.clock.Wall().UTC()
 }
 
 // verifyTime reports the time used to check a signed document.
