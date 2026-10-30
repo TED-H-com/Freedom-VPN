@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -50,6 +51,7 @@ func (r *Runtime) DesiredStateCompiler() *desiredstate.Compiler {
 
 func (r *Runtime) desiredStateCompiler(signer desiredstate.Signer, opts ...desiredstate.Option) *desiredstate.Compiler {
 	base := []desiredstate.Option{
+		desiredstate.WithDocumentInputs(r.ResolveDocumentInputs, nodes.RecordIssuedResolverDocumentTx),
 		desiredstate.WithEnvelopeTTL(time.Duration(r.Config.DesiredStateSeconds) * time.Second),
 		desiredstate.WithDNSResolvers(r.Config.DNSResolverIPv4, r.Config.DNSResolverIPv6),
 	}

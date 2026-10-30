@@ -682,7 +682,7 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 	if s.compiler != nil && uint64(nodeDetail.ConfigGeneration.Desired) < desiredGen {
 		compiled, cErr := s.compiler.Compile(ctx, nodeID)
 		if cErr != nil {
-			return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.DependencyUnavailable), cErr.Error())
+			return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.DependencyUnavailable), "desired_state_unavailable")
 		}
 		desiredGen = compiled.Generation
 		nodeDetail, _, err = s.NodeService().GetNode(ctx, nodeID)
@@ -768,17 +768,22 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		DesiredHash:    desiredHash,
 	})
 	if err != nil {
-		_ = s.recordBindingError(ctx, exitID, deploymentID, existingExtID, desiredHash, err.Error())
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.DependencyUnavailable), fmt.Sprintf("netbird publish failed: %v", err))
+		cause := PublicationFailureCause(err, "publish")
+		_ = s.recordBindingError(ctx, exitID, deploymentID, existingExtID, desiredHash, cause)
+		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.DependencyUnavailable), cause)
 	}
 
 	readback, err := s.netbird.ReadExitState(ctx, deploymentID, exitID, pubEv.ExternalID)
 	if err != nil {
-		_ = s.recordBindingError(ctx, exitID, deploymentID, pubEv.ExternalID, desiredHash, err.Error())
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.DependencyUnavailable), fmt.Sprintf("netbird read-back failed: %v", err))
+		cause := PublicationFailureCause(err, "readback")
+		_ = s.recordBindingError(ctx, exitID, deploymentID, pubEv.ExternalID, desiredHash, cause)
+		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.DependencyUnavailable), cause)
 	}
 	if !readback.Exists || !readback.Enabled {
-		msg := "netbird read-back showed route missing or disabled"
+		msg := "route_disabled"
+		if !readback.Exists {
+			msg = "route_missing"
+		}
 		_ = s.recordBindingError(ctx, exitID, deploymentID, pubEv.ExternalID, desiredHash, msg)
 		return s.failPublishStep(ctx, opID, nodeID, nodes.StepNetBirdRouteReadback, string(apierr.DependencyUnavailable), msg)
 	}
@@ -799,15 +804,21 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		return api.Operation{}, err
 	}
 
-	// Step 3: Verify data_path_probe from node observation checks.
-	probePassed := nodeDetail.DataHealth == api.DataHealthHealthy
-	for _, ch := range nodeDetail.Checks {
-		if ch.Name == api.NodeCheckNameTunnelProbe && ch.Status != api.HealthCheckStatusPassed {
-			probePassed = false
-		}
+	// SECOPS-11: healthy baseline/tunnel checks do not prove member serving.
+	// Require the current immutable report's forwarding flag, applied generation,
+	// finite lease and lease/QoS/source-binding checks before claiming active.
+	var rawReport []byte
+	err = s.pool.QueryRow(ctx, `SELECT o.report_payload FROM node_observations o JOIN nodes n ON n.id=o.node_id AND n.current_incarnation_id=o.incarnation_id AND n.last_observed_at=o.observed_at WHERE n.id=$1 ORDER BY o.received_at DESC,o.id DESC LIMIT 1`, nodeID).Scan(&rawReport)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return api.Operation{}, err
 	}
-	if !probePassed {
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "data_path_probe check has not passed")
+	var report api.ObservationReport
+	if err != nil || json.Unmarshal(rawReport, &report) != nil || !nodes.PublicationForwardingEvidence(report, now) {
+		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed")
+	}
+	observedGeneration, _ := report.AppliedConfigGeneration.Get()
+	if uint64(observedGeneration) < desiredGen || report.ProvisioningState != api.ProvisioningStateReady {
+		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed")
 	}
 
 	if err := s.markStepSucceeded(ctx, opID, nodes.StepDataPathProbe, fmt.Sprintf("node:%s:probe:passed", nodeID), now); err != nil {

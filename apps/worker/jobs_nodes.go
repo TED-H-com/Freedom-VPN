@@ -493,5 +493,5 @@ func recordDiscoveryFailure(ctx context.Context, tx pgx.Tx, p nodeDiscovery, cau
 	if _, err = tx.Exec(ctx, `UPDATE nodes SET provisioning_state='failed',safety_status=CASE WHEN $3 THEN 'failed' ELSE safety_status END,member_forwarding_observed=false,recent_errors=$2::jsonb,resource_version=resource_version+1 WHERE id=$1`, p.NodeID, errorsJSON, freeze); err != nil {
 		return err
 	}
-	return audit.Append(ctx, tx, db.AuditEvent{ID: uuid.Must(uuid.NewV7()), Actor: nodelib.SystemActorUUID.String(), ActorType: "system", Action: "node.peer_discovery_failed", Resource: "node:" + p.NodeID.String(), OperationID: &p.OperationID, Result: "failed"}, nil, map[string]any{"incarnation_id": p.IncarnationID, "reason": reason, "mapping_frozen": freeze}, "incarnation_id", "reason", "mapping_frozen")
+	return audit.Append(ctx, tx, db.AuditEvent{ID: uuid.Must(uuid.NewV7()), Actor: nodelib.SystemActorUUID.String(), ActorType: "system", Action: "node.peer_discovery_failed", Resource: "node:" + p.NodeID.String(), OperationID: &p.OperationID, Result: "failed"}, nil, map[string]any{"incarnation_id": p.IncarnationID, "reason": reason}, "incarnation_id", "reason")
 }

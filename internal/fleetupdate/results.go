@@ -141,7 +141,10 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		if !r.StartedAt.Before(*j.validUntil) || r.StartedAt.Before(*j.issued) {
 			return apierr.New(apierr.AuthorizationExpired, "Transaction started after authorization expired")
 		}
-		if isTerminal && (currentReleaseID == nil || health == nil || finishedAt == nil || finishedAt.Before(r.StartedAt)) {
+		// D-062a: failures before checking have no health attestation. Unknown
+		// stage and every post-check terminal outcome still require checks.
+		preCheckFailure := r.State == api.UpdateResultStateFailed && beforeChecking(stage)
+		if isTerminal && (currentReleaseID == nil || health == nil && !preCheckFailure || finishedAt == nil || finishedAt.Before(r.StartedAt)) {
 			return apierr.New(apierr.ValidationFailed, "Terminal result requires actual version, checks and completion time")
 		}
 		if usageCheckpoint != nil && usageCheckpoint.CentralAckedThrough > usageCheckpoint.LastDurableEventSeq {
@@ -188,7 +191,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 			if r.StateSchemaVersion != rollbackManifest.Signed.Compatibility.StateSchemaTo {
 				return apierr.New(apierr.SchemaIncompatible, "Rollback state schema differs from the active release")
 			}
-			if !manifest.Signed.Rollback.StateReadableByPrevious || !slices.Contains(manifest.Signed.Rollback.AllowedReleaseIds, *currentReleaseID) || *currentReleaseID == j.releaseID || !healthy(health) {
+			if !manifest.Signed.Rollback.StateReadableByPrevious || (len(manifest.Signed.Rollback.AllowedReleaseIds) > 0 && !slices.Contains(manifest.Signed.Rollback.AllowedReleaseIds, *currentReleaseID)) || *currentReleaseID == j.releaseID || !healthy(health) {
 				return apierr.New(apierr.SchemaIncompatible, "Rollback lacks allowed release and health evidence")
 			}
 		}
@@ -200,7 +203,7 @@ func (s *Service) SubmitResult(ctx context.Context, i Identity, raw []byte) (api
 		// Applying/checking older jobs may finish their own ledger, but not the pointer.
 		updateJob := !terminal(j.state) && canAdvance(j.state, string(r.State))
 		if updateJob {
-			_, e = tx.Exec(ctx, `UPDATE update_jobs SET state=$2,phase_since=CASE WHEN state<>$2 THEN clock_timestamp() ELSE phase_since END,needs_attention=false,started_at=coalesce(started_at,clock_timestamp()),completed_at=CASE WHEN $3 THEN clock_timestamp() ELSE completed_at END,
+			_, e = tx.Exec(ctx, `UPDATE update_jobs SET state=$2,phase_since=CASE WHEN state<>$2 THEN clock_timestamp() ELSE phase_since END,needs_attention=($2='failed'),started_at=coalesce(started_at,clock_timestamp()),completed_at=CASE WHEN $3 THEN clock_timestamp() ELSE completed_at END,
  actual_release_id=$4,last_good_release_id=CASE WHEN $5 THEN $4 ELSE last_good_release_id END,last_result_at=clock_timestamp(),result_id=CASE WHEN $3 THEN $6 ELSE result_id END,result_hash=CASE WHEN $3 THEN $7 ELSE result_hash END,error_code=$8,observed_evidence=$9,recovery_required=$10,stage=$11 WHERE id=$1`, j.id, string(r.State), isTerminal, currentReleaseID, success || r.State == "rolled_back", r.ResultId, digest, errorCode, raw, recovery, stage)
 			if e != nil {
 				return e
@@ -285,4 +288,19 @@ func canAdvance(from, to string) bool {
 	a, ok := rank[from]
 	b, ok2 := rank[to]
 	return ok && ok2 && b >= a
+}
+
+// beforeChecking follows the node-local stage vocabulary, not job state ranks.
+func beforeChecking(stage *api.UpdateStage) bool {
+	if stage == nil {
+		return false
+	}
+	switch *stage {
+	case api.UpdateStageClaim, api.UpdateStagePreflight, api.UpdateStageDownload,
+		api.UpdateStageVerify, api.UpdateStagePrepare, api.UpdateStageBlockForwarding,
+		api.UpdateStageFinalSample, api.UpdateStageStopServices, api.UpdateStageSwitch,
+		api.UpdateStageMigrate, api.UpdateStageStart:
+		return true
+	}
+	return false
 }

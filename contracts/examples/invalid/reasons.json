@@ -89,6 +89,12 @@
     "keyword": "type",
     "note": "Bytes never pass through a float (\u00a710.4)."
   },
+  "NodeDetail.bad-dns-outcome.json": {
+    "kind": "schema",
+    "pointer": "/dns_policy_evidence/outcome",
+    "keyword": "enum",
+    "note": "Reported DNS evidence uses the DnsPolicyEvidence outcome enum. success is not a reported outcome (D-056)."
+  },
   "NodeDetail.numeric-resource-version.json": {
     "kind": "schema",
     "pointer": "/resource_version",

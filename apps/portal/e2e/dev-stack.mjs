@@ -7,18 +7,15 @@
  * 2. Generates ephemeral TLS certificates, mTLS node CA, and FileProvider vault.
  * 3. Runs local HTTPS mock OIDC provider, fake NetBird management API, and fake Stripe API + HTTPS CONNECT proxy.
  * 4. Builds and launches real `fvpn-control -migrate-on-start` and `fvpn-worker` binaries.
- * 5. Enrolls a live node via `/api/v1/agent/enroll`, drives fleet updates via
+ * 5. Creates member groups via `POST /api/v1/admin/groups`, enrolls two nodes via
+ *    `POST /api/v1/admin/enrollments` + `POST /api/v1/agent/enroll` (`tw-tpe-01` amd64 active
+ *    and `jp-tyo-01` arm64 offline secondary reporter), drives fleet updates via
  *    `POST /api/v1/admin/update-batches` -> `GET /api/v1/agent/desired-state` ->
- *    `POST /api/v1/agent/update-results` -> `POST /api/v1/agent/observations`, and runs an mTLS
+ *    `POST /api/v1/agent/update-results` -> `POST /api/v1/agent/observations`, publishes the
+ *    exit via `PUT /api/v1/admin/nodes/{id}/publication` with `group_ids`, and runs an mTLS
  *    agent observation loop so multi-step operations reach `succeeded` through real control/worker code.
  * 6. Serves the built Portal frontend on `PORTAL_DEV_PORT` (default 4173) and proxies `/api/v1` and `/auth`
  *    to `fvpn-control`.
- *
- * Remaining D-050 fixture deviations (until the dev stack has a second fake agent reporter):
- * - `exits` publication state seed (`publication_intent = 'published'`, `publication_observed = 'active'`)
- *   on the enrolled node and secondary fixture exit.
- * - `SEEDED_NODE_2_ID` offline secondary fixture node (`nodes`, `node_incarnations`, `exits`)
- *   representing a second fleet target (`waiting_online`, `unconfirmed`, `policy_generation = null`).
  */
 
 import { spawn, execFileSync } from 'node:child_process';
@@ -54,10 +51,7 @@ const RELEASE_VECTOR = JSON.parse(fs.readFileSync(RELEASE_VECTOR_PATH, 'utf8'));
 // Deterministic UUID constants for seeded test data
 const PLAN_ID = 'b4fe029a-ecbf-4b1a-9ee7-de399791ae6e';
 const PLAN_REVISION_ID = '0195f100-0000-7000-8000-000000000101';
-const EXIT_GROUP_ID = '11111111-1111-4111-8111-111111111111';
 const RELEASE_110_ID = RELEASE_VECTOR.envelope.signed.release_id; // 6d2797d0-b9a5-4724-96af-9b3039d351b1
-const SEEDED_NODE_2_ID = '0195f100-0000-7000-8000-000000000202';
-const SEEDED_NODE_2_INC_ID = '0195f100-0000-7000-8000-000000000203';
 
 function getFreePort() {
   return new Promise((resolve, reject) => {
@@ -462,6 +456,16 @@ function createFakeNetBirdServer(tlsOptions) {
         },
       ],
       [
+        'nb-peer-node-2',
+        {
+          id: 'nb-peer-node-2',
+          name: 'jp-tyo-01',
+          user_id: '',
+          ephemeral: false,
+          ip: '100.64.0.11',
+        },
+      ],
+      [
         'nb-peer-dev-1',
         {
           id: 'nb-peer-dev-1',
@@ -546,6 +550,7 @@ function createFakeNetBirdServer(tlsOptions) {
   };
 
   let serial = 1;
+  let nextSetupKeyPeer = { id: 'nb-peer-node-1', name: 'tw-tpe-01' };
 
   function extractIds(arr) {
     if (!Array.isArray(arr)) return [];
@@ -658,7 +663,7 @@ function createFakeNetBirdServer(tlsOptions) {
           for (const gid of extractIds(reply.auto_groups)) {
             const grp = objects.groups.get(gid);
             if (grp) {
-              grp.peers = [{ id: 'nb-peer-node-1', name: 'tw-tpe-01' }];
+              grp.peers = [nextSetupKeyPeer];
               grp.peers_count = 1;
             }
           }
@@ -676,7 +681,13 @@ function createFakeNetBirdServer(tlsOptions) {
     });
   });
 
-  return { server, objects };
+  return {
+    server,
+    objects,
+    setNextSetupKeyPeer: (peer) => {
+      nextSetupKeyPeer = peer;
+    },
+  };
 }
 
 function createFakeStripeAndProxy(tlsOptions, webhookSecret) {
@@ -1054,21 +1065,44 @@ async function performOidcLogin(controlBaseUrl, oidcController, persona, caPem) 
   };
 }
 
+async function createGroupViaApi(controlBaseUrl, adminAuth, caPem, code, name) {
+  const res = await httpsRequest(`${controlBaseUrl}/api/v1/admin/groups`, {
+    method: 'POST',
+    headers: {
+      Cookie: adminAuth.sessionCookie,
+      'X-CSRF-Token': adminAuth.csrfToken,
+      Origin: 'https://portal.example.invalid',
+      'Idempotency-Key': crypto.randomUUID(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ code, name }),
+    ca: caPem,
+  });
+  if (res.status !== 201) {
+    throw new Error(
+      `POST /api/v1/admin/groups (${code}) failed (${res.status}): ${res.text}`,
+    );
+  }
+  return JSON.parse(res.text);
+}
+
 async function enrollLiveNode(
   controlBaseUrl,
   agentBaseUrl,
   adminAuth,
   caPem,
   tmpDir,
-  pool,
+  options = {},
 ) {
-  await pool.query(
-    `INSERT INTO member_groups(id, code, name)
-     VALUES ($1, 'standard-exits', 'Standard Exit Group'),
-            ('63575bae-2d23-45c0-ae11-ba6bb9ace34a', 'default-members', 'Default Member Group')
-     ON CONFLICT (id) DO NOTHING`,
-    [EXIT_GROUP_ID],
-  );
+  const {
+    name = 'tw-tpe-01',
+    region = 'tw-tpe',
+    arch = 'amd64',
+    peerId = 'nb-peer-node-1',
+    memberGroupIds = [],
+    notes = 'Primary Taipei exit node',
+    filePrefix = 'enrolled-node-1',
+  } = options;
 
   const createRes = await httpsRequest(`${controlBaseUrl}/api/v1/admin/enrollments`, {
     method: 'POST',
@@ -1082,10 +1116,10 @@ async function enrollLiveNode(
     body: JSON.stringify({
       delivery: 'preinstalled',
       expires_in_seconds: 3600,
-      name: 'tw-tpe-01',
-      region: 'tw-tpe',
-      member_group_ids: [EXIT_GROUP_ID],
-      notes: 'Primary Taipei exit node',
+      name,
+      region,
+      member_group_ids: memberGroupIds,
+      notes,
     }),
     ca: caPem,
   });
@@ -1096,8 +1130,8 @@ async function enrollLiveNode(
   const token = created.token;
   const nodeId = created.enrollment.node_id;
 
-  const nodeKeyPath = path.join(tmpDir, 'enrolled-node.key');
-  const nodeCsrPath = path.join(tmpDir, 'enrolled-node.csr');
+  const nodeKeyPath = path.join(tmpDir, `${filePrefix}.key`);
+  const nodeCsrPath = path.join(tmpDir, `${filePrefix}.csr`);
   execFileSync('openssl', [
     'ecparam',
     '-name',
@@ -1123,7 +1157,7 @@ async function enrollLiveNode(
   const enrollmentRequestId = crypto.randomUUID();
   const nodeIncarnationId = crypto.randomUUID();
   const agentRelease = '1.1.0';
-  const platform = { arch: 'amd64', os: 'ubuntu', os_version: '24.04' };
+  const platform = { arch, os: 'ubuntu', os_version: '24.04' };
   const jcsProofInput = JSON.stringify({
     agent_release: agentRelease,
     csr_pem: csrPem,
@@ -1225,7 +1259,7 @@ async function enrollLiveNode(
         expires_at: null,
       },
       netbird: {
-        peer_id: 'nb-peer-node-1',
+        peer_id: peerId,
         version: '0.76.2',
         backend: 'kernel',
       },
@@ -1247,18 +1281,21 @@ async function enrollLiveNode(
           status: 'passed',
           observed_at: nowIso,
           error_code: null,
+          detail: 'inet fvpn table verified; RFC1918 egress blocked',
         },
         {
           name: 'meter_path',
           status: 'passed',
           observed_at: nowIso,
           error_code: null,
+          detail: 'forward_admission_v1 counters active on wg-nb0',
         },
         {
           name: 'tunnel_probe',
           status: 'passed',
           observed_at: nowIso,
           error_code: null,
+          detail: 'NetBird WireGuard peer handshake verified',
         },
       ],
       errors: [],
@@ -1686,6 +1723,113 @@ async function pollLiveNodeReady(pool, liveNode, label = 'liveNode') {
   );
 }
 
+async function publishLiveNodeExitViaApi(
+  controlBaseUrl,
+  adminAuth,
+  caPem,
+  pool,
+  liveNode,
+  exitGroupId,
+) {
+  let op = null;
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const getRes = await httpsRequest(
+      `${controlBaseUrl}/api/v1/admin/nodes/${liveNode.nodeId}`,
+      {
+        method: 'GET',
+        headers: {
+          Cookie: adminAuth.sessionCookie,
+          Accept: 'application/json',
+        },
+        ca: caPem,
+      },
+    );
+    if (getRes.status !== 200) {
+      throw new Error(
+        `GET /api/v1/admin/nodes/${liveNode.nodeId} failed (${getRes.status}): ${getRes.text}`,
+      );
+    }
+    const nodeObj = JSON.parse(getRes.text);
+    const etag = getRes.headers.etag || `"${nodeObj.resource_version}"`;
+    const pubRes = await httpsRequest(
+      `${controlBaseUrl}/api/v1/admin/nodes/${liveNode.nodeId}/publication`,
+      {
+        method: 'PUT',
+        headers: {
+          Cookie: adminAuth.sessionCookie,
+          'X-CSRF-Token': adminAuth.csrfToken,
+          Origin: 'https://portal.example.invalid',
+          'Idempotency-Key': crypto.randomUUID(),
+          'If-Match': etag,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          publication_intent: 'published',
+          reason: 'Initial dev-stack exit publication',
+          group_ids: [exitGroupId],
+        }),
+        ca: caPem,
+      },
+    );
+    if (pubRes.status === 200 || pubRes.status === 202) {
+      op = JSON.parse(pubRes.text);
+      break;
+    }
+    if (pubRes.status === 412 && attempt < 4) {
+      continue;
+    }
+    throw new Error(
+      `PUT /api/v1/admin/nodes/${liveNode.nodeId}/publication failed (${pubRes.status}): ${pubRes.text}`,
+    );
+  }
+  if (!op) {
+    throw new Error(
+      `PUT /api/v1/admin/nodes/${liveNode.nodeId}/publication exhausted ETag retries`,
+    );
+  }
+
+  const deadline = Date.now() + 15_000;
+  let lastRow = null;
+  while (Date.now() < deadline) {
+    const res = await pool.query(
+      `SELECT
+         n.desired_config_generation::text AS desired_config_generation,
+         n.applied_config_generation::text AS applied_config_generation,
+         greatest(n.desired_config_generation, 1)::text AS target_gen,
+         (n.applied_config_generation >= n.desired_config_generation) AS gen_caught_up,
+         e.publication_intent,
+         e.publication_observed,
+         EXISTS(
+           SELECT 1 FROM outbox_events
+           WHERE delivered_at IS NULL
+             AND dead_lettered_at IS NULL
+             AND event_type = 'node.peer.observe'
+         ) AS has_pending_observe
+       FROM nodes n
+       JOIN exits e ON e.node_id = n.id
+       WHERE n.id = $1`,
+      [liveNode.nodeId],
+    );
+    lastRow = res.rows[0] || null;
+    if (
+      lastRow &&
+      lastRow.publication_intent === 'published' &&
+      lastRow.publication_observed === 'active' &&
+      lastRow.gen_caught_up === true &&
+      !lastRow.has_pending_observe
+    ) {
+      return lastRow;
+    }
+    if (!lastRow?.has_pending_observe || !lastRow?.gen_caught_up) {
+      await liveNode.submitObservation(lastRow?.target_gen || '1');
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(
+    `Timed out waiting for live node exit publication active on ${liveNode.nodeId}; last=${JSON.stringify(lastRow)}`,
+  );
+}
+
 async function seedDatabase(
   pool,
   adminId,
@@ -1694,8 +1838,11 @@ async function seedDatabase(
   caPem,
   defaultMemberId,
   liveNode,
+  secondaryNode,
+  exitGroupId,
 ) {
   const enrolledNodeId = liveNode.nodeId;
+  const secondaryNodeId = secondaryNode.nodeId;
   const now = new Date();
   // Valid < 30d grant window (14d + 1h < MaxGrantDuration 2592000s, D-050)
   const periodStart = new Date(now.getTime() - 3600_000);
@@ -1704,16 +1851,6 @@ async function seedDatabase(
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
-
-  await runSeedStep('seed-member-groups', async () => {
-    await pool.query(
-      `INSERT INTO member_groups(id, code, name)
-       VALUES ($1, 'standard-exits', 'Standard Exit Group'),
-              ('63575bae-2d23-45c0-ae11-ba6bb9ace34a', 'default-members', 'Default Member Group')
-       ON CONFLICT (id) DO NOTHING`,
-      [EXIT_GROUP_ID],
-    );
-  });
 
   await runSeedStep('seed-releases-and-fleet-config', async () => {
     const manifestEnvelope = JSON.stringify(RELEASE_VECTOR.envelope);
@@ -1815,7 +1952,7 @@ async function seedDatabase(
       payload: {
         display_name: { 'zh-TW': '標準月費方案', en: 'Standard Monthly Plan' },
         device_limit: 3,
-        exit_group_ids: [EXIT_GROUP_ID],
+        exit_group_ids: [exitGroupId],
         price: {
           amount_minor: 19900,
           currency: 'TWD',
@@ -1949,7 +2086,7 @@ async function seedDatabase(
       [
         PLAN_REVISION_ID,
         PLAN_ID,
-        EXIT_GROUP_ID,
+        exitGroupId,
         JSON.stringify({
           display_name: { 'zh-TW': '標準月費方案', en: 'Standard Monthly Plan' },
         }),
@@ -1973,7 +2110,7 @@ async function seedDatabase(
   await runSeedStep('patch-default-member-via-api', async () => {
     await patchMemberViaApi(controlBaseUrl, adminAuth, caPem, defaultMemberId, {
       display_name: '陳小華 (Active Member)',
-      member_group_ids: [EXIT_GROUP_ID],
+      member_group_ids: [exitGroupId],
       notes: 'Default seeded active member',
     });
   });
@@ -1998,13 +2135,8 @@ async function seedDatabase(
     await pollMemberAuthorizedDevices(pool, defaultMemberId, 3, 'defaultMemberId');
   });
 
-  await runSeedStep('seed-node-and-exit-fixtures', async () => {
-    // Deviation (D-050): exits publication state is seeded directly until a fake agent/route projector drives it.
-    await pool.query(
-      `UPDATE exits SET publication_intent = 'published', publication_observed = 'active', resource_version = resource_version + 1 WHERE node_id = $1`,
-      [enrolledNodeId],
-    );
-    await pollLiveNodeOnline(pool, liveNode, 'seed-node-and-exit-fixtures');
+  await runSeedStep('seed-node-and-usage-fixtures', async () => {
+    await pollLiveNodeOnline(pool, liveNode, 'seed-node-and-usage-fixtures');
 
     await pool.query(
       `INSERT INTO usage_rollups(id, member_id, period, granularity, projection_generation, metering_version, upload_bytes, download_bytes, last_observed_at, aggregate_as_of, period_start, period_end, estimated, gap, reconciliation_in_progress)
@@ -2012,29 +2144,16 @@ async function seedDatabase(
        ON CONFLICT (member_id, period, granularity, projection_generation) DO NOTHING`,
       [crypto.randomUUID(), defaultMemberId, currentMonth, monthStart, monthEnd],
     );
+  });
 
-    // Deviation (D-050): SEEDED_NODE_2_ID is an offline secondary fixture node without a second fake agent reporter.
-    await pool.query(
-      `INSERT INTO nodes(id, lifecycle_state, notes, provisioning_state, control_status, data_health, safety_status)
-       VALUES ($1, 'registered', 'Secondary Tokyo exit node', 'ready', 'offline', 'degraded', 'passed')
-       ON CONFLICT (id) DO NOTHING`,
-      [SEEDED_NODE_2_ID],
-    );
-    await pool.query(
-      `INSERT INTO node_incarnations(id, node_id, public_key_fingerprint, deployment_id, peer_id, os, arch, os_version)
-       VALUES ($1, $2, $3, 'nb-dev', 'nb-peer-node-2', 'ubuntu', 'arm64', '24.04')
-       ON CONFLICT (id) DO NOTHING`,
-      [SEEDED_NODE_2_INC_ID, SEEDED_NODE_2_ID, crypto.randomBytes(32)],
-    );
-    await pool.query(
-      `UPDATE nodes SET current_incarnation_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-      [SEEDED_NODE_2_ID, SEEDED_NODE_2_INC_ID],
-    );
-    await pool.query(
-      `INSERT INTO exits(id, node_id, display_name, region, publication_intent, publication_observed)
-       VALUES ($1, $2, 'jp-tyo-01', 'jp-tyo', 'published', 'active')
-       ON CONFLICT (node_id) DO NOTHING`,
-      [crypto.randomUUID(), SEEDED_NODE_2_ID],
+  await runSeedStep('publish-live-node-exit-via-api', async () => {
+    await publishLiveNodeExitViaApi(
+      controlBaseUrl,
+      adminAuth,
+      caPem,
+      pool,
+      liveNode,
+      exitGroupId,
     );
   });
 
@@ -2114,7 +2233,7 @@ async function seedDatabase(
           (t) => t.node_id === enrolledNodeId,
         );
         const offlineTarget = (lastBatch.targets || []).find(
-          (t) => t.node_id === SEEDED_NODE_2_ID,
+          (t) => t.node_id === secondaryNodeId,
         );
         if (
           liveTarget &&
@@ -2347,7 +2466,7 @@ async function main() {
           authorization_seconds: 3600,
           online_seconds: 180,
           stuck_seconds: 600,
-          reconcile_seconds: 5,
+          reconcile_seconds: 1,
           fetch_seconds: 10,
           desired_state_seconds: 600,
           release_origins: [
@@ -2429,6 +2548,8 @@ async function main() {
       usage_rate: { per_second: 1000, burst: 1000 },
       anonymous_rate: { per_second: 1000, burst: 1000 },
       worker_poll_seconds: 1,
+      worker_backoff_seconds: 1,
+      worker_backoff_max_seconds: 2,
       migrate_on_start: true,
     };
     const centralConfigPath = path.join(tmpDir, 'central.json');
@@ -2544,9 +2665,70 @@ async function main() {
     );
     const defaultMemberId = memberAuth.session.member_id;
 
-    const liveNode = await runSeedStep('enroll-live-node', async () =>
-      enrollLiveNode(controlBaseUrl, agentBaseUrl, adminAuth, caPem, tmpDir, pool),
+    const { exitGroupId } = await runSeedStep(
+      'create-member-groups-via-api',
+      async () => {
+        const exitGrp = await createGroupViaApi(
+          controlBaseUrl,
+          adminAuth,
+          caPem,
+          'standard-exits',
+          'Standard Exit Group',
+        );
+        await createGroupViaApi(
+          controlBaseUrl,
+          adminAuth,
+          caPem,
+          'default-members',
+          'Default Member Group',
+        );
+        return { exitGroupId: exitGrp.group_id };
+      },
     );
+
+    nbController.setNextSetupKeyPeer({ id: 'nb-peer-node-1', name: 'tw-tpe-01' });
+    const liveNode = await runSeedStep('enroll-live-node-1', async () => {
+      const node = await enrollLiveNode(
+        controlBaseUrl,
+        agentBaseUrl,
+        adminAuth,
+        caPem,
+        tmpDir,
+        {
+          name: 'tw-tpe-01',
+          region: 'tw-tpe',
+          arch: 'amd64',
+          peerId: 'nb-peer-node-1',
+          memberGroupIds: [exitGroupId],
+          notes: 'Primary Taipei exit node',
+          filePrefix: 'enrolled-node-1',
+        },
+      );
+      await drainNodeAffectingOutbox(pool, 'enroll-live-node-1');
+      return node;
+    });
+
+    nbController.setNextSetupKeyPeer({ id: 'nb-peer-node-2', name: 'jp-tyo-01' });
+    const secondaryNode = await runSeedStep('enroll-live-node-2', async () => {
+      const node = await enrollLiveNode(
+        controlBaseUrl,
+        agentBaseUrl,
+        adminAuth,
+        caPem,
+        tmpDir,
+        {
+          name: 'jp-tyo-01',
+          region: 'jp-tyo',
+          arch: 'arm64',
+          peerId: 'nb-peer-node-2',
+          memberGroupIds: [exitGroupId],
+          notes: 'Secondary Tokyo exit node',
+          filePrefix: 'enrolled-node-2',
+        },
+      );
+      await drainNodeAffectingOutbox(pool, 'enroll-live-node-2');
+      return node;
+    });
 
     await seedDatabase(
       pool,
@@ -2556,6 +2738,8 @@ async function main() {
       caPem,
       defaultMemberId,
       liveNode,
+      secondaryNode,
+      exitGroupId,
     );
     await runSeedStep('submit-initial-node-observation', async () => {
       await pollLiveNodeReady(pool, liveNode, 'submit-initial-node-observation');
@@ -2645,7 +2829,7 @@ async function main() {
                   journeyMemberId,
                   {
                     display_name: '林測試 (Journey Member)',
-                    member_group_ids: [EXIT_GROUP_ID],
+                    member_group_ids: [exitGroupId],
                   },
                 );
                 nbController.objects.users.set(sub, {
@@ -2978,6 +3162,12 @@ async function main() {
             }
           });
           return;
+        }
+
+        if (reqUrl.pathname.startsWith('/admin')) {
+          currentInteractiveRole = 'admin';
+        } else if (reqUrl.pathname.startsWith('/member')) {
+          currentInteractiveRole = 'member';
         }
 
         let filePath = path.join(

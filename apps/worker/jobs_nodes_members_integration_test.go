@@ -115,13 +115,16 @@ func newMemberPolicyFixture(t *testing.T, withSigner bool) *memberPolicyFixture 
 
 	group, plan, revision, incarnation, exit, identity := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	now := time.Now().UTC().Truncate(time.Microsecond)
-	f.sql(`INSERT INTO members(id,status) VALUES($1,'active')`, f.member)
+	f.sql(`INSERT INTO members(id) VALUES($1)`, f.member)
 	f.sql(`INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','TEST ONLY subject','TEST ONLY claim','verified-link',$3)`, identity, f.member, now)
 	f.sql(`INSERT INTO netbird_user_bindings(id,member_id,deployment_id,external_user_id,identity_binding_id,mapping_proof,revision,verified_at) VALUES($1,$2,$3,$4,$5,'TEST ONLY proof',1,$6)`, uuid.New(), f.member, m.NetBirdDeployment, f.peer.peer.ExternalUserID, identity, now)
 	f.sql(`INSERT INTO member_groups(id,code,name) VALUES($1,'TEST ONLY group','TEST ONLY group')`, group)
 	f.sql(`INSERT INTO plans(id,code) VALUES($1,'TEST ONLY plan')`, plan)
 	f.sql(`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,schema_version,payload) VALUES($1,$2,1,3,$3,1,'{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, revision, plan, []uuid.UUID{group})
-	f.sql(`INSERT INTO entitlement_grants(id,member_id,source,valid_from,valid_until,reason,created_by,plan_revision_id) VALUES($1,$2,'admin_grant',$3,$4,'TEST ONLY finite grant','TEST ONLY actor',$5)`, uuid.New(), f.member, now.Add(-time.Hour), now.Add(12*time.Hour), revision)
+	start := now.Add(-time.Hour)
+	if _, err := f.services.HTTP.Members.Grant(t.Context(), memberPolicyCommand("admin", uuid.New()), f.member, api.GrantCreateRequest{Source: api.GrantSourceAdminGrant, ValidFrom: &start, ValidUntil: now.Add(12 * time.Hour), Reason: "TEST ONLY finite grant", PlanRevisionId: &revision}); err != nil {
+		t.Fatal(err)
+	}
 	f.sql(`INSERT INTO nodes(id,lifecycle_state,provisioning_state,capacity) VALUES($1,'registered','ready','{"down_bps":1000000000,"up_bps":1000000000,"member_down_bps_cap":60000000,"member_up_bps_cap":30000000}')`, f.node)
 	f.sql(`INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,deployment_id,peer_id,os,os_version,arch) VALUES($1,$2,$3,$4,'TEST ONLY node peer','ubuntu','24.04','amd64')`, incarnation, f.node, make([]byte, 32), m.NetBirdDeployment)
 	f.sql(`UPDATE nodes SET current_incarnation_id=$2,resource_version=resource_version+1 WHERE id=$1`, f.node, incarnation)
@@ -287,4 +290,50 @@ func TestAT02_MemberCompilationFailureDoesNotAcknowledge(t *testing.T) {
 	if err = f.pool.QueryRow(t.Context(), `SELECT desired_config_generation=0 AND NOT EXISTS(SELECT 1 FROM desired_states WHERE node_id=$1) AND NOT EXISTS(SELECT 1 FROM audit_events WHERE id=$2) FROM nodes WHERE id=$1`, f.node, id).Scan(&clean); err != nil || !clean {
 		t.Fatal("failed compilation leaked desired state or success evidence", clean, err)
 	}
+}
+
+// D-052 F-02: a new-groups-only event must still revoke grants in old envelopes.
+func TestD052_RemovedGroupRecompilesExistingMemberBindings(t *testing.T) {
+	f := newMemberPolicyFixture(t, true)
+	app, err := Open(t.Context(), Dependencies{Config: f.config, Pool: f.pool}, f.memberDomain(), nodes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = f.services.HTTP.Devices.AuthorizeDevice(t.Context(), memberPolicyCommand("system", uuid.New()), f.peer.peer); err != nil {
+		t.Fatal(err)
+	}
+	f.assertCompleted(f.dispatch(app, "device.authorized"), 1, 1, 1)
+	f.assertCompleted(f.dispatch(app, "member.entitlement_changed"), 2, 1, 1)
+	var original, plan uuid.UUID
+	if err = f.pool.QueryRow(t.Context(), `SELECT g.id,r.plan_id FROM entitlement_grants g JOIN plan_revisions r ON r.id=g.plan_revision_id WHERE g.member_id=$1`, f.member).Scan(&original, &plan); err != nil {
+		t.Fatal(err)
+	}
+	group, revision := uuid.New(), uuid.New()
+	f.sql(`INSERT INTO member_groups(id,code,name) VALUES($1,'TEST ONLY other','TEST ONLY other')`, group)
+	f.sql(`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,schema_version,payload) VALUES($1,$2,2,3,$3,1,'{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, revision, plan, []uuid.UUID{group})
+	if err = f.services.HTTP.Members.RevokeGrant(t.Context(), memberPolicyCommand("admin", uuid.New()), f.member, original, "TEST ONLY removed old group"); err != nil {
+		t.Fatal(err)
+	}
+	start := time.Now().UTC().Add(-time.Minute)
+	if _, err = f.services.HTTP.Members.Grant(t.Context(), memberPolicyCommand("admin", uuid.New()), f.member, api.GrantCreateRequest{Source: api.GrantSourceAdminGrant, ValidFrom: &start, ValidUntil: start.Add(6 * time.Hour), Reason: "TEST ONLY replacement plan", PlanRevisionId: &revision}); err != nil {
+		t.Fatal(err)
+	}
+
+	var event db.ClaimedEvent
+	if err = f.pool.QueryRow(t.Context(), `SELECT id,event_type,payload FROM outbox_events WHERE event_type='member.entitlement_changed' AND aggregate_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1`, f.member).Scan(&event.ID, &event.EventType, &event.Payload); err != nil {
+		t.Fatal(err)
+	}
+	// Old producers only carry the new set. Use that actual event, then require
+	// its normal dispatcher receipt and signed removal, without projector SQL.
+	var payload struct {
+		ExitGroupIDs []uuid.UUID `json:"exit_group_ids"`
+	}
+	if err = json.Unmarshal(event.Payload, &payload); err != nil || !slices.Equal(payload.ExitGroupIDs, []uuid.UUID{group}) {
+		t.Fatal(string(event.Payload), err)
+	}
+	f.sql(`UPDATE outbox_events SET available_at=CASE WHEN id=$1 THEN clock_timestamp() ELSE clock_timestamp()+interval '1 day' END WHERE delivered_at IS NULL AND dead_lettered_at IS NULL`, event.ID)
+	if worked, err := app.Once(t.Context()); err != nil || !worked {
+		t.Fatal(worked, err)
+	}
+	f.assertCompleted(event.ID, 3, 0, 0)
 }
