@@ -240,6 +240,10 @@ def main():
             blockers.append(live['device_idor_blocker'])
         if at in ('AT29', 'AT31'):
             blockers.extend(live[k] for k in ('admission_blocker', 'binding_blocker', 'serving_blocker') if live.get(k))
+        if at == 'AT31' and live.get('concurrent_sign_in'):
+            login = live['concurrent_sign_in']
+            if login['authenticated'] != login['attempts']:
+                blockers.append(f"Concurrent login diagnostic completed {login['authenticated']}/{login['attempts']} sessions; final login HTTP statuses {login.get('last_login_http_status', {})}. Limits were not tuned.")
         data = dict(common, id=at, spec=['§19.1', '§19 '+at], requirements=requirements, status=status, verdict=status,
                     expected=EXPECTED[at], actual={'component_status': component_status, 'component_suites': [r['id'] for r in related], 'full_stack_executed': bool(live), 'full_acceptance_profile_executed': status == 'passed'},
                     blockers=blockers, commands=[r['command'] for r in related],
@@ -247,7 +251,8 @@ def main():
                     evidence=['live.json', 'components.json', 'secret-scan.json', 'requests.md'])
         if at == 'AT29':
             data['node_incarnation'] = live.get('agent_node_incarnation')
-            data['serving'] = {k:live.get(k) for k in ('node_service_precondition','publication_request','publication_operation','forward_baseline_generation_zero','member_accept_rules','watchdog_heartbeat_present','counted_flow','flow_probe','serving_checks')}
+            data['policy_revision'] = live.get('node_after_publication', {}).get('config_generation', {}).get('applied')
+            data['serving'] = {k:live.get(k) for k in ('node_service_precondition','publication_request','publication_operation','forward_baseline_generation_zero','member_accept_rules','watchdog_heartbeat_present','counted_flow','flow_probe','serving_checks','node_after_publication','watchdog_state','configured_updater_recovery_file_present','short_node_lease_seconds')}
         if at == 'AT30':
             data['recovery'] = live.get('recovery', {})
             if (PUBLIC / 'restore.json').exists() and stack.get('isolated_restore',{}).get('exit_code') == 0:

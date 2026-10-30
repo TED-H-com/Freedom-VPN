@@ -1,7 +1,7 @@
 # Remaining operator runs
 
 Every procedure below is **needs operator run**. It has not passed. Complete
-SECOPS-03 before attempting traffic. Use the shared `deploy/devstack`
+SECOPS-09 and prove counted member traffic before attempting outage assertions. Use the shared `deploy/devstack`
 implementation with an orchestrator-assigned instance; do not fork it. On this
 branch the only assigned instance is `w4-secops`, base `30000`. The automated logical restore uses a separate network-none container; no second
 networked restore slot or production hardware is allocated. Record UTC start/end, source commit,
@@ -71,7 +71,10 @@ files; prepare them privately for the additional manual steps.
 
 ## AT29
 
-1. Use a TEST ONLY node lease of 90 s, a paid member service end at +30 s, a
+1. The automated fixture sets a TEST ONLY node lease ceiling of 90 s through
+   fleet configuration input. Once serving works, create source inputs (API
+   grants and fake-provider payment/grace events), never projected entitlement
+   or device rows. Wait for projections. Use a node lease of 90 s, a paid member service end at +30 s, a
    finite grace member ending at +45 s and a finite grant member ending at +60 s.
    Persist and compare original `paid_through`, grant/grace source deadlines and
    entitlement revisions before/after every renewal. Obtain verified policy and
@@ -123,7 +126,10 @@ The runner has passed a real isolated logical dump/replay subset (see
 [restore.json](restore.json)). The steps below extend that evidence to WAL/PITR,
 original node archives and coordinated external reconciliation; they are unrun.
 
-1. On the isolated source copy, use a valid node archive retaining at least
+1. First use the owning `w4-ops-backups` pgBackRest procedure in
+   `deploy/backup/` and `docs/ops/backups.md` after it lands; these paths are absent
+   on this follow-up checkout. Do not create a parallel physical backup path.
+   On the isolated source copy, use a valid node archive retaining at least
    72 hours. Generate original events 1–400, persist exact hashes/totals and
    archive a base backup plus WAL through that commit. Record backup ID,
    manifest digest, system identifier, timeline, start/stop LSN and UTC commit
