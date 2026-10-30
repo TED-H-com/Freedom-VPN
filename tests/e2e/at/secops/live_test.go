@@ -692,8 +692,8 @@ func (p *liveProbe) finish() {
 		}
 	}
 	services := []string{"postgres", "idp", "payment", "origin", "netbird", "gateway", "coredns", "adguard", "control", "worker", "node-netns", "node", "member"}
-	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" {
-		for _, service := range []string{"node2-netns", "node2-adguard", "node2"} {
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" || os.Getenv("FVPN_SECOPS_FOLLOWUP8") == "1" {
+		for _, service := range []string{"node2-netns", "node2-adguard", "node2", "restore-live"} {
 			if exec.CommandContext(p.t.Context(), "docker", "inspect", livePrefix+service).Run() == nil {
 				services = append(services, service)
 			}
@@ -791,6 +791,9 @@ func (p *liveProbe) finish() {
 		}
 	}
 	name := "live.json"
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP8") == "1" {
+		name = "followup8-live.json"
+	}
 	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" {
 		name = "followup7-live.json"
 	}

@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "follow_up": 7,
-  "checked_at": "2026-10-30T19:20:00Z",
-  "application_base": "fb3ea32e963cf58bdca914db4d07549ef5fb8961",
-  "harness_revision": "c1e4f8f5714003b63d17a4665dab6736bb1e3992",
+  "follow_up": 8,
+  "checked_at": "2026-10-30T22:10:16Z",
+  "application_base": "6b98422",
+  "harness_revision": "6350853010054cf656465e5e677c60dc29553cb5",
   "roadmap": [
     "fb3ea32 roadmap: w2-agent-core follow-up 15 merged (#195)",
-    "5bf13e1 contracts: revision 10 (API 1.6.0, 47 operations) — Enrollment.token_sha256, GET /admin/nodes/{node_id}/incarnations, awaiting_member_grants (ENR-02, ENR-03, D-067) (#191)",
+    "5bf13e1 contracts: revision 10 (API 1.6.0, 47 operations) \u2014 Enrollment.token_sha256, GET /admin/nodes/{node_id}/incarnations, awaiting_member_grants (ENR-02, ENR-03, D-067) (#191)",
     "222e6ee roadmap: w4-at-enrollment follow-up 1 merged (#187)",
     "1c1fd7d at-enrollment: corrected slot w4-enroll/12000, fresh AT06/AT07 live run (95 subchecks pass, 0 fail), ENR-02/ENR-03 narrowed to exact API questions (follow-up 1) (#187)",
     "ef60493 roadmap: w4-at-updates follow-up 7 merged (#186)",
-    "cc04f32 at-updates: accepted-result authority restated (F6-02) — AT24 offline catch-up and inheritance, AT26 rollback, AT27 post-acceptance claims pass; AT23/AT25 retained blocked on the probe-peer export (follow-up 7) (#186)",
+    "cc04f32 at-updates: accepted-result authority restated (F6-02) \u2014 AT24 offline catch-up and inheritance, AT26 rollback, AT27 post-acceptance claims pass; AT23/AT25 retained blocked on the probe-peer export (follow-up 7) (#186)",
     "50482b4 roadmap: w3-portal-live follow-up 11 merged (#185)",
     "b8d9a77 portal: operator settings view for the fleet configuration resource (D-065); dev-stack seed paces observations and honours Retry-After (portal follow-up 11) (#185)",
     "cecec34 roadmap: w4-at-isolation follow-up 2 merged (#184)",
-    "6c49c1c at-isolation: counted positive controls across the assembled AT10–AT13 runner on the real release baseline (follow-up 2) (#184)",
+    "6c49c1c at-isolation: counted positive controls across the assembled AT10\u2013AT13 runner on the real release baseline (follow-up 2) (#184)",
     "42f4f34 roadmap: w4-at-members follow-up 4 merged (#183)",
     "167247a at-members: second exit adopted, AT02/AT03/AT08 pass, AT09 restart finds an empty same-generation lease (F4-01) (follow-up 4) (#183)",
     "8eaafcb roadmap: w3-devstack-e2e follow-up 11 merged (#182)",
@@ -54,7 +54,9 @@
     "wire_nodes_followup_17": 179,
     "devstack_followup_11": 182,
     "agent_followup_14": 181,
-    "secops_followup_6": 178
+    "secops_followup_6": 178,
+    "secops_followup_7": 203,
+    "members_followup_5": 205
   },
   "absent_on_measured_main": [
     "devstack follow-up 12 per-stream bulk scanner results"
@@ -67,7 +69,7 @@
     "git log --oneline origin/main -20",
     "git diff 5ee3a05..8eaafcb --name-only -- deploy/backup docs/handover/restore-drill.md docs/ops/backups.md"
   ],
-  "history": "history/follow-up-6/dependencies.json",
+  "history": "history/follow-up-7/dependencies.json",
   "requests": {
     "SECOPS-04": {
       "status": "resolved input APIs/configuration",
@@ -93,12 +95,28 @@
       "evidence": "secret-scan.json"
     },
     "SECOPS-05": {
-      "status": "unchanged",
-      "detail": "No backup source change since #165"
+      "status": "measured in follow-up 8 (usage replay & provider reconciliation passed; #205 discovery-denial deduplication verified)",
+      "prs": [
+        165,
+        205
+      ],
+      "evidence": "restore-reconcile.json"
     },
     "trusted_proxy": {
       "status": "live measured after #174/#182",
       "evidence": "limiter.json"
+    },
+    "SECOPS-18": {
+      "status": "open",
+      "owner": "w2-members (internal/devices)",
+      "detail": "T0..T1 revoked device (peerM2D2) re-authorized by SyncDevice after restoring central DB to T0",
+      "evidence": "restore-reconcile.json"
+    },
+    "SECOPS-19": {
+      "status": "informational",
+      "owner": "w1-node-agent (node/agent/observe.go)",
+      "detail": "node/agent/observe.go:111-116 sends zeroed UsageOutboxStatus; retained archive sequences only visible via SQLite usage.db",
+      "evidence": "restore-reconcile.json"
     }
   }
 }

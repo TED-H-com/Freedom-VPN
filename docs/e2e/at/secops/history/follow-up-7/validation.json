@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "follow_up": 6,
+  "checked_at": "2026-10-30T17:30:38.234903Z",
+  "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+  "checks": [
+    {
+      "name": "root-lint",
+      "command": "make go-lint",
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "area",
+      "command": "make -f mk/at-secops.mk at-secops-lint at-secops-test at-secops-build",
+      "exit_code": 0,
+      "output_tail": [
+        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t2.917s",
+        "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
+        "...........",
+        "----------------------------------------------------------------------",
+        "Ran 11 tests in 0.004s",
+        "",
+        "OK",
+        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+      ]
+    },
+    {
+      "name": "e2e-vet",
+      "command": "go vet -tags e2e ./tests/...",
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "control-f17",
+      "command": "go test -p 1 -parallel 2 -count=1 -run ^TestReviewR12_ ./internal/httpapi",
+      "exit_code": 0,
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/internal/httpapi\t0.362s"
+      ]
+    }
+  ],
+  "live_target": {
+    "command": "make -f mk/at-secops.mk at-secops-followup6",
+    "exit_code": 2,
+    "phases": [
+      {
+        "phase": "profile",
+        "status": "passed",
+        "test_seconds": 967.81
+      },
+      {
+        "phase": "helper",
+        "status": "passed",
+        "test_seconds": 405.13
+      }
+    ],
+    "scope": "2 denotes full-case gates; both live Go probes exit 0"
+  },
+  "python_evidence_tests": {
+    "count": 11,
+    "exit_code": 0
+  },
+  "evidence_consistency": "passed: JSON parse, both 20/60/60 snapshots, both 600 valid owned-device reads, limiter and body triplet, duplicate ledger row, teardown inventories",
+  "final_probe_source_sha256": "9d3b4f4bcf9bec21f3726b75720f9cc6dac8bd4d35535158524ee5ea11b7ce24",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
+      "sha256": "d6ff489ab36ccb649597bbd2fdd38195d5bc1ed51dbf80a78693577261773213"
+    },
+    {
+      "arch": "arm64",
+      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
+      "sha256": "7d05ae15973b4ce8ba8dea8657b66dc21955cebd8353f79ff9fb97e3665deb67"
+    }
+  ],
+  "harness_scripts": [
+    {
+      "path": "tests/e2e/at/secops/followup6_gateway.py",
+      "sha256": "79434797a9c06558177edb0bdc162386d03198f2c68d0279441b0abceac4bdb3"
+    },
+    {
+      "path": "tests/e2e/at/secops/followup6_records.py",
+      "sha256": "b1958bb9a3e9c4858d6d95bdacba3b889f142ad9752fc98b24981e4b0daf3a89"
+    },
+    {
+      "path": "tests/e2e/at/secops/followup6_run.py",
+      "sha256": "4fd4bcd0ab7e216fe8e9adfb348ae585c99a065ba5d3ff99bf797d337c911448"
+    }
+  ],
+  "runtime_qualification": "Profile used original ps-based worker count (invalid); helper and final source use /proc. Recorded driver launched before its observer/renderer integration; observer ran alongside it from 17:08:10Z. The final reusable driver adds automatic observer start/finally-stop and record rendering; parse/unit checks pass. No application measurement is relabeled.",
+  "cleanup": "cleanup.json",
+  "history": "history/index.json"
+}
