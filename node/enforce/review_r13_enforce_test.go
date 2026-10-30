@@ -323,8 +323,9 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 
 // TestReviewR13_Q1_Q2_WhatHeld verifies the Q1 and Q2 properties that held in
 // node/enforce:
-//   - Apply reads `nft -j list table inet fvpn` (single table, not full ruleset),
-//     and installs nftables before VerifyServing, applyQoS, VerifyQoS, and deleteConntrack.
+//   - Apply loads state with `nft -j list table inet fvpn`, then reads the
+//     whole ruleset with `nft -j list ruleset` for VerifyServing. It installs
+//     nftables before VerifyServing, applyQoS, VerifyQoS, and deleteConntrack.
 //   - In the verified serving ruleset, a revoked IPv4 address removed from @allowed_v4
 //     and device rules is dropped before any accept or established/related rule in
 //     upload, download/reply, and input directions.
@@ -349,16 +350,17 @@ func TestReviewR13_Q1_Q2_WhatHeld(t *testing.T) {
 		t.Fatalf("expected 1 nft batch and 1 tc batch, got nft=%d tc=%d", len(f.nft), len(f.tc))
 	}
 	hasTableList := false
+	hasRuleset := false
 	for _, c := range cmds {
 		if c == "nft -j list table inet fvpn" {
 			hasTableList = true
 		}
 		if c == "nft -j list ruleset" {
-			t.Fatalf("Apply called `nft -j list ruleset` instead of `nft -j list table inet fvpn`")
+			hasRuleset = true
 		}
 	}
-	if !hasTableList {
-		t.Fatalf("expected `nft -j list table inet fvpn`, got %v", cmds)
+	if !hasTableList || !hasRuleset {
+		t.Fatalf("expected loadState `nft -j list table inet fvpn` and verify `nft -j list ruleset`, got %v", cmds)
 	}
 	lastTwo := cmds[len(cmds)-2:]
 	if lastTwo[0] != "conntrack -D -s 100.64.9.9" || lastTwo[1] != "conntrack -D -d 100.64.9.9" {
