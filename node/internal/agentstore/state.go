@@ -491,17 +491,26 @@ func (s *Store) SaveCounters(ctx context.Context, m map[string]Counter) error {
 	})
 }
 
+// AppliedAddress is one overlay host installed by the last serving apply,
+// with the device and member that owned it. A nil UUID is a row migrated
+// from a store that recorded only the address.
+type AppliedAddress struct {
+	Addr     string
+	DeviceID string
+	MemberID string
+}
+
 // Addresses returns overlay addresses installed by the last serving apply.
-func (s *Store) Addresses(ctx context.Context) ([]string, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT addr FROM applied_address ORDER BY addr`)
+func (s *Store) Addresses(ctx context.Context) ([]AppliedAddress, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT addr, device_id, member_id FROM applied_address ORDER BY addr, device_id, member_id`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var out []string
+	var out []AppliedAddress
 	for rows.Next() {
-		var a string
-		if err := rows.Scan(&a); err != nil {
+		var a AppliedAddress
+		if err := rows.Scan(&a.Addr, &a.DeviceID, &a.MemberID); err != nil {
 			return nil, err
 		}
 		out = append(out, a)
@@ -510,13 +519,13 @@ func (s *Store) Addresses(ctx context.Context) ([]string, error) {
 }
 
 // SaveAddresses replaces the applied address set.
-func (s *Store) SaveAddresses(ctx context.Context, addrs []string) error {
+func (s *Store) SaveAddresses(ctx context.Context, addrs []AppliedAddress) error {
 	return s.tx(ctx, func(tx *sql.Tx) error {
 		if _, err := tx.ExecContext(ctx, `DELETE FROM applied_address`); err != nil {
 			return err
 		}
 		for _, a := range addrs {
-			if _, err := tx.ExecContext(ctx, `INSERT INTO applied_address (addr) VALUES (?)`, a); err != nil {
+			if _, err := tx.ExecContext(ctx, `INSERT INTO applied_address (addr, device_id, member_id) VALUES (?, ?, ?)`, a.Addr, a.DeviceID, a.MemberID); err != nil {
 				return err
 			}
 		}
