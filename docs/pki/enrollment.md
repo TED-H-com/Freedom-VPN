@@ -192,3 +192,21 @@ revives them. Migration 00111 permits only a newly consumed
 bound enrollment to transition revoked→registered. Existing node-level journal
 denials remain fail closed and require operator reconciliation; they are never
 silently erased. Retirement cannot be undone.
+
+
+## Management peer correlation (D-055)
+
+The worker passes the stable enrollment **operation ID** to the NetBird adapter.
+Its one-off, usage-limit-one, non-ephemeral setup key auto-enrolls the peer into
+exactly two groups: shared `fvpn-unpublished-nodes` and an empty
+`fvpn-enroll-peer-<hash>` unique to that attempt. The latter is only a correlation
+record, never a policy/route authorization group. `node.peer.discover` reads
+management's key usage and that group's membership, requires exactly one use
+and one machine peer, and records `peer_readback` only after confirmed binding
+and removal of the temporary group. A null agent `netbird.peer_id` therefore
+requires no guessed identifier. Setup-key revocation also detaches and removes
+the temporary group with read-back. Unknown/ambiguous management evidence never
+binds a peer: transient absence retries within the worker budget; conflicts
+freeze the incarnation and retain a safe operation/node/audit reason. Existing
+bootstrap encryption, single delivery and revocation fences remain unchanged.
+See [worker discovery and failure semantics](../nodes/WIRING.md#worker-jobs-and-read-back).

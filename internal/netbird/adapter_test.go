@@ -124,6 +124,11 @@ func (f *fake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reply := object{}
+	if kind == "setup-keys" && r.Method == "PUT" {
+		for k, v := range bucket[id] {
+			reply[k] = v
+		}
+	}
 	for k, v := range f.templates[kind] {
 		reply[k] = v
 	}
@@ -155,6 +160,9 @@ func (f *fake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		reply["rules"] = rules
 	case "setup-keys":
+		if r.Method == "POST" {
+			reply["used_times"], reply["revoked"], reply["state"] = 0, false, "valid"
+		}
 		reply["key"] = "TEST ONLY generated setup secret"
 		reply["expires"] = time.Now().Add(24 * time.Hour).Format(time.RFC3339)
 	}
