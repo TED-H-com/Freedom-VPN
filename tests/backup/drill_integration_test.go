@@ -28,43 +28,47 @@ type BackupFileDigest struct {
 
 // DrillRecord represents the JSON evidence written to docs/ops/backups/drill-<date>.json (§17.2, §17.5, AT30).
 type DrillRecord struct {
-	SchemaVersion         int                `json:"schema_version"`
-	SpecReferences        []string           `json:"spec_references"`
-	Requirements          []string           `json:"requirements"`
-	DrillDate             string             `json:"drill_date"`
-	ExecutedAtUTC         string             `json:"executed_at_utc"`
-	PgBackRestVersion     string             `json:"pgbackrest_version"`
-	PostgresVersion       string             `json:"postgres_version"`
-	BaseImageDigest       string             `json:"base_image_digest"`
-	BuiltImageID          string             `json:"built_image_id"`
-	ArchiveMode           string             `json:"archive_mode"`
-	ProductionTimeout     string             `json:"production_archive_timeout"`
-	LabOverrideTimeout    string             `json:"lab_archive_timeout_test_only"`
-	BackupLabel           string             `json:"backup_label"`
-	BackupType            string             `json:"backup_type"`
-	BackupStartLSN        string             `json:"backup_start_lsn"`
-	BackupStopLSN         string             `json:"backup_stop_lsn"`
-	TargetTimestampUTC    string             `json:"target_timestamp_utc"`
-	TargetLSN             string             `json:"target_lsn"`
-	PrimaryMarkers        []string           `json:"primary_markers"`
-	RestoredMarkers       []string           `json:"restored_markers"`
-	MarkerAPresent        bool               `json:"marker_a_present"`
-	MarkerBAbsent         bool               `json:"marker_b_absent"`
-	LivePrimaryProtected  bool               `json:"live_primary_overwrite_refused"`
-	IsolatedNetworkMode   string             `json:"isolated_network_mode"`
-	IsolatedPublishedPort int                `json:"isolated_published_ports"`
-	MigrationsApplied     int                `json:"migrations_applied"`
-	MigrationsPending     int                `json:"migrations_pending"`
-	ChecklistVerified     bool               `json:"post_restore_checklist_verified"`
-	VerifyScriptPassed    bool               `json:"verify_script_passed"`
-	RPOTargetSeconds      int64              `json:"rpo_target_seconds"`
-	RTOTargetSeconds      int64              `json:"rto_target_seconds"`
-	MeasuredArchiveLagMs  int64              `json:"measured_rpo_archive_lag_ms"`
-	MeasuredRestoreRTOMs  int64              `json:"measured_rto_restore_ms"`
-	MeasuredVerifyRTOMs   int64              `json:"measured_rto_verify_ms"`
-	MeasuredTotalDrillMs  int64              `json:"measured_total_drill_ms"`
-	BackupSetDigests      []BackupFileDigest `json:"backup_set_digests"`
-	Status                string             `json:"status"`
+	SchemaVersion          int                `json:"schema_version"`
+	SpecReferences         []string           `json:"spec_references"`
+	Requirements           []string           `json:"requirements"`
+	DrillDate              string             `json:"drill_date"`
+	ExecutedAtUTC          string             `json:"executed_at_utc"`
+	PgBackRestVersion      string             `json:"pgbackrest_version"`
+	PostgresVersion        string             `json:"postgres_version"`
+	BaseImageDigest        string             `json:"base_image_digest"`
+	BuiltImageID           string             `json:"built_image_id"`
+	ArchiveMode            string             `json:"archive_mode"`
+	ProductionTimeout      string             `json:"production_archive_timeout"`
+	LabOverrideTimeout     string             `json:"lab_archive_timeout_test_only"`
+	BackupLabel            string             `json:"backup_label"`
+	BackupType             string             `json:"backup_type"`
+	BackupStartLSN         string             `json:"backup_start_lsn"`
+	BackupStopLSN          string             `json:"backup_stop_lsn"`
+	TargetTimestampUTC     string             `json:"target_timestamp_utc"`
+	TargetLSN              string             `json:"target_lsn"`
+	PrimaryMarkers         []string           `json:"primary_markers"`
+	RestoredMarkers        []string           `json:"restored_markers"`
+	MarkerMPresent         bool               `json:"marker_m_present"`
+	MarkerAPresent         bool               `json:"marker_a_present"`
+	MarkerBAbsent          bool               `json:"marker_b_absent"`
+	LivePrimaryProtected   bool               `json:"live_primary_overwrite_refused"`
+	IsolatedNetworkMode    string             `json:"isolated_network_mode"`
+	IsolatedPublishedPort  int                `json:"isolated_published_ports"`
+	MigrationsApplied      int                `json:"migrations_applied"`
+	MigrationsPending      int                `json:"migrations_pending"`
+	ChecklistVerified      bool               `json:"post_restore_checklist_verified"`
+	VerifyScriptPassed     bool               `json:"verify_script_passed"`
+	RPOTargetSeconds       int64              `json:"rpo_target_seconds"`
+	RTOTargetSeconds       int64              `json:"service_rto_target_seconds_unverified"`
+	WALSwitchToArchiveMs   int64              `json:"wal_switch_to_archive_ms"`
+	RepositoryArchiveLagMs int64              `json:"repository_archive_lag_ms"`
+	RepositoryNewestWAL    string             `json:"repository_newest_wal"`
+	MeasuredArchiveLagMs   int64              `json:"archiver_lag_ms"`
+	MeasuredRestoreRTOMs   int64              `json:"local_restore_command_ms"`
+	MeasuredVerifyRTOMs    int64              `json:"local_verify_command_ms"`
+	MeasuredTotalDrillMs   int64              `json:"measured_total_drill_ms"`
+	BackupSetDigests       []BackupFileDigest `json:"backup_set_digests"`
+	Status                 string             `json:"status"`
 }
 
 func TestAT30_BackupPITRDrill(t *testing.T) {
@@ -72,6 +76,9 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 	defer cancel()
 
 	if err := exec.CommandContext(ctx, "docker", "info").Run(); err != nil {
+		if os.Getenv("GITHUB_ACTIONS") == "true" {
+			t.Fatalf("CI requires Docker for the PITR drill: %v", err)
+		}
 		t.Skipf("skipping backup PITR drill: docker daemon is not reachable: %v", err)
 	}
 
@@ -180,6 +187,9 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 	for time.Now().UTC().Unix() <= backupStopUnix {
 		time.Sleep(100 * time.Millisecond)
 	}
+	execPsql(ctx, t, names.PrimaryContainer, `
+		INSERT INTO _backup_drill (marker, note) VALUES ('M', 'after backup stop, before target');
+	`)
 	time.Sleep(100 * time.Millisecond)
 	targetTimestamp := strings.TrimSpace(execPsql(ctx, t, names.PrimaryContainer,
 		`SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"');`))
@@ -200,17 +210,14 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 
 	primaryMarkersCSV := strings.TrimSpace(execPsql(ctx, t, names.PrimaryContainer,
 		`SELECT string_agg(marker, ',' ORDER BY marker) FROM _backup_drill;`))
-	if primaryMarkersCSV != "A,B" {
-		t.Fatalf("expected primary _backup_drill markers 'A,B', got %q", primaryMarkersCSV)
+	if primaryMarkersCSV != "A,B,M" {
+		t.Fatalf("expected primary _backup_drill markers 'A,B,M', got %q", primaryMarkersCSV)
 	}
 
 	// Force WAL switch and verify archiving via backup.sh wal-switch.
 	walSwitchStart := time.Now()
 	runCmd(ctx, t, repoRoot, nil, "bash", backupScript, "--container", names.PrimaryContainer, "wal-switch")
-	rpoArchiveLagMs := time.Since(walSwitchStart).Milliseconds()
-	if rpoArchiveLagMs < 1 {
-		rpoArchiveLagMs = 1
-	}
+	walSwitchToArchiveMs := time.Since(walSwitchStart).Milliseconds()
 
 	// 8. Failure case: verify restore-pitr.sh refuses to overwrite the live primary container.
 	restoreScript := filepath.Join(repoRoot, "deploy", "backup", "restore-pitr.sh")
@@ -229,7 +236,7 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 	// Confirm primary still has both A and B untouched.
 	afterRefuseCSV := strings.TrimSpace(execPsql(ctx, t, names.PrimaryContainer,
 		`SELECT string_agg(marker, ',' ORDER BY marker) FROM _backup_drill;`))
-	if afterRefuseCSV != "A,B" {
+	if afterRefuseCSV != "A,B,M" {
 		t.Fatalf("primary markers altered after refused restore: got %q", afterRefuseCSV)
 	}
 
@@ -261,11 +268,29 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 		t.Fatalf("expected 0 published ports on restored container, got %q (err=%v)", portCountStr, err)
 	}
 
-	// 11. Assert Marker A is present and Marker B is absent in the PITR-restored database.
+	// 11. Require WAL-only marker M, and separately exclude post-target B.
 	restoredMarkersCSV := strings.TrimSpace(execPsql(ctx, t, names.RestoreContainer,
 		`SELECT COALESCE(string_agg(marker, ',' ORDER BY marker), '') FROM _backup_drill;`))
-	if restoredMarkersCSV != "A" {
-		t.Fatalf("PITR verification failed: expected restored _backup_drill markers 'A' (B absent), got %q (target=%s)", restoredMarkersCSV, targetTimestamp)
+	if restoredMarkersCSV != "A,M" {
+		t.Fatalf("PITR verification failed: expected restored _backup_drill markers 'A,M' (B absent), got %q (target=%s)", restoredMarkersCSV, targetTimestamp)
+	}
+
+	if got := strings.TrimSpace(execPsql(ctx, t, names.RestoreContainer,
+		`SELECT count(*) FROM _backup_drill WHERE marker = 'B';`)); got != "0" {
+		t.Fatalf("post-target marker B survived: %s", got)
+	}
+
+	// Execute every SQL fence in the handover itself, so edited queries cannot drift.
+	handover, err := os.ReadFile(filepath.Join(repoRoot, "docs", "handover", "restore-drill.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	queries := handoverSQL(string(handover))
+	if len(queries) < 4 {
+		t.Fatal("handover SQL inventory unexpectedly empty")
+	}
+	for _, query := range queries {
+		execPsql(ctx, t, names.RestoreContainer, "SET default_transaction_read_only=on;\n"+query)
 	}
 
 	// 12. Assert fvpn-migrate status reports every migration applied on the restored container.
@@ -327,6 +352,22 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 		t.Fatalf("verify.sh did not report status=PASS:\n%s", verifyOut)
 	}
 
+	verifyBytes, err := os.ReadFile(verifyJSONPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var archiveState struct {
+		ArchiverLagMs   int64  `json:"archiver_lag_ms"`
+		RepositoryLagMs int64  `json:"repository_archive_lag_ms"`
+		RepositoryWAL   string `json:"repository_newest_wal"`
+	}
+	if err := json.Unmarshal(verifyBytes, &archiveState); err != nil {
+		t.Fatal(err)
+	}
+	if archiveState.RepositoryWAL == "" {
+		t.Fatal("missing repository WAL evidence")
+	}
+
 	// 15. Collect SHA-256 digests of the backup set files from the pgBackRest repository.
 	digests := collectRepoDigests(ctx, t, names.PrimaryContainer)
 	if len(digests) == 0 {
@@ -336,43 +377,52 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 	totalDrillMs := time.Since(drillStart).Milliseconds()
 
 	record := DrillRecord{
-		SchemaVersion:         1,
-		SpecReferences:        []string{"§15.4", "§16.2", "§17.1", "§17.2", "§17.3", "§17.4", "§17.5", "§19 AT30"},
-		Requirements:          []string{"DATA01", "BILL01", "MTR03", "SECOPS-05"},
-		DrillDate:             drillDate,
-		ExecutedAtUTC:         drillStart.Format(time.RFC3339),
-		PgBackRestVersion:     pgBackRestVer,
-		PostgresVersion:       pgVersion,
-		BaseImageDigest:       "postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-		BuiltImageID:          builtImageID,
-		ArchiveMode:           archiveMode,
-		ProductionTimeout:     "300s",
-		LabOverrideTimeout:    "10s",
-		BackupLabel:           backupLabel,
-		BackupType:            "full",
-		BackupStartLSN:        backupStartLSN,
-		BackupStopLSN:         backupStopLSN,
-		TargetTimestampUTC:    targetTimestamp,
-		TargetLSN:             targetLSN,
-		PrimaryMarkers:        strings.Split(primaryMarkersCSV, ","),
-		RestoredMarkers:       strings.Split(restoredMarkersCSV, ","),
-		MarkerAPresent:        restoredMarkersCSV == "A",
-		MarkerBAbsent:         !strings.Contains(restoredMarkersCSV, "B"),
-		LivePrimaryProtected:  true,
-		IsolatedNetworkMode:   netMode,
-		IsolatedPublishedPort: portCount,
-		MigrationsApplied:     appliedMigrations,
-		MigrationsPending:     pendingMigrations,
-		ChecklistVerified:     true,
-		VerifyScriptPassed:    true,
-		RPOTargetSeconds:      900,  // 15 minutes (§17.2)
-		RTOTargetSeconds:      7200, // 2 hours (§17.2 / docs/handover/restore-drill.md)
-		MeasuredArchiveLagMs:  rpoArchiveLagMs,
-		MeasuredRestoreRTOMs:  rtoRestoreMs,
-		MeasuredVerifyRTOMs:   verifyRTOMs,
-		MeasuredTotalDrillMs:  totalDrillMs,
-		BackupSetDigests:      digests,
-		Status:                "PASS",
+		SchemaVersion:          2,
+		SpecReferences:         []string{"§15.4", "§16.2", "§17.1", "§17.2", "§17.3", "§17.4", "§17.5", "§19 AT30"},
+		Requirements:           []string{"DATA01", "BILL01", "MTR03", "SECOPS-05"},
+		DrillDate:              drillDate,
+		ExecutedAtUTC:          drillStart.Format(time.RFC3339),
+		PgBackRestVersion:      pgBackRestVer,
+		PostgresVersion:        pgVersion,
+		BaseImageDigest:        "postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+		BuiltImageID:           builtImageID,
+		ArchiveMode:            archiveMode,
+		ProductionTimeout:      "300s",
+		LabOverrideTimeout:     "10s",
+		BackupLabel:            backupLabel,
+		BackupType:             "full",
+		BackupStartLSN:         backupStartLSN,
+		BackupStopLSN:          backupStopLSN,
+		TargetTimestampUTC:     targetTimestamp,
+		TargetLSN:              targetLSN,
+		PrimaryMarkers:         strings.Split(primaryMarkersCSV, ","),
+		RestoredMarkers:        strings.Split(restoredMarkersCSV, ","),
+		MarkerAPresent:         strings.Contains(restoredMarkersCSV, "A"),
+		MarkerMPresent:         strings.Contains(restoredMarkersCSV, "M"),
+		MarkerBAbsent:          !strings.Contains(restoredMarkersCSV, "B"),
+		LivePrimaryProtected:   true,
+		IsolatedNetworkMode:    netMode,
+		IsolatedPublishedPort:  portCount,
+		MigrationsApplied:      appliedMigrations,
+		MigrationsPending:      pendingMigrations,
+		ChecklistVerified:      true,
+		VerifyScriptPassed:     true,
+		RPOTargetSeconds:       900,   // 15 minutes (§17.2)
+		RTOTargetSeconds:       14400, // Service RTO (§17.2); not measured by this local drill.
+		MeasuredArchiveLagMs:   archiveState.ArchiverLagMs,
+		WALSwitchToArchiveMs:   walSwitchToArchiveMs,
+		RepositoryArchiveLagMs: archiveState.RepositoryLagMs,
+		RepositoryNewestWAL:    archiveState.RepositoryWAL,
+		MeasuredRestoreRTOMs:   rtoRestoreMs,
+		MeasuredVerifyRTOMs:    verifyRTOMs,
+		MeasuredTotalDrillMs:   totalDrillMs,
+		BackupSetDigests:       digests,
+		Status:                 "PASS",
+	}
+
+	if os.Getenv("FVPN_BACKUP_DRILL_RECORD") != "1" {
+		t.Logf("PITR verified: restored=%v B_absent=%v archiver_lag=%dms repo_lag=%dms; evidence recording disabled", record.RestoredMarkers, record.MarkerBAbsent, record.MeasuredArchiveLagMs, record.RepositoryArchiveLagMs)
+		return
 	}
 
 	outputDir := os.Getenv("FVPN_BACKUP_DRILL_OUTPUT_DIR")
@@ -398,7 +448,7 @@ func TestAT30_BackupPITRDrill(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Logf("PITR Drill Summary: backup=%s target=%s markerA=%v markerB_absent=%v migrations=%d/%d RPO=%dms RTO=%dms (verify=%dms, total=%dms) record=%s",
+	t.Logf("PITR Drill Summary: backup=%s target=%s markerA=%v markerB_absent=%v migrations=%d/%d archiver_lag=%dms local_restore=%dms (verify=%dms, total=%dms) record=%s",
 		record.BackupLabel,
 		record.TargetTimestampUTC,
 		record.MarkerAPresent,
@@ -660,17 +710,16 @@ func renderDrillMarkdown(r DrillRecord) string {
 	fmt.Fprintf(&b, "- **Base Image Digest**: `%s`\n", r.BaseImageDigest)
 	fmt.Fprintf(&b, "- **Status**: **%s**\n\n", r.Status)
 
-	b.WriteString("## 1. Measured RPO & RTO vs. Targets (`§17.2`)\n\n")
-	b.WriteString("| Metric | Spec / Handover Target | Measured Drill Value | Result |\n")
-	b.WriteString("|---|---|---|---|\n")
-	fmt.Fprintf(&b, "| **Continuous WAL Archive Lag (RPO)** | `<= 15 minutes` (`%d s`) | **`%d ms`** (`%.3f s`) | **PASS** |\n",
-		r.RPOTargetSeconds, r.MeasuredArchiveLagMs, float64(r.MeasuredArchiveLagMs)/1000.0)
-	fmt.Fprintf(&b, "| **Physical PITR Restore + Promotion Time (Database RTO)** | `<= 2 hours` (`%d s`) | **`%d ms`** (`%.3f s`) | **PASS** |\n",
-		r.RTOTargetSeconds, r.MeasuredRestoreRTOMs, float64(r.MeasuredRestoreRTOMs)/1000.0)
-	fmt.Fprintf(&b, "| **Full Throwaway Verification (`verify.sh`: Restore + `fvpn-migrate status` + Checklist)** | `<= 2 hours` (`%d s`) | **`%d ms`** (`%.3f s`) | **PASS** |\n",
-		r.RTOTargetSeconds, r.MeasuredVerifyRTOMs, float64(r.MeasuredVerifyRTOMs)/1000.0)
-	fmt.Fprintf(&b, "| **Total End-to-End Automated Drill Duration** | `<= 10 minutes` CI budget | **`%d ms`** (`%.3f s`) | **PASS** |\n\n",
-		r.MeasuredTotalDrillMs, float64(r.MeasuredTotalDrillMs)/1000.0)
+	b.WriteString("## 1. Archive observations and local command durations (`§17.2`)\n\n")
+	b.WriteString("This local POSIX drill does not measure the 4-hour service RTO: secrets, service configuration, external reconciliation and end-user probes still require a service-level drill. Archive ages describe this lab sample, not a production RPO guarantee.\n\n")
+	b.WriteString("| Metric | Measured value |\n|---|---:|\n")
+	fmt.Fprintf(&b, "| Primary pg_stat_archiver age | %d ms |\n", r.MeasuredArchiveLagMs)
+	fmt.Fprintf(&b, "| Newest WAL in restored repository (object mtime age) | %d ms |\n", r.RepositoryArchiveLagMs)
+	fmt.Fprintf(&b, "| WAL switch to archive check duration | %d ms |\n", r.WALSwitchToArchiveMs)
+	fmt.Fprintf(&b, "| Local restore command including promotion | %d ms |\n", r.MeasuredRestoreRTOMs)
+	fmt.Fprintf(&b, "| Local verify command | %d ms |\n", r.MeasuredVerifyRTOMs)
+	fmt.Fprintf(&b, "| Total local drill | %d ms |\n\n", r.MeasuredTotalDrillMs)
+	fmt.Fprintf(&b, "Repository WAL: `%s`. Both archive ages must be known and at most 900 seconds.\n\n", r.RepositoryNewestWAL)
 
 	b.WriteString("## 2. Point-in-Time Recovery (PITR) & Safety Verification\n\n")
 	b.WriteString("| Verification Check | Expected | Observed | Result |\n")
@@ -679,11 +728,11 @@ func renderDrillMarkdown(r DrillRecord) string {
 		r.ArchiveMode, r.ProductionTimeout, r.LabOverrideTimeout)
 	fmt.Fprintf(&b, "| Full Base Backup Label & LSN Window | Valid pgBackRest backup | `%s` (`%s` -> `%s`) | **PASS** |\n",
 		r.BackupLabel, r.BackupStartLSN, r.BackupStopLSN)
-	fmt.Fprintf(&b, "| Target Recovery Point (`restore-pitr.sh --target-time`) | Between Marker `A` and Marker `B` | `%s` (LSN `%s`) | **PASS** |\n",
+	fmt.Fprintf(&b, "| Target Recovery Point (`restore-pitr.sh --target-time`) | After post-backup Marker `M`, before Marker `B` | `%s` (LSN `%s`) | **PASS** |\n",
 		r.TargetTimestampUTC, r.TargetLSN)
-	fmt.Fprintf(&b, "| Live Primary Markers (`_backup_drill`) | `A, B` | `%s` | **PASS** |\n",
+	fmt.Fprintf(&b, "| Live Primary Markers (`_backup_drill`) | `A, B, M` | `%s` | **PASS** |\n",
 		strings.Join(r.PrimaryMarkers, ", "))
-	fmt.Fprintf(&b, "| Restored Instance Markers (`_backup_drill`) | `A` present, `B` absent | `%s` (`marker_a_present=%v`, `marker_b_absent=%v`) | **PASS** |\n",
+	fmt.Fprintf(&b, "| Restored Instance Markers (`_backup_drill`) | Exactly `A, M`; `B` absent | `%s` (`marker_a_present=%v`, `marker_b_absent=%v`) | **PASS** |\n",
 		strings.Join(r.RestoredMarkers, ", "), r.MarkerAPresent, r.MarkerBAbsent)
 	fmt.Fprintf(&b, "| Live-Primary Overwrite Guard | Refuses live primary container/dir | `live_primary_overwrite_refused=%v` | **PASS** |\n",
 		r.LivePrimaryProtected)
@@ -701,4 +750,29 @@ func renderDrillMarkdown(r DrillRecord) string {
 		fmt.Fprintf(&b, "| `%s` | `%d` | `%s` |\n", d.Path, d.Bytes, d.SHA256)
 	}
 	return b.String()
+}
+
+// handoverSQL extracts SQL fences, preserving the exact operator queries.
+func handoverSQL(markdown string) []string {
+	var queries []string
+	var query strings.Builder
+	inside := false
+	for _, line := range strings.Split(markdown, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "```sql" {
+			inside = true
+			query.Reset()
+			continue
+		}
+		if inside && trimmed == "```" {
+			queries = append(queries, query.String())
+			inside = false
+			continue
+		}
+		if inside {
+			query.WriteString(line)
+			query.WriteByte('\n')
+		}
+	}
+	return queries
 }

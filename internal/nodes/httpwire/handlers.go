@@ -183,8 +183,11 @@ func (h *Handlers) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
-	out, tag, e := h.Runtime.Nodes.GetNode(ctx, r.NodeId)
-	return gen.GetNode200JSONResponse{Body: out, Headers: gen.GetNode200ResponseHeaders{ETag: &tag}}, e
+	out, evidence, tag, e := h.Runtime.Nodes.GetNodeWithDNSEvidence(ctx, r.NodeId)
+	if e != nil {
+		return nil, e
+	}
+	return nodeDetailResponse{body: nodeDetailProjection{NodeDetail: out, DNSPolicyEvidence: evidence}, etag: tag}, nil
 }
 func (h *Handlers) ListMemberExits(ctx context.Context, _ gen.ListMemberExitsRequestObject) (gen.ListMemberExitsResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
@@ -370,6 +373,9 @@ func (h *Handlers) Replay(ctx context.Context, name string, ref db.IdempotencyRe
 	switch name {
 	case "SubmitObservation", "SubmitUpdateResult", "RenewServingLease":
 		return h.replayAgentReceipt(ctx, name, ref)
+	case "CreateAdminGroup":
+		out, e := h.Runtime.Nodes.CreatedGroup(ctx, *ref.ResourceID)
+		return gen.CreateAdminGroup201JSONResponse{Body: out}, e
 	case "CreateEnrollment":
 		out, e := h.Runtime.Enrollment.GetEnrollment(ctx, *ref.ResourceID)
 		return gen.CreateEnrollment201JSONResponse{Body: api.EnrollmentCreated{Enrollment: out, SecretAvailable: false, Token: presence.NewNullNullable[string]()}}, e

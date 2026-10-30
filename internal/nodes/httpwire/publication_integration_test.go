@@ -132,20 +132,9 @@ func TestAPI01_PublishedDesiredStateDBPolicyAndEligibilityCache(t *testing.T) {
 	if third.Header().Get("ETag") == second.Header().Get("ETag") {
 		t.Fatal("policy refs omitted from cache inputs")
 	}
-	dnsRev := f.activate("dns_profile", uuid.Nil, 1, `{}`)
-	var dnsDef uuid.UUID
-	if err = f.r.Pool.QueryRow(t.Context(), `SELECT definition_id FROM policy_revisions WHERE id=$1`, dnsRev).Scan(&dnsDef); err != nil {
-		t.Fatal(err)
-	}
-	doc := []byte(`{"schema_version":1}`)
-	hash, err := canonjson.HashHex(doc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	f.sql(`INSERT INTO dns_resolver_documents(profile_revision_id,definition_id,profile_code,policy_generation,document_sha256,document,canonical_bytes) VALUES($1,$2,'TEST ONLY DNS',9,$3,$4,$5)`, dnsRev, dnsDef, hash, string(doc), doc)
-	f.sql(`INSERT INTO dns_publication_heads(definition_id,profile_revision_id,policy_generation,document_sha256,status) VALUES($1,$2,9,$3,'active')`, dnsDef, dnsRev, hash)
+	dnsDoc, _ := publishResolverProfile(t, f, nil, 60)
 	fourth, state := read(third.Header().Get("ETag"))
-	if state.Signed.PolicyRefs.DnsGeneration != 9 {
+	if state.Signed.PolicyRefs.DnsGeneration != dnsDoc.Reference.Generation {
 		t.Fatal("DNS head generation missing")
 	}
 	// FUP changes need no active-policy revision change to invalidate an envelope.

@@ -44,6 +44,11 @@
     "rule": "return_url",
     "note": "TEST ONLY allowlist: https://portal.example.invalid; this host is absent (§16.2)."
   },
+  "UpdateResult.health-null-on-check.json": {
+    "owner": "fleet update service",
+    "rule": "health",
+    "note": "health is null only for a failed result whose stage precedes checking. stage check already ran the health profile (D-062); payload hash is correct."
+  },
   "BillingPortalSessionRequest.non-allowlisted.json": {
     "owner": "billing service",
     "rule": "return_url",
