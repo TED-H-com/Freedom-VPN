@@ -111,6 +111,41 @@ func TestD053_AttestationObservationHashesDecodedBytes(t *testing.T) {
 	}
 }
 
+func TestChallengeProbeRoundTrip(t *testing.T) {
+	ch, _, _, _ := validPair(t)
+	if ch.Probe != nil {
+		t.Fatal("Issue set a probe")
+	}
+	dir := privateDir(t)
+	if err := WriteChallenge(dir, ch); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := ReadChallenge(dir)
+	if err != nil || !got.Same(ch) || got.Probe != nil {
+		t.Fatalf("%v %+v", err, got.Probe)
+	}
+	ch.Probe = &ChallengeProbe{
+		PeerID:   "peer-probe",
+		SourceV4: "100.64.8.1/32",
+		Destinations: []ChallengeProbeDest{{
+			AddrV4: "1.2.3.4/32", Proto: "tcp", Port: 80,
+		}},
+		ResolverDNS: true,
+	}
+	if err := WriteChallenge(dir, ch); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err = ReadChallenge(dir)
+	if err != nil || !got.Same(ch) {
+		t.Fatalf("%v %+v", err, got.Probe)
+	}
+	other := ch
+	other.Probe = nil
+	if other.Same(ch) {
+		t.Fatal("a missing probe matched a probe")
+	}
+}
+
 func TestD053_FutureClockBoundAndReasonVocabulary(t *testing.T) {
 	ch, at, now, versions := validPair(t)
 	at.GeneratedAt = now.Add(MaxClockSkew)

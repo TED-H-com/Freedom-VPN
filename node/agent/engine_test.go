@@ -27,10 +27,16 @@ func (passProbe) Probe(context.Context, ProbeRequest) ProbeResult {
 	return ProbeResult{Ran: true, Check: api.HealthCheckStatusPassed, Health: api.DataHealthHealthy, Detail: "overlay_up"}
 }
 
+type planeCall struct {
+	kind  string
+	model enforce.Model
+}
+
 type memPlane struct {
 	baselines int
 	applies   int
 	last      enforce.Model
+	calls     []planeCall
 }
 
 func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
@@ -40,11 +46,31 @@ func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]en
 	}
 	m.applies++
 	m.last = model
-	return enforce.ApplyResult{Plan: plan}, nil
+	m.calls = append(m.calls, planeCall{kind: "apply", model: model})
+	res := enforce.ApplyResult{Plan: plan}
+	if model.Probe != nil {
+		// The real apply returns these diagnostic counters. The agent must
+		// not copy them into member usage.
+		res.Counters = map[string]enforce.CounterValue{
+			"probe_up":   {Packets: 1, Bytes: 1},
+			"probe_down": {Packets: 1, Bytes: 1},
+		}
+	}
+	return res, nil
 }
 
 func (m *memPlane) Baseline(context.Context, enforce.Datapath) error {
 	m.baselines++
+	m.calls = append(m.calls, planeCall{kind: "baseline"})
+	return nil
+}
+
+func (m *memPlane) BaselineModel(_ context.Context, model enforce.Model) error {
+	if _, err := enforce.RenderBaseline(model, enforce.State{}); err != nil {
+		return err
+	}
+	m.last = model
+	m.calls = append(m.calls, planeCall{kind: "baseline_model", model: model})
 	return nil
 }
 
