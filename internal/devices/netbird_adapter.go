@@ -11,6 +11,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,7 +26,7 @@ type NetBirdAdapter struct {
 }
 
 func (a *NetBirdAdapter) ObservePeer(ctx context.Context, deployment, id string) (Peer, error) {
-	p := Peer{DeploymentID: deployment, ID: id, OverlayScope: a.OverlayScope, Platform: "unknown", Groups: []uuid.UUID{}}
+	p := Peer{DeploymentID: deployment, ID: id, OverlayScope: a.OverlayScope, Platform: "unknown", IdentityUnmapped: true, Groups: []uuid.UUID{}}
 	if deployment != a.DeploymentID {
 		return p, ErrUnmapped
 	}
@@ -119,7 +120,7 @@ func (a *NetBirdAdapter) device(ctx context.Context, deployment, peer string) (n
 	d.PeerID = peer
 	var identity uuid.UUID
 	var revision decstr.U64
-	e = a.Pool.QueryRow(ctx, `SELECT n.external_user_id,n.identity_binding_id,n.revision::text FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.mapping_proof<>'' AND i.stable_claim_ref<>'' AND i.binding_method<>'' AND n.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp()`, member, deployment).Scan(&d.UserID, &identity, &revision)
+	e = a.Pool.QueryRow(ctx, `SELECT n.external_user_id,n.identity_binding_id,n.revision::text FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.mapping_proof='shared_issuer_public_subject:' || i.issuer AND i.subject=n.external_user_id AND n.revision>0 AND i.stable_claim_ref='sub' AND i.binding_method='oidc' AND n.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp()`, member, deployment).Scan(&d.UserID, &identity, &revision)
 	if e != nil {
 		return d, status, db.MapError(e)
 	}
@@ -213,6 +214,11 @@ func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
 				return e
 			}
 		}
+		if result == identityService || result == identityBlocked {
+			if e = db.InTx(ctx, a.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return auditIdentity(ctx, tx, uuid.Nil, uuid.Nil, result) }); e != nil {
+				return e
+			}
+		}
 		eligible[user.ID] = result == identityCreated || result == identityUnchanged || result == identityUpdated
 		a.Identity.record(ctx, result)
 	}
@@ -229,6 +235,10 @@ func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
 			a.Identity.record(ctx, identityUnmapped)
 		}
 		if !verified {
+			c := entitlement.Command{Actor: entitlement.Actor{ID: uuid.MustParse("00000000-0000-0000-0000-000000000003"), Role: "system"}}
+			if e = s.recordDenial(ctx, c, Peer{DeploymentID: a.DeploymentID, ID: p.ID}, uuid.Nil, ErrUnmapped); e != nil {
+				return e
+			}
 			continue
 		}
 		// Existing devices reconcile separately; revoked tombstones never rejoin.

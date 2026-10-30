@@ -134,3 +134,82 @@ func TestAPI01_OperationCreationAndFrozenTerminalRows(t *testing.T) {
 		})
 	}
 }
+
+func TestSECOPS11_AdminOperationProjectsOnlyBoundedFailureCauses(t *testing.T) {
+	pool := dbtest.New(t)
+	s := Store{Pool: pool}
+	adminPrincipal := auth.Principal{Role: auth.Admin, ID: uuid.New()}
+	memberPrincipal := auth.Principal{Role: auth.Member, ID: uuid.New()}
+
+	cases := []struct {
+		name      string
+		stored    *string
+		wantAdmin string
+	}{
+		{"route_missing", strPtr("route_missing"), "route_missing"},
+		{"route_disabled", strPtr("route_disabled"), "route_disabled"},
+		{"publish_rejected_503", strPtr("publish_rejected:503"), "publish_rejected:503"},
+		{"readback_failed_unconfirmed", strPtr("readback_failed:unconfirmed"), "readback_failed:unconfirmed"},
+		{"no_distribution_groups", strPtr("no_distribution_groups"), "no_distribution_groups"},
+		{"member_forwarding_unconfirmed", strPtr("member_forwarding_unconfirmed"), "member_forwarding_unconfirmed"},
+		{"desired_state_unavailable", strPtr("desired_state_unavailable"), "desired_state_unavailable"},
+		{"unlisted_withdrawal_sentence", strPtr("central NetBird route withdrawn; node agent withdrawal unconfirmed"), "Step failed; quote the operation ID."},
+		{"unlisted_secret", strPtr("TEST ONLY upstream response body"), "Step failed; quote the operation ID."},
+		{"nil_error_message", nil, "Step failed; quote the operation ID."},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var opID uuid.UUID
+			if err := s.InTx(t.Context(), func(tx pgx.Tx) error {
+				var err error
+				opID, err = Create(t.Context(), tx, CreateRequest{
+					Kind:      api.OperationKindNodePublish,
+					Principal: memberPrincipal,
+					Resource:  api.ResourceRef{Type: api.ResourceTypeNode, Id: uuid.New()},
+					RequestID: uuid.New(),
+					Steps:     map[string]Step{"netbird_route_readback": {Required: true}},
+				})
+				return err
+			}); err != nil {
+				t.Fatal(err)
+			}
+			code := api.ErrorCodeDEPENDENCYUNAVAILABLE
+			if err := s.InTx(t.Context(), func(tx pgx.Tx) error {
+				return Transition(t.Context(), tx, opID, "netbird_route_readback", "failed", nil, &code, nil)
+			}); err != nil {
+				t.Fatal(err)
+			}
+			if tc.stored != nil {
+				if _, err := pool.Exec(t.Context(), `UPDATE operations SET steps = jsonb_set(steps, '{netbird_route_readback,error_message}', to_jsonb($2::text), true) WHERE id = $1`, opID, *tc.stored); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			adminResp, err := s.GetAdminOperation(auth.WithPrincipal(t.Context(), adminPrincipal), gen.GetAdminOperationRequestObject{OperationId: opID})
+			if err != nil {
+				t.Fatal(err)
+			}
+			adminOp := adminResp.(gen.GetAdminOperation200JSONResponse).Body
+			if len(adminOp.Steps) != 1 {
+				t.Fatalf("steps len = %d, want 1", len(adminOp.Steps))
+			}
+			gotAdminMsg, err := adminOp.Steps[0].Message.Get()
+			if err != nil || gotAdminMsg != tc.wantAdmin {
+				t.Fatalf("admin step message = %q (err=%v), want %q", gotAdminMsg, err, tc.wantAdmin)
+			}
+
+			memberResp, err := s.GetMemberOperation(auth.WithPrincipal(t.Context(), memberPrincipal), gen.GetMemberOperationRequestObject{OperationId: opID})
+			if err != nil {
+				t.Fatal(err)
+			}
+			memberOp := memberResp.(gen.GetMemberOperation200JSONResponse).Body
+			gotMemberMsg, err := memberOp.Steps[0].Message.Get()
+			if err != nil || gotMemberMsg != "Step failed; quote the operation ID." {
+				t.Fatalf("member step message = %q (err=%v), want generic sentence", gotMemberMsg, err)
+			}
+		})
+	}
+}
+
+func strPtr(s string) *string { return &s }

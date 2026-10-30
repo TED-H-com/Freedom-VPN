@@ -589,6 +589,36 @@ export const zhTW = {
     '更新間隔秒數 (update_interval_seconds) 超出合約範圍：必須介於 300 至 604800 秒之間。',
   'admin.dns.threatFeedForm.bypassClientCheckLabel':
     '略過前端範圍攔截以測試後端 422 欄位驗證 (Send raw value to server)',
+
+  // Follow-up 8: Typed DNS Policy Evidence (D-056) & Rolled-Back Candidate Health (D-062)
+  'admin.nodeDetail.dnsEvidence.title':
+    '節點回報之 DNS 政策套用證據 (Node-Reported DNS Policy Evidence, D-056)',
+  'admin.nodeDetail.dnsEvidence.disclaimer':
+    '注意：此處數值由節點回報（reported by the node），僅供維運對照，絕非中央驗證已套用之證明（never central proof of apply，D-056）。',
+  'admin.nodeDetail.dnsEvidence.notReported': '尚未回報 (not yet reported)',
+  'admin.nodeDetail.dnsEvidence.documentId': '解析器文件 ID (document_id)',
+  'admin.nodeDetail.dnsEvidence.contentSha256': '文件內容 SHA-256 (content_sha256)',
+  'admin.nodeDetail.dnsEvidence.generation': 'DNS 政策世代 (generation)',
+  'admin.nodeDetail.dnsEvidence.outcome': '套用結果 (outcome)',
+  'admin.nodeDetail.dnsEvidence.appliedAt': '套用時間 (applied_at)',
+  'admin.nodeDetail.dnsEvidence.errorCode': '錯誤碼 (error_code)',
+  'admin.nodeDetail.dnsEvidence.feedsTitle': '節點回報之威脅名單摘要 (feeds)',
+  'admin.nodeDetail.dnsEvidence.feedsEmpty': '無附掛威脅名單 (0 feeds)',
+
+  'admin.updates.rollbackHealth.sectionTitle':
+    '自動退回目標之版本健康檢查對照 (Rollback Health Comparison, D-062)',
+  'admin.updates.rollbackHealth.restoredTitle':
+    '已復原版本健康檢查 (Restored Release Checks — health)',
+  'admin.updates.rollbackHealth.restoredReleaseLabel':
+    '已復原運行版本 (current_release_id)：',
+  'admin.updates.rollbackHealth.candidateTitle':
+    '失敗候選版本健康檢查 (Failed Candidate Release Checks — candidate_health)',
+  'admin.updates.rollbackHealth.candidateReleaseLabel':
+    '失敗候選版本 (previous_release_id)：',
+  'admin.updates.rollbackHealth.candidateNullNotice':
+    '尚未回報候選版本健康檢查 (candidate_health: null — 例如於切換或驗證前即退回)',
+  'admin.updates.rollbackHealth.restoredNullNotice':
+    '尚未回報已復原版本健康檢查 (health: null)',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;

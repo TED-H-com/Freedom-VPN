@@ -101,6 +101,22 @@ func (s NetBirdBindings) Get(ctx context.Context, deployment, kind, key string) 
 func (s NetBirdBindings) FindExternal(ctx context.Context, deployment, kind, external string) (netbird.Binding, bool, error) {
 	return scanBinding(s.Pool.QueryRow(ctx, `SELECT resource_type,external_id,desired_hash,last_observed_at FROM external_bindings WHERE provider='netbird' AND deployment_id=$1 AND external_id=$2`, deployment, kind+":"+external), deployment, kind)
 }
+
+// VerifyMemberIdentity supports upgrading the pre-F-03 adapter hash. The base
+// trigger forbids changing this row's member, deployment, user or identity ID;
+// discovery may only advance its proof revision. Re-prove the exact tuple and
+// current revision rather than trusting an opaque external binding hash.
+func (s NetBirdBindings) VerifyMemberIdentity(ctx context.Context, deployment string, d netbird.MemberDevice) (bool, error) {
+	var verified bool
+	err := s.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings n
+ JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id
+ WHERE n.deployment_id=$1 AND n.member_id=$2 AND n.identity_binding_id=$3 AND n.external_user_id=$4
+ AND n.revision=$5::numeric AND n.revision>0 AND n.verified_at<=clock_timestamp()
+ AND i.subject=n.external_user_id AND i.stable_claim_ref='sub' AND i.binding_method='oidc'
+ AND i.verified_at<=clock_timestamp() AND n.mapping_proof='shared_issuer_public_subject:'||i.issuer)`, deployment, d.MemberID, d.IdentityBindingID, d.UserID, d.MappingRevision).Scan(&verified)
+	return verified, err
+}
+
 func (s NetBirdBindings) Put(ctx context.Context, b netbird.Binding) error {
 	id, e := bindingID(b.Kind, b.InternalID)
 	if e != nil {

@@ -69,7 +69,7 @@ func TestAT04_FiniteBindingRenewalAndExpiredObservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	d, err = s.Get(ctx, deviceCommand("member", member).Actor, change.DeviceID)
-	if err != nil || d.ObservedAuthorized || d.Version != 1 || d.Status != "authorized" {
+	if err != nil || d.ObservedAuthorized || d.Version != 2 || d.Status != "pending" {
 		t.Fatal(d, err)
 	}
 	var incomplete int
@@ -77,8 +77,8 @@ func TestAT04_FiniteBindingRenewalAndExpiredObservation(t *testing.T) {
 		t.Fatal(incomplete, err)
 	}
 	// Prove the base authorization guard remains in force on expired devices.
-	if _, err = s.Pool.Exec(ctx, `UPDATE member_devices SET name='TEST ONLY',resource_version=resource_version+1 WHERE id=$1`, change.DeviceID); err == nil {
-		t.Fatal("expired authorized device UPDATE accepted")
+	if _, err = s.Pool.Exec(ctx, `UPDATE member_devices SET status='authorized',resource_version=resource_version+1 WHERE id=$1`, change.DeviceID); err == nil {
+		t.Fatal("expired device reauthorization accepted")
 	}
 }
 

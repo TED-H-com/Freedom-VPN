@@ -9,6 +9,7 @@
 import auditEventListJson from '../../../../contracts/examples/valid/AuditEventList.json';
 import billingPortalSessionJson from '../../../../contracts/examples/valid/BillingPortalSession.json';
 import checkoutSessionJson from '../../../../contracts/examples/valid/CheckoutSession.json';
+import dnsPolicyEvidenceJson from '../../../../contracts/examples/valid/DnsPolicyEvidence.json';
 import enrollmentJson from '../../../../contracts/examples/valid/Enrollment.json';
 import enrollmentCreatedJson from '../../../../contracts/examples/valid/EnrollmentCreated.json';
 import enrollmentCreatedReplayJson from '../../../../contracts/examples/valid/EnrollmentCreated.replay.json';
@@ -21,6 +22,8 @@ import memberListJson from '../../../../contracts/examples/valid/MemberList.json
 import memberSelfJson from '../../../../contracts/examples/valid/MemberSelf.json';
 import memberUsageJson from '../../../../contracts/examples/valid/MemberUsage.json';
 import nodeDetailJson from '../../../../contracts/examples/valid/NodeDetail.json';
+import nodeDetailDnsEvidenceJson from '../../../../contracts/examples/valid/NodeDetail.dns-evidence.json';
+import nodeDetailDnsEvidenceNullJson from '../../../../contracts/examples/valid/NodeDetail.dns-evidence-null.json';
 import nodeListJson from '../../../../contracts/examples/valid/NodeList.json';
 import operationJson from '../../../../contracts/examples/valid/Operation.json';
 import policyDefinitionListJson from '../../../../contracts/examples/valid/PolicyDefinitionList.json';
@@ -35,6 +38,8 @@ import releaseJson from '../../../../contracts/examples/valid/Release.json';
 import releaseListJson from '../../../../contracts/examples/valid/ReleaseList.json';
 import updateBatchJson from '../../../../contracts/examples/valid/UpdateBatch.json';
 import updateBatchAcceptedJson from '../../../../contracts/examples/valid/UpdateBatchAccepted.json';
+import updateResultNullCandidateHealthJson from '../../../../contracts/examples/valid/UpdateResult.null-candidate-health.json';
+import updateResultRolledBackJson from '../../../../contracts/examples/valid/UpdateResult.rolled-back.json';
 
 import type { AuthSession } from '../api/auth';
 import type {
@@ -43,6 +48,7 @@ import type {
   AuditEventListResponse,
   BillingPortalSessionResponse,
   CheckoutSessionResponse,
+  DnsPolicyEvidence,
   EnrollmentCreateResponse,
   EnrollmentRecord,
   MemberDetail,
@@ -61,14 +67,20 @@ import type {
   ReleaseListResponse,
   UpdateBatchAccepted,
   UpdateBatchDetail,
+  UpdateResult,
 } from '../api/types';
-import { buildDnsPolicyViewModel, buildFupPolicyViewModel } from '../api/view-models';
+import {
+  buildDnsPolicyViewModel,
+  buildFupPolicyViewModel,
+  type UpdateTargetWithResult,
+} from '../api/view-models';
 
 export const CONTRACT_EXAMPLES_USED_BY_MOCKS = {
   AuditEventList: auditEventListJson as unknown as AuditEventListResponse,
   BillingPortalSession:
     billingPortalSessionJson as unknown as BillingPortalSessionResponse,
   CheckoutSession: checkoutSessionJson as unknown as CheckoutSessionResponse,
+  DnsPolicyEvidence: dnsPolicyEvidenceJson as unknown as DnsPolicyEvidence,
   Enrollment: enrollmentJson as unknown as EnrollmentRecord,
   EnrollmentCreated: enrollmentCreatedJson as unknown as EnrollmentCreateResponse,
   EnrollmentCreatedReplay:
@@ -82,6 +94,8 @@ export const CONTRACT_EXAMPLES_USED_BY_MOCKS = {
   MemberSelf: memberSelfJson as unknown as MemberSelf,
   MemberUsage: memberUsageJson as unknown as MemberUsageResponse,
   NodeDetail: nodeDetailJson as unknown as NodeDetail,
+  NodeDetailDnsEvidence: nodeDetailDnsEvidenceJson as unknown as NodeDetail,
+  NodeDetailDnsEvidenceNull: nodeDetailDnsEvidenceNullJson as unknown as NodeDetail,
   NodeList: nodeListJson as unknown as NodeListResponse,
   Operation: operationJson as unknown as OperationResource,
   PolicyDefinitionList:
@@ -97,6 +111,9 @@ export const CONTRACT_EXAMPLES_USED_BY_MOCKS = {
   ReleaseList: releaseListJson as unknown as ReleaseListResponse,
   UpdateBatch: updateBatchJson as unknown as UpdateBatchDetail,
   UpdateBatchAccepted: updateBatchAcceptedJson as unknown as UpdateBatchAccepted,
+  UpdateResultNullCandidateHealth:
+    updateResultNullCandidateHealthJson as unknown as UpdateResult,
+  UpdateResultRolledBack: updateResultRolledBackJson as unknown as UpdateResult,
 } as const;
 
 export const PRIMARY_NODE_ID = nodeDetailJson.node_id;
@@ -275,6 +292,17 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
       detail: 'forward_admission_v1 counters active on wg-nb0',
     },
   ];
+  primary.dns_policy_evidence = {
+    ...clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.DnsPolicyEvidence),
+    feeds: [
+      {
+        feed_code: 'malware-domains-default',
+        content_sha256:
+          '7777777777777777777777777777777777777777777777777777777777777777',
+        rule_count: 1420,
+      },
+    ],
+  };
 
   const safetyFailed = clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.NodeDetail);
   safetyFailed.node_id = SAFETY_FAILED_NODE_ID;
@@ -287,6 +315,7 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   safetyFailed.group_ids = [PRIMARY_GROUP_ID];
   safetyFailed.member_group_ids = [PRIMARY_GROUP_ID];
   safetyFailed.resource_version = '19';
+  safetyFailed.dns_policy_evidence = null;
   safetyFailed.checks = [
     {
       name: 'internet_only',
@@ -326,6 +355,7 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   offlineNode.group_ids = [];
   offlineNode.member_group_ids = [];
   offlineNode.resource_version = '7';
+  offlineNode.dns_policy_evidence = null;
 
   return {
     [primary.node_id]: primary,
@@ -595,12 +625,19 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
       PRIMARY_DNS_RULESET_DEFINITION_ID,
     ];
 
-    const rolledBackTarget = clone(templateTarget);
+    const rolledBackResult = clone(
+      CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateResultRolledBack,
+    );
+    const rolledBackTarget = clone(templateTarget) as UpdateTargetWithResult;
     rolledBackTarget.target_id = '9648dcdb-c82e-4611-8608-06895697e0b1';
     rolledBackTarget.node_id = SAFETY_FAILED_NODE_ID;
     rolledBackTarget.node_name = 'Taipei 2';
     rolledBackTarget.state = 'rolled_back';
     rolledBackTarget.current_release_id = FALLBACK_RELEASE_ID;
+    rolledBackTarget.previous_release_id = rolledBackResult.previous_release_id;
+    rolledBackTarget.health = rolledBackResult.health;
+    rolledBackTarget.candidate_health = rolledBackResult.candidate_health ?? null;
+    rolledBackTarget.last_result = rolledBackResult;
     rolledBackTarget.retryable = true;
     rolledBackTarget.needs_attention = true;
     rolledBackTarget.unconfirmed = false;

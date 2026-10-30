@@ -14,6 +14,15 @@ listeners, routing, response tracking and request IDs. All command handlers reus
 `httpapi.Transaction`, set durable resource references, and implement replay.
 Standalone service callers retain their existing transaction/idempotency APIs.
 
+Node-domain tests compose only core operations and node handlers (D-039).
+Their unregistered member routes do not describe the production binary:
+`apps/control/handlers.go` also registers `members()` and `usage()`.
+`wire_members.go` installs `httpadapter.Handlers.GetMemberSelf` and
+`ListMemberDevices` from `internal/members/httpadapter/reads.go` for
+`GET /member/me` and `GET /member/devices`; `wire_usage.go` installs
+`UsageHandler.GetMemberUsage` for `GET /member/usage`. The control binary
+uses this production `Domains()` list through `control.Servers`.
+
 The following transitional 501 handlers are removed:
 
 | Operation | Behavior |
@@ -128,10 +137,13 @@ generation and node operation steps still require agent observations (§14.5).
 | `node.peer.discover` | D-055 management-only correlation via `DiscoverNodePeer(operation_id, node/incarnation)`, under the deployment lock and claim/identity fence. Confirmed binding and temporary-group cleanup precede the central `peer_id`, audit evidence and `peer_readback` commit. No hostname, address or timing inference. |
 | `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
 | `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
+| `node.resolver_documents.reconcile` | Reads the eligible document through the DNS publisher's reader, pages current signed states with differing references, and recompiles them under the claim/fleet/node locks. Issuance and the new signed state commit together. No external network calls. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
 
-The supervised runner seeds reconciliation immediately at startup and checks for
-a missing chain each `reconcile_seconds`. Fleet locking coalesces seeds from
+The supervised runner seeds both reconciliation chains immediately at startup
+and checks for missing chains every `min(reconcile_seconds, 60)` seconds. Fleet
+reconciliation retains its configured successor delay; resolver-document delivery
+has an independent delay capped at 60 seconds. Fleet locking coalesces seeds from
 multiple processes and event-created successors. Runners only enqueue; the shared
 dispatcher claims and completes work. Enqueue failures return to the supervisor;
 cancellation stops the runner. Reconciliation never guesses success for
@@ -398,7 +410,9 @@ that are unpublished or offline. Creation replay returns the original immutable
 `PublicationRequest.group_ids` is handled by `exits.SetPublicationTx` under its
 existing node/exit locks and `If-Match`. Omission preserves membership, an empty
 array clears it, and a nonempty array replaces it. Unknown IDs return 422 with
-`/group_ids` detail before writes. Membership, publication, the single generation
+`/group_ids` detail. A group removed after validation produces the same field
+error through the membership foreign-key check, rolling back the entire change.
+Membership, publication, the single generation
 and version advance, operation, outbox and audit commit together (§5.2, §15.3).
 Node detail exposes the same sorted membership in `group_ids` and the legacy
 `member_group_ids`.
@@ -408,9 +422,9 @@ rewriting the immutable report. Node detail reads DNS evidence from the report
 selected by current-incarnation observed state in the same repeatable-read
 snapshot as the rest of the detail. A late old report does not replace evidence;
 a newer report with null or absent evidence reports null, never a newer desired
-policy or an inferred successful apply. Revision 5's NodeDetail schema allows
-this additive property; a typed generated `NodeDetail.dns_policy_evidence` member
-is requested from the contracts owner. Diagnostic producers remain responsible
+policy or an inferred successful apply. Contracts revision 6's typed
+`NodeDetail.dns_policy_evidence` member is projected directly through the generated
+response, with no additive wrapper. Diagnostic producers remain responsible
 for bounded, redacted text (§13.9, SEC02).
 
 The resolver endpoint authorizes before consulting `nodes.ResolverDocumentSource`
@@ -419,8 +433,8 @@ It validates the stored bytes against the issued reference (ID, profile revision
 policy generation, SHA-256 and size), requires canonical JSON of at most 1 MiB,
 and writes those bytes without HTML escaping or a trailing newline. Responses
 set `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0` in the
-strict response. The core Transport currently overwrites the latter with
-`no-store`; its exact-route exception is a separate pending owner request.
+strict response. The core Transport preserves that cache policy for this exact
+GET 200 route; errors retain `no-store`.
 `RecordIssuedResolverDocumentTx` records a typed, metadata-only issuance audit
 after confirming the reference exists in the persisted signed envelope; a lookup
 joins that record to immutable desired-state history and checks the current
@@ -439,13 +453,38 @@ and fails closed on a concurrent mismatch. Exactly one active fleet DNS profile
 is supported; none produces null, and multiple active profiles fail closed.
 There is no per-node profile assignment.
 
+Desired state is compiled on authenticated agent reads, publication/withdrawal
+execution (`node.publication_changed`, including revoke/retire), and the member
+jobs `device.authorized`, `device.revoked`, `member.entitlement_changed` and
+`member.suspended`. Metadata and fleet events (`node.updated`, `fleet.update_created`,
+`fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`)
+reconcile their intent; agent reads compile that current state. The separate
+`node.resolver_documents.reconcile` chain closes the DNS eligibility gap after
+`dns.publish`: every registered current incarnation with a signed state receives
+the active fleet profile's newly eligible document, including unpublished baseline
+nodes. It needs no new DNS producer event or migration.
+
+The resolver sweep compares the entire reference (document/revision IDs,
+generation, digest and size) in pages of 100 nodes and rechecks it under the
+normal transaction locks. An equal reference skips compilation entirely: no
+generation, signature, ETag or issuance-audit churn, even on event redelivery.
+Changed references use `CompileControlState`, retaining update intent and the
+existing eligibility/cache checks; issuance proof commits with the signed state.
+An unavailable document leaves last-good untouched; an ambiguous profile or
+invalid document fails closed. Individual node errors do not prevent attempts
+on other nodes; failures still use the dispatcher's retries/dead-letter policy,
+and the runner repairs an exhausted chain. The 60-second scheduling bound is
+subject to dispatcher capacity and successful dependencies, not an apply SLA.
+Publication's agent forwarding evidence remains required; document delivery
+alone never changes `publication_observed` or claims resolver apply success.
+
 Issuance metadata is an audit record with the configured `audit_days` retention
 (recommended/default 180 days). Current and previous generation authorization
 still requires retained proof; purged or absent historical proof returns 404.
 The production integration test issues a desired state, verifies its signature,
 fetches exactly the stored normalized canonical document and checks its digest
 ETag, rejects another node, allows the previous generation, and rejects generation
-minus two. The independent core cache-header exception remains its owner's work.
+minus two. The production test also verifies the core cache-header exception.
 
 ## D-055 adversarial read-back and withdrawal
 

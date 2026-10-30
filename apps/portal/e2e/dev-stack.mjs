@@ -657,15 +657,23 @@ function createFakeNetBirdServer(tlsOptions) {
         }));
       } else if (kind === 'setup-keys') {
         if (req.method === 'POST') {
-          reply.used_times = 1;
-          reply.revoked = false;
-          reply.state = 'overused';
-          for (const gid of extractIds(reply.auto_groups)) {
-            const grp = objects.groups.get(gid);
-            if (grp) {
-              grp.peers = [nextSetupKeyPeer];
-              grp.peers_count = 1;
+          if (nextSetupKeyPeer) {
+            const consumedPeer = nextSetupKeyPeer;
+            nextSetupKeyPeer = null;
+            reply.used_times = 1;
+            reply.revoked = false;
+            reply.state = 'overused';
+            for (const gid of extractIds(reply.auto_groups)) {
+              const grp = objects.groups.get(gid);
+              if (grp) {
+                grp.peers = [consumedPeer];
+                grp.peers_count = 1;
+              }
             }
+          } else {
+            reply.used_times = 0;
+            reply.revoked = false;
+            reply.state = 'valid';
           }
         }
         reply.key = `nb-setup-secret-${serial}`;
@@ -1195,12 +1203,13 @@ async function enrollLiveNode(
   const bootId = crypto.randomUUID();
   const ledgerEpoch = crypto.randomUUID();
   const meterEpochId = crypto.randomUUID();
+  const leaseId = crypto.randomUUID();
   let lastObservedMs = 0;
   let currentReleaseId = null;
   let lastGoodReleaseId = null;
   let activeUpdateObs = {
     job_id: null,
-    generation: '0',
+    generation: null,
     state: null,
     stage: null,
   };
@@ -1229,10 +1238,14 @@ async function enrollLiveNode(
       .digest('hex');
   }
 
-  async function submitObservation(appliedGen = '1') {
+  async function submitObservation(fallbackGen = '1') {
+    const desiredEnvelope = await fetchDesiredState();
+    const desired = desiredEnvelope?.signed ?? null;
+    const appliedGen = String(desired?.config_generation ?? fallbackGen);
     const nowMs = Math.max(Date.now(), lastObservedMs + 1);
     lastObservedMs = nowMs;
     const nowIso = new Date(nowMs).toISOString();
+    const leaseExpiresIso = new Date(nowMs + 3600_000).toISOString();
     const obsBody = {
       report_id: crypto.randomUUID(),
       node_id: nodeId,
@@ -1242,21 +1255,23 @@ async function enrollLiveNode(
       agent_version: '1.1.0',
       current_release_id: currentReleaseId,
       last_good_release_id: lastGoodReleaseId,
-      applied_config_generation: String(appliedGen),
+      applied_config_generation: appliedGen,
       applied_policy_refs: {
-        authorization_generation: '1',
-        fup_generation: '1',
-        dns_generation: '1',
+        authorization_generation: String(
+          desired?.policy_refs?.authorization_generation ?? '1',
+        ),
+        fup_generation: String(desired?.policy_refs?.fup_generation ?? '1'),
+        dns_generation: String(desired?.policy_refs?.dns_generation ?? '1'),
       },
-      applied_binding_revision: '1',
+      applied_binding_revision: String(desired?.binding_revision ?? '1'),
       provisioning_state: 'ready',
       safety_status: 'passed',
       data_health: 'healthy',
       member_forwarding_enabled: true,
       forwarding_block_reasons: [],
       lease: {
-        lease_id: null,
-        expires_at: null,
+        lease_id: leaseId,
+        expires_at: leaseExpiresIso,
       },
       netbird: {
         peer_id: peerId,
@@ -1297,8 +1312,53 @@ async function enrollLiveNode(
           error_code: null,
           detail: 'NetBird WireGuard peer handshake verified',
         },
+        {
+          name: 'lease',
+          status: 'passed',
+          observed_at: nowIso,
+          error_code: null,
+          detail: 'serving lease valid and unexpired',
+        },
+        {
+          name: 'qos',
+          status: 'passed',
+          observed_at: nowIso,
+          error_code: null,
+          detail: 'tc HTB + fq_codel classes installed',
+        },
+        {
+          name: 'source_binding',
+          status: 'passed',
+          observed_at: nowIso,
+          error_code: null,
+          detail: 'member peer source IP binding verified',
+        },
       ],
       errors: [],
+      dns_policy_evidence: {
+        document_id:
+          desired?.dns?.resolver_document?.document_id ??
+          '01900000-0000-7000-8000-000000000056',
+        content_sha256:
+          desired?.dns?.resolver_document?.content_sha256 ??
+          '2bed2c3a6225090d221f86c8d597c2782a44149ad9bafa7f02783c4cbaf5f20d',
+        generation: String(
+          desired?.dns?.resolver_document?.generation ??
+            desired?.policy_refs?.dns_generation ??
+            '1',
+        ),
+        outcome: 'applied',
+        applied_at: nowIso,
+        feeds: [
+          {
+            feed_code: 'malware-domains-default',
+            content_sha256:
+              '7777777777777777777777777777777777777777777777777777777777777777',
+            rule_count: 1420,
+          },
+        ],
+        error_code: null,
+      },
     };
     const obsRes = await httpsRequest(`${agentBaseUrl}/api/v1/agent/observations`, {
       method: 'POST',
@@ -1788,6 +1848,8 @@ async function publishLiveNodeExitViaApi(
     );
   }
 
+  await liveNode.submitObservation();
+
   const deadline = Date.now() + 15_000;
   let lastRow = null;
   while (Date.now() < deadline) {
@@ -1975,7 +2037,7 @@ async function seedDatabase(
         profile_code: 'standard',
         display_name: { 'zh-TW': '標準防護 DNS', en: 'Standard Protective DNS' },
         domain_rule_set_revision_ids: ['0195f100-0000-7000-8000-000000000404'],
-        threat_feed_revision_ids: ['0195f100-0000-7000-8000-000000000405'],
+        threat_feed_revision_ids: [],
         block_response: 'nxdomain',
         blocked_ttl_seconds: 60,
       },
@@ -2053,11 +2115,12 @@ async function seedDatabase(
     for (const pol of policiesToSeed) {
       const payloadStr = JSON.stringify(pol.payload);
       const payloadHash = crypto.createHash('sha256').update(payloadStr).digest();
+      const initialGen = pol.type === 'dns_profile' ? 0 : 1;
       await pool.query(
         `INSERT INTO policy_definitions(id, type, code, generation, resource_version)
-         VALUES ($1, $2, $3, 1, 1)
+         VALUES ($1, $2, $3, $4, 1)
          ON CONFLICT (id) DO NOTHING`,
-        [pol.defId, pol.type, pol.code],
+        [pol.defId, pol.type, pol.code, initialGen],
       );
       await pool.query(
         `INSERT INTO policy_revisions(id, definition_id, type, revision, schema_version, payload, payload_hash, signing_key_ref, created_by, reason)
@@ -2065,10 +2128,62 @@ async function seedDatabase(
          ON CONFLICT (id) DO NOTHING`,
         [pol.revId, pol.defId, pol.type, payloadStr, payloadHash, adminId, pol.reason],
       );
-      await pool.query(
-        `UPDATE policy_definitions SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
-        [pol.defId, pol.revId],
+      if (pol.type !== 'dns_profile') {
+        await pool.query(
+          `UPDATE policy_definitions SET active_revision_id = $2, resource_version = resource_version + 1 WHERE id = $1`,
+          [pol.defId, pol.revId],
+        );
+      }
+    }
+
+    // Activate dns_profile via POST /api/v1/admin/policies/{definition_id}/activate so fvpn-worker's
+    // dns.publish job compiles and publishes the canonical resolver document (D-050, D-056).
+    const dnsProfilePol = policiesToSeed.find((p) => p.type === 'dns_profile');
+    if (dnsProfilePol) {
+      const actRes = await httpsRequest(
+        `${controlBaseUrl}/api/v1/admin/policies/${dnsProfilePol.defId}/activate`,
+        {
+          method: 'POST',
+          headers: {
+            Cookie: adminAuth.sessionCookie,
+            'X-CSRF-Token': adminAuth.csrfToken,
+            Origin: 'https://portal.example.invalid',
+            'Idempotency-Key': crypto.randomUUID(),
+            'If-Match': '"1"',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            revision_id: dnsProfilePol.revId,
+            reason: dnsProfilePol.reason,
+          }),
+          ca: caPem,
+        },
       );
+      if (actRes.status !== 202 && actRes.status !== 200) {
+        throw new Error(
+          `POST /api/v1/admin/policies/${dnsProfilePol.defId}/activate failed (${actRes.status}): ${actRes.text}`,
+        );
+      }
+      const deadline = Date.now() + 15_000;
+      let published = false;
+      while (Date.now() < deadline) {
+        const headRes = await pool.query(
+          `SELECT status, document_sha256, policy_generation::text AS policy_generation
+           FROM dns_publication_heads
+           WHERE definition_id = $1 AND status = 'active'`,
+          [dnsProfilePol.defId],
+        );
+        if (headRes.rows.length > 0) {
+          published = true;
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      if (!published) {
+        throw new Error(
+          `Timed out waiting for dns.publish worker projection on ${dnsProfilePol.defId}`,
+        );
+      }
     }
   });
 
@@ -3139,6 +3254,15 @@ async function main() {
                   ca: caPem,
                 },
               );
+
+              if (
+                !holdNodeObservations &&
+                req.method === 'PUT' &&
+                reqUrl.pathname.endsWith('/publication') &&
+                (upstreamRes.status === 200 || upstreamRes.status === 202)
+              ) {
+                await liveNode.submitObservation();
+              }
 
               const respHeaders = {};
               for (const [k, v] of Object.entries(upstreamRes.headers)) {
