@@ -1,97 +1,76 @@
-# Requests to orchestrator — follow-up 2
+# Requests to orchestrator — follow-up 3
 
-Run `9c862efb-3595-44e1-a6e9-b9a1f3f6cd67`, source
-`5cb36d03d6e07e6e90a34d4ab2fe65511d63b313`, completed
-2026-10-30T04:41:07Z. AT23, AT24, AT25 and AT27 pass. AT26 remains blocked;
-the make target exits nonzero after writing all records.
+Run `339fcbc0-a3e0-4923-afc3-c2d6e12e9d1a`, source `b936aa71d57e03dd9263b9747e2b863839dbe4b7`, completed `2026-10-30T05:17:32Z`.
+All five requested scenarios pass; the complete fresh-stack make target exits
+zero after writing the records and tearing down the owned stack.
 
-## w2-fleet-update: accepted rollback leaves the current target queued
+## Open requests
 
-Coordinate with **w2-updater** on the product progress/terminal-result path.
-The candidate's real TCP probe failed. The updater restored the real 1.0.2
-last-good process, checked it successfully and sent `state=rolled_back` with
-all five restored `health` checks passed and
-`candidate_health.tunnel_probe=failed`. The signed candidate's rollback
-allowlist was empty. No journal, health or projection values were injected.
+None for the assigned follow-up scenarios. The portal request to project
+`health`, `candidate_health` and `previous_release_id` onto `UpdateTarget`
+belongs to contracts r9 and fleet-update follow-up 5. This harness uses the
+immutable result receipt for those fields and does not depend on that work.
 
-The exact [result JSON](AT26-result.json) and original stored
-[central ACK](AT26-response.json) were read from the immutable
-`update_results` receipt for this batch. The payload's canonical SHA-256,
-excluding `payload_hash`, was independently verified as
-`1d4511e98fd64bc19375a1832319350d6502093ce19fcbcad61cb7d19b5aa88e`.
-The ACK says `accepted=true`, `accepted_as_history=true`,
-`applied_to_current_observation=false`, `observed_update_generation="4"`.
-The product sender retired the result; its outbox is empty. This is an
-accepted history result, not another HTTP rejection or health failure.
+## Resolved: w2-fleet-update direct terminal rollback — #129
 
-After the 90-second target poll, the product batch API still showed:
+Fleet-update follow-up 4 (#129) resolves the follow-up 2 request. A validated
+terminal rollback now closes the queued current job without synthetic progress.
+`internal/fleetupdate/results.go:358` includes `rolled_back` among the terminal
+transitions allowed from a nonterminal state. The regression at
+`internal/fleetupdate/direct_terminal_integration_test.go:70` uses our captured
+result via `internal/fleetupdate/testdata/at26-direct-rollback.json`.
 
-```json
-{
-  "state": "queued",
-  "unconfirmed": false,
-  "needs_attention": false,
-  "current_release": "01a18b18-82f2-717d-be44-07141b97ac90",
-  "error_code": ""
-}
-```
+| Evidence | Follow-up 2 | Follow-up 3 |
+|---|---|---|
+| Run | `9c862efb-3595-44e1-a6e9-b9a1f3f6cd67` | `339fcbc0-a3e0-4923-afc3-c2d6e12e9d1a` |
+| ACK accepted | true | true |
+| ACK accepted_as_history | true | false |
+| Target state | queued | rolled_back |
+| needs_attention | false | true |
+| unconfirmed after later observation | false | false |
+| Batch state | full batch response not captured | completed_with_exceptions |
 
-[AT26.json](AT26.json) preserves the batch ID, real journal, both health
-attestations, empty allowlist, process read-back, exact result/ACK and the
-read-only `fvpn-updater status` snapshot. All manifest and artifact digests
-are in the same record. `AT26.md` is its readable counterpart.
+The candidate performed a real failed loopback TCP probe and reported
+`tunnel_probe=failed`. The updater restored the real last-good process and
+obtained all five passing checks from that process. Its single terminal result
+contains separate candidate and restored health. Central accepted it as current
+under an empty rollback allowlist; the batch target carries
+`HEALTH_CHECK_FAILED`, the restored current release and attention. A later
+authenticated observation clears `unconfirmed`. No applying/checking result,
+journal entry or projector-owned row was injected by the harness.
 
-Code explains the observed outcome:
+- [Current AT26 record](AT26.json) and [readable evidence](AT26.md) include the
+  exact result, original ACK, full batch API JSON, journal, read-only updater
+  status and the subsequent observation timestamps.
+- [Exact result](AT26-result.json), [original ACK](AT26-response.json) and
+  [batch API response](AT26-batch.json) are also provided separately. These are
+  the same JSON values captured in AT26; the result's canonical payload hash
+  was independently verified.
+- The [follow-up 2 blocked capture](history/follow-up-2/README.md) retains its
+  original run ID and four byte-for-byte copies, including its history ACK.
 
-- `internal/fleetupdate/results.go:346` only permits `rolled_back` from
-  `applying` or `checking`. A queued job cannot advance directly to it.
-- `internal/fleetupdate/results.go:249` therefore classifies the result as
-  history; lines 252–260 skip the terminal ledger transition and update only
-  `last_result_at`. Line 286 produces the observed accepted-history ACK.
-- `node/agent/observe.go:143` reads the real updater snapshot, including state
-  at line 155. `internal/fleetupdate/serving.go:190` adapts the report to
-  version/generation observations; line 111 updates the job's observation
-  time, without promoting its state to applying/checking. A real checking
-  heartbeat therefore does not satisfy the rollback transition prerequisite.
-- `node/updater/apply.go:414` builds the terminal result with the restored and
-  candidate health profiles, then enqueues and flushes it at lines 433–441.
-  The current live path delivered one rollback result and no earlier progress
-  result for this batch.
-- `internal/fleetupdate/d062_integration_test.go:115` explicitly submits an
-  `applying` result before its rollback assertion. That setup misses the live
-  queued-to-rollback delivery path.
+The returned ACK's `applied_to_current_observation` is
+`false`. This field reflects
+ordering against observations; the current ACK is established by
+`accepted_as_history=false`. Target completion and later confirmation are
+checked separately.
 
-Please reconcile the producer and central transition contract, add regression
-coverage for the unmodified real producer path, and rerun AT26. Preserve the
-rules for stale/superseded results and restored-health validation. The harness
-will not post synthetic applying/checking results or seed a job state to make
-this pass. No product source was changed here.
+## Earlier requests still resolved
 
-## Previous requests resolved in this run
+- AT23 confirms the real good candidate after its D-053 success.
+- AT24 shows unconfirmed before apply and needs_attention on the failed target.
+- AT25 accepts the honest null-health preflight failure; the byte-tampered
+  candidate never installs or executes.
+- AT27 recovers the interrupted durable transaction and centrally confirms it.
 
-- **w2-agent-core / w2-fleet-update:** AT23 and AT27 now receive subsequent
-  authenticated update observations and clear `unconfirmed`.
-- **w2-updater / w2-fleet-update:** AT25's real `HASH_MISMATCH` remains local;
-  the wire `ARTIFACT_INVALID` download failure has `health=null` and is accepted.
-  AT24 observes the failed target with `needs_attention=true`.
-- **w2-updater / w2-fleet-update:** AT26 delivers separate candidate and
-  restored health and passes central validation with an empty rollback
-  allowlist. The remaining blocker is the terminal state transition above.
+This live run does not separately inject permanent HTTP rejection or Retry-After
+across restart; those remain updater-owned regression coverage.
 
-AT27 now delivers and confirms recovery after the preceding preflight failure.
-That failure is accepted under D-062, so this live run does not independently
-exercise skipping a permanently rejected HTTP result or Retry-After across a
-restart; those remain updater-owned regression coverage.
+## Scope and shared pipeline
 
-## Shared helper and remaining scope
-
-The overlay and `run.py` are retired. The ordinary tagged Go test imports
-`tests/e2e.PrepareServingBaseline`, documented in `docs/e2e/RUN.md`, for all
-real builds, signing, registration and API support-policy activation. The
-owned adapter retains transport, enrollment, service-hook configuration and
-read-only evidence access because those helpers remain private. No second
-release pipeline or database writes were added.
-
-The passes cover the requested follow-up scenarios. Physical arm64 runs,
-multi-node populations, published dataplane traffic and the remaining original
-§19 matrices are still open as mapped in [follow-up 1](follow-up-1.md).
+The driver continues to import `tests/e2e.PrepareServingBaseline` for real
+0.1.0, 1.0.1 and 1.0.2 builds, signing, registration and API support activation.
+No product source was changed. Both architectures build; live execution is
+amd64 on an unpublished node with an accepted baseline. Physical arm64,
+published member traffic and the remaining original §19 matrices remain open
+as mapped in [follow-up 1](follow-up-1.md).

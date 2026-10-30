@@ -1,6 +1,6 @@
 {
-  "run_id": "9c862efb-3595-44e1-a6e9-b9a1f3f6cd67",
-  "scope": "Follow-up 2 requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "run_id": "339fcbc0-a3e0-4923-afc3-c2d6e12e9d1a",
+  "scope": "Follow-up 3 requested scenario; not complete original §19 acceptance or physical arm64 proof",
   "id": "AT27",
   "title": "Recovery after interrupted apply",
   "spec": [
@@ -12,22 +12,22 @@
     "§13.12"
   ],
   "status": "pass",
-  "at": "2026-10-30T04:41:07Z",
+  "at": "2026-10-30T05:17:32Z",
   "expected": "Recovery after interrupted apply",
   "actual": "SIGKILL interrupted apply at final_sampled; production recover completed the same transaction with candidate D-053 health and central confirmation",
-  "git": "5cb36d03d6e07e6e90a34d4ab2fe65511d63b313",
-  "node_incarnation": "01a18b18-885f-79f7-b3d6-4544e446a4ce",
+  "git": "b936aa71d57e03dd9263b9747e2b863839dbe4b7",
+  "node_incarnation": "01a18b3a-cea6-70e8-b2a0-09bed3b4648d",
   "commands": [
     "make -f mk/at-updates.mk at-updates"
   ],
   "observations": [
     {
       "name": "manifest_and_artifact_digests",
-      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"92018ccb319174b777af1880b0033b2c0bb3929f45c5ee76cee5656a4601654d\",\"artifact_sha256_0.1.0_arm64\":\"6bdcf364119c2fc7245b35feb6ff56d478d0424a1f205acec0189d18bd4ef78f\",\"artifact_sha256_1.0.1_amd64\":\"513cd3f80d756790547d0d60149402fe1a38731a3dabcad2492f3b6ada479fe5\",\"artifact_sha256_1.0.1_arm64\":\"fffc6044120da05d35ebc2d3e1d9f561f2f8e6c0e904a4bf70565a1c958a45ec\",\"artifact_sha256_1.0.2_amd64\":\"8df50f237f0119965c56f95cd4f533ba8f113459553bd724b7291ac3596d756c\",\"artifact_sha256_1.0.2_arm64\":\"611886c64bfc9d2974607229cbe067dcd8bf03c05c9c43f42abed927f50114be\",\"manifest_sha256_0.1.0\":\"6ebde5f840a6d3f71988990485b1a514ff08636acf65cf8fe778c2edb7b767c0\",\"manifest_sha256_1.0.1\":\"be364c634a85c16c9cf1872e677295bc3c253f4dde6d4dd6ea70c4cdfa588500\",\"manifest_sha256_1.0.2\":\"486f846c54e64163919f9b6ec62e823280f87cc21f359f9890048fc46865c2aa\",\"signed_manifest_sha256_0.1.0\":\"484f116be95cf116b4e652e0314d37e38bde47697cf55f4114296973e1c546d9\",\"signed_manifest_sha256_1.0.1\":\"dc8d3f627bcd1a0b26d30f1841a8670be04294ec88011c0d4b2bbaf589b59b8c\",\"signed_manifest_sha256_1.0.2\":\"3da6e6e98e6606a180322839ecd9c61a7f8c6674eddfebff6b601c96bcef4f29\"}"
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"5c2836cd7fcd4a6d830e6e3bc6f2a9da0316b106b58ca5c18978cf03932381a1\",\"artifact_sha256_0.1.0_arm64\":\"c8056092c9b774166a08c0130e5ff39bf5ad4c500560aea98c6dabfeb7453677\",\"artifact_sha256_1.0.1_amd64\":\"2e63acb4b66bf1503437e1257bcf241ec526dafad890d016ddbad5a8eca97d00\",\"artifact_sha256_1.0.1_arm64\":\"42c211eb6a47442d52bf9e35aceb36d1df0473d85bc100635e1264160d25e0f5\",\"artifact_sha256_1.0.2_amd64\":\"45e2b6f253c5b9e7ecbbf8d1cac5e83e90a88bde05d6b22b83da7945004fd54c\",\"artifact_sha256_1.0.2_arm64\":\"74aedb955e57491af4f081ff3074982c6ac449549f3c30ca7d1e984df6a38afc\",\"manifest_sha256_0.1.0\":\"088426fea3937d1c0d8915e662fd313c3eb60fa8c9bddfd6ac770eea20c09283\",\"manifest_sha256_1.0.1\":\"6fca261264b2a6ad4f6d7a35f90afcf11b0889b2921845623491bad1f61ea152\",\"manifest_sha256_1.0.2\":\"dfc4d3f1a0529389ba9bddb80e84c6e544aff38b6c4fc94c22c73490b79a8433\",\"signed_manifest_sha256_0.1.0\":\"e339cb41dc1f69699f3e81c01d4d6fa7a4177c92913f480a3fb3335a9b7bc434\",\"signed_manifest_sha256_1.0.1\":\"e32139006f1f0ae6cf89a0a9e49c7fa5a8d864648005b5d46566b2e4d2e67103\",\"signed_manifest_sha256_1.0.2\":\"5d20668fa18eb9311ffe74a26eed6873235eb4c4fcf88a730bab5c3206437b6b\"}"
     },
     {
       "name": "support_policy_revision",
-      "detail": "\"01a18b18-8763-7c8b-aed5-a643e3730b9d\""
+      "detail": "\"01a18b3a-cbda-797f-ae61-067173dbc759\""
     },
     {
       "name": "accepted_unpublished_baseline",
@@ -39,7 +39,7 @@
     },
     {
       "name": "release_ids",
-      "detail": "{\"boot\":\"01a18b18-718c-7d49-90d4-0d3d855ed8a9\",\"good\":\"01a18b18-7a83-7977-ab12-1c6cbf979bef\",\"negative\":\"01a18b18-82f2-717d-be44-07141b97ac90\"}"
+      "detail": "{\"boot\":\"01a18b3a-b002-79b1-aed0-9dc0053efdff\",\"good\":\"01a18b3a-bd8b-7662-96df-fc5c3e85ef8a\",\"negative\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\"}"
     },
     {
       "name": "batch_response",
@@ -47,7 +47,7 @@
     },
     {
       "name": "batch_id",
-      "detail": "\"01a18b19-dc59-7c3c-abab-0b1f6c1b90ff\""
+      "detail": "\"01a18b3c-2053-7d1d-86ba-b998d11cf9fb\""
     },
     {
       "name": "generation",
@@ -63,7 +63,7 @@
     },
     {
       "name": "interrupted_journal",
-      "detail": "{\"txn_id\":\"01a18b1a-05b7-750e-b2cc-e2629f4bcf59\",\"stage\":\"final_sampled\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18b18-7a83-7977-ab12-1c6cbf979bef\",\"last_good\":\"01a18b18-7a83-7977-ab12-1c6cbf979bef\",\"health\":null,\"candidate_health\":null,\"attestations\":null,\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+      "detail": "{\"txn_id\":\"01a18b3c-451c-71be-9cfd-9a45d5b0b670\",\"stage\":\"final_sampled\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18b3a-bd8b-7662-96df-fc5c3e85ef8a\",\"last_good\":\"01a18b3a-bd8b-7662-96df-fc5c3e85ef8a\",\"health\":null,\"candidate_health\":null,\"attestations\":null,\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
     },
     {
       "name": "members_blocked_at_interruption",
@@ -79,23 +79,23 @@
     },
     {
       "name": "recovered_journal",
-      "detail": "{\"txn_id\":\"01a18b1a-05b7-750e-b2cc-e2629f4bcf59\",\"stage\":\"locally_succeeded\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"last_good\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"attestations\":[{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.2\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_up\"}],\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+      "detail": "{\"txn_id\":\"01a18b3c-451c-71be-9cfd-9a45d5b0b670\",\"stage\":\"locally_succeeded\",\"error\":\"\",\"job_error\":\"\",\"current\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"last_good\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"attestations\":[{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.2\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_up\"}],\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
     },
     {
       "name": "central",
-      "detail": "{\"state\":\"succeeded\",\"unconfirmed\":false,\"needs_attention\":false,\"current_release\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"error_code\":\"\"}"
+      "detail": "{\"state\":\"succeeded\",\"unconfirmed\":false,\"needs_attention\":false,\"current_release\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"error_code\":\"\"}"
     },
     {
       "name": "confirmation_projection",
-      "detail": "{\"current_job\":{\"state\":\"succeeded\",\"generation\":\"3\",\"last_result_at\":\"2026-10-30T04:38:22.794036+00:00\"},\"fleet_observed_at\":\"2026-10-30T04:38:52.904331+00:00\",\"fleet_received_at\":\"2026-10-30T04:38:52.907612+00:00\",\"fleet_update_generation\":\"3\",\"latest_node_observation\":{\"update\":{\"stage\":\"report\",\"state\":\"succeeded\",\"job_id\":\"01a18b19-dc5a-7c05-b86e-abde03c07ac6\",\"generation\":\"3\"},\"observed_at\":\"2026-10-30T04:38:52.904331+00:00\",\"received_at\":\"2026-10-30T04:38:52.907612+00:00\"}}"
+      "detail": "{\"current_job\":{\"state\":\"succeeded\",\"generation\":\"3\",\"last_result_at\":\"2026-10-30T05:15:46.463126+00:00\"},\"fleet_observed_at\":\"2026-10-30T05:16:16.714906+00:00\",\"fleet_received_at\":\"2026-10-30T05:16:16.720106+00:00\",\"fleet_update_generation\":\"3\",\"latest_node_observation\":{\"update\":{\"stage\":\"report\",\"state\":\"succeeded\",\"job_id\":\"01a18b3c-2054-7f1f-87d2-0325daab3b12\",\"generation\":\"3\"},\"observed_at\":\"2026-10-30T05:16:16.714906+00:00\",\"received_at\":\"2026-10-30T05:16:16.720106+00:00\"}}"
     },
     {
       "name": "central_result_receipts",
-      "detail": "[{\"payload\":{\"stage\":\"report\",\"state\":\"succeeded\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"01a18b19-dc5a-7c05-b86e-abde03c07ac6\",\"attempt\":1,\"boot_id\":\"996876dd-baeb-4846-805a-e1435a16e4c7\",\"node_id\":\"01a18b18-8790-7725-b7fb-2e70f144b267\",\"batch_id\":\"01a18b19-dc59-7c3c-abab-0b1f6c1b90ff\",\"result_id\":\"4b4b9b0f-3945-56fd-9c5f-5a79a5f148a0\",\"target_id\":\"01a18b19-dc5a-7721-9e19-1182a52e6ac3\",\"error_code\":null,\"generation\":\"3\",\"started_at\":\"2026-10-30T04:38:20Z\",\"finished_at\":\"2026-10-30T04:38:22Z\",\"payload_hash\":\"a9f4eefc7a6742d69c5d1401ad505d20986b7fe097bb3171e3cfc37a24ef6dee\",\"incarnation_id\":\"01a18b18-885f-79f7-b3d6-4544e446a4ce\",\"manifest_sha256\":\"486f846c54e64163919f9b6ec62e823280f87cc21f359f9890048fc46865c2aa\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a18b1a-0c18-7322-bbc2-829c11e49b1f\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"9a1ee25d-eb6d-4970-8c2b-f1cdf9fbfb0a\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"7\",\"recovery_required\":false,\"current_release_id\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a18b18-7a83-7977-ab12-1c6cbf979bef\",\"requested_release_id\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"4b4b9b0f-3945-56fd-9c5f-5a79a5f148a0\",\"received_at\":\"2026-10-30T04:38:22.79442147Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"3\",\"applied_to_current_observation\":false},\"payload_sha256\":\"a9f4eefc7a6742d69c5d1401ad505d20986b7fe097bb3171e3cfc37a24ef6dee\"}]"
+      "detail": "[{\"payload\":{\"stage\":\"report\",\"state\":\"succeeded\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"01a18b3c-2054-7f1f-87d2-0325daab3b12\",\"attempt\":1,\"boot_id\":\"3cf56805-d539-4244-af6a-211e0a594e67\",\"node_id\":\"01a18b3a-cc32-7a19-af73-0f057652970f\",\"batch_id\":\"01a18b3c-2053-7d1d-86ba-b998d11cf9fb\",\"result_id\":\"68ed90cf-9727-52ee-ab49-69d6f8202d2c\",\"target_id\":\"01a18b3c-2054-79dc-b6f3-44ec46716d97\",\"error_code\":null,\"generation\":\"3\",\"started_at\":\"2026-10-30T05:15:45Z\",\"finished_at\":\"2026-10-30T05:15:46Z\",\"payload_hash\":\"d0b3bc0a35fa4fc54e5588370271397700ce66567060546d8ed06122a7892b82\",\"incarnation_id\":\"01a18b3a-cea6-70e8-b2a0-09bed3b4648d\",\"manifest_sha256\":\"dfc4d3f1a0529389ba9bddb80e84c6e544aff38b6c4fc94c22c73490b79a8433\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a18b3c-4850-7c56-935e-f71f047c65cb\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"b5e13b6d-b9cb-4ab3-810b-0a9768484418\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"7\",\"recovery_required\":false,\"current_release_id\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a18b3a-bd8b-7662-96df-fc5c3e85ef8a\",\"requested_release_id\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"68ed90cf-9727-52ee-ab49-69d6f8202d2c\",\"received_at\":\"2026-10-30T05:15:46.463597919Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"3\",\"applied_to_current_observation\":false},\"payload_sha256\":\"d0b3bc0a35fa4fc54e5588370271397700ce66567060546d8ed06122a7892b82\"}]"
     },
     {
       "name": "product_journal_snapshot",
-      "detail": "{\"generation\":\"3\",\"job_id\":\"01a18b19-dc5a-7c05-b86e-abde03c07ac6\",\"stage\":\"report\",\"state\":\"succeeded\",\"journal_stage\":\"locally_succeeded\",\"current_release_id\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"last_good_release_id\":\"01a18b18-82f2-717d-be44-07141b97ac90\",\"recovery_required\":false,\"last_result_state\":\"succeeded\",\"last_rejection\":null,\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health_json\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"}}"
+      "detail": "{\"generation\":\"3\",\"job_id\":\"01a18b3c-2054-7f1f-87d2-0325daab3b12\",\"stage\":\"report\",\"state\":\"succeeded\",\"journal_stage\":\"locally_succeeded\",\"current_release_id\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"last_good_release_id\":\"01a18b3a-c691-70af-8088-13eae1d5b1cd\",\"recovery_required\":false,\"last_result_state\":\"succeeded\",\"last_rejection\":null,\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health_json\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"}}"
     },
     {
       "name": "running_verified_candidate",
