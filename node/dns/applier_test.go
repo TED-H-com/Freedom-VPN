@@ -13,6 +13,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"golang.org/x/net/dns/dnsmessage"
@@ -431,4 +432,38 @@ func contains(in []string, want string) bool {
 		}
 	}
 	return false
+}
+
+func TestD054_AT20_FeedRulesEvidenceAndRollback(t *testing.T) {
+	f, ap := newRig(t, "normal")
+	c, err := dnspublish.Compile(dnspublish.Input{ProfileCode: "standard", Upstreams: []string{"192.0.2.53"},
+		Rules: []dnspublish.Rule{{RuleID: "01900000-0000-7000-8000-0000000000a1", Domain: "cdn.example.com", Action: "allow", Reason: "false_positive"}},
+		Feeds: []dnspublish.Feed{{FeedCode: "test-feed", ContentSHA256: strings.Repeat("a", 64), Format: "domain_list", Categories: []string{"malware"}, Entries: []dnspolicy.SourceEntry{{Domain: "tracker.example.com", IncludeSubdomains: true}, {Domain: "cdn.example.com", IncludeSubdomains: true}}}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ev, err := ap.Apply(context.Background(), "8", c.Document)
+	if err != nil || !ev.Verified || len(ev.Feeds) != 1 || ev.Feeds[0].RuleCount != 2 || ev.Feeds[0].ContentSHA256 != strings.Repeat("a", 64) {
+		t.Fatalf("feed evidence %+v %v", ev, err)
+	}
+	f.mu.Lock()
+	rules := strings.Join(f.rules, "\n")
+	f.failRules = 1
+	f.mu.Unlock()
+	if !strings.Contains(rules, "! layer-3: source_list") || !strings.Contains(rules, "||tracker.example.com^") || strings.Contains(rules, "$important") {
+		t.Fatal("feed rendered in wrong layer")
+	}
+	c.Document.Feeds[0].ContentSHA256 = strings.Repeat("b", 64)
+	rolled, err := ap.Apply(context.Background(), "9", c.Document)
+	if err == nil || !rolled.Verified || rolled.PolicyGeneration != "8" || len(rolled.Feeds) != 1 || rolled.Feeds[0] != ev.Feeds[0] {
+		t.Fatalf("rollback evidence %+v %v", rolled, err)
+	}
+}
+
+func TestD054_AT20_ProbesUseEffectivePrecedence(t *testing.T) {
+	blocked, allowed := domains([]string{"||example.com^", "@@||safe.example.com^", "|forced.safe.example.com^$important", "@@|forced.safe.example.com^"})
+	if strings.Join(blocked, ",") != "example.com,forced.safe.example.com" || strings.Join(allowed, ",") != "safe.example.com" {
+		t.Fatalf("effective probes: %v %v", blocked, allowed)
+	}
 }

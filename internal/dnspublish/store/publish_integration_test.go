@@ -4,7 +4,12 @@ package store
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +17,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -66,6 +72,15 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	feedBody := "malware.example.com\n"
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = fmt.Fprint(w, feedBody) }))
+	defer server.Close()
+	client := server.Client()
+	tr := client.Transport.(*http.Transport).Clone()
+	tr.DialContext = func(ctx context.Context, network, _ string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, network, server.Listener.Addr().String())
+	}
+	client.Transport = tr
 	en := "Example feed"
 	tfPayload := api.ThreatFeedPayload{
 		Provider:              "Example Threat Intel",
@@ -74,10 +89,10 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 		LicenseUrl:            "https://feeds.example.com/license",
 		CommercialUseBasis:    "Licensed for commercial SaaS/VPN redistribution (TEST ONLY).",
 		Attribution:           presence.FromPointer(&en),
-		SourceUrl:             "https://feeds.example.com/malware.txt",
+		SourceUrl:             "https://example.com/malware.txt",
 		Format:                api.ThreatFeedPayloadFormatDomainList,
 		Categories:            []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware},
-		ContentSha256:         "7777777777777777777777777777777777777777777777777777777777777777",
+		ContentSha256:         fmt.Sprintf("%x", sha256.Sum256([]byte(feedBody))),
 		MaxSizeBytes:          1048576,
 		ValidFrom:             fixedNow.Add(-time.Hour),
 		ValidUntil:            fixedNow.Add(30 * 24 * time.Hour),
@@ -96,6 +111,18 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if _, err := store.ActivateRevision(ctx, policies.ActivateRevisionInput{DefinitionID: tfRev.DefinitionID, RevisionID: tfRev.RevisionID, ExpectedVersion: "1", Reason: "TEST ONLY approve feed", ActorID: actorID}); err != nil {
+		t.Fatal(err)
+	}
+	feeds, err := dnsfeeds.New(pool, dnsfeeds.Options{Client: client, Clock: func() time.Time { return fixedNow }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	refreshPayload, _ := json.Marshal(map[string]string{"revision_id": tfRev.RevisionID.String()})
+	refresh := db.ClaimedEvent{OutboxEvent: db.OutboxEvent{ID: uuid.New(), EventType: dnsfeeds.EventRefresh, SchemaVersion: 1, Payload: refreshPayload}}
+	if _, err := feeds.Handle(ctx, refresh); err != nil {
+		t.Fatal(err)
+	}
 	dnsPayload := api.DnsProfilePayload{
 		ProfileCode:              "standard",
 		DisplayName:              api.LocalizedText{ZhTW: "標準防護", En: &en},
@@ -138,7 +165,7 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	}
 
 	var outboxN int
-	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events`).Scan(&outboxN); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE aggregate_id=$1`, rev1.DefinitionID).Scan(&outboxN); err != nil {
 		t.Fatal(err)
 	}
 	if outboxN != 2 {
@@ -223,6 +250,52 @@ func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	if head.ProfileRevisionID != rev2.RevisionID || head.Status != statusActive {
 		t.Fatalf("head did not advance: %+v", head.ProfileRevisionID)
 	}
+	// Same content is a successful verification, but does not create a new
+	// content version, document generation, or refresh publication intent.
+	fixedNow = fixedNow.Add(6 * time.Hour)
+	refresh.ID = uuid.New()
+	if _, err := feeds.Handle(ctx, refresh); err != nil {
+		t.Fatal(err)
+	}
+	var refreshPublications int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox_events WHERE event_type='dns.publish' AND payload->>'action'='feed_refresh'`).Scan(&refreshPublications); err != nil || refreshPublications != 0 {
+		t.Fatalf("unchanged refresh fanout: %d %v", refreshPublications, err)
+	}
+	// A moved last-good produces a new immutable document on the same revision.
+	fixedNow = fixedNow.Add(6 * time.Hour)
+	feedBody += "new-malware.example.com\n"
+	refresh.ID = uuid.New()
+	if _, err := feeds.Handle(ctx, refresh); err != nil {
+		t.Fatal(err)
+	}
+	var refreshEvent db.ClaimedEvent
+	refreshEvent.EventType = dnspublish.EventDNSPublish
+	if err := pool.QueryRow(ctx, `SELECT payload FROM outbox_events WHERE event_type='dns.publish' AND payload->>'action'='feed_refresh'`).Scan(&refreshEvent.Payload); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pub.Handle(ctx, refreshEvent); err != nil {
+		t.Fatal(err)
+	}
+	moved, err := pub.GetByRevision(ctx, rev2.RevisionID)
+	if err != nil || moved.PolicyGeneration <= second.PolicyGeneration || moved.DocumentHash == second.DocumentHash || moved.Document.Feeds[0].RuleCount != 2 {
+		t.Fatalf("refresh publication: %+v %v", moved, err)
+	}
+	if _, err := pub.Handle(ctx, refreshEvent); err != nil {
+		t.Fatal(err)
+	}
+	replay, err := pub.GetByRevision(ctx, rev2.RevisionID)
+	if err != nil || string(replay.Canonical) != string(moved.Canonical) || replay.PolicyGeneration != moved.PolicyGeneration {
+		t.Fatalf("refresh replay changed document: %v", err)
+	}
+	var versions int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM dns_resolver_documents WHERE profile_revision_id=$1`, rev2.RevisionID).Scan(&versions); err != nil || versions != 2 {
+		t.Fatalf("immutable versions %d %v", versions, err)
+	}
+	historical, err := pub.GetByGeneration(ctx, rev2.RevisionID, second.PolicyGeneration)
+	if err != nil || historical.DocumentHash != second.DocumentHash || historical.Status != statusSuperseded {
+		t.Fatalf("retained generation: %+v %v", historical, err)
+	}
+	second = moved
 	older, err := pub.GetByRevision(ctx, rev1.RevisionID)
 	if err != nil || older.Status != statusSuperseded {
 		t.Fatalf("older document status %s err %v", older.Status, err)
@@ -334,17 +407,16 @@ func assertDNSAudit(t *testing.T, ctx context.Context, pool *pgxpool.Pool, defID
 		default:
 			t.Fatalf("resource %s", ev.Resource.Type)
 		}
-		opID, err := ev.OperationId.Get()
-		if err != nil {
-			t.Fatalf("%s missing operation id", ev.Action)
-		}
-		reqID, err := ev.RequestId.Get()
-		if err != nil {
-			t.Fatalf("%s missing request id", ev.Action)
-		}
-		var storedReq uuid.UUID
-		if err := pool.QueryRow(ctx, `SELECT request_id FROM operations WHERE id = $1`, uuid.UUID(opID)).Scan(&storedReq); err != nil || storedReq != uuid.UUID(reqID) {
-			t.Fatalf("request correlation op %s audit %s stored %s err %v", opID, reqID, storedReq, err)
+		// Automatic content refreshes have no admin operation or request.
+		if opID, err := ev.OperationId.Get(); err == nil {
+			reqID, err := ev.RequestId.Get()
+			if err != nil {
+				t.Fatalf("%s missing request id", ev.Action)
+			}
+			var storedReq uuid.UUID
+			if err := pool.QueryRow(ctx, `SELECT request_id FROM operations WHERE id=$1`, uuid.UUID(opID)).Scan(&storedReq); err != nil || storedReq != uuid.UUID(reqID) {
+				t.Fatalf("request correlation: %v", err)
+			}
 		}
 		after, err := ev.Changes.After.Get()
 		if err != nil {
@@ -432,4 +504,43 @@ func withAction(t *testing.T, raw []byte, action string) []byte {
 		t.Fatal(err)
 	}
 	return out
+}
+
+func TestD054_DNS01_MissingLastGoodCannotPublish(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	ps := policies.NewStore(pool)
+	actor := uuid.New()
+	now := time.Now().UTC()
+	feed := api.ThreatFeedPayload{Provider: "TEST ONLY", FeedCode: "missing-feed", LicenseName: "TEST ONLY", LicenseUrl: "https://example.com/license", CommercialUseBasis: "TEST ONLY fixture license", Attribution: presence.NewNullableWithValue("TEST ONLY attribution"), SourceUrl: "https://example.com/feed", Format: api.ThreatFeedPayloadFormatDomainList, Categories: []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware}, ContentSha256: strings.Repeat("a", 64), MaxSizeBytes: 4096, ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(time.Hour), UpdateIntervalSeconds: 300}
+	raw, _ := json.Marshal(feed)
+	code := "missing-feed"
+	rev, err := ps.CreateRevision(ctx, policies.CreateRevisionInput{Code: &code, Type: api.PolicyTypeThreatFeed, SchemaVersion: 1, Payload: raw, Reason: "TEST ONLY", ActorID: actor})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ps.ActivateRevision(ctx, policies.ActivateRevisionInput{DefinitionID: rev.DefinitionID, RevisionID: rev.RevisionID, ExpectedVersion: "1", Reason: "TEST ONLY", ActorID: actor}); err != nil {
+		t.Fatal(err)
+	}
+	profile := api.DnsProfilePayload{ProfileCode: "waiting", DisplayName: api.LocalizedText{ZhTW: "TEST ONLY"}, DomainRuleSetRevisionIds: []uuid.UUID{}, ThreatFeedRevisionIds: []uuid.UUID{rev.RevisionID}, BlockResponse: api.DnsProfilePayloadBlockResponseNxdomain, BlockedTtlSeconds: 60}
+	raw, _ = json.Marshal(profile)
+	code = "waiting"
+	prof, err := ps.CreateRevision(ctx, policies.CreateRevisionInput{Code: &code, Type: api.PolicyTypeDnsProfile, SchemaVersion: 1, Payload: raw, Reason: "TEST ONLY", ActorID: actor})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ps.ActivateRevision(ctx, policies.ActivateRevisionInput{DefinitionID: prof.DefinitionID, RevisionID: prof.RevisionID, ExpectedVersion: "1", Reason: "TEST ONLY", ActorID: actor}); err != nil {
+		t.Fatal(err)
+	}
+	p, err := NewPublisher(pool, Config{Upstreams: []string{"192.0.2.53:53"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.Handle(ctx, loadPublishEvent(t, ctx, pool, 0)); err == nil || err.Error() != "feed_last_good_missing" {
+		t.Fatalf("missing content accepted: %v", err)
+	}
+	var heads int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM dns_publication_heads`).Scan(&heads); err != nil || heads != 0 {
+		t.Fatalf("head without content: %d %v", heads, err)
+	}
 }

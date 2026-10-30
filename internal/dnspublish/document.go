@@ -74,13 +74,15 @@ type Rule struct {
 	Reason            string `json:"reason"`
 }
 
-// Feed is the identity of an enabled threat feed. The feed body is not stored
-// on the policy revision, so the document pins the content hash only (§12.3).
+// Feed embeds the normalized last-good content of an activated feed (D-054).
+// ContentSHA256 identifies raw upstream bytes; the document hash covers entries.
 type Feed struct {
-	FeedCode      string   `json:"feed_code"`
-	ContentSHA256 string   `json:"content_sha256"`
-	Format        string   `json:"format"`
-	Categories    []string `json:"categories"`
+	FeedCode      string                  `json:"feed_code"`
+	ContentSHA256 string                  `json:"content_sha256"`
+	Format        string                  `json:"format"`
+	Categories    []string                `json:"categories"`
+	Entries       []dnspolicy.SourceEntry `json:"entries"`
+	RuleCount     int                     `json:"rule_count"`
 }
 
 // Document is the resolver configuration hashed with RFC 8785 (§12.5).
@@ -178,6 +180,21 @@ func Verify(doc Document) error {
 	if !validBlockResponse(doc.BlockResponse) {
 		return &Error{Code: "block_response", Field: "block_response", Message: "unsupported block response"}
 	}
+	normalized, err := normalize(Input{ProfileCode: doc.ProfileCode, BlockResponse: doc.BlockResponse, BlockedTTLSeconds: doc.BlockedTTLSeconds, SafeSearch: doc.SafeSearch, Upstreams: doc.Upstreams, BootstrapDNS: doc.BootstrapDNS, Rules: doc.Rules, Feeds: doc.Feeds})
+	if err != nil {
+		return err
+	}
+	want, err := canonjson.Marshal(normalized)
+	if err != nil {
+		return err
+	}
+	got, err := canonjson.Marshal(doc)
+	if err != nil {
+		return err
+	}
+	if string(want) != string(got) {
+		return &Error{Code: "document_invalid", Field: "document", Message: "document is not normalized"}
+	}
 	return nil
 }
 
@@ -219,7 +236,11 @@ func normalize(in Input) (Document, error) {
 	if err != nil {
 		return Document{}, err
 	}
-	if len(rules)+len(feeds) > dnspolicy.DefaultMaxTotalRulesPerBundle {
+	total := len(rules)
+	for _, feed := range feeds {
+		total += len(feed.Entries)
+	}
+	if total > dnspolicy.DefaultMaxTotalRulesPerBundle {
 		return Document{}, &Error{Code: "rule_limit", Field: "rules", Message: "rule count exceeds the bundle limit"}
 	}
 	return Document{
@@ -398,7 +419,23 @@ func normalizeFeeds(in []Feed) ([]Feed, error) {
 			}
 		}
 		slices.Sort(cats)
-		out = append(out, Feed{FeedCode: code, ContentSHA256: sum, Format: format, Categories: cats})
+		if len(feed.Entries) == 0 || len(feed.Entries) > dnspolicy.DefaultMaxSourceRules {
+			return nil, &Error{Code: "feed_content_missing", Field: "feeds", Message: "non-empty bounded last-good feed content is required"}
+		}
+		entries := append([]dnspolicy.SourceEntry(nil), feed.Entries...)
+		for j, entry := range entries {
+			norm, err := dnspolicy.NormalizeDomain(entry.Domain)
+			if err != nil {
+				return nil, &Error{Code: "feed_domain", Field: "feeds", Message: "invalid feed domain"}
+			}
+			entries[j].Domain = norm.Canonical
+			if entry.IncludeSubdomains != (format != "hosts") {
+				return nil, &Error{Code: "feed_scope", Field: "feeds", Message: "entry scope does not match feed format"}
+			}
+		}
+		slices.SortFunc(entries, func(a, b dnspolicy.SourceEntry) int { return strings.Compare(a.Domain, b.Domain) })
+		entries = slices.Compact(entries)
+		out = append(out, Feed{FeedCode: code, ContentSHA256: sum, Format: format, Categories: slices.Compact(cats), Entries: entries, RuleCount: len(entries)})
 	}
 	slices.SortFunc(out, func(a, b Feed) int { return strings.Compare(a.FeedCode, b.FeedCode) })
 	return out, nil
@@ -452,6 +489,16 @@ func RenderRules(doc Document, generation, hash string) ([]string, error) {
 	if len(allows) > 0 {
 		lines = append(lines, "! layer-2: admin_allow")
 		lines = append(lines, allows...)
+	}
+	for _, feed := range doc.Feeds {
+		lines = append(lines, "! layer-3: source_list", "! fvpn-feed: "+feed.FeedCode+" "+feed.ContentSHA256+" "+fmt.Sprint(feed.RuleCount))
+		for _, entry := range feed.Entries {
+			line, err := dnspolicy.RenderAdGuardRule(entry.Domain, entry.IncludeSubdomains, dnspolicy.LayerSourceList)
+			if err != nil {
+				return nil, err
+			}
+			lines = append(lines, line)
+		}
 	}
 	return lines, nil
 }

@@ -9,19 +9,31 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // DNS is the resolver deployment file (decision D-028). Upstreams are injected
 // here. There is no production default and the compiler never invents one.
 type DNS struct {
-	Upstreams    []string `json:"upstreams"`
-	BootstrapDNS []string `json:"bootstrap_dns"`
+	Upstreams                []string `json:"upstreams"`
+	BootstrapDNS             []string `json:"bootstrap_dns"`
+	FeedUpdateCadenceSeconds int      `json:"feed_update_cadence_seconds,omitempty"`
+	FeedMaxRemovalPercent    *int     `json:"feed_max_removal_percent,omitempty"`
 }
 
 // Validate requires at least one upstream. Each address is an IPv4 or IPv6
 // literal with a port in 1..65535. An empty bootstrap list means the publisher
 // copies the configured upstreams; it is not a public resolver.
 func (c *DNS) Validate() error {
+	if c.FeedUpdateCadenceSeconds == 0 {
+		c.FeedUpdateCadenceSeconds = int((6 * time.Hour) / time.Second)
+	}
+	if c.FeedUpdateCadenceSeconds < 300 || c.FeedUpdateCadenceSeconds > 604800 {
+		return errors.New("feed_update_cadence_seconds must be in 300..604800")
+	}
+	if c.FeedMaxRemovalPercent != nil && (*c.FeedMaxRemovalPercent < 0 || *c.FeedMaxRemovalPercent > 50) {
+		return errors.New("feed_max_removal_percent must be in 0..50")
+	}
 	upstreams, err := resolverList("upstreams", c.Upstreams, true)
 	if err != nil {
 		return err
