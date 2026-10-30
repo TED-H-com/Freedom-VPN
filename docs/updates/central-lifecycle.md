@@ -314,6 +314,13 @@ A failed result at/after `check` still requires health. Preexisting issued jobs
 without a recorded baseline fail closed for this exception; a new authorized
 attempt/batch supplies that evidence.
 
+The recorded harness pre-check failure is also exercised against this rule:
+the target and job both retain the failed state, original error code and
+`needs_attention`. Harness rollback checks must come from the restored release's
+attestation; failed candidate checks cannot stand in for them. Corrected health
+evidence uses a new result ID, since a rejected result's original payload and
+outcome remain immutable.
+
 A `rolled_back` result names the restored release in `current_release_id`, the
 candidate in `previous_release_id`, the candidate failure in `error_code`, and
 the restored release's checks in `health`. Central stores these fields unchanged
@@ -379,7 +386,9 @@ cannot confirm an older target either.
 
 `VersionView.ObservedGeneration` is nullable. Node view, `GetBatch` and `Evidence`
 share a predicate requiring a non-null generation exactly equal to the job's
-and a matching incarnation and sufficiently recent receipt. A null receipt after
+and a matching incarnation and sufficiently recent receipt. The job's observation
+timestamp must also match that receipt; reports below a job's generation never
+advance its observation evidence. A null receipt after
 local success therefore leaves the target succeeded but unconfirmed; it cannot
 change its denominator or result bucket. A later null receipt also removes
 confirmation without undoing the successful result.

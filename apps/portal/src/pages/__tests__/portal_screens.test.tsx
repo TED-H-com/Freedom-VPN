@@ -11,9 +11,11 @@ import {
   PRIMARY_DEVICE_ID,
   PRIMARY_ENROLLMENT_ID,
   PRIMARY_FUP_DEFINITION_ID,
+  PRIMARY_GROUP_ID,
   PRIMARY_MEMBER_ID,
   PRIMARY_NODE_ID,
   SAFETY_FAILED_NODE_ID,
+  SECONDARY_GROUP_ID,
 } from '../../mocks/data';
 import { setMockPersona, type MockPersona } from '../../mocks/handlers';
 import { assertAccessible } from '../../test/setup';
@@ -389,5 +391,166 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     renderAt(`/admin/enrollments/${PRIMARY_ENROLLMENT_ID}`, 'admin');
     expect(await screen.findByTestId('admin-enrollment-detail-page')).toBeInTheDocument();
     expect(screen.getByTestId('secret-available-flag')).toHaveTextContent('false');
+  });
+
+  it('TestD057_AdminGroupsPage_ListCreateConflict409AndValidation422', async () => {
+    const user = userEvent.setup();
+    const { container } = renderAt('/admin/groups', 'admin');
+
+    expect(await screen.findByTestId('admin-groups-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('group-row-standard-exits')).toBeInTheDocument();
+    expect(screen.getByTestId('group-exit-count-standard-exits')).toHaveTextContent('2');
+    expect(screen.getByTestId('group-row-default-members')).toBeInTheDocument();
+
+    // 422 validation failure on invalid code
+    await user.type(screen.getByTestId('group-code-input'), 'A');
+    await user.type(screen.getByTestId('group-name-input'), 'Invalid Code Group');
+    await user.click(screen.getByTestId('group-create-submit-btn'));
+    expect(await screen.findByTestId('group-validation-detail')).toHaveTextContent(
+      '/code: invalid',
+    );
+    expect(screen.getByTestId('group-code-field-error')).toHaveTextContent('/code');
+
+    // 409 conflict on duplicate code
+    await user.clear(screen.getByTestId('group-code-input'));
+    await user.clear(screen.getByTestId('group-name-input'));
+    await user.type(screen.getByTestId('group-code-input'), 'standard-exits');
+    await user.type(screen.getByTestId('group-name-input'), 'Unique Name');
+    await user.click(screen.getByTestId('group-create-submit-btn'));
+    expect(await screen.findByTestId('group-conflict-field-error')).toHaveTextContent(
+      '409',
+    );
+
+    // 201 create valid group
+    await user.clear(screen.getByTestId('group-code-input'));
+    await user.clear(screen.getByTestId('group-name-input'));
+    await user.type(screen.getByTestId('group-code-input'), 'asia-premium');
+    await user.type(screen.getByTestId('group-name-input'), 'Asia Premium Exits');
+    await user.click(screen.getByTestId('group-create-submit-btn'));
+    expect(await screen.findByTestId('group-row-asia-premium')).toBeInTheDocument();
+    expect(screen.getByTestId('group-exit-count-asia-premium')).toHaveTextContent('0');
+
+    await assertAccessible(container);
+  });
+
+  it('TestD057_D058_AdminNodeDetail_AttachedGroupsReplacement412AndCheckDetail', async () => {
+    const user = userEvent.setup();
+    renderAt(`/admin/nodes/${PRIMARY_NODE_ID}`, 'admin');
+
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('node-attached-groups')).toHaveTextContent(
+      'standard-exits (Standard Member Exits)',
+    );
+
+    // D-058: NodeCheck.detail rendered in checks table
+    expect(screen.getByTestId('node-checks-table')).toBeInTheDocument();
+    expect(screen.getByTestId('node-check-detail-internet_only')).toHaveTextContent(
+      'inet fvpn table verified; RFC1918 egress blocked',
+    );
+    expect(screen.getByTestId('node-check-detail-meter_path')).toHaveTextContent(
+      'forward_admission_v1 counters active on wg-nb0',
+    );
+
+    // Replace attached groups together with publication intent via PUT .../publication
+    const defaultMembersCheckbox = await screen.findByTestId(
+      'pub-group-checkbox-default-members',
+    );
+    await user.click(defaultMembersCheckbox);
+    await user.click(screen.getByTestId('publish-node-btn'));
+
+    expect(await screen.findByTestId('operation-banner')).toBeInTheDocument();
+    expect(await screen.findByTestId('node-attached-groups')).toHaveTextContent(
+      'default-members (Default Members Group)',
+    );
+
+    // 412 conflict on PUT .../publication with stale If-Match
+    await user.click(screen.getByTestId('simulate-pub-conflict-btn'));
+    expect(await screen.findByTestId('conflict-dialog')).toBeInTheDocument();
+    await user.click(screen.getByTestId('conflict-reload-btn'));
+    expect(screen.queryByTestId('conflict-dialog')).not.toBeInTheDocument();
+  });
+
+  it('TestD057_MemberViewsNeverExposeGroupIds', async () => {
+    const memberRoutes = [
+      { path: '/member', testId: 'member-service-page' },
+      { path: '/member/exits', testId: 'member-exits-page' },
+      { path: '/member/devices', testId: 'member-devices-page' },
+      { path: '/member/usage', testId: 'member-usage-page' },
+      { path: '/member/billing', testId: 'member-billing-page' },
+      { path: '/member/dns-protection', testId: 'member-dns-protection-page' },
+      { path: '/member/getting-started', testId: 'member-getting-started-page' },
+    ];
+
+    for (const route of memberRoutes) {
+      const { container, unmount } = renderAt(route.path, 'member_active');
+      expect(await screen.findByTestId(route.testId)).toBeInTheDocument();
+      const html = container.innerHTML;
+      expect(html).not.toContain(PRIMARY_GROUP_ID);
+      expect(html).not.toContain(SECONDARY_GROUP_ID);
+      expect(html).not.toContain('standard-exits');
+      expect(html).not.toContain('default-members');
+      unmount();
+    }
+  });
+
+  it('TestD058_AdminDnsPolicy_ThreatFeedStatusAndUpdateIntervalValidation', async () => {
+    const user = userEvent.setup();
+    renderAt('/admin/policies/dns', 'admin');
+
+    expect(await screen.findByTestId('admin-dns-policy-page')).toBeInTheDocument();
+    expect(screen.getByTestId('threat-feed-status-section')).toBeInTheDocument();
+
+    // zh-TW wording for bootstrap-empty, last-good, and failing-retaining-last-good
+    expect(screen.getByTestId('threat-feed-state-phishing-bootstrap')).toHaveTextContent(
+      '初始空白狀態',
+    );
+    expect(screen.getByTestId('threat-feed-state-standard')).toHaveTextContent(
+      '正常運作：使用最新驗證通過之最後良好版本',
+    );
+    expect(screen.getByTestId('threat-feed-state-botnet-c2-feed')).toHaveTextContent(
+      '重新整理失敗：持續保留並使用上一版已驗證之最後良好版本',
+    );
+
+    // Switch to English and verify en wording
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('threat-feed-state-phishing-bootstrap')).toHaveTextContent(
+      'Bootstrap empty',
+    );
+    expect(screen.getByTestId('threat-feed-state-standard')).toHaveTextContent(
+      'Healthy: serving verified last-good content',
+    );
+    expect(screen.getByTestId('threat-feed-state-botnet-c2-feed')).toHaveTextContent(
+      'Refresh failing: retaining and serving verified last-good content',
+    );
+
+    // ThreatFeedPayload.update_interval_seconds default 21600 + client bounds 300-604800 + server 422 field detail
+    await user.selectOptions(
+      screen.getByTestId('extra-policy-schema-select'),
+      'threat_feed',
+    );
+    const intervalInput = screen.getByTestId(
+      'threat-feed-update-interval-input',
+    ) as HTMLInputElement;
+    expect(intervalInput.value).toBe('21600');
+
+    // Client-side bounds enforcement (< 300)
+    await user.clear(intervalInput);
+    await user.type(intervalInput, '120');
+    await user.click(screen.getByTestId('create-extra-policy-revision-btn'));
+    expect(
+      await screen.findByTestId('threat-feed-interval-field-error'),
+    ).toHaveTextContent('300');
+
+    // Server-side 422 field error detail (> 604800 with client check bypassed)
+    await user.click(screen.getByTestId('threat-feed-bypass-client-check'));
+    await user.clear(intervalInput);
+    await user.type(intervalInput, '700000');
+    await user.click(screen.getByTestId('create-extra-policy-revision-btn'));
+    expect(
+      await screen.findByTestId('threat-feed-interval-field-error'),
+    ).toHaveTextContent('/payload/update_interval_seconds: schema_invalid');
+    expect(await screen.findByTestId('dns-api-error-fields')).toHaveTextContent(
+      '/payload/update_interval_seconds',
+    );
   });
 });

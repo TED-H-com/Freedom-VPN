@@ -12,21 +12,66 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
+func counterValue(t *testing.T, reg *prometheus.Registry, class, limiter string) float64 {
+	t.Helper()
+	families, err := reg.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range families {
+		if f.GetName() != "fvpn_control_rate_limited_total" {
+			continue
+		}
+		for _, m := range f.GetMetric() {
+			var gotClass, gotLimiter string
+			for _, lp := range m.GetLabel() {
+				switch lp.GetName() {
+				case "class":
+					gotClass = lp.GetValue()
+				case "limiter":
+					gotLimiter = lp.GetValue()
+				}
+			}
+			if gotClass == class && gotLimiter == limiter {
+				return m.GetCounter().GetValue()
+			}
+		}
+	}
+	return 0
+}
+
 type memoryStore struct {
+	mu         sync.Mutex
 	flows      map[string]Flow
 	sessions   map[string]Principal
 	identities []Identity
+	rejections []string
 }
 
-func (s *memoryStore) SaveFlow(_ context.Context, f Flow) error { s.flows[f.State] = f; return nil }
+func (s *memoryStore) SaveFlow(_ context.Context, f Flow) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.flows[f.State] = f
+	return nil
+}
+func (s *memoryStore) AuditLoginRejection(_ context.Context, reason string, _ uuid.UUID) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.rejections = append(s.rejections, reason)
+	return nil
+}
 func (s *memoryStore) ConsumeFlow(_ context.Context, state, browser string) (Flow, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	f, ok := s.flows[state]
 	if !ok || f.Browser != browser || !f.Expires.After(time.Now()) {
 		return Flow{}, pgx.ErrNoRows
@@ -35,6 +80,8 @@ func (s *memoryStore) ConsumeFlow(_ context.Context, state, browser string) (Flo
 	return f, nil
 }
 func (s *memoryStore) Login(_ context.Context, i Identity, token, old string, _ time.Duration, _ uuid.UUID) (Principal, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	delete(s.sessions, old)
 	p := Principal{Role: i.Role, ID: uuid.New(), DisplayLabel: i.Label, MFAVerified: i.MFA, AuthenticatedAt: i.AuthTime}
 	s.sessions[token] = p
@@ -42,6 +89,8 @@ func (s *memoryStore) Login(_ context.Context, i Identity, token, old string, _ 
 	return p, nil
 }
 func (s *memoryStore) Session(_ context.Context, token string, _ time.Duration) (Principal, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	p, ok := s.sessions[token]
 	if !ok {
 		return p, pgx.ErrNoRows
@@ -49,6 +98,8 @@ func (s *memoryStore) Session(_ context.Context, token string, _ time.Duration) 
 	return p, nil
 }
 func (s *memoryStore) Logout(_ context.Context, token string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	delete(s.sessions, token)
 	return nil
 }
@@ -222,5 +273,163 @@ func TestAT28_OIDCVerificationAndSessions(t *testing.T) {
 				t.Fatal("session survived logout")
 			}
 		})
+	}
+}
+
+func TestSEC05_SubjectLoginLimitAndRequestedRole(t *testing.T) {
+	// TEST ONLY - NOT A SECRET: ephemeral RSA key generated at test time.
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var issuer string
+	var tokenMu sync.Mutex
+	noncesByCode := map[string]string{}
+	challengesByCode := map[string]string{}
+	subjectsByCode := map[string]string{}
+	rolesByCode := map[string][]string{}
+
+	provider := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/.well-known/openid-configuration":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"issuer":                                issuer,
+				"authorization_endpoint":                issuer + "/authorize",
+				"token_endpoint":                        issuer + "/token",
+				"jwks_uri":                              issuer + "/jwks",
+				"id_token_signing_alg_values_supported": []string{"RS256"},
+			})
+		case "/jwks":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"keys": []any{map[string]any{
+					"kty": "RSA",
+					"alg": "RS256",
+					"use": "sig",
+					"kid": "TEST-ONLY",
+					"n":   base64.RawURLEncoding.EncodeToString(key.N.Bytes()),
+					"e":   "AQAB",
+				}},
+			})
+		case "/token":
+			_ = r.ParseForm()
+			code := r.Form.Get("code")
+			tokenMu.Lock()
+			nonce := noncesByCode[code]
+			challenge := challengesByCode[code]
+			sub := subjectsByCode[code]
+			roles := rolesByCode[code]
+			tokenMu.Unlock()
+			sum := sha256.Sum256([]byte(r.Form.Get("code_verifier")))
+			if base64.RawURLEncoding.EncodeToString(sum[:]) != challenge {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			now := time.Now()
+			claims := map[string]any{
+				"iss":       issuer,
+				"aud":       "portal-client",
+				"sub":       sub,
+				"exp":       now.Add(time.Hour).Unix(),
+				"iat":       now.Unix(),
+				"auth_time": now.Unix(),
+				"nonce":     nonce,
+				"name":      "TEST ONLY Member",
+				"amr":       []string{"mfa"},
+				"roles":     roles,
+			}
+			header := base64.RawURLEncoding.EncodeToString([]byte(`{"alg":"RS256","kid":"TEST-ONLY"}`))
+			body, _ := json.Marshal(claims)
+			unsigned := header + "." + base64.RawURLEncoding.EncodeToString(body)
+			digest := sha256.Sum256([]byte(unsigned))
+			sig, _ := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:])
+			jwt := unsigned + "." + base64.RawURLEncoding.EncodeToString(sig)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"access_token": "TEST-ONLY-TOKEN",
+				"token_type":   "Bearer",
+				"id_token":     jwt,
+			})
+		}
+	}))
+	defer provider.Close()
+	issuer = provider.URL
+
+	reg := prometheus.NewRegistry()
+	counter := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "fvpn_control_rate_limited_total",
+		Help: "TEST ONLY rate limited counter.",
+	}, []string{"class", "limiter"})
+	if err := reg.Register(counter); err != nil {
+		t.Fatal(err)
+	}
+	store := &memoryStore{flows: map[string]Flow{}, sessions: map[string]Principal{}}
+	b, err := NewBrowser(context.Background(), BrowserConfig{
+		Issuer:     issuer,
+		ClientID:   "portal-client",
+		Origin:     "https://portal.example.invalid",
+		AdminClaim: "roles",
+		AdminValue: "admin",
+		MFAAMR:     []string{"mfa"},
+		Idle:       time.Minute,
+		Absolute:   time.Hour,
+		LoginTTL:   time.Minute,
+		RecentAuth: time.Minute,
+		// Default SubjectPerMinute (10)
+		RateLimited: counter,
+	}, store, provider.Client())
+	if err != nil {
+		t.Fatal(err)
+	}
+	mux := http.NewServeMux()
+	b.Register(mux)
+
+	completeLogin := func(loginPath, subject string, roles []string) *httptest.ResponseRecorder {
+		loginRec := httptest.NewRecorder()
+		mux.ServeHTTP(loginRec, httptest.NewRequest("GET", loginPath, nil))
+		if loginRec.Code != http.StatusFound {
+			t.Fatalf("login(%s) status = %d", loginPath, loginRec.Code)
+		}
+		target, err := url.Parse(loginRec.Header().Get("Location"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		code := uuid.NewString()
+		tokenMu.Lock()
+		noncesByCode[code] = target.Query().Get("nonce")
+		challengesByCode[code] = target.Query().Get("code_challenge")
+		subjectsByCode[code] = subject
+		rolesByCode[code] = roles
+		tokenMu.Unlock()
+
+		cbReq := httptest.NewRequest("GET", "/auth/callback?code="+code+"&state="+target.Query().Get("state"), nil)
+		for _, c := range loginRec.Result().Cookies() {
+			cbReq.AddCookie(c)
+		}
+		cbRec := httptest.NewRecorder()
+		mux.ServeHTTP(cbRec, cbReq)
+		return cbRec
+	}
+
+	// F-11: requesting admin role without the admin claim is refused with 403 Forbidden.
+	if rec := completeLogin("/auth/login?role=admin", "member-only-subject", []string{"member"}); rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 when admin role requested without claim, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	// D-060: 10 completions for one subject succeed; the 11th is refused with 429 + Retry-After,
+	// while another subject from the same address still succeeds.
+	for i := 1; i <= 10; i++ {
+		if rec := completeLogin("/auth/login?role=member", "subject-repeat", []string{"member"}); rec.Code != http.StatusSeeOther {
+			t.Fatalf("completion %d for subject-repeat failed with %d: %s", i, rec.Code, rec.Body.String())
+		}
+	}
+	eleventh := completeLogin("/auth/login?role=member", "subject-repeat", []string{"member"})
+	if eleventh.Code != http.StatusTooManyRequests || eleventh.Header().Get("Retry-After") == "" || !strings.Contains(eleventh.Body.String(), `"code":"RATE_LIMITED"`) {
+		t.Fatalf("expected 11th completion for subject-repeat to return 429 with Retry-After and RATE_LIMITED, got %d headers=%v body=%s", eleventh.Code, eleventh.Header(), eleventh.Body.String())
+	}
+	if got := counterValue(t, reg, "login", "subject"); got != 1 {
+		t.Fatalf("rate_limited_total{class=login,limiter=subject} = %v, want 1", got)
+	}
+	if other := completeLogin("/auth/login?role=member", "subject-other", []string{"member"}); other.Code != http.StatusSeeOther {
+		t.Fatalf("other subject should proceed while subject-repeat is rate-limited, got %d: %s", other.Code, other.Body.String())
 	}
 }

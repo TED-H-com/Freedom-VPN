@@ -42,6 +42,8 @@ const (
 
 // Compiler compiles, signs, persists, and serves per-node desired-state envelopes (§5, §14.4, §14.7).
 type Compiler struct {
+	documentInputs  func(context.Context, pgx.Tx, *api.DesiredState, []uuid.UUID) error
+	documentIssued  func(context.Context, pgx.Tx, api.DesiredState) error
 	pool            *pgxpool.Pool
 	signer          Signer
 	entitlements    EntitlementReader
@@ -100,6 +102,12 @@ func WithDNSResolvers(ipv4, ipv6 []string) Option {
 		c.dnsResolverIPv4 = append([]string(nil), ipv4...)
 		c.dnsResolverIPv6 = append([]string(nil), ipv6...)
 	}
+}
+
+// WithDocumentInputs supplies transaction-bound fields before hashing/signing and
+// records issued references after persistence in the same transaction (D-056/D-058).
+func WithDocumentInputs(resolve func(context.Context, pgx.Tx, *api.DesiredState, []uuid.UUID) error, issued func(context.Context, pgx.Tx, api.DesiredState) error) Option {
+	return func(c *Compiler) { c.documentInputs, c.documentIssued = resolve, issued }
 }
 
 // NewCompiler constructs a desired-state Compiler.
@@ -471,6 +479,12 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		Update:             presence.FromPointer(snap.UpdateIntent),
 	}
 
+	if c.documentInputs != nil {
+		if err := c.documentInputs(ctx, tx, &desired, snap.PolicyRefs); err != nil {
+			return CompiledDesiredState{}, err
+		}
+	}
+
 	dsEnv, etag, configHash, err := c.signDesiredState(ctx, desired)
 	if err != nil {
 		return CompiledDesiredState{}, err
@@ -560,6 +574,12 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		After:         afterAudit,
 	}); err != nil {
 		return CompiledDesiredState{}, err
+	}
+
+	if c.documentIssued != nil {
+		if err := c.documentIssued(ctx, tx, desired); err != nil {
+			return CompiledDesiredState{}, err
+		}
 	}
 
 	return CompiledDesiredState{
@@ -868,10 +888,11 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 			}
 		case EventMemberEntitlementChanged, EventDeviceAuthorized, EventDeviceRevoked, EventMemberSuspended:
 			var payload struct {
-				MemberID     string   `json:"member_id"`
-				GroupIDs     []string `json:"group_ids"`
-				ExitGroupIDs []string `json:"exit_group_ids"`
-				NodeIDs      []string `json:"node_ids"`
+				MemberID             string   `json:"member_id"`
+				GroupIDs             []string `json:"group_ids"`
+				ExitGroupIDs         []string `json:"exit_group_ids"`
+				PreviousExitGroupIDs []string `json:"previous_exit_group_ids"`
+				NodeIDs              []string `json:"node_ids"`
 			}
 			_ = json.Unmarshal(ev.Payload, &payload)
 			for _, raw := range payload.NodeIDs {
@@ -881,6 +902,25 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 			}
 			rawGroups := append([]string(nil), payload.GroupIDs...)
 			rawGroups = append(rawGroups, payload.ExitGroupIDs...)
+			rawGroups = append(rawGroups, payload.PreviousExitGroupIDs...)
+			// D-052 F-02: old producers omitted removed groups. Also recompile
+			// each latest envelope that still grants this member access; the new
+			// entitlement snapshot will remove its bindings and rate policies.
+			if member, err := uuid.Parse(payload.MemberID); err == nil {
+				rows, err := c.pool.Query(ctx, `SELECT e.node_id FROM desired_state_envelopes e JOIN nodes n ON n.id=e.node_id AND n.current_incarnation_id=e.incarnation_id
+				 WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(e.envelope->'signed'->'device_bindings') v WHERE v->>'member_id'=$1)
+				 OR EXISTS(SELECT 1 FROM jsonb_array_elements(e.envelope->'signed'->'member_rate_policies') v WHERE v->>'member_id'=$1)`, member.String())
+				if err != nil {
+					return nil, err
+				}
+				ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+				if err != nil {
+					return nil, err
+				}
+				for _, id := range ids {
+					affectedNodes[id] = true
+				}
+			}
 			if len(rawGroups) > 0 {
 				var gids []uuid.UUID
 				for _, raw := range rawGroups {

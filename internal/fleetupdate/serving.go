@@ -108,7 +108,7 @@ func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	if e != nil {
 		return e
 	}
-	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=$2 WHERE node_id=$1 AND execution_incarnation_id=$3`, i.NodeID, o.ObservedAt, i.IncarnationID)
+	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=$2 WHERE node_id=$1 AND execution_incarnation_id=$3 AND generation<=$4::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.AppliedUpdateGeneration.String())
 	return e
 }
 

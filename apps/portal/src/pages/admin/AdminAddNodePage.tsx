@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient, type EnrollmentCreateResponse } from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
@@ -14,6 +14,30 @@ export function AdminAddNodePage(): React.ReactElement {
   const [expiresHours, setExpiresHours] = useState(168);
   const [notes, setNotes] = useState('Pre-installed appliance box (TEST ONLY)');
 
+  useEffect(() => {
+    void apiClient
+      .listAdminGroups({ limit: 50 })
+      .then((res) => {
+        const firstGroup = res.items[0];
+        if (firstGroup) {
+          const validIds = new Set(res.items.map((g) => g.group_id));
+          setGroups((prev) => {
+            const currentIds = prev
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+            if (currentIds.length === 0 || !currentIds.every((id) => validIds.has(id))) {
+              return firstGroup.group_id;
+            }
+            return prev;
+          });
+        }
+      })
+      .catch(() => {
+        // Keep default if group list is unavailable
+      });
+  }, []);
+
   // Held strictly in volatile component memory only (§18.2); never persisted to storage or URL.
   const [createdEnrollment, setCreatedEnrollment] =
     useState<EnrollmentCreateResponse | null>(null);
@@ -25,6 +49,25 @@ export function AdminAddNodePage(): React.ReactElement {
     setError(null);
     setCopied(false);
     try {
+      let groupIds = groups
+        .split(',')
+        .map((g) => g.trim())
+        .filter(Boolean);
+      if (
+        groupIds.length === 1 &&
+        groupIds[0] === '63575bae-2d23-45c0-ae11-ba6bb9ace34a'
+      ) {
+        try {
+          const grpRes = await apiClient.listAdminGroups({ limit: 50 });
+          const firstGroup = grpRes.items[0];
+          if (firstGroup && !grpRes.items.some((g) => g.group_id === groupIds[0])) {
+            groupIds = [firstGroup.group_id];
+            setGroups(firstGroup.group_id);
+          }
+        } catch {
+          // Keep current groupIds
+        }
+      }
       const hours = Number(expiresHours) || (delivery === 'installer' ? 0.25 : 168);
       const clampedSeconds = Math.min(604800, Math.max(60, Math.round(hours * 3600)));
       const response = await apiClient.createEnrollment({
@@ -33,10 +76,7 @@ export function AdminAddNodePage(): React.ReactElement {
         expires_in_seconds: clampedSeconds,
         name: name.trim() || undefined,
         region: region.trim() || undefined,
-        member_group_ids: groups
-          .split(',')
-          .map((g) => g.trim())
-          .filter(Boolean),
+        member_group_ids: groupIds,
         notes: notes.trim() || undefined,
       });
       setCreatedEnrollment(response);
