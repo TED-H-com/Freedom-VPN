@@ -93,6 +93,14 @@ func TestAT08_PublicationBindingAwareEvidence(t *testing.T) {
 		{"isolation_absent", true, func(r *api.ObservationReport) { r.Checks = r.Checks[1:] }, "isolation_unconfirmed"},
 		{"serving_check_absent", true, func(r *api.ObservationReport) { r.Checks = r.Checks[:3] }, "serving_checks_unconfirmed"},
 		{"degraded", true, func(r *api.ObservationReport) { r.DataHealth = api.DataHealthDegraded }, "readiness_unconfirmed"},
+		{"isolation_apply_error_pending", true, func(r *api.ObservationReport) {
+			r.Errors = []api.NodeError{{
+				Code:       api.ErrorCodeISOLATIONPOLICYINVALID,
+				Stage:      "apply",
+				Message:    "conntrack delete pending; serving ruleset verified",
+				ObservedAt: now,
+			}}
+		}, "isolation_unconfirmed"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := api.ObservationReport{ProvisioningState: api.ProvisioningStateReady, SafetyStatus: api.SafetyStatusPassed, DataHealth: api.DataHealthHealthy, MemberForwardingEnabled: true}
@@ -111,5 +119,71 @@ func TestAT08_PublicationBindingAwareEvidence(t *testing.T) {
 				t.Fatal("unexpected publication gate", cause)
 			}
 		})
+	}
+}
+
+func TestEvaluateObservationEvidence_IsolationApplyError(t *testing.T) {
+	now := time.Now().UTC()
+	report := api.ObservationReport{
+		ProvisioningState:       api.ProvisioningStateReady,
+		SafetyStatus:            api.SafetyStatusPassed,
+		DataHealth:              api.DataHealthHealthy,
+		MemberForwardingEnabled: true,
+		ObservedAt:              now,
+		Checks: []api.NodeCheck{
+			{Name: api.NodeCheckNameInternetOnly, Status: api.HealthCheckStatusPassed, ObservedAt: now},
+			{Name: api.NodeCheckNameMeterPath, Status: api.HealthCheckStatusPassed, ObservedAt: now},
+			{Name: api.NodeCheckNameTunnelProbe, Status: api.HealthCheckStatusPassed, ObservedAt: now},
+		},
+		Errors: []api.NodeError{
+			{
+				Code:       api.ErrorCodeISOLATIONPOLICYINVALID,
+				Stage:      "apply",
+				Message:    "conntrack delete pending; serving ruleset verified",
+				ObservedAt: now,
+			},
+		},
+	}
+	report.Netbird.Backend = api.ObservationReportNetbirdBackendKernel
+
+	safety, health, forwarding, _ := evaluateObservationEvidence(report)
+	if safety != api.SafetyStatusPassed {
+		t.Fatalf("safety = %q, want passed while conntrack delete retry is pending", safety)
+	}
+	if health != api.DataHealthDegraded {
+		t.Fatalf("health = %q, want degraded while ISOLATION_POLICY_INVALID apply error is present", health)
+	}
+	if !forwarding {
+		t.Fatalf("forwarding = %v, want true", forwarding)
+	}
+	if _, ok := isPendingIsolationApplyError(report, forwarding); !ok {
+		t.Fatal("expected isPendingIsolationApplyError to be true")
+	}
+
+	// When the node fails closed after exhausting retries, forwarding is disabled and safety is failed.
+	failClosed := report
+	failClosed.MemberForwardingEnabled = false
+	failClosed.SafetyStatus = api.SafetyStatusFailed
+	failClosed.ProvisioningState = api.ProvisioningStateApplying
+	failClosed.Errors = []api.NodeError{
+		{
+			Code:       api.ErrorCodeISOLATIONPOLICYINVALID,
+			Stage:      "apply",
+			Message:    "conntrack delete failed after the serving ruleset was verified",
+			ObservedAt: now,
+		},
+	}
+	safetyFC, healthFC, forwardingFC, _ := evaluateObservationEvidence(failClosed)
+	if safetyFC != api.SafetyStatusFailed {
+		t.Fatalf("fail-closed safety = %q, want failed", safetyFC)
+	}
+	if healthFC != api.DataHealthDegraded {
+		t.Fatalf("fail-closed health = %q, want degraded", healthFC)
+	}
+	if forwardingFC {
+		t.Fatalf("fail-closed forwarding = %v, want false", forwardingFC)
+	}
+	if _, ok := isPendingIsolationApplyError(failClosed, forwardingFC); ok {
+		t.Fatal("expected isPendingIsolationApplyError to be false once node failed closed")
 	}
 }
