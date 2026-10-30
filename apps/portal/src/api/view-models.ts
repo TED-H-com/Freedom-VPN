@@ -27,6 +27,9 @@ import type {
   ReleaseSupportPayload,
   ThreatFeedPayload,
   UpdateBatchDetail,
+  UpdateHealth,
+  UpdateResult,
+  UpdateTarget,
 } from './types';
 
 export interface WithEtag<T> {
@@ -495,4 +498,42 @@ export function deriveUsageQualitySummary(
     };
   }
   return { badge: 'ok', note: null };
+}
+
+export type UpdateTargetWithResult = UpdateTarget & {
+  health?: UpdateHealth | null;
+  candidate_health?: UpdateHealth | null;
+  previous_release_id?: string | null;
+  last_result?: Partial<UpdateResult> | null;
+};
+
+export interface UpdateTargetRollbackHealthViewModel {
+  restoredReleaseId: string | null;
+  previousReleaseId: string | null;
+  health: UpdateHealth | null;
+  candidateHealth: UpdateHealth | null;
+}
+
+export function extractTargetRollbackHealth(
+  target: UpdateTargetWithResult,
+  batchReleaseId?: string | null,
+): UpdateTargetRollbackHealthViewModel {
+  const health = target.health ?? target.last_result?.health ?? null;
+  const candidateHealth =
+    target.candidate_health !== undefined
+      ? target.candidate_health
+      : (target.last_result?.candidate_health ?? null);
+  const previousReleaseId =
+    target.previous_release_id ??
+    target.last_result?.previous_release_id ??
+    batchReleaseId ??
+    null;
+  const restoredReleaseId =
+    target.current_release_id ?? target.last_result?.current_release_id ?? null;
+  return {
+    restoredReleaseId,
+    previousReleaseId,
+    health,
+    candidateHealth,
+  };
 }

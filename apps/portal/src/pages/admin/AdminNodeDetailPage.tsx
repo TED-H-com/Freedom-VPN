@@ -877,6 +877,220 @@ export function AdminNodeDetailPage(): React.ReactElement {
         </div>
       </section>
 
+      {/* Typed DNS Policy Evidence reported by the node (D-056) */}
+      <section className="card" data-testid="node-dns-policy-evidence-section">
+        <h2>{t('admin.nodeDetail.dnsEvidence.title')}</h2>
+        <div
+          className="banner banner-info"
+          style={{ marginTop: '0.5rem', marginBottom: '0.75rem', fontSize: '0.85rem' }}
+          data-testid="node-dns-evidence-disclaimer"
+        >
+          {t('admin.nodeDetail.dnsEvidence.disclaimer')}
+        </div>
+        {node.dns_policy_evidence == null ? (
+          <div
+            style={{ marginTop: '0.5rem' }}
+            data-testid="node-dns-evidence-not-reported"
+          >
+            <span className="badge badge-warning">
+              {t('admin.nodeDetail.dnsEvidence.notReported')}
+            </span>
+          </div>
+        ) : (
+          <div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '0.75rem',
+                fontSize: '0.85rem',
+              }}
+            >
+              <div
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  background: '#f8fafc',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {t('admin.nodeDetail.dnsEvidence.documentId')}
+                </div>
+                <div
+                  className="mono"
+                  style={{ wordBreak: 'break-all' }}
+                  data-testid="node-dns-evidence-document-id"
+                >
+                  {node.dns_policy_evidence.document_id}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  background: '#f8fafc',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {t('admin.nodeDetail.dnsEvidence.contentSha256')}
+                </div>
+                <div
+                  className="mono"
+                  style={{ wordBreak: 'break-all' }}
+                  data-testid="node-dns-evidence-content-sha256"
+                >
+                  {node.dns_policy_evidence.content_sha256}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  background: '#f8fafc',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {t('admin.nodeDetail.dnsEvidence.generation')}
+                </div>
+                <div className="mono" data-testid="node-dns-evidence-generation">
+                  {node.dns_policy_evidence.generation}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  background: '#f8fafc',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {t('admin.nodeDetail.dnsEvidence.outcome')}
+                </div>
+                <div>
+                  <span
+                    className={`badge ${
+                      node.dns_policy_evidence.outcome === 'applied'
+                        ? 'badge-success'
+                        : node.dns_policy_evidence.outcome === 'failed'
+                          ? 'badge-danger'
+                          : 'badge-warning'
+                    }`}
+                    data-testid="node-dns-evidence-outcome"
+                  >
+                    {node.dns_policy_evidence.outcome}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  background: '#f8fafc',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {t('admin.nodeDetail.dnsEvidence.appliedAt')}
+                </div>
+                <div className="mono" data-testid="node-dns-evidence-applied-at">
+                  {node.dns_policy_evidence.applied_at ?? '—'}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  background: '#f8fafc',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {t('admin.nodeDetail.dnsEvidence.errorCode')}
+                </div>
+                <div className="mono" data-testid="node-dns-evidence-error-code">
+                  {node.dns_policy_evidence.error_code ?? '—'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '0.75rem' }} data-testid="node-dns-evidence-feeds">
+              <div
+                style={{
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  marginBottom: '0.35rem',
+                }}
+              >
+                {t('admin.nodeDetail.dnsEvidence.feedsTitle')}
+              </div>
+              {node.dns_policy_evidence.feeds.length === 0 ? (
+                <div className="text-muted" style={{ fontSize: '0.82rem' }}>
+                  {t('admin.nodeDetail.dnsEvidence.feedsEmpty')}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {node.dns_policy_evidence.feeds.map((f) => (
+                    <span
+                      key={f.feed_code}
+                      className="badge badge-neutral mono"
+                      data-testid={`node-dns-evidence-feed-${f.feed_code}`}
+                    >
+                      {f.feed_code} (rules={f.rule_count}, sha256=
+                      {f.content_sha256.slice(0, 12)}…)
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Recent Errors & Diagnostics */}
       <section className="card">
         <h2>{t('admin.nodeDetail.errors.title')}</h2>
