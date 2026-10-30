@@ -573,6 +573,16 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 	if e != nil {
 		return SetupKey{}, e
 	}
+	// D-055: this empty correlation group grants no access. Preserve membership
+	// on retries: management may already have registered the one-off peer.
+	correlation, e := c.group(ctx, enrollmentGroupKey(enrollmentID), stableName("enroll-peer", enrollmentID), nil, true)
+	if e != nil {
+		return SetupKey{}, e
+	}
+	groups := sorted([]string{group, correlation})
+	if e = c.checkEnrollmentGroupIsolation(ctx, correlation); e != nil {
+		return SetupKey{}, e
+	}
 	name := stableName("enroll", enrollmentID)
 	o, e := c.locate(ctx, "setup-keys", enrollmentID, name)
 	if e != nil {
@@ -580,7 +590,7 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 	}
 	result := SetupKey{}
 	if o == nil {
-		e = c.call(ctx, "POST", "/setup-keys", object{"name": name, "type": "one-off", "expires_in": 86400, "auto_groups": []string{group}, "usage_limit": 1, "ephemeral": false, "allow_extra_dns_labels": false}, &o)
+		e = c.call(ctx, "POST", "/setup-keys", object{"name": name, "type": "one-off", "expires_in": 86400, "auto_groups": groups, "usage_limit": 1, "ephemeral": false, "allow_extra_dns_labels": false}, &o)
 		if e != nil {
 			return result, e
 		}
@@ -598,7 +608,7 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 	if e != nil {
 		return SetupKey{}, e
 	}
-	if stringField(observed, "name") != name || stringField(observed, "type") != "one-off" || observed["usage_limit"] != float64(1) || observed["ephemeral"] != false || !slices.Equal(ids(observed["auto_groups"]), []string{group}) {
+	if stringField(observed, "name") != name || stringField(observed, "type") != "one-off" || observed["usage_limit"] != float64(1) || observed["ephemeral"] != false || !slices.Equal(ids(observed["auto_groups"]), groups) {
 		return SetupKey{}, failure(Unconfirmed)
 	}
 	if result.SecretAvailable {
@@ -608,7 +618,7 @@ func (c *Client) CreateNodeSetupKey(ctx context.Context, enrollmentID string) (S
 			return SetupKey{}, failure(Unconfirmed)
 		}
 	}
-	h, _ := hash(object{"name": name, "type": "one-off", "usage_limit": 1, "ephemeral": false, "auto_groups": []string{group}})
+	h, _ := hash(object{"name": name, "type": "one-off", "usage_limit": 1, "ephemeral": false, "auto_groups": groups})
 	if e = c.bind(ctx, "setup-keys", enrollmentID, result.ID, h); e != nil {
 		return SetupKey{}, e
 	}
@@ -628,22 +638,23 @@ func (c *Client) RevokeNodeSetupKey(ctx context.Context, enrollmentID string) er
 	}
 	defer unlock()
 	o, err := c.locate(ctx, "setup-keys", enrollmentID, stableName("enroll", enrollmentID))
-	if err != nil || o == nil {
-		return err
-	}
-	id := stringField(o, "id")
-	if o["revoked"] != true {
-		err = c.call(ctx, "PUT", endpoint("setup-keys", id), object{"revoked": true, "auto_groups": ids(o["auto_groups"])}, &object{})
-		if err != nil {
-			return err
-		}
-	}
-	o, err = c.get(ctx, "setup-keys", id)
 	if err != nil {
 		return err
 	}
-	if o["revoked"] != true {
-		return failure(Unconfirmed)
+	if o != nil {
+		id := stringField(o, "id")
+		if o["revoked"] != true {
+			if err = c.call(ctx, "PUT", endpoint("setup-keys", id), object{"revoked": true, "auto_groups": ids(o["auto_groups"])}, &object{}); err != nil {
+				return err
+			}
+		}
+		o, err = c.get(ctx, "setup-keys", id)
+		if err != nil {
+			return err
+		}
+		if o["revoked"] != true {
+			return failure(Unconfirmed)
+		}
 	}
-	return nil
+	return c.removeEnrollmentGroup(ctx, enrollmentID, o)
 }
