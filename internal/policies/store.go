@@ -686,6 +686,10 @@ func (s *Store) buildAndValidateDNSProfileTx(ctx context.Context, tx pgx.Tx, bun
 			)
 		}
 		var tf api.ThreatFeedPayload
+		rawPayload, err = dnspolicy.MaterializeFeedDefaults(rawPayload)
+		if err != nil {
+			return nil, nil, err
+		}
 		if err := json.Unmarshal(rawPayload, &tf); err != nil {
 			return nil, nil, err
 		}
@@ -701,7 +705,10 @@ func (s *Store) buildAndValidateDNSProfileTx(ctx context.Context, tx pgx.Tx, bun
 		}
 		seenFeedCodes[tf.FeedCode] = uid
 
-		attr, _ := tf.Attribution.Get()
+		var attr *string
+		if value, err := tf.Attribution.Get(); err == nil {
+			attr = &value
+		}
 		var srcFormat dnspolicy.SourceFormat
 		switch tf.Format {
 		case api.ThreatFeedPayloadFormatDomainList:
