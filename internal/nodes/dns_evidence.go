@@ -40,14 +40,14 @@ func (s *Service) DNSPolicyEvidence(ctx context.Context, node uuid.UUID) (presen
 }
 
 // GetNodeWithDNSEvidence reads the node view and its report from one snapshot.
-func (s *Service) GetNodeWithDNSEvidence(ctx context.Context, node uuid.UUID) (detail api.NodeDetail, evidence presence.Nullable[api.DnsPolicyEvidence], etag string, err error) {
+func (s *Service) GetNodeWithDNSEvidence(ctx context.Context, node uuid.UUID) (detail api.NodeDetail, etag string, err error) {
 	err = db.InTx(ctx, s.pool, db.TxOptions{TxOptions: pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}}, func(tx pgx.Tx) error {
 		var e error
 		detail, etag, e = GetNodeTx(ctx, tx, node)
 		if e != nil {
 			return e
 		}
-		evidence, e = dnsPolicyEvidence(ctx, tx, node)
+		detail.DnsPolicyEvidence, e = dnsPolicyEvidence(ctx, tx, node)
 		return e
 	})
 	return

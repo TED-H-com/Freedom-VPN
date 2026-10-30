@@ -202,25 +202,23 @@ func TestReview_F11_CrossPrincipalSessionOverwriteUnauditedAndAdminClaimBlocksMe
 
 func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testing.T) {
 	schemas := []struct {
-		name               string
-		ddl                string
-		expectUpdatedScope bool
+		name                string
+		issuerSubjectUnique bool
+		mutableClientScope  bool
+		expectUpdatedScope  bool
 	}{
 		{
 			name: "current_schema",
 		},
 		{
-			name: "migration_00183_issuer_subject_unique",
-			ddl:  `ALTER TABLE identity_bindings ADD CONSTRAINT identity_bindings_issuer_subject_key UNIQUE (issuer, subject);`,
+			name:                "migration_00183_issuer_subject_unique",
+			issuerSubjectUnique: true,
 		},
 		{
-			name: "migration_00183_with_mutable_client_scope",
-			ddl: `
-				ALTER TABLE identity_bindings ADD CONSTRAINT identity_bindings_issuer_subject_key UNIQUE (issuer, subject);
-				DROP TRIGGER identity_bindings_identity ON identity_bindings;
-				CREATE TRIGGER identity_bindings_identity BEFORE UPDATE ON identity_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','issuer','subject');
-			`,
-			expectUpdatedScope: true,
+			name:                "migration_00183_with_mutable_client_scope",
+			issuerSubjectUnique: true,
+			mutableClientScope:  true,
+			expectUpdatedScope:  true,
 		},
 	}
 
@@ -228,8 +226,28 @@ func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testin
 		t.Run(sc.name, func(t *testing.T) {
 			pool := dbtest.New(t)
 			ctx := t.Context()
-			if sc.ddl != "" {
-				if _, err := pool.Exec(ctx, sc.ddl); err != nil {
+			// Migration 00183 creates identity_bindings_issuer_subject_key.
+			// When the catalog already has it, exercise that schema and do not ALTER again.
+			if sc.issuerSubjectUnique {
+				var exists bool
+				if err := pool.QueryRow(ctx, `SELECT EXISTS (
+					SELECT 1 FROM pg_constraint
+					WHERE conname = 'identity_bindings_issuer_subject_key'
+					  AND conrelid = 'identity_bindings'::regclass
+				)`).Scan(&exists); err != nil {
+					t.Fatal(err)
+				}
+				if !exists {
+					if _, err := pool.Exec(ctx, `ALTER TABLE identity_bindings ADD CONSTRAINT identity_bindings_issuer_subject_key UNIQUE (issuer, subject)`); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			if sc.mutableClientScope {
+				if _, err := pool.Exec(ctx, `
+					DROP TRIGGER identity_bindings_identity ON identity_bindings;
+					CREATE TRIGGER identity_bindings_identity BEFORE UPDATE ON identity_bindings FOR EACH ROW EXECUTE FUNCTION immutable_fields('id','member_id','issuer','subject');
+				`); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -356,7 +374,7 @@ func TestReview_F04_CanonicalIssuerSubjectAcrossClientScopesAndSchemas(t *testin
 
 			// Also verify the unique-violation (23505) savepoint retry path directly when an insert collides with the existing unique key.
 			collisionScope := raceScope
-			if sc.ddl != "" {
+			if sc.issuerSubjectUnique {
 				collisionScope = "portal-v3"
 			}
 			tx, err := pool.Begin(ctx)
