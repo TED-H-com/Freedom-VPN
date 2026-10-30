@@ -142,21 +142,7 @@ func (s *Server) signDesired(node, inc uuid.UUID) ([]byte, string, error) {
 	expire := s.expire
 	s.mu.Unlock()
 	now := s.now()
-	gen := f.Generation
-	if gen == 0 {
-		gen = 1
-	}
-	gen += bump
-	if delta != 0 {
-		ng := int64(gen) + delta
-		if ng < 1 {
-			ng = 1
-		}
-		gen = uint64(ng)
-	}
-	if force > 0 {
-		gen = force
-	}
+	gen := configGeneration(f.Generation, bump, delta, force)
 	ttl := f.TTL
 	if ttl <= 0 {
 		ttl = time.Hour
@@ -291,6 +277,29 @@ func (s *Server) resolverDocument(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(body)
 }
 
+// configGeneration is the generation signed into desired state and into a
+// new lease. Control signs nodes.desired_config_generation, which is the
+// same number the desired document carries. A sticky replay does not call
+// this; it returns the first body.
+func configGeneration(base, bump uint64, delta int64, force uint64) uint64 {
+	gen := base
+	if gen == 0 {
+		gen = 1
+	}
+	gen += bump
+	if delta != 0 {
+		ng := int64(gen) + delta
+		if ng < 1 {
+			ng = 1
+		}
+		gen = uint64(ng)
+	}
+	if force > 0 {
+		gen = force
+	}
+	return gen
+}
+
 func (s *Server) sign(doc any, priv ed25519.PrivateKey, keyID string, corrupt bool) ([]byte, string, error) {
 	env, err := envelope.Sign(doc, priv, keyID)
 	if err != nil {
@@ -311,6 +320,17 @@ func (s *Server) sign(doc any, priv ed25519.PrivateKey, keyID string, corrupt bo
 func (s *Server) lease(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		apierr.Write(w, r, apierr.New(apierr.MethodNotAllowed, "Method not allowed."))
+		return
+	}
+	s.mu.Lock()
+	s.leasePosts++
+	failLease := s.leaseFail > 0
+	if failLease {
+		s.leaseFail--
+	}
+	s.mu.Unlock()
+	if failLease {
+		apierr.Write(w, r, apierr.New(apierr.DependencyUnavailable, "Lease renewal is unavailable."))
 		return
 	}
 	node, inc, ok := s.requireIdentity(w, r)
@@ -362,6 +382,9 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 	wrongNode := s.wrongNode
 	wrongInc := s.wrongInc
 	sticky := s.sticky
+	bump := s.bump
+	delta := s.genDelta
+	force := s.forceGen
 	s.mu.Unlock()
 	if maxOff < 60 {
 		maxOff = 60
@@ -373,6 +396,12 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 		serviceFor = time.Hour
 	}
 	now := s.now()
+	s.mu.Lock()
+	if !now.After(s.lastLeaseIssued) {
+		now = s.lastLeaseIssued.Add(time.Millisecond)
+	}
+	s.lastLeaseIssued = now
+	s.mu.Unlock()
 	issued := now
 	nodeEnd := issued.Add(time.Duration(maxOff) * time.Second)
 	if wrongNode {
@@ -410,10 +439,7 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 	if members == nil {
 		members = []api.MemberLease{}
 	}
-	gen := f.Generation
-	if gen == 0 {
-		gen = 1
-	}
+	gen := configGeneration(f.Generation, bump, delta, force)
 	lease := api.ServingLease{
 		AuthorizationGeneration: 1,
 		ConfigGeneration:        decstr.U64(gen),

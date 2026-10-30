@@ -206,3 +206,22 @@ this case. The lab does not alter projector-owned rows, forge leases, or move
 the host clock. Clock rollback requires a disposable guest VM and remains an
 operator test. The current missing lease refresh prevents this prerequisite;
 acceptance records the dependent expiry test as blocked without injecting it.
+
+## Follow-up 8 restart, DNS and landing observables
+
+Fresh prepared runtime configs already include the D-061 `dns` object shown in
+[the threat-feed scenario](scenarios/threat-feed.md); enrollment configs omit it.
+Keep the prepared runtime fields when using the shared enrollment helper. A private
+harness-generated config that omits `dns` cannot apply an issued resolver document.
+The entrypoint changes only the credential file's owner/mode to uid 0 / 0600;
+its contents never enter evidence. `threat-feed-node` records the runtime `dns`
+object, signed document reference, exact mTLS body digest/size and projected apply
+outcome. Its result is independent of `threat-feed-tamper`.
+
+[Node restart](scenarios/node-restart.md) resumes the existing durable identity
+without another installer token. The smoke runs before member admission; it is
+not a workaround for stale serving leases. Keep recovery enabled.
+
+The gateway serves the built Portal at `/` with an explicit index and readable
+public asset permissions. The login walker requires HTTP 200 on a portal landing;
+404, 500 and callback errors are failures. `admin-login` records the landing status.

@@ -74,6 +74,8 @@ The agent translates the accepted document into an `enforce.Model`, then calls `
 
 Renewal starts one lead time before expiry. The default lead is 120 seconds, capped at half the node lease window, and jittered by ±10 percent.
 
+The same step that applies a desired generation also requests a lease when the stored lease's config generation is not that generation. The request does not wait for the lead. The lease the agent serves against carries the applied generation. A lease from an older generation is never a basis for `serving=1`, and it does not by itself produce `lease_expired`. `lease_expired` means the anchored deadline of the lease for the applied generation has passed: monotonic time has reached `expires_at` measured from the send. Until a lease for the applied generation is accepted, heartbeat and observation use `policy_missing`. The forwarding-block vocabulary has no `lease_pending` or `lease_renewing`, and `policy_missing` is the existing token for a serving document that is not in hand. A failed renewal leaves forwarding off with that reason. The lead, its jitter, the rest of the bounded reason set, and the §13.9 forwarding latch are unchanged.
+
 ## Forwarding gates
 
 Member forwarding stays off unless all of these hold:
@@ -88,7 +90,7 @@ Member forwarding stays off unless all of these hold:
 - the isolation baseline is present
 - desired state is verified, in force, and `published`
 - `serving_release_ids` is empty, or it contains this `release_id` (an empty list passes, the same rule as `CheckPublishable`; a non-empty list that omits this release blocks forwarding)
-- this process holds a fresh lease whose monotonic send time is set
+- this process holds a fresh lease for the applied generation, and its monotonic send time is set
 - capacity is non-null and QoS renders
 - if any device binding is present, at least one is admitted for at least one second
 - the data-path probe has finished and its check is `passed`

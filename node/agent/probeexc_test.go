@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"net/netip"
 	"strings"
 	"testing"
 	"time"
@@ -330,5 +331,17 @@ func TestProbeException_MemberPeerFromDesiredIsNotInstalled(t *testing.T) {
 		if c.model.Probe != nil {
 			t.Fatalf("member address was installed: %+v", c.model.Probe)
 		}
+	}
+}
+
+func TestMemberCollisionBareIPv4(t *testing.T) {
+	e := &Engine{desired: &api.DesiredState{DeviceBindings: []api.DeviceBinding{{
+		PeerId: "member-peer", AllowedIpv4: []string{"100.64.1.9"},
+	}}}}
+	if !e.memberCollision("other", netip.MustParseAddr("100.64.1.9")) {
+		t.Fatal("bare allowed_ipv4 did not match the member host")
+	}
+	if e.memberCollision("other", netip.MustParseAddr("100.64.1.10")) {
+		t.Fatal("a different host collided")
 	}
 }

@@ -232,6 +232,35 @@ func TestDecideNobodyAdmittedKeepsSafety(t *testing.T) {
 	assertServingChecks(t, d.Checks, api.HealthCheckStatusFailed)
 }
 
+func TestDecideBareIPv4BindingIsAdmitted(t *testing.T) {
+	in := withAdmittedMember(servingInput())
+	in.Desired.DeviceBindings[0].AllowedIpv4 = []string{"100.64.1.1"}
+	d := Decide(in)
+	if !d.Serve || hasReason(d.Reasons, api.ForwardingBlockReasonSafetyCheckFailed) || hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("serve %v reasons %v", d.Serve, d.Reasons)
+	}
+	if len(d.Model.Bindings) != 1 || len(d.Model.Bindings[0].AllowedV4) != 1 || d.Model.Bindings[0].AllowedV4[0].String() != "100.64.1.1/32" {
+		t.Fatalf("bindings %+v", d.Model.Bindings)
+	}
+	lease, ok := checkBy(d.Checks, api.NodeCheckNameLease)
+	if !ok || lease.Status != api.HealthCheckStatusPassed {
+		t.Fatalf("lease %+v", lease)
+	}
+}
+
+func TestHostPrefixForms(t *testing.T) {
+	got, err := hostPrefixes([]string{"100.64.1.1", "100.64.1.2/32"})
+	if err != nil || len(got) != 2 || got[0].String() != "100.64.1.1/32" || got[1].String() != "100.64.1.2/32" {
+		t.Fatalf("got %v err %v", got, err)
+	}
+	if _, err := hostPrefixes([]string{"100.64.1.0/24"}); err == nil {
+		t.Fatal("prefix length other than 32 was accepted")
+	}
+	if _, err := hostPrefixes(nil); err == nil {
+		t.Fatal("empty allowed set was accepted")
+	}
+}
+
 func withAdmittedMember(in Input) Input {
 	ds := *in.Desired
 	ds.DeviceBindings = []api.DeviceBinding{oneBinding(in.Now)}

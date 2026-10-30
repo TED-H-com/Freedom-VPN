@@ -78,18 +78,19 @@ func TestWalkPostsThePasswordAndLandsOnThePortal(t *testing.T) {
 	}
 }
 
-func TestPortalDoneAcceptsTheMissingIndex(t *testing.T) {
-	index := &http.Response{StatusCode: http.StatusNotFound, Request: httptest.NewRequest(http.MethodGet, "https://portal.example.invalid:8443/", nil)}
-	if !PortalDone(index, "404 page not found\n<form action=\"/search\"></form>") {
-		t.Fatal("missing index")
+func TestPortalDoneRequiresHealthyLanding(t *testing.T) {
+	for _, path := range []string{"/", "/member/billing", "/auth/callback"} {
+		for _, code := range []int{200, 302, 401, 404, 500} {
+			resp := &http.Response{StatusCode: code, Request: httptest.NewRequest(http.MethodGet, "https://portal.example.invalid:8443"+path, nil)}
+			want := code == 200 && path != "/auth/callback"
+			if PortalDone(resp, "") != want {
+				t.Fatalf("path %s status %d", path, code)
+			}
+		}
 	}
-	failed := &http.Response{StatusCode: http.StatusUnauthorized, Request: httptest.NewRequest(http.MethodGet, "https://portal.example.invalid:8443/auth/callback?code=x", nil)}
-	if PortalDone(failed, `{"error":{"code":"UNAUTHENTICATED"}}`) {
-		t.Fatal("failed callback")
-	}
-	other := &http.Response{StatusCode: http.StatusOK, Request: httptest.NewRequest(http.MethodGet, "https://netbird.example.invalid/oauth2/auth", nil)}
+	other := &http.Response{StatusCode: 200, Request: httptest.NewRequest(http.MethodGet, "https://netbird.example.invalid/oauth2/auth", nil)}
 	if PortalDone(other, "ok") {
-		t.Fatal("idp page")
+		t.Fatal("idp page accepted")
 	}
 }
 
@@ -105,7 +106,7 @@ func TestWalkDoesNotSubmitAPortalForm(t *testing.T) {
 			http.Error(w, "posted", http.StatusBadRequest)
 			return
 		}
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`<form action="/search"><input name="q" value=""></form>`))
 	})}
 	go func() { _ = srv.Serve(ln) }()
@@ -114,7 +115,7 @@ func TestWalkDoesNotSubmitAPortalForm(t *testing.T) {
 		return (&net.Dialer{}).DialContext(ctx, network, ln.Addr().String())
 	}}, CheckRedirect: RedirectLimit(20)}
 	status, err := Walk(context.Background(), client, "http://portal.example.invalid/", "user@example.invalid", "s3cret", PortalDone)
-	if err != nil || status != http.StatusNotFound || posted {
+	if err != nil || status != http.StatusOK || posted {
 		t.Fatalf("walk %d posted=%v %v", status, posted, err)
 	}
 }

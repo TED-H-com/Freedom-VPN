@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -51,6 +52,9 @@ type Config struct {
 	// Empty keeps the guard. The dev stack sets this explicitly. It does not
 	// allow every private address.
 	AllowedArtifactOrigins []string `json:"allowed_artifact_origins,omitempty"`
+	// ProbePeer names the dedicated synthetic peer and exact sockets for the
+	// D-063 health challenge. The agent checks live member/host exclusions.
+	ProbePeer *healthattest.ChallengeProbe `json:"probe_peer,omitempty"`
 }
 
 // LoadConfig reads a config file. Unknown fields are rejected. Empty layout
@@ -64,7 +68,13 @@ func LoadConfig(path string) (Config, error) {
 	dec.DisallowUnknownFields()
 	var c Config
 	if err := dec.Decode(&c); err != nil {
-		return Config{}, fmt.Errorf("updater: config: %w", err)
+		return Config{}, errors.New("updater: invalid config JSON")
+	}
+	if err := dec.Decode(new(any)); err != io.EOF {
+		return Config{}, errors.New("updater: invalid config JSON")
+	}
+	if err := validateProbePeer(c.ProbePeer); err != nil {
+		return Config{}, err
 	}
 	d := DefaultLayout()
 	if c.Layout.Releases == "" {
@@ -110,6 +120,9 @@ func LoadConfig(path string) (Config, error) {
 // from a challenge-bound attestation in the journal directory (D-053, §13.9).
 // Service commands that are empty fail closed at stop.
 func (c Config) Engine() (*Engine, error) {
+	if err := validateProbePeer(c.ProbePeer); err != nil {
+		return nil, err
+	}
 	rel, err := readTrust(c.ReleaseTrust)
 	if err != nil {
 		return nil, err
@@ -155,6 +168,7 @@ func (c Config) Engine() (*Engine, error) {
 		Download:       DefaultDownload(),
 		AllowLoopback:  c.AllowLoopback,
 		AllowedOrigins: origins,
+		ProbePeer:      cloneProbePeer(c.ProbePeer),
 	}, nil
 }
 

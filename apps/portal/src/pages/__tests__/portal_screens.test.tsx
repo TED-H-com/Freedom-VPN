@@ -654,5 +654,20 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     expect(screen.getByTestId('target-detail-candidate-health-null')).toHaveTextContent(
       'candidate_health: null',
     );
+
+    // 3. Target with no current receipt (waiting_online) shows explicit "no evidence" state rather than blanks
+    await user.click(await screen.findByTestId(`inspect-target-${OFFLINE_NODE_ID}`));
+    expect(
+      await screen.findByTestId('target-detail-no-receipt-evidence'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('target-detail-previous-release-id')).toHaveTextContent(
+      /尚未回報|Not yet reported/,
+    );
+    expect(screen.getByTestId('target-detail-restored-health-null')).toHaveTextContent(
+      /尚未回報|Not yet reported/,
+    );
+    expect(screen.getByTestId('target-detail-candidate-health-null')).toHaveTextContent(
+      /尚未回報|Not yet reported/,
+    );
   });
 });

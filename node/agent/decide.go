@@ -162,8 +162,15 @@ func Decide(in Input) Decision {
 			}
 		}
 	}
-	leaseOK := in.LeaseFresh && in.Lease != nil && in.LeaseMonoSent > 0
-	if !leaseOK {
+	// A lease for another generation is not in force. The vocabulary has no
+	// lease_pending or lease_renewing. policy_missing is the existing token
+	// for a serving document this generation does not yet hold. lease_expired
+	// stays the anchored deadline of the lease for this generation.
+	leaseStale := leaseGenerationStale(in)
+	leaseOK := in.LeaseFresh && in.Lease != nil && in.LeaseMonoSent > 0 && !leaseStale
+	if leaseStale {
+		add(api.ForwardingBlockReasonPolicyMissing)
+	} else if !leaseOK {
 		add(api.ForwardingBlockReasonLeaseExpired)
 	}
 
@@ -258,7 +265,13 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 	qos := notRun(api.NodeCheckNameQos, at)
 	bind := notRun(api.NodeCheckNameSourceBinding, at)
 	if evaluateServing {
-		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at), "Serving lease is not in force.")
+		leaseCode := api.ErrorCodeLEASEEXPIRED
+		leaseDetail := "Serving lease is not in force."
+		if leaseGenerationStale(in) {
+			leaseCode = api.ErrorCodeSTALEGENERATION
+			leaseDetail = "Serving lease is not for the applied generation."
+		}
+		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, leaseCode, at), leaseDetail)
 		qos = withDetail(chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "Rate policy could not be applied.")
 		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "No member binding was admitted.")
 	}
@@ -396,6 +409,20 @@ func provisioningOf(in Input, acked bool) api.ProvisioningState {
 		return api.ProvisioningStateReady
 	}
 	return api.ProvisioningStateApplying
+}
+
+// leaseGenerationStale is true when both documents name a generation and
+// they differ. Generation 0 is not a desired generation (desiredInForce
+// rejects it), so an unset desired generation is not a mismatch.
+func leaseGenerationStale(in Input) bool {
+	if in.Lease == nil || in.Desired == nil {
+		return false
+	}
+	dg := uint64(in.Desired.ConfigGeneration)
+	if dg == 0 {
+		return false
+	}
+	return uint64(in.Lease.ConfigGeneration) != dg
 }
 
 func containsID(ids []uuid.UUID, id uuid.UUID) bool {
@@ -557,13 +584,27 @@ func hostPrefixes(in []string) ([]netip.Prefix, error) {
 	}
 	out := make([]netip.Prefix, 0, len(in))
 	for _, s := range in {
-		p, err := netip.ParsePrefix(s)
-		if err != nil || !p.IsValid() || p.Bits() != 32 {
+		p, err := hostPrefix(s)
+		if err != nil {
 			return nil, errCapacity
 		}
 		out = append(out, p)
 	}
 	return out, nil
+}
+
+// hostPrefix is one allowed_ipv4 item. The contract type is a bare IPv4
+// address, which is this device's host. An explicit /32 is the same host.
+// Any other prefix length is not a device binding.
+func hostPrefix(s string) (netip.Prefix, error) {
+	if addr, err := netip.ParseAddr(s); err == nil && addr.Is4() {
+		return netip.PrefixFrom(addr, 32), nil
+	}
+	p, err := netip.ParsePrefix(s)
+	if err != nil || !p.IsValid() || !p.Addr().Is4() || p.Bits() != 32 {
+		return netip.Prefix{}, errCapacity
+	}
+	return p, nil
 }
 
 func buildQoS(in Input, upParent, downParent, upCap, downCap, host uint64, admitted map[uuid.UUID]uint64, now time.Time) (enforce.QoS, error) {

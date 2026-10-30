@@ -119,7 +119,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 }
 
 func (e *Engine) needRenew() bool {
-	if !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK {
+	if !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || e.leaseBehindApplied() {
 		return true
 	}
 	window := e.lease.ExpiresAt.Sub(e.lease.IssuedAt)
@@ -128,6 +128,39 @@ func (e *Engine) needRenew() bool {
 		return true
 	}
 	return timeanchor.Remaining(deadline, e.clock.Mono()) <= e.renewLead(window)+leadJitter(e.renewLead(window))
+}
+
+// leaseBehindApplied is a stored lease whose config generation is not the
+// generation this process has applied. The deadline path is unchanged.
+// appliedGen 0 means nothing has been applied yet, so the generation
+// comparison waits.
+func (e *Engine) leaseBehindApplied() bool {
+	if e.appliedGen == 0 || e.lease == nil {
+		return false
+	}
+	return uint64(e.lease.ConfigGeneration) != e.appliedGen
+}
+
+// renewAppliedLease runs after this step applies a generation. One renewal
+// is attempted in that same step. A lease that comes back for the applied
+// generation is what the rest of the step serves. A failure leaves the
+// decision already computed: forwarding stays off, and the reason is not
+// lease_expired.
+func (e *Engine) renewAppliedLease(ctx context.Context) error {
+	if !e.leaseBehindApplied() {
+		return nil
+	}
+	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
+		return err
+	}
+	if e.lease == nil || !e.leaseFresh || uint64(e.lease.ConfigGeneration) != e.appliedGen {
+		return nil
+	}
+	e.evaluate(ctx)
+	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
+		return err
+	}
+	return nil
 }
 
 func leadJitter(lead time.Duration) time.Duration {

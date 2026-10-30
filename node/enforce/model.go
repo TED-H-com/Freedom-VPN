@@ -41,6 +41,8 @@ const (
 	// The kernel element timeout is derived from ExpiresAt and cannot be
 	// longer than this.
 	ProbeMaxSeconds = 300
+	// ProbeMaxDestinations is the most exact sockets one probe may name.
+	ProbeMaxDestinations = 4
 
 	dirUpload      = "upload"
 	dirDownload    = "download"
@@ -177,6 +179,11 @@ type ProbeException struct {
 	// ruleset the same resolver addresses are installed for the exception.
 	ResolverDNS bool      `json:"resolver_dns,omitempty"`
 	ExpiresAt   time.Time `json:"expires_at"`
+	// TimeoutCeilSeconds caps the kernel timeout the same way as
+	// MemberLease.TimeoutCeilSeconds. Zero means no extra cap. Render also
+	// caps to the remaining lifetime already installed in State, so a
+	// re-render cannot extend a live probe past its original ExpiresAt.
+	TimeoutCeilSeconds uint64 `json:"timeout_ceil_seconds,omitempty"`
 }
 
 // CounterValue is an absolute nft named-counter reading (§10.5, §10.7).

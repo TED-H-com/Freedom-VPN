@@ -296,7 +296,16 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		}
 		m.route = r.Method + " /api/v1" + route.Path
 		ingressClass, _, _ := classify(op, o.Config)
-		peer, _, _ := net.SplitHostPort(r.RemoteAddr)
+		peer, peerOK := connectionRateKey(r.RemoteAddr)
+		if !peerOK {
+			// Do not insert an empty host. Unparseable connection addresses
+			// would otherwise share one bucket and could fill the principal map.
+			if o.RateLimited != nil {
+				o.RateLimited.WithLabelValues(ingressClass, "address").Inc()
+			}
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(time.Second))
+			return
+		}
 		if delay := ingress.allow("ingress:"+ingressClass+":"+peer, o.Config.IngressRate); delay > 0 {
 			if o.RateLimited != nil {
 				o.RateLimited.WithLabelValues(ingressClass, "address").Inc()
@@ -335,8 +344,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		class, bounds, bodyLimit := classify(op, o.Config)
 		key := p.Scope()
 		if p.Role == "" {
-			host, _, _ := net.SplitHostPort(r.RemoteAddr)
-			key = "anonymous:" + host
+			key = "anonymous:" + peer
 		}
 		bucket := lim
 		if p.Role == "" {
@@ -469,17 +477,21 @@ func parameterNames(path string) []string {
 	}
 	return names
 }
+
+// classify selects a D-060 bucket from the operation id gen.GetSpec returns.
+// Codegen stores those ids in PascalCase. The camelCase operationId values in
+// contracts/openapi.yaml are not the strings the router loads.
 func classify(op *openapi3.Operation, c config.Config) (string, config.Bucket, int64) {
 	switch op.OperationID {
-	case "submitObservation":
+	case "SubmitObservation":
 		return "heartbeat", c.HeartbeatRate, c.AgentBodyBytes
-	case "renewServingLease":
+	case "RenewServingLease":
 		return "lease", c.LeaseRate, c.AgentBodyBytes
-	case "submitUsageBatch":
+	case "SubmitUsageBatch":
 		return "usage", c.UsageRate, c.UsageBodyBytes
-	case "enrollNode":
+	case "EnrollNode":
 		return "anonymous", c.AnonymousRate, c.AgentBodyBytes
-	case "receiveProviderWebhook":
+	case "ReceiveProviderWebhook":
 		return "anonymous", c.AnonymousRate, c.WebhookBodyBytes
 	}
 	if op.Tags[0] == "agent" {
@@ -520,9 +532,81 @@ func matchingIdentity(v any, p auth.Principal) bool {
 }
 
 // BrowserRoutes bounds login discovery/token work and session bootstrap. The key
-// is the direct peer address; untrusted proxy forwarding headers are ignored.
+// is the connection address (IPv4 per address, IPv6 per /64). Untrusted proxy
+// forwarding headers are ignored.
 func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 	return BrowserRoutesWithMetrics(c, next, nil)
+}
+
+// ipv6RatePrefixBits is the IPv6 prefix that shares one limiter principal.
+// A /64 is one subscriber allocation. Keying the full /128 lets that
+// allocation fill MaxRatePrincipals with one fresh bucket per address.
+const ipv6RatePrefixBits = 64
+
+// connectionRateKey is the rate-limiter principal for a connection address.
+// IPv4, including IPv4-mapped IPv6, is the canonical host. IPv6 is the
+// canonical address of its /64. Bracketed "[2001:db8::1]:443" and unbracketed
+// "2001:db8::1:443" are the same principal. ok is false when remoteAddr is
+// not an IP connection address; the caller fails that request closed and
+// does not store a key.
+func connectionRateKey(remoteAddr string) (string, bool) {
+	ip := parseRemoteIP(remoteAddr)
+	if ip == nil {
+		return "", false
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return v4.String(), true
+	}
+	prefix := ip.Mask(net.CIDRMask(ipv6RatePrefixBits, 128))
+	if prefix == nil {
+		return "", false
+	}
+	return prefix.String(), true
+}
+
+// parseRemoteIP reads the host from a connection address. net.SplitHostPort
+// accepts "ipv4:port" and "[ipv6]:port". An unbracketed IPv6 address keeps a
+// trailing numeric port ("2001:db8::1:443") so it matches the bracketed form
+// of that same host. A zone identifier is not part of the key.
+func parseRemoteIP(remoteAddr string) net.IP {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		if h, ok := splitUnbracketedIPv6(remoteAddr); ok {
+			host = h
+		} else {
+			host = remoteAddr
+		}
+	}
+	if i := strings.IndexByte(host, '%'); i >= 0 {
+		host = host[:i]
+	}
+	return net.ParseIP(host)
+}
+
+// splitUnbracketedIPv6 accepts "address:port" when the address contains a
+// colon, so net.SplitHostPort rejected it for missing brackets. The port is
+// stripped before the prefix is computed. Treating the whole string as one
+// IPv6 address would move a trailing port into the host and can change the /64.
+func splitUnbracketedIPv6(remoteAddr string) (string, bool) {
+	colon := strings.LastIndexByte(remoteAddr, ':')
+	if colon <= 0 || colon == len(remoteAddr)-1 {
+		return "", false
+	}
+	host, port := remoteAddr[:colon], remoteAddr[colon+1:]
+	if strings.IndexByte(host, ':') < 0 {
+		return "", false
+	}
+	if _, err := strconv.ParseUint(port, 10, 16); err != nil {
+		return "", false
+	}
+	bare := host
+	if i := strings.IndexByte(bare, '%'); i >= 0 {
+		bare = bare[:i]
+	}
+	if net.ParseIP(bare) == nil {
+		return "", false
+	}
+	return host, true
 }
 
 // BrowserRoutesWithMetrics bounds browser authentication and session routes using
@@ -536,10 +620,17 @@ func BrowserRoutesWithMetrics(c config.Config, next http.Handler, rateLimited *p
 	gate := make(chan struct{}, c.MaxConcurrent)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = apierr.TrackResponse(w)
-		host, _, _ := net.SplitHostPort(r.RemoteAddr)
 		class := "login"
 		if r.URL.Path == "/auth/session" || r.URL.Path == "/auth/logout" {
 			class = "session"
+		}
+		host, ok := connectionRateKey(r.RemoteAddr)
+		if !ok {
+			if rateLimited != nil {
+				rateLimited.WithLabelValues(class, "address").Inc()
+			}
+			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Login request rate exceeded.").WithRetryAfter(time.Second))
+			return
 		}
 		if d := lim.allow(class+":"+host, rate); d > 0 {
 			if rateLimited != nil {
