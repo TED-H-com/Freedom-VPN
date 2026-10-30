@@ -33,6 +33,8 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
 
 > **中央自動授權機制與 `D-052` 單一 Issuer 公開 Subject 驗證（`§2 [S36]`、`§7.3`、`§9.4`、`§15.2`、`MEM01`、`MEM02`）**：會員入口網站 `/member/devices` **沒有**手動授權按鈕，API 亦無會員手動新增裝置端點。當您在官方 NetBird 客戶端將 **Management URL（管理伺服器網址）** 指向 `https://netbird.example.com` 並使用與會員入口網站 **相同之 OIDC 簽發者（Issuer）與帳號** 完成 SSO 登入後，中央 `fvpn-worker` 的 `devices.discover` 作業會比對 NetBird 使用者 ID 與中央 `identity_bindings.subject`（寫入 `netbird_user_bindings`，證明格式 `mapping_proof = "shared_issuer_public_subject:" + oidc_issuer`，排除服務帳號與停用帳號，且絕不以 Email 或顯示名稱猜測配對；若為 pairwise 或未知 subject 則以 `identity_unmapped` 失敗關閉並排除於清單外）。驗證通過後，中央在資料庫交易鎖定下檢查您的有效資格與裝置名額上限（`device_limit`），並透過背景作業（`member.device_authorize`）自動配發出口群組與 DNS 權限。您只需在 `/member/devices`（`GET /api/v1/member/devices`）檢視裝置狀態由 `pending`（套用中）自動變為 **`authorized`（已授權）**。
 
+會員身分由相同的標準化 Issuer 與 Subject 決定；管理員更換入口網站的 OIDC Client ID 時會沿用原會員，不會建立新會員。若身分比對遭拒，請聯絡支援人員，勿改用相同 Email 的另一帳號嘗試合併（[身分規則](../control/AUTH.md)）。
+
 #### A. Windows（候選版本 `v0.82.0`，待實測 `AT01`）
 1. 安裝官方候選版 `v0.82.0` Windows 安裝程式。
 2. 點擊系統列（System Tray）的 NetBird 圖示 -> **Settings（設定）** -> **Advanced（進階）**。
@@ -73,7 +75,7 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
 1. **驗證會員工作階段與有效資格（`GET /api/v1/member/me`）**：
    - `/api/v1/member/me` 回傳的是您的會員帳號與服務資格狀態（`status`、`effective_service_end`、`plan`），**並非**用來反映客戶端的出口公網 IP，且呼叫時必須附帶已認證的瀏覽器工作階段 Cookie（請透過權限 `0600` 的 curl 設定檔傳遞，避免將工作階段秘密留在指令歷史中，`§16.1`、`§16.2`）：
    ```bash
-   # 建立 0600 設定檔（測試完成後刪除），內含：header = "Cookie: __Host-fvpn_session=<SESSION_TOKEN>"
+   # 建立 0600 設定檔（測試完成後刪除），內含：header = "Cookie: __Host-fvpn-member=<SESSION_TOKEN>"
    curl -fsS --config ~/.config/fvpn/session.curl https://vpn.example.com/api/v1/member/me
    ```
 2. **以受控測試端點驗證出口來源 IP 切換（`AT01`、`AT09`）**：
@@ -116,7 +118,7 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
    - **節點本機 Watchdog 心跳逾時（`§16.3`）**：出口節點上的獨立守護程序 `fvpn-watchdog` 會檢查本機 `fvpn-agent` 的心跳檔案（預設設定 `watchdog_stale_seconds = 30` 秒）。若本機 `fvpn-agent` 卡死或異常退出，`fvpn-watchdog` 會將該節點的 `inet fvpn` 切換回 baseline drop 狀態，停止該節點的會員轉發。
    - **控制面在線時的主動撤權 / 停用（`§16.5`、`AT04`、`AT13`）**：當中央控制服務與出口節點均在線時，管理員停用出口、會員停權或撤銷裝置的**線上政策收斂設計目標以 60 秒為起點**（`§16.5` 非功能目標，並非瞬間生效，亦非離線保證）。
    - **控制面失聯時的離線到期界線（`§16.3`、`AT29`）**：當出口節點與中央控制面失聯時，無法即時收到新發生的撤權通知；節點核心透過 `inet fvpn` 的 `@allowed_v4` timeout 集合強制執行 `min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`（預設最長離線租約上限為 `86,400` 秒 / 24 小時），最早期限到達時由核心自動停止轉發，且不受系統牆鐘回調（clock rollback）延長。
-   - **實測狀態**：上述三項端到端流量切斷時間目前均 **尚未實測（not yet measured，待執行 `AT04`、`AT13` 與 `AT29`；`2026-10-29` 與 `2026-10-30` 之 `lease-expiry.json` 執行紀錄在停止控制面時因出口群組掛載 `D-057` 尚待接線而無活躍會員轉發規則，`docs/e2e/README.md`）**。
+   - **實測狀態**：上述端到端流量切斷時間仍待驗收。`D-057` 群組掛載已接線；已提交的 [2026-10-30 租約到期紀錄](../e2e/runs/2026-10-30/lease-expiry.json) 仍因測試前提缺少有效會員轉發而為 `blocked`。程式碼合併不代表計時驗收通過。
 3. **四平台斷線、睡眠喚醒與換網行為記錄要求（`§7.3`、`§18.5`、`APP01`、`AT01`、`AT09`）**：
    - 各平台客戶端在睡眠/鎖定、切換網路及所選出口被停用時的實際路由行為，須依 `docs/e2e/at/members/OPERATORS.md` 逐平台實測並記錄：
 
@@ -157,6 +159,8 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
    - **撤銷生效時間說明**：點擊撤銷**並非瞬間在全球所有節點同步斷線**。在中央與出口節點皆在線的正常路徑下，系統會非同步撤除 NetBird 權限並下發新政策版本以終止既有與新連線（規格在線撤權目標以 **60 秒**為起點，`§16.5`；實際端到端切斷時間 **尚未實測 / not yet measured**，待執行 `AT02`、`AT04`、`AT29`）。若某台出口節點當時與控制面失聯，該節點上的轉發最長受既有核心租約/服務截止期限（`min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`，預設最長 `86,400` 秒，`§16.3`、`AT29`）約束。
    - 待 `/member/devices` 頁面上的撤銷操作狀態完成並釋出配額後，即可讓新裝置取得授權。
 
+方案降低裝置名額時，中央保留最早授權的裝置，超額裝置轉為 `pending` 並撤除權限；資格恢復後，只會在現有名額內重新授權先前已授權且未撤銷、身分證明有效的裝置。請在 `/member/devices` 確認目前狀態；詳見[會員與裝置規則](../members/README.md#quota-withdrawals-and-finite-binding-history)。
+
 ---
 
 ## 5. 用量統計與公平使用政策（FUP）顯示說明 (`/member/usage`, `§8.3`, `§10`, `§11`, `MTR01`–`MTR05`, `FUP01`–`FUP04`, `AT14`, `AT17`–`AT19`)
@@ -194,6 +198,8 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
 
 ## 6. DNS 安全防護行為、資料最小化與技術限制 (`§8.1`, `§12.1`–`§12.7`, `DNS01`–`DNS04`, `SEC02`, `AT12`, `AT20`–`AT22`)
 
+會員入口網站 `/member/dns-protection` 說明 DNS 防護範圍、限制與誤判回報方式；`/member/exits` 顯示可選出口及可用狀態。節點回報的型別化 `dns_policy_evidence` 位於管理員的節點詳細頁，會員頁面尚未顯示；需要確認特定出口的套用結果時，請支援人員查看該證據。入口網站行為以 [portal 文件](../portal/README.md) 為準。
+
 ### 6.1 受控解析器配置、防火牆規則與資料最小化 (`§8.1`, `§12.2`, `§12.6`, `§12.7`, `DNS03`, `SEC02`, `AT12`, `AT21`, `AT22`)
 - **受控 DNS 解析器與 `inet fvpn` 規則（`node/enforce/render_nft.go`）**：
   - NetBird 會將本服務配置的受控 AdGuard Home 解析器位址（例如文件示例位址 `100.64.0.53` 與 `100.64.0.54`；實際位址依部署環境設定而定，`AGENTS.md §8`）下發給已授權的會員裝置（`§12.2`）。
@@ -227,7 +233,7 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
 2. **回報誤攔截網域（False Positive）與生效時間說明（`§12.5`、`§12.6`、`D-054`、`D-056`、`AT20`、`AT22`）**：
    - 請提供完整網域名稱（例如 `sub.example.com`）與發生時間（UTC）。管理員確認後可於 `domain_rule_set` 政策新增白名單覆寫（`action: "allow"`，可覆蓋一般威脅清單誤擋，但不會解除強制 deny 或內網 IP 隔離，`§12.4`）。
    - **解除封鎖之實際生效時間（不作全域 60 秒保證，`§12.5`、`docs/dns/PUBLISH.md`、`node/agent/resolver.go`）**：白名單發布後的端到端生效時間取決於三個獨立環節：
-     1. **中央 `resolver_document` 編譯與節點解析器套用延遲（Publication & Resolver Apply Delay，`D-054`、`D-056`、`D-061`）**：管理員啟用新政策版本後，由 `fvpn-worker` 結合已核准的威脅清單內容（`dns_feed_contents`、`00181_dns_feed_contents.sql`、`00182_dns_feed_review.sql`）編譯出正規化 JSON 解析器文件（`dns_resolver_documents` 與 `dns_publication_heads`，`00180_dns_publish.sql`），並於節點簽章期望狀態（`DesiredState.dns.resolver_document`）帶入文件雜湊與長度；節點 `fvpn-agent` 透過已接線的 mTLS 端點 `GET /api/v1/agent/resolver-documents/{document_id}` 下載並驗證 SHA-256 後，讀取本機 `0600` 憑證檔（`dns.resolver_credentials_file`，`D-061`）經由 `node/dns.Applier` 推送至 `dns.resolvers[]` 所列受控 AdGuard Home 解析器完成語法檢查、smoke test 與原子載入，再於觀測報告回傳 `dns_policy_evidence`（註：期望狀態編譯器之 `resolver_document` 輸入掛鉤邊界詳見 `docs/nodes/WIRING.md`，且發布至解析器 ACK 之端到端延遲 **尚未實測 / not yet measured**，列入 `AT20` / `AT22` / `AT31` 驗收，`docs/e2e/README.md`）；
+     1. **政策發布與節點套用延遲（`D-056`）**：中央背景作業會將可用的解析器文件參照加入簽署狀態，無須另行發布出口；節點驗證大小與摘要後套用，並回報 `dns_policy_evidence`。只有套用目前有效政策所指定的文件後，`dns_policy` 檢查才能通過。支援人員可在管理員節點詳細頁確認結果；排程間隔不是端到端生效保證，實際延遲仍待量測（[節點接線](../nodes/WIRING.md)、[節點執行行為](../node/README.md)）；
      2. **受控解析器之封鎖回應快取 TTL（`blocked_ttl_seconds`）**：`dns_profile` 中的 `blocked_ttl_seconds` 為可調整設定（schema 範圍 `60..3600` 秒，`internal/dnspolicy` 預設 `300` 秒，`60` 秒僅為 `§12.5` 建議起點），僅控制封鎖回應的 DNS TTL 標頭，並非端到端生效 SLA；
      3. **終端作業系統、瀏覽器快取與既有連線（`§12.5`）**：即使受控解析器已載入新版本，您的作業系統 DNS 快取、瀏覽器快取或已建立的長連線仍可能暫時沿用舊結果。若管理員通知已發布白名單，建議您清除本機 DNS 快取、重啟瀏覽器或重新連線 VPN 隧道以加速重新解析。
 
@@ -259,7 +265,9 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
 
 ### 2.2 Step 2: Point NetBird to the Management URL, Sign In via SSO, and Verify Automatic Central Authorization (`§7.3`, `§9.4`, `D-052`, `docs/members/README.md`)
 
-> **How Device Authorization and `D-052` Shared-Issuer Public-Subject Discovery Actually Work (`§2 [S36]`, `§7.3`, `§9.4`, `§15.2`, `MEM01`, `MEM02`)**: There is **no** manual authorization button on `/member/devices` and no member device-creation API endpoint in the 44-operation OpenAPI `1.1.1` contract. When you point the official NetBird client's **Management URL** to `https://netbird.example.com` and sign in with the **same OIDC issuer and public subject** used in the Member Portal, `fvpn-worker`'s `devices.discover` handler matches the NetBird user ID to `identity_bindings.subject` under `oidc_issuer` and writes `netbird_user_bindings` (`mapping_proof = "shared_issuer_public_subject:" + oidc_issuer`, excluding service/blocked accounts and failing closed as `identity_unmapped` on pairwise or unknown subjects—never matching by email or display name). Central then checks your active entitlement and `device_limit` quota under a database transaction lock, and dispatches the asynchronous `member.device_authorize` synchronization job to grant exit and DNS permissions. You simply check `https://vpn.example.com/member/devices` (`GET /api/v1/member/devices`) to see your device appear and transition from `pending` to **`authorized`**.
+> **How Device Authorization and `D-052` Shared-Issuer Public-Subject Discovery Actually Work (`§2 [S36]`, `§7.3`, `§9.4`, `§15.2`, `MEM01`, `MEM02`)**: There is **no** manual authorization button on `/member/devices` and no member device-creation API endpoint in the 44-operation OpenAPI `1.3.0` contract. When you point the official NetBird client's **Management URL** to `https://netbird.example.com` and sign in with the **same OIDC issuer and public subject** used in the Member Portal, `fvpn-worker`'s `devices.discover` handler matches the NetBird user ID to `identity_bindings.subject` under `oidc_issuer` and writes `netbird_user_bindings` (`mapping_proof = "shared_issuer_public_subject:" + oidc_issuer`, excluding service/blocked accounts and failing closed as `identity_unmapped` on pairwise or unknown subjects—never matching by email or display name). Central then checks your active entitlement and `device_limit` quota under a database transaction lock, and dispatches the asynchronous `member.device_authorize` synchronization job to grant exit and DNS permissions. You simply check `https://vpn.example.com/member/devices` (`GET /api/v1/member/devices`) to see your device appear and transition from `pending` to **`authorized`**.
+
+Your member identity is the same canonical issuer and subject across a portal OIDC client-ID rotation; the existing member is reused. If identity matching is refused, contact support instead of trying to link a different account by matching its email ([identity rules](../control/AUTH.md)).
 
 #### A. Windows (Candidate `v0.82.0`, needs operator run `AT01`)
 1. Install the candidate `v0.82.0` Windows installer.
@@ -299,7 +307,7 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
 1. **Authenticated Member Session Check (`GET /api/v1/member/me`)**:
    - `/api/v1/member/me` returns your account and entitlement JSON (`status`, `effective_service_end`, `plan`), **not** your client egress IP, and requires an authenticated session cookie passed via a `0600` curl config file (so session tokens are never exposed on the command line, `§16.1`, `§16.2`):
    ```bash
-   # ~/.config/fvpn/session.curl (mode 0600) contains: header = "Cookie: __Host-fvpn_session=<SESSION_TOKEN>"
+   # ~/.config/fvpn/session.curl (mode 0600) contains: header = "Cookie: __Host-fvpn-member=<SESSION_TOKEN>"
    curl -fsS --config ~/.config/fvpn/session.curl https://vpn.example.com/api/v1/member/me
    ```
 2. **Verify Exit Egress IP via the Controlled Lab Origin (`AT01`, `AT09`)**:
@@ -342,7 +350,7 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
    - **Node-Local Watchdog Staleness (`§16.3`)**: On each exit node, `fvpn-watchdog` monitors the local `fvpn-agent` heartbeat file (configured `watchdog_stale_seconds = 30` seconds by default) and reverts the local `inet fvpn` table to baseline drop if the local agent stalls or crashes.
    - **Online Revocation / Disable (`§16.5`, `AT04`, `AT13`)**: When the control plane and exit node are online, administrative disable, member suspension, or device revocation has a spec design target starting at **60 seconds** (`§16.5` NFR target — not instantaneous, not a 30-second guarantee, and not applicable while a node is offline).
    - **Offline Lease / Service Deadline (`§16.3`, `AT29`)**: When an exit node cannot reach the control plane, it enforces the earliest of `effective_service_end`, `node_lease_end`, and `signed_server_time + max_offline_seconds` (configured default `86,400` seconds / 24 hours) via kernel nftables set timeouts (`@allowed_v4`), independent of wall-clock rollback.
-   - **Measurement Status**: End-to-end flow cutoff timings across all three paths are **not yet measured (pending `AT04`, `AT13`, and `AT29`; the `2026-10-29` and `2026-10-30` `lease-expiry.json` runs had `0` member accept rules before stopping control pending `D-057` exit-group wiring, `docs/e2e/README.md`)**.
+   - **Measurement status:** End-to-end cutoff timing still requires acceptance. `D-057` group attachment is wired; the committed [2026-10-30 lease-expiry record](../e2e/runs/2026-10-30/lease-expiry.json) remains `blocked` because its serving-flow prerequisite was absent. Merged code is not a passed timing measurement.
 3. **Per-Platform Disconnect, Sleep/Wake, and Network-Switch Matrix (`§7.3`, `§18.5`, `APP01`, `AT01`, `AT09`)**:
    - Per `docs/e2e/at/members/OPERATORS.md`, each platform's disconnect, sleep/lock, and network-switch behavior must be recorded during operator runs:
 
@@ -383,6 +391,8 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
    - **Propagation Timing (Not Instantaneous)**: Revoking a device is an asynchronous control-plane and node-policy operation, **not** an instantaneous global disconnect. When the control plane and exit nodes are online, the spec design target for revoking existing and new flows starts at **60 seconds** (`§16.5`; actual end-to-end cutoff timing is **not yet measured**, pending `AT02`, `AT04`, `AT29`). If an exit node is unreachable from the control plane, forwarding on that node remains bounded by the earliest kernel lease/service deadline (`min(effective_service_end, node_lease_end, signed_server_time + max_offline_seconds)`, default `86,400s`, `§16.3`, `AT29`).
    - Once the revocation operation reaches **`succeeded`**, the device slot is released for a new device.
 
+When a plan reduces your device allowance, central keeps the oldest authorizations and moves excess devices to `pending` while withdrawing access. Restored entitlement readmits previously authorized, non-revoked devices with valid identity proof within the current quota. Check `/member/devices` for current status; see [member and device rules](../members/README.md#quota-withdrawals-and-finite-binding-history).
+
 ---
 
 ## 5. Usage Metering and Fair-Use Policy (FUP) Display (`/member/usage`, `§8.3`, `§10`, `§11`, `MTR01`–`MTR05`, `FUP01`–`FUP04`, `AT14`, `AT17`–`AT19`)
@@ -418,6 +428,8 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
 
 ## 6. DNS Behaviour, Data Minimization, and Explicit Limitations (`§8.1`, `§12.1`–`§12.7`, `DNS01`–`DNS04`, `SEC02`, `AT12`, `AT20`–`AT22`)
 
+The Member Portal's `/member/dns-protection` page explains filtering scope, limitations and false-positive reporting; `/member/exits` shows exits and availability. Typed node-reported `dns_policy_evidence` is on the admin node-detail page and is not currently shown in member views. Ask support to inspect it for the selected exit. [Portal documentation](../portal/README.md) remains authoritative for the interface.
+
 ### 6.1 Configured Resolvers, Firewall Rules, and Data Minimization (`§8.1`, `§12.2`, `§12.6`, `§12.7`, `DNS03`, `SEC02`, `AT12`, `AT21`, `AT22`)
 - **Configured DNS Resolvers and `inet fvpn` Rules (`node/enforce/render_nft.go`)**:
   - NetBird distributes the deployment's configured AdGuard Home resolver addresses (for example, documentation addresses `100.64.0.53` and `100.64.0.54` per `AGENTS.md §8`; actual addresses depend on `nodes.json:dns_resolver_ipv4`) to authorized member clients (`§12.2`).
@@ -449,6 +461,6 @@ Freedom VPN v1 is designed to use the official **NetBird Client** paired with th
 2. **Reporting False Positives and Unblock Propagation Timing (`§12.5`, `§12.6`, `D-054`, `D-056`, `AT20`, `AT22`)**:
    - Send the exact domain name (e.g., `app.example.com`) and UTC timestamp to support. Once approved, an administrator activates a new `domain_rule_set` policy revision with an `allow` rule (which overrides general threat-feed false positives, but never overrides an explicit admin `block` rule or IP-layer private-network isolation, `§12.4`).
    - **How Unblock Propagation Timing Works (No Universal 60-Second Guarantee, `§12.5`, `docs/dns/PUBLISH.md`, `node/agent/resolver.go`)**: End-to-end propagation of an `allow` override depends on three separate factors:
-     1. **Central `resolver_document` Publication & Node Resolver Apply Delay (`D-054`, `D-056`, `D-061`)**: After the administrator activates the policy revision, `fvpn-worker` combines approved threat-feed entries (`dns_feed_contents`, `00181_dns_feed_contents.sql`, `00182_dns_feed_review.sql`) into a canonical JSON `resolver_document` (`dns_resolver_documents` and `dns_publication_heads`, `00180_dns_publish.sql`), and `DesiredState.dns.resolver_document` delivers its signed digest and size to nodes. `fvpn-agent` fetches `GET /api/v1/agent/resolver-documents/{document_id}` over mTLS, verifies the exact size and SHA-256, loads the root-owned `0600` credentials from `dns.resolver_credentials_file` (`D-061`), applies the policy to each configured `dns.resolvers[]` AdGuard Home target via `node/dns.Applier`, and reports `dns_policy_evidence` (note: see `docs/nodes/WIRING.md` for the current desired-state compiler `resolver_document` input-hook boundary; end-to-end publication-to-resolver-apply delay is **not yet measured**, tracked under `AT20` / `AT22` / `AT31`, `docs/e2e/README.md`);
+     1. **Publication and node apply delay (`D-056`)**: Central background reconciliation adds an eligible resolver-document reference to signed state without another exit-publication command. The node verifies size/digest, applies the document and reports `dns_policy_evidence`; `dns_policy` passes only after the exact document named by the in-force policy is applied. Support can inspect this on admin node detail. Scheduling cadence is not an end-to-end apply guarantee; actual delay still needs measurement ([node wiring](../nodes/WIRING.md), [node runtime](../node/README.md));
      2. **Configured Blocked-Response TTL (`blocked_ttl_seconds`)**: The `dns_profile` setting `blocked_ttl_seconds` (schema bounds `60..3600` seconds, default `300` seconds in `internal/dnspolicy`, `60` seconds as the recommended starting point in `§12.5`) governs only the DNS TTL header on blocked responses, not end-to-end propagation time;
      3. **Client OS, Browser Caches, and Existing Connections (`§12.5`)**: Even after controlled resolvers apply the new revision, your operating system DNS cache, browser DNS/socket cache, or already-open HTTPS/QUIC sessions may continue holding cached results until they expire or you flush your local DNS cache, restart the browser, or reconnect the VPN tunnel.
