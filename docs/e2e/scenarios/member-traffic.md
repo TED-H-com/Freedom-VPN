@@ -20,3 +20,28 @@ API is available, these remain blocked on `w3-wire-nodes` follow-up 11; the lab
 must not claim them from a synthetic published row. Resolver enforcement also
 requires the D-056 central-to-agent delivery path; a central feed document is
 not an on-node ACK.
+
+## Follow-up 7
+
+The native peer and portal use the same public subject. The shared native helper
+checks the exact peer identity and polls the authorized device; the desired
+state now contains its real device binding and non-empty member rate policy.
+The plan's TEST ONLY 100 Mbps rate is explicit. NetBird uses `fvmb0` on the exit
+with `--disable-firewall`; the product agent owns `inet fvpn`. The real
+origin-facing interface is renamed `fvup0` inside the node and the configured
+SNAT is that interface's address. The member has only the lab bridge and cannot
+reach the controlled origin through a directly attached origin bridge.
+
+Traffic passes only after HTTPS to the controlled origin returns 200 and the
+same device's admission counters increase. The persistent boot recovery config
+is created from real enrollment IDs; it is separate from the one-shot updater
+trigger. Missing/failed recovery still blocks forwarding.
+
+The current remaining blocker is `node/agent` lease renewal: the agent retains
+its initial lease (generation 1, zero members, 24-hour deadline) after publication
+and member binding advance desired state. The bounded probe sees `serving 0`,
+`policy_expires_mono_ns 0`, `reason lease_expired`, and no admission counters.
+`needRenew()` does not consider the changed desired/member generation.
+**Owner: w2-agent-core.** The runner records the exact stored lease, desired
+counts, current node HTTP response/checks and heartbeat, and does not restart
+the process to force renewal. No counted flow, usage or expiry success is claimed.

@@ -69,7 +69,7 @@ tag() {
     fi
     docker tag "$digest" "$name"
 }
-docker build --iidfile "$STATE/render/postgres.image" -t fvpn-devstack-postgres:17 "$ROOT/deploy/backup/postgres"
+docker build --iidfile "$STATE/render/postgres.image" -t fvpn-devstack-postgres:17 -t "$PREFIX-postgres:run" "$ROOT/deploy/backup/postgres"
 export FVPN_E2E_IMAGE_POSTGRES=$(cat "$STATE/render/postgres.image")
 tag "nginx@sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce" "fvpn-devstack-nginx:1.30.0"
 tag "coredns/coredns@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97" "fvpn-devstack-coredns:1.12.0"
@@ -101,7 +101,7 @@ service_image() {
     mkdir -p "$ctx"
     cp "$bin" "$ctx/service"
     cp "$ROOT/deploy/devstack/Dockerfile.service" "$ctx/Dockerfile"
-    docker build --iidfile "$ctx/image.id" -t "fvpn-devstack-$name:local" "$ctx"
+    docker build --iidfile "$ctx/image.id" -t "fvpn-devstack-$name:local" -t "$PREFIX-$name:run" "$ctx"
     # Pin this run to the built image even if another worktree moves :local.
     image_var=FVPN_E2E_IMAGE_$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]')
     export "$image_var=$(cat "$ctx/image.id")"
@@ -118,7 +118,7 @@ mkdir -p "$ctx"
 cp "$ROOT/.agent/e2e-build/fvpn-agent" "$ROOT/.agent/e2e-build/fvpn-watchdog" "$ROOT/.agent/e2e-build/fvpn-updater" "$ROOT/.agent/e2e-build/fvpn-e2e-nodeconfig" "$ctx/"
 cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-member.sh" "$ROOT/deploy/devstack/agent-service.sh" "$ctx/"
 cp "$ROOT/deploy/devstack/Dockerfile.node" "$ctx/Dockerfile"
-docker build --iidfile "$ctx/image.id" -t fvpn-devstack-node:local "$ctx"
+docker build --iidfile "$ctx/image.id" -t fvpn-devstack-node:local -t "$PREFIX-node:run" "$ctx"
 export FVPN_E2E_IMAGE_NODE=$(cat "$ctx/image.id")
 
 # Serve the actual built Portal at the public origin, including SPA returns.

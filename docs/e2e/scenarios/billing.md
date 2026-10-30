@@ -61,3 +61,15 @@ page through the member session without saving cookies, screenshots or traces.
 A returned page does not grant service. See [shared hooks](../RUN.md) and
 [latest billing record](../runs/2026-10-30/billing.md) for observed reconciliation
 or its exact product prerequisite. No subscription or entitlement is seeded.
+
+## Follow-up 7: first live reconciliation
+
+With the API-created group and plan available, the fresh-stack run now reaches
+the first full paid period: one checkout, one paid invoice, matching paid bounds,
+`entitlement_state=active` and no reconciliation anomalies. Duplicate webhook
+deliveries remain 202 without duplicate invoice rows. A 250/1000 partial refund
+plus cancellation preserves service through the paid end; a cumulative 1000/1000
+refund and canceled subscription produce `expired` with
+`effective_service_end=null`. Paid invoice bounds remain stored as financial
+history. The harness asserts service withdrawal rather than erasure of those
+facts. There is one invoice and two immutable refund rows (250 and 750).

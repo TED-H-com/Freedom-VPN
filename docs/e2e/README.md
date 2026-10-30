@@ -32,8 +32,9 @@ Images use neutral `fvpn-devstack-*` tags, including
 `fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
 Bring-up pins locally built services to their immutable image IDs before
 starting Compose; a concurrent worktree moving a shared `:local` tag cannot
-change that run's selected image. Auxiliary update nodes use the running
-node's image ID. Teardown retains the shared images.
+change that run's selected image. Per-prefix `fvpn-<prefix>-*:run` aliases retain those images while concurrent
+builds move the neutral tags; teardown removes these runtime aliases. Auxiliary
+update nodes use the running node's image ID. Teardown retains the shared images.
 
 ## Loopback ports
 
@@ -160,18 +161,18 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `publish` | `PUT /admin/nodes/{id}/publication`, then poll the operation | §5.2, §14.2 |
 | `forwarding` | forward-chain generation and `fvmb0` member accept rules | §5, §19 AT10 |
 | `member-traffic` | API-created plan, grant, same-subject embedded-IdP join and device poll | §8, §19 AT12 |
-| `usage` | `GET /member/usage` and one idempotent usage-batch replay of a projected binding | §10, §19 AT14, AT15 |
+| `usage` | `GET /member/usage` and real agent samples after a positive counted flow | §10, §19 AT14, AT15 |
 | `release-register` | real packages, registration, verification and API-activated support policy | §13.2–§13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
 | `lease-expiry` | stop control and read the forward chain again | §5, §19 AT29 |
 | `threat-feed-central` | approved bootstrap, wrong-pin rejection, audit, worker metrics, resolver document | §12.3, §12.5, §19 AT22 groundwork |
-| `threat-feed-node` | explicit node-delivery gap (D-056) | §12.5, §19 AT22 |
+| `threat-feed-node` | D-061 local resolver, issued-reference and node evidence probe | §12.5, §19 AT22 |
 | `revoke` | `POST /admin/nodes/{id}/revoke` | §5, §19 AT13 |
 
 AT07 (reinstall of an existing node) is not executed. A `pass` record is only
 a claim for the observations in that file. AT10 and AT29 pass only when the
-forward chain's member accept rules change. AT14 and AT15 pass only when the
-member total matches the uploaded bytes.
+forward chain's member accept rules change. Usage passes only after real counted traffic and agent samples; it does not
+claim the separate exact-byte replay assertions of AT14/AT15.
 
 ## How to read evidence
 
@@ -237,9 +238,10 @@ revision with a wrong pin must fail bootstrap with `content_mismatch` and a
 `dns.feed.refresh_failed` audit. Last-good is per revision: the new revision
 stays null, while the prior approved content and resolver generation remain.
 The document digest and normalized embedded rules are checked without
-recording DNS queries. On-node feed delivery remains separately blocked on
-D-056 (wire-nodes follow-up 11 delivery and node application); the central result does not
-claim full AT22. No feed is fetched from the public Internet.
+recording DNS queries. On-node delivery is separately blocked: the current desired-state compiler
+omits `dns.resolver_document`; the authenticated document request returns 404
+and node DNS evidence is null. D-061 credentials and the local AdGuard listener
+are wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetched from the public Internet.
 
 ## Known limits
 
@@ -265,24 +267,23 @@ claim full AT22. No feed is fetched from the public Internet.
   the tested main tree. The lab uses their writers and reports their observed
   rows; it no longer treats those implementations as absent. A matching
   subject alone is still insufficient evidence of device authorization.
-- Publication must complete its operation, including NetBird route read-back.
-  `ready` and a 202 response alone do not prove publication. See `publish` for
-  the exact stored node/observation values and each operation step. An empty
-  `exit_groups` input prevents the production adapter from publishing a paid
-  route; the missing admin group/exit attachment path is D-057 (contracts
-  revision 5, then central exit wiring). The lab records that count.
-- Member forwarding counts only `fvmb0` accepts in the `inet fvpn` forward
-  chain. An `fvnb0` accept or an unrelated chain does not count. Exact usage
-  acceptance needs a projected desired-state binding covering the uploaded
-  interval. Control-loss acceptance needs active forwarding before the stop.
-- D-053's updater consumer and agent producer are both included. Candidate
-  checks must pass in the real runtime; a missing/failed answer remains
-  blocked and never becomes a synthetic success. No successful rollback is
-  claimed without a restorable last-good release and its health evidence.
-- Feed central publication is tested separately from node delivery. The latter
-  remains blocked on D-056, owned by wire-nodes follow-up 11 delivery and the
-  node application implementation. The fixture's 300-second source cadence and 60-second
-  blocked TTL are TEST ONLY settings, not new production defaults.
+- Publication now succeeds through the D-057 group API and route readback.
+  Native D-052 identity matching, authorization and desired bindings also pass.
+  Forwarding remains blocked on w2-agent-core: the agent retains its initial
+  empty-member lease after desired state changes. Exact lease generations,
+  member counts, deadlines and heartbeat are recorded in `member-traffic`.
+- Only a native controlled-origin request with a device admission counter
+  increment can pass forwarding. Usage must come from the real sampler. Expiry
+  faults run only after that positive flow; none is claimed from a baseline.
+- D-061 resolver configuration uses the node-local namespace and root-owned
+  mode-0600 credentials. `threat-feed-node` remains blocked on w3-wire-nodes /
+  internal/desiredstate reference issuance, with authenticated 404 and null
+  projected DNS evidence. Bad-pin last-good application needs that positive path.
+- D-053 runs real candidates and records their actual runtime health answers.
+  A successful update does not prove serving traffic or rollback to last-good.
+- Shared importable helpers and a 20-users × 3-peers scale hook are documented
+  in RUN.md. Acceptance smoke-tests 2 × 2; full scale, deadline faults and guest
+  VM clock rollback remain with the relevant harness/operator owners.
 - The separate portal driver retains the four fixture deviations listed above.
   Those rows are not used by this acceptance runner and cannot clear its gates.
 - Dated evidence is replaced as a complete set. The 2026-10-29 directory remains
@@ -290,43 +291,9 @@ claim full AT22. No feed is fetched from the public Internet.
   the latest complete run. Records with `blocked` keep the acceptance command
   non-zero and identify the responsible product area.
 
-## Latest complete run — 2026-10-30
+## Latest complete run — follow-up 7
 
-Run `5de03570-0436-477d-9847-6f6984432bd8`, source `a7a712aab8a67fcc33514a9ac76cb877a90c8143` (task branch based on main through #89):
-all twenty scenarios finished in 328.797 seconds, with **12 pass, 8 blocked,
-0 fail**. Go test exited 1 and `make e2e-test` exited 2. Every dated record is
-from this complete run. [Repeatability and checks](followup6-verification.md)
-record three earlier fresh stacks and the final dependency gate.
-
-- Physical PITR passed: full backup 3271 ms,
-  restore 4085 ms, total
-  8828 ms. The isolated restored copy retained only
-  the pre-target API-created enrollment (`1|0|f|off`); the primary retained both.
-- The built Portal return rendered in Chromium with pending confirmation and
-  no API error. Control metrics returned HTTP 200 on configured loopback HTTP
-  `127.0.0.1:9091`; no control address override or listener defect was found.
-- The reusable helper verified three real signed releases and activated a
-  non-empty support policy through APIs. The fresh node was
-  `ready`, safety `passed`, data health
-  `healthy`, applied/desired generation
-  `1/1`,
-  with a production-bound peer ID. Both update cases passed.
-- `GET /admin/groups` returned **501 NOT_IMPLEMENTED**, blocking an API-created
-  plan, live paid-period reconciliation and the D-057 forwarding continuation.
-  Publication returned 202 but route readback failed `DEPENDENCY_UNAVAILABLE`
-  with `exit_group_count=0`. Owner: `w3-wire-nodes`
-  follow-up 11. No plan, group, readiness or publication row was fabricated.
-- Payment hooks passed production-adapter unit tests for linked paid invoice
-  truth, cancellation, partial/full refunds and signed events. **A live paid
-  interval has not yet been reconciled**: this is a remaining B4 validation
-  gap, not a claimed pass from a webhook receipt.
-- Central feed bootstrap, wrong-pin rejection and retained last-good passed.
-  Resolver delivery, actual member flow, real flow metering and lease expiry
-  remain blocked on the serving/delivery prerequisite. The additional source
-  flavours, second exit/resolver, controlled CNAME/HTTPS/SVCB/rebinding zones,
-  forced direct/relay, mobile/desktop platforms and physical arm64 remain
-  operator work.
-
-The requested final fetch found no wire-nodes follow-up 11 on `origin/main`
-(`5a22aa9`), so the conditional merge and Part B were not performed. Newer agent
-and feed implementations present upstream are not claimed as tested here.
+See [followup7-verification.md](followup7-verification.md) for fresh-stack run
+counts, source commits and real-release digests. The dated records are one
+complete run; exploratory runs are excluded. The previous follow-up's
+[verification](followup6-verification.md) remains historical evidence.

@@ -65,3 +65,38 @@ func (r *runner) admissionBytes() (uint64, bool) {
 	}
 	return total, true
 }
+
+func (r *runner) noteAdmissionGate(ctx context.Context, admin *session, rec *Record) {
+	note := recPathNote(rec)
+	detail, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), nil, nil)
+	note("admin_node", httpDetail(detail, err))
+	if err == nil && detail.Status == 200 {
+		noteNode(rec, detail.Body)
+	}
+	conn, err := r.lab.db(ctx)
+	if err != nil {
+		return
+	}
+	defer conn.Close(ctx)
+	var raw []byte
+	err = conn.QueryRow(ctx, `SELECT jsonb_build_object(
+ 'desired_generation',n.desired_config_generation::text,
+ 'applied_generation',n.applied_config_generation::text,
+ 'capacity',n.capacity,
+ 'latest_lease',(SELECT jsonb_build_object('generation',s.policy_generation::text,'issued_at',s.issued_at,'expires_at',s.expires_at,'member_count',jsonb_array_length(s.envelope->'signed'->'members')) FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
+ 'lease_count',(SELECT count(*) FROM serving_leases s WHERE s.node_id=n.id),
+ 'observation',(SELECT jsonb_build_object('checks',o.report_payload->'checks','forwarding',o.report_payload->'forwarding') FROM node_observations o WHERE o.node_id=n.id ORDER BY received_at DESC LIMIT 1)) FROM nodes n WHERE n.id=$1`, r.nodeID).Scan(&raw)
+	if err == nil {
+		note("serving_gate_rows", string(raw))
+	} else {
+		note("serving_gate_rows", "query failed")
+	}
+	policies, bindings, intent, generation := r.desiredMemberView()
+	note("desired_member_rate_policies", itoa(policies))
+	note("desired_device_bindings", itoa(bindings))
+	note("desired_generation", generation)
+	note("desired_publication_intent", intent)
+	if !r.flowCounted {
+		note("traffic", "not claimed; no admission counter increment. Inspect lease generation/member count versus desired bindings.")
+	}
+}

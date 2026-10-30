@@ -3,7 +3,6 @@
 package e2e
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -17,10 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
-	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	_ "modernc.org/sqlite"
@@ -61,6 +57,7 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
+		run.scaleHook(ctx, admin)
 		run.threatFeedNode(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
@@ -71,29 +68,24 @@ func TestE2E_Acceptance(t *testing.T) {
 }
 
 type runner struct {
-	t              *testing.T
-	lab            *lab
-	dir            string
-	counts         map[Status]int
-	bad            bool
-	runID          string
-	sourceCommit   string
-	nodeID         uuid.UUID
-	incID          uuid.UUID
-	enrolledID     uuid.UUID
-	groupID        uuid.UUID
-	profileID      uuid.UUID
-	planError      string
-	planID         uuid.UUID
-	planRevID      uuid.UUID
-	usageDevice    uuid.UUID
-	usageRevision  decstr.U64
-	usageFrom      time.Time
-	usageUntil     time.Time
-	flowCounted    bool
-	usageReady     bool
-	usageSentStart time.Time
-	usageSentEnd   time.Time
+	t            *testing.T
+	lab          *lab
+	dir          string
+	counts       map[Status]int
+	bad          bool
+	runID        string
+	sourceCommit string
+	nodeID       uuid.UUID
+	incID        uuid.UUID
+	enrolledID   uuid.UUID
+	groupID      uuid.UUID
+	profileID    uuid.UUID
+	planError    string
+	planID       uuid.UUID
+	planRevID    uuid.UUID
+	usageDevice  uuid.UUID
+	flowCounted  bool
+	usageReady   bool
 }
 
 func (r *runner) record(rec Record) {
@@ -106,9 +98,9 @@ func (r *runner) record(rec Record) {
 	if rec.Status == StatusBlocked {
 		owners := map[string]string{
 			"publish":        "w3-wire-nodes: publication operation and production peer projection",
-			"member-traffic": "w3-wire-nodes follow-up 11: D-057 group/plan/publication prerequisite; then native device admission",
-			"forwarding":     "w3-wire-nodes follow-up 11 and w2-agent-core: applied serving policy",
-			"usage":          "w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance",
+			"member-traffic": "w2-agent-core: lease refresh after publication/member changes",
+			"forwarding":     "w2-agent-core: current member lease and applied serving policy",
+			"usage":          "w2-agent-core: positive counted-flow prerequisite; then w3-wire-usage sampler acceptance",
 			"update-good":    "w4-node-updater and w2-agent-core: D-053 live candidate health",
 			"update-bad":     "w4-node-updater: tampered artifact rejection and recovery",
 			"lease-expiry":   "w2-agent-core: AT29 needs active forwarding before control loss",
@@ -387,6 +379,7 @@ func (r *runner) member(ctx context.Context, admin *session) {
 			rec.Status = StatusPass
 		}
 	}
+	r.noteAdmissionGate(ctx, admin, &rec)
 	r.record(rec)
 	r.usage(ctx, member)
 }
@@ -823,72 +816,6 @@ func (l *lab) rememberPlan(plan, rev uuid.UUID) error {
 	return os.WriteFile(path, append(out, '\n'), 0o600)
 }
 
-func (r *runner) replayUsageBatch(memberID string) (same bool, firstStatus, secondStatus string, accepted bool, outcome string) {
-	if r.enrolledID == uuid.Nil || r.incID == uuid.Nil {
-		return false, "no-node", "no-node", false, ""
-	}
-	if !r.usageReady {
-		return false, "not-sent", "not-sent", false, "no binding was projected"
-	}
-	memberUUID, err := uuid.Parse(memberID)
-	if err != nil {
-		return false, "no-member", "no-member", false, ""
-	}
-	start, end, ok := coveredInterval(r.usageFrom, r.usageUntil, time.Now())
-	if !ok {
-		return false, "not-sent", "not-sent", false, "binding window does not cover an interval"
-	}
-	r.usageSentStart, r.usageSentEnd = start, end
-	ev, err := usage.WithComputedHash(api.UsageEvent{
-		SchemaVersion: api.UsageEventSchemaVersionN1, NodeId: openapi_types.UUID(r.enrolledID),
-		NodeIncarnationId: openapi_types.UUID(r.incID), MeterEpochId: openapi_types.UUID(uuid.New()),
-		EventSeq: decstr.U64(1), IntervalStart: start, IntervalEnd: end,
-		MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete,
-		Records: []api.UsageRecord{{
-			MemberId: openapi_types.UUID(memberUUID), DeviceId: openapi_types.UUID(r.usageDevice),
-			BindingRevision: r.usageRevision, PeriodId: start.UTC().Format("2006-01"),
-			UploadBytes: decstr.U64(1000), DownloadBytes: decstr.U64(2000),
-		}},
-	})
-	if err != nil {
-		return false, "hash", "hash", false, ""
-	}
-	raw, err := json.Marshal(api.UsageBatchRequest{
-		NodeId: openapi_types.UUID(r.enrolledID), NodeIncarnationId: openapi_types.UUID(r.incID),
-		LedgerEpoch: presence.NewNullNullable[openapi_types.UUID](), Events: []api.UsageEvent{ev},
-	})
-	if err != nil {
-		return false, "encode", "encode", false, ""
-	}
-	if err := os.WriteFile(filepath.Join(r.lab.state, "node", "var", "e2e", "usage-batch.json"), raw, 0o600); err != nil {
-		return false, "file", "file", false, ""
-	}
-	key := uuid.NewString()
-	firstBody, firstStatus := r.postUsage(key)
-	secondBody, secondStatus := r.postUsage(key)
-	left, right := usageResults(firstBody), usageResults(secondBody)
-	return left != "" && left == right, firstStatus, secondStatus, strings.Contains(left, `"status":"accepted"`), usageOutcome(firstBody)
-}
-
-func (r *runner) postUsage(key string) ([]byte, string) {
-	out, _ := r.lab.docker(r.lab.node, "wget", "-q", "-S", "-O", "-", "--content-on-error",
-		"--ca-certificate=/etc/vpn-node/ca.pem",
-		"--certificate=/var/lib/vpn-node/identity/cert.pem",
-		"--private-key=/var/lib/vpn-node/identity/key.pem",
-		"--header=Content-Type: application/json",
-		"--header=Idempotency-Key: "+key,
-		"--post-file=/var/lib/vpn-node/e2e/usage-batch.json",
-		r.lab.agent+"/api/v1/agent/usage-batches")
-	status := "transport"
-	for _, line := range strings.Split(string(out), "\n") {
-		fields := strings.Fields(strings.TrimSpace(line))
-		if len(fields) >= 2 && strings.HasPrefix(fields[0], "HTTP/") {
-			status = fields[1]
-		}
-	}
-	return out, status
-}
-
 type nbGroup struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -988,54 +915,6 @@ func updaterBlockedNote(v journalView) string {
 		note += ". ROLLBACK_FAILED is the rollback decision when no last-good release can be restored"
 	}
 	return note
-}
-
-func usageOutcome(raw []byte) string {
-	i := bytes.IndexByte(raw, '{')
-	if i < 0 {
-		return ""
-	}
-	var doc struct {
-		Results []struct {
-			Status string `json:"status"`
-			Error  struct {
-				Code   string `json:"code"`
-				Fields []struct {
-					Reason string `json:"reason"`
-				} `json:"fields"`
-			} `json:"error"`
-		} `json:"results"`
-	}
-	if json.Unmarshal(raw[i:], &doc) != nil || len(doc.Results) == 0 {
-		return ""
-	}
-	one := doc.Results[0]
-	if one.Error.Code == "" {
-		return one.Status
-	}
-	reason := ""
-	if len(one.Error.Fields) > 0 {
-		reason = one.Error.Fields[0].Reason
-	}
-	return strings.TrimSpace(one.Status + " " + one.Error.Code + " " + reason)
-}
-
-func usageResults(raw []byte) string {
-	i := bytes.IndexByte(raw, '{')
-	if i < 0 {
-		return ""
-	}
-	var doc struct {
-		Results json.RawMessage `json:"results"`
-	}
-	if json.Unmarshal(raw[i:], &doc) != nil || len(doc.Results) == 0 {
-		return ""
-	}
-	var compact bytes.Buffer
-	if json.Compact(&compact, doc.Results) != nil {
-		return string(doc.Results)
-	}
-	return compact.String()
 }
 
 func memberUsageTotal(raw []byte) string {
