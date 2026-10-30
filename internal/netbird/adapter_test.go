@@ -25,6 +25,10 @@ type fake struct {
 	templates      map[string]object
 	writes, serial int
 	lose, stale    string
+	// beforeGet runs under f.mu, before a GET response is built. Return true
+	// after writing the response to skip the normal body. It must not lock f.mu
+	// or call the client. A nil hook preserves every existing test.
+	beforeGet func(kind, id string, w http.ResponseWriter) bool
 }
 
 func newFake(t *testing.T) (*fake, *Client) {
@@ -83,6 +87,9 @@ func (f *fake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	respond := func(v any) { w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(v) }
 	if r.Method == "GET" {
+		if f.beforeGet != nil && f.beforeGet(kind, id, w) {
+			return
+		}
 		if id != "" {
 			o, ok := bucket[id]
 			if !ok {

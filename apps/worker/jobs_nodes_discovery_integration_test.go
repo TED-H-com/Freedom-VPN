@@ -35,6 +35,9 @@ type discoveryManagement struct {
 	beforePeerRead  func()
 	beforeKeyUpdate func()
 	peerDeleted     bool
+	// injectPeerOnGroupRead simulates the node enrolling after the setup-key
+	// snapshot and before the correlation-group read. Empty leaves GETs unchanged.
+	injectPeerOnGroupRead string
 }
 
 func (f *discoveryManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +78,16 @@ func (f *discoveryManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			_ = json.NewDecoder(r.Body).Decode(&g)
 			g["id"] = id
 			f.groups[id] = g
+		}
+		if r.Method == "GET" && f.injectPeerOnGroupRead != "" {
+			if name, _ := g["name"].(string); strings.HasPrefix(name, "fvpn-enroll-peer-") {
+				g["peers"] = []any{f.injectPeerOnGroupRead}
+				if f.key != nil {
+					f.key["used_times"] = 1
+					f.key["state"] = "overused"
+				}
+				f.injectPeerOnGroupRead = ""
+			}
 		}
 		respond(g)
 	case path == "setup-keys" && r.Method == "GET":
