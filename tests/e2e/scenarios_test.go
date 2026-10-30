@@ -65,7 +65,7 @@ func TestE2E_Acceptance(t *testing.T) {
 		run.threatFeedTamper(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
-		run.revoke(ctx, admin, nodeID)
+		run.revoke(ctx, nodeID)
 	} else {
 		run.forwarding(run.lab.forwardChain())
 	}
@@ -90,6 +90,7 @@ type runner struct {
 	usageDevice  uuid.UUID
 	dnsApplied   bool
 	flowCounted  bool
+	trafficOwner string
 	usageReady   bool
 }
 
@@ -103,12 +104,18 @@ func (r *runner) record(rec Record) {
 	if rec.Status == StatusBlocked {
 		owners := map[string]string{
 			"publish":        "w3-wire-nodes: publication operation and production peer projection",
-			"member-traffic": "w2-agent-core: lease refresh after publication/member changes",
-			"forwarding":     "w2-agent-core: current member lease and applied serving policy",
-			"usage":          "w2-agent-core: positive counted-flow prerequisite; then w3-wire-usage sampler acceptance",
+			"member-traffic": r.trafficOwner,
+			"forwarding":     r.trafficOwner,
+			"usage":          "w3-wire-usage: real sampler/usage projection after counted flow",
 			"update-good":    "w4-node-updater and w2-agent-core: D-053 live candidate health",
 			"update-bad":     "w4-node-updater: tampered artifact rejection and recovery",
-			"lease-expiry":   "w2-agent-core: AT29 needs active forwarding before control loss",
+			"lease-expiry":   r.trafficOwner,
+		}
+		if rec.ID == "usage" && !r.flowCounted {
+			owners[rec.ID] = r.trafficOwner
+		}
+		if (rec.ID == "member-traffic" || rec.ID == "forwarding") && owners[rec.ID] == "" {
+			owners[rec.ID] = "w3-wire-members: native device authorization and desired binding prerequisite"
 		}
 		if owner := owners[rec.ID]; owner != "" {
 			rec.Observations = append(rec.Observations, Observation{Name: "owner", Detail: owner})
@@ -605,6 +612,7 @@ func (r *runner) controlStop(ctx context.Context) {
 		return
 	}
 	before := r.lab.forwardChain()
+	recPathNote(&rec)("desired_before_stop", expiryView(r.desiredRaw()))
 	cmd := exec.Command("docker", "stop", "-t", "20", r.lab.control)
 	if err := cmd.Run(); err != nil {
 		rec.Status = StatusFail
@@ -616,6 +624,12 @@ func (r *runner) controlStop(ctx context.Context) {
 	waitUntil(waitExpiry, 2*time.Second, func() bool { return r.lab.forwardChain().MemberAccept == 0 })
 	cancelExpiry()
 	after := r.lab.forwardChain()
+	heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
+	recPathNote(&rec)("heartbeat_after_wait", strings.TrimSpace(string(heartbeat)))
+	recPathNote(&rec)("wait_finished_at", time.Now().UTC().Format(time.RFC3339))
+	if after.MemberAccept > 0 {
+		recPathNote(&rec)("owner", "w2-agent-core: forwarding remains after 11-minute control-loss window; compare signed desired expiry and heartbeat below; member lease expiry may be later")
+	}
 	rec.Observations = append(rec.Observations, Observation{Name: "table_before", Detail: boolText(before.Present)})
 	rec.Observations = append(rec.Observations, Observation{Name: "policy_before", Detail: emptyDash(before.Policy)})
 	rec.Observations = append(rec.Observations, Observation{Name: "member_accept_before", Detail: itoa(before.MemberAccept)})
@@ -653,8 +667,16 @@ func (r *runner) controlStop(ctx context.Context) {
 	r.record(rec)
 }
 
-func (r *runner) revoke(ctx context.Context, admin *session, nodeID uuid.UUID) {
+func (r *runner) revoke(ctx context.Context, nodeID uuid.UUID) {
 	rec := Record{ID: "revoke", Title: "Operator revoke", Spec: []string{"§5", "§19 AT13"}, Status: StatusFail}
+	// Control-loss probes can outlast recent_auth_seconds. Reauthenticate
+	// through the normal OIDC flow; never extend or bypass the security window.
+	admin := r.mustAdmin(ctx)
+	recPathNote(&rec)("fresh_admin_auth", boolText(admin != nil))
+	if admin == nil {
+		r.record(rec)
+		return
+	}
 	detail, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String(), nil, nil)
 	if err != nil || detail.Status != 200 {
 		rec.Observations = append(rec.Observations, Observation{Name: "get", Detail: httpDetail(detail, err)})

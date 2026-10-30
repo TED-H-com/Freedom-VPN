@@ -18,6 +18,9 @@ func main() {
 	if len(os.Args) == 2 && os.Args[1] == "dns-probe" {
 		run = dnsProbe
 	}
+	if len(os.Args) == 2 && os.Args[1] == "resolver-proxy" {
+		run = resolverProxy
+	}
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, "lab boot recovery configuration failed")
 		os.Exit(1)

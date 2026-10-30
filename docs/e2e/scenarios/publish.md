@@ -28,3 +28,11 @@ ONLY capacity (200 Mbps parent, 100 Mbps member caps). The operation now reaches
 `netbird_route_readback`, with `publication_observed=active`. Fresh D-055
 bootstrap uses the correlation group and the production worker binds its peer.
 Publication success does not prove member forwarding; see member-traffic.
+
+## Follow-up 9 base
+
+Wire-nodes follow-up 15 (#148) is included. It permits `not_run` lease, QoS and
+source-binding checks only for the issued published generation with zero device
+bindings. The lab still calls the normal publication API and polls all operation
+steps and `publication_observed=active`; it supplies no substitute observation.
+Actual member forwarding is established later by the independent traffic trace.
