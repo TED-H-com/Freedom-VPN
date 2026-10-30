@@ -82,6 +82,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-fleet-update follow-up 1: review fixes (SubmitResult generation compare, signed intent issued_at, node_name, Register validation order, applied policy_generation) | WP09 | done (#37) |
 | w2-pki-enroll follow-ups 1–2: review fixes (bootstrap verdict, node_id binding, trust bundle filter), migration 00111 guarded reinstall, node.enroll operations, core audit builders | WP04 | done (#43) |
 | w3-wire-members follow-up 2: adopt revision 3 kinds (member.device_authorize, member.grant_revoke), D-029 audit conformance | WP06 | done (#38) |
+| w3-wire-members follow-up 3: production `netbird_user_bindings` writer (D-052) — shared-issuer public-subject discovery, read-only NetBird user list, native peer admission through the product | WP06 | done (#76) |
 | w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | done (#41) |
 | w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | done (#40) |
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | done (#44) |
@@ -99,6 +100,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-updater follow-up 3: review re-run regressions (revoked-current rescue path, artifact origin allowlist D-046, extract caps and ./ root D-047, resume semantics, nodelock start time) | WP09 | done (#47) |
 | r2-updater-review confirmation: R-01..R-05 against main after updater follow-up 3 (read-only) | WP09 | done (5/5 closed; 2 minor → updater follow-up 4) |
 | w2-updater follow-up 4: reject internal `..` segments at extract, one origin-allowlist rule for IP literals and DNS names, ForceQuery/`#` entries | WP09 | done (#54) |
+| w2-updater follow-up 5: challenge-bound health attestation from the candidate agent for isolation, DNS and tunnel checks (D-053); first health report retained in the journal | WP09 | done (#78) |
 | w2-fleet-update follow-up 2: core audit builders for every fleet/releases writer, system singleton actor, zero-anomaly read-back | WP09 | done (#42) |
 | r2-control-review re-run: confirm control-core follow-ups 1–5, pki and fleet-update against main (read-only) | WP04, WP09 | done (16/16 closed; 2 wiring findings → nodes httpwire follow-up 3, usage replay follow-up 3) |
 | w3-wire-nodes follow-up 3: real wiring behind the httpwire 503 gates (member policies in desired state, keyed agent receipts, transactional lease renewal) | WP04, WP05 | done (#49; publish gate remains until the exits seam lands) |
@@ -109,6 +111,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
 | w3-wire-nodes follow-up 8: retire the legacy withdraw handlers; node.revoke/node.retire through the publication executor | WP04, WP05, WP09 | done (#70) |
+| w3-wire-nodes follow-up 9: baseline readiness without a management peer id (central side of the publication deadlock) | WP04, WP05, WP09 | done (#77) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | harness merged (#63): AT28 passed live; AT29–AT32 blocked on the serving node, WAL archiving, the IdP identity fixture and operator runs |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
@@ -121,6 +124,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |
 | w2-control-core follow-up 8: control loopback metrics listener; config example with all five domain files | WP04, WP09 | done (#71) |
 | w3-dns-publish follow-up 2: D-029 audit conformance for publication and withdrawal writers | WP08 | done (#45) |
+| w3-dns-publish follow-up 3: threat-feed content pipeline (D-054): bootstrap pin, cadence refresh with last-good, failure observations, Layer 3 rules published to the resolver document | WP08 | done (#79) |
 | w2-portal-wire: portal on generated contract types, auth session, CSRF, contract-example mocks | WP10 | done (#8) |
 
 Later waves cover the control API, enrollment and PKI, node agent, usage ledger, entitlements and billing, fair-use policy, fleet updates, installer and images, end-to-end and fault-injection suites, backups and acceptance reporting.

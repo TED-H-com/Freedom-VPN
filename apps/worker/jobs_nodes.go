@@ -153,9 +153,6 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		return "bootstrap:" + p.IncarnationID.String(), e
 	})
 	jobs.Register("node.peer.observe", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
-		if nb == nil {
-			return "", errors.New("NetBird adapter required")
-		}
 		var payload struct {
 			ReportID uuid.UUID `json:"report_id"`
 		}
@@ -172,13 +169,16 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		if e = json.Unmarshal(raw, &report); e != nil {
 			return "", e
 		}
-		peerID, e := report.Netbird.PeerId.Get()
-		if e != nil {
-			return "", e
-		}
-		peer, e := nb.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: report.NodeId.String(), IncarnationID: report.NodeIncarnationId.String(), PeerID: peerID})
-		if e != nil {
-			return "", e
+		peerID, peerErr := report.Netbird.PeerId.Get()
+		var peer netbird.Peer
+		if peerErr == nil {
+			if nb == nil {
+				return "", errors.New("NetBird adapter required")
+			}
+			peer, e = nb.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: report.NodeId.String(), IncarnationID: report.NodeIncarnationId.String(), PeerID: peerID})
+			if e != nil {
+				return "", e
+			}
 		}
 		ctx = commandtx.WithClaim(ctx, event)
 		e = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
@@ -192,14 +192,19 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 			if e := r.PKI.CheckFence(ctx, pki.NodeIdentity{NodeID: report.NodeId, IncarnationID: report.NodeIncarnationId}); e != nil {
 				return e
 			}
-			if _, e := tx.Exec(ctx, `UPDATE node_incarnations SET deployment_id=$2,peer_id=$3 WHERE id=$1 AND revoked_at IS NULL`, report.NodeIncarnationId, r.Config.NetBirdDeployment, peer.ID); e != nil {
-				return e
-			}
-			if e := stepSucceeded(ctx, tx, op, "peer_readback", "observation:"+payload.ReportID.String()); e != nil {
-				return e
+			// A baseline ACK is independent of management peer discovery (§6.1).
+			// Only confirmed peer read-back can bind identity or advance that step.
+			if peerErr == nil {
+				if _, e := tx.Exec(ctx, `UPDATE node_incarnations SET deployment_id=$2,peer_id=$3 WHERE id=$1 AND revoked_at IS NULL`, report.NodeIncarnationId, r.Config.NetBirdDeployment, peer.ID); e != nil {
+					return e
+				}
+				if e := stepSucceeded(ctx, tx, op, "peer_readback", "observation:"+payload.ReportID.String()); e != nil {
+					return e
+				}
 			}
 			var ready bool
-			if e := tx.QueryRow(ctx, `SELECT safety_status='passed' AND applied_config_generation>0 AND applied_config_generation>=desired_config_generation AND last_observed_at=$2 FROM nodes WHERE id=$1`, report.NodeId, report.ObservedAt).Scan(&ready); e != nil {
+			applied, _ := report.AppliedConfigGeneration.Get()
+			if e := tx.QueryRow(ctx, `SELECT safety_status='passed' AND applied_config_generation>=desired_config_generation AND $3::numeric>0 AND $3::numeric>=desired_config_generation AND last_observed_at=$2 FROM nodes WHERE id=$1`, report.NodeId, report.ObservedAt, applied.String()).Scan(&ready); e != nil {
 				return e
 			}
 			if ready && report.ProvisioningState == api.ProvisioningStateReady {

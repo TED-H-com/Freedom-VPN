@@ -62,7 +62,8 @@ func newMemberPolicyFixture(t *testing.T, withSigner bool) *memberPolicyFixture 
 	n := nodestest.New(t, nodestest.NetBird{})
 	f.nodes, f.config = n.Nodes, config.Defaults()
 	f.config.NodesConfigFile = n.Path
-	f.config.WorkerAttempts = 2 // TEST ONLY; no production retry override.
+	f.config.OIDCIssuer = "https://issuer.example.invalid" // TEST ONLY shared public-subject issuer (D-052).
+	f.config.WorkerAttempts = 2                            // TEST ONLY; no production retry override.
 	var err error
 	f.provider, err = signing.OpenFileProvider(n.Nodes.ProviderDirectory)
 	if err != nil {

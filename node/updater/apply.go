@@ -202,15 +202,25 @@ func (e *Engine) stepCheck(ctx context.Context, txn updatejournal.Txn) (updatejo
 	if n > maxCheckAttempts {
 		return e.beginRollback(ctx, txn, apierr.HealthCheckFailed, api.UpdateStageCheck, nil)
 	}
+	// The challenge is written before Start so the candidate agent can answer
+	// it. stepStart may already have started that agent; Start is idempotent
+	// and is the signal that the challenge is live (D-053).
+	if err := e.issueChallenge(ctx, txn, txn.ReleaseID, "candidate"); err != nil {
+		h := e.blankHealth(ctx, txn.ReleaseID)
+		e.recordHealth(ctx, txn.TxnID, h)
+		return e.beginRollback(ctx, txn, apierr.HealthCheckFailed, api.UpdateStageCheck, &h)
+	}
 	if e.Services != nil {
 		if err := e.Services.Start(ctx, e.Layout.releaseDir(txn.ReleaseID)); err != nil {
+			e.consumeChallenge()
 			return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStart, nil)
 		}
 	}
 	manifest := e.manifestOf(ctx, txn.ReleaseID)
 	view := e.viewFor(ctx, txn.ReleaseID, manifest)
 	h, ok := e.runHealth(ctx, view)
-	_ = e.Journal.RecordHealth(ctx, txn.TxnID, h)
+	e.recordHealth(ctx, txn.TxnID, h)
+	e.consumeChallenge()
 	if !ok {
 		return e.beginRollback(ctx, txn, apierr.HealthCheckFailed, api.UpdateStageCheck, &h)
 	}
@@ -271,17 +281,30 @@ func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c clai
 		}
 		if e.Services != nil {
 			_ = e.Services.Stop(ctx)
+		}
+		// Stop the candidate before publishing the rollback challenge, so the
+		// restored agent is the one that answers it (D-053).
+		if err := e.issueChallenge(ctx, txn, target, "rollback"); err != nil {
+			h := e.blankHealth(ctx, target)
+			e.recordHealth(ctx, txn.TxnID, h)
+			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, nil)
+		}
+		if e.Services != nil {
 			if err := e.Services.Start(ctx, e.Layout.releaseDir(target)); err != nil {
+				e.consumeChallenge()
 				return e.toRecovery(ctx, txn, apierr.StartFailed, api.UpdateStageRollback, nil)
 			}
 		}
 		// Pointers now name the restored release. Refresh that half of the
 		// snapshot and keep the identity snapshot taken before the failed start.
 		if err := e.snapshotPointers(ctx); err != nil {
+			e.consumeChallenge()
 			return e.toRecovery(ctx, txn, apierr.CheckpointFailed, api.UpdateStageRollback, nil)
 		}
 		view := e.viewFor(ctx, target, e.manifestOf(ctx, target))
 		h, ok := e.runHealth(ctx, view)
+		e.recordHealth(ctx, txn.TxnID, h)
+		e.consumeChallenge()
 		if !ok {
 			return e.toRecovery(ctx, txn, apierr.RollbackFailed, api.UpdateStageRollback, &h)
 		}
@@ -437,6 +460,7 @@ func (e *Engine) cleanTxnNotes(txnID string) {
 	for _, prefix := range []string{"epoch-", "checks-", "rollback-"} {
 		_ = os.Remove(filepath.Join(e.Layout.Journal, prefix+txnID))
 	}
+	e.consumeChallenge()
 }
 
 func (e *Engine) claimedFor(ctx context.Context, txn updatejournal.Txn) (claimed, error) {

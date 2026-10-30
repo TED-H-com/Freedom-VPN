@@ -416,7 +416,7 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 		seen[canonical] = struct{}{}
 		entries = append(entries, SourceEntry{
 			Domain:            canonical,
-			IncludeSubdomains: true,
+			IncludeSubdomains: format != SourceFormatHosts,
 		})
 		return nil
 	}

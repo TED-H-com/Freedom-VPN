@@ -18,54 +18,78 @@ const (
 	maxRollbackAttempts = 3
 )
 
-// NodeChecks is the stock health adapter used when the agent has not
-// supplied one. Process checks compare the release tree. Persistent data
-// checks the identity directory and the immutable pointers and state-schema
-// record, not the mutable state directory (D-034c). Isolation, DNS and the
-// tunnel probe fail closed: a config file cannot mark them passed (§13.9).
-type NodeChecks struct{}
+// NodeChecks is the on-node health adapter (D-053, §13.9).
+// Processes compares the release tree. When Journal is set it also requires
+// the attested agent and NetBird versions. Persistent data is the identity
+// directory and the immutable pointers record, not the mutable state
+// directory (D-034c). Isolation, DNS and the tunnel probe come from the
+// candidate agent's attestation. With an empty Journal those three fail
+// closed, so a config file cannot mark them passed.
+type NodeChecks struct {
+	Journal string
+	Node    Node
+	Now     func() time.Time
+	Sleep   func(context.Context, time.Duration) error
+	Wait    time.Duration
+	Poll    time.Duration
+	rt      *checkRT
+}
 
-func (NodeChecks) Processes(_ context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
-	if v.ExpectedTree == "" || v.Dir == "" {
+func (n NodeChecks) Processes(ctx context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
+	if n.Journal == "" {
+		return checkProcesses(v), nil
+	}
+	if n.rt == nil {
 		return api.HealthCheckStatusFailed, nil
 	}
-	got, err := fsutil.TreeHash(v.Dir)
-	if err != nil || got != v.ExpectedTree {
-		return api.HealthCheckStatusFailed, nil
-	}
-	return api.HealthCheckStatusPassed, nil
+	return n.evaluate(ctx, v).health.Processes, nil
 }
 
 func (NodeChecks) PersistentData(_ context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
+	return checkPersistent(v), nil
+}
+
+func (n NodeChecks) Isolation(ctx context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
+	return n.attestStatus(ctx, v, func(h api.UpdateHealth) api.HealthCheckStatus { return h.InternetOnly }), nil
+}
+
+func (n NodeChecks) DNSPolicy(ctx context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
+	return n.attestStatus(ctx, v, func(h api.UpdateHealth) api.HealthCheckStatus { return h.DnsPolicy }), nil
+}
+
+func (n NodeChecks) TunnelProbe(ctx context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
+	return n.attestStatus(ctx, v, func(h api.UpdateHealth) api.HealthCheckStatus { return h.TunnelProbe }), nil
+}
+
+func checkProcesses(v ReleaseView) api.HealthCheckStatus {
+	if v.ExpectedTree == "" || v.Dir == "" {
+		return api.HealthCheckStatusFailed
+	}
+	got, err := fsutil.TreeHash(v.Dir)
+	if err != nil || got != v.ExpectedTree {
+		return api.HealthCheckStatusFailed
+	}
+	return api.HealthCheckStatusPassed
+}
+
+func checkPersistent(v ReleaseView) api.HealthCheckStatus {
 	if v.ExpectedIdentity == "" {
-		return api.HealthCheckStatusFailed, nil
+		return api.HealthCheckStatusFailed
 	}
 	id, err := fsutil.TreeHash(v.IdentityDir)
 	if err != nil || id != v.ExpectedIdentity {
-		return api.HealthCheckStatusFailed, nil
+		return api.HealthCheckStatusFailed
 	}
 	// Callers that do not supply the immutable record are not asking for the
 	// pointers check. The mutable state directory is never hashed (D-034c).
 	if v.ImmutableRecord == "" {
-		return api.HealthCheckStatusPassed, nil
+		return api.HealthCheckStatusPassed
 	}
 	b, err := os.ReadFile(v.ImmutableRecord)
 	if err != nil || v.ExpectedState == "" || digestBytes(b) != v.ExpectedState {
-		return api.HealthCheckStatusFailed, nil
+		return api.HealthCheckStatusFailed
 	}
-	return api.HealthCheckStatusPassed, nil
-}
-
-func (NodeChecks) Isolation(context.Context, ReleaseView) (api.HealthCheckStatus, error) {
-	return api.HealthCheckStatusFailed, nil
-}
-
-func (NodeChecks) DNSPolicy(context.Context, ReleaseView) (api.HealthCheckStatus, error) {
-	return api.HealthCheckStatusFailed, nil
-}
-
-func (NodeChecks) TunnelProbe(context.Context, ReleaseView) (api.HealthCheckStatus, error) {
-	return api.HealthCheckStatusFailed, nil
+	return api.HealthCheckStatusPassed
 }
 
 func (e *Engine) runHealth(ctx context.Context, v ReleaseView) (api.UpdateHealth, bool) {

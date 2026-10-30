@@ -1,0 +1,134 @@
+{
+  "id": "AT17",
+  "title": "UTC 自然月切分、延遲事件歸屬與時鐘回撥保護 (UTC Month Boundary, Late-Arriving Events \u0026 Clock Rollback Protection)",
+  "spec": "§10.3, §10.5, §10.7, §19.5 AT17",
+  "requirements": [
+    "MTR01",
+    "MTR02",
+    "MTR04",
+    "API01",
+    "DATA01"
+  ],
+  "status": "blocked",
+  "at": "2026-10-30T01:04:27Z",
+  "build": {
+    "git_commit": "912d976b03b9948ba308cd6e4e97d0f931574510",
+    "git_dirty": false,
+    "go_version": "go1.27.3",
+    "goos": "linux",
+    "goarch": "amd64",
+    "binaries": {
+      "fvpn-agent": "c7a86bc09070181cafbb68108ed19c3e7ab6c844827e440f2688b5cdae60501a",
+      "fvpn-control": "3e58851f703bbf405b25f986d876491ee03cdc73e4f1ad12ad11f329eb3f91a9",
+      "fvpn-updater": "407e51e37e40a5424701fc07143d7c7ec40d1dd1ed2eee178b2bafe0ebe9ac1b",
+      "fvpn-worker": "428a71d6717d313ce01a3ddd4c69a5f545ba2e432aa3330b29353385cd3b6d72"
+    }
+  },
+  "image_digests": {
+    "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "control": "sha256:7fc215c29ed67a8db53b7af1724513a3d698f9c5cd947288be5cb0675a6bb323",
+    "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+    "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "idp": "sha256:67a8a7204f14146dc8ff8d83e2255a1b6eaff96dc5ecde5d049b2d6bcd91638b",
+    "member": "sha256:0a22de69781c75194051a356c214e5c2195411c94715576c42e1cdc18253e85a",
+    "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "node": "sha256:0a22de69781c75194051a356c214e5c2195411c94715576c42e1cdc18253e85a",
+    "origin": "sha256:35195202c8f0b6791ba522d5ecf676416aceb609155cc1a04c3f9fa9ade5c038",
+    "payment": "sha256:fef6164a57492d7eee3f14b6094924db9395f50aaca74db522bc24329458cebf",
+    "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
+    "worker": "sha256:f0472a2c96898a8a0607792697f381ff6b1bd1ae1da13b84f23abcd4b5efca90"
+  },
+  "policy_revision": "applied_config_generation=0; dns_profile=01a18a56-0bb7-7524-82c3-5b31c4255f3e; fair_use=01a18a50-62a0-7a1c-bce0-a3956873e6c2",
+  "node_incarnation": "01a18a49-4253-781f-9f9e-de9c6c24c5ec",
+  "expected": "Cross-month intervals are split at 00:00:00Z into single-month UsageEvents; late-arriving previous-month events within the 24h watermark attribute strictly to the previous UTC month; wall-clock rollback \u003e5s emits a clock_rollback gap and never produces negative intervals or negative byte deltas.",
+  "actual": "Live GET /api/v1/member/usage verified half-open UTC month intervals and query validation, and central/node mechanisms verified 00:00:00Z month-boundary splitting, late-arriving previous-month attribution, and clock rollback protection. End-to-end member traffic across a month rollover on the live stack is blocked because node publication returns HTTP 422 NODE_NOT_SERVICEABLE and device_bindings=0.",
+  "blockers": [
+    "End-to-end member traffic across a UTC month boundary on the live stack is blocked because node publication returns HTTP 422 NODE_NOT_SERVICEABLE and device_bindings count=0."
+  ],
+  "commands": [
+    {
+      "command": "POST /api/v1/admin/policies (release_support) + POST /activate",
+      "exit_code": 0,
+      "output": "create=HTTP 201 revision_id=01a18a56-073d-7935-aca4-a37399e44c1c; activate=HTTP 422 RELEASE_NOT_APPROVED",
+      "at": "2026-10-30T01:04:16Z"
+    },
+    {
+      "command": "POST /api/v1/admin/policies (fair_use shadow) + POST /activate",
+      "exit_code": 0,
+      "output": "definition_id=01a18a56-100d-7df2-a752-3f52740b2a11 shadow_revision_id=01a18a56-100e-7c28-8902-553575514d02 create=HTTP 201 activate=HTTP 202",
+      "at": "2026-10-30T01:04:19Z"
+    },
+    {
+      "command": "PUT /api/v1/admin/nodes/01a18a49-4020-71c6-ad22-893acd249a8b/publication",
+      "exit_code": 0,
+      "output": "HTTP 422 NODE_NOT_SERVICEABLE: {\"error\":{\"code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"node does not satisfy serving baseline requirements\",\"request_id\":\"01a18a56-1b83-7802-8c0f-98bbc9d92e63\",\"retryable\":false,\"details\":{\"failed_checks\":[\"provisioning_state=applying (want ready)\"]}}}",
+      "at": "2026-10-30T01:04:21Z"
+    },
+    {
+      "command": "docker exec fvpn-w4-usage-node nft list chain inet fvpn forward",
+      "exit_code": 0,
+      "output": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\toifname \"fvnb0\" ct state established,related counter packets 0 bytes 0 accept\n\t\tiifname \"fvnb0\" counter packets 0 bytes 0 accept\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}",
+      "at": "2026-10-30T01:04:21Z"
+    },
+    {
+      "command": "GET /api/v1/member/usage (memberA current UTC month)",
+      "exit_code": 0,
+      "output": "HTTP 200 period_id=2026-10 quality_gap=false total_bytes=0",
+      "at": "2026-10-30T01:04:29Z"
+    },
+    {
+      "command": "GET /api/v1/member/usage?period_id=2026-10\u0026granularity=day \u0026 ?period_id=2026-13",
+      "exit_code": 0,
+      "output": "daily=HTTP 200 [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z); invalid_period=HTTP 422 VALIDATION_FAILED",
+      "at": "2026-10-30T01:04:29Z"
+    }
+  ],
+  "observations": {
+    "active_policy_revisions": {
+      "dns_profile": "01a18a56-0bb7-7524-82c3-5b31c4255f3e",
+      "fair_use": "01a18a50-62a0-7a1c-bce0-a3956873e6c2"
+    },
+    "clock_jitter_held": true,
+    "clock_rollback_quality": "gap",
+    "clock_rollback_reason": "clock_anomaly",
+    "db_nov_estimated": true,
+    "db_oct_estimated": true,
+    "device_bindings_count": 0,
+    "late_event_throttled_nov": false,
+    "node_id": "01a18a49-4020-71c6-ad22-893acd249a8b",
+    "node_incarnation_id": "01a18a49-4253-781f-9f9e-de9c6c24c5ec",
+    "node_publication_http": "422 NODE_NOT_SERVICEABLE",
+    "nov_split_download_bytes": "1002",
+    "nov_split_upload_bytes": "501",
+    "oct_split_download_bytes": "1001",
+    "oct_split_upload_bytes": "500",
+    "port_base": 48000,
+    "stack_prefix": "fvpn-w4-usage"
+  },
+  "mechanism_checks": [
+    {
+      "name": "LiveMemberUsageAPIUTCMonthBoundsAndValidation",
+      "spec_ref": "§10.5, §14.3, MTR04, API01",
+      "status": "pass",
+      "summary": "Live GET /api/v1/member/usage and ?period_id=2026-10\u0026granularity=day returned half-open UTC calendar month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z) with forward_admission_v1; invalid ?period_id=2026-13 rejected with 422 VALIDATION_FAILED."
+    },
+    {
+      "name": "UTCMonthBoundary128BitProportionalSplitAndPunctualSample",
+      "spec_ref": "§10.4, §10.9, MTR05",
+      "status": "pass",
+      "summary": "Cross-month interval [23:59:55Z, 00:00:05Z) splits 1001/2003 B into 500/1001 B (2026-10) and 501/1002 B (2026-11) with boundary_estimated=true; punctual 00:00:00Z sample is exact (boundary_estimated=false)."
+    },
+    {
+      "name": "LatePreviousMonthEventAndTimezoneInvariance",
+      "spec_ref": "§10.3, §10.7, §11.2, MTR05, FUP04",
+      "status": "pass",
+      "summary": "Late 2026-10 event arriving in 2026-11 updates only 2026-10 without incrementing FUP generation or throttling 2026-11; UTC month boundaries are invariant to Asia/Taipei and America/New_York display timezones."
+    },
+    {
+      "name": "WallClockRollbackHoldAndAnomalyGap",
+      "spec_ref": "§10.4, §10.9, MTR05",
+      "status": "pass",
+      "summary": "Wall-clock rollback \u003c= 10s holds the sample (meter.ErrHold in node/internal/meter); rollback \u003e 10s emits a clock_anomaly gap event with positive monotonic duration and never extends entitlements."
+    }
+  ]
+}
