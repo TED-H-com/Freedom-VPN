@@ -4,7 +4,7 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates iproute2 nftables wget \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=nb /usr/local/bin/netbird /usr/local/bin/netbird
-COPY fvpn-agent fvpn-watchdog fvpn-updater entrypoint-node.sh entrypoint-member.sh agent-service.sh /usr/local/bin/
+COPY fvpn-agent fvpn-watchdog fvpn-updater fvpn-e2e-nodeconfig entrypoint-node.sh entrypoint-member.sh agent-service.sh /usr/local/bin/
 RUN chmod 755 /usr/local/bin/fvpn-agent /usr/local/bin/fvpn-watchdog /usr/local/bin/fvpn-updater \
     /usr/local/bin/netbird /usr/local/bin/entrypoint-node.sh /usr/local/bin/entrypoint-member.sh /usr/local/bin/agent-service.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint-node.sh"]

@@ -5,6 +5,7 @@ import (
 	"net/netip"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -60,6 +61,9 @@ func validateServing(m Model) ([]admittedDevice, map[uuid.UUID]uint16, []netip.P
 	// Reject non-IPv4 set members before any tc or nft batch. An IPv6 literal
 	// in an ipv4_addr set fails nft only after the qdisc has already changed.
 	if err := validateIPv4Sets(m); err != nil {
+		return nil, nil, nil, err
+	}
+	if err := validateProbe(m); err != nil {
 		return nil, nil, nil, err
 	}
 	denied, err := m.denyV4()
@@ -183,6 +187,123 @@ func validateV4Prefixes(ps []netip.Prefix, name string) error {
 }
 
 func (d admittedDevice) TimeoutOK() bool { return d.Timeout > 0 }
+
+// validateProbe checks the synthetic-probe exception (§13.9). A nil probe is
+// the removal path and is valid. Validation runs before any tc or nft batch.
+func validateProbe(m Model) error {
+	p := m.Probe
+	if p == nil {
+		return nil
+	}
+	if p.PeerID == "" || len(p.PeerID) > 128 || strings.ContainsAny(p.PeerID, "\r\n") {
+		return fmt.Errorf("probe peer_id is empty or unsafe")
+	}
+	if !p.SourceV4.IsValid() || !p.SourceV4.Addr().Is4() || p.SourceV4.Bits() != 32 {
+		return fmt.Errorf("probe source %s is not an ipv4 /32", p.SourceV4)
+	}
+	src := p.SourceV4.Addr()
+	if src.IsUnspecified() || src.IsMulticast() || src.IsLoopback() || src.IsLinkLocalUnicast() {
+		return fmt.Errorf("probe source %s is not usable", src)
+	}
+	if nodeLocalAddr(m, src) {
+		return fmt.Errorf("probe source %s is a node address", src)
+	}
+	for _, b := range m.Bindings {
+		if b.PeerID != "" && b.PeerID == p.PeerID {
+			return fmt.Errorf("probe peer %s is a member device", p.PeerID)
+		}
+		for _, allowed := range b.AllowedV4 {
+			if allowed.IsValid() && allowed.Contains(src) {
+				return fmt.Errorf("probe source %s collides with member binding %s", src, b.DeviceID)
+			}
+		}
+	}
+	if len(p.Destinations) == 0 && !p.ResolverDNS {
+		return fmt.Errorf("probe has no destinations and resolver DNS is off")
+	}
+	if p.ResolverDNS {
+		if len(m.Resolvers) == 0 {
+			return fmt.Errorf("probe resolver DNS requires at least one ipv4 resolver")
+		}
+		for _, addr := range m.Resolvers {
+			if !addr.IsValid() || !addr.Is4() {
+				return fmt.Errorf("probe resolver %s is not an ipv4 address", addr)
+			}
+		}
+	}
+	denied, err := m.denyV4()
+	if err != nil {
+		return err
+	}
+	for _, d := range p.Destinations {
+		if err := validateProbeDestination(m, d, denied); err != nil {
+			return err
+		}
+	}
+	if m.Now.IsZero() {
+		return fmt.Errorf("model.now is required to evaluate the probe expiration")
+	}
+	remain := p.ExpiresAt.Sub(m.Now)
+	if remain <= 0 {
+		return fmt.Errorf("probe ExpiresAt is in the past")
+	}
+	if remain > time.Duration(ProbeMaxSeconds)*time.Second {
+		return fmt.Errorf("probe ExpiresAt is more than %d seconds ahead", ProbeMaxSeconds)
+	}
+	if _, ok := probeTimeout(p.ExpiresAt, m.Now); !ok {
+		return fmt.Errorf("probe ExpiresAt is less than one second ahead")
+	}
+	return nil
+}
+
+func validateProbeDestination(m Model, d ProbeDestination, denied []netip.Prefix) error {
+	if !d.AddrV4.IsValid() || !d.AddrV4.Addr().Is4() || d.AddrV4.Bits() != 32 {
+		return fmt.Errorf("probe destination %s is not an ipv4 /32", d.AddrV4)
+	}
+	if d.Proto != "tcp" && d.Proto != "udp" {
+		return fmt.Errorf("probe destination proto %q is not tcp or udp", d.Proto)
+	}
+	if d.Port == 0 {
+		return fmt.Errorf("probe destination port must be 1-65535")
+	}
+	addr := d.AddrV4.Addr()
+	if addr.IsUnspecified() || addr.IsMulticast() || addr.IsLoopback() || addr.IsLinkLocalUnicast() {
+		return fmt.Errorf("probe destination %s is inside host or denied material", addr)
+	}
+	local := nodeLocalAddr(m, addr)
+	if local && probeAdminPort(d.Port) {
+		return fmt.Errorf("probe destination %s port %d is a node admin port", addr, d.Port)
+	}
+	if local || addrInPrefixes(addr, denied) || addrInPrefixes(addr, m.HostV4) {
+		return fmt.Errorf("probe destination %s is inside host or denied material", addr)
+	}
+	return nil
+}
+
+func nodeLocalAddr(m Model, addr netip.Addr) bool {
+	if m.Datapath.SNAT.IsValid() && addr == m.Datapath.SNAT {
+		return true
+	}
+	return addrInPrefixes(addr, m.HostV4)
+}
+
+func addrInPrefixes(addr netip.Addr, ps []netip.Prefix) bool {
+	for _, p := range ps {
+		if p.IsValid() && p.Contains(addr) {
+			return true
+		}
+	}
+	return false
+}
+
+func probeAdminPort(port uint16) bool {
+	switch port {
+	case 22, 80, 443, 3000, 8080, 9091:
+		return true
+	default:
+		return false
+	}
+}
 
 func validateQoS(q QoS, needed map[uuid.UUID]bool) error {
 	if err := validateParent(q.Up, "qos.up"); err != nil {

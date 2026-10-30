@@ -217,7 +217,7 @@ func run(state string, reset bool, lay layout) error {
 		OnlineSeconds: 180, StuckSeconds: 600, ReconcileSeconds: 5, FetchSeconds: 20, DesiredStateSeconds: 600,
 		NetBirdURL: "https://netbird.example.invalid/api", NetBirdDeployment: "e2e",
 		NetBirdTokenFile: "/secrets/netbird.token",
-		DNSResolverIPv4:  []string{lay.AdGuardIP}, DNSResolverIPv6: []string{},
+		DNSResolverIPv4:  []string{lay.LabPrefix + ".40"}, DNSResolverIPv6: []string{},
 		ReleaseOrigins: []string{"https://releases.example.invalid"},
 	}
 	if err := nodes.Validate(); err != nil {
@@ -286,7 +286,7 @@ func run(state string, reset bool, lay layout) error {
 	if err := writeJSON(filepath.Join(state, "config", "usage.json"), usageCfg); err != nil {
 		return err
 	}
-	if err := writeAgentConfigs(state); err != nil {
+	if err := writeAgentConfigs(state, lay.OriginPrefix); err != nil {
 		return err
 	}
 	if err := writeNetBird(state); err != nil {
@@ -354,23 +354,24 @@ FVPN_E2E_PORT_POSTGRES=%d
 	return writeSecret(filepath.Join(state, "render", "compose.env"), []byte(body))
 }
 
-func writeAgentConfigs(state string) error {
+func writeAgentConfigs(state, originPrefix string) error {
 	base := map[string]any{
 		"state_dir": "/var/lib/vpn-node/state", "identity_dir": "/var/lib/vpn-node/identity",
 		"journal_dir": "/var/lib/vpn-node/update-journal", "lock_path": "/var/lib/vpn-node/update.lock",
 		"server_ca_file": "/etc/vpn-node/ca.pem", "trust_bundle": "/etc/vpn-node/trust.json",
-		"datapath":      map[string]string{"member_ingress": "fvmb0", "uplink": "fvup0", "snat": "192.0.2.20"},
+		"datapath":      map[string]string{"member_ingress": "fvmb0", "uplink": "fvup0", "snat": originPrefix + ".20"},
 		"agent_release": "0.1.0",
 		// TEST ONLY rate. The agent requires the field and has no product default (D-034).
 		"host_reserve_bps": 1000000, "netbird_backend": "kernel",
 		"heartbeat_seconds": 5, "poll_seconds": 5, "watchdog_stale_seconds": 30, "watchdog_interval_seconds": 5,
 		"boot_id_file": "/etc/vpn-node/boot-id", "test_mode": true,
-		"updater_recover": "/usr/local/bin/fvpn-updater", "updater_config": "/var/lib/vpn-node/e2e/updater.json",
+		"updater_recover": "/usr/local/bin/fvpn-updater", "updater_config": "/etc/vpn-node/updater-recover.json",
 	}
 	enroll := cloneMap(base)
 	enroll["control_url"] = "https://portal.example.invalid:8443"
 	runCfg := cloneMap(base)
 	runCfg["control_url"] = "https://agent.example.invalid:9443"
+	runCfg["dns"] = map[string]any{"resolvers": []any{map[string]string{"id": "lab", "admin_url": "http://127.0.0.1:8080", "dns_addr": "127.0.0.1:53"}}, "resolver_credentials_file": "/etc/vpn-node/resolver-credentials.json"}
 	dir := filepath.Join(state, "node", "etc")
 	if err := writeJSON(filepath.Join(dir, "agent-enroll.json"), enroll); err != nil {
 		return err
@@ -419,6 +420,9 @@ func writeAdGuard(state, coreDNS string) error {
 		return err
 	}
 	if err := writeSecret(filepath.Join(state, "secrets", "adguard.password"), []byte(password+"\n")); err != nil {
+		return err
+	}
+	if err := writeJSON(filepath.Join(state, "node", "etc", "resolver-credentials.json"), map[string]string{"username": "e2e", "password": password}); err != nil {
 		return err
 	}
 	// schema_version 29 is what v0.107.59 writes. A lower version runs the

@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"net"
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -62,41 +65,184 @@ func (s PostgresStore) ConsumeFlow(ctx context.Context, state, browser string) (
 	}
 	return f, nil
 }
+func canonicalIssuer(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil || strings.TrimSpace(raw) != raw || strings.ContainsAny(raw, "?#") || u.User != nil || u.Opaque != "" || u.Hostname() == "" || strings.HasSuffix(u.Host, ":") {
+		return raw
+	}
+	u.Scheme = strings.ToLower(u.Scheme)
+	if u.Scheme != "https" && u.Scheme != "http" {
+		return raw
+	}
+	host, port := strings.ToLower(u.Hostname()), u.Port()
+	if u.Scheme == "https" && port == "443" || u.Scheme == "http" && port == "80" {
+		port = ""
+	}
+	if port != "" {
+		host = net.JoinHostPort(host, port)
+	} else if strings.Contains(host, ":") {
+		host = "[" + host + "]"
+	}
+	u.Host = host
+	u.Path = strings.TrimRight(u.Path, "/")
+	u.RawPath = strings.TrimRight(u.RawPath, "/")
+	return u.String()
+}
+
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
+}
+
+type memberBindingRow struct {
+	bindingID   uuid.UUID
+	memberID    uuid.UUID
+	clientScope string
+	closed      bool
+}
+
+func lookupMemberBindings(ctx context.Context, tx pgx.Tx, canonIssuer, rawIssuer, subject string) ([]memberBindingRow, error) {
+	rows, err := tx.Query(ctx, `SELECT b.id,b.member_id,b.client_scope,m.status='closed' FROM identity_bindings b JOIN members m ON m.id=b.member_id WHERE (b.issuer=$1 OR b.issuer=$2) AND b.subject=$3 ORDER BY b.id LIMIT 2`, canonIssuer, rawIssuer, subject)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []memberBindingRow
+	for rows.Next() {
+		var r memberBindingRow
+		if err := rows.Scan(&r.bindingID, &r.memberID, &r.clientScope, &r.closed); err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
+func updateMemberBindingScope(ctx context.Context, tx pgx.Tx, memberID, bindingID uuid.UUID, role Role, clientScope string, request uuid.UUID) error {
+	if _, err := tx.Exec(ctx, `SAVEPOINT auth_update_scope`); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE identity_bindings SET client_scope=$2,verified_at=clock_timestamp() WHERE id=$1`, bindingID, clientScope); err != nil {
+		if _, rbErr := tx.Exec(ctx, `ROLLBACK TO SAVEPOINT auth_update_scope`); rbErr != nil {
+			return rbErr
+		}
+		if _, err := tx.Exec(ctx, `UPDATE identity_bindings SET verified_at=clock_timestamp() WHERE id=$1`, bindingID); err != nil {
+			return err
+		}
+	}
+	if _, err := tx.Exec(ctx, `RELEASE SAVEPOINT auth_update_scope`); err != nil {
+		return err
+	}
+	after, err := json.Marshal(map[string]any{
+		"identity_binding_id": bindingID,
+		"reason":              "proof_updated",
+	})
+	if err != nil {
+		return err
+	}
+	return db.AppendAudit(ctx, tx, db.AuditEvent{
+		Actor:         memberID.String(),
+		ActorType:     string(role),
+		Action:        "identity_binding.proof_updated",
+		Resource:      "member:" + memberID.String(),
+		Result:        "succeeded",
+		RequestID:     &request,
+		SchemaVersion: 1,
+		Before:        json.RawMessage(`{}`),
+		After:         after,
+	})
+}
+
+func insertOrSelectMemberBinding(ctx context.Context, tx pgx.Tx, i Identity, rawIssuer string, request uuid.UUID) (uuid.UUID, bool, error) {
+	if _, err := tx.Exec(ctx, `SAVEPOINT auth_register_member`); err != nil {
+		return uuid.Nil, false, err
+	}
+	memberID := uuid.Must(uuid.NewV7())
+	binding := uuid.Must(uuid.NewV7())
+	_, err := tx.Exec(ctx, `INSERT INTO members(id,display_name,status) VALUES($1,$2,'pending_payment')`, memberID, i.Label)
+	if err == nil {
+		_, err = tx.Exec(ctx, `INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,$3,$4,$5,'sub','oidc',clock_timestamp())`, binding, memberID, i.Issuer, i.ClientScope, i.Subject)
+	}
+	if isUniqueViolation(err) {
+		if _, rbErr := tx.Exec(ctx, `ROLLBACK TO SAVEPOINT auth_register_member`); rbErr != nil {
+			return uuid.Nil, false, rbErr
+		}
+		if _, rlErr := tx.Exec(ctx, `RELEASE SAVEPOINT auth_register_member`); rlErr != nil {
+			return uuid.Nil, false, rlErr
+		}
+		rechecked, selErr := lookupMemberBindings(ctx, tx, i.Issuer, rawIssuer, i.Subject)
+		if selErr != nil {
+			return uuid.Nil, false, selErr
+		}
+		if len(rechecked) != 1 {
+			return uuid.Nil, false, apierr.New(apierr.Forbidden, "Identity binding is ambiguous.")
+		}
+		if rechecked[0].closed {
+			return uuid.Nil, false, apierr.New(apierr.Forbidden, "Account is closed.")
+		}
+		if rechecked[0].clientScope != i.ClientScope {
+			if err = updateMemberBindingScope(ctx, tx, rechecked[0].memberID, rechecked[0].bindingID, i.Role, i.ClientScope, request); err != nil {
+				return uuid.Nil, false, err
+			}
+		}
+		return rechecked[0].memberID, false, nil
+	}
+	if err != nil {
+		return uuid.Nil, false, err
+	}
+	if _, err = tx.Exec(ctx, `UPDATE members SET canonical_identity_ref=$2,resource_version=resource_version+1 WHERE id=$1`, memberID, binding); err != nil {
+		return uuid.Nil, false, err
+	}
+	if err = db.AppendAudit(ctx, tx, db.AuditEvent{Actor: memberID.String(), ActorType: string(i.Role), Action: "member.register", Resource: "member:" + memberID.String(), Result: "succeeded", RequestID: &request, SchemaVersion: 1, Before: json.RawMessage(`{}`), After: json.RawMessage(`{"status":"pending_payment"}`)}); err != nil {
+		return uuid.Nil, false, err
+	}
+	if _, err = tx.Exec(ctx, `RELEASE SAVEPOINT auth_register_member`); err != nil {
+		return uuid.Nil, false, err
+	}
+	return memberID, true, nil
+}
+
 func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string, absolute time.Duration, request uuid.UUID) (p Principal, err error) {
 	if strings.TrimSpace(i.Subject) == "" || strings.TrimSpace(i.Issuer) == "" || strings.TrimSpace(i.ClientScope) == "" || token == "" || (i.Role != Admin && i.Role != Member) {
 		return p, errors.New("invalid login identity")
 	}
+	rawIssuer := i.Issuer
+	i.Issuer = canonicalIssuer(i.Issuer)
+	if request == uuid.Nil {
+		request = uuid.Must(uuid.NewV7())
+	}
 	if i.Role == Admin {
-		return s.loginAdmin(ctx, i, token, old, absolute, request)
+		return s.loginAdmin(ctx, i, rawIssuer, token, old, absolute, request)
 	}
 	p = Principal{Role: i.Role, DisplayLabel: i.Label, MFAVerified: i.MFA, AuthenticatedAt: i.AuthTime}
 	err = db.InTx(ctx, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		// Serialize first login by the scoped identity, never by an email (§9.1).
-		scoped, _ := json.Marshal([]string{i.Issuer, i.ClientScope, i.Subject})
+		// Serialize first login by canonical (issuer, subject), never by client_scope or email (§9.1, D-052 F-04).
+		scoped, _ := json.Marshal([]string{i.Issuer, i.Subject})
 		if _, e := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, string(scoped)); e != nil {
 			return e
 		}
-		var closed bool
-		e := tx.QueryRow(ctx, `SELECT b.member_id,m.status='closed' FROM identity_bindings b JOIN members m ON m.id=b.member_id WHERE issuer=$1 AND client_scope=$2 AND subject=$3`, i.Issuer, i.ClientScope, i.Subject).Scan(&p.ID, &closed)
-		if errors.Is(e, pgx.ErrNoRows) {
-			p.ID = uuid.Must(uuid.NewV7())
-			binding := uuid.Must(uuid.NewV7())
-			if _, e = tx.Exec(ctx, `INSERT INTO members(id,display_name,status) VALUES($1,$2,'pending_payment')`, p.ID, i.Label); e != nil {
-				return e
-			}
-			if _, e = tx.Exec(ctx, `INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,$3,$4,$5,'sub','oidc',clock_timestamp())`, binding, p.ID, i.Issuer, i.ClientScope, i.Subject); e != nil {
-				return e
-			}
-			if _, e = tx.Exec(ctx, `UPDATE members SET canonical_identity_ref=$2,resource_version=resource_version+1 WHERE id=$1`, p.ID, binding); e != nil {
-				return e
-			}
-			e = db.AppendAudit(ctx, tx, db.AuditEvent{Actor: p.ID.String(), ActorType: string(i.Role), Action: "member.register", Resource: "member:" + p.ID.String(), Result: "succeeded", RequestID: &request, SchemaVersion: 1, Before: json.RawMessage(`{}`), After: json.RawMessage(`{"status":"pending_payment"}`)})
-		}
+		found, e := lookupMemberBindings(ctx, tx, i.Issuer, rawIssuer, i.Subject)
 		if e != nil {
 			return e
 		}
-		if closed {
-			return apierr.New(apierr.Forbidden, "Account is closed.")
+		if len(found) > 1 {
+			return apierr.New(apierr.Forbidden, "Identity binding is ambiguous.")
+		}
+		if len(found) == 1 {
+			if found[0].closed {
+				return apierr.New(apierr.Forbidden, "Account is closed.")
+			}
+			p.ID = found[0].memberID
+			if found[0].clientScope != i.ClientScope {
+				if e = updateMemberBindingScope(ctx, tx, p.ID, found[0].bindingID, i.Role, i.ClientScope, request); e != nil {
+					return e
+				}
+			}
+		} else {
+			p.ID, _, e = insertOrSelectMemberBinding(ctx, tx, i, rawIssuer, request)
+			if e != nil {
+				return e
+			}
 		}
 		if old != "" {
 			var oldMemberID uuid.UUID

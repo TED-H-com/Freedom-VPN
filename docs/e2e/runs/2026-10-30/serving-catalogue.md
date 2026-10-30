@@ -2,13 +2,16 @@
 
 Member group and plan through product APIs
 
-Status: blocked
+Status: pass
 
-Run: 5de03570-0436-477d-9847-6f6984432bd8
+Run: dc2f6353-89ec-434c-bc68-567066d9fe51
 
-Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
+Source: b15ff057cd5e91e227477de6a09d977931fa62d8
 
 Spec: §9, §14.2
 
-- groups_get: 501 NOT_IMPLEMENTED
-- owner: D-057: GET /admin/groups 501 NOT_IMPLEMENTED; owner w3-wire-nodes follow-up 11
+- groups_get: 200
+- group_create: 201
+- group_id: 01a18b06-eb96-7761-acb7-2684164d00bf
+- plan_id: 01a18b06-eba7-74ae-a09b-8ca1859b8628
+- plan_revision_id: 01a18b06-eba7-7683-92ef-965c06c73a63

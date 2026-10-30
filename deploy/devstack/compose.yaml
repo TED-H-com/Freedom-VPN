@@ -241,10 +241,8 @@ services:
       # Directory mount: AdGuard rewrites the file with rename, which fails on a file bind.
       - ${FVPN_E2E_STATE}/adguard/conf:/opt/adguardhome/conf
       - ${FVPN_E2E_STATE}/adguard/work:/opt/adguardhome/work
-    depends_on: [coredns]
-    networks:
-      lab:
-        ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.53
+    depends_on: [coredns, node]
+    network_mode: service:node
     restart: "no"
 
   control:
@@ -315,18 +313,19 @@ services:
         condition: service_healthy
       gateway:
         condition: service_started
-      adguard:
-        condition: service_started
     networks:
       lab:
         ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.40
-      origin: {}
+      origin:
+        ipv4_address: ${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20
     restart: "no"
 
   member:
     image: ${FVPN_E2E_IMAGE_NODE:-fvpn-devstack-node:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-member
     entrypoint: ["/usr/local/bin/entrypoint-member.sh"]
+    extra_hosts:
+      - "releases.example.invalid:${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.10"
     cap_add: [NET_ADMIN, NET_RAW]
     devices:
       - /dev/net/tun:/dev/net/tun

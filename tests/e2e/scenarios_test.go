@@ -3,7 +3,6 @@
 package e2e
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -17,10 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
-	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	_ "modernc.org/sqlite"
@@ -61,6 +57,8 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
+		run.scaleHook(ctx, admin)
+		run.threatFeedNode(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
 		run.revoke(ctx, admin, nodeID)
@@ -70,28 +68,24 @@ func TestE2E_Acceptance(t *testing.T) {
 }
 
 type runner struct {
-	t              *testing.T
-	lab            *lab
-	dir            string
-	counts         map[Status]int
-	bad            bool
-	runID          string
-	sourceCommit   string
-	nodeID         uuid.UUID
-	incID          uuid.UUID
-	enrolledID     uuid.UUID
-	groupID        uuid.UUID
-	profileID      uuid.UUID
-	planError      string
-	planID         uuid.UUID
-	planRevID      uuid.UUID
-	usageDevice    uuid.UUID
-	usageRevision  decstr.U64
-	usageFrom      time.Time
-	usageUntil     time.Time
-	usageReady     bool
-	usageSentStart time.Time
-	usageSentEnd   time.Time
+	t            *testing.T
+	lab          *lab
+	dir          string
+	counts       map[Status]int
+	bad          bool
+	runID        string
+	sourceCommit string
+	nodeID       uuid.UUID
+	incID        uuid.UUID
+	enrolledID   uuid.UUID
+	groupID      uuid.UUID
+	profileID    uuid.UUID
+	planError    string
+	planID       uuid.UUID
+	planRevID    uuid.UUID
+	usageDevice  uuid.UUID
+	flowCounted  bool
+	usageReady   bool
 }
 
 func (r *runner) record(rec Record) {
@@ -104,9 +98,9 @@ func (r *runner) record(rec Record) {
 	if rec.Status == StatusBlocked {
 		owners := map[string]string{
 			"publish":        "w3-wire-nodes: publication operation and production peer projection",
-			"member-traffic": "w3-wire-nodes follow-up 11: D-057 group/plan/publication prerequisite; then native device admission",
-			"forwarding":     "w3-wire-nodes follow-up 11 and w2-agent-core: applied serving policy",
-			"usage":          "w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance",
+			"member-traffic": "w2-agent-core: lease refresh after publication/member changes",
+			"forwarding":     "w2-agent-core: current member lease and applied serving policy",
+			"usage":          "w2-agent-core: positive counted-flow prerequisite; then w3-wire-usage sampler acceptance",
 			"update-good":    "w4-node-updater and w2-agent-core: D-053 live candidate health",
 			"update-bad":     "w4-node-updater: tampered artifact rejection and recovery",
 			"lease-expiry":   "w2-agent-core: AT29 needs active forwarding before control loss",
@@ -320,7 +314,7 @@ func (r *runner) desired(ctx context.Context) {
 func (r *runner) forwarding(view forwardView) {
 	status := StatusBlocked
 	detail := "forward chain policy is " + emptyDash(view.Policy) + ", generation " + itoa(view.Generation) + ", with " + itoa(view.MemberAccept) + " member accept rules; AT10 is not claimed"
-	if view.MemberAccept > 0 && view.Generation >= 1 {
+	if view.MemberAccept > 0 && view.Generation >= 1 && r.flowCounted {
 		status = StatusPass
 		detail = "forward chain generation is " + itoa(view.Generation) + " with member accept rules"
 	}
@@ -379,13 +373,19 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		PlanId: openapi_types.UUID(planForCheckout), ReturnUrl: "https://portal.example.invalid:8443/billing/return",
 	}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	rec.Observations = append(rec.Observations, Observation{Name: "checkout", Detail: httpDetail(checkout, err)})
-	rec.Observations = append(rec.Observations, Observation{Name: "traffic", Detail: "not claimed; no flow was counted"})
+	if r.usageReady {
+		r.flowCounted = r.countedFlow(ctx, recPathNote(&rec))
+		if r.flowCounted {
+			rec.Status = StatusPass
+		}
+	}
+	r.noteAdmissionGate(ctx, admin, &rec)
 	r.record(rec)
 	r.usage(ctx, member)
 }
 
 func (r *runner) usage(ctx context.Context, member *session) {
-	rec := Record{ID: "usage", Title: "Sampled usage visible with exact bytes", Spec: []string{"§10", "§19 AT14", "§19 AT15"}, Status: StatusBlocked}
+	rec := Record{ID: "usage", Title: "Agent samples after native admitted traffic", Spec: []string{"§10", "§19 AT14", "§19 AT15"}, Status: StatusBlocked}
 	if member == nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "member", Detail: "no session"})
 		r.record(rec)
@@ -405,31 +405,22 @@ func (r *runner) usage(ctx context.Context, member *session) {
 		r.record(rec)
 		return
 	}
-	same, firstStatus, secondStatus, accepted, outcome := r.replayUsageBatch(member.memberID)
-	if !r.usageSentStart.IsZero() {
-		rec.Observations = append(rec.Observations, Observation{Name: "interval_start", Detail: r.usageSentStart.UTC().Format(time.RFC3339)})
-		rec.Observations = append(rec.Observations, Observation{Name: "interval_end", Detail: r.usageSentEnd.UTC().Format(time.RFC3339)})
+	if !r.flowCounted {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "No positive counted flow; no synthetic sample is submitted."})
+		r.record(rec)
+		return
 	}
-	rec.Observations = append(rec.Observations, Observation{Name: "batch_status", Detail: firstStatus})
-	rec.Observations = append(rec.Observations, Observation{Name: "replay_status", Detail: secondStatus})
-	rec.Observations = append(rec.Observations, Observation{Name: "replay_results_equal", Detail: boolText(same)})
-	rec.Observations = append(rec.Observations, Observation{Name: "batch_outcome", Detail: emptyDash(outcome)})
-	again, againErr := member.call(ctx, "GET", r.lab.public+"/api/v1/member/usage", nil, nil)
-	total := memberUsageTotal(again.Body)
-	rec.Observations = append(rec.Observations, Observation{Name: "member_usage_after_batch", Detail: httpDetail(again, againErr)})
-	rec.Observations = append(rec.Observations, Observation{Name: "member_total_bytes", Detail: emptyDash(total)})
-	exact := again.Status == 200 && total == "3000"
-	rec.Observations = append(rec.Observations, Observation{Name: "exact_bytes", Detail: boolText(exact)})
-	switch {
-	case resp.Status == 200 && same && exact && accepted:
+	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
+	defer cancel()
+	var total string
+	arrived := waitUntil(wait, 2*time.Second, func() bool {
+		again, e := member.call(wait, "GET", r.lab.public+"/api/v1/member/usage", nil, nil)
+		total = memberUsageTotal(again.Body)
+		return e == nil && again.Status == 200 && total != "" && total != "0"
+	})
+	rec.Observations = append(rec.Observations, Observation{Name: "member_total_bytes", Detail: total}, Observation{Name: "source", Detail: "real agent sampler after controlled-origin admission; no harness usage batch"})
+	if arrived {
 		rec.Status = StatusPass
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "replay returned the same results and the member total matches the uploaded bytes"})
-	case firstStatus == "not-sent":
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: emptyDash(outcome)})
-	case resp.Status == 200 && same:
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "member usage is served and the idempotent replay returned the same results; exact byte totals were not claimed"})
-	default:
-		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "usage replay did not show the same results"})
 	}
 	r.record(rec)
 }
@@ -598,6 +589,11 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 
 func (r *runner) controlStop(ctx context.Context) {
 	rec := Record{ID: "lease-expiry", Title: "Control stop leaves forwarding off", Spec: []string{"§5", "§19 AT29"}, Status: StatusBlocked}
+	if !r.flowCounted || !r.countedFlow(ctx, recPathNote(&rec)) {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "No positive counted flow before fault; control stop is not injected."})
+		r.record(rec)
+		return
+	}
 	before := r.lab.forwardChain()
 	cmd := exec.Command("docker", "stop", "-t", "20", r.lab.control)
 	if err := cmd.Run(); err != nil {
@@ -606,7 +602,9 @@ func (r *runner) controlStop(ctx context.Context) {
 		r.record(rec)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	waitExpiry, cancelExpiry := context.WithTimeout(ctx, 11*time.Minute)
+	waitUntil(waitExpiry, 2*time.Second, func() bool { return r.lab.forwardChain().MemberAccept == 0 })
+	cancelExpiry()
 	after := r.lab.forwardChain()
 	rec.Observations = append(rec.Observations, Observation{Name: "table_before", Detail: boolText(before.Present)})
 	rec.Observations = append(rec.Observations, Observation{Name: "policy_before", Detail: emptyDash(before.Policy)})
@@ -818,72 +816,6 @@ func (l *lab) rememberPlan(plan, rev uuid.UUID) error {
 	return os.WriteFile(path, append(out, '\n'), 0o600)
 }
 
-func (r *runner) replayUsageBatch(memberID string) (same bool, firstStatus, secondStatus string, accepted bool, outcome string) {
-	if r.enrolledID == uuid.Nil || r.incID == uuid.Nil {
-		return false, "no-node", "no-node", false, ""
-	}
-	if !r.usageReady {
-		return false, "not-sent", "not-sent", false, "no binding was projected"
-	}
-	memberUUID, err := uuid.Parse(memberID)
-	if err != nil {
-		return false, "no-member", "no-member", false, ""
-	}
-	start, end, ok := coveredInterval(r.usageFrom, r.usageUntil, time.Now())
-	if !ok {
-		return false, "not-sent", "not-sent", false, "binding window does not cover an interval"
-	}
-	r.usageSentStart, r.usageSentEnd = start, end
-	ev, err := usage.WithComputedHash(api.UsageEvent{
-		SchemaVersion: api.UsageEventSchemaVersionN1, NodeId: openapi_types.UUID(r.enrolledID),
-		NodeIncarnationId: openapi_types.UUID(r.incID), MeterEpochId: openapi_types.UUID(uuid.New()),
-		EventSeq: decstr.U64(1), IntervalStart: start, IntervalEnd: end,
-		MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete,
-		Records: []api.UsageRecord{{
-			MemberId: openapi_types.UUID(memberUUID), DeviceId: openapi_types.UUID(r.usageDevice),
-			BindingRevision: r.usageRevision, PeriodId: start.UTC().Format("2006-01"),
-			UploadBytes: decstr.U64(1000), DownloadBytes: decstr.U64(2000),
-		}},
-	})
-	if err != nil {
-		return false, "hash", "hash", false, ""
-	}
-	raw, err := json.Marshal(api.UsageBatchRequest{
-		NodeId: openapi_types.UUID(r.enrolledID), NodeIncarnationId: openapi_types.UUID(r.incID),
-		LedgerEpoch: presence.NewNullNullable[openapi_types.UUID](), Events: []api.UsageEvent{ev},
-	})
-	if err != nil {
-		return false, "encode", "encode", false, ""
-	}
-	if err := os.WriteFile(filepath.Join(r.lab.state, "node", "var", "e2e", "usage-batch.json"), raw, 0o600); err != nil {
-		return false, "file", "file", false, ""
-	}
-	key := uuid.NewString()
-	firstBody, firstStatus := r.postUsage(key)
-	secondBody, secondStatus := r.postUsage(key)
-	left, right := usageResults(firstBody), usageResults(secondBody)
-	return left != "" && left == right, firstStatus, secondStatus, strings.Contains(left, `"status":"accepted"`), usageOutcome(firstBody)
-}
-
-func (r *runner) postUsage(key string) ([]byte, string) {
-	out, _ := r.lab.docker(r.lab.node, "wget", "-q", "-S", "-O", "-", "--content-on-error",
-		"--ca-certificate=/etc/vpn-node/ca.pem",
-		"--certificate=/var/lib/vpn-node/identity/cert.pem",
-		"--private-key=/var/lib/vpn-node/identity/key.pem",
-		"--header=Content-Type: application/json",
-		"--header=Idempotency-Key: "+key,
-		"--post-file=/var/lib/vpn-node/e2e/usage-batch.json",
-		r.lab.agent+"/api/v1/agent/usage-batches")
-	status := "transport"
-	for _, line := range strings.Split(string(out), "\n") {
-		fields := strings.Fields(strings.TrimSpace(line))
-		if len(fields) >= 2 && strings.HasPrefix(fields[0], "HTTP/") {
-			status = fields[1]
-		}
-	}
-	return out, status
-}
-
 type nbGroup struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -983,54 +915,6 @@ func updaterBlockedNote(v journalView) string {
 		note += ". ROLLBACK_FAILED is the rollback decision when no last-good release can be restored"
 	}
 	return note
-}
-
-func usageOutcome(raw []byte) string {
-	i := bytes.IndexByte(raw, '{')
-	if i < 0 {
-		return ""
-	}
-	var doc struct {
-		Results []struct {
-			Status string `json:"status"`
-			Error  struct {
-				Code   string `json:"code"`
-				Fields []struct {
-					Reason string `json:"reason"`
-				} `json:"fields"`
-			} `json:"error"`
-		} `json:"results"`
-	}
-	if json.Unmarshal(raw[i:], &doc) != nil || len(doc.Results) == 0 {
-		return ""
-	}
-	one := doc.Results[0]
-	if one.Error.Code == "" {
-		return one.Status
-	}
-	reason := ""
-	if len(one.Error.Fields) > 0 {
-		reason = one.Error.Fields[0].Reason
-	}
-	return strings.TrimSpace(one.Status + " " + one.Error.Code + " " + reason)
-}
-
-func usageResults(raw []byte) string {
-	i := bytes.IndexByte(raw, '{')
-	if i < 0 {
-		return ""
-	}
-	var doc struct {
-		Results json.RawMessage `json:"results"`
-	}
-	if json.Unmarshal(raw[i:], &doc) != nil || len(doc.Results) == 0 {
-		return ""
-	}
-	var compact bytes.Buffer
-	if json.Compact(&compact, doc.Results) != nil {
-		return string(doc.Results)
-	}
-	return compact.String()
 }
 
 func memberUsageTotal(raw []byte) string {
