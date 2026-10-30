@@ -82,6 +82,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-fleet-update follow-up 1: review fixes (SubmitResult generation compare, signed intent issued_at, node_name, Register validation order, applied policy_generation) | WP09 | done (#37) |
 | w2-pki-enroll follow-ups 1–2: review fixes (bootstrap verdict, node_id binding, trust bundle filter), migration 00111 guarded reinstall, node.enroll operations, core audit builders | WP04 | done (#43) |
 | w3-wire-members follow-up 2: adopt revision 3 kinds (member.device_authorize, member.grant_revoke), D-029 audit conformance | WP06 | done (#38) |
+| w3-wire-members follow-up 3: production `netbird_user_bindings` writer (D-052) — shared-issuer public-subject discovery, read-only NetBird user list, native peer admission through the product | WP06 | done (#76) |
 | w2-updater follow-up 2: enforce signed revoked_release_ids, ARTIFACT_INVALID reporting, applied policy_generation (D-043) | WP09 | done (#41) |
 | w3-wire-policies-usage follow-up 2: fail-closed signing and explicit policies/usage settings (D-045), fixture helpers | WP07, WP08 | done (#40) |
 | w2-agent-core follow-up 2: revision 3 node codes, external meter resets via DetectMeterResets (D-041), per-event usage conflicts | WP05, WP07 | done (#44) |
