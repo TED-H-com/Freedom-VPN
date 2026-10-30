@@ -130,13 +130,16 @@ type HealthChecks interface {
 // Accepted is the part of a central update-result ACK the outbox stores
 // (§13.10.3). Local success is not acceptance.
 type Accepted struct {
+	HTTPStatus        int
+	APICode           string
 	AcceptedAsHistory bool
 	Raw               json.RawMessage
 }
 
 // ResultSink delivers one outbox payload. conflict is ACK_CONFLICT (§13.8):
-// the payload stays as evidence and is not resent. A transient error leaves
-// the entry pending.
+// the payload stays as evidence and is not resent. DeliveryError preserves
+// HTTP/API diagnostics and identifies permanent rejections and retry deadlines.
+// Other transient errors leave the entry pending.
 type ResultSink interface {
 	Submit(ctx context.Context, payload []byte) (ack Accepted, conflict bool, err error)
 }
