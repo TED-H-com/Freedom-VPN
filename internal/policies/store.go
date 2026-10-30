@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -15,7 +16,9 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
+	dnsoperation "github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -1012,7 +1015,17 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 		if err != nil {
 			opID = uuid.New()
 		}
-		stepsJSON := []byte(`{"desired_state_compile":{"required":true,"status":"pending"}}`)
+		steps := map[string]operations.Step{"desired_state_compile": {Required: true, Status: api.OperationStepStatusPending}}
+		switch revRec.Type {
+		case api.PolicyTypeDnsProfile:
+			steps[dnsoperation.DocumentStep] = operations.Step{Required: true, Status: api.OperationStepStatusPending}
+		case api.PolicyTypeThreatFeed:
+			steps[dnsoperation.FeedStep] = operations.Step{Required: true, Status: api.OperationStepStatusPending}
+		}
+		stepsJSON, err := json.Marshal(steps)
+		if err != nil {
+			return err
+		}
 		var opCreatedAt time.Time
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO operations (id, kind, status, principal, resource_type, resource_id, request_id, resource_version, desired_generation, steps)
@@ -1135,7 +1148,8 @@ func (s *Store) ActivateRevision(ctx context.Context, in ActivateRevisionInput) 
 			},
 			CompiledBundle: compiledBundle,
 		}
-		return nil
+		out.Operation, err = getOperationTx(ctx, tx, opID)
+		return err
 	})
 	if err != nil {
 		return nil, err
@@ -1488,11 +1502,13 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 	var resVerStr, desiredGenStr, observedGenStr *string
 	var createdAt, updatedAt time.Time
 	var completedAt *time.Time
+	var stepsRaw []byte
+	var errorCode *api.ErrorCode
 	err := tx.QueryRow(ctx,
-		`SELECT kind, status, resource_type, resource_id, request_id, resource_version::text, desired_generation::text, observed_generation::text, created_at, updated_at, completed_at
+		`SELECT kind, status, resource_type, resource_id, request_id, resource_version::text, desired_generation::text, observed_generation::text, created_at, updated_at, completed_at,steps,error_code
 		 FROM operations WHERE id = $1`,
 		opID,
-	).Scan(&kind, &status, &resType, &resID, &reqID, &resVerStr, &desiredGenStr, &observedGenStr, &createdAt, &updatedAt, &completedAt)
+	).Scan(&kind, &status, &resType, &resID, &reqID, &resVerStr, &desiredGenStr, &observedGenStr, &createdAt, &updatedAt, &completedAt, &stepsRaw, &errorCode)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return op, apierr.New(apierr.ResourceNotFound, "Operation not found.")
@@ -1523,11 +1539,25 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 			observedGen = &g
 		}
 	}
-	stepStatus := api.OperationStepStatusPending
-	if status == string(api.OperationStatusSucceeded) {
-		stepStatus = api.OperationStepStatusSucceeded
-	} else if status == string(api.OperationStatusFailed) {
-		stepStatus = api.OperationStepStatusFailed
+	var storedSteps map[string]operations.Step
+	if err := json.Unmarshal(stepsRaw, &storedSteps); err != nil {
+		return op, err
+	}
+	steps := make([]api.OperationStep, 0, len(storedSteps))
+	for name, step := range storedSteps {
+		steps = append(steps, api.OperationStep{Name: name, Required: step.Required, Status: step.Status, ObservedAt: presence.FromPointer(step.ObservedAt), ErrorCode: presence.FromPointer(step.ErrorCode), Message: presence.NewNullNullable[string]()})
+	}
+	slices.SortFunc(steps, func(a, b api.OperationStep) int { return strings.Compare(a.Name, b.Name) })
+
+	failure := presence.NewNullNullable[struct {
+		Code    api.ErrorCode `json:"code"`
+		Message string        `json:"message"`
+	}]()
+	if errorCode != nil && apierr.Code(*errorCode).Valid() {
+		failure.Set(struct {
+			Code    api.ErrorCode `json:"code"`
+			Message string        `json:"message"`
+		}{*errorCode, "Required operation step failed; quote the operation ID."})
 	}
 	return api.Operation{
 		OperationId: openapi_types.UUID(opID),
@@ -1538,26 +1568,14 @@ func getOperationTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID) (api.Operati
 			Type: api.ResourceType(resType),
 			Id:   refID,
 		},
-		DesiredGeneration: presence.FromPointer(desiredGen),
-		CreatedAt:         createdAt.UTC(),
-		UpdatedAt:         updatedAt.UTC(),
-		CompletedAt:       presence.FromPointer(completedAt),
-		Error: presence.NewNullNullable[struct {
-			Code    api.ErrorCode `json:"code"`
-			Message string        `json:"message"`
-		}](),
+		DesiredGeneration:  presence.FromPointer(desiredGen),
+		CreatedAt:          createdAt.UTC(),
+		UpdatedAt:          updatedAt.UTC(),
+		CompletedAt:        presence.FromPointer(completedAt),
+		Error:              failure,
 		ObservedGeneration: presence.FromPointer(observedGen),
 		ResourceVersion:    presence.FromPointer(resVer),
-		Steps: []api.OperationStep{
-			{
-				Name:       "desired_state_compile",
-				Required:   true,
-				Status:     stepStatus,
-				Message:    presence.NewNullNullable[string](),
-				ObservedAt: presence.FromPointer(completedAt),
-				ErrorCode:  presence.NewNullNullable[api.ErrorCode](),
-			},
-		},
+		Steps:              steps,
 	}, nil
 }
 

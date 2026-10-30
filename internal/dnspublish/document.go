@@ -425,7 +425,7 @@ func normalizeFeeds(in []Feed) ([]Feed, error) {
 		entries := append([]dnspolicy.SourceEntry(nil), feed.Entries...)
 		for j, entry := range entries {
 			norm, err := dnspolicy.NormalizeDomain(entry.Domain)
-			if err != nil {
+			if err != nil || !dnspolicy.SafeFeedDomain(norm.Canonical, entry.IncludeSubdomains) {
 				return nil, &Error{Code: "feed_domain", Field: "feeds", Message: "invalid feed domain"}
 			}
 			entries[j].Domain = norm.Canonical
