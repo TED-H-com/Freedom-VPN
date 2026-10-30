@@ -96,7 +96,10 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
 	}
-	raw, err := ex.Output(ctx, "nft", "-j", "list", "table", TableFamily, TableName)
+	// The whole ruleset. VerifyServing fails closed when another table can
+	// rewrite or drop member traffic. loadState stays `nft -j list table inet
+	// fvpn` so a missing table is still empty state.
+	raw, err := ex.Output(ctx, "nft", "-j", "list", "ruleset")
 	if err != nil {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
@@ -175,7 +178,7 @@ func ApplyBaselineModel(ctx context.Context, ex Executor, m Model) error {
 	if err := installBaselineModel(ctx, ex, m, state); err != nil {
 		return err
 	}
-	raw, err := ex.Output(ctx, "nft", "-j", "list", "table", TableFamily, TableName)
+	raw, err := ex.Output(ctx, "nft", "-j", "list", "ruleset")
 	if err != nil {
 		return err
 	}
