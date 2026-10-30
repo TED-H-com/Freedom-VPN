@@ -373,6 +373,11 @@ func TestReview_F06_SuspensionAndGrantRevokeKeepActiveDeviceBindingsBlockingIPRe
 		t.Fatal(err)
 	}
 
+	// The frozen fixture clock originally made admission and suspension the
+	// same instant. F-06 explicitly retains a minimum one-microsecond interval;
+	// move the input clock before asserting that ownership has ended.
+	env.now = env.now.Add(time.Microsecond)
+	env.engine.Now = func() time.Time { return env.now }
 	// Admin suspends Member A.
 	m, err := env.members.Get(ctx, entitlement.Actor{ID: uuid.New(), Role: "admin"}, memberA)
 	if err != nil {
@@ -393,7 +398,7 @@ func TestReview_F06_SuspensionAndGrantRevokeKeepActiveDeviceBindingsBlockingIPRe
 		t.Fatal(err)
 	}
 	if openBindingsOnSuspend != 0 {
-		t.Errorf("TODO(review) [F-06]: suspended member %s still has %d active device_bindings rows with valid_until > now", memberA, openBindingsOnSuspend)
+		t.Errorf("[F-06]: suspended member %s still has %d active device_bindings rows with valid_until > now", memberA, openBindingsOnSuspend)
 	}
 
 	// Admin also revokes Member A's grant.
@@ -406,7 +411,7 @@ func TestReview_F06_SuspensionAndGrantRevokeKeepActiveDeviceBindingsBlockingIPRe
 		t.Fatal(err)
 	}
 	if openBindingsOnRevokeGrant != 0 {
-		t.Errorf("TODO(review) [F-06]: grant-revoked member %s still has %d active device_bindings rows with valid_until > now", memberA, openBindingsOnRevokeGrant)
+		t.Errorf("[F-06]: grant-revoked member %s still has %d active device_bindings rows with valid_until > now", memberA, openBindingsOnRevokeGrant)
 	}
 
 	// NetBird reassigns overlay IP 100.64.0.42 to active Member B's peer.
@@ -422,7 +427,7 @@ func TestReview_F06_SuspensionAndGrantRevokeKeepActiveDeviceBindingsBlockingIPRe
 
 	_, admitErr := env.devices.ObserveAndAuthorize(ctx, deviceCommand("system", memberB), "test-deploy", "peer-active-b")
 	if admitErr != nil {
-		t.Errorf("TODO(review) [F-06]: active Member B could not admit peer with reassigned IP 100.64.0.42 because suspended/revoked Member A kept open device_binding: %v", admitErr)
+		t.Errorf("[F-06]: active Member B could not admit peer with reassigned IP 100.64.0.42 because suspended/revoked Member A kept open device_binding: %v", admitErr)
 	}
 }
 
@@ -454,7 +459,7 @@ func TestReview_F08_RuntimeAdapterNilIdentityAllowsUnverifiedMappingProof(t *tes
 	change, err := env.devices.ObserveAndAuthorize(ctx, deviceCommand("system", memberA), "test-deploy", "peer-f08")
 	if err == nil {
 		_ = env.devices.SyncDevice(ctx, change.DeviceID)
-		t.Errorf("TODO(review) [F-08]: ObserveAndAuthorize + SyncDevice succeeded with nil Adapter.Identity and foreign mapping_proof (device=%s, peerAuthorized=%v); want ErrUnmapped",
+		t.Errorf("[F-08]: ObserveAndAuthorize + SyncDevice succeeded with nil Adapter.Identity and foreign mapping_proof (device=%s, peerAuthorized=%v); want ErrUnmapped",
 			change.DeviceID, env.upstream.peerAuthorized("peer-f08"))
 	}
 }
@@ -497,7 +502,7 @@ func TestReview_F09_IssuerNormalizationMismatchFailsD052Discovery(t *testing.T) 
 				t.Fatal(err)
 			}
 			if bound != 1 {
-				t.Errorf("TODO(review) [F-09]: NewIdentityDiscovery accepted unnormalized issuer %q without canonicalizing to %q, resulting in %d bound users (unmatched_subject)",
+				t.Errorf("[F-09]: NewIdentityDiscovery accepted unnormalized issuer %q without canonicalizing to %q, resulting in %d bound users (unmatched_subject)",
 					tc.issuer, canonicalIssuer, bound)
 			}
 		})
@@ -563,7 +568,7 @@ func TestReview_F10_SyncMemberEarlyAbortLeavesRemainingDevicesAuthorizedOnSuspen
 
 	_ = env.devices.SyncMember(ctx, memberA)
 	if env.upstream.peerAuthorized(peer2) {
-		t.Errorf("TODO(review) [F-10]: SyncMember aborted on first device (%s) error and left suspended member's second device (%s) authorized in NetBird",
+		t.Errorf("[F-10]: SyncMember aborted on first device (%s) error and left suspended member's second device (%s) authorized in NetBird",
 			peer1, peer2)
 	}
 }

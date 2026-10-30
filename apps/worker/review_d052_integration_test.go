@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/netip"
+	"slices"
 	"testing"
 	"time"
 
@@ -117,6 +118,28 @@ func TestReview_F02_ExitGroupRemovalLeavesStaleDeviceBindingOnRemovedGroupNode(t
 	if _, err := f.services.HTTP.Members.Patch(ctx, memberPolicyCommand("admin", uuid.New()), f.member, &ver, api.MemberPatch{MemberGroupIds: &onlyGroupA}); err != nil {
 		t.Fatal(err)
 	}
+	t.Run("event includes previous and new groups", func(t *testing.T) {
+		var raw []byte
+		if err := f.pool.QueryRow(ctx, `SELECT payload->'exit_group_ids' FROM outbox_events WHERE aggregate_id=$1 AND event_type='member.entitlement_changed' ORDER BY created_at DESC,id DESC LIMIT 1`, f.member).Scan(&raw); err != nil {
+			t.Fatal(err)
+		}
+		var groups []uuid.UUID
+		if err := json.Unmarshal(raw, &groups); err != nil {
+			t.Fatal(err)
+		}
+		if len(groups) != 2 || !slices.Contains(groups, groupA) || !slices.Contains(groups, groupB) {
+			t.Fatal("event lost previous or current group", groups)
+		}
+		if err := f.pool.QueryRow(ctx, `SELECT projection->'exit_group_ids' FROM entitlements WHERE member_id=$1`, f.member).Scan(&raw); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(raw, &groups); err != nil {
+			t.Fatal(err)
+		}
+		if len(groups) != 1 || groups[0] != groupA {
+			t.Fatal("event union contaminated current entitlement", groups)
+		}
+	})
 	for range 10 {
 		worked, err := app.Once(ctx)
 		if err != nil {
@@ -127,11 +150,13 @@ func TestReview_F02_ExitGroupRemovalLeavesStaleDeviceBindingOnRemovedGroupNode(t
 		}
 	}
 
-	genB2, bindingsB2, policiesB2 := readNodeBindings(nodeB)
-	if bindingsB2 != 0 || policiesB2 != 0 {
-		t.Errorf("TODO(review) [F-02]: after removing Group B from member %s, Node B (serving Group B) was not recompiled (gen %d -> %d) and still authorizes %d DeviceBindings and %d MemberRatePolicies",
-			f.member, genB1, genB2, bindingsB2, policiesB2)
-	}
+	t.Run("compiler withdraws previous group", func(t *testing.T) {
+		genB2, bindingsB2, policiesB2 := readNodeBindings(nodeB)
+		if bindingsB2 != 0 || policiesB2 != 0 {
+			t.Errorf("[F-02]: after removing Group B from member %s, Node B (serving Group B) was not recompiled (gen %d -> %d) and still authorizes %d DeviceBindings and %d MemberRatePolicies",
+				f.member, genB1, genB2, bindingsB2, policiesB2)
+		}
+	})
 }
 
 // TestReview_F01_CompilerEmitsExcessDeviceBindingsAfterPlanDowngrade proves that
@@ -218,7 +243,7 @@ func TestReview_F01_CompilerEmitsExcessDeviceBindingsAfterPlanDowngrade(t *testi
 		}
 	}
 	if memberBindings > 1 {
-		t.Errorf("TODO(review) [F-01]: DesiredStateEnvelope on node %s contains %d DeviceBindings for downgraded member %s; want <= 1 (plan device_limit=1)",
+		t.Errorf("[F-01]: DesiredStateEnvelope on node %s contains %d DeviceBindings for downgraded member %s; want <= 1 (plan device_limit=1)",
 			f.node, memberBindings, f.member)
 	}
 }

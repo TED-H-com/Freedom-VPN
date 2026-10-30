@@ -65,7 +65,7 @@ func TestReview_F01_PlanDowngradeAndUnsuspendExceedDeviceSlots(t *testing.T) {
 	devList := decode[api.MemberDeviceList](t, w)
 	limit, _ := devList.DeviceLimit.Get()
 	if devList.AuthorizedCount > limit {
-		t.Errorf("TODO(review) [F-01]: after plan downgrade to 1 slot, GET /api/v1/member/devices reports authorized_count=%d > device_limit=%d",
+		t.Errorf("[F-01]: after plan downgrade to 1 slot, GET /api/v1/member/devices reports authorized_count=%d > device_limit=%d",
 			devList.AuthorizedCount, limit)
 	}
 
@@ -80,7 +80,7 @@ func TestReview_F01_PlanDowngradeAndUnsuspendExceedDeviceSlots(t *testing.T) {
 		}
 	}
 	if upstreamAuthCount > 1 {
-		t.Errorf("TODO(review) [F-01]: after plan downgrade to 1 slot and worker drain, %d peers remain authorized in NetBird; want <= 1",
+		t.Errorf("[F-01]: after plan downgrade to 1 slot and worker drain, %d peers remain authorized in NetBird; want <= 1",
 			upstreamAuthCount)
 	}
 
@@ -106,7 +106,7 @@ func TestReview_F01_PlanDowngradeAndUnsuspendExceedDeviceSlots(t *testing.T) {
 		}
 	}
 	if reAdmittedCount > 1 {
-		t.Errorf("TODO(review) [F-01]: re-admission after suspension on 1-slot plan re-authorized %d peers in NetBird; want <= 1",
+		t.Errorf("[F-01]: re-admission after suspension on 1-slot plan re-authorized %d peers in NetBird; want <= 1",
 			reAdmittedCount)
 	}
 }
@@ -145,7 +145,7 @@ func TestReview_F03_D052ProofRevisionAdvanceBricksDeviceSync(t *testing.T) {
 
 	// Now re-syncing dev1 or syncing a newly admitted dev2 fails with netbird: conflict!
 	if err := f.services.HTTP.Devices.SyncDevice(ctx, dev1); err != nil {
-		t.Errorf("TODO(review) [F-03]: SyncDevice for existing device failed after netbird_user_bindings.revision advanced to 2: %v", err)
+		t.Errorf("[F-03]: SyncDevice for existing device failed after netbird_user_bindings.revision advanced to 2: %v", err)
 	}
 
 	f.seedPeer(member, "TEST-f03-peer-2", "100.64.0.62")
@@ -157,7 +157,7 @@ func TestReview_F03_D052ProofRevisionAdvanceBricksDeviceSync(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := f.services.HTTP.Devices.SyncDevice(ctx, dev2); err != nil {
-		t.Errorf("TODO(review) [F-03]: SyncDevice for new device failed after netbird_user_bindings.revision advanced to 2: %v", err)
+		t.Errorf("[F-03]: SyncDevice for new device failed after netbird_user_bindings.revision advanced to 2: %v", err)
 	}
 }
 
@@ -215,7 +215,7 @@ func TestReview_F07_D029FailedAdmissionsUnauditedAndUnallowlistedAuditPayloads(t
 	var deniedDeviceAudits int
 	_ = f.pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE result='denied'`).Scan(&deniedDeviceAudits)
 	if afterAuditCount == beforeAuditCount || deniedDeviceAudits == 0 {
-		t.Errorf("TODO(review) [F-07]: failed device admissions (ErrLimit, ErrEntitlement, ErrUnmapped) produced %d new audit events (%d denied); want failed admissions audited with fixed reason (D-029)",
+		t.Errorf("[F-07]: failed device admissions (ErrLimit, ErrEntitlement, ErrUnmapped) produced %d new audit events (%d denied); want failed admissions audited with fixed reason (D-029)",
 			afterAuditCount-beforeAuditCount, deniedDeviceAudits)
 	}
 
@@ -231,19 +231,41 @@ func TestReview_F07_D029FailedAdmissionsUnauditedAndUnallowlistedAuditPayloads(t
 	if err != nil {
 		t.Fatal(err)
 	}
+	denialReasons := map[string]bool{}
 	for _, ev := range page.Items {
 		raw, _ := json.Marshal(ev)
 		for _, forbidden := range []string{"leak-user@example.invalid", "TEST-f07-member", "198.51.100.99"} {
 			if strings.Contains(string(raw), forbidden) {
-				t.Errorf("TODO(review) [F-07]: audit event %s (%s) leaked forbidden PII/subject/IP %q in payload because entitlement.Audit bypasses audit.Diff allowlists",
+				t.Errorf("[F-07]: audit event %s (%s) leaked forbidden PII/subject/IP %q in payload because entitlement.Audit bypasses audit.Diff allowlists",
 					ev.Action, ev.AuditEventId, forbidden)
 			}
 		}
-		if (ev.Action == "device.authorize" || ev.Action == "member.grant" || ev.Action == "member.patch") && ev.OperationId.IsNull() {
-			t.Errorf("TODO(review) [F-07]: audit event %s (%s) has formal OperationId=null (operation_id was only written into after_diff JSON)",
+		// A denial creates no asynchronous operation. The original proof's blanket
+		// non-null check applied to these new rows too; require correlation for
+		// accepted commands and explicitly forbid fabricated operations on denials.
+		if ev.Action == "device.authorize" && ev.Result == api.AuditEventResultDenied {
+			if !ev.OperationId.IsNull() {
+				t.Fatal("denied admission fabricated an operation")
+			}
+			diff, _ := ev.Changes.After.Get()
+			reason, _ := diff["reason"].(string)
+			switch reason {
+			case "device_limit_reached", "entitlement_inactive", "identity_unmapped":
+				denialReasons[reason] = true
+			default:
+				t.Fatalf("unbounded denial reason %q", reason)
+			}
+		}
+
+		if (ev.Action == "device.authorize" || ev.Action == "member.grant" || ev.Action == "member.patch") && ev.Result == api.AuditEventResultSucceeded && ev.OperationId.IsNull() {
+			t.Errorf("[F-07]: audit event %s (%s) has formal OperationId=null (operation_id was only written into after_diff JSON)",
 				ev.Action, ev.AuditEventId)
 		}
 	}
+	if len(denialReasons) != 3 || store.AnomalyCount() != 0 {
+		t.Fatal("missing denied evidence or audit anomalies", denialReasons, store.AnomalyCount())
+	}
+
 }
 
 // TestReview_Held_CrossMemberIsolationAnd404Parity verifies §7 isolation: a member
