@@ -64,6 +64,7 @@ type buildInfo struct {
 	BinaryVCS map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
+	Complete bool `json:"complete"`
 	e2e.Record
 	ReleaseDigests   map[string]string `json:"release_digests,omitempty"`
 	FollowupBuild    *buildInfo        `json:"followup_build,omitempty"`
@@ -141,6 +142,7 @@ func TestATMembers_Live(t *testing.T) {
 		t.Run(task.id, func(t *testing.T) {
 			r := l.newRecord(task.id)
 			task.run(&r)
+			r.Complete = true
 			l.write(&r)
 			if r.Status != e2e.StatusPass {
 				t.Errorf("%s: %s; see docs/e2e/at/members/%s.json", task.id, r.Status, task.id)
@@ -378,6 +380,12 @@ func (r *record) block(reason string) {
 	}
 }
 func (l *live) write(r *record) {
+	if !r.Complete {
+		copy := *r
+		copy.Status = e2e.StatusBlocked
+		copy.Blockers = append(append([]string{}, r.Blockers...), "Run in progress; this is an incremental record, not a full AT result.")
+		r = &copy
+	}
 	r.Observations = nil
 	if len(l.baseline.Digests) > 0 {
 		r.ReleaseDigests = l.baseline.Digests

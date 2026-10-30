@@ -90,6 +90,7 @@ func (l *live) servingPrecondition(r *record) {
 	policies := l.count(`SELECT count(*) FROM policy_definitions WHERE type='release_support' AND active_revision_id IS NOT NULL`)
 	r.check("shared serving support readback", "nonempty active API policy", fmt.Sprintf("active_release_policies=%d", policies), "read policy_definitions after PrepareServingBaseline", policies > 0)
 	l.forwardingGate(r)
+	l.resolverEvidence(r)
 }
 
 // §12.3 / D-054: all content, state and publication rows below are produced by
@@ -173,6 +174,7 @@ func (l *live) feedLastGood(r *record) {
 		}
 	}
 	r.Blockers = filtered
+	l.resolverEvidence(r)
 	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. AT22 remains blocked on the inherited missing desired-state resolver reference (w3-wire-nodes/internal/desiredstate), real member URL flow and remaining file/raw-usage/backup retention coverage. Commercial feed approval remains a business decision.")
 }
 

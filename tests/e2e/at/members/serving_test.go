@@ -55,7 +55,8 @@ func (l *live) prepare(r *record) bool {
 	now := time.Now().UTC()
 	fup["effective_at"] = time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	fair := l.activePolicy(r, "fair_use", fup)
-	profile := l.activePolicy(r, "dns_profile", map[string]any{"profile_code": "at-initial", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []string{}})
+	rules := l.activePolicy(r, "domain_rule_set", map[string]any{"rules": []any{rule("feed-01.example.invalid", false, "allow")}})
+	profile := l.activePolicy(r, "dns_profile", map[string]any{"profile_code": "at-initial", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []uuid.UUID{rules}, "threat_feed_revision_ids": []string{}})
 	if fair == uuid.Nil || profile == uuid.Nil {
 		return false
 	}
@@ -109,16 +110,16 @@ func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) 
 	var required, observed int
 	ready := l.wait(90*time.Second, func() bool {
 		err := l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE id=$1`, command.ID).Scan(&status)
-		return err == nil && status == "succeeded"
+		return err == nil && (status == "succeeded" || status == "failed")
 	})
 	// Operation completion requires read-back evidence (base F-02), not merely 202.
 	_ = l.pool.QueryRow(l.ctx, `SELECT count(*) FILTER(WHERE (v->>'required')::boolean),count(*) FILTER(WHERE (v->>'required')::boolean AND v->>'status'='succeeded') FROM operations o CROSS JOIN LATERAL jsonb_each(o.steps) s(k,v) WHERE o.id=$1`, command.ID).Scan(&required, &observed)
 	desired, actual := l.publicationState()
-	r.check("publication operation "+intent, "record applied operation independently of intent", fmt.Sprintf("status=%s; required=%d; succeeded=%d; intent=%s; observed=%s", status, required, observed, desired, actual), "poll operations and required operation_steps; read exits projection", status != "")
-	if !ready {
+	r.check("publication operation "+intent, "record applied operation independently of intent", fmt.Sprintf("status=%s; required=%d; succeeded=%d; intent=%s; observed=%s", status, required, observed, desired, actual), "poll operations.steps and required observations; read exits projection", status != "")
+	if !ready || status != "succeeded" {
 		r.block("Publication operation did not succeed within 90 seconds: " + status)
 	}
-	return ready
+	return ready && status == "succeeded"
 }
 func (l *live) publish(r *record, groups []uuid.UUID) bool {
 	if l.node == uuid.Nil {

@@ -69,6 +69,14 @@
       "detail": "pass; expected: 202; 3 to 2 to 3; former loser admitted; actual: revoke_HTTP=202; after_revoke=2; admitted=true; final_authorized=3; command: DELETE A2 through member API; ObserveAndAuthorize former loser"
     },
     {
+      "name": "current serving prerequisite",
+      "detail": "pass; expected: record desired/applied and lease members; actual: {\"lease\": {\"issued_at\": \"2026-10-30T04:40:19.793271+00:00\", \"expires_at\": \"2026-10-31T04:40:19.793271+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"3\", \"desired\": \"4\"}; command: read nodes and latest serving_leases; no projection writes"
+    },
+    {
+      "name": "admission counters",
+      "detail": "pass; expected: record actual per-device counters; actual: read_ok=true; counters=0; command: docker exec node nft -j list table inet fvpn"
+    },
+    {
       "name": "mTLS usage binding negative control",
       "detail": "pass; expected: binding_not_found; no made-up binding accepted; actual: HTTP=200; per_event_results=1; binding_not_found=true; command: POST /agent/usage-batches with real node mTLS and explicitly unknown device"
     },
@@ -81,124 +89,79 @@
       "detail": "pass; expected: one receipt, one sample; actual: receipts=1; samples=1; command: SELECT usage_events and usage_samples after duplicate"
     },
     {
-      "name": "post-worker projection readback",
-      "detail": "pass; expected: record native proofs, devices and desired/applied separately; actual: verified_proofs=3; authorized_devices=4; observed_authorized=4; desired_generation=12; applied_generation=0; command: read product projections after worker resumes; no projection fixtures"
-    },
-    {
       "name": "blocked",
-      "detail": "Transaction, ownership and paid-group checks do not prove real gateway denial. AT08 must establish an applied exit and successful winner flow before the loser's no-exit result can be certified."
+      "detail": "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
     },
     {
       "name": "provenance",
-      "detail": "source=3262e1a764f67c9168ef6b6e36746edb012b629d; applied generation=0; incarnation=01a18a79-ed50-7d25-856d-0f5de751a390; image/binary digests in JSON"
+      "detail": "source=6d1795403cb14c8ea3681aedd84f6341c3fee474; applied generation=3; incarnation=01a18b1b-d5dc-78ab-accd-8c8d70449bef; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-30T01:43:54Z",
-  "followup_build": {
-    "source_commit": "8a90082753b86fea50ee9a964d394de39b8dcfb6",
-    "source_dirty": true,
-    "image_digests": {
-      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
-      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
-      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
-      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
-      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
-      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
-    },
-    "binary_sha256": {
-      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
-      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
-      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
-      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
-    },
-    "binary_vcs": {
-      "fvpn-agent": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      },
-      "fvpn-control": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      },
-      "fvpn-updater": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      },
-      "fvpn-worker": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      }
-    }
+  "at": "2026-10-30T04:42:02Z",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "14940002cfc263523bbafa01d74fc44efd479e1f8b5fa7253bdaa7e4ddfe3b63",
+    "artifact_sha256_0.1.0_arm64": "5986c94b55231f05d2db056b980f6254a2a4bc0e6519d833f6068dc6a47a4e73",
+    "manifest_sha256_0.1.0": "ea66fb787aca48daa5e7b6864020bb6e5a38ea1e32e7b0ad25c58b29d04a9280",
+    "signed_manifest_sha256_0.1.0": "f3b8b22e77fbf3848598c7ecfe3d26e7f8168cd39e902de510a7eb7438051ae0"
   },
   "build": {
-    "source_commit": "3262e1a764f67c9168ef6b6e36746edb012b629d",
+    "source_commit": "6d1795403cb14c8ea3681aedd84f6341c3fee474",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
+      "control": "sha256:a14a1151fa1d1c791b9742bd539eb438b5ef98d10caa8e5b95b79726b9e65c62",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
-      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
+      "idp": "sha256:977c0b9a9c7d4392a10555b29d5e79a7ab57acac38db7af954976a9d41c49560",
+      "member": "sha256:1f7f76f61f989ef3d945b0dddb69aba9bd4622c8391b4c888f0128aea408749f",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
-      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
-      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
+      "node": "sha256:1f7f76f61f989ef3d945b0dddb69aba9bd4622c8391b4c888f0128aea408749f",
+      "origin": "sha256:7ab7273564355f144996d4e3042e819ed0bb3bbd7f37231faee28d3f089add14",
+      "payment": "sha256:59241ddb26ea4870e4245676a38aef43868320b7e804256edc3f22a810ad8349",
+      "postgres": "sha256:3609bb7895b34d55d6549fc8a5a2bee751ed1ed265cb40d582fa0ff83a1b6c21",
+      "worker": "sha256:775fd38d9792de9d84051aa7e61904d6c3b99618f073e62f6c3fb2bbb2f3f259"
     },
     "binary_sha256": {
-      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
-      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
-      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
-      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
+      "fvpn-agent": "cab9ae36a8be6226b46c6f27fde8bcb212e259a0a49049c03aedf4c61a6a35df",
+      "fvpn-control": "330fb84eff41856cb2e8a0c7d27363aa7420a42b523f3ff5893d506120c679da",
+      "fvpn-updater": "520e13ba04ec103ba3d7ebde0814775b756911983332c3d4626faa45568be28c",
+      "fvpn-worker": "a4cc07360d9bad12042ae427759a24e443eb589ba10bd4b5c45826084729f643"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       }
     }
   },
-  "policy_revision": "0",
+  "policy_revision": "3",
   "active_policy_revisions": {
-    "dns_profile": "01a18a7c-8eb0-7137-b999-947b813a7b5e"
+    "dns_profile": "01a18b1b-c1c5-7e02-a3cd-80c83419e0ed",
+    "fair_use": "01a18b1b-bd00-7c67-bafd-186bf4945667",
+    "plan": "01a18b1b-cb4a-7e18-9533-acbf74789692",
+    "release_support": "01a18b1b-b5bc-70bd-953d-b5d5daced6d8"
   },
-  "node_incarnation": "01a18a79-ed50-7d25-856d-0f5de751a390",
+  "node_incarnation": "01a18b1b-d5dc-78ab-accd-8c8d70449bef",
   "steps": [
     {
       "name": "member-a2 shared issuer login",
@@ -206,7 +169,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T01:43:56Z"
+      "at": "2026-10-30T04:42:05Z"
     },
     {
       "name": "member-a2 native peer",
@@ -214,7 +177,7 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T01:44:02Z"
+      "at": "2026-10-30T04:42:10Z"
     },
     {
       "name": "B entitlement",
@@ -222,7 +185,7 @@
       "expected": "finite grant accepted",
       "actual": "HTTP 202 ",
       "command": "POST B grant",
-      "at": "2026-10-30T01:44:08Z"
+      "at": "2026-10-30T04:42:16Z"
     },
     {
       "name": "member-b1 shared issuer login",
@@ -230,7 +193,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T01:44:11Z"
+      "at": "2026-10-30T04:42:19Z"
     },
     {
       "name": "member-b1 native peer",
@@ -238,7 +201,7 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T01:44:17Z"
+      "at": "2026-10-30T04:42:24Z"
     },
     {
       "name": "cross-owner existing device delete/list",
@@ -246,7 +209,7 @@
       "expected": "403/404; B device absent from A list and unchanged",
       "actual": "list_HTTP=200; delete_HTTP=404; field_leak=false; B_authorized=1",
       "command": "GET A /member/devices; DELETE B existing UUID as A; read projection",
-      "at": "2026-10-30T01:44:24Z"
+      "at": "2026-10-30T04:42:31Z"
     },
     {
       "name": "cross-owner service read",
@@ -254,7 +217,7 @@
       "expected": "not found and no returned fields",
       "actual": "not_found=true; empty_device=true",
       "command": "devices.Service.Get(A, B existing device)",
-      "at": "2026-10-30T01:44:24Z"
+      "at": "2026-10-30T04:42:31Z"
     },
     {
       "name": "member-a3 shared issuer login",
@@ -262,7 +225,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T01:44:27Z"
+      "at": "2026-10-30T04:42:33Z"
     },
     {
       "name": "member-a3 native peer",
@@ -270,7 +233,7 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T01:44:33Z"
+      "at": "2026-10-30T04:42:39Z"
     },
     {
       "name": "member-a4 shared issuer login",
@@ -278,7 +241,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T01:44:36Z"
+      "at": "2026-10-30T04:42:42Z"
     },
     {
       "name": "member-a4 native peer",
@@ -286,7 +249,7 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T01:44:41Z"
+      "at": "2026-10-30T04:42:47Z"
     },
     {
       "name": "final-slot precondition",
@@ -294,7 +257,7 @@
       "expected": "two authorized of limit three",
       "actual": "authorized=2",
       "command": "pause worker after A1/A2 projection; native-join A3/A4; read count",
-      "at": "2026-10-30T01:44:41Z"
+      "at": "2026-10-30T04:42:47Z"
     },
     {
       "name": "final-slot transaction race",
@@ -302,7 +265,7 @@
       "expected": "exactly one commit and one ErrLimit",
       "actual": "committed=1; ErrLimit=1; other_errors=0; authorized=3",
       "command": "barrier release two goroutines: ObserveAndAuthorize(real NetBirdAdapter); read committed rows",
-      "at": "2026-10-30T01:44:41Z"
+      "at": "2026-10-30T04:42:47Z"
     },
     {
       "name": "loser authorization readback",
@@ -310,7 +273,7 @@
       "expected": "no device/binding or paid group",
       "actual": "member_device_rows=0; paid_group=false; read_ok=true",
       "command": "SELECT loser device; real NetBird group membership readback",
-      "at": "2026-10-30T01:44:41Z"
+      "at": "2026-10-30T04:42:47Z"
     },
     {
       "name": "revoke releases exactly one slot",
@@ -318,7 +281,23 @@
       "expected": "202; 3 to 2 to 3; former loser admitted",
       "actual": "revoke_HTTP=202; after_revoke=2; admitted=true; final_authorized=3",
       "command": "DELETE A2 through member API; ObserveAndAuthorize former loser",
-      "at": "2026-10-30T01:44:42Z"
+      "at": "2026-10-30T04:42:48Z"
+    },
+    {
+      "name": "current serving prerequisite",
+      "status": "pass",
+      "expected": "record desired/applied and lease members",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T04:40:19.793271+00:00\", \"expires_at\": \"2026-10-31T04:40:19.793271+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"3\", \"desired\": \"4\"}",
+      "command": "read nodes and latest serving_leases; no projection writes",
+      "at": "2026-10-30T04:42:48Z"
+    },
+    {
+      "name": "admission counters",
+      "status": "pass",
+      "expected": "record actual per-device counters",
+      "actual": "read_ok=true; counters=0",
+      "command": "docker exec node nft -j list table inet fvpn",
+      "at": "2026-10-30T04:42:48Z"
     },
     {
       "name": "mTLS usage binding negative control",
@@ -326,7 +305,7 @@
       "expected": "binding_not_found; no made-up binding accepted",
       "actual": "HTTP=200; per_event_results=1; binding_not_found=true",
       "command": "POST /agent/usage-batches with real node mTLS and explicitly unknown device",
-      "at": "2026-10-30T01:44:43Z"
+      "at": "2026-10-30T04:42:49Z"
     },
     {
       "name": "real projected binding usage replay",
@@ -334,7 +313,7 @@
       "expected": "accepted then duplicate; one receipt and sample",
       "actual": "first=accepted; replay=duplicate; sequence=1; device_revision=1",
       "command": "POST node-mTLS synthetic usage for real projected binding, interval inside [valid_from,valid_until), twice",
-      "at": "2026-10-30T01:44:44Z"
+      "at": "2026-10-30T04:42:50Z"
     },
     {
       "name": "positive control durable evidence",
@@ -342,18 +321,10 @@
       "expected": "one receipt, one sample",
       "actual": "receipts=1; samples=1",
       "command": "SELECT usage_events and usage_samples after duplicate",
-      "at": "2026-10-30T01:44:44Z"
-    },
-    {
-      "name": "post-worker projection readback",
-      "status": "pass",
-      "expected": "record native proofs, devices and desired/applied separately",
-      "actual": "verified_proofs=3; authorized_devices=4; observed_authorized=4; desired_generation=12; applied_generation=0",
-      "command": "read product projections after worker resumes; no projection fixtures",
-      "at": "2026-10-30T01:50:21Z"
+      "at": "2026-10-30T04:42:50Z"
     }
   ],
   "blockers": [
-    "Transaction, ownership and paid-group checks do not prove real gateway denial. AT08 must establish an applied exit and successful winner flow before the loser's no-exit result can be certified."
+    "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
   ]
 }

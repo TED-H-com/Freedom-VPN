@@ -6,31 +6,35 @@
     "§19 AT08",
     "NODE02 NODE03 EXIT01 EXIT03"
   ],
-  "status": "blocked",
+  "status": "fail",
   "observations": [
     {
-      "name": "classify and rename",
-      "detail": "pass; expected: 200 or 202; actual: HTTP 202 ; command: PATCH /admin/nodes/{id} with If-Match"
+      "name": "A-only publication readback",
+      "detail": "fail; expected: one A attachment, zero B; NetBird routes readable; actual: A=0; B=0; routes=0; HTTP=200; command: read exit_groups; GET NetBird /api/routes"
     },
     {
-      "name": "publication readiness",
-      "detail": "pass; expected: record command result; actual: HTTP 422 NODE_NOT_SERVICEABLE; command: PUT /admin/nodes/{id}/publication"
+      "name": "current serving prerequisite",
+      "detail": "pass; expected: record desired/applied and lease members; actual: {\"lease\": {\"issued_at\": \"2026-10-30T04:40:19.793271+00:00\", \"expires_at\": \"2026-10-31T04:40:19.793271+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"11\", \"desired\": \"11\"}; command: read nodes and latest serving_leases; no projection writes"
     },
     {
-      "name": "desired versus observed",
-      "detail": "pass; expected: both independently recorded; actual: intent=unpublished; observed=absent; command: GET /admin/nodes/{id}; database readback"
+      "name": "admission counters",
+      "detail": "pass; expected: record actual per-device counters; actual: read_ok=true; counters=0; command: docker exec node nft -j list table inet fvpn"
     },
     {
-      "name": "real gateway rule readback",
-      "detail": "pass; expected: record forward-chain accept count; actual: nft_read_ok=true; forward_accept_rules=2; command: docker exec node nft -j list table inet fvpn"
+      "name": "publication command published",
+      "detail": "fail; expected: 202 pending, group_ids accepted; actual: HTTP 422 NODE_NOT_SERVICEABLE; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
     },
     {
-      "name": "NetBird readback and operations",
-      "detail": "pass; expected: actual routes and pending operations; actual: routes=0; pending_operations=1; HTTP=200; command: GET NetBird /api/routes; SELECT operations"
+      "name": "regroup projection",
+      "detail": "fail; expected: group B attached; actual: B=0; command: PUT group_ids=[B]; read product attachment"
     },
     {
-      "name": "disable command",
-      "detail": "pass; expected: 202; actual: HTTP 202 ; command: PUT publication=disabled"
+      "name": "publication command disabled",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication operation disabled",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=succeeded; required=2; succeeded=2; intent=disabled; observed=withdrawn; command: poll operations and required operation_steps; read exits projection"
     },
     {
       "name": "node restart",
@@ -38,195 +42,154 @@
     },
     {
       "name": "disabled persists",
-      "detail": "pass; expected: disabled intent after reconnect/restart; actual: disabled; command: SELECT publication_intent after node restart"
+      "detail": "pass; expected: disabled intent after node restart; actual: intent=disabled; observed=withdrawn; command: read publication after reconnect/restart"
     },
     {
-      "name": "serving precondition diagnosis",
-      "detail": "pass; expected: read actual readiness and active policy; actual: provisioning=applying; safety=failed; desired=12; applied=0; node_peer_present=false; active_release_policies=0; command: SELECT node/incarnation and active release_support policy"
-    },
-    {
-      "name": "real node desired-state gate",
-      "detail": "pass; expected: record mTLS response and precise missing precondition; actual: HTTP 503 DEPENDENCY_UNAVAILABLE; release_support_required=true; command: GET /agent/desired-state using actual node mTLS"
+      "name": "publication command published",
+      "detail": "fail; expected: 202 pending, group_ids accepted; actual: HTTP 422 NODE_NOT_SERVICEABLE; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
     },
     {
       "name": "blocked",
-      "detail": "Publication precondition: HTTP 422 NODE_NOT_SERVICEABLE"
+      "detail": "Enrolled node did not project ready after signed baseline"
     },
     {
       "name": "blocked",
-      "detail": "Publication cannot reach active; observed state remains absent; no applied forwarding baseline. See operation evidence; publication worker is present on this build."
+      "detail": "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
     },
     {
       "name": "blocked",
-      "detail": "Group A/B gateway isolation and applied disable cannot be certified without a previously serving exit (native user admission is recorded in AT01/AT02). Restart above checks persisted administrative intent only."
+      "detail": "Publication command rejected: HTTP 422 NODE_NOT_SERVICEABLE"
     },
     {
       "name": "blocked",
-      "detail": "Observed mTLS desired-state 503 DEPENDENCY_UNAVAILABLE: Release support policy required. The fresh e2e-up hook supplies no active release-support policy; tests/e2e/harness.go:insertReleaseSupport uses non-contract {}. Request a reusable valid signed boot-release/support-policy setup hook from devstack. No readiness or projection rows are fabricated."
-    },
-    {
-      "name": "blocked",
-      "detail": "Node incarnation peer_id is still null; D-055 owner w3-wire-nodes follow-up 10 must supply real management peer observation. This run cannot isolate its effect until the missing release-support baseline is supplied."
+      "detail": "Publication command rejected: HTTP 422 NODE_NOT_SERVICEABLE"
     },
     {
       "name": "provenance",
-      "detail": "source=3262e1a764f67c9168ef6b6e36746edb012b629d; applied generation=0; incarnation=01a18a79-ed50-7d25-856d-0f5de751a390; image/binary digests in JSON"
+      "detail": "source=6d1795403cb14c8ea3681aedd84f6341c3fee474; applied generation=13; incarnation=01a18b1b-d5dc-78ab-accd-8c8d70449bef; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-30T01:45:31Z",
-  "followup_build": {
-    "source_commit": "8a90082753b86fea50ee9a964d394de39b8dcfb6",
-    "source_dirty": true,
-    "image_digests": {
-      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
-      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
-      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
-      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
-      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
-      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
-    },
-    "binary_sha256": {
-      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
-      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
-      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
-      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
-    },
-    "binary_vcs": {
-      "fvpn-agent": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      },
-      "fvpn-control": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      },
-      "fvpn-updater": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      },
-      "fvpn-worker": {
-        "go_version": "go1.27.3",
-        "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
-      }
-    }
+  "at": "2026-10-30T04:45:04Z",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "14940002cfc263523bbafa01d74fc44efd479e1f8b5fa7253bdaa7e4ddfe3b63",
+    "artifact_sha256_0.1.0_arm64": "5986c94b55231f05d2db056b980f6254a2a4bc0e6519d833f6068dc6a47a4e73",
+    "manifest_sha256_0.1.0": "ea66fb787aca48daa5e7b6864020bb6e5a38ea1e32e7b0ad25c58b29d04a9280",
+    "signed_manifest_sha256_0.1.0": "f3b8b22e77fbf3848598c7ecfe3d26e7f8168cd39e902de510a7eb7438051ae0"
   },
   "build": {
-    "source_commit": "3262e1a764f67c9168ef6b6e36746edb012b629d",
+    "source_commit": "6d1795403cb14c8ea3681aedd84f6341c3fee474",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
+      "control": "sha256:a14a1151fa1d1c791b9742bd539eb438b5ef98d10caa8e5b95b79726b9e65c62",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
-      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
+      "idp": "sha256:977c0b9a9c7d4392a10555b29d5e79a7ab57acac38db7af954976a9d41c49560",
+      "member": "sha256:1f7f76f61f989ef3d945b0dddb69aba9bd4622c8391b4c888f0128aea408749f",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
-      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
-      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
-      "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
+      "node": "sha256:1f7f76f61f989ef3d945b0dddb69aba9bd4622c8391b4c888f0128aea408749f",
+      "origin": "sha256:7ab7273564355f144996d4e3042e819ed0bb3bbd7f37231faee28d3f089add14",
+      "payment": "sha256:59241ddb26ea4870e4245676a38aef43868320b7e804256edc3f22a810ad8349",
+      "postgres": "sha256:3609bb7895b34d55d6549fc8a5a2bee751ed1ed265cb40d582fa0ff83a1b6c21",
+      "worker": "sha256:775fd38d9792de9d84051aa7e61904d6c3b99618f073e62f6c3fb2bbb2f3f259"
     },
     "binary_sha256": {
-      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
-      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
-      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
-      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
+      "fvpn-agent": "cab9ae36a8be6226b46c6f27fde8bcb212e259a0a49049c03aedf4c61a6a35df",
+      "fvpn-control": "330fb84eff41856cb2e8a0c7d27363aa7420a42b523f3ff5893d506120c679da",
+      "fvpn-updater": "520e13ba04ec103ba3d7ebde0814775b756911983332c3d4626faa45568be28c",
+      "fvpn-worker": "a4cc07360d9bad12042ae427759a24e443eb589ba10bd4b5c45826084729f643"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
-        "vcs.time": "2026-10-30T01:28:44Z"
+        "vcs.revision": "ed1e0de6ef4ac89db3eafef89ce23319804521f6",
+        "vcs.time": "2026-10-30T04:30:48Z"
       }
     }
   },
-  "policy_revision": "0",
+  "policy_revision": "13",
   "active_policy_revisions": {
-    "dns_profile": "01a18a7c-8eb0-7137-b999-947b813a7b5e"
+    "dns_profile": "01a18b1b-c1c5-7e02-a3cd-80c83419e0ed",
+    "fair_use": "01a18b1b-bd00-7c67-bafd-186bf4945667",
+    "plan": "01a18b1b-cb4a-7e18-9533-acbf74789692",
+    "release_support": "01a18b1b-b5bc-70bd-953d-b5d5daced6d8"
   },
-  "node_incarnation": "01a18a79-ed50-7d25-856d-0f5de751a390",
+  "node_incarnation": "01a18b1b-d5dc-78ab-accd-8c8d70449bef",
   "steps": [
     {
-      "name": "classify and rename",
-      "status": "pass",
-      "expected": "200 or 202",
-      "actual": "HTTP 202 ",
-      "command": "PATCH /admin/nodes/{id} with If-Match",
-      "at": "2026-10-30T01:45:32Z"
+      "name": "A-only publication readback",
+      "status": "fail",
+      "expected": "one A attachment, zero B; NetBird routes readable",
+      "actual": "A=0; B=0; routes=0; HTTP=200",
+      "command": "read exit_groups; GET NetBird /api/routes",
+      "at": "2026-10-30T04:46:34Z"
     },
     {
-      "name": "publication readiness",
+      "name": "current serving prerequisite",
       "status": "pass",
-      "expected": "record command result",
-      "actual": "HTTP 422 NODE_NOT_SERVICEABLE",
-      "command": "PUT /admin/nodes/{id}/publication",
-      "at": "2026-10-30T01:45:33Z"
+      "expected": "record desired/applied and lease members",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T04:40:19.793271+00:00\", \"expires_at\": \"2026-10-31T04:40:19.793271+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"11\", \"desired\": \"11\"}",
+      "command": "read nodes and latest serving_leases; no projection writes",
+      "at": "2026-10-30T04:46:34Z"
     },
     {
-      "name": "desired versus observed",
+      "name": "admission counters",
       "status": "pass",
-      "expected": "both independently recorded",
-      "actual": "intent=unpublished; observed=absent",
-      "command": "GET /admin/nodes/{id}; database readback",
-      "at": "2026-10-30T01:46:03Z"
-    },
-    {
-      "name": "real gateway rule readback",
-      "status": "pass",
-      "expected": "record forward-chain accept count",
-      "actual": "nft_read_ok=true; forward_accept_rules=2",
+      "expected": "record actual per-device counters",
+      "actual": "read_ok=true; counters=0",
       "command": "docker exec node nft -j list table inet fvpn",
-      "at": "2026-10-30T01:46:03Z"
+      "at": "2026-10-30T04:46:34Z"
     },
     {
-      "name": "NetBird readback and operations",
-      "status": "pass",
-      "expected": "actual routes and pending operations",
-      "actual": "routes=0; pending_operations=1; HTTP=200",
-      "command": "GET NetBird /api/routes; SELECT operations",
-      "at": "2026-10-30T01:46:04Z"
+      "name": "publication command published",
+      "status": "fail",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 422 NODE_NOT_SERVICEABLE",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-10-30T04:46:36Z"
     },
     {
-      "name": "disable command",
+      "name": "regroup projection",
+      "status": "fail",
+      "expected": "group B attached",
+      "actual": "B=0",
+      "command": "PUT group_ids=[B]; read product attachment",
+      "at": "2026-10-30T04:46:36Z"
+    },
+    {
+      "name": "publication command disabled",
       "status": "pass",
-      "expected": "202",
+      "expected": "202 pending, group_ids accepted",
       "actual": "HTTP 202 ",
-      "command": "PUT publication=disabled",
-      "at": "2026-10-30T01:46:05Z"
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-10-30T04:46:37Z"
+    },
+    {
+      "name": "publication operation disabled",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=succeeded; required=2; succeeded=2; intent=disabled; observed=withdrawn",
+      "command": "poll operations and required operation_steps; read exits projection",
+      "at": "2026-10-30T04:46:49Z"
     },
     {
       "name": "node restart",
@@ -234,38 +197,29 @@
       "expected": "restart succeeds",
       "actual": "restart_ok=true",
       "command": "docker restart fvpn-w4-members-node",
-      "at": "2026-10-30T01:46:16Z"
+      "at": "2026-10-30T04:46:59Z"
     },
     {
       "name": "disabled persists",
       "status": "pass",
-      "expected": "disabled intent after reconnect/restart",
-      "actual": "disabled",
-      "command": "SELECT publication_intent after node restart",
-      "at": "2026-10-30T01:46:16Z"
+      "expected": "disabled intent after node restart",
+      "actual": "intent=disabled; observed=withdrawn",
+      "command": "read publication after reconnect/restart",
+      "at": "2026-10-30T04:46:59Z"
     },
     {
-      "name": "serving precondition diagnosis",
-      "status": "pass",
-      "expected": "read actual readiness and active policy",
-      "actual": "provisioning=applying; safety=failed; desired=12; applied=0; node_peer_present=false; active_release_policies=0",
-      "command": "SELECT node/incarnation and active release_support policy",
-      "at": "2026-10-30T01:50:21Z"
-    },
-    {
-      "name": "real node desired-state gate",
-      "status": "pass",
-      "expected": "record mTLS response and precise missing precondition",
-      "actual": "HTTP 503 DEPENDENCY_UNAVAILABLE; release_support_required=true",
-      "command": "GET /agent/desired-state using actual node mTLS",
-      "at": "2026-10-30T01:50:21Z"
+      "name": "publication command published",
+      "status": "fail",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 422 NODE_NOT_SERVICEABLE",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-10-30T04:47:00Z"
     }
   ],
   "blockers": [
-    "Publication precondition: HTTP 422 NODE_NOT_SERVICEABLE",
-    "Publication cannot reach active; observed state remains absent; no applied forwarding baseline. See operation evidence; publication worker is present on this build.",
-    "Group A/B gateway isolation and applied disable cannot be certified without a previously serving exit (native user admission is recorded in AT01/AT02). Restart above checks persisted administrative intent only.",
-    "Observed mTLS desired-state 503 DEPENDENCY_UNAVAILABLE: Release support policy required. The fresh e2e-up hook supplies no active release-support policy; tests/e2e/harness.go:insertReleaseSupport uses non-contract {}. Request a reusable valid signed boot-release/support-policy setup hook from devstack. No readiness or projection rows are fabricated.",
-    "Node incarnation peer_id is still null; D-055 owner w3-wire-nodes follow-up 10 must supply real management peer observation. This run cannot isolate its effect until the missing release-support baseline is supplied."
+    "Enrolled node did not project ready after signed baseline",
+    "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01.",
+    "Publication command rejected: HTTP 422 NODE_NOT_SERVICEABLE",
+    "Publication command rejected: HTTP 422 NODE_NOT_SERVICEABLE"
   ]
 }

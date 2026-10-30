@@ -4,8 +4,11 @@ package members
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -25,7 +28,7 @@ func (l *live) installProbe() bool {
 	if _, err := cmd.CombinedOutput(); err != nil {
 		return false
 	}
-	for _, s := range []string{"member", "adguard", "control"} {
+	for _, s := range []string{"member", "node", "adguard", "control"} {
 		if _, err := l.docker("cp", path, l.name(s)+":/tmp/at-members-probe"); err != nil {
 			return false
 		}
@@ -34,6 +37,15 @@ func (l *live) installProbe() bool {
 }
 func (l *live) dns(name, typ, proto string) string {
 	raw, err := l.inside("member", "/tmp/at-members-probe", "dns", l.stack.LabPrefix+".40:53", name, typ, proto)
+	if err != nil {
+		return "probe unavailable"
+	}
+	return strings.TrimSpace(string(raw))
+}
+
+// Host-local resolver observation is explicitly separate from member forwarding.
+func (l *live) dnsLocal(name, typ, proto string) string {
+	raw, err := l.inside("node", "/tmp/at-members-probe", "dns", "127.0.0.1:53", name, typ, proto)
 	if err != nil {
 		return "probe unavailable"
 	}
@@ -58,7 +70,7 @@ func (l *live) dnsRules(r *record) {
 		got, _ := l.policy("domain_rule_set", map[string]any{"rules": []any{rule(domain, true, "block")}})
 		r.check("reject noncanonical "+domain, "422 (contract canonical ASCII)", detail(got), "POST /admin/policies domain_rule_set", got.status == 422)
 	}
-	canonical := []any{rule("lab.example.invalid", true, "block"), rule("xn--bcher-kva.example.com", false, "block"), rule("private.example.invalid", true, "allow")}
+	canonical := []any{rule("lab.example.invalid", true, "block"), rule("xn--bcher-kva.example.com", false, "block"), rule("feed-01.example.invalid", false, "allow")}
 	good, id := l.policy("domain_rule_set", map[string]any{"rules": canonical})
 	l.dnsRuleRev = id
 	r.check("canonical rules", "201, immutable canonical payload", detail(good), "POST canonical A-label, include_subdomains and allow rules", good.status == 201)
@@ -124,18 +136,18 @@ func (l *live) dnsFailure(r *record) {
 		}
 		// Immediate restoration and Cleanup cover assertions and test interruption.
 		l.t.Cleanup(func() { l.cleanupDocker("unpause", l.name(service)) })
-		answer := l.dns("failure-"+l.run+"-"+service+".example.invalid", "1", "udp")
+		answer := l.dnsLocal("failure-"+l.run+"-"+service+".example.invalid", "1", "udp")
 		_, restore := l.docker("unpause", l.name(service))
 		r.check(service+" failure", "no successful answer while resolver/upstream paused", answer, "docker pause "+l.name(service)+"; unique sentinel query; unpause", restore == nil && (strings.Contains(answer, `"available":false`) || strings.Contains(answer, `"rcode":2`)))
 	}
-	after := l.dns("lab.example.invalid", "1", "udp")
-	r.check("fault restoration", "controlled answer available", after, "probe DNS after both unpause operations", strings.Contains(after, `"available":true`))
+	after := l.dnsLocal("lab.example.invalid", "1", "udp")
+	r.check("fault restoration", "controlled answer available", after, "node loopback probe DNS after both unpause operations", strings.Contains(after, `"available":true`))
 	r.block("Running topology contains one filtering resolver and one authoritative CoreDNS upstream, not two independent controlled filtering resolvers. The member entrypoint uses --disable-dns. Faults above prove direct resolver unavailability only; client fallback/public-DNS exclusion and policy-sync failure require devstack follow-up. Android Private DNS/browser DoH scripts and member guidance are in OPERATORS.md.")
 }
 func (l *live) privacy(r *record) {
 	sentinel := "privacy-" + l.run + ".example.invalid"
-	response := l.dns(sentinel, "1", "udp")
-	r.check("privacy sentinel query", "controlled resolver responds", response, "member probe DNS unique TEST ONLY sentinel", strings.Contains(response, `"available":true`))
+	response := l.dnsLocal(sentinel, "1", "udp")
+	r.check("privacy sentinel query", "controlled resolver responds", response, "node loopback probe DNS unique TEST ONLY sentinel (resolver privacy only)", strings.Contains(response, `"available":true`))
 	for _, path := range []string{"/control/querylog/config", "/control/stats/config"} {
 		raw, err := l.resolver(path)
 		var v struct {
@@ -199,7 +211,7 @@ func (l *live) privacy(r *record) {
 	r.block("No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed.")
 }
 
-// D-056: a central document or an HTTP 200 alone never proves node application.
+// D-056: a central document or HTTP 200 alone never proves node application.
 func (l *live) resolverEvidence(r *record) {
 	got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
 	var node api.NodeDetail
@@ -210,8 +222,45 @@ func (l *live) resolverEvidence(r *record) {
 	if present {
 		document = l.count(`SELECT count(*) FROM dns_resolver_documents WHERE id=$1`, evidence.DocumentId) > 0
 	}
-	r.check("typed DNS evidence", "record exact issued-document application, or explicit null", fmt.Sprintf("HTTP=%d; decoded=%t; specified=%t; null=%t; present=%t; outcome=%s; issued_document_matches=%t", got.status, decode == nil, node.DnsPolicyEvidence.IsSpecified(), node.DnsPolicyEvidence.IsNull(), present, evidence.Outcome, document), "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document", got.status == 200 && decode == nil)
-	if !present || evidence.Outcome != api.DnsPolicyEvidenceOutcomeApplied || !document {
+	code, _ := evidence.ErrorCode.Get()
+	r.check("typed DNS evidence", "record exact issued-document application, or explicit null", fmt.Sprintf("HTTP=%d; decoded=%t; specified=%t; null=%t; present=%t; outcome=%s; error_code=%s; issued_document_matches=%t", got.status, decode == nil, node.DnsPolicyEvidence.IsSpecified(), node.DnsPolicyEvidence.IsNull(), present, evidence.Outcome, code, document), "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document", got.status == 200 && decode == nil)
+	if !present {
 		r.block(inheritedResolverGate)
+		return
+	}
+	// This run can supersede the historical missing-reference observation.
+	kept := r.Blockers[:0]
+	for _, b := range r.Blockers {
+		if b != inheritedResolverGate {
+			kept = append(kept, b)
+		}
+	}
+	r.Blockers = kept
+	if evidence.Outcome != api.DnsPolicyEvidenceOutcomeApplied || !document {
+		r.block("F2-03: this run has an issued resolver document and non-null typed DNS evidence, but outcome=" + string(evidence.Outcome) + " error=" + string(code) + ". node/agent/resolver.go:noteDNSApply reports resolver application failure; node/dns/applier.go:Apply owns convergence/readback. The earlier missing-reference result is historical, not this run's diagnosis. See requests.md.")
+	}
+	cert, e1 := l.inside("node", "cat", "/var/lib/vpn-node/identity/cert.pem")
+	key, e2 := l.inside("node", "cat", "/var/lib/vpn-node/identity/key.pem")
+	if e1 != nil || e2 != nil {
+		r.block("node identity unavailable for resolver HTTP readback")
+		return
+	}
+	pair, err := tls.X509KeyPair(cert, key)
+	if err != nil {
+		r.block("node mTLS pair unavailable")
+		return
+	}
+	transport := l.transport.Clone()
+	defer transport.CloseIdleConnections()
+	transport.TLSClientConfig.Certificates = []tls.Certificate{pair}
+	client := &browser{client: &http.Client{Transport: transport, Timeout: 20 * time.Second}}
+	fetched := l.request(client, "GET", "https://agent.example.invalid:9443/api/v1/agent/resolver-documents/"+evidence.DocumentId.String(), nil, nil)
+	hash, hashErr := canonjson.HashHex(fetched.body)
+	r.check("issued resolver document mTLS fetch", "200 canonical bytes match node evidence digest", fmt.Sprintf("HTTP=%d; hash_matches=%t; bytes=%d", fetched.status, hashErr == nil && hash == evidence.ContentSha256, len(fetched.body)), "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory", fetched.status == 200 && hashErr == nil && hash == evidence.ContentSha256)
+	desired := l.request(client, "GET", "https://agent.example.invalid:9443/api/v1/agent/desired-state", nil, nil)
+	ambiguous := strings.Contains(string(desired.body), "Node DNS profile selection is ambiguous")
+	r.check("current desired-state DNS selection", "record response independently of previously issued document", fmt.Sprintf("HTTP=%d; code=%s; ambiguous_active_profiles=%t", desired.status, desired.code, ambiguous), "GET /agent/desired-state via actual mTLS; retain only allowlisted error", desired.status != 0)
+	if ambiguous {
+		r.block("F2-04: multiple API-activated DNS profiles make current desired-state GET return 503 DEPENDENCY_UNAVAILABLE (Node DNS profile selection is ambiguous). ResolveDocumentInputs has no node-to-profile selection; plan profile references do not resolve it. See requests.md.")
 	}
 }

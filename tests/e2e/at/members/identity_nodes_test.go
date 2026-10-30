@@ -29,7 +29,12 @@ func (l *live) patchMember(b *browser, body any) response {
 	return l.api(l.admin, "PATCH", path, body, h)
 }
 func (l *live) policy(kind string, payload any) (response, uuid.UUID) {
-	r := l.api(l.admin, "POST", "/api/v1/admin/policies", map[string]any{"type": kind, "schema_version": 1, "code": "at-" + l.run + "-" + uuid.NewString()[:8], "reason": "TEST ONLY acceptance", "payload": payload}, commandHeaders())
+	code := "at-" + l.run + "-" + uuid.NewString()[:8]
+	// Revise the one lab DNS profile; the D-056 hook has no per-node profile selector.
+	if kind == "dns_profile" {
+		_ = l.pool.QueryRow(l.ctx, `SELECT code FROM policy_definitions WHERE type='dns_profile' ORDER BY id LIMIT 1`).Scan(&code)
+	}
+	r := l.api(l.admin, "POST", "/api/v1/admin/policies", map[string]any{"type": kind, "schema_version": 1, "code": code, "reason": "TEST ONLY acceptance", "payload": payload}, commandHeaders())
 	var v struct {
 		RevisionID uuid.UUID `json:"revision_id"`
 	}
@@ -134,7 +139,10 @@ func (l *live) publication(r *record) {
 		r.block("No enrolled node")
 		return
 	}
-	l.publish(r, []uuid.UUID{l.groupA})
+	if !l.publish(r, []uuid.UUID{l.groupA}) {
+		l.resolverEvidence(r)
+		return
+	}
 	routes := l.nb("GET", "/routes", nil)
 	var list []map[string]any
 	_ = json.Unmarshal(routes.body, &list)
@@ -147,6 +155,9 @@ func (l *live) publication(r *record) {
 	r.check("regroup projection", "group B attached", fmt.Sprintf("B=%d", regroup), "PUT group_ids=[B]; read product attachment", regroup == 1)
 	l.publicationCommand(r, "disabled", []uuid.UUID{l.groupB})
 	_, err := l.docker("restart", l.name("node"))
+	// D-061 lab sidecar shares the node network namespace. Reattach after restart.
+	_, dnsRestart := l.docker("restart", l.name("adguard"))
+	r.check("resolver sidecar namespace restored", "restart succeeds", fmt.Sprintf("restart_ok=%t", dnsRestart == nil), "docker restart fvpn-w4-members-adguard after node restart", dnsRestart == nil)
 	r.check("node restart", "restart succeeds", fmt.Sprintf("restart_ok=%t", err == nil), "docker restart fvpn-w4-members-node", err == nil)
 	intent, observed := l.publicationState()
 	r.check("disabled persists", "disabled intent after node restart", fmt.Sprintf("intent=%s; observed=%s", intent, observed), "read publication after reconnect/restart", intent == "disabled")
@@ -158,5 +169,5 @@ func (l *live) exits(r *record) {
 	out, err := l.inside("member", "netbird", "routes", "list")
 	r.check("exit inventory", "record active node count and client routes", fmt.Sprintf("enrolled_nodes=%d; routes_command_ok=%t; route_output_bytes=%d", n, err == nil, len(out)), "SELECT enrolled nodes; docker exec member netbird routes list", n >= 1)
 	r.block(inheritedLeaseGate)
-	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic.", n))
+	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. The second lab node stays unenrolled while the inherited positive-flow gate is unresolved. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU remain unmeasured; physical second NAT needs an operator run. No bridge-only traffic is counted as exit traffic.", n))
 }
