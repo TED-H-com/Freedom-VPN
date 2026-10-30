@@ -661,7 +661,8 @@ func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
 	i := l.node("amd64", "published", "registered", true)
 	l.batch(l.new)
 	w := l.intent(i)
-	r := api.ObservationReport{ReportId: uuid.New(), NodeId: i.NodeID, NodeIncarnationId: i.IncarnationID, ObservedAt: time.Now().UTC(), CurrentReleaseId: presence.NewNullableWithValue(l.new), LastGoodReleaseId: presence.NewNullableWithValue(l.new),
+	// H-3: a valid pre-result target seed agrees with the recorded last-good.
+	r := api.ObservationReport{ReportId: uuid.New(), NodeId: i.NodeID, NodeIncarnationId: i.IncarnationID, ObservedAt: time.Now().UTC(), CurrentReleaseId: presence.NewNullableWithValue(l.new), LastGoodReleaseId: presence.NewNullableWithValue(l.old),
 		AppliedBindingRevision:  presence.NewNullNullable[decstr.U64](),
 		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
 		AppliedPolicyRefs:       presence.NewNullNullable[api.PolicyRefs]()}

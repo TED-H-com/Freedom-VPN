@@ -27,7 +27,8 @@ func TestAT23_ResultAfterRoutineHeartbeat(t *testing.T) {
 			if observed >= w.Intent.Generation {
 				current = l.new
 			}
-			if err := l.s.Observe(l.ctx, i, Observation{Sequence: 2, AppliedUpdateGeneration: observed, CurrentReleaseID: &current, LastGoodReleaseID: &current, ObservedAt: time.Now().UTC()}); err != nil {
+			// H-3: the positive seed path must agree with recorded last-good.
+			if err := l.s.Observe(l.ctx, i, Observation{Sequence: 2, AppliedUpdateGeneration: observed, CurrentReleaseID: &current, LastGoodReleaseID: &l.old, ObservedAt: time.Now().UTC()}); err != nil {
 				t.Fatal(err)
 			}
 			var receipt time.Time
