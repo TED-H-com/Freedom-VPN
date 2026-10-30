@@ -4,9 +4,9 @@ Issued resolver document is applied and blocks a synthetic name
 
 Status: pass
 
-Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
+Run: 76f0725c-2264-4021-a553-60f6c921e32b
 
-Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
+Source: 1b2f358880d38ae643865edc2bb6f19756748456
 
 Spec: §12.5, §19 AT22, D-061
 
@@ -21,8 +21,8 @@ Spec: §12.5, §19 AT22, D-061
       }
     ]
   }
-- desired_resolver_reference: {"content_sha256":"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a","document_id":"01a18da0-bf6d-7a46-9969-93a0b9454c5a","generation":"2","profile_revision_id":"01a18da0-b6d7-7ba7-95c4-3ceb8039569e","size_bytes":1174}
-- dns_policy_evidence: {"applied_at":"2026-10-30T16:25:26.871329029Z","content_sha256":"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a","document_id":"01a18da0-bf6d-7a46-9969-93a0b9454c5a","error_code":null,"feeds":[{"content_sha256":"c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174","feed_code":"e2e-feed","rule_count":10}],"generation":"2","outcome":"applied"}
+- desired_resolver_reference: {"content_sha256":"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a","document_id":"01a18dda-108e-79c8-8747-df09bee08c26","generation":"2","profile_revision_id":"01a18dda-06c6-7428-a433-1284ead6055f","size_bytes":1174}
+- dns_policy_evidence: {"applied_at":"2026-10-30T17:28:02.245550688Z","content_sha256":"96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a","document_id":"01a18dda-108e-79c8-8747-df09bee08c26","error_code":null,"feeds":[{"content_sha256":"c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174","feed_code":"e2e-feed","rule_count":10}],"generation":"2","outcome":"applied"}
 - admin_node: 200
 - provisioning_state: ready
 - resolver_document_response: HTTP/1.1 200 OK

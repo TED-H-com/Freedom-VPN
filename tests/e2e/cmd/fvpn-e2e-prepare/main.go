@@ -31,6 +31,7 @@ func main() {
 	reset := flag.Bool("reset", false, "replace an existing state directory")
 	prefix := flag.String("prefix", "e2e", "short stack prefix")
 	portBase := flag.Int("port-base", 18000, "loopback port base")
+	graceSeconds := flag.Int("grace-seconds", 0, "TEST ONLY payment grace seconds (0 disables grace; prepare-time setting)")
 	flag.Parse()
 	if *state == "" {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-prepare: -state is required")
@@ -41,14 +42,21 @@ func main() {
 		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: %s\n", err.Error())
 		os.Exit(2)
 	}
-	if err := run(*state, *reset, lay); err != nil {
+	if err := run(*state, *reset, lay, *graceSeconds); err != nil {
 		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: failed: %s\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("e2e state ready")
 }
 
-func run(state string, reset bool, lay layout) error {
+func run(state string, reset bool, lay layout, graceSeconds int) error {
+	if graceSeconds < 0 || graceSeconds > 366*24*60*60 {
+		return fmt.Errorf("grace-seconds must be 0..31622400")
+	}
+	graceReason := ""
+	if graceSeconds > 0 {
+		graceReason = "TEST ONLY finite payment grace"
+	}
 	marker := filepath.Join(state, "ready")
 	if !reset {
 		if _, err := os.Stat(marker); err == nil {
@@ -240,7 +248,7 @@ func run(state string, reset bool, lay layout) error {
 		VaultActiveKey: "e2e-v1", VaultKeyFiles: map[string]string{"e2e-v1": "/secrets/vault.key"},
 		LiveMode: &falseValue, PriceIDs: []string{"e2e-price"},
 		ReturnURLs:       []string{"https://portal.example.invalid:8443/billing/return"},
-		FullRefundPolicy: "revoke_original_period", GraceSeconds: &zero, GraceReason: "",
+		FullRefundPolicy: "revoke_original_period", GraceSeconds: &graceSeconds, GraceReason: graceReason,
 		TrialMaxSeconds: &zero, GrantMaxSeconds: 86400, DeviceLimit: 3,
 		PortalTTLSeconds: 60, BillingLeaseSeconds: 120, MaxWebhookBytes: 1 << 20,
 		ReconcileSeconds: 300, DeviceSyncSeconds: 15,
@@ -257,6 +265,7 @@ func run(state string, reset bool, lay layout) error {
 	central := map[string]any{
 		"public_address": ":8443", "agent_address": ":9443", "metrics_address": "127.0.0.1:9091",
 		"public_origin":        "https://portal.example.invalid:8443",
+		"trusted_proxies":      []string{lay.LabPrefix + ".21/32"},
 		"tls_certificate_file": "/secrets/tls.crt", "tls_key_file": "/secrets/tls.key",
 		"agent_ca_file": "/secrets/agent-ca.pem", "database_url_file": "/secrets/database.url",
 		"oidc_issuer": "https://netbird.example.invalid/oauth2", "oidc_client_id": "netbird-dashboard",

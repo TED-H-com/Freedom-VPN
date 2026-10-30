@@ -1,9 +1,11 @@
 package meter
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"math"
 	"math/rand"
 	"path/filepath"
@@ -710,6 +712,85 @@ func TestMonotonicWaitIgnoresWallJump(t *testing.T) {
 	clk.Set(time.Date(2026, 11, 1, 0, 0, 1, 0, time.UTC))
 	if m.nextWait(ctx) != 0 {
 		t.Fatal("month boundary did not wake the sampler")
+	}
+}
+
+func TestMTR03_RunSkipsBusySampleWithoutLosingCounters(t *testing.T) {
+	ctx := t.Context()
+	clk := &clock{t: time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)}
+	src := &fakeSrc{}
+	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1}))
+	m, s := start(t, src, clk, usagestore.Options{})
+	before, err := s.Head(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var logs bytes.Buffer
+	m.log = slog.New(slog.NewTextHandler(&logs, &slog.HandlerOptions{Level: slog.LevelWarn}))
+
+	// Hold a real sample in Source.Read. Run's first tick must see ErrBusy.
+	// Its nextWait calls Mono after the tick; cancel there so the test joins
+	// Run after exactly that tick, without a timer or a scheduler assumption.
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	m.mono = func() time.Time {
+		cancel()
+		return clk.Now()
+	}
+	block := make(chan struct{})
+	src.block = block
+	src.hit = make(chan struct{}, 1)
+	clk.Set(clk.Now().Add(10 * time.Second))
+	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 1000, upP: 10, dnB: 50, dnP: 1}))
+	done := make(chan struct{})
+	var sampleErr error
+	go func() {
+		sampleErr = m.Sample(ctx)
+		close(done)
+	}()
+	var release sync.Once
+	defer func() {
+		release.Do(func() { close(block) })
+		<-done
+	}()
+	<-src.hit
+	if err := m.Run(runCtx); !errors.Is(err, context.Canceled) {
+		t.Fatalf("busy tick: %v", err)
+	}
+	if logs.Len() != 0 {
+		t.Fatalf("busy tick logged an error: %s", logs.String())
+	}
+	select {
+	case <-src.hit:
+		t.Fatal("busy tick read the source again")
+	default:
+	}
+	after, err := s.Head(ctx)
+	if err != nil || after.NextSeq != before.NextSeq || after.OpenEpoch != before.OpenEpoch || !after.LastSample.Equal(before.LastSample) {
+		t.Fatalf("busy tick changed the checkpoint: %+v, %v", after, err)
+	}
+
+	release.Do(func() { close(block) })
+	<-done
+	if sampleErr != nil {
+		t.Fatal(sampleErr)
+	}
+	first := loadEvent(t, s, 1)
+	if first.Quality != api.UsageQualityComplete || len(first.Records) != 1 || first.Records[0].UploadBytes != 1000 || first.Records[0].DownloadBytes != 50 {
+		t.Fatalf("in-flight counters lost: %+v", first)
+	}
+	clk.Set(clk.Now().Add(10 * time.Second))
+	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 1750, upP: 15, dnB: 150, dnP: 3}))
+	if err := m.Sample(ctx); err != nil {
+		t.Fatal(err)
+	}
+	second := loadEvent(t, s, 2)
+	if second.Quality != api.UsageQualityComplete || second.MeterEpochId != before.OpenEpoch || len(second.Records) != 1 || second.Records[0].UploadBytes != 750 || second.Records[0].DownloadBytes != 100 {
+		t.Fatalf("next sample lost or recounted counters: %+v", second)
+	}
+	health, err := m.Health(ctx)
+	if err != nil || !health.ForwardingAllowed || health.Reason != "" {
+		t.Fatalf("busy tick affected meter health: %+v, %v", health, err)
 	}
 }
 

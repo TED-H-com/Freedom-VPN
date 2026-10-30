@@ -42,7 +42,7 @@ if [ "$RESET" = "1" ] || [ ! -f "$STATE/ready" ]; then
         rm -rf "$STATE"
     fi
     go build -o "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" ./tests/e2e/cmd/fvpn-e2e-prepare
-    "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset -prefix "$SHORT" -port-base "$PORT_BASE"
+    "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset -prefix "$SHORT" -port-base "$PORT_BASE" -grace-seconds "${FVPN_E2E_GRACE_SECONDS:-0}"
 fi
 if [ ! -f "$STATE/render/compose.env" ]; then
     echo "compose env is missing; set E2E_RESET=1" >&2

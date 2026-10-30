@@ -515,5 +515,48 @@
         "sha256": "9ecf7772161e2da81d1e08d1bcc4497f0cd79c23922040b3f367fd22d3e30b73"
       }
     ]
+  },
+  "handover_follow_up_6": {
+    "reviewed_at": "2026-10-30T17:47:00Z",
+    "base_main_commit": "9c0e96912c4502ad60a6fa4d7f9c75355f00f395",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "94a24222b4dde941de98b912aa4fa6501e4ecbfa00739555e178468badd6563a"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "cb22a77325108903d72d598f31412f656ae4ca5441b05c3dbbee98f77fa88d64"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "114734216de0de27c00eed38701983922d426746c3fae054d1ff2835df108bd2"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "66365dd3990db5f7b63b603e739e8e7d41ff4bfd6d25faea925e63b729e1cd3e"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "b2a67f4471708ee0cd2bbea6598514d38898d30e6f64a59644704cb2ad27e944"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "9b6919098de112f1f5670947af3b1b3dd57bc59323a323a517e37a23129fcc09"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "1175f45748be524be374538433f418445430a8a22a3e431b46d7ac6bf92661ad"
+      }
+    ],
+    "doc15_handover_half": {
+      "id": "DOC15",
+      "files": [
+        "docs/handover/member-guide.md:121",
+        "docs/handover/member-guide.md:353"
+      ],
+      "status": "resolved in w4-handover follow-up 6",
+      "resolution": "docs/handover/member-guide.md attributes the prior blocked AT02/AT03/AT04/AT08 records historically to members follow-up 3 (#151) and early devstack follow-up 9 (#153), links the current scoped evidence in security-ops follow-up 5 (#165: counted-flow.json, post-revoke.json, deadlines.json, capacity.json) and devstack follow-up 10 (#170: device-revoke.md, second-exit hook), and preserves the grace, clock, platform, and transport qualifications. docs/e2e/RUN.md:207 remains w3-devstack-e2e's half."
+    }
   }
 }

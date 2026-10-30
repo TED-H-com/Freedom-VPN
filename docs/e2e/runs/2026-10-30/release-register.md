@@ -4,25 +4,25 @@ Signed real releases and non-empty serving baseline through APIs
 
 Status: pass
 
-Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
+Run: 76f0725c-2264-4021-a553-60f6c921e32b
 
-Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
+Source: 1b2f358880d38ae643865edc2bb6f19756748456
 
 Spec: §13.2, §13.3, §13.4
 
-- signed_manifest_sha256_0.1.0: 0a044e8632b786a5d2ba664e2c78772c2c777c2a33f49628d5515cce32813922
-- manifest_sha256_0.1.0: 3723f5d100f170f78da485a43562284e3b923ab856df0edee17703bcd5e82464
-- artifact_sha256_1.0.1_arm64: bed4e04a490c73e1035483645f35717f2b71309d867e70af58b46eaf5818a3b1
-- artifact_sha256_1.0.2_amd64: 209fc94c05e4c193a194b14b4d3204365010129e67b690a9c812bfb7247f2a77
-- signed_manifest_sha256_1.0.2: b59adbf4b6d5a819314107b8aeddab0738885d63b3860f94f2021a136abf1c03
-- manifest_sha256_1.0.2: 6f970df2c17abc54bd73ee8e58efe33dcf8cc09f640c085c3403c0bf3b9b74a6
-- artifact_sha256_0.1.0_amd64: 3563a11f2b22f6a1ba14067ebc7f8dca1904a8ae827265bfefea24473765d66b
-- artifact_sha256_0.1.0_arm64: 0a4841ed197d8272ea0badb2791ea013247d74644796044c0345390f08e507f5
-- artifact_sha256_1.0.1_amd64: f4a5cd6b2a1ad4a74c5a97dd343263f40b55310a46c03df90c87b26c22e1bb08
-- signed_manifest_sha256_1.0.1: d3891203abfbde92fa12c32a0547f66ec975238cc502fd9b6457492a2ae7ba1e
-- manifest_sha256_1.0.1: 3c345b7501565b4ed9596ef44bb7b1da2d7abf680edb55cc045234767d432b76
-- artifact_sha256_1.0.2_arm64: 6afc412f067d94798505058eb4b4d7a8d3189af22b087a86b4b605d9486f3459
-- boot_release_id: 01a18da0-d4a0-7da4-9f93-cd16f080c8d2
-- support_revision_id: 01a18da0-e952-756f-bc61-8de404b26fd2
+- manifest_sha256_1.0.1: 49c036aed394f409f36b6e77da7b5fc53a2be10b6f976b65b1ca001e1d613ce9
+- artifact_sha256_1.0.2_arm64: 2f6d38bb33280237b20884186fd383bdcf6e55f3ad4ea989fd5791592d27ceb7
+- signed_manifest_sha256_1.0.2: 59223bdb8c2ae4b9d722fb991af26a7ab50e9bb955506a64a3968be7beee7c26
+- artifact_sha256_0.1.0_amd64: a1feb0b292dde10c968858cf9ab0df57723bc962b63da110af1b229cee5cd2bc
+- artifact_sha256_0.1.0_arm64: 58e759c9192a3dcac0464869763316453410c8bf3fd28d9f3cba2b0b338c614f
+- artifact_sha256_1.0.1_amd64: f6ae554c5026683bd8f8ee1e437f3ad7ed896a3ec6575c09957ea292fd3f1b62
+- artifact_sha256_1.0.1_arm64: fe22900af3dac63eb7d8664963cd9e3def5f62f96ee3259ca56973ad77727e25
+- artifact_sha256_1.0.2_amd64: d46dc6101a9b68cb87b0aeb8205675e32617e805034bd632ede1c8207c6566f2
+- manifest_sha256_1.0.2: d59caaf7e96c0ec58790567c94e8531c5d9636c353b8ca593ddb2250f6103e0b
+- signed_manifest_sha256_0.1.0: d9297ee51b1afdcf575a13dc23458686664d567318ea21b9bf063e8443cbb66f
+- manifest_sha256_0.1.0: 8d693c22d33f91501565e671a3bb28f8ade10bf90587af27dabdf0e566ba5dbc
+- signed_manifest_sha256_1.0.1: 050bda6dc4d119915eb321017d2844adc3fb4b9749ddbf255dcd0fcc16258f30
+- boot_release_id: 01a18dda-2478-78a2-ad38-c7859546122f
+- support_revision_id: 01a18dda-3893-79b1-9933-0fe55894b03d
 - support_policy: API activated; all three verified releases explicitly permitted
 - arm64: cross-compiled and packaged; not executed on this host

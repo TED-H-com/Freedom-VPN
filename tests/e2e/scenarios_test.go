@@ -43,6 +43,7 @@ func TestE2E_Acceptance(t *testing.T) {
 
 	run.health(ctx)
 	run.metrics(ctx)
+	run.gatewayPrincipals(ctx)
 	admin := run.login(ctx, "e2e-admin", "admin")
 	if admin == nil {
 		return
@@ -360,11 +361,12 @@ func (r *runner) forwarding(view forwardView) {
 func (r *runner) member(ctx context.Context, admin *session) {
 	defer func() { r.forwarding(r.lab.forwardChain()) }()
 	rec := Record{ID: "member-traffic", Title: "Member device and exit traffic", Spec: []string{"§8", "§19 AT12"}, Status: StatusBlocked}
+	finishTelemetry := r.recordTelemetry(ctx, &rec)
+	defer func() { finishTelemetry(); r.record(rec) }()
 	member, err := r.lab.login(ctx, "e2e-member", "member")
 	if err != nil {
 		rec.Status = StatusFail
 		rec.Observations = append(rec.Observations, Observation{Name: "login", Detail: "failed"})
-		r.record(rec)
 		r.usage(ctx, nil)
 		return
 	}
@@ -372,7 +374,6 @@ func (r *runner) member(ctx context.Context, admin *session) {
 	portalSub := r.notePortalSubject(ctx, member.memberID, recPathNote(&rec))
 	if r.planRevID == uuid.Nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "plan", Detail: r.planError})
-		r.record(rec)
 		r.usage(ctx, nil)
 		return
 	}
@@ -405,7 +406,6 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		}
 	}
 	r.noteAdmissionGate(ctx, admin, &rec)
-	r.record(rec)
 	r.usage(ctx, member)
 }
 

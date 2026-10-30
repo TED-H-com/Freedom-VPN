@@ -28,7 +28,11 @@ func (l *live) installProbe() bool {
 	if _, err := cmd.CombinedOutput(); err != nil {
 		return false
 	}
-	for _, s := range []string{"member", "node", "adguard", "control", "origin"} {
+	services := []string{"member", "node", "adguard", "control", "origin"}
+	if l.second.NodeID != uuid.Nil {
+		services = append(services, "node2", "node2-adguard")
+	}
+	for _, s := range services {
 		if _, err := l.docker("cp", path, l.name(s)+":/tmp/at-members-probe"); err != nil {
 			return false
 		}
@@ -45,7 +49,7 @@ func (l *live) dns(name, typ, proto string) string {
 
 // Host-local resolver observation is explicitly separate from member forwarding.
 func (l *live) dnsLocal(name, typ, proto string) string {
-	raw, err := l.inside("node", "/tmp/at-members-probe", "dns", "127.0.0.1:53", name, typ, proto)
+	raw, err := l.inside(l.nodeContainer(), "/tmp/at-members-probe", "dns", "127.0.0.1:53", name, typ, proto)
 	if err != nil {
 		return "probe unavailable"
 	}
@@ -120,29 +124,74 @@ func (l *live) dnsRules(r *record) {
 	r.block("Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
 }
 func (l *live) dnsFailure(r *record) {
-	raw, err := l.resolver("/control/dns_info")
-	var info struct {
-		Upstream  []string `json:"upstream_dns"`
-		Fallback  []string `json:"fallback_dns"`
-		Bootstrap []string `json:"bootstrap_dns"`
+	raw, readErr := l.inside("member", "cat", "/var/lib/netbird/default.json")
+	var native struct{ DisableDNS bool }
+	decodeErr := json.Unmarshal(raw, &native)
+	r.check("native DNS configuration", "record actual persisted client DNS setting", fmt.Sprintf("read_ok=%t; DisableDNS=%t", readErr == nil && decodeErr == nil, native.DisableDNS), "read /var/lib/netbird/default.json in memory; emit DisableDNS boolean only", readErr == nil && decodeErr == nil)
+
+	if !l.secondExit(r) || !l.installProbe() {
+		r.block("F4-02: second resolver prerequisite unavailable")
+		return
 	}
-	_ = json.Unmarshal(raw, &info)
-	r.check("resolver topology", "record upstream/fallback counts", fmt.Sprintf("API_ok=%t; upstream_count=%d; fallback_count=%d; bootstrap_count=%d; filtering_resolvers=1", err == nil, len(info.Upstream), len(info.Fallback), len(info.Bootstrap)), "AdGuard GET /control/dns_info", err == nil)
-	for _, service := range []string{"adguard", "coredns"} {
-		_, err = l.docker("pause", l.name(service))
-		if err != nil {
-			r.block(service + " fault unavailable")
+	// Two independent filtering resolvers, not one filter plus its authority.
+	for _, item := range []struct{ node, resolver string }{{"node", "adguard"}, {"node2", "node2-adguard"}} {
+		other := "node2"
+		if item.node == "node2" {
+			other = "node"
+		}
+		before, _ := l.inside(item.node, "/tmp/at-members-probe", "dns", "127.0.0.1:53", "lab.example.invalid", "1", "udp")
+		_, pause := l.docker("pause", l.name(item.resolver))
+		if pause != nil {
+			r.block("Filtering resolver fault unavailable: " + item.resolver)
 			continue
 		}
-		// Immediate restoration and Cleanup cover assertions and test interruption.
-		l.t.Cleanup(func() { l.cleanupDocker("unpause", l.name(service)) })
-		answer := l.dnsLocal("failure-"+l.run+"-"+service+".example.invalid", "1", "udp")
-		_, restore := l.docker("unpause", l.name(service))
-		r.check(service+" failure", "no successful answer while resolver/upstream paused", answer, "docker pause "+l.name(service)+"; unique sentinel query; unpause", restore == nil && (strings.Contains(answer, `"available":false`) || strings.Contains(answer, `"rcode":2`)))
+		l.t.Cleanup(func() { l.cleanupDocker("unpause", l.name(item.resolver)) })
+		unavailable, _ := l.inside(item.node, "/tmp/at-members-probe", "dns", "127.0.0.1:53", "lab.example.invalid", "1", "udp")
+		fallback, _ := l.inside(other, "/tmp/at-members-probe", "dns", "127.0.0.1:53", "lab.example.invalid", "1", "udp")
+		_, resume := l.docker("unpause", l.name(item.resolver))
+		r.check(item.resolver+" isolated failure", "paused filter unavailable; other filter still blocks synthetic domain", fmt.Sprintf("before=%s; paused=%s; other=%s", before, unavailable, fallback), "pause exactly one filtering resolver; query both node loopbacks; unpause (explicit probes, not native client failover)", resume == nil && strings.Contains(string(unavailable), `"available":false`) && strings.Contains(string(fallback), `"rcode":3`))
 	}
-	after := l.dnsLocal("lab.example.invalid", "1", "udp")
-	r.check("fault restoration", "controlled answer available", after, "node loopback probe DNS after both unpause operations", strings.Contains(after, `"available":true`))
-	r.block("Running topology contains one filtering resolver and one authoritative CoreDNS upstream, not two independent controlled filtering resolvers. The member entrypoint uses --disable-dns. Faults above prove direct resolver unavailability only; client fallback/public-DNS exclusion and policy-sync failure require devstack follow-up. Android Private DNS/browser DoH scripts and member guidance are in OPERATORS.md.")
+	l.resolverEvidence(r)
+	restore := l.useSecond()
+	l.resolverEvidence(r)
+	restore()
+	l.dnsSyncFault(r)
+	r.block("F4-05: two independent filtering resolvers survive alternating faults, but the native member entrypoint still uses --disable-dns. No product-distributed two-resolver client configuration/fallback is available; loopback probes do not prove automatic member failover or public-DNS exclusion. Owner: w3-devstack-e2e deploy/devstack/entrypoint-member.sh and native DNS fixture. Android Private DNS/browser DoH remain needs operator run; guidance in OPERATORS.md.")
+}
+
+func (l *live) dnsSyncFault(r *record) {
+	marker := filepath.Join(l.state, "node/var/e2e/corrupt-resolver")
+	if err := os.WriteFile(marker, []byte("*"), 0600); err != nil {
+		r.block("Shared resolver transport marker unavailable")
+		return
+	}
+	defer func() { _ = os.Remove(marker) }()
+	profile, rev := l.policy("dns_profile", map[string]any{"profile_code": "at-sync-fault", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []uuid.UUID{l.dnsRuleRev}, "threat_feed_revision_ids": []string{}})
+	if profile.status != 201 {
+		r.check("sync fault policy input", "201", detail(profile), "POST new DNS profile revision", false)
+		return
+	}
+	act := l.activate(rev)
+	r.check("sync fault activation", "202", detail(act), "activate normal profile while shared byte-corruption hook armed", act.status == 202)
+	var evidence api.DnsPolicyEvidence
+	failed := l.wait(90*time.Second, func() bool {
+		got := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
+		var node api.NodeDetail
+		if json.Unmarshal(got.body, &node) != nil {
+			return false
+		}
+		var e error
+		evidence, e = node.DnsPolicyEvidence.Get()
+		if e != nil {
+			return false
+		}
+		code, _ := evidence.ErrorCode.Get()
+		return evidence.Outcome == api.DnsPolicyEvidenceOutcomeFailed && code == api.ErrorCodeHASHMISMATCH
+	})
+	code, _ := evidence.ErrorCode.Get()
+	r.check("resolver synchronization corruption", "failed HASH_MISMATCH; last-good synthetic rule still blocks", fmt.Sprintf("observed=%t; outcome=%s; error=%s; last_good=%s", failed, evidence.Outcome, code, l.dnsLocal("lab.example.invalid", "1", "udp")), "shared node loopback mTLS corruption hook; typed NodeDetail evidence and DNS query", failed && strings.Contains(l.dnsLocal("lab.example.invalid", "1", "udp"), `"rcode":3`))
+	_ = os.Remove(marker)
+	l.resolverEvidence(r)
 }
 func (l *live) privacy(r *record) {
 	sentinel := "privacy-" + l.run + ".example.invalid"
@@ -208,7 +257,7 @@ func (l *live) privacy(r *record) {
 	}
 	feeds := l.count(`SELECT count(*) FROM policy_definitions WHERE type='threat_feed' AND active_revision_id IS NOT NULL`)
 	r.check("feed inventory", "record actual active feed count", fmt.Sprintf("active_feed_definitions=%d", feeds), "SELECT active threat_feed policies", true)
-	r.block("No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed.")
+	r.block("No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS; forwarding uses a fixed controlled health path without a URL sentinel. F4-06: raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed.")
 }
 
 // D-056: a central document or HTTP 200 alone never proves node application.
@@ -254,8 +303,8 @@ func (l *live) resolverEvidence(r *record) {
 	if evidence.Outcome != api.DnsPolicyEvidenceOutcomeApplied || !document {
 		r.block("F2-03: this run has an issued resolver document and non-null typed DNS evidence, but outcome=" + string(evidence.Outcome) + " error=" + string(code) + ". node/agent/resolver.go:noteDNSApply reports resolver application failure; node/dns/applier.go:Apply owns convergence/readback. The earlier missing-reference result is historical, not this run's diagnosis. See requests.md.")
 	}
-	cert, e1 := l.inside("node", "cat", "/var/lib/vpn-node/identity/cert.pem")
-	key, e2 := l.inside("node", "cat", "/var/lib/vpn-node/identity/key.pem")
+	cert, e1 := l.inside(l.nodeContainer(), "cat", "/var/lib/vpn-node/identity/cert.pem")
+	key, e2 := l.inside(l.nodeContainer(), "cat", "/var/lib/vpn-node/identity/key.pem")
 	if e1 != nil || e2 != nil {
 		r.block("node identity unavailable for resolver HTTP readback")
 		return
