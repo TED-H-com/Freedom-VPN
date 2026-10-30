@@ -2,6 +2,10 @@ package dnspublish
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -27,6 +31,61 @@ func sampleInput() Input {
 			Format:        "domain_list",
 			Categories:    []string{"phishing", "malware"},
 		}},
+	}
+}
+
+func Test12_5_ContractResolverDocumentIsCompileOutput(t *testing.T) {
+	raw, err := os.ReadFile("../../contracts/examples/valid/ResolverDocument.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc Document
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	// The contract input leaves bootstrap empty. Compile copies upstreams.
+	compiled, err := Compile(Input{
+		ProfileCode: doc.ProfileCode, BlockResponse: doc.BlockResponse, BlockedTTLSeconds: doc.BlockedTTLSeconds,
+		SafeSearch: doc.SafeSearch, Upstreams: append([]string(nil), doc.Upstreams...),
+		Rules: append([]Rule(nil), doc.Rules...), Feeds: append([]Feed(nil), doc.Feeds...),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(compiled.Bytes, raw) {
+		t.Fatalf("vector is not Compile output\n got %s\nwant %s", compiled.Bytes, raw)
+	}
+	sum := sha256.Sum256(raw)
+	digest := hex.EncodeToString(sum[:])
+	if compiled.Hash != digest {
+		t.Fatalf("digest %s, compiler %s", digest, compiled.Hash)
+	}
+	var ref struct {
+		ContentSHA256 string `json:"content_sha256"`
+		SizeBytes     int    `json:"size_bytes"`
+	}
+	refRaw, err := os.ReadFile("../../contracts/examples/valid/ResolverDocumentRef.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(refRaw, &ref); err != nil {
+		t.Fatal(err)
+	}
+	if ref.ContentSHA256 != compiled.Hash || ref.SizeBytes != len(compiled.Bytes) {
+		t.Fatalf("reference binds %s/%d, compiler %s/%d", ref.ContentSHA256, ref.SizeBytes, compiled.Hash, len(compiled.Bytes))
+	}
+	var evidence struct {
+		ContentSHA256 string `json:"content_sha256"`
+	}
+	evidenceRaw, err := os.ReadFile("../../contracts/examples/valid/DnsPolicyEvidence.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(evidenceRaw, &evidence); err != nil {
+		t.Fatal(err)
+	}
+	if evidence.ContentSHA256 != compiled.Hash {
+		t.Fatalf("evidence digest %s, compiler %s", evidence.ContentSHA256, compiled.Hash)
 	}
 }
 
