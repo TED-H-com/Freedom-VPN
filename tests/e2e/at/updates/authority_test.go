@@ -113,7 +113,9 @@ func (s *updatesFollowup) followup4(batch api.UpdateBatchAccepted, candidate, re
 	s.note("AT26", "check_revision7_rollback_target", targetEvidenceMatches(target.BatchJSON, receipt) && receipt.text("previous_release_id") == candidate.String())
 	s.observationAuthority(batch, receipt, candidate, restored)
 	s.conflictBounds(receipt)
-	s.failedRequiresCause(receipt, next)
+	if s.rec["AT25"].RunID == s.rec["AT26"].RunID {
+		s.failedRequiresCause(receipt, next)
+	} // Retained AT25 is not rerun in follow-up 7.
 }
 
 // Keep the identity key on the node. GNU wget reads it there; only the bounded
@@ -132,7 +134,7 @@ func (s *updatesFollowup) nodePOST(route string, body any) reply {
 		s.r.t.Fatal("unexpected node API probe route")
 	}
 	name := "authority-" + uuid.NewString()
-	host := filepath.Join(s.r.lab.state, "node", "var", "e2e", name)
+	host := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e", name)
 	raw, err := json.Marshal(body)
 	if err != nil || writeAtomic(host+".json", raw) != nil {
 		s.r.t.Fatal("node API probe write failed")
@@ -178,7 +180,7 @@ func sameAuthority(a, b updateDocument) bool {
 }
 
 func (s *updatesFollowup) observationAuthority(batch api.UpdateBatchAccepted, receipt updateDocument, candidate, restored uuid.UUID) {
-	pause := filepath.Join(s.r.lab.state, "node", "var", "e2e", "pause-agent")
+	pause := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e", "pause-agent")
 	if writeAtomic(pause, []byte("TEST ONLY controlled API observation probes\n")) != nil {
 		s.r.t.Fatal("pause request failed")
 	}
