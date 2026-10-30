@@ -289,6 +289,13 @@ omitted shape.
 
 `UpdateResult` and `UpdateHealth` are unchanged. No operation changed.
 
+No new `ErrorCode`. A publication whose exit has no attached groups is not a
+new code: the merged exits path stores `DEPENDENCY_UNAVAILABLE` and the step
+cause `no_distribution_groups`. `VALIDATION_FAILED` with a `/group_ids` field
+detail remains the request-time error for an unknown or invalid group id.
+`NODE_NOT_SERVICEABLE` remains the serving-baseline and forwarding-evidence
+code. See Operation step messages.
+
 ## Revision 6
 
 API version **1.2.0**. The endpoint count remains **44**. No operation, enum
@@ -649,6 +656,37 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /agent/resolver-documents/{document_id}` | `getResolverDocument` | Agent mTLS | 200 | §14.4, §14.7, §12.3, D-056 | DNS01 DNS03 SEC01 |
 | `GET /admin/groups` | `listAdminGroups` | Admin | 200 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
 | `POST /admin/groups` | `createAdminGroup` | Admin | 201 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
+
+## Operation step messages
+
+`OperationStep.message` stays a free string. This revision does not add an enum
+for it. `GET /api/v1/admin/operations/{operation_id}` may put a bounded failure
+cause in `steps[].message` so the portal can tell publication failures apart.
+Map only this vocabulary:
+
+- Classified `exits.PublicationFailureCause` values: `route_missing`,
+  `route_disabled`, `route_ambiguous`, `route_contract_mismatch`,
+  `route_peer_mismatch`, `route_groups_mismatch`,
+  `group_evidence_unavailable`, `no_distribution_groups`,
+  `identity_unconfirmed`, `adapter_unavailable`.
+- `publish_rejected:<status>`, where `<status>` is an integer from 400 through 599.
+- `publish_failed:<kind>` and `readback_failed:<kind>`. `<kind>` is a NetBird
+  adapter kind: `not_found`, `conflict`, `rate_limited`, `unauthorized`,
+  `upstream`, `unavailable`, `invalid`, `unconfirmed`. An unclassified failure
+  uses `unavailable`.
+- `member_forwarding_unconfirmed`
+- `desired_state_unavailable`
+
+Any other stored text is outside this vocabulary. On a failed step, member
+`GET /api/v1/member/operations/{operation_id}` always receives the generic
+sentence `Step failed; quote the operation ID.` and never the bounded cause.
+
+`no_distribution_groups` is one of those causes, not an `ErrorCode`. The merged
+publish path (`internal/exits` `failPublishStep` after
+`PublicationEvidenceError("no_distribution_groups")`) records
+`DEPENDENCY_UNAVAILABLE` as the step error code and `no_distribution_groups`
+as the cause. That code is already in the `ErrorCode` enum, so the enum is
+unchanged.
 
 ## Spec decisions recorded in the contract
 
