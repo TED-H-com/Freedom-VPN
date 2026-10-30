@@ -59,6 +59,8 @@ type Config struct {
 	UpdaterRecover    string `json:"updater_recover"`
 	UpdaterConfig     string `json:"updater_config"`
 	BootIDFile        string `json:"boot_id_file"`
+	// DNS is optional. Absent keeps the resolver applier unset (D-061).
+	DNS *DNSConfig `json:"dns,omitempty"`
 }
 
 // DatapathConfig names the interfaces enforce binds to.
@@ -186,6 +188,9 @@ func (c Config) validate() error {
 		if _, _, err := net.SplitHostPort(c.EgressProbeTarget); err != nil {
 			return errors.New("agent: egress_probe_target must be host:port")
 		}
+	}
+	if err := c.validateDNS(); err != nil {
+		return err
 	}
 	return nil
 }
