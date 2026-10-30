@@ -659,4 +659,8 @@ export const en: Record<TranslationKey, string> = {
     'Candidate health checks not reported (candidate_health: null — rolled back before candidate health check ran)',
   'admin.updates.rollbackHealth.restoredNullNotice':
     'Restored release health checks not reported (health: null)',
+  'admin.updates.rollbackHealth.noReceiptEvidenceTitle':
+    'Target Update Receipt & Health Evidence',
+  'admin.updates.rollbackHealth.noReceiptEvidenceNotice':
+    'No current update receipt evidence reported (previous_release_id / health / candidate_health = null)',
 };

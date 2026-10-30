@@ -624,6 +624,11 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
       PRIMARY_FUP_DEFINITION_ID,
       PRIMARY_DNS_RULESET_DEFINITION_ID,
     ];
+    templateTarget.previous_release_id = FALLBACK_RELEASE_ID;
+    templateTarget.health = clone(
+      CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateResultRolledBack.health,
+    );
+    templateTarget.candidate_health = null;
 
     const rolledBackResult = clone(
       CONTRACT_EXAMPLES_USED_BY_MOCKS.UpdateResultRolledBack,
@@ -657,6 +662,10 @@ function buildInitialUpdateBatch(): UpdateBatchDetail {
     waitingOfflineTarget.attempts = 0;
     waitingOfflineTarget.current_job = null;
     waitingOfflineTarget.current_release_id = FALLBACK_RELEASE_ID;
+    waitingOfflineTarget.last_result_at = null;
+    waitingOfflineTarget.previous_release_id = null;
+    waitingOfflineTarget.health = null;
+    waitingOfflineTarget.candidate_health = null;
     waitingOfflineTarget.retryable = true;
     waitingOfflineTarget.needs_attention = false;
     waitingOfflineTarget.unconfirmed = true;
