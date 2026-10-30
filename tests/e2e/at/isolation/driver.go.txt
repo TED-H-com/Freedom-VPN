@@ -1,0 +1,768 @@
+//go:build e2e
+
+package e2e
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	iso "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation"
+	"github.com/google/uuid"
+)
+
+// This owned test is added to the shared driver package by a Go overlay. No
+// shared implementation is copied: countedFlow/selectExit/tracedFetch run here.
+type isolationRun struct {
+	t             *testing.T
+	ctx           context.Context
+	r             *runner
+	stack         *Stack
+	admin         *session
+	dir           string
+	records       map[string]*iso.Record
+	groupB, planB uuid.UUID
+	a, b          *session
+	a1, a2, b1    *runner
+	binary        string
+}
+
+func TestIsolationAssembled(t *testing.T) {
+	if os.Getenv("FVPN_E2E") != "1" {
+		t.Skip("requires assigned devstack")
+	}
+	if os.Getenv("FVPN_E2E_PREFIX") != "w4-isolation" || os.Getenv("FVPN_E2E_PORT_BASE") != "36000" {
+		t.Fatal("wrong assigned binding")
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Minute)
+	defer cancel()
+	root, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	root = filepath.Clean(filepath.Join(root, "../.."))
+	dir := filepath.Join(root, "docs/e2e/at/isolation")
+	if configured := os.Getenv("FVPN_AT_EVIDENCE_DIR"); configured != "" {
+		if filepath.IsAbs(configured) {
+			dir = configured
+		} else {
+			dir = filepath.Join(root, configured)
+		}
+	}
+	source, _ := exec.Command("git", "rev-parse", "HEAD").Output()
+	dirty, _ := exec.Command("git", "status", "--porcelain", "--", "apps", "node", "internal", "pkg", "tests", "deploy", "go.mod", "go.sum").Output()
+	runID := os.Getenv("FVPN_AT_RUN_ID")
+	if runID == "" {
+		runID = uuid.NewString()
+	}
+	x := &isolationRun{t: t, ctx: ctx, dir: dir, records: map[string]*iso.Record{}}
+	for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
+		x.records[id] = &iso.Record{ID: id, Title: "Assembled isolation " + id, Spec: []string{"§19 " + id}, Status: iso.StatusBlocked, RunID: runID, StartedAt: time.Now().UTC().Format(time.RFC3339), Build: strings.TrimSpace(string(source)), SourceDirty: len(dirty) > 0, Actual: "setup not completed", Commands: []string{"make -f mk/at-isolation.mk at-isolation"}}
+		x.records[id].Expected = map[string]string{
+			"AT10": "Protected host, intranet and metadata destinations stay denied during interface changes, with the same member's counted origin control.",
+			"AT11": "IPv4 and IPv6 platform routes cannot bypass protected destinations; unavailable platforms remain blocked.",
+			"AT12": "Same-member and cross-member peers remain isolated; publication groups withdraw excluded members; DNS and source identity exceptions require independent proof.",
+			"AT13": "Disable, revoke and signed expiry withdraw forwarding; restart recovers safely and unmeasured fault windows remain blocked.",
+		}[id]
+	}
+	defer x.finish()
+	lab, err := openLab()
+	if err != nil {
+		x.problem("w3-devstack-e2e", err.Error())
+		return
+	}
+	if lab.prefix != "fvpn-w4-isolation" {
+		x.problem("acceptance", "unexpected stack prefix")
+		return
+	}
+	defer lab.transport.CloseIdleConnections()
+	x.r = &runner{t: t, lab: lab, dir: filepath.Join(dir, "support"), runID: runID, sourceCommit: strings.TrimSpace(string(source))}
+	x.stack = &Stack{lab: lab}
+	for _, s := range []string{"control", "worker", "node", "member", "netbird", "adguard", "gateway", "origin", "idp", "postgres"} {
+		raw, e := exec.Command("docker", "inspect", "--format={{.Image}}", lab.prefix+"-"+s).Output()
+		for _, rec := range x.records {
+			if e == nil {
+				rec.ImageDigests = append(rec.ImageDigests, s+" "+strings.TrimSpace(string(raw)))
+			}
+		}
+	}
+	x.admin, err = lab.login(ctx, "e2e-admin", "admin")
+	if err != nil {
+		x.problem("w3-devstack-e2e", "admin login failed")
+		return
+	}
+	if !x.prepare() {
+		return
+	}
+	x.a1 = x.join("iso-a", x.r.planRevID, "a1", time.Now().UTC().Add(time.Hour))
+	x.a2 = x.join("iso-a", x.r.planRevID, "a2", time.Now().UTC().Add(time.Hour))
+	x.b1 = x.join("iso-b", x.planB, "b1", time.Now().UTC().Add(time.Hour))
+	if x.a1 == nil || x.a2 == nil || x.b1 == nil {
+		x.problem("w3-wire-members", "native admission unavailable")
+		return
+	}
+	x.a, _ = lab.login(ctx, "iso-a", "member")
+	x.b, _ = lab.login(ctx, "iso-b", "member")
+	x.binary = filepath.Join(t.TempDir(), "isolation-probe")
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", x.binary, filepath.Join(root, "tests/e2e/at/isolation/probe_main.go"))
+	if out, e := cmd.CombinedOutput(); e != nil {
+		x.problem("acceptance", string(out))
+		return
+	}
+	for _, c := range []string{x.a1.lab.member, x.a2.lab.member, x.b1.lab.member, lab.node, lab.prefix + "-origin"} {
+		if !x.install(c) {
+			return
+		}
+	}
+	_ = exec.Command("docker", "exec", "-d", lab.prefix+"-origin", "/tmp/isolation-probe", "serve").Run()
+	for _, r := range []*runner{x.a1, x.a2, x.b1} {
+		_ = exec.Command("docker", "exec", "-d", r.lab.member, "/tmp/isolation-probe", "serve").Run()
+	}
+	x.t.Log("native members admitted; starting counted controls")
+	x.intranet()
+	x.peers()
+	x.groups()
+	x.revoke()
+	x.restart()
+	x.deadline()
+}
+
+func (x *isolationRun) problem(owner, detail string) {
+	x.t.Logf("blocked: %s: %s", owner, detail)
+	for _, rec := range x.records {
+		rec.Actual = detail
+		rec.Observations = append(rec.Observations, iso.Observation{Name: "owner", Detail: owner})
+	}
+}
+
+func (x *isolationRun) finish() {
+	for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
+		rec := x.records[id]
+		if x.r != nil {
+			_, _, _, generation := x.r.desiredMemberView()
+			rec.PolicyRevision = generation
+			rec.NodeIncarnation = x.r.incID.String()
+			rec.Observations = append(rec.Observations, iso.Observation{Name: "mechanism_control", Detail: "lab-" + id + ".json; separate mechanism proof, never substitutes for a counted product control"})
+		}
+		if len(rec.Checks) > 0 {
+			rec.Status = iso.ChecksStatus(rec.Checks)
+			rec.Actual = "See per-check positive controls, outcomes and owners."
+		}
+		if err := iso.Write(x.dir, *rec); err != nil {
+			x.t.Errorf("write %s: %v", id, err)
+		}
+	}
+	// All records are persisted before the aggregate test is failed.
+	for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
+		if x.records[id].Status != iso.StatusPass {
+			x.t.Errorf("%s: %s", id, x.records[id].Status)
+		}
+	}
+}
+
+func (x *isolationRun) add(id string, c iso.Check) {
+	c.At = time.Now().UTC().Format(time.RFC3339)
+	x.records[id].Checks = append(x.records[id].Checks, c)
+	x.records[id].Status = iso.ChecksStatus(x.records[id].Checks)
+	if err := iso.Write(x.dir, *x.records[id]); err != nil {
+		x.t.Error(err)
+	}
+	x.t.Logf("%s %s: %s (positive=%t)", id, c.Name, c.Status, c.Positive.Valid())
+}
+
+func (x *isolationRun) proof(r *runner) iso.Positive {
+	p := iso.Positive{DeviceID: r.usageDevice.String(), Container: r.lab.member, At: time.Now().UTC().Format(time.RFC3339)}
+	// Wait only for advertisement; selection itself remains the shared driver.
+	wait, cancel := context.WithTimeout(x.ctx, 45*time.Second)
+	advertised := waitUntil(wait, 2*time.Second, func() bool {
+		raw, _ := r.lab.docker(r.lab.member, "netbird", "networks", "list")
+		return strings.Contains(string(raw), "fvpn-exit-")
+	})
+	cancel()
+	if !advertised {
+		p.Observations = append(p.Observations, iso.Observation{Name: "advertisement", Detail: "no product exit advertised within 45 seconds"})
+		return p
+	}
+	p.Counted = r.countedFlow(x.ctx, func(k, v string) {
+		p.Observations = append(p.Observations, iso.Observation{Name: k, Detail: v})
+		if k == "admission_bytes_before" {
+			p.Before = v
+		}
+		if k == "admission_bytes_after" {
+			p.After = v
+		}
+	})
+	return p
+}
+
+func (x *isolationRun) observation(c *iso.Check, r *runner) {
+	heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
+	c.Observations = append(c.Observations, iso.Observation{Name: "heartbeat", Detail: strings.TrimSpace(string(heartbeat))})
+	conn, e := r.lab.db(x.ctx)
+	if e != nil {
+		return
+	}
+	defer conn.Close(x.ctx)
+	var raw []byte
+	if conn.QueryRow(x.ctx, `SELECT jsonb_build_object('generation',report_payload->'applied_config_generation','checks',report_payload->'checks','errors',report_payload->'errors','forwarding',report_payload->'member_forwarding_enabled','reasons',report_payload->'forwarding_block_reasons') FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, r.nodeID).Scan(&raw) == nil {
+		c.Observations = append(c.Observations, iso.Observation{Name: "accepted_observation", Detail: string(raw)})
+	}
+}
+
+func (x *isolationRun) prepare() bool {
+	baseline, err := PrepareServingBaseline(x.ctx, x.admin.http, x.admin.csrf, false)
+	if err != nil {
+		x.problem("w3-devstack-e2e", "PrepareServingBaseline: "+err.Error())
+		return false
+	}
+	for _, rec := range x.records {
+		rec.Observations = append(rec.Observations, iso.Observation{Name: "boot_release", Detail: baseline.Boot.String()})
+	}
+	r := x.r
+	rules, _, err := r.lab.createPolicy(x.ctx, x.admin, "domain_rule_set", "isolation-allow", map[string]any{"rules": []any{map[string]any{"rule_id": uuid.NewString(), "domain": "feed-01.example.invalid", "include_subdomains": false, "action": "allow", "profile_id": nil, "reason": "admin_rule", "revision": "1"}}})
+	if err != nil {
+		x.problem("w3-wire-dns", err.Error())
+		return false
+	}
+	r.profileID, _, err = r.lab.createPolicy(x.ctx, x.admin, "dns_profile", "isolation-profile", map[string]any{"profile_code": "isolation", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []uuid.UUID{rules}, "threat_feed_revision_ids": []string{}})
+	if err != nil {
+		x.problem("w3-wire-dns", err.Error())
+		return false
+	}
+	r.catalogue(x.ctx, x.admin)
+	if r.planRevID == uuid.Nil {
+		x.problem("w3-wire-members", r.planError)
+		return false
+	}
+	created, e := x.admin.call(x.ctx, "POST", r.lab.public+"/api/v1/admin/groups", api.MemberGroupCreate{Code: "isolation-b", Name: "TEST ONLY isolation B"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	var group api.MemberGroup
+	if e != nil || created.Status != 201 || json.Unmarshal(created.Body, &group) != nil {
+		x.problem("w3-wire-nodes", "group B creation failed")
+		return false
+	}
+	x.groupB = group.GroupId
+	conn, e := r.lab.db(x.ctx)
+	if e != nil {
+		return false
+	}
+	defer conn.Close(x.ctx)
+	var raw []byte
+	if conn.QueryRow(x.ctx, `SELECT payload FROM policy_revisions WHERE id=$1`, r.planRevID).Scan(&raw) != nil {
+		return false
+	}
+	var payload map[string]json.RawMessage
+	if json.Unmarshal(raw, &payload) != nil {
+		return false
+	}
+	payload["exit_group_ids"], _ = json.Marshal([]uuid.UUID{x.groupB})
+	x.planB, _, err = r.lab.createPolicy(x.ctx, x.admin, "plan", "isolation-plan-b", payload)
+	if err != nil {
+		x.problem("w3-wire-members", err.Error())
+		return false
+	}
+	n, err := x.stack.Enroll(x.ctx, BrowserSession{x.admin.http, x.admin.csrf, x.admin.memberID}, "TEST ONLY isolation exit")
+	if err != nil {
+		x.problem("w2-agent-core", err.Error())
+		return false
+	}
+	r.nodeID, r.incID = n.NodeID, n.IncarnationID
+	r.publish(x.ctx, x.admin, n.NodeID)
+	c := iso.Check{Name: "serving setup", Status: iso.StatusBlocked, Owner: "w2-agent-core / w3-wire-nodes"}
+	if !x.publication("published", []uuid.UUID{r.groupID, x.groupB}, &c) {
+		c.Actual = "publication did not complete; exact product response and observation retained"
+		x.observation(&c, r)
+		for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
+			x.add(id, c)
+		}
+		return false
+	}
+	return true
+}
+
+func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Check) bool {
+	note := func(k, v string) {
+		if c != nil {
+			c.Observations = append(c.Observations, iso.Observation{Name: k, Detail: v})
+		}
+	}
+	// Long capture matrices can outlive a browser session. Obtain a fresh one
+	// before each mutation; never replay an unasserted side effect.
+	var loginErr error
+	x.admin, loginErr = x.r.lab.login(x.ctx, "e2e-admin", "admin")
+	if loginErr != nil {
+		note("publication_login", "failed")
+		return false
+	}
+	path := x.r.lab.public + "/api/v1/admin/nodes/" + x.r.nodeID.String()
+	get, e := x.admin.call(x.ctx, "GET", path, nil, nil)
+	if e != nil || get.Status != 200 {
+		return false
+	}
+	put, e := x.admin.call(x.ctx, "PUT", path+"/publication", map[string]any{"publication_intent": intent, "group_ids": groups, "reason": "TEST ONLY isolation publication"}, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": get.Header.Get("ETag")})
+	note("publication_put", httpDetail(put, e))
+	if e != nil || put.Status != 202 {
+		note("publication_error", apiErrorText(put.Body))
+		return false
+	}
+	id := operationID(put.Body)
+	wait, cancel := context.WithTimeout(x.ctx, 150*time.Second)
+	defer cancel()
+	var last reply
+	status := ""
+	done := waitUntil(wait, 2*time.Second, func() bool {
+		last, e = x.admin.call(wait, "GET", x.r.lab.public+"/api/v1/admin/operations/"+id, nil, nil)
+		var v opView
+		if e != nil || last.Status != 200 || json.Unmarshal(last.Body, &v) != nil {
+			return false
+		}
+		status = v.Status
+		return status == "succeeded" || status == "failed" || status == "partially_succeeded"
+	})
+	note("operation", string(last.Body))
+	node, _ := x.admin.call(x.ctx, "GET", path, nil, nil)
+	var detail map[string]json.RawMessage
+	_ = json.Unmarshal(node.Body, &detail)
+	for _, key := range []string{"publication_intent", "publication_observed", "provisioning_state", "safety_status", "checks", "config_generation"} {
+		note(key, string(detail[key]))
+	}
+	return done && status == "succeeded"
+}
+
+func (x *isolationRun) join(subject string, plan uuid.UUID, name string, until time.Time) *runner {
+	member, e := x.stack.Login(x.ctx, subject, "member")
+	if e != nil {
+		return nil
+	}
+	resp, e := x.stack.Call(x.ctx, BrowserSession{x.admin.http, x.admin.csrf, x.admin.memberID}, "POST", "/api/v1/admin/members/"+member.MemberID+"/grants", api.GrantCreateRequest{Source: api.GrantSourceAdminGrant, Reason: "TEST ONLY finite isolation grant", PlanRevisionId: &plan, ValidUntil: until}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	if e != nil || resp.Status != 202 {
+		x.t.Log("grant", httpDetail(resp, e))
+		return nil
+	}
+	container, e := x.stack.StartNativePeer(x.ctx, name)
+	if e != nil {
+		x.t.Log(e)
+		return nil
+	}
+	peer, e := x.stack.JoinNativeMember(x.ctx, member, subject, container, container)
+	if e != nil {
+		x.t.Log(e)
+		return nil
+	}
+	r := *x.r
+	l := *x.r.lab
+	r.lab = &l
+	r.lab.member = container
+	r.usageDevice = peer.DeviceID
+	return &r
+}
+
+func (x *isolationRun) install(container string) bool {
+	out, e := exec.Command("docker", "cp", x.binary, container+":/tmp/isolation-probe").CombinedOutput()
+	if e != nil {
+		x.problem("acceptance", string(out))
+		return false
+	}
+	return true
+}
+
+func (x *isolationRun) connect(r *runner, ip string, port int) (string, string) {
+	route, _ := r.lab.docker(r.lab.member, "ip", "route", "get", ip)
+	raw, e := r.lab.docker(r.lab.member, "/tmp/isolation-probe", "connect", ip, strconv.Itoa(port))
+	var v struct {
+		Result string `json:"result"`
+	}
+	if e != nil || json.Unmarshal(raw, &v) != nil {
+		return strings.TrimSpace(string(route)), "probe_error"
+	}
+	return strings.TrimSpace(string(route)), v.Result
+}
+
+// Capture only fixture headers at both boundaries. A route and a timeout alone
+// cannot attribute a denial to the exit's enforcement.
+func (x *isolationRun) capturedConnect(r *runner, target, ip string, port int, c *iso.Check) (route, result string, ingress, delivered bool) {
+	type capture struct {
+		name    string
+		cmd     *exec.Cmd
+		out     bytes.Buffer
+		started bool
+	}
+	captures := []*capture{}
+	for _, v := range []struct{ name, container, iface string }{{"negative_node_ingress", r.lab.node, "fvmb0"}, {"negative_target_ingress", target, "eth0"}} {
+		direction := "in"
+		if v.container == r.lab.prefix+"-origin" {
+			// The service image has no tcpdump. Observe the origin bridge at
+			// the node's uplink instead, using the shared node image's tools.
+			v.name, v.container, v.iface, direction = "negative_node_egress", r.lab.node, "fvup0", "out"
+		}
+		args := []string{"exec", v.container, "timeout", "-s", "INT", "3", "tcpdump", "-nn", "-q", "-s", "96", "-Q", direction, "-i", v.iface, "dst", "host", ip, "and", "tcp", "dst", "port", strconv.Itoa(port)}
+		if v.name == "negative_node_ingress" {
+			args = append(args, "and", "src", "host", memberIP(r))
+		}
+		cap := &capture{name: v.name, cmd: exec.CommandContext(x.ctx, "docker", args...)}
+		cap.cmd.Stdout, cap.cmd.Stderr = &cap.out, &cap.out
+		cap.started = cap.cmd.Start() == nil
+		captures = append(captures, cap)
+	}
+	time.Sleep(time.Second)
+	route, result = x.connect(r, ip, port)
+	valid := true
+	for _, cap := range captures {
+		if cap.started {
+			_ = cap.cmd.Wait()
+		}
+		raw := cap.out.String()
+		c.Observations = append(c.Observations, iso.Observation{Name: cap.name, Detail: strings.TrimSpace(raw)})
+		n, parsed := iso.CaptureCount(raw)
+		ok := cap.started && parsed
+		valid = valid && ok
+		if ok {
+			if cap.name == "negative_node_ingress" {
+				ingress = n > 0
+			} else {
+				delivered = n > 0
+			}
+		}
+	}
+	return route, result, ingress && valid, delivered
+}
+
+func (x *isolationRun) deny(id, name string, r *runner, ip string, port int, requireExit bool) {
+	c := iso.Check{Name: name, Positive: x.proof(r), Owner: "w1-netlab / w2-agent-core"}
+	before, _ := r.lab.docker(r.lab.node, "nft", "list", "counter", "inet", "fvpn", "ctin")
+	route, result := x.connect(r, ip, port)
+	after, _ := r.lab.docker(r.lab.node, "nft", "list", "counter", "inet", "fvpn", "ctin")
+	c.Observations = append(c.Observations, iso.Observation{Name: "node_input_counter_before", Detail: string(before)}, iso.Observation{Name: "node_input_counter_after", Detail: string(after)})
+	ran := result != "probe_error" && (!requireExit || strings.Contains(route, "dev fvnb0"))
+	c.Status = iso.NegativeStatus(c.Positive, ran, result == "timeout")
+	c.Actual = "route=" + route + "; result=" + result
+	if !ran || !c.Positive.Valid() {
+		c.Owner = "w3-devstack-e2e: counted path or target route unavailable"
+	}
+	x.add(id, c)
+}
+
+func (x *isolationRun) intranet() {
+	r := x.a1
+	image, _ := exec.Command("docker", "inspect", "--format={{.Image}}", r.lab.node).Output()
+	prefix := strings.TrimSuffix(r.originIP(), ".10")
+	target := r.lab.prefix + "-isolation-target"
+	out, e := exec.Command("docker", "run", "-d", "--name", target, "--network", r.lab.prefix+"-origin", "--ip", prefix+".30", "--cap-add=NET_ADMIN", "--entrypoint", "sleep", strings.TrimSpace(string(image)), "infinity").CombinedOutput()
+	if e != nil {
+		x.add("AT10", iso.Check{Name: "controlled targets", Status: iso.StatusBlocked, Actual: string(out), Owner: "acceptance"})
+		return
+	}
+	if !x.install(target) {
+		return
+	}
+	_ = exec.Command("docker", "exec", "-d", target, "/tmp/isolation-probe", "serve").Run()
+	targets := []struct{ name, ip string }{{"RFC1918-10", "10.42.0.10"}, {"RFC1918-172", "172.16.42.10"}, {"RFC1918-192", "192.168.42.10"}, {"metadata", "169.254.169.254"}, {"public-prefix-internal", "192.0.2.200"}, {"deprecated-6to4", "192.88.99.10"}}
+	for _, v := range targets {
+		_, e1 := r.lab.docker(target, "ip", "addr", "add", v.ip+"/32", "dev", "eth0")
+		_, e2 := r.lab.docker(r.lab.node, "ip", "route", "add", v.ip+"/32", "via", prefix+".30", "dev", "fvup0")
+		local, _ := r.lab.docker(r.lab.node, "/tmp/isolation-probe", "connect", v.ip, "8080")
+		c := iso.Check{Name: v.name, Positive: x.proof(r), Owner: "w1-netlab / w2-agent-core"}
+		route, result, ingress, delivered := x.capturedConnect(r, target, v.ip, 8080, &c)
+		c.Actual = "node target control=" + strings.TrimSpace(string(local)) + "; member result=" + result + "; route=" + route
+		c.Status = iso.NegativeStatus(c.Positive, e1 == nil && e2 == nil && strings.Contains(string(local), "connected") && strings.Contains(route, "dev fvnb0") && ingress, result == "timeout" && !delivered)
+		if !ingress {
+			c.Owner = "w3-devstack-e2e: negative ingress not demonstrated"
+		}
+		x.add("AT10", c)
+		if v.name == "metadata" || v.name == "deprecated-6to4" {
+			x.add("AT11", c)
+		}
+	}
+	c := iso.Check{Name: "node interface and serving generation change", Positive: x.proof(r), Owner: "w2-agent-core"}
+	loopPath := "/tmp/isolation-flap.json"
+	oldGeneration := r.lab.forwardChain().Generation
+	loopErr := exec.Command("docker", "exec", "-d", r.lab.member, "/tmp/isolation-probe", "loop", "10.42.0.10", "60", loopPath).Run()
+	time.Sleep(400 * time.Millisecond)
+	_, e = r.lab.docker(r.lab.node, "ip", "link", "add", "fvisotest", "type", "dummy")
+	if e == nil {
+		_, e = r.lab.docker(r.lab.node, "ip", "addr", "add", "198.18.0.10/32", "dev", "fvisotest")
+	}
+	_, _ = r.lab.docker(r.lab.node, "ip", "link", "set", "fvisotest", "up")
+	route, result := x.connect(r, "198.18.0.10", 8080)
+	_, _ = r.lab.docker(r.lab.node, "ip", "link", "del", "fvisotest")
+	path := r.lab.public + "/api/v1/admin/nodes/" + r.nodeID.String()
+	get, getErr := x.admin.call(x.ctx, "GET", path, nil, nil)
+	patch, patchErr := x.admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 201000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	waitApply, stopApply := context.WithTimeout(x.ctx, 45*time.Second)
+	applied := waitUntil(waitApply, time.Second, func() bool {
+		return r.lab.forwardChain().Generation > oldGeneration && r.lab.forwardChain().MemberAccept > 0
+	})
+	stopApply()
+	c.Observations = append(c.Observations, iso.Observation{Name: "capacity_patch", Detail: httpDetail(patch, patchErr)}, iso.Observation{Name: "generation_change", Detail: fmt.Sprintf("before=%d after=%d", oldGeneration, r.lab.forwardChain().Generation)})
+	waitLoop, stopLoop := context.WithTimeout(x.ctx, 65*time.Second)
+	loopComplete := waitUntil(waitLoop, time.Second, func() bool { _, err := r.lab.docker(r.lab.member, "test", "-f", loopPath); return err == nil })
+	stopLoop()
+	loopRaw, loopRead := r.lab.docker(r.lab.member, "cat", loopPath)
+	var loop struct {
+		Attempts  uint64  `json:"attempts"`
+		Delivered uint64  `json:"delivered"`
+		Seconds   float64 `json:"seconds"`
+	}
+	loopValid := loopErr == nil && loopComplete && loopRead == nil && json.Unmarshal(loopRaw, &loop) == nil && loop.Seconds > 0 && float64(loop.Attempts)/loop.Seconds >= 10
+	after := x.proof(r)
+	c.Observations = append(c.Observations, iso.Observation{Name: "continuous_probe", Detail: string(loopRaw)}, iso.Observation{Name: "origin_after_flap", Detail: boolText(after.Valid())})
+	c.Status = iso.NegativeStatus(c.Positive, e == nil && getErr == nil && get.Status == 200 && patchErr == nil && (patch.Status == 200 || patch.Status == 202) && applied && strings.Contains(route, "dev fvnb0") && loopValid && after.Valid(), result == "timeout" && loop.Delivered == 0)
+	c.Actual = "dummy added/addressed/removed and API capacity generation applied inside node under >=10 attempts/s; changed-interface result=" + result
+	x.add("AT10", c)
+	v6, _ := r.lab.docker(r.lab.member, "ip", "-6", "addr", "show")
+	x.add("AT11", iso.Check{Name: "IPv6 platform matrix", Status: iso.StatusBlocked, Positive: x.proof(r), Actual: "no controlled IPv6 underlay/targets; " + strings.TrimSpace(string(v6)), Owner: "w3-devstack-e2e / operator platforms"})
+}
+
+func (x *isolationRun) peers() {
+	for _, v := range []struct {
+		name     string
+		from, to *runner
+	}{{"same-member A1-to-A2", x.a1, x.a2}, {"same-member A2-to-A1", x.a2, x.a1}, {"cross-member A1-to-B1", x.a1, x.b1}, {"cross-member B1-to-A1", x.b1, x.a1}} {
+		ip := memberIP(v.to)
+		if ip == "" {
+			x.add("AT12", iso.Check{Name: v.name, Status: iso.StatusBlocked, Actual: "target overlay absent", Owner: "w3-devstack-e2e"})
+			continue
+		}
+		x.deny("AT12", v.name, v.from, ip, 8080, true)
+	}
+	raw, _ := x.r.lab.docker(x.r.lab.node, "ip", "-o", "-4", "addr", "show", "fvmb0")
+	nodeIP := overlayIP(raw)
+	if nodeIP != "" {
+		for _, p := range []int{22, 9443, 3000} {
+			x.deny("AT12", "node-management-"+strconv.Itoa(p), x.a1, nodeIP, p, true)
+		}
+	} else {
+		x.add("AT12", iso.Check{Name: "node-management", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "node fvmb0 overlay address unavailable", Owner: "w3-devstack-e2e"})
+	}
+	var desired struct {
+		Signed struct {
+			DNS struct {
+				Resolvers []string `json:"resolver_ipv4"`
+			} `json:"dns"`
+		} `json:"signed"`
+	}
+	_ = json.Unmarshal(x.r.desiredRaw(), &desired)
+	if len(desired.Signed.DNS.Resolvers) > 0 {
+		resolver := desired.Signed.DNS.Resolvers[0]
+		route, _ := x.a1.lab.docker(x.a1.lab.member, "ip", "route", "get", resolver)
+		x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route)) + "; DNS transport must traverse the exit to prove its service exception", Owner: "w3-devstack-e2e: resolver on member underlay"})
+	}
+	x.add("AT12", iso.Check{Name: "unknown/spoofed member source", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "no authenticated stale/spoofed-client injection hook; mechanism lab covers unknown source", Owner: "w3-devstack-e2e"})
+}
+
+func memberIP(r *runner) string {
+	raw, _ := r.lab.docker(r.lab.member, "ip", "-o", "-4", "addr", "show", "fvnb0")
+	return overlayIP(raw)
+}
+
+func overlayIP(raw []byte) string {
+	for _, f := range strings.Fields(string(raw)) {
+		if strings.HasPrefix(f, "100.") {
+			return strings.Split(f, "/")[0]
+		}
+	}
+	return ""
+}
+
+func (x *isolationRun) groups() {
+	c := iso.Check{Name: "publish A only withdraws B", Positive: x.proof(x.b1), Owner: "w3-wire-nodes / w3-wire-members"}
+	ok := x.publication("published", []uuid.UUID{x.r.groupID}, &c)
+	time.Sleep(8 * time.Second)
+	route, result := x.connect(x.b1, x.b1.originIP(), 443)
+	sibling := x.proof(x.a1)
+	c.Observations = append(c.Observations, iso.Observation{Name: "A_remains_counted", Detail: boolText(sibling.Valid())})
+	c.Status = iso.NegativeStatus(c.Positive, ok && sibling.Valid(), result == "timeout" || result == "unreachable")
+	c.Actual = "B result=" + result + "; route=" + route + "; A counted=" + boolText(sibling.Valid())
+	x.add("AT12", c)
+	_ = x.publication("published", []uuid.UUID{x.r.groupID, x.groupB}, nil)
+	c = iso.Check{Name: "disable published exit", Positive: x.proof(x.a1), Owner: "w3-wire-nodes / w2-agent-core"}
+	ok = x.publication("disabled", []uuid.UUID{x.r.groupID, x.groupB}, &c)
+	route, result = x.connect(x.a1, x.a1.originIP(), 443)
+	c.Status = iso.NegativeStatus(c.Positive, ok, result == "timeout" || result == "unreachable")
+	c.Actual = "result=" + result + "; route=" + route
+	x.observation(&c, x.a1)
+	x.add("AT13", c)
+	_ = x.publication("published", []uuid.UUID{x.r.groupID, x.groupB}, nil)
+}
+
+func (x *isolationRun) revoke() {
+	r := x.a2
+	c := iso.Check{Name: "revoke established TCP and UDP", Positive: x.proof(r), Owner: "w2-agent-core / w3-wire-members"}
+	path := "/tmp/isolation-revoke.json"
+	e := exec.Command("docker", "exec", "-d", r.lab.member, "/tmp/isolation-probe", "stream", r.originIP(), "45", path).Run()
+	time.Sleep(2 * time.Second)
+	before, _ := r.lab.docker(r.lab.member, "cat", path)
+	c.Observations = append(c.Observations, iso.Observation{Name: "stream_before", Detail: string(before)})
+	source := memberIP(r)
+	ctBefore, ctBeforeErr := r.lab.docker(r.lab.node, "conntrack", "-L", "-s", source, "-d", r.originIP(), "-o", "extended")
+	old := r.lab.forwardChain().Generation
+	memberSession, err := r.lab.login(x.ctx, "iso-a", "member")
+	if err != nil {
+		c.Status = iso.StatusBlocked
+		c.Actual = "member session refresh failed"
+		x.add("AT13", c)
+		return
+	}
+	x.a = memberSession
+	resp, err := x.a.call(x.ctx, "DELETE", r.lab.public+"/api/v1/member/devices/"+r.usageDevice.String(), nil, map[string]string{"Idempotency-Key": uuid.NewString()})
+	c.Observations = append(c.Observations, iso.Observation{Name: "delete", Detail: httpDetail(resp, err)})
+	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
+	applied := waitUntil(wait, time.Second, func() bool {
+		_, bound := readProjectedBinding(r.desiredRaw(), r.usageDevice)
+		return !bound && r.lab.forwardChain().Generation > old && r.lab.forwardChain().MemberAccept > 0
+	})
+	cancel()
+	time.Sleep(3 * time.Second)
+	after, _ := r.lab.docker(r.lab.member, "cat", path)
+	ctAfter, ctAfterErr := r.lab.docker(r.lab.node, "conntrack", "-L", "-s", source, "-d", r.originIP(), "-o", "extended")
+	var a, b struct {
+		TCP     int    `json:"tcp_ok"`
+		UDP     int    `json:"udp_ok"`
+		TCPFail string `json:"tcp_first_fail"`
+		UDPFail string `json:"udp_first_fail"`
+	}
+	_ = json.Unmarshal(before, &a)
+	_ = json.Unmarshal(after, &b)
+	sibling := x.proof(x.a1)
+	c.Observations = append(c.Observations, iso.Observation{Name: "stream_after", Detail: string(after)}, iso.Observation{Name: "sibling_counted", Detail: boolText(sibling.Valid())})
+	c.Observations = append(c.Observations, iso.Observation{Name: "conntrack_before", Detail: string(ctBefore)}, iso.Observation{Name: "conntrack_after", Detail: string(ctAfter)})
+	tracked := ctBeforeErr == nil && strings.Contains(string(ctBefore), "tcp ") && strings.Contains(string(ctBefore), "udp ") && strings.Contains(string(ctBefore), "dport=8080 ")
+	cleared := ctAfterErr == nil && !strings.Contains(string(ctAfter), "dport=8080 ")
+	c.Status = iso.NegativeStatus(c.Positive, e == nil && err == nil && resp.Status == 202 && applied && a.TCP > 0 && a.UDP > 0 && sibling.Valid() && tracked, b.TCPFail != "" && b.UDPFail != "" && cleared)
+	c.Actual = "binding removed and new serving generation=" + boolText(applied) + "; sibling counted=" + boolText(sibling.Valid()) + "; native route withdrawal and kernel revoke are not independently attributed"
+	if !applied {
+		c.Status = iso.StatusBlocked
+		c.Actual = "post-revoke serving apply missing; agent owns exact observation below"
+	}
+	x.observation(&c, r)
+	x.add("AT13", c)
+	x.add("AT13", iso.Check{Name: "post-revoke kernel ingress attribution", Status: iso.StatusBlocked, Positive: c.Positive, Actual: "native route withdrawal can precede post-revoke ingress; established-flow stop and conntrack deletion recorded above, isolated ingress remains backed by lab-AT13", Owner: "w3-devstack-e2e: known #170 measurement limit"})
+}
+
+func (x *isolationRun) restart() {
+	c := iso.Check{Name: "node restart with durable identity", Positive: x.proof(x.a1), Owner: "w2-agent-core / w3-devstack-e2e"}
+	before, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
+	boot := regexp.MustCompile(`(?m)^boot_id (\S+)$`).FindStringSubmatch(string(before))
+	out, e := exec.Command("docker", "restart", x.r.lab.node).CombinedOutput()
+	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
+	ready := waitUntil(wait, 2*time.Second, func() bool {
+		raw, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
+		return len(boot) == 2 && !strings.Contains(string(raw), "boot_id "+boot[1]) && strings.Contains(string(raw), "\nserving 1\n") && x.r.lab.forwardChain().MemberAccept > 0
+	})
+	cancel()
+	after := x.proof(x.a1)
+	for attempt, deadline := 0, time.Now().Add(60*time.Second); !after.Valid() && time.Now().Before(deadline); attempt++ {
+		raw, _ := json.Marshal(after)
+		c.Observations = append(c.Observations, iso.Observation{Name: "recovery_attempt_" + strconv.Itoa(attempt), Detail: string(raw)})
+		time.Sleep(3 * time.Second)
+		after = x.proof(x.a1)
+	}
+	afterRaw, _ := json.Marshal(after)
+	c.Observations = append(c.Observations, iso.Observation{Name: "recovered_control", Detail: string(afterRaw)})
+	c.Status = iso.NegativeStatus(c.Positive, e == nil && ready && after.Valid(), true)
+	c.Actual = "container restart=" + strings.TrimSpace(string(out)) + "; recovered counted=" + boolText(after.Valid()) + "; continuous forbidden-flow coverage not established"
+	x.observation(&c, x.a1)
+	x.add("AT13", c)
+	x.add("AT13", iso.Check{Name: "continuous crash/NetBird/reboot/updater transitions", Status: iso.StatusBlocked, Positive: after, Actual: "restart recovery measured; full continuous fault matrix remains unproved", Owner: "acceptance / operator"})
+}
+
+func (x *isolationRun) deadline() {
+	x.admin, _ = x.r.lab.login(x.ctx, "e2e-admin", "admin")
+	if x.admin == nil {
+		return
+	}
+	end := time.Now().UTC().Add(180 * time.Second).Truncate(time.Second)
+	r := x.join("iso-expiry", x.r.planRevID, "expiry", end)
+	if r == nil {
+		x.add("AT13", iso.Check{Name: "lease member expiry", Status: iso.StatusBlocked, Actual: "finite member admission failed", Owner: "w3-wire-members"})
+		return
+	}
+	if !x.install(r.lab.member) {
+		return
+	}
+	c := iso.Check{Name: "lease member expiry under control loss", Positive: x.proof(r), Owner: "w2-agent-core"}
+	fleet, fleetErr := x.admin.call(x.ctx, "GET", r.lab.public+"/api/v1/admin/fleet-config", nil, nil)
+	x.add("AT13", iso.Check{Name: "short whole-node lease expiry", Status: iso.StatusBlocked, Positive: c.Positive, Actual: "D-065 fleet-config read: " + httpDetail(fleet, fleetErr) + "; " + apiErrorText(fleet.Body) + "; no fleet_config rows written", Owner: "w3-wire-nodes: fleet configuration handler required", Observations: []iso.Observation{{Name: "fleet_config_response", Detail: string(fleet.Body)}}})
+	conn, e := r.lab.db(x.ctx)
+	if e != nil {
+		return
+	}
+	defer conn.Close(x.ctx)
+	var lease []byte
+	e = conn.QueryRow(x.ctx, `SELECT jsonb_build_object('issued_at',issued_at,'expires_at',expires_at,'generation',policy_generation::text,'members',envelope->'signed'->'members') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, r.nodeID).Scan(&lease)
+	c.Observations = append(c.Observations, iso.Observation{Name: "signed_lease_bounds", Detail: string(lease)}, iso.Observation{Name: "grant_deadline", Detail: end.Format(time.RFC3339)})
+	binding, bound := readProjectedBinding(r.desiredRaw(), r.usageDevice)
+	var bounds struct {
+		Members []struct {
+			Member     uuid.UUID `json:"member_id"`
+			End        time.Time `json:"lease_end"`
+			ServiceEnd time.Time `json:"effective_service_end"`
+		} `json:"members"`
+	}
+	leaseBound := false
+	if json.Unmarshal(lease, &bounds) == nil && bound {
+		for _, m := range bounds.Members {
+			if m.Member == binding.Member && m.ServiceEnd.Equal(end) && m.End.Equal(end) {
+				leaseBound = true
+			}
+		}
+	}
+	if !c.Positive.Valid() || e != nil || !leaseBound || !time.Now().Before(end.Add(-25*time.Second)) {
+		c.Status = iso.StatusBlocked
+		c.Actual = "counted finite flow, matching signed member deadline, or pre-expiry fault window unavailable"
+		x.add("AT13", c)
+		return
+	}
+	for time.Until(end) > 25*time.Second {
+		select {
+		case <-x.ctx.Done():
+			return
+		case <-time.After(time.Second):
+		}
+	}
+	e = exec.Command("docker", "stop", "--time", "2", r.lab.control, r.lab.prefix+"-worker").Run()
+	c.Observations = append(c.Observations, iso.Observation{Name: "control_stopped_at", Detail: time.Now().UTC().Format(time.RFC3339)})
+	defer func() { _ = exec.Command("docker", "start", r.lab.control, r.lab.prefix+"-worker").Run() }()
+	if e != nil {
+		c.Status = iso.StatusBlocked
+		c.Actual = "control stop failed"
+		x.add("AT13", c)
+		return
+	}
+	for time.Now().Before(end.Add(2 * time.Second)) {
+		select {
+		case <-x.ctx.Done():
+			return
+		case <-time.After(time.Second):
+		}
+	}
+	frozen, available := r.admissionBytes()
+	denied := true
+	routed, probesOK := true, true
+	for i := 0; i < 5; i++ {
+		route, result, ingress, delivered := x.capturedConnect(r, r.lab.prefix+"-origin", r.originIP(), 443, &c)
+		c.Observations = append(c.Observations, iso.Observation{Name: "post_deadline_" + strconv.Itoa(i), Detail: "result=" + result + "; route=" + route})
+		denied = denied && result == "timeout" && !delivered
+		routed = routed && strings.Contains(route, "dev fvnb0")
+		probesOK = probesOK && result != "probe_error" && ingress
+		time.Sleep(time.Second)
+	}
+	after, ok := r.admissionBytes()
+	c.Observations = append(c.Observations, iso.Observation{Name: "post_deadline_bytes_before", Detail: fmt.Sprint(frozen)}, iso.Observation{Name: "post_deadline_bytes_after", Detail: fmt.Sprint(after)})
+	c.Status = iso.NegativeStatus(c.Positive, available && ok && probesOK, denied && after == frozen)
+	c.Actual = "five new TCP requests after finite signed member deadline; control and worker stopped; admission bytes frozen=" + boolText(after == frozen) + "; route retained throughout=" + boolText(routed) + "; node lease has a later deadline"
+	x.observation(&c, r)
+	x.add("AT13", c)
+	if !routed {
+		x.add("AT13", iso.Check{Name: "expiry per-packet ingress attribution", Status: iso.StatusBlocked, Positive: c.Positive, Actual: "Native route was withdrawn during the post-deadline window. End-to-end withdrawal was measured; persistent post-expiry ingress was not.", Owner: "w3-devstack-e2e: retain controlled ingress after authorization withdrawal"})
+	}
+}
