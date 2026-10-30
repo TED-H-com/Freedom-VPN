@@ -10,16 +10,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/agent"
 )
 
-// init dispatches `fvpn-agent usage` before main. node/agent/cmd/fvpn-agent/main.go
-// is outside this task's owned paths, so the switch there is not edited.
-// The process still exits with the snapshot status and never falls through
-// to enroll, run or step.
-func init() {
-	if len(os.Args) > 1 && os.Args[1] == "usage" {
-		os.Exit(usageCommand(os.Args[2:]))
-	}
-}
-
 func usageCommand(args []string) int {
 	return usageCommandTo(args, os.Stdout, os.Stderr)
 }

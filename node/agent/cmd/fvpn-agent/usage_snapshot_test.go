@@ -17,6 +17,17 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
 )
 
+// TestMain sends a re-exec of this test binary (`usage snapshot …`) into
+// main. The test harness is the process entry, so that is the path that
+// reaches the dispatch switch. A normal `go test` run does not take it.
+func TestMain(m *testing.M) {
+	if len(os.Args) > 1 && os.Args[1] == "usage" {
+		main()
+		return
+	}
+	os.Exit(m.Run())
+}
+
 func TestUsageSnapshotCommand(t *testing.T) {
 	dir := t.TempDir()
 	cfgPath := writeRunConfig(t, dir)
