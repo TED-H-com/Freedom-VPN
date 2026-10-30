@@ -22,7 +22,7 @@ export CGO_ENABLED := 0
 
 LINT_TARGETS += at-isolation-lint
 
-.PHONY: at-isolation-lint at-isolation at-isolation-lab-up at-isolation-lab-down
+.PHONY: at-isolation-lint at-isolation at-isolation-review-captures at-isolation-lab-up at-isolation-lab-down
 
 at-isolation-disk = set -eu; mkdir -p .agent/tmp; at_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/at-isolation.XXXXXX"); trap 'rm -rf "$$at_tmp"' EXIT; export TMPDIR="$$at_tmp" GOTMPDIR="$$at_tmp";
 
@@ -35,6 +35,10 @@ at-isolation-lint:
 	@$(at-isolation-disk) go vet tests/e2e/at/isolation/probe_main.go
 	@$(at-isolation-disk) go run $(AT_STATICCHECK) tests/e2e/at/isolation/probe_main.go
 	@python3 tests/e2e/at/isolation/driver.py lint
+
+# Offline evaluation only; archive the original AT13 first (see RUN.md).
+at-isolation-review-captures:
+	@$(at-isolation-disk) FVPN_AT_REVIEW_DIR='$(abspath $(FVPN_AT_EVIDENCE_DIR))' go test -count=1 -v -run '^TestAT13_ReviewCapturedExpiry$$' ./tests/e2e/at/isolation
 
 at-isolation-lab-up:
 	FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' sh tests/e2e/at/isolation/lab.sh up

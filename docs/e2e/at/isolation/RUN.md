@@ -62,3 +62,18 @@ captures/matrices are mechanism records. Each has a source hash, run ID, image
 IDs and UTC timestamps. `summary.md` and `requests.md` describe the current run.
 The #69 evidence lives in `history/follow-up-1/`. Diagnostic histories retain
 their original dirty-source marker and are not the final acceptance run.
+
+The final live run initially classified the finite-member expiry check as
+blocked because its capture parser missed tcpdump's singular `1 packet captured`.
+The original AT13 record is preserved in `history/follow-up-2-live/`. The corrected
+parser accepts singular/plural summaries and rejects capture loss or an interface
+disappearing. Its unit tests and an offline review establish five ingress packets,
+zero egress packets, five timeouts, a retained exit route and frozen counters.
+The root AT13 records this evaluation's UTC time and evaluator SHA256 separately
+from the unchanged live source hash. No new live traffic is claimed by this review.
+
+To reproduce that review, first archive the input AT13 JSON/Markdown, then run:
+
+```sh
+make -f mk/at-isolation.mk at-isolation-review-captures
+```

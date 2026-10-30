@@ -422,11 +422,10 @@ func (x *isolationRun) capturedConnect(r *runner, target, ip string, port int, c
 		}
 		raw := cap.out.String()
 		c.Observations = append(c.Observations, iso.Observation{Name: cap.name, Detail: strings.TrimSpace(raw)})
-		m := regexp.MustCompile(`(?m)^(\d+) packets captured$`).FindStringSubmatch(raw)
-		ok := cap.started && len(m) == 2 && strings.Contains(raw, "listening on") && strings.Contains(raw, "0 packets dropped by kernel")
+		n, parsed := iso.CaptureCount(raw)
+		ok := cap.started && parsed
 		valid = valid && ok
 		if ok {
-			n, _ := strconv.Atoi(m[1])
 			if cap.name == "negative_node_ingress" {
 				ingress = n > 0
 			} else {
