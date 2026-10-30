@@ -292,6 +292,9 @@ func TestStep_RejectsBadDesiredState(t *testing.T) {
 		t.Fatalf("wrong node was accepted: gen %d", r.eng.desired.ConfigGeneration)
 	}
 	r.srv.SetWrongIdentity(false, false)
+	// A newer desired generation is served only against a lease for that
+	// generation. The sticky replay would keep generation 1.
+	r.srv.StickyLease(false)
 	r.srv.BumpGeneration()
 	if err := r.eng.Step(context.Background()); err != nil {
 		t.Fatal(err)

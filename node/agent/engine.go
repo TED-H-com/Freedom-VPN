@@ -447,6 +447,11 @@ func (e *Engine) Step(ctx context.Context) error {
 	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
 		return err
 	}
+	// The generation this step just applied is visible only after enforce.
+	// The matching lease is requested before heartbeat and observation.
+	if err := e.renewAppliedLease(ctx); err != nil && ctx.Err() != nil {
+		return err
+	}
 	e.publishMeterEpoch()
 	_ = e.observe(ctx)
 	_ = e.flush(ctx)
