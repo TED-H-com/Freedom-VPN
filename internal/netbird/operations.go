@@ -141,7 +141,8 @@ func (c *Client) ensureMember(ctx context.Context, d MemberDevice) (Peer, error)
 	if e != nil {
 		return Peer{}, e
 	}
-	proof, e := hash([]string{d.IdentityBindingID, d.MappingRevision, d.UserID})
+	// D-052/F-03: verification revisions change; the identity tuple is immutable.
+	proof, e := hash([]string{d.IdentityBindingID, d.UserID})
 	if e != nil {
 		return Peer{}, e
 	}
