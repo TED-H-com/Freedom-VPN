@@ -398,8 +398,10 @@ func WorkFromEnvelope(raw []byte, trust *envelope.TrustStore, node Node, now tim
 }
 
 // HTTPSink posts an update result. The contract answers 202. 409 is
-// ACK_CONFLICT. Other statuses stay pending and are retried (§13.10.3).
+// ACK_CONFLICT. Other 4xx responses except 429 are permanent rejections.
+// Transport/5xx failures and throttling stay pending (D-062d).
 type HTTPSink struct {
+	Now            func() time.Time // tests may inject the HTTP Retry-After clock
 	URL            string
 	Client         *http.Client
 	AllowLoopback  bool
@@ -413,7 +415,7 @@ func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, e
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.URL, bytes.NewReader(payload))
 	if err != nil {
-		return Accepted{}, false, err
+		return Accepted{}, false, permanent(apierr.ValidationFailed, "result request")
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "fvpn-updater/"+Version)
@@ -430,21 +432,45 @@ func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, e
 		return Accepted{}, false, transient(apierr.StoreUnavailable, "result submit")
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if err != nil {
-		return Accepted{}, false, transient(apierr.StoreUnavailable, "result submit")
+	body, err := io.ReadAll(io.LimitReader(resp.Body, (1<<20)+1))
+	if err != nil || len(body) > 1<<20 {
+		body = nil
 	}
+	apiCode := responseCode(body)
 	switch resp.StatusCode {
 	case http.StatusAccepted:
+		if err != nil {
+			return Accepted{}, false, &DeliveryError{HTTPStatus: resp.StatusCode, Op: transient(apierr.StoreUnavailable, "result response")}
+		}
 		var ack api.UpdateResultAck
 		if err := json.Unmarshal(body, &ack); err != nil {
-			return Accepted{}, false, transient(apierr.StoreUnavailable, "result ack")
+			return Accepted{}, false, &DeliveryError{HTTPStatus: resp.StatusCode, Op: transient(apierr.ValidationFailed, "result ack")}
 		}
 		return Accepted{AcceptedAsHistory: ack.AcceptedAsHistory, Raw: append([]byte(nil), body...)}, false, nil
 	case http.StatusConflict:
-		return Accepted{}, true, nil
+		return Accepted{HTTPStatus: resp.StatusCode, APICode: apiCode}, true, nil
 	default:
-		return Accepted{}, false, transient(apierr.StoreUnavailable, fmt.Sprintf("result submit status %d", resp.StatusCode))
+		code := apierr.Code(apiCode)
+		if code == "" || code == apierr.StoreUnavailable {
+			code = apierr.ValidationFailed
+		}
+		retry := false
+		var retryAt time.Time
+		switch {
+		case resp.StatusCode >= 500:
+			code, retry = apierr.StoreUnavailable, true
+		case resp.StatusCode == http.StatusTooManyRequests:
+			code, retry = apierr.RateLimited, true
+			now := time.Now()
+			if s.Now != nil {
+				now = s.Now()
+			}
+			retryAt = retryAfter(resp.Header.Get("Retry-After"), now)
+		case resp.StatusCode < 400:
+			code, retry = apierr.ValidationFailed, true
+		}
+		return Accepted{}, false, &DeliveryError{HTTPStatus: resp.StatusCode, APICode: apiCode, RetryAt: retryAt,
+			Op: opErr(code, "result submit", retry)}
 	}
 }
 

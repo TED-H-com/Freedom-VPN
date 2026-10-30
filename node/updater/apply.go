@@ -401,6 +401,9 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 		finished = txn.UpdatedAt
 	}
 	prev := txn.PreviousReleaseID
+	if state == api.UpdateResultStateRolledBack {
+		prev = txn.ReleaseID
+	}
 	in := resultInput{
 		Claimed: c, State: state, Stage: journalStageAPI(txn.Stage), Code: code,
 		Current: current, Previous: prev, Recovery: recovery, Forwarding: forwarding,
@@ -413,8 +416,16 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 			in.Stage = api.UpdateStageFinalSample
 		}
 	}
-	if err := e.enqueueResult(ctx, in); err != nil {
+	recorded, err := e.Journal.HasResult(ctx, resultID(txn.JobID, txn.Attempt, state).String())
+	if err != nil {
 		return err
+	}
+	// A crash after enqueue but before FinishJob must reuse the sealed bytes,
+	// including a v1 result whose health/previous fields predate D-062.
+	if !recorded {
+		if err := e.enqueueResult(ctx, in); err != nil {
+			return err
+		}
 	}
 	if err := e.finish(ctx, job, string(state), string(code)); err != nil {
 		return err

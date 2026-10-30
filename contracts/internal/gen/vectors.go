@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
@@ -253,7 +254,18 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	reasons["DesiredStateEnvelope.revocations-tampered.json"] = Reason{Kind: "signature", Code: envelope.CodeSignatureInvalid, Note: "Removing a signed revocation invalidates the signature."}
 
 	// D-056/D-058 bind the separately fetched resolver bytes and exact probe targets.
-	resolver := mustCanon(`{"schema_version":1,"kind":"resolver_document","profile_code":"standard","block_response":"nxdomain","blocked_ttl_seconds":60,"safe_search":false,"privacy":{"querylog_enabled":false,"querylog_file_enabled":false,"statistics_enabled":false},"upstreams":["192.0.2.53"],"bootstrap_dns":[],"fallback_dns":[],"rules":[],"feeds":[]}`)
+	// bootstrap_dns is left empty on input so the compiler copies upstreams (D-028).
+	compiled, err := dnspublish.Compile(dnspublish.Input{
+		ProfileCode: "standard", BlockResponse: "nxdomain", BlockedTTLSeconds: 60,
+		Upstreams: []string{"192.0.2.53"},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err = dnspublish.Verify(compiled.Document); err != nil {
+		return nil, err
+	}
+	resolver := compiled.Bytes
 	resolverHash, err := canonjson.HashHex(resolver)
 	if err != nil {
 		return nil, err
@@ -343,6 +355,23 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["examples/valid/UpdateResult.json"] = prettyDoc(ur)
 	out["examples/valid/UpdateResult.rolled-back.json"] = prettyDoc(urRB)
 	out["examples/valid/UpdateResult.null-stage.json"] = prettyDoc(withHash(setMember(ur, []string{"stage"}, "null"), "payload_hash"))
+	out["examples/valid/UpdateResult.null-candidate-health.json"] = prettyDoc(withHash(setMember(ur, []string{"candidate_health"}, "null"), "payload_hash"))
+	preflight := setMember(ur, []string{"state"}, `"failed"`)
+	preflight = setMember(preflight, []string{"stage"}, `"download"`)
+	preflight = setMember(preflight, []string{"health"}, "null")
+	preflight = setMember(preflight, []string{"error_code"}, `"HASH_MISMATCH"`)
+	preflight = setMember(preflight, []string{"current_release_id"}, `"`+idReleaseR41+`"`)
+	preflight = setMember(preflight, []string{"candidate_health"}, "null")
+	out["examples/valid/UpdateResult.preflight-failed.json"] = prettyDoc(withHash(preflight, "payload_hash"))
+	healthNullOnCheck := setMember(ur, []string{"state"}, `"failed"`)
+	healthNullOnCheck = setMember(healthNullOnCheck, []string{"stage"}, `"check"`)
+	healthNullOnCheck = setMember(healthNullOnCheck, []string{"health"}, "null")
+	healthNullOnCheck = setMember(healthNullOnCheck, []string{"error_code"}, `"HEALTH_CHECK_FAILED"`)
+	out["examples/semantic-invalid/UpdateResult.health-null-on-check.json"] = prettyDoc(withHash(healthNullOnCheck, "payload_hash"))
+	badCandidate := setMember(urRB, []string{"candidate_health", "tunnel_probe"}, `"skipped"`)
+	out["examples/invalid/UpdateResult.bad-candidate-health.json"] = prettyDoc(badCandidate)
+	reasons["UpdateResult.bad-candidate-health.json"] = Reason{Kind: "schema", Pointer: "/candidate_health/tunnel_probe", Keyword: "enum",
+		Note: "candidate_health uses UpdateHealth; unknown check statuses are rejected (D-062)."}
 	out["examples/invalid/UpdateResult.hash-mismatch.json"] = prettyDoc(setMember(ur, []string{"state"}, `"failed"`))
 	reasons["UpdateResult.hash-mismatch.json"] = Reason{Kind: "payload_hash", Field: "payload_hash",
 		Note: "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."}

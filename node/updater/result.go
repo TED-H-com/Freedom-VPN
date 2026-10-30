@@ -185,7 +185,8 @@ func (e *Engine) NoteAck(ctx context.Context, resultID, payloadHash string, acce
 	return dup, err
 }
 
-// Flush sends pending results. A send error leaves the entry pending.
+// Flush sends pending results in order. Permanent HTTP rejections are retained
+// for diagnosis and do not block later results. Retry-After defers the queue.
 // Local success is not changed into acceptance here (§13.6 step 13).
 func (e *Engine) Flush(ctx context.Context) error {
 	if e.Sender == nil {
@@ -203,19 +204,39 @@ func (e *Engine) flushLocked(ctx context.Context) error {
 		return err
 	}
 	for _, ent := range pending {
-		if ent.Status == updatejournal.OutboxConflict {
-			continue
+		if !ent.RetryNotBefore.IsZero() && e.now().Before(ent.RetryNotBefore) {
+			return &DeliveryError{HTTPStatus: ent.LastHTTPStatus, APICode: ent.LastAPICode,
+				RetryAt: ent.RetryNotBefore, Op: transient(apierr.RateLimited, "result retry deferred")}
 		}
 		ack, conflict, err := e.Sender.Submit(ctx, ent.Payload)
 		if conflict {
-			if err := e.Journal.MarkConflict(ctx, ent.ResultID, "central ACK_CONFLICT"); err != nil {
+			if err := e.Journal.RecordDeliveryFailure(ctx, ent.ResultID, updatejournal.DeliveryFailure{
+				Status: updatejournal.OutboxConflict, HTTPStatus: ack.HTTPStatus, APICode: ack.APICode, ErrorCode: string(apierr.AckConflict),
+			}); err != nil {
 				return err
 			}
 			continue
 		}
 		if err != nil {
-			_ = e.Journal.RecordSendFailure(ctx, ent.ResultID, errCode(err))
-			return transient(apierr.StoreUnavailable, "result submit")
+			if asOp(err) == nil {
+				err = transient(apierr.StoreUnavailable, "result submit")
+			}
+			failure := updatejournal.DeliveryFailure{Status: updatejournal.OutboxPending, ErrorCode: errCode(err)}
+			var delivery *DeliveryError
+			if errors.As(err, &delivery) {
+				failure.HTTPStatus, failure.APICode, failure.RetryNotBefore = delivery.HTTPStatus, delivery.APICode, delivery.RetryAt
+				if delivery.rejected() {
+					failure.Status = updatejournal.OutboxRejected
+				}
+			}
+			if recordErr := e.Journal.RecordDeliveryFailure(ctx, ent.ResultID, failure); recordErr != nil {
+				return recordErr
+			}
+			if failure.Status == updatejournal.OutboxRejected {
+				e.log().Warn("update result rejected", "http_status", failure.HTTPStatus, "api_code", failure.APICode)
+				continue
+			}
+			return err
 		}
 		raw := ack.Raw
 		if len(raw) == 0 {

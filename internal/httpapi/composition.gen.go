@@ -629,7 +629,6 @@ func (c *Composite) RevokeEnrollment(ctx context.Context, r gen.RevokeEnrollment
 	}
 	return nil, errNotImplemented
 }
-
 func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -640,7 +639,6 @@ func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRe
 	}
 	return nil, errNotImplemented
 }
-
 func (c *Composite) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -901,7 +899,6 @@ func (c *Composite) SubmitObservation(ctx context.Context, r gen.SubmitObservati
 	}
 	return nil, errNotImplemented
 }
-
 func (c *Composite) GetResolverDocument(ctx context.Context, r gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {

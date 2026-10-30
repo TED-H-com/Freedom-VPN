@@ -7,6 +7,7 @@ import { http, HttpResponse } from 'msw';
 import type {
   EnrollmentCreateRequest,
   GrantCreateRequest,
+  MemberGroupCreate,
   MemberPatchRequest,
   NodePatchRequest,
   NodeSummaryItem,
@@ -228,6 +229,68 @@ export const handlers = [
     });
   }),
 
+  // --- Admin Groups (D-057) ---
+  http.get('/api/v1/admin/groups', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    return HttpResponse.json({
+      items: state.groups,
+      next_cursor: null,
+    });
+  }),
+
+  http.post('/api/v1/admin/groups', async ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const body = (await request.json()) as MemberGroupCreate;
+    const code = (body.code ?? '').trim();
+    const name = (body.name ?? '').trim();
+
+    const codeValid = /^[a-z0-9][a-z0-9-]{1,63}$/.test(code);
+    if (!codeValid) {
+      return makeErrorResponse(
+        422,
+        'VALIDATION_FAILED',
+        'Request validation failed.',
+        false,
+        {
+          fields: [{ field: '/code', reason: 'invalid' }],
+        },
+      );
+    }
+    if (!name || name.length > 120) {
+      return makeErrorResponse(
+        422,
+        'VALIDATION_FAILED',
+        'Request validation failed.',
+        false,
+        {
+          fields: [{ field: '/name', reason: 'invalid' }],
+        },
+      );
+    }
+
+    const dup = state.groups.find((g) => g.code === code || g.name === name);
+    if (dup) {
+      return makeErrorResponse(
+        409,
+        'STATE_CONFLICT',
+        'Group code or name already exists.',
+      );
+    }
+
+    const created = {
+      group_id: `83575bae-2d23-45c0-ae11-${String(state.groups.length + 10).padStart(12, '0')}`,
+      code,
+      name,
+      exit_count: 0,
+    };
+    state.groups.push(created);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+
   // --- Admin Nodes ---
   http.get('/api/v1/admin/nodes', ({ request }) => {
     const guard = checkSessionGuard(request, true);
@@ -423,6 +486,29 @@ export const handlers = [
     }
 
     const body = (await request.json()) as PublicationRequest;
+    if (body.group_ids !== undefined) {
+      const knownIds = new Set(state.groups.map((g) => g.group_id));
+      for (const gid of body.group_ids) {
+        if (!knownIds.has(gid)) {
+          return makeErrorResponse(
+            422,
+            'VALIDATION_FAILED',
+            `Unknown group_id: ${gid}`,
+            false,
+            {
+              fields: [{ field: '/group_ids', reason: 'unknown_group' }],
+            },
+          );
+        }
+      }
+      node.group_ids = [...body.group_ids];
+      node.member_group_ids = [...body.group_ids];
+      for (const grp of state.groups) {
+        grp.exit_count = Object.values(state.nodes).filter((n) =>
+          (n.group_ids ?? n.member_group_ids ?? []).includes(grp.group_id),
+        ).length;
+      }
+    }
     const nextGen = String(BigInt(node.config_generation.desired) + 1n);
     const nextVer = String(BigInt(node.resource_version) + 1n);
     node.publication_intent = body.publication_intent;
@@ -921,6 +1007,31 @@ export const handlers = [
             `Invalid domain rule: ${r.domain}`,
           );
         }
+      }
+    }
+    if (body.type === 'threat_feed') {
+      const interval = body.payload.update_interval_seconds;
+      if (
+        typeof interval !== 'number' ||
+        !Number.isInteger(interval) ||
+        interval < 300 ||
+        interval > 604800
+      ) {
+        return makeErrorResponse(
+          422,
+          'VALIDATION_FAILED',
+          'payload.update_interval_seconds must be in 300..604800',
+          false,
+          {
+            reason: 'schema_invalid',
+            fields: [
+              {
+                field: '/payload/update_interval_seconds',
+                reason: 'schema_invalid',
+              },
+            ],
+          },
+        );
       }
     }
 

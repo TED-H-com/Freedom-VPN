@@ -217,6 +217,7 @@
       "additionalProperties": false,
       "properties": {
         "allowed_release_ids": {
+          "description": "Empty means no additional restriction (D-034e). A non-empty list is a\nfail-closed intersection with the serving set: the rollback target must\nbe in both this list and serving_release_ids. The updater and central\nenforce the same rule.\n",
           "items": {
             "format": "uuid",
             "type": "string"

@@ -32,6 +32,9 @@ import type {
   MemberDetail,
   MemberDeviceListResponse,
   MemberExitListResponse,
+  MemberGroup,
+  MemberGroupCreate,
+  MemberGroupListResponse,
   MemberListResponse,
   MemberPatchRequest,
   MemberSelf,
@@ -481,10 +484,15 @@ export class FreedomVpnApiClient {
     ifMatch?: string,
     actionId?: string,
     reason = 'Publish node to member service',
+    groupIds?: string[],
   ): Promise<OperationResource> {
     return this.setNodePublication(
       nodeId,
-      { publication_intent: 'published', reason },
+      {
+        publication_intent: 'published',
+        reason,
+        ...(groupIds !== undefined ? { group_ids: groupIds } : {}),
+      },
       ifMatch,
       actionId,
     );
@@ -495,10 +503,15 @@ export class FreedomVpnApiClient {
     ifMatch?: string,
     actionId?: string,
     reason = 'Disable node from member service',
+    groupIds?: string[],
   ): Promise<OperationResource> {
     return this.setNodePublication(
       nodeId,
-      { publication_intent: 'disabled', reason },
+      {
+        publication_intent: 'disabled',
+        reason,
+        ...(groupIds !== undefined ? { group_ids: groupIds } : {}),
+      },
       ifMatch,
       actionId,
     );
@@ -509,13 +522,37 @@ export class FreedomVpnApiClient {
     ifMatch?: string,
     actionId?: string,
     reason = 'Unpublish node from member service',
+    groupIds?: string[],
   ): Promise<OperationResource> {
     return this.setNodePublication(
       nodeId,
-      { publication_intent: 'unpublished', reason },
+      {
+        publication_intent: 'unpublished',
+        reason,
+        ...(groupIds !== undefined ? { group_ids: groupIds } : {}),
+      },
       ifMatch,
       actionId,
     );
+  }
+
+  listAdminGroups(
+    query?: operations['listAdminGroups']['parameters']['query'],
+  ): Promise<MemberGroupListResponse> {
+    return this.callOperation({
+      method: 'get',
+      path: '/admin/groups',
+      query,
+    });
+  }
+
+  createAdminGroup(body: MemberGroupCreate, actionId?: string): Promise<MemberGroup> {
+    return this.callOperation({
+      method: 'post',
+      path: '/admin/groups',
+      body,
+      actionId,
+    });
   }
 
   revokeNode(
