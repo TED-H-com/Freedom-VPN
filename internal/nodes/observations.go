@@ -315,7 +315,9 @@ func (s *Service) SubmitObservation(
 				if err != nil {
 					return err
 				}
-				if cause != "" && observed != "withdrawn" || cause == "" && observed != "active" {
+				// Only recover a withdrawn empty-exception attachment once the
+				// populated desired generation has full serving evidence.
+				if cause == "" && observed == "withdrawn" {
 					if err := QueuePublicationGateTx(ctx, tx, authNodeID, receivedAt, false); err != nil {
 						return err
 					}
@@ -595,6 +597,11 @@ func advanceNodeOperationsOnObservation(
 		}
 
 		if allRequiredSucceeded && op.status == string(api.OperationStatusRunning) {
+			if op.kind == OpKindPublish {
+				if err := RecordPublicationAttachmentTx(ctx, tx, op.id, obsGenStr); err != nil {
+					return err
+				}
+			}
 			if _, err := tx.Exec(ctx, `
 				UPDATE operations
 				SET status = 'succeeded',

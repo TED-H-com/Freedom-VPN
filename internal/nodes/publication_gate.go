@@ -3,6 +3,7 @@ package nodes
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -15,13 +16,61 @@ import (
 
 const PublicationGatePrincipal = "system:publication-gate"
 
-// QueuePublicationGateTx rechecks an existing route after compilation or a new
-// observation (§5.2). The caller holds the node lock; terminal evidence is never reset.
+// PublicationAttachmentEmpty reports whether the most recent successful publish
+// attached under the zero-binding exception. Principal is deliberately irrelevant.
+// Envelope storage is a latest-per-incarnation cache; completion retains the
+// derived basis and desired-state ID in immutable operation evidence before the
+// cache can advance. Unknown history is not evidence of the empty exception.
+func PublicationAttachmentEmpty(ctx context.Context, q Querier, nodeID uuid.UUID) (bool, error) {
+	var empty bool
+	err := q.QueryRow(ctx, `SELECT coalesce(
+		CASE WHEN s.id::text=o.observed_refs->>'publication_attachment_state'
+		THEN o.observed_refs->>'publication_attachment_basis'='empty_exception' END,
+		e.envelope->'signed'->'device_bindings'='[]'::jsonb, false)
+		FROM (SELECT * FROM operations WHERE resource_type='node' AND resource_id=$1
+		AND kind='node.publish' AND status='succeeded'
+		ORDER BY completed_at DESC,id DESC LIMIT 1) o
+		JOIN nodes n ON n.id=o.resource_id
+		LEFT JOIN desired_states s ON s.node_id=n.id AND s.incarnation_id=n.current_incarnation_id
+		AND s.generation=o.observed_generation
+		LEFT JOIN desired_state_envelopes e ON e.desired_state_id=s.id
+		AND e.generation=o.observed_generation AND e.incarnation_id=n.current_incarnation_id`, nodeID).Scan(&empty)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+	return empty, err
+}
+
+// RecordPublicationAttachmentTx retains the signed generation's basis before a
+// publish becomes terminal. It never changes an already-terminal operation.
+func RecordPublicationAttachmentTx(ctx context.Context, tx pgx.Tx, opID uuid.UUID, generation string) error {
+	_, err := tx.Exec(ctx, `UPDATE operations o SET observed_refs=o.observed_refs||jsonb_build_object(
+		'publication_attachment_state',s.id::text,
+		'publication_attachment_basis',CASE WHEN e.envelope->'signed'->'device_bindings'='[]'::jsonb
+		THEN 'empty_exception' ELSE 'populated_verified' END),
+		resource_version=coalesce(o.resource_version,0)+1
+		FROM nodes n JOIN desired_state_envelopes e ON e.node_id=n.id AND e.incarnation_id=n.current_incarnation_id
+		JOIN desired_states s ON s.id=e.desired_state_id AND s.node_id=n.id AND s.incarnation_id=n.current_incarnation_id
+		WHERE o.id=$1 AND o.resource_id=n.id AND o.kind='node.publish' AND o.status IN ('pending','running')
+		AND s.generation=$2::numeric AND e.generation=s.generation
+		AND e.envelope->'signed'->>'config_generation'=$2::text
+		AND jsonb_typeof(e.envelope->'signed'->'device_bindings')='array'`, opID, generation)
+	return err
+}
+
+// QueuePublicationGateTx gates only the first populated generation after an
+// empty-exception attachment (§5.2, r11). The caller holds the node lock.
 func QueuePublicationGateTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID, now time.Time, newGeneration bool) error {
+	empty, err := PublicationAttachmentEmpty(ctx, tx, nodeID)
+	if err != nil || !empty {
+		return err
+	}
 	var generation decstr.U64
 	var eligible bool
 	if err := tx.QueryRow(ctx, `SELECT n.desired_config_generation::text,
 		n.lifecycle_state='registered' AND e.publication_intent='published' AND EXISTS(
+		SELECT 1 FROM desired_state_envelopes ds WHERE ds.node_id=n.id AND ds.incarnation_id=n.current_incarnation_id
+		AND ds.generation=n.desired_config_generation AND jsonb_array_length(ds.envelope->'signed'->'device_bindings')>0) AND EXISTS(
 		SELECT 1 FROM external_bindings b WHERE b.resource_type='exit' AND b.resource_id=e.id AND b.provider='netbird')
 		FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1`, nodeID).Scan(&generation, &eligible); err != nil {
 		return err
@@ -58,6 +107,10 @@ func QueuePublicationGateTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID, no
 func CheckPublicationDelivery(ctx context.Context, q Querier, state api.DesiredState) error {
 	if state.PublicationIntent != api.PublicationIntentPublished || len(state.DeviceBindings) == 0 {
 		return nil
+	}
+	empty, err := PublicationAttachmentEmpty(ctx, q, state.NodeId)
+	if err != nil || !empty {
+		return err
 	}
 	var blocked bool
 	if err := q.QueryRow(ctx, `SELECT e.publication_observed<>'withdrawn' AND EXISTS(

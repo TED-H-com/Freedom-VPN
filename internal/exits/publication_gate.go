@@ -18,8 +18,12 @@ import (
 )
 
 func (s *Service) publicationGateCause(ctx context.Context, nodeID uuid.UUID, generation uint64) (string, error) {
+	return publicationGateCause(ctx, s.pool, nodeID, generation, s.now().UTC())
+}
+
+func publicationGateCause(ctx context.Context, q nodes.Querier, nodeID uuid.UUID, generation uint64, now time.Time) (string, error) {
 	var raw []byte
-	err := s.pool.QueryRow(ctx, `SELECT o.report_payload FROM node_observations o JOIN nodes n ON n.id=o.node_id AND n.current_incarnation_id=o.incarnation_id AND n.last_observed_at=o.observed_at WHERE n.id=$1 ORDER BY o.received_at DESC,o.id DESC LIMIT 1`, nodeID).Scan(&raw)
+	err := q.QueryRow(ctx, `SELECT o.report_payload FROM node_observations o JOIN nodes n ON n.id=o.node_id AND n.current_incarnation_id=o.incarnation_id AND n.last_observed_at=o.observed_at WHERE n.id=$1 ORDER BY o.received_at DESC,o.id DESC LIMIT 1`, nodeID).Scan(&raw)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "stale_generation", nil
 	}
@@ -30,12 +34,27 @@ func (s *Service) publicationGateCause(ctx context.Context, nodeID uuid.UUID, ge
 	if json.Unmarshal(raw, &report) != nil {
 		return "readiness_unconfirmed", nil
 	}
-	return nodes.PublicationDataPathFailure(ctx, s.pool, report, generation, s.now().UTC())
+	return nodes.PublicationDataPathFailure(ctx, q, report, generation, now)
 }
 
 // failGatedPublish confirms route withdrawal before recording a closed gate.
 // A failed external write/read-back leaves error, never an invented withdrawn state.
 func (s *Service) failGatedPublish(ctx context.Context, opID, nodeID uuid.UUID, step, code, message, cause string) (api.Operation, error) {
+	empty, err := nodes.PublicationAttachmentEmpty(ctx, s.pool, nodeID)
+	if err != nil {
+		return api.Operation{}, err
+	}
+	var populated bool
+	if empty {
+		if err := s.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM nodes n JOIN desired_state_envelopes e ON e.node_id=n.id AND e.incarnation_id=n.current_incarnation_id WHERE n.id=$1 AND e.generation=n.desired_config_generation AND jsonb_array_length(e.envelope->'signed'->'device_bindings')>0)`, nodeID).Scan(&populated); err != nil {
+			return api.Operation{}, err
+		}
+	}
+	if !empty || !populated {
+		// Established populated routes retain pre-r11 failure semantics. Node-side
+		// generation-scoped enforcement covers policy/device changes during apply.
+		return s.failPublishStep(ctx, opID, nodeID, step, code, message, cause)
+	}
 	var exitID uuid.UUID
 	if err := s.pool.QueryRow(ctx, `SELECT id FROM exits WHERE node_id=$1`, nodeID).Scan(&exitID); err != nil {
 		return api.Operation{}, err

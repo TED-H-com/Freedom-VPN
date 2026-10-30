@@ -849,8 +849,22 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		return api.Operation{}, err
 	}
 
-	// Complete operation and mark exit publication_observed = 'active'.
+	// Finalize against one locked generation, without any management I/O here.
+	// This keeps the retained attachment basis tied to the successful ACK even
+	// when compilation or observation advanced during external route read-back.
+	var finalCause string
 	err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := tx.QueryRow(ctx, `SELECT applied_config_generation::text FROM nodes WHERE id=$1 FOR UPDATE`, nodeID).Scan(&appliedGenStr); err != nil {
+			return err
+		}
+		var err error
+		finalCause, err = publicationGateCause(ctx, tx, nodeID, desiredGen, s.now().UTC())
+		if err != nil || finalCause != "" {
+			return err
+		}
+		if err := nodes.RecordPublicationAttachmentTx(ctx, tx, opID, appliedGenStr); err != nil {
+			return err
+		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE operations
 			SET status = 'succeeded',
@@ -866,6 +880,9 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 	})
 	if err != nil {
 		return api.Operation{}, err
+	}
+	if finalCause != "" {
+		return s.failGatedPublish(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed", finalCause)
 	}
 	return nodes.GetOperation(ctx, s.pool, opID)
 }
