@@ -163,8 +163,29 @@ func TestUPD_D063_OmissionSurvivesHealthAndConsumption(t *testing.T) {
 			}
 			defer j.Close()
 			records, err := j.ProbeOmissions(context.Background(), issued.TxnID)
-			if err != nil || len(records) != 1 || records[0].Nonce != issued.Nonce || records[0].ProbeOmitted != *issued.ProbeOmitted {
-				t.Fatal("omission lost after consumption/reopen", err)
+			if err != nil || len(records) != 0 {
+				t.Fatal("sealed transaction kept probe_omission meta", len(records), err)
+			}
+			events, err = j.TxnEvents(context.Background(), issued.TxnID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			audit = false
+			for _, event := range events {
+				var d struct {
+					Kind         string                      `json:"kind"`
+					ProbeOmitted *healthattest.ProbeOmission `json:"probe_omitted"`
+				}
+				if json.Unmarshal([]byte(event.Detail), &d) != nil || d.Kind != "probe_omitted" || d.ProbeOmitted == nil {
+					continue
+				}
+				if *d.ProbeOmitted != *issued.ProbeOmitted {
+					t.Fatal("reopened audit changed omission")
+				}
+				audit = true
+			}
+			if !audit {
+				t.Fatal("txn_events omission lost after seal and reopen")
 			}
 		})
 	}

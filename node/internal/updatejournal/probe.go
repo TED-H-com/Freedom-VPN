@@ -69,8 +69,9 @@ func (j *Journal) RecordProbeOmission(ctx context.Context, ch healthattest.Chall
 	return tx.Commit()
 }
 
-// ProbeOmissions returns all recorded omissions for this transaction, including
-// standalone recovery challenges. Records survive sidecar consumption/restart.
+// ProbeOmissions returns recorded omissions for this transaction, including a
+// standalone recovery challenge. Apply-transaction rows are removed when that
+// transaction seals; standalone rows have no txns row and stay.
 func (j *Journal) ProbeOmissions(ctx context.Context, txnID string) ([]ProbeOmission, error) {
 	prefix := probeOmissionPrefix + txnID + "/"
 	rows, err := j.db.QueryContext(ctx, `SELECT value FROM meta WHERE substr(key, 1, length(?)) = ? ORDER BY key`, prefix, prefix)
@@ -91,4 +92,28 @@ func (j *Journal) ProbeOmissions(ctx context.Context, txnID string) ([]ProbeOmis
 		out = append(out, r)
 	}
 	return out, rows.Err()
+}
+
+// DeleteProbeOmissions removes meta rows for one apply transaction. The
+// append-only txn_events copy is left in place. A missing set is success.
+func (j *Journal) DeleteProbeOmissions(ctx context.Context, txnID string) error {
+	if uuid.Validate(txnID) != nil {
+		return errors.New("updatejournal: invalid probe omission transaction")
+	}
+	// Prefix match avoids LIKE, because the key contains underscores.
+	prefix := probeOmissionPrefix + txnID + "/"
+	_, err := j.db.ExecContext(ctx, `DELETE FROM meta WHERE substr(key, 1, length(?)) = ?`, prefix, prefix)
+	return err
+}
+
+// PruneProbeOmissions deletes probe_omission meta for terminal apply
+// transactions. Open transactions and standalone recovery ids (no txns row)
+// are kept, so the meta table cannot grow with every finished update.
+func (j *Journal) PruneProbeOmissions(ctx context.Context) error {
+	_, err := j.db.ExecContext(ctx, `DELETE FROM meta WHERE substr(key, 1, length(?)) = ?
+		AND substr(key, length(?)+1, 36) IN (
+			SELECT txn_id FROM txns WHERE stage IN (?, ?, ?))`,
+		probeOmissionPrefix, probeOmissionPrefix, probeOmissionPrefix,
+		string(StageLocallySucceeded), string(StageRolledBack), string(StageRecoveryRequired))
+	return err
 }
