@@ -94,12 +94,32 @@
       "detail": "pass; expected: 204; no product projection modified; actual: HTTP 204 ; command: PUT same origin object with comment-only content"
     },
     {
+      "name": "real scheduled last-good retention",
+      "detail": "pass; expected: empty/invalid-list failure preserves original hash and one content row; actual: failure_observed=true; error=zero_rules; hash_preserved=true; content_rows=1; failures=1; command: wait actual 300-second cadence plus worker sweep; poll product refresh projection"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=670; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "node last-good block response",
+      "detail": "pass; expected: controlled positive name remains NXDOMAIN after invalid feed update; actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}; command: node loopback DNS after actual 300-second failed refresh; not a native member DNS claim"
+    },
+    {
       "name": "blocked",
-      "detail": "No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed."
+      "detail": "D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision."
     },
     {
       "name": "provenance",
-      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=36; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=39; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
     }
   ],
   "at": "2026-10-30T04:57:01Z",
@@ -110,8 +130,8 @@
     "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
   },
   "followup_build": {
-    "source_commit": "b43613d6a40c20c48465088b7dfd6d71366fe4a4",
-    "source_dirty": false,
+    "source_commit": "75e7e33c6ea125b2b6568c87e075081ba0d1c18f",
+    "source_dirty": true,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
       "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
@@ -209,7 +229,7 @@
       }
     }
   },
-  "policy_revision": "36",
+  "policy_revision": "39",
   "active_policy_revisions": {
     "dns_profile": "01a18b2c-a731-7247-b0e8-91c9457ed6ed",
     "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
@@ -387,9 +407,49 @@
       "actual": "HTTP 204 ",
       "command": "PUT same origin object with comment-only content",
       "at": "2026-10-30T04:58:44Z"
+    },
+    {
+      "name": "real scheduled last-good retention",
+      "status": "pass",
+      "expected": "empty/invalid-list failure preserves original hash and one content row",
+      "actual": "failure_observed=true; error=zero_rules; hash_preserved=true; content_rows=1; failures=1",
+      "command": "wait actual 300-second cadence plus worker sweep; poll product refresh projection",
+      "at": "2026-10-30T05:04:39Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T05:04:40Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=670",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T05:04:40Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T05:04:41Z"
+    },
+    {
+      "name": "node last-good block response",
+      "status": "pass",
+      "expected": "controlled positive name remains NXDOMAIN after invalid feed update",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
+      "command": "node loopback DNS after actual 300-second failed refresh; not a native member DNS claim",
+      "at": "2026-10-30T05:04:41Z"
     }
   ],
   "blockers": [
-    "No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS only, not a successful member URL flow. Raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed."
+    "D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision."
   ]
 }

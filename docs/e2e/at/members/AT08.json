@@ -7,71 +7,15 @@
     "§19 AT08",
     "NODE02 NODE03 EXIT01 EXIT03"
   ],
-  "status": "fail",
+  "status": "blocked",
   "observations": [
     {
-      "name": "finite capacity and classification",
-      "detail": "pass; expected: 200 or 202; actual: HTTP 202 ; command: PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps"
+      "name": "restart entrypoint stage",
+      "detail": "pass; expected: record stage independently of stored disabled intent; actual: read_ok=true; stage=waiting_token; enrolled_identity_present=true; command: read node entrypoint status; test existing identity file; no key export"
     },
     {
-      "name": "publication command published",
-      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
-    },
-    {
-      "name": "publication operation published",
-      "detail": "pass; expected: record applied operation independently of intent; actual: status=running; required=3; succeeded=0; intent=published; observed=error; command: poll operations.steps and required observations; read exits projection"
-    },
-    {
-      "name": "A-only publication readback",
-      "detail": "pass; expected: one A attachment, zero B; NetBird routes readable; actual: A=1; B=0; routes=1; HTTP=200; command: read exit_groups; GET NetBird /api/routes"
-    },
-    {
-      "name": "current serving prerequisite",
-      "detail": "pass; expected: record desired/applied and lease members; actual: {\"lease\": {\"issued_at\": \"2026-10-30T04:49:55.706909+00:00\", \"expires_at\": \"2026-10-31T04:49:55.706909+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"31\", \"desired\": \"32\"}; command: read nodes and latest serving_leases; no projection writes"
-    },
-    {
-      "name": "admission counters",
-      "detail": "pass; expected: record actual per-device counters; actual: read_ok=true; counters=0; command: docker exec node nft -j list table inet fvpn"
-    },
-    {
-      "name": "publication command published",
-      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
-    },
-    {
-      "name": "publication operation published",
-      "detail": "pass; expected: record applied operation independently of intent; actual: status=running; required=3; succeeded=0; intent=published; observed=error; command: poll operations.steps and required observations; read exits projection"
-    },
-    {
-      "name": "regroup projection",
-      "detail": "pass; expected: group B attached; actual: B=1; command: PUT group_ids=[B]; read product attachment"
-    },
-    {
-      "name": "publication command disabled",
-      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
-    },
-    {
-      "name": "publication operation disabled",
-      "detail": "pass; expected: record applied operation independently of intent; actual: status=partially_succeeded; required=2; succeeded=1; intent=disabled; observed=withdrawn; command: poll operations.steps and required observations; read exits projection"
-    },
-    {
-      "name": "resolver sidecar namespace restored",
-      "detail": "pass; expected: restart succeeds; actual: restart_ok=true; command: docker restart fvpn-w4-members-adguard after node restart"
-    },
-    {
-      "name": "node restart",
-      "detail": "pass; expected: restart succeeds; actual: restart_ok=true; command: docker restart fvpn-w4-members-node"
-    },
-    {
-      "name": "disabled persists",
-      "detail": "pass; expected: disabled intent after node restart; actual: intent=disabled; observed=error; command: read publication after reconnect/restart"
-    },
-    {
-      "name": "publication command published",
-      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
-    },
-    {
-      "name": "publication operation published",
-      "detail": "pass; expected: record applied operation independently of intent; actual: status=running; required=3; succeeded=0; intent=published; observed=error; command: poll operations.steps and required observations; read exits projection"
+      "name": "documented agent-only workaround",
+      "detail": "pass; expected: service hook starts/idempotently retains agent; no reboot claim; actual: started=true; command: e2e.Stack.Service(ctx, start, /usr/local); NetBird/watchdog not replaced"
     },
     {
       "name": "shared serving support readback",
@@ -79,11 +23,11 @@
     },
     {
       "name": "current serving prerequisite",
-      "detail": "pass; expected: record desired/applied and lease members; actual: {\"lease\": {\"issued_at\": \"2026-10-30T04:49:55.706909+00:00\", \"expires_at\": \"2026-10-31T04:49:55.706909+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied\": \"36\", \"desired\": \"37\"}; command: read nodes and latest serving_leases; no projection writes"
+      "detail": "pass; expected: record desired/applied and lease members; actual: {\"lease\": {\"issued_at\": \"2026-10-30T05:01:03.52012+00:00\", \"expires_at\": \"2026-10-31T05:01:03.52012+00:00\", \"generation\": \"39\", \"member_count\": 7}, \"applied\": \"39\", \"desired\": \"39\"}; command: read nodes and latest serving_leases; no projection writes"
     },
     {
       "name": "admission counters",
-      "detail": "fail; expected: record actual per-device counters; actual: read_ok=false; counters=0; command: docker exec node nft -j list table inet fvpn"
+      "detail": "pass; expected: record actual per-device counters or missing table; actual: read_ok=true; counters=0; command: docker exec node nft -j list table inet fvpn"
     },
     {
       "name": "typed DNS evidence",
@@ -91,7 +35,7 @@
     },
     {
       "name": "issued resolver document mTLS fetch",
-      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=867; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=670; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
     },
     {
       "name": "current desired-state DNS selection",
@@ -99,27 +43,15 @@
     },
     {
       "name": "real default-route semantics",
-      "detail": "fail; expected: explicit peer, masquerade, skip_auto_apply on every default exit route; actual: HTTP=200; defaults=1; skip_auto_apply=1; enabled=1; masquerade=0; peer_set=1; command: GET NetBird /api/routes; retain counts, not external identifiers"
+      "detail": "pass; expected: explicit peer, skip_auto_apply=true and masquerade=false (node owns NAT); actual: HTTP=200; defaults=1; skip_auto_apply=1; enabled=1; masquerade=0; peer_set=1; command: GET NetBird /api/routes; retain counts, not external identifiers"
+    },
+    {
+      "name": "prior attempts",
+      "detail": "29 prior checks retained with UTC times in JSON prior_checks; see RUN.md for corrected ETag/route expectations and restart blocker"
     },
     {
       "name": "blocked",
-      "detail": "Publication operation did not succeed within 90 seconds: running"
-    },
-    {
-      "name": "blocked",
-      "detail": "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
-    },
-    {
-      "name": "blocked",
-      "detail": "Publication operation did not succeed within 90 seconds: running"
-    },
-    {
-      "name": "blocked",
-      "detail": "Publication operation did not succeed within 90 seconds: partially_succeeded"
-    },
-    {
-      "name": "blocked",
-      "detail": "Publication operation did not succeed within 90 seconds: running"
+      "detail": "F2-05: node restart returns to waiting_token with a durable enrolled identity; entrypoint-node.sh has no resume branch. Agent/tunnel/watchdog recovery is not proven. The shared Service(start) workaround below is only for independent DNS evidence, not a reboot or forwarding pass."
     },
     {
       "name": "blocked",
@@ -127,7 +59,7 @@
     },
     {
       "name": "provenance",
-      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=36; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=39; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
     }
   ],
   "at": "2026-10-30T04:55:16Z",
@@ -138,8 +70,8 @@
     "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
   },
   "followup_build": {
-    "source_commit": "b43613d6a40c20c48465088b7dfd6d71366fe4a4",
-    "source_dirty": false,
+    "source_commit": "75e7e33c6ea125b2b6568c87e075081ba0d1c18f",
+    "source_dirty": true,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
       "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
@@ -237,13 +169,14 @@
       }
     }
   },
-  "policy_revision": "36",
+  "policy_revision": "39",
   "active_policy_revisions": {
-    "dns_profile": "01a18b2b-0b04-7061-b759-483a4e35a3d0",
+    "dns_profile": "01a18b2c-a731-7247-b0e8-91c9457ed6ed",
     "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
     "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
     "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
-    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b"
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b",
+    "threat_feed": "01a18b2c-9e60-7089-8598-2b92227aeaf9"
   },
   "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
   "prior_checks": [
@@ -294,9 +227,7 @@
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
       "at": "2026-10-30T04:56:51Z"
-    }
-  ],
-  "steps": [
+    },
     {
       "name": "finite capacity and classification",
       "status": "pass",
@@ -482,12 +413,82 @@
       "at": "2026-10-30T04:58:36Z"
     }
   ],
+  "steps": [
+    {
+      "name": "restart entrypoint stage",
+      "status": "pass",
+      "expected": "record stage independently of stored disabled intent",
+      "actual": "read_ok=true; stage=waiting_token; enrolled_identity_present=true",
+      "command": "read node entrypoint status; test existing identity file; no key export",
+      "at": "2026-10-30T05:05:11Z"
+    },
+    {
+      "name": "documented agent-only workaround",
+      "status": "pass",
+      "expected": "service hook starts/idempotently retains agent; no reboot claim",
+      "actual": "started=true",
+      "command": "e2e.Stack.Service(ctx, start, /usr/local); NetBird/watchdog not replaced",
+      "at": "2026-10-30T05:05:11Z"
+    },
+    {
+      "name": "shared serving support readback",
+      "status": "pass",
+      "expected": "nonempty active API policy",
+      "actual": "active_release_policies=1",
+      "command": "read policy_definitions after PrepareServingBaseline",
+      "at": "2026-10-30T05:05:11Z"
+    },
+    {
+      "name": "current serving prerequisite",
+      "status": "pass",
+      "expected": "record desired/applied and lease members",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T05:01:03.52012+00:00\", \"expires_at\": \"2026-10-31T05:01:03.52012+00:00\", \"generation\": \"39\", \"member_count\": 7}, \"applied\": \"39\", \"desired\": \"39\"}",
+      "command": "read nodes and latest serving_leases; no projection writes",
+      "at": "2026-10-30T05:05:11Z"
+    },
+    {
+      "name": "admission counters",
+      "status": "pass",
+      "expected": "record actual per-device counters or missing table",
+      "actual": "read_ok=true; counters=0",
+      "command": "docker exec node nft -j list table inet fvpn",
+      "at": "2026-10-30T05:05:11Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T05:05:12Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=670",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T05:05:13Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T05:05:13Z"
+    },
+    {
+      "name": "real default-route semantics",
+      "status": "pass",
+      "expected": "explicit peer, skip_auto_apply=true and masquerade=false (node owns NAT)",
+      "actual": "HTTP=200; defaults=1; skip_auto_apply=1; enabled=1; masquerade=0; peer_set=1",
+      "command": "GET NetBird /api/routes; retain counts, not external identifiers",
+      "at": "2026-10-30T05:05:14Z"
+    }
+  ],
   "blockers": [
-    "Publication operation did not succeed within 90 seconds: running",
-    "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01.",
-    "Publication operation did not succeed within 90 seconds: running",
-    "Publication operation did not succeed within 90 seconds: partially_succeeded",
-    "Publication operation did not succeed within 90 seconds: running",
+    "F2-05: node restart returns to waiting_token with a durable enrolled identity; entrypoint-node.sh has no resume branch. Agent/tunnel/watchdog recovery is not proven. The shared Service(start) workaround below is only for independent DNS evidence, not a reboot or forwarding pass.",
     "Inherited from docs/e2e/followup7-verification.md (run dc2f6353-89ec-434c-bc68-567066d9fe51): w2-agent-core needRenew does not refresh the generation-1 empty member lease after desired/device changes. No successful counted flow; do not inject connection/expiry faults before this positive prerequisite. See requests.md F2-01."
   ]
 }

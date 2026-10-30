@@ -114,12 +114,28 @@
       "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
     },
     {
+      "name": "central resolver document readback",
+      "detail": "pass; expected: record stored publication versus node delivery; actual: central_documents=3; command: SELECT dns_resolver_documents"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=670; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
       "name": "blocked",
       "detail": "Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20."
     },
     {
       "name": "provenance",
-      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=36; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
+      "detail": "source=4ebf248f02d95da663223d2b922e8a8f21c59a6c; applied generation=39; incarnation=01a18b24-9f8d-7aa5-9c26-917891d51ca5; image/binary digests in JSON"
     }
   ],
   "at": "2026-10-30T04:56:51Z",
@@ -130,8 +146,8 @@
     "signed_manifest_sha256_0.1.0": "504352e2de613825c41f7620f9875b14c7dc196b6a9626899ad6846f13d1ee3e"
   },
   "followup_build": {
-    "source_commit": "b43613d6a40c20c48465088b7dfd6d71366fe4a4",
-    "source_dirty": false,
+    "source_commit": "75e7e33c6ea125b2b6568c87e075081ba0d1c18f",
+    "source_dirty": true,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
       "control": "sha256:d82c7c066676e9dc66a2f586ad982fd959308724430bdaecc6143a3948571bd2",
@@ -229,13 +245,14 @@
       }
     }
   },
-  "policy_revision": "36",
+  "policy_revision": "39",
   "active_policy_revisions": {
-    "dns_profile": "01a18b2b-0b04-7061-b759-483a4e35a3d0",
+    "dns_profile": "01a18b2c-a731-7247-b0e8-91c9457ed6ed",
     "domain_rule_set": "01a18b24-8971-7371-999c-28942603c2d3",
     "fair_use": "01a18b24-84a9-7d6d-800d-5292c786d748",
     "plan": "01a18b24-97cb-728b-a3a9-49cf1861676a",
-    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b"
+    "release_support": "01a18b24-7d58-753d-b4d1-05d600ec4c5b",
+    "threat_feed": "01a18b2c-9e60-7089-8598-2b92227aeaf9"
   },
   "node_incarnation": "01a18b24-9f8d-7aa5-9c26-917891d51ca5",
   "steps": [
@@ -446,6 +463,38 @@
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
       "at": "2026-10-30T04:58:38Z"
+    },
+    {
+      "name": "central resolver document readback",
+      "status": "pass",
+      "expected": "record stored publication versus node delivery",
+      "actual": "central_documents=3",
+      "command": "SELECT dns_resolver_documents",
+      "at": "2026-10-30T05:05:14Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T05:05:15Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=670",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T05:05:15Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T05:05:16Z"
     }
   ],
   "blockers": [
