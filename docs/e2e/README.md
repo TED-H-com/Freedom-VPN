@@ -13,20 +13,11 @@ Shared setup calls and probe commands are documented in [RUN.md](RUN.md).
 | `FVPN_E2E_PORT_BASE` | `18000` | Each loopback port is this base plus a fixed offset. |
 | `FVPN_E2E_STATE` | `.agent/e2e-state-<prefix>` | Git-ignored secrets and rendered config for that prefix. |
 
-Legal port bases are `18000 + 6000*n` for `n` from 0 through 7. The step is
-larger than the widest offset, so two legal bases cannot publish the same
-host port. Slot `n` uses lab subnet `172.28.<30+n>.0/24` and release origin
-`192.0.<3+n>.10`. `e2e-down` removes only names matching `^fvpn-<prefix>-`
-for containers, volumes, and images, and `^fvpn-<prefix>(-|$)` for networks.
-It does not match another prefix.
-
-## Who may use which base
-
-| Base | Prefix rule |
-|---|---|
-| `18000` | This lab's default. The acceptance run uses prefix `e2e` and this base only. |
-| `24000`, `30000`, `36000`, `42000`, `48000` | Reserved for the W4 acceptance tasks. Do not start, stop, or reset those prefixes from this task. |
-| `54000`, `60000` | Legal and currently unassigned. Do not start them unless a task owns that slot. |
+Legal port bases are `6000 + 6000*n` for `n` from 0 through 9; `66000`
+is rejected. Existing bases `18000..60000` retain their original subnets and
+ports. The added `12000` slot belongs to `w4-enroll`; `6000` stays reserved.
+See the [binding table](RUN.md#assigned-port-slots) for all owners and subnets.
+This task uses only `e2e` / `18000`. Teardown matches only its own prefix.
 
 Images use neutral `fvpn-devstack-*` tags, including
 `fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.

@@ -59,6 +59,74 @@ Manifest `components.netbird` is `0.82.0`, matching the daemon, and agent
 heartbeat/poll intervals are both five seconds. Only the running agent writes
 the health attestation. These settings are TEST ONLY.
 
+## Assigned port slots
+
+Offsets remain control `+443`, IdP `+444`, origin `+445`, payment `+446`,
+NetBird gateway `+480`, agent mTLS `+1443`, STUN UDP `+3478`, PostgreSQL `+5432`.
+Every base is 6000 apart. The existing eight slots keep exactly the same ports
+and networks; the two lower bases append subnet slots instead of shifting them.
+`66000` is rejected. Origin ranges below are TEST ONLY isolated bridges without
+masquerading; they are not documentation prefixes or public traffic targets.
+
+| Base | Owner / binding | Lab subnet | Origin subnet |
+|---:|---|---|---|
+| 6000 | Reserved; do not start | 172.28.39.0/24 | 192.0.12.0/24 |
+| 12000 | Enrollment: `w4-enroll` | 172.28.38.0/24 | 192.0.11.0/24 |
+| 18000 | Devstack: `e2e` | 172.28.30.0/24 | 192.0.3.0/24 |
+| 24000 | Members | 172.28.31.0/24 | 192.0.4.0/24 |
+| 30000 | Secops | 172.28.32.0/24 | 192.0.5.0/24 |
+| 36000 | Isolation | 172.28.33.0/24 | 192.0.6.0/24 |
+| 42000 | Updates | 172.28.34.0/24 | 192.0.7.0/24 |
+| 48000 | Usage | 172.28.35.0/24 | 192.0.8.0/24 |
+| 54000 | Agent | 172.28.36.0/24 | 192.0.9.0/24 |
+| 60000 | Wire-nodes | 172.28.37.0/24 | 192.0.10.0/24 |
+
+Each origin is `.10` in its listed subnet. This task starts only `e2e` / `18000`.
+The enrollment harness owner must replace its old `66000` binding with `12000`.
+
+## Gateway trust and client rate principals
+
+The public nginx location appends `X-Forwarded-For` with
+`$proxy_add_x_forwarded_for`. Prepared `central.json` trusts only the gateway's
+lab address (`172.28.30.21/32` for `e2e`); no whole lab subnet is trusted.
+Control uses the rightmost untrusted address, so a client-supplied prefix in the
+header cannot choose a different principal. A direct untrusted connection to
+control cannot choose one through that header either. With `trusted_proxies`
+empty, every client through this gateway shares its connection-address bucket.
+Clients sharing an actual source address still share pre-authentication limits.
+The agent mTLS listener remains direct and ignores forwarded headers.
+`worker_connections` is a separate nginx connection budget, not a control rate
+limit. The live `gateway-principals` record uses only responses and control
+metrics, never limiter tables.
+
+## Finite payment grace (SECOPS-04 / AT29)
+
+`fvpn-e2e-prepare -grace-seconds 90` writes `members.json:grace_seconds=90`
+and a TEST ONLY reason. The default is `0` (disabled); valid values are
+`0..31622400`, matching the members configuration bound. Through bring-up:
+
+```sh
+FVPN_E2E_GRACE_SECONDS=90 make -f mk/e2e.mk e2e-up E2E_RESET=1
+```
+
+This is a prepare-time option. Without reset, existing prepared state is reused
+and the environment variable does not rewrite it. Reset is for a fresh stack,
+not for changing a running stack's identity/secrets. Both control and worker
+load members configuration at startup: when deliberately editing an existing
+lab's `config/members.json`, restart both owned containers before the next
+reconciliation; changing a file alone does not update either process. No node
+restart is required for this setting; the node receives product-issued policy
+and lease updates. Existing grace projections are not rewritten by the lab.
+
+A harness records the configured seconds/reason, control and worker start times,
+a paid provider snapshot and successful reconciliation, a positive counted
+member flow, then the unpaid provider snapshot/event and read-only projected
+`grace_from`/`grace_until`, desired/lease generation, and before/after counters
+at the deadline. Do not infer payment or grace from webhook HTTP acceptance.
+Only inject control-loss/short-deadline faults after the positive flow. This
+option does not set `max_offline_lease_seconds`; D-065's API belongs to
+w3-wire-nodes. Clock rollback remains a disposable-guest operator run.
+
 ## Portal and payment
 
 `up.sh` builds the Portal with `npm ci` and `npm run build`. To reuse a build,
