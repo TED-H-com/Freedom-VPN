@@ -88,6 +88,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w1-deps-bump follow-up 1: golang.org/x/crypto GO-2026-5932 | WP01 | done (no change: GO-2026-5932 is the unused x/crypto/openpgp packages, no fixed release exists, govulncheck symbol scan clean) |
 | w3-portal-live: portal on the real control plane, Playwright end-to-end | WP10 | done (#56; all screens on live endpoints, Playwright e2e against real control/worker in CI, dev stack seeds inputs and awaits product projection per D-050) |
 | w3-portal-live follow-up 3: dev-stack node readiness through the agent observation path (fixes main Portal CI after #62) | WP10 | done (#67) |
+| w3-portal-live follow-up 4: pending-apply banner derived from the PATCH response (Portal CI race), DOC12 device-id label, update-target policy evidence | WP10 | done (#74) |
 | r2-ledger-review confirmation pass on main 3224345: probes re-run read-only, 11 of 12 findings closed; finding 9 (uint64 clamp) still open in internal/fup → policies follow-up | WP05, WP07, WP08 | done (read-only) |
 | w3-devstack-e2e: compose dev stack and first end-to-end acceptance run | WP11 | done (#50; 6 scenarios pass, lab gaps → follow-up 2) |
 | w3-devstack-e2e follow-up 2: policies/usage settings in the lab, side-by-side stacks (prefix + port base), NetBird signal via gateway, plan catalog, forwarding baseline check | WP11 | done (#59; 7/12 scenarios pass, 5 blocked on the serving-node and device-binding preconditions) |
