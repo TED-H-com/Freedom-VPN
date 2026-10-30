@@ -21,6 +21,9 @@ import (
 )
 
 func (e *Engine) syncDesired(ctx context.Context) error {
+	// A 304 and a transport error are still an attempt. Boot must not treat
+	// "no document yet" as a finished DNS failure before this runs.
+	defer func() { e.desiredSynced = true }()
 	body, etag, err := e.client.DesiredState(ctx, e.desiredETag)
 	if errors.Is(err, controlclient.ErrNotModified) {
 		// A 304 is not a new document and does not move the lease (§14.7).

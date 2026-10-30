@@ -459,7 +459,7 @@ function createFakeNetBirdServer(tlsOptions) {
         {
           id: 'nb-peer-dev-1',
           name: 'Member MacBook Pro',
-          user_id: 'nb-user-member-1',
+          user_id: 'oidc-sub-member-1',
           ephemeral: false,
           ip: '100.64.0.21',
         },
@@ -469,7 +469,7 @@ function createFakeNetBirdServer(tlsOptions) {
         {
           id: 'nb-peer-dev-2',
           name: 'Member iPhone 16',
-          user_id: 'nb-user-member-1',
+          user_id: 'oidc-sub-member-1',
           ephemeral: false,
           ip: '100.64.0.22',
         },
@@ -479,21 +479,59 @@ function createFakeNetBirdServer(tlsOptions) {
         {
           id: 'nb-peer-dev-3',
           name: 'Member Linux Workstation',
-          user_id: 'nb-user-member-1',
+          user_id: 'oidc-sub-member-1',
           ephemeral: false,
           ip: '100.64.0.23',
+        },
+      ],
+      [
+        'nb-peer-service-neg',
+        {
+          id: 'nb-peer-service-neg',
+          name: 'Service User Peer (Skipped)',
+          user_id: 'nb-service-user-1',
+          ephemeral: false,
+          ip: '100.64.0.91',
+        },
+      ],
+      [
+        'nb-peer-blocked-neg',
+        {
+          id: 'nb-peer-blocked-neg',
+          name: 'Blocked User Peer (Skipped)',
+          user_id: 'nb-blocked-user-1',
+          ephemeral: false,
+          ip: '100.64.0.92',
         },
       ],
     ]),
     'setup-keys': new Map(),
     users: new Map([
       [
-        'nb-user-member-1',
+        'oidc-sub-member-1',
         {
-          id: 'nb-user-member-1',
+          id: 'oidc-sub-member-1',
           auto_groups: [],
           is_service_user: false,
           is_blocked: false,
+        },
+      ],
+      [
+        'nb-service-user-1',
+        {
+          id: 'nb-service-user-1',
+          auto_groups: [],
+          is_service_user: true,
+          is_blocked: false,
+        },
+      ],
+      [
+        'nb-blocked-user-1',
+        {
+          id: 'nb-blocked-user-1',
+          auto_groups: [],
+          is_service_user: false,
+          is_blocked: true,
         },
       ],
     ]),
@@ -992,6 +1030,7 @@ async function performOidcLogin(controlBaseUrl, oidcController, persona, caPem) 
     sessionCookie,
     csrfToken,
     session: sessionJson,
+    sub: persona.sub,
   };
 }
 
@@ -1337,8 +1376,20 @@ async function pollMemberEntitlementActive(pool, memberId, label) {
 }
 
 async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label) {
+  const deadline = Date.now() + 15_000;
   let lastIds = [];
-  for (let i = 0; i < 75; i += 1) {
+  let lastBinding = null;
+  while (Date.now() < deadline) {
+    const bindRes = await pool.query(
+      `SELECT external_user_id, mapping_proof, revision::text AS revision
+       FROM netbird_user_bindings
+       WHERE member_id = $1
+         AND deployment_id = 'nb-dev'
+         AND mapping_proof LIKE 'shared_issuer_public_subject:%'`,
+      [memberId],
+    );
+    lastBinding = bindRes.rows[0] || null;
+
     const res = await pool.query(
       `SELECT d.id
        FROM member_devices d
@@ -1350,7 +1401,7 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
       [memberId],
     );
     lastIds = res.rows.map((r) => r.id);
-    if (lastIds.length >= expectedCount) {
+    if (lastBinding && lastIds.length >= expectedCount) {
       return lastIds.slice(0, expectedCount);
     }
     await new Promise((r) => setTimeout(r, 200));
@@ -1364,7 +1415,7 @@ async function pollMemberAuthorizedDevices(pool, memberId, expectedCount, label)
     [memberId],
   );
   throw new Error(
-    `Timed out waiting for ${expectedCount} authorized+observed devices on ${label} (${memberId}); current=${JSON.stringify(diagRes.rows)}`,
+    `Timed out waiting for ${expectedCount} authorized+observed devices on ${label} (${memberId}); binding=${JSON.stringify(lastBinding)} current=${JSON.stringify(diagRes.rows)}`,
   );
 }
 
@@ -1688,20 +1739,7 @@ async function seedDatabase(
     );
   });
 
-  await runSeedStep('seed-member-bindings-and-customer', async () => {
-    const identityRes = await pool.query(
-      `SELECT id FROM identity_bindings WHERE member_id = $1 LIMIT 1`,
-      [defaultMemberId],
-    );
-    const identityBindingId = identityRes.rows[0].id;
-
-    await pool.query(
-      `INSERT INTO netbird_user_bindings(id, member_id, deployment_id, external_user_id, identity_binding_id, mapping_proof, revision, verified_at)
-       VALUES ($1, $2, 'nb-dev', 'nb-user-member-1', $3, 'oidc-sub-verified', 1, clock_timestamp())
-       ON CONFLICT (deployment_id, external_user_id) DO NOTHING`,
-      [crypto.randomUUID(), defaultMemberId, identityBindingId],
-    );
-
+  await runSeedStep('seed-member-billing-customer', async () => {
     await pool.query(
       `INSERT INTO billing_customers(id, member_id, provider, external_customer_id)
        VALUES ($1, $2, 'stripe', 'cus_test_default_member')
@@ -2062,8 +2100,8 @@ async function main() {
           portal_ttl_seconds: 60,
           billing_lease_seconds: 60,
           max_webhook_bytes: 65536,
-          reconcile_seconds: 2,
-          device_sync_seconds: 2,
+          reconcile_seconds: 1,
+          device_sync_seconds: 1,
           netbird_url: `https://127.0.0.1:${nbPort}/api`,
           netbird_deployment: 'nb-dev',
           netbird_token_file: nbTokenFile,
@@ -2380,27 +2418,12 @@ async function main() {
                     member_group_ids: [EXIT_GROUP_ID],
                   },
                 );
-                const idBindRes = await pool.query(
-                  `SELECT id FROM identity_bindings WHERE member_id = $1 LIMIT 1`,
-                  [journeyMemberId],
-                );
-                const netbirdUserId = `nb-user-${journeyMemberId.slice(0, 8)}`;
-                nbController.objects.users.set(netbirdUserId, {
-                  id: netbirdUserId,
+                nbController.objects.users.set(sub, {
+                  id: sub,
                   auto_groups: [],
                   is_service_user: false,
                   is_blocked: false,
                 });
-                await pool.query(
-                  `INSERT INTO netbird_user_bindings(id, member_id, deployment_id, external_user_id, identity_binding_id, mapping_proof, revision, verified_at)
-                   VALUES ($1, $2, 'nb-dev', $3, $4, 'oidc-sub-verified', 1, clock_timestamp())`,
-                  [
-                    crypto.randomUUID(),
-                    journeyMemberId,
-                    netbirdUserId,
-                    idBindRes.rows[0].id,
-                  ],
-                );
                 roleSessions.member = journeyAuth;
                 currentInteractiveRole = 'member';
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -2495,10 +2518,13 @@ async function main() {
                   [targetMemberId],
                 );
                 if (existingRes.rows.length < 3) {
-                  const netbirdUserId =
-                    targetMemberId === defaultMemberId
-                      ? 'nb-user-member-1'
-                      : `nb-user-${targetMemberId.slice(0, 8)}`;
+                  const netbirdUserId = roleSessions.member.sub || 'oidc-sub-member-1';
+                  nbController.objects.users.set(netbirdUserId, {
+                    id: netbirdUserId,
+                    auto_groups: [],
+                    is_service_user: false,
+                    is_blocked: false,
+                  });
                   const subnetOctet = Math.floor(Math.random() * 200) + 10;
                   for (let idx = 1; idx <= 3; idx += 1) {
                     const suffix = crypto.randomUUID().slice(0, 6);
@@ -2613,10 +2639,7 @@ async function main() {
                   }
                 : {
                     role: 'member',
-                    sub:
-                      roleSessions.member === memberAuth
-                        ? 'oidc-sub-member-1'
-                        : 'oidc-sub-active-member',
+                    sub: roleSessions.member.sub || 'oidc-sub-member-1',
                     name: roleSessions.member.session.display_label || 'Member',
                   },
             );
@@ -2670,6 +2693,10 @@ async function main() {
                 sessionCookie,
                 csrfToken,
                 session: sessData,
+                sub:
+                  currentInteractiveRole === 'admin'
+                    ? 'oidc-sub-admin-1'
+                    : roleSessions.member.sub || 'oidc-sub-member-1',
               };
             }
             const redirectTarget =

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
@@ -33,6 +34,7 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 
 func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
+	jobs.Register("node.peer.discover", nodePeerDiscovery(r, nb, attempts))
 	var publication exits.NetBirdAdapter = httpwire.NewPublicationAdapter(r, nb)
 	if len(publicationAdapter) > 1 {
 		panic("at most one publication adapter")
@@ -148,6 +150,9 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 			if e := stepSucceeded(ctx, tx, p.OperationID, "netbird_setup", "bootstrap:"+p.IncarnationID.String()); e != nil {
 				return e
 			}
+			if err := enqueueNodePeerDiscovery(ctx, tx, p.NodeID, p.IncarnationID, p.OperationID); err != nil {
+				return err
+			}
 			return scheduleNodeReconcile(ctx, tx, event, r.Config.ReconcileSeconds)
 		})
 		return "bootstrap:" + p.IncarnationID.String(), e
@@ -161,7 +166,12 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		}
 		var raw []byte
 		var op uuid.UUID
-		e := r.Pool.QueryRow(ctx, `SELECT o.report_payload,e.operation_id FROM node_observations o JOIN node_enrollments e ON e.incarnation_id=o.incarnation_id JOIN nodes n ON n.id=o.node_id JOIN node_incarnations i ON i.id=o.incarnation_id WHERE o.incarnation_id=$1 AND o.report_id=$2 AND n.current_incarnation_id=i.id AND n.lifecycle_state='registered' AND i.revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=i.id AND x.mapping_frozen)`, event.AggregateID, payload.ReportID).Scan(&raw, &op)
+		var boundPeer *string
+		e := r.Pool.QueryRow(ctx, `SELECT o.report_payload,e.operation_id,i.peer_id FROM node_observations o JOIN node_enrollments e ON e.incarnation_id=o.incarnation_id JOIN nodes n ON n.id=o.node_id JOIN node_incarnations i ON i.id=o.incarnation_id WHERE o.incarnation_id=$1 AND o.report_id=$2 AND n.current_incarnation_id=i.id AND n.lifecycle_state='registered' AND i.revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=i.id AND x.mapping_frozen)`, event.AggregateID, payload.ReportID).Scan(&raw, &op, &boundPeer)
+		if errors.Is(e, pgx.ErrNoRows) {
+			// Revoked/frozen incarnations cannot resume discovery or binding.
+			return "observation:" + payload.ReportID.String(), nil
+		}
 		if e != nil {
 			return "", e
 		}
@@ -170,6 +180,9 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 			return "", e
 		}
 		peerID, peerErr := report.Netbird.PeerId.Get()
+		if peerErr != nil && boundPeer != nil {
+			peerID, peerErr = *boundPeer, nil
+		}
 		var peer netbird.Peer
 		if peerErr == nil {
 			if nb == nil {
@@ -200,6 +213,11 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 				}
 				if e := stepSucceeded(ctx, tx, op, "peer_readback", "observation:"+payload.ReportID.String()); e != nil {
 					return e
+				}
+			}
+			if peerErr != nil {
+				if err := enqueueNodePeerDiscovery(ctx, tx, report.NodeId, report.NodeIncarnationId, op); err != nil {
+					return err
 				}
 			}
 			var ready bool
@@ -322,4 +340,158 @@ func RunNodeSchedule(ctx context.Context, runtime *httpwire.Runtime) error {
 		case <-ticker.C:
 		}
 	}
+}
+
+type nodeDiscovery struct {
+	NodeID        uuid.UUID `json:"node_id"`
+	IncarnationID uuid.UUID `json:"incarnation_id"`
+	OperationID   uuid.UUID `json:"operation_id"`
+}
+
+// Callers hold the fleet lock. A heartbeat cannot reset an exhausted retry
+// budget: one durable discovery event belongs to each enrollment attempt.
+func enqueueNodePeerDiscovery(ctx context.Context, tx pgx.Tx, node, incarnation, op uuid.UUID) error {
+	raw, err := canonjson.Marshal(nodeDiscovery{node, incarnation, op})
+	if err != nil {
+		return err
+	}
+	var exists bool
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM outbox_events WHERE event_type='node.peer.discover' AND payload->>'incarnation_id'=$1)`, incarnation.String()).Scan(&exists); err != nil || exists {
+		return err
+	}
+	return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateType: "node", AggregateID: node, AggregateVersion: "1", EventType: "node.peer.discover", SchemaVersion: 1, Payload: raw})
+}
+
+var errDiscoveryInactive = errors.New("node discovery identity inactive")
+
+func discoveryActive(ctx context.Context, tx pgx.Tx, r *httpwire.Runtime, p nodeDiscovery) error {
+	var active bool
+	err := tx.QueryRow(ctx, `SELECT n.current_incarnation_id=i.id AND n.lifecycle_state='registered' AND i.revoked_at IS NULL AND e.state<>'revoked' AND NOT EXISTS(SELECT 1 FROM node_identity_endpoints x WHERE x.incarnation_id=i.id AND x.mapping_frozen)
+		FROM nodes n JOIN node_incarnations i ON i.node_id=n.id AND i.id=$2 JOIN node_enrollments e ON e.incarnation_id=i.id AND e.operation_id=$3 WHERE n.id=$1 FOR UPDATE OF n,i,e`, p.NodeID, p.IncarnationID, p.OperationID).Scan(&active)
+	if errors.Is(err, pgx.ErrNoRows) || (err == nil && !active) {
+		return errDiscoveryInactive
+	}
+	if err != nil {
+		return err
+	}
+	return r.PKI.CheckFence(ctx, pki.NodeIdentity{NodeID: p.NodeID, IncarnationID: p.IncarnationID})
+}
+
+func nodePeerDiscovery(r *httpwire.Runtime, nb *netbird.Client, attempts int) Handler {
+	return func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		var p nodeDiscovery
+		if err := json.Unmarshal(event.Payload, &p); err != nil {
+			return "", err
+		}
+		if p.NodeID == uuid.Nil || p.OperationID == uuid.Nil || p.IncarnationID == uuid.Nil || event.AggregateID != p.NodeID || event.AggregateType != "node" {
+			return "", errors.New("invalid peer discovery event")
+		}
+		ctx = commandtx.WithClaim(ctx, event)
+		check := func(ctx context.Context) error {
+			return commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return discoveryActive(ctx, tx, r, p) })
+		}
+		if err := check(ctx); err != nil {
+			if errors.Is(err, errDiscoveryInactive) {
+				return p.OperationID.String(), nil
+			}
+			return "", err
+		}
+		if nb == nil {
+			return "", errors.New("NetBird adapter required")
+		}
+		// Recheck after acquiring the adapter lock and before storing its binding.
+		// Revocation uses the same lock; cleanup includes bindings whose central
+		// projection was interrupted. No external call runs in a DB transaction.
+		peer, discoveryErr := nb.DiscoverNodePeer(netbird.WithDiscoveryFence(ctx, check), p.OperationID.String(), netbird.NodePeer{NodeID: p.NodeID.String(), IncarnationID: p.IncarnationID.String()})
+		if errors.Is(discoveryErr, errDiscoveryInactive) {
+			return p.OperationID.String(), nil
+		}
+		conflict := netbird.IsKind(discoveryErr, netbird.Conflict)
+		terminal := conflict || event.Attempt >= attempts
+		if discoveryErr != nil && !terminal {
+			return "", discoveryErr
+		}
+		err := commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			if err := discoveryActive(ctx, tx, r, p); err != nil {
+				return err
+			}
+			if discoveryErr != nil {
+				return recordDiscoveryFailure(ctx, tx, p, discoveryErr, conflict)
+			}
+			updated, err := tx.Exec(ctx, `UPDATE node_incarnations SET deployment_id=$2,peer_id=$3 WHERE id=$1 AND (peer_id IS NULL OR peer_id=$3)`, p.IncarnationID, r.Config.NetBirdDeployment, peer.ID)
+			if err != nil {
+				return err
+			}
+			if updated.RowsAffected() != 1 {
+				return errors.New("incarnation peer changed during discovery")
+			}
+			evidence := uuid.Must(uuid.NewV7())
+			if err := audit.Append(ctx, tx, db.AuditEvent{ID: evidence, Actor: nodelib.SystemActorUUID.String(), ActorType: "system", Action: "node.peer_discovered", Resource: "node:" + p.NodeID.String(), OperationID: &p.OperationID, Result: "succeeded"}, nil, map[string]any{"incarnation_id": p.IncarnationID, "peer_id": peer.ID}, "incarnation_id", "peer_id"); err != nil {
+				return err
+			}
+			return stepSucceeded(ctx, tx, p.OperationID, "peer_readback", "audit_event:"+evidence.String())
+		})
+		if errors.Is(err, errDiscoveryInactive) {
+			return p.OperationID.String(), nil
+		}
+		if err != nil {
+			return "", err
+		}
+		if discoveryErr != nil && !conflict {
+			return "", discoveryErr // dispatcher dead-letters exhausted transient work
+		}
+		// A conflict receipt means terminal classification was persisted, not a
+		// successful binding. The failed operation and frozen incarnation say so.
+		return p.OperationID.String(), nil
+	}
+}
+
+func recordDiscoveryFailure(ctx context.Context, tx pgx.Tx, p nodeDiscovery, cause error, freeze bool) error {
+	reason := netbird.DiscoveryReason(cause)
+	code := api.ErrorCodeDEPENDENCYUNAVAILABLE
+	if freeze {
+		code = api.ErrorCodeSTATECONFLICT
+		raw, err := canonjson.Marshal(map[string]any{"incarnation_id": p.IncarnationID, "reason": reason})
+		if err != nil {
+			return err
+		}
+		hash, err := canonjson.Hash(raw)
+		if err != nil {
+			return err
+		}
+		if _, err = tx.Exec(ctx, `INSERT INTO node_identity_endpoints(incarnation_id,endpoint_hash,last_seen_at,mapping_frozen) VALUES($1,$2,clock_timestamp(),true) ON CONFLICT(incarnation_id) DO UPDATE SET mapping_frozen=true WHERE NOT node_identity_endpoints.mapping_frozen`, p.IncarnationID, hash[:]); err != nil {
+			return err
+		}
+	}
+	var rawStep []byte
+	if err := tx.QueryRow(ctx, `SELECT steps->'peer_readback' FROM operations WHERE id=$1 FOR UPDATE`, p.OperationID).Scan(&rawStep); err != nil {
+		return err
+	}
+	var step nodelib.StoredStep
+	if err := json.Unmarshal(rawStep, &step); err != nil {
+		return err
+	}
+	if !step.Required {
+		return errors.New("discovery step is not required")
+	}
+	codeString := string(code)
+	step.Status, step.ErrorCode, step.ErrorMessage = "failed", &codeString, &reason
+	step.ObservedRef, step.ObservedAt, step.UpdatedAt = "", nil, time.Now().UTC()
+	rawStep, err := canonjson.Marshal(step)
+	if err != nil {
+		return err
+	}
+	// Pending sibling steps must not leave exhausted discovery claiming progress
+	// (§14.5 / D-040). Set step failure and terminal status in one guarded write.
+	if _, err := tx.Exec(ctx, `UPDATE operations SET status='failed',completed_at=clock_timestamp(),error_code=$2,error_message=$3,steps=jsonb_set(steps,'{peer_readback}',$4::jsonb),observed_refs=observed_refs-'peer_readback',resource_version=coalesce(resource_version,0)+1 WHERE id=$1 AND status NOT IN ('succeeded','superseded') AND steps->'peer_readback'->>'status'<>'succeeded'`, p.OperationID, code, reason, rawStep); err != nil {
+		return err
+	}
+	errorsJSON, err := canonjson.Marshal([]api.NodeError{{Code: code, Message: reason, Stage: "peer_discovery", ObservedAt: time.Now().UTC()}})
+	if err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `UPDATE nodes SET provisioning_state='failed',safety_status=CASE WHEN $3 THEN 'failed' ELSE safety_status END,member_forwarding_observed=false,recent_errors=$2::jsonb,resource_version=resource_version+1 WHERE id=$1`, p.NodeID, errorsJSON, freeze); err != nil {
+		return err
+	}
+	return audit.Append(ctx, tx, db.AuditEvent{ID: uuid.Must(uuid.NewV7()), Actor: nodelib.SystemActorUUID.String(), ActorType: "system", Action: "node.peer_discovery_failed", Resource: "node:" + p.NodeID.String(), OperationID: &p.OperationID, Result: "failed"}, nil, map[string]any{"incarnation_id": p.IncarnationID, "reason": reason, "mapping_frozen": freeze}, "incarnation_id", "reason", "mapping_frozen")
 }
