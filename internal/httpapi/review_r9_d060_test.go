@@ -157,8 +157,10 @@ func TestReviewR9_LoginLimiterAddressIdentityBoundsAndRoutes(t *testing.T) {
 		}
 	})
 
-	// [1::2:3:4:5]:6 and 1::2:3:4:5:6 are one host. Reading the unbracketed
-	// string as a single IPv6 address yields 1:0:0:2::/64 instead.
+	// A bracketed RemoteAddr "[1::2:3:4:5]:6" is host 1::2:3:4:5 (/64 1::/64).
+	// The unbracketed string "1::2:3:4:5:6" parses as the address
+	// 1:0:0:2:3:4:5:6 (/64 1:0:0:2::/64). A trailing port is removed only when
+	// the full string does not parse, as with eight hextets plus a port.
 	t.Run("bracketed and unbracketed ipv6", func(t *testing.T) {
 		c := config.Defaults()
 		c.LoginRate = config.Bucket{PerSecond: 0.0001, Burst: 1}
@@ -168,18 +170,18 @@ func TestReviewR9_LoginLimiterAddressIdentityBoundsAndRoutes(t *testing.T) {
 		if w := reviewLogin(h, unbracketed, "/auth/login", nil); w.Code != http.StatusNoContent {
 			t.Fatal("unbracketed ipv6", w.Code, w.Body.String())
 		}
-		if w := reviewLogin(h, bracketed, "/auth/login", nil); w.Code != http.StatusTooManyRequests {
-			t.Fatal("bracketed form did not share the unbracketed key", w.Code, w.Body.String())
+		if w := reviewLogin(h, bracketed, "/auth/login", nil); w.Code != http.StatusNoContent {
+			t.Fatal("bracketed host shared the parsed unbracketed address", w.Code, w.Body.String())
 		}
 		h2, _ := reviewLoginHandler(c)
-		if w := reviewLogin(h2, bracketed, "/auth/login", nil); w.Code != http.StatusNoContent {
+		if w := reviewLogin(h2, "[1:0:0:0:2:3:4:5]:6", "/auth/login", nil); w.Code != http.StatusNoContent {
 			t.Fatal("bracketed ipv6", w.Code, w.Body.String())
 		}
-		if w := reviewLogin(h2, unbracketed, "/auth/login", nil); w.Code != http.StatusTooManyRequests {
-			t.Fatal("unbracketed form did not share the bracketed key", w.Code, w.Body.String())
+		if w := reviewLogin(h2, "1:0:0:0:2:3:4:5:99", "/auth/login", nil); w.Code != http.StatusTooManyRequests {
+			t.Fatal("eight hextets plus a port did not share the bracketed host", w.Code, w.Body.String())
 		}
-		if w := reviewLogin(h2, "[1:0:0:2::1]:6", "/auth/login", nil); w.Code != http.StatusNoContent {
-			t.Fatal("the prefix from absorbing the port must stay a different bucket", w.Code, w.Body.String())
+		if w := reviewLogin(h2, unbracketed, "/auth/login", nil); w.Code != http.StatusNoContent {
+			t.Fatal("the address from parsing the whole string must stay a different bucket", w.Code, w.Body.String())
 		}
 		h3, _ := reviewLoginHandler(c)
 		if w := reviewLogin(h3, "192.0.2.77:9", "/auth/login", nil); w.Code != http.StatusNoContent {
@@ -194,7 +196,7 @@ func TestReviewR9_LoginLimiterAddressIdentityBoundsAndRoutes(t *testing.T) {
 		if w := reviewLogin(h3, "[2001:db8::1]:9", "/auth/login", nil); w.Code != http.StatusNoContent {
 			t.Fatal("ipv6 must not share the ipv4 bucket", w.Code, w.Body.String())
 		}
-		if *hits != 1 {
+		if *hits != 2 {
 			t.Fatal("limited request reached the login handler", *hits)
 		}
 	})

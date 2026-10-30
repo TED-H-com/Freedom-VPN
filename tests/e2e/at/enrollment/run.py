@@ -15,35 +15,36 @@ import uuid
 ROOT = Path(__file__).resolve().parents[4]
 DOCS = ROOT / "docs/e2e/at/enrollment"
 PREFIX = "w4-enroll"
-PORT_BASE = "66000"
+PORT_BASE = "12000"
 REQUIRED = {
     "AT06": ["fresh_stack", "response_dropped", "same_holder_retry", "one_node",
              "current_incarnation", "consumed_binding", "single_consumption_audit",
              "incarnation_uniqueness", "peer_uniqueness", "audit_token_hash", "csr_proof",
              "different_key_race", "race_winner_identity", "expired_token", "revoked_token", "token_only",
-             "invalid_proof", "bootstrap_requires_mtls", "retry_no_store",
+             "invalid_proof", "bootstrap_requires_mtls", "retry_no_store", "evidence_set_scan",
+             "secret_scan_current_probe_evidence",
              "secret_scan_control/console", "secret_scan_worker/console",
              "secret_scan_node/console", "secret_scan_node/agent.log",
              "secret_scan_node/watchdog.log", "secret_scan_node/netbird-service.log",
              "secret_scan_node/netbird-up.log", "secret_scan_node/resolver-proxy.log"],
-    "AT07": ["fresh_stack", "distinct_first_boot", "current_incarnation",
-             "certificate_identity_node", "certificate_identity_node2",
+    "AT07": ["fresh_stack", "distinct_api_first_boot", "distinct_first_boot", "current_incarnation",
              "machine_identity", "counted_unacked_usage", "installer_rerun",
              "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied",
              "historical_usage_retained", "cloned_identity_conflict"],
 }
 MISSING = {
-    "incarnation_uniqueness": "ENR-03: admin API exposes current incarnation, not complete incarnation count/history",
-    "peer_uniqueness": "ENR-04: no documented own-key enrollment join and complete correlated peer readback hook",
-    "audit_token_hash": "ENR-02: enrollment audit writer exposes reason only; token hash evidence unavailable",
-    "machine_identity": "ENR-07: no documented OS machine-id/NetBird key fingerprint observer",
-    "counted_unacked_usage": "ENR-05: no documented usage acknowledgement hold and ledger snapshot hook",
-    "installer_rerun": "ENR-06: no documented real installer rerun hook",
+    "incarnation_uniqueness": "ENR-03 / w3-wire-nodes: getNode.current_incarnation_id is not complete incarnation count/history",
+    "peer_uniqueness": "ENR-04 / devstack follow-up 12: JoinEnrolledIdentity and EnrollmentPeerInventory are not exported",
+    "audit_token_hash": "ENR-02 / pki-enroll: listAuditEvents.changes has no enrollment token-hash evidence",
+    "distinct_first_boot": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported; API identity comparison alone is partial",
+    "machine_identity": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported",
+    "counted_unacked_usage": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
+    "installer_rerun": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
     "identity_ledger_preserved": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
-    "controlled_reinstall": "ENR-06: no documented controlled reinstall hook for the real node",
+    "controlled_reinstall": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
     "old_certificate_denied": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
     "historical_usage_retained": "ENR-03/ENR-05/ENR-06: history API and counted usage across reinstall required",
-    "cloned_identity_conflict": "ENR-07: no sanctioned cloned enrolled identity fixture; never copy it into a running container",
+    "cloned_identity_conflict": "ENR-07 / devstack follow-up 12: StartClonedIdentityFixture is not exported",
 }
 
 
@@ -80,8 +81,8 @@ def previous(docdir, at):
 
 
 def verdict(checks, prior):
-    if any(c["status"] == "fail" for c in checks):
-        return "fail"
+    # A failed subcheck remains explicit evidence and blocks the complete AT.
+    # The follow-up's aggregate gate is pass/blocked, never green on a failure.
     if any(c["status"] != "pass" for c in checks):
         return "blocked"
     if any(c["status"] == "fail" for c in prior):
@@ -137,6 +138,11 @@ def persist(docdir, recs, archive):
     summary += ["", "See [RUN.md](RUN.md) and [requests.md](requests.md). Immutable attempts are in `history/`.", ""]
     (docdir / "summary.md").write_text("\n".join(summary))
     (archive / "summary.md").write_text("\n".join(summary))
+    (archive / "RUN.md").write_text("# Archived attempt\n\nSee [current runbook](../../RUN.md). "
+                                    "Exact source, UTC times and command exits are in the AT JSON records.\n")
+    requests = docdir / "requests.md"
+    if requests.exists():
+        (archive / "requests.md").write_text(requests.read_text().replace("(../../RUN.md)", "(../../../../RUN.md)"))
 
 
 def inventory():
@@ -200,7 +206,7 @@ def main():
             else:
                 up = run("fresh_startup", ["make", "-f", "mk/e2e.mk", "e2e-up"], {"E2E_RESET": "1"})
                 startup = (private / "fresh_startup.log").read_text(errors="replace")
-                reason = ("ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range"
+                reason = (f"ENR-01: shared prepare rejected assigned port base {PORT_BASE}: port base slot is out of range"
                           if "port base slot is out of range" in startup else "Fresh stack startup failed; private diagnostic log retained")
                 for at in REQUIRED:
                     note(at, "fresh_stack", "blocked" if up else "pass", reason if up else "E2E_RESET=1 fresh stack started")

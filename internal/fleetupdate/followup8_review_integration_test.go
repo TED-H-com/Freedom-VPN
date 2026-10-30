@@ -11,8 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// §13.8 / r12 H-3: a superseded job's heartbeat must not borrow the current
-// job's target or attribute its unexpected-release evidence to that job.
+// §13.8 / r12 H-3 + D-068: a superseded job's heartbeat is ignored before
+// observeTx: it never advances fleet_node_state, never seeds, and never
+// attributes unexpected-release audits to the current or superseded job.
 func TestReviewR12_Q7_CrossJobAuditAndSeedingMisattribution(t *testing.T) {
 	l := newLabState(t)
 	i := l.node("amd64", "unpublished", "registered", true)
@@ -47,7 +48,7 @@ func TestReviewR12_Q7_CrossJobAuditAndSeedingMisattribution(t *testing.T) {
 	if count := l.scalar(`SELECT count(*) FROM audit_events WHERE action='update_observation.unexpected_release' AND after_diff->>'job_id'=$1`, job2ID.String()); count != 0 {
 		t.Fatalf("old heartbeat attributed %d audits to current job", count)
 	}
-	r11AuditReadback(t, l, i, map[[2]uuid.UUID]bool{{w1.Intent.JobId, l.new}: false})
+	r11AuditReadback(t, l, i, map[[2]uuid.UUID]bool{})
 
 	// Unlike job2/old, this next target is not an already recorded version.
 	// An issued current intent still cannot authorize seeding via job1's report.
@@ -58,10 +59,11 @@ func TestReviewR12_Q7_CrossJobAuditAndSeedingMisattribution(t *testing.T) {
 	for range 2 {
 		submit(other)
 	}
-	r11AuditReadback(t, l, i, map[[2]uuid.UUID]bool{{w1.Intent.JobId, l.new}: false, {w1.Intent.JobId, other}: false})
+	r11AuditReadback(t, l, i, map[[2]uuid.UUID]bool{})
 
 	// Always exercise the review's second scenario, even when job attribution
-	// passes: an unexpected last-good must prevent a partial current write.
+	// passes: an unexpected last-good on a current job writes one audit and
+	// prevents any current-release change.
 	i2 := l.node("arm64", "unpublished", "registered", true)
 	b2 := l.batch(l.new)
 	w2 := l.intent(i2)
@@ -76,9 +78,7 @@ func TestReviewR12_Q7_CrossJobAuditAndSeedingMisattribution(t *testing.T) {
 		t.Fatal(err)
 	}
 	r11Versions(t, l, i2, l.old, l.old)
-	if count := l.scalar(`SELECT count(*) FROM audit_events WHERE action='update_observation.unexpected_release' AND after_diff->>'job_id'=$1 AND after_diff->>'release_id'=$2`, w2.Intent.JobId.String(), other.String()); count != 1 {
-		t.Fatalf("unexpected last-good audits = %d, want 1", count)
-	}
+	r11AuditReadback(t, l, i2, map[[2]uuid.UUID]bool{{w2.Intent.JobId, other}: false})
 	for _, target := range l.get(b2.BatchId).Targets {
 		if target.NodeId == i2.NodeID && !target.Unconfirmed {
 			t.Fatal("unexpected last-good confirmed the current job", target)
