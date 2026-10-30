@@ -266,6 +266,16 @@ func handlePolicyActivated(ctx context.Context, s *PoliciesServices, event db.Cl
 		}
 	}
 
+	// Fair-Use activation changes the fleet generation and the member rate policies
+	// the sweep just wrote. Recompile the serving exits before the operation can
+	// report desired_state_compile succeeded. A policies-only worker has no compiler
+	// and keeps the previous read-back transition.
+	if payload.Type == string(api.PolicyTypeFairUse) {
+		if err := recompilePolicyEvent(ctx, s, event); err != nil {
+			return "", err
+		}
+	}
+
 	evidenceRef := "policy_definition:" + defID.String()
 
 	// Transition the policy.activate operation's desired_state_compile step to succeeded with read-back evidence.
@@ -352,5 +362,26 @@ func handleFUPMemberGenerationChanged(ctx context.Context, s *PoliciesServices, 
 	if err != nil {
 		return "", fmt.Errorf("fup worker: read back fup_member_states %s: %w", event.AggregateID, err)
 	}
+	if err := recompilePolicyEvent(ctx, s, event); err != nil {
+		return "", err
+	}
 	return "fup_member_state:" + stateID.String(), nil
+}
+
+// recompilePolicyEvent hands one outbox event to the desired-state compiler.
+// RecompileBatch coalesces to one compile per exit and skips a replay whose
+// envelope is already current. No compiler means this worker does not own
+// desired state; the caller still completes its own read-back.
+func recompilePolicyEvent(ctx context.Context, s *PoliciesServices, event db.ClaimedEvent) error {
+	compiler := s.Compiler
+	if compiler == nil {
+		compiler = membersruntime.CompilerFromContext(ctx)
+	}
+	if compiler == nil {
+		return nil
+	}
+	if _, err := compiler.RecompileBatch(ctx, []db.ClaimedEvent{event}); err != nil {
+		return fmt.Errorf("policies worker: recompile desired state: %w", err)
+	}
+	return nil
 }
