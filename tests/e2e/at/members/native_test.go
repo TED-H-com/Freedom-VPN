@@ -19,6 +19,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
 )
 
@@ -233,6 +234,8 @@ func (l *live) devices(r *record) {
 	}
 	l.traceForwarding(r, loserService, uuid.Nil)
 	l.traceForwarding(r, "member-a2", second)
+	revokedSource := l.overlayIPv4("member-a2")
+	siblingSource := l.overlayIPv4("member")
 	if _, err = l.docker("pause", l.name("worker")); err != nil {
 		r.block("Could not re-pause worker for slot reuse")
 		return
@@ -252,9 +255,10 @@ func (l *live) devices(r *record) {
 	})
 	r.check("revocation generation applied", "new generation removes old binding and includes replacement", fmt.Sprintf("converged=%t; before=%s; after=%s", converged, beforeGeneration, l.counters(first).Generation), "poll authentic local desired-state and kernel generation; no restart/state clearing", converged)
 	l.forwardingGate(r)
+	l.traceForwarding(r, "member-a2", uuid.Nil)
+	l.strictPostWithdrawalIngress(r, revokedSource, second, siblingSource, first)
 	l.traceForwarding(r, "member", first)
 	l.traceForwarding(r, loserService, replacement)
-	l.traceForwarding(r, "member-a2", uuid.Nil)
 	l.revocationReadback(r)
 	pidAfter, _ := l.inside("node", "pgrep", "-x", "fvpn-agent")
 	r.check("continuous agent across revoke and replace", "same live PID", fmt.Sprintf("same_pid=%t", len(pidBefore) > 0 && string(pidBefore) == string(pidAfter)), "pgrep -x fvpn-agent before/after", len(pidBefore) > 0 && string(pidBefore) == string(pidAfter))
@@ -264,18 +268,183 @@ func (l *live) devices(r *record) {
 		return e == nil && health
 	})
 	r.check("post-revoke health agrees with counted sibling and replacement", "forwarding true and no block reasons", fmt.Sprintf("coherent=%t", healthy), "latest accepted observation; two independent counted transfers", healthy)
-	addr, _ := l.inside("member-a2", "ip", "-o", "-4", "addr", "show", "fvnb0")
-	fields := strings.Fields(string(addr))
-	source := ""
-	for i, v := range fields {
-		if v == "inet" && i+1 < len(fields) {
-			source = strings.Split(fields[i+1], "/")[0]
-		}
+	source := revokedSource
+	if s := l.overlayIPv4("member-a2"); s != "" {
+		source = s
 	}
 	if source != "" {
 		raw, e := l.inside("node", "conntrack", "-L", "-f", "ipv4", "-s", source)
 		entries := strings.Count(string(raw), "src=")
 		r.check("revoked source conntrack", "no entries for revoked overlay source", fmt.Sprintf("read_ok=%t; tuple_fields=%d", e == nil, entries), "conntrack -L scoped to former peer source; emit count only", e == nil && entries == 0)
 	}
-	r.check("AT02 assertion boundary", "quota, owner isolation, exit denial and replacement; no strict ingress-drop claim", "shared device-revoke run3 documents upstream route withdrawal before post-revoke node ingress", "docs/e2e/runs/2026-10-30/followup10-run3/device-revoke.md; §19 AT02", true)
+	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "ObserveMemberIngress proves revoked source increments ctunku by 1 with empty fvup0/origin captures and frozen device counters while sibling injection increments u_<hex> by 1 and reaches fvup0/origin", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)
+}
+
+func (l *live) overlayIPv4(service string) string {
+	addr, err := l.inside(service, "ip", "-o", "-4", "addr", "show", "fvnb0")
+	if err != nil {
+		return ""
+	}
+	fields := strings.Fields(string(addr))
+	for i, v := range fields {
+		if v == "inet" && i+1 < len(fields) {
+			return strings.Split(fields[i+1], "/")[0]
+		}
+	}
+	return ""
+}
+
+func (l *live) strictPostWithdrawalIngress(r *record, revokedSource string, revokedDevice uuid.UUID, siblingSource string, siblingDevice uuid.UUID) {
+	dest := l.originIP()
+	revokedProof, revokedErr := l.hook.ObserveMemberIngress(l.ctx, revokedSource, dest)
+	ctunku, ctOK := ingressDelta(revokedProof.Before, revokedProof.After, "ctunku")
+	revokedHex := strings.ReplaceAll(revokedDevice.String(), "-", "")
+	revokedUp := "u_" + revokedHex
+	revokedDown := "d_" + revokedHex
+	revokedHeld := ingressDeviceCountersHeld(revokedProof.Before, revokedProof.After)
+	revokedUpEmpty := ingressCaptureEmpty(revokedProof.UplinkCapture)
+	revokedOriginEmpty := ingressCaptureEmpty(revokedProof.OriginCapture)
+	revokedOK := revokedSource != "" && revokedErr == nil && ctOK && ctunku.Packets == 1 && ctunku.Bytes > 0 &&
+		revokedHeld && revokedProof.Mechanism == "tun-mirred" && revokedProof.LinkType == 65534 &&
+		revokedProof.MemberIface == "fvmb0" && revokedProof.SourcePort == 40000 && revokedProof.DestPort == 9 &&
+		revokedUpEmpty && revokedOriginEmpty &&
+		revokedProof.Before[revokedUp] == revokedProof.After[revokedUp] &&
+		revokedProof.Before[revokedDown] == revokedProof.After[revokedDown]
+
+	admittedProof, admittedErr := l.hook.ObserveMemberIngress(l.ctx, siblingSource, dest)
+	sibHex := strings.ReplaceAll(siblingDevice.String(), "-", "")
+	upName := "u_" + sibHex
+	downName := "d_" + sibHex
+	up, upOK := ingressDelta(admittedProof.Before, admittedProof.After, upName)
+	down, _ := ingressDelta(admittedProof.Before, admittedProof.After, downName)
+	ctAfter, ctAfterOK := ingressDelta(admittedProof.Before, admittedProof.After, "ctunku")
+	admittedHeld := ingressDeviceCountersHeld(admittedProof.Before, admittedProof.After, upName, downName)
+	admittedUpSaw := ingressCaptureSawDatagram(admittedProof.UplinkCapture)
+	admittedOriginSaw := ingressCaptureSawDatagram(admittedProof.OriginCapture)
+	admittedOK := siblingSource != "" && admittedErr == nil && upOK && up.Packets == 1 && up.Bytes > 0 &&
+		ctAfterOK && ctAfter.Packets == 0 && ctAfter.Bytes == 0 &&
+		admittedHeld && admittedProof.Mechanism == "tun-mirred" && admittedProof.LinkType == 65534 &&
+		admittedProof.MemberIface == "fvmb0" && admittedProof.SourcePort == 40000 && admittedProof.DestPort == 9 &&
+		admittedUpSaw && admittedOriginSaw
+
+	evidence, _ := json.Marshal(map[string]any{
+		"injection_count": 2,
+		"revoked": map[string]any{
+			"device_id":             revokedDevice.String(),
+			"device_upload_counter": revokedUp,
+			"injection_count":       1,
+			"mechanism":             revokedProof.Mechanism,
+			"link_type":             revokedProof.LinkType,
+			"member_iface":          revokedProof.MemberIface,
+			"source":                revokedProof.Source,
+			"dest":                  revokedProof.Dest,
+			"source_port":           revokedProof.SourcePort,
+			"dest_port":             revokedProof.DestPort,
+			"kernel_attribution": map[string]any{
+				"counter":                     "ctunku",
+				"ctunku_packets_delta":        ctunku.Packets,
+				"ctunku_bytes_delta":          ctunku.Bytes,
+				"device_upload_counter":       revokedUp,
+				"device_upload_packets_delta": 0,
+				"device_upload_bytes_delta":   0,
+				"forwarded_bytes":             0,
+				"device_counters_held":        revokedHeld,
+			},
+			"before":          revokedProof.Before,
+			"after":           revokedProof.After,
+			"deltas":          revokedProof.Deltas,
+			"uplink_empty":    revokedUpEmpty,
+			"origin_empty":    revokedOriginEmpty,
+			"uplink_capture":  strings.TrimSpace(revokedProof.UplinkCapture),
+			"origin_capture":  strings.TrimSpace(revokedProof.OriginCapture),
+			"inject_error_ok": revokedErr == nil,
+		},
+		"admitted": map[string]any{
+			"device_id":               siblingDevice.String(),
+			"device_upload_counter":   upName,
+			"device_download_counter": downName,
+			"injection_count":         1,
+			"mechanism":               admittedProof.Mechanism,
+			"link_type":               admittedProof.LinkType,
+			"member_iface":            admittedProof.MemberIface,
+			"source":                  admittedProof.Source,
+			"dest":                    admittedProof.Dest,
+			"source_port":             admittedProof.SourcePort,
+			"dest_port":               admittedProof.DestPort,
+			"kernel_attribution": map[string]any{
+				"counter":                    upName,
+				"u_packets_delta":            up.Packets,
+				"u_bytes_delta":              up.Bytes,
+				"d_packets_delta":            down.Packets,
+				"d_bytes_delta":              down.Bytes,
+				"ctunku_packets_delta":       ctAfter.Packets,
+				"other_device_counters_held": admittedHeld,
+			},
+			"before":              admittedProof.Before,
+			"after":               admittedProof.After,
+			"deltas":              admittedProof.Deltas,
+			"uplink_saw_datagram": admittedUpSaw,
+			"origin_saw_datagram": admittedOriginSaw,
+			"uplink_capture":      strings.TrimSpace(admittedProof.UplinkCapture),
+			"origin_capture":      strings.TrimSpace(admittedProof.OriginCapture),
+			"inject_error_ok":     admittedErr == nil,
+		},
+	})
+	r.check(
+		"strict post-withdrawal fvmb0 ingress injection",
+		"revoked source increments ctunku by 1 with 0 forwarded bytes (empty fvup0/origin captures, all device counters held); admitted sibling source increments u_<hex> by 1 and reaches fvup0 and origin",
+		string(evidence),
+		"labstack.Stack.ObserveMemberIngress(ctx, revokedSource, dest) and ObserveMemberIngress(ctx, siblingSource, dest) on fvmb0 (tun-mirred, link type 65534, source port 40000, dest port 9)",
+		revokedOK && admittedOK,
+	)
+}
+
+func ingressDelta(before, after map[string]labstack.IngressCounter, name string) (labstack.IngressCounter, bool) {
+	b, a := before[name], after[name]
+	if a.Packets < b.Packets || a.Bytes < b.Bytes {
+		return labstack.IngressCounter{}, false
+	}
+	return labstack.IngressCounter{Packets: a.Packets - b.Packets, Bytes: a.Bytes - b.Bytes}, true
+}
+
+func ingressDeviceCountersHeld(before, after map[string]labstack.IngressCounter, allow ...string) bool {
+	allowed := map[string]bool{}
+	for _, name := range allow {
+		if name != "" {
+			allowed[name] = true
+		}
+	}
+	names := map[string]struct{}{}
+	for name := range before {
+		names[name] = struct{}{}
+	}
+	for name := range after {
+		names[name] = struct{}{}
+	}
+	for name := range names {
+		if allowed[name] {
+			continue
+		}
+		if !strings.HasPrefix(name, "u_") && !strings.HasPrefix(name, "d_") && !strings.HasPrefix(name, "nu_") && !strings.HasPrefix(name, "nd_") {
+			continue
+		}
+		if before[name] != after[name] {
+			return false
+		}
+	}
+	return true
+}
+
+func ingressCaptureSawDatagram(text string) bool {
+	return strings.Contains(text, "UDP") && strings.Contains(text, ".40000")
+}
+
+func ingressCaptureEmpty(text string) bool {
+	if strings.Contains(text, "UDP") || strings.Contains(text, ".40000 >") {
+		return false
+	}
+	if strings.Contains(text, "0 packets captured") {
+		return true
+	}
+	return strings.Contains(text, "listening on") && !strings.Contains(text, " IP ")
 }
