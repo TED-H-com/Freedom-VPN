@@ -3,126 +3,264 @@
 package members
 
 import (
+	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/billing"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/google/uuid"
 )
 
 func (l *live) nb(method, path string, body any) response {
 	return l.request(nil, method, "https://netbird.example.invalid/api"+path, body, map[string]string{"Authorization": "Token " + l.secret("netbird.token")})
 }
-func (l *live) webhook(id, kind string, valid bool) response {
-	object := map[string]any{"id": "in_TEST_ONLY_" + l.run, "customer": "cus_TEST_ONLY_" + l.run, "parent": map[string]any{"subscription_details": map[string]string{"subscription": "sub_TEST_ONLY_" + l.run}}}
-	if strings.HasPrefix(kind, "customer.subscription.") {
-		object = map[string]any{"id": "sub_TEST_ONLY_" + l.run, "customer": "cus_TEST_ONLY_" + l.run}
+
+type paidSession struct {
+	member     *browser
+	checkout   string
+	start, end time.Time
+	snapshot   map[string]any
+}
+type paymentEvent struct{ Body, Signature string }
+
+func (l *live) paymentHook(path string, body any) response {
+	return l.request(nil, "POST", "https://api.stripe.com/e2e/"+path, body, map[string]string{"X-E2E-Secret": l.secret("payment.secret")})
+}
+func (l *live) checkout(r *record, b *browser, end time.Time) *paidSession {
+	headers := commandHeaders()
+	body := api.CheckoutSessionRequest{PlanId: l.plan, ReturnUrl: "https://portal.example.invalid:8443/billing/return"}
+	first := l.api(b, "POST", "/api/v1/member/checkout-sessions", body, headers)
+	replay := l.api(b, "POST", "/api/v1/member/checkout-sessions", body, headers)
+	var a, z api.CheckoutSession
+	_ = json.Unmarshal(first.body, &a)
+	_ = json.Unmarshal(replay.body, &z)
+	ok := first.status == 201 && replay.status == 201 && a.CheckoutSessionId != uuid.Nil && a.CheckoutSessionId == z.CheckoutSessionId && a.CheckoutUrl == z.CheckoutUrl
+	r.check("checkout command replay", "201 and same hosted session", fmt.Sprintf("first=%d; replay=%d; same_session=%t", first.status, replay.status, ok), "POST /member/checkout-sessions twice with same Idempotency-Key", ok)
+	if !ok {
+		return nil
 	}
-	raw, _ := json.Marshal(map[string]any{"id": id, "type": kind, "created": 1, "api_version": billing.StripeAPIVersion, "livemode": false, "data": map[string]any{"object": object}})
+	p := &paidSession{member: b, start: time.Now().UTC().Add(-time.Minute).Truncate(time.Second), end: end.UTC().Truncate(time.Second)}
+	if l.pool.QueryRow(l.ctx, `SELECT external_session_id FROM billing_sessions WHERE id=$1 AND member_id=$2`, a.CheckoutSessionId, b.member).Scan(&p.checkout) != nil {
+		r.block("Checkout lacks provider session projection")
+		return nil
+	}
+	p.snapshot = map[string]any{"checkout_id": p.checkout, "period_start": p.start.Unix(), "period_end": p.end.Unix(), "amount_minor": 1000, "currency": "USD", "status": "active", "paid": true, "cancel_at_period_end": false, "refund_minor": 0}
+	return p
+}
+func (l *live) truth(r *record, p *paidSession) bool {
+	got := l.paymentHook("snapshot", p.snapshot)
+	r.check("authoritative provider truth", "200; input to provider, not a central invoice fixture", detail(got), "POST authenticated lab payment /e2e/snapshot for actual checkout", got.status == 200)
+	return got.status == 200
+}
+func (l *live) event(r *record, p *paidSession, kind string) paymentEvent {
+	got := l.paymentHook("event", map[string]string{"checkout_id": p.checkout, "type": kind})
+	var e paymentEvent
+	ok := got.status == 200 && json.Unmarshal(got.body, &e) == nil && e.Body != "" && e.Signature != ""
+	r.check("provider event "+kind, "200 exact signed event bytes", fmt.Sprintf("HTTP=%d; signed_event_present=%t", got.status, ok), "POST authenticated lab /e2e/event; keep payload and signature in memory", ok)
+	return e
+}
+func (l *live) sendEvent(e paymentEvent) response {
+	return l.api(nil, "POST", "/api/v1/webhooks/stripe", []byte(e.Body), map[string]string{"Stripe-Signature": e.Signature})
+}
+func eventID(e paymentEvent) string {
+	var v struct{ ID string }
+	_ = json.Unmarshal([]byte(e.Body), &v)
+	return v.ID
+}
+func (l *live) processed(e paymentEvent) bool {
+	return l.wait(90*time.Second, func() bool {
+		return l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1 AND processing_status='succeeded'`, eventID(e)) == 1
+	})
+}
+func (l *live) paidReadback(r *record, p *paidSession, state string, refund int) bool {
+	var raw []byte
+	ok := l.wait(90*time.Second, func() bool {
+		var matched bool
+		err := l.pool.QueryRow(l.ctx, `SELECT s.last_reconciled_at IS NOT NULL AND s.paid_from=$2 AND s.paid_through=$3 AND e.state=$4 AND (SELECT coalesce(sum(amount_minor),0) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='refund')=$5 FROM subscriptions s JOIN entitlements e ON e.member_id=s.member_id WHERE s.external_subscription_id=$1`, "sub_"+p.checkout, p.start, p.end, state, refund).Scan(&matched)
+		return err == nil && matched
+	})
+	err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('provider_status',s.provider_status,'cancel_at_period_end',s.cancel_at_period_end,'paid_from',s.paid_from,'paid_through',s.paid_through,'last_reconciled',s.last_reconciled_at IS NOT NULL,'anomalies',s.reconciliation_anomalies,'entitlement',e.state,'revision',e.revision::text,'effective_service_end',e.effective_service_end,'invoices',(SELECT count(*) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='paid_invoice'),'refund_total',(SELECT coalesce(sum(amount_minor),0) FROM billing_records b WHERE b.subscription_id=s.id AND b.record_type='refund')) FROM subscriptions s JOIN entitlements e ON e.member_id=s.member_id WHERE s.external_subscription_id=$1`, "sub_"+p.checkout).Scan(&raw)
+	r.check("reconciled "+state, fmt.Sprintf("one exact paid interval; state=%s; refund=%d", state, refund), string(raw), "poll real subscription, billing_records and entitlements projections", ok && err == nil)
+	l.write(r)
+	return ok
+}
+func (l *live) revision(b *browser) string {
+	var rev string
+	_ = l.pool.QueryRow(l.ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, b.member).Scan(&rev)
+	return rev
+}
+func (l *live) portal(r *record, b *browser) {
+	u, _ := url.Parse("https://portal.example.invalid:8443")
+	input, _ := json.Marshal(map[string]any{"port": 24443, "cookies": b.client.Jar.Cookies(u)})
+	ctx, cancel := context.WithTimeout(l.ctx, 40*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "node", filepath.Join(l.root, "deploy/devstack/probe-portal.mjs"))
+	cmd.Stdin = bytes.NewReader(input)
+	raw, err := cmd.Output()
+	var result struct {
+		Status  int  `json:"http_status"`
+		Visible bool `json:"billing_page_visible"`
+		Error   bool `json:"api_error"`
+		Pending bool `json:"pending_confirmation"`
+	}
+	decoded := json.Unmarshal(raw, &result) == nil
+	r.check("real Portal billing return", "built billing page renders, pending confirmation; no API error", fmt.Sprintf("probe_ok=%t; HTTP=%d; page=%t; pending=%t; api_error=%t", err == nil, result.Status, result.Visible, result.Pending, result.Error), "shared deploy/devstack/probe-portal.mjs; cookies via stdin, controlled origin only", err == nil && decoded && result.Status == 200 && result.Visible && result.Pending && !result.Error)
+}
+func (l *live) payment(r *record) {
+	if l.plan == uuid.Nil {
+		r.block("API-created plan unavailable")
+		return
+	}
+	l.portal(r, l.c)
+	p := l.checkout(r, l.c, time.Now().Add(time.Hour))
+	if p == nil {
+		return
+	}
+	l.paid = p
+	forged := l.api(l.c, "GET", "/billing/return?success=true&paid=true&session_id=TEST_ONLY_forged", nil, nil)
+	subscriptions := l.count(`SELECT count(*) FROM subscriptions WHERE member_id=$1`, l.c.member)
+	r.check("forged return before provider truth", "200 built Portal; no subscription or live entitlement", fmt.Sprintf("HTTP=%d; subscriptions=%d; state=%s", forged.status, subscriptions, l.entitlementState(l.c)), "GET forged return before snapshot; read product subscriptions and entitlement", forged.status == 200 && subscriptions == 0 && l.entitlementState(l.c) != "active")
+	if !l.truth(r, p) {
+		return
+	}
+	paid := l.event(r, p, "invoice.paid")
+	bad := paid
+	bad.Signature = "t=" + fmt.Sprint(time.Now().Unix()) + ",v1=" + strings.Repeat("0", 64)
+	invalid := l.sendEvent(bad)
+	r.check("invalid signature", "401; no inbox row", fmt.Sprintf("HTTP=%d; inbox=%d", invalid.status, l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1`, eventID(paid))), "POST provider's exact bytes with invalid signature", invalid.status == 401 && l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1`, eventID(paid)) == 0)
+	initialRev := l.revision(l.c)
+	first := l.sendEvent(paid)
+	settled := l.processed(paid)
+	r.check("first paid event", "202 then inbox succeeded", fmt.Sprintf("HTTP=%d; reconciled=%t", first.status, settled), "POST exact provider event; poll processing_status", first.status == 202 && settled)
+	if !l.paidReadback(r, p, "active", 0) {
+		return
+	}
+	paidRev := l.revision(l.c)
+	accepted := 1
+	for range 9 {
+		if l.sendEvent(paid).status == 202 {
+			accepted++
+		}
+	}
+	invoices := l.count(`SELECT count(*) FROM billing_records WHERE member_id=$1 AND record_type='paid_invoice'`, l.c.member)
+	rows := l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1`, eventID(paid))
+	r.check("ten identical paid deliveries", "one inbox/invoice; one revision change then stable", fmt.Sprintf("accepted=%d; inbox=%d; invoices=%d; before=%s; paid=%s; after=%s", accepted, rows, invoices, initialRev, paidRev, l.revision(l.c)), "POST identical exact bytes 10 times; read keys, intervals and revisions", accepted == 10 && rows == 1 && invoices == 1 && initialRev != paidRev && paidRev == l.revision(l.c))
+	l.paidReadback(r, p, "active", 0)
+	l.write(r)
+	l.paymentOrders(r)
+	r.block(inheritedLeaseGate)
+}
+
+// AT03: the hook supports paid/updated, but not created/failed events. Reuse its
+// real checkout-bound object and sign these two documented event INPUTS with the
+// generated TEST ONLY key. Authoritative truth still comes exclusively from the
+// provider hook. This never inserts an invoice/subscription/entitlement fixture.
+func (l *live) orderingEvent(template paymentEvent, kind string) paymentEvent {
+	var v map[string]any
+	_ = json.Unmarshal([]byte(template.Body), &v)
+	v["type"] = kind
+	v["id"] = "evt_TEST_ONLY_" + uuid.NewString()
+	raw, _ := json.Marshal(v)
 	stamp := fmt.Sprint(time.Now().Unix())
 	mac := hmac.New(sha256.New, []byte(l.secret("webhook.secret")))
 	_, _ = mac.Write([]byte(stamp + "."))
 	_, _ = mac.Write(raw)
-	sig := hex.EncodeToString(mac.Sum(nil))
-	if !valid {
-		sig = strings.Repeat("0", 64)
-	}
-	return l.api(nil, "POST", "/api/v1/webhooks/stripe", raw, map[string]string{"Stripe-Signature": "t=" + stamp + ",v1=" + sig})
+	return paymentEvent{string(raw), "t=" + stamp + ",v1=" + hex.EncodeToString(mac.Sum(nil))}
 }
-func (l *live) payment(r *record) {
-	headers := commandHeaders()
-	body := map[string]any{"plan_id": l.plan, "return_url": "https://portal.example.invalid:8443/billing/return"}
-	checkout := l.api(l.c, "POST", "/api/v1/member/checkout-sessions", body, headers)
-	replay := l.api(l.c, "POST", "/api/v1/member/checkout-sessions", body, headers)
-	var first, again struct {
-		URL string `json:"checkout_url"`
-	}
-	_ = json.Unmarshal(checkout.body, &first)
-	_ = json.Unmarshal(replay.body, &again)
-	r.check("real hosted checkout replay", "201 with hosted URL; same command replays", fmt.Sprintf("first=%d; replay=%d; same_url=%t", checkout.status, replay.status, first.URL != "" && first.URL == again.URL), "POST /member/checkout-sessions twice with same Idempotency-Key", checkout.status == 201 && replay.status == 201 && first.URL != "" && first.URL == again.URL)
-	before := l.count(`SELECT count(*) FROM subscriptions WHERE member_id=$1`, l.c.member)
-	forged := l.api(l.c, "GET", "/billing/return?success=true&paid=true&session_id=TEST_ONLY_forged", nil, nil)
-	after := l.count(`SELECT count(*) FROM subscriptions WHERE member_id=$1`, l.c.member)
-	r.check("forged success return", "no subscription created", fmt.Sprintf("return_HTTP=%d; before=%d; after=%d", forged.status, before, after), "GET forged billing return; SELECT member subscriptions", before == 0 && after == 0)
-	if forged.status == 404 {
-		r.block("The running control origin returns 404 for /billing/return; no rendered Portal return page is served. No-rights side effect is observed, but the frontend-return journey is unavailable.")
-	}
-	badID := "evt_TEST_ONLY_bad_" + l.run
-	bad := l.webhook(badID, "invoice.paid", false)
-	badRows := l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1`, badID)
-	r.check("invalid signature", "401, no inbox row", fmt.Sprintf("%s; inbox_rows=%d", detail(bad), badRows), "POST exact webhook bytes with invalid Stripe-Signature", bad.status == 401 && badRows == 0)
-	var revBefore string
-	_ = l.pool.QueryRow(l.ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, l.c.member).Scan(&revBefore)
-	id := "evt_TEST_ONLY_replay_" + l.run
-	accepted := 0
-	for range 10 {
-		w := l.webhook(id, "invoice.paid", true)
-		if w.status == 202 || w.status == 200 {
-			accepted++
-		}
-	}
-	rows := l.count(`SELECT count(*) FROM inbox_events WHERE external_event_id=$1`, id)
-	r.check("ten deliveries", "one durable inbox key", fmt.Sprintf("accepted=%d/10; inbox_rows=%d", accepted, rows), "POST same paid event ten times; SELECT source/external_event_id uniqueness", accepted == 10 && rows == 1)
+func (l *live) paymentOrders(r *record) {
 	orders := [][3]string{{"created", "paid", "failed"}, {"created", "failed", "paid"}, {"paid", "created", "failed"}, {"paid", "failed", "created"}, {"failed", "created", "paid"}, {"failed", "paid", "created"}}
-	kinds := map[string]string{"created": "customer.subscription.created", "paid": "invoice.paid", "failed": "invoice.payment_failed"}
-	count := 0
 	for i, order := range orders {
+		b := l.login(fmt.Sprintf("AT-order-%s-%d", l.run, i), "member")
+		p := l.checkout(r, b, time.Now().Add(time.Hour))
+		if p == nil || !l.truth(r, p) {
+			return
+		}
+		invoice := l.event(r, p, "invoice.paid")
+		subscription := l.event(r, p, "customer.subscription.updated")
+		events := map[string]paymentEvent{"created": l.orderingEvent(subscription, "customer.subscription.created"), "paid": invoice, "failed": l.orderingEvent(invoice, "invoice.payment_failed")}
+		delivered, processed := 0, 0
 		for _, kind := range order {
-			w := l.webhook(fmt.Sprintf("evt_TEST_ONLY_order_%s_%d_%s", l.run, i, kind), kinds[kind], true)
-			if w.status == 202 || w.status == 200 {
-				count++
+			if l.sendEvent(events[kind]).status == 202 {
+				delivered++
+			}
+			if l.processed(events[kind]) {
+				processed++
 			}
 		}
-	}
-	r.check("all six delivery orders", "18 authenticated inbox deliveries", fmt.Sprintf("accepted=%d/18", count), "POST created/paid/failed in every permutation", count == 18)
-	// The authoritative GET must work before a delivered event can mean paid.
-	snapshot := l.request(nil, "GET", "https://api.stripe.com/v1/subscriptions/sub_TEST_ONLY_"+l.run, nil, map[string]string{"Authorization": "Bearer " + l.secret("stripe.key")})
-	r.check("authoritative provider precondition", "record snapshot availability", detail(snapshot), "GET controlled payment provider /v1/subscriptions/{id}", snapshot.status != 0)
-	var revAfter string
-	_ = l.pool.QueryRow(l.ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, l.c.member).Scan(&revAfter)
-	r.check("pending entitlement revision", "unreconciled deliveries do not extend interval", fmt.Sprintf("before=%s; after=%s", revBefore, revAfter), "SELECT entitlements.revision before/after webhook sequence", revBefore == revAfter)
-	state := l.entitlementState(l.c)
-	r.check("unreconciled event cannot grant", "pending member has no live entitlement", state, "GET /member/me; SELECT effective entitlement", state == "pending_payment" || state == "expired" || state == "none")
-	if snapshot.status == 404 {
-		r.block("Controlled payment provider returns 404 for the authoritative subscription snapshot and empty invoice/refund lists. Inbox replay/order is exercised; no paid subscription can reconcile, so one paid interval, revision stability after successful reconciliation, refunds and gateway authorization remain blocked. Add mutable snapshots to fvpn-e2e-payment, not fake production entitlements.")
+		good := l.paidReadback(r, p, "active", 0)
+		rows := l.count(`SELECT count(*) FROM billing_records WHERE member_id=$1 AND record_type='paid_invoice'`, b.member)
+		r.check("delivery order "+strings.Join(order[:], "/"), "each event processed against same authoritative paid truth; one exact interval", fmt.Sprintf("delivered=%d; processed=%d; invoices=%d; period_matches=%t", delivered, processed, rows, good), "fresh checkout/subject per order; provider event templates; signed created/failed event inputs; read paid interval", delivered == 3 && processed == 3 && rows == 1 && good)
+		l.write(r)
 	}
 }
 func (l *live) entitlementState(b *browser) string {
 	var state string
-	err := l.pool.QueryRow(l.ctx, `SELECT state FROM entitlements WHERE member_id=$1`, b.member).Scan(&state)
-	if err != nil {
+	if l.pool.QueryRow(l.ctx, `SELECT state FROM entitlements WHERE member_id=$1`, b.member).Scan(&state) != nil {
 		return "none"
 	}
 	return state
 }
 func (l *live) entitlements(r *record) {
-	expiry := time.Now().UTC().Add(12 * time.Second)
-	g := l.grant(l.c, expiry)
-	r.check("finite short entitlement", "202; active before real clock expiry", detail(g)+"; state="+l.entitlementState(l.c), "POST finite TEST ONLY grant, 12 seconds", g.status == 202 && l.entitlementState(l.c) == "active")
-	expired := l.wait(90*time.Second, func() bool { return l.entitlementState(l.c) == "expired" })
-	r.check("real expiry boundary", "effective interval ends without extending", fmt.Sprintf("expired=%t; elapsed_after_end_seconds=%.0f", expired, time.Since(expiry).Seconds()), "wait on real UTC clock; poll product entitlements.state projection", expired)
-	suspend := l.patchMember(l.c, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY acceptance"})
-	r.check("manual suspension", "202", detail(suspend), "PATCH member admin_suspended=true with If-Match", suspend.status == 202)
-	grant := l.grant(l.c, time.Now().UTC().Add(2*time.Hour))
-	state := l.entitlementState(l.c)
-	r.check("grant does not clear suspension", "202; remains suspended", detail(grant)+"; state="+state, "POST second finite grant; read effective entitlement", grant.status == 202 && state == "suspended")
-	screen := l.api(l.c, "GET", "/api/v1/member/me", nil, nil)
-	r.check("member view model", "200 with admin_suspended=true", fmt.Sprintf("HTTP=%d; suspended_flag=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after suspend", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
-	for _, kind := range []string{"customer.subscription.updated", "customer.subscription.deleted", "charge.refunded", "invoice.paid"} {
-		event := l.webhook("evt_TEST_ONLY_lifecycle_"+kind+"_"+l.run, kind, true)
-		r.check("lifecycle inbox "+kind, "authenticated lifecycle event accepted, no payment truth inferred", detail(event), "POST exact signed lifecycle event", event.status == 202 || event.status == 200)
+	if l.paid == nil {
+		r.block("AT03 paid session unavailable")
+		return
 	}
-	for _, path := range []string{"/v1/subscriptions/sub_TEST_ONLY_" + l.run, "/v1/invoices", "/v1/refunds"} {
-		snapshot := l.request(nil, "GET", "https://api.stripe.com"+path, nil, map[string]string{"Authorization": "Bearer " + l.secret("stripe.key")})
-		var list struct {
-			Data []json.RawMessage `json:"data"`
-		}
-		_ = json.Unmarshal(snapshot.body, &list)
-		r.check("lifecycle snapshot "+strings.Split(path, "/")[2], "record actual authoritative fixture availability", fmt.Sprintf("HTTP=%d; objects=%d", snapshot.status, len(list.Data)), "GET controlled provider authoritative snapshot/list", snapshot.status != 0)
+	p := l.paid
+	// §9.2–9.3: cancellation preserves paid history, full refund ends effective service.
+	p.snapshot["cancel_at_period_end"] = true
+	p.snapshot["refund_minor"] = 250
+	if l.truth(r, p) {
+		ev := l.event(r, p, "customer.subscription.updated")
+		got := l.sendEvent(ev)
+		r.check("cancel and partial refund event", "202 then reconciled", detail(got), "update provider truth; POST signed event", got.status == 202 && l.processed(ev))
+		l.paidReadback(r, p, "cancel_at_period_end", 250)
 	}
-	r.block("No successful paid snapshot (AT03) or serving data path (AT08; native admission is now attempted in AT01/AT02). A grant surviving suspension is not proof of successful-payment precedence. Existing TCP/UDP stop latency, cancellation/refund timing, every-node enforcement and rendered member screen need those prerequisites.")
+	p.snapshot["refund_minor"] = 1000
+	p.snapshot["status"] = "canceled"
+	if l.truth(r, p) {
+		ev := l.event(r, p, "charge.refunded")
+		got := l.sendEvent(ev)
+		r.check("full refund event", "202 then reconciled", detail(got), "POST full refund truth and exact signed event", got.status == 202 && l.processed(ev))
+		l.paidReadback(r, p, "expired", 1000)
+		invoices := l.count(`SELECT count(*) FROM billing_records WHERE member_id=$1 AND record_type='paid_invoice'`, l.c.member)
+		refunds := l.count(`SELECT count(*) FROM billing_records WHERE member_id=$1 AND record_type='refund'`, l.c.member)
+		r.check("refund audit history", "one invoice retained; two refund deltas", fmt.Sprintf("invoices=%d; refunds=%d", invoices, refunds), "read immutable billing_records after cumulative 250/1000 refund", invoices == 1 && refunds == 2)
+		deleted := l.event(r, p, "customer.subscription.deleted")
+		got = l.sendEvent(deleted)
+		r.check("cancellation deletion replay", "202; reconciled without restoring service", detail(got), "POST customer.subscription.deleted after canceled truth", got.status == 202 && l.processed(deleted) && l.entitlementState(l.c) == "expired")
+	}
+	// Expiry runs on a fresh, paid subscription so no grant masks the boundary.
+	expiryMember := l.login("AT-expiry-"+l.run, "member")
+	ep := l.checkout(r, expiryMember, time.Now().Add(45*time.Second))
+	if ep != nil && l.truth(r, ep) {
+		ev := l.event(r, ep, "checkout.session.completed")
+		got := l.sendEvent(ev)
+		r.check("short real paid period", "202 then active", detail(got), "actual checkout and provider paid interval ending in 45 seconds", got.status == 202 && l.processed(ev))
+		l.paidReadback(r, ep, "active", 0)
+		expired := l.wait(100*time.Second, func() bool { return l.entitlementState(expiryMember) == "expired" })
+		r.check("real paid expiry", "product projection expires at real UTC boundary", fmt.Sprintf("expired=%t; seconds_after_end=%.0f", expired, time.Since(ep.end).Seconds()), "poll entitlement.state without changing any clock", expired)
+	}
+	suspended := l.login("AT-suspend-"+l.run, "member")
+	got := l.patchMember(suspended, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY successful payment precedence"})
+	r.check("manual suspension before payment", "202", detail(got), "PATCH member with If-Match", got.status == 202)
+	sp := l.checkout(r, suspended, time.Now().Add(time.Hour))
+	if sp != nil && l.truth(r, sp) {
+		ev := l.event(r, sp, "invoice.paid")
+		paid := l.sendEvent(ev)
+		r.check("successful payment while suspended", "202 then reconciled", detail(paid), "POST real paid event after manual suspension", paid.status == 202 && l.processed(ev))
+		l.paidReadback(r, sp, "suspended", 0)
+		screen := l.api(suspended, "GET", "/api/v1/member/me", nil, nil)
+		r.check("member screen state", "200; admin_suspended true despite paid interval", fmt.Sprintf("HTTP=%d; suspended=%t", screen.status, strings.Contains(string(screen.body), `"admin_suspended":true`)), "GET /member/me after successful paid reconciliation", screen.status == 200 && strings.Contains(string(screen.body), `"admin_suspended":true`))
+	}
+	r.block(inheritedLeaseGate)
+	r.block("Paid periods, cancellation/refunds, real expiry and suspension are control-plane checks. Long TCP/UDP stop latency on every node and rendered suspended/expired member screens require the positive counted-flow and platform fixtures; OPERATORS.md retains the exact scripts.")
 }

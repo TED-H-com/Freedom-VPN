@@ -1,23 +1,26 @@
 # Wave 4 security and operations acceptance
 
-Follow-up 2 uses the shared dev stack with
+Follow-up 3 uses the shared dev stack with
 `FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000`.
 
 ```sh
-make -f mk/at-secops.mk at-secops
+make -f mk/at-secops.mk at-secops-followup3
 ```
 
 The runner refuses an occupied namespace, creates fresh TEST ONLY state, runs
-live probes and a network-none physical PITR, removes its Docker objects, then
-runs supporting suites with `-p 1 -parallel 2`. Exit 2 preserves blocked
-acceptance. It never restores the live stack or shared admin database.
+live D-060 limiter and SECOPS-11 publication probes, removes its Docker objects,
+then runs supporting suites with `-p 1 -parallel 2`. Exit 2 preserves blocked
+acceptance. This follow-up reviews the historical PITR record's compatibility;
+it does not repeat the restore or relabel its timestamps and images. The full
+`at-secops` target still includes an isolated PITR. Neither target restores the
+live stack or shared admin database.
 
 | Case | Evidence | Scope |
 |---|---|---|
 | AT28 | [record](AT28.json), [live](live.json) | Sessions, native-device ownership, role refusals, two node certificates, expired/revoked TLS, replay, CSRF/ETag/limits and stream scan |
-| AT29 | [record](AT29.json) | Requires serving=1 and increasing admission counters before deadline faults; a publication operation alone cannot satisfy the gate |
+| AT29 | [record](AT29.json), [publication](publication.json) | Requires serving=1 and increasing admission counters before deadline faults; SECOPS-11 also rejects an unarmed agent observation |
 | AT30 | [record](AT30.json), [physical PITR](pitr.json), [procedure](pitr.md) | pgBackRest base backup/WAL, target boundary across ledger/grant/audit, isolated replay without extension or double counting. Actual node archive and external reconciliation remain unmeasured |
-| AT31 | [record](AT31.json), [dependency check](dependencies.json) | 20 API grants and one native device; full capacity blocked without counted serving flow and 60-peer hook. Prior login burst is historical pending D-060 |
+| AT31 | [record](AT31.json), [limiter](limiter.json), [dependency check](dependencies.json) | D-060 default 20-user burst and separate subject/address thresholds; full capacity still requires a counted serving flow and 60-peer hook |
 | AT32 | [record](AT32.json), [review](scope-review.json) | DOC01–DOC13 corrections retained; physical source/platform comparison needs operator runs |
 
 D-050: every live fixture input uses an API or exported lab helper. Groups,
@@ -33,9 +36,18 @@ are retained by the test sender. Accepted usage is not evidence of kernel
 sampling or forwarding. Capacity measurements require a counted serving flow;
 [historical API diagnostics](capacity-history.json) and the [Follow-up 1 login
 burst](followup1-login.json) preserve their original scope and source.
-The instructed dependency check found neither control follow-up 10 nor devstack
-follow-up 7 on origin/main. No merge, limiter tuning or recovery workaround was
-performed. The 41st-request Retry-After remeasurement stays blocked on D-060.
+Control follow-up 10 (#106, D-060) and wire-nodes follow-up 12 (#109) are in the
+tested starting revision `f7281ec`. Devstack follow-up 7 was absent at the
+instructed start check; #118 arrived during this task and is recorded separately
+in `dependencies.json`, without attributing its changes to this run. No merge,
+limiter tuning, clock change or recovery workaround was performed. Limiter traces
+retain only paths, methods, UTC times, request IDs, statuses and error codes;
+callback queries, redirect targets, cookies and tokens are excluded.
+
+[PITR compatibility](pitr-compatibility.json) validates the original boundary
+assertions and compares its commands and migrations with this checkout. Backup
+follow-up 4 (#111) changed the handover example, not the commands used by the
+physical drill. The original [PITR measurements](pitr.json) remain historical.
 
 For the independent physical half on a **fresh** own-prefix running lab:
 

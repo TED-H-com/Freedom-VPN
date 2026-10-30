@@ -217,6 +217,21 @@
       "evidence": [
         "docs/spec/PROJECT_SPEC.zh-TW.md"
       ]
+    },
+    {
+      "id": "DOC14",
+      "status": "open",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "Part II 2.2",
+      "claim": "Current contract described as OpenAPI 1.1.1.",
+      "actual": "contracts/openapi.yaml info.version is 1.2.0 on tested revision f7281ec; endpoint count remains 44.",
+      "requested_change": "Update or remove the stale version reference; retain the automatic device admission and unmeasured-platform qualifications.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "docs/handover/member-guide.md"
+      ]
     }
   ],
   "unified_model_review": [
@@ -312,5 +327,41 @@
     "new_mismatches": [],
     "physical_acceptance": "needs operator run",
     "conclusion": "Prior DOC01–DOC13 resolutions remain applicable. This run proves native admission and the isolated physical ledger/grant/audit restore boundary, not member platform kill-switch behavior, serving availability, real node archive recovery, or capacity."
+  },
+  "follow_up_3": {
+    "reviewed_at": "2026-10-30T04:50:26.068612Z",
+    "source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+    "method": "Inspect public text delta from 1773ae4 to f7281ec; preserve previous DOC01-DOC13 review and physical operator gates. No new full UI or platform run.",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "8a5bff18d3bcb99ce7870e20e4c6598df66037fff79180072385823886a05a3a"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "fb202e5672147699b942ced00ff926816e72842a90f1cc8c9e8c98052f815d88"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "397bf0cf486901e0dc3f5fa06d94fa2ab4a40e15912b61a62419073003586a58"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "0ca598f36840d3841789b47848ca9a1d68a7663a230728889cdb2f11e0bbb279"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "7359e96a343b2385f92b28dd4c10ff0040d5eb061421370863571ede2171c6f4"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "f1a19b95b5d276bce0dbdf01eb449a6433fe0a5521a7e523328d906254fea05d"
+      }
+    ],
+    "new_mismatches": [
+      "DOC14"
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "New text continues to qualify unmeasured forwarding, platform and propagation behavior; native authorization is observed here. Contract version reference is stale; no full serving, client platform, or UI-render acceptance is claimed."
   }
 }

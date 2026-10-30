@@ -1,14 +1,96 @@
 {
-  "checked_at": "2026-10-30T03:45:24.566360Z",
-  "local_source_revision": "2a2146890607a00285c4262686608dba2ac6ba2f",
-  "origin_main_revision": "4d02151b78ff95e3fb0a08bdfeccd33082da0e69",
+  "schema_version": 1,
+  "checked_at": "2026-10-30T04:50:26.068612Z",
+  "local_source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+  "origin_main_revision_at_record_refresh": "9951359f581edb4de95a3a7ec3c5074c18faddc0",
   "commands": [
     "git fetch origin",
     "git log --oneline origin/main | grep \"w2-control-core follow-up 10\"",
-    "git log --oneline origin/main | grep \"w3-devstack-e2e follow-up 7\""
+    "git log --oneline origin/main | grep \"w3-devstack-e2e follow-up 7\"",
+    "git log --oneline f7281ec --grep=\"w3-devstack-e2e follow-up 7\""
   ],
-  "control_followup_10_found": false,
-  "devstack_followup_7_found": false,
+  "at_start": {
+    "control_followup_10_found": true,
+    "devstack_followup_7_found": false,
+    "local_source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c"
+  },
+  "later_remote_observation": {
+    "devstack_followup_7_found": true,
+    "merge_pr": 118,
+    "roadmap_commit": "ed1e0de",
+    "merged_fix_commit": "a924716",
+    "remote_ref_first_includes_fix_at": "2026-10-30T04:30:47Z",
+    "source": "git reflog show --date=iso origin/main; shared remote ref advanced during work"
+  },
   "merge_performed": false,
-  "decision": "Both owning follow-ups absent at the instructed check. Retain historical burst measurement; no recovery workaround."
+  "decision": "Run remains pinned to assigned f7281ec under the requested check-at-start gate. #118 arrived later and is not attributed to this run.",
+  "requests": {
+    "SECOPS-03": {
+      "status": "peer identity and native device admission resolved; ready DNS baseline blocked in this run",
+      "merged_prs": [
+        81,
+        83,
+        114
+      ],
+      "evidence": "live.json"
+    },
+    "SECOPS-06": {
+      "status": "resolved: 20/20 authenticated; exact subject and address thresholds measured",
+      "merged_prs": [
+        106
+      ],
+      "evidence": "limiter.json"
+    },
+    "SECOPS-09": {
+      "status": "blocked on tested revision; owner follow-up merged during run, needs retest on #118",
+      "merged_prs": [
+        118
+      ],
+      "merged_after_start": true,
+      "evidence": "AT29.json"
+    },
+    "SECOPS-11": {
+      "status": "worker component negative/positive pass after #109; live publication blocked before operation by DNS/readiness",
+      "merged_prs": [
+        109
+      ],
+      "evidence": "publication.json"
+    },
+    "SECOPS-12": {
+      "status": "harness fix resolved; historical physical PITR remains valid after backups follow-up 4",
+      "merged_prs": [
+        112,
+        111
+      ],
+      "evidence": "pitr-compatibility.json"
+    },
+    "SECOPS-13": {
+      "status": "owner test fails against refreshed live evidence; needs immutable regression fixture",
+      "introduced_by_pr": 109,
+      "evidence": "components.json"
+    },
+    "SECOPS-14": {
+      "status": "lab landing GET / returns 500 after successful authentication; UI completion not proved",
+      "evidence": "limiter.json"
+    }
+  },
+  "history": [
+    {
+      "follow_up": 2,
+      "record": {
+        "checked_at": "2026-10-30T03:45:24.566360Z",
+        "local_source_revision": "2a2146890607a00285c4262686608dba2ac6ba2f",
+        "origin_main_revision": "4d02151b78ff95e3fb0a08bdfeccd33082da0e69",
+        "commands": [
+          "git fetch origin",
+          "git log --oneline origin/main | grep \"w2-control-core follow-up 10\"",
+          "git log --oneline origin/main | grep \"w3-devstack-e2e follow-up 7\""
+        ],
+        "control_followup_10_found": false,
+        "devstack_followup_7_found": false,
+        "merge_performed": false,
+        "decision": "Both owning follow-ups absent at the instructed check. Retain historical burst measurement; no recovery workaround."
+      }
+    }
+  ]
 }
