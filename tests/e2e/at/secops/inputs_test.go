@@ -239,6 +239,7 @@ func (p *liveProbe) concurrentLogins(members []*liveSession) {
 			p.t.Fatal("historical login evidence")
 		}
 		p.metadata["concurrent_sign_in"] = historical
+		p.metadata["login_41st_request"] = map[string]any{"status": "blocked on control follow-up 10 / D-060", "expected_status": 429, "actual_status": nil, "retry_after": nil, "remeasured": false}
 		return
 	}
 	type outcome struct {

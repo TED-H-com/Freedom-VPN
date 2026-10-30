@@ -274,5 +274,43 @@
       }
     ],
     "conclusion": "Resolved copy now qualifies intended capabilities and unmeasured platform/flow behavior. Native admission and synthetic ledger replay do not establish forwarding, hardware capacity or client kill-switch guarantees."
+  },
+  "follow_up_2": {
+    "reviewed_at": "2026-10-30T03:53:49.106412Z",
+    "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+    "method": "Compare current source hashes with Follow-up 1 and inspect git diff 125a761..HEAD for changed public text",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "a567d681d82cadddda90b463f72a994465d80acf0e66453e2961b2996b77450b"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "d9859549899afc8fecd12c7e1272d069f0291ed19b3c4427239fb60158efcbef"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "6deba64f8bc9bdce331fcdf5039d24bc6d3e267e842b77adb9534eefdf01d932"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "3cbac9aae23ef14f6befd77d5dcb34dc489f20d7cd88640c083cdd06c1d90c43"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "7359e96a343b2385f92b28dd4c10ff0040d5eb061421370863571ede2171c6f4"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      }
+    ],
+    "changed_public_text": [
+      "Member guide endpoint count corrected to 44; device admission still automatic",
+      "Portal adds admin update evidence detail labels; member copy unchanged"
+    ],
+    "new_mismatches": [],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "Prior DOC01–DOC13 resolutions remain applicable. This run proves native admission and the isolated physical ledger/grant/audit restore boundary, not member platform kill-switch behavior, serving availability, real node archive recovery, or capacity."
   }
 }

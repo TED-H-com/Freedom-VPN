@@ -101,7 +101,11 @@ func TestAT28_AT31_LiveStack(t *testing.T) {
 	p.ownership(admin, members, devices)
 	p.serving(admin, nodeA)
 	p.concurrentLogins(members)
-	p.load(members)
+	if p.metadata["counted_flow"] == true {
+		p.load(members)
+	} else {
+		p.metadata["capacity_subset"] = map[string]any{"status": "blocked", "reason": "Follow-up 2: no capacity measurement without a counted serving flow; prior API diagnostics remain historical"}
+	}
 	p.ledger(admin, nodeClient, nodeB, members, devices)
 	if len(devices[0]) > 0 {
 		p.memberOperation(members)

@@ -1,5 +1,5 @@
 {
-  "audit_rows_scanned": 45,
+  "audit_rows_scanned": 44,
   "authorized_devices": 1,
   "backup_check": {
     "command": [
@@ -8,7 +8,7 @@
       "fvpn-w4-secops-postgres",
       "check"
     ],
-    "elapsed_seconds": 0.219962853,
+    "elapsed_seconds": 0.257473068,
     "passed": true
   },
   "backup_full": {
@@ -18,7 +18,7 @@
       "fvpn-w4-secops-postgres",
       "full"
     ],
-    "elapsed_seconds": 4.652815735,
+    "elapsed_seconds": 3.798480461,
     "passed": true
   },
   "backup_info": {
@@ -28,7 +28,7 @@
       "fvpn-w4-secops-postgres",
       "info"
     ],
-    "elapsed_seconds": 0.046039092,
+    "elapsed_seconds": 0.049447469,
     "passed": true
   },
   "backup_wal-switch": {
@@ -38,7 +38,7 @@
       "fvpn-w4-secops-postgres",
       "wal-switch"
     ],
-    "elapsed_seconds": 0.298590023,
+    "elapsed_seconds": 0.347813889,
     "passed": true
   },
   "checks": [
@@ -49,7 +49,7 @@
       "expected_status": 201,
       "name": "create member group input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.670811689Z"
+      "utc": "2026-10-30T03:59:35.534137416Z"
     },
     {
       "actual_code": "",
@@ -58,7 +58,7 @@
       "expected_status": 201,
       "name": "create fair_use policy input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.681815862Z"
+      "utc": "2026-10-30T03:59:35.541862158Z"
     },
     {
       "actual_code": "",
@@ -67,7 +67,7 @@
       "expected_status": 202,
       "name": "activate fair_use policy input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.694589146Z"
+      "utc": "2026-10-30T03:59:35.550325431Z"
     },
     {
       "actual_code": "",
@@ -76,7 +76,7 @@
       "expected_status": 201,
       "name": "create dns_profile policy input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.705502542Z"
+      "utc": "2026-10-30T03:59:35.556930177Z"
     },
     {
       "actual_code": "",
@@ -85,7 +85,7 @@
       "expected_status": 202,
       "name": "activate dns_profile policy input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.716088848Z"
+      "utc": "2026-10-30T03:59:35.563851303Z"
     },
     {
       "actual_code": "",
@@ -94,7 +94,7 @@
       "expected_status": 201,
       "name": "create plan policy input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.725827773Z"
+      "utc": "2026-10-30T03:59:35.570282548Z"
     },
     {
       "actual_code": "",
@@ -103,7 +103,7 @@
       "expected_status": 202,
       "name": "activate plan policy input",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.736883343Z"
+      "utc": "2026-10-30T03:59:35.577019624Z"
     },
     {
       "actual_code": "",
@@ -112,7 +112,7 @@
       "expected_status": 202,
       "name": "member 00 grant accepted",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.751384829Z"
+      "utc": "2026-10-30T03:59:35.587028543Z"
     },
     {
       "actual_code": "",
@@ -121,7 +121,7 @@
       "expected_status": 202,
       "name": "member 01 grant accepted",
       "passed": true,
-      "utc": "2026-10-30T03:42:12.910619908Z"
+      "utc": "2026-10-30T03:59:35.743948062Z"
     },
     {
       "actual_code": "",
@@ -130,7 +130,7 @@
       "expected_status": 202,
       "name": "member 02 grant accepted",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.072601267Z"
+      "utc": "2026-10-30T03:59:35.900844842Z"
     },
     {
       "actual_code": "",
@@ -139,7 +139,7 @@
       "expected_status": 201,
       "name": "create enrollment secops-node-b",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.231422589Z"
+      "utc": "2026-10-30T03:59:36.058605298Z"
     },
     {
       "actual_code": "no-store",
@@ -148,7 +148,7 @@
       "expected_status": 201,
       "name": "enrollment secret no-store",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.231489125Z"
+      "utc": "2026-10-30T03:59:36.058686702Z"
     },
     {
       "actual_code": "",
@@ -157,7 +157,7 @@
       "expected_status": 201,
       "name": "enrollment duplicate",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.235452428Z"
+      "utc": "2026-10-30T03:59:36.061706021Z"
     },
     {
       "actual_code": "IDEMPOTENCY_CONFLICT",
@@ -166,7 +166,7 @@
       "expected_status": 409,
       "name": "enrollment idempotency conflict",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.238265492Z"
+      "utc": "2026-10-30T03:59:36.063885207Z"
     },
     {
       "actual_code": "",
@@ -175,7 +175,7 @@
       "expected_status": 201,
       "name": "node B certificate enrollment",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.248956671Z"
+      "utc": "2026-10-30T03:59:36.073919329Z"
     },
     {
       "actual_code": "",
@@ -184,7 +184,7 @@
       "expected_status": 200,
       "name": "node B CSR replay",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.25253566Z"
+      "utc": "2026-10-30T03:59:36.07750297Z"
     },
     {
       "actual_code": "TRANSPORT_REFUSED",
@@ -193,7 +193,7 @@
       "expected_status": 0,
       "name": "expired certificate actual TLS",
       "passed": true,
-      "utc": "2026-10-30T03:42:13.254247257Z"
+      "utc": "2026-10-30T03:59:36.079267844Z"
     },
     {
       "actual_code": "",
@@ -202,7 +202,7 @@
       "expected_status": 200,
       "name": "PITR upload",
       "passed": true,
-      "utc": "2026-10-30T03:42:53.772888522Z"
+      "utc": "2026-10-30T04:00:16.596076933Z"
     },
     {
       "actual_code": "",
@@ -211,7 +211,7 @@
       "expected_status": 200,
       "name": "PITR upload",
       "passed": true,
-      "utc": "2026-10-30T03:42:58.487369899Z"
+      "utc": "2026-10-30T04:00:20.461810966Z"
     },
     {
       "actual_code": "",
@@ -220,7 +220,7 @@
       "expected_status": 202,
       "name": "PITR before-target grant",
       "passed": true,
-      "utc": "2026-10-30T03:42:58.494245446Z"
+      "utc": "2026-10-30T04:00:20.469685362Z"
     },
     {
       "actual_code": "",
@@ -229,7 +229,7 @@
       "expected_status": 200,
       "name": "PITR upload",
       "passed": true,
-      "utc": "2026-10-30T03:42:59.514279875Z"
+      "utc": "2026-10-30T04:00:21.499651653Z"
     },
     {
       "actual_code": "",
@@ -238,35 +238,35 @@
       "expected_status": 202,
       "name": "PITR after-target grant",
       "passed": true,
-      "utc": "2026-10-30T03:42:59.522107119Z"
+      "utc": "2026-10-30T04:00:21.511787393Z"
     }
   ],
   "device_fixture": "native NetBird user device flow; production devices.discover writes admission/binding",
   "device_scale_blocker": "deploy/devstack/entrypoint-member.sh exposes one fixed daemon/interface and one user-auth trigger. Need a documented 20-user/3-native-peer-per-user fixture hook before claiming 60 devices.",
-  "finished_at": "2026-10-30T03:42:59.823135615Z",
+  "finished_at": "2026-10-30T04:00:21.861625464Z",
   "go_test_failed": false,
   "grant_projection": {
     "active_members": 3,
     "commands": 3,
-    "finite_end": "2026-10-30T04:42:12Z",
+    "finite_end": "2026-10-30T04:59:35Z",
     "writes": "admin grants only; projected tables read-only"
   },
   "grant_survived_two_device_sweeps": true,
   "image_digests": [
     {
-      "image_id": "sha256:1b4a0a38a0817c6e5252249f98fdb91af76cdf9c3e0ee0ee5f5560ae6f880ca5",
+      "image_id": "sha256:5f423c5e70b8149490599c3b7a428c764c5128476dd9cde1e00d4cb29507f0c2",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:3d7bf39ceed93fb4fdf2ec9e4d3fe730c7a0507c95477e9724f5459ee30c474a",
+      "image_id": "sha256:703b033da49e227cc3dd96607ffa338f1444ae4eefeafc2bed1210bdc6c962dd",
       "service": "idp"
     },
     {
-      "image_id": "sha256:6f8789c9511230eecbf0f1821f28952b7b62b2373213cb0f09df70d12f1a15bc",
+      "image_id": "sha256:b82c974899207eb76b9dccdd7849f97162e4d06a7e1c5de54c7b2d6e89b118cf",
       "service": "payment"
     },
     {
-      "image_id": "sha256:dff4b4369266c86ea384808ae5bf3a688b96d495a6d460590a815b6599c376c9",
+      "image_id": "sha256:6829ac95c2c0e83b6bda12c8dd4a25bc980101f88a1901ccde7b711a7b196f4a",
       "service": "origin"
     },
     {
@@ -286,19 +286,19 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:28d28b42f21dbf97e114df9c208d7df3e357fed48f40aae138dd62d55dcf7827",
+      "image_id": "sha256:734c400b2e5d3d04c87fb128dcbc58a4161b1e521a3d34ad43cd2c5cbb66c956",
       "service": "control"
     },
     {
-      "image_id": "sha256:15ab02c38aac62a7f5529ff762038b4a0c68daa3e3066124bc97eb34f2c60fd4",
+      "image_id": "sha256:7c7700cd490c7b0d280ea7d12154fbb2ae6d4daf89f8a6e54e29de6c9613acb1",
       "service": "worker"
     },
     {
-      "image_id": "sha256:f3916a4b2281f23011e42b223415b6c1174cedfd99885e5ce57c863a497bff56",
+      "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
       "service": "node"
     },
     {
-      "image_id": "sha256:f3916a4b2281f23011e42b223415b6c1174cedfd99885e5ce57c863a497bff56",
+      "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
       "service": "member"
     }
   ],
@@ -315,19 +315,19 @@
     "same_public_subject": true,
     "user_bindings": 1
   },
-  "node_incarnation": "90fb61e7-91d9-45fa-81f4-baa32c7a81ce",
+  "node_incarnation": "3b7abd62-26fa-41ee-9c76-d155747e43ba",
   "physical_source": {
     "archive_source": "original mTLS-uploaded events retained by test sender; not node SQLite archive",
-    "backup_label": "20261030-034253F",
+    "backup_label": "20261030-040016F",
     "backup_lsn": {
       "start": "0/6000028",
-      "stop": "0/6007358"
+      "stop": "0/6006DA8"
     },
     "backup_timestamp": {
-      "start": 1793331773,
-      "stop": 1793331777
+      "start": 1793332816,
+      "stop": 1793332819
     },
-    "db_rpo_seconds": 1.027456,
+    "db_rpo_seconds": 1.040352,
     "expected_restored_ack": "7",
     "full_service_rpo_seconds": null,
     "full_service_rto_seconds": null,
@@ -336,11 +336,11 @@
     "pre_target_audit_rows": 2,
     "projector_owned_rows_written": [],
     "source_ack": "10",
-    "source_watermark": "2026-10-29T23:42:59.523247-04:00",
-    "target_lsn": "0/7012380",
-    "target_time": "2026-10-29T23:42:58.495791-04:00"
+    "source_watermark": "2026-10-30T04:00:21.51213Z",
+    "target_lsn": "0/7012AD8",
+    "target_time": "2026-10-30T04:00:20.471778Z"
   },
-  "policy_revision": "01a18ae6-a0f2-765f-98b2-61e6808d2b8e",
+  "policy_revision": "01a18af6-8a90-793e-aae9-1c3176207820",
   "projected_bindings": 1,
   "projector_owned_rows_written": [],
   "purpose": "AT30 physical PITR product-input source; not serving/capacity acceptance",
@@ -395,13 +395,13 @@
       "stream": "adguard stdout/stderr"
     },
     {
-      "bytes": 14745,
+      "bytes": 14746,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "control stdout/stderr"
     },
     {
-      "bytes": 4268,
+      "bytes": 4271,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "worker stdout/stderr"
@@ -419,7 +419,7 @@
       "stream": "member stdout/stderr"
     },
     {
-      "bytes": 4275,
+      "bytes": 3853,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "member file /var/lib/vpn-node/e2e/netbird-service.log"
@@ -431,14 +431,14 @@
       "stream": "member file /var/lib/vpn-node/e2e/netbird-up.log"
     },
     {
-      "bytes": 23671,
+      "bytes": 23164,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "audit_events"
     }
   ],
   "security_matrix_complete": false,
-  "source_revision": "2a2146890607a00285c4262686608dba2ac6ba2f",
+  "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
   "sql_input_fixtures": [],
-  "started_at": "2026-10-30T03:42:09.041666978Z"
+  "started_at": "2026-10-30T03:59:31.913206335Z"
 }

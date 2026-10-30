@@ -140,6 +140,23 @@ func (p *liveProbe) physicalSource(admin, node *liveSession, b api.EnrollRespons
 		p.t.Fatal("physical backup inventory")
 	}
 	backup := inventory[0].Backup[len(inventory[0].Backup)-1]
+	// pgBackRest backup selection compares whole-second stop times. Wait on
+	// PostgreSQL's clock so a fractional target in that same second cannot be
+	// mistaken for a target preceding the completed backup. Never adjust clocks.
+	boundary := time.Unix(backup.Timestamp["stop"]+1, 0).UTC()
+	for deadline := time.Now().Add(10 * time.Second); ; {
+		var databaseNow time.Time
+		if p.db.QueryRow(p.t.Context(), `SELECT clock_timestamp()`).Scan(&databaseNow) != nil {
+			p.t.Fatal("backup target boundary clock")
+		}
+		if !databaseNow.Before(boundary) {
+			break
+		}
+		if time.Now().After(deadline) {
+			p.t.Fatal("backup target boundary timeout")
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 	send(7)
 	manifest := pitrManifest{Node: b.NodeId, Incarnation: b.NodeIncarnationId, Member: uuid.MustParse(member.member), PreEnd: now.Add(70 * time.Minute), PostEnd: now.Add(80 * time.Minute), TargetACK: 7, AuditHashes: map[string]string{}}
 	manifest.PreGrant, manifest.PreOperation = p.grantAt(admin, member, manifest.PreEnd, "before-target")

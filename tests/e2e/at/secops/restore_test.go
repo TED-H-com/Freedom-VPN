@@ -124,6 +124,10 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 	if svc.CompleteRecovery(ctx, actor) != nil {
 		t.Fatal("complete recovery")
 	}
+	total, err := svc.GetMemberPeriodTotal(ctx, batch.Events[0].Records[0].MemberId, string(batch.Events[0].Records[0].PeriodId))
+	if err != nil || total.TotalBytes != 3000 || total.Gap || total.ReconciliationInProgress {
+		t.Fatal("replayed member rollup must total exactly 3000 bytes without gap or pending reconciliation")
+	}
 	var entitlementAfter string
 	err = pool.QueryRow(ctx, `SELECT string_agg(member_id::text||effective_service_end::text,',' ORDER BY member_id) FROM entitlements`).Scan(&entitlementAfter)
 	if err != nil || entitlementBefore != entitlementAfter {
@@ -146,6 +150,7 @@ func TestAT30_IsolatedRestoreReplayer(t *testing.T) {
 		report["kind"] = "physical pgBackRest WAL/PITR and service replay"
 		report["physical_boundary"] = physical
 	}
+	report["final_member_total_bytes"] = total.TotalBytes
 	encoded, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
 		t.Fatal(err)

@@ -245,7 +245,7 @@ def main():
         if at == 'AT31' and live.get('concurrent_sign_in'):
             login = live['concurrent_sign_in']
             if login['authenticated'] != login['attempts']:
-                blockers.append(f"Concurrent login diagnostic completed {login['authenticated']}/{login['attempts']} sessions; final login HTTP statuses {login.get('last_login_http_status', {})}. Limits were not tuned.")
+                blockers.append(f"{'Historical Follow-up 1' if login.get('remeasurement_status') else 'Current'} concurrent login diagnostic completed {login['authenticated']}/{login['attempts']} sessions; final login HTTP statuses {login.get('last_login_http_status', {})}. Limits were not tuned.")
         data = dict(common, id=at, spec=['§19.1', '§19 '+at], requirements=requirements, status=status, verdict=status,
                     expected=EXPECTED[at], actual={'component_status': component_status, 'component_suites': [r['id'] for r in related], 'full_stack_executed': bool(live), 'full_acceptance_profile_executed': status == 'passed'},
                     blockers=blockers, commands=[r['command'] for r in related],
@@ -261,7 +261,7 @@ def main():
                 data['physical_restore_subset'] = json.loads((PUBLIC / 'pitr.json').read_text())
                 data['evidence'].extend(['pitr.json', 'pitr-source.json'])
         if at == 'AT31':
-            data['capacity'] = dict(profile='load-profile.json', full_profile_executed=False, candidate_hardware=False, measured_subset=live.get('capacity_subset'), grants=live.get('grant_projection'), requested_devices=60, authorized_devices=live.get('authorized_devices', 0), concurrent_sign_in=live.get('concurrent_sign_in'), synthetic_ledger_ack=live.get('usage_final_ack'))
+            data['capacity'] = dict(profile='load-profile.json', full_profile_executed=False, candidate_hardware=False, measured_subset=live.get('capacity_subset'), grants=live.get('grant_projection'), requested_devices=60, authorized_devices=live.get('authorized_devices', 0), concurrent_sign_in=live.get('concurrent_sign_in'), synthetic_ledger_ack=live.get('usage_final_ack'), login_41st_request=live.get('login_41st_request'))
         if at == 'AT32':
             data['documentation_findings'] = [{'id': f['id'], 'status': f['status']} for f in review['findings']]
             data['evidence'].append('scope-review.json')
