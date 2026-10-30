@@ -37,6 +37,7 @@ var ownedDocs = []string{
 	"docs/reviews/r8-d057-review.md",
 	"docs/reviews/r9-d062-review.md",
 	"docs/reviews/r10-d063-review.md",
+	"docs/reviews/r11-d064-review.md",
 }
 
 var repoPathPrefixes = []string{
@@ -355,6 +356,7 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"fvpn-portal-prod":            "example-oidc-client-id",
 		"fvpn-portal-test":            "example-oidc-client-id",
 		"fvpn-enroll-peer":            "netbird-correlation-group-prefix (fvpn-enroll-peer-<hash>)",
+		"fvpn-exit":                   "netbird-exit-network-prefix (fvpn-exit-<node>)",
 		"fvpn-unpublished-nodes":      "netbird-shared-staging-group-name",
 		"fvpn-node":                   "netbird-setup-key-prefix (fvpn-node-<node_id>-<incarnation_id>)",
 		"fvpn-updater-recover":        "systemd-oneshot-unit (fvpn-updater-recover.service)",
@@ -605,6 +607,7 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r8-d057-review.md",
 		"r9-d062-review.md",
 		"r10-d063-review.md",
+		"r11-d064-review.md",
 	}
 
 	var gotFiles []string
