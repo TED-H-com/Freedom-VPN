@@ -9,6 +9,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -131,8 +132,15 @@ func (s *Service) begin(ctx context.Context, rev, event uuid.UUID, now time.Time
 			return err
 		}
 		candidate := &attempt{revision: rev, token: uuid.New()}
+		raw, err = dnspolicy.MaterializeFeedDefaults(raw)
+		if err != nil {
+			return errors.New("invalid stored feed")
+		}
 		if err := json.Unmarshal(raw, &candidate.payload); err != nil {
 			return errors.New("invalid stored feed")
+		}
+		if candidate.payload.UpdateIntervalSeconds < 300 || candidate.payload.UpdateIntervalSeconds > 604800 {
+			return errors.New("invalid stored feed cadence")
 		}
 		if _, err := tx.Exec(ctx, `INSERT INTO dns_feed_refresh_state(feed_revision_id) VALUES($1) ON CONFLICT DO NOTHING`, rev); err != nil {
 			return err

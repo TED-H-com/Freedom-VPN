@@ -446,6 +446,12 @@ func TestPoliciesHTTP_AllSixPolicyTypesActivateIdempotencyWorkerAndAudit(t *test
 		t.Fatalf("expected 6 policy definitions, got %d", len(list.Items))
 	}
 
+	for _, definition := range list.Items {
+		if definition.Type != api.PolicyTypeThreatFeed && !definition.ThreatFeedStatus.IsNull() {
+			t.Fatalf("non-feed %s has a refresh status", definition.Type)
+		}
+	}
+
 	// Run worker dispatcher to process all outbox events (6 policy.activated + 1 fleet.release_support_changed)
 	// and transition operations to succeeded.
 	for i := 0; i < 10; i++ {
