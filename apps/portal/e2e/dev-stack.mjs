@@ -1425,15 +1425,36 @@ async function enrollLiveNode(
         error_code: null,
       },
     };
-    const obsRes = await httpsRequest(`${agentBaseUrl}/api/v1/agent/observations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(obsBody),
-      ca: caPem,
-      cert: clientCertPem,
-      key: nodeKeyPem,
-    });
-    if (obsRes.status !== 200 && obsRes.status !== 202) {
+    for (let attempt = 1; attempt <= 6; attempt += 1) {
+      const attemptBody =
+        attempt === 1
+          ? obsBody
+          : {
+              ...obsBody,
+              report_id: crypto.randomUUID(),
+              observed_at: new Date().toISOString(),
+            };
+      const obsRes = await httpsRequest(`${agentBaseUrl}/api/v1/agent/observations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(attemptBody),
+        ca: caPem,
+        cert: clientCertPem,
+        key: nodeKeyPem,
+      });
+      if (obsRes.status === 200 || obsRes.status === 202) {
+        return;
+      }
+      if (obsRes.status === 429 && attempt < 6) {
+        const retryAfterHeader = obsRes.headers?.['retry-after'];
+        const parsedSec = Number.parseInt(String(retryAfterHeader ?? '1'), 10);
+        const waitMs = Math.min(
+          5000,
+          Math.max(200, (Number.isFinite(parsedSec) ? parsedSec : 1) * 1000),
+        );
+        await new Promise((r) => setTimeout(r, waitMs));
+        continue;
+      }
       throw new Error(
         `POST /api/v1/agent/observations failed (${obsRes.status}): ${obsRes.text}`,
       );
@@ -1816,6 +1837,8 @@ async function drainNodeAffectingOutbox(pool, label = 'outbox') {
 async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
   const deadline = Date.now() + 15_000;
   let lastRow = null;
+  let lastSubmittedGen = null;
+  let lastSubmittedAt = 0;
   while (Date.now() < deadline) {
     const res = await pool.query(
       `SELECT
@@ -1848,8 +1871,16 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
     ) {
       return lastRow;
     }
-    if (!lastRow?.has_pending_observe || !lastRow?.gen_caught_up) {
-      await liveNode.submitObservation(lastRow?.target_gen || '1');
+    const targetGen = lastRow?.target_gen || '1';
+    const now = Date.now();
+    if (
+      !lastRow?.gen_caught_up ||
+      lastSubmittedGen !== targetGen ||
+      (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
+    ) {
+      await liveNode.submitObservation(targetGen);
+      lastSubmittedGen = targetGen;
+      lastSubmittedAt = Date.now();
     }
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -1866,6 +1897,8 @@ async function pollLiveNodeReady(
 ) {
   const deadline = Date.now() + 15_000;
   let lastRow = null;
+  let lastSubmittedGen = null;
+  let lastSubmittedAt = 0;
   while (Date.now() < deadline) {
     const res = await pool.query(
       `SELECT
@@ -1902,13 +1935,18 @@ async function pollLiveNodeReady(
     ) {
       return lastRow;
     }
+    const targetGen = lastRow?.target_gen || '1';
+    const now = Date.now();
     if (
-      !lastRow?.has_pending_observe ||
       !lastRow?.gen_caught_up ||
       lastRow?.current_release_id !== expectedReleaseId ||
-      lastRow?.last_good_release_id !== expectedReleaseId
+      lastRow?.last_good_release_id !== expectedReleaseId ||
+      lastSubmittedGen !== targetGen ||
+      (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
-      await liveNode.submitObservation(lastRow?.target_gen || '1');
+      await liveNode.submitObservation(targetGen);
+      lastSubmittedGen = targetGen;
+      lastSubmittedAt = Date.now();
     }
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -1986,6 +2024,8 @@ async function publishLiveNodeExitViaApi(
 
   const deadline = Date.now() + 15_000;
   let lastRow = null;
+  let lastSubmittedGen = null;
+  let lastSubmittedAt = Date.now();
   while (Date.now() < deadline) {
     const res = await pool.query(
       `SELECT
@@ -2016,8 +2056,16 @@ async function publishLiveNodeExitViaApi(
     ) {
       return lastRow;
     }
-    if (!lastRow?.has_pending_observe || !lastRow?.gen_caught_up) {
-      await liveNode.submitObservation(lastRow?.target_gen || '1');
+    const targetGen = lastRow?.target_gen || '1';
+    const now = Date.now();
+    if (
+      !lastRow?.gen_caught_up ||
+      lastSubmittedGen !== targetGen ||
+      (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
+    ) {
+      await liveNode.submitObservation(targetGen);
+      lastSubmittedGen = targetGen;
+      lastSubmittedAt = Date.now();
     }
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -2946,8 +2994,11 @@ async function main() {
       usage_config_file: usageConfigPath,
       ingress_rate: { per_second: 1000, burst: 1000 },
       browser_rate: { per_second: 1000, burst: 1000 },
+      login_rate: { per_second: 1000, burst: 1000 },
       agent_rate: { per_second: 1000, burst: 1000 },
+      heartbeat_rate: { per_second: 1000, burst: 1000 },
       usage_rate: { per_second: 1000, burst: 1000 },
+      lease_rate: { per_second: 1000, burst: 1000 },
       anonymous_rate: { per_second: 1000, burst: 1000 },
       worker_poll_seconds: 1,
       worker_backoff_seconds: 1,

@@ -332,10 +332,46 @@ func (e *Engine) rollbackDestructive(ctx context.Context, txn updatejournal.Txn,
 
 func (e *Engine) toRecovery(ctx context.Context, txn updatejournal.Txn, code apierr.Code, stage api.UpdateStage, health *api.UpdateHealth) (updatejournal.Txn, error) {
 	u := updatejournal.StageUpdate{ErrorCode: string(code), ErrorStage: string(stage), ErrorDetail: string(code)}
+	// D-062: rollback is at or after the health stages, so a terminal result
+	// needs a health object. A profile already stored for this attempt stays.
+	// Earlier stages, including migrate, stay pre-health and keep null health.
+	if health == nil && stage == api.UpdateStageRollback && !e.txnHasHealth(ctx, txn) {
+		h := e.blankHealth(ctx, e.rollbackHealthRelease(ctx, txn))
+		health = &h
+	}
 	if health != nil {
 		u.Health = health
 	}
 	return e.advance(ctx, txn, updatejournal.StageRecoveryRequired, u)
+}
+
+func (e *Engine) txnHasHealth(ctx context.Context, txn updatejournal.Txn) bool {
+	if len(txn.Health) > 0 {
+		return true
+	}
+	if e.Journal == nil || txn.TxnID == "" {
+		return false
+	}
+	fresh, err := e.Journal.GetTxn(ctx, txn.TxnID)
+	return err == nil && len(fresh.Health) > 0
+}
+
+// rollbackHealthRelease is the tree current still names when rollback recovery
+// starts before a health profile exists. The pointer is updated only after a
+// successful switch, so a failure before that switch names the previous release.
+func (e *Engine) rollbackHealthRelease(ctx context.Context, txn updatejournal.Txn) string {
+	if txn.RollbackReleaseID != "" {
+		return txn.RollbackReleaseID
+	}
+	if e.Journal != nil {
+		if p, err := e.Journal.Pointers(ctx); err == nil && p.CurrentRelease != "" {
+			return p.CurrentRelease
+		}
+	}
+	if txn.PreviousReleaseID != "" {
+		return txn.PreviousReleaseID
+	}
+	return txn.ReleaseID
 }
 
 func (e *Engine) advance(ctx context.Context, txn updatejournal.Txn, to updatejournal.Stage, u updatejournal.StageUpdate) (updatejournal.Txn, error) {
@@ -417,6 +453,12 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 		Started: started, Finished: finished, Schema: schemaAtLeast1(schema),
 		Health: health, CandidateHealth: candidateHealth, Checkpoint: cp,
 	}
+	// journalStageAPI maps recovery_required to report. The fleet stage is the
+	// error_stage toRecovery recorded (rollback or migrate), same as a
+	// non-destructive rolled_back result.
+	if txn.Stage == updatejournal.StageRecoveryRequired && txn.ErrorStage != "" {
+		in.Stage = api.UpdateStage(txn.ErrorStage)
+	}
 	if txn.Stage == updatejournal.StageRolledBack && !txn.Destructive {
 		in.Stage = api.UpdateStage(txn.ErrorStage)
 		if in.Stage == "" {
@@ -443,7 +485,7 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 		}
 	}
 	_ = e.Retain(ctx)
-	e.cleanTxnNotes(txn.TxnID)
+	e.cleanTxnNotes(ctx, txn.TxnID)
 	if recovery {
 		return ErrMembersBlocked
 	}
@@ -463,9 +505,12 @@ func txnOutcome(txn updatejournal.Txn) string {
 	}
 }
 
-func (e *Engine) cleanTxnNotes(txnID string) {
+func (e *Engine) cleanTxnNotes(ctx context.Context, txnID string) {
 	for _, prefix := range []string{"epoch-", "checks-", "rollback-"} {
 		_ = os.Remove(filepath.Join(e.Layout.Journal, prefix+txnID))
+	}
+	if e.Journal != nil {
+		_ = e.Journal.DeleteProbeOmissions(ctx, txnID)
 	}
 	e.consumeChallenge()
 }

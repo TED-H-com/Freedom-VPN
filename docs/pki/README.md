@@ -112,10 +112,15 @@ staging group; no real group/account identifier is embedded here.
 4. Agent adapters take the peer certificate from verified mTLS; never trust a
    body-supplied certificate, `X-Node-ID` or an unprotected proxy header.
    `Authenticate` locally returns `NodeIdentity{NodeID, IncarnationID}`. `AuthenticateAgent` adapts it to `internal/auth.AgentAuthenticator`.
-5. `CreateEnrollment` returns `api.EnrollmentCreated`; `Enroll` returns
-   `EnrollResult.Response`, 201 for first success and 200 when `Replay` is true.
-   Every error path returns no partial secret/result. Secret responses require
-   `Cache-Control: no-store`; middleware must redact Authorization/body secrets.
+5. `CreateEnrollment` returns `api.EnrollmentCreated` (whose `Enrollment` is
+   `api.Enrollment` with `TokenSha256 *string` populated from
+   `encode(node_enrollments.token_hash, 'hex')`, and records `token_sha256` in
+   the `enrollment.created` audit `changes.after` set; `GetEnrollment` and
+   `RevokeEnrollment` return the same `api.Enrollment` domain model); `Enroll`
+   returns `EnrollResult.Response`, 201 for first success and 200 when `Replay`
+   is true. Every error path returns no partial secret/result. Secret responses
+   require `Cache-Control: no-store`; middleware must redact Authorization/body
+   secrets.
 6. Workers consume `node.provision.requested` and persist external read-back
    evidence before calling `StoreBootstrap`. They must not mark the operation
    successful until setup/peer/policy required steps have real evidence.
