@@ -406,6 +406,7 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	l.report(i, w, "applying")
 	rollback := result(w, "rolled_back")
 	rollback.CurrentReleaseId.Set(l.old)
+	rollback.PreviousReleaseId.Set(w.Intent.ReleaseId)
 	code := api.ErrorCode("HEALTH_CHECK_FAILED")
 	rollback.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, rollback)); e != nil {
@@ -421,6 +422,7 @@ func TestAT27_ObservedVersionRollbackAndDisabled(t *testing.T) {
 	l.report(i, w, "applying")
 	rollback = result(w, "rolled_back")
 	rollback.CurrentReleaseId.Set(l.old)
+	rollback.PreviousReleaseId.Set(w.Intent.ReleaseId)
 	rollback.ErrorCode.Set(code)
 	if _, e = l.s.SubmitResult(l.ctx, i, payload(t, rollback)); !errors.Is(e, apierr.New(apierr.MinimumVersionViolation, "")) {
 		t.Fatal(e)

@@ -135,10 +135,12 @@ response; 202 is acceptance, never completion.
 | No recorded job authorization, expired start or expired pre-apply progress | `AUTHORIZATION_EXPIRED`; acquire fresh intent |
 | Same result ID, same canonical payload | Return the exact stored ACK, including original received time |
 | Same result ID, different canonical payload | Commit conflict hash and audit, return 409 `ACK_CONFLICT`; preserve original ACK |
-| Terminal result lacks actual version, manifest digest, health or finish time | Reject; no success counted |
+| Terminal result lacks actual version or finish time | Reject; no success counted |
+| Pre-health failed result has null health, an error code and the unchanged attempt release | Accept as failed, with needs_attention; never count success |
+| Failed result at/after check, or another terminal result, lacks health | Reject; no completion inferred |
 | Succeeded/already_current without target version, all health checks, state schema or durable usage checkpoint | Reject; no success counted |
 | Rolled back to unsupported/revoked release | `MINIMUM_VERSION_VIOLATION`, persist recovery attention; forwarding stays forbidden |
-| Rolled back without compatible, approved, trusted manifest and healthy checks | Reject; never count rollback as target success |
+| Rolled back without a verified, trusted, readable restored manifest, restored health, candidate ID/failure, or membership in a nonempty rollback allowlist | Reject; never count rollback as target success |
 | Older applying/checking job finishes | Finish that job's ledger, ACK as history, leave newest pointer/generation intact |
 | Superseded/terminal job reports late, progress goes backwards, already_current arrives after download began, or rollback arrives before applying | Append history; preserve terminal ledger/current pointer |
 | Current terminal result with a strictly greater update generation than the observation | Advance actual and last-good release when supported by result evidence, even if a routine pre-switch heartbeat arrived after authorization |
@@ -287,9 +289,107 @@ latest policy. Accepted old-job history and conflict payloads cannot overwrite
 accepted evidence. `Evidence(targetID)` exposes the accepted job's policy generation
 and references, including integers beyond JavaScript's safe range.
 
-The revision 3 generated `UpdateTarget` has no policy-generation/reference fields,
-and UpdateResult does not carry policy_refs. `GetBatch` retains its generated
-contract return type. The contract owner must add nullable `policy_generation`
-(decimal string) and `policy_refs` (UUID array) to UpdateTarget before the node HTTP
-adapter can expose this evidence in batch targets. No undeclared wire fields are
-added by this domain.
+D-048 added nullable `policy_generation` and `policy_refs` to UpdateTarget.
+`GetBatch` and `Evidence(targetID)` now use the same accepted-result evidence.
+UpdateResult does not carry policy_refs; no undeclared wire fields are added.
+
+
+## Terminal evidence and receipts (D-062)
+
+The shared `api.UpdateStage` definition follows §13.6: claim, download, verify,
+preflight, prepare, block_forwarding, final_sample, stop_services, migrate,
+switch and start precede the health profile. The wire stage `check` corresponds
+to the job/journal phase `checking`. Check, commit, rollback, report and unknown
+or null stages do not qualify for the pre-health exception. Classification uses
+those generated enum members, never alphabetical comparisons.
+
+A pre-health `failed` result has `health: null`, a non-null `error_code`, a valid
+`finished_at`, and `current_release_id` equal to the release recorded when the
+job was first authorized. Central snapshots that version in the job's existing
+`observed_evidence.attempt_release_id` and preserves it when storing subsequent
+result evidence. Reissuing an intent never changes the snapshot. It accepts the
+failure and marks the job/target failed with `needs_attention=true`. It does not
+fabricate passing health checks or infer that the candidate became current.
+A failed result at/after `check` still requires health. Preexisting issued jobs
+without a recorded baseline fail closed for this exception; a new authorized
+attempt/batch supplies that evidence.
+
+A `rolled_back` result names the restored release in `current_release_id`, the
+candidate in `previous_release_id`, the candidate failure in `error_code`, and
+the restored release's checks in `health`. Central stores these fields unchanged
+in the immutable result payload. The restored release must be serving, not
+revoked, verified, trusted, and schema-readable. An empty manifest rollback
+allowlist imposes no additional release restriction; a nonempty list must
+contain the restored release (D-034e). Approval to target a new install is not
+an additional rollback-serving requirement. Failed candidate health is journal
+evidence; this implementation does not depend on revision 6's candidate_health.
+
+TEST ONLY JSON vectors live in
+[pre-health failure](../../internal/fleetupdate/testdata/d062-pre-health-failure.json),
+[restored rollback](../../internal/fleetupdate/testdata/d062-rollback.json), and
+[replayed rejection](../../internal/fleetupdate/testdata/d062-rejected-result.json).
+Tests bind their identities, authorization timestamps and hashes to actual jobs.
+The rejected vector describes an otherwise well-formed rollback to a release
+that is not serving; re-enabling that release cannot change the old rejection.
+
+| HTTP status | Result-submission meaning | Retry semantics |
+|---|---|---|
+| 202 | Persisted accepted progress/result; exact replay returns the original ACK and received_at | Retire that result from the node outbox after durable receipt |
+| 400 | Malformed request | Permanent rejection; journal the precise API code |
+| 401 | Authentication is unavailable/invalid | Permanent for this submission; preserve diagnostic evidence |
+| 403 | Identity revoked or incarnation mismatch | Permanent rejection; no work under that identity |
+| 404 | Job/node is unknown | Permanent rejection; investigate identity/restore state |
+| 422 | Invalid evidence, hash, health, schema or serving policy | Permanent rejection; preserve the precise API code |
+| 409 | Generation/ordering/authorization or result-ID content conflict | retryable=true; reconcile authorized work, and preserve immutable result IDs/payloads |
+| 429 | Rate/concurrency limit | retryable=true and Retry-After; back off before replay |
+| 5xx | Persistence/dependency failure; no durable acceptance promised | Retain the original outbox entry; follow code/backoff guidance |
+
+For authenticated, job-bound input, `update_results` stores either the original
+ACK or a safe rejection object in its existing `ack` JSON column. A rejection
+never updates accepted job evidence or target counts. The domain runs projection
+work under a savepoint: rejected projection work rolls back, while the original
+code/message/retryable/details can commit as a receipt. Replaying the same result
+ID/hash returns that original outcome; different content returns ACK_CONFLICT.
+A fresh service instance has the same behavior. Request IDs remain per-request
+tracing metadata rather than part of the cached rejection.
+
+Schema/hash/identity checks before a trustworthy job binding remain fail-closed
+validation, not persisted receipts. A nonexistent job cannot be referenced by
+this inbox's FK. Durable replay of such early rejections across a restore or
+contract change requires an unbound rejection receipt owned by the HTTP/core
+persistence layer; no schema is weakened here.
+
+`SubmitResult` commits domain-owned rejection receipts before returning their
+API error. `SubmitResultTx` writes in the supplied transaction: its caller must
+commit a recorded rejection outcome separately from fatal transaction failures.
+The current generic HTTP command wrapper rolls back every returned error. Core
+must add that distinction before HTTP rejection replay has the same durable
+semantics as the standalone domain; it must also replay stored errors as errors,
+never deserialize them into a success ACK. Authentication and rate limiting
+remain core-owned. Current rate-limit middleware already emits Retry-After.
+
+## Null update generations (D-062)
+
+A heartbeat's null `update.generation` means no update state, regardless of any
+other update metadata. It neither claims generation zero nor confirms, fails or
+demotes a target. It records the receipt time while preserving current/last-good
+versions and the monotonic generation high-water mark. A subsequent heartbeat
+with the authorized job's generation can confirm that target; a larger generation
+cannot confirm an older target either.
+
+`VersionView.ObservedGeneration` is nullable. Node view, `GetBatch` and `Evidence`
+share a predicate requiring a non-null generation exactly equal to the job's
+and a matching incarnation and sufficiently recent receipt. A null receipt after
+local success therefore leaves the target succeeded but unconfirmed; it cannot
+change its denominator or result bucket. A later null receipt also removes
+confirmation without undoing the successful result.
+
+The existing numeric cache is NOT NULL and remains an allocation/ordering
+high-water mark. The nullable projection consults the immutable heartbeat
+`report_payload.update.generation` at the cached receipt, rather than coercing
+null to zero or changing a base schema constraint. `ObserveReportTx` requires that
+complete receipt in the same transaction. Direct `Observe`/`ObserveTx` callers
+provide an explicit generation; they are not the nullable wire adapter. The
+current contract's update block has generation/job_id/stage/state; actual release
+is still the top-level current_release_id until a contract revision adds the
+nested member. No undeclared observation field is accepted here.

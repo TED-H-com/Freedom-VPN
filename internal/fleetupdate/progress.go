@@ -227,9 +227,18 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 // Shared by response mapping, evidence queries and node summaries. Receipt time
 // must be strictly after authorization; another incarnation never confirms work.
 const needsAttentionSQL = `coalesce(j.needs_attention,false) OR coalesce(j.state IN ('failed','rolled_back','blocked'),false) OR coalesce(j.state='already_current' AND n.current_release_id IS DISTINCT FROM j.release_id,false)`
+
+// The numeric cache remains a monotonic high-water mark. A receipt with a
+// null generation is absence of update evidence, not generation zero (D-062).
+// Standalone Observe calls supply an explicit generation and have no raw receipt.
+const observedGenerationSQL = `CASE WHEN s.observation_incarnation_id IS NULL THEN NULL
+ WHEN EXISTS(SELECT 1 FROM node_observations o WHERE o.node_id=n.id
+ AND o.incarnation_id=s.observation_incarnation_id AND o.received_at=s.received_at
+ AND o.report_payload ? 'update' AND o.report_payload->'update'->>'generation' IS NULL) THEN NULL
+ ELSE s.observed_update_generation END`
 const unconfirmedSQL = `j.id IS NULL OR j.issued_at IS NULL OR s.last_observed_at IS NULL
  OR s.observation_incarnation_id IS DISTINCT FROM j.execution_incarnation_id
- OR coalesce(s.observed_update_generation<j.generation,true)
+ OR (` + observedGenerationSQL + `) IS DISTINCT FROM j.generation
  OR coalesce(s.received_at<=j.issued_at,true)
  OR coalesce(j.last_result_at>s.received_at,false)`
 
