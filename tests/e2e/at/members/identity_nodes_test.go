@@ -129,10 +129,19 @@ func (l *live) identity(r *record) {
 }
 func (l *live) nodeMutation(method, suffix string, body any) response {
 	path := "/api/v1/admin/nodes/" + l.node.String()
-	old := l.api(l.admin, "GET", path, nil, nil)
-	h := commandHeaders()
-	h["If-Match"] = old.headers.Get("ETag")
-	return l.api(l.admin, method, path+suffix, body, h)
+	var got response
+	// Heartbeats advance resource_version. A 412 has no effect; refresh the ETag
+	// and retry this setup command with a fresh key, never bypass If-Match.
+	for range 3 {
+		old := l.api(l.admin, "GET", path, nil, nil)
+		h := commandHeaders()
+		h["If-Match"] = old.headers.Get("ETag")
+		got = l.api(l.admin, method, path+suffix, body, h)
+		if got.status != 412 {
+			return got
+		}
+	}
+	return got
 }
 func (l *live) publication(r *record) {
 	if l.node == uuid.Nil {

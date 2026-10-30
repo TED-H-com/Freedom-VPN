@@ -62,6 +62,12 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 			observations := l.count(`SELECT count(*) FROM device_authorization_observations WHERE observed_authorized`)
 			r.check("post-worker projection readback", "record native proofs, devices and desired/applied separately", fmt.Sprintf("verified_proofs=%d; authorized_devices=%d; observed_authorized=%d; desired_generation=%s; applied_generation=%s", proofs, devices, observations, desired, applied), "read product projections after worker resumes; no projection fixtures", proofs >= 2 && devices >= 4)
 		case "AT08":
+			// Re-execute independent publication checks after bounded ETag retry.
+			// Preserve the original attempt, including any 412, with its UTC time.
+			r.PriorChecks = append(r.PriorChecks, r.Steps...)
+			r.Steps = nil
+			r.Blockers = nil
+			r.Status = "pass"
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-a-%' ORDER BY code LIMIT 1`).Scan(&l.groupA)
 			_ = l.pool.QueryRow(ctx, `SELECT id FROM member_groups WHERE code LIKE 'at-b-%' ORDER BY code LIMIT 1`).Scan(&l.groupB)
 			if l.groupA != uuid.Nil && l.groupB != uuid.Nil {

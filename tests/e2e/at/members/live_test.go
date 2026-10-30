@@ -72,6 +72,7 @@ type record struct {
 	PolicyRevision   string            `json:"policy_revision"`
 	PolicyReferences map[string]string `json:"active_policy_revisions"`
 	NodeIncarnation  string            `json:"node_incarnation"`
+	PriorChecks      []step            `json:"prior_checks,omitempty"`
 	Steps            []step            `json:"steps"`
 	Blockers         []string          `json:"blockers"`
 	Operator         string            `json:"operator_status,omitempty"`
