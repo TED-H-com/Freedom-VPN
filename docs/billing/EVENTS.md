@@ -51,15 +51,20 @@ append-only billing records retain invoices/refunds and the grace reason.
    before acknowledging the event. `member.suspended` can be an informational
    notification because the entitlement event already drives withdrawal.
 6. `SyncDevice` serializes by peer with a PostgreSQL **session** advisory lock;
-   provider calls run outside a transaction. It rechecks observed identity/IP,
-   writes owned groups idempotently, reads them back, and fences evidence by
-   both the device version and entitlement revision. Evidence lives in
-   `device_authorization_observations`, separately from desired device state,
-   so recording withdrawal after expiry does not reauthorize the device or
-   increment its desired resource version. Lost identity mapping
-   withdraws authorization. Failed/mismatched read-back is retryable and does
-   not mark the operation complete. Run periodic `SyncMember` reconciliation to
-   repair drift or an ambiguous external timeout.
+   provider calls run outside a transaction. `SyncMember` takes a non-blocking
+   lock on `member:<member_id>` in the same namespace before walking devices.
+   A lost lock (`db.ErrLeaseLost`) or optimistic conflict (`entitlement.ErrConflict`,
+   including mismatched read-back) is returned for dispatcher retry and does not
+   fail the operation step. NetBird HTTP errors, invalid state, and other
+   database errors still fail that step with `DEPENDENCY_UNAVAILABLE`. Sync
+   rechecks observed identity/IP, writes owned groups idempotently, reads them
+   back, and fences evidence by both the device version and entitlement revision.
+   Evidence lives in `device_authorization_observations`, separately from desired
+   device state, so recording withdrawal after expiry does not reauthorize the
+   device or increment its desired resource version. Lost identity mapping
+   withdraws authorization. Run periodic `SyncMember` reconciliation to
+   repair drift or an ambiguous external timeout. Unmapped-peer denial audits
+   are emitted once per decision transition, not once per discovery pass.
 7. Device/member operations have required `netbird` and `nodes` steps. These
    services fill only `netbird` after evidence; the node consumer must fill
    `nodes`, attach observed references, and transition to `succeeded` only when

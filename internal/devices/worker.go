@@ -52,7 +52,9 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 		return db.MapError(err)
 	}
 	defer func() {
-		if retErr == nil {
+		// Another worker already holds this device, or the row moved under us.
+		// The dispatcher retries; leaving the step pending/running is not a failure.
+		if retErr == nil || retryableContention(retErr) {
 			return
 		}
 		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -131,8 +133,33 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 		return ErrUnmapped
 	}
 	return nil
-
 }
+
+// retryableContention reports overlap with another worker. The outbox
+// dispatcher retries these; they must not mark an operation step failed.
+func retryableContention(err error) bool {
+	if err == nil {
+		return false
+	}
+	if joined, ok := err.(interface{ Unwrap() []error }); ok {
+		saw := false
+		for _, part := range joined.Unwrap() {
+			if part == nil {
+				continue
+			}
+			saw = true
+			if !retryableContention(part) {
+				return false
+			}
+		}
+		return saw
+	}
+	if inner := errors.Unwrap(err); inner != nil {
+		return retryableContention(inner)
+	}
+	return errors.Is(err, db.ErrLeaseLost) || errors.Is(err, entitlement.ErrConflict)
+}
+
 func sameGroups(a, b []uuid.UUID) bool {
 	if len(a) != len(b) {
 		return false
@@ -147,18 +174,42 @@ func sameGroups(a, b []uuid.UUID) bool {
 
 // SyncMember handles member.entitlement_changed, including suspension, expiry,
 // and closure; every device is attempted even if another adapter call fails.
+// A non-blocking member lock (same namespace as the per-device lock, distinct
+// key) keeps two workers from interleaving one member's devices. Losing that
+// lock is contention, not an operation failure.
 func (s *Service) SyncMember(ctx context.Context, member uuid.UUID) (retErr error) {
 	var initial decstr.U64
 	if err := s.Pool.QueryRow(ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, member).Scan(&initial); err != nil {
 		return db.MapError(err)
 	}
 	defer func() {
-		if retErr == nil {
+		if retErr == nil || retryableContention(retErr) {
 			return
 		}
 		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		_ = db.InTx(cleanup, s.Pool, db.TxOptions{}, func(tx pgx.Tx) error { return failOperations(cleanup, tx, api.ResourceTypeMember, member, initial) })
+	}()
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	lockKey := "member:" + member.String()
+	var locked bool
+	if err = conn.QueryRow(ctx, `SELECT pg_try_advisory_lock(hashtextextended($1,120))`, lockKey).Scan(&locked); err != nil {
+		return err
+	}
+	if !locked {
+		return db.ErrLeaseLost
+	}
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_, e := conn.Exec(cleanup, `SELECT pg_advisory_unlock(hashtextextended($1,120))`, lockKey)
+		if e != nil {
+			_ = conn.Conn().Close(cleanup)
+		}
 	}()
 	rows, err := s.Pool.Query(ctx, `SELECT id FROM member_devices WHERE member_id=$1 ORDER BY id`, member)
 	if err != nil {
