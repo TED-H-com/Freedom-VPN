@@ -1,6 +1,6 @@
 table inet fvpn {
 	counter ctbase {
-		packets 4 bytes 336
+		packets 5 bytes 420
 	}
 
 	counter ctv6 {
@@ -90,8 +90,8 @@ table inet fvpn {
 	set allowed_v4 {
 		type ipv4_addr
 		flags timeout
-		elements = { 100.64.1.1 timeout 1h expires 59m59s956ms, 100.64.1.2 timeout 1h expires 59m59s956ms,
-			     100.64.2.1 timeout 1h expires 59m59s956ms }
+		elements = { 100.64.1.1 timeout 1h expires 59m59s955ms, 100.64.1.2 timeout 1h expires 59m59s955ms,
+			     100.64.2.1 timeout 1h expires 59m59s955ms }
 	}
 
 	set denied_v4 {
@@ -102,8 +102,9 @@ table inet fvpn {
 			     100.64.0.0/10, 127.0.0.0/8,
 			     169.254.0.0/16, 172.16.0.0/12,
 			     192.0.0.0/24, 192.0.2.0/24,
-			     192.168.0.0/16, 198.18.0.0/15,
-			     198.51.100.0/24, 224.0.0.0/3 }
+			     192.88.99.0/24, 192.168.0.0/16,
+			     198.18.0.0/15, 198.51.100.0/24,
+			     224.0.0.0/3 }
 	}
 
 	set host_v4 {

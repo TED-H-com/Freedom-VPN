@@ -54,7 +54,12 @@ func (l *live) native(r *record, b *browser, service string) string {
 		r.block("Native user-auth trigger unavailable: " + service)
 		return ""
 	}
-	defer func() { _, _ = l.inside(service, "rm", "-f", "/var/lib/vpn-node/e2e/netbird-up.log") }()
+	defer func() {
+		scan, e := l.hook.ScanNativeJoinLog(l.ctx, l.name(service))
+		raw, _ := json.Marshal(scan)
+		r.check(service+" protected native log inventory", "mode 0600; values never retained", string(raw), "Stack.ScanNativeJoinLog before transient log deletion", e == nil && scan.Present && scan.Mode == "0:600")
+		_, _ = l.inside(service, "rm", "-f", "/var/lib/vpn-node/e2e/netbird-up.log")
+	}()
 	var flow string
 	found := l.wait(45*time.Second, func() bool {
 		raw, _ := l.inside(service, "cat", "/var/lib/vpn-node/e2e/netbird-up.log")
@@ -227,16 +232,50 @@ func (l *live) devices(r *record) {
 		loserService = "member-a4"
 	}
 	l.traceForwarding(r, loserService, uuid.Nil)
+	l.traceForwarding(r, "member-a2", second)
 	if _, err = l.docker("pause", l.name("worker")); err != nil {
 		r.block("Could not re-pause worker for slot reuse")
 		return
 	}
+	beforeGeneration := l.counters(first).Generation
+	pidBefore, _ := l.inside("node", "pgrep", "-x", "fvpn-agent")
 	revoke := l.api(l.a, "DELETE", "/api/v1/member/devices/"+second.String(), nil, commandHeaders())
 	freed := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
 	_, err = svc.ObserveAndAuthorize(l.ctx, admissionCommand(), "e2e", loser)
 	restored := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
 	r.check("revoke releases exactly one slot", "202; 3 to 2 to 3; former loser admitted", fmt.Sprintf("revoke_HTTP=%d; after_revoke=%d; admitted=%t; final_authorized=%d", revoke.status, freed, err == nil, restored), "DELETE A2 through member API; ObserveAndAuthorize former loser", revoke.status == 202 && freed == 2 && err == nil && restored == 3)
 	_, _ = l.docker("unpause", l.name("worker"))
+	replacement := l.awaitDevice(loser)
+	converged := l.wait(90*time.Second, func() bool {
+		raw, e := l.inside("node", "cat", "/var/lib/vpn-node/state/desired-state.json")
+		return e == nil && !strings.Contains(string(raw), second.String()) && strings.Contains(string(raw), replacement.String()) && l.counters(first).Generation > beforeGeneration
+	})
+	r.check("revocation generation applied", "new generation removes old binding and includes replacement", fmt.Sprintf("converged=%t; before=%s; after=%s", converged, beforeGeneration, l.counters(first).Generation), "poll authentic local desired-state and kernel generation; no restart/state clearing", converged)
 	l.forwardingGate(r)
+	l.traceForwarding(r, "member", first)
+	l.traceForwarding(r, loserService, replacement)
+	l.traceForwarding(r, "member-a2", uuid.Nil)
 	l.revocationReadback(r)
+	pidAfter, _ := l.inside("node", "pgrep", "-x", "fvpn-agent")
+	r.check("continuous agent across revoke and replace", "same live PID", fmt.Sprintf("same_pid=%t", len(pidBefore) > 0 && string(pidBefore) == string(pidAfter)), "pgrep -x fvpn-agent before/after", len(pidBefore) > 0 && string(pidBefore) == string(pidAfter))
+	var health bool
+	healthy := l.wait(30*time.Second, func() bool {
+		e := l.pool.QueryRow(l.ctx, `SELECT (report_payload->>'member_forwarding_enabled')::boolean AND report_payload->'forwarding_block_reasons'='[]'::jsonb FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, l.node).Scan(&health)
+		return e == nil && health
+	})
+	r.check("post-revoke health agrees with counted sibling and replacement", "forwarding true and no block reasons", fmt.Sprintf("coherent=%t", healthy), "latest accepted observation; two independent counted transfers", healthy)
+	addr, _ := l.inside("member-a2", "ip", "-o", "-4", "addr", "show", "fvnb0")
+	fields := strings.Fields(string(addr))
+	source := ""
+	for i, v := range fields {
+		if v == "inet" && i+1 < len(fields) {
+			source = strings.Split(fields[i+1], "/")[0]
+		}
+	}
+	if source != "" {
+		raw, e := l.inside("node", "conntrack", "-L", "-f", "ipv4", "-s", source)
+		entries := strings.Count(string(raw), "src=")
+		r.check("revoked source conntrack", "no entries for revoked overlay source", fmt.Sprintf("read_ok=%t; tuple_fields=%d", e == nil, entries), "conntrack -L scoped to former peer source; emit count only", e == nil && entries == 0)
+	}
+	r.check("AT02 assertion boundary", "quota, owner isolation, exit denial and replacement; no strict ingress-drop claim", "shared device-revoke run3 documents upstream route withdrawal before post-revoke node ingress", "docs/e2e/runs/2026-10-30/followup10-run3/device-revoke.md; §19 AT02", true)
 }

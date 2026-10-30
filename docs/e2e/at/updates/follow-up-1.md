@@ -161,3 +161,9 @@ no `node/updater`, agent, central service or contract file was modified here.
 Run `a83d5d64-505c-488c-b560-5a777566702e`, source `1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f`, evidence `2026-10-30T17:10:45Z`. Prefix `w4-updates`, port base 42000.
 
 Fresh case c now passes (F5-01 resolved). Original AT23–AT27 scenarios and follow-up 4 extensions pass. Extended AT23/AT25 remain blocked on shared probe setup (F5-02 reopened); AT24/AT27 on the requested recorded c2/c3 expectations (F6-02). AT26 passes. Make exit 2. See [current summary](summary.md), [raw pre-result evidence](pre-result.json), [probe evidence](probe-issuance.json), and [requests](requests.md).
+
+## Follow-up 7 mapping
+
+Run `71078ab8-edf8-4d23-af72-ea247f704011`, source `c8d4a00cf1bf594b20016263c2cfc3c164d92bc9`, evidence `2026-10-30T18:09:36Z`. Prefix `w4-updates`, port base 42000.
+
+AT24/AT26/AT27 pass under the restated accepted-result authority criteria. AT24 includes offline catch-up and a real post-batch node's own completed first_sync job. AT23/AT25 retain follow-up 6 blocked evidence for F5-02. F6-02 is resolved (#TBD). Make exit 2. See [summary](summary.md), [RUN](RUN.md), [inheritance](inheritance.json), and [requests](requests.md).

@@ -1,0 +1,247 @@
+{
+  "node_incarnations": {
+    "node": "01a18dd2-0805-7138-a0d9-3c77628ff51f",
+    "node2": "01a18dd8-784f-75e9-947b-18bfbcf52b70"
+  },
+  "complete": true,
+  "id": "AT22",
+  "title": "Privacy, feed sources and retention",
+  "spec": [
+    "§19.1",
+    "§19 AT22",
+    "SEC02 DNS01 DNS04"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "privacy sentinel query",
+      "detail": "pass; expected: controlled resolver responds; actual: {\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}; command: node loopback probe DNS unique TEST ONLY sentinel (resolver privacy only)"
+    },
+    {
+      "name": "/control/querylog/config",
+      "detail": "pass; expected: disabled; actual: read_ok=true; enabled=false; file_enabled=false; command: AdGuard GET /control/querylog/config"
+    },
+    {
+      "name": "/control/stats/config",
+      "detail": "pass; expected: disabled; actual: read_ok=true; enabled=false; file_enabled=false; command: AdGuard GET /control/stats/config"
+    },
+    {
+      "name": "/control/querylog sentinel scan",
+      "detail": "pass; expected: no sentinel retained; actual: read_ok=true; sentinel_matches=0; command: scan actual resolver API response in memory"
+    },
+    {
+      "name": "/control/stats sentinel scan",
+      "detail": "pass; expected: no sentinel retained; actual: read_ok=true; sentinel_matches=0; command: scan actual resolver API response in memory"
+    },
+    {
+      "name": "on-disk privacy config",
+      "detail": "pass; expected: query history and statistics disabled; actual: read_ok=true; querylog=false; querylog_file=false; statistics=false; command: read assigned AdGuardHome.yaml; emit only booleans"
+    },
+    {
+      "name": "service log scan",
+      "detail": "pass; expected: 12 services; no sentinel; actual: services_scanned=12; sentinel_matches=0; command: docker logs assigned containers; count sentinel in memory"
+    },
+    {
+      "name": "metrics scan",
+      "detail": "pass; expected: record endpoint availability and sentinel matches; actual: read_ok=true; sentinel_matches=0; command: control loopback /metrics via probe"
+    },
+    {
+      "name": "database backup scan",
+      "detail": "pass; expected: dump succeeds; no query sentinel; actual: dump_ok=true; sentinel_matches=0; command: pg_dump own lab DB into memory only; scan sentinel"
+    },
+    {
+      "name": "audit scan",
+      "detail": "pass; expected: no query sentinel; actual: sentinel_rows=0; command: SELECT count audit JSON containing sentinel"
+    },
+    {
+      "name": "bounded audit retention",
+      "detail": "pass; expected: reject early cutoff; delete only expired synthetic row; actual: early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1; command: SELECT purge_retained audit_events; inspect old/young IDs"
+    },
+    {
+      "name": "feed inventory",
+      "detail": "pass; expected: record actual active feed count; actual: active_feed_definitions=0; command: SELECT active threat_feed policies"
+    },
+    {
+      "name": "blocked",
+      "detail": "No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS; forwarding uses a fixed controlled health path without a URL sentinel. F4-06: raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=a511927c4962b21cc90d04dc372f11f848cf6478; applied generation=49; incarnation=01a18dd2-0805-7138-a0d9-3c77628ff51f; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-10-30T17:40:19Z",
+  "run_id": "d89eda32-84ef-4582-b669-053d5d9abadd",
+  "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "b4afc29b9bd56179f4e6981a646cf1de4235c99cb236e362344c702bde00f7e4",
+    "artifact_sha256_0.1.0_arm64": "1eb4b1a7fda363a79f272e4ecb2e918e5a4ee5c8b405e31a8883f695c692a0dc",
+    "manifest_sha256_0.1.0": "174148889555165c85f4f92a62254c9006ec69f167192ca1c7f9b4c84ef440da",
+    "signed_manifest_sha256_0.1.0": "3c14199507eb3d9d3812b98ff4c18731f0123206654a99c677c6aeb1568a3df8"
+  },
+  "build": {
+    "test_binary_sha256": "8ef1802ab2af74afbf5f8106a7e62a6ccfed08dc3f6f13f9700895025db24342",
+    "source_commit": "a511927c4962b21cc90d04dc372f11f848cf6478",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:2a6646fd892f30018da565de5e6efaf82a90fe80767c1e23d4c064b4e0ea4003",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:0de1b30726f2f2d6025af017369d7a985c07d9217fc99aaa021c76253de59af3",
+      "member": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node-netns": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node2": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:c2bedbc16621ee8cab6044c741a8af95871eb79b52313fbc3cee230aa2a9f197",
+      "origin": "sha256:7b53fea2e5d6608eb1b7c0aabab94ad6a395ce93d05a69907d767b2abc97a3ad",
+      "payment": "sha256:d77d107156c5263a3a30c94a5a7ce25e928395a9b939f1ca2ee3f03441feb9b1",
+      "postgres": "sha256:967ea92c079ea53bb34e8a2837cbcc96d6f6359ebf81957b40fddb085f9dcc71",
+      "worker": "sha256:fc936c5874d1181714f3a8cebeb2ffe9e0a2511afefb67c08c5a9ee88d39379f"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "392bf09563f83d471ec10d4270499b47bb6321bb3a043289e7d4a790e4e78b47",
+      "fvpn-control": "fa1d08d7d8287540f9964e4f726ebc1130d8f24b6cf41ee27f0425b5dc90a019",
+      "fvpn-updater": "9e7487d542beea600d9568a0f58f6e009f19e36db1a44772bda8f1a8e753ac60",
+      "fvpn-worker": "6440ca5d9cd9d6886fd38edd707acef2a251406d138201961a8139e4985c37f7"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "a511927c4962b21cc90d04dc372f11f848cf6478",
+        "vcs.time": "2026-10-30T16:59:28Z"
+      }
+    }
+  },
+  "policy_revision": "49",
+  "active_policy_revisions": {
+    "dns_profile": "01a18de5-b6d3-7113-8586-17b4eeb869f9",
+    "domain_rule_set": "01a18dd1-ee0a-7869-83e8-5c86fe89816f",
+    "fair_use": "01a18dd1-e94c-7b2b-961e-39bc47cf378c",
+    "plan": "01a18dd1-fc64-77c8-bda0-2c3983402c38",
+    "release_support": "01a18dd1-e208-7bf5-9ad3-867512255e6a"
+  },
+  "node_incarnation": "01a18dd2-0805-7138-a0d9-3c77628ff51f",
+  "steps": [
+    {
+      "name": "privacy sentinel query",
+      "status": "pass",
+      "expected": "controlled resolver responds",
+      "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":3600}",
+      "command": "node loopback probe DNS unique TEST ONLY sentinel (resolver privacy only)",
+      "at": "2026-10-30T17:40:19Z"
+    },
+    {
+      "name": "/control/querylog/config",
+      "status": "pass",
+      "expected": "disabled",
+      "actual": "read_ok=true; enabled=false; file_enabled=false",
+      "command": "AdGuard GET /control/querylog/config",
+      "at": "2026-10-30T17:40:19Z"
+    },
+    {
+      "name": "/control/stats/config",
+      "status": "pass",
+      "expected": "disabled",
+      "actual": "read_ok=true; enabled=false; file_enabled=false",
+      "command": "AdGuard GET /control/stats/config",
+      "at": "2026-10-30T17:40:19Z"
+    },
+    {
+      "name": "/control/querylog sentinel scan",
+      "status": "pass",
+      "expected": "no sentinel retained",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "scan actual resolver API response in memory",
+      "at": "2026-10-30T17:40:19Z"
+    },
+    {
+      "name": "/control/stats sentinel scan",
+      "status": "pass",
+      "expected": "no sentinel retained",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "scan actual resolver API response in memory",
+      "at": "2026-10-30T17:40:19Z"
+    },
+    {
+      "name": "on-disk privacy config",
+      "status": "pass",
+      "expected": "query history and statistics disabled",
+      "actual": "read_ok=true; querylog=false; querylog_file=false; statistics=false",
+      "command": "read assigned AdGuardHome.yaml; emit only booleans",
+      "at": "2026-10-30T17:40:19Z"
+    },
+    {
+      "name": "service log scan",
+      "status": "pass",
+      "expected": "12 services; no sentinel",
+      "actual": "services_scanned=12; sentinel_matches=0",
+      "command": "docker logs assigned containers; count sentinel in memory",
+      "at": "2026-10-30T17:40:20Z"
+    },
+    {
+      "name": "metrics scan",
+      "status": "pass",
+      "expected": "record endpoint availability and sentinel matches",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "control loopback /metrics via probe",
+      "at": "2026-10-30T17:40:20Z"
+    },
+    {
+      "name": "database backup scan",
+      "status": "pass",
+      "expected": "dump succeeds; no query sentinel",
+      "actual": "dump_ok=true; sentinel_matches=0",
+      "command": "pg_dump own lab DB into memory only; scan sentinel",
+      "at": "2026-10-30T17:40:20Z"
+    },
+    {
+      "name": "audit scan",
+      "status": "pass",
+      "expected": "no query sentinel",
+      "actual": "sentinel_rows=0",
+      "command": "SELECT count audit JSON containing sentinel",
+      "at": "2026-10-30T17:40:20Z"
+    },
+    {
+      "name": "bounded audit retention",
+      "status": "pass",
+      "expected": "reject early cutoff; delete only expired synthetic row",
+      "actual": "early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1",
+      "command": "SELECT purge_retained audit_events; inspect old/young IDs",
+      "at": "2026-10-30T17:40:20Z"
+    },
+    {
+      "name": "feed inventory",
+      "status": "pass",
+      "expected": "record actual active feed count",
+      "actual": "active_feed_definitions=0",
+      "command": "SELECT active threat_feed policies",
+      "at": "2026-10-30T17:40:20Z"
+    }
+  ],
+  "blockers": [
+    "No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS; forwarding uses a fixed controlled health path without a URL sentinel. F4-06: raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed."
+  ]
+}
