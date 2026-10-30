@@ -40,6 +40,7 @@ type stackConfig struct {
 type browser struct {
 	client       *http.Client
 	csrf, member string
+	cred         idplogin.Cred
 }
 type response struct {
 	status  int
@@ -64,6 +65,7 @@ type buildInfo struct {
 }
 type record struct {
 	e2e.Record
+	FollowupBuild    *buildInfo        `json:"followup_build,omitempty"`
 	Build            buildInfo         `json:"build"`
 	PolicyRevision   string            `json:"policy_revision"`
 	PolicyReferences map[string]string `json:"active_policy_revisions"`
@@ -84,7 +86,8 @@ type live struct {
 	build                                    buildInfo
 	node, inc, plan, planRev, groupA, groupB uuid.UUID
 	run                                      string
-	machinePeer                              string
+	nativePeer                               string
+	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
 }
 
@@ -219,6 +222,16 @@ func (l *live) command(name string, args ...string) ([]byte, error) {
 }
 func (l *live) name(service string) string            { return "fvpn-w4-members-" + service }
 func (l *live) docker(args ...string) ([]byte, error) { return l.command("docker", args...) }
+
+// Test cleanup runs after the parent context is canceled. Keep fault restoration
+// and extra-client removal bounded but independent of that cancellation.
+func (l *live) cleanupDocker(args ...string) {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), 40*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	cmd.Dir = l.root
+	_ = cmd.Run()
+}
 func (l *live) inside(service string, args ...string) ([]byte, error) {
 	return l.docker(append([]string{"exec", l.name(service)}, args...)...)
 }
@@ -299,6 +312,7 @@ func (l *live) login(subject, role string) *browser {
 	if r.status != 200 || json.Unmarshal(r.body, &s) != nil || !s.Authenticated || s.Role != role {
 		l.t.Fatalf("real browser login unavailable: status=%d role=%s", r.status, role)
 	}
+	b.cred = cred
 	b.member = s.MemberID
 	b.csrf = r.headers.Get("X-CSRF-Token")
 	if b.csrf == "" {
@@ -354,6 +368,7 @@ func (r *record) block(reason string) {
 	}
 }
 func (l *live) write(r *record) {
+	r.Observations = nil
 	r.PolicyReferences = map[string]string{}
 	rows, err := l.pool.Query(l.ctx, `SELECT type,active_revision_id::text FROM policy_definitions WHERE active_revision_id IS NOT NULL ORDER BY type`)
 	if err == nil {

@@ -7,7 +7,7 @@ at-members-disk = set -eu; mkdir -p .agent/tmp; at_tmp=$$(mktemp -d "$$(pwd)/.ag
 
 LINT_TARGETS += at-members-lint
 
-.PHONY: at-members at-members-test at-members-lint at-members-build
+.PHONY: at-members at-members-test at-members-lint at-members-build at-members-readback
 
 at-members:
 	@$(at-members-disk) FVPN_E2E=1 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 go test -tags e2e -count=1 -p 1 -parallel 2 -timeout 30m -v ./tests/e2e/at/members/...
@@ -22,3 +22,7 @@ at-members-lint:
 
 at-members-build:
 	@$(at-members-disk) for arch in amd64 arm64; do GOOS=linux GOARCH=$$arch go build -o "$$at_tmp/probe-$$arch" ./tests/e2e/at/members/cmd/probe; done
+
+# Supplements evidence from the same live run; leaves complete AT status blocked.
+at-members-readback:
+	@$(at-members-disk) FVPN_E2E=1 FVPN_AT_MEMBERS_READBACK=1 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 go test -tags e2e -run '^TestATMembers_FollowupReadback$$' -count=1 -p 1 -parallel 2 -timeout 15m -v ./tests/e2e/at/members
