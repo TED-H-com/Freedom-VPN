@@ -33,12 +33,19 @@ export function AdminNodeDetailPage(): React.ReactElement {
   const [downBps, setDownBps] = useState('');
   const [clearCapacity, setClearCapacity] = useState(false);
   const [notes, setNotes] = useState('');
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
   const nodeQuery = useQuery({
     queryKey: ['admin', 'node', nodeId],
     queryFn: () => apiClient.getNode(nodeId),
     enabled: Boolean(nodeId),
   });
+
+  const adminGroupsQuery = useQuery({
+    queryKey: ['admin', 'groups'],
+    queryFn: () => apiClient.listAdminGroups({ limit: 100 }),
+  });
+  const availableGroups = adminGroupsQuery.data?.items ?? [];
 
   const node = nodeQuery.data?.data;
   const etag = nodeQuery.data?.etag ?? null;
@@ -54,12 +61,21 @@ export function AdminNodeDetailPage(): React.ReactElement {
     null;
 
   const [syncedNodeKey, setSyncedNodeKey] = useState<string>('');
-  const currentNodeKey = node ? `${node.node_id}:${node.resource_version}` : '';
+  const groupsKey = availableGroups.map((g) => g.group_id).join(',');
+  const currentNodeKey = node
+    ? `${node.node_id}:${node.resource_version}:${(node.group_ids ?? node.member_group_ids).join(',')}:${groupsKey}`
+    : '';
   if (node && syncedNodeKey !== currentNodeKey) {
     setSyncedNodeKey(currentNodeKey);
     setName(node.name ?? '');
     setRegion(node.region ?? '');
     setGroups(node.member_group_ids.join(', '));
+    const rawAttached = node.group_ids ?? node.member_group_ids ?? [];
+    const normalizedIds = rawAttached.map((idOrCode) => {
+      const byCode = availableGroups.find((g) => g.code === idOrCode);
+      return byCode ? byCode.group_id : idOrCode;
+    });
+    setSelectedGroupIds(normalizedIds);
     setUpBps(String(node.capacity?.up_bps ?? 1000000000));
     setDownBps(String(node.capacity?.down_bps ?? 1000000000));
     setClearCapacity(false);
@@ -82,16 +98,38 @@ export function AdminNodeDetailPage(): React.ReactElement {
     );
   }
 
-  const handlePublish = async () => {
+  const resolveGroupLabel = (idOrCode: string): string => {
+    const matched =
+      availableGroups.find((g) => g.group_id === idOrCode) ??
+      availableGroups.find((g) => g.code === idOrCode);
+    if (matched) {
+      return `${matched.code} (${matched.name})`;
+    }
+    return idOrCode;
+  };
+
+  const attachedGroupIds = node.group_ids ?? node.member_group_ids ?? [];
+
+  const toggleGroupSelection = (groupId: string) => {
+    setSelectedGroupIds((prev) =>
+      prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId],
+    );
+  };
+
+  const handlePublish = async (overrideEtag?: string) => {
     setActionError(null);
     try {
+      const effectiveEtag = overrideEtag ?? etag ?? undefined;
       const op = await apiClient.publishNode(
         node.node_id,
-        etag ?? undefined,
-        `publish:${node.node_id}:${node.resource_version}`,
+        effectiveEtag,
+        `publish:${node.node_id}:${effectiveEtag ?? node.resource_version}:${selectedGroupIds.join(',')}`,
+        'Publish node to member service',
+        selectedGroupIds,
       );
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
     } catch (err) {
       if (err instanceof ApiError && err.status === 412) {
         setConflictError(err);
@@ -101,16 +139,20 @@ export function AdminNodeDetailPage(): React.ReactElement {
     }
   };
 
-  const handleUnpublish = async () => {
+  const handleUnpublish = async (overrideEtag?: string) => {
     setActionError(null);
     try {
+      const effectiveEtag = overrideEtag ?? etag ?? undefined;
       const op = await apiClient.unpublishNode(
         node.node_id,
-        etag ?? undefined,
-        `unpublish:${node.node_id}:${node.resource_version}`,
+        effectiveEtag,
+        `unpublish:${node.node_id}:${effectiveEtag ?? node.resource_version}:${selectedGroupIds.join(',')}`,
+        'Unpublish node from member service',
+        selectedGroupIds,
       );
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
     } catch (err) {
       if (err instanceof ApiError && err.status === 412) {
         setConflictError(err);
@@ -120,16 +162,20 @@ export function AdminNodeDetailPage(): React.ReactElement {
     }
   };
 
-  const handleDisable = async () => {
+  const handleDisable = async (overrideEtag?: string) => {
     setActionError(null);
     try {
+      const effectiveEtag = overrideEtag ?? etag ?? undefined;
       const op = await apiClient.disableNode(
         node.node_id,
-        etag ?? undefined,
-        `disable:${node.node_id}:${node.resource_version}`,
+        effectiveEtag,
+        `disable:${node.node_id}:${effectiveEtag ?? node.resource_version}:${selectedGroupIds.join(',')}`,
+        'Disable node from member service',
+        selectedGroupIds,
       );
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
     } catch (err) {
       if (err instanceof ApiError && err.status === 412) {
         setConflictError(err);
@@ -244,9 +290,9 @@ export function AdminNodeDetailPage(): React.ReactElement {
   };
 
   const handleReloadConflict = async () => {
+    await queryClient.refetchQueries({ queryKey: ['admin', 'node', nodeId] });
     setConflictError(null);
     setSavedSnapshot(null);
-    await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
   };
 
   const phraseCode = deriveNodeSummaryPhrase(node);
@@ -361,7 +407,25 @@ export function AdminNodeDetailPage(): React.ReactElement {
               </tr>
               <tr>
                 <td>{t('admin.nodeDetail.field.memberGroups')}</td>
-                <td className="mono">{node.member_group_ids.join(', ')}</td>
+                <td data-testid="node-attached-groups">
+                  {attachedGroupIds.length === 0 ? (
+                    <span className="text-muted">
+                      {t('admin.nodeDetail.attachedGroups.none')}
+                    </span>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                      {attachedGroupIds.map((gid) => (
+                        <span
+                          key={gid}
+                          className="badge badge-info mono"
+                          data-testid={`node-attached-group-badge-${gid}`}
+                        >
+                          {resolveGroupLabel(gid)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </td>
                 <td className="mono">
                   forwarding: {node.member_forwarding_observed ? 'true' : 'false'}
                 </td>
@@ -495,9 +559,66 @@ export function AdminNodeDetailPage(): React.ReactElement {
         </section>
       )}
 
-      {/* Publication vs Revoke Machine Identity actions (§5.2, §18.3) */}
+      {/* Publication vs Revoke Machine Identity actions (§5.2, §18.3, D-057) */}
       <section className="card">
         <h2>{t('admin.nodeDetail.pubActions.title')}</h2>
+
+        <div
+          style={{
+            marginTop: '0.75rem',
+            padding: '0.75rem',
+            background: '#f8fafc',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--color-border)',
+          }}
+          data-testid="node-publication-groups-editor"
+        >
+          <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.35rem' }}>
+            {t('admin.nodeDetail.attachedGroups.title')}
+          </div>
+          <div
+            style={{
+              fontSize: '0.82rem',
+              color: 'var(--color-text-muted)',
+              marginBottom: '0.5rem',
+            }}
+          >
+            {t('admin.nodeDetail.attachedGroups.selectLabel')}
+          </div>
+          {availableGroups.length === 0 ? (
+            <div className="text-muted" style={{ fontSize: '0.85rem' }}>
+              {t('admin.nodeDetail.attachedGroups.none')}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              {availableGroups.map((g) => (
+                <label
+                  key={g.group_id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    data-testid={`pub-group-checkbox-${g.code}`}
+                    checked={selectedGroupIds.includes(g.group_id)}
+                    onChange={() => toggleGroupSelection(g.group_id)}
+                    disabled={isRevokedOrRetired}
+                  />
+                  <span className="mono" style={{ fontWeight: 600 }}>
+                    {g.code}
+                  </span>
+                  <span>({g.name})</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div
           style={{
             display: 'flex',
@@ -533,6 +654,15 @@ export function AdminNodeDetailPage(): React.ReactElement {
             disabled={isRevokedOrRetired}
           >
             {t('admin.nodeDetail.pubActions.disableBtn')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-testid="simulate-pub-conflict-btn"
+            onClick={() => void handlePublish('"0"')}
+            disabled={isRevokedOrRetired}
+          >
+            {t('admin.nodeDetail.attachedGroups.simulateConflictBtn')}
           </button>
         </div>
 
@@ -685,6 +815,66 @@ export function AdminNodeDetailPage(): React.ReactElement {
             </button>
           </div>
         </form>
+      </section>
+
+      {/* Node Checks Detail Table (D-058) */}
+      <section className="card" data-testid="node-checks-section">
+        <h2>{t('admin.nodeDetail.checks.title')}</h2>
+        <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
+          <table className="data-table" data-testid="node-checks-table">
+            <thead>
+              <tr>
+                <th>{t('admin.nodeDetail.checks.col.name')}</th>
+                <th>{t('admin.nodeDetail.checks.col.status')}</th>
+                <th>{t('admin.nodeDetail.checks.col.errorCode')}</th>
+                <th>{t('admin.nodeDetail.checks.col.detail')}</th>
+                <th>{t('admin.nodeDetail.checks.col.observedAt')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {node.checks.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-muted">
+                    {t('admin.nodeDetail.checks.empty')}
+                  </td>
+                </tr>
+              ) : (
+                node.checks.map((c) => (
+                  <tr key={c.name} data-testid={`node-check-row-${c.name}`}>
+                    <td className="mono" style={{ fontWeight: 600 }}>
+                      {c.name}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          c.status === 'passed'
+                            ? 'badge-success'
+                            : c.status === 'failed'
+                              ? 'badge-danger'
+                              : 'badge-warning'
+                        }`}
+                        data-testid={`node-check-status-${c.name}`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="mono">{c.error_code ?? '—'}</td>
+                    <td
+                      className="mono"
+                      style={{ fontSize: '0.82rem', wordBreak: 'break-word' }}
+                      data-testid={`node-check-detail-${c.name}`}
+                    >
+                      {c.detail ?? '—'}
+                    </td>
+                    <td className="mono" style={{ fontSize: '0.8rem' }}>
+                      {c.observed_at}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Recent Errors & Diagnostics */}

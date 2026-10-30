@@ -20,8 +20,8 @@ func TestAT00_Topology(t *testing.T) {
 			n++
 		}
 	}
-	if n != 4 {
-		t.Fatalf("want 4 wireguard handshakes, got %d", n)
+	if n != 5 {
+		t.Fatalf("want 5 wireguard handshakes, got %d", n)
 	}
 	rules := mustExec(t, "nft", "list", "table", "inet", "fvpn")
 	if !strings.Contains(rules, "fvpn_generation=0") || !strings.Contains(rules, "fvpn_baseline=1") {
@@ -38,5 +38,5 @@ func TestAT00_Topology(t *testing.T) {
 	}
 	save(t, "baseline.nft", rules)
 	fwd := mustExec(t, "sysctl", "-n", "net.ipv4.ip_forward")
-	noteSummary("AT00 handshakes=4 forward=" + strings.TrimSpace(fwd) + " baseline=1")
+	noteSummary("AT00 handshakes=5 forward=" + strings.TrimSpace(fwd) + " baseline=1")
 }

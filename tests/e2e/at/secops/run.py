@@ -62,7 +62,7 @@ EXPECTED = {
 GAPS = {
     'AT28': [],
     'AT29': ['A counted serving flow is required before outage/deadline assertions; see the live publication, rule, admission and flow observations.', 'Grace/grant/short-lease flow cutoffs and rollback of wall time remain unmeasured. A disposable VM or injected time source is required for clock rollback; never change the shared host clock.'],
-    'AT30': ['w4-ops-backups has not landed on this checkout (deploy/backup and docs/ops/backups.md absent). No parallel physical backup path was created. Logical replay is not WAL/PITR.', 'Provider/NetBird/revocation-journal reconciliation and actual node SQLite archive replay are outside the isolated logical subset. Complete-service RPO/RTO remain null.'],
+    'AT30': ['Provider/NetBird/revocation-journal reconciliation and actual node SQLite archive replay are outside the isolated physical subset. Complete-service RPO/RTO remain null.'],
     'AT31': ['D-050 grants and native admission replace projected SQL rows. The shared lab has one native member daemon; a documented 20-user/3-peer-per-user hook is needed for 60 devices.', 'API and synthetic ledger diagnostics are not capacity certification. The full sampling/policy/multi-flow/relay profile needs counted serving flows. Candidate hardware remains needs operator run.'],
     'AT32': ['DOC01–DOC13 were resolved on main and re-reviewed. Physical three-origin/platform comparison and complete Wave 4 runtime evidence still need operator runs.'],
 }
@@ -165,6 +165,8 @@ def main():
     (ROOT / '.agent/tmp').mkdir(parents=True, exist_ok=True)
     os.umask(0o077)
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    history = subprocess.check_output(['git', 'log', '--format=%s'], cwd=ROOT, text=True)
+    login_burst = '1' if 'w2-control-core follow-up 10' in history else '0'
     source_digest = hashlib.sha256(b''.join(p.read_bytes() for p in sorted(HERE.glob('*.go')))).hexdigest()
     records, builds = [], []
     started = utc()
@@ -179,7 +181,7 @@ def main():
                 stack['reason'] = 'Assigned namespace is occupied or Docker inventory unavailable; no bring-up or teardown authorized by this runner.'
             else:
                 # Never attach a previous run's backup or evidence to this run.
-                for stale in (PUBLIC / 'live.json', PUBLIC / 'restore.json', PRIVATE / 'restore.dump', PRIVATE / 'retained.json'):
+                for stale in (PUBLIC / 'live.json', PUBLIC / 'restore.json', PUBLIC / 'pitr.json', PUBLIC / 'pitr-source.json', PRIVATE / 'pitr-manifest.json', PRIVATE / 'retained.json'):
                     stale.unlink(missing_ok=True)
                 try:
                     up, raw = command('e2e-up', ['make', '-f', 'mk/e2e.mk', 'e2e-up'], env, 1200)
@@ -188,10 +190,10 @@ def main():
                         stack['reason'] = 'Assigned dev stack failed bring-up; private diagnostics retained.'
                     else:
                         live_command = ['go', 'test', '-json', '-tags', 'e2e,integration', '-p', '1', '-parallel', '2', '-count=1', '-timeout', '15m', '-run', '^TestAT28_AT31_LiveStack$', './tests/e2e/at/secops']
-                        probe, output = command('live-probe', live_command, dict(env, FVPN_SECOPS_LIVE='1'), 960)
+                        probe, output = command('live-probe', live_command, dict(env, FVPN_SECOPS_LIVE='1', FVPN_SECOPS_LOGIN_BURST=login_burst), 960)
                         stack['live_probe'] = dict(probe, **summarize_go(output, ['TestAT28_AT31_LiveStack'], probe['exit_code']))
-                        if (PRIVATE / 'restore.dump').is_file() and (PRIVATE / 'retained.json').is_file():
-                            restore, _ = command('isolated-restore', ['python3', 'tests/e2e/at/secops/restore.py'], env)
+                        if (PRIVATE / 'pitr-manifest.json').is_file() and (PRIVATE / 'retained.json').is_file():
+                            restore, _ = command('isolated-restore', ['python3', 'tests/e2e/at/secops/pitr.py'], env)
                             stack['isolated_restore'] = restore
                         else:
                             stack['isolated_restore'] = {'status': 'blocked', 'reason': 'Current live run produced no backup/retained window; no stale restore reused.'}
@@ -243,7 +245,7 @@ def main():
         if at == 'AT31' and live.get('concurrent_sign_in'):
             login = live['concurrent_sign_in']
             if login['authenticated'] != login['attempts']:
-                blockers.append(f"Concurrent login diagnostic completed {login['authenticated']}/{login['attempts']} sessions; final login HTTP statuses {login.get('last_login_http_status', {})}. Limits were not tuned.")
+                blockers.append(f"{'Historical Follow-up 1' if login.get('remeasurement_status') else 'Current'} concurrent login diagnostic completed {login['authenticated']}/{login['attempts']} sessions; final login HTTP statuses {login.get('last_login_http_status', {})}. Limits were not tuned.")
         data = dict(common, id=at, spec=['§19.1', '§19 '+at], requirements=requirements, status=status, verdict=status,
                     expected=EXPECTED[at], actual={'component_status': component_status, 'component_suites': [r['id'] for r in related], 'full_stack_executed': bool(live), 'full_acceptance_profile_executed': status == 'passed'},
                     blockers=blockers, commands=[r['command'] for r in related],
@@ -255,11 +257,11 @@ def main():
             data['serving'] = {k:live.get(k) for k in ('node_service_precondition','publication_request','publication_operation','forward_baseline_generation_zero','member_accept_rules','watchdog_heartbeat_present','counted_flow','flow_probe','serving_checks','node_after_publication','watchdog_state','configured_updater_recovery_file_present','short_node_lease_seconds')}
         if at == 'AT30':
             data['recovery'] = live.get('recovery', {})
-            if (PUBLIC / 'restore.json').exists() and stack.get('isolated_restore',{}).get('exit_code') == 0:
-                data['logical_restore_subset'] = json.loads((PUBLIC / 'restore.json').read_text())
-                data['evidence'].append('restore.json')
+            if (PUBLIC / 'pitr.json').exists() and stack.get('isolated_restore',{}).get('exit_code') == 0:
+                data['physical_restore_subset'] = json.loads((PUBLIC / 'pitr.json').read_text())
+                data['evidence'].extend(['pitr.json', 'pitr-source.json'])
         if at == 'AT31':
-            data['capacity'] = dict(profile='load-profile.json', full_profile_executed=False, candidate_hardware=False, measured_subset=live.get('capacity_subset'), grants=live.get('grant_projection'), requested_devices=60, authorized_devices=live.get('authorized_devices', 0), concurrent_sign_in=live.get('concurrent_sign_in'), synthetic_ledger_ack=live.get('usage_final_ack'))
+            data['capacity'] = dict(profile='load-profile.json', full_profile_executed=False, candidate_hardware=False, measured_subset=live.get('capacity_subset'), grants=live.get('grant_projection'), requested_devices=60, authorized_devices=live.get('authorized_devices', 0), concurrent_sign_in=live.get('concurrent_sign_in'), synthetic_ledger_ack=live.get('usage_final_ack'), login_41st_request=live.get('login_41st_request'))
         if at == 'AT32':
             data['documentation_findings'] = [{'id': f['id'], 'status': f['status']} for f in review['findings']]
             data['evidence'].append('scope-review.json')

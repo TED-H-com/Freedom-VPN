@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/netip"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,7 @@ type Ruleset struct {
 	Chains     map[string]ChainView
 	Counters   map[string]CounterValue
 	Sets       map[string]bool
+	Elements   map[string][]setElement
 	Flowtables []string
 	Classes    map[uuid.UUID]uint16
 	Raw        string
@@ -45,8 +47,25 @@ type RuleView struct {
 	IIF           []string
 	OIF           []string
 	NegSets       []string
+	SaddrSets     []string
+	DaddrSets     []string
+	ConcatSets    []string
+	Dports        []uint16
+	L4Protos      []string
+	NFProto       string
 	CTEstablished bool
 	SNAT          string
+}
+
+// setElement is one element of an nft set. Bounded is false when the element
+// has no timeout and no expires value (§13.9).
+type setElement struct {
+	Addr    netip.Addr
+	Proto   string
+	Port    uint16
+	Concat  bool
+	Bounded bool
+	Seconds uint32
 }
 
 // ParseRuleset reads `nft -j list table inet fvpn`. Numbers above 2^53 stay
@@ -64,6 +83,7 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 		Chains:   map[string]ChainView{},
 		Counters: map[string]CounterValue{},
 		Sets:     map[string]bool{},
+		Elements: map[string][]setElement{},
 		Raw:      string(raw),
 	}
 	for _, obj := range doc.Nftables {
@@ -155,8 +175,9 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 			rs.Counters[c.Name] = CounterValue{Packets: packets, Bytes: byteCount}
 		case hasKey(obj, "set"):
 			var s struct {
-				Table string `json:"table"`
-				Name  string `json:"name"`
+				Table string          `json:"table"`
+				Name  string          `json:"name"`
+				Elem  json.RawMessage `json:"elem"`
 			}
 			if err := json.Unmarshal(obj["set"], &s); err != nil {
 				return Ruleset{}, err
@@ -165,6 +186,13 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 				continue
 			}
 			rs.Sets[s.Name] = true
+			elems, err := parseSetElems(s.Elem)
+			if err != nil {
+				return Ruleset{}, fmt.Errorf("set %s: %w", s.Name, err)
+			}
+			if len(elems) > 0 {
+				rs.Elements[s.Name] = append(rs.Elements[s.Name], elems...)
+			}
 		}
 	}
 	if strings.Contains(rs.Raw, "\"flowtable\"") && len(rs.Flowtables) == 0 {
@@ -395,11 +423,39 @@ func noteMatch(v any, rv *RuleView) {
 			}
 		}
 	}
+	if _, ok := left["concat"]; ok {
+		if name, ok := matchSet(right); ok {
+			rv.ConcatSets = append(rv.ConcatSets, name)
+		}
+	}
 	if payload, ok := left["payload"].(map[string]any); ok {
 		field, _ := payload["field"].(string)
-		if (field == "saddr" || field == "daddr") && op == "!=" {
+		switch field {
+		case "saddr", "daddr":
 			if name, ok := matchSet(right); ok {
-				rv.NegSets = append(rv.NegSets, name)
+				if op == "!=" {
+					rv.NegSets = append(rv.NegSets, name)
+				}
+				if op == "==" && field == "saddr" {
+					rv.SaddrSets = append(rv.SaddrSets, name)
+				}
+				if op == "==" && field == "daddr" {
+					rv.DaddrSets = append(rv.DaddrSets, name)
+				}
+			}
+		case "dport":
+			if n, ok := asUint(right); ok && n > 0 && n <= 65535 {
+				rv.Dports = append(rv.Dports, uint16(n))
+			}
+			if proto, ok := payload["protocol"].(string); ok && proto != "" {
+				rv.L4Protos = append(rv.L4Protos, proto)
+			}
+		}
+	}
+	if meta, ok := left["meta"].(map[string]any); ok {
+		if key, _ := meta["key"].(string); key == "nfproto" {
+			if name, ok := right.(string); ok {
+				rv.NFProto = name
 			}
 		}
 	}
@@ -505,4 +561,235 @@ func asUint(v any) (uint64, bool) {
 	default:
 		return 0, false
 	}
+}
+
+func parseSetElems(raw json.RawMessage) ([]setElement, error) {
+	if len(bytes.TrimSpace(raw)) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return nil, nil
+	}
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.UseNumber()
+	var v any
+	if err := dec.Decode(&v); err != nil {
+		return nil, err
+	}
+	var out []setElement
+	switch t := v.(type) {
+	case []any:
+		for _, item := range t {
+			el, ok := parseOneElem(item)
+			if ok {
+				out = append(out, el)
+			}
+		}
+	default:
+		if el, ok := parseOneElem(t); ok {
+			out = append(out, el)
+		}
+	}
+	return out, nil
+}
+
+func parseOneElem(item any) (setElement, bool) {
+	switch t := item.(type) {
+	case string:
+		return parseElemString(t)
+	case map[string]any:
+		if inner, ok := t["elem"]; ok {
+			return parseOneElem(inner)
+		}
+		return parseElemObject(t)
+	default:
+		return setElement{}, false
+	}
+}
+
+func parseElemObject(m map[string]any) (setElement, bool) {
+	bounded, seconds := timeoutFromMap(m)
+	val, ok := m["val"]
+	if !ok {
+		if _, has := m["concat"]; has {
+			return parseConcatVal(m, bounded, seconds)
+		}
+		return setElement{}, false
+	}
+	switch t := val.(type) {
+	case string:
+		el, ok := parseElemString(t)
+		if !ok {
+			return setElement{}, false
+		}
+		if bounded {
+			el.Bounded = true
+			if seconds > 0 {
+				el.Seconds = seconds
+			}
+		}
+		return el, true
+	case map[string]any:
+		return parseConcatVal(t, bounded, seconds)
+	case []any:
+		return elemFromParts(stringParts(t), bounded, seconds)
+	default:
+		return setElement{}, false
+	}
+}
+
+func parseConcatVal(m map[string]any, bounded bool, seconds uint32) (setElement, bool) {
+	raw, ok := m["concat"]
+	if !ok {
+		return setElement{}, false
+	}
+	arr, ok := raw.([]any)
+	if !ok {
+		return setElement{}, false
+	}
+	return elemFromParts(stringParts(arr), bounded, seconds)
+}
+
+func stringParts(arr []any) []string {
+	out := make([]string, 0, len(arr))
+	for _, item := range arr {
+		switch t := item.(type) {
+		case string:
+			out = append(out, t)
+		case json.Number:
+			out = append(out, t.String())
+		default:
+			out = append(out, fmt.Sprint(item))
+		}
+	}
+	return out
+}
+
+func timeoutFromMap(m map[string]any) (bool, uint32) {
+	var seconds uint32
+	bounded := false
+	if n, ok := asTimeout(m["timeout"]); ok && n > 0 {
+		bounded = true
+		seconds = n
+	}
+	if n, ok := asTimeout(m["expires"]); ok && n > 0 {
+		bounded = true
+		if seconds == 0 {
+			seconds = n
+		}
+	}
+	return bounded, seconds
+}
+
+func asTimeout(v any) (uint32, bool) {
+	if v == nil {
+		return 0, false
+	}
+	switch t := v.(type) {
+	case json.Number:
+		n, err := strconv.ParseUint(t.String(), 10, 32)
+		if err != nil {
+			return 0, false
+		}
+		return uint32(n), true
+	case string:
+		return parseSeconds(t)
+	default:
+		return 0, false
+	}
+}
+
+func parseElemString(s string) (setElement, bool) {
+	bounded := false
+	var seconds uint32
+	if i := strings.Index(s, "timeout"); i >= 0 {
+		rest := strings.TrimSpace(s[i+len("timeout"):])
+		fields := strings.Fields(rest)
+		if len(fields) > 0 {
+			if n, ok := parseSeconds(fields[0]); ok && n > 0 {
+				bounded = true
+				seconds = n
+			}
+		}
+		s = strings.TrimSpace(s[:i])
+	}
+	if i := strings.Index(s, "expires"); i >= 0 {
+		rest := strings.TrimSpace(s[i+len("expires"):])
+		fields := strings.Fields(rest)
+		if len(fields) > 0 {
+			if n, ok := parseSeconds(fields[0]); ok && n > 0 {
+				bounded = true
+				if seconds == 0 {
+					seconds = n
+				}
+			}
+		}
+		s = strings.TrimSpace(s[:i])
+	}
+	return elemFromParts(splitConcat(s), bounded, seconds)
+}
+
+func splitConcat(s string) []string {
+	raw := strings.Split(s, " . ")
+	out := make([]string, 0, len(raw))
+	for _, p := range raw {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func elemFromParts(parts []string, bounded bool, seconds uint32) (setElement, bool) {
+	if len(parts) == 0 {
+		return setElement{}, false
+	}
+	addr, err := netip.ParseAddr(parts[0])
+	if err != nil {
+		p, err2 := netip.ParsePrefix(parts[0])
+		if err2 != nil || !p.IsValid() {
+			return setElement{}, false
+		}
+		addr = p.Addr()
+	}
+	if !addr.Is4() {
+		return setElement{}, false
+	}
+	el := setElement{Addr: addr, Bounded: bounded, Seconds: seconds}
+	if len(parts) == 1 {
+		return el, true
+	}
+	if len(parts) != 3 {
+		return setElement{}, false
+	}
+	proto, ok := parseL4Proto(parts[1])
+	if !ok {
+		return setElement{}, false
+	}
+	port, err := strconv.ParseUint(parts[2], 10, 16)
+	if err != nil || port == 0 {
+		return setElement{}, false
+	}
+	el.Proto = proto
+	el.Port = uint16(port)
+	el.Concat = true
+	return el, true
+}
+
+func parseL4Proto(s string) (string, bool) {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "tcp", "6":
+		return "tcp", true
+	case "udp", "17":
+		return "udp", true
+	default:
+		return "", false
+	}
+}
+
+func parseSeconds(s string) (uint32, bool) {
+	s = strings.TrimSpace(strings.TrimSuffix(s, "s"))
+	n, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		return 0, false
+	}
+	return uint32(n), true
 }

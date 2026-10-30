@@ -48,7 +48,7 @@ type node struct {
 	current, lastGood                *uuid.UUID
 	online                           bool
 	job, target                      *uuid.UUID
-	observedGeneration               decstr.U64
+	observedHighWater                decstr.U64
 	observedAt                       *time.Time
 }
 
@@ -73,7 +73,7 @@ func (s *Service) readNode(ctx context.Context, tx pgx.Tx, id uuid.UUID) (node, 
 	if e != nil {
 		return n, e
 	}
-	n.observedGeneration, e = decstr.Parse(observed)
+	n.observedHighWater, e = decstr.Parse(observed)
 	return n, e
 }
 func authenticate(ctx context.Context, tx pgx.Tx, n node, i Identity) error {
@@ -177,7 +177,7 @@ func (s *Service) CreateBatch(ctx context.Context, c releases.Command, r api.Upd
 			return e
 		}
 		for _, n := range nodes {
-			gen, e := max(n.generation, n.observedGeneration).Add(1)
+			gen, e := max(n.generation, n.observedHighWater).Add(1)
 			if e != nil {
 				return e
 			}

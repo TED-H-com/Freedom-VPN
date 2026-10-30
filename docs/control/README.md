@@ -43,8 +43,12 @@ value and internal error text. Client tracing is available separately through
 `httpapi.ClientTrace`; domains must never log it as trusted metadata. Errors use
 `pkg/apierr.Write`. The response buffer discards partial output on panic. Responses
 are bounded to 32 MiB; APIs here have no streaming endpoints. All API and auth
-responses use `Cache-Control: no-store`; HSTS, nosniff, frame denial, restrictive
-CSP and no-referrer headers apply. Portal static assets need their own web server.
+responses use `Cache-Control: no-store`, except `GET /api/v1/agent/resolver-documents/{document_id}`
+with HTTP 200 which sets `Cache-Control: private, max-age=0` so agents can
+revalidate cached resolver documents with `ETag` / `If-None-Match` (D-056); 304
+and error responses on that route still use `Cache-Control: no-store`. HSTS,
+nosniff, frame denial, restrictive CSP and no-referrer headers apply. Portal
+static assets need their own web server.
 
 Browser writes require exact configured Origin plus a session-bound CSRF token.
 All administrator writes require recent authentication; this intentionally applies
@@ -94,10 +98,12 @@ omit underlying provider/driver/TLS error strings, which can contain credentials
 The control metrics listener serves plain HTTP `GET /metrics` on `metrics_address`
 (default `127.0.0.1:9091`, loopback IP literals only), using the registry shared
 with domain builds. It exports `fvpn_control_http_requests_total{route,status}`
-with bounded normalized route labels. Startup logs record the actual bound
-address, including an ephemeral port when configured as zero. Metrics starts and
-drains with the other listeners; a listener failure stops the application. Control
-and worker need distinct metrics ports when hosted together.
+with bounded normalized route labels and `fvpn_control_rate_limited_total{class,limiter}`
+(`limiter` in `{"address","subject"}`) for HTTP 429 responses (D-060). Startup
+logs record the actual bound address, including an ephemeral port when configured
+as zero. Metrics starts and drains with the other listeners; a listener failure
+stops the application. Control and worker need distinct metrics ports when hosted
+together.
 
 No latency/SLA, fleet enforcement timing, real device or arm64 runtime claims are
 made. Both architectures are cross-compiled; §16.5 targets require a separate

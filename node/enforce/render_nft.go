@@ -32,6 +32,14 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		return RenderPlan{}, err
 	}
 	host := mergePrefixes(m.HostV4)
+	if m.Probe != nil && m.Datapath.SNAT.Is4() {
+		// The node's SNAT address is host material even when HostV4 omitted it.
+		host = mergePrefixes(append(host, netip.PrefixFrom(m.Datapath.SNAT, 32)))
+	}
+	probeSec, err := probeSeconds(m)
+	if err != nil {
+		return RenderPlan{}, err
+	}
 	resolvers := append([]netip.Addr{}, m.Resolvers...)
 	sort.Slice(resolvers, func(i, j int) bool { return resolvers[i].Compare(resolvers[j]) < 0 })
 
@@ -50,6 +58,10 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		wantCounters[usageCounter(dirDNSUpload, d.Binding.DeviceID)] = true
 		wantCounters[usageCounter(dirDNSDownload, d.Binding.DeviceID)] = true
 	}
+	if m.Probe != nil {
+		wantCounters[counterProbeUp] = true
+		wantCounters[counterProbeDown] = true
+	}
 	names := sortedKeys(wantCounters)
 	for _, name := range names {
 		if state.hasCounter(name) {
@@ -62,6 +74,12 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	ensureSet(&b, state, "denied_v4", "type ipv4_addr; flags interval; auto-merge;")
 	ensureSet(&b, state, "host_v4", "type ipv4_addr; flags interval; auto-merge;")
 	ensureSet(&b, state, "resolver_v4", "type ipv4_addr;")
+	if m.Probe != nil {
+		ensureSet(&b, state, setProbeV4, "type ipv4_addr; flags timeout;")
+		if len(m.Probe.Destinations) > 0 {
+			ensureSet(&b, state, setProbeDstV4, "type ipv4_addr . inet_proto . inet_service; flags timeout;")
+		}
+	}
 
 	flushOrFill := func(set string, body string) {
 		if state.hasSet(set) {
@@ -75,6 +93,12 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	flushOrFill("denied_v4", prefixList(denied))
 	flushOrFill("host_v4", prefixList(host))
 	flushOrFill("resolver_v4", addrList(resolvers))
+	if m.Probe != nil {
+		flushOrFill(setProbeV4, probeSourceElement(m.Probe.SourceV4.Addr(), probeSec))
+		if len(m.Probe.Destinations) > 0 {
+			flushOrFill(setProbeDstV4, probeDestElements(m.Probe.Destinations, probeSec))
+		}
+	}
 
 	replaceChain(&b, state, "forward", fmt.Sprintf("type filter hook forward priority %d; policy drop;", HookPriorityFilter))
 	replaceChain(&b, state, "input", fmt.Sprintf("type filter hook input priority %d; policy accept;", HookPriorityFilter))
@@ -102,8 +126,13 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ct state invalid counter name %q drop", up, in, counterInvalid))
 
 	// Lease and binding before any accept (§8.2, §16.3). An empty allow set
-	// drops every upload source.
-	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr != @allowed_v4 counter name %q drop", in, up, counterUnknown))
+	// drops every upload source. A live probe source is not a member, so the
+	// drop exempts @probe_v4 only while the exception is installed (§13.9).
+	if m.Probe != nil {
+		rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr != @allowed_v4 ip saddr != @%s counter name %q drop", in, up, setProbeV4, counterUnknown))
+	} else {
+		rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr != @allowed_v4 counter name %q drop", in, up, counterUnknown))
+	}
 
 	// DNS exception before the destination deny, because the resolver prefix
 	// is itself inside the spec deny list (§8.1, §10.1). These counters are
@@ -119,9 +148,20 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 udp dport 53 counter name %q meta priority set %s accept", in, up, addr, dnsUp, prio))
 		}
 	}
+	// Probe DNS is the same hole as member DNS: the resolver prefix is inside
+	// the deny list, and only dport 53 is accepted. The source element timeout
+	// closes the hole (§13.9).
+	if m.Probe != nil && m.Probe.ResolverDNS {
+		writeProbeDNS(&b, in, up)
+	}
 	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @resolver_v4 counter name %q drop", in, up, counterBadDNS))
 	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @denied_v4 counter name %q drop", in, up, counterDenied))
 	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @host_v4 counter name %q drop", in, up, counterHost))
+	// General probe accepts sit behind the deny and host drops, and before
+	// any member accept. A tuple that is not in the set falls through.
+	if m.Probe != nil && len(m.Probe.Destinations) > 0 {
+		writeProbeTuple(&b, in, up)
+	}
 
 	for _, d := range devices {
 		if !d.TimeoutOK() {
@@ -137,8 +177,15 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	// Download: the same allow set is checked before established/related
 	// traffic is accepted, so a timeout or revocation stops an existing flow
 	// (§16.3). Reverse NAT has already restored the member address (§10.2).
-	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop", up, in, counterUnkDown))
+	if m.Probe != nil {
+		rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr != @allowed_v4 ip daddr != @%s counter name %q drop", up, in, setProbeV4, counterUnkDown))
+	} else {
+		rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop", up, in, counterUnkDown))
+	}
 	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ct state != { established, related } counter name %q drop", up, in, counterNoDown))
+	if m.Probe != nil {
+		writeProbeDown(&b, in, up)
+	}
 	for _, d := range devices {
 		if !d.TimeoutOK() {
 			continue
@@ -158,6 +205,11 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	rule(&b, "input", fmt.Sprintf("iifname %q counter name %q drop", in, counterInput))
 	rule(&b, "input", fmt.Sprintf("ip saddr 100.64.0.0/10 counter name %q drop", counterInput))
 	rule(&b, "postrouting", fmt.Sprintf("oifname %q ip saddr @allowed_v4 snat ip to %s", up, m.Datapath.SNAT))
+	if m.Probe != nil {
+		writeProbeSNAT(&b, up, m.Datapath.SNAT.String())
+	}
+	// Chains are already replaced, so a deleted probe set is no longer referenced.
+	writeProbeSetCleanup(&b, state, m.Probe)
 
 	tc, err := renderTC(m, assignments, tcState)
 	if err != nil {
@@ -183,15 +235,32 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 
 // RenderBaseline is the fail-closed boot ruleset. Member forwarding is off.
 // Control traffic (output, and input that is not from the member path) is
-// left alone (§8.2, §17.1).
-func RenderBaseline(dp Datapath, state State) (string, error) {
-	if err := validateDatapath(dp); err != nil {
+// left alone (§8.2, §17.1). A non-nil Probe is the only forward accept, so a
+// health check can use the candidate path while members stay blocked (§13.9).
+func RenderBaseline(m Model, state State) (string, error) {
+	if err := validateDatapath(m.Datapath); err != nil {
+		return "", err
+	}
+	if m.Probe != nil {
+		if err := validateProbe(m); err != nil {
+			return "", err
+		}
+	}
+	probeSec, err := probeSeconds(m)
+	if err != nil {
 		return "", err
 	}
 	var b strings.Builder
 	b.WriteString("# inet fvpn boot baseline. Member forwarding is off (§8.2).\n")
 	fmt.Fprintf(&b, "add table %s %s\n", TableFamily, TableName)
-	for _, name := range []string{counterBase, counterV6, counterInput} {
+	names := []string{counterBase, counterV6, counterInput}
+	if m.Probe != nil {
+		names = append(names, counterInvalid, counterDenied, counterHost, counterProbeUp, counterProbeDown)
+		if m.Probe.ResolverDNS {
+			names = append(names, counterBadDNS)
+		}
+	}
+	for _, name := range names {
 		if !state.hasCounter(name) {
 			fmt.Fprintf(&b, "add counter %s %s %s\n", TableFamily, TableName, name)
 		}
@@ -200,6 +269,44 @@ func RenderBaseline(dp Datapath, state State) (string, error) {
 	if state.hasSet("allowed_v4") {
 		fmt.Fprintf(&b, "flush set %s %s allowed_v4\n", TableFamily, TableName)
 	}
+	if m.Probe != nil {
+		denied, err := m.denyV4()
+		if err != nil {
+			return "", err
+		}
+		host := mergePrefixes(m.HostV4)
+		if m.Datapath.SNAT.Is4() {
+			host = mergePrefixes(append(host, netip.PrefixFrom(m.Datapath.SNAT, 32)))
+		}
+		resolvers := append([]netip.Addr{}, m.Resolvers...)
+		sort.Slice(resolvers, func(i, j int) bool { return resolvers[i].Compare(resolvers[j]) < 0 })
+		ensureSet(&b, state, "denied_v4", "type ipv4_addr; flags interval; auto-merge;")
+		ensureSet(&b, state, "host_v4", "type ipv4_addr; flags interval; auto-merge;")
+		ensureSet(&b, state, setProbeV4, "type ipv4_addr; flags timeout;")
+		if m.Probe.ResolverDNS {
+			ensureSet(&b, state, "resolver_v4", "type ipv4_addr;")
+		}
+		if len(m.Probe.Destinations) > 0 {
+			ensureSet(&b, state, setProbeDstV4, "type ipv4_addr . inet_proto . inet_service; flags timeout;")
+		}
+		flushFill := func(set, body string) {
+			if state.hasSet(set) {
+				fmt.Fprintf(&b, "flush set %s %s %s\n", TableFamily, TableName, set)
+			}
+			if body != "" {
+				fmt.Fprintf(&b, "add element %s %s %s { %s }\n", TableFamily, TableName, set, body)
+			}
+		}
+		flushFill("denied_v4", prefixList(denied))
+		flushFill("host_v4", prefixList(host))
+		if m.Probe.ResolverDNS {
+			flushFill("resolver_v4", addrList(resolvers))
+		}
+		flushFill(setProbeV4, probeSourceElement(m.Probe.SourceV4.Addr(), probeSec))
+		if len(m.Probe.Destinations) > 0 {
+			flushFill(setProbeDstV4, probeDestElements(m.Probe.Destinations, probeSec))
+		}
+	}
 	replaceChain(&b, state, "forward", fmt.Sprintf("type filter hook forward priority %d; policy drop;", HookPriorityFilter))
 	replaceChain(&b, state, "input", fmt.Sprintf("type filter hook input priority %d; policy accept;", HookPriorityFilter))
 	replaceChain(&b, state, "output", fmt.Sprintf("type filter hook output priority %d; policy accept;", HookPriorityFilter))
@@ -207,13 +314,117 @@ func RenderBaseline(dp Datapath, state State) (string, error) {
 	if err := markerRule(&b, "forward", "fvpn_generation=0 fvpn_baseline=1 fvpn_metering="+MeteringVersion); err != nil {
 		return "", err
 	}
-	rule(&b, "forward", fmt.Sprintf("iifname %q counter name %q drop", dp.MemberIngress, counterBase))
-	rule(&b, "forward", fmt.Sprintf("oifname %q counter name %q drop", dp.MemberIngress, counterBase))
-	rule(&b, "forward", fmt.Sprintf("iifname %q meta nfproto ipv6 counter name %q drop", dp.MemberIngress, counterV6))
-	rule(&b, "forward", fmt.Sprintf("oifname %q meta nfproto ipv6 counter name %q drop", dp.MemberIngress, counterV6))
-	rule(&b, "input", fmt.Sprintf("iifname %q counter name %q drop", dp.MemberIngress, counterInput))
+	in := m.Datapath.MemberIngress
+	up := m.Datapath.Uplink
+	if m.Probe != nil {
+		// Drops stay unbound to the uplink so the baseline does not narrow.
+		// The probe accepts name both interfaces. DNS is before the deny drop
+		// because the resolver prefix is inside that set. The tuple accept is
+		// after the deny and host drops (§13.9).
+		rule(&b, "forward", fmt.Sprintf("iifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
+		rule(&b, "forward", fmt.Sprintf("oifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
+		rule(&b, "forward", fmt.Sprintf("iifname %q ct state invalid counter name %q drop", in, counterInvalid))
+		rule(&b, "forward", fmt.Sprintf("oifname %q ct state invalid counter name %q drop", in, counterInvalid))
+		if m.Probe.ResolverDNS {
+			writeProbeDNS(&b, in, up)
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @resolver_v4 counter name %q drop", in, up, counterBadDNS))
+		}
+		rule(&b, "forward", fmt.Sprintf("iifname %q ip daddr @denied_v4 counter name %q drop", in, counterDenied))
+		rule(&b, "forward", fmt.Sprintf("iifname %q ip daddr @host_v4 counter name %q drop", in, counterHost))
+		if len(m.Probe.Destinations) > 0 {
+			writeProbeTuple(&b, in, up)
+		}
+		writeProbeDown(&b, in, up)
+	}
+	rule(&b, "forward", fmt.Sprintf("iifname %q counter name %q drop", in, counterBase))
+	rule(&b, "forward", fmt.Sprintf("oifname %q counter name %q drop", in, counterBase))
+	if m.Probe == nil {
+		rule(&b, "forward", fmt.Sprintf("iifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
+		rule(&b, "forward", fmt.Sprintf("oifname %q meta nfproto ipv6 counter name %q drop", in, counterV6))
+	}
+	rule(&b, "input", fmt.Sprintf("iifname %q counter name %q drop", in, counterInput))
 	rule(&b, "input", fmt.Sprintf("ip saddr 100.64.0.0/10 counter name %q drop", counterInput))
+	if m.Probe != nil {
+		writeProbeSNAT(&b, up, m.Datapath.SNAT.String())
+	}
+	writeProbeSetCleanup(&b, state, m.Probe)
 	return b.String(), nil
+}
+
+const (
+	setProbeV4    = "probe_v4"
+	setProbeDstV4 = "probe_dst_v4"
+)
+
+func probeSeconds(m Model) (uint32, error) {
+	if m.Probe == nil {
+		return 0, nil
+	}
+	sec, ok := probeTimeout(m.Probe.ExpiresAt, m.Now)
+	if !ok || sec > ProbeMaxSeconds {
+		return 0, fmt.Errorf("probe expiration is not admissible")
+	}
+	return sec, nil
+}
+
+func writeProbeDNS(b *strings.Builder, in, up string) {
+	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr @resolver_v4 tcp dport 53 counter name %q accept", in, up, setProbeV4, counterProbeUp))
+	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr @resolver_v4 udp dport 53 counter name %q accept", in, up, setProbeV4, counterProbeUp))
+}
+
+func writeProbeTuple(b *strings.Builder, in, up string) {
+	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr . meta l4proto . th dport @%s counter name %q accept", in, up, setProbeV4, setProbeDstV4, counterProbeUp))
+}
+
+func writeProbeDown(b *strings.Builder, in, up string) {
+	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @%s ct state established,related counter name %q accept", up, in, setProbeV4, counterProbeDown))
+}
+
+func writeProbeSNAT(b *strings.Builder, up, snat string) {
+	rule(b, "postrouting", fmt.Sprintf("oifname %q ip saddr @%s snat ip to %s", up, setProbeV4, snat))
+}
+
+func writeProbeSetCleanup(b *strings.Builder, state State, p *ProbeException) {
+	if p == nil {
+		deleteSet(b, state, setProbeV4)
+	}
+	if p == nil || len(p.Destinations) == 0 {
+		deleteSet(b, state, setProbeDstV4)
+	}
+}
+
+func deleteSet(b *strings.Builder, state State, name string) {
+	if state.hasSet(name) {
+		fmt.Fprintf(b, "delete set %s %s %s\n", TableFamily, TableName, name)
+	}
+}
+
+func probeSourceElement(addr netip.Addr, sec uint32) string {
+	return fmt.Sprintf("%s timeout %ds", addr, sec)
+}
+
+func probeDestElements(dsts []ProbeDestination, sec uint32) string {
+	dsts = append([]ProbeDestination(nil), dsts...)
+	sort.Slice(dsts, func(i, j int) bool {
+		if c := dsts[i].AddrV4.Addr().Compare(dsts[j].AddrV4.Addr()); c != 0 {
+			return c < 0
+		}
+		if dsts[i].Proto != dsts[j].Proto {
+			return dsts[i].Proto < dsts[j].Proto
+		}
+		return dsts[i].Port < dsts[j].Port
+	})
+	var parts []string
+	seen := map[string]bool{}
+	for _, d := range dsts {
+		key := fmt.Sprintf("%s . %s . %d", d.AddrV4.Addr(), d.Proto, d.Port)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		parts = append(parts, fmt.Sprintf("%s timeout %ds", key, sec))
+	}
+	return strings.Join(parts, ", ")
 }
 
 func diagnosticCounters() []string {

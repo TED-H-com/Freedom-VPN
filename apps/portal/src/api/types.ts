@@ -80,6 +80,10 @@ export type Enrollment = components['schemas']['Enrollment'];
 export type EnrollmentRecord = components['schemas']['Enrollment'];
 export type EnrollmentCreated = components['schemas']['EnrollmentCreated'];
 export type EnrollmentCreateResponse = components['schemas']['EnrollmentCreated'];
+export type MemberGroup = components['schemas']['MemberGroup'];
+export type MemberGroupCreate = components['schemas']['MemberGroupCreate'];
+export type MemberGroupList = components['schemas']['MemberGroupList'];
+export type MemberGroupListResponse = components['schemas']['MemberGroupList'];
 
 // Members & Entitlements (§9, §10, §14.2)
 export type PlanRef = components['schemas']['PlanRef'];
@@ -116,6 +120,7 @@ export type DomainRuleSetPayload = components['schemas']['DomainRuleSetPayload']
 export type DomainRule = components['schemas']['DomainRule'];
 export type DnsRule = components['schemas']['DomainRule'];
 export type ThreatFeedPayload = components['schemas']['ThreatFeedPayload'];
+export type ThreatFeedStatus = components['schemas']['ThreatFeedStatus'];
 export type ReleaseSupportPayload = components['schemas']['ReleaseSupportPayload'];
 
 // Releases & Update Batches (§13, §14.2)

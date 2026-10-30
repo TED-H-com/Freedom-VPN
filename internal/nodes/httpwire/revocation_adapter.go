@@ -50,8 +50,8 @@ func (a *RevocationAdapter) WithdrawExit(ctx context.Context, deployment string,
 	if err != nil || done {
 		return ref, err
 	}
-	keys, peers, cleanupErr := a.cleanup(ctx)
-	if err = a.recordCleanup(ctx, keys, peers, cleanupErr); err != nil {
+	peers, cleanupErr := a.cleanup(ctx)
+	if err = a.recordCleanup(ctx, peers, cleanupErr); err != nil {
 		return "", err
 	}
 	return ref, cleanupErr
@@ -81,24 +81,30 @@ func (a *RevocationAdapter) withdrawalDeployment(ctx context.Context, deployment
 	return deployment, nil
 }
 
-func (a *RevocationAdapter) cleanup(ctx context.Context) ([]uuid.UUID, []uuid.UUID, error) {
+func (a *RevocationAdapter) cleanup(ctx context.Context) ([]uuid.UUID, error) {
 	if a.client == nil {
-		return nil, nil, errors.New("identity cleanup adapter required")
+		return nil, errors.New("identity cleanup adapter required")
 	}
-	keyRows, err := a.runtime.Pool.Query(ctx, `SELECT e.operation_id FROM node_enrollments e JOIN node_incarnations i ON i.id=e.incarnation_id WHERE e.node_id=$1 AND i.revoked_at IS NOT NULL ORDER BY e.operation_id`, a.operation.Resource.Id)
+	keyRows, err := a.runtime.Pool.Query(ctx, `SELECT e.operation_id,e.incarnation_id FROM node_enrollments e JOIN node_incarnations i ON i.id=e.incarnation_id WHERE e.node_id=$1 AND i.revoked_at IS NOT NULL ORDER BY e.operation_id`, a.operation.Resource.Id)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	keys, err := pgx.CollectRows(keyRows, pgx.RowTo[uuid.UUID])
+	type enrollmentKey struct{ operation, incarnation uuid.UUID }
+	keys, err := pgx.CollectRows(keyRows, func(row pgx.CollectableRow) (k enrollmentKey, err error) {
+		err = row.Scan(&k.operation, &k.incarnation)
+		return
+	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	keyConfirmed := map[uuid.UUID]bool{}
 	for _, key := range keys {
 		// The client locates the stable enrollment key and reads back revoked
 		// or absent, including recovery after a lost creation response.
-		if err = a.client.RevokeNodeSetupKey(ctx, key.String()); err != nil {
-			return nil, nil, err
+		if err = a.client.RevokeNodeSetupKey(ctx, key.operation.String()); err != nil {
+			return nil, err
 		}
+		keyConfirmed[key.incarnation] = true
 	}
 	type peer struct {
 		id         uuid.UUID
@@ -107,35 +113,42 @@ func (a *RevocationAdapter) cleanup(ctx context.Context) ([]uuid.UUID, []uuid.UU
 	}
 	rows, err := a.runtime.Pool.Query(ctx, `SELECT id,coalesce(peer_id,''),coalesce(deployment_id,'') FROM node_incarnations WHERE node_id=$1 AND revoked_at IS NOT NULL ORDER BY id`, a.operation.Resource.Id)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	peers, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (p peer, err error) {
 		err = row.Scan(&p.id, &p.remote, &p.deployment)
 		return
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	confirmed := []uuid.UUID{}
 	for _, peer := range peers {
 		if peer.deployment != "" && peer.deployment != a.runtime.Config.NetBirdDeployment {
-			return nil, nil, errors.New("identity cleanup deployment mismatch")
+			return nil, errors.New("identity cleanup deployment mismatch")
 		}
 		binding := "node:" + a.operation.Resource.Id.String() + ":" + peer.id.String()
+		_, bound, err := (nodes.NetBirdBindings{Pool: a.runtime.Pool}).Get(ctx, a.runtime.Config.NetBirdDeployment, "peers", binding)
+		if err != nil {
+			return nil, err
+		}
+		if !keyConfirmed[peer.id] && peer.remote == "" && !bound {
+			return nil, errors.New("identity cleanup has no withdrawal evidence")
+		}
 		if peer.remote != "" {
 			if _, err = a.client.EnsureNodePeer(ctx, netbird.NodePeer{NodeID: a.operation.Resource.Id.String(), IncarnationID: peer.id.String(), PeerID: peer.remote}); err != nil && !netbird.IsKind(err, netbird.NotFound) {
-				return nil, nil, err
+				return nil, err
 			}
 		}
 		// D-055: discovery may have persisted its adapter binding before a
 		// crash or revocation fenced the central peer_id update. Cleanup must
 		// also remove that binding, under the same deployment lock.
 		if err = a.client.DeletePeer(ctx, binding); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		confirmed = append(confirmed, peer.id)
 	}
-	return keys, confirmed, nil
+	return confirmed, nil
 }
 
 func (a *RevocationAdapter) lockCleanupStep(ctx context.Context, tx pgx.Tx) (step nodes.StoredStep, err error) {
@@ -153,7 +166,7 @@ func (a *RevocationAdapter) lockCleanupStep(ctx context.Context, tx pgx.Tx) (ste
 	return step, nil
 }
 
-func (a *RevocationAdapter) recordCleanup(ctx context.Context, keys, peers []uuid.UUID, cleanupErr error) error {
+func (a *RevocationAdapter) recordCleanup(ctx context.Context, peers []uuid.UUID, cleanupErr error) error {
 	return commandtx.InTx(ctx, a.runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		step, err := a.lockCleanupStep(ctx, tx)
 		if err != nil || step.Status == string(api.OperationStepStatusSucceeded) {
@@ -166,13 +179,25 @@ func (a *RevocationAdapter) recordCleanup(ctx context.Context, keys, peers []uui
 		var ref string
 		if cleanupErr != nil {
 			code, message := string(api.ErrorCodeDEPENDENCYUNAVAILABLE), "NetBird identity cleanup unconfirmed"
+			if netbird.IsKind(cleanupErr, netbird.Conflict) {
+				message = netbird.DiscoveryReason(cleanupErr)
+			}
 			step.Status, step.ErrorCode, step.ErrorMessage = string(api.OperationStepStatusFailed), &code, &message
-		} else {
-			evidence := uuid.Must(uuid.NewV7())
-			err = audit.Append(ctx, tx, db.AuditEvent{ID: evidence, Actor: nodes.SystemActorUUID.String(), ActorType: string(api.AuditEventActorTypeSystem), Action: "node.identity_withdrawn", Resource: "node:" + a.operation.Resource.Id.String(), OperationID: &a.operation.OperationId, Result: string(api.AuditEventResultSucceeded)}, nil,
-				map[string]any{"enrollment_operations": keys, "peer_incarnations": peers}, "enrollment_operations", "peer_incarnations")
-			if err != nil {
+			if err = audit.Append(ctx, tx, db.AuditEvent{ID: uuid.Must(uuid.NewV7()), Actor: nodes.SystemActorUUID.String(), ActorType: "system", Action: "node.identity_withdrawal_failed", Resource: "node:" + a.operation.Resource.Id.String(), OperationID: &a.operation.OperationId, Result: "failed"}, nil, map[string]any{"reason": netbird.DiscoveryReason(cleanupErr)}, "reason"); err != nil {
 				return err
+			}
+		} else {
+			var evidence uuid.UUID
+			for _, incarnation := range peers {
+				evidence = uuid.Must(uuid.NewV7())
+				err = audit.Append(ctx, tx, db.AuditEvent{ID: evidence, Actor: nodes.SystemActorUUID.String(), ActorType: "system", Action: "node.identity_withdrawn", Resource: "node:" + a.operation.Resource.Id.String(), OperationID: &a.operation.OperationId, Result: "succeeded"}, nil,
+					map[string]any{"incarnation_id": incarnation, "reason": "setup_key_and_peer_withdrawn"}, "incarnation_id", "reason")
+				if err != nil {
+					return err
+				}
+			}
+			if evidence == uuid.Nil {
+				return errors.New("identity cleanup has no withdrawal evidence")
 			}
 			step.Status, step.ObservedRef, step.ObservedAt = string(api.OperationStepStatusSucceeded), nodes.StepNetBirdIdentityCleanup, &now
 			ref = "audit_event:" + evidence.String()

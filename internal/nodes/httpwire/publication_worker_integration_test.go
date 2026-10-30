@@ -17,7 +17,11 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/exits"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 )
 
@@ -48,9 +52,19 @@ func (f *fixture) acknowledgePublication(enrolled api.EnrollResponse, cert *x509
 	report.Lease.LeaseId.SetNull()
 	report.Netbird.PeerId.SetNull()
 	report.MemberForwardingEnabled = forwarding
-	meter := report.Checks[0]
-	meter.Name = api.NodeCheckNameMeterPath
-	report.Checks = append(report.Checks, meter)
+	if forwarding {
+		if _, err := f.r.Provider.(*signing.FileProvider).Rotate(f.t.Context(), signing.Lease, 48*time.Hour, time.Hour); err != nil {
+			f.t.Fatal(err)
+		}
+		lease := decode[api.ServingLeaseEnvelope](f.t, f.call("POST", "/api/v1/agent/lease-renewals", api.LeaseRenewalRequest{RenewalRequestId: uuid.New(), NodeId: enrolled.NodeId, NodeIncarnationId: enrolled.NodeIncarnationId, CurrentLeaseId: presence.NewNullNullable[uuid.UUID](), AppliedConfigGeneration: presence.NewNullableWithValue(decstr.U64(state.Signed.ConfigGeneration))}, cert, nil), 200)
+		report.Lease.LeaseId.Set(lease.Signed.LeaseId)
+		report.Lease.ExpiresAt.Set(lease.Signed.ExpiresAt)
+	}
+	for _, name := range []api.NodeCheckName{api.NodeCheckNameMeterPath, api.NodeCheckNameTunnelProbe, api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+		check := report.Checks[0]
+		check.Name = name
+		report.Checks = append(report.Checks, check)
+	}
 	for i := range report.Checks {
 		report.Checks[i].Status = api.HealthCheckStatusPassed
 		report.Checks[i].ObservedAt = report.ObservedAt
@@ -280,5 +294,45 @@ func TestAT08_PublicationWorkerExhaustedRedelivery(t *testing.T) {
 				t.Fatal("redelivery not dead-lettered", code, err)
 			}
 		})
+	}
+}
+
+// SECOPS-11: the baseline can be healthy while recovery keeps forwarding off.
+func TestSECOPS11_PublicationWorkerRequiresArmedMemberDataPath(t *testing.T) {
+	f, enrolled, cert, _, _ := publicationFixture(t)
+	op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+	f.acknowledgePublication(enrolled, cert, false)
+	nb := exits.NewFakeNetBirdAdapter()
+	d := f.publicationDispatcher(nb, 1)
+	f.publicationDispatch(d, op.OperationId)
+	observed := f.publicationOperation(op.OperationId)
+	if observed.Status != api.OperationStatusFailed {
+		t.Fatal("baseline completed publication", observed)
+	}
+	var cause, publication string
+	if err := f.r.Pool.QueryRow(t.Context(), `SELECT o.steps->'data_path_probe'->>'error_message',e.publication_observed FROM operations o JOIN exits e ON e.node_id=o.resource_id WHERE o.id=$1`, op.OperationId).Scan(&cause, &publication); err != nil || cause != "member_forwarding_unconfirmed" || publication == "active" {
+		t.Fatal(cause, publication, err)
+	}
+	next := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+	f.acknowledgePublication(enrolled, cert, true)
+	f.publicationDispatch(d, next.OperationId)
+	if got := f.publicationOperation(next.OperationId); got.Status != api.OperationStatusSucceeded {
+		t.Fatal("armed publication did not recover", got)
+	}
+}
+
+func TestAT08_PublicationNoGroupsRecordsBoundedCause(t *testing.T) {
+	f, enrolled, cert, _, _ := publicationFixture(t)
+	path := "/api/v1/admin/nodes/" + enrolled.NodeId.String()
+	detail := f.call("GET", path, nil, nil, nil)
+	empty := []uuid.UUID{}
+	op := decode[api.Operation](t, f.call("PUT", path+"/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, Reason: "TEST ONLY no distribution", GroupIds: &empty}, nil, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": detail.Header().Get("ETag")}), 202)
+	f.acknowledgePublication(enrolled, cert, true)
+	// The real bridge rejects the empty distribution before calling management.
+	d := f.publicationDispatcher(httpwire.NewPublicationAdapter(f.r, nil), 1)
+	f.publicationDispatch(d, op.OperationId)
+	var cause string
+	if err := f.r.Pool.QueryRow(t.Context(), `SELECT steps->'netbird_route_readback'->>'error_message' FROM operations WHERE id=$1 AND status='failed'`, op.OperationId).Scan(&cause); err != nil || cause != "no_distribution_groups" || len(cause) > 64 {
+		t.Fatal(cause, err)
 	}
 }

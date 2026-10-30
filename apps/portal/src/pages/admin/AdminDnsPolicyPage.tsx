@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  ApiError,
   apiClient,
   buildDnsPolicyViewModel,
   type OperationResource,
@@ -32,6 +33,9 @@ export function AdminDnsPolicyPage(): React.ReactElement {
   const [extraReason, setExtraReason] = useState(
     'Operator created policy revision from portal',
   );
+  const [threatFeedIntervalInput, setThreatFeedIntervalInput] = useState('21600');
+  const [bypassClientIntervalCheck, setBypassClientIntervalCheck] = useState(false);
+  const [intervalFieldError, setIntervalFieldError] = useState<string | null>(null);
 
   const dnsQuery = useQuery({
     queryKey: ['admin', 'policies'],
@@ -149,6 +153,7 @@ export function AdminDnsPolicyPage(): React.ReactElement {
   const handleCreateExtraPolicyRevision = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError(null);
+    setIntervalFieldError(null);
     try {
       const existingDef = dnsQuery.data?.items.find((d) => d.type === extraSchemaType);
       let req: PolicyRevisionCreate;
@@ -179,6 +184,16 @@ export function AdminDnsPolicyPage(): React.ReactElement {
           },
         };
       } else if (extraSchemaType === 'threat_feed') {
+        const parsedInterval = Number.parseInt(threatFeedIntervalInput.trim(), 10);
+        if (
+          !bypassClientIntervalCheck &&
+          (Number.isNaN(parsedInterval) ||
+            parsedInterval < 300 ||
+            parsedInterval > 604800)
+        ) {
+          setIntervalFieldError(t('admin.dns.threatFeedForm.intervalOutOfRange'));
+          return;
+        }
         req = {
           ...(existingDef
             ? { definition_id: existingDef.definition_id }
@@ -201,7 +216,7 @@ export function AdminDnsPolicyPage(): React.ReactElement {
             max_size_bytes: '10485760',
             valid_from: '2026-10-01T00:00:00Z',
             valid_until: '2026-12-31T23:59:59Z',
-            update_interval_seconds: 86400,
+            update_interval_seconds: Number.isNaN(parsedInterval) ? 0 : parsedInterval,
           },
         };
       } else {
@@ -229,6 +244,26 @@ export function AdminDnsPolicyPage(): React.ReactElement {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'policies'] });
     } catch (err) {
       setApiError(err);
+      if (
+        err instanceof ApiError &&
+        (err.status === 422 || err.code === 'VALIDATION_FAILED')
+      ) {
+        const parsedInterval = Number.parseInt(threatFeedIntervalInput.trim(), 10);
+        const fe =
+          err.fieldErrors.find((f) => f.field.includes('update_interval_seconds')) ??
+          err.fieldErrors[0] ??
+          (extraSchemaType === 'threat_feed' &&
+          (Number.isNaN(parsedInterval) ||
+            parsedInterval < 300 ||
+            parsedInterval > 604800)
+            ? { field: '/payload/update_interval_seconds', reason: 'out_of_bounds' }
+            : undefined);
+        if (fe) {
+          setIntervalFieldError(
+            `${t('admin.dns.threatFeedForm.intervalOutOfRange')} [${fe.field}: ${fe.reason}]`,
+          );
+        }
+      }
     }
   };
 
@@ -290,6 +325,118 @@ export function AdminDnsPolicyPage(): React.ReactElement {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Threat Feed Refresh & Last-Good Status (§12.5, D-058) */}
+      <section className="card" data-testid="threat-feed-status-section">
+        <h2>{t('admin.dns.threatFeedStatus.title')}</h2>
+        <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
+          <table className="data-table" data-testid="threat-feed-status-table">
+            <thead>
+              <tr>
+                <th>{t('admin.dns.threatFeedStatus.col.feedCode')}</th>
+                <th>{t('admin.dns.threatFeedStatus.col.state')}</th>
+                <th>{t('admin.dns.threatFeedStatus.col.approvedSha256')}</th>
+                <th>{t('admin.dns.threatFeedStatus.col.lastGoodSha256')}</th>
+                <th>{t('admin.dns.threatFeedStatus.col.failures')}</th>
+                <th>{t('admin.dns.threatFeedStatus.col.schedule')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dnsQuery.data.items
+                .filter((d) => d.type === 'threat_feed')
+                .map((def) => {
+                  const st = def.threat_feed_status ?? null;
+                  const lastResult = st?.last_result ?? 'never';
+                  const hasLastGood = Boolean(st?.last_good_content_sha256);
+
+                  let stateLabel = t('admin.dns.threatFeedStatus.bootstrapEmpty');
+                  let badgeClass = 'badge-warning';
+                  if (lastResult === 'success') {
+                    stateLabel = t('admin.dns.threatFeedStatus.lastGood');
+                    badgeClass = 'badge-success';
+                  } else if (lastResult === 'failed') {
+                    stateLabel = hasLastGood
+                      ? t('admin.dns.threatFeedStatus.failingRetainingLastGood')
+                      : t('admin.dns.threatFeedStatus.failingNoLastGood');
+                    badgeClass = 'badge-danger';
+                  }
+
+                  return (
+                    <tr
+                      key={def.definition_id}
+                      data-testid={`threat-feed-status-row-${def.code}`}
+                    >
+                      <td>
+                        <div className="mono" style={{ fontWeight: 700 }}>
+                          {def.code}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '0.82rem',
+                            color: 'var(--color-text-muted)',
+                          }}
+                        >
+                          {def.active_revision?.type === 'threat_feed'
+                            ? `${def.active_revision.payload.provider} (${def.active_revision.payload.feed_code})`
+                            : def.code}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${badgeClass}`}
+                          data-testid={`threat-feed-state-${def.code}`}
+                        >
+                          {stateLabel}
+                        </span>
+                      </td>
+                      <td
+                        className="mono"
+                        style={{ fontSize: '0.78rem', wordBreak: 'break-all' }}
+                        data-testid={`threat-feed-approved-sha-${def.code}`}
+                      >
+                        {st?.approved_content_sha256 ?? '—'}
+                      </td>
+                      <td
+                        className="mono"
+                        style={{ fontSize: '0.78rem', wordBreak: 'break-all' }}
+                        data-testid={`threat-feed-last-good-${def.code}`}
+                      >
+                        <div>sha256: {st?.last_good_content_sha256 ?? '—'}</div>
+                        <div>
+                          rules: {st?.last_good_rule_count ?? '—'} · age:{' '}
+                          {st?.last_good_age_seconds != null
+                            ? `${st.last_good_age_seconds}s`
+                            : '—'}
+                        </div>
+                      </td>
+                      <td
+                        className="mono"
+                        style={{ fontSize: '0.78rem' }}
+                        data-testid={`threat-feed-failures-${def.code}`}
+                      >
+                        <div>failures: {st?.consecutive_failures ?? 0}</div>
+                        {st?.last_error_code && (
+                          <div className="text-danger">
+                            {st.last_error_code}
+                            {st.last_error_message ? `: ${st.last_error_message}` : ''}
+                          </div>
+                        )}
+                      </td>
+                      <td
+                        className="mono"
+                        style={{ fontSize: '0.78rem' }}
+                        data-testid={`threat-feed-schedule-${def.code}`}
+                      >
+                        <div>attempt: {st?.last_attempt_at ?? '—'}</div>
+                        <div>next: {st?.next_due_at ?? '—'}</div>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -443,6 +590,7 @@ export function AdminDnsPolicyPage(): React.ReactElement {
         <h2>Create DNS Profile / Threat Feed / Release Support Revision</h2>
         <form
           onSubmit={(e) => void handleCreateExtraPolicyRevision(e)}
+          noValidate
           style={{ marginTop: '0.75rem' }}
         >
           <div className="form-grid">
@@ -473,6 +621,51 @@ export function AdminDnsPolicyPage(): React.ReactElement {
                 onChange={(e) => setExtraReason(e.target.value)}
               />
             </div>
+            {extraSchemaType === 'threat_feed' && (
+              <div className="form-group">
+                <label htmlFor="threat-feed-update-interval-input">
+                  {t('admin.dns.threatFeedForm.updateIntervalLabel')}
+                </label>
+                <input
+                  id="threat-feed-update-interval-input"
+                  data-testid="threat-feed-update-interval-input"
+                  type="number"
+                  className="mono"
+                  value={threatFeedIntervalInput}
+                  onChange={(e) => {
+                    setThreatFeedIntervalInput(e.target.value);
+                    setIntervalFieldError(null);
+                  }}
+                />
+                {intervalFieldError && (
+                  <div
+                    className="text-danger"
+                    style={{ fontSize: '0.82rem', marginTop: '4px' }}
+                    data-testid="threat-feed-interval-field-error"
+                  >
+                    {intervalFieldError}
+                  </div>
+                )}
+                <label
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontSize: '0.8rem',
+                    marginTop: '0.35rem',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    data-testid="threat-feed-bypass-client-check"
+                    checked={bypassClientIntervalCheck}
+                    onChange={(e) => setBypassClientIntervalCheck(e.target.checked)}
+                    style={{ width: 'auto' }}
+                  />
+                  {t('admin.dns.threatFeedForm.bypassClientCheckLabel')}
+                </label>
+              </div>
+            )}
           </div>
           <button
             type="submit"

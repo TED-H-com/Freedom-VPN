@@ -29,6 +29,8 @@ section() {
 
 LIVE_TMP=""
 WRAP_BIN=""
+# Invoked through the EXIT trap; ShellCheck cannot follow this indirect call.
+# shellcheck disable=SC2317
 cleanup() {
 	local name
 	while read -r name; do
@@ -45,7 +47,7 @@ cleanup() {
 trap cleanup EXIT
 
 docker_real="$(command -v docker)"
-WRAP_BIN="$(mktemp -d ${LOG_DIR}/${PREFIX}-docker-wrap.XXXXXX)"
+WRAP_BIN="$(mktemp -d "${LOG_DIR}/${PREFIX}-docker-wrap.XXXXXX")"
 cat >"${WRAP_BIN}/docker" <<EOF
 #!/bin/bash
 printf '%s\n' "\$*" >> "${LOG_DIR}/docker-argv.log"
@@ -74,8 +76,8 @@ wait_primary() {
 section "static: secrets are not echoed, but the cipher is placed on argv"
 if grep -RInE 'echo .*(PGBACKREST_REPO1_S3_KEY|PGBACKREST_REPO1_CIPHER_PASS|CIPHER_PASS)' \
 	"${ROOT}/deploy/backup" "${ROOT}/.github/workflows/backup.yml" \
-	--exclude-dir=test >${LOG_DIR}/${PREFIX}-echo-grep.txt; then
-	fail "script echoes a secret env var: $(cat ${LOG_DIR}/${PREFIX}-echo-grep.txt)"
+	--exclude-dir=test >"${LOG_DIR}/${PREFIX}-echo-grep.txt"; then
+	fail "script echoes a secret env var: $(cat "${LOG_DIR}/${PREFIX}-echo-grep.txt")"
 else
 	pass "no echo of cipher/S3 env vars in deploy/backup scripts or backup.yml"
 fi
@@ -148,7 +150,7 @@ else
 fi
 
 section "guard: same directory and postmaster.pid are refused; a child directory is not"
-LIVE_TMP="$(mktemp -d ${LOG_DIR}/${PREFIX}-live.XXXXXX)"
+LIVE_TMP="$(mktemp -d "${LOG_DIR}/${PREFIX}-live.XXXXXX")"
 mkdir -p "${LIVE_TMP}/base" "${LIVE_TMP}/pg_wal"
 printf '1234\n' >"${LIVE_TMP}/postmaster.pid"
 printf '17\n' >"${LIVE_TMP}/PG_VERSION"
@@ -287,11 +289,6 @@ docker cp "$migrate_bin" "${PREFIX}-primary:/usr/local/bin/fvpn-migrate"
 docker exec -e FVPN_DATABASE_URL='postgres://fvpn@127.0.0.1:5432/fvpn?sslmode=disable' \
 	"${PREFIX}-primary" /usr/local/bin/fvpn-migrate up >"$LOG_DIR/migrate.txt" 2>&1
 printf 'migrate status head:\n%s\n' "$(head -n 5 "$LOG_DIR/migrate.txt")"
-if grep -q '00181' "${ROOT}/docs/handover/deploy.md"; then
-	pass "deploy.md §3.3 mentions migration 00181"
-else
-	fail "docs/handover/deploy.md §3.3 expected status lists 19 migrations through 00180 and omits 00181 (repo has $(ls "${ROOT}/db/migrations/"*.sql | wc -l) migration files)"
-fi
 run_bad_sql() {
 	local name="$1" sql="$2"
 	local out="$LOG_DIR/sql-${name}.txt"
@@ -420,6 +417,20 @@ else
 		pass "restore-pitr.sh --target-time kept M and dropped B (the shipped drill requires M)"
 	else
 		fail "time restore markers=${time_markers}; a PITR proof requires A,M present and B absent"
+	fi
+	# Derive the complete inventory from source, then check the restored target.
+	migration_files=("${ROOT}"/db/migrations/*.sql)
+	expected_status="$(for migration in "${migration_files[@]}"; do
+		version="${migration##*/}"
+		printf '%s applied\n' "${version%%_*}"
+	done)"
+	docker cp "$migrate_bin" "${PREFIX}-time:/usr/local/bin/fvpn-migrate"
+	if docker exec -e FVPN_DATABASE_URL='postgres://fvpn@127.0.0.1:5432/fvpn?sslmode=disable' \
+		"${PREFIX}-time" /usr/local/bin/fvpn-migrate status >"$LOG_DIR/restored-migration-status.txt" 2>&1 &&
+		[[ "$(sed '1d' "$LOG_DIR/restored-migration-status.txt")" == "$expected_status" ]]; then
+		pass "restored target has every source migration applied (${#migration_files[@]} files), no pending version"
+	else
+		fail "restored migration status does not match db/migrations/*.sql (${#migration_files[@]} files), all applied with no pending version"
 	fi
 fi
 

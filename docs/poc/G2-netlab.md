@@ -13,6 +13,7 @@ fv-a1  100.64.1.1
 fv-a2  100.64.1.2   kernel WG :51820
 fv-b1  100.64.2.1   table inet fvnb                   table inet fvpn
 fv-rogue 100.64.9.9  (accept-all, optional masq)      filter forward priority -150
+fv-probe 100.64.8.1  dedicated test peer, not a member
         |                 |                           nat postrouting priority 100
         +---- underlay ---+---- veth fv-ff / fv-fh ---+---- veth fv-ih / fv-ii ---- fv-inet
         192.0.2.0/24 /30s                              tc HTB egress fv-ih (upload)
@@ -25,6 +26,7 @@ fv-rogue 100.64.9.9  (accept-all, optional masq)      filter forward priority -1
 | `fv-a1`, `fv-a2` | Member A, two devices. Same member, two overlay addresses. |
 | `fv-b1` | Member B, one device. |
 | `fv-rogue` | Tunnel with no binding. |
+| `fv-probe` | Dedicated synthetic-probe peer (§13.9). Not a member. Overlay `100.64.8.1/32`. `100.64.8.2/32` is a second address on the same tunnel so a same-/24 source reaches nft. |
 | `fv-fwd` | Terminates kernel WireGuard. Overlay `100.64.0.0/10`. Inner table `inet fvnb` only. |
 | root | Node host. SSH-like `:2222` and agent-API `:8443`. Table `inet fvpn` only. |
 | `fv-inet` | Simulated Internet `203.0.113.10` and `203.0.113.20`, resolver `198.51.100.53` (DNS 53 and a non-DNS port). |
@@ -60,7 +62,9 @@ IPv6 mode is `block` (§8.3). Member IPv6 on the member-uplink pair is dropped a
 
 Lease elements carry an nft `timeout`. That timeout is in jiffies. It is installed before any established/related accept, so a stuck agent does not keep an expired flow (§16.3). The deadline is the earliest of the offline cap (`signed_server_time + max_offline`), the service end, and the node lease end. A zero signed server time or a non-positive offline cap is not admitted. Re-adding an element restarts the timer, so the agent must pass a non-increasing `TimeoutCeilSeconds`. Revoke deletes the conntrack entry for that address after the new ruleset is in place (§8.2).
 
-A ruleset change is one `nft -f` transaction: delete and add of our chains happen in that transaction, and existing named counters are not recreated. TC is applied first, then nft. If verification fails, the boot baseline is installed: member forward stays drop, and output stays accept (§8.2, §17.1).
+A ruleset change is one `nft -f` transaction: delete and add of our chains happen in that transaction, and existing named counters are not recreated. TC is applied first, then nft. If verification fails, the boot baseline is installed with a nil probe: member forward stays drop, the probe sets are removed, and output stays accept (§8.2, §17.1).
+
+A health check that must prove the data path while members stay blocked calls `ApplyBaselineModel` with `Model.Probe` (§13.9, D-063). `ApplyBaseline`, which the agent and the watchdog call, is that function with a nil probe. The exception is one `/32` source, exact destination/protocol/port elements, and optionally TCP/UDP port 53 to the resolver. The upload tuple is behind the invalid, IPv6, deny, and host drops. Resolver DNS is before the deny drop, because the resolver prefix is inside that set, and every other port to the resolver is dropped. The download accept is `ct state established,related` to the probe address. Elements carry a kernel timeout of at most `ProbeMaxSeconds` (300). `probe_up` and `probe_down` are diagnostic counters and are not member usage. A nil probe deletes the sets after the chains are replaced.
 
 ## Results
 
@@ -68,7 +72,7 @@ Short windows. `FVPN_NETLAB_FULL=1` is the §11.7 window (30 s warm-up, 120 s, t
 
 | Case | Result |
 |---|---|
-| AT00 | 4 WireGuard handshakes, forwarding on only after the baseline, baseline present. |
+| AT00 | 5 WireGuard handshakes after the probe peer was added, forwarding on only after the baseline, baseline present. The earlier evidence file still records the 4-peer topology. |
 | AT12 / ISO01 / ISO04 | 17 deny probes, all timeout or dropped. DNS UDP replied and DNS TCP connected, and that traffic stayed in `dns_service_v1`. Member TCP, UDP and ICMP to `203.0.113.10` connected. Target captures empty. Diagnostic counters on the member-uplink pair moved by 8. |
 | AT11 | Native IPv6 to global `2001:db8:203::10`, ULA, `2001:db8::10` and `fe80::10` timed out. IPv4-mapped targets were unreachable. Raw IPv6 was sent and both target captures stayed empty. `ctv6` rose by 3. |
 | AT14 / MTR01 / MTR02 | Upload and download deviation 0.0000 against the inner IP length, for UDP and TCP. DNS and host-originated traffic did not move `forward_admission_v1`. Three off-uplink denies did not move usage or `ctdeny`. A counter reset was reported as `METER_EPOCH_CHANGE`. |
@@ -76,6 +80,7 @@ Short windows. `FVPN_NETLAB_FULL=1` is the §11.7 window (30 s warm-up, 120 s, t
 | AT10 / AT13 | 100 regenerations, one LAN interface add/remove, revoke stopped the live flow in 1.608 s and removed its conntrack entry, `kill -9` of the apply process left generation 2100 in place, then the boot baseline denied every member. The deny loop completed 9 passes and recorded no allowed probe. Target captures empty. |
 | AT29 | Forwarding stopped 8.763 s after the short service end, with the apply process already gone. It stayed denied, then resumed only after generation 30. The offline cap and the backward-clock ceil were checked in process. The kernel clock step stayed skipped. |
 | NetBird | Inner accept-all did not bypass member, LAN, metadata or rogue denies. Masquerade to `192.0.2.34` was dropped as an unknown source (`ctunku`) and `meter-path` returned `METER_PATH_INVALID`. Marks preserved. |
+| Probe (§13.9) | On the boot baseline, `100.64.8.1` reached `203.0.113.10:80` and was SNATed to `192.0.2.37`. `probe_up` rose by 5 packets and `probe_down` by 3. A same-/24 source, an unlisted destination, a different port, and the node address on TCP 22 were dropped. After the 8 s element timeout the same flow was dropped and the sets no longer held the addresses. Resolver DNS admitted only port 53. Member usage counters did not move. |
 
 ### AT14 byte identity (§10.3, §10.7)
 
@@ -111,10 +116,26 @@ In process, an offline cap of 30 s is earlier than a 24 h node lease and a 48 h 
 
 `unshare --time` creates a new time-namespace inode, and `date -s` inside that child still moves the container clock. The test compares the inodes, records `clock_step=skipped`, and does not call `date -s`. nft timeouts follow jiffies, so a wall-clock step would not have been the enforcement mechanism anyway.
 
+### Synthetic probe (§13.9, D-063)
+
+The probe scenario keeps member forwarding on the boot ruleset. The only forward accepts are the declared exception. `100.64.8.1` to `203.0.113.10` TCP 80 connected. The capture on the simulated Internet showed source `192.0.2.37` and did not show `100.64.8.1`. `probe_up` increased by 5 packets and `probe_down` by 3. No `u_`, `d_`, `nu_`, or `nd_` counter changed.
+
+| Case | Flow | Observed |
+|---|---|---|
+| Positive | `100.64.8.1` to `203.0.113.10:80` | connected, SNAT applied |
+| Negative A | `100.64.8.2` (same /24) to that socket | timeout |
+| Negative B | `100.64.8.1` to `203.0.113.20:80`, and to `203.0.113.10:9001` | timeout |
+| Negative C | `100.64.8.1` to `192.0.2.37:22` (listener on the uplink address) | timeout |
+| Negative D | the positive flow after the 8 s `ExpiresAt` | timeout; the probe sets no longer contained the elements |
+| Resolver DNS | UDP and TCP 53 to `198.51.100.53`; TCP 80 to that address; port 53 to `203.0.113.10` | reply and connected; the other three timed out |
+
+The suite that includes this scenario and AT00 printed `SUMMARY PROBE snat=1 up=5 down=3 neg=4 expired=1 dns_only_53=1` and `ok github.com/TED-H-com/Freedom-VPN/tests/netlab 168.128s`. The rows above this section, other than AT00's handshake count, are the earlier measured windows. This run did not replace them. `docs/poc/G2-evidence/SUMMARY.txt` still says `AT00 handshakes=4` from that earlier capture.
+
 ## Decisions
 
 - D-019: usage is the inner IPv4 total length admitted at the forward hook (§10.2). Bytes later dropped by HTB are not subtracted. "Delivered bytes" is not a ledger rule. The lab counters are the meter definition for the node agent.
 - Serving forward rules bind the member interface and the uplink. Upload uses `oifname` uplink. Download uses `iifname` uplink. The baseline drop does not.
+- D-063: the synthetic probe is an optional `Model.Probe`. Nil removes it through the same render path. The kernel element timeout is the authorization. `probe_up` and `probe_down` are not member usage. The agent authenticates the test peer before it supplies the `/32`.
 - Clock-step expiry (§16.3) stays under 待實測. The kernel set-timeout evidence is accepted for Gate G2. This lab does not call `date -s` and does not change the host clock.
 - §11.7 production windows remain a recommended starting point. The short window is what CI runs.
 

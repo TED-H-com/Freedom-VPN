@@ -34,7 +34,8 @@ type Txn struct {
 	ErrorStage        string
 	ErrorDetail       string
 	Checkpoint        json.RawMessage // usage checkpoint from the final sample (§13.6 step 8)
-	Health            json.RawMessage // first health report; later stages do not replace it (D-053)
+	Health            json.RawMessage // latest observed profile; restored health after rollback (D-062)
+	CandidateHealth   json.RawMessage // latest candidate profile, retained through rollback for diagnosis
 	RollbackReleaseID string          // release restored by a rollback
 	StartedAt         time.Time
 	UpdatedAt         time.Time
@@ -144,11 +145,12 @@ func (j *Journal) Advance(ctx context.Context, txnID string, to Stage, u StageUp
 		check_attempts = check_attempts + ?, rollback_attempts = rollback_attempts + ?,
 		error_code = COALESCE(?, error_code), error_stage = COALESCE(?, error_stage), error_detail = COALESCE(?, error_detail),
 		checkpoint_json = COALESCE(?, checkpoint_json),
-		health_json = CASE WHEN health_json IS NOT NULL AND health_json != '' THEN health_json ELSE COALESCE(?, health_json) END,
+		health_json = COALESCE(?, health_json),
+		candidate_health_json = CASE WHEN stage = 'checking' THEN COALESCE(?, candidate_health_json) ELSE candidate_health_json END,
 		rollback_release_id = COALESCE(?, rollback_release_id)
 		WHERE txn_id = ?`,
 		string(to), now, finished, destructive, checkInc, rbInc,
-		nullStr(u.ErrorCode), nullStr(u.ErrorStage), nullStr(u.ErrorDetail), cp, hl, nullStr(u.RollbackReleaseID), txnID); err != nil {
+		nullStr(u.ErrorCode), nullStr(u.ErrorStage), nullStr(u.ErrorDetail), cp, hl, hl, nullStr(u.RollbackReleaseID), txnID); err != nil {
 		return Txn{}, err
 	}
 	var seq int
@@ -203,8 +205,8 @@ func persistAdvanceGate(ctx context.Context, tx *sql.Tx, to Stage) error {
 	return nil
 }
 
-// RecordHealth stores the first health report and does not replace it.
-// A later rollback keeps the candidate's statuses in this column (D-053).
+// RecordHealth stores the latest observed profile. The latest candidate
+// profile stays separately in candidate_health_json through rollback (D-062).
 func (j *Journal) RecordHealth(ctx context.Context, txnID string, health any) error {
 	hl, err := marshalOrNull(health)
 	if err != nil {
@@ -213,7 +215,9 @@ func (j *Journal) RecordHealth(ctx context.Context, txnID string, health any) er
 	if !hl.Valid {
 		return errors.New("updatejournal: empty health")
 	}
-	res, err := j.db.ExecContext(ctx, `UPDATE txns SET health_json = ?, updated_at = ? WHERE txn_id = ? AND (health_json IS NULL OR health_json = '')`, hl.String, j.ts(), txnID)
+	res, err := j.db.ExecContext(ctx, `UPDATE txns SET health_json = ?,
+		candidate_health_json = CASE WHEN stage = 'checking' THEN ? ELSE candidate_health_json END,
+		updated_at = ? WHERE txn_id = ?`, hl.String, hl.String, j.ts(), txnID)
 	if err != nil {
 		return err
 	}
@@ -228,8 +232,7 @@ func (j *Journal) RecordHealth(ctx context.Context, txnID string, health any) er
 	return err
 }
 
-// RecordEvent appends detail at the current stage. The stage and the first
-// health report stay as they are.
+// RecordEvent appends detail without changing the stage or health profiles.
 func (j *Journal) RecordEvent(ctx context.Context, txnID, detail string) error {
 	if detail == "" {
 		return errors.New("updatejournal: empty event detail")
@@ -259,16 +262,16 @@ func (j *Journal) RecordEvent(ctx context.Context, txnID, detail string) error {
 
 const txnSelect = `SELECT txn_id, job_id, attempt, generation, release_id, manifest_sha256, previous_release_id, last_good_release_id,
 	state_schema_from, state_schema_to, migration_id, stage, destructive, check_attempts, rollback_attempts,
-	error_code, error_stage, error_detail, checkpoint_json, health_json, rollback_release_id, started_at, updated_at, finished_at FROM txns`
+	error_code, error_stage, error_detail, checkpoint_json, health_json, candidate_health_json, rollback_release_id, started_at, updated_at, finished_at FROM txns`
 
 func scanTxn(r rowScanner) (Txn, error) {
 	var t Txn
 	var gen, stage string
-	var mig, ecode, estage, edetail, cp, hl, rb, started, updated, finished sql.NullString
+	var mig, ecode, estage, edetail, cp, hl, candidate, rb, started, updated, finished sql.NullString
 	var destructive int
 	err := r.Scan(&t.TxnID, &t.JobID, &t.Attempt, &gen, &t.ReleaseID, &t.ManifestSHA256, &t.PreviousReleaseID, &t.LastGoodReleaseID,
 		&t.StateSchemaFrom, &t.StateSchemaTo, &mig, &stage, &destructive, &t.CheckAttempts, &t.RollbackAttempts,
-		&ecode, &estage, &edetail, &cp, &hl, &rb, &started, &updated, &finished)
+		&ecode, &estage, &edetail, &cp, &hl, &candidate, &rb, &started, &updated, &finished)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Txn{}, ErrNotFound
 	}
@@ -290,6 +293,9 @@ func scanTxn(r rowScanner) (Txn, error) {
 	}
 	if hl.Valid {
 		t.Health = json.RawMessage(hl.String)
+	}
+	if candidate.Valid {
+		t.CandidateHealth = json.RawMessage(candidate.String)
 	}
 	t.RollbackReleaseID = rb.String
 	t.StartedAt, t.UpdatedAt, t.FinishedAt = parseTS(started), parseTS(updated), parseTS(finished)
@@ -367,25 +373,30 @@ type OutboxStatus string
 // Outbox statuses.
 const (
 	OutboxPending  OutboxStatus = "pending"
+	OutboxRejected OutboxStatus = "rejected" // permanent HTTP rejection; evidence retained, later results proceed
 	OutboxConflict OutboxStatus = "conflict" // central answered ACK_CONFLICT; evidence kept, never resent
 )
 
 // OutboxEntry is a durable, not yet acknowledged update result (§13.6 step
-// 13). Payload is the exact canonical JSON sent on every retry.
+// 13). Payload is the exact canonical JSON sent on every retry after the
+// one-time PopulateCandidateHealth compatibility update, when needed.
 type OutboxEntry struct {
-	Seq           int64
-	ResultID      string
-	JobID         string
-	Attempt       int
-	Generation    decstr.U64
-	State         string
-	Payload       []byte
-	PayloadHash   string
-	Status        OutboxStatus
-	SendAttempts  int
-	LastAttemptAt time.Time
-	LastError     string
-	CreatedAt     time.Time
+	Seq            int64
+	ResultID       string
+	JobID          string
+	Attempt        int
+	Generation     decstr.U64
+	State          string
+	Payload        []byte
+	PayloadHash    string
+	Status         OutboxStatus
+	SendAttempts   int
+	LastAttemptAt  time.Time
+	LastError      string
+	LastHTTPStatus int
+	LastAPICode    string
+	RetryNotBefore time.Time
+	CreatedAt      time.Time
 }
 
 // Enqueue stores a result. Re-enqueueing the same result_id with the same
@@ -414,13 +425,13 @@ func (j *Journal) Enqueue(ctx context.Context, e OutboxEntry) error {
 	return tx.Commit()
 }
 
-const outboxSelect = `SELECT seq, result_id, job_id, attempt, generation, state, payload, payload_hash, status, send_attempts, last_attempt_at, last_error, created_at FROM result_outbox`
+const outboxSelect = `SELECT seq, result_id, job_id, attempt, generation, state, payload, payload_hash, status, send_attempts, last_attempt_at, last_error, last_http_status, last_api_code, retry_not_before, created_at FROM result_outbox`
 
 func scanOutbox(r rowScanner) (OutboxEntry, error) {
 	var e OutboxEntry
 	var gen, status string
-	var last, lerr, created sql.NullString
-	err := r.Scan(&e.Seq, &e.ResultID, &e.JobID, &e.Attempt, &gen, &e.State, &e.Payload, &e.PayloadHash, &status, &e.SendAttempts, &last, &lerr, &created)
+	var last, lerr, apiCode, retryAt, created sql.NullString
+	err := r.Scan(&e.Seq, &e.ResultID, &e.JobID, &e.Attempt, &gen, &e.State, &e.Payload, &e.PayloadHash, &status, &e.SendAttempts, &last, &lerr, &e.LastHTTPStatus, &apiCode, &retryAt, &created)
 	if errors.Is(err, sql.ErrNoRows) {
 		return OutboxEntry{}, ErrNotFound
 	}
@@ -432,6 +443,7 @@ func scanOutbox(r rowScanner) (OutboxEntry, error) {
 	}
 	e.Status = OutboxStatus(status)
 	e.LastAttemptAt, e.LastError, e.CreatedAt = parseTS(last), lerr.String, parseTS(created)
+	e.LastAPICode, e.RetryNotBefore = apiCode.String, parseTS(retryAt)
 	return e, nil
 }
 
@@ -453,7 +465,18 @@ func (j *Journal) Pending(ctx context.Context, limit int) ([]OutboxEntry, error)
 	return out, rows.Err()
 }
 
-// Outbox returns every entry still in the outbox (pending or conflict).
+// HasResult reports whether a result was already sealed, regardless of whether
+// it is pending, rejected, conflicted or acknowledged. Recovery must reuse that
+// immutable evidence rather than rebuild it under a newer reporting policy.
+func (j *Journal) HasResult(ctx context.Context, resultID string) (bool, error) {
+	var found bool
+	err := j.db.QueryRowContext(ctx, `SELECT EXISTS(
+		SELECT 1 FROM result_outbox WHERE result_id = ?
+		UNION ALL SELECT 1 FROM result_history WHERE result_id = ?)`, resultID, resultID).Scan(&found)
+	return found, err
+}
+
+// Outbox returns every entry still in the outbox (pending, rejected or conflict).
 func (j *Journal) Outbox(ctx context.Context) ([]OutboxEntry, error) {
 	rows, err := j.db.QueryContext(ctx, outboxSelect+` ORDER BY seq`)
 	if err != nil {
@@ -525,9 +548,9 @@ func (j *Journal) AckResult(ctx context.Context, a Ack) (duplicate bool, err err
 	if a.AcceptedAsHistory {
 		hist = 1
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO result_history(result_id, job_id, attempt, generation, state, payload_hash, created_at, acked_at, accepted_as_history, ack_json)
-		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, e.ResultID, e.JobID, e.Attempt, e.Generation.String(), e.State, e.PayloadHash,
-		e.CreatedAt.UTC().Format(time.RFC3339Nano), j.ts(), hist, raw); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO result_history(result_id, job_id, attempt, generation, state, payload_hash, created_at, acked_at, accepted_as_history, ack_json, stage)
+		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CASE WHEN json_valid(?) THEN json_extract(?, '$.stage') END)`, e.ResultID, e.JobID, e.Attempt, e.Generation.String(), e.State, e.PayloadHash,
+		e.CreatedAt.UTC().Format(time.RFC3339Nano), j.ts(), hist, raw, e.Payload, e.Payload); err != nil {
 		return false, err
 	}
 	if _, err := tx.ExecContext(ctx, `DELETE FROM result_outbox WHERE result_id = ?`, a.ResultID); err != nil {

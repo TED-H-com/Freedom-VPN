@@ -174,6 +174,9 @@ func (s ListSource) ValidateMetadata() error {
 	if err := ValidateSourceURL(s.URL); err != nil {
 		return err
 	}
+	if err := ValidateAttributionNote(s.AttributionNotes); err != nil {
+		return err
+	}
 	if s.LicenseStatus != LicenseCommercialApproved {
 		return &ValidationError{
 			Code:    ErrCodeSourceLicenseUnapproved,
@@ -182,12 +185,12 @@ func (s ListSource) ValidateMetadata() error {
 			Message: fmt.Sprintf("source %q license status is %q (must be %q with verified commercial terms before enabling in a profile)", s.SourceID, s.LicenseStatus, LicenseCommercialApproved),
 		}
 	}
-	if strings.TrimSpace(s.License) == "" || strings.TrimSpace(s.PermittedUse) == "" || strings.TrimSpace(s.DistributionNotes) == "" || (s.AttributionNotes != nil && strings.TrimSpace(*s.AttributionNotes) == "") {
+	if strings.TrimSpace(s.License) == "" || strings.TrimSpace(s.PermittedUse) == "" || strings.TrimSpace(s.DistributionNotes) == "" {
 		return &ValidationError{
 			Code:    ErrCodeSourceLicenseUnapproved,
 			Field:   "source.license",
 			Input:   s.SourceID,
-			Message: fmt.Sprintf("source %q must record non-empty license, permitted_use, distribution_notes, and either null or non-empty attribution_notes", s.SourceID),
+			Message: fmt.Sprintf("source %q must record non-empty license, permitted_use, and distribution_notes", s.SourceID),
 		}
 	}
 	if s.Quality.SmokeTestResult == SmokeTestFailed {
@@ -199,6 +202,20 @@ func (s ListSource) ValidateMetadata() error {
 		}
 	}
 	return nil
+}
+
+// ValidateAttributionNote accepts a null or omitted note (D-058d, B9).
+// A non-null blank or whitespace-only note is rejected. The code stays on
+// the existing source-license vocabulary.
+func ValidateAttributionNote(note *string) error {
+	if note == nil || strings.TrimSpace(*note) != "" {
+		return nil
+	}
+	return &ValidationError{
+		Code:    ErrCodeSourceLicenseUnapproved,
+		Field:   "attribution_notes",
+		Message: "attribution_notes must be null or a non-blank note",
+	}
 }
 
 var blockedSSRFPrefixes = []netip.Prefix{
@@ -978,6 +995,9 @@ func (sr *SourceRegistry) FetchAndUpdate(
 		}
 	}
 	if err := ValidateSourceURL(src.URL); err != nil {
+		return err
+	}
+	if err := ValidateAttributionNote(src.AttributionNotes); err != nil {
 		return err
 	}
 	httpCli := sr.httpClient(client)

@@ -187,6 +187,11 @@ export function AppLayout(): React.ReactElement {
                   </NavLink>
                 </li>
                 <li>
+                  <NavLink to="/admin/groups" data-testid="nav-admin-groups">
+                    {t('nav.admin.groups')}
+                  </NavLink>
+                </li>
+                <li>
                   <NavLink to="/admin/nodes/new">{t('nav.admin.addNode')}</NavLink>
                 </li>
                 <li>

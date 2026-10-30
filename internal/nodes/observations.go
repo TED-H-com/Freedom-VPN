@@ -485,7 +485,8 @@ func advanceNodeOperationsOnObservation(
 			if step, ok := steps[StepDataPathProbe]; ok && step.Required && step.Status != string(api.OperationStepStatusSucceeded) {
 				if steps[StepAgentPolicy].Status == string(api.OperationStepStatusSucceeded) &&
 					checkStatus[api.NodeCheckNameTunnelProbe] == api.HealthCheckStatusPassed &&
-					effectiveHealth == api.DataHealthHealthy {
+					effectiveHealth == api.DataHealthHealthy &&
+					(op.kind != OpKindPublish || effectiveForwarding && PublicationForwardingEvidence(report, now)) {
 					step.Status = string(api.OperationStepStatusSucceeded)
 					step.ObservedRef = StepDataPathProbe
 					step.ObservedAt = &now

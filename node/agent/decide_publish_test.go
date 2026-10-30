@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -281,7 +282,7 @@ func reported(t *testing.T, in Input) (Decision, api.ObservationReport) {
 	if at.IsZero() {
 		at = time.Unix(0, 0).UTC()
 	}
-	rep, err := e.report(at)
+	rep, err := e.report(context.Background(), at)
 	if err != nil {
 		t.Fatal(err)
 	}
