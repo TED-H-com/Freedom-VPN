@@ -365,7 +365,12 @@ func ruleset(t *testing.T) string {
 
 func labMeta(policy string) isolation.Record {
 	id := imageID(labPrefix() + ":lab")
+	runID := os.Getenv("FVPN_AT_RUN_ID")
+	if runID == "" {
+		runID = uuid.NewString()
+	}
 	return isolation.Record{
+		RunID: runID, StartedAt: time.Now().UTC().Format(time.RFC3339),
 		Build: gitSHA(), ImageDigests: []string{labPrefix() + ":lab " + id},
 		PolicyRevision: policy, NodeIncarnation: "mechanism-lab",
 		Commands: []string{
