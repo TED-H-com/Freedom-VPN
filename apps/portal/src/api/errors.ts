@@ -5,9 +5,9 @@
  * Never exposes stack traces, SQL fragments, certificates, or tokens in user-visible messages.
  */
 
-import type { ApiErrorCode, ApiErrorEnvelope } from './types';
+import type { ApiErrorCode, ApiErrorEnvelope, FieldError } from './types';
 
-export type { ApiErrorCode, ApiErrorEnvelope };
+export type { ApiErrorCode, ApiErrorEnvelope, FieldError };
 
 export interface NormalizedApiError {
   status: number;
@@ -370,6 +370,28 @@ export class ApiError extends Error implements NormalizedApiError {
   get currentResourceVersion(): string | null {
     const val = this.details.current_resource_version;
     return typeof val === 'string' ? val : null;
+  }
+
+  get fieldErrors(): FieldError[] {
+    const raw = this.details.fields;
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+    const items: FieldError[] = [];
+    for (const item of raw) {
+      if (
+        item &&
+        typeof item === 'object' &&
+        typeof (item as { field?: unknown }).field === 'string' &&
+        typeof (item as { reason?: unknown }).reason === 'string'
+      ) {
+        items.push({
+          field: sanitizeText((item as { field: string }).field),
+          reason: sanitizeText((item as { reason: string }).reason),
+        });
+      }
+    }
+    return items;
   }
 
   messageForLocale(locale: 'zh-TW' | 'en'): string {

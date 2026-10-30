@@ -99,6 +99,7 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 			creates++
 			json.NewDecoder(r.Body).Decode(&key)
 			key["id"] = "test-key"
+			key["used_times"], key["revoked"], key["state"] = 0, false, "valid"
 			key["key"] = "TEST ONLY one-time setup"
 			key["expires"] = time.Now().Add(24 * time.Hour).UTC().Format(time.RFC3339)
 			json.NewEncoder(w).Encode(key)

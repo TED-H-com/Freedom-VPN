@@ -4,12 +4,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 )
 
@@ -19,7 +22,7 @@ func main() {
 
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|version>")
 		return 64
 	}
 	switch args[0] {
@@ -28,14 +31,50 @@ func run(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stdout, updater.Version)
 			return 0
 		}
-		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|version>")
 		return 0
 	case "run", "recover", "flush":
 		return command(args[0], args[1:], stderr)
+	case "status":
+		return status(args[1:], stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "fvpn-updater: unknown command %q\n", args[0])
 		return 64
 	}
+}
+
+func status(args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("status", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	journal := fs.String("journal", "", "existing journal database file")
+	config := fs.String("config", "", "updater config JSON")
+	if err := fs.Parse(args); err != nil || fs.NArg() != 0 || (*journal != "" && *config != "") {
+		return 64
+	}
+	path := *journal
+	if *config != "" {
+		cfg, err := updater.LoadConfig(*config)
+		if err != nil {
+			fmt.Fprintf(stderr, "fvpn-updater: %v\n", err)
+			return 1
+		}
+		path = filepath.Join(cfg.Layout.Journal, updatejournal.FileName)
+	}
+	if path == "" {
+		path = filepath.Join(updater.DefaultLayout().Journal, updatejournal.FileName)
+	}
+	snapshot, err := updatejournal.Snapshot(context.Background(), path)
+	if err != nil {
+		fmt.Fprintf(stderr, "fvpn-updater: status unavailable: %v\n", err)
+		return 1
+	}
+	enc := json.NewEncoder(stdout)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(snapshot); err != nil {
+		fmt.Fprintln(stderr, "fvpn-updater: write status failed")
+		return 1
+	}
+	return 0
 }
 
 func command(name string, args []string, stderr io.Writer) int {

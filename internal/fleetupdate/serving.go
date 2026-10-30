@@ -59,6 +59,8 @@ func (s *Service) NodeVersionView(ctx context.Context, nodeID uuid.UUID) (Versio
 // Observation is called by the heartbeat owner after identity validation. Seq is
 // monotonic within the incarnation, independent of device wall-clock time.
 type Observation struct {
+	// UpdateGenerationAbsent distinguishes a routine heartbeat from update ACKs (D-062e).
+	UpdateGenerationAbsent              bool
 	Sequence, AppliedUpdateGeneration   decstr.U64
 	CurrentReleaseID, LastGoodReleaseID *uuid.UUID
 	ObservedAt                          time.Time
@@ -90,8 +92,8 @@ func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 		o.ReceivedAt = time.Now().UTC()
 	}
 	tag, e := tx.Exec(ctx, `INSERT INTO fleet_node_state(node_id,observation_incarnation_id,observation_seq,observed_update_generation,last_observed_at,received_at,recovery_required) VALUES($1,$2,$3::numeric,$4::numeric,$5,$7,$6)
- ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,observation_seq=excluded.observation_seq,observed_update_generation=excluded.observed_update_generation,last_observed_at=excluded.last_observed_at,received_at=excluded.received_at,recovery_required=excluded.recovery_required
- WHERE fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR (fleet_node_state.observation_seq<excluded.observation_seq AND fleet_node_state.observed_update_generation<=excluded.observed_update_generation)`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery, o.ReceivedAt)
+ ON CONFLICT(node_id) DO UPDATE SET observation_incarnation_id=excluded.observation_incarnation_id,observation_seq=excluded.observation_seq,observed_update_generation=CASE WHEN $8 THEN fleet_node_state.observed_update_generation ELSE excluded.observed_update_generation END,last_observed_at=excluded.last_observed_at,received_at=excluded.received_at,recovery_required=excluded.recovery_required
+ WHERE fleet_node_state.observation_incarnation_id IS DISTINCT FROM excluded.observation_incarnation_id OR (fleet_node_state.observation_seq<excluded.observation_seq AND ($8 OR fleet_node_state.observed_update_generation<=excluded.observed_update_generation))`, i.NodeID, i.IncarnationID, o.Sequence.String(), o.AppliedUpdateGeneration.String(), o.ObservedAt, recovery, o.ReceivedAt, o.UpdateGenerationAbsent)
 	if e != nil {
 		return e
 	}
@@ -102,7 +104,7 @@ func (s *Service) ObserveTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	if e != nil {
 		return e
 	}
-	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=$2 WHERE node_id=$1 AND execution_incarnation_id=$3`, i.NodeID, o.ObservedAt, i.IncarnationID)
+	_, e = tx.Exec(ctx, `UPDATE update_jobs SET last_observed_at=$2 WHERE node_id=$1 AND execution_incarnation_id=$3 AND NOT $4 AND generation<=$5::numeric`, i.NodeID, o.ObservedAt, i.IncarnationID, o.UpdateGenerationAbsent, o.AppliedUpdateGeneration.String())
 	return e
 }
 
@@ -122,8 +124,8 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if e := tx.QueryRow(ctx, `SELECT received_at FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND report_id=$3`, i.NodeID, i.IncarnationID, r.ReportId).Scan(&received); e != nil {
 		return e
 	}
-	generation, _ := r.Update.Generation.Get()
-	if jobID, err := r.Update.JobId.Get(); err == nil {
+	generation, generationErr := r.Update.Generation.Get()
+	if jobID, err := r.Update.JobId.Get(); err == nil && generationErr == nil {
 		j, e := readJob(ctx, tx, jobID)
 		if e != nil {
 			return e
@@ -146,7 +148,7 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 		if e != nil {
 			return e
 		}
-		if generation < previous || lastReceived != nil && !received.After(*lastReceived) || generation == previous && lastObserved != nil && !r.ObservedAt.After(*lastObserved) {
+		if generationErr == nil && generation < previous || lastReceived != nil && !received.After(*lastReceived) || (generationErr != nil || generation == previous) && lastObserved != nil && !r.ObservedAt.After(*lastObserved) {
 			return nil
 		}
 		sequence, e = seq.Add(1)
@@ -163,5 +165,5 @@ func (s *Service) ObserveReportTx(ctx context.Context, tx pgx.Tx, i Identity, r 
 	if value, err := r.LastGoodReleaseId.Get(); err == nil {
 		lastGoodReleaseID = &value
 	}
-	return s.ObserveTx(ctx, tx, i, Observation{Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt, ReceivedAt: received})
+	return s.ObserveTx(ctx, tx, i, Observation{UpdateGenerationAbsent: generationErr != nil, Sequence: sequence, AppliedUpdateGeneration: generation, CurrentReleaseID: currentReleaseID, LastGoodReleaseID: lastGoodReleaseID, ObservedAt: r.ObservedAt, ReceivedAt: received})
 }

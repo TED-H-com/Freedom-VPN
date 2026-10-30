@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.PORTAL_E2E_BASE_URL || 'http://127.0.0.1:4173';
-const SEEDED_NODE_2_ID = '0195f100-0000-7000-8000-000000000202';
 
 test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT04, AT06, AT23–AT24)', () => {
   test('TestAT01_AT03_MemberJourney_SignInPendingPaymentCheckoutReturnAndWebhookActivation', async ({
@@ -270,9 +269,13 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     const enrolledNode =
       nodesJson.items.find((n) => n.name === 'tw-tpe-01-updated') ??
       nodesJson.items.find((n) => n.name === 'tw-tpe-01') ??
-      nodesJson.items.find((n) => n.node_id !== SEEDED_NODE_2_ID) ??
       nodesJson.items[0];
+    const secondaryNode =
+      nodesJson.items.find((n) => n.name === 'jp-tyo-01') ??
+      nodesJson.items.find((n) => n.node_id !== enrolledNode!.node_id);
+    expect(secondaryNode).toBeTruthy();
     const enrolledNodeId = enrolledNode!.node_id;
+    const secondaryNodeId = secondaryNode!.node_id;
     const activeBatchId = enrolledNode?.update?.batch_id;
     expect(activeBatchId).toBeTruthy();
 
@@ -288,21 +291,19 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('bucket-waiting_online')).toContainText('1');
 
     // 3. Verify per-target `unconfirmed` and D-048 `policy_generation` / `policy_refs` evidence on target rows
-    await expect(
-      page.getByTestId(`target-unconfirmed-${SEEDED_NODE_2_ID}`),
-    ).toBeVisible();
+    await expect(page.getByTestId(`target-unconfirmed-${secondaryNodeId}`)).toBeVisible();
     await expect(page.getByTestId(`target-policy-gen-${enrolledNodeId}`)).toContainText(
       /[1-9][0-9]*/,
     );
     await expect(page.getByTestId(`target-policy-refs-${enrolledNodeId}`)).toContainText(
       '0195f100-0000-7000-8000-000000000401',
     );
-    await expect(page.getByTestId(`target-policy-gen-${SEEDED_NODE_2_ID}`)).toContainText(
+    await expect(page.getByTestId(`target-policy-gen-${secondaryNodeId}`)).toContainText(
       '尚未回報 (not yet reported)',
     );
-    await expect(
-      page.getByTestId(`target-policy-refs-${SEEDED_NODE_2_ID}`),
-    ).toContainText('尚未回報 (not yet reported)');
+    await expect(page.getByTestId(`target-policy-refs-${secondaryNodeId}`)).toContainText(
+      '尚未回報 (not yet reported)',
+    );
 
     // 4. Verify Target Detail panel (D-048) for both the confirmed live target and unconfirmed offline target
     await page.getByTestId(`inspect-target-${enrolledNodeId}`).click();
@@ -315,9 +316,9 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       '0195f100-0000-7000-8000-000000000401',
     );
 
-    await page.getByTestId(`inspect-target-${SEEDED_NODE_2_ID}`).click();
+    await page.getByTestId(`inspect-target-${secondaryNodeId}`).click();
     await expect(page.getByTestId('target-detail-node-id')).toContainText(
-      SEEDED_NODE_2_ID,
+      secondaryNodeId,
     );
     await expect(page.getByTestId('target-detail-policy-gen')).toContainText(
       '尚未回報 (not yet reported)',
@@ -328,10 +329,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
     // 5. Verify locale switching (zh-TW <-> en) on target rows and target detail panel
     await page.getByTestId('locale-switcher').selectOption('en');
-    await expect(
-      page.getByTestId(`target-unconfirmed-${SEEDED_NODE_2_ID}`),
-    ).toContainText('Unconfirmed');
-    await expect(page.getByTestId(`target-policy-gen-${SEEDED_NODE_2_ID}`)).toContainText(
+    await expect(page.getByTestId(`target-unconfirmed-${secondaryNodeId}`)).toContainText(
+      'Unconfirmed',
+    );
+    await expect(page.getByTestId(`target-policy-gen-${secondaryNodeId}`)).toContainText(
       'Not yet reported',
     );
     await expect(page.getByTestId('target-detail-policy-gen')).toContainText(
@@ -351,6 +352,179 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('node-detail-target-policy-refs')).toContainText(
       '0195f100-0000-7000-8000-000000000401',
     );
+  });
+
+  test('TestD057_D058_GroupsAdminNodeAttachmentCheckDetailAndThreatFeedStatus', async ({
+    page,
+    request,
+  }) => {
+    // 1. Member groups admin (/admin/groups, D-057) in zh-TW and en
+    await page.goto('/admin/groups');
+    await expect(page.getByTestId('admin-groups-page')).toBeVisible();
+    await expect(page.getByTestId('groups-table')).toContainText('standard-exits');
+    await expect(page.getByTestId('groups-table')).toContainText('default-members');
+
+    // 422 validation detail on invalid group code and whitespace name
+    await page.locator('#group-code-input').fill('INVALID_UPPER');
+    await page.locator('#group-name-input').fill('Invalid Group');
+    await page.getByTestId('group-create-submit-btn').click();
+    await expect(page.getByTestId('group-validation-detail')).toBeVisible();
+    await expect(page.getByTestId('group-code-field-error')).toBeVisible();
+
+    await page.locator('#group-code-input').fill('valid-code');
+    await page.locator('#group-name-input').fill('   ');
+    await page.getByTestId('group-create-submit-btn').click();
+    await expect(page.getByTestId('group-validation-detail')).toContainText('/name');
+    await expect(page.getByTestId('group-name-field-error')).toBeVisible();
+
+    // 409 duplicate code/name conflict surfaced as field error in zh-TW and en
+    await page.locator('#group-code-input').fill('standard-exits');
+    await page.locator('#group-name-input').fill('Duplicate Exit Group');
+    await page.getByTestId('group-create-submit-btn').click();
+    await expect(page.getByTestId('group-conflict-field-error')).toBeVisible();
+    await expect(page.getByTestId('group-conflict-field-error')).toContainText(
+      '群組代碼或名稱已存在',
+    );
+    await page.getByTestId('locale-switcher').selectOption('en');
+    await expect(page.getByTestId('group-conflict-field-error')).toContainText(
+      'Duplicate group code or name (409 STATE_CONFLICT)',
+    );
+    await page.getByTestId('locale-switcher').selectOption('zh-TW');
+
+    // Create a new member group via POST /api/v1/admin/groups
+    await page.locator('#group-code-input').fill('asia-premium');
+    await page.locator('#group-name-input').fill('Asia Premium Exits');
+    await page.getByTestId('group-create-submit-btn').click();
+    await expect(page.getByTestId('group-row-asia-premium')).toContainText(
+      'Asia Premium Exits',
+    );
+
+    // Fetch groups and nodes for cross-checking IDs
+    const groupsRes = await request.get(`${BASE_URL}/api/v1/admin/groups`);
+    const groupsJson = (await groupsRes.json()) as {
+      items: Array<{ group_id: string; code: string; name: string }>;
+    };
+    const standardExitsGroup = groupsJson.items.find((g) => g.code === 'standard-exits');
+    const asiaPremiumGroup = groupsJson.items.find((g) => g.code === 'asia-premium');
+    expect(standardExitsGroup).toBeTruthy();
+    expect(asiaPremiumGroup).toBeTruthy();
+
+    const nodesRes = await request.get(`${BASE_URL}/api/v1/admin/nodes`);
+    const nodesJson = (await nodesRes.json()) as {
+      items: Array<{ node_id: string; name?: string | null }>;
+    };
+    const tpeNode =
+      nodesJson.items.find((n) => n.name === 'tw-tpe-01') ?? nodesJson.items[0];
+    expect(tpeNode).toBeTruthy();
+
+    // 2. Node detail attached groups, PUT /publication with group_ids + 412 conflict, and NodeCheck.detail (D-057, D-058)
+    await page.goto(`/admin/nodes/${tpeNode.node_id}`);
+    await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
+    await expect(page.getByTestId('node-attached-groups')).toContainText(
+      'standard-exits (Standard Exit Group)',
+    );
+
+    // Verify NodeCheck.detail (D-058) in zh-TW and en
+    await expect(page.getByTestId('node-checks-table')).toBeVisible();
+    await expect(page.getByTestId('node-check-detail-internet_only')).toContainText(
+      'inet fvpn table verified; RFC1918 egress blocked',
+    );
+    await expect(page.getByTestId('node-check-detail-meter_path')).toContainText(
+      'forward_admission_v1 counters active on wg-nb0',
+    );
+    await expect(page.getByTestId('node-check-detail-tunnel_probe')).toContainText(
+      'NetBird WireGuard peer handshake verified',
+    );
+
+    // 412 conflict handling on PUT /publication with stale ETag
+    const bumpRes = await request.post(`${BASE_URL}/__e2e/bump-node-version`, {
+      data: { node_id: tpeNode.node_id },
+    });
+    expect(bumpRes.ok()).toBeTruthy();
+    await page.getByTestId('pub-group-checkbox-asia-premium').check();
+    await page.getByTestId('publish-node-btn').click();
+    await expect(page.getByTestId('conflict-dialog')).toBeVisible();
+    await page.getByTestId('conflict-reload-btn').click();
+    await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
+    await expect(page.getByTestId('pub-group-checkbox-asia-premium')).not.toBeChecked();
+
+    // Replace exit group attachment set together with publication intent via PUT /publication
+    await page.getByTestId('pub-group-checkbox-asia-premium').check();
+    await expect(page.getByTestId('pub-group-checkbox-asia-premium')).toBeChecked();
+    await page.getByTestId('publish-node-btn').click();
+    await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await expect(page.getByTestId('node-attached-groups')).toContainText(
+      'asia-premium (Asia Premium Exits)',
+      { timeout: 15_000 },
+    );
+    await expect(page.getByTestId('node-attached-groups')).toContainText(
+      'standard-exits (Standard Exit Group)',
+    );
+
+    await page.getByTestId('locale-switcher').selectOption('en');
+    await expect(page.getByTestId('node-publication-groups-editor')).toContainText(
+      'Exit Attached Groups (D-057)',
+    );
+    await expect(page.getByTestId('node-checks-section')).toContainText(
+      'Node Local Safety & Health Checks (D-058)',
+    );
+    await page.getByTestId('locale-switcher').selectOption('zh-TW');
+
+    // 3. Members never see group_id values on member exit views (D-057)
+    await page.goto('/member/exits');
+    await expect(page.getByTestId('member-exits-page')).toBeVisible();
+    const exitsTextZh = await page.locator('body').textContent();
+    expect(exitsTextZh).not.toContain(standardExitsGroup!.group_id);
+    expect(exitsTextZh).not.toContain(asiaPremiumGroup!.group_id);
+    expect(exitsTextZh).not.toContain('standard-exits');
+    expect(exitsTextZh).not.toContain('asia-premium');
+
+    await page.getByTestId('locale-switcher').selectOption('en');
+    const exitsTextEn = await page.locator('body').textContent();
+    expect(exitsTextEn).not.toContain(standardExitsGroup!.group_id);
+    expect(exitsTextEn).not.toContain(asiaPremiumGroup!.group_id);
+    await page.getByTestId('locale-switcher').selectOption('zh-TW');
+
+    // 4. DNS Policy threat_feed_status and ThreatFeedPayload.update_interval_seconds (D-058) in zh-TW and en
+    await page.goto('/admin/policies/dns');
+    await expect(page.getByTestId('admin-dns-policy-page')).toBeVisible();
+    await expect(page.getByTestId('threat-feed-status-section')).toBeVisible();
+    await expect(
+      page.getByTestId('threat-feed-state-malware-domains-default'),
+    ).toContainText(
+      '初始空白狀態（尚未完成首次抓取，bootstrap-empty / last_result=never）',
+    );
+
+    await page.getByTestId('locale-switcher').selectOption('en');
+    await expect(
+      page.getByTestId('threat-feed-state-malware-domains-default'),
+    ).toContainText(
+      'Bootstrap empty (initial fetch not yet completed, last_result=never)',
+    );
+    await page.getByTestId('locale-switcher').selectOption('zh-TW');
+
+    // Verify contract default (21600) and client-side bounds (300-604800)
+    await page.getByTestId('extra-policy-schema-select').selectOption('threat_feed');
+    await expect(page.getByTestId('threat-feed-update-interval-input')).toHaveValue(
+      '21600',
+    );
+    await page.getByTestId('threat-feed-update-interval-input').fill('120');
+    await page.getByTestId('create-extra-policy-revision-btn').click();
+    await expect(page.getByTestId('threat-feed-interval-field-error')).toBeVisible();
+
+    // Bypass client check to verify server-side 422 validation field error detail
+    await page.getByTestId('threat-feed-bypass-client-check').check();
+    await page.getByTestId('create-extra-policy-revision-btn').click();
+    await expect(page.getByTestId('threat-feed-interval-field-error')).toContainText(
+      '/payload/update_interval_seconds',
+    );
+    await expect(page.getByTestId('dns-api-error')).toBeVisible();
+
+    // Valid update_interval_seconds (3600) creates threat_feed revision
+    await page.getByTestId('threat-feed-bypass-client-check').uncheck();
+    await page.getByTestId('threat-feed-update-interval-input').fill('3600');
+    await page.getByTestId('create-extra-policy-revision-btn').click();
+    await expect(page.getByTestId('threat-feed-interval-field-error')).toHaveCount(0);
   });
 
   test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page }) => {
