@@ -29,6 +29,8 @@ section() {
 
 LIVE_TMP=""
 WRAP_BIN=""
+# Invoked through the EXIT trap; ShellCheck cannot follow this indirect call.
+# shellcheck disable=SC2317
 cleanup() {
 	local name
 	while read -r name; do
@@ -45,7 +47,7 @@ cleanup() {
 trap cleanup EXIT
 
 docker_real="$(command -v docker)"
-WRAP_BIN="$(mktemp -d ${LOG_DIR}/${PREFIX}-docker-wrap.XXXXXX)"
+WRAP_BIN="$(mktemp -d "${LOG_DIR}/${PREFIX}-docker-wrap.XXXXXX")"
 cat >"${WRAP_BIN}/docker" <<EOF
 #!/bin/bash
 printf '%s\n' "\$*" >> "${LOG_DIR}/docker-argv.log"
@@ -74,8 +76,8 @@ wait_primary() {
 section "static: secrets are not echoed, but the cipher is placed on argv"
 if grep -RInE 'echo .*(PGBACKREST_REPO1_S3_KEY|PGBACKREST_REPO1_CIPHER_PASS|CIPHER_PASS)' \
 	"${ROOT}/deploy/backup" "${ROOT}/.github/workflows/backup.yml" \
-	--exclude-dir=test >${LOG_DIR}/${PREFIX}-echo-grep.txt; then
-	fail "script echoes a secret env var: $(cat ${LOG_DIR}/${PREFIX}-echo-grep.txt)"
+	--exclude-dir=test >"${LOG_DIR}/${PREFIX}-echo-grep.txt"; then
+	fail "script echoes a secret env var: $(cat "${LOG_DIR}/${PREFIX}-echo-grep.txt")"
 else
 	pass "no echo of cipher/S3 env vars in deploy/backup scripts or backup.yml"
 fi
@@ -148,7 +150,7 @@ else
 fi
 
 section "guard: same directory and postmaster.pid are refused; a child directory is not"
-LIVE_TMP="$(mktemp -d ${LOG_DIR}/${PREFIX}-live.XXXXXX)"
+LIVE_TMP="$(mktemp -d "${LOG_DIR}/${PREFIX}-live.XXXXXX")"
 mkdir -p "${LIVE_TMP}/base" "${LIVE_TMP}/pg_wal"
 printf '1234\n' >"${LIVE_TMP}/postmaster.pid"
 printf '17\n' >"${LIVE_TMP}/PG_VERSION"
@@ -290,7 +292,7 @@ printf 'migrate status head:\n%s\n' "$(head -n 5 "$LOG_DIR/migrate.txt")"
 if grep -q '00181' "${ROOT}/docs/handover/deploy.md"; then
 	pass "deploy.md §3.3 mentions migration 00181"
 else
-	fail "docs/handover/deploy.md §3.3 expected status lists 19 migrations through 00180 and omits 00181 (repo has $(ls "${ROOT}/db/migrations/"*.sql | wc -l) migration files)"
+	fail "docs/handover/deploy.md §3.3 expected status lists 19 migrations through 00180 and omits 00181 (repo has $(set -- "${ROOT}"/db/migrations/*.sql; echo "$#") migration files)"
 fi
 run_bad_sql() {
 	local name="$1" sql="$2"
