@@ -1,30 +1,48 @@
-# Pre-result observation authority — follow-up 6
+# Observation authority and stale ACK — follow-up 7
 
-Run `a83d5d64-505c-488c-b560-5a777566702e`, source `1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f`, evidence `2026-10-30T17:10:45Z`. Prefix `w4-updates`, port base 42000.
+Run `71078ab8-edf8-4d23-af72-ea247f704011`, source `c8d4a00cf1bf594b20016263c2cfc3c164d92bc9`, evidence `2026-10-30T18:09:36Z`. Prefix `w4-updates`, port base 42000.
 
-[Full heartbeat payloads, responses, batch GETs, audit pages and real results](pre-result.json).
-Each case has an initial heartbeat and three repetitions with fresh report IDs.
-All return 202, with no new accepted result during injection.
+[Raw requests, batch GETs, audit pages, job timestamps, results and ACKs](pre-result.json).
 
-| Incarnation / case | Current after every report | Last-good | New unexpected-release audits | Verdict |
-|---|---|---|---|---|
-| Fresh a: unrelated in both fields | null | null | 1 for the unrelated release | pass |
-| Fresh b: target / other unrelated | null | null | 1 for the other release | pass under #167 last-good agreement rule |
-| Fresh c: target / boot | null | null | 1 for boot | pass; F5-01 resolved |
-| First genuine AT23 success | 1.0.1 | 1.0.1 | not a heartbeat claim | pass |
-| Recorded c1: recorded current / recorded last-good | 1.0.1 | 1.0.1 | 0 | pass |
-| Recorded c2: target 1.0.2 / recorded last-good | 1.0.1 | 1.0.1 | 0 | requested seed to 1.0.2 absent; unconfirmed=true |
-| Recorded c3: unrelated 1.0.3 / recorded last-good | 1.0.1 | 1.0.1 | 0 | requested one audit absent; unconfirmed=true |
-| Real updater recovery for the recorded job | 1.0.2 | 1.0.2 | accepted result establishes both | pass |
+| Branch | Result |
+|---|---|
+| Fresh a: unrelated release in both columns | Columns stay null; exactly one unexpected-release/job audit despite four reports |
+| Fresh b: target current / unrelated last-good | Columns stay null; exactly one audit for the distinct unrelated last-good |
+| Fresh c: target current / boot last-good | Columns stay null; exactly one boot/job audit |
+| Fresh agreeing null last-good | Current seeds to the issued target; last-good stays null; no accepted result or additional audit |
+| First accepted 1.0.1 success | Result establishes current and last-good |
+| Recorded c1: recorded current | Columns unchanged; zero seeding audits |
+| Recorded c2: later 1.0.2 job target | Current/last-good remain 1.0.1; unconfirmed=true; job last_observed_at=null; zero seeding audits |
+| Recorded c3: unrelated 1.0.3 | Same retained values and withheld confirmation; zero seeding audits |
+| Real 1.0.2 completion | Result establishes current/last-good as 1.0.2 and later observation confirms |
+| Replay genuine old success ACK while new job waits | Exact original ACK returned; current job, desired/observed generations and releases unchanged; no new receipt |
 
-The recorded phase uses the higher-release recovery job after the tampered
-attempt, with genuine prior accepted success and preflight-failure receipts.
-The updater is killed at the actual service boundary and production recovery
-completes the same authorized transaction. Its result is not fabricated.
+> Heartbeats after acceptance can confirm those
+> values, but cannot change current/last-good or clear recovery.
 
-Policy: `docs/updates/central-lifecycle.md:427-467` requires agreeing last-good
-for first-result seeding, explicitly expects one fresh boot audit, and closes
-seeding after the first accepted result even for later jobs. The requested
-recorded c2/c3 assertions are retained separately; their mismatch is F6-02,
-not a return of the resolved fresh-boot prerequisite. Accepted release authority
-was not relaxed and no database observation columns were seeded.
+Source: `docs/updates/central-lifecycle.md:418`.
+
+> Once a result is accepted, seeding closes even for later jobs in that incarnation.
+
+Source: `docs/updates/central-lifecycle.md:467`.
+
+> A mismatch in
+> either release keeps `unconfirmed=true` by withholding that job's observation
+> timestamp; a later agreeing report can confirm it.
+
+Source: `docs/updates/central-lifecycle.md:419`.
+
+> Each distinct unexpected
+> release/reported-job pair gets one `update_observation.unexpected_release` audit
+
+Source: `docs/updates/central-lifecycle.md:442`.
+
+> A later agreeing null
+> last-good permits the issued target to seed current, without establishing
+> last-good.
+
+Source: `docs/updates/central-lifecycle.md:463`.
+
+The recorded branches use four fresh report IDs each and retain actual baseline
+checks. No projection or journal-health fields are written by the harness.
+F6-02 is closed by the orchestrator's corrected expectation, #TBD.
