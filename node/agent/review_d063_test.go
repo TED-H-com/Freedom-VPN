@@ -219,6 +219,7 @@ func TestReviewD063_Agent_ServingProbeSwallowsExternalMeterReset(t *testing.T) {
 	r.srv.BumpGeneration()
 	enrollBoot(t, r)
 	stepOK(t, r)
+	r.manualUsage(t)
 
 	upCounter := "u_" + strings.ReplaceAll(devID.String(), "-", "")
 	r.eng.counters = map[string]enforce.CounterValue{
