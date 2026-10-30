@@ -34,14 +34,16 @@ type Txn struct {
 	ErrorStage        string
 	ErrorDetail       string
 	Checkpoint        json.RawMessage // usage checkpoint from the final sample (§13.6 step 8)
-	Health            json.RawMessage // last health report (§13.9)
+	Health            json.RawMessage // first health report; later stages do not replace it (D-053)
 	RollbackReleaseID string          // release restored by a rollback
 	StartedAt         time.Time
 	UpdatedAt         time.Time
 	FinishedAt        time.Time
 }
 
-// TxnEvent is one recorded stage change.
+// TxnEvent is one journal row for a transaction. A stage change appends one.
+// RecordEvent appends a detail row at the current stage without moving it,
+// which is how health reasons stay next to a later rollback (D-053).
 type TxnEvent struct {
 	Seq    int
 	Stage  Stage
@@ -139,7 +141,8 @@ func (j *Journal) Advance(ctx context.Context, txnID string, to Stage, u StageUp
 		destructive = MAX(destructive, ?),
 		check_attempts = check_attempts + ?, rollback_attempts = rollback_attempts + ?,
 		error_code = COALESCE(?, error_code), error_stage = COALESCE(?, error_stage), error_detail = COALESCE(?, error_detail),
-		checkpoint_json = COALESCE(?, checkpoint_json), health_json = COALESCE(?, health_json),
+		checkpoint_json = COALESCE(?, checkpoint_json),
+		health_json = CASE WHEN health_json IS NOT NULL AND health_json != '' THEN health_json ELSE COALESCE(?, health_json) END,
 		rollback_release_id = COALESCE(?, rollback_release_id)
 		WHERE txn_id = ?`,
 		string(to), now, finished, destructive, checkInc, rbInc,
@@ -190,14 +193,58 @@ func persistAdvanceGate(ctx context.Context, tx *sql.Tx, to Stage) error {
 	return nil
 }
 
-// RecordHealth stores a health report without a stage change.
+// RecordHealth stores the first health report and does not replace it.
+// A later rollback keeps the candidate's statuses in this column (D-053).
 func (j *Journal) RecordHealth(ctx context.Context, txnID string, health any) error {
 	hl, err := marshalOrNull(health)
 	if err != nil {
 		return err
 	}
-	_, err = j.db.ExecContext(ctx, `UPDATE txns SET health_json = ?, updated_at = ? WHERE txn_id = ?`, hl, j.ts(), txnID)
+	if !hl.Valid {
+		return errors.New("updatejournal: empty health")
+	}
+	res, err := j.db.ExecContext(ctx, `UPDATE txns SET health_json = ?, updated_at = ? WHERE txn_id = ? AND (health_json IS NULL OR health_json = '')`, hl.String, j.ts(), txnID)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		return nil
+	}
+	_, err = j.GetTxn(ctx, txnID)
 	return err
+}
+
+// RecordEvent appends detail at the current stage. The stage and the first
+// health report stay as they are.
+func (j *Journal) RecordEvent(ctx context.Context, txnID, detail string) error {
+	if detail == "" {
+		return errors.New("updatejournal: empty event detail")
+	}
+	tx, err := j.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+	cur, err := scanTxn(tx.QueryRowContext(ctx, txnSelect+` WHERE txn_id = ?`, txnID))
+	if err != nil {
+		return err
+	}
+	var seq int
+	if err := tx.QueryRowContext(ctx, `SELECT COALESCE(MAX(seq), 0) + 1 FROM txn_events WHERE txn_id = ?`, txnID).Scan(&seq); err != nil {
+		return err
+	}
+	now := j.ts()
+	if _, err := tx.ExecContext(ctx, `INSERT INTO txn_events(txn_id, seq, stage, at, detail) VALUES(?, ?, ?, ?, ?)`, txnID, seq, string(cur.Stage), now, detail); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE txns SET updated_at = ? WHERE txn_id = ?`, now, txnID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 const txnSelect = `SELECT txn_id, job_id, attempt, generation, release_id, manifest_sha256, previous_release_id, last_good_release_id,
