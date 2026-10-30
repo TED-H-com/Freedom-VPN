@@ -506,6 +506,19 @@ func (r *runner) writeUpdaterConfig() error {
 		"mtls_key":                 "/var/lib/vpn-node/identity/key.pem",
 		"mtls_ca":                  "/etc/vpn-node/ca.pem",
 	}
+	// Preserve lab-supplied probe inputs; never invent a peer or repair the
+	// running agent's config path to make issuance pass.
+	if raw, err := r.lab.docker(r.lab.node, "cat", "/etc/vpn-node/updater-recover.json"); err == nil {
+		var inherited map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &inherited); err != nil {
+			return err
+		}
+		for _, key := range []string{"probe_peer", "agent_config"} {
+			if value, ok := inherited[key]; ok {
+				cfg[key] = value
+			}
+		}
+	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
