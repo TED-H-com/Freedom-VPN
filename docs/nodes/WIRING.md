@@ -418,7 +418,9 @@ and treats unknown and unauthorized document IDs identically (404 `NOT_FOUND`).
 It validates the stored bytes against the issued reference (ID, profile revision,
 policy generation, SHA-256 and size), requires canonical JSON of at most 1 MiB,
 and writes those bytes without HTML escaping or a trailing newline. Responses
-carry `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0`.
+set `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0` in the
+strict response. The core Transport currently overwrites the latter with
+`no-store`; its exact-route exception is a separate pending owner request.
 `RecordIssuedResolverDocumentTx` records a typed, metadata-only issuance audit
 after confirming the reference exists in the persisted signed envelope; a lookup
 joins that record to immutable desired-state history and checks the current

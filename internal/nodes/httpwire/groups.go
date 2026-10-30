@@ -8,6 +8,9 @@ import (
 )
 
 func (h *Handlers) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error) {
+	if err := h.ready(ctx); err != nil {
+		return nil, err
+	}
 	tx, err := httpapi.Transaction(ctx)
 	if err != nil {
 		return nil, err
@@ -23,6 +26,9 @@ func (h *Handlers) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroupR
 }
 
 func (h *Handlers) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error) {
+	if err := h.ready(ctx); err != nil {
+		return nil, err
+	}
 	out, err := h.Runtime.Nodes.ListGroups(ctx, r.Params)
 	return gen.ListAdminGroups200JSONResponse{Body: out}, err
 }

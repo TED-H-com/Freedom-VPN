@@ -7,6 +7,9 @@ import (
 )
 
 func (h *Handlers) GetResolverDocument(ctx context.Context, r gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error) {
+	if err := h.ready(ctx); err != nil {
+		return nil, err
+	}
 	p := principal(ctx)
 	doc, err := h.Runtime.Nodes.ResolverDocumentForNode(ctx, h.Runtime.ResolverDocuments, p.NodeID, p.IncarnationID, r.DocumentId)
 	if err != nil {
