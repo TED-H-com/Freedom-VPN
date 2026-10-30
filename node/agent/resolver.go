@@ -236,19 +236,6 @@ func (e *Engine) guardNamedDNS() {
 	e.refuseUnapplied(ref)
 }
 
-// namedDNSUnapplied is true when a fresh probe must not reuse an earlier
-// dns_policy pass. The in-force document is not the recorded apply.
-func (e *Engine) namedDNSUnapplied() bool {
-	if !e.enrolled || e.desired == nil || !e.desiredOK {
-		return false
-	}
-	ref, err := e.desired.Dns.ResolverDocument.Get()
-	if err != nil {
-		return false
-	}
-	return !e.dnsRecorded(ref) || e.dnsFailed
-}
-
 func (e *Engine) noteResolver(ref api.ResolverDocumentRef, body []byte, outcome api.DnsPolicyEvidenceOutcome, code api.ErrorCode, detail string) {
 	e.appliedDNS = appliedDNS{}
 	e.dnsFailed = true
@@ -266,7 +253,7 @@ func (e *Engine) noteResolver(ref api.ResolverDocumentRef, body []byte, outcome 
 }
 
 func (e *Engine) noteDNSApply(ref api.ResolverDocumentRef, ev dns.Evidence, body []byte, err error) {
-	outcome := classifyDNS(ev, err)
+	outcome := classifyDNS(ev, ref, err)
 	code := api.ErrorCode("")
 	detail := ""
 	switch outcome {
@@ -286,7 +273,7 @@ func (e *Engine) noteDNSApply(ref api.ResolverDocumentRef, ev dns.Evidence, body
 	e.dnsCode = code
 	e.dnsDetail = detail
 	if outcome == api.DnsPolicyEvidenceOutcomeApplied {
-		e.appliedDNS = appliedDNS{ok: true, id: ref.DocumentId, hash: strings.ToLower(ref.ContentSha256)}
+		e.appliedDNS = appliedDNS{ok: true, id: ref.DocumentId, hash: strings.ToLower(strings.TrimSpace(ev.DocumentHash))}
 	} else {
 		e.appliedDNS = appliedDNS{}
 	}
@@ -332,8 +319,11 @@ func heldHash(body []byte, ref api.ResolverDocumentRef) string {
 	return strings.Repeat("0", 64)
 }
 
-func classifyDNS(ev dns.Evidence, err error) api.DnsPolicyEvidenceOutcome {
-	if err == nil && ev.DNSOK() && shaOK(ev.DocumentHash) {
+func classifyDNS(ev dns.Evidence, ref api.ResolverDocumentRef, err error) api.DnsPolicyEvidenceOutcome {
+	if err == nil && ev.DNSOK() && shaOK(strings.ToLower(strings.TrimSpace(ev.DocumentHash))) {
+		if !strings.EqualFold(strings.TrimSpace(ev.DocumentHash), ref.ContentSha256) || strings.TrimSpace(ev.PolicyGeneration) != ref.Generation.String() {
+			return api.DnsPolicyEvidenceOutcomeFailed
+		}
 		if _, gerr := decstr.Parse(strings.TrimSpace(ev.PolicyGeneration)); gerr == nil {
 			return api.DnsPolicyEvidenceOutcomeApplied
 		}
