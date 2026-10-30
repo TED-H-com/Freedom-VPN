@@ -47,7 +47,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-nodes-desiredstate follow-up 2: review fixes (compile without release target, fair-use state, dns_profile, lease locking, signed generation) | WP05 | done (#27) |
 | w2-usage-central: usage ledger ingest, checkpoints, projection, rollups | WP07 | done (#15) |
 | w2-usage-central follow-up: checkpoint initialisation race under concurrent first events (MTR03 flake) | WP07 | done (#21) |
-| w2-usage-central follow-up 3: review fixes (freeze fence, gap and replay scoping, overflow, ledger-epoch purpose) | WP07 | done (#23) |
+| w2-usage-central follow-up 3: review fixes (freeze fence, gap and replay scoping, overflow, ledger-epoch purpose) | WP07 | done (#66) |
 | w2-policies-fup: plan, fair-use, DNS and release-support policies, FUP tiers | WP07, WP08 | done (#12) |
 | w2-fleet-update: releases, manifests, update batches, serving-version policy | WP09 | done (#10) |
 | w2-updater: node updater, update journal, release packaging | WP09 | done (#18) |
