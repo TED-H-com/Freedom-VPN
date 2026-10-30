@@ -400,6 +400,7 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                   <th>{t('admin.updates.col.pubIntent')}</th>
                   <th>{t('admin.updates.col.versions')}</th>
                   <th>{t('admin.updates.col.bucket')}</th>
+                  <th>{t('admin.updates.col.policyEvidence')}</th>
                   <th>{t('admin.updates.col.error')}</th>
                 </tr>
               </thead>
@@ -455,6 +456,50 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                             {t('admin.updates.unconfirmedBadge')}
                           </span>
                         )}
+                      </div>
+                    </td>
+                    <td
+                      className="mono"
+                      style={{ fontSize: '0.75rem' }}
+                      data-testid={`target-policy-evidence-${target.node_id}`}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.25rem',
+                        }}
+                      >
+                        <div data-testid={`target-policy-gen-${target.node_id}`}>
+                          <span style={{ color: 'var(--color-text-muted)' }}>
+                            policy_generation:{' '}
+                          </span>
+                          {target.policy_generation != null ? (
+                            <span className="badge badge-info">
+                              {target.policy_generation}
+                            </span>
+                          ) : (
+                            <span className="badge badge-warning">
+                              {t('admin.updates.evidenceNotReported')}
+                            </span>
+                          )}
+                        </div>
+                        <div data-testid={`target-policy-refs-${target.node_id}`}>
+                          <span style={{ color: 'var(--color-text-muted)' }}>
+                            policy_refs:{' '}
+                          </span>
+                          {target.policy_refs != null ? (
+                            <span className="badge badge-info">
+                              {target.policy_refs.length > 0
+                                ? target.policy_refs.join(', ')
+                                : 'none (0)'}
+                            </span>
+                          ) : (
+                            <span className="badge badge-warning">
+                              {t('admin.updates.evidenceNotReported')}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="mono" style={{ fontSize: '0.75rem' }}>

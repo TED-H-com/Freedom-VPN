@@ -1828,6 +1828,7 @@ async function seedDatabase(
       const job2Id = '0195f100-0000-7000-8000-000000000622';
       const res1Id = '0195f100-0000-7000-8000-000000000631';
       const res2Id = '0195f100-0000-7000-8000-000000000632';
+      const res1Hash = crypto.randomBytes(32);
 
       await client.query(
         `INSERT INTO update_jobs(id, target_id, node_id, release_id, attempt, execution_incarnation_id, generation, state, actual_release_id, last_good_release_id, created_at, issued_at, started_at, completed_at, last_result_at, last_observed_at, result_id, result_hash, stage, needs_attention, recovery_required, observed_evidence)
@@ -1839,8 +1840,14 @@ async function seedDatabase(
           RELEASE_110_ID,
           enrolledIncId,
           res1Id,
-          crypto.randomBytes(32),
+          res1Hash,
         ],
+      );
+
+      await client.query(
+        `INSERT INTO update_results(result_id, job_id, node_id, incarnation_id, payload_hash, payload, ack, policy_refs)
+         VALUES ($1, $2, $3, $4, $5, '{"policy_generation":"2"}'::jsonb, '{"status":"accepted"}'::jsonb, ARRAY['0195f100-0000-7000-8000-000000000401'::uuid, '0195f100-0000-7000-8000-000000000403'::uuid])`,
+        [res1Id, job1Id, enrolledNodeId, enrolledIncId, res1Hash],
       );
 
       await client.query(
@@ -2298,8 +2305,9 @@ async function main() {
     });
 
     let heartbeatInFlight = false;
+    let holdNodeObservations = false;
     heartbeatTimer = setInterval(async () => {
-      if (heartbeatInFlight) return;
+      if (heartbeatInFlight || holdNodeObservations) return;
       heartbeatInFlight = true;
       try {
         const stateRes = await pool.query(
@@ -2513,6 +2521,41 @@ async function main() {
                 );
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ device_ids: deviceIds }));
+                return;
+              }
+
+              if (
+                req.method === 'POST' &&
+                reqUrl.pathname === '/__e2e/hold-node-observations'
+              ) {
+                const parsed = JSON.parse(body || '{}');
+                if (parsed.hold) {
+                  holdNodeObservations = true;
+                  const drainDeadline = Date.now() + 2_000;
+                  while (Date.now() < drainDeadline) {
+                    const outboxRes = await pool.query(
+                      `SELECT EXISTS(
+                         SELECT 1 FROM outbox_events
+                         WHERE delivered_at IS NULL
+                           AND event_type IN (
+                             'device.authorized',
+                             'device.revoked',
+                             'member.entitlement_changed',
+                             'member.suspended'
+                           )
+                       ) AS has_undelivered`,
+                    );
+                    if (!outboxRes.rows[0]?.has_undelivered) {
+                      break;
+                    }
+                    await new Promise((r) => setTimeout(r, 50));
+                  }
+                  await pollLiveNodeReady(pool, liveNode, 'hold-node-observations');
+                } else {
+                  holdNodeObservations = false;
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ held: holdNodeObservations }));
                 return;
               }
 

@@ -85,16 +85,32 @@ Member forwarding stays off unless all of these hold:
 - `netbird_backend` is `kernel` and the meter path is readable (`Barrier.Health`; only reason `meter_path_invalid` is `METER_PATH_INVALID`)
 - the usage store can persist a sample, the usage outbox is inside its age and byte budgets, and the disk floor is clear
 - the isolation baseline is present
-- desired state is verified, in force, `published`, and names this `release_id`
+- desired state is verified, in force, and `published`
+- `serving_release_ids` is empty, or it contains this `release_id` (an empty list passes, the same rule as `CheckPublishable`; a non-empty list that omits this release blocks forwarding)
 - this process holds a fresh lease whose monotonic send time is set
 - capacity is non-null and QoS renders
 - if any device binding is present, at least one is admitted for at least one second
+- the data-path probe has finished and its check is `passed`
 
-Data-plane health is reported as `unknown` and is not a gate. The tunnel probe check is `not_run`. IPv6 is always blocked. A null capacity blocks forwarding. An unknown local release blocks forwarding. `test_exempt_v4` is applied only when `test_mode` is true; a non-empty exempt list with `test_mode` false is a startup error. `host_reserve_bps` is required. Missing or zero is a configuration error: the process prints the setting name and exits 64 before it opens a store, touches nftables, or dials the control plane (D-034). The production value is 待實測 and must be set by the operator. There is no built-in stand-in.
+`safety_status` is the isolation and policy baseline (§5). It does not follow `d.Serve`. The baseline checks are `internet_only`, `dns_policy`, `policy_signature`, `meter_path`, `storage`, `release_supported`, and `tunnel_probe`. They are evaluated while publication is `unpublished` or `disabled`. `safety_status` is `passed` when every baseline check passes, `failed` when one fails, and `expired` only when a policy or lease deadline has passed while publication is `published`. A deadline on an unpublished document is `failed`, not `expired`.
+
+`lease`, `qos`, and `source_binding` are serving checks. They are `not_run` while publication is `unpublished` or `disabled`, and while the desired state has no device bindings. They are `passed` or `failed` only when serving is desired (publication `published` and at least one binding). They do not turn baseline safety to `failed` in the unpublished state. A relay-only overlay (`data_health` `degraded` with `tunnel_probe` still `passed`) does not block forwarding by itself. A failed tunnel check does.
+
+An unpublished desired generation is still applied. The agent installs the fail-closed baseline (member forwarding dropped, isolation baseline, kill switch), persists that generation, and reports `applied_config_generation` equal to the desired generation and `provisioning_state` `ready`. The serving model is not installed, so member traffic stays off. `d.Serve` stays fail-closed: false until publication is `published`, the lease is valid, and every gate above passes. An empty binding list can still serve, as it did before; a non-empty list with nobody admitted does not.
+
+IPv6 is always blocked. A null capacity blocks forwarding. `test_exempt_v4` is applied only when `test_mode` is true; a non-empty exempt list with `test_mode` false is a startup error. `host_reserve_bps` is required. Missing or zero is a configuration error: the process prints the setting name and exits 64 before it opens a store, touches nftables, or dials the control plane (D-034). The production value is 待實測 and must be set by the operator. There is no built-in stand-in.
 
 ## Observations
 
-Heartbeats default to 10 seconds. Observation reports default to 30 seconds (§16.5). Reports carry the applied generation, check results, control and data health, the running release, and failure reasons. They are queued in the local outbox and resent until the center accepts them. HTTP 202 means accepted, not verified. 409 and 422 are conflicts and are not retried. 429 and 5xx stay pending.
+Heartbeats default to 10 seconds. Observation reports default to 30 seconds (§16.5). Reports carry the applied generation, the baseline and serving checks, `safety_status`, `data_health`, the running release, and failure reasons. `data_health` is the probe result: `unknown` only before the first run, then `healthy`, `degraded`, or `failed`. `netbird.peer_id` stays null. NetBird `status --json` has no management peer id, and the agent does not invent one from the public key. Reports are queued in the local outbox and resent until the center accepts them. HTTP 202 means accepted, not verified. 409 and 422 are conflicts and are not retried. 429 and 5xx stay pending.
+
+## Data-path probe (§5, §13.9)
+
+Each step runs one probe before `Decide`. The probe does not change `publication_intent`, does not install a member allow, and does not open member traffic. A control-plane HTTP failure is not this probe. `control_url` is not a probe target.
+
+Unpublished, the probe reads NetBird overlay reachability: `netbird status --json` (argv, no shell, 2 second limit). Management connected, and either at least one relay available or `relays.total` of 0, is a success (`tunnel_probe` `passed`, `data_health` `healthy`). Management connected with relays configured but none available is `degraded` and the check still `passed`. A status that cannot be read, or management disconnected, is `failed` for both the check and `data_health`. When `egress_probe_target` is set (`host:port`), the probe dials that TCP address only after management is connected. A miss is `degraded` and the check `failed`. Desired state has no signed field for this target yet, so the name lives in `agent.json` until the contract grows one.
+
+Once publication is `published`, the same overlay and egress legs run, and both datapath interfaces (`member_ingress` and `uplink`) must exist. Missing interfaces are `degraded` and the check `failed`, so forwarding stays off. That is the member forwarding path this process can see without an nft exception. A dedicated authenticated test peer with a source, destination, and port allowlist (§13.9) is not installed here. `node/enforce` owns that exception. The lab has no NetBird daemon. It sets `netbird_status_file` to a fixture. `test_mode` does not skip the probe. The registered profile (retries and the stable window) is still 待實測. The agent runs the probe once per step.
 
 The heartbeat file is line-oriented, version `v1`:
 
@@ -149,6 +165,8 @@ Updater:
 | `datapath` | yes | `member_ingress` and `uplink` match `^fv[a-z0-9_-]{1,13}$` and differ. `snat` is IPv4 |
 | `host_reserve_bps` | yes | Host rate reserve in bit/s. Missing or zero exits 64. Production value is 待實測 and is set by the operator |
 | `netbird_backend` | yes for forwarding | `kernel`, `userspace` or `unknown`. Only `kernel` may forward |
+| `netbird_status_file` | no | Lab seam. A NetBird `status --json` document read instead of the CLI. Empty runs `netbird status --json` |
+| `egress_probe_target` | no | `host:port` for the data-path probe. Empty skips that leg. Desired state cannot name it yet |
 | `state_dir`, `identity_dir`, `journal_dir`, `lock_path`, `heartbeat_path` | no | Defaults under `/var/lib/vpn-node` and `/run/vpn-node`. Usage ledger is `state_dir/usage.db` |
 | `release_id` | no | Local release UUID. Empty blocks forwarding as an unknown release |
 | `test_mode`, `test_exempt_v4` | no | Exempt prefixes apply only when `test_mode` is true |
@@ -183,9 +201,10 @@ Updater:
 - Trusted time is `CLOCK_MONOTONIC` plus the signed server time captured when the lease request is sent. `CLOCK_BOOTTIME` is not used.
 - A process restart fail-closes until a lease response in that process. The same `lease_id` does not reset `mono_sent`. After reboot, only a strictly newer `issued_at` can enable forwarding.
 - A 304 skips desired-state acceptance only. The step still renews a due lease and still enforces.
-- Capacity null, an unknown release, and a non-kernel NetBird backend block forwarding.
-- Data health `unknown` is not a forwarding gate.
-- Lab exempt prefixes require `test_mode`.
+- Capacity null and a non-kernel NetBird backend block forwarding. A non-empty `serving_release_ids` that omits this release blocks forwarding. An empty list passes.
+- Baseline safety does not require the node to be serving. An unpublished generation is acknowledged after the fail-closed baseline is installed.
+- `data_health` `unknown` means the probe has not run yet. Forwarding stays off until `tunnel_probe` is `passed`. `degraded` with a passed check does not, by itself, block forwarding.
+- Lab exempt prefixes require `test_mode`. The probe still runs when `test_mode` is true.
 - A bootstrap secret lost after HTTP 200 and before the 0600 write is unrecoverable.
 - `ISOLATION_BASELINE_MISSING` and `METER_EPOCH_CHANGE` are report-only observation codes. `HEALTH_CHECK_FAILED` is not used as their stand-in.
 - `host_reserve_bps` missing or zero exits 64 before the kernel or the network. A zero that still reaches `Decide` fails closed and is not replaced.
@@ -196,5 +215,5 @@ Updater:
 - Suspend versus `CLOCK_MONOTONIC` versus nft timeout jiffies. The lab does not step the clock (`date -s` is not isolated in this container).
 - Filesystem flush order beyond `synchronous=FULL` and a directory fsync.
 - Real arm64 hardware. CI cross-compiles `GOARCH=arm64` only.
-- The tunnel probe. The check is `not_run`.
+- The §13.9 test-peer exception inside the datapath (source, destination, protocol, and port). This agent checks NetBird management and relay reachability, an optional egress target, and, once published, that the member interfaces exist. The registered timeout, retry count, and stable window are still 待實測. The probe currently runs once per step with a 2 second limit.
 - The production host rate reserve (`host_reserve_bps`). It is 待實測 and must be set by the operator. The agent no longer substitutes a stand-in.

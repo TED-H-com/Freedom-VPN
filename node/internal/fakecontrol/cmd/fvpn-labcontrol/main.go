@@ -92,6 +92,32 @@ func serve(dir, admin string) error {
 		srv.BumpGeneration()
 		w.WriteHeader(http.StatusNoContent)
 	})
+	mux.HandleFunc("POST /publication", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Intent string `json:"intent"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "intent", http.StatusBadRequest)
+			return
+		}
+		intent := api.PublicationIntent(body.Intent)
+		if !intent.Valid() {
+			http.Error(w, "intent", http.StatusBadRequest)
+			return
+		}
+		srv.SetPublication(intent)
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.HandleFunc("GET /observation", func(w http.ResponseWriter, _ *http.Request) {
+		rep, ok := srv.LastObservation()
+		if !ok {
+			http.Error(w, "none", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(rep)
+	})
 	mux.HandleFunc("POST /service", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Seconds int `json:"seconds"`

@@ -94,7 +94,7 @@ func (e *Engine) report(at time.Time) (api.ObservationReport, error) {
 		BootId:                  e.bootID,
 		Checks:                  checks,
 		CurrentReleaseId:        release,
-		DataHealth:              api.DataHealthUnknown,
+		DataHealth:              reportedHealth(e.decision.DataHealth),
 		Errors:                  errs,
 		ForwardingBlockReasons:  reasons,
 		LastGoodReleaseId:       lastGood,
@@ -122,6 +122,13 @@ func (e *Engine) report(at time.Time) (api.ObservationReport, error) {
 	rep.Update.Stage = presence.NewNullNullable[api.UpdateStage]()
 	rep.Update.State = presence.NewNullNullable[api.UpdateJobState]()
 	return rep, nil
+}
+
+func reportedHealth(h api.DataHealth) api.DataHealth {
+	if !h.Valid() {
+		return api.DataHealthUnknown
+	}
+	return h
 }
 
 func (e *Engine) flush(ctx context.Context) error {

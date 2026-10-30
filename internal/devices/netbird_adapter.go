@@ -21,6 +21,7 @@ type NetBirdAdapter struct {
 	Client                     *netbird.Client
 	Bindings                   netbird.BindingStore
 	DeploymentID, OverlayScope string
+	Identity                   *IdentityDiscovery
 }
 
 func (a *NetBirdAdapter) ObservePeer(ctx context.Context, deployment, id string) (Peer, error) {
@@ -56,6 +57,25 @@ func (a *NetBirdAdapter) ObservePeer(ctx context.Context, deployment, id string)
 		}
 		if !known {
 			return p, db.ErrNotFound
+		}
+	}
+	if a.Identity != nil && found {
+		// Preserve the observed peer for withdrawal even when its identity is
+		// no longer eligible. Authorization and read-back must deny it.
+		p.IdentityUnmapped = true
+		users, err := a.Client.ListUsers(ctx)
+		if err != nil {
+			return p, err
+		}
+		for _, user := range users {
+			if user.ID == p.ExternalUserID && !user.ServiceUser && !user.Blocked {
+				verified, err := a.verifiedIdentity(ctx, user.ID)
+				if err != nil {
+					return p, err
+				}
+				p.IdentityUnmapped = !verified
+				break
+			}
 		}
 	}
 	for _, g := range state.Groups {
@@ -139,6 +159,9 @@ func (a *NetBirdAdapter) SetAuthorization(ctx context.Context, deployment, peer 
 		}
 		return nil
 	}
+	if allow && observed.IdentityUnmapped {
+		return ErrUnmapped
+	}
 	targets := []string{}
 	if allow {
 		if status != "authorized" || len(groups) == 0 {
@@ -166,9 +189,33 @@ func (a *NetBirdAdapter) SetAuthorization(ctx context.Context, deployment, peer 
 	return nil
 }
 
-// Discover admits only native user peers with an independently verified binding.
-// It never links by email, subject equality across OAuth clients, name or IP.
+// Discover creates D-052 public-subject proofs before admitting native peers.
+// It never links pairwise subjects, email, name or IP. GET /member/devices stays
+// a read of the resulting projections; this worker owns provider I/O and writes.
 func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
+	if a.Identity == nil {
+		return errors.New("oidc_issuer required for NetBird identity discovery")
+	}
+	users, e := a.Client.ListUsers(ctx)
+	if e != nil {
+		return e
+	}
+	eligible := make(map[string]bool, len(users))
+	for _, user := range users {
+		result := identityService
+		switch {
+		case user.ServiceUser:
+		case user.Blocked:
+			result = identityBlocked
+		default:
+			result, e = a.bindUser(ctx, user.ID)
+			if e != nil {
+				return e
+			}
+		}
+		eligible[user.ID] = result == identityCreated || result == identityUnchanged || result == identityUpdated
+		a.Identity.record(ctx, result)
+	}
 	state, e := a.Client.ReadObservedState(ctx)
 	if e != nil {
 		return e
@@ -177,9 +224,9 @@ func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
 		if p.UserID == "" || p.Ephemeral {
 			continue
 		}
-		var verified bool
-		if e = a.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings WHERE deployment_id=$1 AND external_user_id=$2 AND mapping_proof<>'')`, a.DeploymentID, p.UserID).Scan(&verified); e != nil {
-			return e
+		verified, listed := eligible[p.UserID]
+		if !listed {
+			a.Identity.record(ctx, identityUnmapped)
 		}
 		if !verified {
 			continue
@@ -201,6 +248,9 @@ func (a *NetBirdAdapter) Discover(ctx context.Context, s *Service) error {
 			return e
 		}
 		_, e = s.ObserveAndAuthorize(ctx, entitlement.Command{Actor: entitlement.Actor{ID: uuid.MustParse("00000000-0000-0000-0000-000000000003"), Role: "system", RequestID: request}, Key: key}, a.DeploymentID, p.ID)
+		if errors.Is(e, ErrUnmapped) {
+			a.Identity.record(ctx, identityUnmapped)
+		}
 		if errors.Is(e, ErrLimit) || errors.Is(e, ErrEntitlement) || errors.Is(e, ErrUnmapped) || errors.Is(e, entitlement.ErrConflict) {
 			continue
 		}

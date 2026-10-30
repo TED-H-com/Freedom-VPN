@@ -49,7 +49,7 @@ func (f *fixture) pay(s browserSession, checkout uuid.UUID, event string, end ti
 }
 func (f *fixture) authorize(s browserSession, peer, ip string) uuid.UUID {
 	f.t.Helper()
-	f.bind(s, "TEST-user-"+s.id.String(), peer, ip)
+	f.seedPeer(s, peer, ip)
 	if e := f.services.Adapter.Discover(f.t.Context(), f.services.HTTP.Devices); e != nil {
 		f.t.Fatal(e)
 	}
@@ -180,8 +180,8 @@ func TestAT02_DeviceLimitRevokeOwnershipReadbackHTTP(t *testing.T) {
 	f.pay(member, checkout, "TEST-paid", f.now.Add(time.Hour))
 	first := f.authorize(member, "TEST-peer", "100.64.0.11")
 	f.authorize(member, "TEST-peer-2", "100.64.0.12")
-	f.bind(member, "TEST-user-"+member.id.String(), "TEST-peer-3", "100.64.0.13")
-	f.bind(member, "TEST-user-"+member.id.String(), "TEST-peer-4", "100.64.0.14")
+	f.seedPeer(member, "TEST-peer-3", "100.64.0.13")
+	f.seedPeer(member, "TEST-peer-4", "100.64.0.14")
 	var wg sync.WaitGroup
 	results := make(chan error, 2)
 	for _, peer := range []string{"TEST-peer-3", "TEST-peer-4"} {

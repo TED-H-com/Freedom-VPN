@@ -90,6 +90,8 @@ type Server struct {
 	bootExp      time.Time
 	bootConsumed bool
 	obs          map[string]api.ObservationAccepted
+	lastObs      api.ObservationReport
+	hasObs       bool
 	enrollCount  int
 	lastHash     string
 	serviceFor   time.Duration
@@ -394,6 +396,22 @@ func (s *Server) BumpGeneration() {
 	s.mu.Lock()
 	s.bump++
 	s.mu.Unlock()
+}
+
+// SetPublication changes the signed publication intent and bumps the
+// generation so a cached ETag cannot hide it. TEST ONLY.
+func (s *Server) SetPublication(intent api.PublicationIntent) {
+	s.mu.Lock()
+	s.fixture.Publication = intent
+	s.bump++
+	s.mu.Unlock()
+}
+
+// LastObservation is the newest accepted report. TEST ONLY.
+func (s *Server) LastObservation() (api.ObservationReport, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.lastObs, s.hasObs
 }
 
 func (s *Server) now() time.Time {
