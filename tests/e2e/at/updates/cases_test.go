@@ -19,9 +19,8 @@ import (
 )
 
 // TestUpdates runs AT23–AT27 and the first-install ROLLBACK_FAILED finding
-// against one dev stack (§19). Blocked product results are recorded and do
-// not fail the test. A missing stack, login, enrollment, release registration,
-// idempotency conflict or snapshot membership does.
+// against one dev stack (§19). Every record is written before any assigned
+// AT with a non-pass status fails the acceptance gate.
 func TestUpdates(t *testing.T) {
 	if os.Getenv("FVPN_E2E") != "1" {
 		t.Skip("set FVPN_E2E=1 against a running dev stack")
@@ -142,9 +141,9 @@ func (s *suite) finish() {
 		rec.Images = s.images
 		rec.PolicyRevision = s.policy
 		rec.NodeIncarnation = s.inc
-		if err := Write(dir, *rec); err != nil {
-			s.t.Errorf("write %s: %v", rec.ID, err)
-		}
+	}
+	if err := writeAcceptance(dir, s.rec); err != nil {
+		s.t.Error(err)
 	}
 	if s.broken != "" {
 		s.t.Errorf("harness: %s", s.broken)
@@ -263,6 +262,9 @@ func (s *suite) prepare() {
 		{name: "tamper", product: "1.3.0", sequence: "13", commit: strings.Repeat("c", 40), build: "at-tamper", marker: "tamper\n"},
 		{name: "schema", product: "1.4.0", sequence: "14", commit: strings.Repeat("d", 40), build: "at-schema", marker: "schema\n", schemaFrom: []int{2}, schemaTo: 2},
 		{name: "bulky", product: "1.5.0", sequence: "15", commit: strings.Repeat("e", 40), build: "at-bulky", marker: "bulky\n", blobBytes: 80 * 1024, installed: "200000"},
+		// TEST ONLY: a 1 PiB reserve exercises DISK_SPACE_LOW without filling
+		// a shared disk or putting test data on tmpfs.
+		{name: "disk", product: "1.6.0", sequence: "16", commit: strings.Repeat("f", 40), build: "at-disk", marker: "disk\n", reserve: "1125899906842624"},
 	}
 	var ids []uuid.UUID
 	for _, spec := range specs {

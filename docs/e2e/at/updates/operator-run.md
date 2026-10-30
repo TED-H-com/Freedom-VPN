@@ -30,8 +30,9 @@ at a third-party Internet host.
 
 Expected: the arm64 node downloads only the arm64 artifact. Success is a
 real version plus health confirmation (§13.9, §13.10). A health failure
-with `ROLLBACK_FAILED` and empty `last_good` is the same non-serving
-precondition as the lab, not an architecture pass.
+with `ROLLBACK_FAILED` and empty `last_good` does not establish an
+architecture pass. The stock CLI adapter always fails three checks even
+on a published node; see [health-analysis.md](health-analysis.md).
 
 ## 2. Three join sources (AT05 precondition of AT23)
 
@@ -52,3 +53,36 @@ the fleet default and is absent from the old snapshot (§19 AT24).
 
 Record UTC time, image digest, release id, policy revision, and incarnation
 for each source. Redact tokens, setup keys, and hostnames.
+
+## Harness gate and local reproduction
+
+Run `make -f mk/at-updates.mk at-updates-lint` for formatting, vet and the
+repository-pinned staticcheck, including the `e2e` build tag. Run
+`make go-test` for offline tests with disk scratch. The gate regression
+tests cover every assigned AT with pass, blocked, failed, unknown and
+operator-run statuses, and check that JSON and Markdown exist before the
+gate returns its error.
+
+Run `make -f mk/at-updates.mk at-updates` for a fresh owned stack at
+`FVPN_E2E_PREFIX=w4-updates`, `FVPN_E2E_PORT_BASE=42000`. A healthy stack
+prepared by `make -f mk/e2e.mk e2e-up` with that prefix/port and still
+waiting for its first enrollment can be reused with
+`make -f mk/at-updates.mk at-updates AT_UPDATES_REUSE=1`.
+Do not reuse an already enrolled primary: this scenario requires first
+install with an empty journal. Both modes tear down the owned stack even
+when acceptance fails.
+
+Every assigned AT23–AT27 record must be `pass` for a zero exit. All records
+are written before the gate reports blocked/failed or missing cases.
+Auxiliary hardware or diagnostic records cannot replace an assigned AT.
+The current product blockers therefore produce a nonzero exit, including
+when individual snapshot, idempotency or failure-path observations hold.
+
+The disk-reserve fault uses a signed **TEST ONLY** release declaring
+`required_free_bytes=1125899906842624` (1 PiB). This exercises the real
+free-space preflight on disk-backed paths without allocating that space.
+It does not prove an ENOSPC failure during writes. No test scratch uses
+tmpfs. Database writes seed only the documented release-support policy
+and release allowlists; node state and update observations are produced
+through enrollment, signed desired state, updater execution and result
+APIs, following D-050.

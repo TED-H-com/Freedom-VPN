@@ -2,12 +2,44 @@ package updates
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
+
+// writeAcceptance saves every record before rejecting incomplete acceptance.
+// Extra diagnostic records do not substitute for any assigned AT (§19).
+func writeAcceptance(dir string, records map[string]*Record) error {
+	var failures []error
+	ids := make([]string, 0, len(records))
+	for id := range records {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		if records[id] == nil {
+			failures = append(failures, fmt.Errorf("%s: missing record", id))
+			continue
+		}
+		if err := Write(dir, *records[id]); err != nil {
+			failures = append(failures, fmt.Errorf("write %s: %w", id, err))
+		}
+	}
+	for _, id := range []string{"at23", "at24", "at25", "at26", "at27"} {
+		rec := records[id]
+		if rec == nil {
+			failures = append(failures, fmt.Errorf("%s: missing assigned AT", id))
+		} else if rec.Status != StatusPass {
+			failures = append(failures, fmt.Errorf("%s: %s; see docs/e2e/at/updates/%s.json", id, rec.Status, id))
+		}
+	}
+	return errors.Join(failures...)
+}
 
 // Status is the claim a case is allowed to make. pass is something the run
 // observed. blocked is a product or lab precondition the run reached.
@@ -135,7 +167,7 @@ func Write(dir string, rec Record) error {
 		b.WriteString("\n")
 	}
 	for _, ob := range rec.Observations {
-		b.WriteString("- " + ob.Name + ": " + ob.Detail + "\n")
+		b.WriteString(strings.TrimRight("- "+ob.Name+": "+ob.Detail, " \t") + "\n")
 	}
 	b.WriteString("\n")
 	return os.WriteFile(base+".md", []byte(b.String()), 0o644)
@@ -153,17 +185,15 @@ type RollbackFacts struct {
 }
 
 const (
-	FindingNotReproduced   = "not_reproduced"
-	FindingLabPrecondition = "lab_precondition"
-	FindingUpdaterDefect   = "updater_defect"
-	FindingInconclusive    = "inconclusive"
+	FindingNotReproduced = "not_reproduced"
+	FindingNoLastGood    = "health_failed_without_last_good"
+	FindingInconclusive  = "inconclusive"
 )
 
 // ClassifyFirstInstallRollback reports why a first install ended in
-// recovery. A lab precondition is health checks that fail closed on a node
-// that is not serving, followed by rollback with no last-good release and
-// no symlink restore. An updater defect is a restore that was attempted, or
-// a last-good release that was present and still rejected.
+// recovery. This classifies journal facts, not product correctness: a missing
+// probe adapter needs code/spec analysis, and an existing last-good release
+// can legitimately be rejected by rollback safety checks (§13.9).
 func ClassifyFirstInstallRollback(in RollbackFacts) string {
 	if in.ErrorCode != "ROLLBACK_FAILED" {
 		return FindingNotReproduced
@@ -171,14 +201,14 @@ func ClassifyFirstInstallRollback(in RollbackFacts) string {
 	events := strings.ToLower(in.Events + " " + in.ErrorDetail)
 	restored := in.LastGood != "" || in.RollbackRelease != "" || strings.Contains(events, "symlink") || strings.Contains(events, "synctree")
 	if restored {
-		return FindingUpdaterDefect
+		return FindingInconclusive
 	}
 	health := strings.ReplaceAll(strings.ToLower(in.HealthJSON), " ", "")
 	failedClosed := strings.Contains(health, `"dns_policy":"failed"`) &&
 		strings.Contains(health, `"internet_only":"failed"`) &&
 		strings.Contains(health, `"tunnel_probe":"failed"`)
 	if failedClosed {
-		return FindingLabPrecondition
+		return FindingNoLastGood
 	}
 	return FindingInconclusive
 }

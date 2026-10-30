@@ -59,7 +59,7 @@ func (s *suite) idempotency() {
 		return
 	}
 	s.obs("at26", "one_batch", acc1.BatchId.String())
-	s.obs("at26", "safe_switch", "blocked: stock NodeChecks cannot pass on a non-serving node, so a completed safe switch is not claimed")
+	s.obs("at26", "safe_switch", "blocked: stock NodeChecks cannot pass with the CLI health adapter, so a completed safe switch is not claimed")
 }
 
 func (s *suite) population() {
@@ -262,9 +262,13 @@ func (s *suite) finding() {
 	s.obs("update-good-finding", "exit_code", fmt.Sprintf("%d", run.Exit))
 	s.obs("update-good-finding", "finished", fmt.Sprintf("%t", run.Finished))
 	s.obs("update-good-finding", "classification", class)
-	s.obs("update-good-finding", "journal", clip(view.Text, 500))
+	s.obs("update-good-finding", "journal", view.Text)
 	s.obs("update-good-finding", "events", clip(view.Events, 500))
-	s.obs("update-good-finding", "updater_out", clip(run.Out, 400))
+	updaterOut := clip(run.Out, 400)
+	if updaterOut == "" {
+		updaterOut = "(empty stdout/stderr; see exit_code and journal)"
+	}
+	s.obs("update-good-finding", "updater_out", updaterOut)
 	s.obs("update-good-finding", "artifact_sha", view.ArtifactSHA)
 	s.obs("update-good-finding", "amd64_sha", s.rel["new"].AMDSHA)
 	s.obs("update-good-finding", "arm64_sha", s.rel["new"].ARMSHA)
@@ -272,7 +276,7 @@ func (s *suite) finding() {
 	s.obs("update-good-finding", "downloaded_arm64", fmt.Sprintf("%t", view.ArtifactSHA == s.rel["new"].ARMSHA && view.ArtifactSHA != ""))
 	s.obs("update-good-finding", "identity_unchanged", fmt.Sprintf("%t", before != "" && before == s.lab.identitySHA(s.lab.node)))
 	s.obs("update-good-finding", "forward_chain", s.lab.forwardSummary(s.lab.node))
-	s.obs("update-good-finding", "cited_run", "docs/e2e/runs/2026-10-29/update-good.md 2026-10-29T22:48:08Z")
+	s.obs("update-good-finding", "cited_run", "main:docs/e2e/runs/2026-10-30/update-good.md (comparison only; this record uses its own journal)")
 	s.obs("at23", "primary_exit", fmt.Sprintf("%d", run.Exit))
 	s.obs("at23", "primary_health", clip(view.Health, 300))
 	s.obs("at23", "primary_error", view.ErrorCode)
@@ -286,11 +290,8 @@ func (s *suite) finding() {
 	}
 	s.rec["update-good-finding"].Actual = "error_code=ROLLBACK_FAILED classification=" + class
 	switch class {
-	case FindingLabPrecondition:
-		s.obs("update-good-finding", "decision", "Lab precondition. node/updater/health.go NodeChecks.Isolation, DNSPolicy and TunnelProbe return failed (internet_only, dns_policy, tunnel_probe). apply.go stepCheck then stepRollback. decide.go DecideRollback returns ROLLBACK_FAILED when HasLastGood is false. pickRollback does not call SwitchSymlink when the target is empty. No updater defect is filed from this journal.")
-		s.rec["update-good-finding"].Status = StatusBlocked
-	case FindingUpdaterDefect:
-		s.obs("update-good-finding", "decision", "Journal shows a last-good release or a restore. Treat as an updater defect in node/updater DecideRollback / stepRollback.")
+	case FindingNoLastGood:
+		s.obs("update-good-finding", "decision", "Missing updater health adapter: host.go:151 selects NodeChecks; health.go:59-68 unconditionally fails isolation, DNS and tunnel checks regardless of publication. apply.go:212-215 starts rollback; decide.go:33-34 and apply.go:238-243 produce recovery_required when no safe last-good exists, before SwitchSymlink at apply.go:266. This is correct fail-closed recovery, but publication alone is not a valid health prerequisite. Spec §13.9 requires real baseline and restricted authenticated candidate-path probes while unpublished/disabled. See health-analysis.md, Requests to orchestrator.")
 		s.rec["update-good-finding"].Status = StatusBlocked
 	default:
 		s.obs("update-good-finding", "decision", "ROLLBACK_FAILED was recorded but the health JSON did not match the stock fail-closed checks.")
@@ -455,7 +456,7 @@ func (s *suite) catchUp() {
 		s.obs("at24", "inheritance", "the post-batch node is absent from the original snapshot")
 	}
 	s.rec["at24"].Status = StatusBlocked
-	s.obs("at24", "note", "Catch-up ran. Health confirmation is blocked by the same non-serving NodeChecks, so AT24 is not passed.")
+	s.obs("at24", "note", "Catch-up ran. Health confirmation is blocked by the same unconditional NodeChecks failures, so AT24 is not passed.")
 }
 
 func (s *suite) staleAck() {
@@ -510,7 +511,7 @@ func (s *suite) staleAck() {
 
 func (s *suite) faults() {
 	s.logf("faults")
-	s.cmd("at25", "tamper amd64 object; strip release trust; riscv64 platform; schema-from 2; tmpfs staging; nft reject origin; docker kill during stop")
+	s.cmd("at25", "tamper amd64 object; strip release trust; riscv64 platform; schema-from 2; TEST ONLY oversized disk reserve; nft reject origin; docker kill during stop")
 	s.preSwitch("hash", s.rel["tamper"].ID, func() error {
 		body, err := s.lab.getObject(s.ctx, "r/"+s.rel["tamper"].ID.String()+"/amd64.tar.zst")
 		if err != nil {
@@ -535,23 +536,16 @@ func (s *suite) faults() {
 	s.preSwitch("arch", s.rel["old"].ID, nil, "riscv64", "", "", "", nil, 4*time.Minute, "UNSUPPORTED_PLATFORM")
 	s.preSwitch("schema", s.rel["schema"].ID, nil, "amd64", "", "", "", nil, 4*time.Minute, "SCHEMA_INCOMPATIBLE")
 
-	mountOut, mountErr := s.lab.exec(20*time.Second, s.lab.node, "sh", "-c", "mkdir -p /var/lib/vpn-node/e2e/tiny && mount -t tmpfs -o size=16384 tmpfs /var/lib/vpn-node/e2e/tiny")
-	s.obs("at25", "tmpfs", clip(string(mountOut), 200))
-	if mountErr != nil {
-		s.obs("at25", "disk", "tmpfs mount failed; DISK_SPACE_LOW was not exercised")
-	} else {
-		// §13.7: the releases directory must hold the artifact, the installed
-		// tree and required_free_bytes. Pointing it at the 16KiB tmpfs fails
-		// that reserve before any tree is written.
-		s.preSwitch("disk", s.rel["bulky"].ID, nil, "amd64", "", "/var/lib/vpn-node/e2e/tiny", "/var/lib/vpn-node/e2e/tiny", nil, 4*time.Minute, "DISK_SPACE_LOW")
-		_, _ = s.lab.exec(15*time.Second, s.lab.node, "umount", "/var/lib/vpn-node/e2e/tiny")
-	}
+	// TEST ONLY: the signed reserve exceeds the lab disk's capacity. This
+	// exercises the real statfs reserve guard without allocating that space.
+	s.obs("at25", "disk_fixture", "TEST ONLY required_free_bytes=1125899906842624; disk-backed paths; no full-disk or ENOSPC claim")
+	s.preSwitch("disk", s.rel["disk"].ID, nil, "amd64", "", "", "", nil, 4*time.Minute, "DISK_SPACE_LOW")
 
 	s.interrupt()
 	s.powerLoss()
 	s.rec["at25"].Status = StatusBlocked
 	s.rec["at25"].Actual = "pre-switch faults were recorded individually; restore to a healthy last-good is blocked because NodeChecks never pass and last_good stays empty"
-	s.obs("at25", "restore", "blocked on the serving-node health precondition")
+	s.obs("at25", "restore", "blocked on missing real updater health checks and a verified last-good")
 }
 
 func (s *suite) preSwitch(label string, release uuid.UUID, mutate func() error, arch, trust, staging, releases string, stop []string, timeout time.Duration, want string) {

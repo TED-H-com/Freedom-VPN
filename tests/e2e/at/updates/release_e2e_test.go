@@ -39,6 +39,7 @@ type releaseSpec struct {
 	schemaFrom []int
 	schemaTo   int
 	installed  string
+	reserve    string
 }
 
 func (l *lab) buildRelease(ctx context.Context, spec releaseSpec) (builtRelease, error) {
@@ -85,6 +86,9 @@ func (l *lab) buildRelease(ctx context.Context, spec releaseSpec) (builtRelease,
 	if spec.installed == "" {
 		spec.installed = "1000"
 	}
+	if spec.reserve == "" {
+		spec.reserve = "4096"
+	}
 	sbom := filepath.Join(dir, "sbom.json")
 	if err := os.WriteFile(sbom, []byte("{}\n"), 0o644); err != nil {
 		return builtRelease{}, err
@@ -105,7 +109,7 @@ func (l *lab) buildRelease(ctx context.Context, spec releaseSpec) (builtRelease,
 		},
 		Rollback: api.ManifestRollback{
 			AllowedReleaseIds: []openapi_types.UUID{}, StateReadableByPrevious: true,
-			RequiredFreeBytes: decstr.MustParse("4096"), HealthProfile: "vpn-node-standard-v1",
+			RequiredFreeBytes: decstr.MustParse(spec.reserve), HealthProfile: "vpn-node-standard-v1",
 		},
 		Evidence: release.EvidenceInput{
 			SBOMURL: base + "/sbom.json", SBOMPath: sbom,
