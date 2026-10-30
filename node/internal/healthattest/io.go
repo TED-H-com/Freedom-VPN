@@ -25,6 +25,7 @@ type Input struct {
 	Now           time.Time
 	TTL           time.Duration
 	Components    Components
+	Probe         *ChallengeProbe
 }
 
 // Issue builds a challenge with a fresh 256-bit nonce. The caller writes it.
@@ -38,6 +39,9 @@ func Issue(in Input) (Challenge, error) {
 	if in.TTL <= 0 || in.Now.IsZero() {
 		return Challenge{}, errors.New("healthattest: clock or ttl")
 	}
+	if in.Probe != nil && in.TTL > 300*time.Second {
+		return Challenge{}, errors.New("healthattest: probe ttl exceeds limit")
+	}
 	if in.Components.NodeAgent == "" || in.Components.Netbird == "" || in.Components.NodeUpdater == "" || in.Components.Enforcement == "" {
 		return Challenge{}, errors.New("healthattest: component version")
 	}
@@ -46,6 +50,12 @@ func Issue(in Input) (Challenge, error) {
 		return Challenge{}, err
 	}
 	now := in.Now.UTC()
+	var probe *ChallengeProbe
+	if in.Probe != nil {
+		copy := *in.Probe
+		copy.Destinations = append([]ChallengeProbeDest(nil), in.Probe.Destinations...)
+		probe = &copy
+	}
 	return Challenge{
 		TxnID:         in.TxnID,
 		Nonce:         hex.EncodeToString(buf[:]),
@@ -56,6 +66,7 @@ func Issue(in Input) (Challenge, error) {
 		IssuedAt:      now,
 		ExpiresAt:     now.Add(in.TTL),
 		Components:    in.Components,
+		Probe:         probe,
 	}, nil
 }
 
