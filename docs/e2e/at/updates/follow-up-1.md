@@ -2,9 +2,9 @@
 
 > Historical implementation and findings before D-062. Follow-up 2 retires
 > the overlay and imports `tests/e2e.PrepareServingBaseline`. See the
-> [current summary](summary.md) and [current requests](requests.md). Follow-up 4
-> adds target evidence and observation authority after #136/#140; the table
-> below records the current scope. See [probe details](follow-up-4.md).
+> [current summary](summary.md) and [current requests](requests.md). Follow-up 5
+> adds pre-result heartbeat injection and probe inspection after #155/#154.
+> See [pre-result evidence](pre-result.md) and [probe finding](probe-issuance.md).
 
 Run the suite with `make -f mk/at-updates.mk at-updates`. It creates only the
 `w4-updates` stack on port base `42000`, writes all five records, then exits
@@ -24,13 +24,13 @@ The orchestrator's follow-up labels name narrower scenarios than the original
 §19 ATs. A follow-up pass proves only the scenario below. It does not clear the
 full acceptance matrix.
 
-| Follow-up label | Requested scenario | Product contract | Remaining original §19 coverage | Follow-up 4 |
+| Follow-up label | Requested scenario | Product contract | Remaining original §19 coverage | Follow-up 5 |
 |---|---|---|---|---|
 | AT23 | Real good candidate, local success, central confirmation | UPD01/UPD02, §13.4–§13.10, part of §19 AT23 | Physical arm64, three join sources, mixed publication states, all-node population | pass |
-| AT24 | Unconfirmed and needs_attention API evidence | UPD02, §13.12 | Offline/enrolling snapshots and later enrollment inheritance (§19 AT24) | pass |
+| AT24 | Unconfirmed and needs_attention API evidence; pre-result version authority | UPD02, §13.12 | Offline/enrolling snapshots and later enrollment inheritance (§19 AT24) | blocked — recorded boot prerequisite absent |
 | AT25 | Byte-tampered real archive never executes; failed result needs a cause | UPD02, §13.4, part of §19 AT25 | Wrong signatures/architecture, migration, low disk, interrupted download, usage continuity | pass |
 | AT26 | Genuine health failure, healthy last-good rollback, one current terminal ACK and later confirmation; revision 7 target evidence and bounded conflicting receipts | UPD02/UPD05, §13.9, part of §19 AT25 | Original §19 AT26 idempotency, race and stale-ACK matrix | pass |
-| AT27 | Interrupted apply resumes the durable transaction; accepted release authority and job-bound confirmation | UPD02/UPD03, §13.5–§13.6, part of §19 AT25 | Full reboot/power cut, original §19 AT27 minimum-serving and disabled-node matrix | pass |
+| AT27 | Interrupted apply resumes the durable transaction; accepted release authority, job-bound confirmation and pre-result audit bounds | UPD02/UPD03, §13.5–§13.6, part of §19 AT25 | Full reboot/power cut, original §19 AT27 minimum-serving and disabled-node matrix | blocked — boot claim adds an audit without the requested recorded-boot baseline |
 
 ## Implementation and stimuli
 

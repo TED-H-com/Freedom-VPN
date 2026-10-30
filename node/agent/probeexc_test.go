@@ -10,6 +10,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -67,6 +68,7 @@ func TestProbeException_BaselineThenClear(t *testing.T) {
 	r.srv.SetPublication(api.PublicationIntentUnpublished)
 	enrollBoot(t, r)
 	stepOK(t, r)
+	holdUpdateLock(t, r)
 	if r.eng.serving {
 		t.Fatal("unpublished node served")
 	}
@@ -145,12 +147,13 @@ func TestProbeException_ServingApplyThenClear(t *testing.T) {
 	r.eng.prober = snap
 	enrollBoot(t, r)
 	stepOK(t, r)
+	holdUpdateLock(t, r)
 	if !r.eng.serving {
 		t.Fatalf("not serving: %v", r.eng.decision.Reasons)
 	}
 	snap.during = func() {
 		if r.plane.last.Probe == nil || r.plane.last.Probe.PeerID != "peer-probe" {
-			t.Fatal("probe ran without the serving exception")
+			t.Fatal("probe ran without the baseline exception")
 		}
 		for name := range r.eng.counters {
 			if name == "probe_up" || name == "probe_down" {
@@ -164,8 +167,11 @@ func TestProbeException_ServingApplyThenClear(t *testing.T) {
 	requireAttest(t, r, ch)
 	sawProbe, sawClear := false, false
 	for _, c := range r.plane.calls[before:] {
-		if c.kind != "apply" {
-			t.Fatalf("serving check used %s", c.kind)
+		if c.kind == "apply" {
+			t.Fatal("probe applied serving policy under the update lock")
+		}
+		if c.kind != "baseline_model" {
+			continue
 		}
 		if c.model.Probe != nil {
 			sawProbe = true
@@ -210,6 +216,7 @@ func TestProbeException_RefusedRequestIsNotInstalled(t *testing.T) {
 	r.srv.SetPublication(api.PublicationIntentUnpublished)
 	enrollBoot(t, r)
 	stepOK(t, r)
+	holdUpdateLock(t, r)
 	bad := labProbe()
 	bad.SourceV4 = "100.64.8.0/24"
 	probeChallenge(t, r, bad, 0)
@@ -306,6 +313,7 @@ func TestProbeException_MemberPeerFromDesiredIsNotInstalled(t *testing.T) {
 	r.srv.BumpGeneration()
 	enrollBoot(t, r)
 	stepOK(t, r)
+	holdUpdateLock(t, r)
 	if r.eng.desired == nil || len(r.eng.desired.DeviceBindings) != 1 {
 		t.Fatal("member binding was not loaded")
 	}
@@ -339,4 +347,13 @@ func TestMemberCollisionBareIPv4(t *testing.T) {
 	if e.memberCollision("other", netip.MustParseAddr("100.64.1.10")) {
 		t.Fatal("a different host collided")
 	}
+}
+
+func holdUpdateLock(t *testing.T, r *rig) {
+	t.Helper()
+	lock, err := nodelock.TryAcquire(r.eng.cfg.LockPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = lock.Release() })
 }

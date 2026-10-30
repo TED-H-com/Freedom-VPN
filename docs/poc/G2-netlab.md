@@ -36,6 +36,36 @@ Policy routing in `fv-fwd` stops hairpin: traffic from the host is routed to the
 
 `203.0.113.0/24` is removed from the lab deny set only because that prefix is the simulated Internet. Production must keep `SpecDeniedV4()` intact. The resolver prefix stays denied except TCP/UDP 53.
 
+## Special-purpose deny list
+
+`SpecDeniedV4()` follows the IANA IPv4 Special-Purpose Address Registry (last updated 2025-10-09). Globally Reachable means a destination in that block is forwardable beyond a specified administrative domain. A block is denied when that cell is not True. Multicast `224.0.0.0/4` is not a row of that registry and stays denied.
+
+| Prefix | Name | Globally Reachable | Decision |
+|---|---|---|---|
+| `0.0.0.0/8` | This network (covers `0.0.0.0/32`) | False | deny |
+| `10.0.0.0/8` | Private-Use | False | deny |
+| `100.64.0.0/10` | Shared Address Space | False | deny |
+| `127.0.0.0/8` | Loopback | False | deny |
+| `169.254.0.0/16` | Link Local | False | deny |
+| `172.16.0.0/12` | Private-Use | False | deny |
+| `192.0.0.0/24` | IETF Protocol Assignments | False | deny. Not usable unless a more specific reservation says so. Covers `192.0.0.0/29`, `192.0.0.8/32`, and `192.0.0.170/32`, `192.0.0.171/32` |
+| `192.0.0.9/32` | Port Control Protocol Anycast | True | denied by the parent `192.0.0.0/24`. No hole |
+| `192.0.0.10/32` | TURN Anycast | True | denied by the parent `192.0.0.0/24`. No hole |
+| `192.0.2.0/24` | Documentation (TEST-NET-1) | False | deny |
+| `192.31.196.0/24` | AS112-v4 | True | not denied |
+| `192.52.193.0/24` | AMT | True | not denied |
+| `192.88.99.0/24` | Deprecated 6to4 Relay Anycast (RFC 7526, allocation terminated 2015-03) | blank | deny. This is the prefix the list was missing |
+| `192.88.99.2/32` | 6a44-relay anycast | False | denied by `192.88.99.0/24` |
+| `192.168.0.0/16` | Private-Use | False | deny |
+| `192.175.48.0/24` | Direct Delegation AS112 | True | not denied |
+| `198.18.0.0/15` | Benchmarking | False | deny |
+| `198.51.100.0/24` | Documentation (TEST-NET-2) | False | deny |
+| `203.0.113.0/24` | Documentation (TEST-NET-3) | False | deny |
+| `240.0.0.0/4` | Reserved | False | deny |
+| `255.255.255.255/32` | Limited Broadcast | False | deny |
+
+The member path and the updater probe validator both call `SpecDeniedV4()`. A rendered ruleset puts `192.88.99.0/24` in `@denied_v4` and does not put the three globally reachable /24s there.
+
 ## Chosen data path (§8.2, §10.2)
 
 Outer enforcement is the host namespace, table `inet fvpn` only. NetBird's simulated rules live in `fv-fwd` as `inet fvnb` and never write `inet fvpn`.
@@ -62,9 +92,13 @@ IPv6 mode is `block` (§8.3). Member IPv6 on the member-uplink pair is dropped a
 
 Lease elements carry an nft `timeout`. That timeout is in jiffies. It is installed before any established/related accept, so a stuck agent does not keep an expired flow (§16.3). The deadline is the earliest of the offline cap (`signed_server_time + max_offline`), the service end, and the node lease end. A zero signed server time or a non-positive offline cap is not admitted. Re-adding an element restarts the timer, so the agent must pass a non-increasing `TimeoutCeilSeconds`. Revoke deletes the conntrack entry for that address after the new ruleset is in place (§8.2).
 
+`conntrack` is an enforcement prerequisite. `RequireConntrack` checks `LookPath` through the `Executor` before the agent starts forwarding. The binary deletes NAT state after a revocation. The ruleset does not depend on that delete to stop the flow: upload drops `ip saddr != @allowed_v4` and download drops `ip daddr != @allowed_v4` before any established or related accept. A `conntrack` failure after a verified ruleset therefore leaves the serving ruleset installed. `Apply` returns `ISOLATION_POLICY_INVALID` with the fixed detail `conntrack delete failed after the serving ruleset was verified` (no address in the message). The next `Apply` that still lists the address retries the delete. It does not install the baseline, so a host that lacks the binary does not flap between the serving ruleset and the boot ruleset.
+
+The agent distinguishes that outcome from a verification failure without comparing detail text. `ApplyResult.Verified` is true only when the serving ruleset and QoS were verified and left installed (the success return and the conntrack-failure return) and false when the baseline was installed or nothing was installed. The conntrack failure is a `*ConntrackDeleteError`: `Pending` is how many revoke addresses were not deleted, and `Unwrap` is the `*CheckError` above, so `errors.As` to `*CheckError` still sees `ISOLATION_POLICY_INVALID` and the error string is unchanged. `IsConntrackDeleteFailure` is that type. `RequireConntrack` is not it. That pair is the contract for the agent.
+
 A ruleset change is one `nft -f` transaction: delete and add of our chains happen in that transaction, and existing named counters are not recreated. TC is applied first, then nft. If verification fails, the boot baseline is installed with a nil probe: member forward stays drop, the probe sets are removed, and output stays accept (§8.2, §17.1).
 
-A health check that must prove the data path while members stay blocked calls `ApplyBaselineModel` with `Model.Probe` (§13.9, D-063). `ApplyBaseline`, which the agent and the watchdog call, is that function with a nil probe. The exception is one `/32` source, at most `ProbeMaxDestinations` (4) exact destination/protocol/port elements that do not overlap a member binding, and optionally TCP/UDP port 53 to the resolver. The upload tuple is behind the invalid, IPv6, deny, and host drops. Resolver DNS is before the deny drop, because the resolver prefix is inside that set, and every other port to the resolver is dropped. The download accept is `ct state established,related` to the probe address. Elements carry a kernel timeout of at most `ProbeMaxSeconds` (300). `TimeoutCeilSeconds`, and the remaining lifetime `State` read from the live elements, stop a later render from extending that timeout. While the probe sets already exist and no remaining lifetime was recorded, a fresh 300 s window is not written back. `Verify` rejects a prefix wider than `/32`, an element it cannot parse, an original timeout above `ProbeMaxSeconds`, or a remaining lifetime past the model window (`ReasonProbeUnbounded`). `probe_up` and `probe_down` are diagnostic counters and are not member usage. A nil probe deletes the sets after the chains are replaced.
+A health check that must prove the data path while members stay blocked calls `ApplyBaselineModel` with `Model.Probe` (§13.9, D-063). `ApplyBaseline`, which the agent and the watchdog call, is that function with a nil probe. The exception is one `/32` source, at most `ProbeMaxDestinations` (4) exact destination/protocol/port elements that do not overlap a member binding, and optionally TCP/UDP port 53 to the resolver. The upload tuple is behind the invalid, IPv6, deny, and host drops. Resolver DNS is before the deny drop, because the resolver prefix is inside that set, and every other port to the resolver is dropped. That DNS accept is only `iif` member ingress, `oif` uplink, `saddr @probe_v4`, `daddr @resolver_v4`, one of TCP or UDP, destination port 53. `@probe_v4` holds the probe source `/32` for the element lifetime, and `@resolver_v4` must equal the configured resolver addresses. `Verify` fails closed (`ISOLATION_POLICY_INVALID`) when an accept names the probe and is not that pair or the destination tuple, when the two DNS accepts are not one TCP and one UDP, or when `@resolver_v4` is not exactly those addresses. The download accept is `ct state established,related` to the probe address. Elements carry a kernel timeout of at most `ProbeMaxSeconds` (300). `TimeoutCeilSeconds`, and the remaining lifetime `State` read from the live elements, stop a later render from extending that timeout. While the probe sets already exist and no remaining lifetime was recorded, a fresh 300 s window is not written back. `Verify` rejects a prefix wider than `/32`, an element it cannot parse, an original timeout above `ProbeMaxSeconds`, or a remaining lifetime past the model window (`ReasonProbeUnbounded`). `probe_up` and `probe_down` are diagnostic counters and are not member usage. A nil probe deletes the sets after the chains are replaced.
 
 ## Results
 
@@ -81,6 +115,8 @@ Short windows. `FVPN_NETLAB_FULL=1` is the §11.7 window (30 s warm-up, 120 s, t
 | AT29 | Forwarding stopped 8.763 s after the short service end, with the apply process already gone. It stayed denied, then resumed only after generation 30. The offline cap and the backward-clock ceil were checked in process. The kernel clock step stayed skipped. |
 | NetBird | Inner accept-all did not bypass member, LAN, metadata or rogue denies. Masquerade to `192.0.2.34` was dropped as an unknown source (`ctunku`) and `meter-path` returned `METER_PATH_INVALID`. Marks preserved. |
 | Probe (§13.9) | On the boot baseline, `100.64.8.1` reached `203.0.113.10:80` and was SNATed to `192.0.2.37`. `probe_up` rose by 5 packets and `probe_down` by 3. A same-/24 source, an unlisted destination, a different port, and the node address on TCP 22 were dropped. After the 8 s element timeout the same flow was dropped and the sets no longer held the addresses. Resolver DNS admitted only port 53. Member usage counters did not move. |
+| Probe DNS bound | Live ruleset: one TCP and one UDP accept, `saddr @probe_v4` to `daddr @resolver_v4` port 53. `@denied_v4` contains `192.88.99.0/24` and not the three globally reachable /24s. `@resolver_v4` is `198.51.100.53`. UDP and TCP 53 replied. Port 80 and 853 to the resolver, `10.1.2.10` on ports 53 and 9, and `192.88.99.1` on TCP 53 and UDP 80 timed out. Captures on the uplink and the LAN were empty. A same-/24 source was denied. After the 8 s element timeout, port 53 to the resolver timed out and `probe_v4` no longer held the source. |
+| Revoke without conntrack delete | An established UDP flow for `100.64.1.1` was left in conntrack (`Revoke` empty). Generation 4101 stayed the serving ruleset. In the next window the uplink capture was 0 packets and the return path capture was 0. `ctunkd` rose by 4, matching 4 injected replies. `ctunku` rose with the stream's own uploads (5 on the recorded run). The other device of that member still connected. Decision: the ruleset alone stops the flow, so a later `conntrack` failure keeps the serving ruleset. |
 
 ### AT14 byte identity (§10.3, §10.7)
 

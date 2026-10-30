@@ -55,11 +55,19 @@ type Config struct {
 	// ProbePeer names the dedicated synthetic peer and exact sockets for the
 	// D-063 health challenge. The agent checks live member/host exclusions.
 	ProbePeer *healthattest.ChallengeProbe `json:"probe_peer,omitempty"`
+	// AgentConfig supplies control and resolver addresses for probe exclusions.
+	// Empty selects /etc/vpn-node/agent.json; only a configured probe reads it.
+	AgentConfig  string `json:"agent_config,omitempty"`
+	probeSources probeAddressSources
 }
 
 // LoadConfig reads a config file. Unknown fields are rejected. Empty layout
 // fields fall back to DefaultLayout.
 func LoadConfig(path string) (Config, error) {
+	return loadConfig(path, probeAddressSources{})
+}
+
+func loadConfig(path string, sources probeAddressSources) (Config, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, err
@@ -73,7 +81,8 @@ func LoadConfig(path string) (Config, error) {
 	if err := dec.Decode(new(any)); err != io.EOF {
 		return Config{}, errors.New("updater: invalid config JSON")
 	}
-	if err := validateProbePeer(c.ProbePeer); err != nil {
+	c.probeSources = sources
+	if err := c.probeEnvironment().validate(context.Background(), c.ProbePeer); err != nil {
 		return Config{}, err
 	}
 	d := DefaultLayout()
@@ -120,7 +129,7 @@ func LoadConfig(path string) (Config, error) {
 // from a challenge-bound attestation in the journal directory (D-053, §13.9).
 // Service commands that are empty fail closed at stop.
 func (c Config) Engine() (*Engine, error) {
-	if err := validateProbePeer(c.ProbePeer); err != nil {
+	if err := c.probeEnvironment().validate(context.Background(), c.ProbePeer); err != nil {
 		return nil, err
 	}
 	rel, err := readTrust(c.ReleaseTrust)
@@ -169,6 +178,7 @@ func (c Config) Engine() (*Engine, error) {
 		AllowLoopback:  c.AllowLoopback,
 		AllowedOrigins: origins,
 		ProbePeer:      cloneProbePeer(c.ProbePeer),
+		probeEnv:       c.probeEnvironment(),
 	}, nil
 }
 

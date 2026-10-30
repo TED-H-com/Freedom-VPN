@@ -1,6 +1,6 @@
 {
-  "run_id": "9cb542dd-53af-4566-97e8-4365260847c5",
-  "scope": "Follow-up 4 requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "run_id": "743c186d-5765-43e9-8b40-7839be178e13",
+  "scope": "Follow-up 5 requested scenario; not complete original §19 acceptance or physical arm64 proof",
   "id": "AT25",
   "title": "Tampered archive never executes",
   "spec": [
@@ -12,22 +12,26 @@
     "§13.12"
   ],
   "status": "pass",
-  "at": "2026-10-30T06:20:24Z",
+  "at": "2026-10-30T08:35:19Z",
   "expected": "Tampered archive never executes",
   "actual": "A byte-tampered real archive produced HASH_MISMATCH before a transaction or executable was installed; last-good still running; follow-up 4 verified: failed_requires_cause",
-  "git": "136bd15d20359c64f2144cd3359f63ac28825988",
-  "node_incarnation": "01a18b73-cb8e-73c3-9b0b-a0ab82f95c63",
+  "git": "dd72ed4e43e2be21a852e6741d8caa06a8f6ad48",
+  "node_incarnation": "01a18bee-f6e3-7a07-b81a-8b46833e1b40",
   "commands": [
     "make -f mk/at-updates.mk at-updates"
   ],
   "observations": [
     {
       "name": "manifest_and_artifact_digests",
-      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"e0e254955d5e08e843f5e213bc06c5da8f25e51dafbbf51ff40be0d15df95e64\",\"artifact_sha256_0.1.0_arm64\":\"005807f0073986b8509d041f407ef405e57184c92183cdb24a2ce40ada0e91a8\",\"artifact_sha256_1.0.1_amd64\":\"a645dc6f609a8e3b6d952ee8bccfb5836a47111f830e72abe2c0b662db6f6373\",\"artifact_sha256_1.0.1_arm64\":\"c1ba60702f1009c11f549d64fbb10d02e72d2272dc67bba8e493a2fe6808c999\",\"artifact_sha256_1.0.2_amd64\":\"0cb8a5a1802cf3e9de0e7e82c40e74df163acc74bf211889785578581a8fe741\",\"artifact_sha256_1.0.2_arm64\":\"db0d5dd41d5cba2a5050cfb305c47cba511cebd5b0f790dc9f76d73388e7778d\",\"manifest_sha256_0.1.0\":\"d621f1b7517bf66ce8e140a58f09cce364e5146ff489f3e3562c0fcb0207ae5f\",\"manifest_sha256_1.0.1\":\"de33fefc04f7db5a431d0bc86da9a56b3a4d55de72926411ea4afbbbbcb34601\",\"manifest_sha256_1.0.2\":\"7423345920df5deefbb9230954061e785d1efe40db00bf2f82e3154247d46294\",\"signed_manifest_sha256_0.1.0\":\"e826d5c1f044e0fd171e46aa8514ca5b1dc09e5fc8737cc0f6d811cf9765166e\",\"signed_manifest_sha256_1.0.1\":\"4c8e012ad4cf328a27e8ebfcaa0f22d83a1bb2b8b483c9c5ca6f95014697e67a\",\"signed_manifest_sha256_1.0.2\":\"80f45e666e25715d37a0e5263391baf4e0c12f874698996d3545cdf08eaf48d9\"}"
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"4a2fecfe44b721245e74be952adcbc4389e67c4319ace4ad3a673b9df46421e4\",\"artifact_sha256_0.1.0_arm64\":\"46b3eb5e1442d733247f73fa7386d08a8b987607f6689dee26d30d20b779bebe\",\"artifact_sha256_1.0.1_amd64\":\"a140de0cdbe75d4fe2f7094ae5956f5c7e7ac73db110a95d66974545d7fa6e63\",\"artifact_sha256_1.0.1_arm64\":\"e0c334eb4898c0132d26e56d16d8ad47c384253453ad17363fbc4090d11750d9\",\"artifact_sha256_1.0.2_amd64\":\"622987769963a0db924086c756d01b38bbb408a26c1fec6dfae5b7165f06cefb\",\"artifact_sha256_1.0.2_arm64\":\"e892a545def1fa1a0912a2ff4042450f3703e005594ff4e35a884f555346be2a\",\"manifest_sha256_0.1.0\":\"315a2c41cfb6d2744a22613edb245e294ba68cbf24e9c5a9a2b5e8d629b9134a\",\"manifest_sha256_1.0.1\":\"aaa2fc92dd0a5afd95023dff97f354e7a8a85f7bb73332a13eb5abefc4f22e58\",\"manifest_sha256_1.0.2\":\"6e95cb67cc7e7e381a27c68dda0a7b978bad792e5c7eb6dfcd25ab4f0bfd689b\",\"signed_manifest_sha256_0.1.0\":\"82291e44edca489b4041fe7a38e681085fa738f0f8e0a49743a9a66f203784e4\",\"signed_manifest_sha256_1.0.1\":\"77432ac42a9190f04ae205b20983fbc3b03b56c59c1e75649b1e4e53036b1a96\",\"signed_manifest_sha256_1.0.2\":\"36d9aca47e7bb7cda632f1938db811c95bfd83737138f36d11f99b3b4797ca53\"}"
     },
     {
       "name": "support_policy_revision",
-      "detail": "\"01a18b73-c8b8-7455-be33-cfe9b50332f8\""
+      "detail": "\"01a18bee-ead5-7536-b1e0-e9609b70e689\""
+    },
+    {
+      "name": "unrelated_release",
+      "detail": "{\"digests\":{\"artifact_sha256_1.0.3_amd64\":\"db35954922453306f22061677237baf561713c2c4a2fedc324b31a50d5848c48\",\"artifact_sha256_1.0.3_arm64\":\"45158816b27174b469d070eb086d2964de9d9d27505b3dbe6e01012753036468\",\"manifest_sha256_1.0.3\":\"f75f9134f64ce8372fa46ab8e6ccf314357b060b02f563dac6ab31d4c70db6fe\",\"signed_manifest_sha256_1.0.3\":\"2e2c0be09a822e92919b3f9986cedcca364557f811896e6c4ebf6f9d0083003c\"},\"purpose\":\"TEST ONLY registered, never installed or made fleet default\",\"release_id\":\"01a18bee-f22d-7ee4-b956-1e2c4e4131d5\",\"version\":\"1.0.3\"}"
     },
     {
       "name": "accepted_unpublished_baseline",
@@ -39,7 +43,7 @@
     },
     {
       "name": "release_ids",
-      "detail": "{\"boot\":\"01a18b73-b4ad-7831-9682-b8154413fc2d\",\"good\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"negative\":\"01a18b73-c450-7425-84ba-8439b1e461a1\"}"
+      "detail": "{\"boot\":\"01a18bee-d742-7131-bc43-820cbad31e71\",\"good\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"negative\":\"01a18bee-e674-70f9-951a-8d87d2a6af1e\"}"
     },
     {
       "name": "batch_response",
@@ -47,7 +51,7 @@
     },
     {
       "name": "batch_id",
-      "detail": "\"01a18b74-ed26-77d5-88be-f49192feff6d\""
+      "detail": "\"01a18bf0-8c59-7019-aa27-f40b661b1961\""
     },
     {
       "name": "generation",
@@ -55,6 +59,14 @@
     },
     {
       "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "probe_issuance",
+      "detail": "{\"actual_updater_config\":{\"boot_id\":\"f953fa3b-8057-44af-94bc-727d704898ef\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"meter_checkpoint\":\"/var/lib/vpn-node/e2e/meter.json\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"platform\":{\"architecture\":\"amd64\",\"control_api_major\":1,\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"policy_schema\":1,\"state_schema\":1,\"updater_version\":\"1.0.0\",\"usage_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"agent_config_exists\":false,\"agent_config_path\":\"/etc/vpn-node/agent.json\",\"challenge_observation\":\"no fresh challenge during pre-health tampered-archive rejection\",\"config_load_invalid_probe_peer\":false,\"configurations_read_in_node\":{\"/etc/vpn-node/updater-recover.json\":{\"config\":{\"boot_id\":\"f953fa3b-8057-44af-94bc-727d704898ef\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"meter_checkpoint\":\"/var/lib/vpn-node/e2e/meter.json\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"platform\":{\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"architecture\":\"amd64\",\"updater_version\":\"1.0.0\",\"control_api_major\":1,\"policy_schema\":1,\"usage_schema\":1,\"state_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"readable\":true},\"/var/lib/vpn-node/e2e/updater.json\":{\"config\":{\"boot_id\":\"f953fa3b-8057-44af-94bc-727d704898ef\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"meter_checkpoint\":\"/var/lib/vpn-node/e2e/meter.json\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"platform\":{\"architecture\":\"amd64\",\"control_api_major\":1,\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"policy_schema\":1,\"state_schema\":1,\"updater_version\":\"1.0.0\",\"usage_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"readable\":true},\"/var/lib/vpn-node/e2e/updater.json.done\":{\"config\":{\"boot_id\":\"f953fa3b-8057-44af-94bc-727d704898ef\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"meter_checkpoint\":\"/var/lib/vpn-node/e2e/meter.json\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"platform\":{\"architecture\":\"amd64\",\"control_api_major\":1,\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"policy_schema\":1,\"state_schema\":1,\"updater_version\":\"1.0.0\",\"usage_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"readable\":true}},\"finding\":\"no probe peer in lab\",\"fresh_challenges\":[],\"has_probe_peer\":false,\"omission_logs\":[],\"stderr_readable\":true}"
+    },
+    {
+      "name": "check_probe_inspection",
       "detail": "true"
     },
     {
@@ -71,11 +83,11 @@
     },
     {
       "name": "result_delivery_http",
-      "detail": "{\"at\":\"2026-10-30T06:17:50.525962503Z\",\"status\":202}"
+      "detail": "{\"at\":\"2026-10-30T08:32:52.320540844Z\",\"status\":202}"
     },
     {
       "name": "journal",
-      "detail": "{\"txn_id\":\"\",\"stage\":\"\",\"error\":\"\",\"job_error\":\"HASH_MISMATCH\",\"current\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"last_good\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"health\":null,\"candidate_health\":null,\"attestations\":null,\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+      "detail": "{\"txn_id\":\"\",\"stage\":\"\",\"error\":\"\",\"job_error\":\"HASH_MISMATCH\",\"current\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"last_good\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"health\":null,\"candidate_health\":null,\"attestations\":null,\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
     },
     {
       "name": "candidate_executable_absent",
@@ -83,15 +95,15 @@
     },
     {
       "name": "central",
-      "detail": "{\"state\":\"failed\",\"unconfirmed\":false,\"needs_attention\":true,\"current_release\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"error_code\":\"ARTIFACT_INVALID\"}"
+      "detail": "{\"state\":\"failed\",\"unconfirmed\":false,\"needs_attention\":true,\"current_release\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"error_code\":\"ARTIFACT_INVALID\"}"
     },
     {
       "name": "central_result_receipts",
-      "detail": "[{\"payload\":{\"stage\":\"download\",\"state\":\"failed\",\"health\":null,\"job_id\":\"01a18b74-ed28-70af-b29c-a606c52b4e3d\",\"attempt\":1,\"boot_id\":\"b90ad2f8-d156-49be-81cf-927010f23577\",\"node_id\":\"01a18b73-c8e7-7ae1-ae3c-191a2b0c798c\",\"batch_id\":\"01a18b74-ed26-77d5-88be-f49192feff6d\",\"result_id\":\"c9cb60d1-37d4-5af6-ad2e-023081e10fc8\",\"target_id\":\"01a18b74-ed27-78a6-b5f5-302570c6aaae\",\"error_code\":\"ARTIFACT_INVALID\",\"generation\":\"2\",\"started_at\":\"2026-10-30T06:17:49Z\",\"finished_at\":\"2026-10-30T06:17:49Z\",\"payload_hash\":\"0ee4c32d01dd71c375f895564a3a518cc00d8041dd60ae4e2b2b202eb48eae57\",\"incarnation_id\":\"01a18b73-cb8e-73c3-9b0b-a0ab82f95c63\",\"manifest_sha256\":\"7423345920df5deefbb9230954061e785d1efe40db00bf2f82e3154247d46294\",\"usage_checkpoint\":null,\"policy_generation\":\"5\",\"recovery_required\":false,\"current_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"requested_release_id\":\"01a18b73-c450-7425-84ba-8439b1e461a1\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"c9cb60d1-37d4-5af6-ad2e-023081e10fc8\",\"received_at\":\"2026-10-30T06:17:50.522104115Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"2\",\"applied_to_current_observation\":true},\"payload_sha256\":\"0ee4c32d01dd71c375f895564a3a518cc00d8041dd60ae4e2b2b202eb48eae57\"}]"
+      "detail": "[{\"payload\":{\"stage\":\"download\",\"state\":\"failed\",\"health\":null,\"job_id\":\"01a18bf0-8c5c-75ad-b6cd-a359d39809c5\",\"attempt\":1,\"boot_id\":\"f953fa3b-8057-44af-94bc-727d704898ef\",\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"batch_id\":\"01a18bf0-8c59-7019-aa27-f40b661b1961\",\"result_id\":\"3ec7f67d-5e4f-561c-91e3-59af857a10c2\",\"target_id\":\"01a18bf0-8c5b-7954-a7f1-dd82420801cb\",\"error_code\":\"ARTIFACT_INVALID\",\"generation\":\"2\",\"started_at\":\"2026-10-30T08:32:50Z\",\"finished_at\":\"2026-10-30T08:32:50Z\",\"payload_hash\":\"7b7364972448cd696284e1c866a0ebc3699785232651a4e6c6f16c3d6b946e12\",\"incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"manifest_sha256\":\"6e95cb67cc7e7e381a27c68dda0a7b978bad792e5c7eb6dfcd25ab4f0bfd689b\",\"usage_checkpoint\":null,\"policy_generation\":\"6\",\"recovery_required\":false,\"current_release_id\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"requested_release_id\":\"01a18bee-e674-70f9-951a-8d87d2a6af1e\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"3ec7f67d-5e4f-561c-91e3-59af857a10c2\",\"received_at\":\"2026-10-30T08:32:52.318358662Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"2\",\"applied_to_current_observation\":true},\"payload_sha256\":\"7b7364972448cd696284e1c866a0ebc3699785232651a4e6c6f16c3d6b946e12\"}]"
     },
     {
       "name": "product_journal_snapshot",
-      "detail": "{\"generation\":\"2\",\"job_id\":\"01a18b74-ed28-70af-b29c-a606c52b4e3d\",\"stage\":\"download\",\"state\":\"failed\",\"current_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"last_good_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"recovery_required\":false,\"last_result_state\":\"failed\",\"last_rejection\":null,\"health\":null,\"candidate_health_json\":null}"
+      "detail": "{\"generation\":\"2\",\"job_id\":\"01a18bf0-8c5c-75ad-b6cd-a359d39809c5\",\"stage\":\"download\",\"state\":\"failed\",\"current_release_id\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"last_good_release_id\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"recovery_required\":false,\"last_result_state\":\"failed\",\"last_rejection\":null,\"health\":null,\"candidate_health_json\":null}"
     },
     {
       "name": "batch_response",
@@ -99,7 +111,7 @@
     },
     {
       "name": "batch_id",
-      "detail": "\"01a18b77-56e8-7a31-8529-6c0281c9caa9\""
+      "detail": "\"01a18bf2-db60-72ca-a894-5fb2c1a43c8f\""
     },
     {
       "name": "generation",
@@ -111,7 +123,7 @@
     },
     {
       "name": "failed_without_cause",
-      "detail": "{\"batch_api_response\":{\"batch_id\":\"01a18b77-56e8-7a31-8529-6c0281c9caa9\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":0,\"queued\":1,\"rolled_back\":0,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-30T06:20:16.487399Z\",\"created_by\":\"01a18b73-acea-7e27-981f-855a58796199\",\"next_cursor\":null,\"operation_id\":\"01a18b77-56e8-7c72-869b-44c8a175255f\",\"reason\":\"TEST ONLY updates follow-up 4\",\"release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"requires_service_restart\":true,\"state\":\"running\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":null,\"current_job\":{\"attempt\":1,\"error_code\":null,\"finished_at\":null,\"job_id\":\"01a18b77-56e9-770e-a27c-80a2c0439a3a\",\"recovery_required\":false,\"stage\":null,\"started_at\":null,\"state\":\"queued\"},\"current_release_id\":\"01a18b73-c450-7425-84ba-8439b1e461a1\",\"execution_incarnation_id\":\"01a18b73-cb8e-73c3-9b0b-a0ab82f95c63\",\"generation\":\"5\",\"health\":null,\"incarnation_at_snapshot\":\"01a18b73-cb8e-73c3-9b0b-a0ab82f95c63\",\"last_observed_at\":\"2026-10-30T06:20:06.348891Z\",\"last_result_at\":null,\"needs_attention\":false,\"node_id\":\"01a18b73-c8e7-7ae1-ae3c-191a2b0c798c\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":null,\"policy_refs\":null,\"previous_release_id\":null,\"retryable\":false,\"state\":\"queued\",\"target_id\":\"01a18b77-56e9-735d-9b6d-3e71f4d204e7\",\"unconfirmed\":true}],\"targets_url\":\"/api/v1/admin/update-batches/01a18b77-56e8-7a31-8529-6c0281c9caa9\",\"updated_at\":\"2026-10-30T06:20:16.491215Z\"},\"http_status\":422,\"request\":{\"attempt\":1,\"batch_id\":\"01a18b77-56e8-7a31-8529-6c0281c9caa9\",\"boot_id\":\"b90ad2f8-d156-49be-81cf-927010f23577\",\"candidate_health\":null,\"current_release_id\":\"01a18b73-c450-7425-84ba-8439b1e461a1\",\"error_code\":null,\"finished_at\":\"2026-10-30T06:20:22.611185393Z\",\"generation\":\"5\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a18b73-cb8e-73c3-9b0b-a0ab82f95c63\",\"job_id\":\"01a18b77-56e9-770e-a27c-80a2c0439a3a\",\"manifest_sha256\":\"de33fefc04f7db5a431d0bc86da9a56b3a4d55de72926411ea4afbbbbcb34601\",\"member_forwarding_enabled\":false,\"node_id\":\"01a18b73-c8e7-7ae1-ae3c-191a2b0c798c\",\"payload_hash\":\"3081ec28ec638f37a9346da0f5dde713f268cbb94e2ea6c100e5ce8ecb5663fb\",\"policy_generation\":\"10\",\"previous_release_id\":null,\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a18b73-bc74-7921-805e-c6a306bb2ccb\",\"result_id\":\"b9095b86-f6ba-4a08-aac6-cf865607f813\",\"stage\":\"check\",\"started_at\":\"2026-10-30T06:20:22.611181099Z\",\"state\":\"failed\",\"state_schema_version\":1,\"target_id\":\"01a18b77-56e9-735d-9b6d-3e71f4d204e7\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a18b76-0b92-7ea4-945e-5d285f459868\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"99f38b6c-f5eb-4c00-82ba-0f0dae002a25\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"VALIDATION_FAILED\",\"message\":\"Failed result requires an error code\",\"request_id\":\"01a18b77-76c8-7cdc-9e92-8c67ef435b45\",\"retryable\":false,\"details\":{}}}}"
+      "detail": "{\"batch_api_response\":{\"batch_id\":\"01a18bf2-db60-72ca-a894-5fb2c1a43c8f\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":0,\"queued\":1,\"rolled_back\":0,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-30T08:35:11.327104Z\",\"created_by\":\"01a18bee-d00e-7167-b077-fd5b64e7571a\",\"next_cursor\":null,\"operation_id\":\"01a18bf2-db60-75d2-a031-ec9847964848\",\"reason\":\"TEST ONLY updates follow-up 5\",\"release_id\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"requires_service_restart\":true,\"state\":\"running\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":null,\"current_job\":{\"attempt\":1,\"error_code\":null,\"finished_at\":null,\"job_id\":\"01a18bf2-db61-73b9-9e78-789891ca589f\",\"recovery_required\":false,\"stage\":null,\"started_at\":null,\"state\":\"queued\"},\"current_release_id\":\"01a18bee-e674-70f9-951a-8d87d2a6af1e\",\"execution_incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"generation\":\"5\",\"health\":null,\"incarnation_at_snapshot\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"last_observed_at\":\"2026-10-30T08:35:01.189657Z\",\"last_result_at\":null,\"needs_attention\":false,\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":null,\"policy_refs\":null,\"previous_release_id\":null,\"retryable\":false,\"state\":\"queued\",\"target_id\":\"01a18bf2-db60-7d6c-8c88-6ff7de211959\",\"unconfirmed\":true}],\"targets_url\":\"/api/v1/admin/update-batches/01a18bf2-db60-72ca-a894-5fb2c1a43c8f\",\"updated_at\":\"2026-10-30T08:35:11.330781Z\"},\"http_status\":422,\"request\":{\"attempt\":1,\"batch_id\":\"01a18bf2-db60-72ca-a894-5fb2c1a43c8f\",\"boot_id\":\"f953fa3b-8057-44af-94bc-727d704898ef\",\"candidate_health\":null,\"current_release_id\":\"01a18bee-e674-70f9-951a-8d87d2a6af1e\",\"error_code\":null,\"finished_at\":\"2026-10-30T08:35:17.447897852Z\",\"generation\":\"5\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a18bee-f6e3-7a07-b81a-8b46833e1b40\",\"job_id\":\"01a18bf2-db61-73b9-9e78-789891ca589f\",\"manifest_sha256\":\"aaa2fc92dd0a5afd95023dff97f354e7a8a85f7bb73332a13eb5abefc4f22e58\",\"member_forwarding_enabled\":false,\"node_id\":\"01a18bee-f69a-7e8c-8919-a063bf662e91\",\"payload_hash\":\"1a79f95ed2595450a5cd7b016565cc1c047af3396f3f7dbff9d864c52931cd57\",\"policy_generation\":\"11\",\"previous_release_id\":null,\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a18bee-ded9-74a9-beef-e14ec8fa01e3\",\"result_id\":\"ce1329c7-d0f3-4561-aacf-1a6ed27914d0\",\"stage\":\"check\",\"started_at\":\"2026-10-30T08:35:17.447893898Z\",\"state\":\"failed\",\"state_schema_version\":1,\"target_id\":\"01a18bf2-db60-7d6c-8c88-6ff7de211959\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a18bf1-8d7a-7e56-a989-6af5f1f0e900\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"28e160d9-c3f4-4664-93eb-616b3ac68594\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"VALIDATION_FAILED\",\"message\":\"Failed result requires an error code\",\"request_id\":\"01a18bf2-fb3b-7ea2-bc4e-ab400e9c2b3b\",\"retryable\":false,\"details\":{}}}}"
     },
     {
       "name": "check_failed_requires_cause",

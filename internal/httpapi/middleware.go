@@ -416,7 +416,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				apierr.Write(w, r, apierr.New(apierr.UnsupportedMediaType, "JSON content required."))
 				return
 			}
-			if _, err = canonjson.Canonicalize(raw); err != nil {
+			if err = checkJSONDocument(raw, bodyLimit); err != nil {
 				apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Invalid JSON document."))
 				return
 			}
@@ -499,6 +499,36 @@ func classify(op *openapi3.Operation, c config.Config) (string, config.Bucket, i
 	}
 	return "browser", c.BrowserRate, c.BrowserBodyBytes
 }
+
+// checkJSONDocument accepts one JSON value. Bodies up to canonjson.MaxBytes
+// must be the signed-document subset; that bound stays 1 MiB. A larger body
+// is still inside its class cap (usage, 8 MiB) and is checked with one
+// decoder read limited to that cap. Trailing data is rejected. The canonical
+// bytes are not kept: identity matching reads the parsed body.
+func checkJSONDocument(raw []byte, limit int64) error {
+	if int64(len(raw)) <= canonjson.MaxBytes {
+		_, err := canonjson.Canonicalize(raw)
+		return err
+	}
+	if limit < int64(len(raw)) {
+		return errors.New("json: body exceeds class limit")
+	}
+	dec := json.NewDecoder(io.LimitReader(bytes.NewReader(raw), limit))
+	var doc json.RawMessage
+	if err := dec.Decode(&doc); err != nil {
+		return err
+	}
+	var trailing json.RawMessage
+	err := dec.Decode(&trailing)
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+	if err == nil {
+		return errors.New("json: trailing value")
+	}
+	return err
+}
+
 func matchingIdentity(v any, p auth.Principal) bool {
 	switch x := v.(type) {
 	case map[string]any:

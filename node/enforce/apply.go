@@ -2,18 +2,58 @@ package enforce
 
 import (
 	"context"
+	"errors"
 	"net/netip"
 	"strings"
 
 	"github.com/google/uuid"
 )
 
-// ApplyResult is what the agent keeps after a successful render.
+// conntrackDeleteDetail is the fixed CheckError text for a conntrack -D
+// failure after the serving ruleset was verified. It contains no address.
+const conntrackDeleteDetail = "conntrack delete failed after the serving ruleset was verified"
+
+// ApplyResult is what the agent keeps after a render.
 type ApplyResult struct {
 	Plan     RenderPlan
 	Resets   []Reset
 	Counters map[string]CounterValue
 	Samples  []Sample
+	// Verified is true only when the serving ruleset and QoS were verified
+	// and left installed. It is false when the baseline was installed or
+	// nothing was installed.
+	Verified bool
+}
+
+// ConntrackDeleteError means the serving ruleset was left installed and one
+// or more revoke addresses were not deleted from conntrack. Pending is how
+// many of those addresses have not succeeded. It is never the addresses.
+// Unwrap is the *CheckError the agent already matches.
+type ConntrackDeleteError struct {
+	Pending int
+	err     error
+}
+
+func (e *ConntrackDeleteError) Error() string {
+	if e == nil || e.err == nil {
+		return ""
+	}
+	return e.err.Error()
+}
+
+func (e *ConntrackDeleteError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+	return e.err
+}
+
+// IsConntrackDeleteFailure reports a conntrack delete that left the verified
+// serving ruleset in place. A verification failure and RequireConntrack are
+// not this error.
+func IsConntrackDeleteFailure(err error) bool {
+	var target *ConntrackDeleteError
+	return errors.As(err, &target)
 }
 
 // Apply installs the model. A verification mismatch installs the boot
@@ -72,20 +112,30 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{Plan: plan, Resets: resets}, err
 	}
-	for _, addr := range m.Revoke {
+	// Admission already drops an address that left allowed_v4, before any
+	// established or related accept. A conntrack failure here must not
+	// replace the verified ruleset with the baseline. The caller passes
+	// Revoke again on the next Apply, which retries the delete (§8.2).
+	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true}
+	for i, addr := range m.Revoke {
 		if err := deleteConntrack(ctx, ex, addr); err != nil {
-			return ApplyResult{Plan: plan, Resets: resets}, err
+			if conntrackCommandFailed(err) {
+				return verified, &ConntrackDeleteError{Pending: len(m.Revoke) - i, err: err}
+			}
+			return verified, err
 		}
 	}
 	rs, err := ParseRuleset(raw)
 	if err != nil {
-		return ApplyResult{}, err
+		return ApplyResult{Verified: true}, err
 	}
 	samples, err := Samples(m, rs.Counters)
 	if err != nil {
-		return ApplyResult{}, err
+		return ApplyResult{Verified: true}, err
 	}
-	return ApplyResult{Plan: plan, Resets: resets, Counters: rs.Counters, Samples: samples}, nil
+	verified.Counters = rs.Counters
+	verified.Samples = samples
+	return verified, nil
 }
 
 // ApplyBaseline installs the fail-closed ruleset and removes our HTB roots.
@@ -218,7 +268,27 @@ func deleteConntrack(ctx context.Context, ex Executor, addr netip.Addr) error {
 		if err == nil || conntrackEmpty(err) {
 			continue
 		}
-		return err
+		// The command text names the address. The reported error must not.
+		return checkf(ReasonIsolation, conntrackDeleteDetail)
+	}
+	return nil
+}
+
+func conntrackCommandFailed(err error) bool {
+	var ce *CheckError
+	return errors.As(err, &ce) && ce.Reason == ReasonIsolation && ce.Detail == conntrackDeleteDetail
+}
+
+// RequireConntrack reports whether the conntrack binary is installed.
+// The agent calls it at startup. A missing binary is ReasonIsolation and
+// the detail does not include a path.
+func RequireConntrack(ex Executor) error {
+	if ex == nil {
+		return checkf(ReasonIsolation, "conntrack is not installed")
+	}
+	path, err := ex.LookPath("conntrack")
+	if err != nil || strings.TrimSpace(path) == "" {
+		return checkf(ReasonIsolation, "conntrack is not installed")
 	}
 	return nil
 }
