@@ -231,7 +231,8 @@ const unconfirmedSQL = `j.id IS NULL OR j.issued_at IS NULL OR s.last_observed_a
  OR s.observation_incarnation_id IS DISTINCT FROM j.execution_incarnation_id
  OR coalesce(s.observed_update_generation<j.generation,true)
  OR coalesce(s.received_at<=j.issued_at,true)
- OR coalesce(j.last_result_at>s.received_at,false)`
+ OR coalesce(j.last_result_at>s.received_at,false)
+ OR j.last_observed_at IS DISTINCT FROM s.last_observed_at`
 
 // TargetEvidence exposes the stored watchdog and observation evidence.
 type TargetEvidence struct {
