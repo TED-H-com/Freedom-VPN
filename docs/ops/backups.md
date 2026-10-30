@@ -306,18 +306,18 @@ The full physical backup, WAL switch, and isolated PITR restore drill is automat
 make -f mk/backup.mk backup-lint backup-test backup-drill
 ```
 
-What `backup-drill` proves on every run:
-1. Builds `deploy/backup/postgres/Dockerfile` (`PostgreSQL 17` + `pgBackRest 2.60.0`) and starts primary container `fvpn-w4-ops-backups-primary` with `archive_mode=on` and repo volume `fvpn-w4-ops-backups-repo`.
+What `backup-drill` proves on every run. Container, volume, network, and image-tag names come from `FVPN_BACKUP_DRILL_PREFIX` when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`, otherwise from `fvpn-w4-ops-backups-` plus 8 lowercase hex digits (`docs/handover/restore-drill.md`). The test removes only that prefix.
+1. Builds `deploy/backup/postgres/Dockerfile` (`PostgreSQL 17` + `pgBackRest 2.60.0`) and starts primary container `<prefix>-primary` with `archive_mode=on` and repo volume `<prefix>-repo`.
 2. Applies all forward migrations via `fvpn-migrate up`.
 3. Creates drill-only table `_backup_drill` (never touching product tables, `D-050`) and commits Marker `A`.
-4. Runs `deploy/backup/backup.sh --container fvpn-w4-ops-backups-primary full` to take a physical full base backup.
+4. Runs `deploy/backup/backup.sh --container <prefix>-primary full` to take a physical full base backup.
 5. Records `targetTimestamp` (UTC) and `targetLSN`, commits Marker `B`, and forces a WAL switch (`backup.sh wal-switch`).
 6. Verifies that `restore-pitr.sh` **refuses** to overwrite the live primary container (`live_primary_overwrite_refused = true`).
-7. Runs `deploy/backup/restore-pitr.sh --target-time <targetTimestamp>` into an isolated container `fvpn-w4-ops-backups-restore` (`--network none`, `0` host ports).
+7. Runs `deploy/backup/restore-pitr.sh --target-time <targetTimestamp>` into an isolated container `<prefix>-restore` (`--network none`, `0` host ports).
 8. Asserts Marker `A` is present and Marker `B` is absent in the restored database.
 9. Asserts `fvpn-migrate status` reports all migrations `applied` (`0` pending).
-10. Executes `deploy/backup/post-restore-checklist.sql` and `deploy/backup/verify.sh`.
-11. Writes the measured RPO/RTO and backup set SHA-256 digests to [`docs/ops/backups/drill-2026-10-29.json`](backups/drill-2026-10-29.json) and [`docs/ops/backups/drill-2026-10-29.md`](backups/drill-2026-10-29.md), then removes all `fvpn-w4-ops-backups-*` Docker resources.
+10. Executes `deploy/backup/post-restore-checklist.sql` and `deploy/backup/verify.sh` (verify prefix `<prefix>-verify`).
+11. Writes the measured RPO/RTO and backup set SHA-256 digests to [`docs/ops/backups/drill-2026-10-29.json`](backups/drill-2026-10-29.json) and [`docs/ops/backups/drill-2026-10-29.md`](backups/drill-2026-10-29.md), then removes Docker objects owned by `<prefix>`. Stale `fvpn-w4-ops-backups-*` objects are removed only by `make -f mk/backup.mk backup-drill-clean`, which the test does not call.
 
 ### Latest Drill Summary (`drill-2026-10-29`)
 
