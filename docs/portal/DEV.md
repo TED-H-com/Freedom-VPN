@@ -23,7 +23,7 @@ All Vite and E2E environment variables are optional and have contract-compliant 
 
 ## Mode 0: Full Live Control Plane Stack (`portal-dev-stack` & `portal-e2e`)
 
-Requires `$FVPN_TEST_DATABASE_URL` (an admin PostgreSQL 17 DSN). Creates an isolated `fvpn_w3_portal_live_*` database, runs migrations, starts `fvpn-control` and `fvpn-worker` with test OIDC, fake NetBird, and fake Stripe servers, enrolls a live mTLS node, and serves the portal on `http://127.0.0.1:4173` (dropping the isolated database on exit):
+Requires `$FVPN_TEST_DATABASE_URL` (an admin PostgreSQL 17 DSN). Creates an isolated `fvpn_w3_portal_live_*` database, runs migrations, starts `fvpn-control` and `fvpn-worker` with test OIDC, fake NetBird, and fake Stripe servers, enrolls a live mTLS node, drives an initial fleet update batch and mTLS update result (`POST /api/v1/admin/update-batches` → `GET /api/v1/agent/desired-state` → `POST /api/v1/agent/update-results` → `POST /api/v1/agent/observations`), and serves the portal on `http://127.0.0.1:4173` (dropping the isolated database on exit):
 
 ```bash
 # Start interactive live stack on http://127.0.0.1:4173
@@ -32,6 +32,11 @@ make -f mk/portal.mk portal-dev-stack
 # Run Playwright E2E suite against the live stack
 make -f mk/portal.mk portal-e2e
 ```
+
+### Remaining D-050 Fixture Deviations (`apps/portal/e2e/dev-stack.mjs`)
+Until the dev stack runs a second fake agent reporter and route publication projector, only two node/exit fixture seeds remain in `dev-stack.mjs`:
+1. **`exits` publication state seed:** Sets `publication_intent = 'published'` and `publication_observed = 'active'` on the enrolled node's `exits` row so member exit listings and update serving checks see an active published exit.
+2. **`SEEDED_NODE_2_ID` offline fixture node:** Inserts a secondary offline node (`nodes`, `node_incarnations`, `exits` for `jp-tyo-01` / `arm64`) without an agent reporter so `POST /api/v1/admin/update-batches` snapshots a second target in `waiting_online` (`unconfirmed: true`, `policy_generation: null`, `policy_refs: null`).
 
 ---
 
