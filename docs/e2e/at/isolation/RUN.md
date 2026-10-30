@@ -1,4 +1,4 @@
-# Follow-up 2 run procedure
+# Isolation run procedure
 
 Use the assigned `w4-isolation` / `36000` binding. The mechanism container is
 `fvpn-w4-isolation-lab`; this supersedes the legacy lab prefix in README.
@@ -33,7 +33,8 @@ open a virtual overlay filename. The copy is deleted on exit.
 
 Setup uses `PrepareServingBaseline`, API-created DNS rules, groups, plans and
 finite grants, native admission, and publication read-back. SQL is read-only.
-No projector-owned row, limiter configuration or fleet setting is written.
+No projector-owned row or limiter configuration is written. The only fleet
+setting write is the AT13 admin API pair below.
 The controlled DNS rule is nonempty, as in the members harness. No synthetic
 probe is used as a member positive control.
 
@@ -81,17 +82,31 @@ IDs and UTC timestamps. `summary.md` and `requests.md` describe the current run.
 The #69 evidence lives in `history/follow-up-1/`. Diagnostic histories retain
 their original dirty-source marker and are not the final acceptance run.
 
-The final live run initially classified the finite-member expiry check as
+Follow-up 2's live run initially classified the finite-member expiry check as
 blocked because its capture parser missed tcpdump's singular `1 packet captured`.
-The original AT13 record is preserved in `history/follow-up-2-live/`. The corrected
+That original AT13 record is preserved in `history/follow-up-2-live/`. The corrected
 parser accepts singular/plural summaries and rejects capture loss or an interface
-disappearing. Its unit tests and an offline review establish five ingress packets,
-zero egress packets, five timeouts, a retained exit route and frozen counters.
-The root AT13 records this evaluation's UTC time and evaluator SHA256 separately
-from the unchanged live source hash. No new live traffic is claimed by this review.
+disappearing. Its unit tests and the offline review of that archived capture
+established five ingress packets, zero egress packets, five timeouts, a retained
+exit route and frozen counters. That correction stays in force. Follow-up 3 did
+not edit `capture.go` or `capture_review_test.go`. Its live AT13 record repeats
+`SHA256(concatenated capture.go, capture_review_test.go)=d4cd4dfd0957cace3ef9cd63168a4653c75ac1d0ba07d5c5ca1af00603f38d53`.
 
-To reproduce that review, first archive the input AT13 JSON/Markdown, then run:
+Follow-up 3's assembled run is `49799a38-1980-4c0f-a527-725646230eee`, source
+`4d84f0a651e60ae84f168a8a33248503a50cc94a`, UTC `2026-10-30T19:43:32Z` through
+`2026-10-30T19:57:57Z`. AT10 passed, including a positive for every destination
+case. Short whole-node expiry passed through the fleet-config API, and
+finite-member expiry was re-measured in the same stack. AT11, AT12 and AT13
+stay blocked on the designed gaps in `requests.md`. The aggregate exited 2.
+`summary.md` is the measured record. The follow-up 2 node snapshots were not
+rewritten by this runner; they remain only under `history/follow-up-2/`.
+
+`at-isolation-review-captures` rewrites the AT13 record in its review directory.
+Follow-up 3's root AT13 is the live measurement; do not pass it through that
+target. To reproduce the follow-up 2 offline review, point the test at a copy
+of `history/follow-up-2-live`:
 
 ```sh
-make -f mk/at-isolation.mk at-isolation-review-captures
+FVPN_AT_REVIEW_DIR="$PWD/docs/e2e/at/isolation/history/follow-up-2-live" \
+  go test -count=1 -run '^TestAT13_ReviewCapturedExpiry$' ./tests/e2e/at/isolation
 ```
