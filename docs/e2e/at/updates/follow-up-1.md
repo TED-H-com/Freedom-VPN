@@ -166,4 +166,4 @@ Fresh case c now passes (F5-01 resolved). Original AT23–AT27 scenarios and fol
 
 Run `71078ab8-edf8-4d23-af72-ea247f704011`, source `c8d4a00cf1bf594b20016263c2cfc3c164d92bc9`, evidence `2026-10-30T18:09:36Z`. Prefix `w4-updates`, port base 42000.
 
-AT24/AT26/AT27 pass under the restated accepted-result authority criteria. AT24 includes offline catch-up and a real post-batch node's own completed first_sync job. AT23/AT25 retain follow-up 6 blocked evidence for F5-02. F6-02 is resolved (#TBD). Make exit 2. See [summary](summary.md), [RUN](RUN.md), [inheritance](inheritance.json), and [requests](requests.md).
+AT24/AT26/AT27 pass under the restated accepted-result authority criteria. AT24 includes offline catch-up and a real post-batch node's own completed first_sync job. AT23/AT25 retain follow-up 6 blocked evidence for F5-02. F6-02 is resolved (#186). Make exit 2. See [summary](summary.md), [RUN](RUN.md), [inheritance](inheritance.json), and [requests](requests.md).

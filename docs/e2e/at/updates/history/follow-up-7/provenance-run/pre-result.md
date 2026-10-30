@@ -45,4 +45,4 @@ Source: `docs/updates/central-lifecycle.md:463`.
 
 The recorded branches use four fresh report IDs each and retain actual baseline
 checks. No projection or journal-health fields are written by the harness.
-F6-02 is closed by the orchestrator's corrected expectation, #TBD.
+F6-02 is closed by the orchestrator's corrected expectation, #186.

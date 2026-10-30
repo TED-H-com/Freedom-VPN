@@ -41,7 +41,7 @@ Source: `docs/updates/central-lifecycle.md:442`.
 The fresh-null case also proves that a later agreeing null last-good permits
 current to seed to the issued target while last-good remains null. Only the
 real accepted result establishes last-good. F6-02 is resolved by the corrected
-expectation in this follow-up (**#TBD**, to be filled by the orchestrator).
+expectation in this follow-up (**#186**).
 
 AT23/AT25 keep run `a83d5d64-505c-488c-b560-5a777566702e` and its evidence timestamps;
 their evidence is not relabeled as this run. Probe evidence remains from

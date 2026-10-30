@@ -14,7 +14,7 @@ the follow-up 6 records and original run IDs/timestamps. No host access to the
 used to bypass this prerequisite. Rerun AT23/AT25 in follow-up 8 after the
 export lands. [Retained probe evidence](probe-issuance.json).
 
-## Resolved: F6-02 — corrected recorded c2/c3 expectations (#TBD)
+## Resolved: F6-02 — corrected recorded c2/c3 expectations (#186)
 
 The orchestrator confirmed the earlier expectations were a misreading.
 Accepted results own current/last-good and recovery; later heartbeats only
@@ -32,8 +32,6 @@ last-good, and `:159` withholds mismatching job observation timestamps.
 AT24 now also proves offline result completion and post-batch inheritance
 through a separate successful first_sync job, while preserving the original
 denominator. [Raw inheritance evidence](inheritance.json).
-
-Replace **#TBD** with this follow-up's PR number when merging.
 
 ## Earlier resolved findings
 
