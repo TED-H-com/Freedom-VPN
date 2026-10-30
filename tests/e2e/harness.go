@@ -485,6 +485,22 @@ func (l *lab) setBootRelease(id uuid.UUID) error {
 	return nil
 }
 
+// desiredUpdateRelease ignores serving_release_ids: an allowlist entry is
+// not an instruction to run the updater (§13.4).
+func desiredUpdateRelease(raw []byte) string {
+	var env struct {
+		Signed struct {
+			Update *struct {
+				ReleaseID string `json:"release_id"`
+			} `json:"update"`
+		} `json:"signed"`
+	}
+	if json.Unmarshal(raw, &env) != nil || env.Signed.Update == nil {
+		return ""
+	}
+	return env.Signed.Update.ReleaseID
+}
+
 func (l *lab) allowReleases(ctx context.Context, ids []uuid.UUID) error {
 	if len(ids) == 0 {
 		return errors.New("no releases")

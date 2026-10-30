@@ -602,10 +602,23 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	defer cancel()
 	seen := waitUntil(wait, 2*time.Second, func() bool {
 		b, err := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/state/desired-state.json")
-		return err == nil && bytes.Contains(b, []byte(releaseID.String()))
+		return err == nil && desiredUpdateRelease(b) == releaseID.String()
 	})
 	rec.Observations = append(rec.Observations, Observation{Name: "desired_contains_release", Detail: boolText(seen)})
 	if !seen {
+		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "no signed update instruction for this release within 90s; updater was not invoked"})
+		conn, err := r.lab.db(ctx)
+		if err == nil {
+			defer conn.Close(ctx)
+			var row []byte
+			err = conn.QueryRow(ctx, `SELECT jsonb_build_object('state',j.state,'stage',j.stage,
+				'error_code',j.error_code,'issued_at',j.issued_at,'target_state',t.target_state)
+				FROM update_jobs j JOIN update_targets t ON t.id=j.target_id
+				WHERE t.batch_id=$1 AND t.node_id=$2 ORDER BY j.attempt DESC LIMIT 1`, accepted.BatchId, r.nodeID).Scan(&row)
+			if err == nil {
+				rec.Observations = append(rec.Observations, Observation{Name: "stored_update_job", Detail: string(row)})
+			}
+		}
 		r.record(rec)
 		return
 	}
