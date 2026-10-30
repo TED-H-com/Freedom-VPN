@@ -1,6 +1,61 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 const BASE_URL = process.env.PORTAL_E2E_BASE_URL || 'http://127.0.0.1:4173';
+
+interface OperationPollPayload {
+  operation_id: string;
+  kind: string;
+  status: string;
+  error?: { code?: string; message?: string } | null;
+  steps?: Array<{
+    name: string;
+    status: string;
+    error_code?: string | null;
+    message?: string | null;
+    observed_at?: string | null;
+  }>;
+}
+
+async function waitForOperationHeadline(
+  page: Page,
+  request: APIRequestContext,
+  scope: 'admin' | 'member',
+  expectedHeadline: string,
+  expectedStatus = 'succeeded',
+): Promise<OperationPollPayload> {
+  const banner = page.getByTestId('operation-banner');
+  await expect(banner).toBeVisible();
+  const opId = await banner.getAttribute('data-operation-id');
+  expect(opId).toBeTruthy();
+
+  const endpoint =
+    scope === 'member'
+      ? `${BASE_URL}/api/v1/member/operations/${opId}`
+      : `${BASE_URL}/api/v1/admin/operations/${opId}`;
+  const deadline = Date.now() + 14_000;
+  let lastOp: OperationPollPayload | null = null;
+  while (Date.now() < deadline) {
+    const res = await request.get(endpoint);
+    if (res.ok()) {
+      lastOp = (await res.json()) as OperationPollPayload;
+      if (lastOp.status === expectedStatus) {
+        break;
+      }
+    }
+    await page.waitForTimeout(100);
+  }
+
+  if (!lastOp || lastOp.status !== expectedStatus) {
+    throw new Error(
+      `Operation ${opId} (${lastOp?.kind ?? 'unknown'}) did not reach ${expectedStatus}; status=${lastOp?.status ?? 'null'} error_code=${lastOp?.error?.code ?? 'none'} error_message=${lastOp?.error?.message ?? 'none'} steps=${JSON.stringify(lastOp?.steps ?? [])}`,
+    );
+  }
+
+  await expect(page.getByTestId('operation-status-headline')).toHaveText(
+    expectedHeadline,
+  );
+  return lastOp;
+}
 
 test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT04, AT06, AT23–AT24)', () => {
   test('TestAT01_AT03_MemberJourney_SignInPendingPaymentCheckoutReturnAndWebhookActivation', async ({
@@ -84,77 +139,88 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     page,
     request,
   }) => {
-    // 1. Seed 3 authorized devices on the active journey member so device count is 3 / 3 (AT02)
-    const seedRes = await request.post(`${BASE_URL}/__e2e/seed-member-devices`);
-    expect(seedRes.ok()).toBeTruthy();
-    const { device_ids: seededDeviceIds } = (await seedRes.json()) as {
-      device_ids: string[];
-    };
-    expect(seededDeviceIds).toHaveLength(3);
+    try {
+      // 1. Seed 3 authorized devices on the active journey member so device count is 3 / 3 (AT02)
+      const seedRes = await request.post(`${BASE_URL}/__e2e/seed-member-devices`);
+      expect(seedRes.ok()).toBeTruthy();
+      const { device_ids: seededDeviceIds } = (await seedRes.json()) as {
+        device_ids: string[];
+      };
+      expect(seededDeviceIds).toHaveLength(3);
 
-    const meRes = await request.get(`${BASE_URL}/api/v1/member/me`);
-    const meJson = (await meRes.json()) as { member_id: string };
-    const activeMemberId = meJson.member_id;
+      const meRes = await request.get(`${BASE_URL}/api/v1/member/me`);
+      const meJson = (await meRes.json()) as { member_id: string };
+      const activeMemberId = meJson.member_id;
 
-    // 2. Navigate to /member/devices and verify 3 / 3 quota, limit warning banner, and Device ID column label (DOC12)
-    await page.goto('/member/devices');
-    await expect(page.getByTestId('member-devices-page')).toBeVisible();
-    await expect(page.getByTestId('member-devices-table')).toContainText(
-      '裝置識別碼 (Device ID)',
-    );
-    await expect(page.getByTestId('device-quota-badge')).toContainText('3 / 3');
-    await expect(page.getByTestId('device-limit-warning')).toBeVisible();
+      // 2. Navigate to /member/devices and verify 3 / 3 quota, limit warning banner, and Device ID column label (DOC12)
+      await page.goto('/member/devices');
+      await expect(page.getByTestId('member-devices-page')).toBeVisible();
+      await expect(page.getByTestId('member-devices-table')).toContainText(
+        '裝置識別碼 (Device ID)',
+      );
+      await expect(page.getByTestId('device-quota-badge')).toContainText('3 / 3');
+      await expect(page.getByTestId('device-limit-warning')).toBeVisible();
 
-    // 3. Revoke the first device (202 Accepted operation -> succeeded) and verify count drops to 2 / 3 (AT02)
-    const firstDeviceId = seededDeviceIds[0];
-    await page.getByTestId(`revoke-own-device-${firstDeviceId}`).click();
+      // 3. Revoke the first device (202 Accepted operation -> succeeded) and verify count drops to 2 / 3 (AT02)
+      const firstDeviceId = seededDeviceIds[0];
+      await page.getByTestId(`revoke-own-device-${firstDeviceId}`).click();
 
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('operation-status-headline')).toHaveText(
-      '已套用（已取得實際觀測確認）',
-    );
-    await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3');
-    await expect(page.getByTestId(`device-status-${firstDeviceId}`)).toHaveText(
-      'revoked',
-    );
+      await waitForOperationHeadline(
+        page,
+        request,
+        'member',
+        '已套用（已取得實際觀測確認）',
+      );
+      await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3');
+      await expect(page.getByTestId(`device-status-${firstDeviceId}`)).toHaveText(
+        'revoked',
+      );
 
-    // 4. Switch to Admin view (/admin/members/{id}) and suspend the member with If-Match (AT04)
-    await page.goto(`/admin/members/${activeMemberId}`);
-    await expect(page.getByTestId('admin-member-detail-page')).toBeVisible();
-    await page
-      .locator('#suspend-reason-input')
-      .fill('AT04 E2E compliance suspension check');
-    await page.getByTestId('suspend-member-btn').click();
+      // 4. Switch to Admin view (/admin/members/{id}) and suspend the member with If-Match (AT04)
+      await page.goto(`/admin/members/${activeMemberId}`);
+      await expect(page.getByTestId('admin-member-detail-page')).toBeVisible();
+      await page
+        .locator('#suspend-reason-input')
+        .fill('AT04 E2E compliance suspension check');
+      await page.getByTestId('suspend-member-btn').click();
 
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('operation-status-headline')).toHaveText(
-      '已套用（已取得實際觀測確認）',
-    );
-    await expect(page.getByTestId('member-detail-entitlement-badge')).toHaveText(
-      'suspended',
-    );
+      await waitForOperationHeadline(
+        page,
+        request,
+        'admin',
+        '已套用（已取得實際觀測確認）',
+      );
+      await expect(page.getByTestId('member-detail-entitlement-badge')).toHaveText(
+        'suspended',
+      );
 
-    // 5. Issue a finite entitlement grant on the member and verify 202 operation banner and grant row
-    await page.getByTestId('create-grant-btn').click();
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('operation-status-headline')).toBeVisible();
-    const grantRows = page.locator('[data-testid^="admin-grant-row-"]');
-    await expect(grantRows.first()).toBeVisible();
-    await expect(grantRows).not.toHaveCount(0);
-    await expect(grantRows.first()).toContainText('Migration parallel transition grant');
+      // 5. Issue a finite entitlement grant on the member and verify 202 operation banner and grant row
+      await page.getByTestId('create-grant-btn').click();
+      await expect(page.getByTestId('operation-banner')).toBeVisible();
+      await expect(page.getByTestId('operation-status-headline')).toBeVisible();
+      const grantRows = page.locator('[data-testid^="admin-grant-row-"]');
+      await expect(grantRows.first()).toBeVisible();
+      await expect(grantRows).not.toHaveCount(0);
+      await expect(grantRows.first()).toContainText(
+        'Migration parallel transition grant',
+      );
 
-    // 6. Restore default seeded active member and verify /member/usage decimal precision (> 2^53) & watermark
-    const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
-    expect(restoreRes.ok()).toBeTruthy();
+      // 6. Restore default seeded active member and verify /member/usage decimal precision (> 2^53) & watermark
+      const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
+      expect(restoreRes.ok()).toBeTruthy();
 
-    await page.goto('/member/usage');
-    await expect(page.getByTestId('member-usage-page')).toBeVisible();
-    await expect(page.getByTestId('usage-total-card')).toContainText(
-      'raw: 18014398509481988 B',
-    );
-    await expect(page.getByTestId('usage-as-of-badge')).toContainText(/Z\)/);
-    await expect(page.getByTestId('honest-metering-banner')).toBeVisible();
-    await expect(page.getByTestId('usage-gap-warning-banner')).toBeVisible();
+      await page.goto('/member/usage');
+      await expect(page.getByTestId('member-usage-page')).toBeVisible();
+      await expect(page.getByTestId('usage-total-card')).toContainText(
+        'raw: 18014398509481988 B',
+      );
+      await expect(page.getByTestId('usage-as-of-badge')).toContainText(/Z\)/);
+      await expect(page.getByTestId('honest-metering-banner')).toBeVisible();
+      await expect(page.getByTestId('usage-gap-warning-banner')).toBeVisible();
+    } finally {
+      const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
+      expect(restoreRes.ok()).toBeTruthy();
+    }
   });
 
   test('TestOperator_NodePatchAnd412PreconditionConflict', async ({ page, request }) => {
@@ -537,8 +603,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('pub-group-checkbox-asia-premium').check();
     await expect(page.getByTestId('pub-group-checkbox-asia-premium')).toBeChecked();
     await page.getByTestId('publish-node-btn').click();
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('operation-status-headline')).toHaveText(
+    await waitForOperationHeadline(
+      page,
+      request,
+      'admin',
       '已套用（已取得實際觀測確認）',
     );
     await expect(page.getByTestId('node-attached-groups')).toContainText(
@@ -573,6 +641,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
 
     // 3. Members never see group_id values on member exit views (D-057)
+    const restoreMemberRes = await request.post(
+      `${BASE_URL}/__e2e/restore-default-member`,
+    );
+    expect(restoreMemberRes.ok()).toBeTruthy();
     await page.goto('/member/exits');
     await expect(page.getByTestId('member-exits-page')).toBeVisible();
     const exitRows = page.locator('[data-testid^="member-exit-row-"]');
@@ -638,7 +710,7 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('policy-definitions-table')).toContainText('#2');
   });
 
-  test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page }) => {
+  test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page, request }) => {
     // 1. Navigate to /admin/policies/fup and verify TEST ONLY fair-use policy & overrides
     await page.goto('/admin/policies/fup');
     await expect(page.getByTestId('admin-fup-policy-page')).toBeVisible();
@@ -655,8 +727,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     // 2. Validate, create immutable revision, and activate with If-Match (202 operation)
     await page.getByTestId('fup-submit-btn').click();
     await expect(page.getByTestId('fup-validation-passed')).toBeVisible();
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('operation-status-headline')).toHaveText(
+    await waitForOperationHeadline(
+      page,
+      request,
+      'admin',
       '已套用（已取得實際觀測確認）',
     );
     await expect(page.getByTestId('op-step-desired_state_compile')).toContainText(
@@ -736,10 +810,12 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       const auditRows = page.locator('[data-testid^="audit-row-"]');
       await expect(auditRows.first()).toBeVisible();
       await expect(auditRows).not.toHaveCount(0);
-      await expect(auditRows.first()).toContainText('fleet_config.update');
-      await expect(auditRows.first()).toContainText('86400');
-      await expect(auditRows.first()).toContainText('3600');
-      await expect(auditRows.first()).toContainText(updateReason);
+      const updateAuditRow = auditRows.filter({ hasText: 'fleet_config.update' }).first();
+      await expect(updateAuditRow).toBeVisible();
+      await expect(updateAuditRow).toContainText('fleet_config.update');
+      await expect(updateAuditRow).toContainText('86400');
+      await expect(updateAuditRow).toContainText('3600');
+      await expect(updateAuditRow).toContainText(updateReason);
 
       // 4. Return to /admin/settings and reload to see the new value (3600)
       await page.goto('/admin/settings');

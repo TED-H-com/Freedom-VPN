@@ -599,3 +599,75 @@ Member entitlement recompilation includes `previous_exit_group_ids` when
 provided and every current envelope still carrying that member's device binding
 or rate policy. This removes access on nodes in removed groups even when an older
 producer supplies only new groups (D-052 F-02).
+
+## Revocation completion under pending isolation errors and lease readiness (Follow-up 18)
+
+When an accepted `ObservationReport` on `applied_config_generation >= desired_config_generation`
+carries an `ISOLATION_POLICY_INVALID` apply error while member forwarding remains active
+(for example, a pending `conntrack -D` flow flush after the serving ruleset is verified,
+r13 M-3), `SubmitObservation` degrades `data_health` to `degraded`, withholds publication
+serving evidence (`PublicationDataPathFailure = "isolation_unconfirmed"`), and holds the
+`"nodes"` step of matching member/entitlement/device operations in `pending` with
+`error_code = "ISOLATION_POLICY_INVALID"`, `error_message = "member_forwarding_unconfirmed"`,
+`reason = "conntrack_delete_pending"`, and a correlated `node.revoke_isolation_pending`
+(`result = "failed"`) audit event. The `"nodes"` step completes and emits
+`node.revoke_isolation_resolved` (`result = "succeeded"`) only when either (a) a subsequent
+observation on the target generation clears the `ISOLATION_POLICY_INVALID` error
+(`resolution = "conntrack_delete_succeeded"`), or (b) the node fails closed after exhausting
+its bounded retry (`member_forwarding_enabled = false`, `safety_status = "failed"`,
+`provisioning_state = "applying"`, `internet_only = "passed"`,
+`resolution = "node_failed_closed"`).
+
+For serving leases (`POST /api/v1/agent/lease-renewals`, `leases.Service.RenewTx`), member
+grants are included only when `lifecycle_state == 'registered'`,
+`publication_intent == 'published'`, and `provisioning_state == 'ready'`. A registered,
+published node with compiled `device_bindings > 0` that is not yet `ready` receives a
+grant-less lease (`members: []`) on `config_generation == desired_config_generation`; once
+its ready observation is ingested, the next `RenewTx` carries the member grants on that
+same `config_generation`. Once an incarnation has reached `provisioning_state = 'ready'`,
+an in-flight observation for an already-applied generation with `safety_status = 'passed'`
+does not downgrade `provisioning_state` back to `'applying'` when central concurrently
+advances `desired_config_generation`, preventing avoidable grant-less lease windows across
+policy recompilations.
+
+## Node incarnation history, enrollment `token_sha256`, and `awaiting_member_grants` (Follow-up 19)
+
+`GET /api/v1/admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`, revision 10;
+ENR-03) is wired on `httpwire.Handlers.ListNodeIncarnations` backed by
+`nodes.Service.ListNodeIncarnations` (`internal/nodes/incarnations.go`). With this handler
+registered on `httpapi.Composite`, all 47 OpenAPI operations are wired.
+
+- **Single-query read model**: Queries `nodes` with a `LEFT JOIN LATERAL` over
+  `node_incarnations`, `node_enrollments`, `usage_checkpoints`, `usage_events`, and
+  `usage_samples` ordered by `created_at DESC, id DESC` with cursor pagination (`limit`
+  default 50, max 100; cursor `<= 512` chars). Returns 404 `RESOURCE_NOT_FOUND` only when
+  the `nodes` row is absent; a node with no incarnations returns `200` with `items: []`
+  and `next_cursor: null`.
+- **Lifecycle and retire reason**: `current` is `nodes.current_incarnation_id = i.id`.
+  `state` is `active` when `i.revoked_at IS NULL` else `retired`. `retire_reason` is `null`
+  while active; when retired, `reinstall` if a later `node_incarnations` row exists for the
+  node, else `revocation` if `nodes.lifecycle_state` is `revoked` or `retired`, else
+  `supersession`.
+- **Retained per-incarnation usage**: Sums `usage_samples.upload_bytes` and
+  `usage_samples.download_bytes` (`NUMERIC(20,0)`) per `(node_id, incarnation_id)` as
+  `decstr.U64` (failing closed with 500 `INTERNAL_ERROR` if a sum exceeds $2^{64}-1$) and
+  maps `usage_checkpoints.updated_at` to `usage.through` (`null` without a checkpoint row;
+  `"0"` bytes with `through` set when a checkpoint row has no samples). Rejections,
+  conflicts, and rollups are never read, and retained usage never moves between
+  incarnations across reinstalls.
+- **Enrollment `token_sha256` (ENR-02)**: `createEnrollment` (create and replay),
+  `getEnrollment`, and `revokeEnrollment` pass through `api.Enrollment.TokenSha256` (64
+  lowercase hex characters of `node_enrollments.token_hash`), and `enrollment.created`
+  audit events expose `changes.after.token_sha256` unredacted.
+- **`awaiting_member_grants` (`ForwardingBlockReason`, D-067)**: `SubmitObservation`
+  validates `report.ForwardingBlockReasons` against `api.ForwardingBlockReason.Valid()` and
+  accepts `awaiting_member_grants` ("valid node lease, no member grants yet while bindings
+  are desired"). When `member_forwarding_enabled == false` with `awaiting_member_grants`
+  and `internet_only == passed` (`meter_path` absent, `not_run`, or `passed`),
+  `evaluateObservationEvidence` keeps `safety_status = 'passed'` and `data_health = 'healthy'`
+  (provisional, not `expired`). `GetNode` and `ListNodes` project `provisioning_state = 'ready'`,
+  `safety_status = 'passed'`, `data_health = 'healthy'`, and `member_forwarding_observed = false`,
+  while `node_observations.report_payload` retains `forwarding_block_reasons: ["awaiting_member_grants"]`
+  and `PublicationDataPathFailure` returns `"forwarding_disabled"` so publication state is
+  unchanged until member grants arrive and member forwarding is enabled.
+

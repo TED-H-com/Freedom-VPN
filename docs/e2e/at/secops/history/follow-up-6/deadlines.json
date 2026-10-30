@@ -1,0 +1,2305 @@
+{
+  "schema_version": 1,
+  "follow_up": 5,
+  "run_id": "86e6106a-1be1-4003-9b0f-35a30e9cda12",
+  "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+  "probe_source_sha256": "bb9e726e4997f6f59fbbb4d6ac2b007c75aa30ab1cf0fc65c4bb795d6df5ac52",
+  "started_at": "2026-10-30T09:26:55.383432456Z",
+  "finished_at": "2026-10-30T09:45:27.565293215Z",
+  "policy_revision": "1",
+  "node_incarnation": "01a18c23-076a-79fb-af87-c28a9ac798a0",
+  "secondary_node_incarnation": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+  "image_digests": [
+    {
+      "image_id": "sha256:bb6608e4f6f966c410892a7f8bc7f023a3ec2d35ac48c4ea6089e64f91062c66",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:54b557988efb2328e10fdd6945d53b7a23f111e634fd2cb5025c20af94633929",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:9a761831f273a26f3ae8f58a8d565bde09f62267e90bd0380132e29a5d5b1618",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:457fd978be9cc245b5e57c25a0a7d30bf11522e2df2901d25debb7b5c49eb1dd",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:7f15d6df60d770b59512b00ca98fa888bbae9d795bff04a395f8ac9f27c4d57f",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:fb3d6639726f7e1160b9145c4a132cfe945aa3d89211cb986056cd0150daff38",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-grant"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-paid"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-counted-b"
+    }
+  ],
+  "build_digests": [
+    {
+      "name": "fvpn-agent",
+      "sha256": "e58ce507f6e8cc6e90c1614daad37d62ac394bb2264615b780d1417cf4213f58",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-control",
+      "sha256": "ef97948f8d9bc326163f7b407c067d8a67f279215aa5ef2d232d61133d11a132",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-idp",
+      "sha256": "b079831f2ba6448fafca64d19005f39117e9dac44fd4378981c0fcdbfa94a2c2",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "sha256": "171dd8f5b28adfee27eaef82417e810480c5a241f9dff085df02f34832c6e469",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-nodeconfig",
+      "sha256": "f5cf21b2018e7e8135dbbdaa571bf69ee23604faa4d6435adebfcb462661cdd9",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-origin",
+      "sha256": "2f5e7744dc3abe4883f6265a1255a1c2734556f1c1398a7138459249309ceb43",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "sha256": "825a8f62213dcaeae59cacf2ecd760d5216f1b8fea4fae8103ad896cfe21d0af",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "sha256": "d8a04949a3a789311e0c7c3896a333c91f89537ae6b92e8651d1d35989ad42ad",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "sha256": "96825f58bc15c94f77d9e7000152c5545146818e3ba7533b6d2f4d6c24880c02",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "sha256": "c1ff8ce46603a0458e905e26de6c9c4e63539faf42f0cbe14c9e6700bf0d6b61",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "sha256": "47a86133875571c8da3455a7b83a2797a2cc4d84347dc4875521c5b18243d6e7",
+      "kind": "prepared application binary"
+    }
+  ],
+  "commands": [
+    "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/at-secops.mk at-secops-followup5"
+  ],
+  "hardware": "shared development host; not candidate hardware",
+  "id": "AT29-deadline-subsets",
+  "status": "blocked",
+  "expected": "Established TCP/UDP and new flows stop at the earliest finite deadline despite control loss, agent/watchdog failure and clock rollback; only a fresh verified policy restores forwarding.",
+  "actual": {
+    "grace": {
+      "owner": "w3-devstack-e2e",
+      "reason": "prepared config/members.json grace_seconds=0; no documented finite-grace configuration hook; no projected rows or lab config rewritten",
+      "status": "blocked"
+    },
+    "grant": {
+      "after_control_restored_expired": {
+        "blocker": "expected exactly one advertised product exit",
+        "counted": false,
+        "exact_native_output_retained": true,
+        "network_list": "No networks available.",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "peer": {
+          "container_role": "member-secops-deadline-grant",
+          "device_id": "01a18c2f-b5df-79fb-9486-e14fe7505051"
+        },
+        "public_status_scope": "full status private; network IDs and route semantics only published",
+        "utc": "2026-10-30T09:44:57.583208211Z"
+      },
+      "after_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "19",
+        "mono_ns": "708470560737983",
+        "policy_expires_mono_ns": "708512192137410",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793353431363916972"
+      },
+      "after_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ],
+              "elem": [
+                {
+                  "elem": {
+                    "val": "100.82.107.158",
+                    "timeout": 2629,
+                    "expires": 2578
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.121.150",
+                    "timeout": 1057,
+                    "expires": 1006
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.167.98",
+                    "timeout": 2629,
+                    "expires": 2578
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "agent_kill_command_ok": true,
+      "before_fault": {
+        "admitted_bytes_delta": {
+          "download": "1512",
+          "upload": "1066"
+        },
+        "after_bytes": {
+          "download": "1512",
+          "generation": "18",
+          "upload": "1066"
+        },
+        "before_bytes": {
+          "download": "0",
+          "generation": "18",
+          "upload": "0"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Not Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-secops-deadline-grant",
+          "device_id": "01a18c2f-b5df-79fb-9486-e14fe7505051"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.135.43 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-30T09:41:44.860843931Z"
+      },
+      "before_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "19",
+        "mono_ns": "708465488749664",
+        "policy_expires_mono_ns": "708512192137410",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793353426291928448"
+      },
+      "before_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ],
+              "elem": [
+                {
+                  "elem": {
+                    "val": "100.82.107.158",
+                    "timeout": 2634,
+                    "expires": 2631
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.121.150",
+                    "timeout": 1062,
+                    "expires": 1059
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.135.43",
+                    "timeout": 46,
+                    "expires": 43
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.167.98",
+                    "timeout": 2634,
+                    "expires": 2631
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "control_lost_agent_alive": {
+        "after_bytes": {
+          "download": "3025",
+          "generation": "19",
+          "upload": "2081"
+        },
+        "before_bytes": {
+          "download": "1512",
+          "generation": "19",
+          "upload": "1066"
+        },
+        "counter_reads_ok": true,
+        "elapsed_seconds": 0.122673797,
+        "http_200": true,
+        "utc": "2026-10-30T09:43:53.759807964Z"
+      },
+      "control_stop_ok": true,
+      "control_stop_utc": "2026-10-30T09:43:48.289186518Z",
+      "expected_service_end": "2026-10-30T09:44:33Z",
+      "lease_read_ok": true,
+      "recovery_ack": {
+        "applied_config_generation": "20",
+        "available": true,
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "qos",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "tunnel_probe",
+            "status": "passed"
+          }
+        ],
+        "data_health": "healthy",
+        "forwarding_evidence_satisfied": true,
+        "lease": {
+          "expires_at": "2026-10-31T09:44:43.91702826Z",
+          "lease_id": "26c8aeff-5876-4eb2-8be9-de87dddae2c1"
+        },
+        "member_forwarding_enabled": true,
+        "observed_at": "2026-10-30T09:44:44.004460238Z",
+        "provisioning_state": "ready",
+        "report_id": "01a18c32-86e4-7715-aa04-1252ffb4fb03",
+        "safety_status": "passed"
+      },
+      "recovery_flow": {
+        "admitted_bytes_delta": {
+          "download": "1513",
+          "upload": "1066"
+        },
+        "after_bytes": {
+          "download": "54469",
+          "generation": "21",
+          "upload": "37082"
+        },
+        "before_bytes": {
+          "download": "52956",
+          "generation": "21",
+          "upload": "36016"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-secops-deadline-grant",
+          "device_id": "01a18c2f-b5df-79fb-9486-e14fe7505051"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.135.43 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-30T09:45:01.053203158Z"
+      },
+      "recovery_grant_status": 202,
+      "recovery_source_intervals": {
+        "grants": [
+          {
+            "revoked_at": null,
+            "valid_until": "2026-10-30T09:44:33Z"
+          },
+          {
+            "revoked_at": null,
+            "valid_until": "2026-10-30T10:04:57.856638Z"
+          }
+        ],
+        "paid_through": null,
+        "effective_service_end": "2026-10-30T10:04:57.856638Z"
+      },
+      "recovery_source_read_ok": true,
+      "samples": [
+        {
+          "after_bytes": {
+            "download": "4538",
+            "generation": "19",
+            "upload": "3096"
+          },
+          "before_bytes": {
+            "download": "3025",
+            "generation": "19",
+            "upload": "2081"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.114288948,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 5.834950628,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:43:54.009846663Z"
+        },
+        {
+          "after_bytes": {
+            "download": "6050",
+            "generation": "19",
+            "upload": "4111"
+          },
+          "before_bytes": {
+            "download": "4538",
+            "generation": "19",
+            "upload": "3096"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122034154,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 7.007571746,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:43:55.17472265Z"
+        },
+        {
+          "after_bytes": {
+            "download": "7563",
+            "generation": "19",
+            "upload": "5166"
+          },
+          "before_bytes": {
+            "download": "6050",
+            "generation": "19",
+            "upload": "4111"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122282692,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 8.181702353,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:43:56.348604802Z"
+        },
+        {
+          "after_bytes": {
+            "download": "9077",
+            "generation": "19",
+            "upload": "6221"
+          },
+          "before_bytes": {
+            "download": "7563",
+            "generation": "19",
+            "upload": "5166"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120959773,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 9.350135926,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:43:57.51836095Z"
+        },
+        {
+          "after_bytes": {
+            "download": "10589",
+            "generation": "19",
+            "upload": "7236"
+          },
+          "before_bytes": {
+            "download": "9077",
+            "generation": "19",
+            "upload": "6221"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120594185,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 10.51874069,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:43:58.687331879Z"
+        },
+        {
+          "after_bytes": {
+            "download": "12103",
+            "generation": "19",
+            "upload": "8291"
+          },
+          "before_bytes": {
+            "download": "10589",
+            "generation": "19",
+            "upload": "7236"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122223693,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 11.691889153,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:43:59.858850754Z"
+        },
+        {
+          "after_bytes": {
+            "download": "13617",
+            "generation": "19",
+            "upload": "9306"
+          },
+          "before_bytes": {
+            "download": "12103",
+            "generation": "19",
+            "upload": "8291"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.123390128,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 12.864676698,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:01.030472075Z"
+        },
+        {
+          "after_bytes": {
+            "download": "15130",
+            "generation": "19",
+            "upload": "10321"
+          },
+          "before_bytes": {
+            "download": "13617",
+            "generation": "19",
+            "upload": "9306"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122242419,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 14.032421492,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:02.199364004Z"
+        },
+        {
+          "after_bytes": {
+            "download": "16642",
+            "generation": "19",
+            "upload": "11376"
+          },
+          "before_bytes": {
+            "download": "15130",
+            "generation": "19",
+            "upload": "10321"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.119324087,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 15.200081465,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:03.369942792Z"
+        },
+        {
+          "after_bytes": {
+            "download": "18154",
+            "generation": "19",
+            "upload": "12431"
+          },
+          "before_bytes": {
+            "download": "16642",
+            "generation": "19",
+            "upload": "11376"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121584733,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 16.370680027,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:04.538280545Z"
+        },
+        {
+          "after_bytes": {
+            "download": "19668",
+            "generation": "19",
+            "upload": "13446"
+          },
+          "before_bytes": {
+            "download": "18154",
+            "generation": "19",
+            "upload": "12431"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.123759147,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 17.544999823,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:05.71042514Z"
+        },
+        {
+          "after_bytes": {
+            "download": "21180",
+            "generation": "19",
+            "upload": "14461"
+          },
+          "before_bytes": {
+            "download": "19668",
+            "generation": "19",
+            "upload": "13446"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.117586687,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 18.712892706,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:06.884491164Z"
+        },
+        {
+          "after_bytes": {
+            "download": "22692",
+            "generation": "19",
+            "upload": "15476"
+          },
+          "before_bytes": {
+            "download": "21180",
+            "generation": "19",
+            "upload": "14461"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120711229,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 19.883952006,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:08.052426092Z"
+        },
+        {
+          "after_bytes": {
+            "download": "24205",
+            "generation": "19",
+            "upload": "16491"
+          },
+          "before_bytes": {
+            "download": "22692",
+            "generation": "19",
+            "upload": "15476"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121192653,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 21.052934905,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:09.220927635Z"
+        },
+        {
+          "after_bytes": {
+            "download": "25719",
+            "generation": "19",
+            "upload": "17506"
+          },
+          "before_bytes": {
+            "download": "24205",
+            "generation": "19",
+            "upload": "16491"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.123945265,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 22.225785071,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:10.391024773Z"
+        },
+        {
+          "after_bytes": {
+            "download": "27232",
+            "generation": "19",
+            "upload": "18561"
+          },
+          "before_bytes": {
+            "download": "25719",
+            "generation": "19",
+            "upload": "17506"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.118234057,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 23.389457006,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:11.560408438Z"
+        },
+        {
+          "after_bytes": {
+            "download": "28745",
+            "generation": "19",
+            "upload": "19576"
+          },
+          "before_bytes": {
+            "download": "27232",
+            "generation": "19",
+            "upload": "18561"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.124635621,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 24.561649326,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:12.72619884Z"
+        },
+        {
+          "after_bytes": {
+            "download": "30259",
+            "generation": "19",
+            "upload": "20631"
+          },
+          "before_bytes": {
+            "download": "28745",
+            "generation": "19",
+            "upload": "19576"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120427352,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 25.732269755,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:13.901027931Z"
+        },
+        {
+          "after_bytes": {
+            "download": "31772",
+            "generation": "19",
+            "upload": "21646"
+          },
+          "before_bytes": {
+            "download": "30259",
+            "generation": "19",
+            "upload": "20631"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122977764,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 26.901999253,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:15.06820658Z"
+        },
+        {
+          "after_bytes": {
+            "download": "33286",
+            "generation": "19",
+            "upload": "22701"
+          },
+          "before_bytes": {
+            "download": "31772",
+            "generation": "19",
+            "upload": "21646"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.125437539,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 28.075616522,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:16.239364032Z"
+        },
+        {
+          "after_bytes": {
+            "download": "34799",
+            "generation": "19",
+            "upload": "23716"
+          },
+          "before_bytes": {
+            "download": "33286",
+            "generation": "19",
+            "upload": "22701"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.116763404,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 29.237948586999998,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:17.41037067Z"
+        },
+        {
+          "after_bytes": {
+            "download": "36312",
+            "generation": "19",
+            "upload": "24731"
+          },
+          "before_bytes": {
+            "download": "34799",
+            "generation": "19",
+            "upload": "23716"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.124386022,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 30.411188113,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:18.575987436Z"
+        },
+        {
+          "after_bytes": {
+            "download": "37824",
+            "generation": "19",
+            "upload": "25786"
+          },
+          "before_bytes": {
+            "download": "36312",
+            "generation": "19",
+            "upload": "24731"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121311383,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 31.583117184,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:19.750991049Z"
+        },
+        {
+          "after_bytes": {
+            "download": "39337",
+            "generation": "19",
+            "upload": "26801"
+          },
+          "before_bytes": {
+            "download": "37824",
+            "generation": "19",
+            "upload": "25786"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122889244,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 32.755506473,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:20.921802338Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40849",
+            "generation": "19",
+            "upload": "27816"
+          },
+          "before_bytes": {
+            "download": "39337",
+            "generation": "19",
+            "upload": "26801"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.168763001,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 34.028090127,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:22.148511802Z"
+        },
+        {
+          "after_bytes": {
+            "download": "42362",
+            "generation": "19",
+            "upload": "28831"
+          },
+          "before_bytes": {
+            "download": "40849",
+            "generation": "19",
+            "upload": "27816"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.135794057,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 35.222295721,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:23.375685578Z"
+        },
+        {
+          "after_bytes": {
+            "download": "43875",
+            "generation": "19",
+            "upload": "29846"
+          },
+          "before_bytes": {
+            "download": "42362",
+            "generation": "19",
+            "upload": "28831"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.125581104,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 36.40380667,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:24.567410447Z"
+        },
+        {
+          "after_bytes": {
+            "download": "45388",
+            "generation": "19",
+            "upload": "30861"
+          },
+          "before_bytes": {
+            "download": "43875",
+            "generation": "19",
+            "upload": "29846"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.173623313,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 37.696612113,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:25.812173307Z"
+        },
+        {
+          "after_bytes": {
+            "download": "46902",
+            "generation": "19",
+            "upload": "31876"
+          },
+          "before_bytes": {
+            "download": "45388",
+            "generation": "19",
+            "upload": "30861"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.12997968,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 38.912916836,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:27.072122342Z"
+        },
+        {
+          "after_bytes": {
+            "download": "48415",
+            "generation": "19",
+            "upload": "32931"
+          },
+          "before_bytes": {
+            "download": "46902",
+            "generation": "19",
+            "upload": "31876"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.123946261,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 40.086490496,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:28.251729389Z"
+        },
+        {
+          "after_bytes": {
+            "download": "49928",
+            "generation": "19",
+            "upload": "33986"
+          },
+          "before_bytes": {
+            "download": "48415",
+            "generation": "19",
+            "upload": "32931"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.119691911,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 41.25388901,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:29.423382569Z"
+        },
+        {
+          "after_bytes": {
+            "download": "51442",
+            "generation": "19",
+            "upload": "35001"
+          },
+          "before_bytes": {
+            "download": "49928",
+            "generation": "19",
+            "upload": "33986"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.123025319,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 42.425395232,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:30.591555032Z"
+        },
+        {
+          "after_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "before_bytes": {
+            "download": "51442",
+            "generation": "19",
+            "upload": "35001"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122050559,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 43.595572772,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:31.762707273Z"
+        },
+        {
+          "after_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "before_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.079557691,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 46.723638475,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:44:32.933266429Z"
+        },
+        {
+          "after_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "before_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.079718851,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 49.851256375,
+          "request_start_after_service_end": true,
+          "utc": "2026-10-30T09:44:36.060723257Z"
+        },
+        {
+          "after_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "before_bytes": {
+            "download": "52956",
+            "generation": "19",
+            "upload": "36016"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.076215935,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 52.973852437,
+          "request_start_after_service_end": true,
+          "utc": "2026-10-30T09:44:39.186822424Z"
+        }
+      ],
+      "service_kind": "grant",
+      "signed_lease_bounds": {
+        "members": [
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-3967-7004-8f1b-7cf7ba251a57",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-3dc2-75fa-be6b-2f0143866585",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4219-7800-b6b5-bc48fac91aee",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4679-7ca9-bfb0-bde7331a3ccf",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4ae1-7ecc-a77a-cde9620105f0",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4f3e-7061-89f6-2accf44ca4fa",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-5395-7a3a-b1e3-1ca8d78c5512",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-57f4-765d-8be5-1f6422e5e5e2",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-5c60-75d5-82bd-ba6135cb598f",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-60ca-7954-bdf1-ffa236b8ac7d",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-6535-7070-a26a-6fa070252757",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-698a-792a-82c0-0d82616a509c",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-6de6-763d-9bd6-d328c2c8d8da",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-7245-768a-a247-3a76c8157878",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-76a0-7c43-b5dd-7c346b7bd952",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-7afb-76fe-b334-017c1c226f61",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-7f51-7bf9-8e61-7c4aba0ecb7f",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-83aa-7dfa-9507-7bb09e2876bd",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-880b-7862-931d-c320a5f2950c",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-8c72-7a0c-bc95-1246d2659ace",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:01:28.505099Z",
+            "member_id": "01a18c2c-72df-7332-94f3-266e7e404023",
+            "entitlement_revision": "3",
+            "effective_service_end": "2026-10-30T10:01:28.505099Z"
+          },
+          {
+            "lease_end": "2026-10-30T09:44:33Z",
+            "member_id": "01a18c2f-9d88-74ef-904b-cf10a228e703",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-10-30T09:44:33Z"
+          }
+        ],
+        "lease_id": "28580368-cdc0-4b83-bc9d-752b00702d27",
+        "issued_at": "2026-10-30T09:41:44.361650Z",
+        "expires_at": "2026-10-31T09:41:44.361650Z",
+        "generation": "18"
+      },
+      "status": "passed repeated-HTTPS subset",
+      "success_after_service_end": false,
+      "watchdog_paused": true,
+      "watchdog_stop_ok": true,
+      "evaluated_status": "passed repeated-HTTPS subset",
+      "original_source_end_unchanged": true
+    },
+    "paid": {
+      "after_control_restored_expired": {
+        "blocker": "expected exactly one advertised product exit",
+        "counted": false,
+        "exact_native_output_retained": true,
+        "network_list": "No networks available.",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "peer": {
+          "container_role": "member-secops-deadline-paid",
+          "device_id": "01a18c2c-ba71-7065-ab78-efc5a264ff40"
+        },
+        "public_status_scope": "full status private; network IDs and route semantics only published",
+        "utc": "2026-10-30T09:41:28.253348736Z"
+      },
+      "after_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "14",
+        "mono_ns": "708262642612140",
+        "policy_expires_mono_ns": "708304193454487",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793353223445790940"
+      },
+      "after_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ]
+            }
+          }
+        ]
+      },
+      "agent_kill_command_ok": true,
+      "before_fault": {
+        "admitted_bytes_delta": {
+          "download": "1513",
+          "upload": "1106"
+        },
+        "after_bytes": {
+          "download": "3026",
+          "generation": "13",
+          "upload": "2172"
+        },
+        "before_bytes": {
+          "download": "1513",
+          "generation": "13",
+          "upload": "1066"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-secops-deadline-paid",
+          "device_id": "01a18c2c-ba71-7065-ab78-efc5a264ff40"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.121.150 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-30T09:38:30.143865448Z"
+      },
+      "before_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "14",
+        "mono_ns": "708257560679927",
+        "policy_expires_mono_ns": "708304193454487",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793353218363858856"
+      },
+      "before_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ],
+              "elem": [
+                {
+                  "elem": {
+                    "val": "100.82.107.158",
+                    "timeout": 2842,
+                    "expires": 2839
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.121.150",
+                    "timeout": 46,
+                    "expires": 43
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.82.167.98",
+                    "timeout": 2842,
+                    "expires": 2839
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "control_lost_agent_alive": {
+        "after_bytes": {
+          "download": "4540",
+          "generation": "14",
+          "upload": "3187"
+        },
+        "before_bytes": {
+          "download": "3026",
+          "generation": "14",
+          "upload": "2172"
+        },
+        "counter_reads_ok": true,
+        "elapsed_seconds": 0.123205778,
+        "http_200": true,
+        "utc": "2026-10-30T09:40:25.861344503Z"
+      },
+      "control_stop_ok": true,
+      "control_stop_utc": "2026-10-30T09:40:20.556242925Z",
+      "expected_service_end": "2026-10-30T09:41:05Z",
+      "lease_read_ok": true,
+      "recovery_ack": {
+        "applied_config_generation": "15",
+        "available": true,
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "qos",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "tunnel_probe",
+            "status": "passed"
+          }
+        ],
+        "data_health": "healthy",
+        "forwarding_evidence_satisfied": true,
+        "lease": {
+          "expires_at": "2026-10-31T09:41:13.637198677Z",
+          "lease_id": "dea63338-e90c-4f95-b032-b151a42c695a"
+        },
+        "member_forwarding_enabled": true,
+        "observed_at": "2026-10-30T09:41:13.711594459Z",
+        "provisioning_state": "ready",
+        "report_id": "01a18c2f-516f-791a-a67c-8ffccfd85772",
+        "safety_status": "passed"
+      },
+      "recovery_flow": {
+        "admitted_bytes_delta": {
+          "download": "1512",
+          "upload": "1106"
+        },
+        "after_bytes": {
+          "download": "42366",
+          "generation": "16",
+          "upload": "29093"
+        },
+        "before_bytes": {
+          "download": "40854",
+          "generation": "16",
+          "upload": "27987"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-secops-deadline-paid",
+          "device_id": "01a18c2c-ba71-7065-ab78-efc5a264ff40"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.121.150 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-30T09:41:31.681950208Z"
+      },
+      "recovery_grant_status": 202,
+      "recovery_source_intervals": {
+        "grants": [
+          {
+            "revoked_at": null,
+            "valid_until": "2026-10-30T10:01:28.505099Z"
+          }
+        ],
+        "paid_through": "2026-10-30T09:41:05Z",
+        "effective_service_end": "2026-10-30T10:01:28.505099Z"
+      },
+      "recovery_source_read_ok": true,
+      "samples": [
+        {
+          "after_bytes": {
+            "download": "6054",
+            "generation": "14",
+            "upload": "4202"
+          },
+          "before_bytes": {
+            "download": "4540",
+            "generation": "14",
+            "upload": "3187"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121124259,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 5.639064429,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:26.074181845Z"
+        },
+        {
+          "after_bytes": {
+            "download": "7567",
+            "generation": "14",
+            "upload": "5257"
+          },
+          "before_bytes": {
+            "download": "6054",
+            "generation": "14",
+            "upload": "4202"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.324616372,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 7.013112303,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:27.24473752Z"
+        },
+        {
+          "after_bytes": {
+            "download": "9081",
+            "generation": "14",
+            "upload": "6272"
+          },
+          "before_bytes": {
+            "download": "7567",
+            "generation": "14",
+            "upload": "5257"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121199191,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 8.178606874,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:28.613649291Z"
+        },
+        {
+          "after_bytes": {
+            "download": "10595",
+            "generation": "14",
+            "upload": "7327"
+          },
+          "before_bytes": {
+            "download": "9081",
+            "generation": "14",
+            "upload": "6272"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121936326,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 9.349792536,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:29.784098202Z"
+        },
+        {
+          "after_bytes": {
+            "download": "12108",
+            "generation": "14",
+            "upload": "8342"
+          },
+          "before_bytes": {
+            "download": "10595",
+            "generation": "14",
+            "upload": "7327"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120630587,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 10.520137332000001,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:30.955748385Z"
+        },
+        {
+          "after_bytes": {
+            "download": "13620",
+            "generation": "14",
+            "upload": "9397"
+          },
+          "before_bytes": {
+            "download": "12108",
+            "generation": "14",
+            "upload": "8342"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.119858743,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 11.691114661,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:32.127497744Z"
+        },
+        {
+          "after_bytes": {
+            "download": "15134",
+            "generation": "14",
+            "upload": "10412"
+          },
+          "before_bytes": {
+            "download": "13620",
+            "generation": "14",
+            "upload": "9397"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.112613803,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 12.850546403,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:33.294174703Z"
+        },
+        {
+          "after_bytes": {
+            "download": "16647",
+            "generation": "14",
+            "upload": "11427"
+          },
+          "before_bytes": {
+            "download": "15134",
+            "generation": "14",
+            "upload": "10412"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.123211505,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 14.022475411,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:34.455505575Z"
+        },
+        {
+          "after_bytes": {
+            "download": "18161",
+            "generation": "14",
+            "upload": "12442"
+          },
+          "before_bytes": {
+            "download": "16647",
+            "generation": "14",
+            "upload": "11427"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122681343,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 15.192032426,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:35.625592605Z"
+        },
+        {
+          "after_bytes": {
+            "download": "19674",
+            "generation": "14",
+            "upload": "13497"
+          },
+          "before_bytes": {
+            "download": "18161",
+            "generation": "14",
+            "upload": "12442"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122269895,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 16.362050837,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:36.796022172Z"
+        },
+        {
+          "after_bytes": {
+            "download": "21188",
+            "generation": "14",
+            "upload": "14512"
+          },
+          "before_bytes": {
+            "download": "19674",
+            "generation": "14",
+            "upload": "13497"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.119876191,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 17.528376859,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:37.964742419Z"
+        },
+        {
+          "after_bytes": {
+            "download": "22701",
+            "generation": "14",
+            "upload": "15567"
+          },
+          "before_bytes": {
+            "download": "21188",
+            "generation": "14",
+            "upload": "14512"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.124463153,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 18.701184865,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:39.132963187Z"
+        },
+        {
+          "after_bytes": {
+            "download": "24213",
+            "generation": "14",
+            "upload": "16622"
+          },
+          "before_bytes": {
+            "download": "22701",
+            "generation": "14",
+            "upload": "15567"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121235974,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 19.872479978,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:40.307485559Z"
+        },
+        {
+          "after_bytes": {
+            "download": "25726",
+            "generation": "14",
+            "upload": "17637"
+          },
+          "before_bytes": {
+            "download": "24213",
+            "generation": "14",
+            "upload": "16622"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120594466,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 21.042029116,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:41.477675609Z"
+        },
+        {
+          "after_bytes": {
+            "download": "27238",
+            "generation": "14",
+            "upload": "18652"
+          },
+          "before_bytes": {
+            "download": "25726",
+            "generation": "14",
+            "upload": "17637"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121843092,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 22.212433861,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:42.646832593Z"
+        },
+        {
+          "after_bytes": {
+            "download": "28750",
+            "generation": "14",
+            "upload": "19707"
+          },
+          "before_bytes": {
+            "download": "27238",
+            "generation": "14",
+            "upload": "18652"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.125923089,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 23.388384038,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:43.818702665Z"
+        },
+        {
+          "after_bytes": {
+            "download": "30264",
+            "generation": "14",
+            "upload": "20722"
+          },
+          "before_bytes": {
+            "download": "28750",
+            "generation": "14",
+            "upload": "19707"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.116639925,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 24.552277025,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:44.991878653Z"
+        },
+        {
+          "after_bytes": {
+            "download": "31777",
+            "generation": "14",
+            "upload": "21737"
+          },
+          "before_bytes": {
+            "download": "30264",
+            "generation": "14",
+            "upload": "20722"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.122018686,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 25.725076349,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:46.159299534Z"
+        },
+        {
+          "after_bytes": {
+            "download": "33291",
+            "generation": "14",
+            "upload": "22752"
+          },
+          "before_bytes": {
+            "download": "31777",
+            "generation": "14",
+            "upload": "21737"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.113427392,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 26.888518843,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:47.331333321Z"
+        },
+        {
+          "after_bytes": {
+            "download": "34803",
+            "generation": "14",
+            "upload": "23767"
+          },
+          "before_bytes": {
+            "download": "33291",
+            "generation": "14",
+            "upload": "22752"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121710269,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 28.055679668,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:48.490210643Z"
+        },
+        {
+          "after_bytes": {
+            "download": "36315",
+            "generation": "14",
+            "upload": "24822"
+          },
+          "before_bytes": {
+            "download": "34803",
+            "generation": "14",
+            "upload": "23767"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.120491763,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 29.225300091,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:49.661049968Z"
+        },
+        {
+          "after_bytes": {
+            "download": "37829",
+            "generation": "14",
+            "upload": "25877"
+          },
+          "before_bytes": {
+            "download": "36315",
+            "generation": "14",
+            "upload": "24822"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121908923,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 30.395985554,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:50.830318393Z"
+        },
+        {
+          "after_bytes": {
+            "download": "39341",
+            "generation": "14",
+            "upload": "26932"
+          },
+          "before_bytes": {
+            "download": "37829",
+            "generation": "14",
+            "upload": "25877"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.121178226,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 31.566877646000002,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:52.001941354Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "14",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "39341",
+            "generation": "14",
+            "upload": "26932"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 0.119980632,
+          "http_200": true,
+          "monotonic_elapsed_seconds": 32.735199671,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:53.171460849Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.075622659,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 35.858223225,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:54.338842502Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.067257865,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 38.974241387,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:40:57.463225797Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.076641771,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 42.093744847,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:41:00.573345316Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.076976439,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 45.21668596,
+          "request_start_after_service_end": false,
+          "utc": "2026-10-30T09:41:03.695951534Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.073188877,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 48.335035023,
+          "request_start_after_service_end": true,
+          "utc": "2026-10-30T09:41:06.818088277Z"
+        },
+        {
+          "after_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "before_bytes": {
+            "download": "40854",
+            "generation": "0",
+            "upload": "27987"
+          },
+          "counter_reads_ok": true,
+          "elapsed_seconds": 2.074343401,
+          "http_200": false,
+          "monotonic_elapsed_seconds": 51.455345176,
+          "request_start_after_service_end": true,
+          "utc": "2026-10-30T09:41:09.937243858Z"
+        }
+      ],
+      "service_kind": "paid",
+      "signed_lease_bounds": {
+        "members": [
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-3967-7004-8f1b-7cf7ba251a57",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-3dc2-75fa-be6b-2f0143866585",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4219-7800-b6b5-bc48fac91aee",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4679-7ca9-bfb0-bde7331a3ccf",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4ae1-7ecc-a77a-cde9620105f0",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-4f3e-7061-89f6-2accf44ca4fa",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-5395-7a3a-b1e3-1ca8d78c5512",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-57f4-765d-8be5-1f6422e5e5e2",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-5c60-75d5-82bd-ba6135cb598f",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-60ca-7954-bdf1-ffa236b8ac7d",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-6535-7070-a26a-6fa070252757",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-698a-792a-82c0-0d82616a509c",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-6de6-763d-9bd6-d328c2c8d8da",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-7245-768a-a247-3a76c8157878",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-76a0-7c43-b5dd-7c346b7bd952",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-7afb-76fe-b334-017c1c226f61",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-7f51-7bf9-8e61-7c4aba0ecb7f",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-83aa-7dfa-9507-7bb09e2876bd",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-880b-7862-931d-c320a5f2950c",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T10:27:41Z",
+            "member_id": "01a18c22-8c72-7a0c-bc95-1246d2659ace",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-10-30T10:27:41Z"
+          },
+          {
+            "lease_end": "2026-10-30T09:41:05Z",
+            "member_id": "01a18c2c-72df-7332-94f3-266e7e404023",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-10-30T09:41:05Z"
+          }
+        ],
+        "lease_id": "672d780b-bca9-4b84-aae0-c8cd897ee86f",
+        "issued_at": "2026-10-30T09:38:26.593348Z",
+        "expires_at": "2026-10-31T09:38:26.593348Z",
+        "generation": "13"
+      },
+      "status": "passed repeated-HTTPS subset",
+      "success_after_service_end": false,
+      "watchdog_paused": false,
+      "evaluated_status": "passed repeated-HTTPS subset",
+      "original_source_end_unchanged": true
+    },
+    "short_node_lease": {
+      "reason": "fleet max_offline_lease_seconds has no public mutation API or exported lab hook; no fleet SQL fixture",
+      "status": "blocked"
+    },
+    "status": "partial",
+    "transport_scope": "repeated HTTPS connections; established TCP and UDP echo require an additional controlled lab transport hook",
+    "wall_clock_rollback": {
+      "reason": "disposable guest VM required; container shares host wall clock",
+      "status": "needs operator run"
+    },
+    "worker_fault_guard": {
+      "started_at": "2026-10-30T09:40:18.382590Z",
+      "scope": "only own worker frozen while own control is stopped; prevents provider/peer reconciliation from confounding timeout proof",
+      "script_sha256": "1d9844048783739b8057ad725e01a05966d8aed9defc66114f1807fad6fd2151",
+      "events": [
+        {
+          "utc": "2026-10-30T09:40:20.839536Z",
+          "monotonic_elapsed_seconds": 2.456867992063053,
+          "command": [
+            "docker",
+            "pause",
+            "fvpn-w4-secops-worker"
+          ],
+          "exit_code": 0
+        },
+        {
+          "utc": "2026-10-30T09:41:13.239111Z",
+          "monotonic_elapsed_seconds": 54.856448521022685,
+          "command": [
+            "docker",
+            "unpause",
+            "fvpn-w4-secops-worker"
+          ],
+          "exit_code": 0
+        },
+        {
+          "utc": "2026-10-30T09:43:48.738568Z",
+          "monotonic_elapsed_seconds": 210.35590364097152,
+          "command": [
+            "docker",
+            "pause",
+            "fvpn-w4-secops-worker"
+          ],
+          "exit_code": 0
+        },
+        {
+          "utc": "2026-10-30T09:44:42.544429Z",
+          "monotonic_elapsed_seconds": 264.1617605549982,
+          "command": [
+            "docker",
+            "unpause",
+            "fvpn-w4-secops-worker"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "finished_at": "2026-10-30T09:44:42.794634Z",
+      "completed_cycles": 2,
+      "status": "passed"
+    }
+  },
+  "qualification": "Finite paid/grant repeated-HTTPS fault subsets only; inspect each actual status. Grace, short node lease, established TCP/UDP and guest clock rollback remain distinct."
+}

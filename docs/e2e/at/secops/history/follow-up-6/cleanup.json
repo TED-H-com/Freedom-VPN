@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-10-30T17:30:38.234903Z",
+  "scope": "only fvpn-w4-secops objects",
+  "inventory": {
+    "containers": {
+      "command": [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        "name=^fvpn-w4-secops-",
+        "--format",
+        "{{.Names}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    },
+    "networks": {
+      "command": [
+        "docker",
+        "network",
+        "ls",
+        "--filter",
+        "name=^fvpn-w4-secops",
+        "--format",
+        "{{.Name}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    },
+    "volumes": {
+      "command": [
+        "docker",
+        "volume",
+        "ls",
+        "--filter",
+        "name=^fvpn-w4-secops-",
+        "--format",
+        "{{.Name}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    },
+    "images": {
+      "command": [
+        "docker",
+        "image",
+        "ls",
+        "--filter",
+        "reference=fvpn-w4-secops-*",
+        "--format",
+        "{{.Repository}}:{{.Tag}}"
+      ],
+      "exit_code": 0,
+      "names": [],
+      "count": 0
+    }
+  }
+}

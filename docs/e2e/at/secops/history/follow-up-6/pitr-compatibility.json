@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-30T04:38:31Z",
+  "status": "passed",
+  "kind": "historical evidence and command compatibility review; not a new physical restore",
+  "reviewed_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+  "historical_run_utc": "2026-10-30T04:00:29.698901076Z",
+  "historical_source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+  "pitr_sha256": "2d9f90c8ac90554e9b454cdaa6b0ca2856f62a2ab814bdbb630f61b5974e1bb8",
+  "changed_dependencies": [],
+  "migration_files": 21,
+  "assertions": {
+    "historical_pass": true,
+    "target_ack_and_ledger": true,
+    "pre_target_grant_operation_audit": true,
+    "post_target_writes_absent": true,
+    "deduplicated_replay": true,
+    "entitlements_preserved": true,
+    "isolated_and_cleaned": true,
+    "full_service_limits_explicit": true,
+    "commands_and_migrations_unchanged": true,
+    "current_migration_count_matches": true
+  },
+  "commands": [
+    [
+      "git",
+      "diff",
+      "--name-only",
+      "e48c6af582a599447e90afc446ca56f5bcd8c5ba..HEAD",
+      "--",
+      "deploy/backup/restore-pitr.sh",
+      "deploy/backup/postgres/Dockerfile",
+      "deploy/backup/post-restore-checklist.sql",
+      "db/migrations"
+    ]
+  ],
+  "attribution": "Backups follow-up 4 / PR #111 removed literal migration IDs from the handover example; the restore command, Dockerfile, SQL checklist and migrations used by this run are unchanged.",
+  "expected": "Historical PITR assertions valid; dependent commands and migrations unchanged",
+  "actual": "Review assertions recorded individually; original RTO/RPO and build/image provenance retained in pitr.json"
+}

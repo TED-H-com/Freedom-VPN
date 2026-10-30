@@ -110,6 +110,7 @@ export const AdminSettingsPage: React.FC = () => {
       setReadEtag(nextEtag);
       setSecondsInput(String(res.data.max_offline_lease_seconds));
       queryClient.setQueryData(['admin', 'fleetConfig'], res);
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] });
       void queryClient.invalidateQueries({ queryKey: ['admin', 'auditEvents'] });
     },
     onError: (err) => {

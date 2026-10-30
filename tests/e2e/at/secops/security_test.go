@@ -133,7 +133,8 @@ func TestAT28_AllContractRoleBoundaries(t *testing.T) {
 			})
 		}
 	}
-	if operations != 44 || protected != 42 {
+	// D-065 / contracts revision 9 and revision 10 (#191) bring the contract to 47 operations (45 protected).
+	if operations != 47 || protected != 45 {
 		t.Fatalf("contract coverage changed: operations=%d protected=%d", operations, protected)
 	}
 	t.Logf("contract operations=%d protected=%d; enrollment and provider webhook use distinct credential checks", operations, protected)

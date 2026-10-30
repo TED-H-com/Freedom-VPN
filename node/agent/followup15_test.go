@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/netip"
@@ -97,13 +98,15 @@ func TestD067_GrantlessRestartRenewsOnHeartbeatSchedule(t *testing.T) {
 		if r.eng.serving || uint64(r.eng.lease.ConfigGeneration) != gen || uint64(r.eng.desired.ConfigGeneration) != gen || len(r.eng.lease.Members) != 0 || r.eng.provisionalStreak != streak {
 			t.Fatalf("grant-less: serving=%v gen lease=%s desired=%s members=%d streak=%d reasons=%v", r.eng.serving, r.eng.lease.ConfigGeneration, r.eng.desired.ConfigGeneration, len(r.eng.lease.Members), r.eng.provisionalStreak, r.eng.decision.Reasons)
 		}
-		if !hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonLeaseExpired) || r.eng.decision.Safety != api.SafetyStatusPassed {
-			t.Fatalf("reason/safety: %v %s", r.eng.decision.Reasons, r.eng.decision.Safety)
+		assertProvisionalDecision(t, r.eng.decision)
+		if mustBeat(t, r).Reason != string(api.ForwardingBlockReasonAwaitingMemberGrants) {
+			t.Fatalf("heartbeat reason %q", mustBeat(t, r).Reason)
 		}
-		lease := leaseCheck(t, r.eng.decision.Checks)
-		if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeLEASEEXPIRED || detailValue(lease) != leaseGrantsPendingDetail {
-			t.Fatalf("lease check: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
+		rep, err := r.eng.report(context.Background(), r.clock.Wall().UTC())
+		if err != nil {
+			t.Fatal(err)
 		}
+		assertProvisionalReport(t, rep)
 	}
 	if r.srv.LeaseRenewals() != before+1 {
 		t.Fatalf("restart renewed %d times", r.srv.LeaseRenewals()-before)
@@ -161,6 +164,9 @@ func TestD067_EmptyBindingsDoNotRenewProvisionally(t *testing.T) {
 	if r.srv.LeaseRenewals() != count {
 		t.Fatalf("empty bindings renewed %d times", r.srv.LeaseRenewals()-count)
 	}
+	if hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("empty bindings reported a grant reason: %v", r.eng.decision.Reasons)
+	}
 }
 
 func TestD067_GrantedLeaseKeepsRenewalLead(t *testing.T) {
@@ -187,7 +193,7 @@ func TestD067_StaleGenerationThenEmptyMembershipConverges(t *testing.T) {
 	if r.eng.serving || uint64(r.eng.lease.ConfigGeneration) != 8 || r.eng.appliedGen != 12 || uint64(r.eng.desired.ConfigGeneration) != 12 {
 		t.Fatalf("stale phase: serving=%v lease=%s applied=%d desired=%s reasons=%v", r.eng.serving, r.eng.lease.ConfigGeneration, r.eng.appliedGen, r.eng.desired.ConfigGeneration, r.eng.decision.Reasons)
 	}
-	if !hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonPolicyMissing) {
+	if !hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonPolicyMissing) || hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonLeaseExpired) {
 		t.Fatalf("stale reasons: %v", r.eng.decision.Reasons)
 	}
 	lease := leaseCheck(t, r.eng.decision.Checks)
@@ -202,12 +208,9 @@ func TestD067_StaleGenerationThenEmptyMembershipConverges(t *testing.T) {
 	if r.srv.LeaseRenewals() != count+1 || r.eng.serving || uint64(r.eng.lease.ConfigGeneration) != 12 || len(r.eng.lease.Members) != 0 || r.eng.provisionalStreak != 1 {
 		t.Fatalf("empty membership: renewals=%d serving=%v lease=%s members=%d streak=%d reasons=%v", r.srv.LeaseRenewals()-count, r.eng.serving, r.eng.lease.ConfigGeneration, len(r.eng.lease.Members), r.eng.provisionalStreak, r.eng.decision.Reasons)
 	}
-	if !hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonLeaseExpired) || hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonPolicyMissing) {
-		t.Fatalf("empty-membership reasons: %v", r.eng.decision.Reasons)
-	}
-	lease = leaseCheck(t, r.eng.decision.Checks)
-	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeLEASEEXPIRED || detailValue(lease) != leaseGrantsPendingDetail {
-		t.Fatalf("grants detail: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
+	assertProvisionalDecision(t, r.eng.decision)
+	if hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonPolicyMissing) {
+		t.Fatalf("empty-membership kept policy_missing: %v", r.eng.decision.Reasons)
 	}
 	stepOK(t, r)
 	if r.srv.LeaseRenewals() != count+1 {
@@ -219,6 +222,126 @@ func TestD067_StaleGenerationThenEmptyMembershipConverges(t *testing.T) {
 	stepOK(t, r)
 	if r.srv.LeaseRenewals() != count+2 || !r.eng.serving || uint64(r.eng.desired.ConfigGeneration) != 12 || uint64(r.eng.lease.ConfigGeneration) != 12 || len(r.eng.lease.Members) != 3 || r.eng.appliedGen != 12 {
 		t.Fatalf("did not converge on generation 12: renewals=%d serving=%v desired=%s lease=%s members=%d applied=%d reasons=%v", r.srv.LeaseRenewals()-count, r.eng.serving, r.eng.desired.ConfigGeneration, r.eng.lease.ConfigGeneration, len(r.eng.lease.Members), r.eng.appliedGen, r.eng.decision.Reasons)
+	}
+}
+
+func TestD067_ExpiredLeaseNeverAwaitingMemberGrants(t *testing.T) {
+	in := servingInput()
+	ds := *in.Desired
+	ds.DeviceBindings = []api.DeviceBinding{oneBinding(in.Now)}
+	in.Desired = &ds
+	in.MonoNow = in.LeaseMonoSent + in.Lease.ExpiresAt.Sub(in.Lease.IssuedAt)
+	d := Decide(in)
+	if hasReason(d.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || !hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("expired reasons: %v", d.Reasons)
+	}
+	lease := leaseCheck(t, d.Checks)
+	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeLEASEEXPIRED || detailValue(lease) != "Serving lease is not in force." {
+		t.Fatalf("expired lease check: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
+	}
+
+	in.LeaseFresh = false
+	in.MonoNow = in.LeaseMonoSent
+	d = Decide(in)
+	if hasReason(d.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || !hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("unstored lease reasons: %v", d.Reasons)
+	}
+	lease = leaseCheck(t, d.Checks)
+	if lease.Status != api.HealthCheckStatusFailed || codeOf(t, lease) != api.ErrorCodeLEASEEXPIRED {
+		t.Fatalf("unstored lease check: status=%s null=%v", lease.Status, lease.ErrorCode.IsNull())
+	}
+}
+
+func TestD067_EmptyBindingsReportNeitherGrantReason(t *testing.T) {
+	d := Decide(servingInput())
+	if hasReason(d.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("empty bindings reasons: %v", d.Reasons)
+	}
+	lease := leaseCheck(t, d.Checks)
+	if lease.Status != api.HealthCheckStatusNotRun {
+		t.Fatalf("empty bindings ran the lease check: %+v", lease)
+	}
+}
+
+func TestD067_StaleGenerationKeepsPolicyMissing(t *testing.T) {
+	in := servingInput()
+	ds := *in.Desired
+	ds.DeviceBindings = []api.DeviceBinding{oneBinding(in.Now)}
+	in.Desired = &ds
+	lease := *in.Lease
+	lease.ConfigGeneration = 2
+	in.Lease = &lease
+	d := Decide(in)
+	if !hasReason(d.Reasons, api.ForwardingBlockReasonPolicyMissing) || hasReason(d.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("stale reasons: %v", d.Reasons)
+	}
+	check := leaseCheck(t, d.Checks)
+	if check.Status != api.HealthCheckStatusFailed || codeOf(t, check) != api.ErrorCodeSTALEGENERATION || detailValue(check) != "Serving lease is not for the applied generation." {
+		t.Fatalf("stale lease check: status=%s code=%s detail=%q", check.Status, codeOf(t, check), detailValue(check))
+	}
+}
+
+func TestD067_UnmatchedGrantStaysLeaseExpired(t *testing.T) {
+	in := withAdmittedMember(servingInput())
+	members := append([]api.MemberLease(nil), in.Lease.Members...)
+	members[0].MemberId = uuid.MustParse("019a0000-0000-7000-8000-0000000000ff")
+	lease := *in.Lease
+	lease.Members = members
+	in.Lease = &lease
+	d := Decide(in)
+	if hasReason(d.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || !hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("unmatched grant reasons: %v", d.Reasons)
+	}
+	check := leaseCheck(t, d.Checks)
+	if check.Status != api.HealthCheckStatusFailed || codeOf(t, check) != api.ErrorCodeLEASEEXPIRED {
+		t.Fatalf("unmatched grant lease check: status=%s null=%v code-ok=%v", check.Status, check.ErrorCode.IsNull(), codeOf(t, check))
+	}
+}
+
+func assertProvisionalDecision(t *testing.T, d Decision) {
+	t.Helper()
+	if d.Serve || d.Safety != api.SafetyStatusPassed {
+		t.Fatalf("serve %v safety %s reasons %v", d.Serve, d.Safety, d.Reasons)
+	}
+	if len(d.Reasons) == 0 || d.Reasons[0] != api.ForwardingBlockReasonAwaitingMemberGrants || hasReason(d.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("reasons %v", d.Reasons)
+	}
+	if hasCode(d.Errors, api.ErrorCodeLEASEEXPIRED) {
+		t.Fatalf("errors carry LEASE_EXPIRED: %+v", d.Errors)
+	}
+	lease := leaseCheck(t, d.Checks)
+	if lease.Status != api.HealthCheckStatusFailed || !lease.ErrorCode.IsNull() || detailValue(lease) != leaseGrantsPendingDetail {
+		t.Fatalf("lease check: status=%s null=%v detail=%q", lease.Status, lease.ErrorCode.IsNull(), detailValue(lease))
+	}
+	for _, name := range []api.NodeCheckName{api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+		c, ok := checkBy(d.Checks, name)
+		if !ok || c.Status != api.HealthCheckStatusFailed || codeOf(t, c) != api.ErrorCodeVALIDATIONFAILED {
+			t.Fatalf("%s: status=%s", name, c.Status)
+		}
+	}
+}
+
+func assertProvisionalReport(t *testing.T, rep api.ObservationReport) {
+	t.Helper()
+	if rep.SafetyStatus != api.SafetyStatusPassed || rep.MemberForwardingEnabled || rep.DataHealth != api.DataHealthHealthy || rep.ProvisioningState != api.ProvisioningStateReady {
+		t.Fatalf("report safety=%s forwarding=%v health=%s provisioning=%s", rep.SafetyStatus, rep.MemberForwardingEnabled, rep.DataHealth, rep.ProvisioningState)
+	}
+	if len(rep.ForwardingBlockReasons) == 0 || rep.ForwardingBlockReasons[0] != api.ForwardingBlockReasonAwaitingMemberGrants || hasReason(rep.ForwardingBlockReasons, api.ForwardingBlockReasonLeaseExpired) {
+		t.Fatalf("report reasons %v", rep.ForwardingBlockReasons)
+	}
+	if hasCode(rep.Errors, api.ErrorCodeLEASEEXPIRED) {
+		t.Fatalf("report errors %+v", rep.Errors)
+	}
+	raw, err := json.Marshal(rep)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(raw)
+	if !strings.Contains(body, `"awaiting_member_grants"`) || strings.Contains(body, `"lease_expired"`) || strings.Contains(body, `"LEASE_EXPIRED"`) {
+		t.Fatalf("wire report: %s", body)
+	}
+	if !strings.Contains(body, `"Serving lease has no member grants yet."`) {
+		t.Fatalf("wire report dropped the lease detail: %s", body)
 	}
 }
 

@@ -120,7 +120,7 @@ Short windows. `FVPN_NETLAB_FULL=1` is the §11.7 window (30 s warm-up, 120 s, t
 | NetBird | Inner accept-all did not bypass member, LAN, metadata or rogue denies. Masquerade to `192.0.2.34` was dropped as an unknown source (`ctunku`) and `meter-path` returned `METER_PATH_INVALID`. Marks preserved. |
 | Probe (§13.9) | On the boot baseline, `100.64.8.1` reached `203.0.113.10:80` and was SNATed to `192.0.2.37`. `probe_up` rose by 5 packets and `probe_down` by 3. A same-/24 source, an unlisted destination, a different port, and the node address on TCP 22 were dropped. After the 8 s element timeout the same flow was dropped and the sets no longer held the addresses. Resolver DNS admitted only port 53. Member usage counters did not move. |
 | Probe DNS bound | Live ruleset: one TCP and one UDP accept, `saddr @probe_v4` to `daddr @resolver_v4` port 53. `@denied_v4` contains `192.88.99.0/24` and not the three globally reachable /24s. `@resolver_v4` is `198.51.100.53`. UDP and TCP 53 replied. Port 80 and 853 to the resolver, `10.1.2.10` on ports 53 and 9, and `192.88.99.1` on TCP 53 and UDP 80 timed out. Captures on the uplink and the LAN were empty. A same-/24 source was denied. After the 8 s element timeout, port 53 to the resolver timed out and `probe_v4` no longer held the source. |
-| Revoke without conntrack delete | An established UDP flow for `100.64.1.1` was left in conntrack (`Revoke` empty). Generation 4101 stayed the serving ruleset. In the next window the uplink capture was 0 packets and the return path capture was 0. `ctunkd` rose by 4, matching 4 injected replies. `ctunku` rose with the stream's own uploads (5 on the recorded run). The other device of that member still connected. Decision: the ruleset alone stops the flow, so a later `conntrack` failure keeps the serving ruleset. |
+| Revoke without conntrack delete | An established UDP flow for `100.64.1.1` was left in conntrack (`Revoke` empty). Generation 4101 stayed the serving ruleset. In the next window the uplink capture was 0 packets and the return path capture was 0. `ctunkd` rose by 4, matching 4 injected replies. `ctunku` rose with the stream's own uploads (5 on the follow-up 5 run; 4 on the follow-up 8 run, with `ctunkd` 4, injected 4, uplink 0, and return 0). The other device of that member still connected. Decision: the ruleset alone stops the flow, so a later `conntrack` failure keeps the serving ruleset. |
 
 ### AT14 byte identity (§10.3, §10.7)
 
@@ -170,6 +170,34 @@ The probe scenario keeps member forwarding on the boot ruleset. The only forward
 | Resolver DNS | UDP and TCP 53 to `198.51.100.53`; TCP 80 to that address; port 53 to `203.0.113.10` | reply and connected; the other three timed out |
 
 The suite that includes this scenario and AT00 printed `SUMMARY PROBE snat=1 up=5 down=3 neg=4 expired=1 dns_only_53=1` and `ok github.com/TED-H-com/Freedom-VPN/tests/netlab 168.128s`. The rows above this section, other than AT00's handshake count, are the earlier measured windows. This run did not replace them. `docs/poc/G2-evidence/SUMMARY.txt` still says `AT00 handshakes=4` from that earlier capture.
+
+## Member-ingress injection
+
+Contract for devstack follow-up 13. The function is `InjectMemberIngress` in package `github.com/TED-H-com/Freedom-VPN/tests/netlab`. The command, run inside the node network namespace, is:
+
+```text
+fvpn-netlab inject -iface fvmb0 -src <old-device-ipv4> -dst <origin-ipv4> -port 9
+```
+
+`-mechanism` stays empty. The interface type selects the transport: `/sys/class/net/<iface>/type` 1 (`ARPHRD_ETHER`, netlab `fv-fh`) uses `veth-mirred`; type 65534 (`ARPHRD_NONE`, devstack `fvmb0`, tcpdump link-type RAW) uses `tun-mirred`. stdout is one JSON object, `IngressObservation`: `mechanism`, `link_type`, `member_iface`, `source`, `dest`, `source_port` (40000), `dest_port`, and `before` / `after` maps of absolute named counters from `nft -j list table inet fvpn`. The datagram is one UDP packet with payload `x`.
+
+The hook creates lab devices `fv-inj0` and, for ethernet, `fv-inj1`, installs a clsact ingress `mirred redirect` onto the member interface, sends one frame, and deletes those devices before it returns. It reads table `inet fvpn` and does not write it. It does not call `wg`, does not add a peer, and does not change the member interface address, qdisc, or routes. It needs `CAP_NET_ADMIN`. The ethernet transport also needs `CAP_NET_RAW`. The raw transport opens `/dev/net/tun`.
+
+Devstack follow-up 13 copies this lab binary into the node container (`fvpn-<prefix>-node`) and execs it there after the agent has applied the post-revoke ruleset. The revoked device source is `-src`. `-dst` is an origin address beyond the node. Compare `before` and `after` for `ctunku` and the device `u_` / `d_` counters. Leave the peer, group, and binding withdrawn.
+
+`TestIngress_InjectedMemberFrames` is the netlab proof. On ethernet `fv-fh` the hook is `veth-mirred`. A non-admitted source `100.64.9.9` increments `ctunku` and the uplink capture on `fv-ih` stays empty. An admitted source `100.64.1.1` increments `u_019a00000000700080000000000000a1` and the uplink capture shows the forwarded datagram. `nft -s list table inet fvpn`, the `fv-fh` address, and the `fv-fwd` WireGuard peer identity are unchanged.
+
+Mechanism comparison in that same test:
+
+| Transport | Where the frame is delivered | Lab result |
+|---|---|---|
+| `veth-mirred` (auto on type 1) | Member ingress of `fv-fh` | `ctunku` +1 for `100.64.9.9`; device upload +1 for `100.64.1.1` |
+| `tun-mirred` (auto on type 65534) | Forward hook of a lab WireGuard device `fv-raw0` with no peers, counted in side table `inet fvpinj` | Tuple counter +1. `ctunku` on `fv-fh` stays put |
+| `veth-mirred` forced onto type 65534 | Same `fv-raw0` forward hook | Tuple counter +1 on this kernel. The hook still selects `tun-mirred` for type 65534 so the injected frame has no ethernet header, matching `fvmb0` |
+| `AF_PACKET` send bound to `fv-fh` | Egress toward `fv-ff` | Capture on `fv-ff` shows the frame. `ctunku` +0 |
+| Lab WireGuard peer on `fv-lab0` | Ingress of `fv-lab0` only | Side counter +2 for source `100.64.50.2`. `ctunku` on `fv-fh` +0. Usable when a netlab run sets `Datapath.MemberIngress` to that interface. The devstack agent already bound `fvmb0`, and this transport does not place a frame there |
+
+The measured line is `SUMMARY INGRESS fv-fh=veth-mirred type=1 nonadmitted_ctunku=1 nonadmitted_uplink=0 admitted_u_019a00000000700080000000000000a1=1 admitted_uplink=1 afpacket_ctunku=0 raw_tun=1 raw_veth=1 wg_separate=2 wg_ctunku=0`.
 
 ## Decisions
 
