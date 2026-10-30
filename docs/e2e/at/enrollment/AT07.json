@@ -1,72 +1,72 @@
 {
-  "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3",
-  "started_at": "2026-10-30T20:49:33Z",
-  "finished_at": "2026-10-30T20:55:13Z",
+  "run_id": "60a7102e-b824-4927-a576-62033f458157",
+  "started_at": "2026-10-30T23:05:38Z",
+  "finished_at": "2026-10-30T23:10:54Z",
   "source": {
-    "commit": "efba7fba96e9e354900e9360b6ef4cfebf578ea7",
-    "tree_sha256": "79cc1e81c8cc85f9044c425e3505608d51714bf91a90d0f444e0ed560899fc0b",
+    "commit": "99ab668e686712d5d0ad4e0c6b79d332fc6f9d25",
+    "tree_sha256": "62e86bf6b54985af168edc6d49193a272c4442007b03074df8686e07f37be406",
     "dirty": true,
     "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"
   },
   "prefix": "w4-enroll",
   "port_base": 12000,
   "image_digests": {
-    "control": "sha256:098c8246b6573ddb65136615a83035fbbd1b06bac593bbe5efa605d53e2a36ac",
-    "worker": "sha256:9b7488569ae7d110fd60ed7e97e397fa9fa966706b32c48f26b7cf6951fbed00",
-    "node": "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27"
+    "control": "sha256:d2f3a7faa0c87483f5170778540105ab86ce35ace89a3f75a1852258423ca3ef",
+    "worker": "sha256:8a8db70d406b7aa4a316196d30bb8e32218f04bea94ff42416483d76306876b9",
+    "node": "sha256:041966e57aeb3c66fa8c99fdb91e72acdc94aa3804003ba6ee87808835552cc7"
   },
   "image_evidence": "immutable running container image IDs",
   "commands": [
     {
       "name": "fresh_teardown",
-      "started_at": "2026-10-30T20:49:33Z",
-      "finished_at": "2026-10-30T20:49:33Z",
+      "started_at": "2026-10-30T23:05:38Z",
+      "finished_at": "2026-10-30T23:05:38Z",
       "exit_code": 0
     },
     {
       "name": "fresh_startup",
-      "started_at": "2026-10-30T20:49:34Z",
-      "finished_at": "2026-10-30T20:50:04Z",
+      "started_at": "2026-10-30T23:05:38Z",
+      "finished_at": "2026-10-30T23:06:05Z",
       "exit_code": 0
     },
     {
       "name": "compile_probe",
-      "started_at": "2026-10-30T20:50:04Z",
-      "finished_at": "2026-10-30T20:50:05Z",
+      "started_at": "2026-10-30T23:06:05Z",
+      "finished_at": "2026-10-30T23:06:05Z",
       "exit_code": 0
     },
     {
       "name": "live_probe",
-      "started_at": "2026-10-30T20:50:05Z",
-      "finished_at": "2026-10-30T20:53:05Z",
+      "started_at": "2026-10-30T23:06:05Z",
+      "finished_at": "2026-10-30T23:07:59Z",
       "exit_code": 0
     },
     {
       "name": "join_teardown",
-      "started_at": "2026-10-30T20:53:05Z",
-      "finished_at": "2026-10-30T20:53:46Z",
+      "started_at": "2026-10-30T23:07:59Z",
+      "finished_at": "2026-10-30T23:09:06Z",
       "exit_code": 0
     },
     {
       "name": "join_startup",
-      "started_at": "2026-10-30T20:53:47Z",
-      "finished_at": "2026-10-30T20:54:08Z",
+      "started_at": "2026-10-30T23:09:07Z",
+      "finished_at": "2026-10-30T23:09:30Z",
       "exit_code": 0
     },
     {
       "name": "live_probe_join",
-      "started_at": "2026-10-30T20:54:08Z",
-      "finished_at": "2026-10-30T20:54:31Z",
+      "started_at": "2026-10-30T23:09:30Z",
+      "finished_at": "2026-10-30T23:09:54Z",
       "exit_code": 0
     },
     {
       "name": "final_teardown",
-      "started_at": "2026-10-30T20:54:31Z",
-      "finished_at": "2026-10-30T20:55:13Z",
+      "started_at": "2026-10-30T23:09:54Z",
+      "finished_at": "2026-10-30T23:10:54Z",
       "exit_code": 0
     }
   ],
-  "test_binary_sha256": "955f92e2442196807f46d20c8f4679411500e686a9c82cda180bd29e6328bba8",
+  "test_binary_sha256": "2884a259187ad5ecd78c400e6cb905ecde344dbaf7cf024194f700b638d4ba25",
   "cleanup": {
     "containers": 0,
     "networks": 0,
@@ -74,13 +74,13 @@
     "images": 0
   },
   "join_image_digests": {
-    "control": "sha256:d654b03b32fc271f9f0fe8da18be3591965d02fae9b978a1604729087e3dcbfc",
-    "worker": "sha256:0945b425115a97b07d6f30ee86785e2e74118b78f7f32a4f6a6b5945aebec75e",
-    "node": "sha256:51ce29b488858de763341d43950628de94a8e72d33a304742d0d074758133d7f"
+    "control": "sha256:1f0db9fb88c7cb665af7cdfddc30e12898927125490c2eb9fdb0fb27027e6611",
+    "worker": "sha256:f029174cfd8ea0f00ec85b42ed80a4b15cbee0f4d1a9c3c7c0e5446461f26f46",
+    "node": "sha256:add5aef7045e2cb5ef86efe96b5a1e097e8bfbef98d9a6a07965ece0a5dada86"
   },
   "id": "AT07",
   "status": "blocked",
-  "actual": "{'changed_on_main': 'devstack follow-up 12 PR #204 StartClonedIdentityFixture', 'clone': {'agent_spki_sha256': 'a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed', 'machine_id_sha256': '966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496', 'netbird_public_key_sha256': '1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f'}, 'clone_stage': 'enrolled', 'conflicts': 0, 'endpoint_rows': 0, 'gap': 'StartClonedIdentityFixture.Observe read node_identity_conflicts and mapping_frozen; both stayed unset', 'mapping_frozen': False, 'owner': 'PKI/enrollment + node identity adapter', 'read_ok': True, 'request': 'ENR-08', 'same_identity': True, 'source': {'agent_spki_sha256': 'a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed', 'machine_id_sha256': '966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496', 'netbird_public_key_sha256': '1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f'}, 'source_stage': 'enrolled', 'started': True}",
+  "actual": "ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, \"node\") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run.",
   "requirements": [
     "ENR03",
     "PKG01",
@@ -99,29 +99,29 @@
       "name": "fresh_stack",
       "status": "pass",
       "detail": "E2E_RESET=1 fresh stack started",
-      "observed_at": "2026-10-30T20:50:04Z"
+      "observed_at": "2026-10-30T23:06:05Z"
     },
     {
       "at": "AT07",
       "name": "current_incarnation",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
-        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "current_incarnation_id": "01a18f11-3005-73d0-8b97-7cfaeaa4e26d",
+        "node_id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
         "response": {
           "error_code": "",
           "http_status": 200,
           "transport_error": false
         }
       },
-      "observed_at": "2026-10-30T20:51:35.989788053Z"
+      "observed_at": "2026-10-30T23:07:36.045959054Z"
     },
     {
       "at": "AT07",
       "name": "node_api_surface",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "current_incarnation_id": "01a18f11-3005-73d0-8b97-7cfaeaa4e26d",
         "field_names": [
           "capacity",
           "checks",
@@ -134,6 +134,7 @@
           "drift",
           "exit_id",
           "group_ids",
+          "identity_conflict",
           "last_seen_at",
           "lifecycle_state",
           "member_forwarding_observed",
@@ -156,33 +157,33 @@
           "safety_status",
           "update"
         ],
-        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "node_id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
         "operation": "getNode",
         "peer_bound": true
       },
-      "observed_at": "2026-10-30T20:51:35.990236582Z"
+      "observed_at": "2026-10-30T23:07:36.04643197Z"
     },
     {
       "at": "AT07",
       "name": "current_incarnation",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
-        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "current_incarnation_id": "01a18f11-6438-7c16-b9e0-644a6228763c",
+        "node_id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
         "response": {
           "error_code": "",
           "http_status": 200,
           "transport_error": false
         }
       },
-      "observed_at": "2026-10-30T20:51:35.992779444Z"
+      "observed_at": "2026-10-30T23:07:36.050453986Z"
     },
     {
       "at": "AT07",
       "name": "node_api_surface",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "current_incarnation_id": "01a18f11-6438-7c16-b9e0-644a6228763c",
         "field_names": [
           "capacity",
           "checks",
@@ -195,6 +196,7 @@
           "drift",
           "exit_id",
           "group_ids",
+          "identity_conflict",
           "last_seen_at",
           "lifecycle_state",
           "member_forwarding_observed",
@@ -217,11 +219,11 @@
           "safety_status",
           "update"
         ],
-        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "node_id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
         "operation": "getNode",
         "peer_bound": true
       },
-      "observed_at": "2026-10-30T20:51:35.993042161Z"
+      "observed_at": "2026-10-30T23:07:36.050988541Z"
     },
     {
       "at": "AT07",
@@ -232,23 +234,23 @@
         "count": 1,
         "current": true,
         "default_items_at_most_50": true,
-        "enrollment_id": "01a18e94-ad70-7c5f-bfd8-5a18a6f19416",
-        "incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "enrollment_id": "01a18f11-2e1b-77a4-b504-5874024bdb34",
+        "incarnation_id": "01a18f11-3005-73d0-8b97-7cfaeaa4e26d",
         "limit_1_items": 1,
         "matches_get_enrollment": true,
         "matches_get_node": true,
         "next_cursor_null": true,
-        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "node_id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
         "operation": "listNodeIncarnations",
         "state": "active",
         "usage": {
           "download_bytes": "0",
-          "through": "2026-10-30T20:51:11.681114Z",
+          "through": "2026-10-30T23:07:10.830985Z",
           "through_null": false,
           "upload_bytes": "0"
         }
       },
-      "observed_at": "2026-10-30T20:51:36.001335382Z"
+      "observed_at": "2026-10-30T23:07:36.061720979Z"
     },
     {
       "at": "AT07",
@@ -259,23 +261,23 @@
         "count": 1,
         "current": true,
         "default_items_at_most_50": true,
-        "enrollment_id": "01a18e94-df75-7d66-8f60-4adfc75f050a",
-        "incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "enrollment_id": "01a18f11-62b2-7e56-9a56-747f4ca1b1b9",
+        "incarnation_id": "01a18f11-6438-7c16-b9e0-644a6228763c",
         "limit_1_items": 1,
         "matches_get_enrollment": true,
         "matches_get_node": true,
         "next_cursor_null": true,
-        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "node_id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
         "operation": "listNodeIncarnations",
         "state": "active",
         "usage": {
           "download_bytes": "0",
-          "through": "2026-10-30T20:51:24.065428Z",
+          "through": "2026-10-30T23:07:24.178382Z",
           "through_null": false,
           "upload_bytes": "0"
         }
       },
-      "observed_at": "2026-10-30T20:51:36.010686183Z"
+      "observed_at": "2026-10-30T23:07:36.070976869Z"
     },
     {
       "at": "AT07",
@@ -285,13 +287,13 @@
         "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
         "each_count": 1,
         "node_ids": [
-          "01a18e94-ad70-7c60-9807-166471e4e296",
-          "01a18e94-df75-7d67-a6b9-8551dcec240a"
+          "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
+          "01a18f11-62b2-7e57-80b2-5e0b43bcadc6"
         ],
         "operation": "listNodeIncarnations",
         "retirement_measured_on": "AT06 incarnation_history"
       },
-      "observed_at": "2026-10-30T20:51:36.010975786Z"
+      "observed_at": "2026-10-30T23:07:36.071281377Z"
     },
     {
       "at": "AT07",
@@ -299,19 +301,19 @@
       "status": "pass",
       "detail": {
         "image_digests": [
-          "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27",
-          "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27"
+          "sha256:041966e57aeb3c66fa8c99fdb91e72acdc94aa3804003ba6ee87808835552cc7",
+          "sha256:041966e57aeb3c66fa8c99fdb91e72acdc94aa3804003ba6ee87808835552cc7"
         ],
         "incarnation_ids": [
-          "01a18e94-b054-755d-9138-8111cbdeb629",
-          "01a18e94-e0aa-7c5c-a744-586ddab63d42"
+          "01a18f11-3005-73d0-8b97-7cfaeaa4e26d",
+          "01a18f11-6438-7c16-b9e0-644a6228763c"
         ],
         "node_ids": [
-          "01a18e94-ad70-7c60-9807-166471e4e296",
-          "01a18e94-df75-7d67-a6b9-8551dcec240a"
+          "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
+          "01a18f11-62b2-7e57-80b2-5e0b43bcadc6"
         ]
       },
-      "observed_at": "2026-10-30T20:51:36.034356578Z"
+      "observed_at": "2026-10-30T23:07:36.094322641Z"
     },
     {
       "at": "AT07",
@@ -322,7 +324,7 @@
         "http_status": 200,
         "transport_error": false
       },
-      "observed_at": "2026-10-30T20:51:36.038190057Z"
+      "observed_at": "2026-10-30T23:07:36.098617485Z"
     },
     {
       "at": "AT07",
@@ -340,7 +342,7 @@
             "peer_id"
           ],
           "resource": {
-            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
             "type": "node"
           }
         },
@@ -353,7 +355,7 @@
             "reason"
           ],
           "resource": {
-            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
             "type": "node"
           }
         },
@@ -368,7 +370,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
             "type": "node"
           }
         },
@@ -382,7 +384,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
             "type": "node"
           }
         },
@@ -396,12 +398,12 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "id": "01a18f11-2e1b-77a5-b810-910b5bf3d1e2",
             "type": "node"
           }
         }
       ],
-      "observed_at": "2026-10-30T20:51:36.038515792Z"
+      "observed_at": "2026-10-30T23:07:36.099024989Z"
     },
     {
       "at": "AT07",
@@ -412,7 +414,7 @@
         "http_status": 200,
         "transport_error": false
       },
-      "observed_at": "2026-10-30T20:51:36.041113545Z"
+      "observed_at": "2026-10-30T23:07:36.101446815Z"
     },
     {
       "at": "AT07",
@@ -430,7 +432,7 @@
             "peer_id"
           ],
           "resource": {
-            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
             "type": "node"
           }
         },
@@ -443,7 +445,7 @@
             "reason"
           ],
           "resource": {
-            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
             "type": "node"
           }
         },
@@ -458,7 +460,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
             "type": "node"
           }
         },
@@ -472,7 +474,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
             "type": "node"
           }
         },
@@ -486,12 +488,12 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "id": "01a18f11-62b2-7e57-80b2-5e0b43bcadc6",
             "type": "node"
           }
         }
       ],
-      "observed_at": "2026-10-30T20:51:36.041527956Z"
+      "observed_at": "2026-10-30T23:07:36.101735936Z"
     },
     {
       "at": "AT07",
@@ -500,18 +502,18 @@
       "detail": {
         "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
         "node": {
-          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
-          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
-          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+          "agent_spki_sha256": "db259f5dd5a46b8652cb8755139c8cd42169125c3bc46afa7d8308b11fea0929",
+          "machine_id_sha256": "1aecce36d1145ff8654ce5bd66c8c5574a33e7654ba62edd0f2814554abbc0d3",
+          "netbird_public_key_sha256": "4bd6996051506f8ac7d39e1bbeaf66bdadef6007de4b1a33d9e4509198316e8f"
         },
         "node2": {
-          "agent_spki_sha256": "a0a5c28aa653769cbc373b510129725268e00405ea1eedfcc4ece27e510cdc84",
-          "machine_id_sha256": "5ac8cf0fa1a95a61bbc903768d334fd47fb1545bb6163c7cd729e63c1fec0a20",
-          "netbird_public_key_sha256": "fb1c8b6d6f8bb79f21a85846c763d8f33ce87c50cd6a65af744c879c6c91a915"
+          "agent_spki_sha256": "34c8de12c3cad8cd06adeed75a50f6ba8fc2c674636944cc4408bd8786e7b5a3",
+          "machine_id_sha256": "30d0b829e5bd0c9b9e8a21728c08295f0d63efad32aea13b3964fc8760c439ab",
+          "netbird_public_key_sha256": "fddd8c3c7e3fff02d7027e9c9ae2e9b2c18a8ea12a3379f999e4f7a2860b5e7d"
         },
         "reads_ok": true
       },
-      "observed_at": "2026-10-30T20:51:36.095967628Z"
+      "observed_at": "2026-10-30T23:07:36.154825098Z"
     },
     {
       "at": "AT07",
@@ -520,90 +522,158 @@
       "detail": {
         "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
         "node": {
-          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
-          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
-          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+          "agent_spki_sha256": "db259f5dd5a46b8652cb8755139c8cd42169125c3bc46afa7d8308b11fea0929",
+          "machine_id_sha256": "1aecce36d1145ff8654ce5bd66c8c5574a33e7654ba62edd0f2814554abbc0d3",
+          "netbird_public_key_sha256": "4bd6996051506f8ac7d39e1bbeaf66bdadef6007de4b1a33d9e4509198316e8f"
         },
         "node2": {
-          "agent_spki_sha256": "a0a5c28aa653769cbc373b510129725268e00405ea1eedfcc4ece27e510cdc84",
-          "machine_id_sha256": "5ac8cf0fa1a95a61bbc903768d334fd47fb1545bb6163c7cd729e63c1fec0a20",
-          "netbird_public_key_sha256": "fb1c8b6d6f8bb79f21a85846c763d8f33ce87c50cd6a65af744c879c6c91a915"
+          "agent_spki_sha256": "34c8de12c3cad8cd06adeed75a50f6ba8fc2c674636944cc4408bd8786e7b5a3",
+          "machine_id_sha256": "30d0b829e5bd0c9b9e8a21728c08295f0d63efad32aea13b3964fc8760c439ab",
+          "netbird_public_key_sha256": "fddd8c3c7e3fff02d7027e9c9ae2e9b2c18a8ea12a3379f999e4f7a2860b5e7d"
         },
         "reads_ok": true
       },
-      "observed_at": "2026-10-30T20:51:36.096491387Z"
+      "observed_at": "2026-10-30T23:07:36.155307071Z"
     },
     {
       "at": "AT07",
       "name": "cloned_identity_conflict",
       "status": "blocked",
       "detail": {
-        "changed_on_main": "devstack follow-up 12 PR #204 StartClonedIdentityFixture",
-        "clone": {
-          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
-          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
-          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        "active_window": "120s",
+        "changed_on_main": "wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict; devstack follow-up 12 PR #204 StartClonedIdentityFixture",
+        "compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
+        "domain_offered": "same lab /24 and same origin /24; trusted-proxy X-Forwarded-For is not the clone's TCP peer",
+        "gap": "ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, \"node\") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run.",
+        "networks": {
+          "clone_addresses": "fvpn-w4-enroll=172.28.38.129 fvpn-w4-enroll-origin=192.0.11.23",
+          "inspect_ok": true,
+          "lab_subnet": "172.28.38.0/24",
+          "origin_subnet": "192.0.11.0/24",
+          "same_lab_slash24": true,
+          "same_origin_slash24": true,
+          "source_addresses": "fvpn-w4-enroll=172.28.38.40 fvpn-w4-enroll-origin=192.0.11.20"
         },
-        "clone_stage": "enrolled",
-        "conflicts": 0,
-        "endpoint_rows": 0,
-        "gap": "StartClonedIdentityFixture.Observe read node_identity_conflicts and mapping_frozen; both stayed unset",
-        "mapping_frozen": false,
-        "owner": "PKI/enrollment + node identity adapter",
-        "read_ok": true,
-        "request": "ENR-08",
-        "same_identity": true,
-        "source": {
-          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
-          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
-          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        "observe_after": {
+          "clone": {
+            "agent_spki_sha256": "db259f5dd5a46b8652cb8755139c8cd42169125c3bc46afa7d8308b11fea0929",
+            "machine_id_sha256": "1aecce36d1145ff8654ce5bd66c8c5574a33e7654ba62edd0f2814554abbc0d3",
+            "netbird_public_key_sha256": "4bd6996051506f8ac7d39e1bbeaf66bdadef6007de4b1a33d9e4509198316e8f"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 0,
+          "endpoint_rows": 1,
+          "mapping_frozen": false,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "db259f5dd5a46b8652cb8755139c8cd42169125c3bc46afa7d8308b11fea0929",
+            "machine_id_sha256": "1aecce36d1145ff8654ce5bd66c8c5574a33e7654ba62edd0f2814554abbc0d3",
+            "netbird_public_key_sha256": "4bd6996051506f8ac7d39e1bbeaf66bdadef6007de4b1a33d9e4509198316e8f"
+          },
+          "source_stage": "enrolled"
         },
-        "source_stage": "enrolled",
-        "started": true
+        "observe_before": {
+          "read_ok": false
+        },
+        "observe_enrolled": {
+          "clone": {
+            "agent_spki_sha256": "db259f5dd5a46b8652cb8755139c8cd42169125c3bc46afa7d8308b11fea0929",
+            "machine_id_sha256": "1aecce36d1145ff8654ce5bd66c8c5574a33e7654ba62edd0f2814554abbc0d3",
+            "netbird_public_key_sha256": "4bd6996051506f8ac7d39e1bbeaf66bdadef6007de4b1a33d9e4509198316e8f"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 0,
+          "endpoint_rows": 1,
+          "mapping_frozen": false,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "db259f5dd5a46b8652cb8755139c8cd42169125c3bc46afa7d8308b11fea0929",
+            "machine_id_sha256": "1aecce36d1145ff8654ce5bd66c8c5574a33e7654ba62edd0f2814554abbc0d3",
+            "netbird_public_key_sha256": "4bd6996051506f8ac7d39e1bbeaf66bdadef6007de4b1a33d9e4509198316e8f"
+          },
+          "source_stage": "enrolled"
+        },
+        "owner": "devstack",
+        "projection_after": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "applying",
+          "read_ok": true,
+          "safety_status": "failed"
+        },
+        "projection_before": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "applying",
+          "read_ok": true,
+          "safety_status": "failed"
+        },
+        "request": "ENR-07",
+        "started": true,
+        "steps_not_run": [
+          "interleave_two_domains",
+          "conflict_freeze",
+          "revoke_and_reenroll",
+          "quiet_window_promotion"
+        ]
       },
-      "observed_at": "2026-10-30T20:53:04.800429348Z"
+      "observed_at": "2026-10-30T23:07:58.992075981Z"
     },
     {
       "at": "AT07",
       "name": "counted_unacked_usage",
       "status": "blocked",
-      "observed_at": "2026-10-30T20:55:13Z",
-      "detail": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported"
+      "detail": "ENR-05 stays blocked after devstack follow-up 13 (#219). docs/e2e/requests.md recheck: node/internal/usageupload still acknowledges every batch. HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:07:58.992675387Z"
     },
     {
       "at": "AT07",
       "name": "installer_rerun",
       "status": "blocked",
-      "observed_at": "2026-10-30T20:55:13Z",
-      "detail": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported"
+      "detail": "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:07:58.993297309Z"
     },
     {
       "at": "AT07",
       "name": "identity_ledger_preserved",
       "status": "blocked",
-      "observed_at": "2026-10-30T20:55:13Z",
-      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required"
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.",
+      "observed_at": "2026-10-30T23:07:58.993683482Z"
     },
     {
       "at": "AT07",
       "name": "controlled_reinstall",
       "status": "blocked",
-      "observed_at": "2026-10-30T20:55:13Z",
-      "detail": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported"
+      "detail": "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:07:58.994036438Z"
     },
     {
       "at": "AT07",
       "name": "old_certificate_denied",
       "status": "blocked",
-      "observed_at": "2026-10-30T20:55:13Z",
-      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall"
+      "detail": "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.",
+      "observed_at": "2026-10-30T23:07:58.994373968Z"
     },
     {
       "at": "AT07",
       "name": "historical_usage_retained",
       "status": "blocked",
-      "observed_at": "2026-10-30T20:55:13Z",
-      "detail": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately"
+      "detail": "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.",
+      "observed_at": "2026-10-30T23:07:58.994750507Z"
     }
   ],
   "prior_checks": [
@@ -2201,6 +2271,1166 @@
       "observed_at": "2026-10-30T20:32:53Z",
       "detail": "ENR-07 / devstack follow-up 12: StartClonedIdentityFixture is not exported",
       "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T20:50:04Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:51:35.989788053Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:51:35.990236582Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:51:35.992779444Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:51:35.993042161Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e94-ad70-7c5f-bfd8-5a18a6f19416",
+        "incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:51:11.681114Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:51:36.001335382Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e94-df75-7d66-8f60-4adfc75f050a",
+        "incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:51:24.065428Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:51:36.010686183Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a18e94-ad70-7c60-9807-166471e4e296",
+          "01a18e94-df75-7d67-a6b9-8551dcec240a"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-30T20:51:36.010975786Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27",
+          "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27"
+        ],
+        "incarnation_ids": [
+          "01a18e94-b054-755d-9138-8111cbdeb629",
+          "01a18e94-e0aa-7c5c-a744-586ddab63d42"
+        ],
+        "node_ids": [
+          "01a18e94-ad70-7c60-9807-166471e4e296",
+          "01a18e94-df75-7d67-a6b9-8551dcec240a"
+        ]
+      },
+      "observed_at": "2026-10-30T20:51:36.034356578Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:51:36.038190057Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:51:36.038515792Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:51:36.041113545Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:51:36.041527956Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "node2": {
+          "agent_spki_sha256": "a0a5c28aa653769cbc373b510129725268e00405ea1eedfcc4ece27e510cdc84",
+          "machine_id_sha256": "5ac8cf0fa1a95a61bbc903768d334fd47fb1545bb6163c7cd729e63c1fec0a20",
+          "netbird_public_key_sha256": "fb1c8b6d6f8bb79f21a85846c763d8f33ce87c50cd6a65af744c879c6c91a915"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T20:51:36.095967628Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "node2": {
+          "agent_spki_sha256": "a0a5c28aa653769cbc373b510129725268e00405ea1eedfcc4ece27e510cdc84",
+          "machine_id_sha256": "5ac8cf0fa1a95a61bbc903768d334fd47fb1545bb6163c7cd729e63c1fec0a20",
+          "netbird_public_key_sha256": "fb1c8b6d6f8bb79f21a85846c763d8f33ce87c50cd6a65af744c879c6c91a915"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T20:51:36.096491387Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 StartClonedIdentityFixture",
+        "clone": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "clone_stage": "enrolled",
+        "conflicts": 0,
+        "endpoint_rows": 0,
+        "gap": "StartClonedIdentityFixture.Observe read node_identity_conflicts and mapping_frozen; both stayed unset",
+        "mapping_frozen": false,
+        "owner": "PKI/enrollment + node identity adapter",
+        "read_ok": true,
+        "request": "ENR-08",
+        "same_identity": true,
+        "source": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "source_stage": "enrolled",
+        "started": true
+      },
+      "observed_at": "2026-10-30T20:53:04.800429348Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T22:59:00Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "probe_process",
+      "status": "fail",
+      "detail": "Live probe process returned nonzero; completed checks retained",
+      "observed_at": "2026-10-30T23:00:48Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+        "node_id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.839517906Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "identity_conflict",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T23:00:25.840245546Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-e75d-767e-b98d-8a48c92d3f82",
+        "node_id": "01a18f0a-e628-798a-9bca-12981960984a",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.844356491Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-e75d-767e-b98d-8a48c92d3f82",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "identity_conflict",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18f0a-e628-798a-9bca-12981960984a",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T23:00:25.844721767Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18f0a-b40f-75d2-90c0-01bb34544dd6",
+        "incarnation_id": "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T23:00:06.395786Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.857342808Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18f0a-e628-7989-ab77-238075b277f0",
+        "incarnation_id": "01a18f0a-e75d-767e-b98d-8a48c92d3f82",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18f0a-e628-798a-9bca-12981960984a",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T23:00:19.003845Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.86846909Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+          "01a18f0a-e628-798a-9bca-12981960984a"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-30T23:00:25.868950886Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:af77fe6a15a0ac1ba56e3cf2bc39d93f61fee704c2f7a67f02a1a2d1bc01a9f7",
+          "sha256:af77fe6a15a0ac1ba56e3cf2bc39d93f61fee704c2f7a67f02a1a2d1bc01a9f7"
+        ],
+        "incarnation_ids": [
+          "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+          "01a18f0a-e75d-767e-b98d-8a48c92d3f82"
+        ],
+        "node_ids": [
+          "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+          "01a18f0a-e628-798a-9bca-12981960984a"
+        ]
+      },
+      "observed_at": "2026-10-30T23:00:25.894431978Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T23:00:25.898108645Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T23:00:25.898470505Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T23:00:25.90141833Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T23:00:25.901797068Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+          "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+          "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+        },
+        "node2": {
+          "agent_spki_sha256": "902cf91c8e4a50d38b0b55785b74e69f34cfdceeae1ce65fd3a820b9c04bdd29",
+          "machine_id_sha256": "f187ac681608b261190b9af1af895d2bc8022a6daa966e2d1cdc125c8fceb874",
+          "netbird_public_key_sha256": "2cd333cca0c877ba5d5407edd7c432bea0847075ac9a71df62c9b94f288bf65e"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T23:00:25.960345362Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+          "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+          "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+        },
+        "node2": {
+          "agent_spki_sha256": "902cf91c8e4a50d38b0b55785b74e69f34cfdceeae1ce65fd3a820b9c04bdd29",
+          "machine_id_sha256": "f187ac681608b261190b9af1af895d2bc8022a6daa966e2d1cdc125c8fceb874",
+          "netbird_public_key_sha256": "2cd333cca0c877ba5d5407edd7c432bea0847075ac9a71df62c9b94f288bf65e"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T23:00:25.96078901Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "detail": {
+        "active_window": "120s",
+        "changed_on_main": "wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict; devstack follow-up 12 PR #204 StartClonedIdentityFixture",
+        "compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
+        "domain_offered": "same lab /24 and same origin /24; trusted-proxy X-Forwarded-For is not the clone's TCP peer",
+        "gap": "ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, \"node\") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run.",
+        "networks": {
+          "clone_addresses": "fvpn-w4-enroll=172.28.38.129 fvpn-w4-enroll-origin=192.0.11.23",
+          "inspect_ok": true,
+          "lab_subnet": "172.28.38.0/24",
+          "origin_subnet": "192.0.11.0/24",
+          "same_lab_slash24": true,
+          "same_origin_slash24": true,
+          "source_addresses": "fvpn-w4-enroll=172.28.38.40 fvpn-w4-enroll-origin=192.0.11.20"
+        },
+        "observe_after": {
+          "clone": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 0,
+          "endpoint_rows": 1,
+          "mapping_frozen": false,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "source_stage": "enrolled"
+        },
+        "observe_before": {
+          "clone": {
+            "agent_spki_sha256": "",
+            "machine_id_sha256": "",
+            "netbird_public_key_sha256": ""
+          },
+          "clone_stage": "",
+          "conflicts": 0,
+          "endpoint_rows": 0,
+          "mapping_frozen": false,
+          "read_ok": false,
+          "same_identity": false,
+          "source": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "source_stage": ""
+        },
+        "observe_enrolled": {
+          "clone": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 0,
+          "endpoint_rows": 1,
+          "mapping_frozen": false,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "source_stage": "enrolled"
+        },
+        "owner": "devstack",
+        "projection_after": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "ready",
+          "read_ok": true,
+          "safety_status": "passed"
+        },
+        "projection_before": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "applying",
+          "read_ok": true,
+          "safety_status": "failed"
+        },
+        "request": "ENR-07",
+        "started": true,
+        "steps_not_run": [
+          "interleave_two_domains",
+          "conflict_freeze",
+          "revoke_and_reenroll",
+          "quiet_window_promotion"
+        ]
+      },
+      "observed_at": "2026-10-30T23:00:48.494843449Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "detail": "ENR-05 stays blocked after devstack follow-up 13 (#219). docs/e2e/requests.md recheck: node/internal/usageupload still acknowledges every batch. HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.495361748Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "detail": "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.495636924Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.495885733Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "detail": "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.496360789Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "detail": "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.496952211Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "detail": "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.497149698Z",
+      "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40"
     }
   ]
 }

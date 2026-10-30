@@ -1,0 +1,2832 @@
+{
+  "run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40",
+  "started_at": "2026-10-30T22:58:11Z",
+  "finished_at": "2026-10-30T23:02:55Z",
+  "source": {
+    "commit": "99ab668e686712d5d0ad4e0c6b79d332fc6f9d25",
+    "tree_sha256": "36a186b45c27955f8d5b8ab2642f69d2133fe7358fe43d3276a0b5fad0a103c1",
+    "dirty": true,
+    "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"
+  },
+  "prefix": "w4-enroll",
+  "port_base": 12000,
+  "image_digests": {
+    "control": "sha256:bfc5b0275602e9137b1cbcbd1944a30adf7bc07a37f3ba77fe716fbc23330736",
+    "worker": "sha256:f57b821b1bc9b3663117c67c1ee589d6c73840be7986d82903b35ab70136c20d",
+    "node": "sha256:af77fe6a15a0ac1ba56e3cf2bc39d93f61fee704c2f7a67f02a1a2d1bc01a9f7"
+  },
+  "image_evidence": "immutable running container image IDs",
+  "commands": [
+    {
+      "name": "fresh_teardown",
+      "started_at": "2026-10-30T22:58:11Z",
+      "finished_at": "2026-10-30T22:58:12Z",
+      "exit_code": 0
+    },
+    {
+      "name": "fresh_startup",
+      "started_at": "2026-10-30T22:58:12Z",
+      "finished_at": "2026-10-30T22:59:00Z",
+      "exit_code": 0
+    },
+    {
+      "name": "compile_probe",
+      "started_at": "2026-10-30T22:59:00Z",
+      "finished_at": "2026-10-30T22:59:01Z",
+      "exit_code": 0
+    },
+    {
+      "name": "live_probe",
+      "started_at": "2026-10-30T22:59:01Z",
+      "finished_at": "2026-10-30T23:00:48Z",
+      "exit_code": 1
+    },
+    {
+      "name": "join_teardown",
+      "started_at": "2026-10-30T23:00:48Z",
+      "finished_at": "2026-10-30T23:01:30Z",
+      "exit_code": 0
+    },
+    {
+      "name": "join_startup",
+      "started_at": "2026-10-30T23:01:30Z",
+      "finished_at": "2026-10-30T23:01:52Z",
+      "exit_code": 0
+    },
+    {
+      "name": "live_probe_join",
+      "started_at": "2026-10-30T23:01:52Z",
+      "finished_at": "2026-10-30T23:02:14Z",
+      "exit_code": 0
+    },
+    {
+      "name": "final_teardown",
+      "started_at": "2026-10-30T23:02:14Z",
+      "finished_at": "2026-10-30T23:02:55Z",
+      "exit_code": 0
+    }
+  ],
+  "test_binary_sha256": "d9f7eefba34eb803b65c0c755f25b1c80c91693570043435faadafcecfea2720",
+  "cleanup": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "images": 0
+  },
+  "join_image_digests": {
+    "control": "sha256:9488b872b7ce1abc83718ca53a81ff893a16817dfd457bbacc19a50da2385f0d",
+    "worker": "sha256:c990cf83fb212ebecd3a86fd6bf8cc4027ff8ca02b7c5bcea0c59da646da1b03",
+    "node": "sha256:cfa14bbb4f271bb1adbfd019f6786ce6a144bfae846f647b626a94e8126c3023"
+  },
+  "id": "AT07",
+  "status": "blocked",
+  "actual": "Live probe process returned nonzero; completed checks retained",
+  "requirements": [
+    "ENR03",
+    "PKG01",
+    "DATA01"
+  ],
+  "spec": [
+    "§19 AT07",
+    "§6.1",
+    "§6.2",
+    "§6.3",
+    "§6.4"
+  ],
+  "checks": [
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T22:59:00Z"
+    },
+    {
+      "at": "AT07",
+      "name": "probe_process",
+      "status": "fail",
+      "detail": "Live probe process returned nonzero; completed checks retained",
+      "observed_at": "2026-10-30T23:00:48Z"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+        "node_id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.839517906Z"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "identity_conflict",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T23:00:25.840245546Z"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-e75d-767e-b98d-8a48c92d3f82",
+        "node_id": "01a18f0a-e628-798a-9bca-12981960984a",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.844356491Z"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18f0a-e75d-767e-b98d-8a48c92d3f82",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "identity_conflict",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18f0a-e628-798a-9bca-12981960984a",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T23:00:25.844721767Z"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18f0a-b40f-75d2-90c0-01bb34544dd6",
+        "incarnation_id": "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T23:00:06.395786Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.857342808Z"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18f0a-e628-7989-ab77-238075b277f0",
+        "incarnation_id": "01a18f0a-e75d-767e-b98d-8a48c92d3f82",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18f0a-e628-798a-9bca-12981960984a",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T23:00:19.003845Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T23:00:25.86846909Z"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+          "01a18f0a-e628-798a-9bca-12981960984a"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-30T23:00:25.868950886Z"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:af77fe6a15a0ac1ba56e3cf2bc39d93f61fee704c2f7a67f02a1a2d1bc01a9f7",
+          "sha256:af77fe6a15a0ac1ba56e3cf2bc39d93f61fee704c2f7a67f02a1a2d1bc01a9f7"
+        ],
+        "incarnation_ids": [
+          "01a18f0a-b620-71fe-9e2b-364c5fda2dcc",
+          "01a18f0a-e75d-767e-b98d-8a48c92d3f82"
+        ],
+        "node_ids": [
+          "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+          "01a18f0a-e628-798a-9bca-12981960984a"
+        ]
+      },
+      "observed_at": "2026-10-30T23:00:25.894431978Z"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T23:00:25.898108645Z"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-b40f-75d3-966d-8f4761594f7c",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T23:00:25.898470505Z"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T23:00:25.90141833Z"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18f0a-e628-798a-9bca-12981960984a",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T23:00:25.901797068Z"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+          "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+          "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+        },
+        "node2": {
+          "agent_spki_sha256": "902cf91c8e4a50d38b0b55785b74e69f34cfdceeae1ce65fd3a820b9c04bdd29",
+          "machine_id_sha256": "f187ac681608b261190b9af1af895d2bc8022a6daa966e2d1cdc125c8fceb874",
+          "netbird_public_key_sha256": "2cd333cca0c877ba5d5407edd7c432bea0847075ac9a71df62c9b94f288bf65e"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T23:00:25.960345362Z"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+          "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+          "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+        },
+        "node2": {
+          "agent_spki_sha256": "902cf91c8e4a50d38b0b55785b74e69f34cfdceeae1ce65fd3a820b9c04bdd29",
+          "machine_id_sha256": "f187ac681608b261190b9af1af895d2bc8022a6daa966e2d1cdc125c8fceb874",
+          "netbird_public_key_sha256": "2cd333cca0c877ba5d5407edd7c432bea0847075ac9a71df62c9b94f288bf65e"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T23:00:25.96078901Z"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "detail": {
+        "active_window": "120s",
+        "changed_on_main": "wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict; devstack follow-up 12 PR #204 StartClonedIdentityFixture",
+        "compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
+        "domain_offered": "same lab /24 and same origin /24; trusted-proxy X-Forwarded-For is not the clone's TCP peer",
+        "gap": "ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, \"node\") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run.",
+        "networks": {
+          "clone_addresses": "fvpn-w4-enroll=172.28.38.129 fvpn-w4-enroll-origin=192.0.11.23",
+          "inspect_ok": true,
+          "lab_subnet": "172.28.38.0/24",
+          "origin_subnet": "192.0.11.0/24",
+          "same_lab_slash24": true,
+          "same_origin_slash24": true,
+          "source_addresses": "fvpn-w4-enroll=172.28.38.40 fvpn-w4-enroll-origin=192.0.11.20"
+        },
+        "observe_after": {
+          "clone": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 0,
+          "endpoint_rows": 1,
+          "mapping_frozen": false,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "source_stage": "enrolled"
+        },
+        "observe_before": {
+          "clone": {
+            "agent_spki_sha256": "",
+            "machine_id_sha256": "",
+            "netbird_public_key_sha256": ""
+          },
+          "clone_stage": "",
+          "conflicts": 0,
+          "endpoint_rows": 0,
+          "mapping_frozen": false,
+          "read_ok": false,
+          "same_identity": false,
+          "source": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "source_stage": ""
+        },
+        "observe_enrolled": {
+          "clone": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 0,
+          "endpoint_rows": 1,
+          "mapping_frozen": false,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "138a510693c29764c94d6971c7a88b653825595b4ec04c1d9f51f5e8f13fe601",
+            "machine_id_sha256": "5249bffddeed5d4238ff26396ddd7033028d8b7c9bfac7d9d0cf929291c68143",
+            "netbird_public_key_sha256": "acd6607c2b5e60762ecf6b3917fd2bc9982469708879cfe1c0e659044af6caf4"
+          },
+          "source_stage": "enrolled"
+        },
+        "owner": "devstack",
+        "projection_after": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "ready",
+          "read_ok": true,
+          "safety_status": "passed"
+        },
+        "projection_before": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "applying",
+          "read_ok": true,
+          "safety_status": "failed"
+        },
+        "request": "ENR-07",
+        "started": true,
+        "steps_not_run": [
+          "interleave_two_domains",
+          "conflict_freeze",
+          "revoke_and_reenroll",
+          "quiet_window_promotion"
+        ]
+      },
+      "observed_at": "2026-10-30T23:00:48.494843449Z"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "detail": "ENR-05 stays blocked after devstack follow-up 13 (#219). docs/e2e/requests.md recheck: node/internal/usageupload still acknowledges every batch. HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.495361748Z"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "detail": "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.495636924Z"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.495885733Z"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "detail": "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.496360789Z"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "detail": "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.496952211Z"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "detail": "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.",
+      "observed_at": "2026-10-30T23:00:48.497149698Z"
+    }
+  ],
+  "prior_checks": [
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:15Z",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "certificate_identity_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "certificate_identity_node2",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-07: no documented OS machine-id/NetBird key fingerprint observer",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-05: no documented usage acknowledgement hold and ledger snapshot hook",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-06: no documented real installer rerun hook",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-06: no documented controlled reinstall hook for the real node",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-03/ENR-05/ENR-06: history API and counted usage across reinstall required",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:16Z",
+      "detail": "ENR-07: no sanctioned cloned enrolled identity fixture; never copy it into a running container",
+      "run_id": "79b89e47-b23f-45f8-a683-28e0557dc1ba"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "blocked",
+      "detail": "ENR-01: shared prepare rejected assigned port base 66000: port base slot is out of range",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "certificate_identity_node",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "certificate_identity_node2",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "Not reached: fresh-stack/API prerequisite unavailable",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-07: no documented OS machine-id/NetBird key fingerprint observer",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-05: no documented usage acknowledgement hold and ledger snapshot hook",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-06: no documented real installer rerun hook",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-06: no documented controlled reinstall hook for the real node",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-03/ENR-05/ENR-06: history API and counted usage across reinstall required",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "observed_at": "2026-10-30T17:02:24Z",
+      "detail": "ENR-07: no sanctioned cloned enrolled identity fixture; never copy it into a running container",
+      "run_id": "9db51ea3-d807-449e-a812-cfad739db675"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T18:07:43Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e00-0771-73c6-a133-86bee082c0cd",
+        "node_id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T18:09:13.498545045Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e00-0771-73c6-a133-86bee082c0cd",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T18:09:13.498927007Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e00-3815-7b41-8d41-f1647bae24f6",
+        "node_id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T18:09:13.501856789Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e00-3815-7b41-8d41-f1647bae24f6",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T18:09:13.502096623Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:228645164949bf932fb43eab692855229dad9755f63b27e7703df67c6a81398b",
+          "sha256:228645164949bf932fb43eab692855229dad9755f63b27e7703df67c6a81398b"
+        ],
+        "incarnation_ids": [
+          "01a18e00-0771-73c6-a133-86bee082c0cd",
+          "01a18e00-3815-7b41-8d41-f1647bae24f6"
+        ],
+        "node_ids": [
+          "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+          "01a18e00-36da-73ce-abe8-a65b1c6c10a8"
+        ]
+      },
+      "observed_at": "2026-10-30T18:09:13.523932112Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:09:13.527917091Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e00-04c5-7ecd-bbbc-c1ba2a7183bc",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T18:09:13.528381036Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T18:09:13.530961941Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e00-36da-73ce-abe8-a65b1c6c10a8",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T18:09:13.531238502Z",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported; API identity comparison alone is partial",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-03/ENR-05/ENR-06: history API and counted usage across reinstall required",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "observed_at": "2026-10-30T18:09:56Z",
+      "detail": "ENR-07 / devstack follow-up 12: StartClonedIdentityFixture is not exported",
+      "run_id": "75dbb974-04d2-4e45-a6bd-cfe0d923bd2c"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T20:22:44Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "probe_process",
+      "status": "fail",
+      "detail": "Live probe process returned nonzero; completed checks retained",
+      "observed_at": "2026-10-30T20:24:15Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e7b-a541-7a45-a2c1-5d519cf33445",
+        "node_id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:24:15.088843263Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e7b-a541-7a45-a2c1-5d519cf33445",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:24:15.089413042Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e7b-d6ea-77ff-af1d-fc5b031f0eda",
+        "node_id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:24:15.092854429Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e7b-d6ea-77ff-af1d-fc5b031f0eda",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:24:15.093189509Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e7b-a362-7d09-bd0a-33e7c54ca4e9",
+        "incarnation_id": "01a18e7b-a541-7a45-a2c1-5d519cf33445",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:23:50.441235Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:24:15.102928396Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e7b-d5bf-769f-994f-1870caffe9f4",
+        "incarnation_id": "01a18e7b-d6ea-77ff-af1d-fc5b031f0eda",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:24:03.157589Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:24:15.114397743Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+          "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-30T20:24:15.114624381Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:db805412138650349ac5558c50edd5f1c8de9982b6141c86d1cda56affe0ac38",
+          "sha256:db805412138650349ac5558c50edd5f1c8de9982b6141c86d1cda56affe0ac38"
+        ],
+        "incarnation_ids": [
+          "01a18e7b-a541-7a45-a2c1-5d519cf33445",
+          "01a18e7b-d6ea-77ff-af1d-fc5b031f0eda"
+        ],
+        "node_ids": [
+          "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+          "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1"
+        ]
+      },
+      "observed_at": "2026-10-30T20:24:15.137374263Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:24:15.141724593Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e7b-a362-7d0a-a986-963dba8a37f2",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:24:15.141996386Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:24:15.144603152Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e7b-d5bf-76a0-bd9f-529fdd6fbbd1",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:24:15.144830053Z",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported; API identity comparison alone is partial",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:24:57Z",
+      "detail": "ENR-07 / devstack follow-up 12: StartClonedIdentityFixture is not exported",
+      "run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T20:30:42Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e82-ed85-7ad7-b460-fdb5015b8f17",
+        "node_id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:32:10.906956615Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e82-ed85-7ad7-b460-fdb5015b8f17",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:32:10.907375561Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e83-199a-7ea9-a21a-85c9bdd91874",
+        "node_id": "01a18e83-1866-737d-a0c6-289f601f9378",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:32:10.910661361Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e83-199a-7ea9-a21a-85c9bdd91874",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e83-1866-737d-a0c6-289f601f9378",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:32:10.910996657Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e82-ebcf-7919-a60f-0b6f99926be2",
+        "incarnation_id": "01a18e82-ed85-7ad7-b460-fdb5015b8f17",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:31:48.360893Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:32:10.919681664Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e83-1866-737c-856f-4598917737aa",
+        "incarnation_id": "01a18e83-199a-7ea9-a21a-85c9bdd91874",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e83-1866-737d-a0c6-289f601f9378",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:31:59.108907Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:32:10.925820998Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+          "01a18e83-1866-737d-a0c6-289f601f9378"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-30T20:32:10.926085889Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:141ee8cf2160864bf4eadf2ed26630948793ddd290aa959dc67750b9ef70c597",
+          "sha256:141ee8cf2160864bf4eadf2ed26630948793ddd290aa959dc67750b9ef70c597"
+        ],
+        "incarnation_ids": [
+          "01a18e82-ed85-7ad7-b460-fdb5015b8f17",
+          "01a18e83-199a-7ea9-a21a-85c9bdd91874"
+        ],
+        "node_ids": [
+          "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+          "01a18e83-1866-737d-a0c6-289f601f9378"
+        ]
+      },
+      "observed_at": "2026-10-30T20:32:10.950912793Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:32:10.953935595Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e82-ebcf-791a-a332-b0e8c99ccd2a",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:32:10.954236561Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:32:10.956855444Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e83-1866-737d-a0c6-289f601f9378",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e83-1866-737d-a0c6-289f601f9378",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e83-1866-737d-a0c6-289f601f9378",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e83-1866-737d-a0c6-289f601f9378",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e83-1866-737d-a0c6-289f601f9378",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:32:10.957166085Z",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported; API identity comparison alone is partial",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-07 / devstack follow-up 12: MachineIdentityFingerprints is not exported",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:32:53Z",
+      "detail": "ENR-07 / devstack follow-up 12: StartClonedIdentityFixture is not exported",
+      "run_id": "9bb66c4e-e429-450b-8671-521d33926ede"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-30T20:50:04Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:51:35.989788053Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:51:35.990236582Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-30T20:51:35.992779444Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update"
+        ],
+        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-30T20:51:35.993042161Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e94-ad70-7c5f-bfd8-5a18a6f19416",
+        "incarnation_id": "01a18e94-b054-755d-9138-8111cbdeb629",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e94-ad70-7c60-9807-166471e4e296",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:51:11.681114Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:51:36.001335382Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a18e94-df75-7d66-8f60-4adfc75f050a",
+        "incarnation_id": "01a18e94-e0aa-7c5c-a744-586ddab63d42",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-30T20:51:24.065428Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-30T20:51:36.010686183Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a18e94-ad70-7c60-9807-166471e4e296",
+          "01a18e94-df75-7d67-a6b9-8551dcec240a"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-30T20:51:36.010975786Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27",
+          "sha256:5d950b704594632e67993c167b8b4d889850dd0bd13800bb81639b445c983e27"
+        ],
+        "incarnation_ids": [
+          "01a18e94-b054-755d-9138-8111cbdeb629",
+          "01a18e94-e0aa-7c5c-a744-586ddab63d42"
+        ],
+        "node_ids": [
+          "01a18e94-ad70-7c60-9807-166471e4e296",
+          "01a18e94-df75-7d67-a6b9-8551dcec240a"
+        ]
+      },
+      "observed_at": "2026-10-30T20:51:36.034356578Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:51:36.038190057Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-ad70-7c60-9807-166471e4e296",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:51:36.038515792Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-30T20:51:36.041113545Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a18e94-df75-7d67-a6b9-8551dcec240a",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-30T20:51:36.041527956Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "node2": {
+          "agent_spki_sha256": "a0a5c28aa653769cbc373b510129725268e00405ea1eedfcc4ece27e510cdc84",
+          "machine_id_sha256": "5ac8cf0fa1a95a61bbc903768d334fd47fb1545bb6163c7cd729e63c1fec0a20",
+          "netbird_public_key_sha256": "fb1c8b6d6f8bb79f21a85846c763d8f33ce87c50cd6a65af744c879c6c91a915"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T20:51:36.095967628Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "node2": {
+          "agent_spki_sha256": "a0a5c28aa653769cbc373b510129725268e00405ea1eedfcc4ece27e510cdc84",
+          "machine_id_sha256": "5ac8cf0fa1a95a61bbc903768d334fd47fb1545bb6163c7cd729e63c1fec0a20",
+          "netbird_public_key_sha256": "fb1c8b6d6f8bb79f21a85846c763d8f33ce87c50cd6a65af744c879c6c91a915"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-30T20:51:36.096491387Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "blocked",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 StartClonedIdentityFixture",
+        "clone": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "clone_stage": "enrolled",
+        "conflicts": 0,
+        "endpoint_rows": 0,
+        "gap": "StartClonedIdentityFixture.Observe read node_identity_conflicts and mapping_frozen; both stayed unset",
+        "mapping_frozen": false,
+        "owner": "PKI/enrollment + node identity adapter",
+        "read_ok": true,
+        "request": "ENR-08",
+        "same_identity": true,
+        "source": {
+          "agent_spki_sha256": "a5951566617a893589fa2c93276728c07367454fd3422cc1e48a91e50ff504ed",
+          "machine_id_sha256": "966f6cec585b885596dc34e40057e5e6cbbb41f4556656b4ca565eab84b41496",
+          "netbird_public_key_sha256": "1cd7c4d89c466d13387fa77f61efaf3679057bc08694cf692c372f63c848f75f"
+        },
+        "source_stage": "enrolled",
+        "started": true
+      },
+      "observed_at": "2026-10-30T20:53:04.800429348Z",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "observed_at": "2026-10-30T20:55:13Z",
+      "detail": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately",
+      "run_id": "7615d23d-d572-4db1-a903-9610dd3bcef3"
+    }
+  ]
+}
