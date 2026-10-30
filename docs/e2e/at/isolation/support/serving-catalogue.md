@@ -4,14 +4,14 @@ Member group and plan through product APIs
 
 Status: pass
 
-Run: 422cdd6d-090b-4bb7-b92b-d4883259ac87
+Run: 49799a38-1980-4c0f-a527-725646230eee
 
-Source: 11698fc4d7205a5c902592660ccb346d7f4db750
+Source: 4d84f0a651e60ae84f168a8a33248503a50cc94a
 
 Spec: §9, §14.2
 
 - groups_get: 200
 - group_create: 201
-- group_id: 01a18ddb-af9e-725a-8a0e-230130c373e2
-- plan_id: 01a18ddb-afaf-71a3-95b4-2ab005fe1051
-- plan_revision_id: 01a18ddb-afaf-7399-926f-e21e5f7e8fbe
+- group_id: 01a18e56-cf95-7273-8664-22b362d36fcb
+- plan_id: 01a18e56-cfb8-704b-b89e-eed7ec489912
+- plan_revision_id: 01a18e56-cfb8-755c-8b34-102983828df8

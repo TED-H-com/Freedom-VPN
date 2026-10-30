@@ -27,6 +27,12 @@ import (
 // DefaultMaxOfflineLeaseSeconds is the recommended default offline serving lease cap (24h, §16.3).
 const DefaultMaxOfflineLeaseSeconds = 86400
 
+// ProvisionalGrantlessLeaseSeconds is the central expiry backstop (60s, D-067)
+// when RenewTx issues a grant-less lease for a published exit whose
+// provisioning_state is not yet ready. A ready node keeps the configured
+// max_offline_lease_seconds window (D-065).
+const ProvisionalGrantlessLeaseSeconds = 60
+
 // Signer signs a canonical JSON payload for a given key purpose (`lease`).
 type Signer interface {
 	Sign(ctx context.Context, purpose envelope.Purpose, signed any) (envelope.Envelope, error)
@@ -422,10 +428,21 @@ func (s *Service) RenewTx(
 	var dbMemberLeases []dbMemberLease
 	var maxAuthGen uint64 = 1
 
-	includeMembers := pubIntentStr == string(api.PublicationIntentPublished) &&
-		lifecycleState == string(api.LifecycleStateRegistered) &&
-		provisioningState == string(api.ProvisioningStateReady) &&
-		len(groupIDs) > 0
+	publishedAndRegistered := pubIntentStr == string(api.PublicationIntentPublished) &&
+		lifecycleState == string(api.LifecycleStateRegistered)
+	nodeReady := provisioningState == string(api.ProvisioningStateReady)
+	includeMembers := publishedAndRegistered && nodeReady && len(groupIDs) > 0
+
+	// D-067 central backstop: when includeMembers is false on a published exit because
+	// provisioning_state is not ready, issue the grant-less lease with ExpiresAt 60s
+	// after issued_at so an agent that waits for the renewal lead still renews promptly.
+	// Never shorten the lease of a ready node.
+	if publishedAndRegistered && !nodeReady {
+		provisionalDur := time.Duration(ProvisionalGrantlessLeaseSeconds) * time.Second
+		if provisionalDur < maxOfflineDur {
+			nodeLeaseEnd = issuedAt.Add(provisionalDur)
+		}
+	}
 
 	// Only issue member grants when exit publication_intent == 'published' and node is registered & ready (§16.3).
 	if includeMembers {

@@ -4,12 +4,15 @@ package devices
 
 import (
 	"context"
+	"errors"
+	"testing"
+
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
-	"testing"
 )
 
 func TestMEM02_D029DeviceReplayOperationsAndAudit(t *testing.T) {
@@ -40,16 +43,12 @@ func TestMEM02_D029DeviceReplayOperationsAndAudit(t *testing.T) {
 	}
 	adapter := s.Adapter.(*fakeAdapter)
 	adapter.ignoreWrites = true
-	if err = s.SyncDevice(ctx, c.DeviceID); err == nil {
-		t.Fatal("unobserved sync succeeded")
+	if err = s.SyncDevice(ctx, c.DeviceID); !errors.Is(err, entitlement.ErrConflict) {
+		t.Fatal("unobserved sync", err)
 	}
 	op := read(*c.OperationID)
-	if op.Kind != api.OperationKindMemberDeviceAuthorize || op.Error.IsNull() || op.Status != api.OperationStatusFailed {
-		t.Fatal("failed step invisible", op)
-	}
-	var code, message string
-	if err = s.Pool.QueryRow(ctx, `SELECT error_code,error_message FROM operations WHERE id=$1`, c.OperationID).Scan(&code, &message); err != nil || code != "DEPENDENCY_UNAVAILABLE" || message == "" {
-		t.Fatal(code, message, err)
+	if op.Kind != api.OperationKindMemberDeviceAuthorize || op.Status == api.OperationStatusFailed || !op.Error.IsNull() || op.Status != api.OperationStatusPending {
+		t.Fatal("read-back conflict failed the operation", op)
 	}
 	adapter.ignoreWrites = false
 	if err = s.SyncDevice(ctx, c.DeviceID); err != nil {

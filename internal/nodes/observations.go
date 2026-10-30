@@ -713,10 +713,8 @@ func advanceNodeOperationsOnObservation(
 		effectiveSafety == api.SafetyStatusPassed &&
 		report.ProvisioningState == api.ProvisioningStateReady &&
 		!hasIsoErr
-	failedClosed := !effectiveForwarding &&
-		!pendingIso &&
-		checkStatus[api.NodeCheckNameInternetOnly] == api.HealthCheckStatusPassed &&
-		(nodeAcked || hasIsoErr)
+	failedClosed := isFailClosedIsolationApplyError(report, effectiveSafety, effectiveForwarding) ||
+		(!effectiveForwarding && !pendingIso && !hasIsoErr && nodeAcked && checkStatus[api.NodeCheckNameInternetOnly] == api.HealthCheckStatusPassed)
 
 	if cleanReady || (reportAcked && pendingIso) || failedClosed {
 		type memberOpCandidate struct {
@@ -746,8 +744,8 @@ func advanceNodeOperationsOnObservation(
 					JOIN exits ex2 ON ex2.node_id = n2.id
 					WHERE n2.id <> $1
 					  AND n2.lifecycle_state = 'registered'
-					  AND coalesce(n2.member_forwarding_observed, false)
-					  AND n2.recent_errors @> '[{"code":"ISOLATION_POLICY_INVALID"}]'::jsonb
+					  AND (coalesce(n2.member_forwarding_observed, false) OR n2.safety_status = 'passed')
+					  AND n2.recent_errors @> '[{"code":"ISOLATION_POLICY_INVALID","stage":"apply"}]'::jsonb
 					  AND (
 						NOT EXISTS (SELECT 1 FROM exit_groups eg2 WHERE eg2.exit_id = ex2.id)
 						OR jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
