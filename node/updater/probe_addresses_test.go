@@ -149,7 +149,7 @@ func TestUPD_D063_ProbeNodeAddressesIncludeEveryGlobalUnicastV4(t *testing.T) {
 func TestUPD_D063_ProbeRevalidatesEachIssuance(t *testing.T) {
 	cfg := probeConfigFixture(t)
 	cfg.ProbePeer = probeFixture()
-	var nodeAddresses []string
+	nodeAddresses := []string{"192.0.2.10"}
 	control := netip.MustParseAddr("192.0.2.1")
 	cfg.probeSources.interfaces = func() ([]net.Addr, error) { return probeInterfaces(nodeAddresses...)() }
 	cfg.probeSources.lookup = func(context.Context, string, string) ([]netip.Addr, error) {
@@ -187,7 +187,7 @@ func TestUPD_D063_ProbeRevalidatesEachIssuance(t *testing.T) {
 	}
 	issue(true)
 	for _, reason := range []string{"node_destination", "node_source", "control_destination", "resolver_destination", "agent_config_unavailable"} {
-		nodeAddresses, control = nil, netip.MustParseAddr("192.0.2.1")
+		nodeAddresses, control = []string{"192.0.2.10"}, netip.MustParseAddr("192.0.2.1")
 		writeProbeAgentConfig(t, cfg.AgentConfig, `{"control_url":"https://control.example.invalid"}`)
 		switch reason {
 		case "node_destination":

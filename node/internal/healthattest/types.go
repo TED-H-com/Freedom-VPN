@@ -1,6 +1,7 @@
 package healthattest
 
 import (
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -51,6 +52,27 @@ type ChallengeProbe struct {
 	ResolverDNS  bool                 `json:"resolver_dns,omitempty"`
 }
 
+// ProbeOmission distinguishes an absent configuration from a configured probe
+// refused by the issuer. PeerID is only for protected local artifacts, never
+// logs. No source or destination address is included.
+type ProbeOmission struct {
+	PeerID string `json:"peer_id"`
+	Reason string `json:"reason"`
+}
+
+// Valid permits only the issuer's fixed, bounded refusal vocabulary.
+func (p ProbeOmission) Valid() bool {
+	if strings.TrimSpace(p.PeerID) == "" || len(p.PeerID) > 128 || strings.ContainsFunc(p.PeerID, func(r rune) bool { return r < 0x20 || r == 0x7f }) {
+		return false
+	}
+	switch p.Reason {
+	case "malformed", "denied_destination", "node_source", "node_destination", "control_destination", "resolver_destination",
+		"agent_config_unavailable", "node_addresses_unavailable", "control_addresses_unavailable", "resolver_addresses_unavailable":
+		return true
+	}
+	return false
+}
+
 // Challenge is the updater's per-check challenge. One file is live at a
 // time. A new check overwrites it. Consumed is set only when the updater
 // marks the file instead of removing it; a consumed challenge never matches.
@@ -67,6 +89,7 @@ type Challenge struct {
 	Components    Components      `json:"components"`
 	Consumed      bool            `json:"consumed,omitempty"`
 	Probe         *ChallengeProbe `json:"probe,omitempty"`
+	ProbeOmitted  *ProbeOmission  `json:"probe_omitted,omitempty"`
 }
 
 // Check is one agent-reported §13.9 result. Status is a HealthCheckStatus.

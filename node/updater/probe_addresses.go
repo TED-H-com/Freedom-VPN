@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
@@ -48,13 +50,24 @@ func readProbeAgentConfig(path string) (probeAgentConfig, error) {
 	if path == "" {
 		path = defaultProbeAgentConfig
 	}
-	f, err := os.Open(path)
+	lst, err := os.Lstat(path)
+	if err != nil || !lst.Mode().IsRegular() {
+		return cfg, probeRefusal("agent_config_unavailable")
+	}
+	return readProbeAgentFile(path, lst)
+}
+
+// lst is the pre-open identity. NOFOLLOW rejects a substituted symlink;
+// NONBLOCK prevents a substituted FIFO from hanging before the fstat check.
+func readProbeAgentFile(path string, lst os.FileInfo) (probeAgentConfig, error) {
+	var cfg probeAgentConfig
+	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		return cfg, probeRefusal("agent_config_unavailable")
 	}
 	defer f.Close()
 	st, err := f.Stat()
-	if err != nil || !st.Mode().IsRegular() {
+	if err != nil || !st.Mode().IsRegular() || !os.SameFile(lst, st) {
 		return cfg, probeRefusal("agent_config_unavailable")
 	}
 	const maxBytes = 1 << 20
@@ -113,6 +126,9 @@ func (env probeEnvironment) addresses(ctx context.Context) (probeAddresses, erro
 		if addr.Is4() && addr.IsGlobalUnicast() {
 			known.node = append(known.node, addr)
 		}
+	}
+	if len(known.node) == 0 {
+		return known, probeRefusal("node_addresses_unavailable")
 	}
 	lookup := env.sources.lookup
 	if lookup == nil {
@@ -178,7 +194,7 @@ func probeURLHost(raw string) (string, bool) {
 	return u.Hostname(), true
 }
 
-func (e *Engine) challengeProbe(ctx context.Context) *healthattest.ChallengeProbe {
+func (e *Engine) challengeProbe(ctx context.Context) (*healthattest.ChallengeProbe, *healthattest.ProbeOmission) {
 	p := cloneProbePeer(e.ProbePeer)
 	if err := e.probeEnv.validate(ctx, p); err != nil {
 		// validate returns only fixed probeRefusal values; no raw file or DNS
@@ -191,7 +207,13 @@ func (e *Engine) challengeProbe(ctx context.Context) *healthattest.ChallengeProb
 			e.log().Warn("health challenge probe omitted", "reason", string(reason))
 			e.probeRefusals[reason] = true
 		}
-		return nil
+		peerID := p.PeerID
+		// Loaded configurations have bounded peer IDs. Also bound diagnostics
+		// when an embedded caller supplies a malformed peer directly.
+		if strings.TrimSpace(peerID) == "" || len(peerID) > 128 || strings.ContainsFunc(peerID, func(r rune) bool { return r < 0x20 || r == 0x7f }) {
+			peerID = "invalid_peer_id"
+		}
+		return nil, &healthattest.ProbeOmission{PeerID: peerID, Reason: string(reason)}
 	}
-	return p
+	return p, nil
 }
