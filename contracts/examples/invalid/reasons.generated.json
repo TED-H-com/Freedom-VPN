@@ -53,6 +53,12 @@
     "code": "KEY_UNTRUSTED",
     "note": "Signed by the trusted desired-state key, which is not allowed for the lease purpose."
   },
+  "UpdateResult.bad-candidate-health.json": {
+    "kind": "schema",
+    "pointer": "/candidate_health/tunnel_probe",
+    "keyword": "enum",
+    "note": "candidate_health uses UpdateHealth; unknown check statuses are rejected (D-062)."
+  },
   "UpdateResult.hash-mismatch.json": {
     "kind": "payload_hash",
     "field": "payload_hash",

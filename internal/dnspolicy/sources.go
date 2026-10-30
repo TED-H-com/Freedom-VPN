@@ -1,7 +1,7 @@
 package dnspolicy
 
 import (
-	"bytes"
+	"bufio"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -71,6 +71,11 @@ const (
 	// DefaultMaxSourceRules is the default maximum number of parsed rules in a
 	// single list source.
 	DefaultMaxSourceRules = 500_000
+
+	// Bound parser work independently of byte size, including comments/duplicates.
+	MaxSourceLineBytes = 4096
+	MaxSourceLines     = 100000
+	MaxHostsPerLine    = 64
 
 	// DefaultFetchTimeout is the default timeout for external source HTTPS fetches.
 	DefaultFetchTimeout = 15 * time.Second
@@ -211,6 +216,9 @@ var blockedSSRFPrefixes = []netip.Prefix{
 	netip.MustParsePrefix("203.0.113.0/24"),  // TEST-NET-3 documentation
 	netip.MustParsePrefix("224.0.0.0/4"),     // IPv4 multicast
 	netip.MustParsePrefix("240.0.0.0/4"),     // Reserved / broadcast
+	netip.MustParsePrefix("::/96"),           // Deprecated IPv4-compatible IPv6; all embedded IPv4 refused
+	netip.MustParsePrefix("64:ff9b:1::/48"),  // RFC 8215 local translation; embedded IPv4 refused
+	netip.MustParsePrefix("100::/64"),        // Discard-only
 	netip.MustParsePrefix("::/128"),          // IPv6 unspecified
 	netip.MustParsePrefix("::1/128"),         // IPv6 loopback
 	netip.MustParsePrefix("64:ff9b::/96"),    // NAT64
@@ -223,6 +231,11 @@ var blockedSSRFPrefixes = []netip.Prefix{
 }
 
 func isBlockedSSRFAddr(ip netip.Addr) (netip.Prefix, bool) {
+	if ip.Zone() != "" {
+		return netip.Prefix{}, true
+	}
+	// Refuse translation/tunnelling prefixes entirely, including public embedded
+	// IPv4. This is stricter than extracting and permitting translated targets.
 	ip = ip.Unmap()
 	if !ip.IsValid() {
 		return netip.Prefix{}, true
@@ -267,6 +280,12 @@ func ValidateSourceURL(rawURL string) error {
 			Message: "source URL must use fixed https:// scheme",
 		}
 	}
+	if u.Port() != "" && u.Port() != "443" {
+		return &ValidationError{Code: ErrCodeSourceInvalidURL, Field: "url", Message: "source requires HTTPS port 443"}
+	}
+	if u.RawQuery != "" || u.ForceQuery || u.Fragment != "" {
+		return &ValidationError{Code: ErrCodeSourceInvalidURL, Field: "url", Message: "source query and fragment are forbidden"}
+	}
 	if u.User != nil {
 		return &ValidationError{
 			Code:    ErrCodeSourceInvalidURL,
@@ -310,7 +329,7 @@ func ValidateSourceURL(rawURL string) error {
 			Cause:   err,
 		}
 	}
-	if norm.Canonical == "localhost" || strings.HasSuffix(norm.Canonical, ".localhost") || strings.HasSuffix(norm.Canonical, ".local") || strings.HasSuffix(norm.Canonical, ".internal") {
+	if IsReservedDomain(norm.Canonical) {
 		return &ValidationError{
 			Code:    ErrCodeSourceInvalidURL,
 			Field:   "url",
@@ -384,29 +403,20 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 		maxRules = DefaultMaxSourceRules
 	}
 
-	limited := io.LimitReader(r, maxBytes+1)
-	rawBytes, err := io.ReadAll(limited)
-	if err != nil {
-		return ParseResult{}, fmt.Errorf("read source list: %w", err)
-	}
-	if int64(len(rawBytes)) > maxBytes {
-		return ParseResult{}, &ValidationError{
-			Code:    ErrCodeSourceTooLarge,
-			Field:   "source_content",
-			Message: fmt.Sprintf("source content exceeds maximum size of %d bytes", maxBytes),
-		}
-	}
-
-	sum := sha256.Sum256(rawBytes)
-	contentHash := hex.EncodeToString(sum[:])
-
+	limited := &io.LimitedReader{R: r, N: maxBytes + 1}
+	hasher := sha256.New()
+	scanner := bufio.NewScanner(io.TeeReader(limited, hasher))
+	scanner.Buffer(make([]byte, MaxSourceLineBytes), MaxSourceLineBytes)
 	var res ParseResult
-	res.ContentSHA256 = contentHash
 
 	seen := make(map[string]struct{})
 	var entries []SourceEntry
 
 	addDomain := func(canonical string) error {
+		if !SafeFeedDomain(canonical, format != SourceFormatHosts) {
+			res.ParseErrors++
+			return nil
+		}
 		if _, exists := seen[canonical]; exists {
 			return nil
 		}
@@ -425,9 +435,20 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 		return nil
 	}
 
-	lines := bytes.Split(rawBytes, []byte{'\n'})
-	for _, rawLine := range lines {
-		line := strings.TrimSpace(strings.TrimSuffix(string(rawLine), "\r"))
+	lines, candidates := 0, 0
+	normalize := func(raw string) (NormalizedDomain, error) {
+		candidates++
+		if candidates > maxRules {
+			return NormalizedDomain{}, &ValidationError{Code: ErrCodeRuleLimitExceeded, Message: "source normalization budget exceeded"}
+		}
+		return NormalizeDomain(raw)
+	}
+	for scanner.Scan() {
+		lines++
+		if lines > MaxSourceLines {
+			return res, &ValidationError{Code: ErrCodeSourceTooLarge, Message: "source line limit exceeded"}
+		}
+		line := strings.TrimSpace(scanner.Text())
 		if line == "" {
 			continue
 		}
@@ -448,7 +469,10 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 				res.ParseErrors++
 				continue
 			}
-			norm, err := NormalizeDomain(line)
+			norm, err := normalize(line)
+			if ErrorCode(err) == ErrCodeRuleLimitExceeded {
+				return res, err
+			}
 			if err != nil {
 				res.ParseErrors++
 				continue
@@ -467,12 +491,14 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 			if line == "" {
 				continue
 			}
-			fields := strings.Fields(line)
-			if len(fields) < 2 {
+			ipToken, rest, found := strings.Cut(line, " ")
+			if index := strings.IndexAny(line, " \t"); index >= 0 {
+				ipToken, rest, found = line[:index], line[index+1:], true
+			}
+			if !found || strings.TrimSpace(rest) == "" {
 				res.ParseErrors++
 				continue
 			}
-			ipToken := fields[0]
 			if _, ok := sinkholeIPs[ipToken]; !ok {
 				// Non-sinkhole IP or invalid first token: skip as unsupported/parse error
 				// so external feeds can never inject arbitrary DNS redirection IPs.
@@ -483,13 +509,20 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 				}
 				continue
 			}
-			for _, hostToken := range fields[1:] {
+			fields := strings.Fields(rest)
+			if len(fields) > MaxHostsPerLine {
+				return res, &ValidationError{Code: ErrCodeSourceTooLarge, Message: "hosts token limit exceeded"}
+			}
+			for _, hostToken := range fields {
 				lowerHost := strings.ToLower(strings.TrimSuffix(hostToken, "."))
 				if _, isBoilerplate := hostsBoilerplateNames[lowerHost]; isBoilerplate {
 					res.SkippedUnsupported++
 					continue
 				}
-				norm, err := NormalizeDomain(hostToken)
+				norm, err := normalize(hostToken)
+				if ErrorCode(err) == ErrCodeRuleLimitExceeded {
+					return res, err
+				}
 				if err != nil {
 					res.ParseErrors++
 					continue
@@ -531,7 +564,10 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 				res.SkippedUnsupported++
 				continue
 			}
-			norm, err := NormalizeDomain(body)
+			norm, err := normalize(body)
+			if ErrorCode(err) == ErrCodeRuleLimitExceeded {
+				return res, err
+			}
 			if err != nil {
 				res.ParseErrors++
 				continue
@@ -550,6 +586,13 @@ func ParseSourceList(r io.Reader, format SourceFormat, opts ParseOptions) (Parse
 		}
 	}
 
+	if limited.N == 0 {
+		return res, &ValidationError{Code: ErrCodeSourceTooLarge, Message: "source byte limit exceeded"}
+	}
+	if err := scanner.Err(); err != nil {
+		return res, &ValidationError{Code: ErrCodeSourceTooLarge, Message: "source line or read limit exceeded"}
+	}
+	res.ContentSHA256 = hex.EncodeToString(hasher.Sum(nil))
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Domain < entries[j].Domain
 	})
@@ -603,6 +646,9 @@ func makeSSRFDialContext(timeout time.Duration, lookupIP LookupNetIPFunc, dial D
 		if err != nil {
 			return nil, err
 		}
+		if port != "443" || IsReservedDomain(strings.ToLower(strings.TrimSuffix(host, "."))) {
+			return nil, &ValidationError{Code: ErrCodeSourceInvalidURL, Message: "source endpoint refused"}
+		}
 		ips, err := lookupIP(ctx, "ip", host)
 		if err != nil || len(ips) == 0 {
 			return nil, &ValidationError{
@@ -627,15 +673,10 @@ func makeSSRFDialContext(timeout time.Duration, lookupIP LookupNetIPFunc, dial D
 	}
 }
 
-func refuseSourceRedirect(req *http.Request, _ []*http.Request) error {
-	target := ""
-	if req != nil && req.URL != nil {
-		target = req.URL.String()
-	}
+func RefuseSourceRedirect(_ *http.Request, _ []*http.Request) error {
 	return &ValidationError{
 		Code:    ErrCodeSourceInvalidURL,
 		Field:   "url",
-		Input:   target,
 		Message: "source redirects are forbidden",
 	}
 }
@@ -655,12 +696,13 @@ func NewSourceHTTPClient(timeout time.Duration, lookupIP LookupNetIPFunc, dial D
 		TLSHandshakeTimeout:   timeout,
 		ResponseHeaderTimeout: timeout,
 		DisableKeepAlives:     true,
+		DisableCompression:    true,
 		DialContext:           makeSSRFDialContext(timeout, lookupIP, dial),
 	}
 	return &http.Client{
 		Transport:     tr,
 		Timeout:       timeout,
-		CheckRedirect: refuseSourceRedirect,
+		CheckRedirect: RefuseSourceRedirect,
 	}
 }
 
@@ -739,12 +781,13 @@ func (sr *SourceRegistry) httpClient(override *http.Client) *http.Client {
 	}
 	tr.Proxy = nil
 	tr.DisableKeepAlives = true
+	tr.DisableCompression = true
 	tr.DialContext = makeSSRFDialContext(timeout, lookupIP, dial)
 
 	c := *override
 	c.Timeout = timeout
 	c.Transport = tr
-	c.CheckRedirect = refuseSourceRedirect
+	c.CheckRedirect = RefuseSourceRedirect
 	return &c
 }
 
@@ -850,6 +893,9 @@ func (sr *SourceRegistry) UpdateFromReader(
 	}
 
 	parsed, err := ParseSourceList(r, src.Format, opts)
+	if err == nil && parsed.ParseErrors > 0 {
+		err = &ValidationError{Code: ErrCodeSourceEmpty, Message: "source contains parse errors"}
+	}
 	if err != nil {
 		// Retain last good state on parse failure.
 		if src.LastGood != nil {
@@ -939,6 +985,7 @@ func (sr *SourceRegistry) FetchAndUpdate(
 	if err != nil {
 		return fmt.Errorf("create request for source %q: %w", sourceID, err)
 	}
+	req.Header.Set("Accept-Encoding", "identity")
 	resp, err := httpCli.Do(req)
 	if err != nil {
 		var ve *ValidationError
@@ -951,6 +998,9 @@ func (sr *SourceRegistry) FetchAndUpdate(
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("fetch source %q returned HTTP %d", sourceID, resp.StatusCode)
+	}
+	if resp.Uncompressed || (resp.Header.Get("Content-Encoding") != "" && resp.Header.Get("Content-Encoding") != "identity") {
+		return &ValidationError{Code: ErrCodeSourceFormatUnsupported, Message: "encoded source responses are forbidden"}
 	}
 
 	return sr.UpdateFromReader(sourceID, newVersion, resp.Body, opts, now, smokeCheck)

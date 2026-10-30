@@ -4,14 +4,14 @@ Publish the enrolled exit
 
 Status: blocked
 
-Run: 5852f09a-30e8-45bc-8983-b5f212e33640
+Run: 5de03570-0436-477d-9847-6f6984432bd8
 
-Source: 5eb716e1a36ced17b8013646c9282c92746c81da
+Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
 
 Spec: §5.2, §14.2
 
 - agent_baseline_observed: true
-- stored_rows: {"node": {"peer_id": "dbhvi0n8k4c000b7i5eg", "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1", "desired_config_generation": "1"}, "observation": {"checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "lease", "status": "not_run", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "qos", "status": "not_run", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "source_binding", "status": "not_run", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}, {"name": "tunnel_probe", "status": "passed", "error_code": null, "observed_at": "2026-10-30T01:55:39.288463922Z"}], "peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1"}, "exit_group_count": 0, "peer_observe_events": 2}
+- stored_rows: {"node": {"peer_id": "dbi0jv78k4c000fu06bg", "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1", "desired_config_generation": "1"}, "observation": {"checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "lease", "status": "not_run", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "qos", "status": "not_run", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "source_binding", "status": "not_run", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}, {"name": "tunnel_probe", "status": "passed", "error_code": null, "observed_at": "2026-10-30T03:08:05.184550749Z"}], "peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1"}, "exit_group_count": 0, "peer_observe_events": 2}
 - control_status: online
 - safety_status: passed
 - data_health: healthy
@@ -32,7 +32,7 @@ Spec: §5.2, §14.2
 - check_storage: passed
 - check_tunnel_probe: passed
 - put: 202
-- operation_id: efb6c4aa-f32a-454b-ae06-78d7f9c2d612
+- operation_id: a3570157-7c4d-42e5-ac77-5524c3df565d
 - operation_status: running
 - operation_kind: node.publish
 - step_agent_policy: succeeded
@@ -66,4 +66,3 @@ Spec: §5.2, §14.2
 - member_accept_rules: 0
 - note: publication did not succeed: agent_policy NODE_NOT_SERVICEABLE Step failed; quote the operation ID.
 - owner: w3-wire-nodes: publication operation and production peer projection
-

@@ -208,7 +208,7 @@ func syncDir(dir string) error {
 	return d.Sync()
 }
 
-const schemaVersion = 1
+const schemaVersion = 2
 
 func (j *Journal) migrate(ctx context.Context) error {
 	var v int
@@ -308,8 +308,26 @@ func (j *Journal) migrate(ctx context.Context) error {
 			path TEXT NOT NULL,
 			size INTEGER NOT NULL,
 			verified_at TEXT NOT NULL)`,
-		fmt.Sprintf(`PRAGMA user_version = %d`, schemaVersion),
 	}
+	if v == 1 {
+		stmts = nil
+	}
+	stmts = append(stmts,
+		`ALTER TABLE txns ADD COLUMN candidate_health_json TEXT`,
+		`UPDATE txns SET candidate_health_json = health_json`,
+		// v1 stored candidate health in health_json even after rollback. Use
+		// only recorded rollback evidence; never manufacture a passing profile.
+		`UPDATE txns SET health_json = (SELECT json_extract(detail, '$.statuses') FROM txn_events
+			WHERE txn_events.txn_id = txns.txn_id AND json_valid(detail)
+			AND json_extract(detail, '$.kind') = 'health_attest' AND json_extract(detail, '$.phase') = 'rollback'
+			AND json_type(detail, '$.statuses') = 'object' ORDER BY seq DESC LIMIT 1)
+			WHERE stage = 'rolled_back' AND destructive = 1`,
+		`ALTER TABLE result_outbox ADD COLUMN last_http_status INTEGER NOT NULL DEFAULT 0`,
+		`ALTER TABLE result_outbox ADD COLUMN last_api_code TEXT`,
+		`ALTER TABLE result_outbox ADD COLUMN retry_not_before TEXT`,
+		`ALTER TABLE result_history ADD COLUMN stage TEXT`,
+		fmt.Sprintf(`PRAGMA user_version = %d`, schemaVersion),
+	)
 	tx, err := j.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err

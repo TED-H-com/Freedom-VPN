@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "spec_references": [
     "§15.4",
     "§16.2",
@@ -17,27 +17,30 @@
     "SECOPS-05"
   ],
   "drill_date": "2026-10-29",
-  "executed_at_utc": "2026-10-30T01:51:56Z",
+  "executed_at_utc": "2026-10-30T03:06:49Z",
   "pgbackrest_version": "pgBackRest 2.60.0",
   "postgres_version": "PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
   "base_image_digest": "postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-  "built_image_id": "sha256:df9380fb220e3101c42af6157055db31e9c9652d4434099d5c7117a27917e820",
+  "built_image_id": "sha256:5be48b078fa00f4130dde9b2b88542dd53c835d2a550dc3be3c939a8ee165c12",
   "archive_mode": "on",
   "production_archive_timeout": "300s",
   "lab_archive_timeout_test_only": "10s",
-  "backup_label": "20261030-015200F",
+  "backup_label": "20261030-030654F",
   "backup_type": "full",
   "backup_start_lsn": "0/6000028",
   "backup_stop_lsn": "0/6000120",
-  "target_timestamp_utc": "2026-10-30T01:52:03.191771Z",
-  "target_lsn": "0/7000028",
+  "target_timestamp_utc": "2026-10-30T03:06:58.579391Z",
+  "target_lsn": "0/70001C0",
   "primary_markers": [
     "A",
-    "B"
+    "B",
+    "M"
   ],
   "restored_markers": [
-    "A"
+    "A",
+    "M"
   ],
+  "marker_m_present": true,
   "marker_a_present": true,
   "marker_b_absent": true,
   "live_primary_overwrite_refused": true,
@@ -48,40 +51,43 @@
   "post_restore_checklist_verified": true,
   "verify_script_passed": true,
   "rpo_target_seconds": 900,
-  "rto_target_seconds": 7200,
-  "measured_rpo_archive_lag_ms": 277,
-  "measured_rto_restore_ms": 3551,
-  "measured_rto_verify_ms": 3931,
-  "measured_total_drill_ms": 15070,
+  "service_rto_target_seconds_unverified": 14400,
+  "wal_switch_to_archive_ms": 287,
+  "repository_archive_lag_ms": 15366,
+  "repository_newest_wal": "17-1/0000000100000000/000000010000000000000008-3f7761b2a24c749f2ceddf946bc0bf14e2f3652b.zst",
+  "archiver_lag_ms": 9083,
+  "local_restore_command_ms": 7221,
+  "local_verify_command_ms": 6826,
+  "measured_total_drill_ms": 25299,
   "backup_set_digests": [
     {
       "path": "archive/fvpn/archive.info",
-      "sha256": "27676989f6a138f37738e29e63ba21f96cba4846a32b21470f65085982a8ea24",
+      "sha256": "d908241a53b45878e7ea70a559a3a6451f0c4a5f6e149a8fc8009d057205402c",
       "bytes": 255
     },
     {
       "path": "archive/fvpn/archive.info.copy",
-      "sha256": "27676989f6a138f37738e29e63ba21f96cba4846a32b21470f65085982a8ea24",
+      "sha256": "d908241a53b45878e7ea70a559a3a6451f0c4a5f6e149a8fc8009d057205402c",
       "bytes": 255
     },
     {
-      "path": "backup/fvpn/20261030-015200F/backup.manifest",
-      "sha256": "0ebfd5e1c84636396171582fb2731813b511097674acc55203dcae4098749236",
+      "path": "backup/fvpn/20261030-030654F/backup.manifest",
+      "sha256": "c8464eef715a0a95dcd10a99d4d238a3c928a9189a2dd99db69b7fe02dc1c9d2",
       "bytes": 283543
     },
     {
-      "path": "backup/fvpn/20261030-015200F/backup.manifest.copy",
-      "sha256": "0ebfd5e1c84636396171582fb2731813b511097674acc55203dcae4098749236",
+      "path": "backup/fvpn/20261030-030654F/backup.manifest.copy",
+      "sha256": "c8464eef715a0a95dcd10a99d4d238a3c928a9189a2dd99db69b7fe02dc1c9d2",
       "bytes": 283543
     },
     {
       "path": "backup/fvpn/backup.info",
-      "sha256": "eff7b8048a637cc0b637884b3fa2923093eeff800eca7122e36cc0de70e80a68",
+      "sha256": "3f59b27900c93a1326d07f84f3512ee48271d7a03098e187c6b3b6d85a67e491",
       "bytes": 1055
     },
     {
       "path": "backup/fvpn/backup.info.copy",
-      "sha256": "eff7b8048a637cc0b637884b3fa2923093eeff800eca7122e36cc0de70e80a68",
+      "sha256": "3f59b27900c93a1326d07f84f3512ee48271d7a03098e187c6b3b6d85a67e491",
       "bytes": 1055
     }
   ],

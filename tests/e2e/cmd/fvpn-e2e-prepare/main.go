@@ -124,6 +124,7 @@ func run(state string, reset bool, lay layout) error {
 	secrets := map[string]int{
 		"oidc.secret":    32,
 		"stripe.key":     32,
+		"payment.secret": 32,
 		"webhook.secret": 32,
 		"assume.secret":  32,
 		"origin.secret":  32,

@@ -418,12 +418,12 @@ func TestJournalHealthStaysWithItsReasons(t *testing.T) {
 	if err := j.RecordEvent(ctx, "t1", `{"kind":"health_attest","reason":"probe refused"}`); err != nil {
 		t.Fatal(err)
 	}
-	if err := j.RecordHealth(ctx, "t1", map[string]string{"processes": "passed", "internet_only": "passed"}); err != nil {
+	if _, err := j.Advance(ctx, "t1", StageRollingBack, StageUpdate{
+		ErrorCode: "HEALTH_CHECK_FAILED",
+	}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := j.Advance(ctx, "t1", StageRollingBack, StageUpdate{
-		Health: map[string]string{"internet_only": "passed"}, ErrorCode: "HEALTH_CHECK_FAILED",
-	}); err != nil {
+	if err := j.RecordHealth(ctx, "t1", map[string]string{"processes": "passed", "internet_only": "passed"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := j.Advance(ctx, "t1", StageRecoveryRequired, StageUpdate{
@@ -435,8 +435,11 @@ func TestJournalHealthStaysWithItsReasons(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(txn.Health) != `{"internet_only":"failed","processes":"passed"}` {
-		t.Fatalf("health overwritten: %s", txn.Health)
+	if string(txn.CandidateHealth) != `{"internet_only":"failed","processes":"passed"}` {
+		t.Fatalf("candidate health overwritten: %s", txn.CandidateHealth)
+	}
+	if string(txn.Health) != `{"internet_only":"passed"}` {
+		t.Fatalf("latest health missing: %s", txn.Health)
 	}
 	ev, err := j.TxnEvents(ctx, "t1")
 	if err != nil {

@@ -271,27 +271,6 @@ func nodeField(raw []byte, name string) string {
 	return s
 }
 
-func apiErrorText(raw []byte) string {
-	var doc struct {
-		Error struct {
-			Code    string         `json:"code"`
-			Message string         `json:"message"`
-			Details map[string]any `json:"details"`
-		} `json:"error"`
-	}
-	if json.Unmarshal(raw, &doc) != nil || doc.Error.Code == "" {
-		return clipText(string(raw), 500)
-	}
-	text := doc.Error.Code + " " + doc.Error.Message
-	if len(doc.Error.Details) > 0 {
-		extra, err := json.Marshal(doc.Error.Details)
-		if err == nil {
-			text += " " + string(extra)
-		}
-	}
-	return clipText(text, 800)
-}
-
 func (r *runner) desiredMemberView() (policies, bindings int, intent, generation string) {
 	raw, err := os.ReadFile(filepath.Join(r.lab.state, "node", "var", "state", "desired-state.json"))
 	if err != nil || len(raw) == 0 {

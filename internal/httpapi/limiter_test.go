@@ -2,12 +2,15 @@ package httpapi
 
 import (
 	"fmt"
-	"github.com/TED-H-com/Freedom-VPN/internal/auth"
-	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
+
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
+	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets(t *testing.T) {
@@ -51,7 +54,7 @@ func TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets(t *testing.T) {
 }
 func TestAT28_BrowserRateAndConcurrencyRetryAfter(t *testing.T) {
 	c := config.Defaults()
-	c.AnonymousRate = config.Bucket{PerSecond: .0001, Burst: 1}
+	c.LoginRate = config.Bucket{PerSecond: .0001, Burst: 1}
 	h := BrowserRoutes(c, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) }))
 	for i := 0; i < 2; i++ {
 		w := httptest.NewRecorder()
@@ -61,7 +64,7 @@ func TestAT28_BrowserRateAndConcurrencyRetryAfter(t *testing.T) {
 		}
 	}
 	c.MaxConcurrent = 1
-	c.AnonymousRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	c.LoginRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 	started, release, done := make(chan struct{}), make(chan struct{}), make(chan struct{})
 	h = BrowserRoutes(c, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { close(started); <-release }))
 	go func() {
@@ -75,5 +78,77 @@ func TestAT28_BrowserRateAndConcurrencyRetryAfter(t *testing.T) {
 	<-done
 	if w.Code != 429 || w.Header().Get("Retry-After") == "" {
 		t.Fatal(w.Code, w.Header())
+	}
+}
+
+func TestAT31_D060_LoginAddressBurstAndMetric(t *testing.T) {
+	c := config.Defaults()
+	// Keep default Burst=40 and freeze refill within the test window so the 41st
+	// login/callback request is deterministically inside one refill window.
+	c.LoginRate = config.Bucket{PerSecond: 0.0001, Burst: config.Defaults().LoginRate.Burst}
+	reg := prometheus.NewRegistry()
+	counter := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "fvpn_control_rate_limited_total",
+		Help: "TEST ONLY rate limited counter.",
+	}, []string{"class", "limiter"})
+	if err := reg.Register(counter); err != nil {
+		t.Fatal(err)
+	}
+	h := BrowserRoutesWithMetrics(c, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}), counter)
+
+	const signIns = 20
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	errs := make(chan error, signIns)
+	for i := 0; i < signIns; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			<-start
+			for _, path := range []string{"/auth/login", "/auth/callback", "/auth/session"} {
+				req := httptest.NewRequest("GET", path, nil)
+				req.RemoteAddr = "198.51.100.10:40000"
+				rec := httptest.NewRecorder()
+				h.ServeHTTP(rec, req)
+				if rec.Code != http.StatusOK {
+					errs <- fmt.Errorf("sign-in %d %s: got HTTP %d, want 200", idx, path, rec.Code)
+					return
+				}
+			}
+		}(i)
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Fatal(err)
+	}
+
+	// The 20 concurrent sign-ins consumed 20 (/auth/login) + 20 (/auth/callback) = 40
+	// tokens from the login address bucket. The 41st login request inside one refill
+	// window must be refused with HTTP 429, Retry-After, and RATE_LIMITED.
+	req41 := httptest.NewRequest("GET", "/auth/login", nil)
+	req41.RemoteAddr = "198.51.100.10:40000"
+	rec41 := httptest.NewRecorder()
+	h.ServeHTTP(rec41, req41)
+	if rec41.Code != http.StatusTooManyRequests || rec41.Header().Get("Retry-After") == "" || !strings.Contains(rec41.Body.String(), `"code":"RATE_LIMITED"`) {
+		t.Fatalf("41st login request: status=%d headers=%v body=%s", rec41.Code, rec41.Header(), rec41.Body.String())
+	}
+	families, err := reg.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got float64
+	for _, f := range families {
+		if f.GetName() == "fvpn_control_rate_limited_total" {
+			for _, m := range f.GetMetric() {
+				got = m.GetCounter().GetValue()
+			}
+		}
+	}
+	if got != 1 {
+		t.Fatalf("rate_limited_total{class=login,limiter=address} = %v, want 1", got)
 	}
 }

@@ -31,6 +31,8 @@ networks:
 volumes:
   pg:
     name: fvpn-${FVPN_E2E_PREFIX:-e2e}-pg
+  pgbackrest:
+    name: fvpn-${FVPN_E2E_PREFIX:-e2e}-pgbackrest-repo
   nb:
     name: fvpn-${FVPN_E2E_PREFIX:-e2e}-nb
 
@@ -41,11 +43,13 @@ services:
     environment:
       POSTGRES_USER: fvpn
       POSTGRES_DB: fvpn
+      FVPN_PG_ARCHIVE_TIMEOUT: "10s" # TEST ONLY; production defaults to 300s
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres.password
     ports:
       - "127.0.0.1:${FVPN_E2E_PORT_POSTGRES:-23432}:5432"
     volumes:
       - pg:/var/lib/postgresql/data
+      - pgbackrest:/var/lib/pgbackrest
       - ${FVPN_E2E_STATE}/secrets/postgres.password:/run/secrets/postgres.password:ro
     networks:
       lab:
@@ -118,11 +122,17 @@ services:
       - /certs/payment.key
       - -api-key-file
       - /secrets/stripe.key
+      - -hook-secret-file
+      - /secrets/payment.secret
+      - -webhook-secret-file
+      - /secrets/webhook.secret
     ports:
       - "127.0.0.1:${FVPN_E2E_PORT_PAYMENT:-18446}:443"
     volumes:
       - ${FVPN_E2E_STATE}/certs:/certs:ro
       - ${FVPN_E2E_STATE}/secrets/stripe.key:/secrets/stripe.key:ro
+      - ${FVPN_E2E_STATE}/secrets/payment.secret:/secrets/payment.secret:ro
+      - ${FVPN_E2E_STATE}/secrets/webhook.secret:/secrets/webhook.secret:ro
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "--no-check-certificate", "https://127.0.0.1/healthz"]
       interval: 5s
@@ -196,9 +206,12 @@ services:
     entrypoint: ["nginx", "-g", "daemon off;"]
     ports:
       - "127.0.0.1:${FVPN_E2E_PORT_GATEWAY:-18480}:443"
+      - "127.0.0.1:${FVPN_E2E_PORT_CONTROL:-18443}:8443"
       - "127.0.0.1:${FVPN_E2E_PORT_STUN:-21478}:3478/udp"
     volumes:
       - ${FVPN_E2E_STATE}/render/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${FVPN_E2E_STATE}/portal:/srv/portal:ro
+      - ${FVPN_E2E_STATE}/ca.pem:/trusted-ca.pem:ro
       - ${FVPN_E2E_STATE}/certs:/certs:ro
     depends_on:
       netbird:
@@ -206,7 +219,7 @@ services:
     networks:
       lab:
         ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.21
-        aliases: [netbird.example.invalid]
+        aliases: [netbird.example.invalid, portal.example.invalid]
     restart: "no"
 
   coredns:
@@ -241,7 +254,6 @@ services:
     environment:
       SSL_CERT_FILE: /certs/ca.pem
     ports:
-      - "127.0.0.1:${FVPN_E2E_PORT_CONTROL:-18443}:8443"
       - "127.0.0.1:${FVPN_E2E_PORT_AGENT:-19443}:9443"
     volumes:
       - ${FVPN_E2E_STATE}/config:/etc/fvpn:ro
@@ -256,7 +268,7 @@ services:
     networks:
       lab:
         ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.30
-        aliases: [portal.example.invalid, agent.example.invalid]
+        aliases: [agent.example.invalid]
       origin: {}
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "--no-check-certificate", "https://127.0.0.1:8443/readyz"]

@@ -74,14 +74,18 @@ fi
 # and set FVPN_PGBACKREST_CUSTOM_CONFIG=1.
 PGBACKREST_CONF="/etc/pgbackrest/pgbackrest.conf"
 if [[ "${FVPN_PGBACKREST_CUSTOM_CONFIG:-0}" != "1" ]] && [[ -w /etc/pgbackrest ]]; then
-	CIPHER_LINES=""
-	if [[ -n "${FVPN_PGBACKREST_CIPHER_PASS:-}" ]]; then
-		CIPHER_LINES=$'repo1-cipher-type=aes-256-cbc\nrepo1-cipher-pass='"${FVPN_PGBACKREST_CIPHER_PASS}"
+	PGBACKREST_REPO1_CIPHER_PASS="${PGBACKREST_REPO1_CIPHER_PASS:-${FVPN_PGBACKREST_CIPHER_PASS:-}}"
+	if [[ -n "$PGBACKREST_REPO1_CIPHER_PASS" ]]; then
+		export PGBACKREST_REPO1_CIPHER_PASS
+		export PGBACKREST_REPO1_CIPHER_TYPE="${PGBACKREST_REPO1_CIPHER_TYPE:-aes-256-cbc}"
+	else
+		unset PGBACKREST_REPO1_CIPHER_PASS
 	fi
 	cat >"$PGBACKREST_CONF" <<EOF
 # Freedom VPN pgBackRest container configuration (§17.2)
 [global]
 repo1-type=posix
+repo1-cipher-type=${PGBACKREST_REPO1_CIPHER_TYPE:-none}
 repo1-path=/var/lib/pgbackrest
 repo1-retention-full-type=count
 repo1-retention-full=7
@@ -94,7 +98,6 @@ spool-path=/var/spool/pgbackrest
 start-fast=y
 archive-async=n
 compress-type=zst
-${CIPHER_LINES}
 
 [${STANZA}]
 pg1-path=${PGDATA_DIR}
