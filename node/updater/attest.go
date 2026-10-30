@@ -52,21 +52,22 @@ func (e *Engine) attestWindow() AttestWindow {
 // what the updater decided. The agent_* fields are the raw attestation, so a
 // not_run answer stays visible next to the failed status.
 type healthDetail struct {
-	Kind                    string           `json:"kind"`
-	Phase                   string           `json:"phase"`
-	Reason                  string           `json:"reason,omitempty"`
-	Statuses                api.UpdateHealth `json:"statuses"`
-	InternetOnlyReason      string           `json:"internet_only_reason,omitempty"`
-	DNSPolicyReason         string           `json:"dns_policy_reason,omitempty"`
-	TunnelProbeReason       string           `json:"tunnel_probe_reason,omitempty"`
-	AgentInternet           string           `json:"agent_internet_only,omitempty"`
-	AgentDNS                string           `json:"agent_dns_policy,omitempty"`
-	AgentTunnel             string           `json:"agent_tunnel_probe,omitempty"`
-	AgentVersion            string           `json:"agent_version,omitempty"`
-	NetbirdVersion          string           `json:"netbird_version,omitempty"`
-	Published               string           `json:"published,omitempty"`
-	UpdaterVersionCheck     string           `json:"updater_version_check"`
-	EnforcementVersionCheck string           `json:"enforcement_version_check"`
+	ProbeOmitted            *healthattest.ProbeOmission `json:"probe_omitted,omitempty"`
+	Kind                    string                      `json:"kind"`
+	Phase                   string                      `json:"phase"`
+	Reason                  string                      `json:"reason,omitempty"`
+	Statuses                api.UpdateHealth            `json:"statuses"`
+	InternetOnlyReason      string                      `json:"internet_only_reason,omitempty"`
+	DNSPolicyReason         string                      `json:"dns_policy_reason,omitempty"`
+	TunnelProbeReason       string                      `json:"tunnel_probe_reason,omitempty"`
+	AgentInternet           string                      `json:"agent_internet_only,omitempty"`
+	AgentDNS                string                      `json:"agent_dns_policy,omitempty"`
+	AgentTunnel             string                      `json:"agent_tunnel_probe,omitempty"`
+	AgentVersion            string                      `json:"agent_version,omitempty"`
+	NetbirdVersion          string                      `json:"netbird_version,omitempty"`
+	Published               string                      `json:"published,omitempty"`
+	UpdaterVersionCheck     string                      `json:"updater_version_check"`
+	EnforcementVersionCheck string                      `json:"enforcement_version_check"`
 }
 
 // checkRT is the shared state of one NodeChecks value. The engine keeps a
@@ -218,6 +219,7 @@ func (n NodeChecks) decide(v ReleaseView, bound healthattest.Challenge, at *heal
 		TunnelProbe:      api.HealthCheckStatusFailed,
 	}
 	d := healthDetail{
+		ProbeOmitted:            bound.ProbeOmitted,
 		Kind:                    "health_attest",
 		Phase:                   phase,
 		Reason:                  string(reason),
@@ -315,7 +317,7 @@ func (e *Engine) nodeChecks() *NodeChecks {
 // issueChallenge writes one live challenge for this check. A file that was
 // already at the attestation path is not an answer (D-053).
 func (e *Engine) issueChallenge(ctx context.Context, txn updatejournal.Txn, releaseID, phase string) error {
-	probe := e.challengeProbe(ctx)
+	probe, omitted := e.challengeProbe(ctx)
 	m := e.manifestOf(ctx, releaseID)
 	if m == nil {
 		e.noteHealth(ctx, txn.TxnID, e.blankHealth(ctx, releaseID), healthattest.ReasonManifestUnavailable, phase)
@@ -332,7 +334,7 @@ func (e *Engine) issueChallenge(ctx context.Context, txn updatejournal.Txn, rele
 		TxnID: txn.TxnID, ReleaseID: releaseID,
 		NodeID: e.Node.ID.String(), IncarnationID: e.Node.Incarnation.String(), BootID: e.Node.BootID.String(),
 		Now: e.now(), TTL: e.attestWindow().TTL,
-		Probe: probe,
+		Probe: probe, ProbeOmitted: omitted,
 		Components: healthattest.Components{
 			NodeAgent: m.Components.NodeAgent, Netbird: m.Components.Netbird,
 			NodeUpdater: m.Components.NodeUpdater, Enforcement: m.Components.Enforcement,
@@ -341,6 +343,12 @@ func (e *Engine) issueChallenge(ctx context.Context, txn updatejournal.Txn, rele
 	if err != nil {
 		e.noteHealth(ctx, txn.TxnID, e.blankHealth(ctx, releaseID), healthattest.ReasonMalformed, phase)
 		return err
+	}
+	if omitted != nil {
+		if e.Journal == nil || e.Journal.RecordProbeOmission(ctx, ch, phase) != nil {
+			// Omission is nonfatal; loss of its required durable evidence is not.
+			return errChallenge
+		}
 	}
 	if err := healthattest.WriteChallenge(e.Layout.Journal, ch); err != nil {
 		e.noteHealth(ctx, txn.TxnID, e.blankHealth(ctx, releaseID), healthattest.ReasonUnreadable, phase)

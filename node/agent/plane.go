@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"os/exec"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 )
@@ -18,34 +17,27 @@ type Plane interface {
 	BaselineModel(ctx context.Context, m enforce.Model) error
 }
 
-// Executor is the agent's enforcement boundary, including executable preflight.
-type Executor interface {
-	enforce.Executor
-	LookPath(string) (string, error)
-}
-
-type systemExecutor struct{ enforce.System }
-
-func (systemExecutor) LookPath(name string) (string, error) { return exec.LookPath(name) }
-
 // SystemPlane is the production data plane. A nil Executor uses the system tools.
-type SystemPlane struct{ Executor Executor }
+type SystemPlane struct{ Executor enforce.Executor }
 
-func (p SystemPlane) executor() Executor {
+func (p SystemPlane) executor() enforce.Executor {
 	if p.Executor != nil {
 		return p.Executor
 	}
-	return systemExecutor{}
+	return enforce.System{}
 }
 
 // MissingExecutables checks all tools before the first enforcement attempt.
 // Return names only: PATH and lookup errors can contain local configuration.
 func (p SystemPlane) MissingExecutables() []string {
 	var missing []string
-	for _, name := range []string{"nft", "tc", "ip", "conntrack"} {
+	for _, name := range []string{"nft", "tc", "ip"} {
 		if _, err := p.executor().LookPath(name); err != nil {
 			missing = append(missing, name)
 		}
+	}
+	if err := enforce.RequireConntrack(p.executor()); err != nil {
+		missing = append(missing, "conntrack")
 	}
 	return missing
 }

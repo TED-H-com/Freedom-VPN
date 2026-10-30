@@ -74,3 +74,20 @@ class EvidenceTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class Followup5EvidenceTests(unittest.TestCase):
+    def test_flow_requires_all_ordered_gates_not_a_claimed_flag(self):
+        from followup5_records import counted_proof
+        self.assertFalse(counted_proof({'counted':True,'http_200':True}))
+        proof={'route_device':'fvnb0','http_200':True,'origin_authenticated':True,'origin_probe_matches':True,'origin_node_snat':True,'counter_reads_ok':True,'admitted_bytes_delta':{'upload':'1','download':'1'}}
+        self.assertTrue(counted_proof(proof))
+        proof['origin_node_snat']=False
+        self.assertFalse(counted_proof(proof))
+
+    def test_body_boundary_requires_the_complete_triplet(self):
+        from followup5_records import body_verdict
+        rows=[{'bytes':n,'passed':True} for n in (7,8,9)]
+        self.assertEqual(body_verdict(rows,8),'passed')
+        self.assertEqual(body_verdict(rows[:2],8),'blocked')
+        rows[-1]['passed']=False
+        self.assertEqual(body_verdict(rows,8),'failed')

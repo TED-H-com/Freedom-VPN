@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"net"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -39,7 +38,7 @@ func probeConfigFixture(t *testing.T) Config {
 	return Config{Layout: testLayout(dir), NodeID: uuid.Must(uuid.NewV7()), IncarnationID: uuid.Must(uuid.NewV7()),
 		BootID: uuid.Must(uuid.NewV7()), Platform: testPlatform(), ReleaseTrust: trust, DesiredTrust: trust,
 		AgentConfig: agentConfig, probeSources: probeAddressSources{
-			interfaces: func() ([]net.Addr, error) { return nil, nil },
+			interfaces: probeInterfaces("192.0.2.10"),
 			lookup: func(context.Context, string, string) ([]netip.Addr, error) {
 				return []netip.Addr{netip.MustParseAddr("192.0.2.1")}, nil
 			},

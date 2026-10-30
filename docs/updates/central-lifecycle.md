@@ -219,9 +219,11 @@ sequence field. `ObserveTx`/`Observe` are also available to integrations that
 already maintain a trustworthy monotonic per-incarnation observation sequence.
 Old sequences/generations cannot overwrite newer actual versions. Before the
 incarnation's first accepted result, a bound observation may seed current only
-from the current job's target or an already recorded current/last-good release.
-It preserves last-good and can flag that recorded release as revoked. After an
-accepted result, observations preserve the accepted versions and recovery; disagreements stay
+from its reported job's target (still current, with an intent issued to this
+incarnation) or an already recorded current/last-good release, and only when
+reported last-good agrees with recorded last-good. It preserves last-good and
+can flag that recorded release as revoked. After an accepted result,
+observations preserve the accepted versions and recovery; disagreements stay
 unconfirmed. Missing observations stay unconfirmed.
 
 If an agent reports a generation ahead of restored central state (§17.4), intent
@@ -422,27 +424,48 @@ the high-water and versions unchanged, just like a null generation. Proofs:
 `TestReviewR9_D062_JoblessAndInvalidVocabulary`, and
 `TestReviewR9_D062_RecoveryAndRetryAttemptAuthority`.
 
-Before that incarnation's first accepted result, a heartbeat may seed current
-only with the **current job's target** or a release already recorded in the
-node's current/last-good columns (§13.2, §13.8; r11). A superseded target alone
-is insufficient. Last-good is preserved until an accepted result establishes
-it; repeatedly reporting a seeded target cannot promote it to last-good.
-Unexpected releases are ignored for the version columns and withhold the job's
-observation timestamp, leaving `unconfirmed=true`. Recovery uses the recorded
-last-good, never an unexpected heartbeat claim. Each distinct unexpected
-release/job pair gets one `update_observation.unexpected_release` audit with
-node actor/resource, result `failed`, and only `job_id`/`release_id` evidence.
+Before that incarnation's first accepted result, seeding and audit attribution
+use the **reported job** (§13.2, §13.8; r12 H-3). Only the trusted sequence adapter
+falls back to the current job when it has no reported job; the wire path still
+requires a validated job and its exact generation. A target is eligible to seed
+only when that reported job is also the current job, its execution incarnation matches the
+authenticated incarnation, and its intent has already been issued. This prevents
+a pre-intent heartbeat from poisoning the attempt's pre-switch release snapshot.
+A superseded job cannot borrow a newer job's target or audit identity; its own
+target is also insufficient unless already recorded in current/last-good.
+
+Even an eligible target or an already recorded current/last-good release can
+seed current **only if reported last-good equals recorded last-good** (including
+null agreeing with null). A disagreeing last-good leaves both columns intact;
+heartbeats never establish last-good. A disagreement with the retained versions
+withholds that reported job's observation timestamp, leaving `unconfirmed=true`. Recovery uses the
+recorded last-good, never an unexpected heartbeat claim. Each distinct unexpected
+release/reported-job pair gets one `update_observation.unexpected_release` audit
+with node actor/resource, result `failed`, and only `job_id`/`release_id` evidence.
 The existing fleet transaction lock serializes the audit lookup and append;
 repeated or concurrent reports add no duplicate audit, while a different release
 or job records new evidence. Proofs: the adopted
 `TestReviewR11_HeartbeatSeedsAnyReleaseUntilAResult`,
 `TestReviewR11_PreResultTargetSeedPreservesLastGood`,
 `TestReviewR11_UnexpectedReleaseAuditBound` (D-029 read-back), and
-`TestReviewR11_SupersededTargetCannotSeed`.
+`TestReviewR11_SupersededTargetCannotSeed`. The adopted r12 regressions
+`TestReviewR12_Q7_CrossJobAuditAndSeedingMisattribution`,
+`TestReviewR12_Q7_PreIntentTargetSeedPoisonsAttemptRelease`, and
+`TestReviewR12_Q7_SeedingRuleEdgesHeld` cover reported-job attribution,
+pre-intent refusal followed by an accepted download failure, and preserved
+incarnation/revocation/last-good boundaries.
 
-The wire path additionally requires a validated job and its exact generation;
-it cannot seed from a jobless report. Once a result is accepted, seeding closes
-even for later jobs in that incarnation. A current terminal result can correct
+Updates harness follow-up 5 case (c)'s audit expectation is unchanged: a fresh
+incarnation with null current/last-good columns, reporting an issued job's target
+as current and an unrecorded boot release as last-good, produces **exactly one**
+`update_observation.unexpected_release` audit for that boot release/job pair,
+including repetitions. Both columns now stay null because last-good disagrees;
+no boot provenance is fabricated to avoid the audit. A later agreeing null
+last-good permits the issued target to seed current, without establishing
+last-good. `TestFollowup8_FreshIncarnationNullColumnsCaseC` proves these cases.
+
+Once a result is accepted, seeding closes even for later jobs in that incarnation.
+A current terminal result can correct
 an earlier same-generation seed and establish last-good; that write returns
 `applied_to_current_observation=true` even when current was already seeded.
 The trusted sequence adapter retains its separate restore high-water behavior,
