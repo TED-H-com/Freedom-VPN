@@ -222,6 +222,16 @@ func (l *live) command(name string, args ...string) ([]byte, error) {
 }
 func (l *live) name(service string) string            { return "fvpn-w4-members-" + service }
 func (l *live) docker(args ...string) ([]byte, error) { return l.command("docker", args...) }
+
+// Test cleanup runs after the parent context is canceled. Keep fault restoration
+// and extra-client removal bounded but independent of that cancellation.
+func (l *live) cleanupDocker(args ...string) {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), 40*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	cmd.Dir = l.root
+	_ = cmd.Run()
+}
 func (l *live) inside(service string, args ...string) ([]byte, error) {
 	return l.docker(append([]string{"exec", l.name(service)}, args...)...)
 }

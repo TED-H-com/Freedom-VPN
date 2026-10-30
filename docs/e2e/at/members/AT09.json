@@ -14,71 +14,71 @@
     },
     {
       "name": "blocked",
-      "detail": "Observed 1 enrolled node, no admitted member binding and no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic."
+      "detail": "Observed 1 enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic."
     },
     {
       "name": "provenance",
-      "detail": "source=4e500392333b00caf380ca155b7e2c722447044d; applied generation=0; incarnation=01a18a0e-3ee6-7bef-8c05-a34e115bfcac; image/binary digests in JSON"
+      "detail": "source=3262e1a764f67c9168ef6b6e36746edb012b629d; applied generation=0; incarnation=01a18a79-ed50-7d25-856d-0f5de751a390; image/binary digests in JSON"
     },
     {
       "name": "operator",
       "detail": "needs operator run; see OPERATORS.md"
     }
   ],
-  "at": "2026-10-29T23:47:21Z",
+  "at": "2026-10-30T01:46:16Z",
   "build": {
-    "source_commit": "4e500392333b00caf380ca155b7e2c722447044d",
-    "source_dirty": true,
+    "source_commit": "3262e1a764f67c9168ef6b6e36746edb012b629d",
+    "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:1f69e8a9bfa7e537ba773fc1389e45f54b05e3afb33b17c83b1eb4060dd7cb72",
+      "control": "sha256:c94b94edb1dc0ba56ba5c84a745351574b86d670bba4322ac8f63065f9041ae8",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:6e07dd4a8c9b4cde67bc39af7a989869d47e8fef67ed3a9df2b42e5289d1d2dd",
-      "member": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
+      "idp": "sha256:9dd515bf06ff9e84e4c9e7cdddad6a803d91792dcf32fc9b0c6ba4811fa72490",
+      "member": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:1bbdf8ee0cd9f1d832bd1886bc51d4cebb59553836fd62cf3cebcb0b4d084de8",
-      "origin": "sha256:3b69c46fd7e0edec5cf85fdd410fe5f32a416e540829646ef46bfc8b11f1f4dd",
-      "payment": "sha256:ab528e98893a9a65648dc008d92e0a245a8a5708acaadf5ed49d37f225c832f4",
+      "node": "sha256:846eaae609e73dc385737e931325529ea560a67bbf7c83097cb2914e78fc76ca",
+      "origin": "sha256:c744f37d09aa6e8254b7ae3c7ec529d69777f843ce9598b1bc97a27f255c2df7",
+      "payment": "sha256:7bb1e7a35232365787850c956ef7289f9aadb7c4647ad1e8426dec54bc75dd72",
       "postgres": "sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f",
-      "worker": "sha256:65ef14a342f025ce3b6e4da138e7897c980e7496b32ab466072fd36081f72c28"
+      "worker": "sha256:87cd456cc17c64eb0584fea509f5273c6a47d5c54ee98fd7149465fb86813a30"
     },
     "binary_sha256": {
-      "fvpn-agent": "7cc57a753da1f5c002e69c13ec740ec51ac01942d47d51684eac50d2d6be877a",
-      "fvpn-control": "f2daedc1a981fb638f3176bad73b8464dc705ce5a1038fb6f5d0ad3273df590f",
-      "fvpn-updater": "29f05a7834ab25d608b5d41669f6c2c66e8c7bff47913f846dfb9a2a609b1cbf",
-      "fvpn-worker": "8cc584afb350889242112e4a7a9601fb0a06b6681cb4571f2e5073541fbded5c"
+      "fvpn-agent": "e9b01f3e4f90eb034fc49efe5bdcb17a244a9437177eaa22314f2ae566f60095",
+      "fvpn-control": "7c592ac851b2be4509b991008921f1b2786f8916d61d26967839f2f8e6b24d91",
+      "fvpn-updater": "aaa978f6815b5c0c5f6b1c38c1a6e8c0ece765c83d400b661cfb6fabea47a38f",
+      "fvpn-worker": "2c3fe64b5327eb2a497e367a3caa3520a005df99c31480af98681aace8003dc0"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
-        "vcs.time": "2026-10-29T23:44:52Z"
+        "vcs.modified": "false",
+        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
+        "vcs.time": "2026-10-30T01:28:44Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
-        "vcs.time": "2026-10-29T23:44:52Z"
+        "vcs.modified": "false",
+        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
+        "vcs.time": "2026-10-30T01:28:44Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
-        "vcs.time": "2026-10-29T23:44:52Z"
+        "vcs.modified": "false",
+        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
+        "vcs.time": "2026-10-30T01:28:44Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4e500392333b00caf380ca155b7e2c722447044d",
-        "vcs.time": "2026-10-29T23:44:52Z"
+        "vcs.modified": "false",
+        "vcs.revision": "629766c18d1bdd63a336972f95ae2b41734a242b",
+        "vcs.time": "2026-10-30T01:28:44Z"
       }
     }
   },
   "policy_revision": "0",
   "active_policy_revisions": {},
-  "node_incarnation": "01a18a0e-3ee6-7bef-8c05-a34e115bfcac",
+  "node_incarnation": "01a18a79-ed50-7d25-856d-0f5de751a390",
   "steps": [
     {
       "name": "exit inventory",
@@ -86,11 +86,11 @@
       "expected": "record active node count and client routes",
       "actual": "enrolled_nodes=1; routes_command_ok=true; route_output_bytes=23",
       "command": "SELECT enrolled nodes; docker exec member netbird routes list",
-      "at": "2026-10-29T23:47:22Z"
+      "at": "2026-10-30T01:46:16Z"
     }
   ],
   "blockers": [
-    "Observed 1 enrolled node, no admitted member binding and no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic."
+    "Observed 1 enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic."
   ],
   "operator_status": "needs operator run"
 }

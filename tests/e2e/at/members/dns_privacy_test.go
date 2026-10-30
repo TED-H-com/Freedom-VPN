@@ -121,7 +121,7 @@ func (l *live) dnsFailure(r *record) {
 			continue
 		}
 		// Immediate restoration and Cleanup cover assertions and test interruption.
-		l.t.Cleanup(func() { _, _ = l.docker("unpause", l.name(service)) })
+		l.t.Cleanup(func() { l.cleanupDocker("unpause", l.name(service)) })
 		answer := l.dns("failure-"+l.run+"-"+service+".example.invalid", "1", "udp")
 		_, restore := l.docker("unpause", l.name(service))
 		r.check(service+" failure", "no successful answer while resolver/upstream paused", answer, "docker pause "+l.name(service)+"; unique sentinel query; unpause", restore == nil && (strings.Contains(answer, `"available":false`) || strings.Contains(answer, `"rcode":2`)))

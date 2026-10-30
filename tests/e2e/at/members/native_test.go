@@ -48,7 +48,7 @@ func (l *live) native(r *record, b *browser, service string) string {
 			r.block("Extra native client could not reuse the lab image/entrypoint: " + service)
 			return ""
 		}
-		l.t.Cleanup(func() { _, _ = l.docker("rm", "-f", l.name(service)) })
+		l.t.Cleanup(func() { l.cleanupDocker("rm", "-f", l.name(service)) })
 	}
 	if _, err := l.inside(service, "touch", "/var/lib/vpn-node/e2e/user-auth"); err != nil {
 		r.block("Native user-auth trigger unavailable: " + service)
