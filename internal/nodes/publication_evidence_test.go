@@ -43,9 +43,9 @@ func TestSECOPS11_RecordedBaselineDoesNotProveServing(t *testing.T) {
 		t.Fatal("SECOPS-11 fixture shape changed")
 	}
 	now := time.Now().UTC()
-	report := api.ObservationReport{DataHealth: record.NodeAfterPublication.DataHealth, SafetyStatus: api.SafetyStatusPassed, MemberForwardingEnabled: record.FlowProbe.NodeServing}
+	report := api.ObservationReport{ProvisioningState: api.ProvisioningStateReady, DataHealth: record.NodeAfterPublication.DataHealth, SafetyStatus: api.SafetyStatusPassed, MemberForwardingEnabled: record.FlowProbe.NodeServing}
 	report.AppliedConfigGeneration = record.NodeAfterPublication.ConfigGeneration.Applied
-	for _, name := range []api.NodeCheckName{api.NodeCheckNameTunnelProbe, api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+	for _, name := range []api.NodeCheckName{api.NodeCheckNameInternetOnly, api.NodeCheckNameMeterPath, api.NodeCheckNameTunnelProbe, api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
 		report.Checks = append(report.Checks, api.NodeCheck{Name: name, Status: api.HealthCheckStatusPassed})
 	}
 	if PublicationForwardingEvidence(report, now) {
@@ -68,5 +68,48 @@ func TestSECOPS11_RecordedBaselineDoesNotProveServing(t *testing.T) {
 	report.Lease.ExpiresAt.Set(now)
 	if PublicationForwardingEvidence(report, now) {
 		t.Fatal("expired lease claimed serving")
+	}
+}
+
+func TestAT08_PublicationBindingAwareEvidence(t *testing.T) {
+	now := time.Now().UTC()
+	for _, tc := range []struct {
+		name  string
+		empty bool
+		edit  func(*api.ObservationReport)
+		want  string
+	}{
+		{"empty_not_run", true, nil, ""},
+		{"bound_not_run", false, nil, "serving_checks_unconfirmed"},
+		{"empty_failed", true, func(r *api.ObservationReport) { r.Checks[3].Status = api.HealthCheckStatusFailed }, "check_failed"},
+		{"bound_failed", false, func(r *api.ObservationReport) { r.Checks[3].Status = api.HealthCheckStatusFailed }, "check_failed"},
+		{"failed_then_passed_duplicate", true, func(r *api.ObservationReport) {
+			c := r.Checks[0]
+			c.Status = api.HealthCheckStatusFailed
+			r.Checks = append([]api.NodeCheck{c}, r.Checks...)
+		}, "check_failed"},
+		{"forwarding_off", true, func(r *api.ObservationReport) { r.MemberForwardingEnabled = false }, "forwarding_disabled"},
+		{"tunnel_not_run", true, func(r *api.ObservationReport) { r.Checks[2].Status = api.HealthCheckStatusNotRun }, "tunnel_not_passed"},
+		{"isolation_absent", true, func(r *api.ObservationReport) { r.Checks = r.Checks[1:] }, "isolation_unconfirmed"},
+		{"serving_check_absent", true, func(r *api.ObservationReport) { r.Checks = r.Checks[:3] }, "serving_checks_unconfirmed"},
+		{"degraded", true, func(r *api.ObservationReport) { r.DataHealth = api.DataHealthDegraded }, "readiness_unconfirmed"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := api.ObservationReport{ProvisioningState: api.ProvisioningStateReady, SafetyStatus: api.SafetyStatusPassed, DataHealth: api.DataHealthHealthy, MemberForwardingEnabled: true}
+			r.AppliedConfigGeneration.Set(2)
+			for i, name := range []api.NodeCheckName{api.NodeCheckNameInternetOnly, api.NodeCheckNameMeterPath, api.NodeCheckNameTunnelProbe, api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+				status := api.HealthCheckStatusNotRun
+				if i < 3 {
+					status = api.HealthCheckStatusPassed
+				}
+				r.Checks = append(r.Checks, api.NodeCheck{Name: name, Status: status})
+			}
+			if tc.edit != nil {
+				tc.edit(&r)
+			}
+			if cause := publicationForwardingFailure(r, now, tc.empty); cause != tc.want || len(cause) > 64 {
+				t.Fatal("unexpected publication gate", cause)
+			}
+		})
 	}
 }

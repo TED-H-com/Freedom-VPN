@@ -273,9 +273,12 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     const secondaryNode =
       nodesJson.items.find((n) => n.name === 'jp-tyo-01') ??
       nodesJson.items.find((n) => n.node_id !== enrolledNode!.node_id);
+    const rollbackNode = nodesJson.items.find((n) => n.name === 'tw-tpe-02');
     expect(secondaryNode).toBeTruthy();
+    expect(rollbackNode).toBeTruthy();
     const enrolledNodeId = enrolledNode!.node_id;
     const secondaryNodeId = secondaryNode!.node_id;
+    const rollbackNodeId = rollbackNode!.node_id;
     const activeBatchId = enrolledNode?.update?.batch_id;
     expect(activeBatchId).toBeTruthy();
 
@@ -285,9 +288,10 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('update-batch-progress-card')).toBeVisible();
 
     // 2. Verify 12-bucket target accounting and verified success count from the real batch
-    await expect(page.getByTestId('bucket-sum-check')).toContainText('2 / 2');
+    await expect(page.getByTestId('bucket-sum-check')).toContainText('3 / 3');
     await expect(page.getByTestId('verified-success-summary')).toContainText('1');
     await expect(page.getByTestId('bucket-succeeded')).toContainText('1');
+    await expect(page.getByTestId('bucket-rolled_back')).toContainText('1');
     await expect(page.getByTestId('bucket-waiting_online')).toContainText('1');
 
     // 3. Verify per-target `unconfirmed` and D-048 `policy_generation` / `policy_refs` evidence on target rows
@@ -305,7 +309,7 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       '尚未回報 (not yet reported)',
     );
 
-    // 4. Verify Target Detail panel (D-048) for both the confirmed live target and unconfirmed offline target
+    // 4. Verify Target Detail panel (D-048, D-062, API 1.3.0) for confirmed live target, rolled-back target, and offline target
     await page.getByTestId(`inspect-target-${enrolledNodeId}`).click();
     await expect(page.getByTestId('batch-target-detail-panel')).toBeVisible();
     await expect(page.getByTestId('target-detail-node-id')).toContainText(enrolledNodeId);
@@ -316,6 +320,43 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       '0195f100-0000-7000-8000-000000000401',
     );
 
+    // Inspect rolled-back target (modeled on internal/fleetupdate/testdata/at26-direct-rollback.json)
+    await page.getByTestId(`inspect-target-${rollbackNodeId}`).click();
+    await expect(page.getByTestId('target-detail-node-id')).toContainText(rollbackNodeId);
+    await expect(page.getByTestId('target-detail-state')).toHaveText('rolled_back');
+    await expect(page.getByTestId('target-detail-rollback-health-section')).toBeVisible();
+    await expect(page.getByTestId('target-detail-restored-release-id')).toHaveText(
+      'cdb25ffa-5395-400c-ad3e-b32899f14bb8',
+    );
+    await expect(page.getByTestId('target-detail-previous-release-id')).toHaveText(
+      '6d2797d0-b9a5-4724-96af-9b3039d351b1',
+    );
+    for (const checkKey of [
+      'processes',
+      'identity_and_state',
+      'internet_only',
+      'dns_policy',
+      'tunnel_probe',
+    ]) {
+      await expect(page.getByTestId(`restored-health-check-${checkKey}`)).toContainText(
+        'passed',
+      );
+    }
+    for (const checkKey of [
+      'processes',
+      'identity_and_state',
+      'internet_only',
+      'dns_policy',
+    ]) {
+      await expect(page.getByTestId(`candidate-health-check-${checkKey}`)).toContainText(
+        'passed',
+      );
+    }
+    await expect(page.getByTestId('candidate-health-check-tunnel_probe')).toContainText(
+      'failed',
+    );
+
+    // Inspect target with no current receipt (waiting_online) -> explicit "no evidence" state rather than blanks
     await page.getByTestId(`inspect-target-${secondaryNodeId}`).click();
     await expect(page.getByTestId('target-detail-node-id')).toContainText(
       secondaryNodeId,
@@ -324,6 +365,16 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       '尚未回報 (not yet reported)',
     );
     await expect(page.getByTestId('target-detail-policy-refs')).toContainText(
+      '尚未回報 (not yet reported)',
+    );
+    await expect(page.getByTestId('target-detail-no-receipt-evidence')).toBeVisible();
+    await expect(page.getByTestId('target-detail-previous-release-id')).toContainText(
+      '尚未回報 (not yet reported)',
+    );
+    await expect(page.getByTestId('target-detail-restored-health-null')).toContainText(
+      '尚未回報 (not yet reported)',
+    );
+    await expect(page.getByTestId('target-detail-candidate-health-null')).toContainText(
       '尚未回報 (not yet reported)',
     );
 
@@ -339,6 +390,18 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       'Not yet reported',
     );
     await expect(page.getByTestId('target-detail-policy-refs')).toContainText(
+      'Not yet reported',
+    );
+    await expect(page.getByTestId('target-detail-no-receipt-evidence')).toContainText(
+      'No current update receipt evidence reported',
+    );
+    await expect(page.getByTestId('target-detail-previous-release-id')).toContainText(
+      'Not yet reported',
+    );
+    await expect(page.getByTestId('target-detail-restored-health-null')).toContainText(
+      'Not yet reported',
+    );
+    await expect(page.getByTestId('target-detail-candidate-health-null')).toContainText(
       'Not yet reported',
     );
     await page.getByTestId('locale-switcher').selectOption('zh-TW');

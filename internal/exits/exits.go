@@ -691,6 +691,9 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		}
 	}
 
+	// A later compile may have advanced beyond this operation's initial target.
+	desiredGen = max(desiredGen, uint64(nodeDetail.ConfigGeneration.Desired))
+
 	var appliedGen uint64
 	appliedGenStr := "0"
 	if gen, err := nodeDetail.ConfigGeneration.Applied.Get(); err == nil {
@@ -715,7 +718,11 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		CurrentReleaseID:          currentReleaseID,
 		RequireOnlineAndACKForRun: true,
 	}); err != nil {
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), err.Error())
+		cause := "readiness_unconfirmed"
+		if appliedGen < desiredGen {
+			cause = "stale_generation"
+		}
+		return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), err.Error(), cause)
 	}
 
 	if err := s.markStepSucceeded(ctx, opID, nodes.StepAgentPolicy, fmt.Sprintf("node:%s:gen:%s:safety:passed", nodeID, appliedGenStr), now); err != nil {
@@ -805,20 +812,23 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 	}
 
 	// SECOPS-11: healthy baseline/tunnel checks do not prove member serving.
-	// Require the current immutable report's forwarding flag, applied generation,
-	// finite lease and lease/QoS/source-binding checks before claiming active.
+	// Check the issued generation before allowing not_run serving checks for an
+	// empty binding list; populated generations retain the full armed-path gate.
 	var rawReport []byte
 	err = s.pool.QueryRow(ctx, `SELECT o.report_payload FROM node_observations o JOIN nodes n ON n.id=o.node_id AND n.current_incarnation_id=o.incarnation_id AND n.last_observed_at=o.observed_at WHERE n.id=$1 ORDER BY o.received_at DESC,o.id DESC LIMIT 1`, nodeID).Scan(&rawReport)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return api.Operation{}, err
 	}
 	var report api.ObservationReport
-	if err != nil || json.Unmarshal(rawReport, &report) != nil || !nodes.PublicationForwardingEvidence(report, now) {
+	if err != nil || json.Unmarshal(rawReport, &report) != nil {
 		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed")
 	}
-	observedGeneration, _ := report.AppliedConfigGeneration.Get()
-	if uint64(observedGeneration) < desiredGen || report.ProvisioningState != api.ProvisioningStateReady {
-		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed")
+	cause, err := nodes.PublicationDataPathFailure(ctx, s.pool, report, desiredGen, now)
+	if err != nil {
+		return api.Operation{}, err
+	}
+	if cause != "" {
+		return s.failPublishStep(ctx, opID, nodeID, nodes.StepDataPathProbe, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed", cause)
 	}
 
 	if err := s.markStepSucceeded(ctx, opID, nodes.StepDataPathProbe, fmt.Sprintf("node:%s:probe:passed", nodeID), now); err != nil {
@@ -1191,6 +1201,7 @@ func (s *Service) markStepSucceeded(ctx context.Context, opID uuid.UUID, stepNam
 		st.ObservedAt = &now
 		st.ErrorCode = nil
 		st.ErrorMessage = nil
+		st.Reason = ""
 		st.UpdatedAt = now
 		steps[stepName] = st
 		refs[stepName] = refValue
@@ -1225,6 +1236,7 @@ func (s *Service) failPublishStep(
 	stepName string,
 	errCode string,
 	errMsg string,
+	gateReason ...string,
 ) (api.Operation, error) {
 	now := s.now().UTC()
 	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
@@ -1248,6 +1260,9 @@ func (s *Service) failPublishStep(
 		st.Status = string(api.OperationStepStatusFailed)
 		st.ErrorCode = &errCode
 		st.ErrorMessage = &errMsg
+		if len(gateReason) != 0 {
+			st.Reason = gateReason[0]
+		}
 		st.UpdatedAt = now
 		steps[stepName] = st
 		stepsJSON, _ := json.Marshal(steps)

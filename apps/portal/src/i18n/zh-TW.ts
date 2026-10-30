@@ -619,6 +619,10 @@ export const zhTW = {
     '尚未回報候選版本健康檢查 (candidate_health: null — 例如於切換或驗證前即退回)',
   'admin.updates.rollbackHealth.restoredNullNotice':
     '尚未回報已復原版本健康檢查 (health: null)',
+  'admin.updates.rollbackHealth.noReceiptEvidenceTitle':
+    '目標節點更新回條與健康檢查證據 (Target Receipt & Health Evidence)',
+  'admin.updates.rollbackHealth.noReceiptEvidenceNotice':
+    '尚無當前批次更新回條證據 (No current update receipt evidence reported: previous_release_id / health / candidate_health = null)',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;

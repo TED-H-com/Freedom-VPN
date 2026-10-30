@@ -512,11 +512,11 @@ export interface UpdateTargetRollbackHealthViewModel {
   previousReleaseId: string | null;
   health: UpdateHealth | null;
   candidateHealth: UpdateHealth | null;
+  hasReceiptEvidence: boolean;
 }
 
 export function extractTargetRollbackHealth(
   target: UpdateTargetWithResult,
-  batchReleaseId?: string | null,
 ): UpdateTargetRollbackHealthViewModel {
   const health = target.health ?? target.last_result?.health ?? null;
   const candidateHealth =
@@ -524,16 +524,19 @@ export function extractTargetRollbackHealth(
       ? target.candidate_health
       : (target.last_result?.candidate_health ?? null);
   const previousReleaseId =
-    target.previous_release_id ??
-    target.last_result?.previous_release_id ??
-    batchReleaseId ??
-    null;
+    target.previous_release_id ?? target.last_result?.previous_release_id ?? null;
   const restoredReleaseId =
     target.current_release_id ?? target.last_result?.current_release_id ?? null;
+  const hasReceiptEvidence =
+    target.last_result_at != null ||
+    previousReleaseId != null ||
+    health != null ||
+    candidateHealth != null;
   return {
     restoredReleaseId,
     previousReleaseId,
     health,
     candidateHealth,
+    hasReceiptEvidence,
   };
 }

@@ -1,0 +1,61 @@
+{
+  "batch_id": "01a18b3c-c7d8-7b3d-b623-ac7bb22eacfc",
+  "counts": {
+    "already_current": 0,
+    "applying": 0,
+    "cancelled": 0,
+    "checking": 0,
+    "downloading": 0,
+    "failed": 0,
+    "queued": 0,
+    "rolled_back": 1,
+    "succeeded": 0,
+    "superseded": 0,
+    "verifying": 0,
+    "waiting_online": 0
+  },
+  "created_at": "2026-10-30T05:16:18.77577Z",
+  "created_by": "01a18b3a-a871-725c-8739-6b01499e31ff",
+  "next_cursor": null,
+  "operation_id": "01a18b3c-c7d8-7e50-8ce6-8ca666870a41",
+  "reason": "TEST ONLY updates follow-up 3",
+  "release_id": "01a18b3a-b002-79b1-aed0-9dc0053efdff",
+  "requires_service_restart": true,
+  "state": "completed_with_exceptions",
+  "target_count": 1,
+  "targets": [
+    {
+      "attempts": 1,
+      "current_job": {
+        "attempt": 1,
+        "error_code": "HEALTH_CHECK_FAILED",
+        "finished_at": "2026-10-30T05:16:59.257901Z",
+        "job_id": "01a18b3c-c7d9-7bae-b4ab-216ea003f3eb",
+        "recovery_required": false,
+        "stage": "report",
+        "started_at": "2026-10-30T05:16:59.257901Z",
+        "state": "rolled_back"
+      },
+      "current_release_id": "01a18b3a-c691-70af-8088-13eae1d5b1cd",
+      "execution_incarnation_id": "01a18b3a-cea6-70e8-b2a0-09bed3b4648d",
+      "generation": "4",
+      "incarnation_at_snapshot": "01a18b3a-cea6-70e8-b2a0-09bed3b4648d",
+      "last_observed_at": "2026-10-30T05:17:31.31219Z",
+      "last_result_at": "2026-10-30T05:16:59.257901Z",
+      "needs_attention": true,
+      "node_id": "01a18b3a-cc32-7a19-af73-0f057652970f",
+      "node_name": "TEST ONLY updates",
+      "online_at_snapshot": true,
+      "policy_generation": "10",
+      "policy_refs": [
+        "01a18b3a-cbda-797f-ae61-067173dbc759"
+      ],
+      "retryable": false,
+      "state": "rolled_back",
+      "target_id": "01a18b3c-c7d9-76cc-adbd-e8c914f84d4e",
+      "unconfirmed": false
+    }
+  ],
+  "targets_url": "/api/v1/admin/update-batches/01a18b3c-c7d8-7b3d-b623-ac7bb22eacfc",
+  "updated_at": "2026-10-30T05:16:59.259567Z"
+}
