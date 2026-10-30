@@ -1,0 +1,96 @@
+{
+  "id": "publish",
+  "title": "Publish the enrolled exit",
+  "spec": [
+    "§5.2",
+    "§14.2"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "failed"
+    },
+    {
+      "name": "data_health",
+      "detail": "unknown"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "applying"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "unpublished"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "absent"
+    },
+    {
+      "name": "config_desired",
+      "detail": "1"
+    },
+    {
+      "name": "config_applied",
+      "detail": "0"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "passed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "failed"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "failed"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "failed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "failed"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "not_run"
+    },
+    {
+      "name": "put",
+      "detail": "422 NODE_NOT_SERVICEABLE"
+    },
+    {
+      "name": "put_error",
+      "detail": "NODE_NOT_SERVICEABLE node does not satisfy serving baseline requirements {\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}"
+    }
+  ],
+  "at": "2026-10-30T00:05:56Z"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "forwarding",
+  "title": "Member forwarding follows a serving lease",
+  "spec": [
+    "§5",
+    "§19 AT10"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "nft_table_present",
+      "detail": "true"
+    },
+    {
+      "name": "forward_policy",
+      "detail": "drop"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "0"
+    },
+    {
+      "name": "baseline_marker",
+      "detail": "true"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "0"
+    },
+    {
+      "name": "forward_excerpt",
+      "detail": "type filter hook forward priority mangle; policy drop; | oifname \"fvnb0\" ct state established,related counter packets 0 bytes 0 accept | iifname \"fvnb0\" counter packets 0 bytes 0 accept | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | iifname \"fvmb0\" counter name \"ctbase\" drop | oifname \"fvmb0\" counter name \"ctbase\" drop"
+    },
+    {
+      "name": "note",
+      "detail": "forward chain policy is drop, generation 0, with 0 member accept rules; AT10 is not claimed"
+    }
+  ],
+  "at": "2026-10-30T00:08:07Z"
+}

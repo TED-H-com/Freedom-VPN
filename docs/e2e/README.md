@@ -13,11 +13,24 @@ TEST ONLY.
 | `FVPN_E2E_PORT_BASE` | `18000` | Each loopback port is this base plus a fixed offset. |
 | `FVPN_E2E_STATE` | `.agent/e2e-state-<prefix>` | Git-ignored secrets and rendered config for that prefix. |
 
-Legal port bases are `18000 + 6000*n` for `n` from 0 through 7 (`18000`,
-`24000`, `30000`, `36000`, `42000`, `48000`, `54000`, `60000`). The step is
+Legal port bases are `18000 + 6000*n` for `n` from 0 through 7. The step is
 larger than the widest offset, so two legal bases cannot publish the same
 host port. Slot `n` uses lab subnet `172.28.<30+n>.0/24` and release origin
-`192.0.<3+n>.10`. `e2e-down` removes only `fvpn-<prefix>` and `fvpn-<prefix>-*`.
+`192.0.<3+n>.10`. `e2e-down` removes only names matching `^fvpn-<prefix>-`
+for containers, volumes, and images, and `^fvpn-<prefix>(-|$)` for networks.
+It does not match another prefix.
+
+## Who may use which base
+
+| Base | Prefix rule |
+|---|---|
+| `18000` | This lab's default. The acceptance run uses prefix `e2e` and this base only. |
+| `24000`, `30000`, `36000`, `42000`, `48000` | Reserved for the W4 acceptance tasks. Do not start, stop, or reset those prefixes from this task. |
+| `54000`, `60000` | Legal and currently unassigned. Do not start them unless a task owns that slot. |
+
+Image names stay `fvpn-<prefix>-*` (`fvpn-e2e-postgres:17`, and the same shape
+for the other services). A shared `fvpn-devstack-*` tag would collide when
+two prefixes are up, so the prefix stays in the image name.
 
 ## Loopback ports
 
@@ -60,19 +73,15 @@ runs on `workflow_dispatch` and the nightly schedule.
 
 ## Two stacks
 
-A second prefix can run while the first is still up. Use another legal port
-base. Tear each one down with its own prefix:
-
-```sh
-make -f mk/e2e.mk e2e-up
-FVPN_E2E_PREFIX=side FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-up
-FVPN_E2E_PREFIX=side FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
-make -f mk/e2e.mk e2e-down
-```
+A second prefix can run while the first is still up only on a legal base that
+no other task is using. Tear each one down with its own prefix. Do not reuse
+`24000` for that: the 2026-10-29 proof in
+`docs/e2e/runs/2026-10-29/parallel-stacks.md` used prefix `side` on base
+`24000`, and that base is now reserved for a W4 task.
 
 `stack-health` for the default stack is `https://127.0.0.1:18443/readyz`.
-For base 24000 it is `https://127.0.0.1:24443/readyz`. Names inside each lab
-stay `*.example.invalid`.
+Names inside each lab stay `*.example.invalid`. The control port is
+`base + 443`.
 
 ## Scenario catalogue
 
@@ -82,9 +91,10 @@ stay `*.example.invalid`.
 | `admin-login` | OIDC authorization code with MFA; the member session is inside `member-traffic` | §14.2 |
 | `enroll-bootstrap` | installer token, bootstrap consumed once, NetBird join | §6, §19 AT06 |
 | `desired-state` | signed desired-state file on the node | §5, §8 |
-| `forwarding` | `inet fvpn` forward-chain policy and member accept rules | §5, §19 AT10 |
-| `member-traffic` | seeded plan, grant, device setup key, checkout | §8, §19 AT12 |
-| `usage` | `GET /member/usage` and one idempotent usage-batch replay | §10, §19 AT14, AT15 |
+| `publish` | `PUT /admin/nodes/{id}/publication`, then poll the operation | §5.2, §14.2 |
+| `forwarding` | forward-chain generation and `fvmb0` member accept rules | §5, §19 AT10 |
+| `member-traffic` | seeded plan, grant, embedded-IdP user join, device poll, checkout | §8, §19 AT12 |
+| `usage` | `GET /member/usage` and one idempotent usage-batch replay of a projected binding | §10, §19 AT14, AT15 |
 | `release-register` | `fvpn-release` package, register, verify | §13.3, §13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
 | `lease-expiry` | stop control and read the forward chain again | §5, §19 AT29 |
@@ -118,36 +128,47 @@ are redacted. The process exits non-zero when any record is not `pass`.
 - Stripe's API host is fixed in the client. The lab publishes it as the
   Docker alias `api.stripe.com` with a certificate for that name. The lab
   seeds one plan whose provider is `stripe` and whose price id is `e2e-price`.
-- The lab seeds one plan revision that includes an exit group, passes that
-  `plan_revision_id` on the admin grant, and creates the member setup key in
-  the NetBird group `fvpn-unpublished-nodes` (never the All group). The
-  2026-10-29 run recorded grant 202, checkout 201, and the member container
-  at `netbird_up`. No flow was counted, so AT12 is not claimed.
-- `GET /api/v1/member/usage` is served. The node uploads one usage batch with
-  an `Idempotency-Key` and repeats it. The 2026-10-29 replay returned the
-  same `results`. The event was `rejected` / `VALIDATION_FAILED` /
-  `binding_not_found`, and the member total stayed 0, so AT14 and AT15 are
-  not claimed.
+- The lab seeds one plan revision that includes an exit group and passes that
+  `plan_revision_id` on the admin grant. The member container joins with
+  `netbird up` and no setup key. The harness completes the embedded IdP
+  device flow and unescapes the HTML form action so the password POST keeps
+  the `state` query. It does not insert `member_devices`, `device_bindings`,
+  or `netbird_user_bindings`. The 2026-10-30 run recorded grant 202, checkout
+  201, device path `/oauth2/device`, login submitted, stage `netbird_up`, and
+  one peer of two with a NetBird user. `GET /api/v1/member/devices` was 200
+  with zero devices. No binding was projected and no flow was counted, so
+  AT12 is not claimed.
+- After enroll the run calls `PUT /admin/nodes/{id}/publication` with intent
+  `published` and `If-Match`. The 2026-10-30 call returned 422
+  `NODE_NOT_SERVICEABLE` before an operation existed. The failed checks were
+  `provisioning_state=applying (want ready)` and `safety_status=failed`.
+  `publication_observed` stayed absent, so the poll of `agent_policy`,
+  `netbird_route_readback`, and `data_path_probe` did not start.
+- `GET /api/v1/member/usage` is served. A usage batch is sent only when a
+  desired-state `device_bindings` row matches an authorized device and covers
+  the interval. The 2026-10-30 run did not send a batch. The member total
+  stayed 0, so AT14 and AT15 are not claimed.
 - A member accept rule is an `fvmb0` accept on the `inet fvpn` forward chain.
   NetBird `fvnb0` accepts in that chain do not count, and neither does
-  `policy accept` on another chain. The 2026-10-29 forward chain stayed
-  `policy drop` with the baseline marker and zero member accepts, so AT10
-  and AT29 are not claimed.
-- The node client log before the signal fix was `DeadlineExceeded` dialing
-  `netbird.example.invalid`. After the fix the client log is `Connected`.
-  The gateway does not serve the NetBird relay WebSocket; the client records
-  HTTP 404 for `rels://netbird.example.invalid:443`. One management job
-  stream logged `RST_STREAM` / `PROTOCOL_ERROR` and retried.
-- Stock updater `NodeChecks` fail closed. The 2026-10-29 journal
-  `health_json` has `internet_only`, `dns_policy`, and `tunnel_probe` failed,
-  and `processes` and `identity_and_state` passed. The good update ended
-  `recovery_required` with `ROLLBACK_FAILED`. The tampered artifact logged
-  `HASH_MISMATCH`. The result outbox was still `pending`. `locally_succeeded`
-  was not observed.
+  `policy accept` on another chain. The 2026-10-30 forward chain stayed
+  `policy drop`, generation 0, with the baseline marker and zero member
+  accepts, so AT10 and AT29 are not claimed.
+- The 2026-10-30 enroll record shows the node signal log `Connected` after
+  join. An earlier lab run recorded a relay WebSocket 404 and one management
+  `RST_STREAM`; this run's evidence does not repeat that measurement.
+- Stock updater `NodeChecks` fail closed. While the node was not serving, the
+  2026-10-30 good-release journal `health_json` was
+  `{"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}`.
+  That update ended `recovery_required` with `ROLLBACK_FAILED`. The bad
+  release has no journal row, so `HASH_MISMATCH` was not observed.
+  `locally_succeeded` was not observed. AT23, AT25, and AT27 are not claimed
+  from this run.
 - The meter runs inside `fvpn-agent`. There is no separate meter or
   time-anchor binary. `host_reserve_bps` is set in the generated agent file
   because the binary has no default (D-034).
 - `docs/e2e/runs/<UTC date>/` is the latest run for that date. A later run on
-  the same UTC date replaces those files. The first recorded run of
-  2026-10-29 is the copy in `acc17fb`. A forward chain that stays on the
+  the same UTC date replaces those files. The acceptance table for this
+  follow-up is `docs/e2e/runs/2026-10-30/`. `docs/e2e/runs/2026-10-29/` remains
+  the follow-up 2 run, including `parallel-stacks.md`. The first recorded run
+  of 2026-10-29 is the copy in `acc17fb`. A forward chain that stays on the
   baseline is not an AT10 or AT29 pass.
