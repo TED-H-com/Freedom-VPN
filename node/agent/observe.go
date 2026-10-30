@@ -108,18 +108,13 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 		ProvisioningState:       e.decision.Provisioning,
 		ReportId:                id,
 		SafetyStatus:            e.decision.Safety,
-		Usage: api.UsageOutboxStatus{
-			BlockedSeq:      presence.NewNullNullable[decstr.U64](),
-			LedgerEpoch:     presence.NewNullNullable[uuid.UUID](),
-			MeterEpochId:    presence.NewNullNullable[uuid.UUID](),
-			OldestUnackedAt: presence.NewNullNullable[time.Time](),
-		},
 	}
 	rep.Lease.ExpiresAt = exp
 	rep.Lease.LeaseId = lid
 	rep.Netbird.Backend = backend
 	rep.Netbird.PeerId = presence.NewNullNullable[string]()
 	rep.Netbird.Version = presence.NewNullNullable[string]()
+	e.attachUsage(ctx, &rep)
 	e.attachUpdate(ctx, &rep)
 	if e.dnsEv != nil {
 		rep.DnsPolicyEvidence = presence.NewNullableWithValue(*e.dnsEv)

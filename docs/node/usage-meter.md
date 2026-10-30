@@ -36,6 +36,10 @@ type Controller interface {
 
 `Close` stops the sampler. It does not close the store.
 
+## Reading the local ledger
+
+`fvpn-agent usage snapshot` prints the meter epochs this sampler has opened and closed, the assigned sequences and the unacknowledged events. It does not sample and it does not open a new meter epoch. The field list and the lab contract are in `docs/node/usage-store.md`, section "Reading the local ledger". A restart of `fvpn-agent run` does not change those hashes or sequences, and the watermark in the snapshot is the persisted one.
+
 ## Fault injection
 
 `Sample` asks the store hook to fail at `sample.read` (before the counter read) and `sample.plan` (before the commit). Store commit steps are in `docs/node/usage-store.md`. An injected crash is not reported as `persist_failed`. A crash after commit leaves the event durable; the next sample does not emit it again.

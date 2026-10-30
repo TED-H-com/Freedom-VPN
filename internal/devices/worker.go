@@ -69,7 +69,8 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	if err = conn.QueryRow(ctx, `SELECT $1::uuid IN (`+entitlement.AuthorizedDeviceIDsSQL+` AND ranked.member_id=$2)`, id, member).Scan(&withinLimit); err != nil {
 		return err
 	}
-	allow := status == "authorized" && withinLimit && r.Allows(s.Entitlements.Time())
+	centralAllow := status == "authorized" && withinLimit && r.Allows(s.Entitlements.Time())
+	allow := centralAllow
 	preflight, err := s.Adapter.ObservePeer(ctx, deployment, peer)
 	if err != nil {
 		return err
@@ -83,6 +84,34 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	}
 	mappingLost := allow && !mapped
 	allow = allow && mapped
+	// D-076: a restored observed_authorized row is not a current entitlement.
+	// Revoked and closed devices never reach this branch. A fence row, once
+	// written, keeps the peer withdrawn until explicit re-authorization.
+	var recordFence, recordBlock bool
+	var fenceGroups []uuid.UUID
+	if status == "authorized" {
+		var already bool
+		if err = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM device_authorization_fences WHERE device_id=$1)`, id).Scan(&already); err != nil {
+			return err
+		}
+		if already {
+			allow = false
+		} else if centralAllow {
+			block, fence, groups, e := s.detectRestoredWithdrawal(ctx, conn, id, deployment, peer, preflight, r.ExitGroups)
+			if e != nil {
+				return e
+			}
+			// A newer central revocation while status is still authorized is not
+			// an external withdrawal, and it must not grant on a later sync
+			// after the read-back is stored as withdrawn.
+			if block || fence {
+				allow = false
+			}
+			recordFence = fence
+			recordBlock = block
+			fenceGroups = groups
+		}
+	}
 
 	groups := []uuid.UUID{}
 	if allow {
@@ -102,6 +131,8 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	if allow && !r.Allows(s.Entitlements.Time()) {
 		return entitlement.ErrConflict
 	}
+	var fencedNow bool
+	var ledgerMode string
 	err = pgx.BeginFunc(ctx, conn, func(tx pgx.Tx) error {
 		var lockedMember uuid.UUID
 		if e := tx.QueryRow(ctx, `SELECT id FROM members WHERE id=$1 FOR UPDATE`, member).Scan(&lockedMember); e != nil {
@@ -117,6 +148,18 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 		if tag.RowsAffected() != 1 {
 			return entitlement.ErrConflict
 		}
+		if recordFence {
+			inserted, mode, e := recordExternalWithdrawal(ctx, tx, id, member, peer, fenceGroups)
+			if e != nil {
+				return e
+			}
+			fencedNow = inserted
+			ledgerMode = mode
+		} else if recordBlock {
+			if _, e = ensureFence(ctx, tx, id, nil); e != nil {
+				return e
+			}
+		}
 		if mappingLost {
 			return nil
 		}
@@ -128,6 +171,9 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	})
 	if err != nil {
 		return err
+	}
+	if fencedNow {
+		s.announceFence(ctx, id, member, peer, ledgerMode)
 	}
 	if mappingLost {
 		return ErrUnmapped

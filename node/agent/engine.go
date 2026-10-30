@@ -86,6 +86,18 @@ type Engine struct {
 	loopCancel    context.CancelFunc
 	loops         sync.WaitGroup
 
+	// usageStatus is the open store, read when an observation is built.
+	// Nil before the store opens and after it closes. usageStatusBound
+	// overrides the 2s read limit; zero keeps the default. The reason
+	// pair logs one line per transition. lastUsage is this process's
+	// last successful read and is what a timed-out read reports.
+	usageStatus       usageStatusSource
+	usageStatusBound  time.Duration
+	usageStatusReason string
+	usageStatusKnown  bool
+	lastUsage         api.UsageOutboxStatus
+	hasUsage          bool
+
 	mu      sync.Mutex
 	tlsCert *tls.Certificate
 
