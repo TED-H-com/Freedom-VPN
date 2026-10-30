@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,6 +18,7 @@ import (
 )
 
 func main() {
+	udpAddr := flag.String("probe-udp-addr", "", "TEST ONLY authenticated UDP probe listener")
 	addr := flag.String("addr", ":443", "listen address")
 	cert := flag.String("cert", "", "TLS certificate")
 	key := flag.String("key", "", "TLS private key")
@@ -45,6 +47,15 @@ func main() {
 	mux := http.NewServeMux()
 	probe := &trafficProbe{}
 	probe.register(mux, token)
+	if *udpAddr != "" {
+		conn, err := net.ListenPacket("udp4", *udpAddr)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "fvpn-e2e-origin: probe listener")
+			os.Exit(1)
+		}
+		defer conn.Close()
+		go probe.serveUDP(conn, []byte(token))
+	}
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		probe.observe(r)
 		w.WriteHeader(http.StatusOK)

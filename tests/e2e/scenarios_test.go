@@ -30,7 +30,7 @@ func TestE2E_Acceptance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 35*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
 	defer cancel()
 	run := &runner{t: t, lab: lab, dir: filepath.Join(lab.root, "docs", "e2e", "runs", time.Now().UTC().Format("2006-01-02"))}
 	run.runID = uuid.NewString()
@@ -61,11 +61,14 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
+		run.deviceRevoke(ctx)
 		run.scaleHook(ctx, admin)
+		run.gatewayPrivacy(ctx)
 		run.threatFeedTamper(ctx, admin)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
 		run.revoke(ctx, nodeID)
+		run.secondExit(ctx)
 	} else {
 		run.forwarding(run.lab.forwardChain())
 	}
@@ -92,6 +95,8 @@ type runner struct {
 	flowCounted  bool
 	trafficOwner string
 	usageReady   bool
+	probePeer    map[string]any
+	updateOwner  string
 }
 
 func (r *runner) record(rec Record) {
@@ -116,6 +121,9 @@ func (r *runner) record(rec Record) {
 		}
 		if (rec.ID == "member-traffic" || rec.ID == "forwarding") && owners[rec.ID] == "" {
 			owners[rec.ID] = "w3-wire-members: native device authorization and desired binding prerequisite"
+		}
+		if rec.ID == "update-good" && r.updateOwner != "" {
+			owners[rec.ID] = r.updateOwner
 		}
 		if owner := owners[rec.ID]; owner != "" {
 			rec.Observations = append(rec.Observations, Observation{Name: "owner", Detail: owner})
@@ -536,6 +544,23 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		r.record(rec)
 		return
 	}
+	var finishProbe func() bool
+	if !wantHash {
+		r.updateOwner = "w3-devstack-e2e: dedicated synthetic peer and narrow route setup"
+		if !r.prepareProbe(ctx, recPathNote(&rec)) {
+			recPathNote(&rec)("probe_gate", "dedicated peer/route setup failed")
+			r.record(rec)
+			return
+		}
+		r.updateOwner = "w2-agent-core / w1-netlab: challenge exception and observed probe traversal"
+		finishProbe = r.startProbeCapture(ctx, recPathNote(&rec))
+	}
+	probeOK := wantHash
+	defer func() {
+		if finishProbe != nil {
+			finishProbe()
+		}
+	}()
 	pause := filepath.Join(r.lab.state, "node", "var", "e2e", "pause-agent")
 	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
 		rec.Status = StatusFail
@@ -574,7 +599,17 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/bin/fvpn-agent"
 	rec.Observations = append(rec.Observations, Observation{Name: "running_candidate_executable", Detail: boolText(candidateRunning)})
 	journal := r.readJournal(releaseID.String())
-	outLog, _ := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
+	outLog, outLogErr := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
+	probeOmissions := strings.Count(string(outLog), "health challenge probe omitted")
+	if !wantHash {
+		recPathNote(&rec)("probe_agent_config", "/etc/vpn-node/agent-run.json")
+		recPathNote(&rec)("updater_log_readable", boolText(outLogErr == nil))
+		recPathNote(&rec)("probe_omission_count", itoa(probeOmissions))
+		recPathNote(&rec)("invalid_probe_peer", boolText(strings.Contains(string(outLog), "updater: invalid probe_peer")))
+		if refusal := excerptMatching(string(outLog), []string{"health challenge probe omitted", "updater: invalid probe_peer"}, 3); refusal != "" {
+			recPathNote(&rec)("probe_refusal", refusal)
+		}
+	}
 	blob := journal.Text + "\n" + string(outLog)
 	words := scanWords(blob)
 	rec.Observations = append(rec.Observations, Observation{Name: "exit_code", Detail: itoa(exit.Code)})
@@ -588,7 +623,13 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	if excerpt := excerptMatching(blob, []string{"health_json", "error_code", "tunnel", "dns_policy", "internet_only", "HASH", "rollback", "last_error", "locally_succeeded"}, 6); excerpt != "" {
 		rec.Observations = append(rec.Observations, Observation{Name: "journal_excerpt", Detail: excerpt})
 	}
+	if finishProbe != nil {
+		probeOK = finishProbe() && outLogErr == nil && probeOmissions == 0
+		finishProbe = nil
+	}
 	switch {
+	case !wantHash && !probeOK:
+		recPathNote(&rec)("probe_gate", "real candidate result does not prove §13.9; see observed grant and traversal counters; owner w2-agent-core / w1-netlab")
 	case wantHash && words["locally_succeeded"]:
 		rec.Status = StatusFail
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "tampered artifact incorrectly accepted"})
@@ -745,12 +786,16 @@ func (r *runner) writeUpdaterConfig() error {
 		"release_trust": "/etc/vpn-node/trust.json", "desired_trust": "/etc/vpn-node/trust.json",
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
 		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+		"agent_config":     "/etc/vpn-node/agent-run.json",
 		"stop_command":     []string{"/usr/local/bin/agent-service.sh", "stop"}, "start_command": []string{"/usr/local/bin/agent-service.sh", "start"},
 		"result_url":               r.lab.agent + "/api/v1/agent/update-results",
 		"allowed_artifact_origins": []string{r.lab.agent},
 		"mtls_cert":                "/var/lib/vpn-node/identity/cert.pem",
 		"mtls_key":                 "/var/lib/vpn-node/identity/key.pem",
 		"mtls_ca":                  "/etc/vpn-node/ca.pem",
+	}
+	if r.probePeer != nil {
+		cfg["probe_peer"] = r.probePeer
 	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {

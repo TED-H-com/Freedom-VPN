@@ -4,9 +4,9 @@ Good release reaches a terminal updater state
 
 Status: pass
 
-Run: 22c14cd9-39fc-444b-a7c5-c04cf3ffbff6
+Run: 3a129919-af3f-4bc9-b54a-8075eae8af45
 
-Source: 43176b8860bf90970e96b100c1ba4e957f09363d
+Source: 79259af1facc1faa798fbb83cc20aa4e74539d1f
 
 Spec: §13, §19 AT23, §19 AT25
 
@@ -14,7 +14,14 @@ Spec: §13, §19 AT23, §19 AT25
 - fleet_generation: 2
 - target_count: 3
 - desired_contains_release: true
+- probe_not_member: true
+- probe_route_selected: true
+- probe_config_scope: one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant
 - running_candidate_executable: true
+- probe_agent_config: /etc/vpn-node/agent-run.json
+- updater_log_readable: true
+- probe_omission_count: 0
+- invalid_probe_peer: false
 - exit_code: 0
 - locally_succeeded: true
 - rolled_back: false
@@ -27,4 +34,8 @@ Spec: §13, §19 AT23, §19 AT25
 - error_code: -
 - result_last_error: -
 - journal_excerpt: stage=locally_succeeded error_code= error_stage= error_detail= | health_json {"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":"passed","tunnel_probe":"passed"} | event seq=8 stage=checking detail={"kind":"health_attest","phase":"candidate","statuses":{"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":" | event seq=9 stage=locally_succeeded detail=
+- probe_traffic: {"attempts":1311,"authenticated_udp_replies":24}
+- probe_window: {"samples":843,"grant_samples":3,"source_elements":1,"destination_elements":1,"max_timeout_seconds":44,"probe_up_bytes":1848,"probe_down_bytes":1848,"member_bytes_before":0,"member_bytes_after":0,"elements_after":0}
+- probe_origin_receipt: {"probe_id":"3abe1f67-9ec2-479d-b61f-b1b3dbc70b06","requests":24,"source_address":"192.0.3.20"}
+- probe_traversal_verified: true
 - note: locally_succeeded was observed

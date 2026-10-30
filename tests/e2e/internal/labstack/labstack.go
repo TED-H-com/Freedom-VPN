@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
+type NativeLogScan = e2e.NativeLogScan
 type NativePeer = e2e.NativePeer
 type NativeScale = e2e.NativeScale
 type Stack = e2e.Stack

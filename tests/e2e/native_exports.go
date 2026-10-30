@@ -25,18 +25,23 @@ type NativePeer struct {
 	Container       string
 	IdentityMatched bool
 	Authorized      bool
+	DeviceID        uuid.UUID
+	LogScan         NativeLogScan
 }
 type NativeScale struct {
-	Users           int
-	Peers           int
-	IdentityMatches int
-	Authorized      int
+	Users                  int
+	Peers                  int
+	IdentityMatches        int
+	Authorized             int
+	ScannedLogs            int
+	ProtectedLogs          int
+	SimultaneousAuthorized int
 }
 
 // JoinNativeMember drives the real device flow on an existing prefixed peer.
 // Each peer must have its own NetBird state, socket and network namespace.
-func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, subject, container, peerName string) (NativePeer, error) {
-	out := NativePeer{Container: container}
+func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, subject, container, peerName string) (out NativePeer, err error) {
+	out = NativePeer{Container: container}
 	if !strings.HasPrefix(container, s.lab.prefix+"-member") {
 		return out, fmt.Errorf("member container outside stack")
 	}
@@ -60,7 +65,10 @@ func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, sub
 		return out, err
 	}
 	logPath := "/var/lib/vpn-node/e2e/netbird-up.log"
-	defer func() { _, _ = s.lab.docker(container, "rm", "-f", logPath) }()
+	defer func() {
+		out.LogScan, _ = s.ScanNativeJoinLog(ctx, container)
+		_, _ = s.lab.docker(container, "rm", "-f", logPath)
+	}()
 	if _, err = s.lab.docker(container, "touch", "/var/lib/vpn-node/e2e/user-auth"); err != nil {
 		return out, err
 	}
@@ -126,6 +134,7 @@ func (s *Stack) JoinNativeMember(ctx context.Context, member BrowserSession, sub
 		for _, d := range page.Items {
 			if d.DeviceId == device && d.Status == api.DeviceStatusAuthorized {
 				out.Authorized = true
+				out.DeviceID = device
 				return true
 			}
 		}
@@ -148,7 +157,7 @@ func (s *Stack) StartNativePeer(ctx context.Context, name string) (string, error
 	if err != nil {
 		return "", err
 	}
-	cmd := exec.CommandContext(ctx, "docker", "run", "-d", "--name", container, "--hostname", container, "--network", s.lab.prefix, "--cap-add=NET_ADMIN", "--cap-add=NET_RAW", "--device=/dev/net/tun:/dev/net/tun", "--env", "FVPN_E2E_MEMBER_NAME="+container, "--mount", "type=bind,src="+filepath.Join(s.lab.state, "node", "etc", "ca.pem")+",dst=/etc/vpn-node/ca.pem,readonly", "--mount", "type=volume,src="+container+",dst=/var/lib/vpn-node", "--entrypoint", "/usr/local/bin/entrypoint-member.sh", strings.TrimSpace(string(image)))
+	cmd := exec.CommandContext(ctx, "docker", "run", "-d", "--name", container, "--hostname", container, "--network", s.lab.prefix, "--add-host", "releases.example.invalid:"+s.lab.originIP, "--cap-add=NET_ADMIN", "--cap-add=NET_RAW", "--device=/dev/net/tun:/dev/net/tun", "--env", "FVPN_E2E_MEMBER_NAME="+container, "--mount", "type=bind,src="+filepath.Join(s.lab.state, "node", "etc", "ca.pem")+",dst=/etc/vpn-node/ca.pem,readonly", "--mount", "type=volume,src="+container+",dst=/var/lib/vpn-node", "--entrypoint", "/usr/local/bin/entrypoint-member.sh", strings.TrimSpace(string(image)))
 	if err = cmd.Run(); err != nil {
 		return "", fmt.Errorf("start native peer: %w", err)
 	}
@@ -158,13 +167,26 @@ func (s *Stack) StartNativePeer(ctx context.Context, name string) (string, error
 // ScaleNativeMembers is the SECOPS-10 hook. 20x3 is supported by the hook;
 // callers choose the execution budget and must use a plan allowing three devices.
 // Each native peer and subject is distinct; the return contains only counts.
-func (s *Stack) ScaleNativeMembers(ctx context.Context, admin BrowserSession, plan uuid.UUID, namespace string, users, peers int) (NativeScale, error) {
+func (s *Stack) ScaleNativeMembers(ctx context.Context, admin BrowserSession, plan uuid.UUID, namespace string, users, peers int, refresh ...func(context.Context) (BrowserSession, error)) (NativeScale, error) {
 	var out NativeScale
+	if len(refresh) > 1 {
+		return out, fmt.Errorf("at most one admin refresh callback")
+	}
 	if users < 1 || users > 20 || peers < 1 || peers > 3 || !nativeName.MatchString(namespace) || len(namespace) > 12 || plan == uuid.Nil {
 		return out, fmt.Errorf("scale requires 1..20 users, 1..3 peers, plan and short namespace")
 	}
 	seen := map[string]bool{}
+	devices := []uuid.UUID{}
+	lastAuth := time.Time{}
 	for u := 1; u <= users; u++ {
+		if len(refresh) == 1 && time.Since(lastAuth) > 5*time.Minute {
+			fresh, e := refresh[0](ctx)
+			if e != nil {
+				return out, e
+			}
+			admin = fresh
+			lastAuth = time.Now()
+		}
 		subject := fmt.Sprintf("%s-u%02d", namespace, u)
 		member, err := s.Login(ctx, subject, "member")
 		if err != nil {
@@ -179,24 +201,59 @@ func (s *Stack) ScaleNativeMembers(ctx context.Context, admin BrowserSession, pl
 			return out, fmt.Errorf("scale grant: %s", httpDetail(grant, err))
 		}
 		out.Users++
+
+		// A user's three independent namespaces join concurrently. Identity
+		// and authorization are still checked per peer before counts advance.
+		type joined struct {
+			peer NativePeer
+			err  error
+		}
+		joinedPeers := make(chan joined, peers)
 		for p := 1; p <= peers; p++ {
 			name := fmt.Sprintf("%s-p%d", subject, p)
-			container, err := s.StartNativePeer(ctx, name)
-			if err != nil {
-				return out, err
-			}
-			peer, err := s.JoinNativeMember(ctx, member, subject, container, container)
+			go func() {
+				container, e := s.StartNativePeer(ctx, name)
+				if e != nil {
+					joinedPeers <- joined{err: e}
+					return
+				}
+				peer, e := s.JoinNativeMember(ctx, member, subject, container, container)
+				joinedPeers <- joined{peer: peer, err: e}
+			}()
+		}
+		var firstErr error
+		for range peers {
+			result := <-joinedPeers
+			peer := result.peer
 			out.Peers++
+			if peer.LogScan.Present {
+				out.ScannedLogs++
+			}
+			if peer.LogScan.Present && peer.LogScan.Mode == "0:600" {
+				out.ProtectedLogs++
+			}
 			if peer.IdentityMatched {
 				out.IdentityMatches++
 			}
 			if peer.Authorized {
 				out.Authorized++
+				devices = append(devices, peer.DeviceID)
 			}
-			if err != nil {
-				return out, err
+			if result.err != nil && firstErr == nil {
+				firstErr = result.err
 			}
 		}
+		if firstErr != nil {
+			return out, firstErr
+		}
+	}
+	conn, e := s.lab.db(ctx)
+	if e != nil {
+		return out, e
+	}
+	defer conn.Close(ctx)
+	if e = conn.QueryRow(ctx, `SELECT count(*) FROM member_devices WHERE id=ANY($1::uuid[]) AND status='authorized'`, devices).Scan(&out.SimultaneousAuthorized); e != nil {
+		return out, e
 	}
 	return out, nil
 }

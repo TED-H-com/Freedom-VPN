@@ -192,8 +192,8 @@ product mapping and `/member/devices` authorization with a four-minute bound.
 Only aggregate counts escape the hook. No second Compose deployment or setup
 key masquerading as a member is used. `StartNativePeer` and `JoinNativeMember`
 are available separately. Prefix teardown removes all additional peer
-containers and volumes. Acceptance runs only a **2 users × 2 peers smoke**;
-this does not claim 20 × 3 capacity or fairness.
+containers and volumes. Acceptance runs the full **20 users × 3 peers** cohort. This proves native
+admission and the lab gateway budget, not fairness or production hardware capacity.
 
 ## SECOPS-04 deadline faults
 
@@ -204,8 +204,8 @@ Read the resulting signed lease deadline before waiting for withdrawal; retain
 the positive and negative counters. An initial fail-closed baseline cannot pass
 this case. The lab does not alter projector-owned rows, forge leases, or move
 the host clock. Clock rollback requires a disposable guest VM and remains an
-operator test. The current missing lease refresh prevents this prerequisite;
-acceptance records the dependent expiry test as blocked without injecting it.
+operator test. The current counted-flow prerequisite is measured before each fault; see the
+dated evidence for the exact signed deadline and measured withdrawal.
 
 ## Follow-up 8 restart, DNS and landing observables
 
@@ -275,3 +275,79 @@ Long fault probes can exceed the configured 900-second recent-auth window.
 Perform a fresh admin OIDC login before a protected action such as revoke;
 the acceptance harness does so after control-loss withdrawal. Do not lengthen
 the security window to make a long test pass.
+
+## Protected native stream scan (SECOPS-16)
+
+`labstack.Stack.ScanNativeJoinLog(ctx, container)` inventories the fixed
+`/var/lib/vpn-node/e2e/netbird-up.log` inside an owned member container. It returns
+`NativeLogScan{Present, Bytes, Mode, DeviceFlowKeys}` only (the last field counts
+lines containing recognized device-flow keys); it does not export
+matched lines, URLs, codes or raw content. `JoinNativeMember` always calls it
+before removing the transient file and includes the result in `NativePeer.LogScan`.
+The scale helper totals present and root-owned mode-0600 streams. Scanner owners
+can call the export while a join is in progress and retain its aggregate result;
+completed joins return their pre-delete inventory directly.
+
+## Second runnable exit (F3-03)
+
+After preparing the signed serving baseline, use the existing stack:
+
+```go
+if err := stack.StartSecondExit(ctx); err != nil { t.Fatal(err) }
+second, err := stack.EnrollAt(ctx, admin, "TEST ONLY second exit", "node2")
+if err != nil { t.Fatal(err) }
+// Use second.NodeID with the normal node/group/publication APIs.
+```
+
+`StartSecondExit` pins the running node and resolver image IDs, creates
+`node2-netns`, `node2-adguard`, and `node2` under the stack prefix, and uses the
+existing two bridges. The second uplink is slot origin `.22`. It copies runtime
+configuration and trust into a fresh `node2` directory, changes only that SNAT
+address, and obtains a new identity/setup key through normal enrollment. No
+identity, state database or readiness row is copied. `Enroll` still targets
+`node`; `EnrollAt` accepts only `node` or `node2`. `e2e-down` removes both.
+The hook does not itself publish an exit or prove simultaneous multi-exit traffic.
+Boot-source variants, physical networks and physical arm64 remain operator runs.
+
+## Dedicated updater probe (D-063/D-064)
+
+Acceptance creates a separate one-off setup key, synthetic NetBird peer and
+probe-only group through the lab management API. A separate transport policy
+links that group only to a synthetic target group containing the actual node.
+It gives only the probe group a
+TEST ONLY `/32` controlled-origin route via the actual enrolled node. This does
+not alter the product's published exit, member groups, devices or bindings.
+The peer selects that narrow route. The updater receives its real peer ID,
+overlay source `/32`, and isolated origin `/32` UDP/4443 in `probe_peer`.
+The updater config explicitly sets `agent_config` to
+`/etc/vpn-node/agent-run.json`; the default `agent.json` is not the lab's runtime
+file. The #154 validator reads that file's control/resolver endpoints and the
+node's actual interfaces at load, engine creation and challenge issuance. The
+isolated origin must differ from every node/control/resolver address. The
+existing validator remains authoritative; no denied-range exception is added.
+
+`fvpn-e2e-nodeconfig probe-client <synthetic UUID>` sends bounded authenticated
+UDP echo requests from that peer; `probe-watch` only reads nftables snapshots.
+Both stop on `e2e/probe-stop` or a 180-second bound. Each 49-byte packet
+has a synthetic UUID and a domain-separated HMAC-SHA256; the origin accepts only
+the currently armed probe ID and the peer verifies the authenticated reply. The
+per-run key is supplied by protected stdin to a mode-0600 peer file and removed
+after capture. UDP/4443 is reachable only on the isolated origin bridge; it is
+not published on the host. This avoids relying on a cold TLS handshake inside
+the short real exception window. The observer records set
+sizes/timeouts, diagnostic counters and member-counter totals, never challenge
+nonces or peer IDs. Only the product installs/removes the exception and answers
+the challenge. `update-good` requires traversal evidence in addition to the
+real updater result; an attestation alone cannot satisfy this lab assertion.
+
+For a long scale run, the optional final `ScaleNativeMembers` argument is an
+admin-login callback `func(context.Context) (labstack.BrowserSession, error)`.
+It performs a real login initially and every five minutes. Acceptance uses it
+so grant commands stay inside the unchanged 900-second recent-auth window.
+Three independent peers for each user join concurrently; users remain sequential.
+The final `SimultaneousAuthorized` count reads all admitted device IDs in one
+read-only query, in addition to each peer's identity and authorization checks.
+
+Dynamic native peers and the second node namespace use the lab bridge's
+`.128/25` allocation pool. Static services remain below `.128`; a new peer
+cannot take a temporarily stopped control container's address during a fault.
