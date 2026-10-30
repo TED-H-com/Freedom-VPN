@@ -194,6 +194,11 @@ func newLimiter(max int) *limiter {
 	return &limiter{entries: map[string]*bucketEntry{}, max: max}
 }
 
+// limiterNow is the clock for token refill and idle eviction. Production
+// leaves it as time.Now. A test replaces it so eligibility for eviction does
+// not depend on how fast the requests run, and restores it when the test ends.
+var limiterNow = time.Now
+
 // allow spends one token or returns how long the caller should wait.
 // At capacity it evicts only the least-recently-used bucket, and only when
 // that bucket is idle with a full token count or has been idle for more
@@ -205,7 +210,7 @@ func newLimiter(max int) *limiter {
 func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	now := time.Now()
+	now := limiterNow()
 	e, ok := l.entries[key]
 	if !ok {
 		if len(l.entries) >= l.max && !l.evictIdle(now) {

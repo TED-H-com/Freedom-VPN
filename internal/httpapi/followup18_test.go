@@ -143,27 +143,36 @@ func TestFollowup18_ConnectionPrincipal(t *testing.T) {
 	})
 
 	t.Run("malformed chosen entry is 429 and occupies no slot", func(t *testing.T) {
+		// Login is 1000/s with one principal slot. A tail that spent one token
+		// is idle-full after 1 ms, which would evict the valid client and admit
+		// the next address. Advance 1µs per request so that eviction stays closed.
+		now := time.Date(2026, 10, 30, 17, 0, 0, 0, time.UTC)
+		setLimiterClock(t, func() time.Time { return now })
 		c := config.Defaults()
 		c.LoginRate = config.Bucket{PerSecond: 1000, Burst: 1000}
 		c.MaxRatePrincipals = 1
 		c.TrustedProxies = []string{"192.0.2.8/32"}
 		h, hits := reviewLoginHandler(c)
 		proxy := "192.0.2.8:443"
+		login := func(remote string, header map[string]string) *httptest.ResponseRecorder {
+			now = now.Add(time.Microsecond)
+			return reviewLogin(h, remote, "/auth/login", header)
+		}
 		for _, header := range []map[string]string{
 			{"X-Forwarded-For": "not-an-ip"},
 			{"X-Forwarded-For": "198.51.100.1, not-an-ip"},
 			{"X-Forwarded-For": "198.51.100.7,"},
 		} {
-			followup18Limited(t, reviewLogin(h, proxy, "/auth/login", header), "Login request rate exceeded.")
+			followup18Limited(t, login(proxy, header), "Login request rate exceeded.")
 		}
-		followup18Limited(t, reviewLogin(h, "not-an-address", "/auth/login", map[string]string{"X-Forwarded-For": "198.51.100.7"}), "Login request rate exceeded.")
+		followup18Limited(t, login("not-an-address", map[string]string{"X-Forwarded-For": "198.51.100.7"}), "Login request rate exceeded.")
 		if *hits != 0 {
 			t.Fatalf("handler hits=%d", *hits)
 		}
-		if w := reviewLogin(h, proxy, "/auth/login", map[string]string{"X-Forwarded-For": "198.51.100.7"}); w.Code != http.StatusNoContent {
+		if w := login(proxy, map[string]string{"X-Forwarded-For": "198.51.100.7"}); w.Code != http.StatusNoContent {
 			t.Fatal("malformed entries occupied the only principal slot", w.Code, w.Body.String())
 		}
-		followup18Limited(t, reviewLogin(h, proxy, "/auth/login", map[string]string{"X-Forwarded-For": "198.51.100.8"}), "Login request rate exceeded.")
+		followup18Limited(t, login(proxy, map[string]string{"X-Forwarded-For": "198.51.100.8"}), "Login request rate exceeded.")
 	})
 
 	t.Run("ipv6 prefix and ipv4-mapped forms", func(t *testing.T) {
