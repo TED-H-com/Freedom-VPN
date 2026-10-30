@@ -527,6 +527,48 @@ cause in the existing step `reason` (`stale_generation`, `forwarding_disabled`,
 member admission unchanged; this is agent-reported capability, not counted
 traffic or a measurement of the watchdog/kernel.
 
+The r11 gate applies only to an attachment made under the empty-generation
+exception (§5.2). The attachment basis is `empty_exception` when the most recent
+succeeded `node.publish` operation (any principal, including system recovery)
+acknowledged a signed generation with zero `device_bindings`, and
+`populated_verified` otherwise. The lookup joins `operations.observed_generation`
+to `desired_states` for the node's current incarnation, then
+`desired_state_envelopes.desired_state_id` to read the signed binding list.
+Because envelopes are a latest-per-incarnation cache, successful completion
+retains the derived basis and desired-state ID in `operations.observed_refs`
+before that operation freezes. Later lookups validate that reference against the
+immutable generation history instead of inspecting the newest binding list.
+A legacy success whose envelope is still retained uses that envelope; missing
+historical evidence does not invent an empty attachment.
+
+Only an `empty_exception` attachment followed by a populated desired generation
+queues a system `node.publish` operation through `node.publication_changed`.
+An old ACK (`stale_generation`) or unverified serving checks
+(`serving_checks_unconfirmed`) withdraws that route and confirms its absence or
+disabled state before setting `publication_observed=withdrawn`.
+`publication_intent` stays `published`. Only this exception's populated envelope
+is withheld with retryable `DEPENDENCY_UNAVAILABLE` until withdrawal is confirmed;
+management failure remains `error` under the retry/dead-letter budget.
+
+A current ACK with complete serving evidence queues a fresh recovery operation
+for the withdrawn exception. Re-attachment is read back before recording
+`publication_observed=active`; its populated successful generation establishes
+`populated_verified`. Populated-basis generations never withdraw the route or
+block desired-state delivery, including binding revocations while NetBird is
+unavailable. Later failed checks retain ordinary publication execution semantics
+(`publication_observed=error`, no route withdrawal); broader route reconciliation
+for those failures is outside this gate. The node's generation-scoped enforcement
+covers the interval between compilation and application.
+
+The existing step `reason` records the fixed gate cause; confirmed withdrawal
+evidence remains in `observed_refs`, and both route transitions append D-029
+`node.publish` audits against the exit with only intent, observed state and fixed
+reason fields. Terminal operations are never reset. Duplicate claims reuse
+external IDs and avoid duplicate transitions/audits. Executors retain the per-node
+session advisory lock, without an SQL transaction open across NetBird calls;
+final completion locks the node briefly to retain evidence for the generation
+actually acknowledged.
+
 Route failures store bounded causes such as `route_missing`, `route_disabled`,
 `publish_rejected:503`, `readback_failed:unconfirmed` and
 `no_distribution_groups`; no upstream body, URL or untrusted error text is

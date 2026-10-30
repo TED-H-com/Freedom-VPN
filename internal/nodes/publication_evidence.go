@@ -26,20 +26,23 @@ func PublicationDataPathFailure(ctx context.Context, q Querier, report api.Obser
 		return "stale_generation", nil
 	}
 	var desired decstr.U64
-	var empty bool
+	var empty, published bool
 	err = q.QueryRow(ctx, `SELECT n.desired_config_generation::text,
 		coalesce(e.generation=n.desired_config_generation AND e.generation=$3::text::numeric
 		AND e.envelope#>>'{signed,config_generation}'=$3::text
 		AND e.envelope#>>'{signed,publication_intent}'='published'
-		AND e.envelope#>'{signed,device_bindings}'='[]'::jsonb,false)
-		FROM nodes n LEFT JOIN desired_state_envelopes e
+		AND e.envelope#>'{signed,device_bindings}'='[]'::jsonb,false), n.lifecycle_state='registered' AND x.publication_intent='published'
+		FROM nodes n JOIN exits x ON x.node_id=n.id LEFT JOIN desired_state_envelopes e
 		ON e.node_id=n.id AND e.incarnation_id=n.current_incarnation_id
-		WHERE n.id=$1 AND n.current_incarnation_id=$2`, report.NodeId, report.NodeIncarnationId, applied.String()).Scan(&desired, &empty)
+		WHERE n.id=$1 AND n.current_incarnation_id=$2`, report.NodeId, report.NodeIncarnationId, applied.String()).Scan(&desired, &empty, &published)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "stale_generation", nil
 	}
 	if err != nil {
 		return "", err
+	}
+	if !published {
+		return "readiness_unconfirmed", nil
 	}
 	if applied < desired {
 		return "stale_generation", nil

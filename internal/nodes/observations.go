@@ -17,6 +17,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -304,6 +305,25 @@ func (s *Service) SubmitObservation(
 				return err
 			}
 
+			var publication, observed string
+			var generation decstr.U64
+			if err := tx.QueryRow(ctx, `SELECT e.publication_intent,e.publication_observed,n.desired_config_generation::text FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1`, authNodeID).Scan(&publication, &observed, &generation); err != nil {
+				return err
+			}
+			if publication == "published" {
+				cause, err := PublicationDataPathFailure(ctx, tx, report, uint64(generation), receivedAt)
+				if err != nil {
+					return err
+				}
+				// Only recover a withdrawn empty-exception attachment once the
+				// populated desired generation has full serving evidence.
+				if cause == "" && observed == "withdrawn" {
+					if err := QueuePublicationGateTx(ctx, tx, authNodeID, receivedAt, false); err != nil {
+						return err
+					}
+				}
+			}
+
 			// 5. Feed pending/running operation steps ONLY if concrete evidence is satisfied.
 			if err := advanceNodeOperationsOnObservation(ctx, tx, authNodeID, report, effectiveSafety, effectiveHealth, effectiveForwarding, receivedAt, obsAuditID); err != nil {
 				return err
@@ -577,6 +597,11 @@ func advanceNodeOperationsOnObservation(
 		}
 
 		if allRequiredSucceeded && op.status == string(api.OperationStatusRunning) {
+			if op.kind == OpKindPublish {
+				if err := RecordPublicationAttachmentTx(ctx, tx, op.id, obsGenStr); err != nil {
+					return err
+				}
+			}
 			if _, err := tx.Exec(ctx, `
 				UPDATE operations
 				SET status = 'succeeded',

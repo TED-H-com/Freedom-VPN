@@ -148,6 +148,9 @@ func (h *Handlers) GetDesiredState(ctx context.Context, r gen.GetDesiredStateReq
 	if e != nil {
 		return nil, e
 	}
+	if e := nodes.CheckPublicationDelivery(ctx, h.Runtime.Pool, out.Envelope.Signed); e != nil {
+		return nil, e
+	}
 	for _, tag := range strings.Split(value(r.Params.IfNoneMatch), ",") {
 		if strings.TrimSpace(tag) == "*" || strings.TrimPrefix(strings.TrimSpace(tag), "W/") == out.ETag {
 			return stateNotModified(out.ETag), nil
