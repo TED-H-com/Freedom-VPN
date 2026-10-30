@@ -21,7 +21,10 @@ export function AdminNodeDetailPage(): React.ReactElement {
   const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
   const [conflictError, setConflictError] = useState<ApiError | null>(null);
   const [actionError, setActionError] = useState<unknown>(null);
-  const [savedNotice, setSavedNotice] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<{
+    desired: string;
+    applied: string | null;
+  } | null>(null);
 
   const [name, setName] = useState('');
   const [region, setRegion] = useState('');
@@ -167,11 +170,11 @@ export function AdminNodeDetailPage(): React.ReactElement {
 
   const handleSavePatch = async (overrideEtag?: string) => {
     setActionError(null);
-    setSavedNotice(false);
+    setSavedSnapshot(null);
     try {
       const parsedUp = Number.parseInt(upBps.trim(), 10);
       const parsedDown = Number.parseInt(downBps.trim(), 10);
-      await apiClient.updateNode(
+      const updated = await apiClient.updateNode(
         node.node_id,
         clearCapacity
           ? {
@@ -202,7 +205,24 @@ export function AdminNodeDetailPage(): React.ReactElement {
         overrideEtag ?? etag ?? undefined,
         `patch:${node.node_id}:${overrideEtag ?? etag ?? 'none'}:${Date.now()}`,
       );
-      setSavedNotice(true);
+      const nextDesired =
+        'config_generation' in updated.data
+          ? updated.data.config_generation.desired
+          : (updated.data.desired_generation ?? node.config_generation.desired);
+      const nextApplied =
+        'config_generation' in updated.data
+          ? (updated.data.config_generation.applied ?? null)
+          : (node.config_generation.applied ?? null);
+      setSavedSnapshot({
+        desired: nextDesired,
+        applied: nextApplied,
+      });
+      if ('config_generation' in updated.data) {
+        queryClient.setQueryData(['admin', 'node', nodeId], {
+          data: updated.data,
+          etag: updated.etag,
+        });
+      }
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
     } catch (err) {
       if (err instanceof ApiError && err.status === 412) {
@@ -215,6 +235,7 @@ export function AdminNodeDetailPage(): React.ReactElement {
 
   const handleReloadConflict = async () => {
     setConflictError(null);
+    setSavedSnapshot(null);
     await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
   };
 
@@ -256,16 +277,16 @@ export function AdminNodeDetailPage(): React.ReactElement {
         }}
       />
 
-      {savedNotice && (
+      {savedSnapshot && (
         <div
           className="alert alert-info"
           role="status"
           data-testid="saved-pending-apply-banner"
         >
           <strong>{t('op.savedPendingApply')}</strong> — Desired config_generation:{' '}
-          <span className="mono">{node.config_generation.desired}</span> / Observed
+          <span className="mono">{savedSnapshot.desired}</span> / Observed
           applied_config_generation:{' '}
-          <span className="mono">{node.config_generation.applied ?? '-'}</span>
+          <span className="mono">{savedSnapshot.applied ?? '-'}</span>
         </div>
       )}
 

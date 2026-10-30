@@ -10,6 +10,7 @@ import {
   OFFLINE_NODE_ID,
   PRIMARY_DEVICE_ID,
   PRIMARY_ENROLLMENT_ID,
+  PRIMARY_FUP_DEFINITION_ID,
   PRIMARY_MEMBER_ID,
   PRIMARY_NODE_ID,
   SAFETY_FAILED_NODE_ID,
@@ -173,6 +174,20 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
       screen.getByTestId(`target-bucket-${SAFETY_FAILED_NODE_ID}`),
     ).toHaveTextContent('rolled_back');
 
+    // D-048 target policy evidence: reported target vs not-reported target
+    expect(screen.getByTestId(`target-policy-gen-${PRIMARY_NODE_ID}`)).toHaveTextContent(
+      '128',
+    );
+    expect(screen.getByTestId(`target-policy-refs-${PRIMARY_NODE_ID}`)).toHaveTextContent(
+      PRIMARY_FUP_DEFINITION_ID,
+    );
+    expect(screen.getByTestId(`target-policy-gen-${OFFLINE_NODE_ID}`)).toHaveTextContent(
+      '未回報 (not reported)',
+    );
+    expect(screen.getByTestId(`target-policy-refs-${OFFLINE_NODE_ID}`)).toHaveTextContent(
+      '未回報 (not reported)',
+    );
+
     // Run one-action Update All Nodes -> 202 accepted banner
     await user.click(screen.getByTestId('run-all-nodes-update-btn'));
     expect(await screen.findByTestId('update-batch-accepted-banner')).toBeInTheDocument();
@@ -319,9 +334,15 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     expect(await screen.findByTestId('member-exits-page')).toBeInTheDocument();
     expect(screen.getByTestId('manual-exit-selection-notice')).toBeInTheDocument();
 
-    // 4. AT02: Member Devices quota & self-service revoke
+    // 4. AT02: Member Devices quota & self-service revoke (and DOC12 Device ID column label)
     renderAt('/member/devices', 'member_active');
     expect(await screen.findByTestId('member-devices-page')).toBeInTheDocument();
+    expect(screen.getByTestId('member-devices-table')).toHaveTextContent(
+      '裝置識別碼 (Device ID)',
+    );
+    expect(screen.getByTestId('member-devices-table')).not.toHaveTextContent(
+      '分配位址 ／ Peer ID',
+    );
     expect(screen.getByTestId('device-quota-badge')).toHaveTextContent('2 / 3');
     await user.click(screen.getByTestId(`revoke-own-device-${PRIMARY_DEVICE_ID}`));
     expect(await screen.findByTestId('operation-banner')).toBeInTheDocument();
