@@ -40,7 +40,7 @@ func (s *Service) CreateGroupTx(ctx context.Context, tx pgx.Tx, principal string
 	actor, actorType, _ := ResolveAdminActor(ctx, principal)
 	event, err := audit.NewEvent(audit.Entry{
 		Actor:  audit.Actor{Type: api.AuditEventActorType(actorType), ID: actor},
-		Action: "group.create", Resource: api.ResourceRef{Type: api.ResourceType("member_group"), Id: id},
+		Action: "group.create", Resource: api.ResourceRef{Type: api.ResourceTypeMemberGroup, Id: id},
 		Result: api.AuditEventResultSucceeded, RequestID: requestID,
 		After: map[string]any{"code": body.Code, "name": body.Name}, Fields: []string{"code", "name"},
 	})

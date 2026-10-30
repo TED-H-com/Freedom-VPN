@@ -22,7 +22,9 @@ The following transitional 501 handlers are removed:
 | `enrollNode` | CSR proof, durable incarnation/certificate/provisioning operation; same proof returns the original certificate. |
 | `consumeAgentBootstrap` | Authenticated single delivery: 409 not ready, one 200, then 410 consumed; expired undelivered material returns 410 expired. |
 | `renewAgentCertificate` | New CSR and serial with bounded older-serial overlap; same renewal ID replays. |
-| `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. |
+| `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. Node detail projects current exit `group_ids`, reported DNS document evidence and check diagnostics. |
+| `createAdminGroup`, `listAdminGroups` | Immutable groups, unique code/name, exact code filtering and cursor pages; creation has an idempotent 201 receipt and `group.create` audit. |
+| `getResolverDocument` | mTLS node/current-incarnation issuance authorization, exact canonical bytes, digest ETag and a current/previous-generation window. Publisher and compiler integration status is described below. |
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
 | `setNodePublication` | All three intents use `exits.Service.SetPublicationTx` inside the HTTP command transaction; 202 returns the pending publication operation. |
 | `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
@@ -49,7 +51,7 @@ until the HTTP command commits; any command failure rolls back the lease,
 member grants, audit and HTTP key together. The contract renewal route is
 `POST /api/v1/agent/lease-renewals`.
 
-Every API response passes through `apierr`/response tracking and `no-store`.
+Every API response passes through `apierr`/response tracking. Secret responses use `no-store`; resolver documents use `private, max-age=0` as required by D-056.
 Certificate authentication uses the verified TLS certificate, current incarnation,
 certificate history, effective validity, and independent revocation journal.
 `X-Node-ID` and proxy certificate headers cannot select identity. The internal
@@ -273,6 +275,7 @@ is not a production HSM or independent anti-rollback appliance.
 | `authorization_seconds`, `online_seconds`, `stuck_seconds` | Explicit fleet authorization/online/watchdog windows. |
 | `reconcile_seconds`, `fetch_seconds`, `desired_state_seconds` | Explicit reconciliation, HTTP fetch and desired-envelope durations. |
 | `release_origins` | Exact HTTPS origins for immutable manifests/artifacts. |
+| `egress_probe` | Optional fleet-wide D-058 object: 1–4 unique literal-IP TCP targets (`address`, `port`, `protocol`), optional `timeout_ms` 100–10000 (contract default 2000). Absent by default. Compiler seam integration remains pending below. |
 | `dns_resolver_ipv4`, `dns_resolver_ipv6` | Fleet-wide designated resolver address arrays, validated by family; at least one address across the two arrays is required. No production default. |
 | `netbird_url`, `netbird_deployment`, `netbird_token_file` | Adapter `/api` HTTPS URL, deployment scope and bearer-token file. |
 
@@ -300,6 +303,7 @@ production settings.
   "release_origins": ["https://releases.example.invalid"],
   "dns_resolver_ipv4": ["100.64.0.53"],
   "dns_resolver_ipv6": ["2001:db8::53"],
+  "egress_probe": {"targets": [{"address": "192.0.2.80", "port": 443, "protocol": "tcp"}], "timeout_ms": 2000},
   "netbird_url": "https://netbird.example.invalid/api",
   "netbird_deployment": "test-deployment",
   "netbird_token_file": "/etc/fvpn-control/netbird-token"
@@ -381,3 +385,55 @@ signing boundary occurs before persistence: an unchanged document returns the
 existing envelope without another desired-state/audit write. A policy revision,
 DNS publication, FUP update or member suspension therefore cannot remain hidden
 behind an otherwise fresh ETag.
+
+## Resolver documents, group membership and observations (follow-up 11)
+
+D-057 group creation writes `member_groups`, the typed D-059 `group.create` audit
+(`member_group:<id>`) and the HTTP idempotency receipt in one transaction. Groups
+are immutable; both code and name are unique. Listing orders by code, binds the
+cursor to its exact code filter, and counts every attached exit, including exits
+that are unpublished or offline. Creation replay returns the original immutable
+201 body, including its initial zero exit count.
+
+`PublicationRequest.group_ids` is handled by `exits.SetPublicationTx` under its
+existing node/exit locks and `If-Match`. Omission preserves membership, an empty
+array clears it, and a nonempty array replaces it. Unknown IDs return 422 with
+`/group_ids` detail before writes. Membership, publication, the single generation
+and version advance, operation, outbox and audit commit together (§5.2, §15.3).
+Node detail exposes the same sorted membership in `group_ids` and the legacy
+`member_group_ids`.
+
+Observation payloads retain `dns_policy_evidence` and `NodeCheck.detail` without
+rewriting the immutable report. Node detail reads DNS evidence from the report
+selected by current-incarnation observed state in the same repeatable-read
+snapshot as the rest of the detail. A late old report does not replace evidence;
+a newer report with null or absent evidence reports null, never a newer desired
+policy or an inferred successful apply. Revision 5's NodeDetail schema allows
+this additive property; a typed generated `NodeDetail.dns_policy_evidence` member
+is requested from the contracts owner. Diagnostic producers remain responsible
+for bounded, redacted text (§13.9, SEC02).
+
+The resolver endpoint authorizes before consulting `nodes.ResolverDocumentSource`
+and treats unknown and unauthorized document IDs identically (404 `NOT_FOUND`).
+It validates the stored bytes against the issued reference (ID, profile revision,
+policy generation, SHA-256 and size), requires canonical JSON of at most 1 MiB,
+and writes those bytes without HTML escaping or a trailing newline. Responses
+carry `ETag: "sha256:<hex>"` and `Cache-Control: private, max-age=0`.
+`RecordIssuedResolverDocumentTx` records a typed, metadata-only issuance audit
+after confirming the reference exists in the persisted signed envelope; a lookup
+joins that record to immutable desired-state history and checks the current
+incarnation and current/immediately previous configuration generation. No profile
+list or document-existence inference is exposed to nodes.
+
+Integration boundary: `ResolveDocumentInputs` prepares nullable resolver and
+probe inputs, but the production desired-state compiler currently has no
+before-signing input or after-persistence hook. The patch and ownership request
+are in the follow-up report; the `egress_probe` setting is validated but is not
+yet emitted by that compiler. The DNS owner is adding read-only latest/by-ID
+document APIs; `ResolverDocumentSource` keeps this code independent of that
+implementation. Until those seams are merged and wired, newly compiled states
+have no resolver-document reference, so their fetches correctly return 404. The
+prepared input reader accepts a single active fleet DNS profile and fails closed
+on ambiguous multiple profiles; a per-node assignment rule needs an explicit
+contract before that restriction can be relaxed. No signed probe or successful
+resolver delivery is claimed by the current production composition.

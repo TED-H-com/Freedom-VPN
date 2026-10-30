@@ -14,20 +14,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func requireD059(t *testing.T) {
-	t.Helper()
-	if !api.ResourceType("member_group").Valid() {
-		t.Skip("D-059 contract ResourceType.member_group awaits contracts-r6; group creation audit deliberately fails closed")
-	}
-}
-
 func (f *fixture) group(code string) api.MemberGroup {
 	f.t.Helper()
 	return decode[api.MemberGroup](f.t, f.call("POST", "/api/v1/admin/groups", api.MemberGroupCreate{Code: code, Name: "TEST ONLY " + code}, nil, map[string]string{"Idempotency-Key": uuid.NewString()}), http.StatusCreated)
 }
 
 func TestD057_HTTPGroupsImmutablePagingReplayAndAudit(t *testing.T) {
-	requireD059(t)
 	f := setup(t)
 	alpha := f.group("alpha")
 	body := api.MemberGroupCreate{Code: "bravo", Name: "TEST ONLY bravo"}
@@ -60,7 +52,7 @@ func TestD057_HTTPGroupsImmutablePagingReplayAndAudit(t *testing.T) {
 	decode[api.ErrorEnvelope](t, f.call("GET", "/api/v1/admin/groups?code=bravo&cursor="+cursor, nil, nil, nil), http.StatusBadRequest)
 	decode[api.ErrorEnvelope](t, f.call("GET", "/api/v1/admin/groups?cursor=malformed", nil, nil, nil), http.StatusBadRequest)
 	store := &audit.Store{Pool: f.r.Pool}
-	resource := api.ResourceType("member_group")
+	resource := api.ResourceTypeMemberGroup
 	events, err := store.List(t.Context(), api.ListAuditEventsParams{ResourceType: &resource, ResourceId: &bravo.GroupId})
 	if err != nil || len(events.Items) != 1 || store.AnomalyCount() != 0 {
 		t.Fatalf("group audit: %+v %v", events, err)
@@ -72,7 +64,6 @@ func TestD057_HTTPGroupsImmutablePagingReplayAndAudit(t *testing.T) {
 }
 
 func TestD057_PublicationMembershipReplaceOmitEmptyAndRollback(t *testing.T) {
-	requireD059(t)
 	runtime, enrolled, report := nodestest.BaselineObservation(t, "../../../contracts/examples/valid/ObservationReport.json")
 	f := setupRuntime(t, runtime)
 	if _, err := runtime.Nodes.SubmitObservation(t.Context(), report.NodeId, report.NodeIncarnationId, report); err != nil {

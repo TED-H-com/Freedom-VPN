@@ -25,14 +25,15 @@ import (
 )
 
 type Runtime struct {
-	Pool       *pgxpool.Pool
-	PKI        *pki.Service
-	Enrollment *enrollment.Service
-	Nodes      *nodes.Service
-	Releases   *releases.Service
-	Fleet      *fleetupdate.Service
-	Provider   signing.Provider
-	Config     config.Nodes
+	ResolverDocuments nodes.ResolverDocumentSource
+	Pool              *pgxpool.Pool
+	PKI               *pki.Service
+	Enrollment        *enrollment.Service
+	Nodes             *nodes.Service
+	Releases          *releases.Service
+	Fleet             *fleetupdate.Service
+	Provider          signing.Provider
+	Config            config.Nodes
 }
 
 // Open builds services once from process-owned dependencies. It neither reads
