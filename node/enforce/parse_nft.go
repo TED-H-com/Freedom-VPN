@@ -13,10 +13,15 @@ import (
 
 // Ruleset is the part of an nft -j listing that verification inspects.
 type Ruleset struct {
-	Chains     map[string]ChainView
-	Counters   map[string]CounterValue
-	Sets       map[string]bool
-	Elements   map[string][]setElement
+	Chains   map[string]ChainView
+	Counters map[string]CounterValue
+	Sets     map[string]bool
+	Elements map[string][]setElement
+	// Tainted is true when a set contains an element this parser cannot
+	// accept as a timed host address: a prefix wider than /32, a port range,
+	// or any other shape. Verification fails closed on a tainted allow or
+	// probe set (§13.9).
+	Tainted    map[string]bool
 	Flowtables []string
 	Classes    map[uuid.UUID]uint16
 	Raw        string
@@ -60,12 +65,18 @@ type RuleView struct {
 // setElement is one element of an nft set. Bounded is false when the element
 // has no timeout and no expires value (§13.9).
 type setElement struct {
-	Addr    netip.Addr
-	Proto   string
-	Port    uint16
-	Concat  bool
+	Addr   netip.Addr
+	Proto  string
+	Port   uint16
+	Concat bool
+	// Bounded is false when the element has no timeout and no expires (§13.9).
+	// Seconds is max(timeout, expires). Remain is the smaller of the two when
+	// both are present, otherwise Seconds. Verification uses Seconds so a long
+	// expires cannot hide behind a short timeout. Render uses Remain so a
+	// re-render cannot extend the kernel lifetime.
 	Bounded bool
 	Seconds uint32
+	Remain  uint32
 }
 
 // ParseRuleset reads `nft -j list table inet fvpn`. Numbers above 2^53 stay
@@ -84,6 +95,7 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 		Counters: map[string]CounterValue{},
 		Sets:     map[string]bool{},
 		Elements: map[string][]setElement{},
+		Tainted:  map[string]bool{},
 		Raw:      string(raw),
 	}
 	for _, obj := range doc.Nftables {
@@ -186,9 +198,12 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 				continue
 			}
 			rs.Sets[s.Name] = true
-			elems, err := parseSetElems(s.Elem)
+			elems, tainted, err := parseSetElems(s.Elem)
 			if err != nil {
 				return Ruleset{}, fmt.Errorf("set %s: %w", s.Name, err)
+			}
+			if tainted {
+				rs.Tainted[s.Name] = true
 			}
 			if len(elems) > 0 {
 				rs.Elements[s.Name] = append(rs.Elements[s.Name], elems...)
@@ -223,7 +238,32 @@ func ParseState(raw []byte) (State, error) {
 	for name := range rs.Sets {
 		st.Sets[name] = true
 	}
+	st.ProbeRemain = probeSetRemain(rs)
 	return st, nil
+}
+
+// probeSetRemain is the shortest remaining probe-element lifetime already in
+// the kernel. Zero means the probe sets are absent, empty, or unreadable.
+func probeSetRemain(rs Ruleset) uint32 {
+	var remain uint32
+	for _, name := range []string{setProbeV4, setProbeDstV4} {
+		if rs.Tainted[name] {
+			continue
+		}
+		for _, el := range rs.Elements[name] {
+			r := el.Remain
+			if r == 0 {
+				r = el.Seconds
+			}
+			if r == 0 {
+				continue
+			}
+			if remain == 0 || r < remain {
+				remain = r
+			}
+		}
+	}
+	return remain
 }
 
 // classAssignments reads "fvpn_class=<uuid>:<minorhex>" from a rule comment.
@@ -563,31 +603,35 @@ func asUint(v any) (uint64, bool) {
 	}
 }
 
-func parseSetElems(raw json.RawMessage) ([]setElement, error) {
+func parseSetElems(raw json.RawMessage) ([]setElement, bool, error) {
 	if len(bytes.TrimSpace(raw)) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-		return nil, nil
+		return nil, false, nil
 	}
 	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.UseNumber()
 	var v any
 	if err := dec.Decode(&v); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	var out []setElement
+	tainted := false
+	note := func(item any) {
+		el, ok := parseOneElem(item)
+		if !ok {
+			tainted = true
+			return
+		}
+		out = append(out, el)
+	}
 	switch t := v.(type) {
 	case []any:
 		for _, item := range t {
-			el, ok := parseOneElem(item)
-			if ok {
-				out = append(out, el)
-			}
+			note(item)
 		}
 	default:
-		if el, ok := parseOneElem(t); ok {
-			out = append(out, el)
-		}
+		note(t)
 	}
-	return out, nil
+	return out, tainted, nil
 }
 
 func parseOneElem(item any) (setElement, bool) {
@@ -605,11 +649,11 @@ func parseOneElem(item any) (setElement, bool) {
 }
 
 func parseElemObject(m map[string]any) (setElement, bool) {
-	bounded, seconds := timeoutFromMap(m)
+	bounded, seconds, remain := timeoutFromMap(m)
 	val, ok := m["val"]
 	if !ok {
 		if _, has := m["concat"]; has {
-			return parseConcatVal(m, bounded, seconds)
+			return parseConcatVal(m, bounded, seconds, remain)
 		}
 		return setElement{}, false
 	}
@@ -621,21 +665,20 @@ func parseElemObject(m map[string]any) (setElement, bool) {
 		}
 		if bounded {
 			el.Bounded = true
-			if seconds > 0 {
-				el.Seconds = seconds
-			}
+			el.Seconds = seconds
+			el.Remain = remain
 		}
 		return el, true
 	case map[string]any:
-		return parseConcatVal(t, bounded, seconds)
+		return parseConcatVal(t, bounded, seconds, remain)
 	case []any:
-		return elemFromParts(stringParts(t), bounded, seconds)
+		return elemFromParts(stringParts(t), bounded, seconds, remain)
 	default:
 		return setElement{}, false
 	}
 }
 
-func parseConcatVal(m map[string]any, bounded bool, seconds uint32) (setElement, bool) {
+func parseConcatVal(m map[string]any, bounded bool, seconds, remain uint32) (setElement, bool) {
 	raw, ok := m["concat"]
 	if !ok {
 		return setElement{}, false
@@ -644,7 +687,7 @@ func parseConcatVal(m map[string]any, bounded bool, seconds uint32) (setElement,
 	if !ok {
 		return setElement{}, false
 	}
-	return elemFromParts(stringParts(arr), bounded, seconds)
+	return elemFromParts(stringParts(arr), bounded, seconds, remain)
 }
 
 func stringParts(arr []any) []string {
@@ -662,20 +705,36 @@ func stringParts(arr []any) []string {
 	return out
 }
 
-func timeoutFromMap(m map[string]any) (bool, uint32) {
-	var seconds uint32
-	bounded := false
-	if n, ok := asTimeout(m["timeout"]); ok && n > 0 {
-		bounded = true
-		seconds = n
+func timeoutFromMap(m map[string]any) (bool, uint32, uint32) {
+	timeout, hasT := asTimeout(m["timeout"])
+	expires, hasE := asTimeout(m["expires"])
+	if timeout == 0 {
+		hasT = false
 	}
-	if n, ok := asTimeout(m["expires"]); ok && n > 0 {
-		bounded = true
-		if seconds == 0 {
-			seconds = n
+	if expires == 0 {
+		hasE = false
+	}
+	return combineTimeout(hasT, timeout, hasE, expires)
+}
+
+// combineTimeout reports max(timeout, expires) as seconds and the tighter of
+// the two as remain. A single positive value is both.
+func combineTimeout(hasT bool, timeout uint32, hasE bool, expires uint32) (bool, uint32, uint32) {
+	if !hasT && !hasE {
+		return false, 0, 0
+	}
+	seconds := timeout
+	if expires > seconds {
+		seconds = expires
+	}
+	remain := seconds
+	if hasT && hasE {
+		remain = timeout
+		if expires < remain {
+			remain = expires
 		}
 	}
-	return bounded, seconds
+	return true, seconds, remain
 }
 
 func asTimeout(v any) (uint32, bool) {
@@ -697,15 +756,15 @@ func asTimeout(v any) (uint32, bool) {
 }
 
 func parseElemString(s string) (setElement, bool) {
-	bounded := false
-	var seconds uint32
+	var timeout, expires uint32
+	hasT, hasE := false, false
 	if i := strings.Index(s, "timeout"); i >= 0 {
 		rest := strings.TrimSpace(s[i+len("timeout"):])
 		fields := strings.Fields(rest)
 		if len(fields) > 0 {
 			if n, ok := parseSeconds(fields[0]); ok && n > 0 {
-				bounded = true
-				seconds = n
+				hasT = true
+				timeout = n
 			}
 		}
 		s = strings.TrimSpace(s[:i])
@@ -715,15 +774,14 @@ func parseElemString(s string) (setElement, bool) {
 		fields := strings.Fields(rest)
 		if len(fields) > 0 {
 			if n, ok := parseSeconds(fields[0]); ok && n > 0 {
-				bounded = true
-				if seconds == 0 {
-					seconds = n
-				}
+				hasE = true
+				expires = n
 			}
 		}
 		s = strings.TrimSpace(s[:i])
 	}
-	return elemFromParts(splitConcat(s), bounded, seconds)
+	bounded, seconds, remain := combineTimeout(hasT, timeout, hasE, expires)
+	return elemFromParts(splitConcat(s), bounded, seconds, remain)
 }
 
 func splitConcat(s string) []string {
@@ -738,14 +796,16 @@ func splitConcat(s string) []string {
 	return out
 }
 
-func elemFromParts(parts []string, bounded bool, seconds uint32) (setElement, bool) {
+func elemFromParts(parts []string, bounded bool, seconds, remain uint32) (setElement, bool) {
 	if len(parts) == 0 {
 		return setElement{}, false
 	}
 	addr, err := netip.ParseAddr(parts[0])
 	if err != nil {
 		p, err2 := netip.ParsePrefix(parts[0])
-		if err2 != nil || !p.IsValid() {
+		// A CIDR string is a host element only when it is a single address.
+		// Anything wider fails the set check (§13.9).
+		if err2 != nil || !p.IsValid() || !p.IsSingleIP() {
 			return setElement{}, false
 		}
 		addr = p.Addr()
@@ -753,7 +813,7 @@ func elemFromParts(parts []string, bounded bool, seconds uint32) (setElement, bo
 	if !addr.Is4() {
 		return setElement{}, false
 	}
-	el := setElement{Addr: addr, Bounded: bounded, Seconds: seconds}
+	el := setElement{Addr: addr, Bounded: bounded, Seconds: seconds, Remain: remain}
 	if len(parts) == 1 {
 		return el, true
 	}

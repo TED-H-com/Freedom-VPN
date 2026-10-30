@@ -18,18 +18,22 @@
 // one epoch when the numbers did not move.
 //
 // A synthetic probe (§13.9, D-063) is an optional Model.Probe. Render and
-// RenderBaseline admit only that peer's /32, for the listed destination
-// sockets and, when ResolverDNS is set, TCP/UDP port 53 to the model's
-// resolvers. The upload tuple sits behind the invalid, IPv6, deny, and host
-// drops and before any member accept. Resolver DNS is the same early hole as
-// member DNS, because the resolver prefix is inside the deny set, and a drop
-// of every other port to that set follows it. The download accept is
-// established,related back to the probe /32. Both sets carry the kernel
-// timeout from ExpiresAt, at most ProbeMaxSeconds. Apply and
-// ApplyBaselineModel remove the exception when Probe is nil; there is no
-// separate withdraw call. ApplyBaseline is that path with a nil probe, which
-// is what the agent and the watchdog call, including after a failed serving
-// apply. probe_up and probe_down are diagnostic_v1 and are not member usage.
-// The caller authenticates the test peer before it puts the address in
-// SourceV4.
+// RenderBaseline admit only that peer's /32, for at most ProbeMaxDestinations
+// exact sockets that do not overlap a member binding, and, when ResolverDNS
+// is set, TCP/UDP port 53 to the model's resolvers. The upload tuple sits
+// behind the invalid, IPv6, deny, and host drops and before any member accept.
+// Resolver DNS is the same early hole as member DNS, because the resolver
+// prefix is inside the deny set, and a drop of every other port to that set
+// follows it. The download accept is established,related back to the probe
+// /32. Both sets carry the kernel timeout from ExpiresAt, at most
+// ProbeMaxSeconds. TimeoutCeilSeconds and the remaining lifetime already in
+// State cap a re-render so a live set is not given a fresh full window.
+// Verify rejects a prefix wider than /32, an element it cannot parse, and a
+// timeout or expires longer than that window, as ReasonProbeUnbounded.
+// Apply and ApplyBaselineModel remove the exception when Probe is nil; there
+// is no separate withdraw call. ApplyBaseline is that path with a nil probe,
+// which is what the agent and the watchdog call, including after a failed
+// serving apply. probe_up and probe_down are diagnostic_v1 and are not member
+// usage. The caller authenticates the test peer before it puts the address
+// in SourceV4.
 package enforce
