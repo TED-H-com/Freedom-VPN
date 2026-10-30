@@ -40,6 +40,8 @@ func main() {
 		err = renderCmd(os.Args[2:])
 	case "meter-path":
 		err = meterPathCmd(os.Args[2:])
+	case "inject":
+		err = injectCmd(os.Args[2:])
 	default:
 		usage()
 		os.Exit(1)
@@ -56,7 +58,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab apply|baseline|verify|counters|hold|render|meter-path\n")
+	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab apply|baseline|verify|counters|hold|render|meter-path|inject\n")
 }
 
 func applyCmd(args []string) error {
