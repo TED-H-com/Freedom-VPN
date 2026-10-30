@@ -53,9 +53,27 @@ serving heartbeat before checking recovery.
 The finite-member expiry case checks the actual signed member deadline, then
 stops both control and worker before it. This preserves the advertised route
 while testing local expiry, with five post-deadline ingress captures and frozen
-admission bytes. Both services are restarted afterward. Whole-node short-lease
-expiry requires the D-065 fleet API handler; the contract-only stub is recorded
-as blocked. No host clock is changed.
+admission bytes. Both services are restarted afterward.
+
+Whole-node expiry then `PUT`s `/api/v1/admin/fleet-config` to
+`max_offline_lease_seconds=60` with reason
+`TEST ONLY: AT13 whole-node expiry (isolation follow-up 3)`, using the strong
+ETag, `If-Match` and `Idempotency-Key`. A capacity patch, the same desired-state
+change the harness already makes, forces a renewal. The node must hold a 60s
+lease with member grants. Control and worker are stopped before the renewal
+lead. The node must keep forwarding until that signed deadline and return to
+the baseline within one configured agent tick after it: ingress on `fvmb0`,
+nothing on the uplink, admission counters flat. After control answers,
+`86400` is restored with reason
+`TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 3)`.
+Both `fleet_config.update` audit events are recorded. No host clock is changed.
+No `fleet_config` row is written except through that API.
+
+From publication until the first counted member byte, the runner samples
+desired and applied generations, lease grant counts, observation block reasons
+and the forward chain. The samples are `convergence-timeline.json`. The live
+AT13 record repeats the SHA256 of `capture.go` concatenated with
+`capture_review_test.go`; the singular/plural parser from follow-up 2 stays.
 
 `AT*.json` are authoritative product records; `lab-AT*.json` and their sibling
 captures/matrices are mechanism records. Each has a source hash, run ID, image
