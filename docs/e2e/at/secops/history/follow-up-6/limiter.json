@@ -1,0 +1,2160 @@
+{
+  "schema_version": 1,
+  "follow_up": 6,
+  "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+  "started_at": "2026-10-30T17:03:09Z",
+  "finished_at": "2026-10-30T17:28:30Z",
+  "hardware": "shared development host, not candidate hardware",
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "50m",
+      "-run",
+      "^TestAT28_AT31_Followup6$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "50m",
+      "-run",
+      "^TestAT28_AT31_Followup6$",
+      "./tests/e2e/at/secops"
+    ]
+  ],
+  "runs": {
+    "profile": {
+      "run_id": "89054df3-0973-4448-9065-5f1266d0558b",
+      "started_at": "2026-10-30T17:03:40.947704857Z",
+      "finished_at": "2026-10-30T17:19:41.891010532Z",
+      "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+      "probe_source_sha256": "d83cdbffbf8eee7833280a3f8f75dd445e8eb522d29eb466d8462bc541100394",
+      "policy_revision": "01a18dc4-6636-7311-96df-429b3ea651d8",
+      "node_incarnation": null,
+      "image_digests": [
+        {
+          "image_id": "sha256:666b159242219e77b2d7ab4d606254c2529dc9f9ba310eebda8fdb28e19822e5",
+          "service": "postgres"
+        },
+        {
+          "image_id": "sha256:355f0de1b0b2f7b9d675391fa173e9e320be2241e4de5187a7401c6ffc35fecb",
+          "service": "idp"
+        },
+        {
+          "image_id": "sha256:eaaff387083a80f2eb638ec8e90d3b6f3676b9490529e70f24e68dbf990c8814",
+          "service": "payment"
+        },
+        {
+          "image_id": "sha256:17bc1751939087ba90ce400acaa4564a2a02eeaea448e2d8a4b2fb174534ad66",
+          "service": "origin"
+        },
+        {
+          "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+          "service": "netbird"
+        },
+        {
+          "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+          "service": "gateway"
+        },
+        {
+          "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+          "service": "coredns"
+        },
+        {
+          "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+          "service": "adguard"
+        },
+        {
+          "image_id": "sha256:13e9ad3c8c6bfab02d0e114c81ecf5cc130647495abd016997a648150fa81251",
+          "service": "control"
+        },
+        {
+          "image_id": "sha256:f85ba9a01c94dab0f2fd63dc6813c8adfc2a2912cbd2415a66ca64afad1aed37",
+          "service": "worker"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "node-netns"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "node"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u19-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u19-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u19-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u18-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u18-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u18-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u17-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u17-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u17-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u16-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u16-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u16-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u15-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u15-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u15-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u14-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u14-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u14-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u13-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u13-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u13-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u12-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u12-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u12-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u11-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u11-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u11-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u10-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u10-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u10-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u09-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u09-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u09-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u08-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u08-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u08-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u07-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u07-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u07-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u06-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u06-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u06-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u05-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u05-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u05-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u04-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u04-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u04-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u03-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u03-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u03-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u02-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u02-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u02-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u01-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u01-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u01-p1"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u00-p3"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u00-p2"
+        },
+        {
+          "image_id": "sha256:b82b807d9fef7c3b1313db9f36c1308817faae0c1e6cfacca71ae45c84239308",
+          "service": "member-secops-u00-p1"
+        }
+      ]
+    },
+    "helper": {
+      "run_id": "6bfaca25-e5a6-4fcb-8dfa-ad1e918cb546",
+      "started_at": "2026-10-30T17:20:58.987373081Z",
+      "finished_at": "2026-10-30T17:27:37.768373964Z",
+      "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+      "probe_source_sha256": "9d3b4f4bcf9bec21f3726b75720f9cc6dac8bd4d35535158524ee5ea11b7ce24",
+      "policy_revision": "01a18dd4-3d60-7904-afbd-5c76ccfde003",
+      "node_incarnation": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+      "image_digests": [
+        {
+          "image_id": "sha256:7ec95f1bb6c481f02fcab076f80abef730b34cc3eed20c1905b63f5f727eaee1",
+          "service": "postgres"
+        },
+        {
+          "image_id": "sha256:574a3c32b652071a679f0e31d5523732409936bdf18e6c58294456c2be560cf1",
+          "service": "idp"
+        },
+        {
+          "image_id": "sha256:36eaa67b92da3d5b03cfad80d9ac52f83f182c69b29c3665b41f3e67f3d5e43b",
+          "service": "payment"
+        },
+        {
+          "image_id": "sha256:25a9cf9d880adb64e84d5c60ebc3516972ac281be050c21a87ac9647562da6cf",
+          "service": "origin"
+        },
+        {
+          "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+          "service": "netbird"
+        },
+        {
+          "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+          "service": "gateway"
+        },
+        {
+          "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+          "service": "coredns"
+        },
+        {
+          "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+          "service": "adguard"
+        },
+        {
+          "image_id": "sha256:35bac72bf3dfa4ad402641b63b963764e66cf68fcdedd0a86176666ff4f3271e",
+          "service": "control"
+        },
+        {
+          "image_id": "sha256:2cd25e7ca47028387cc647a27c9cfca717f48b3db087a7239b5eb858f8291b34",
+          "service": "worker"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "node-netns"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "node"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u20-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u20-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u20-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u19-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u19-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u19-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u18-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u18-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u18-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u17-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u17-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u17-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u16-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u16-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u16-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u15-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u15-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u15-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u14-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u14-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u14-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u13-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u13-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u13-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u12-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u12-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u12-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u11-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u11-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u11-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u10-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u10-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u10-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u09-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u09-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u09-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u08-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u08-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u08-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u07-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u07-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u07-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u06-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u06-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u06-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u05-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u05-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u05-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u04-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u04-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u04-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u03-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u03-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u03-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u02-p3"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u02-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u02-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u01-p1"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u01-p2"
+        },
+        {
+          "image_id": "sha256:33e80dc273fe05482e6376523b572ee86b635d195040ad5d11aba342999c4829",
+          "service": "member-secops6-u01-p3"
+        }
+      ]
+    }
+  },
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
+      "sha256": "d6ff489ab36ccb649597bbd2fdd38195d5bc1ed51dbf80a78693577261773213"
+    },
+    {
+      "arch": "arm64",
+      "kind": "final compiled acceptance test binary; per-phase executed probe source hash remains separate",
+      "sha256": "7d05ae15973b4ce8ba8dea8657b66dc21955cebd8353f79ff9fb97e3665deb67"
+    }
+  ],
+  "id": "AT28-f17",
+  "status": "passed",
+  "expected": "Anonymous saturation leaves admin and certified lease unaffected; usage cap remains 8 MiB and duplicate row count one",
+  "actual": {
+    "anonymous_isolation": {
+      "checks": [
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 0,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T17:26:57.585105222Z"
+        },
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 40,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T17:26:57.664188966Z"
+        },
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 80,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T17:26:57.706964796Z"
+        },
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 120,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T17:26:57.748486565Z"
+        }
+      ],
+      "elapsed_seconds": 0.121802574,
+      "expected": "anonymous429 while admin200 and certified lease200",
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110
+      },
+      "metrics_before": {},
+      "requests": [
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 1,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 2,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 3,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 4,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 5,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 6,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 7,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 8,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 9,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 10,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 11,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 12,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 13,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 14,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 15,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 16,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 17,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 18,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 19,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 20,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 21,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 22,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 23,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 24,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 25,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 26,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 27,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 28,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 29,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 30,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 31,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 32,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 33,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 34,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 35,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 36,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 37,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 38,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 39,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 40,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 41,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 42,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 43,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 44,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 45,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 46,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 47,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 48,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 49,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 50,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 51,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 52,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 53,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 54,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 55,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 56,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 57,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 58,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 59,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 60,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 61,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 62,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 63,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 64,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 65,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 66,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 67,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 68,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 69,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 70,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 71,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 72,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 73,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 74,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 75,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 76,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 77,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 78,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 79,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 80,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 81,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 82,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 83,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 84,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 85,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 86,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 87,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 88,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 89,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 90,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 91,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 92,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 93,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 94,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 95,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 96,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 97,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 98,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 99,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 100,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 101,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 102,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 103,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 104,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 105,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 106,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 107,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 108,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 109,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 110,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 111,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 112,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 113,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 114,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 115,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 116,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 117,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 118,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 119,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 120,
+          "retry_after": "1",
+          "status": 429
+        }
+      ],
+      "scope": "single-address 120-request anonymous saturation; not a 10000-principal IPv6 table-fill test",
+      "source": "one actual connection address; headers do not manufacture principals"
+    },
+    "rate_classes": {
+      "anonymous_shared": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.01277235,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 113,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 112,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 1,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:28.206518219Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 2,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:28.207587552Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 3,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:28.208724684Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 4,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:28.209912017Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 5,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:28.211041767Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 6,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:28.212156936Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 7,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:28.213267667Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 8,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:28.214424226Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 9,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:28.215492147Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 10,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:28.216685676Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T17:27:28.217631797Z"
+          }
+        ]
+      },
+      "enrollment": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.011960117,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 111,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 1,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.019214514Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 2,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.020210366Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 3,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.021191268Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 4,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.022088736Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 5,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.022990759Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 6,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.02387572Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 7,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.025170257Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 8,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.026118385Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 9,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.027164347Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 10,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:16.028250126Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T17:27:16.029405045Z"
+          }
+        ]
+      },
+      "heartbeat": {
+        "actual_first_rejection": 6,
+        "elapsed_seconds": 0.003893528,
+        "expected_first_rejection": 6,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 1,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:03.835709107Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 2,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:03.836799984Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 3,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:03.837222986Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 4,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:03.837576826Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 5,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T17:27:03.837909237Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 6,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T17:27:03.838260707Z"
+          }
+        ]
+      },
+      "ipv6": {
+        "lab_network_ipv6": "false",
+        "network_read_ok": true,
+        "reason": "This live transport dials assigned IPv4 loopback ports. No IPv6-origin experiment or host/network changes; owner component tests cover /64 and invalid RemoteAddr.",
+        "status": "needs operator run"
+      },
+      "lease": {
+        "actual_first_rejection": 6,
+        "elapsed_seconds": 0.015594199,
+        "expected_first_rejection": 6,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 110,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "",
+            "index": 1,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:09.927825435Z"
+          },
+          {
+            "code": "",
+            "index": 2,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:09.929557397Z"
+          },
+          {
+            "code": "",
+            "index": 3,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:09.930937708Z"
+          },
+          {
+            "code": "",
+            "index": 4,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:09.932015515Z"
+          },
+          {
+            "code": "",
+            "index": 5,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:09.933046171Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 6,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T17:27:09.933302411Z"
+          }
+        ]
+      },
+      "ledger": {
+        "actual_rows": 1,
+        "expected_rows": 1,
+        "kernel_flow": false,
+        "read_ok": true,
+        "synthetic": true
+      },
+      "observation_payload": "{} deliberately schema-invalid: no projected observation rows written",
+      "settings": "unmodified D-060 defaults after #145; ingress 20/s burst60 per class/address; heartbeat and lease 1/s burst5; usage and anonymous 2/s burst10",
+      "source": "one host transport address; node B certificate; real agent uses node A identity",
+      "usage": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.246030256,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 113,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 113,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "",
+            "index": 1,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.532488746Z"
+          },
+          {
+            "code": "",
+            "index": 2,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.536679877Z"
+          },
+          {
+            "code": "",
+            "index": 3,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.540092063Z"
+          },
+          {
+            "code": "",
+            "index": 4,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.542536172Z"
+          },
+          {
+            "code": "",
+            "index": 5,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.545498052Z"
+          },
+          {
+            "code": "",
+            "index": 6,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.548782493Z"
+          },
+          {
+            "code": "",
+            "index": 7,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.55157893Z"
+          },
+          {
+            "code": "",
+            "index": 8,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.554967522Z"
+          },
+          {
+            "code": "",
+            "index": 9,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.557939991Z"
+          },
+          {
+            "code": "",
+            "index": 10,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T17:27:34.561335286Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T17:27:34.561690377Z"
+          }
+        ]
+      },
+      "usage_acknowledgements": [
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.317434698Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "accepted"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.534027024Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.537314723Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.540465818Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.542954264Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.546075074Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.549162211Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.551958407Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.55542832Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "4bd450f1-6fa7-4e7e-8b32-7601cb8cc8f5",
+          "node_id": "01a18dd9-9d7c-7a97-8929-f8701845bd9a",
+          "node_incarnation_id": "4ba3b1fb-9f53-4aec-aeaa-fd3dcb7fed74",
+          "received_at": "2026-10-30T17:27:34.558345997Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        }
+      ],
+      "usage_body_limits": [
+        {
+          "actual_status": 200,
+          "bytes": 8388607,
+          "code": "",
+          "expected_status": 200,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": true,
+          "valid_json": true
+        },
+        {
+          "actual_status": 200,
+          "bytes": 8388608,
+          "code": "",
+          "expected_status": 200,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": true,
+          "valid_json": true
+        },
+        {
+          "actual_status": 413,
+          "bytes": 8388609,
+          "code": "PAYLOAD_TOO_LARGE",
+          "expected_status": 413,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": true,
+          "valid_json": true
+        }
+      ],
+      "webhook": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.01335715,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 112,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 111,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 1,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.105977697Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 2,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.107440093Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 3,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.108379849Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 4,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.109683936Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 5,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.110684767Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 6,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.11185831Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 7,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.112963626Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 8,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.114067984Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 9,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.115622582Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 10,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T17:27:22.116732742Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T17:27:22.117450349Z"
+          }
+        ]
+      }
+    },
+    "trusted_proxy": {
+      "owner": "w2-control-core follow-up 18",
+      "reason": "not merged on measured source; no principal claim from forwarded headers",
+      "status": "blocked"
+    }
+  }
+}

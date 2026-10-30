@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,6 +30,10 @@ type Observation struct {
 // catalogue requires: build, image digests, policy revision, incarnation,
 // UTC time, expected, actual, and the commands that produced it.
 type Record struct {
+	RunID           string        `json:"run_id,omitempty"`
+	StartedAt       string        `json:"started_at,omitempty"`
+	SourceDirty     bool          `json:"source_dirty"`
+	Checks          []Check       `json:"checks,omitempty"`
 	ID              string        `json:"id"`
 	Title           string        `json:"title"`
 	Spec            []string      `json:"spec"`
@@ -42,6 +47,60 @@ type Record struct {
 	Actual          string        `json:"actual"`
 	Commands        []string      `json:"commands"`
 	Observations    []Observation `json:"observations"`
+}
+
+type Positive struct {
+	DeviceID     string        `json:"device_id"`
+	Container    string        `json:"container"`
+	At           string        `json:"at"`
+	Counted      bool          `json:"counted"`
+	Before       string        `json:"admission_bytes_before"`
+	After        string        `json:"admission_bytes_after"`
+	Observations []Observation `json:"observations"`
+}
+
+func (p Positive) Valid() bool {
+	before, e1 := strconv.ParseUint(p.Before, 10, 64)
+	after, e2 := strconv.ParseUint(p.After, 10, 64)
+	return p.Counted && p.DeviceID != "" && e1 == nil && e2 == nil && after > before
+}
+
+type Check struct {
+	Name         string        `json:"name"`
+	Status       string        `json:"status"`
+	At           string        `json:"at"`
+	Actual       string        `json:"actual"`
+	Owner        string        `json:"owner,omitempty"`
+	Positive     Positive      `json:"positive_control"`
+	Observations []Observation `json:"observations,omitempty"`
+}
+
+// A disconnected client cannot prove a negative. Failure remains explicit only
+// when the same client's counted origin control was observed in this record.
+func NegativeStatus(positive Positive, ran, denied bool) string {
+	if !positive.Valid() || !ran {
+		return StatusBlocked
+	}
+	if !denied {
+		return StatusFail
+	}
+	return StatusPass
+}
+
+func ChecksStatus(checks []Check) string {
+	status := StatusPass
+	if len(checks) == 0 {
+		return StatusBlocked
+	}
+	for _, c := range checks {
+		if c.Status == StatusFail && c.Positive.Valid() {
+			return StatusFail
+		}
+		if c.Status != StatusPass || !c.Positive.Valid() {
+			status = StatusBlocked
+		}
+	}
+	return status
 }
 
 func mustCompile(parts ...string) *regexp.Regexp {
@@ -76,6 +135,15 @@ func Write(dir string, rec Record) error {
 	if rec.At == "" {
 		rec.At = time.Now().UTC().Format(time.RFC3339)
 	}
+	for i := range rec.Checks {
+		c := &rec.Checks[i]
+		c.Actual, c.Owner = Redact(c.Actual), Redact(c.Owner)
+		for _, observations := range [][]Observation{c.Observations, c.Positive.Observations} {
+			for j := range observations {
+				observations[j].Detail = Redact(observations[j].Detail)
+			}
+		}
+	}
 	rec.Title = Redact(rec.Title)
 	rec.Expected = Redact(rec.Expected)
 	rec.Actual = Redact(rec.Actual)
@@ -108,6 +176,9 @@ func Write(dir string, rec Record) error {
 	b.WriteString("# " + rec.ID + "\n\n")
 	b.WriteString(rec.Title + "\n\n")
 	b.WriteString("Status: " + rec.Status + "\n\n")
+	if rec.RunID != "" {
+		b.WriteString("Run: " + rec.RunID + "; started UTC: " + rec.StartedAt + "; source dirty: " + strconv.FormatBool(rec.SourceDirty) + "\n\n")
+	}
 	if len(rec.Spec) > 0 {
 		b.WriteString("Spec: " + strings.Join(rec.Spec, ", ") + "\n\n")
 	}
@@ -135,8 +206,18 @@ func Write(dir string, rec Record) error {
 	for _, ob := range rec.Observations {
 		b.WriteString("- " + ob.Name + ": " + ob.Detail + "\n")
 	}
+	if len(rec.Checks) > 0 {
+		b.WriteString("\nChecks (full positive controls and observations in JSON):\n\n")
+		for _, c := range rec.Checks {
+			b.WriteString("- " + c.Name + ": " + c.Status + "; " + c.Actual + "; counted positive=" + strconv.FormatBool(c.Positive.Valid()) + "\n")
+		}
+	}
 	b.WriteString("\n")
-	return os.WriteFile(base+".md", []byte(strings.TrimRight(b.String(), "\n")+"\n"), 0o644)
+	lines := strings.Split(strings.TrimRight(b.String(), "\n"), "\n")
+	for i := range lines {
+		lines[i] = strings.TrimRight(lines[i], " \t")
+	}
+	return os.WriteFile(base+".md", []byte(strings.Join(lines, "\n")+"\n"), 0o644)
 }
 
 // WriteExtra stores a redacted sibling of a record, such as a ruleset or a

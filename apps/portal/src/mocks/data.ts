@@ -15,6 +15,8 @@ import enrollmentCreatedJson from '../../../../contracts/examples/valid/Enrollme
 import enrollmentCreatedReplayJson from '../../../../contracts/examples/valid/EnrollmentCreated.replay.json';
 import errorEnvelopeJson from '../../../../contracts/examples/valid/ErrorEnvelope.json';
 import errorEnvelopeValidationJson from '../../../../contracts/examples/valid/ErrorEnvelope.validation.json';
+import fleetConfigJson from '../../../../contracts/examples/valid/FleetConfig.json';
+import fleetConfigUpdateJson from '../../../../contracts/examples/valid/FleetConfigUpdate.json';
 import memberDetailJson from '../../../../contracts/examples/valid/MemberDetail.json';
 import memberDeviceListJson from '../../../../contracts/examples/valid/MemberDeviceList.json';
 import memberExitListJson from '../../../../contracts/examples/valid/MemberExitList.json';
@@ -51,6 +53,8 @@ import type {
   DnsPolicyEvidence,
   EnrollmentCreateResponse,
   EnrollmentRecord,
+  FleetConfig,
+  FleetConfigUpdate,
   MemberDetail,
   MemberDeviceListResponse,
   MemberExitListResponse,
@@ -87,6 +91,8 @@ export const CONTRACT_EXAMPLES_USED_BY_MOCKS = {
     enrollmentCreatedReplayJson as unknown as EnrollmentCreateResponse,
   ErrorEnvelope: errorEnvelopeJson as unknown as ApiErrorEnvelope,
   ErrorEnvelopeValidation: errorEnvelopeValidationJson as unknown as ApiErrorEnvelope,
+  FleetConfig: fleetConfigJson as unknown as FleetConfig,
+  FleetConfigUpdate: fleetConfigUpdateJson as unknown as FleetConfigUpdate,
   MemberDetail: memberDetailJson as unknown as MemberDetail,
   MemberDeviceList: memberDeviceListJson as unknown as MemberDeviceListResponse,
   MemberExitList: memberExitListJson as unknown as MemberExitListResponse,
@@ -740,6 +746,7 @@ export interface MockState {
   forceSession401: boolean;
   nodes: Record<string, NodeDetail>;
   groups: MemberGroup[];
+  fleetConfig: FleetConfig;
   enrollments: Record<string, EnrollmentRecord>;
   releaseList: ReleaseListResponse;
   updateBatch: UpdateBatchDetail;
@@ -774,6 +781,7 @@ export function createInitialMockState(persona: MockPersona = 'admin'): MockStat
         exit_count: 0,
       },
     ],
+    fleetConfig: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.FleetConfig),
     enrollments: {
       [PRIMARY_ENROLLMENT_ID]: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.Enrollment),
     },

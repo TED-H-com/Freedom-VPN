@@ -155,3 +155,21 @@ from the first pending failure's effect on delivery in the final run.
 The unpublished node's original unconditional health-adapter blocker is resolved
 by D-053. The remaining requests concern real observation and result delivery;
 no `node/updater`, agent, central service or contract file was modified here.
+
+## Follow-up 6 mapping
+
+Run `a83d5d64-505c-488c-b560-5a777566702e`, source `1c8997d91a2c57a445fd25c62a0e4561fe5e6e8f`, evidence `2026-10-30T17:10:45Z`. Prefix `w4-updates`, port base 42000.
+
+Fresh case c now passes (F5-01 resolved). Original AT23–AT27 scenarios and follow-up 4 extensions pass. Extended AT23/AT25 remain blocked on shared probe setup (F5-02 reopened); AT24/AT27 on the requested recorded c2/c3 expectations (F6-02). AT26 passes. Make exit 2. See [current summary](summary.md), [raw pre-result evidence](pre-result.json), [probe evidence](probe-issuance.json), and [requests](requests.md).
+
+## Follow-up 7 mapping
+
+Run `71078ab8-edf8-4d23-af72-ea247f704011`, source `c8d4a00cf1bf594b20016263c2cfc3c164d92bc9`, evidence `2026-10-30T18:09:36Z`. Prefix `w4-updates`, port base 42000.
+
+AT24/AT26/AT27 pass under the restated accepted-result authority criteria. AT24 includes offline catch-up and a real post-batch node's own completed first_sync job. AT23/AT25 retain follow-up 6 blocked evidence for F5-02. F6-02 is resolved (#186). Make exit 2. See [follow-up 7 history](history/follow-up-7/README.md).
+
+## Follow-up 8 mapping
+
+Run `71f2aa37-b0b9-4568-abe0-2ba7665377e4`, source `bc93ce430ebe8a50e5dfdaf4121352047fe89249` (on `main` `52dc77026cb168df5684ae2ccd5cbcadb4dbaeff`), evidence `2026-10-30T20:59:15Z`. Prefix `w4-updates`, port base 42000.
+
+All five scenarios (`AT23`–`AT27`) execute in one live run and **pass** (make exit **0**). F5-02 is closed by the exported updater probe peer (#204): AT23 verifies D-063 issuance (`configured_probe_issued=true`, 0 omissions) and D-064 bounded exception traversal (`verified=true`, 14 authenticated UDP replies, 0 elements after); AT25 verifies pre-health byte-tamper rejection (`HASH_MISMATCH`, 0 challenges, 0 grant samples) and records that probe scope does not apply to an archive that never passes preflight. D-068 (#189) policy quotes and line citations are aligned with `docs/updates/central-lifecycle.md:425-506`. See [summary](summary.md), [probe issuance](probe-issuance.md), [pre-result](pre-result.md), [inheritance](inheritance.md), [RUN](RUN.md), and [requests](requests.md).

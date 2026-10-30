@@ -394,6 +394,8 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 	bump := s.bump
 	delta := s.genDelta
 	force := s.forceGen
+	leaseGen := s.leaseGen
+	grantsReady := s.grantsReady
 	s.mu.Unlock()
 	if maxOff < 60 {
 		maxOff = 60
@@ -422,7 +424,7 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 	seen := map[uuid.UUID]bool{}
 	var members []api.MemberLease
 	for _, b := range f.Bindings {
-		if seen[b.MemberId] {
+		if !grantsReady || seen[b.MemberId] {
 			continue
 		}
 		seen[b.MemberId] = true
@@ -449,6 +451,9 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 		members = []api.MemberLease{}
 	}
 	gen := configGeneration(f.Generation, bump, delta, force)
+	if leaseGen > 0 {
+		gen = leaseGen
+	}
 	lease := api.ServingLease{
 		AuthorizationGeneration: 1,
 		ConfigGeneration:        decstr.U64(gen),

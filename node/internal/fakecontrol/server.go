@@ -73,11 +73,18 @@ type Server struct {
 	leaseID   string
 	recID     string
 
-	tokens        map[string]*enrolled
-	revoked       map[uuid.UUID]bool
-	fixture       Fixture
-	genDelta      int64
-	forceGen      uint64
+	tokens   map[string]*enrolled
+	revoked  map[uuid.UUID]bool
+	fixture  Fixture
+	genDelta int64
+	forceGen uint64
+	// leaseGen, when non-zero, is signed into the lease only. Desired state
+	// keeps configGeneration. TEST ONLY, for a stale-generation lease.
+	leaseGen uint64
+	// grantsReady is false while the node is not ready. Renewals then omit
+	// member grants the way RenewTx does when includeMembers is false.
+	// TEST ONLY. The default is ready.
+	grantsReady   bool
 	corrupt       bool
 	wrongNode     bool
 	wrongInc      bool
@@ -218,6 +225,7 @@ func Start() (*Server, error) {
 		bootMode: "ready", bootKey: "test-only-setup-key", bootExt: "test-ext",
 		bootExp:    time.Now().Add(time.Hour).UTC(),
 		serviceFor: time.Hour, maxOffline: 3600, certTTL: 24 * time.Hour, serial: 10,
+		grantsReady: true,
 		fixture: Fixture{
 			ReleaseID:   uuid.MustParse("019a0000-0000-7000-8000-0000000000c1"),
 			Publication: api.PublicationIntentPublished,
@@ -369,6 +377,14 @@ func (s *Server) SetClockOffset(d time.Duration) {
 	s.mu.Unlock()
 }
 
+// SetClock supplies signed server time from the test's clock. Nil restores
+// wall time. SetClockOffset still applies, for explicit skew scenarios.
+func (s *Server) SetClock(now func() time.Time) {
+	s.mu.Lock()
+	s.nowFn = now
+	s.mu.Unlock()
+}
+
 // Revoke makes later mTLS calls return 403 IDENTITY_REVOKED.
 func (s *Server) Revoke() {
 	s.mu.Lock()
@@ -483,6 +499,28 @@ func (s *Server) ResolverFetches() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.docFetches
+}
+
+// SetMemberGrantsReady selects whether renewals include one grant per
+// desired binding. False matches a node that is not provisioning-ready:
+// the lease generation is unchanged and Members is empty. A sticky body
+// is dropped so the next renewal is signed again. TEST ONLY.
+func (s *Server) SetMemberGrantsReady(ready bool) {
+	s.mu.Lock()
+	s.grantsReady = ready
+	s.stickyRaw = nil
+	s.stickyETag = ""
+	s.mu.Unlock()
+}
+
+// SetLeaseGeneration forces the next lease's config generation without
+// changing desired state. Zero follows the desired generation. TEST ONLY.
+func (s *Server) SetLeaseGeneration(gen uint64) {
+	s.mu.Lock()
+	s.leaseGen = gen
+	s.stickyRaw = nil
+	s.stickyETag = ""
+	s.mu.Unlock()
 }
 
 // SetPublication changes the signed publication intent and bumps the

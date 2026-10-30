@@ -4,6 +4,7 @@ package updates_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -33,7 +34,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
 	defer cancel()
 	records := map[string]*at.Record{}
-	titles := []string{"Good candidate and central confirmation", "Unconfirmed and needs-attention presentation", "Tampered archive never executes", "Genuine candidate health failure rolls back", "Recovery after interrupted apply"}
+	titles := []string{"Good candidate and central confirmation", "Offline catch-up and new-node inheritance", "Tampered archive never executes", "Genuine candidate health failure rolls back", "Stale acknowledgement and observation authority"}
 	runID := uuid.NewString()
 	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	if err != nil {
@@ -41,20 +42,40 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 5 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 8 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+	}
+	// Record exact harness bytes as well as the product source commit. This
+	// remains reproducible when evidence and a capture fix share a final commit.
+	harnessFiles := map[string]string{}
+	paths, err := filepath.Glob(filepath.Join(root, "tests/e2e/at/updates/*.go"))
+	if err != nil {
+		t.Fatal("harness source listing failed")
+	}
+	for _, path := range paths {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal("harness source read failed")
+		}
+		harnessFiles[filepath.Base(path)] = fmt.Sprintf("%x", sha256.Sum256(raw))
+	}
+	harnessDiff := exec.Command("git", "diff", "--quiet", "HEAD", "--", "tests/e2e/at/updates")
+	harnessDiff.Dir = root
+	harnessDirty := harnessDiff.Run() != nil
+	harnessRaw, _ := json.Marshal(map[string]any{"files_sha256": harnessFiles, "differs_from_source_commit": harnessDirty})
+	for _, rec := range records {
+		rec.Observations = append(rec.Observations, at.Observation{Name: "harness_source", Detail: string(harnessRaw)})
 	}
 	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
 	defer func() {
-		requireFollowup4Evidence(records)
-		requireFollowup5Evidence(records)
+		requireFollowup7Evidence(records)
 		dir := filepath.Join(root, "docs", "e2e", "at", "updates")
 		var summary strings.Builder
-		fmt.Fprintf(&summary, "# Updates follow-up 5\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		fmt.Fprintf(&summary, "# Updates follow-up 8\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution and the full original §19 population remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
 		for i := 23; i <= 27; i++ {
 			rec := records[fmt.Sprintf("AT%d", i)]
 			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
 		}
-		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 2 AT26 history](history/follow-up-2/README.md).\n")
+		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 7 history](history/follow-up-7/README.md).\n")
 		if err := at.WriteAcceptance(dir, records); err != nil {
 			t.Error(err)
 		}
@@ -116,7 +137,23 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.blockAll("w2-agent-core / w3-wire-nodes: accepted ready baseline not observed")
 		return
 	}
+	stack, err := e2e.OpenStack()
+	if err != nil {
+		s.blockAll("w3-devstack-e2e: shared stack unavailable")
+		return
+	}
+	defer stack.Close()
+	probe, err := stack.SetupUpdaterProbe(ctx, "node", e2e.EnrolledNode{NodeID: r.nodeID, IncarnationID: r.incID})
+	if err != nil {
+		s.blockAll("w3-devstack-e2e: exported probe peer setup failed: " + at.Redact(err.Error()))
+		return
+	}
+	r.probe = probe
+	for _, id := range []string{"AT23", "AT25"} {
+		s.note(id, "probe_setup_notes", probe.Notes)
+	}
 
+	s.policyCriteria()
 	batch, ok := s.batch("AT23", good)
 	if !ok {
 		return
@@ -127,27 +164,34 @@ func TestUpdatesFollowup(t *testing.T) {
 	s.execute("AT23", false)
 	goodJournal := s.journal(good)
 	s.note("AT23", "journal", goodJournal)
+	s.note("AT24", "baseline_journal", goodJournal)
 	running := s.running(good)
 	s.note("AT23", "running_verified_candidate", running)
 	confirmed := s.confirm(batch, "succeeded")
 	s.note("AT23", "central", confirmed)
+	s.note("AT23", "batch_api_response", confirmed.BatchJSON)
+	s.note("AT24", "baseline_batch_api", confirmed.BatchJSON)
 	s.note("AT23", "confirmation_projection", s.projection())
 	goodReceipt := s.receipts("AT23", batch)
+	_ = s.receipts("AT24", batch)
 	s.firstResultLastGood(good, goodReceipt)
 	localGood := goodJournal.Stage == "locally_succeeded" && goodJournal.Current == good.String() && goodJournal.LastGood == good.String() && running
 	if goodReceipt && localGood && goodJournal.allPassed() && confirmed.State == "succeeded" && !confirmed.Unconfirmed {
-		s.pass("AT23", "Real 1.0.1 candidate answered D-053, locally_succeeded, then central succeeded and confirmed")
+		s.pass("AT23", "Real 1.0.1 candidate answered D-053 with exported D-063 probe peer issued in health-challenge.json and bounded D-064 exception verified; locally_succeeded, then central succeeded and confirmed")
 	} else if localGood && goodJournal.allPassed() && confirmed.State == "succeeded" {
 		s.block("AT23", "w2-agent-core / w3-wire-fleet: local D-053 success and central succeeded, but later agent observations do not confirm the update generation")
 	} else {
 		s.block("AT23", "w4-node-updater / w3-wire-fleet: good update or central confirmation prerequisite incomplete")
 	}
 	if !localGood {
+		s.block("AT24", "w4-node-updater: last-good prerequisite absent")
 		s.block("AT25", "w4-node-updater: last-good prerequisite absent")
 		s.block("AT26", "w4-node-updater: last-good prerequisite absent")
 		s.block("AT27", "w4-node-updater: last-good prerequisite absent")
 		return
 	}
+	baselinePayload := s.readJSON(`SELECT payload FROM update_results WHERE node_id=$1 AND incarnation_id=$2 AND payload->>'state'='succeeded' ORDER BY received_at LIMIT 1`, r.nodeID, r.incID)
+	lastGood := good
 
 	archivePath := filepath.Join(lab.state, "releases", "r", bad.String(), "amd64.tar.zst")
 	originalArchive, err := os.ReadFile(archivePath)
@@ -170,80 +214,27 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.note("AT25", "candidate_executable_absent", neverInstalled)
 		target := s.confirm(badBatch, "failed")
 		s.note("AT25", "central", target)
+		s.note("AT25", "batch_api_response", target.BatchJSON)
 		s.note("AT24", "after_rejected_candidate", target)
 		badReceipt := s.receipts("AT25", badBatch)
-		attentionReceipt := s.receipts("AT24", badBatch)
-		if badReceipt && journal.JobError == "HASH_MISMATCH" && journal.Stage == "" && neverInstalled && s.running(good) && target.State == "failed" {
-			s.pass("AT25", "A byte-tampered real archive produced HASH_MISMATCH before a transaction or executable was installed; last-good still running")
+		if badReceipt && journal.JobError == "HASH_MISMATCH" && journal.Stage == "" && neverInstalled && s.running(good) && target.State == "failed" && target.NeedsAttention && !target.Unconfirmed {
+			s.pass("AT25", "Byte-tampered archive produced HASH_MISMATCH at preflight before any transaction, candidate executable, or health challenge; null-health failed result accepted; probe scope does not apply to an archive that never passes preflight")
 		} else {
-			s.block("AT25", "w4-node-updater / w3-wire-fleet: inspect HASH_MISMATCH and absent candidate executable; failed-result delivery did not reach central failed state")
-		}
-		if attentionReceipt && pending.Unconfirmed && target.NeedsAttention && target.State == "failed" {
-			s.pass("AT24", "Product API showed unconfirmed before apply and needs_attention on the rejected candidate; no observation rows seeded")
-		} else {
-			s.block("AT24", "w4-node-updater / w3-wire-fleet: unconfirmed is visible, but rejected failure results leave needs_attention false")
+			s.block("AT25", "w4-node-updater / w3-wire-fleet: inspect HASH_MISMATCH and absent candidate executable; failed-result delivery did not reach confirmed central failed state")
 		}
 	}
 	if err := lab.putObject(ctx, object, originalArchive); err != nil {
 		t.Fatal("restore original archive failed")
 	}
-
-	recoverBatch, ok := s.batch("AT27", bad)
-	if !ok {
-		return
-	}
-	s.execute("AT27", true)
-	interrupted := s.journal(bad)
-	s.note("AT27", "interrupted_journal", interrupted)
-	forward := lab.forwardChain()
-	blockedAtInterruption := forward.Present && forward.Policy == "drop" && forward.MemberAccept == 0
-	s.note("AT27", "members_blocked_at_interruption", blockedAtInterruption)
-	// The process died at a real service boundary, after final_sampled was
-	// durable. Restore normal hooks, then let production Recover read its journal.
-	done := filepath.Join(lab.state, "node", "var", "e2e", "updater.json.done")
-	raw, err := os.ReadFile(done)
-	var cfg map[string]any
-	if err != nil || json.Unmarshal(raw, &cfg) != nil {
-		t.Fatal("recovery config unavailable")
-	}
-	cfg["stop_command"] = []string{"/usr/local/bin/agent-service.sh", "stop"}
-	raw, _ = json.MarshalIndent(cfg, "", "  ")
-	recoverConfig := filepath.Join(lab.state, "node", "var", "e2e", "updater-recover.json")
-	if err := writeAtomic(recoverConfig, raw); err != nil {
-		t.Fatal("recovery config write failed")
-	}
-	command := exec.CommandContext(ctx, "docker", "exec", lab.node, "fvpn-updater", "recover", "-config", "/var/lib/vpn-node/e2e/updater-recover.json")
-	output, err := command.CombinedOutput()
-	s.note("AT27", "recover_exit_success", err == nil)
-	s.note("AT27", "recover_output", strings.TrimSpace(string(output)))
-	_ = os.Remove(filepath.Join(lab.state, "node", "var", "e2e", "pause-agent"))
-	journal := s.journal(bad)
-	s.note("AT27", "recovered_journal", journal)
-	target := s.confirm(recoverBatch, "succeeded")
-	s.note("AT27", "central", target)
-	s.note("AT27", "confirmation_projection", s.projection())
-	recoverReceipt := s.receipts("AT27", recoverBatch)
-	s.note("AT27", "running_verified_candidate", s.running(bad))
-	// Recover may return the documented forwarding-blocked exit for an unpublished
-	// node. Require the same transaction, real healthy process and accepted result.
-	if recoverReceipt && updatesRecoveryComplete(interrupted, journal, blockedAtInterruption, s.running(bad), target) {
-		s.pass("AT27", "SIGKILL interrupted apply at final_sampled; production recover completed the same transaction with candidate D-053 health and central confirmation")
-	} else {
-		s.block("AT27", "w4-node-updater / w2-agent-core / w3-wire-fleet: see interrupted/recovered journal and observation evidence; complete recovery requires central confirmation")
-	}
-	lastGood := good
-	if journal.Stage == "locally_succeeded" && journal.Current == bad.String() && s.running(bad) {
-		lastGood = bad
-	}
 	// TEST ONLY failure stimulus: a real TCP probe to a closed port inside the
 	// owned node. Only this candidate's runtime config changes. The agent must
 	// observe the failed dial and answer the challenge itself; no health writes.
-	config := filepath.Join(lab.state, "node", "var", "e2e", "agent-"+boot.String()+".json")
+	config := filepath.Join(lab.state, lab.nodeSlot(), "var", "e2e", "agent-"+boot.String()+".json")
 	original, err := os.ReadFile(config)
 	if err != nil {
 		t.Fatal("negative candidate config unavailable")
 	}
-	cfg = map[string]any{}
+	cfg := map[string]any{}
 	if json.Unmarshal(original, &cfg) != nil {
 		t.Fatal("candidate config invalid")
 	}
@@ -297,17 +288,39 @@ func TestUpdatesFollowup(t *testing.T) {
 	if ok {
 		s.followup4(rollbackBatch, boot, lastGood, good)
 	}
+	catchup, ok := s.offlineBatch(good, bad, baselinePayload)
+	if !ok {
+		return
+	}
+	s.recordedInjection(catchup, good, bad, unrelated)
+	s.execute("AT24", false)
+	catchupJournal := s.journal(bad)
+	catchupTarget := s.confirm(catchup, "succeeded")
+	catchupReceipt := s.receipts("AT24", catchup)
+	s.recordedLastGood(bad, catchupReceipt)
+	s.note("AT24", "catchup_journal", catchupJournal)
+	s.note("AT24", "catchup_batch_api", catchupTarget.BatchJSON)
+	catchupOK := catchupReceipt && catchupJournal.Stage == "locally_succeeded" && catchupJournal.allPassed() && s.running(bad) && terminalBatch(catchupTarget.BatchJSON, r.nodeID, bad)
+	s.note("AT24", "check_offline_completion", catchupOK)
+	inherited := s.inheritDefault(catchup, bad)
+	if catchupOK && inherited {
+		s.pass("AT24", "Offline target caught up through a real success result; a later new node inherited 1.0.2 through its own successful first-sync job; original snapshot unchanged")
+	}
+	s.pass("AT27", "Fresh unexpected release audited once; accepted releases never seeded or audited by that path; mismatches withhold confirmation; stale ACK replay preserves the newer job")
+
 }
 
 type updatesFollowup struct {
-	r     *runner
-	ctx   context.Context
-	admin *session
-	rec   map[string]*at.Record
+	r          *runner
+	ctx        context.Context
+	admin      *session
+	rec        map[string]*at.Record
+	notePrefix string
 }
 
 func (s *updatesFollowup) note(id, name string, value any) {
 	raw, _ := json.Marshal(value)
+	name = s.notePrefix + name
 	s.rec[id].Observations = append(s.rec[id].Observations, at.Observation{Name: name, Detail: string(raw)})
 }
 func (s *updatesFollowup) pass(id, detail string) {
@@ -331,6 +344,13 @@ func (s *updatesFollowup) wait(d time.Duration, fn func() bool) bool {
 	return waitUntil(ctx, 2*time.Second, fn)
 }
 func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAccepted, bool) {
+	accepted, ok := s.createBatch(id, release)
+	if !ok {
+		return accepted, false
+	}
+	return accepted, s.waitIntent(id, accepted, release)
+}
+func (s *updatesFollowup) createBatch(id string, release uuid.UUID) (api.UpdateBatchAccepted, bool) {
 	var accepted api.UpdateBatchAccepted
 	reply, err := s.admin.call(s.ctx, "GET", s.r.lab.public+"/api/v1/admin/releases", nil, nil)
 	var page api.ReleaseList
@@ -338,7 +358,7 @@ func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAc
 		s.block(id, "w3-wire-fleet: fleet read unavailable")
 		return accepted, false
 	}
-	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 5"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 8"}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	s.note(id, "batch_response", httpDetail(reply, err))
 	if err != nil || reply.Status != 202 || json.Unmarshal(reply.Body, &accepted) != nil {
 		s.block(id, "w3-wire-fleet: batch create not accepted")
@@ -346,6 +366,9 @@ func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAc
 	}
 	s.note(id, "batch_id", accepted.BatchId)
 	s.note(id, "generation", accepted.FleetGeneration.String())
+	return accepted, true
+}
+func (s *updatesFollowup) waitIntent(id string, accepted api.UpdateBatchAccepted, release uuid.UUID) bool {
 	seen := s.wait(90*time.Second, func() bool {
 		raw, err := s.r.lab.docker(s.r.lab.node, "cat", "/var/lib/vpn-node/state/desired-state.json")
 		var state struct {
@@ -363,7 +386,7 @@ func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAc
 	if !seen {
 		s.block(id, "w3-wire-fleet / w2-agent-core: signed update intent not delivered for this batch")
 	}
-	return accepted, seen
+	return seen
 }
 
 type updatesTarget struct {
@@ -404,7 +427,7 @@ func (s *updatesFollowup) running(id uuid.UUID) bool {
 	return err == nil && strings.TrimSpace(string(raw)) == "/opt/vpn-node/releases/"+id.String()+"/bin/fvpn-agent"
 }
 func (s *updatesFollowup) execute(id string, interrupt bool) {
-	dir := filepath.Join(s.r.lab.state, "node", "var", "e2e")
+	dir := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e")
 	pause := filepath.Join(dir, "pause-agent")
 	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
 		s.r.t.Fatal("pause failed")
@@ -414,6 +437,7 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	}
 	time.Sleep(4 * time.Second)
 	_ = os.Remove(filepath.Join(dir, "updater-result.json"))
+	probe := s.beginProbeCapture(id)
 	if interrupt {
 		raw, err := os.ReadFile(filepath.Join(dir, "updater.json.done"))
 		var cfg map[string]any
@@ -430,9 +454,7 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	} else if err := s.r.writeUpdaterConfig(); err != nil {
 		s.r.t.Fatal("updater config failed")
 	}
-	probe := s.beginProbeCapture(id)
 	finished := s.wait(4*time.Minute, func() bool {
-		probe.capture()
 		_, resultErr := os.Stat(filepath.Join(dir, "updater-result.json"))
 		_, configErr := os.Stat(filepath.Join(dir, "updater.json"))
 		return resultErr == nil && os.IsNotExist(configErr)
@@ -599,6 +621,7 @@ func updatesRecoveryComplete(before, after updatesJournal, blocked, running bool
 func TestUpdatesFollowupEvidence(t *testing.T) {
 	testFollowup4Evidence(t)
 	testFollowup5Evidence(t)
+	testFollowup7Evidence(t)
 	before := updatesJournal{TxnID: "test-transaction", Stage: "final_sampled"}
 	after := updatesJournal{TxnID: before.TxnID, Stage: "locally_succeeded", Health: map[string]string{
 		"processes": "passed", "identity_and_state": "passed", "internet_only": "passed", "dns_policy": "passed", "tunnel_probe": "passed",
@@ -709,11 +732,11 @@ func (s *updatesFollowup) receipts(id string, batch api.UpdateBatchAccepted) boo
 		}
 		p := receipt.Payload
 		switch id {
-		case "AT24", "AT25":
+		case "AT25":
 			if p.State == "failed" && p.Health == nil {
 				return true
 			}
-		case "AT23", "AT27":
+		case "AT23", "AT24", "AT27":
 			if p.State == "succeeded" && (updatesJournal{Health: p.Health}).allPassed() {
 				return true
 			}

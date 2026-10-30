@@ -14,7 +14,7 @@ listeners, routing, response tracking and request IDs. All command handlers reus
 `httpapi.Transaction`, set durable resource references, and implement replay.
 Standalone service callers retain their existing transaction/idempotency APIs.
 
-Node-domain tests compose only core operations and node handlers (D-039).
+Node-domain tests compose only core operations/audit and node handlers (D-039).
 Their unregistered member routes do not describe the production binary:
 `apps/control/handlers.go` also registers `members()` and `usage()`.
 `wire_members.go` installs `httpadapter.Handlers.GetMemberSelf` and
@@ -27,6 +27,7 @@ The following transitional 501 handlers are removed:
 
 | Operation | Behavior |
 |---|---|
+| `getFleetConfig`, `updateFleetConfig` | Admin fleet lease ceiling: GET with strong ETag; PUT with If-Match/idempotency returns 200 and commits one `fleet_config.update` audit, with no asynchronous operation. Existing leases retain their signed value. |
 | `createEnrollment`, `getEnrollment`, `revokeEnrollment` | Issue a hash-only token, read its state, revoke unused tokens. Replayed creation never returns plaintext. |
 | `enrollNode` | CSR proof, durable incarnation/certificate/provisioning operation; same proof returns the original certificate. |
 | `consumeAgentBootstrap` | Authenticated single delivery: 409 not ready, one 200, then 410 consumed; expired undelivered material returns 410 expired. |
@@ -37,11 +38,26 @@ The following transitional 501 handlers are removed:
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
 | `setNodePublication` | All three intents use `exits.Service.SetPublicationTx` inside the HTTP command transaction; 202 returns the pending publication operation. |
 | `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
-| `renewServingLease` | Signed 24-hour default maximum, bounded member grants, natural renewal-ID replay without restarting deadlines. |
-| `submitObservation` | Immutable deduplicated receipt, then `ObserveReportTx` in the same transaction, fleet lock before node lock. |
+| `renewServingLease` | Signed 24-hour default maximum (60 s D-067 backstop when `provisioning_state != 'ready'`), bounded member grants, natural renewal-ID replay without restarting deadlines, and transactional `ObserveEndpointTx` cloned-identity check (D-072). |
+| `submitObservation` | Immutable deduplicated receipt, transactional `ObserveEndpointTx` cloned-identity check (D-072), then `SubmitObservationTx` and `ObserveReportTx` in the same transaction, fleet lock before node lock. |
 | `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
 | `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
 | `submitUpdateResult` | Durable 202 ACK; identical result replays, changed payload returns 409 ACK_CONFLICT with retained conflict evidence. |
+
+Fleet configuration uses the same `nodes()` handler registration and generated
+admin-session/CSRF boundary. Its command transaction locks the singleton before
+checking `If-Match`, changes only the lease ceiling and resource metadata, then
+commits the audit and idempotency reference together. The audit ID is the command
+reservation ID; allowlisted `changes.after` also retains the original version and
+timestamp so a replay never substitutes a later fleet value. Keep audit retention
+at least as long as command retention (defaults: 180 days and 7 days); a missing
+receipt fails closed. Both audit snapshots include the maximum even on an
+accepted same-value write. No operation or outbox event is needed for this local
+200 response. See [the admin resource semantics](README.md#admin-fleet-configuration-d-065-145-163).
+If the singleton is absent, GET returns the issuer's 86400-second default with
+version `0` and `updated_at` at the Unix epoch, without writing. A subsequent PUT
+with `If-Match: "0"` creates it with the table's fail-closed release defaults and
+returns version `1`; an existing row normally starts at version `1`.
 
 Agent keys now join the same command transaction as their domain writes (§14.5).
 The transactional entry points delegate to the existing implementations rather
@@ -583,3 +599,92 @@ Member entitlement recompilation includes `previous_exit_group_ids` when
 provided and every current envelope still carrying that member's device binding
 or rate policy. This removes access on nodes in removed groups even when an older
 producer supplies only new groups (D-052 F-02).
+
+## Revocation completion under pending isolation errors and lease readiness (Follow-up 18 & Follow-up 20, D-067, D-070)
+
+When an accepted `ObservationReport` on `applied_config_generation >= desired_config_generation`
+carries an `ISOLATION_POLICY_INVALID` apply error (`code == "ISOLATION_POLICY_INVALID"` and
+`stage == "apply"`, D-070) while member forwarding remains active or `safety_status == "passed"`
+(for example, a pending `conntrack -D` flow flush under the 12-attempt bound after the serving
+ruleset is verified: `message = "conntrack delete pending; serving ruleset verified"`,
+`member_forwarding_enabled = true`, `safety_status = "passed"`, and every check `passed`),
+`SubmitObservation` degrades `data_health` to `degraded`, withholds publication serving evidence
+(`PublicationDataPathFailure = "isolation_unconfirmed"`), and holds the `"nodes"` step of
+matching member/entitlement/device operations in `pending` with
+`error_code = "ISOLATION_POLICY_INVALID"`, `error_message = "member_forwarding_unconfirmed"`,
+`reason = "conntrack_delete_pending"`, and a correlated `node.revoke_isolation_pending`
+(`result = "failed"`) audit event. The `"nodes"` step is never completed while the node forwards
+with a pending conntrack delete. It completes and emits `node.revoke_isolation_resolved`
+(`result = "succeeded"`) only when no other registered node in the member's exit group still
+reports a pending `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}` error while forwarding,
+and either (a) a subsequent observation on the target generation clears the
+`ISOLATION_POLICY_INVALID` apply error (`resolution = "conntrack_delete_succeeded"`), or (b) the
+node fails closed with the agent's real fail-closed observation shape (D-070:
+`member_forwarding_enabled = false`, `safety_status = "failed"`, `forwarding_block_reasons`
+contains `"safety_check_failed"`, check `internet_only` **failed** with
+`error_code = "ISOLATION_POLICY_INVALID"` and detail `"Conntrack delete exceeded the retry bound."`
+or `"Conntrack is not installed."`, and the `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}`
+error still present in `errors`; `resolution = "node_failed_closed"`).
+
+For serving leases (`POST /api/v1/agent/lease-renewals`, `leases.Service.RenewTx`), member
+grants are included only when `lifecycle_state == 'registered'`,
+`publication_intent == 'published'`, `provisioning_state == 'ready'`, and `len(groupIDs) > 0`.
+When `includeMembers` is false on a registered, published exit because `provisioning_state` is
+not `'ready'`, `RenewTx` issues the grant-less lease (`members: []`) on
+`config_generation == desired_config_generation` with `expires_at = issued_at + min(max_offline_seconds, 60s)`
+(`leases.ProvisionalGrantlessLeaseSeconds = 60`, D-067 central backstop), while keeping
+`max_offline_seconds` copied from `fleet_config.max_offline_lease_seconds`. Ready nodes
+(`provisioning_state == 'ready'`) are never shortened and keep the configured
+`max_offline_lease_seconds` window (D-065). Once the node's first ready observation after
+restart is ingested by `nodes.Service.SubmitObservation` (`internal/nodes/observations.go:237-295`,
+triggered on the first `(*agent.Engine).Step` via `evaluate`/`Decide` -> `enforce`/`ackApplied` ->
+`observe`/`flush` in `node/agent/engine.go:572-796`, `node/agent/decide.go:253-260,454-506`, and
+`node/agent/observe.go:19-44,217-249`), `nodes.provisioning_state` flips to `'ready'` immediately
+on that first accepted observation, and the next `RenewTx` carries the member grants on the same
+`config_generation`. Once an incarnation has reached `provisioning_state = 'ready'`,
+an in-flight observation for an already-applied generation with `safety_status = 'passed'`
+does not downgrade `provisioning_state` back to `'applying'` when central concurrently
+advances `desired_config_generation`, preventing avoidable grant-less lease windows across
+policy recompilations.
+
+## Node incarnation history, enrollment `token_sha256`, and `awaiting_member_grants` (Follow-up 19)
+
+`GET /api/v1/admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`, revision 10;
+ENR-03) is wired on `httpwire.Handlers.ListNodeIncarnations` backed by
+`nodes.Service.ListNodeIncarnations` (`internal/nodes/incarnations.go`). With this handler
+registered on `httpapi.Composite`, all 47 OpenAPI operations are wired.
+
+- **Single-query read model**: Queries `nodes` with a `LEFT JOIN LATERAL` over
+  `node_incarnations`, `node_enrollments`, `usage_checkpoints`, `usage_events`, and
+  `usage_samples` ordered by `created_at DESC, id DESC` with cursor pagination (`limit`
+  default 50, max 100; cursor `<= 512` chars). Returns 404 `RESOURCE_NOT_FOUND` only when
+  the `nodes` row is absent; a node with no incarnations returns `200` with `items: []`
+  and `next_cursor: null`.
+- **Lifecycle and retire reason**: `current` is `nodes.current_incarnation_id = i.id`.
+  `state` is `active` when `i.revoked_at IS NULL` else `retired`. `retire_reason` is `null`
+  while active; when retired, `reinstall` if a later `node_incarnations` row exists for the
+  node, else `revocation` if `nodes.lifecycle_state` is `revoked` or `retired`, else
+  `supersession`.
+- **Retained per-incarnation usage**: Sums `usage_samples.upload_bytes` and
+  `usage_samples.download_bytes` (`NUMERIC(20,0)`) per `(node_id, incarnation_id)` as
+  `decstr.U64` (failing closed with 500 `INTERNAL_ERROR` if a sum exceeds $2^{64}-1$) and
+  maps `usage_checkpoints.updated_at` to `usage.through` (`null` without a checkpoint row;
+  `"0"` bytes with `through` set when a checkpoint row has no samples). Rejections,
+  conflicts, and rollups are never read, and retained usage never moves between
+  incarnations across reinstalls.
+- **Enrollment `token_sha256` (ENR-02)**: `createEnrollment` (create and replay),
+  `getEnrollment`, and `revokeEnrollment` pass through `api.Enrollment.TokenSha256` (64
+  lowercase hex characters of `node_enrollments.token_hash`), and `enrollment.created`
+  audit events expose `changes.after.token_sha256` unredacted.
+- **`awaiting_member_grants` (`ForwardingBlockReason`, D-067)**: `SubmitObservation`
+  validates `report.ForwardingBlockReasons` against `api.ForwardingBlockReason.Valid()` and
+  accepts `awaiting_member_grants` ("valid node lease, no member grants yet while bindings
+  are desired"). When `member_forwarding_enabled == false` with `awaiting_member_grants`
+  and `internet_only == passed` (`meter_path` absent, `not_run`, or `passed`),
+  `evaluateObservationEvidence` keeps `safety_status = 'passed'` and `data_health = 'healthy'`
+  (provisional, not `expired`). `GetNode` and `ListNodes` project `provisioning_state = 'ready'`,
+  `safety_status = 'passed'`, `data_health = 'healthy'`, and `member_forwarding_observed = false`,
+  while `node_observations.report_payload` retains `forwarding_block_reasons: ["awaiting_member_grants"]`
+  and `PublicationDataPathFailure` returns `"forwarding_disabled"` so publication state is
+  unchanged until member grants arrive and member forwarding is enabled.
+

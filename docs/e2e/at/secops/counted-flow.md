@@ -1,7 +1,3 @@
-# counted-flow: passed
+# Counted flow — Follow-up 7
 
-Selected API exit → fvnb0 → HTTPS 200 → authenticated node SNAT receipt → exact-device byte growth
-
-See the ordered expected/actual gates and counters.
-
-[JSON evidence](counted-flow.json), source `446b6b0f643586d48859236664800df8c2d1ef64`, run `86e6106a-1be1-4003-9b0f-35a30e9cda12`.
+The ordered 60-peer proofs are in [counted-flow.json](counted-flow.json); timed byte deltas and any missing precondition are in [capacity.json](capacity.json). No API-only forwarding claim.

@@ -15,6 +15,7 @@ import (
 	"errors"
 	"log/slog"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -38,6 +39,12 @@ const TokenPrefix = "fvpn_enr_"
 const DefaultInstallerValidity = 15 * time.Minute
 const DefaultPreinstalledValidity = 7 * 24 * time.Hour
 
+// DefaultIdentityActiveWindow is the endpoint compatibility window (D-072).
+// Chosen at 120s: larger than the 60s provisional lease renewal cap (D-067)
+// and the 30s heartbeat interval so an active or renewing node always refreshes
+// inside the window, while remaining shorter than the finite-member serving lease.
+const DefaultIdentityActiveWindow = 120 * time.Second
+
 // TEST ONLY. Production bootstrap-delivery validity is a required setting.
 const TestBootstrapValidity = 10 * time.Minute
 
@@ -45,6 +52,7 @@ type Config struct {
 	InstallerValidity    time.Duration
 	PreinstalledValidity time.Duration
 	BootstrapValidity    time.Duration
+	IdentityActiveWindow time.Duration
 	Logger               *slog.Logger
 }
 type Service struct {
@@ -54,6 +62,10 @@ type Service struct {
 	secrets signing.Provider
 	fence   pki.Revocations
 	cfg     Config
+
+	mu         sync.Mutex
+	clock      func() time.Time
+	candidates map[uuid.UUID]*roamingCandidate
 }
 
 func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signing.Provider, fence pki.Revocations, cfg Config) (*Service, error) {
@@ -63,10 +75,37 @@ func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signi
 	if cfg.PreinstalledValidity == 0 {
 		cfg.PreinstalledValidity = DefaultPreinstalledValidity
 	}
+	if cfg.IdentityActiveWindow <= 0 {
+		cfg.IdentityActiveWindow = DefaultIdentityActiveWindow
+	}
 	if pool == nil || ca == nil || auth == nil || secrets == nil || fence == nil || cfg.InstallerValidity < time.Minute || cfg.PreinstalledValidity < time.Minute || cfg.InstallerValidity > 30*24*time.Hour || cfg.PreinstalledValidity > 30*24*time.Hour || cfg.BootstrapValidity <= 0 {
 		return nil, errors.New("enrollment: dependencies and explicit bootstrap validity required")
 	}
-	return &Service{pool, ca, auth, secrets, fence, cfg}, nil
+	return &Service{
+		pool:       pool,
+		ca:         ca,
+		auth:       auth,
+		secrets:    secrets,
+		fence:      fence,
+		cfg:        cfg,
+		candidates: make(map[uuid.UUID]*roamingCandidate),
+	}, nil
+}
+
+// SetClock overrides the wall clock used by ObserveEndpoint and ObserveEndpointTx
+// in tests. Passing nil restores the database transaction clock.
+func (s *Service) SetClock(clock func() time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.clock = clock
+}
+
+// ActiveWindow returns the configured compatibility-domain activity window (D-072).
+func (s *Service) ActiveWindow() time.Duration {
+	if s == nil || s.cfg.IdentityActiveWindow <= 0 {
+		return DefaultIdentityActiveWindow
+	}
+	return s.cfg.IdentityActiveWindow
 }
 
 // Command identifies the already-authorized administrator and UUID idempotency
@@ -133,17 +172,23 @@ func safe(err error) error {
 	}
 	return apierr.New(apierr.DependencyUnavailable, "Enrollment operation unavailable.")
 }
-func appendDomainAudit(ctx context.Context, tx pgx.Tx, actor auth.Principal, action string, resource api.ResourceRef, op *uuid.UUID, reason string) error {
+func appendDomainAudit(ctx context.Context, tx pgx.Tx, actor auth.Principal, action string, resource api.ResourceRef, op *uuid.UUID, reason string, tokenSHA256 ...string) error {
 	actorID, actorType := actor.ID, api.AuditEventActorTypeAdmin
 	if actor.Role == auth.Agent {
 		actorID, actorType = actor.NodeID, api.AuditEventActorTypeNode
+	}
+	after := map[string]any{"reason": reason}
+	fields := []string{"reason"}
+	if len(tokenSHA256) > 0 {
+		after["token_sha256"] = tokenSHA256[0]
+		fields = append(fields, "token_sha256")
 	}
 	request := commandtx.RequestID(ctx)
 	event, err := audit.NewEvent(audit.Entry{
 		Actor: audit.Actor{Type: actorType, ID: actorID}, Action: action,
 		Resource: resource, Result: api.AuditEventResultSucceeded,
 		OperationID: op, RequestID: &request,
-		After: map[string]any{"reason": reason}, Fields: []string{"reason"},
+		After: after, Fields: fields,
 	})
 	if err != nil {
 		return err
@@ -280,13 +325,16 @@ func (s *Service) CreateEnrollment(ctx context.Context, cmd Command, r api.Enrol
 		if e != nil {
 			return e
 		}
-		if e = appendDomainAudit(ctx, tx, actor, "enrollment.created", api.ResourceRef{Type: api.ResourceTypeEnrollment, Id: id}, nil, ""); e != nil {
+		out.Enrollment, e = get(ctx, tx, id)
+		if e != nil {
 			return e
 		}
-		out.Enrollment, e = get(ctx, tx, id)
+		if e = appendDomainAudit(ctx, tx, actor, "enrollment.created", api.ResourceRef{Type: api.ResourceTypeEnrollment, Id: id}, nil, "", *out.Enrollment.TokenSha256); e != nil {
+			return e
+		}
 		out.Token.Set(token)
 		out.SecretAvailable = true
-		return e
+		return nil
 	})
 	if err != nil {
 		return api.EnrollmentCreated{}, safe(err)
@@ -307,10 +355,11 @@ type querier interface {
 
 func get(ctx context.Context, q querier, id uuid.UUID) (out api.Enrollment, err error) {
 	var fp []byte
+	var tokenSHA256 string
 	var name, region, notes *string
 	var requestID, incarnationID *uuid.UUID
 	var consumedAt, revokedAt *time.Time
-	err = q.QueryRow(ctx, `SELECT id,node_id,delivery,CASE WHEN state='pending' AND expiry<=clock_timestamp() THEN 'expired' ELSE state END,expiry,name,region,notes,member_group_ids,request_id,incarnation_id,public_key_fingerprint,created_at,consumed_at,revoked_at FROM node_enrollments WHERE id=$1`, id).Scan(&out.EnrollmentId, &out.NodeId, &out.Delivery, &out.State, &out.ExpiresAt, &name, &region, &notes, &out.MemberGroupIds, &requestID, &incarnationID, &fp, &out.CreatedAt, &consumedAt, &revokedAt)
+	err = q.QueryRow(ctx, `SELECT id,node_id,delivery,CASE WHEN state='pending' AND expiry<=clock_timestamp() THEN 'expired' ELSE state END,expiry,name,region,notes,member_group_ids,request_id,incarnation_id,public_key_fingerprint,encode(token_hash,'hex'),created_at,consumed_at,revoked_at FROM node_enrollments WHERE id=$1`, id).Scan(&out.EnrollmentId, &out.NodeId, &out.Delivery, &out.State, &out.ExpiresAt, &name, &region, &notes, &out.MemberGroupIds, &requestID, &incarnationID, &fp, &tokenSHA256, &out.CreatedAt, &consumedAt, &revokedAt)
 	out.Name = presence.FromPointer(name)
 	out.Region = presence.FromPointer(region)
 	out.Notes = presence.FromPointer(notes)
@@ -323,6 +372,7 @@ func get(ctx context.Context, q querier, id uuid.UUID) (out api.Enrollment, err 
 		v := hex.EncodeToString(fp)
 		out.BoundPublicKeySha256.Set(v)
 	}
+	out.TokenSha256 = &tokenSHA256
 	out.ExpiresAt = out.ExpiresAt.UTC()
 	out.CreatedAt = out.CreatedAt.UTC()
 	return

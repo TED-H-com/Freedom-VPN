@@ -16,9 +16,11 @@ import (
 )
 
 type flowPeer struct {
-	Service string       `json:"container_role"`
-	Device  uuid.UUID    `json:"device_id"`
-	Member  *liveSession `json:"-"`
+	Service     string       `json:"container_role"`
+	NodeService string       `json:"node_role,omitempty"`
+	ExitID      string       `json:"exit_network_id,omitempty"`
+	Device      uuid.UUID    `json:"device_id"`
+	Member      *liveSession `json:"-"`
 }
 
 // §19 AT28–AT31: product inputs and native client exit selection only (D-050).
@@ -136,7 +138,7 @@ func (p *liveProbe) cohortPeers(members []*liveSession) []flowPeer {
 				continue
 			}
 			service := name
-			if i == 0 && len(out) == 0 {
+			if i == 0 && len(out) == 0 && len(p.bindings) > 0 {
 				service = "member"
 			} else if len(name) > len(livePrefix) && name[:len(livePrefix)] == livePrefix {
 				service = name[len(livePrefix):]

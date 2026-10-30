@@ -487,11 +487,20 @@ func TestENR02_BootstrapExpiryAndConflictFreeze(t *testing.T) {
 	if err != nil || !allowed {
 		t.Fatal(err)
 	}
+	// D-072: a single switch X->Y inside activeWindow is roaming (allowed, X remains mapped).
 	allowed, err = f.s.ObserveEndpoint(ctx, cert, "endpoint-domain-b", time.Minute)
-	if err != nil || allowed {
-		t.Fatal("conflict did not freeze", err)
+	if err != nil || !allowed {
+		t.Fatal("single switch must be treated as roaming", err)
 	}
+	if count(t, f, "node_identity_conflicts") != 0 {
+		t.Fatal("single switch must not record a conflict")
+	}
+	// Interleaving X->Y->X inside activeWindow is a conflict and freezes mapping.
 	allowed, err = f.s.ObserveEndpoint(ctx, cert, "endpoint-domain-a", time.Minute)
+	if err != nil || allowed {
+		t.Fatal("interleaved conflict did not freeze", err)
+	}
+	allowed, err = f.s.ObserveEndpoint(ctx, cert, "endpoint-domain-b", time.Minute)
 	if err != nil || allowed {
 		t.Fatal("mapping unfroze", err)
 	}

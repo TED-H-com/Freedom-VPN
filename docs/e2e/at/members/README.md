@@ -1,22 +1,22 @@
-# Wave 4 member acceptance — Follow-up 3
+# Wave 4 member acceptance — Follow-up 5
 
-Run only the assigned `w4-members / 24000` stack. [RUN.md](RUN.md) records both
-fresh attempts; [summary.md](summary.md) lists current AT outcomes and
-[requests.md](requests.md) names the remaining owners. Prior evidence is
-preserved under [history/follow-up-2](history/follow-up-2/RUN.md).
+Run only the assigned `w4-members / 24000` stack. [RUN.md](RUN.md) records the
+Follow-up 5 execution; [summary.md](summary.md) lists current AT outcomes and
+[requests.md](requests.md) names the resolved F4-01 check and remaining owners.
+Prior evidence is preserved under [history/follow-up-4](history/follow-up-4/RUN.md)
+and [history/follow-up-3](history/follow-up-3/RUN.md).
 
 ```sh
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
 make -f mk/at-members.mk at-members
 make -f mk/at-members.mk at-members-readback
-FVPN_AT_MEMBERS_OBSERVE_ONLY=1 make -f mk/at-members.mk at-members-readback
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
 ```
 
 The full target is intentionally non-green when any complete AT is blocked.
-The readback targets are partial observations on the same images and incarnation;
-their successful exit cannot pass a full AT. Earlier assertions remain in
-`prior_checks` or the archived complete attempt, with their original UTC times.
+The readback target records supplemental scheduled observations (such as the
+300-second feed refresh and immutable restart timeline) on the same images and
+incarnation; its successful exit cannot pass a full AT.
 
 D-050 applies throughout: signed releases use `PrepareServingBaseline`; groups,
 plans, grants, publication and devices use product APIs and production admission.
@@ -34,7 +34,8 @@ counter snapshots and concurrent bounded packet observations inside the member,
 node and origin containers. The observer keeps only counts by interface and
 direction for the controlled TCP connection; no packet body, URL history or
 credential is retained. Both a CA-verified origin response and increases in the
-specific device's upload/download counters are required for counted forwarding.
+specific device's upload/download counters, plus authenticated origin receipt
+from the selected node's SNAT address, are required for counted forwarding.
 See [forwarding-observation.md](forwarding-observation.md).
 
 DNS policy revisions reuse one active definition. Node-mTLS document digests

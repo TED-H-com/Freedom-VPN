@@ -59,6 +59,74 @@ Manifest `components.netbird` is `0.82.0`, matching the daemon, and agent
 heartbeat/poll intervals are both five seconds. Only the running agent writes
 the health attestation. These settings are TEST ONLY.
 
+## Assigned port slots
+
+Offsets remain control `+443`, IdP `+444`, origin `+445`, payment `+446`,
+NetBird gateway `+480`, agent mTLS `+1443`, STUN UDP `+3478`, PostgreSQL `+5432`.
+Every base is 6000 apart. The existing eight slots keep exactly the same ports
+and networks; the two lower bases append subnet slots instead of shifting them.
+`66000` is rejected. Origin ranges below are TEST ONLY isolated bridges without
+masquerading; they are not documentation prefixes or public traffic targets.
+
+| Base | Owner / binding | Lab subnet | Origin subnet |
+|---:|---|---|---|
+| 6000 | Reserved; do not start | 172.28.39.0/24 | 192.0.12.0/24 |
+| 12000 | Enrollment: `w4-enroll` | 172.28.38.0/24 | 192.0.11.0/24 |
+| 18000 | Devstack: `e2e` | 172.28.30.0/24 | 192.0.3.0/24 |
+| 24000 | Members | 172.28.31.0/24 | 192.0.4.0/24 |
+| 30000 | Secops | 172.28.32.0/24 | 192.0.5.0/24 |
+| 36000 | Isolation | 172.28.33.0/24 | 192.0.6.0/24 |
+| 42000 | Updates | 172.28.34.0/24 | 192.0.7.0/24 |
+| 48000 | Usage | 172.28.35.0/24 | 192.0.8.0/24 |
+| 54000 | Agent | 172.28.36.0/24 | 192.0.9.0/24 |
+| 60000 | Wire-nodes | 172.28.37.0/24 | 192.0.10.0/24 |
+
+Each origin is `.10` in its listed subnet. This task starts only `e2e` / `18000`.
+The enrollment harness owner must replace its old `66000` binding with `12000`.
+
+## Gateway trust and client rate principals
+
+The public nginx location appends `X-Forwarded-For` with
+`$proxy_add_x_forwarded_for`. Prepared `central.json` trusts only the gateway's
+lab address (`172.28.30.21/32` for `e2e`); no whole lab subnet is trusted.
+Control uses the rightmost untrusted address, so a client-supplied prefix in the
+header cannot choose a different principal. A direct untrusted connection to
+control cannot choose one through that header either. With `trusted_proxies`
+empty, every client through this gateway shares its connection-address bucket.
+Clients sharing an actual source address still share pre-authentication limits.
+The agent mTLS listener remains direct and ignores forwarded headers.
+`worker_connections` is a separate nginx connection budget, not a control rate
+limit. The live `gateway-principals` record uses only responses and control
+metrics, never limiter tables.
+
+## Finite payment grace (SECOPS-04 / AT29)
+
+`fvpn-e2e-prepare -grace-seconds 90` writes `members.json:grace_seconds=90`
+and a TEST ONLY reason. The default is `0` (disabled); valid values are
+`0..31622400`, matching the members configuration bound. Through bring-up:
+
+```sh
+FVPN_E2E_GRACE_SECONDS=90 make -f mk/e2e.mk e2e-up E2E_RESET=1
+```
+
+This is a prepare-time option. Without reset, existing prepared state is reused
+and the environment variable does not rewrite it. Reset is for a fresh stack,
+not for changing a running stack's identity/secrets. Both control and worker
+load members configuration at startup: when deliberately editing an existing
+lab's `config/members.json`, restart both owned containers before the next
+reconciliation; changing a file alone does not update either process. No node
+restart is required for this setting; the node receives product-issued policy
+and lease updates. Existing grace projections are not rewritten by the lab.
+
+A harness records the configured seconds/reason, control and worker start times,
+a paid provider snapshot and successful reconciliation, a positive counted
+member flow, then the unpaid provider snapshot/event and read-only projected
+`grace_from`/`grace_until`, desired/lease generation, and before/after counters
+at the deadline. Do not infer payment or grace from webhook HTTP acceptance.
+Only inject control-loss/short-deadline faults after the positive flow. This
+option does not set `max_offline_lease_seconds`; D-065's API belongs to
+w3-wire-nodes. Clock rollback remains a disposable-guest operator run.
+
 ## Portal and payment
 
 `up.sh` builds the Portal with `npm ci` and `npm run build`. To reuse a build,
@@ -189,7 +257,7 @@ existing network and running node's immutable image. The entrypoint's
 `FVPN_E2E_MEMBER_NAME` supplies a distinct hostname. Each join compares that
 exact peer's NetBird user ID with the member's portal subject, then polls the
 product mapping and `/member/devices` authorization with a four-minute bound.
-Only aggregate counts escape the hook. No second Compose deployment or setup
+Only counts and bounded final per-stream inventories escape the hook. No second Compose deployment or setup
 key masquerading as a member is used. `StartNativePeer` and `JoinNativeMember`
 are available separately. Prefix teardown removes all additional peer
 containers and volumes. Acceptance runs the full **20 users × 3 peers** cohort. This proves native
@@ -351,3 +419,94 @@ read-only query, in addition to each peer's identity and authorization checks.
 Dynamic native peers and the second node namespace use the lab bridge's
 `.128/25` allocation pool. Static services remain below `.128`; a new peer
 cannot take a temporarily stopped control container's address during a fault.
+
+## Stale native client control hook
+
+`stack.PauseNativeControl(ctx, container, true)` stops only the named member
+container's NetBird userspace process, whose PID the entrypoint saves privately.
+Kernel WireGuard and installed routes remain. It does not pause the exit agent,
+watchdog, or the container. Require a fresh counted request **after** pausing;
+then issue the member DELETE through the API and inspect the node's new applied
+generation, ingress capture, `ctunku`, per-device admission counters, origin
+receipt and conntrack. Always defer `PauseNativeControl(..., false)` with a
+bounded cleanup context. A paused CLI cannot answer `netbird networks list`;
+read the kernel route directly instead. This is a controlled stale-client fault,
+not a normal user workflow or a repair of a revoked binding.
+
+## Node resource telemetry (AT31)
+
+With `-tags e2e`, `tests/e2e/internal/labstack` exports `NodeTelemetry` and:
+
+```go
+collect, err := stack.StartNodeTelemetry(ctx, 5*time.Second)
+if err != nil { t.Fatal(err) }
+defer collect() // also stop on an early test exit
+// Run bounded native admission or counted member traffic.
+resources := collect() // stops the sampler and returns all observations
+```
+
+The primary acceptance run collects at five-second cadence during member
+admission/traffic/usage polling and during the 20-user × 3-peer admission run.
+`node_telemetry` sits in those scenario records beside their inventory and flow
+evidence. Samples retain UTC time, cgroup v2 cumulative CPU microseconds,
+`memory.current` bytes, all node-container process FD counts, process count and
+the network namespace's `/proc/sys/net/netfilter/nf_conntrack_count`.
+CPU percentage is a delta over actual sample timestamps, with 100% meaning one
+fully occupied core; the first sample has no percentage. Docker exec is bounded
+per sample. Failed reads increment `errors`, never become fabricated zeros.
+The record includes the full series and configured cadence; scheduling jitter
+is visible in its timestamps. The command reads only inside the owned node
+container and emits no process arguments, FD paths, connection tuples or packet
+contents. Numbers include the small observer overhead; memory includes cgroup
+page cache. These are workload measurements, not an AT31 hardware certification.
+The sampler needs cgroup v2 and readable namespace procfs; it is stopped and
+collected before record writing and teardown.
+
+## Follow-up 12 export inventory
+
+Import `github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack` with
+`-tags e2e`. All methods below belong to the existing `Stack`; no copied test
+source or secondary Compose stack is required. Each operation validates the
+prepared stack prefix. The smoke procedure is in
+[shared harness exports](scenarios/harness-exports.md).
+
+| Export | Inputs and result |
+|---|---|
+| `SetupUpdaterProbe(ctx, slot, EnrolledNode)` | `node` or `node2`; creates one dedicated setup-key peer and narrow transport route for this exact enrolled incarnation. Returns `*UpdaterProbe`. Call once per slot/fresh stack. |
+| `UpdaterProbe.Config`, `.AgentConfig`, `.Notes` | Exact `probe_peer` JSON-compatible value and `/etc/vpn-node/agent-run.json`; put both into the actual updater invocation (including recovery invocations that should exercise health). Config contains public peer/address information, no setup key. `Notes` are the non-secret setup observations (`probe_not_member`, `probe_route_selected`, scope). Do not publish the raw peer ID. |
+| `UpdaterProbe.Observe(ctx)` | Returns a collector. Start before the real updater; call once after completion, including errors. Generates authenticated lab traffic and reads nft state. `ProbeObservation.Verified` requires bounded exception elements, replies/origin receipt, probe counters, unchanged member counters and removal. It never writes a challenge, attestation or nft rule. |
+| `GenerateEnrollmentIdentity(ctx, slot, name)` | Optional stack-local P-256 key, CSR and immutable signed request generator for a fresh waiting slot. Returns only `EnrolledIdentityInput` paths. Harnesses may stage their own equivalent files. |
+| `StageEnrollmentToken(ctx, slot, input, token)` | Stages a real API-issued token via stdin into root-owned 0600 storage; never an argument/log. The caller must not record the token. |
+| `JoinEnrolledIdentity(ctx, slot, input)` | Reads the caller's PKCS8 key, exact signed `api.EnrollRequest` (with CSR), and token at container paths under `/var/lib/vpn-node/e2e/harness/`. `DiscardResponse=true` consumes then discards a successful response before persistence/bootstrap. Replay with the same files; `Join=true` consumes the normal one-time mTLS bootstrap and joins NetBird. Returns only statuses, error code, request digest and public node/incarnation IDs. No agent or central database rows are manufactured. |
+| `EnrollmentPeerInventory(ctx, admin, enrollmentID)` | Complete remote key/group/peer collections plus enrollment, audit and node API readback. The setup-key and correlation-group names are the product's `fvpn-enroll-<hash>` and `fvpn-enroll-peer-<hash>` of the `enrollment.consumed` operation id, not the enrollment id. Group peers may be id strings or objects. `Complete` requires that operation's one-off key used once, exactly one projected peer, and at most one correlation group. Discovery deletes that group after binding, so a zero group count after a successful readback is the cleaned state, not a missing correlation. A missing collection or operation id is an error, not a successful zero. This does not supply ENR-03's missing full incarnation-history API. |
+| `MachineIdentityFingerprints(ctx, slot)` | SHA-256 of trimmed OS machine-id text, DER agent SPKI and raw NetBird X25519 public key. The native key is read from the client profile `/var/lib/netbird/default.json` inside the node. No private key, certificate or native config is returned. |
+| `StartClonedIdentityFixture(ctx, "node")` | Requires unused `node-clone`; stops source, copies durable state, identity and `/var/lib/netbird` into private mounts before clone boot, then resumes source. The clone bind-mounts that profile at `/var/lib/netbird`. A clean `StartSecondExit` still leaves the image's `/var/lib/netbird` writable. Returns a fixture with `Observe(ctx)` for hashes, entrypoint stages and actual read-only conflict/freeze rows. Never publish this clone. Prefix teardown removes it. |
+| `NativePeer.Stream`, `NativeScale.Streams` | Final per-stream scan inventory, at most 60 entries for 20×3. Contains synthetic stream name, `scanned/missing/error/not_started`, `NativeLogScan` (including `DeviceFlowKeys`), fixed safe error class and deletion outcome. A nonzero count is not a clean scan; missing/error is not zero. `JoinNativeMember` returns scanner/deletion errors instead of discarding them. |
+
+Probe example (the caller keeps its existing updater invocation):
+
+```go
+probe, err := stack.SetupUpdaterProbe(ctx, "node", enrolled)
+if err != nil { t.Fatal(err) }
+config["probe_peer"] = probe.Config
+config["agent_config"] = probe.AgentConfig
+collect, err := probe.Observe(ctx)
+if err != nil { t.Fatal(err) }
+// Write/invoke the real updater using config; never synthesize health files.
+// Call collect on every exit path after the invocation.
+evidence := collect()
+```
+
+The observer is bounded to 180 seconds and must surround the health phase.
+An artifact hash failure occurs before health and cannot prove D-063 issuance;
+use a separate valid candidate for that assertion. The dev-stack update-good
+record adds `configured_probe_issued`: true only when the in-node watcher sees
+a fresh `health-challenge.json` `probe` object equal to `UpdaterProbe.Config`.
+The watcher prints that boolean and does not copy the peer ID out. Source/destination guards remain the
+product validator's responsibility and are never relaxed by the lab.
+
+Protected native device-flow files are separate streams from gateway logs,
+container logs and captures. Their final scan happens before deletion even when
+a join fails or the caller cancels; cleanup has a separate ten-second bound.
+Only counts/mode/result leave the scanner. Other stream inventories remain the
+security-ops harness's responsibility.

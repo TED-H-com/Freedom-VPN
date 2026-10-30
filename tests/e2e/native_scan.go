@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"strings"
 )
 
@@ -25,11 +26,11 @@ func (s *Stack) ScanNativeJoinLog(ctx context.Context, container string) (Native
 	}
 	// The command emits aggregate counts only. No matched line, URL, code or
 	// secret crosses the container boundary for this scan.
-	raw, err := s.lab.docker(container, "sh", "-c", `p=/var/lib/vpn-node/e2e/netbird-up.log
+	raw, err := exec.CommandContext(ctx, "docker", "exec", container, "sh", "-c", `p=/var/lib/vpn-node/e2e/netbird-up.log
  if [ ! -f "$p" ]; then printf '{"present":false}'; exit 0; fi
  size=$(stat -c %s "$p"); mode=$(stat -c %u:%a "$p")
  count=$(grep -Eoc 'user_code=|verification_uri|device_code=' "$p" || true)
- printf '{"present":true,"bytes":%s,"mode":"%s","device_flow_keys":%s}' "$size" "$mode" "$count"`)
+ printf '{"present":true,"bytes":%s,"mode":"%s","device_flow_keys":%s}' "$size" "$mode" "$count"`).Output()
 	if err != nil {
 		return out, fmt.Errorf("protected native scan failed")
 	}

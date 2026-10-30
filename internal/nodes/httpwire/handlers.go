@@ -22,6 +22,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type Handlers struct {
@@ -189,6 +190,16 @@ func (h *Handlers) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen
 	}
 	return gen.GetNode200JSONResponse{Body: out, Headers: gen.GetNode200ResponseHeaders{ETag: &tag}}, nil
 }
+func (h *Handlers) ListNodeIncarnations(ctx context.Context, r gen.ListNodeIncarnationsRequestObject) (gen.ListNodeIncarnationsResponseObject, error) {
+	if e := h.ready(ctx); e != nil {
+		return nil, e
+	}
+	out, e := h.Runtime.Nodes.ListNodeIncarnations(ctx, r.NodeId, r.Params)
+	if e != nil {
+		return nil, e
+	}
+	return gen.ListNodeIncarnations200JSONResponse{Body: out}, nil
+}
 func (h *Handlers) ListMemberExits(ctx context.Context, _ gen.ListMemberExitsRequestObject) (gen.ListMemberExitsResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
 		return nil, e
@@ -268,18 +279,39 @@ func (h *Handlers) RetireNode(ctx context.Context, r gen.RetireNodeRequestObject
 	op, e := h.operation(ctx, out.OperationID)
 	return gen.RetireNode202JSONResponse{OperationAcceptedJSONResponse: op}, e
 }
+
+// observeAgentEndpointTx records the authenticated mTLS client's compatibility
+// domain inside the handler's transaction before any automatic identity-mapping
+// mutation in the same request (D-072). When a conflict freezes the mapping,
+// the request still returns its normal 2xx response while the frozen mapping
+// immediately governs observation projection and peer discovery.
+func (h *Handlers) observeAgentEndpointTx(ctx context.Context, tx pgx.Tx) error {
+	if h.Runtime == nil || h.Runtime.Enrollment == nil {
+		return nil
+	}
+	cert := httpapi.ClientCertificate(ctx)
+	domain := httpapi.ClientCompatibilityDomain(ctx)
+	if cert == nil || domain == "" {
+		return nil
+	}
+	_, err := h.Runtime.Enrollment.ObserveEndpointTx(ctx, tx, cert, domain, h.Runtime.Enrollment.ActiveWindow())
+	return err
+}
+
 func (h *Handlers) SubmitObservation(ctx context.Context, r gen.SubmitObservationRequestObject) (gen.SubmitObservationResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
 	i := identity(ctx)
 	var out api.ObservationAccepted
-	var e error
-	if tx, err := httpapi.Transaction(ctx); err == nil {
-		out, e = h.Runtime.Nodes.SubmitObservationTx(ctx, tx, i.NodeID, i.IncarnationID, *r.Body)
-	} else {
-		out, e = h.Runtime.Nodes.SubmitObservation(ctx, i.NodeID, i.IncarnationID, *r.Body)
-	}
+	e := commandtx.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
+			return err
+		}
+		var err error
+		out, err = h.Runtime.Nodes.SubmitObservationTx(ctx, tx, i.NodeID, i.IncarnationID, *r.Body)
+		return err
+	})
 	if e != nil {
 		return nil, e
 	}
@@ -371,6 +403,8 @@ func (h *Handlers) Replay(ctx context.Context, name string, ref db.IdempotencyRe
 		return nil, e
 	}
 	switch name {
+	case "UpdateFleetConfig":
+		return h.replayFleetConfig(ctx, ref)
 	case "SubmitObservation", "SubmitUpdateResult", "RenewServingLease":
 		return h.replayAgentReceipt(ctx, name, ref)
 	case "CreateAdminGroup":

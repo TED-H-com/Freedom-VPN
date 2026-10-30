@@ -89,49 +89,59 @@ type Engine struct {
 	mu      sync.Mutex
 	tlsCert *tls.Certificate
 
-	nodeID            uuid.UUID
-	incID             uuid.UUID
-	enrolled          bool
-	revoked           bool
-	bootstrapLost     bool
-	desired           *api.DesiredState
-	desiredETag       string
-	desiredOK         bool
-	desiredExpired    bool
-	lease             *api.ServingLease
-	leaseMono         time.Duration
-	leaseBoot         uuid.UUID
-	highestIssued     time.Time
-	leaseFresh        bool
-	anchor            timeanchor.Anchor
-	anchorOK          bool
-	baselineOK        bool
-	storageOK         bool
-	serving           bool
-	appliedGen        uint64
-	assignments       map[uuid.UUID]uint16
-	counters          map[string]enforce.CounterValue
-	addresses         []string
-	pendingRevoke     []netip.Addr
-	recoverBlocked    bool
-	recovered         bool
-	latchBlocked      bool
-	outboxFull        bool
-	meterFailed       bool
-	applyError        *api.NodeError
-	dependencyMissing bool
-	leaseRetryAt      time.Duration
-	leaseAttempted    bool
-	decision          Decision
-	policyExpires     time.Duration
-	lastObs           time.Time
-	lastServing       bool
-	prober            Prober
-	lastProbe         ProbeResult
+	nodeID             uuid.UUID
+	incID              uuid.UUID
+	enrolled           bool
+	revoked            bool
+	bootstrapLost      bool
+	desired            *api.DesiredState
+	desiredETag        string
+	desiredOK          bool
+	desiredExpired     bool
+	lease              *api.ServingLease
+	leaseMono          time.Duration
+	leaseBoot          uuid.UUID
+	highestIssued      time.Time
+	leaseFresh         bool
+	anchor             timeanchor.Anchor
+	anchorOK           bool
+	baselineOK         bool
+	storageOK          bool
+	serving            bool
+	appliedGen         uint64
+	assignments        map[uuid.UUID]uint16
+	counters           map[string]enforce.CounterValue
+	addresses          []addrID
+	pendingRevoke      []addrID
+	conntrackAttempts  int
+	conntrackBlocked   bool
+	conntrackDetail    string
+	recoverBlocked     bool
+	recovered          bool
+	latchBlocked       bool
+	outboxFull         bool
+	meterFailed        bool
+	applyError         *api.NodeError
+	dependencyMissing  bool
+	leaseRetryAt       time.Duration
+	leaseAttempted     bool
+	provisionalStreak  int
+	provisionalRetryAt time.Duration
+	decision           Decision
+	policyExpires      time.Duration
+	lastObs            time.Time
+	lastServing        bool
+	prober             Prober
+	lastProbe          ProbeResult
 	// probeAt is the trusted time of the last probe. An answer is written only
 	// when this is strictly after the challenge issued_at, so a cached probe
 	// cannot satisfy a challenge that did not exist yet.
 	probeAt time.Time
+	// Keep omission evidence after the updater consumes its sidecars. Only a
+	// newer probe-bearing or omission-bearing challenge supersedes it.
+	probeOmitted        string
+	probeOmittedAt      time.Time
+	probeEvidenceIssued time.Time
 	// healthNonce and healthSig remember the last answer this process wrote.
 	// A restart leaves them empty, so the next answer is a new file. An
 	// attestation already on disk when the challenge appeared is not evidence
@@ -442,6 +452,10 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.answerHealth(ctx)
 		return nil
 	}
+	// Classify the document before the lease decision. After a restart the
+	// stored desired state is loaded with desiredOK still false, and the
+	// provisional schedule is armed in the same step that accepts the lease.
+	e.refreshDesired()
 	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
 		return err
 	}
@@ -529,11 +543,30 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 	for name, c := range raw {
 		e.counters[name] = enforce.CounterValue{Packets: c.Packets, Bytes: c.Bytes}
 	}
-	e.addresses, err = e.store.Addresses(ctx)
+	rows, err := e.store.Addresses(ctx)
 	if err != nil {
 		return err
 	}
-	return e.loadRevocations(ctx)
+	e.addresses = nil
+	for _, row := range rows {
+		addr, err := netip.ParseAddr(row.Addr)
+		if err != nil || !addr.Is4() {
+			return errors.New("agent: invalid applied address")
+		}
+		device, err := uuid.Parse(row.DeviceID)
+		if err != nil {
+			return errors.New("agent: invalid applied address")
+		}
+		member, err := uuid.Parse(row.MemberID)
+		if err != nil {
+			return errors.New("agent: invalid applied address")
+		}
+		e.addresses = append(e.addresses, addrID{Addr: addr, DeviceID: device, MemberID: member})
+	}
+	if err := e.loadRevocations(ctx); err != nil {
+		return err
+	}
+	return e.loadConntrackState(ctx)
 }
 
 func (e *Engine) trustedNow() time.Time {
@@ -564,11 +597,12 @@ func (e *Engine) input() Input {
 		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
 		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
 		ApplyError: e.applyError, DependencyMissing: e.dependencyMissing, LeaseRetryPending: e.leaseRetryAt > 0,
-		RevocationPending: len(e.pendingRevoke) > 0,
-		OutboxFull:        e.outboxFull, MeterFailed: e.meterFailed,
+		RevocationPending: len(e.pendingRevoke) > 0, ConntrackBlocked: e.conntrackBlocked,
+		ConntrackDetail: e.conntrackDetail,
+		OutboxFull:      e.outboxFull, MeterFailed: e.meterFailed,
 		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
-		ProbeRan: e.lastProbe.Ran, ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
-		ProbeSource: e.probeSource,
+		ProbeRan: e.lastProbe.Ran && e.probeOmitted == "", ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
+		ProbeSource: e.probeSource, ProbeOmitted: e.probeOmitted, ProbeOmittedAt: e.probeOmittedAt,
 		DNSDocument: e.dnsDocument, DNSFailed: e.dnsFailed, DNSCode: e.dnsCode, DNSDetail: e.dnsDetail,
 	}
 }
@@ -597,6 +631,32 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 			e.probeAt = time.Time{}
 		}
 	})
+	e.noteProbeOmission()
+}
+
+// noteProbeOmission retains only the shared reader's fixed reason, never the
+// peer ID. Re-read the challenge after the probe to bind this evidence to the
+// same live issuance. A plain overlay check cannot supersede a refused probe.
+func (e *Engine) noteProbeOmission() {
+	ch, ok := e.matchingChallenge()
+	now := e.trustedNow().UTC()
+	if !ok || !e.anchorOK || e.probedChallenge == nil || !ch.Same(*e.probedChallenge) ||
+		!now.After(ch.IssuedAt) || !now.Before(ch.ExpiresAt) || !ch.IssuedAt.After(e.probeEvidenceIssued) {
+		return
+	}
+	if ch.Probe == nil && ch.ProbeOmitted == nil {
+		return
+	}
+	e.probeEvidenceIssued = ch.IssuedAt
+	e.probeOmitted = ""
+	e.probeOmittedAt = time.Time{}
+	if ch.ProbeOmitted != nil {
+		e.probeOmitted = ch.ProbeOmitted.Reason
+		e.probeOmittedAt = now
+	}
+	// The node may stay non-serving across this change; do not wait for the
+	// serving-state trigger to publish the new check evidence.
+	e.lastObs = time.Time{}
 }
 
 // verifyTime reports the time used to check a signed document.
@@ -681,12 +741,15 @@ func (e *Engine) baseline(ctx context.Context) error {
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	baselineOK, meterFailed, applyError := e.baselineOK, e.meterFailed, e.applyError
 	storageOK, revocationPending := e.storageOK, len(e.pendingRevoke) > 0
+	blocked := e.conntrackBlocked
 	defer func() {
-		if revocationPending != (len(e.pendingRevoke) > 0) {
-			// Publish the new pending/cleared condition on this tick.
+		pendingChanged := revocationPending != (len(e.pendingRevoke) > 0)
+		blockedChanged := blocked != e.conntrackBlocked
+		if pendingChanged || blockedChanged {
+			// Publish the new pending or failed-closed condition on this tick.
 			e.lastObs = time.Time{}
 		}
-		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || revocationPending != (len(e.pendingRevoke) > 0) {
+		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || pendingChanged || blockedChanged {
 			errs := e.decision.Errors
 			e.decision = Decide(e.input())
 			for _, err := range errs {
@@ -696,6 +759,21 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			}
 		}
 	}()
+	if e.conntrackBlocked && !e.conntrackMissing() && e.flushPendingConntrack(ctx) {
+		e.clearConntrackBlock(ctx)
+		d = Decide(e.input())
+		e.decision = d
+	}
+	if e.conntrackMissing() {
+		e.markConntrackBlocked(ctx, conntrackMissingDetail)
+		d.Serve = false
+		e.decision.Serve = false
+	} else if e.conntrackBlocked {
+		e.serving = false
+		e.policyExpires = 0
+		_ = e.baseline(ctx)
+		return nil
+	}
 	// A previous failure remains reportable while we retry. Only the candidate
 	// decision omits it; successful read-back below clears the evidence.
 	if e.applyError != nil {
@@ -733,15 +811,20 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	defer lock.Release()
 	model := d.Model
-	model.Revoke = mergeRevocations(e.pendingRevoke, droppedAddrs(e.addresses, model))
+	queued := planRevokes(e.pendingRevoke, e.addresses, model.Bindings)
+	model.Revoke = queued
 	prev := map[string]enforce.CounterValue{}
 	for name, c := range e.counters {
 		prev[name] = c
 	}
 	wasServing := e.expectServing.Load()
 	res, err := e.plane.Apply(ctx, model, prev)
-	pending := err != nil && res.Verified && enforce.IsConntrackDeleteFailure(err)
-	if err != nil && !pending {
+	// A verified conntrack failure keeps serving. Only Failed stays pending.
+	// An empty Failed list is a successful delete and resets the bound.
+	var ctErr *enforce.ConntrackDeleteError
+	verifiedDelete := err != nil && res.Verified && errors.As(err, &ctErr)
+	pending := verifiedDelete && len(ctErr.Failed) > 0
+	if err != nil && !verifiedDelete {
 		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
@@ -756,9 +839,25 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	e.policyExpires = d.PolicyExpires
 	e.ackApplied(ctx, model.Generation)
 	if pending {
-		e.saveRevocations(ctx, model.Revoke)
+		e.conntrackAttempts++
+		if e.conntrackAttempts > maxConntrackDeleteAttempts {
+			e.conntrackAttempts = maxConntrackDeleteAttempts
+		}
+		e.saveRevocations(ctx, pendingAfterFailure(e.pendingRevoke, e.addresses, model.Bindings, ctErr.Failed))
+		if e.conntrackAttempts >= maxConntrackDeleteAttempts {
+			e.markConntrackBlocked(ctx, conntrackBoundDetail)
+			e.handoff(ctx)
+			e.serving = false
+			e.policyExpires = 0
+			_ = e.baseline(ctx)
+			return nil
+		}
+		e.persistConntrack(ctx)
 	} else {
 		e.saveRevocations(ctx, nil)
+		if e.conntrackAttempts != 0 || e.conntrackBlocked {
+			e.clearConntrackBlock(ctx)
+		}
 	}
 	if res.Plan.Assignments != nil {
 		e.assignments = res.Plan.Assignments
@@ -779,8 +878,14 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			e.storageOK = false
 		}
 	}
-	e.addresses = bindingAddrs(model)
-	if err := e.store.SaveAddresses(ctx, e.addresses); err != nil {
+	e.addresses = bindingIDs(model)
+	stored := make([]agentstore.AppliedAddress, 0, len(e.addresses))
+	for _, id := range e.addresses {
+		stored = append(stored, agentstore.AppliedAddress{
+			Addr: id.Addr.String(), DeviceID: id.DeviceID.String(), MemberID: id.MemberID.String(),
+		})
+	}
+	if err := e.store.SaveAddresses(ctx, stored); err != nil {
 		e.storageOK = false
 	}
 	e.setMeterBindings(model.Bindings)
@@ -883,39 +988,4 @@ func (e *Engine) renewLead(window time.Duration) time.Duration {
 		lead = time.Second
 	}
 	return lead
-}
-
-func droppedAddrs(prev []string, m enforce.Model) []netip.Addr {
-	keep := map[string]bool{}
-	for _, b := range m.Bindings {
-		for _, p := range b.AllowedV4 {
-			keep[p.Addr().String()] = true
-		}
-	}
-	var out []netip.Addr
-	for _, s := range prev {
-		if keep[s] {
-			continue
-		}
-		a, err := netip.ParseAddr(s)
-		if err == nil {
-			out = append(out, a)
-		}
-	}
-	return out
-}
-
-func bindingAddrs(m enforce.Model) []string {
-	var out []string
-	seen := map[string]bool{}
-	for _, b := range m.Bindings {
-		for _, p := range b.AllowedV4 {
-			s := p.Addr().String()
-			if !seen[s] {
-				seen[s] = true
-				out = append(out, s)
-			}
-		}
-	}
-	return out
 }

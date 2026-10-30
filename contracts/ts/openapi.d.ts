@@ -39,7 +39,8 @@ export interface paths {
          * Create a single-node enrollment
          * @description Creates one enrollment with a reserved Node (§6.1, §18.2). The one-time
          *     token is returned only in the first response; the database stores only its
-         *     hash. A retry with the same Idempotency-Key and payload returns the same
+         *     SHA-256, and `Enrollment.token_sha256` is that digest in lowercase hex.
+         *     A retry with the same Idempotency-Key and payload returns the same
          *     enrollment with `secret_available=false` and `token=null` (§14.5). Creating
          *     an enrollment is the authorization to join; there is no further manual
          *     admission step (ENR01). Optional node_id authorizes reinstallation onto
@@ -65,7 +66,8 @@ export interface paths {
         };
         /**
          * Get an enrollment
-         * @description Expiry, binding and usage state. The raw token is never returned (§14.2).
+         * @description Expiry, binding and usage state (§14.2, §6.1). The raw token is never
+         *     returned. `token_sha256` is the stored SHA-256 of that token.
          */
         get: operations["getEnrollment"];
         put?: never;
@@ -131,6 +133,31 @@ export interface paths {
          *     state.
          */
         patch: operations["updateNode"];
+        trace?: never;
+    };
+    "/admin/nodes/{node_id}/incarnations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a node's incarnations
+         * @description Every incarnation the node has ever had, newest first (§14.2, §6.2,
+         *     §15.3, §19 AT07). Read-only. An unknown node is 404. A node that exists
+         *     and has never consumed an enrollment returns an empty page. Usage on
+         *     each item is that incarnation's own ledger total and never moves to a
+         *     later incarnation. There is no stored incarnation-state or retire-reason
+         *     column; both are derived as `NodeIncarnation` describes.
+         */
+        get: operations["listNodeIncarnations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/admin/nodes/{node_id}/publication": {
@@ -437,6 +464,8 @@ export interface paths {
          * List audit events
          * @description Paginated, redacted audit events filtered by resource, actor, period
          *     `[occurred_from, occurred_to)` or request_id (§14.2, §16.4). Read-only.
+         *     `enrollment.created` carries `token_sha256` in `changes.after`. Property
+         *     names ending in `_sha256` are digests and are never redacted.
          */
         get: operations["listAuditEvents"];
         put?: never;
@@ -908,6 +937,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/fleet-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read fleet configuration
+         * @description Operator-role read of the singleton fleet configuration (D-065, §16.3).
+         *     The row id is `00000000-0000-0000-0000-000000000001`.
+         *     `max_offline_lease_seconds` is copied onto leases issued or renewed after
+         *     it is stored. Leases already issued keep their `max_offline_seconds`
+         *     until renewal: a later write does not shorten or extend them, and the
+         *     §16.3 replay rule is untouched (replaying a known lease never restarts
+         *     its time). The response carries the strong ETag `"<resource_version>"`.
+         *     `default_max_offline_lease_seconds` is the read-only recommended default,
+         *     always 86400. The maximum 86400 is the §16.3 ceiling (每次服務租約最長 24
+         *     小時), not a recommendation. The minimum 60 exists for test labs: the
+         *     agent renews when the remaining window is at or below
+         *     min(`renew_lead_seconds` 120, window/2) with a 10 s heartbeat, so a 60 s
+         *     lease is renewed at about 30 s remaining. The portal must warn below 900 s.
+         */
+        get: operations["getFleetConfig"];
+        /**
+         * Set the fleet offline-lease ceiling
+         * @description Stores `max_offline_lease_seconds` on the singleton fleet configuration
+         *     (D-065, §16.3). Returns 200 with the resource. The API reserves 202 for
+         *     an operation whose external or data-plane effect is still pending;
+         *     `Operation` succeeds only after observed evidence for every required
+         *     step. This write is one local row. Lease issuance reads that row later,
+         *     and leases already issued are not rewritten, so nothing in the data
+         *     plane is pending when the response is sent.
+         *     The value applies only to leases issued or renewed after the write.
+         *     There is no retroactive shortening and no extension. The §16.3 replay
+         *     rule is untouched. The minimum 60 exists for test labs (renewal at about
+         *     30 s remaining on a 60 s lease; see GET). The portal must warn below
+         *     900 s. The maximum 86400 is the §16.3 ceiling, not a recommendation.
+         *     An accepted write increments `resource_version`, sets `updated_at`, and
+         *     records one audit event `fleet_config.update` on resource
+         *     `fleet_config:00000000-0000-0000-0000-000000000001`. `changes.before` and
+         *     `changes.after` each contain `max_offline_lease_seconds`. `operation_id`
+         *     is null. Requires If-Match (428 PRECONDITION_REQUIRED when missing, 412
+         *     RESOURCE_VERSION_CONFLICT with `details.current_resource_version`) and
+         *     Idempotency-Key. The same key and payload replay the original 200; a
+         *     different payload is 409 IDEMPOTENCY_CONFLICT. A value below 60 or above
+         *     86400 is 422 VALIDATION_FAILED, the existing schema-validation code.
+         */
+        put: operations["updateFleetConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/groups": {
         parameters: {
             query?: never;
@@ -974,8 +1059,9 @@ export interface components {
          *     contracts tests keep this enum identical to that table. Codes marked
          *     node-local in `pkg/apierr` are reported mainly inside agent payloads
          *     (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-         *     METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-         *     in revision 8 are report-only and have no HTTP response status.
+         *     METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+         *     in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+         *     have no HTTP response status.
          *     NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
          *     endpoints must not ship with it in a release.
          *     Node enforcement verification (§13.11) is the address-free group the node
@@ -994,9 +1080,10 @@ export interface components {
          *     MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
          *     ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
          *     PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+         *     AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
          * @enum {string}
          */
-        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "ARTIFACT_INVALID" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "ISOLATION_BASELINE_MISSING" | "METER_EPOCH_CHANGE" | "ISOLATION_POLICY_INVALID" | "GENERATION_MISMATCH" | "HOOK_PRIORITY_MISMATCH" | "COUNTER_ORDER_INVALID" | "FLOWTABLE_BYPASS" | "DEVICE_CLASS_MISSING" | "QOS_CLASS_MISSING" | "MARK_SEMANTICS_VIOLATED" | "PROBE_UNBOUNDED" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
+        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "ARTIFACT_INVALID" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "ISOLATION_BASELINE_MISSING" | "METER_EPOCH_CHANGE" | "ISOLATION_POLICY_INVALID" | "GENERATION_MISMATCH" | "HOOK_PRIORITY_MISMATCH" | "COUNTER_ORDER_INVALID" | "FLOWTABLE_BYPASS" | "DEVICE_CLASS_MISSING" | "QOS_CLASS_MISSING" | "MARK_SEMANTICS_VIOLATED" | "PROBE_UNBOUNDED" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "AWAITING_MEMBER_GRANTS" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
         /** @description Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type). */
         PeriodId: string;
         /** @description User-facing text. zh-TW is the default UI language; English is second. */
@@ -1016,6 +1103,46 @@ export interface components {
         };
         /** @description A command that only needs an audited reason. */
         ReasonRequest: {
+            reason: string;
+        };
+        /**
+         * @description Singleton fleet configuration (D-065, §16.3). The row id is
+         *     `00000000-0000-0000-0000-000000000001`. `resource_version` is the strong
+         *     ETag value without the surrounding quotes.
+         */
+        FleetConfig: {
+            /**
+             * @description Seconds copied onto leases issued or renewed after this value is
+             *     stored. Already issued leases keep `max_offline_seconds` until
+             *     renewal. 60 is the test-lab floor. 86400 is the §16.3 ceiling
+             *     (每次服務租約最長 24 小時), not a recommendation. The portal must warn
+             *     when the value is below 900.
+             */
+            max_offline_lease_seconds: number;
+            /**
+             * @description Read-only recommended default (§16.3). Always 86400. Not accepted on PUT.
+             * @enum {integer}
+             */
+            readonly default_max_offline_lease_seconds: 86400;
+            /** @description Monotonic version of the fleet configuration row. The ETag is `"<resource_version>"`. */
+            resource_version: string;
+            /**
+             * Format: date-time
+             * @description Time of the last accepted write.
+             */
+            updated_at: string;
+        };
+        /**
+         * @description Replace `max_offline_lease_seconds` (D-065). `reason` uses the same
+         *     bounds as the other admin reasons (`ReasonRequest`).
+         */
+        FleetConfigUpdate: {
+            /**
+             * @description Next value copied onto leases issued or renewed after this write.
+             *     Below 60 or above 86400 is 422 VALIDATION_FAILED.
+             */
+            max_offline_lease_seconds: number;
+            /** @description Audited reason for the change. */
             reason: string;
         };
         /**
@@ -1271,6 +1398,19 @@ export interface components {
             /** Format: date-time */
             created_at: string;
         };
+        /**
+         * @description Cloned or duplicated node identity state for the current incarnation
+         *     (spec line 278, docs/pki/enrollment.md). Endpoint hashes, addresses and
+         *     compatibility domains are never exposed.
+         */
+        NodeIdentityConflict: {
+            /** @description The current incarnation's external identity mapping is frozen - automatic mapping updates are suppressed. Resolution is operator revoke + re-enroll (the new incarnation starts unfrozen). There is no automatic unfreeze and no unfreeze operation. */
+            mapping_frozen: boolean;
+            /** @description Recorded identity conflicts for the current incarnation. */
+            conflict_count: number;
+            /** Format: date-time */
+            last_conflict_at: string | null;
+        };
         /** @description Node detail (§14.2, §18.1) with desired versus observed differences. */
         NodeDetail: components["schemas"]["NodeSummary"] & {
             /** Format: uuid */
@@ -1294,6 +1434,13 @@ export interface components {
             /** @description Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed. Empty means no attached groups; absent means not projected. Existing member_group_ids remains unchanged. */
             group_ids?: string[];
             /**
+             * @description Cloned or duplicated node identity state (spec line 278, docs/pki/enrollment.md).
+             *     null when the node has no current incarnation or no endpoint has been observed yet;
+             *     absent means the server does not project it yet (pre-revision-11). Endpoint hashes,
+             *     addresses and compatibility domains are never exposed.
+             */
+            identity_conflict?: components["schemas"]["NodeIdentityConflict"] | null;
+            /**
              * @description Reported DNS policy evidence from the immutable observation selected for this
              *     node's current incarnation (D-056). Same shape as ObservationReport.dns_policy_evidence:
              *     document id, content digest, policy generation, outcome, applied_at, feed summaries
@@ -1303,6 +1450,16 @@ export interface components {
              */
             dns_policy_evidence?: components["schemas"]["DnsPolicyEvidence"] | null;
         };
+        /**
+         * @description One named node check. In the D-071 provisional state (the node lease for this
+         *     generation is inside its anchored deadline, `config_generation` equals the desired
+         *     generation, `lease.members` is empty, and desired `device_bindings` is non-empty),
+         *     `name=lease`, `name=qos` and `name=source_binding` are `status=failed` with
+         *     `error_code=AWAITING_MEMBER_GRANTS`, not `VALIDATION_FAILED`. Details are
+         *     `Serving lease has no member grants yet.`, `Rate policy could not be applied.`
+         *     and `No member binding was admitted.`. A passed deadline uses `LEASE_EXPIRED`
+         *     (`Serving lease is not in force.`). A generation mismatch uses `STALE_GENERATION`.
+         */
         NodeCheck: {
             /** @enum {string} */
             name: "internet_only" | "source_binding" | "meter_path" | "qos" | "dns_policy" | "lease" | "policy_signature" | "release_supported" | "tunnel_probe" | "storage";
@@ -1374,7 +1531,11 @@ export interface components {
             member_group_ids?: string[];
             notes?: string;
         };
-        /** @description Enrollment without the token (§6.1, §15.3). */
+        /**
+         * @description Enrollment without the token (§6.1, §15.3). Returned by `getEnrollment`
+         *     and as `EnrollmentCreated.enrollment`. This API has no `listEnrollments`
+         *     operation; the same object is the enrollment record wherever it appears.
+         */
         Enrollment: {
             /** Format: uuid */
             enrollment_id: string;
@@ -1403,6 +1564,13 @@ export interface components {
             node_incarnation_id: string | null;
             /** @description SHA-256 of the DER SubjectPublicKeyInfo bound at first use. */
             bound_public_key_sha256: string | null;
+            /**
+             * @description Lowercase hex SHA-256 of the one-time enrollment token. This is the
+             *     only form the database keeps (`node_enrollments.token_hash`). The
+             *     plaintext is returned once, on creation, and never again (§6.1).
+             *     It is not `bound_public_key_sha256`, which is the CSR key.
+             */
+            readonly token_sha256: string;
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */
@@ -1420,6 +1588,107 @@ export interface components {
             /** @description One-time, high-entropy (at least 256 bits, base64url) enrollment token. Secret; never logged. */
             token: string | null;
             secret_available: boolean;
+        };
+        /**
+         * @description Derived incarnation lifecycle. The node schemas do not expose an
+         *     incarnation-state enum, and `node_incarnations` has no state column.
+         *     `active` means `revoked_at` is null (partial unique index
+         *     `node_incarnations_active_key` in `db/migrations/00002_nodes.sql`).
+         *     `retired` means `revoked_at` is not null. `internal/nodes/observations.go`
+         *     treats a non-null `revoked_at` as revoked and a current-pointer mismatch
+         *     as superseded; those are request errors, not extra stored states.
+         *     `LifecycleState` is the node, not the incarnation.
+         * @enum {string}
+         */
+        NodeIncarnationState: "active" | "retired";
+        /**
+         * @description Why a retired incarnation stopped. There is no retire-reason column.
+         *     Derive it from the nodes domain, in this order, and leave it null while
+         *     `revoked_at` is null. `reinstall`: another `node_incarnations` row for
+         *     the same node has a later `created_at` (`internal/enrollment/service.go`,
+         *     the AT07 authorized reinstall that requires the previous incarnation to
+         *     be revoked before the new row is inserted). `revocation`: no later
+         *     incarnation, and `nodes.lifecycle_state` is `revoked` or `retired`
+         *     (`internal/enrollment/revoke.go` `revokeNode` sets `revoked_at` for both
+         *     `node.revoked` and `node.retired`). `supersession`: `revoked_at` is set
+         *     and the row is not explained by those two rules
+         *     (`internal/nodes/observations.go`, "superseded by a newer incarnation").
+         * @enum {string}
+         */
+        NodeIncarnationRetireReason: "reinstall" | "revocation" | "supersession";
+        /**
+         * @description Ledger total for this incarnation only (§10, §19 AT07). It never moves
+         *     to another incarnation. `upload_bytes` and `download_bytes` are the sum
+         *     of accepted `usage_samples.upload_bytes` and `download_bytes` whose
+         *     `usage_events.incarnation_id` is this incarnation. Rejections and
+         *     conflicts are not included. `through` is
+         *     `usage_checkpoints.updated_at` for that `(node_id, incarnation_id)`,
+         *     null when that checkpoint row does not exist. Bytes are zero when no
+         *     accepted sample exists. A sum above 18446744073709551615 is a failure,
+         *     not a truncated total.
+         */
+        NodeIncarnationUsage: {
+            upload_bytes: string;
+            download_bytes: string;
+            /**
+             * Format: date-time
+             * @description Time of the last accepted usage checkpoint for this incarnation.
+             */
+            through: string | null;
+        };
+        /**
+         * @description One historical incarnation (§6.2, §15.3). Columns: `node_incarnations.id`,
+         *     `created_at`, `revoked_at`, `public_key_fingerprint`;
+         *     `nodes.current_incarnation_id` and `nodes.lifecycle_state`;
+         *     `node_enrollments.id` and `consumed_at` where
+         *     `node_enrollments.incarnation_id` equals this row. Product consumption
+         *     always writes that enrollment link (`internal/enrollment/service.go`).
+         *     `created_at` is `node_incarnations.created_at`. `bound_at` is
+         *     `node_enrollments.consumed_at` (the CSR accept time; the incarnation row
+         *     is inserted in that same transaction, and there is no earlier unbound
+         *     incarnation row). `retired_at` is `node_incarnations.revoked_at`, not
+         *     `nodes.retired_at`. `bound_public_key_sha256` is the lowercase hex of
+         *     `public_key_fingerprint`, the same SHA-256 of the DER
+         *     SubjectPublicKeyInfo as on `Enrollment`. `current` is true when
+         *     `nodes.current_incarnation_id` equals this id. Revocation does not clear
+         *     that pointer, so a retired incarnation can still be current until a
+         *     reinstall replaces it.
+         */
+        NodeIncarnation: {
+            /** Format: uuid */
+            incarnation_id: string;
+            state: components["schemas"]["NodeIncarnationState"];
+            /**
+             * Format: uuid
+             * @description Enrollment that created this incarnation (`node_enrollments.id`).
+             */
+            enrollment_id: string;
+            /** Format: date-time */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description When the enrollment was consumed and this incarnation was inserted.
+             */
+            bound_at: string;
+            /**
+             * Format: date-time
+             * @description `node_incarnations.revoked_at`. Null while the incarnation is active.
+             */
+            retired_at: string | null;
+            retire_reason: (string & components["schemas"]["NodeIncarnationRetireReason"]) | null;
+            /** @description SHA-256 of the DER SubjectPublicKeyInfo bound at consumption. */
+            bound_public_key_sha256: string;
+            /** @description True when this id is `nodes.current_incarnation_id`. */
+            current: boolean;
+            usage: components["schemas"]["NodeIncarnationUsage"];
+        };
+        /**
+         * @description Cursor page of incarnations, newest `created_at` first, then
+         *     `incarnation_id` descending. `limit` defaults to 50 and is at most 100.
+         */
+        NodeIncarnationList: {
+            items: components["schemas"]["NodeIncarnation"][];
+            next_cursor: string | null;
         };
         PlanRef: {
             /**
@@ -2481,7 +2750,13 @@ export interface components {
             target_ids?: string[];
             reason: string;
         };
-        /** @description Redacted audit event (§9.1, §16.4). Configuration history, never member browsing history. */
+        /**
+         * @description Redacted audit event (§9.1, §16.4). Configuration history, never member
+         *     browsing history. `enrollment.created` puts `token_sha256` in
+         *     `changes.after`: the lowercase hex SHA-256 of the one-time token, the
+         *     same value as `Enrollment.token_sha256`. Property names ending in
+         *     `_sha256` are digests and are never redacted.
+         */
         AuditEvent: {
             /** Format: uuid */
             audit_event_id: string;
@@ -2502,7 +2777,11 @@ export interface components {
             operation_id: string | null;
             /** @enum {string} */
             result: "succeeded" | "failed" | "denied";
-            /** @description Redacted before/after differences. Never secrets, tokens or full payment payloads. */
+            /**
+             * @description Redacted before/after differences. Never secrets, tokens or full
+             *     payment payloads. Property names ending in `_sha256` are digests
+             *     and are never redacted, including `token_sha256`.
+             */
             changes: {
                 before: {
                     [key: string]: unknown;
@@ -2961,10 +3240,37 @@ export interface components {
         };
         /**
          * @description Why member forwarding is off on the node (fail-closed reasons).
+         *     `lease_expired` is the anchored deadline of the node lease for this
+         *     generation: the lease is no longer in force. `awaiting_member_grants`
+         *     (D-067) is different: the node holds a valid node lease whose member
+         *     grant set is empty while the desired generation carries member bindings.
+         *     The agent renews on a bounded schedule. Do not report `lease_expired`
+         *     for that provisional lease. While that deadline holds, the `lease`,
+         *     `qos` and `source_binding` checks and the single `errors[]` entry use
+         *     `ErrorCode` `AWAITING_MEMBER_GRANTS` (D-071). This enum is unchanged.
          * @enum {string}
          */
-        ForwardingBlockReason: "not_published" | "identity_invalid" | "provisioning_incomplete" | "policy_missing" | "policy_expired" | "lease_expired" | "clock_untrusted" | "safety_check_failed" | "meter_path_invalid" | "meter_storage_failed" | "outbox_full" | "disk_low" | "release_not_supported" | "update_in_progress" | "recovery_required";
-        /** @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at. */
+        ForwardingBlockReason: "not_published" | "identity_invalid" | "provisioning_incomplete" | "policy_missing" | "policy_expired" | "lease_expired" | "awaiting_member_grants" | "clock_untrusted" | "safety_check_failed" | "meter_path_invalid" | "meter_storage_failed" | "outbox_full" | "disk_low" | "release_not_supported" | "update_in_progress" | "recovery_required";
+        /**
+         * @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
+         *     the center stores its own received_at.
+         *     D-071. When the node lease for this generation is inside its anchored deadline and
+         *     `config_generation` equals the desired generation, but `lease.members` is empty while
+         *     desired `device_bindings` is non-empty, `forwarding_block_reasons` contains
+         *     `awaiting_member_grants` (revision 10; that vocabulary is unchanged) and `safety_status`
+         *     stays `passed`. `checks[]` then carries `name=lease`, `status=failed`,
+         *     `error_code=AWAITING_MEMBER_GRANTS`, detail `Serving lease has no member grants yet.`;
+         *     `name=qos` and `name=source_binding` in the same provisional state carry
+         *     `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) with details
+         *     `Rate policy could not be applied.` and `No member binding was admitted.`.
+         *     `errors[]` carries exactly one entry `code=AWAITING_MEMBER_GRANTS`, `stage=lease`,
+         *     `message=Serving lease has no member grants yet.`. The agent renews on the D-067
+         *     schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline
+         *     failure and not a malformed policy.
+         *     Negatives, unchanged: a passed deadline is `lease_expired` / `LEASE_EXPIRED`
+         *     (`Serving lease is not in force.`); a generation mismatch is `policy_missing` /
+         *     `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
+         */
         ObservationReport: {
             /**
              * Format: uuid
@@ -3404,7 +3710,9 @@ export interface components {
              */
             expires_at: string;
             /**
-             * @description configured_max_offline_lease; recommended default 24 hours (§16.3).
+             * @description Seconds copied from fleet configuration at issuance or renewal (§16.3).
+             *     A later `PUT /admin/fleet-config` does not rewrite this field. 86400 is
+             *     the ceiling and the recommended default.
              * @default 86400
              */
             max_offline_seconds: number;
@@ -4045,6 +4353,41 @@ export interface operations {
             412: components["responses"]["PreconditionFailed"];
             422: components["responses"]["UnprocessableEntity"];
             428: components["responses"]["PreconditionRequired"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    listNodeIncarnations: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1). */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Page size. Default 50, maximum 100 (§14.1, recommended default). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                node_id: components["parameters"]["NodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of incarnations, newest first. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NodeIncarnationList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalError"];
             503: components["responses"]["ServiceUnavailable"];
@@ -5407,6 +5750,84 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getFleetConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current fleet configuration. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetConfig"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    updateFleetConfig: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Strong ETag of the resource as last read, `"<resource_version>"` (§14.5).
+                 *     Missing: 428 PRECONDITION_REQUIRED. Mismatch: 412
+                 *     RESOURCE_VERSION_CONFLICT with details.current_resource_version.
+                 */
+                "If-Match": components["parameters"]["IfMatch"];
+                /**
+                 * @description Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+                 *     route and key. Same key and same validated payload return the same resource
+                 *     or operation; same key and a different payload return 409
+                 *     IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+                 *     header: 400 MALFORMED_REQUEST.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FleetConfigUpdate"];
+            };
+        };
+        responses: {
+            /** @description Fleet configuration stored. ETag is the new resource version. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FleetConfig"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            428: components["responses"]["PreconditionRequired"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalError"];
             503: components["responses"]["ServiceUnavailable"];

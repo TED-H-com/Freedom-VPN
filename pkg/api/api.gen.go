@@ -472,6 +472,7 @@ const (
 	ErrorCodeACKCONFLICT              ErrorCode = "ACK_CONFLICT"
 	ErrorCodeARTIFACTINVALID          ErrorCode = "ARTIFACT_INVALID"
 	ErrorCodeAUTHORIZATIONEXPIRED     ErrorCode = "AUTHORIZATION_EXPIRED"
+	ErrorCodeAWAITINGMEMBERGRANTS     ErrorCode = "AWAITING_MEMBER_GRANTS"
 	ErrorCodeBOOTSTRAPCONSUMED        ErrorCode = "BOOTSTRAP_CONSUMED"
 	ErrorCodeBOOTSTRAPEXPIRED         ErrorCode = "BOOTSTRAP_EXPIRED"
 	ErrorCodeBOOTSTRAPNOTREADY        ErrorCode = "BOOTSTRAP_NOT_READY"
@@ -549,6 +550,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeARTIFACTINVALID:
 		return true
 	case ErrorCodeAUTHORIZATIONEXPIRED:
+		return true
+	case ErrorCodeAWAITINGMEMBERGRANTS:
 		return true
 	case ErrorCodeBOOTSTRAPCONSUMED:
 		return true
@@ -851,8 +854,24 @@ func (e FairUseStatusState) Valid() bool {
 	}
 }
 
+// Defines values for FleetConfigDefaultMaxOfflineLeaseSeconds.
+const (
+	FleetConfigDefaultMaxOfflineLeaseSecondsN86400 FleetConfigDefaultMaxOfflineLeaseSeconds = 86400
+)
+
+// Valid indicates whether the value is a known member of the FleetConfigDefaultMaxOfflineLeaseSeconds enum.
+func (e FleetConfigDefaultMaxOfflineLeaseSeconds) Valid() bool {
+	switch e {
+	case FleetConfigDefaultMaxOfflineLeaseSecondsN86400:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ForwardingBlockReason.
 const (
+	ForwardingBlockReasonAwaitingMemberGrants   ForwardingBlockReason = "awaiting_member_grants"
 	ForwardingBlockReasonClockUntrusted         ForwardingBlockReason = "clock_untrusted"
 	ForwardingBlockReasonDiskLow                ForwardingBlockReason = "disk_low"
 	ForwardingBlockReasonIdentityInvalid        ForwardingBlockReason = "identity_invalid"
@@ -873,6 +892,8 @@ const (
 // Valid indicates whether the value is a known member of the ForwardingBlockReason enum.
 func (e ForwardingBlockReason) Valid() bool {
 	switch e {
+	case ForwardingBlockReasonAwaitingMemberGrants:
+		return true
 	case ForwardingBlockReasonClockUntrusted:
 		return true
 	case ForwardingBlockReasonDiskLow:
@@ -1232,6 +1253,45 @@ func (e NodeCheckName) Valid() bool {
 	case NodeCheckNameStorage:
 		return true
 	case NodeCheckNameTunnelProbe:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for NodeIncarnationRetireReason.
+const (
+	NodeIncarnationRetireReasonReinstall    NodeIncarnationRetireReason = "reinstall"
+	NodeIncarnationRetireReasonRevocation   NodeIncarnationRetireReason = "revocation"
+	NodeIncarnationRetireReasonSupersession NodeIncarnationRetireReason = "supersession"
+)
+
+// Valid indicates whether the value is a known member of the NodeIncarnationRetireReason enum.
+func (e NodeIncarnationRetireReason) Valid() bool {
+	switch e {
+	case NodeIncarnationRetireReasonReinstall:
+		return true
+	case NodeIncarnationRetireReasonRevocation:
+		return true
+	case NodeIncarnationRetireReasonSupersession:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for NodeIncarnationState.
+const (
+	NodeIncarnationStateActive  NodeIncarnationState = "active"
+	NodeIncarnationStateRetired NodeIncarnationState = "retired"
+)
+
+// Valid indicates whether the value is a known member of the NodeIncarnationState enum.
+func (e NodeIncarnationState) Valid() bool {
+	switch e {
+	case NodeIncarnationStateActive:
+		return true
+	case NodeIncarnationStateRetired:
 		return true
 	default:
 		return false
@@ -2378,7 +2438,11 @@ type AgentBootstrap struct {
 // Architecture Supported node CPU architectures (§3.2).
 type Architecture string
 
-// AuditEvent Redacted audit event (§9.1, §16.4). Configuration history, never member browsing history.
+// AuditEvent Redacted audit event (§9.1, §16.4). Configuration history, never member
+// browsing history. `enrollment.created` puts `token_sha256` in
+// `changes.after`: the lowercase hex SHA-256 of the one-time token, the
+// same value as `Enrollment.token_sha256`. Property names ending in
+// `_sha256` are digests and are never redacted.
 type AuditEvent struct {
 	// Action Dotted action name, for example `node.publish`.
 	Action string `json:"action"`
@@ -2388,7 +2452,9 @@ type AuditEvent struct {
 	} `json:"actor"`
 	AuditEventId openapi_types.UUID `json:"audit_event_id"`
 
-	// Changes Redacted before/after differences. Never secrets, tokens or full payment payloads.
+	// Changes Redacted before/after differences. Never secrets, tokens or full
+	// payment payloads. Property names ending in `_sha256` are digests
+	// and are never redacted, including `token_sha256`.
 	Changes struct {
 		After  nullable.Nullable[map[string]interface{}] `json:"after"`
 		Before nullable.Nullable[map[string]interface{}] `json:"before"`
@@ -2842,7 +2908,9 @@ type EnrollResponse struct {
 // EnrollResponseNext defines model for EnrollResponse.Next.
 type EnrollResponseNext string
 
-// Enrollment Enrollment without the token (§6.1, §15.3).
+// Enrollment Enrollment without the token (§6.1, §15.3). Returned by `getEnrollment`
+// and as `EnrollmentCreated.enrollment`. This API has no `listEnrollments`
+// operation; the same object is the enrollment record wherever it appears.
 type Enrollment struct {
 	// BoundPublicKeySha256 SHA-256 of the DER SubjectPublicKeyInfo bound at first use.
 	BoundPublicKeySha256 nullable.Nullable[string]    `json:"bound_public_key_sha256"`
@@ -2871,6 +2939,12 @@ type Enrollment struct {
 	Region            nullable.Nullable[string]             `json:"region"`
 	RevokedAt         nullable.Nullable[time.Time]          `json:"revoked_at"`
 	State             EnrollmentState                       `json:"state"`
+
+	// TokenSha256 Lowercase hex SHA-256 of the one-time enrollment token. This is the
+	// only form the database keeps (`node_enrollments.token_hash`). The
+	// plaintext is returned once, on creation, and never again (§6.1).
+	// It is not `bound_public_key_sha256`, which is the CSR key.
+	TokenSha256 *string `json:"token_sha256,omitempty"`
 }
 
 // EnrollmentCreateRequest defines model for EnrollmentCreateRequest.
@@ -2896,7 +2970,9 @@ type EnrollmentCreateRequest struct {
 // replays return `token: null` and `secret_available: false`. If the token
 // was lost, revoke the enrollment and create a new one.
 type EnrollmentCreated struct {
-	// Enrollment Enrollment without the token (§6.1, §15.3).
+	// Enrollment Enrollment without the token (§6.1, §15.3). Returned by `getEnrollment`
+	// and as `EnrollmentCreated.enrollment`. This API has no `listEnrollments`
+	// operation; the same object is the enrollment record wherever it appears.
 	Enrollment      Enrollment `json:"enrollment"`
 	SecretAvailable bool       `json:"secret_available"`
 
@@ -2967,8 +3043,9 @@ type ErrorBody struct {
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
 	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-	// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-	// in revision 8 are report-only and have no HTTP response status.
+	// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+	// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+	// have no HTTP response status.
 	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 	// endpoints must not ship with it in a release.
 	// Node enforcement verification (§13.11) is the address-free group the node
@@ -2987,6 +3064,7 @@ type ErrorBody struct {
 	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+	// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 	Code ErrorCode `json:"code"`
 
 	// Details Machine-readable context, always an object (empty when there is none).
@@ -3011,8 +3089,9 @@ type ErrorBody struct {
 // contracts tests keep this enum identical to that table. Codes marked
 // node-local in `pkg/apierr` are reported mainly inside agent payloads
 // (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-// in revision 8 are report-only and have no HTTP response status.
+// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+// have no HTTP response status.
 // NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 // endpoints must not ship with it in a release.
 // Node enforcement verification (§13.11) is the address-free group the node
@@ -3031,6 +3110,7 @@ type ErrorBody struct {
 // MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 // ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 // PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 type ErrorCode string
 
 // ErrorEnvelope Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
@@ -3233,6 +3313,41 @@ type FieldError struct {
 	Reason string `json:"reason"`
 }
 
+// FleetConfig Singleton fleet configuration (D-065, §16.3). The row id is
+// `00000000-0000-0000-0000-000000000001`. `resource_version` is the strong
+// ETag value without the surrounding quotes.
+type FleetConfig struct {
+	// DefaultMaxOfflineLeaseSeconds Read-only recommended default (§16.3). Always 86400. Not accepted on PUT.
+	DefaultMaxOfflineLeaseSeconds *FleetConfigDefaultMaxOfflineLeaseSeconds `json:"default_max_offline_lease_seconds,omitempty"`
+
+	// MaxOfflineLeaseSeconds Seconds copied onto leases issued or renewed after this value is
+	// stored. Already issued leases keep `max_offline_seconds` until
+	// renewal. 60 is the test-lab floor. 86400 is the §16.3 ceiling
+	// (每次服務租約最長 24 小時), not a recommendation. The portal must warn
+	// when the value is below 900.
+	MaxOfflineLeaseSeconds int `json:"max_offline_lease_seconds"`
+
+	// ResourceVersion Monotonic version of the fleet configuration row. The ETag is `"<resource_version>"`.
+	ResourceVersion decstr.U64 `json:"resource_version"`
+
+	// UpdatedAt Time of the last accepted write.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// FleetConfigDefaultMaxOfflineLeaseSeconds Read-only recommended default (§16.3). Always 86400. Not accepted on PUT.
+type FleetConfigDefaultMaxOfflineLeaseSeconds int
+
+// FleetConfigUpdate Replace `max_offline_lease_seconds` (D-065). `reason` uses the same
+// bounds as the other admin reasons (`ReasonRequest`).
+type FleetConfigUpdate struct {
+	// MaxOfflineLeaseSeconds Next value copied onto leases issued or renewed after this write.
+	// Below 60 or above 86400 is 422 VALIDATION_FAILED.
+	MaxOfflineLeaseSeconds int `json:"max_offline_lease_seconds"`
+
+	// Reason Audited reason for the change.
+	Reason string `json:"reason"`
+}
+
 // FleetReleaseState Fleet target and serving policy (§13.2, §15.4 fleet_config). Target version and minimum serving set are separate (UPD04).
 type FleetReleaseState struct {
 	FleetDefaultReleaseId nullable.Nullable[openapi_types.UUID] `json:"fleet_default_release_id"`
@@ -3245,6 +3360,14 @@ type FleetReleaseState struct {
 }
 
 // ForwardingBlockReason Why member forwarding is off on the node (fail-closed reasons).
+// `lease_expired` is the anchored deadline of the node lease for this
+// generation: the lease is no longer in force. `awaiting_member_grants`
+// (D-067) is different: the node holds a valid node lease whose member
+// grant set is empty while the desired generation carries member bindings.
+// The agent renews on a bounded schedule. Do not report `lease_expired`
+// for that provisional lease. While that deadline holds, the `lease`,
+// `qos` and `source_binding` checks and the single `errors[]` entry use
+// `ErrorCode` `AWAITING_MEMBER_GRANTS` (D-071). This enum is unchanged.
 type ForwardingBlockReason string
 
 // GrantCreateRequest defines model for GrantCreateRequest.
@@ -3631,7 +3754,14 @@ type NodeCapacity struct {
 	UpBps          int64                    `json:"up_bps"`
 }
 
-// NodeCheck defines model for NodeCheck.
+// NodeCheck One named node check. In the D-071 provisional state (the node lease for this
+// generation is inside its anchored deadline, `config_generation` equals the desired
+// generation, `lease.members` is empty, and desired `device_bindings` is non-empty),
+// `name=lease`, `name=qos` and `name=source_binding` are `status=failed` with
+// `error_code=AWAITING_MEMBER_GRANTS`, not `VALIDATION_FAILED`. Details are
+// `Serving lease has no member grants yet.`, `Rate policy could not be applied.`
+// and `No member binding was admitted.`. A passed deadline uses `LEASE_EXPIRED`
+// (`Serving lease is not in force.`). A generation mismatch uses `STALE_GENERATION`.
 type NodeCheck struct {
 	// Detail Bounded operator-facing diagnostic (§13.9, SEC02, D-058). Never secrets, identity subjects, tokens, raw member addresses, queries or credential-bearing URLs; producers redact before reporting.
 	Detail     *string                      `json:"detail,omitempty"`
@@ -3676,6 +3806,12 @@ type NodeDetail struct {
 
 	// GroupIds Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed. Empty means no attached groups; absent means not projected. Existing member_group_ids remains unchanged.
 	GroupIds *[]openapi_types.UUID `json:"group_ids,omitempty"`
+
+	// IdentityConflict Cloned or duplicated node identity state (spec line 278, docs/pki/enrollment.md).
+	// null when the node has no current incarnation or no endpoint has been observed yet;
+	// absent means the server does not project it yet (pre-revision-11). Endpoint hashes,
+	// addresses and compatibility domains are never exposed.
+	IdentityConflict nullable.Nullable[NodeIdentityConflict] `json:"identity_conflict,omitzero"`
 
 	// LastSeenAt Central received_at of the last authenticated agent report.
 	LastSeenAt nullable.Nullable[time.Time] `json:"last_seen_at"`
@@ -3726,8 +3862,9 @@ type NodeError struct {
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
 	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-	// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-	// in revision 8 are report-only and have no HTTP response status.
+	// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+	// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+	// have no HTTP response status.
 	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 	// endpoints must not ship with it in a release.
 	// Node enforcement verification (§13.11) is the address-free group the node
@@ -3746,12 +3883,129 @@ type NodeError struct {
 	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+	// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 	Code ErrorCode `json:"code"`
 
 	// Message Redacted summary; never tokens, keys, environment or browsing data (§13.11).
 	Message    string    `json:"message"`
 	ObservedAt time.Time `json:"observed_at"`
 	Stage      string    `json:"stage"`
+}
+
+// NodeIdentityConflict Cloned or duplicated node identity state for the current incarnation
+// (spec line 278, docs/pki/enrollment.md). Endpoint hashes, addresses and
+// compatibility domains are never exposed.
+type NodeIdentityConflict struct {
+	// ConflictCount Recorded identity conflicts for the current incarnation.
+	ConflictCount  int                          `json:"conflict_count"`
+	LastConflictAt nullable.Nullable[time.Time] `json:"last_conflict_at"`
+
+	// MappingFrozen The current incarnation's external identity mapping is frozen - automatic mapping updates are suppressed. Resolution is operator revoke + re-enroll (the new incarnation starts unfrozen). There is no automatic unfreeze and no unfreeze operation.
+	MappingFrozen bool `json:"mapping_frozen"`
+}
+
+// NodeIncarnation One historical incarnation (§6.2, §15.3). Columns: `node_incarnations.id`,
+// `created_at`, `revoked_at`, `public_key_fingerprint`;
+// `nodes.current_incarnation_id` and `nodes.lifecycle_state`;
+// `node_enrollments.id` and `consumed_at` where
+// `node_enrollments.incarnation_id` equals this row. Product consumption
+// always writes that enrollment link (`internal/enrollment/service.go`).
+// `created_at` is `node_incarnations.created_at`. `bound_at` is
+// `node_enrollments.consumed_at` (the CSR accept time; the incarnation row
+// is inserted in that same transaction, and there is no earlier unbound
+// incarnation row). `retired_at` is `node_incarnations.revoked_at`, not
+// `nodes.retired_at`. `bound_public_key_sha256` is the lowercase hex of
+// `public_key_fingerprint`, the same SHA-256 of the DER
+// SubjectPublicKeyInfo as on `Enrollment`. `current` is true when
+// `nodes.current_incarnation_id` equals this id. Revocation does not clear
+// that pointer, so a retired incarnation can still be current until a
+// reinstall replaces it.
+type NodeIncarnation struct {
+	// BoundAt When the enrollment was consumed and this incarnation was inserted.
+	BoundAt time.Time `json:"bound_at"`
+
+	// BoundPublicKeySha256 SHA-256 of the DER SubjectPublicKeyInfo bound at consumption.
+	BoundPublicKeySha256 string    `json:"bound_public_key_sha256"`
+	CreatedAt            time.Time `json:"created_at"`
+
+	// Current True when this id is `nodes.current_incarnation_id`.
+	Current bool `json:"current"`
+
+	// EnrollmentId Enrollment that created this incarnation (`node_enrollments.id`).
+	EnrollmentId  openapi_types.UUID                             `json:"enrollment_id"`
+	IncarnationId openapi_types.UUID                             `json:"incarnation_id"`
+	RetireReason  nullable.Nullable[NodeIncarnationRetireReason] `json:"retire_reason"`
+
+	// RetiredAt `node_incarnations.revoked_at`. Null while the incarnation is active.
+	RetiredAt nullable.Nullable[time.Time] `json:"retired_at"`
+
+	// State Derived incarnation lifecycle. The node schemas do not expose an
+	// incarnation-state enum, and `node_incarnations` has no state column.
+	// `active` means `revoked_at` is null (partial unique index
+	// `node_incarnations_active_key` in `db/migrations/00002_nodes.sql`).
+	// `retired` means `revoked_at` is not null. `internal/nodes/observations.go`
+	// treats a non-null `revoked_at` as revoked and a current-pointer mismatch
+	// as superseded; those are request errors, not extra stored states.
+	// `LifecycleState` is the node, not the incarnation.
+	State NodeIncarnationState `json:"state"`
+
+	// Usage Ledger total for this incarnation only (§10, §19 AT07). It never moves
+	// to another incarnation. `upload_bytes` and `download_bytes` are the sum
+	// of accepted `usage_samples.upload_bytes` and `download_bytes` whose
+	// `usage_events.incarnation_id` is this incarnation. Rejections and
+	// conflicts are not included. `through` is
+	// `usage_checkpoints.updated_at` for that `(node_id, incarnation_id)`,
+	// null when that checkpoint row does not exist. Bytes are zero when no
+	// accepted sample exists. A sum above 18446744073709551615 is a failure,
+	// not a truncated total.
+	Usage NodeIncarnationUsage `json:"usage"`
+}
+
+// NodeIncarnationList Cursor page of incarnations, newest `created_at` first, then
+// `incarnation_id` descending. `limit` defaults to 50 and is at most 100.
+type NodeIncarnationList struct {
+	Items      []NodeIncarnation         `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
+}
+
+// NodeIncarnationRetireReason Why a retired incarnation stopped. There is no retire-reason column.
+// Derive it from the nodes domain, in this order, and leave it null while
+// `revoked_at` is null. `reinstall`: another `node_incarnations` row for
+// the same node has a later `created_at` (`internal/enrollment/service.go`,
+// the AT07 authorized reinstall that requires the previous incarnation to
+// be revoked before the new row is inserted). `revocation`: no later
+// incarnation, and `nodes.lifecycle_state` is `revoked` or `retired`
+// (`internal/enrollment/revoke.go` `revokeNode` sets `revoked_at` for both
+// `node.revoked` and `node.retired`). `supersession`: `revoked_at` is set
+// and the row is not explained by those two rules
+// (`internal/nodes/observations.go`, "superseded by a newer incarnation").
+type NodeIncarnationRetireReason string
+
+// NodeIncarnationState Derived incarnation lifecycle. The node schemas do not expose an
+// incarnation-state enum, and `node_incarnations` has no state column.
+// `active` means `revoked_at` is null (partial unique index
+// `node_incarnations_active_key` in `db/migrations/00002_nodes.sql`).
+// `retired` means `revoked_at` is not null. `internal/nodes/observations.go`
+// treats a non-null `revoked_at` as revoked and a current-pointer mismatch
+// as superseded; those are request errors, not extra stored states.
+// `LifecycleState` is the node, not the incarnation.
+type NodeIncarnationState string
+
+// NodeIncarnationUsage Ledger total for this incarnation only (§10, §19 AT07). It never moves
+// to another incarnation. `upload_bytes` and `download_bytes` are the sum
+// of accepted `usage_samples.upload_bytes` and `download_bytes` whose
+// `usage_events.incarnation_id` is this incarnation. Rejections and
+// conflicts are not included. `through` is
+// `usage_checkpoints.updated_at` for that `(node_id, incarnation_id)`,
+// null when that checkpoint row does not exist. Bytes are zero when no
+// accepted sample exists. A sum above 18446744073709551615 is a failure,
+// not a truncated total.
+type NodeIncarnationUsage struct {
+	DownloadBytes decstr.U64 `json:"download_bytes"`
+
+	// Through Time of the last accepted usage checkpoint for this incarnation.
+	Through     nullable.Nullable[time.Time] `json:"through"`
+	UploadBytes decstr.U64                   `json:"upload_bytes"`
 }
 
 // NodeList defines model for NodeList.
@@ -3870,7 +4124,24 @@ type ObservationAccepted struct {
 // ObservationAcceptedAccepted defines model for ObservationAccepted.Accepted.
 type ObservationAcceptedAccepted bool
 
-// ObservationReport Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at.
+// ObservationReport Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
+// the center stores its own received_at.
+// D-071. When the node lease for this generation is inside its anchored deadline and
+// `config_generation` equals the desired generation, but `lease.members` is empty while
+// desired `device_bindings` is non-empty, `forwarding_block_reasons` contains
+// `awaiting_member_grants` (revision 10; that vocabulary is unchanged) and `safety_status`
+// stays `passed`. `checks[]` then carries `name=lease`, `status=failed`,
+// `error_code=AWAITING_MEMBER_GRANTS`, detail `Serving lease has no member grants yet.`;
+// `name=qos` and `name=source_binding` in the same provisional state carry
+// `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) with details
+// `Rate policy could not be applied.` and `No member binding was admitted.`.
+// `errors[]` carries exactly one entry `code=AWAITING_MEMBER_GRANTS`, `stage=lease`,
+// `message=Serving lease has no member grants yet.`. The agent renews on the D-067
+// schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline
+// failure and not a malformed policy.
+// Negatives, unchanged: a passed deadline is `lease_expired` / `LEASE_EXPIRED`
+// (`Serving lease is not in force.`); a generation mismatch is `policy_missing` /
+// `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
 type ObservationReport struct {
 	// AgentVersion Exact pinned component version (never `latest`).
 	AgentVersion            ComponentVersion              `json:"agent_version"`
@@ -3949,8 +4220,9 @@ type Operation struct {
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
 		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-		// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-		// in revision 8 are report-only and have no HTTP response status.
+		// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+		// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+		// have no HTTP response status.
 		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 		// endpoints must not ship with it in a release.
 		// Node enforcement verification (§13.11) is the address-free group the node
@@ -3969,6 +4241,7 @@ type Operation struct {
 		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+		// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
 	}] `json:"error"`
@@ -4494,7 +4767,9 @@ type ServingLease struct {
 	IssuedAt time.Time          `json:"issued_at"`
 	LeaseId  openapi_types.UUID `json:"lease_id"`
 
-	// MaxOfflineSeconds configured_max_offline_lease; recommended default 24 hours (§16.3).
+	// MaxOfflineSeconds Seconds copied from fleet configuration at issuance or renewal (§16.3).
+	// A later `PUT /admin/fleet-config` does not rewrite this field. 86400 is
+	// the ceiling and the recommended default.
 	MaxOfflineSeconds int                       `json:"max_offline_seconds"`
 	Members           []MemberLease             `json:"members"`
 	NodeId            openapi_types.UUID        `json:"node_id"`
@@ -5103,8 +5378,9 @@ type UsageEventResult struct {
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
 		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-		// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-		// in revision 8 are report-only and have no HTTP response status.
+		// METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+		// in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+		// have no HTTP response status.
 		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 		// endpoints must not ship with it in a release.
 		// Node enforcement verification (§13.11) is the address-free group the node
@@ -5123,6 +5399,7 @@ type UsageEventResult struct {
 		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+		// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
 		Message string       `json:"message"`
@@ -5343,6 +5620,21 @@ type RevokeEnrollmentParams struct {
 	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
 }
 
+// UpdateFleetConfigParams defines parameters for UpdateFleetConfig.
+type UpdateFleetConfigParams struct {
+	// IfMatch Strong ETag of the resource as last read, `"<resource_version>"` (§14.5).
+	// Missing: 428 PRECONDITION_REQUIRED. Mismatch: 412
+	// RESOURCE_VERSION_CONFLICT with details.current_resource_version.
+	IfMatch IfMatch `json:"If-Match"`
+
+	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+	// route and key. Same key and same validated payload return the same resource
+	// or operation; same key and a different payload return 409
+	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+	// header: 400 MALFORMED_REQUEST.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
 // ListAdminGroupsParams defines parameters for ListAdminGroups.
 type ListAdminGroupsParams struct {
 	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
@@ -5441,6 +5733,15 @@ type UpdateNodeParams struct {
 	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
 	// header: 400 MALFORMED_REQUEST.
 	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// ListNodeIncarnationsParams defines parameters for ListNodeIncarnations.
+type ListNodeIncarnationsParams struct {
+	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Page size. Default 50, maximum 100 (§14.1, recommended default).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // SetNodePublicationParams defines parameters for SetNodePublication.
@@ -5700,6 +6001,9 @@ type CreateEnrollmentJSONRequestBody = EnrollmentCreateRequest
 
 // RevokeEnrollmentJSONRequestBody defines body for RevokeEnrollment for application/json ContentType.
 type RevokeEnrollmentJSONRequestBody = ReasonRequest
+
+// UpdateFleetConfigJSONRequestBody defines body for UpdateFleetConfig for application/json ContentType.
+type UpdateFleetConfigJSONRequestBody = FleetConfigUpdate
 
 // CreateAdminGroupJSONRequestBody defines body for CreateAdminGroup for application/json ContentType.
 type CreateAdminGroupJSONRequestBody = MemberGroupCreate

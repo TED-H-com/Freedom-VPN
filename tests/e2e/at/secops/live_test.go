@@ -673,18 +673,32 @@ func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 	p.check("revoked certificate refuses desired state", p.call(node, "GET", liveAgent+"/api/v1/agent/desired-state", nil, nil), 403, "IDENTITY_REVOKED")
 }
 func (p *liveProbe) finish() {
+	for key := range p.metadata {
+		if strings.HasPrefix(key, "private_") {
+			delete(p.metadata, key)
+		}
+	}
 	p.metadata["finished_at"] = time.Now().UTC()
 	p.metadata["checks"] = p.observations
 	p.metadata["security_matrix_complete"] = p.securityComplete
 	p.metadata["projector_owned_rows_written"] = []string{}
 	p.metadata["go_test_failed"] = p.t.Failed()
-	for _, file := range []string{"key.pem", "setup.key"} {
-		raw, er := p.docker("node", "cat", "/var/lib/vpn-node/identity/"+file)
-		if er == nil {
-			p.secrets = append(p.secrets, bytes.TrimSpace(raw))
+	for _, nodeSvc := range []string{"node", "node2"} {
+		for _, file := range []string{"key.pem", "setup.key"} {
+			raw, er := p.docker(nodeSvc, "cat", "/var/lib/vpn-node/identity/"+file)
+			if er == nil {
+				p.secrets = append(p.secrets, bytes.TrimSpace(raw))
+			}
 		}
 	}
 	services := []string{"postgres", "idp", "payment", "origin", "netbird", "gateway", "coredns", "adguard", "control", "worker", "node-netns", "node", "member"}
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" {
+		for _, service := range []string{"node2-netns", "node2-adguard", "node2"} {
+			if exec.CommandContext(p.t.Context(), "docker", "inspect", livePrefix+service).Run() == nil {
+				services = append(services, service)
+			}
+		}
+	}
 	extra, inventoryErr := exec.CommandContext(p.t.Context(), "docker", "ps", "-a", "--filter", "name=^fvpn-w4-secops-member-", "--format", "{{.Names}}").Output()
 	if inventoryErr != nil {
 		p.t.Error("native peer log inventory failed")
@@ -714,7 +728,13 @@ func (p *liveProbe) finish() {
 		if bytes.Contains(raw, []byte("PRIVATE KEY-----")) {
 			findings++
 		}
-		streams = append(streams, map[string]any{"stream": name, "bytes": len(raw), "read_ok": err == nil, "known_secret_matches": findings})
+		deviceFlowLines := 0
+		for _, line := range bytes.Split(raw, []byte("\n")) {
+			if bytes.Contains(line, []byte("user_code=")) || bytes.Contains(line, []byte("verification_uri")) || bytes.Contains(line, []byte("device_code=")) {
+				deviceFlowLines++
+			}
+		}
+		streams = append(streams, map[string]any{"stream": name, "bytes": len(raw), "read_ok": err == nil, "known_secret_matches": findings, "device_flow_key_lines": deviceFlowLines})
 		if findings > 0 {
 			p.t.Error("secret in stream " + name)
 		}
@@ -728,7 +748,7 @@ func (p *liveProbe) finish() {
 		}
 	}
 	for _, service := range services {
-		if service != "node" && service != "member" && !strings.HasPrefix(service, "member-") {
+		if service != "node" && service != "node2" && service != "member" && !strings.HasPrefix(service, "member-") {
 			continue
 		}
 		listing, err := p.docker(service, "find", "/var/lib/vpn-node/e2e", "/var/log/netbird", "-type", "f", "-name", "*.log")
@@ -771,11 +791,17 @@ func (p *liveProbe) finish() {
 		}
 	}
 	name := "live.json"
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP7") == "1" {
+		name = "followup7-live.json"
+	}
 	if os.Getenv("FVPN_SECOPS_PITR") == "1" {
 		name = "pitr-source.json"
 	}
 	if os.Getenv("FVPN_SECOPS_SCALE_ONLY") == "1" {
 		name = "native-scale-live.json"
+	}
+	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP6"); phase == "profile" || phase == "helper" {
+		name = "followup6-" + phase + "-live.json"
 	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {
 		p.t.Error("evidence write")

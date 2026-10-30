@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type NodeTelemetry = e2e.NodeTelemetry
+type NodeTelemetrySample = e2e.NodeTelemetrySample
 type NativeLogScan = e2e.NativeLogScan
 type NativePeer = e2e.NativePeer
 type NativeScale = e2e.NativeScale
@@ -35,3 +37,13 @@ func PrepareServingBaselineWithOptions(ctx context.Context, client *http.Client,
 func RollbackAllowlist(lastGood uuid.UUID, allowed ...uuid.UUID) []uuid.UUID {
 	return e2e.RollbackAllowlist(lastGood, allowed...)
 }
+
+type UpdaterProbe = e2e.UpdaterProbe
+type ProbeObservation = e2e.ProbeObservation
+type NativeStreamResult = e2e.NativeStreamResult
+type EnrolledIdentityInput = e2e.EnrolledIdentityInput
+type EnrolledIdentityResult = e2e.EnrolledIdentityResult
+type EnrollmentPeers = e2e.EnrollmentPeers
+type IdentityFingerprints = e2e.IdentityFingerprints
+type ClonedIdentityFixture = e2e.ClonedIdentityFixture
+type CloneObservation = e2e.CloneObservation

@@ -27,6 +27,24 @@ func main() {
 	if len(os.Args) == 2 && os.Args[1] == "resolver-proxy" {
 		run = resolverProxy
 	}
+	if len(os.Args) == 2 && os.Args[1] == "telemetry" {
+		run = telemetry
+	}
+	if len(os.Args) == 2 && os.Args[1] == "http-burst" {
+		run = httpBurst
+	}
+	if len(os.Args) == 2 && os.Args[1] == "enrollment-generate" {
+		run = enrollmentGenerate
+	}
+	if len(os.Args) == 2 && os.Args[1] == "enrollment-join" {
+		run = enrollmentJoin
+	}
+	if len(os.Args) == 2 && os.Args[1] == "identity-fingerprints" {
+		run = identityFingerprints
+	}
+	if len(os.Args) == 2 && os.Args[1] == "probe-issued" {
+		run = probeIssued
+	}
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, "lab boot recovery configuration failed")
 		os.Exit(1)

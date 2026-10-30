@@ -4,6 +4,9 @@
 package handover_test
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -38,6 +41,8 @@ var ownedDocs = []string{
 	"docs/reviews/r9-d062-review.md",
 	"docs/reviews/r10-d063-review.md",
 	"docs/reviews/r11-d064-review.md",
+	"docs/reviews/r12-enforce-limits-review.md",
+	"docs/reviews/r13-r12-fixes-review.md",
 }
 
 var repoPathPrefixes = []string{
@@ -365,6 +370,7 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"fvpn-backup":                 "backup-systemd-unit-prefix",
 		"fvpn-postgres-entrypoint":    "backup-postgres-entrypoint-script",
 		"fvpn-oidc":                   "devstack-oidc-container-name",
+		"fvpn-nb-login":               "devstack-netbird-login-temp-log-prefix (/var/run/fvpn-nb-login-*.log)",
 	}
 
 	tokenRE := regexp.MustCompile(`\b(fvpn-[a-z0-9-]+)(\.service)?\b`)
@@ -608,6 +614,8 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r9-d062-review.md",
 		"r10-d063-review.md",
 		"r11-d064-review.md",
+		"r12-enforce-limits-review.md",
+		"r13-r12-fixes-review.md",
 	}
 
 	var gotFiles []string
@@ -698,4 +706,512 @@ func splitMarkdownRow(line string) []string {
 		out[i] = strings.TrimSpace(p)
 	}
 	return out
+}
+
+func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	memberGuide := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	var zhStatusLine, enStatusLine string
+	for _, line := range strings.Split(memberGuide, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "- **實測狀態（`DOC15`") {
+			zhStatusLine = trimmed
+		}
+		if strings.HasPrefix(trimmed, "- **Measurement status (`DOC15`") {
+			enStatusLine = trimmed
+		}
+	}
+	if zhStatusLine == "" {
+		t.Fatal("docs/handover/member-guide.md: missing zh-TW DOC15 measurement status paragraph")
+	}
+	if enStatusLine == "" {
+		t.Fatal("docs/handover/member-guide.md: missing en DOC15 measurement status paragraph")
+	}
+
+	requiredMemberLinks := []string{
+		"../e2e/at/secops/history/follow-up-5/counted-flow.json",
+		"../e2e/at/secops/history/follow-up-5/post-revoke.json",
+		"../e2e/at/secops/history/follow-up-5/deadlines.json",
+		"../e2e/at/secops/history/follow-up-5/capacity.json",
+		"ab96acac-8713-485a-9c29-88f20110e2e5",
+		"../e2e/runs/2026-10-30/followup10-run3/device-revoke.md",
+		"../e2e/requests.md",
+		"StartSecondExit",
+		"FVPN_E2E_GRACE_SECONDS",
+		"clock_settime",
+	}
+	for _, link := range requiredMemberLinks {
+		if !strings.Contains(zhStatusLine, link) {
+			t.Errorf("docs/handover/member-guide.md zh-TW DOC15 paragraph missing %q", link)
+		}
+		if !strings.Contains(enStatusLine, link) {
+			t.Errorf("docs/handover/member-guide.md en DOC15 paragraph missing %q", link)
+		}
+	}
+	if !strings.Contains(zhStatusLine, "歷史快照") {
+		t.Error("docs/handover/member-guide.md zh-TW DOC15 paragraph must attribute earlier blocked records as historical")
+	}
+	if !strings.Contains(enStatusLine, "historical records") || !strings.Contains(enStatusLine, "do not represent current `main` status") {
+		t.Error("docs/handover/member-guide.md en DOC15 paragraph must attribute earlier blocked records as historical")
+	}
+
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"contract revision 8 (#164)",
+		"#164", "#165", "#166", "#167", "#168", "#169", "#170", "#171", "#172", "#174",
+		"ISOLATION_POLICY_INVALID",
+		"GENERATION_MISMATCH",
+		"HOOK_PRIORITY_MISMATCH",
+		"COUNTER_ORDER_INVALID",
+		"FLOWTABLE_BYPASS",
+		"DEVICE_CLASS_MISSING",
+		"QOS_CLASS_MISSING",
+		"MARK_SEMANTICS_VIOLATED",
+		"PROBE_UNBOUNDED",
+		"conntrack delete pending; serving ruleset verified",
+		"pending_revocations",
+		"effectiveJob",
+		"probe_omitted",
+		"DisallowUnknownFields",
+		"checkLargeJSONDocument",
+		"trusted_proxies",
+		"ParseTrustedProxies",
+		"StartSecondExit",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 6 claim %q", token)
+		}
+	}
+
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"r.RemoteAddr",
+		"trusted_proxies",
+		"ParseTrustedProxies",
+		"trusting the world lets any peer choose its bucket",
+		"#174",
+		"conntrack delete pending; serving ruleset verified",
+		"pending_revocations",
+		"ExtraDeniedV4",
+		"probe_omitted",
+		"DisallowUnknownFields",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 6 claim %q", token)
+		}
+	}
+
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"probe_omitted",
+		"DisallowUnknownFields",
+		"checkLargeJSONDocument",
+		"anonClass",
+		"trusted_proxies",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 6 claim %q", token)
+		}
+	}
+
+	r12 := readOwnedDoc(t, root, "docs/reviews/r12-enforce-limits-review.md")
+	for _, token := range []string{
+		"844b59a32124ca6ada6939ef81dd406aebce2b51",
+		"d5a2bed55ef0cc81c9d6f48b76ddf501ba5e6f47",
+		"9c67e4b9eafffc312ead24e9bf023702285ee4f36a95423e2f8b5a488ad4a7b6",
+		"agy/gemini-4-argon-high",
+		"#167",
+		"#168",
+		"#169",
+		"#171",
+		"#172",
+		"#174",
+	} {
+		if !strings.Contains(r12, token) {
+			t.Errorf("docs/reviews/r12-enforce-limits-review.md missing expected provenance/closing token %q", token)
+		}
+	}
+
+	var scopeReview struct {
+		FollowUp6         map[string]any `json:"follow_up_6"`
+		HandoverFollowUp6 struct {
+			ReviewedDocuments []struct {
+				Path   string `json:"path"`
+				SHA256 string `json:"sha256"`
+			} `json:"reviewed_documents"`
+		} `json:"handover_follow_up_6"`
+	}
+	rawScope := readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")
+	if err := json.Unmarshal([]byte(rawScope), &scopeReview); err != nil {
+		t.Fatalf("unmarshal docs/e2e/at/secops/scope-review.json: %v", err)
+	}
+	if len(scopeReview.FollowUp6) == 0 {
+		t.Error("docs/e2e/at/secops/scope-review.json missing follow_up_6 entry")
+	}
+	if len(scopeReview.HandoverFollowUp6.ReviewedDocuments) != 7 {
+		t.Fatalf("docs/e2e/at/secops/scope-review.json handover_follow_up_6.reviewed_documents count = %d, want 7", len(scopeReview.HandoverFollowUp6.ReviewedDocuments))
+	}
+	for _, entry := range scopeReview.HandoverFollowUp6.ReviewedDocuments {
+		raw, err := os.ReadFile(filepath.Join(root, entry.Path))
+		if err != nil {
+			t.Errorf("read %s: %v", entry.Path, err)
+			continue
+		}
+		sum := sha256.Sum256(raw)
+		got := hex.EncodeToString(sum[:])
+		if got != entry.SHA256 {
+			t.Errorf("docs/e2e/at/secops/scope-review.json handover_follow_up_6 sha256 for %s = %s, want %s", entry.Path, entry.SHA256, got)
+		}
+	}
+}
+
+func TestHandover_Followup7Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Parse contracts/openapi.yaml for the live operation count and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
+	// Revision 10 advanced the count from 46 to 47 (listNodeIncarnations). This test still pins follow-up 7's fleet-config decisions.
+	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read contracts/openapi.yaml: %v", err)
+	}
+	var spec struct {
+		Paths      map[string]map[string]any `yaml:"paths"`
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]struct {
+					Minimum int `yaml:"minimum"`
+					Maximum int `yaml:"maximum"`
+				} `yaml:"properties"`
+			} `yaml:"schemas"`
+		} `yaml:"components"`
+	}
+	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
+		t.Fatalf("parse contracts/openapi.yaml: %v", err)
+	}
+	opCount := 0
+	for _, path := range spec.Paths {
+		for method := range path {
+			if slices.Contains([]string{"get", "put", "post", "delete", "patch", "options", "head", "trace"}, method) {
+				opCount++
+			}
+		}
+	}
+	if opCount != 47 {
+		t.Fatalf("contracts/openapi.yaml operation count = %d, want 47", opCount)
+	}
+	if _, ok := spec.Paths["/admin/fleet-config"]; !ok {
+		t.Fatal("contracts/openapi.yaml missing /admin/fleet-config path")
+	}
+	fcProp := spec.Components.Schemas["FleetConfigUpdate"].Properties["max_offline_lease_seconds"]
+	if fcProp.Minimum != 60 || fcProp.Maximum != 86400 {
+		t.Fatalf("FleetConfigUpdate.max_offline_lease_seconds bounds = %d..%d, want 60..86400", fcProp.Minimum, fcProp.Maximum)
+	}
+
+	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"All 47 are wired in `apps/control` on `main`",
+		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
+		"D-065",
+		"/api/v1/admin/fleet-config",
+		"max_offline_lease_seconds",
+		"default_max_offline_lease_seconds",
+		"`60`–`86400`",
+		"min(120 s, window/2)",
+		"900 s",
+		"428 PRECONDITION_REQUIRED",
+		"412 RESOURCE_VERSION_CONFLICT",
+		"409 IDEMPOTENCY_CONFLICT",
+		"422 VALIDATION_FAILED",
+		"fleet_config.update",
+		"fleet_config:00000000-0000-0000-0000-000000000001",
+		"TestD065_FleetConfigHTTPReadWrite",
+		"TestD065_AT29_FleetConfigOnlyChangesNewLeases",
+		"TestD065_FleetConfigReleaseWriterInterleaving",
+		"TestD065_FleetConfigMissingRowUsesIssuerDefault",
+		"w4-enroll",
+		"12000",
+		"66000",
+		"F5-01",
+		"F6-02",
+		"docs/updates/central-lifecycle.md",
+		"shared development host, not candidate hardware",
+		"904.360 s",
+		"300.386 s",
+		"ScaleNativeMembers",
+		"D-066",
+		"gateway-principals",
+		"-grace-seconds",
+		"PauseNativeControl",
+		"StartNodeTelemetry",
+		"TestMTR03_RunSkipsBusySampleWithoutLosingCounters",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 7 token %q", token)
+		}
+	}
+
+	// 3. Verify deploy.md and calibration.md fleet-config and devstack follow-up 11 claims.
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"D-065",
+		"#176",
+		"#179",
+		"#182",
+		"/api/v1/admin/fleet-config",
+		"max_offline_lease_seconds",
+		"default_max_offline_lease_seconds",
+		"`60`–`86400`",
+		"min(120 s, window/2)",
+		"fleet_config.update",
+		"428 PRECONDITION_REQUIRED",
+		"412 RESOURCE_VERSION_CONFLICT",
+		"409 IDEMPOTENCY_CONFLICT",
+		"422 VALIDATION_FAILED",
+		"TestD065_AT29_FleetConfigOnlyChangesNewLeases",
+		"gateway-principals",
+		"-grace-seconds",
+		"FVPN_E2E_GRACE_SECONDS",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 7 token %q", token)
+		}
+	}
+
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"D-065",
+		"#176",
+		"#179",
+		"#178",
+		"#182",
+		"/api/v1/admin/fleet-config",
+		"max_offline_lease_seconds",
+		"`60`–`86400` seconds",
+		"min(120 s, window/2)",
+		"fleet_config.update",
+		"TestD065_AT29_FleetConfigOnlyChangesNewLeases",
+		"shared development host, not candidate hardware",
+		"StartNodeTelemetry",
+		"-grace-seconds",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 7 token %q", token)
+		}
+	}
+
+	// 4. Verify r13-r12-fixes-review.md archive provenance and README.md row.
+	r13 := readOwnedDoc(t, root, "docs/reviews/r13-r12-fixes-review.md")
+	for _, token := range []string{
+		"12496fd0d057632919d8f1153b92a9a660fdc520",
+		"e66393db6a16b7ce94472564e526a7254720114a",
+		"13bc71172ff626baded35dee6993448ca6d0df842e08c1bd766f8085e3f13134",
+		"agy/gemini-4-argon-high",
+		"H-1", "H-2", "H-3", "H-4",
+		"M-1", "M-2", "M-3", "M-4", "M-5",
+		"L-1", "L-2", "L-3",
+	} {
+		if !strings.Contains(r13, token) {
+			t.Errorf("docs/reviews/r13-r12-fixes-review.md missing expected provenance/finding token %q", token)
+		}
+	}
+	reviewsREADME := readOwnedDoc(t, root, "docs/reviews/README.md")
+	if !strings.Contains(reviewsREADME, "r13-r12-fixes-review.md") || !strings.Contains(reviewsREADME, "12496fd") {
+		t.Error("docs/reviews/README.md missing r13-r12-fixes-review archive entry")
+	}
+}
+
+func TestHandover_Followup8Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify OpenAPI 1.7.0 revision 11 still carries the revision 10 schema elements: listNodeIncarnations, Enrollment.token_sha256, and awaiting_member_grants.
+	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
+	if err != nil {
+		t.Fatalf("read contracts/openapi.yaml: %v", err)
+	}
+	var spec struct {
+		Paths      map[string]map[string]any `yaml:"paths"`
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]any `yaml:"properties"`
+				Enum       []string       `yaml:"enum"`
+			} `yaml:"schemas"`
+		} `yaml:"components"`
+	}
+	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
+		t.Fatalf("parse contracts/openapi.yaml: %v", err)
+	}
+	if _, ok := spec.Paths["/admin/nodes/{node_id}/incarnations"]; !ok {
+		t.Fatal("contracts/openapi.yaml missing /admin/nodes/{node_id}/incarnations path")
+	}
+	if _, ok := spec.Components.Schemas["Enrollment"].Properties["token_sha256"]; !ok {
+		t.Fatal("contracts/openapi.yaml Enrollment schema missing token_sha256")
+	}
+	if !slices.Contains(spec.Components.Schemas["ForwardingBlockReason"].Enum, "awaiting_member_grants") {
+		t.Fatal("contracts/openapi.yaml ForwardingBlockReason enum missing awaiting_member_grants")
+	}
+
+	// 2. Verify all 47 revision 11 operations are wired on main (no "Forty-six" or "46 of 47" wording remains).
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	handoverREADME := readOwnedDoc(t, root, "docs/handover/README.md")
+	opsREADME := readOwnedDoc(t, root, "docs/ops/README.md")
+	for name, doc := range map[string]string{
+		"docs/handover/operator-guide.md": operatorGuide,
+		"docs/handover/README.md":         handoverREADME,
+		"docs/ops/README.md":              opsREADME,
+	} {
+		for _, stale := range []string{"Forty-six", "forty-six", "46 of 47", "not implemented in this revision"} {
+			if strings.Contains(doc, stale) {
+				t.Errorf("%s still contains stale unwired operation wording %q", name, stale)
+			}
+		}
+	}
+
+	// 3. Verify operator-guide.md pins for control follow-up 19 (#190), revision 11 (keeping #191/#195/#200),
+	// D-067 (#193/#198/#201/#202), D-068 (#189), updater follow-up 12 (#192), and secops follow-up 7 (#203).
+	for _, token := range []string{
+		"All 47 are wired in `apps/control` on `main`",
+		"#186", "#187", "#189", "#190", "#191", "#192", "#193", "#194", "#195", "#196", "#197", "#198", "#199", "#200", "#201", "#202", "#203",
+		// Control follow-up 19 (#190): parse rule, certificate-key, 8-bucket eviction, /48 budget, single-walk body identity.
+		"bracketed input",
+		"an unbracketed multi-colon string is parsed whole before a trailing port is removed",
+		"eight hextets written with a zero-width `::` (`2001:db8:1::2:3:4:5:6`) are `2001:db8:1:2:3:4:5:6`, `/64` `2001:db8:1:2::/64`",
+		"one `/48` holds at most half of `max_rate_principals` `/64`s",
+		"no verified chain is `401 UNAUTHENTICATED` and inserts nothing",
+		"SHA-256 of the leaf certificate DER",
+		"takes the class concurrency slot (`gates[class]`) before `AuthenticateAgent`",
+		"spent the token",
+		"eviction scans **eight** buckets from the tail (`evictScanWindow = 8`",
+		"single streaming walk (no `json.Unmarshal` of the body)",
+		"sets `ExcludeRequestBody`",
+		"returns `501 NOT_IMPLEMENTED` without a third decode",
+		"order for a large body is `400 MALFORMED_REQUEST` syntax, `422 VALIDATION_FAILED` schema, `403 INCARNATION_MISMATCH` identity",
+		// Contract revision 11 keeps revision 10 (#191, #195, #200): incarnations, token_sha256, awaiting_member_grants.
+		"GET /api/v1/admin/nodes/{node_id}/incarnations",
+		"listNodeIncarnations",
+		"retire_reason",
+		"\"reinstall\"",
+		"\"revocation\"",
+		"\"supersession\"",
+		"token_sha256",
+		"enrollment.created",
+		"changes.after.token_sha256",
+		"awaiting_member_grants",
+		// Agent follow-up 15-17 (#193, #198, #202 — D-067) & conntrack retry bound.
+		"D-067",
+		"**provisional** and renews after **one heartbeat**, then **doubling**, capped at **`60 s`**",
+		"Serving lease has no member grants yet.",
+		"**twelve consecutive failed `conntrack -D` attempts**",
+		"member_forwarding_enabled=false",
+		"safety_status=failed",
+		"ConntrackDeleteError{Pending, Failed}",
+		"(addr, device_id, member_id)",
+		// Fleet-update follow-up 9 (#189 — D-068).
+		"D-068",
+		"advances **only** through an accepted `UpdateResult`",
+		"**only when `nodes.current_release_id` is `NULL`**",
+		"superseded attempt's `job_id`",
+		"do not move the batch read model",
+		// Updater follow-up 12 (#192).
+		"blankHealth",
+		"probe_omission/<txn_id>/<nonce>",
+		"cleanTxnNotes",
+		// Secops follow-up 7 (#203) verdicts & numbers.
+		"ab96acac-8713-485a-9c29-88f20110e2e5",
+		"subset passed, case blocked on",
+		"5,960/5,960",
+		"60/60",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 8 token %q", token)
+		}
+	}
+
+	// 4. Verify deploy.md and calibration.md pins for #190, #192, #193, #200, #203.
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"#190", "#192", "#193", "#200", "#202",
+		"bracketed input is never split, an unbracketed multi-colon string is parsed whole before a trailing port is removed, and eight hextets written with a zero-width `::` (`2001:db8:1::2:3:4:5:6`) are `2001:db8:1:2:3:4:5:6`, `/64` `2001:db8:1:2::/64`",
+		"the agent-listener ingress key is the certificate fingerprint",
+		"so an address-rewriting proxy does not choose the bucket",
+		"twelve consecutive failed `conntrack -D` attempts",
+		"blankHealth",
+		"token_sha256",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 8 token %q", token)
+		}
+	}
+
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#190", "#192", "#193", "#198", "#200", "#203",
+		"D-067",
+		"awaiting_member_grants",
+		"Serving lease has no member grants yet.",
+		"renews after one heartbeat, then doubling, capped at `60 s`",
+		"bracketed input is never split, an unbracketed multi-colon string is parsed whole before a trailing port is removed, and eight hextets written with a zero-width `::` `2001:db8:1::2:3:4:5:6` are `2001:db8:1:2:3:4:5:6`, `/64` `2001:db8:1:2::/64`",
+		"one `/48` holds at most half of `max_rate_principals` `/64`s",
+		"no verified chain is `401` and inserts nothing, a verified chain keys ingress by the SHA-256 of the leaf certificate DER and takes the class concurrency slot before `AuthenticateAgent`, and a failed authentication has spent the token",
+		"scan eight buckets from the O(1) LRU tail (`evictScanWindow = 8`",
+		"identity is read during the single streaming walk (no `json.Unmarshal` of the body)",
+		"sets `ExcludeRequestBody`",
+		"returns `501 NOT_IMPLEMENTED` without a third decode; order for a large body is `400` syntax, `422` schema, `403` identity",
+		"blankHealth",
+		"ab96acac-8713-485a-9c29-88f20110e2e5",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 8 token %q", token)
+		}
+	}
+
+	// 5. Verify DOC16 in member-guide.md (no mutable root counted-flow/post-revoke links) and live sha256 pins in scope-review.json follow_up_7.files.
+	memberGuide := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	for _, forbidden := range []string{
+		"(../e2e/at/secops/counted-flow.json)",
+		"(../e2e/at/secops/post-revoke.json)",
+	} {
+		if strings.Contains(memberGuide, forbidden) {
+			t.Errorf("docs/handover/member-guide.md still links follow-up 5 evidence to mutable root path %s", forbidden)
+		}
+	}
+	if !strings.Contains(memberGuide, "DOC16") || !strings.Contains(memberGuide, "ab96acac-8713-485a-9c29-88f20110e2e5") {
+		t.Error("docs/handover/member-guide.md missing DOC16 or follow-up 7 run ID ab96acac-8713-485a-9c29-88f20110e2e5")
+	}
+
+	var scopeReview struct {
+		FollowUp7 struct {
+			Files []struct {
+				Path   string `json:"path"`
+				SHA256 string `json:"sha256"`
+			} `json:"files"`
+			NewRequests []struct {
+				ID     string `json:"id"`
+				Status string `json:"status"`
+			} `json:"new_requests"`
+		} `json:"follow_up_7"`
+	}
+	rawScope := readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")
+	if err := json.Unmarshal([]byte(rawScope), &scopeReview); err != nil {
+		t.Fatalf("unmarshal docs/e2e/at/secops/scope-review.json: %v", err)
+	}
+	if len(scopeReview.FollowUp7.Files) != 7 {
+		t.Fatalf("docs/e2e/at/secops/scope-review.json follow_up_7.files count = %d, want 7", len(scopeReview.FollowUp7.Files))
+	}
+	for _, entry := range scopeReview.FollowUp7.Files {
+		raw, err := os.ReadFile(filepath.Join(root, entry.Path))
+		if err != nil {
+			t.Errorf("read %s: %v", entry.Path, err)
+			continue
+		}
+		sum := sha256.Sum256(raw)
+		got := hex.EncodeToString(sum[:])
+		if got != entry.SHA256 {
+			t.Errorf("docs/e2e/at/secops/scope-review.json follow_up_7 sha256 for %s = %s, want %s", entry.Path, entry.SHA256, got)
+		}
+	}
+	if len(scopeReview.FollowUp7.NewRequests) == 0 || scopeReview.FollowUp7.NewRequests[0].ID != "DOC16" || !strings.HasPrefix(scopeReview.FollowUp7.NewRequests[0].Status, "resolved") {
+		t.Errorf("docs/e2e/at/secops/scope-review.json follow_up_7.new_requests DOC16 status = %+v, want resolved", scopeReview.FollowUp7.NewRequests)
+	}
 }

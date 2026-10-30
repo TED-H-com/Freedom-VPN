@@ -291,6 +291,10 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
     'zh-TW': '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
     en: 'Node serving lease has expired; member forwarding has stopped.',
   },
+  AWAITING_MEMBER_GRANTS: {
+    'zh-TW': '正在等待會員授權。這不是會員可以自行處理的錯誤。',
+    en: 'Waiting for member grants. This is not an error the member can act on.',
+  },
   BOOTSTRAP_CONSUMED: {
     'zh-TW': '節點啟動憑證已領取，無法再次領取。',
     en: 'The node bootstrap credential has already been consumed.',

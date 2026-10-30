@@ -152,7 +152,7 @@ func TestResolverCacheSurvivesReopen(t *testing.T) {
 		t.Fatal("wrong hash was stored")
 	}
 	var version int
-	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&version); err != nil || version != 2 {
+	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&version); err != nil || version != schemaVersion {
 		t.Fatalf("version %d %v", version, err)
 	}
 	if err := s.Close(); err != nil {
@@ -218,5 +218,62 @@ func TestResolverCacheMigratesFromV1(t *testing.T) {
 	got, ok, err := s.ResolverCache(ctx, "doc-1")
 	if err != nil || !ok || string(got) != string(body) {
 		t.Fatalf("%q %v %v", got, ok, err)
+	}
+}
+
+func TestAppliedAddressMigratesIdentityFromV2(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "agent.db")
+	db, err := sql.Open("sqlite", "file:"+path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE schema_migrations (
+		version INTEGER PRIMARY KEY,
+		name TEXT NOT NULL,
+		applied_at TEXT NOT NULL)`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO schema_migrations (version, name, applied_at) VALUES
+		(1, 'agent_core', '2026-01-01T00:00:00Z'),
+		(2, 'resolver_cache', '2026-01-01T00:00:00Z')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE applied_address (addr TEXT PRIMARY KEY)`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO applied_address (addr) VALUES ('100.64.1.1')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`PRAGMA user_version = 2`); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	var version int
+	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&version); err != nil || version != schemaVersion {
+		t.Fatalf("version %d %v", version, err)
+	}
+	rows, err := s.Addresses(ctx)
+	if err != nil || len(rows) != 1 || rows[0].Addr != "100.64.1.1" || rows[0].DeviceID != uuid.Nil.String() || rows[0].MemberID != uuid.Nil.String() {
+		t.Fatalf("migrated row %+v %v", rows, err)
+	}
+	deviceB := uuid.MustParse("019a0000-0000-7000-8000-0000000000b2")
+	memberB := uuid.MustParse("019a0000-0000-7000-8000-0000000000c2")
+	if err := s.SaveAddresses(ctx, []AppliedAddress{
+		{Addr: "100.64.1.1", DeviceID: uuid.Nil.String(), MemberID: uuid.Nil.String()},
+		{Addr: "100.64.1.1", DeviceID: deviceB.String(), MemberID: memberB.String()},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	rows, err = s.Addresses(ctx)
+	if err != nil || len(rows) != 2 || rows[0].DeviceID != uuid.Nil.String() || rows[1].DeviceID != deviceB.String() || rows[1].MemberID != memberB.String() {
+		t.Fatalf("same address, two identities: %+v %v", rows, err)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -25,7 +26,7 @@ func TestApply_ConntrackFailureKeepsServing(t *testing.T) {
 		t.Fatalf("verified=%v err=%v", res.Verified, err)
 	}
 	var del *ConntrackDeleteError
-	if !errors.As(err, &del) || del.Pending != 1 {
+	if !errors.As(err, &del) || del.Pending != 1 || del.Pending != len(del.Failed) || !slices.Equal(del.Failed, []netip.Addr{revoked}) {
 		t.Fatalf("pending: %#v err=%v", del, err)
 	}
 	if strings.Contains(err.Error(), revoked.String()) || strings.Contains(err.Error(), "conntrack -D") {
@@ -108,11 +109,65 @@ func TestApply_ConntrackPendingCountsRemaining(t *testing.T) {
 	})
 	res, err := Apply(context.Background(), f, m, nil)
 	var del *ConntrackDeleteError
-	if !res.Verified || !IsConntrackDeleteFailure(err) || !errors.As(err, &del) || del.Pending != 2 {
+	if !res.Verified || !IsConntrackDeleteFailure(err) || !errors.As(err, &del) || del.Pending != 2 || del.Pending != len(del.Failed) || !slices.Equal(del.Failed, []netip.Addr{first, second}) {
 		t.Fatalf("verified=%v pending=%v err=%v", res.Verified, del, err)
 	}
 	if strings.Contains(err.Error(), first.String()) || strings.Contains(err.Error(), second.String()) {
 		t.Fatalf("error names an address: %v", err)
+	}
+}
+
+func TestApply_ConntrackFailedListsUnsuccessfulAddresses(t *testing.T) {
+	first := mustAddr("100.64.1.1")
+	second := mustAddr("100.64.1.2")
+	partial := smallModel()
+	partial.Revoke = []netip.Addr{first, second}
+	f := servingExec(partial)
+	f.handler = conntrackHandler(partial, f, func(key string) ([]byte, error) {
+		if strings.Contains(key, second.String()) {
+			return nil, &CmdError{Cmd: key, Err: fmt.Errorf("exit"), Out: "exec: conntrack: executable file not found in $PATH"}
+		}
+		return nil, nil
+	})
+	res, err := Apply(context.Background(), f, partial, nil)
+	var del *ConntrackDeleteError
+	if !res.Verified || !IsConntrackDeleteFailure(err) || !errors.As(err, &del) || del.Pending != 1 || !slices.Equal(del.Failed, []netip.Addr{second}) {
+		t.Fatalf("partial verified=%v del=%#v err=%v", res.Verified, del, err)
+	}
+	if del.Pending != len(del.Failed) {
+		t.Fatalf("pending %d failed %v", del.Pending, del.Failed)
+	}
+	if err.Error() != "ISOLATION_POLICY_INVALID: conntrack delete failed after the serving ruleset was verified" || strings.Contains(err.Error(), first.String()) || strings.Contains(err.Error(), second.String()) {
+		t.Fatalf("error text: %v", err)
+	}
+	var ce *CheckError
+	if !errors.As(err, &ce) || ce.Reason != ReasonIsolation || ce.Detail != "conntrack delete failed after the serving ruleset was verified" {
+		t.Fatalf("unwrap: %v", err)
+	}
+
+	full := smallModel()
+	full.Revoke = []netip.Addr{first, second}
+	ff := servingExec(full)
+	ff.handler = conntrackHandler(full, ff, func(key string) ([]byte, error) {
+		return nil, &CmdError{Cmd: key, Err: fmt.Errorf("exit"), Out: "exec: conntrack: executable file not found in $PATH"}
+	})
+	res, err = Apply(context.Background(), ff, full, nil)
+	if !res.Verified || !IsConntrackDeleteFailure(err) || !errors.As(err, &del) || del.Pending != 2 || !slices.Equal(del.Failed, []netip.Addr{first, second}) {
+		t.Fatalf("full verified=%v del=%#v err=%v", res.Verified, del, err)
+	}
+	if strings.Contains(err.Error(), first.String()) || strings.Contains(err.Error(), second.String()) {
+		t.Fatalf("full error names an address: %v", err)
+	}
+
+	okModel := smallModel()
+	okModel.Revoke = []netip.Addr{first, second}
+	okExec := servingExec(okModel)
+	okExec.handler = conntrackHandler(okModel, okExec, func(string) ([]byte, error) {
+		return nil, nil
+	})
+	res, err = Apply(context.Background(), okExec, okModel, nil)
+	if err != nil || !res.Verified || IsConntrackDeleteFailure(err) {
+		t.Fatalf("success verified=%v err=%v", res.Verified, err)
 	}
 }
 

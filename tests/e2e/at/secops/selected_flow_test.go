@@ -19,7 +19,13 @@ import (
 )
 
 func (p *liveProbe) deviceBytes(id uuid.UUID) (map[string]decstr.U64, bool) {
-	raw, e := p.docker("node", "nft", "-j", "list", "table", "inet", "fvpn")
+	return p.deviceBytesAt("node", id)
+}
+func (p *liveProbe) deviceBytesAt(service string, id uuid.UUID) (map[string]decstr.U64, bool) {
+	if service == "" {
+		service = "node"
+	}
+	raw, e := p.docker(service, "nft", "-j", "list", "table", "inet", "fvpn")
 	if e != nil {
 		return nil, false
 	}
@@ -33,7 +39,13 @@ func (p *liveProbe) deviceBytes(id uuid.UUID) (map[string]decstr.U64, bool) {
 	return map[string]decstr.U64{"upload": decstr.U64(up.Bytes), "download": decstr.U64(down.Bytes), "generation": decstr.U64(state.Generation)}, ok && ok2
 }
 func (p *liveProbe) originAddress() (string, string) {
-	raw, _ := p.docker("node", "cat", "/etc/vpn-node/agent-run.json")
+	return p.originAddressAt("node")
+}
+func (p *liveProbe) originAddressAt(service string) (string, string) {
+	if service == "" {
+		service = "node"
+	}
+	raw, _ := p.docker(service, "cat", "/etc/vpn-node/agent-run.json")
 	var cfg struct {
 		Datapath struct {
 			SNAT string `json:"snat"`
@@ -84,7 +96,7 @@ func (p *liveProbe) route(peer flowPeer, origin string) (string, string) {
 // after the native client selects the single API-published exit (§19 AT29/AT31).
 func (p *liveProbe) selectedFlow(peer flowPeer) map[string]any {
 	out := map[string]any{"utc": time.Now().UTC(), "peer": peer, "counted": false, "order": []string{"select advertised exit", "route dev fvnb0", "HTTPS 200", "authenticated node-SNAT receipt", "exact-device byte delta"}}
-	origin, snat := p.originAddress()
+	origin, snat := p.originAddressAt(peer.NodeService)
 	if origin == "" {
 		out["blocker"] = "origin configuration absent"
 		return out
@@ -94,6 +106,15 @@ func (p *liveProbe) selectedFlow(peer flowPeer) map[string]any {
 	matches := re.FindAllStringSubmatch(string(raw), -1)
 	out["network_list"] = strings.TrimSpace(string(raw))
 	out["network_list_ok"] = err == nil
+	if peer.ExitID != "" {
+		filtered := [][]string{}
+		for _, m := range matches {
+			if m[1] == peer.ExitID {
+				filtered = append(filtered, m)
+			}
+		}
+		matches = filtered
+	}
 	if len(matches) != 1 {
 		out["blocker"] = "expected exactly one advertised product exit"
 		p.preserveRouteFailure(peer, out)
@@ -124,7 +145,7 @@ func (p *liveProbe) selectedFlow(peer flowPeer) map[string]any {
 		out["blocker"] = "authenticated origin probe could not arm"
 		return out
 	}
-	before, ok1 := p.deviceBytes(peer.Device)
+	before, ok1 := p.deviceBytesAt(peer.NodeService, peer.Device)
 	// Extra native peers do not inherit Compose origin aliases. The generated
 	// origin certificate includes this controlled IP SAN; keep TLS verification.
 	body, fetchErr := p.docker(peer.Service, "wget", "--server-response", "--timeout=3", "--tries=1", "--ca-certificate=/etc/vpn-node/ca.pem", "--header=X-E2E-Probe: "+id, "-O", "-", "https://"+origin+"/healthz")
@@ -134,7 +155,7 @@ func (p *liveProbe) selectedFlow(peer flowPeer) map[string]any {
 	out["origin_probe_matches"] = arrival["probe_id"] == id
 	out["origin_node_snat"] = arrival["source_address"] == snat
 	out["origin_requests"] = arrival["requests"]
-	after, ok2 := p.deviceBytes(peer.Device)
+	after, ok2 := p.deviceBytesAt(peer.NodeService, peer.Device)
 	out["counter_reads_ok"] = ok1 && ok2
 	out["before_bytes"] = before
 	out["after_bytes"] = after

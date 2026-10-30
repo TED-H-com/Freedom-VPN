@@ -5,23 +5,30 @@ package httpwire_test
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
+	"github.com/TED-H-com/Freedom-VPN/internal/members"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
@@ -30,6 +37,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -66,7 +74,7 @@ func setupRuntime(t *testing.T, runtime *httpwire.Runtime) *fixture {
 	t.Helper()
 	pool, identity := runtime.Pool, runtime.PKI
 	f := &fixture{t: t, r: runtime, p: auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: true, AuthenticatedAt: time.Now(), CSRFToken: "test-csrf"}}
-	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
+	handlers, e := httpapi.Compose(operations.Store{Pool: pool}, &audit.Store{Pool: pool}, &httpwire.Handlers{Runtime: runtime})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -469,6 +477,8 @@ func TestAT29_HTTPSignedLeaseWindowAndReplay(t *testing.T) {
 	if _, _, e = envelope.Verify(raw, trust, envelope.PurposeLease, time.Now()); e != nil {
 		t.Fatal(e)
 	}
+	// TEST ONLY below-floor issuer fixture: D-065 PUT has a 60 s lab floor,
+	// so this 2 s window deliberately exercises the issuer beneath the API range.
 	if _, e = f.r.Pool.Exec(ctx, `UPDATE fleet_config SET max_offline_lease_seconds=2,resource_version=resource_version+1`); e != nil {
 		t.Fatal(e)
 	}
@@ -614,5 +624,494 @@ func TestAT07_HTTPRetireAndPreconditions(t *testing.T) {
 	w = f.call("POST", "/api/v1/admin/enrollments", api.EnrollmentCreateRequest{Delivery: "installer", NodeId: &enrolled.NodeId}, nil, map[string]string{"Idempotency-Key": uuid.NewString()})
 	if w.Code != 409 || !strings.Contains(w.Body.String(), "NODE_RETIRED") {
 		t.Fatalf("retired reinstall: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestENR02_EnrollmentTokenSha256HTTPAndContractShape(t *testing.T) {
+	// 1. Confirm contract example shapes for Enrollment, EnrollmentCreated, and EnrollmentCreated.replay.
+	for _, tc := range []struct {
+		path   string
+		replay bool
+	}{
+		{path: "../../../contracts/examples/valid/EnrollmentCreated.json", replay: false},
+		{path: "../../../contracts/examples/valid/EnrollmentCreated.replay.json", replay: true},
+	} {
+		raw, err := os.ReadFile(tc.path)
+		if err != nil {
+			t.Fatalf("read %s: %v", tc.path, err)
+		}
+		var ex api.EnrollmentCreated
+		if err := json.Unmarshal(raw, &ex); err != nil {
+			t.Fatalf("unmarshal %s: %v", tc.path, err)
+		}
+		if ex.Enrollment.TokenSha256 == nil || len(*ex.Enrollment.TokenSha256) != 64 {
+			t.Fatalf("%s: expected 64-char token_sha256, got %v", tc.path, ex.Enrollment.TokenSha256)
+		}
+		if !tc.replay {
+			if tok, err := ex.Token.Get(); err != nil || tok == "" {
+				t.Fatalf("%s: expected non-null token: %v", tc.path, err)
+			}
+		} else if !ex.Token.IsNull() || ex.SecretAvailable {
+			t.Fatalf("%s: replay example must have token=null and secret_available=false", tc.path)
+		}
+	}
+	rawEnr, err := os.ReadFile("../../../contracts/examples/valid/Enrollment.json")
+	if err != nil {
+		t.Fatalf("read Enrollment.json: %v", err)
+	}
+	var exEnr api.Enrollment
+	if err := json.Unmarshal(rawEnr, &exEnr); err != nil {
+		t.Fatalf("unmarshal Enrollment.json: %v", err)
+	}
+	if exEnr.TokenSha256 == nil || len(*exEnr.TokenSha256) != 64 {
+		t.Fatalf("Enrollment.json: expected 64-char token_sha256, got %v", exEnr.TokenSha256)
+	}
+
+	// 2. Assert HTTP handler responses for createEnrollment (create + replay), getEnrollment, revokeEnrollment, and audit.
+	f := setup(t)
+	idemKey := uuid.NewString()
+	body := api.EnrollmentCreateRequest{Delivery: api.EnrollmentDeliveryInstaller}
+
+	wCreate := f.call("POST", "/api/v1/admin/enrollments", body, nil, map[string]string{"Idempotency-Key": idemKey})
+	if got := wCreate.Header().Get("Cache-Control"); got != "no-store" {
+		t.Fatalf("create Cache-Control = %q, want no-store", got)
+	}
+	created := decode[api.EnrollmentCreated](t, wCreate, 201)
+	token, err := created.Token.Get()
+	if err != nil || !created.SecretAvailable {
+		t.Fatalf("create token missing: secret_available=%v err=%v", created.SecretAvailable, err)
+	}
+	sum := sha256.Sum256([]byte(token))
+	wantDigest := hex.EncodeToString(sum[:])
+	if created.Enrollment.TokenSha256 == nil || *created.Enrollment.TokenSha256 != wantDigest {
+		t.Fatalf("create token_sha256 = %v, want %q", created.Enrollment.TokenSha256, wantDigest)
+	}
+
+	// Idempotent replay: plaintext token is withheld (null), token_sha256 remains identical.
+	replayed := decode[api.EnrollmentCreated](t, f.call("POST", "/api/v1/admin/enrollments", body, nil, map[string]string{"Idempotency-Key": idemKey}), 201)
+	if replayed.SecretAvailable || !replayed.Token.IsNull() {
+		t.Fatalf("replay leaked secret: secret_available=%v token=%v", replayed.SecretAvailable, replayed.Token)
+	}
+	if replayed.Enrollment.TokenSha256 == nil || *replayed.Enrollment.TokenSha256 != wantDigest {
+		t.Fatalf("replay token_sha256 = %v, want %q", replayed.Enrollment.TokenSha256, wantDigest)
+	}
+
+	// GET /api/v1/admin/enrollments/{enrollment_id}
+	enrPath := "/api/v1/admin/enrollments/" + created.Enrollment.EnrollmentId.String()
+	fetched := decode[api.Enrollment](t, f.call("GET", enrPath, nil, nil, nil), 200)
+	if fetched.TokenSha256 == nil || *fetched.TokenSha256 != wantDigest {
+		t.Fatalf("getEnrollment token_sha256 = %v, want %q", fetched.TokenSha256, wantDigest)
+	}
+
+	// POST /api/v1/admin/enrollments/{enrollment_id}/revoke
+	revoked := decode[api.Enrollment](t, f.call("POST", enrPath+"/revoke", api.ReasonRequest{Reason: "TEST ONLY revoke unused token"}, nil, map[string]string{"Idempotency-Key": uuid.NewString()}), 200)
+	if revoked.State != api.EnrollmentStateRevoked || revoked.TokenSha256 == nil || *revoked.TokenSha256 != wantDigest {
+		t.Fatalf("revokeEnrollment state=%q token_sha256=%v, want revoked / %q", revoked.State, revoked.TokenSha256, wantDigest)
+	}
+
+	// GET /api/v1/admin/audit-events confirms changes.after.token_sha256 is preserved (not redacted).
+	auditList := decode[api.AuditEventList](t, f.call("GET", "/api/v1/admin/audit-events?resource_type=enrollment&resource_id="+created.Enrollment.EnrollmentId.String(), nil, nil, nil), 200)
+	var createdAudit *api.AuditEvent
+	for i := range auditList.Items {
+		if auditList.Items[i].Action == "enrollment.created" {
+			createdAudit = &auditList.Items[i]
+			break
+		}
+	}
+	if createdAudit == nil {
+		t.Fatalf("expected enrollment.created audit event in %+v", auditList.Items)
+	}
+	afterMap, err := createdAudit.Changes.After.Get()
+	if err != nil {
+		t.Fatalf("audit changes.after: %v", err)
+	}
+	if got := afterMap["token_sha256"]; got != wantDigest {
+		t.Fatalf("audit changes.after.token_sha256 = %v, want %q", got, wantDigest)
+	}
+}
+
+func TestENR03_ListNodeIncarnationsHTTPReadModelAndRetainedUsage(t *testing.T) {
+	// 1. Confirm contract example shape for NodeIncarnationList.json.
+	rawExample, err := os.ReadFile("../../../contracts/examples/valid/NodeIncarnationList.json")
+	if err != nil {
+		t.Fatalf("read NodeIncarnationList.json: %v", err)
+	}
+	var exList api.NodeIncarnationList
+	if err := json.Unmarshal(rawExample, &exList); err != nil {
+		t.Fatalf("unmarshal NodeIncarnationList.json: %v", err)
+	}
+	if len(exList.Items) != 2 || !exList.Items[0].Current || exList.Items[1].Current {
+		t.Fatalf("unexpected NodeIncarnationList.json example items: %+v", exList.Items)
+	}
+
+	f := setup(t)
+	ctx := t.Context()
+
+	// 2. RBAC checks: non-admin / member -> 403.
+	adminPrincipal := f.p
+	f.p = auth.Principal{Role: auth.Member, ID: uuid.New(), AuthenticatedAt: time.Now()}
+	if w := f.call("GET", "/api/v1/admin/nodes/"+uuid.NewString()+"/incarnations", nil, nil, nil); w.Code != 403 {
+		t.Fatalf("member status = %d, want 403", w.Code)
+	}
+	f.p = auth.Principal{Role: auth.Admin, ID: uuid.New(), MFAVerified: false, AuthenticatedAt: time.Now()}
+	if w := f.call("GET", "/api/v1/admin/nodes/"+uuid.NewString()+"/incarnations", nil, nil, nil); w.Code != 403 {
+		t.Fatalf("admin without MFA status = %d, want 403", w.Code)
+	}
+	f.p = adminPrincipal
+
+	// 3. Unknown node -> 404 RESOURCE_NOT_FOUND.
+	w404 := f.call("GET", "/api/v1/admin/nodes/"+uuid.NewString()+"/incarnations", nil, nil, nil)
+	if w404.Code != 404 || !strings.Contains(w404.Body.String(), "RESOURCE_NOT_FOUND") {
+		t.Fatalf("unknown node = %d %s, want 404 RESOURCE_NOT_FOUND", w404.Code, w404.Body.String())
+	}
+
+	// 4. Create enrollment (creates nodes row before any incarnation is bound).
+	// Known node with no incarnations returns 200 with empty list and null next_cursor.
+	enr1 := f.create(nil)
+	nodeID := enr1.Enrollment.NodeId
+	incPath := "/api/v1/admin/nodes/" + nodeID.String() + "/incarnations"
+
+	emptyList := decode[api.NodeIncarnationList](t, f.call("GET", incPath, nil, nil, nil), 200)
+	if len(emptyList.Items) != 0 || !emptyList.NextCursor.IsNull() {
+		t.Fatalf("unconsumed node incarnations = %+v, want empty items and null next_cursor", emptyList)
+	}
+
+	// 5. Enroll incarnation 1.
+	req1, enrolled1, _ := f.enroll(enr1)
+	csr1, _, err := enrollment.VerifyProof(req1)
+	if err != nil {
+		t.Fatalf("VerifyProof 1: %v", err)
+	}
+	wantFP1 := hex.EncodeToString(pki.Fingerprint(csr1))
+	inc1 := enrolled1.NodeIncarnationId
+
+	// Prepare a member + grant + authorized device through domain services so usageSvc.IngestBatch can validate device_bindings.
+	now := time.Now().UTC().Truncate(time.Second)
+	periodID := now.Format("2006-01")
+	var grp api.MemberGroup
+	if err := db.InTx(ctx, f.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var gErr error
+		grp, gErr = f.r.Nodes.CreateGroupTx(ctx, tx, f.p.Scope(), nil, api.MemberGroupCreate{
+			Code: "grp-enr03",
+			Name: "ENR03 Group",
+		})
+		return gErr
+	}); err != nil {
+		t.Fatalf("CreateGroupTx: %v", err)
+	}
+	memberID := uuid.New()
+	identityID := uuid.New()
+	planID := uuid.New()
+	planRevID := uuid.New()
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO members (id, status) VALUES ($1, 'active')`, memberID); err != nil {
+		t.Fatalf("insert member: %v", err)
+	}
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO identity_bindings (id, member_id, issuer, client_scope, subject, stable_claim_ref, binding_method, verified_at) VALUES ($1, $2, 'https://id.example.invalid', 'portal', 'TEST ONLY enr03 user', 'sub', 'oidc', $3)`, identityID, memberID, now); err != nil {
+		t.Fatalf("insert identity_binding: %v", err)
+	}
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO netbird_user_bindings (id, member_id, deployment_id, external_user_id, identity_binding_id, mapping_proof, revision, verified_at) VALUES ($1, $2, 'netbird-prod', 'TEST ONLY enr03 user', $3, 'shared_issuer_public_subject:https://id.example.invalid', 1, $4)`, uuid.New(), memberID, identityID, now); err != nil {
+		t.Fatalf("insert netbird_user_binding: %v", err)
+	}
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO plans (id, code) VALUES ($1, 'plan-enr03')`, planID); err != nil {
+		t.Fatalf("insert plan: %v", err)
+	}
+	if _, err := f.r.Pool.Exec(ctx, `INSERT INTO plan_revisions (id, plan_id, revision, device_limit, exit_group_ids, schema_version, payload) VALUES ($1, $2, 1, 3, $3, 1, '{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, planRevID, planID, []uuid.UUID{grp.GroupId}); err != nil {
+		t.Fatalf("insert plan_revision: %v", err)
+	}
+
+	entStore, err := entitlement.NewStore(entitlement.TestConfig())
+	if err != nil {
+		t.Fatalf("entitlement.NewStore: %v", err)
+	}
+	entStore.Now = func() time.Time { return now }
+	membersSvc := &members.Service{Pool: f.r.Pool, Entitlements: entStore}
+	devicesSvc := &devices.Service{Pool: f.r.Pool, Entitlements: entStore}
+
+	validFrom := now.Add(-2 * time.Hour)
+	validUntil := now.Add(24 * time.Hour)
+	if _, err := membersSvc.Grant(ctx, entitlement.Command{
+		Actor: entitlement.Actor{Role: "admin", ID: f.p.ID, RequestID: uuid.New()},
+		Key:   uuid.New(),
+	}, memberID, api.GrantCreateRequest{
+		Source:         api.GrantSourceAdminGrant,
+		ValidFrom:      &validFrom,
+		ValidUntil:     validUntil,
+		Reason:         "TEST ONLY ENR03 grant",
+		PlanRevisionId: &planRevID,
+	}); err != nil {
+		t.Fatalf("members.Grant: %v", err)
+	}
+	devOut, err := devicesSvc.AuthorizeDevice(ctx, entitlement.Command{
+		Actor: entitlement.Actor{Role: "system", ID: uuid.New(), RequestID: uuid.New()},
+		Key:   uuid.New(),
+	}, devices.Peer{
+		DeploymentID:   "netbird-prod",
+		ID:             "TEST ONLY enr03 peer",
+		ExternalUserID: "TEST ONLY enr03 user",
+		OverlayScope:   "TEST ONLY",
+		OverlayIP:      netip.MustParseAddr("100.64.0.42"),
+		Platform:       "linux",
+	})
+	if err != nil {
+		t.Fatalf("AuthorizeDevice: %v", err)
+	}
+	var bindingRev decstr.U64
+	if err := f.r.Pool.QueryRow(ctx, `SELECT binding_revision::text FROM device_bindings WHERE device_id = $1 ORDER BY binding_revision DESC LIMIT 1`, devOut.DeviceID).Scan(&bindingRev); err != nil {
+		t.Fatalf("query binding_revision: %v", err)
+	}
+
+	usageNow := now
+	usageSvc, err := usage.NewService(usage.Config{Pool: f.r.Pool, Clock: func() time.Time { return usageNow }})
+	if err != nil {
+		t.Fatalf("usage.NewService: %v", err)
+	}
+
+	// 6. Checkpoint with no samples -> upload_bytes="0", download_bytes="0", and through set.
+	if _, err := usageSvc.IngestBatch(ctx, usage.NodeIdentity{NodeID: nodeID, NodeIncarnationID: inc1}, api.UsageBatchRequest{
+		NodeId:            nodeID,
+		NodeIncarnationId: inc1,
+		Events:            []api.UsageEvent{},
+	}); err != nil {
+		t.Fatalf("IngestBatch empty: %v", err)
+	}
+	var wantZeroThrough time.Time
+	if err := f.r.Pool.QueryRow(ctx, `SELECT updated_at FROM usage_checkpoints WHERE node_id = $1 AND incarnation_id = $2`, nodeID, inc1).Scan(&wantZeroThrough); err != nil {
+		t.Fatalf("query zero-sample checkpoint updated_at: %v", err)
+	}
+	zeroSampleList := decode[api.NodeIncarnationList](t, f.call("GET", incPath, nil, nil, nil), 200)
+	if len(zeroSampleList.Items) != 1 {
+		t.Fatalf("expected 1 incarnation, got %d", len(zeroSampleList.Items))
+	}
+	zItem := zeroSampleList.Items[0]
+	zThrough, err := zItem.Usage.Through.Get()
+	if err != nil || zItem.Usage.UploadBytes.String() != "0" || zItem.Usage.DownloadBytes.String() != "0" {
+		t.Fatalf("checkpoint with zero samples usage = %+v (err=%v), want 0/0 with non-null through", zItem.Usage, err)
+	}
+	if !zThrough.Equal(wantZeroThrough.UTC()) {
+		t.Fatalf("through = %v, want %v", zThrough, wantZeroThrough.UTC())
+	}
+
+	// 7. Ingest usage on incarnation 1:
+	// - Accepted event 1: upload_bytes = 9007199254740993 (2^53 + 1), download_bytes = 1024
+	// - Accepted event 2: upload_bytes = 1000, download_bytes = 2048
+	//   -> Sum on inc1: upload_bytes = "9007199254741993" (> 2^53), download_bytes = "3072"
+	// - Conflicting event on seq 2 (upload_bytes = 999999) -> stored in usage_event_conflicts, ignored by read model
+	// - Rejected event on seq 3 (upload_bytes = 888888, bad hash) -> stored in usage_event_rejections, ignored by read model
+	makeEvent := func(incID uuid.UUID, seq uint64, start, end time.Time, up, down uint64) api.UsageEvent {
+		ev := api.UsageEvent{
+			NodeId:            nodeID,
+			NodeIncarnationId: incID,
+			EventSeq:          decstr.U64(seq),
+			SchemaVersion:     api.UsageEventSchemaVersionN1,
+			MeterEpochId:      uuid.MustParse("3e6c7b40-9651-4e7b-b724-0949fb7ab3dc"),
+			MeteringVersion:   api.MeteringVersionForwardAdmissionV1,
+			Quality:           api.UsageQualityComplete,
+			IntervalStart:     start,
+			IntervalEnd:       end,
+			Records: []api.UsageRecord{
+				{
+					MemberId:        memberID,
+					DeviceId:        devOut.DeviceID,
+					BindingRevision: bindingRev,
+					PeriodId:        periodID,
+					UploadBytes:     decstr.U64(up),
+					DownloadBytes:   decstr.U64(down),
+				},
+			},
+		}
+		_, hashHex, _, err := usage.ComputeEventHash(ev)
+		if err != nil {
+			t.Fatalf("ComputeEventHash: %v", err)
+		}
+		ev.PayloadSha256 = hashHex
+		return ev
+	}
+
+	usageNow = now.Add(5 * time.Minute)
+	ev1 := makeEvent(inc1, 1, now.Add(1*time.Minute), now.Add(2*time.Minute), 9007199254740993, 1024)
+	ev2 := makeEvent(inc1, 2, now.Add(2*time.Minute), now.Add(3*time.Minute), 1000, 2048)
+	ev2Conflict := makeEvent(inc1, 2, now.Add(2*time.Minute), now.Add(3*time.Minute), 999999, 999999)
+	ev3Rejected := makeEvent(inc1, 3, now.Add(3*time.Minute), now.Add(4*time.Minute), 888888, 888888)
+	ev3Rejected.PayloadSha256 = strings.Repeat("0", 64)
+
+	batchRes1, err := usageSvc.IngestBatch(ctx, usage.NodeIdentity{NodeID: nodeID, NodeIncarnationID: inc1}, api.UsageBatchRequest{
+		NodeId:            nodeID,
+		NodeIncarnationId: inc1,
+		Events:            []api.UsageEvent{ev1, ev2, ev2Conflict, ev3Rejected},
+	})
+	if err != nil {
+		t.Fatalf("IngestBatch inc1: %v", err)
+	}
+	if len(batchRes1.Results) != 4 ||
+		batchRes1.Results[0].Status != api.UsageEventResultStatusAccepted ||
+		batchRes1.Results[1].Status != api.UsageEventResultStatusAccepted ||
+		batchRes1.Results[2].Status != api.UsageEventResultStatusConflict ||
+		batchRes1.Results[3].Status != api.UsageEventResultStatusRejected {
+		t.Fatalf("unexpected batchRes1 statuses: %+v", batchRes1.Results)
+	}
+	var inc1Through time.Time
+	if err := f.r.Pool.QueryRow(ctx, `SELECT updated_at FROM usage_checkpoints WHERE node_id = $1 AND incarnation_id = $2`, nodeID, inc1).Scan(&inc1Through); err != nil {
+		t.Fatalf("query inc1 checkpoint updated_at: %v", err)
+	}
+	inc1Through = inc1Through.UTC()
+
+	// 8. Revoke the node (before reinstalling) and verify inc1 is retired with retire_reason="revocation".
+	detail1 := f.call("GET", "/api/v1/admin/nodes/"+nodeID.String(), nil, nil, nil)
+	if detail1.Code != 200 {
+		t.Fatalf("getNode 1: %d %s", detail1.Code, detail1.Body.String())
+	}
+	wRev := f.call("POST", "/api/v1/admin/nodes/"+nodeID.String()+"/revoke", api.ReasonRequest{Reason: "TEST ONLY revoke before reinstall"}, nil, map[string]string{
+		"Idempotency-Key": uuid.NewString(),
+		"If-Match":        detail1.Header().Get("ETag"),
+	})
+	if wRev.Code != 202 {
+		t.Fatalf("revoke node: %d %s", wRev.Code, wRev.Body.String())
+	}
+
+	revokedList := decode[api.NodeIncarnationList](t, f.call("GET", incPath, nil, nil, nil), 200)
+	if len(revokedList.Items) != 1 {
+		t.Fatalf("expected 1 incarnation after revoke, got %d", len(revokedList.Items))
+	}
+	revItem := revokedList.Items[0]
+	revReason, err := revItem.RetireReason.Get()
+	if err != nil || revItem.State != api.NodeIncarnationStateRetired || revReason != api.NodeIncarnationRetireReasonRevocation || revItem.RetiredAt.IsNull() {
+		t.Fatalf("after revoke item = %+v, want state=retired, retire_reason=revocation, non-null retired_at", revItem)
+	}
+	if revItem.Usage.UploadBytes.String() != "9007199254741993" || revItem.Usage.DownloadBytes.String() != "3072" {
+		t.Fatalf("after revoke usage = %+v, want 9007199254741993 / 3072", revItem.Usage)
+	}
+
+	// 9. Guarded reinstall path: create replacement enrollment for nodeID and enroll incarnation 2.
+	enr2 := f.create(&nodeID)
+	req2, enrolled2, _ := f.enroll(enr2)
+	csr2, _, err := enrollment.VerifyProof(req2)
+	if err != nil {
+		t.Fatalf("VerifyProof 2: %v", err)
+	}
+	wantFP2 := hex.EncodeToString(pki.Fingerprint(csr2))
+	inc2 := enrolled2.NodeIncarnationId
+	if inc2 == inc1 {
+		t.Fatal("expected distinct incarnation ID after reinstall")
+	}
+
+	// Record usage on incarnation 2 without a usage_checkpoints row so the join proves:
+	// two incarnations, usage on both, a checkpoint on one (inc1), and a sum above 2^53 (on inc1).
+	ledgerState, err := usageSvc.GetLedgerState(ctx)
+	if err != nil {
+		t.Fatalf("GetLedgerState: %v", err)
+	}
+	insertInc2Event := func(seq uint64, start, end time.Time, up, down uint64) {
+		ev := makeEvent(inc2, seq, start, end, up, down)
+		hashBytes, _, canonPayload, err := usage.ComputeEventHash(ev)
+		if err != nil {
+			t.Fatalf("ComputeEventHash inc2: %v", err)
+		}
+		evID := uuid.New()
+		if err := db.InTx(ctx, f.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO usage_events (
+					id, node_id, incarnation_id, event_seq, schema_version,
+					payload_hash, record_count, received_at, quality_flags,
+					kind, meter_epoch_id, metering_version, quality,
+					interval_start, interval_end, ledger_epoch
+				) VALUES (
+					$1, $2, $3, $4::numeric, 1,
+					$5, 1, $6, '{}',
+					'event', $7, $8, 'complete',
+					$9, $10, $11
+				)`,
+				evID, nodeID, inc2, decstr.U64(seq).String(),
+				hashBytes[:], now.Add(15*time.Minute),
+				ev.MeterEpochId, string(ev.MeteringVersion),
+				start, end, ledgerState.LedgerEpoch,
+			); err != nil {
+				return err
+			}
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO usage_event_payloads (id, event_id, payload, created_at)
+				VALUES ($1, $2, $3, $4)`,
+				uuid.New(), evID, canonPayload, now.Add(15*time.Minute),
+			); err != nil {
+				return err
+			}
+			_, err := tx.Exec(ctx, `
+				INSERT INTO usage_samples (
+					id, event_id, record_index, member_id, device_id,
+					binding_revision, meter_epoch_id, interval_start, interval_end,
+					upload_bytes, download_bytes, metering_version,
+					monotonic_elapsed_ns, clock_quality, quality_flags
+				) VALUES (
+					$1, $2, 0, $3, $4,
+					$5::numeric, $6, $7, $8,
+					$9::numeric, $10::numeric, $11,
+					60000000000, 'trusted', '{}'
+				)`,
+				uuid.New(), evID, memberID, devOut.DeviceID,
+				bindingRev.String(), ev.MeterEpochId, start, end,
+				decstr.U64(up).String(), decstr.U64(down).String(), string(ev.MeteringVersion),
+			)
+			return err
+		}); err != nil {
+			t.Fatalf("insert usage_events/usage_samples inc2 seq %d: %v", seq, err)
+		}
+	}
+	insertInc2Event(1, now.Add(5*time.Minute), now.Add(6*time.Minute), 4096, 8192)
+
+	bothList := decode[api.NodeIncarnationList](t, f.call("GET", incPath, nil, nil, nil), 200)
+	if len(bothList.Items) != 2 || !bothList.NextCursor.IsNull() {
+		t.Fatalf("expected 2 incarnations and null next_cursor, got %+v", bothList)
+	}
+
+	// Newest first: items[0] is inc2 (current, active), items[1] is inc1 (retired, reinstall).
+	got2 := bothList.Items[0]
+	got1 := bothList.Items[1]
+
+	if got2.IncarnationId != inc2 || got2.EnrollmentId != enr2.Enrollment.EnrollmentId {
+		t.Fatalf("items[0] identity = %+v, want inc2=%s enr2=%s", got2, inc2, enr2.Enrollment.EnrollmentId)
+	}
+	if !got2.Current || got2.State != api.NodeIncarnationStateActive || !got2.RetireReason.IsNull() || !got2.RetiredAt.IsNull() {
+		t.Fatalf("items[0] lifecycle = %+v, want current=true state=active retire_reason=null retired_at=null", got2)
+	}
+	if got2.BoundPublicKeySha256 != wantFP2 {
+		t.Fatalf("items[0] bound_public_key_sha256 = %q, want %q", got2.BoundPublicKeySha256, wantFP2)
+	}
+	if got2.Usage.UploadBytes.String() != "4096" || got2.Usage.DownloadBytes.String() != "8192" || !got2.Usage.Through.IsNull() {
+		t.Fatalf("items[0] usage = %+v, want upload=4096 download=8192 through=null", got2.Usage)
+	}
+
+	if got1.IncarnationId != inc1 || got1.EnrollmentId != enr1.Enrollment.EnrollmentId {
+		t.Fatalf("items[1] identity = %+v, want inc1=%s enr1=%s", got1, inc1, enr1.Enrollment.EnrollmentId)
+	}
+	got1Reason, err := got1.RetireReason.Get()
+	if err != nil || got1.Current || got1.State != api.NodeIncarnationStateRetired || got1Reason != api.NodeIncarnationRetireReasonReinstall || got1.RetiredAt.IsNull() {
+		t.Fatalf("items[1] lifecycle = %+v, want current=false state=retired retire_reason=reinstall", got1)
+	}
+	if got1.BoundPublicKeySha256 != wantFP1 {
+		t.Fatalf("items[1] bound_public_key_sha256 = %q, want %q", got1.BoundPublicKeySha256, wantFP1)
+	}
+	got1Through, err := got1.Usage.Through.Get()
+	if err != nil || got1.Usage.UploadBytes.String() != "9007199254741993" || got1.Usage.DownloadBytes.String() != "3072" || !got1Through.Equal(inc1Through) {
+		t.Fatalf("items[1] retained usage = %+v, want upload=9007199254741993 download=3072 through=%v", got1.Usage, inc1Through)
+	}
+
+	// 10. Pagination: limit=1 returns page 1 (inc2) with next_cursor, then page 2 (inc1) with null next_cursor.
+	page1 := decode[api.NodeIncarnationList](t, f.call("GET", incPath+"?limit=1", nil, nil, nil), 200)
+	p1Cursor, err := page1.NextCursor.Get()
+	if err != nil || len(page1.Items) != 1 || page1.Items[0].IncarnationId != inc2 {
+		t.Fatalf("page1 = %+v, want [inc2] with next_cursor", page1)
+	}
+	page2 := decode[api.NodeIncarnationList](t, f.call("GET", incPath+"?limit=1&cursor="+p1Cursor, nil, nil, nil), 200)
+	if len(page2.Items) != 1 || page2.Items[0].IncarnationId != inc1 || !page2.NextCursor.IsNull() {
+		t.Fatalf("page2 = %+v, want [inc1] with null next_cursor", page2)
+	}
+	if wBadCur := f.call("GET", incPath+"?cursor=not-a-valid-cursor", nil, nil, nil); wBadCur.Code != 400 {
+		t.Fatalf("malformed cursor status = %d, want 400", wBadCur.Code)
+	}
+
+	// 11. Sum above 2^64-1 fails closed (500 INTERNAL_ERROR), never returning a truncated total.
+	insertInc2Event(2, now.Add(6*time.Minute), now.Add(7*time.Minute), ^uint64(0), 1)
+	wOverflow := f.call("GET", incPath, nil, nil, nil)
+	if wOverflow.Code != 500 || !strings.Contains(wOverflow.Body.String(), "INTERNAL_ERROR") {
+		t.Fatalf("overflow sum status = %d %s, want 500 INTERNAL_ERROR", wOverflow.Code, wOverflow.Body.String())
 	}
 }

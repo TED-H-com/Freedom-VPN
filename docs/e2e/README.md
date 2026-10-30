@@ -11,22 +11,14 @@ Shared setup calls and probe commands are documented in [RUN.md](RUN.md).
 |---|---|---|
 | `FVPN_E2E_PREFIX` | `e2e` | Runtime containers, networks and volumes use `fvpn-<prefix>-*`. |
 | `FVPN_E2E_PORT_BASE` | `18000` | Each loopback port is this base plus a fixed offset. |
+| `FVPN_E2E_GRACE_SECONDS` | `0` | Prepare-time payment grace; see restart semantics in RUN.md. |
 | `FVPN_E2E_STATE` | `.agent/e2e-state-<prefix>` | Git-ignored secrets and rendered config for that prefix. |
 
-Legal port bases are `18000 + 6000*n` for `n` from 0 through 7. The step is
-larger than the widest offset, so two legal bases cannot publish the same
-host port. Slot `n` uses lab subnet `172.28.<30+n>.0/24` and release origin
-`192.0.<3+n>.10`. `e2e-down` removes only names matching `^fvpn-<prefix>-`
-for containers, volumes, and images, and `^fvpn-<prefix>(-|$)` for networks.
-It does not match another prefix.
-
-## Who may use which base
-
-| Base | Prefix rule |
-|---|---|
-| `18000` | This lab's default. The acceptance run uses prefix `e2e` and this base only. |
-| `24000`, `30000`, `36000`, `42000`, `48000` | Reserved for the W4 acceptance tasks. Do not start, stop, or reset those prefixes from this task. |
-| `54000`, `60000` | Legal and currently unassigned. Do not start them unless a task owns that slot. |
+Legal port bases are `6000 + 6000*n` for `n` from 0 through 9; `66000`
+is rejected. Existing bases `18000..60000` retain their original subnets and
+ports. The added `12000` slot belongs to `w4-enroll`; `6000` stays reserved.
+See the [binding table](RUN.md#assigned-port-slots) for all owners and subnets.
+This task uses only `e2e` / `18000`. Teardown matches only its own prefix.
 
 Images use neutral `fvpn-devstack-*` tags, including
 `fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
@@ -151,6 +143,7 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | Evidence id | What the run drives | Spec |
 |---|---|---|
 | `stack-health` | control `/readyz`, IdP, origin, Postgres | §3, §17 |
+| `gateway-principals` | distinct browser clients, forged-header refusals, response and metric evidence | §14.2, AT28/AT31 |
 | `control-metrics` | bounded in-container HTTP probe of loopback metrics | §17.1 |
 | `backup` | archive check, physical full backup and isolated PITR readback | §17.2, §17.3, AT30 groundwork |
 | `serving-catalogue` | member group, Fair-Use and plan through APIs | §9, §14.2 |
@@ -307,24 +300,22 @@ wired and checked. See [threat feed](scenarios/threat-feed.md). No feed is fetch
   the latest complete run. Records with `blocked` keep the acceptance command
   non-zero and identify the responsible owner.
 
-## Latest complete run — follow-up 10
+## Latest complete run — follow-up 11
 
-See [followup10-verification.md](followup10-verification.md) for fresh-stack run
-counts, source commits and real-release digests. The dated root records are one
-complete merged-tree run; `followup10-run1/`, `followup10-run2/` and
-`followup10-run3/` retain the original three complete runs. Exploratory
-attempts are excluded. [Owner requests](requests.md) distinguish resolved lab
-findings from remaining measurement limits. The previous follow-up's
-[verification](followup9-verification.md) remains historical evidence.
+[Follow-up 11 verification](followup11-verification.md) records the fresh run
+`76f0725c-2264-4021-a553-60f6c921e32b`, source `1b2f358` on product base
+`5555772`: **26 pass / 1 blocked / 0 fail**, Go exit 1 / make exit 2.
+All 27 dated root record pairs belong to that run. The original follow-up 10
+sets and its merged-tree run remain archived; their
+[verification](followup10-verification.md) is historical evidence.
 
-The latest merged-tree run `3a129919-af3f-4bc9-b54a-8075eae8af45` on `79259af`
-is **21 pass / 5 blocked / 0 fail** (Go 1 / make 2). Both update scenarios pass,
-including #154 probe issuance with zero omissions and measured §13.9 traversal.
-Member traffic saw no advertised exit at the lab's one-time selection check;
-a later read showed it available but unselected. The lab owns bounded
-route-discovery polling. `member-traffic`, `usage`, `forwarding`, `device-revoke`
-and `lease-expiry` remain blocked without a positive counted flow; no agent
-forwarding defect is inferred from this run. See [owner requests](requests.md).
+Gateway client principals, finite-grace prepare, all ten layout slots and node
+resource sampling are verified. Bounded native route discovery now enables
+counted member traffic, usage and expiry withdrawal. The stale native client
+keeps its route and carries a counted flow while paused before DELETE, but the
+post-DELETE node capture is empty. The independent ingress fixture remains
+blocked with devstack/netlab; no kernel drop is claimed. See
+[owner requests](requests.md) for exact evidence and harness adoption steps.
 
 ## Node image prerequisites (F3-02)
 
@@ -352,3 +343,10 @@ on stderr. The controlled `/oauth2/e2e-log-fault` route proxies to a closed
 loopback port and proves a 502 diagnostic without its synthetic query value.
 `JoinNativeMember` scans each protected CLI stream before deletion and returns
 aggregate inventory counts. No matched secret or URI leaves that scan.
+
+The lab gateway appends `X-Forwarded-For`; control trusts only that hop's `/32`.
+An empty trust list collapses gateway clients into one pre-authentication
+connection bucket. The agent mTLS listener remains direct, and nginx
+`worker_connections` is a separate resource limit. See the
+[gateway scenario](scenarios/gateway-principals.md) and
+[finite grace and telemetry hooks](RUN.md).

@@ -117,6 +117,8 @@ export function OperationBanner({
       role="status"
       aria-live="polite"
       data-testid="operation-banner"
+      data-operation-id={current.operation_id}
+      data-operation-status={current.status}
     >
       <div
         style={{

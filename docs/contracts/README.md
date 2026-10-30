@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 44 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 47 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -113,7 +113,7 @@ malformed public key, and missing revocation timestamp.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs44`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs47`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -242,7 +242,7 @@ meanings and where those codes may appear are in [Revision 8](#revision-8).
 ## Browser role selector (D-032)
 
 `GET /auth/session` and `POST /auth/logout` are existing browser routes outside
-`/api/v1` and outside the 44-endpoint API. Their query parameter is recorded in
+`/api/v1` and outside the 47-endpoint API. Their query parameter is recorded in
 `openapi.yaml` under `x-fvpn-browser-auth`:
 
 | Parameter | Type | Presence | Cookies |
@@ -254,6 +254,126 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 11
+
+API version **1.7.0**. The endpoint count stays **47**. No new operation.
+
+### D-071 `ErrorCode.AWAITING_MEMBER_GRANTS`
+
+The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
+
+The code is report-only (`pkg/apierr` HTTP status 0, node-local). It is not a browser-facing HTTP error. `forwarding_block_reasons` still contains `awaiting_member_grants` (revision 10); that vocabulary is unchanged. `safety_status` stays `passed` while the deadline holds.
+
+`ObservationReport.checks[]` in that provisional state:
+
+| name | status | error_code | detail |
+|---|---|---|---|
+| `lease` | `failed` | `AWAITING_MEMBER_GRANTS` | `Serving lease has no member grants yet.` |
+| `qos` | `failed` | `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) | `Rate policy could not be applied.` |
+| `source_binding` | `failed` | `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) | `No member binding was admitted.` |
+
+`ObservationReport.errors[]` carries exactly one entry: `code=AWAITING_MEMBER_GRANTS`, `stage=lease`, `message=Serving lease has no member grants yet.`
+
+Negatives, unchanged: a passed deadline is `lease_expired` / `LEASE_EXPIRED` (`Serving lease is not in force.`); a generation mismatch is `policy_missing` / `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
+
+### D-072 `NodeDetail.identity_conflict`
+
+`NodeDetail` (not `NodeSummary`) gains optional nullable `identity_conflict` (`NodeIdentityConflict`): `mapping_frozen`, `conflict_count`, `last_conflict_at`. Absent means the server does not project the field yet (pre-revision-11). Null means the node has no current incarnation or no endpoint has been observed yet. Endpoint hashes, addresses and compatibility domains are never exposed.
+
+`conflict_count` is an integer with minimum 0 and maximum 9007199254740991. The maximum is the JSON-number bound required by the contract integer convention (2^53-1). It is not a product cap. `last_conflict_at` is a nullable UTC `Z` date-time, the same pattern as `retired_at`.
+
+This is the operator-visible projection of spec line 278 (`docs/pki/enrollment.md`, "Revocation and conflicts"). `ObserveEndpoint` freezes the current incarnation's external identity mapping when a different compatibility-domain hash is seen, retains the original endpoint, and does not apply last-writer-wins. There is no automatic unfreeze and no unfreeze operation.
+
+Reconciliation is `revokeNode` plus a new enrollment. The new incarnation starts unfrozen. wire-nodes follow-up 22 projects the field. The operator node detail renders it later (portal follow-up). No new operation, no new error code, and no audit-action enum change (audit actions are free strings).
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-071 | `ErrorCode.AWAITING_MEMBER_GRANTS`; `ObservationReport` and `NodeCheck` placement | agent follow-up 18 adopts the code; the portal error table has the operator copy |
+| D-072 | `NodeDetail.identity_conflict` | wire-nodes follow-up 22 projects the field; portal follow-up renders node detail |
+
+## Revision 10
+
+API version **1.6.0**. The endpoint count is **47**. No `ErrorCode` was added.
+`Enrollment` gains required read-only `token_sha256`. The only new operation
+is `GET /admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`).
+`ForwardingBlockReason` gains `awaiting_member_grants` immediately after
+`lease_expired`. There is no `listEnrollments` operation; `token_sha256` is
+on `Enrollment`, which `getEnrollment` and the creation response already return.
+
+`token_sha256` is the lowercase hex SHA-256 of the one-time enrollment token.
+The plaintext is returned once, on creation, and never again (§6.1). It is not
+`bound_public_key_sha256`. `enrollment.created` records that digest in
+`changes.after`.
+
+### Audit redaction
+
+`AuditEvent` and `changes` are redacted configuration history (§16.4). Property
+names ending in `_sha256` are digests and are never redacted. That includes
+`token_sha256`. `sensitive()` in `internal/audit/audit.go` matches the
+substring `token` after stripping underscores, so `token_sha256` is sensitive
+today. `Diff` then omits the key, and `redact` would replace a stored value
+with `[REDACTED]` on read. pki-enroll must exempt names ending in `_sha256`
+before that substring check. The contract rule is the exemption, not a new
+error code.
+
+`listNodeIncarnations` is a synchronous 200 page. An unknown node is 404. A
+known node with no consumed enrollment is an empty page. Ordering is newest
+`created_at`, then `incarnation_id`. Usage on an old incarnation stays on that
+incarnation.
+
+`lease_expired` means the node lease for this generation is past its anchored
+deadline. `awaiting_member_grants` (D-067) means the node holds a valid node
+lease whose member grant set is empty while the desired generation carries
+member bindings, and the agent renews on a bounded schedule. The observation
+example is
+[ObservationReport.awaiting-member-grants.json](../../contracts/examples/valid/ObservationReport.awaiting-member-grants.json).
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| ENR-02 | `Enrollment.token_sha256`; `enrollment.created` `changes.after.token_sha256` | pki-enroll audit writer and enrollment read |
+| ENR-03 | `NodeIncarnation`, `NodeIncarnationList`; `listNodeIncarnations` | w3-wire-nodes read model; usage ledger join |
+| D-067 | `ForwardingBlockReason.awaiting_member_grants` | w2-agent-core follow-up 16 emits it; portal copy and the nodes read model adopt it afterwards |
+
+## Revision 9
+
+API version **1.5.0**. The endpoint count is **46**. No `ErrorCode` was added.
+`GET /admin/fleet-config` and `PUT /admin/fleet-config` are the only new
+operations (D-065). Old payloads stay valid.
+
+`PUT` returns **200** `FleetConfig`, not 202. The contract says `201` means a
+local resource was durably created and `202` means an operation was accepted
+whose external or data-plane effect is still pending. `Operation` is an
+asynchronous operation that succeeds only with observed evidence for every
+required step; `activatePolicyRevision` stays pending until applied-generation
+ACKs. Setting `max_offline_lease_seconds` writes one local row. Lease issuance
+reads that row later, and leases already issued keep their
+`max_offline_seconds` until renewal, so no node or data-plane step is pending
+when the response is sent.
+
+The value applies only to leases issued or renewed after the write. There is
+no retroactive shortening and no extension. The §16.3 replay rule is untouched.
+60 seconds is the test-lab floor: the agent renews when the remaining window
+is at or below min(`renew_lead_seconds` 120, window/2) with a 10 s heartbeat,
+so a 60 s lease is renewed at about 30 s remaining. The portal must warn below
+900 s. 86400 is the §16.3 ceiling (每次服務租約最長 24 小時), not a recommendation.
+`default_max_offline_lease_seconds` is read-only and always 86400.
+
+An accepted write increments `resource_version`, sets `updated_at`, returns
+`ETag: "<resource_version>"`, and records one `fleet_config.update` audit event
+on `fleet_config:00000000-0000-0000-0000-000000000001`. `changes.before` and
+`changes.after` each contain `max_offline_lease_seconds`. `operation_id` is
+null. Missing `If-Match` is 428 `PRECONDITION_REQUIRED`. A mismatch is 412
+`RESOURCE_VERSION_CONFLICT` with `details.current_resource_version`. The same
+`Idempotency-Key` and payload replay the original 200; a different payload is
+409 `IDEMPOTENCY_CONFLICT`. A value outside 60..86400 is 422
+`VALIDATION_FAILED`, the code the shared schema filter already returns for
+minimum and maximum. `MALFORMED_REQUEST` (400) stays the code for malformed
+JSON and a missing `Idempotency-Key`.
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-065 | `FleetConfig`, `FleetConfigUpdate`; `getFleetConfig`, `updateFleetConfig` | w3-wire-nodes admin handler and lease read; portal settings; AT29 harnesses |
 
 ## Revision 8
 
@@ -619,7 +739,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the current count of 44 (including D-015);
+1. Find the requirement in the spec. New endpoints change the current count of 47 (including D-015, D-065 and ENR-03);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -656,6 +776,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /admin/enrollments/{enrollment_id}` | `getEnrollment` | adminSession | 200 | §14.2 | ENR01 ENR02 |
 | `POST /admin/enrollments/{enrollment_id}/revoke` | `revokeEnrollment` | adminSession + csrfToken | 200 | §14.2, §6.4 | ENR02 |
 | `GET /admin/nodes/{node_id}` | `getNode` | adminSession | 200 | §14.2, §5 | NODE02 EXIT01 |
+| `GET /admin/nodes/{node_id}/incarnations` | `listNodeIncarnations` | adminSession | 200 | §14.2, §6.2, §15.3 | NODE02 DATA01 ENR02 |
 | `PATCH /admin/nodes/{node_id}` | `updateNode` | adminSession + csrfToken | 200,202 | §14.2, §14.5 | NODE03 FUP04 API01 |
 | `DELETE /admin/nodes/{node_id}` | `retireNode` | adminSession + csrfToken | 202 | §14.2, §5.2, §15.1 | NODE03 DATA01 |
 | `PUT /admin/nodes/{node_id}/publication` | `setNodePublication` | adminSession + csrfToken | 202 | §14.2, §5.2 | EXIT01 EXIT03 ENR04 NODE03 |
@@ -696,6 +817,8 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /agent/resolver-documents/{document_id}` | `getResolverDocument` | Agent mTLS | 200 | §14.4, §14.7, §12.3, D-056 | DNS01 DNS03 SEC01 |
 | `GET /admin/groups` | `listAdminGroups` | Admin | 200 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
 | `POST /admin/groups` | `createAdminGroup` | Admin | 201 | §14.2, §15.2, D-057 | NODE03 EXIT01 API01 |
+| `GET /admin/fleet-config` | `getFleetConfig` | adminSession | 200 | §14.2, §14.5, §16.3, D-065 | SEC01 API01 |
+| `PUT /admin/fleet-config` | `updateFleetConfig` | adminSession + csrfToken | 200 | §14.2, §14.5, §16.3, D-065 | SEC01 API01 |
 
 ## Operation step messages
 
@@ -737,6 +860,9 @@ unchanged.
 - **D-058:** sign probe configuration, expose bounded diagnostic/feed metadata,
   and default optional source refresh cadence to 21600 seconds. Version 1.1.0
   has 44 operations. Spec prose amendments remain pending authorization.
+- **D-065:** expose `max_offline_lease_seconds` only through
+  `GET /admin/fleet-config` and `PUT /admin/fleet-config`. The endpoint count
+  is 46. Harnesses and operators do not write `fleet_config` directly.
 
 - The update batch targets page is part of `GET /admin/update-batches/{batch_id}`
   (`targets`, `next_cursor`) under D-007; D-015 adds bootstrap and D-056/D-057 add resolver delivery and groups, making 44 endpoints. §13.10.4's
@@ -778,6 +904,9 @@ unchanged.
   Enrollment responses remain secret-free. The enrollment service owns atomic
   delivery consumption, deadlines, and secret redaction; provider key expiry
   remains distinct from both delivery and enrollment-token deadlines (§6.4).
+  Audit redaction is separate: property names ending in `_sha256` are digests
+  and are never redacted. `enrollment.created` therefore keeps `token_sha256`
+  in `changes.after` (revision 10).
 - AT07 reinstallation: optional `EnrollmentCreateRequest.node_id` binds to an
   existing Node. The enrollment service checks that its previous incarnation
   is revoked (otherwise 409 `NODE_INCARNATION_ACTIVE`) and it is not retired

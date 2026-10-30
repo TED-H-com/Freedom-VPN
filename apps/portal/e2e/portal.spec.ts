@@ -1,6 +1,94 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 const BASE_URL = process.env.PORTAL_E2E_BASE_URL || 'http://127.0.0.1:4173';
+
+interface OperationPollPayload {
+  operation_id: string;
+  kind: string;
+  status: string;
+  error?: { code?: string; message?: string } | null;
+  steps?: Array<{
+    name: string;
+    status: string;
+    error_code?: string | null;
+    message?: string | null;
+    observed_at?: string | null;
+  }>;
+}
+
+interface OperationPollResult {
+  finalOp: OperationPollPayload;
+  polledStatuses: string[];
+}
+
+async function waitForOperationHeadline(
+  page: Page,
+  request: APIRequestContext,
+  scope: 'admin' | 'member',
+  expectedHeadline: string,
+  expectedStatus = 'succeeded',
+): Promise<OperationPollResult> {
+  const banner = page.getByTestId('operation-banner');
+  await expect(banner).toBeVisible();
+  const opId = await banner.getAttribute('data-operation-id');
+  expect(opId).toBeTruthy();
+
+  const endpoint =
+    scope === 'member'
+      ? `${BASE_URL}/api/v1/member/operations/${opId}`
+      : `${BASE_URL}/api/v1/admin/operations/${opId}`;
+  const deadline = Date.now() + 14_000;
+  let lastOp: OperationPollPayload | null = null;
+  const polledStatuses: string[] = [];
+
+  const initialDomStatus = await banner.getAttribute('data-operation-status');
+  if (initialDomStatus) {
+    polledStatuses.push(initialDomStatus);
+    if (expectedStatus === 'succeeded' && initialDomStatus === 'failed') {
+      const failRes = await request.get(endpoint);
+      const failBody = failRes.ok() ? await failRes.json() : null;
+      throw new Error(
+        `Operation ${opId} observed failed on initial banner render: ${JSON.stringify(failBody)}`,
+      );
+    }
+  }
+
+  while (Date.now() < deadline) {
+    const res = await request.get(endpoint);
+    if (res.ok()) {
+      lastOp = (await res.json()) as OperationPollPayload;
+      polledStatuses.push(lastOp.status);
+      const domStatus = await banner.getAttribute('data-operation-status');
+      if (domStatus) {
+        polledStatuses.push(domStatus);
+      }
+      const hasFailedStep = (lastOp.steps ?? []).some((s) => s.status === 'failed');
+      if (
+        expectedStatus === 'succeeded' &&
+        (lastOp.status === 'failed' || domStatus === 'failed' || hasFailedStep)
+      ) {
+        throw new Error(
+          `Operation ${opId} (${lastOp.kind}) was observed failed during polling (polledStatuses=${JSON.stringify(polledStatuses)}): ${JSON.stringify(lastOp)}`,
+        );
+      }
+      if (lastOp.status === expectedStatus) {
+        break;
+      }
+    }
+    await page.waitForTimeout(50);
+  }
+
+  if (!lastOp || lastOp.status !== expectedStatus) {
+    throw new Error(
+      `Operation ${opId} (${lastOp?.kind ?? 'unknown'}) did not reach ${expectedStatus}; status=${lastOp?.status ?? 'null'} error_code=${lastOp?.error?.code ?? 'none'} error_message=${lastOp?.error?.message ?? 'none'} steps=${JSON.stringify(lastOp?.steps ?? [])}`,
+    );
+  }
+
+  await expect(page.getByTestId('operation-status-headline')).toHaveText(
+    expectedHeadline,
+  );
+  return { finalOp: lastOp, polledStatuses };
+}
 
 test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT04, AT06, AT23–AT24)', () => {
   test('TestAT01_AT03_MemberJourney_SignInPendingPaymentCheckoutReturnAndWebhookActivation', async ({
@@ -38,8 +126,7 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
     await page.getByTestId('start-hosted-checkout-btn').click();
     await expect(page.getByTestId('hosted-redirect-banner')).toBeVisible();
-    const checkoutUrlText = await page.getByTestId('hosted-redirect-url').textContent();
-    expect(checkoutUrlText).toContain(
+    await expect(page.getByTestId('hosted-redirect-url')).toContainText(
       'https://checkout.stripe.example.invalid/pay/cs_test_',
     );
 
@@ -66,6 +153,9 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('member-entitlement-state-badge')).toHaveText('active');
 
     await page.goto('/member/exits');
+    await expect(page.getByTestId('member-exits-page')).toBeVisible();
+    await expect(page.locator('[data-testid^="member-exit-row-"]').first()).toBeVisible();
+    await expect(page.locator('[data-testid^="member-exit-row-"]')).not.toHaveCount(0);
     await expect(page.getByTestId('member-exits-table')).toContainText('tw-tpe');
 
     // 7. Verify billing portal session hand-off on /member/billing
@@ -82,69 +172,96 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     page,
     request,
   }) => {
-    // 1. Seed 3 authorized devices on the active journey member so device count is 3 / 3 (AT02)
-    const seedRes = await request.post(`${BASE_URL}/__e2e/seed-member-devices`);
-    expect(seedRes.ok()).toBeTruthy();
-    const { device_ids: seededDeviceIds } = (await seedRes.json()) as {
-      device_ids: string[];
-    };
-    expect(seededDeviceIds).toHaveLength(3);
+    try {
+      // 1. Seed 3 authorized devices on the active journey member so device count is 3 / 3 (AT02)
+      const seedRes = await request.post(`${BASE_URL}/__e2e/seed-member-devices`);
+      expect(seedRes.ok()).toBeTruthy();
+      const { device_ids: seededDeviceIds } = (await seedRes.json()) as {
+        device_ids: string[];
+      };
+      expect(seededDeviceIds).toHaveLength(3);
 
-    const meRes = await request.get(`${BASE_URL}/api/v1/member/me`);
-    const meJson = (await meRes.json()) as { member_id: string };
-    const activeMemberId = meJson.member_id;
+      const meRes = await request.get(`${BASE_URL}/api/v1/member/me`);
+      const meJson = (await meRes.json()) as { member_id: string };
+      const activeMemberId = meJson.member_id;
 
-    // 2. Navigate to /member/devices and verify 3 / 3 quota, limit warning banner, and Device ID column label (DOC12)
-    await page.goto('/member/devices');
-    await expect(page.getByTestId('member-devices-page')).toBeVisible();
-    await expect(page.getByTestId('member-devices-table')).toContainText(
-      '裝置識別碼 (Device ID)',
-    );
-    await expect(page.getByTestId('device-quota-badge')).toContainText('3 / 3');
-    await expect(page.getByTestId('device-limit-warning')).toBeVisible();
+      // 2. Navigate to /member/devices and verify 3 / 3 quota, limit warning banner, and Device ID column label (DOC12)
+      await page.goto('/member/devices');
+      await expect(page.getByTestId('member-devices-page')).toBeVisible();
+      await expect(page.getByTestId('member-devices-table')).toContainText(
+        '裝置識別碼 (Device ID)',
+      );
+      await expect(page.getByTestId('device-quota-badge')).toContainText('3 / 3');
+      await expect(page.getByTestId('device-limit-warning')).toBeVisible();
 
-    // 3. Revoke the first device (202 Accepted operation -> succeeded) and verify count drops to 2 / 3 (AT02)
-    const firstDeviceId = seededDeviceIds[0];
-    await page.getByTestId(`revoke-own-device-${firstDeviceId}`).click();
+      // 3. Revoke the first device (202 Accepted operation -> succeeded, never observed failed at concurrency 4) and verify count drops to 2 / 3 (AT02)
+      const firstDeviceId = seededDeviceIds[0];
+      await page.getByTestId(`revoke-own-device-${firstDeviceId}`).click();
 
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3', {
-      timeout: 15_000,
-    });
-    await expect(page.getByTestId(`device-status-${firstDeviceId}`)).toHaveText(
-      'revoked',
-    );
+      const revokePoll = await waitForOperationHeadline(
+        page,
+        request,
+        'member',
+        '已套用（已取得實際觀測確認）',
+      );
+      expect(revokePoll.polledStatuses.length).toBeGreaterThan(0);
+      expect(revokePoll.polledStatuses).not.toContain('failed');
+      expect(revokePoll.finalOp.status).toBe('succeeded');
+      expect(revokePoll.finalOp.steps?.map((s) => s.status)).not.toContain('failed');
+      await expect(page.getByTestId('device-quota-badge')).toContainText('2 / 3');
+      await expect(page.getByTestId(`device-status-${firstDeviceId}`)).toHaveText(
+        'revoked',
+      );
 
-    // 4. Switch to Admin view (/admin/members/{id}) and suspend the member with If-Match (AT04)
-    await page.goto(`/admin/members/${activeMemberId}`);
-    await expect(page.getByTestId('admin-member-detail-page')).toBeVisible();
-    await page
-      .locator('#suspend-reason-input')
-      .fill('AT04 E2E compliance suspension check');
-    await page.getByTestId('suspend-member-btn').click();
+      // 4. Switch to Admin view (/admin/members/{id}) and suspend the member with If-Match (AT04; never observed failed at concurrency 4)
+      await page.goto(`/admin/members/${activeMemberId}`);
+      await expect(page.getByTestId('admin-member-detail-page')).toBeVisible();
+      await page
+        .locator('#suspend-reason-input')
+        .fill('AT04 E2E compliance suspension check');
+      await page.getByTestId('suspend-member-btn').click();
 
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
-    await expect(page.getByTestId('member-detail-entitlement-badge')).toHaveText(
-      'suspended',
-      { timeout: 15_000 },
-    );
+      const suspendPoll = await waitForOperationHeadline(
+        page,
+        request,
+        'admin',
+        '已套用（已取得實際觀測確認）',
+      );
+      expect(suspendPoll.polledStatuses.length).toBeGreaterThan(0);
+      expect(suspendPoll.polledStatuses).not.toContain('failed');
+      expect(suspendPoll.finalOp.status).toBe('succeeded');
+      expect(suspendPoll.finalOp.steps?.map((s) => s.status)).not.toContain('failed');
+      await expect(page.getByTestId('member-detail-entitlement-badge')).toHaveText(
+        'suspended',
+      );
 
-    // 5. Issue a finite entitlement grant on the member and verify 202 operation banner
-    await page.getByTestId('create-grant-btn').click();
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
+      // 5. Issue a finite entitlement grant on the member and verify 202 operation banner and grant row
+      await page.getByTestId('create-grant-btn').click();
+      await expect(page.getByTestId('operation-banner')).toBeVisible();
+      await expect(page.getByTestId('operation-status-headline')).toBeVisible();
+      const grantRows = page.locator('[data-testid^="admin-grant-row-"]');
+      await expect(grantRows.first()).toBeVisible();
+      await expect(grantRows).not.toHaveCount(0);
+      await expect(grantRows.first()).toContainText(
+        'Migration parallel transition grant',
+      );
 
-    // 6. Restore default seeded active member and verify /member/usage decimal precision (> 2^53) & watermark
-    const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
-    expect(restoreRes.ok()).toBeTruthy();
+      // 6. Restore default seeded active member and verify /member/usage decimal precision (> 2^53) & watermark
+      const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
+      expect(restoreRes.ok()).toBeTruthy();
 
-    await page.goto('/member/usage');
-    await expect(page.getByTestId('member-usage-page')).toBeVisible();
-    await expect(page.getByTestId('usage-total-card')).toContainText(
-      'raw: 18014398509481988 B',
-    );
-    await expect(page.getByTestId('usage-as-of-badge')).toContainText(/Z\)/);
-    await expect(page.getByTestId('honest-metering-banner')).toBeVisible();
-    await expect(page.getByTestId('usage-gap-warning-banner')).toBeVisible();
+      await page.goto('/member/usage');
+      await expect(page.getByTestId('member-usage-page')).toBeVisible();
+      await expect(page.getByTestId('usage-total-card')).toContainText(
+        'raw: 18014398509481988 B',
+      );
+      await expect(page.getByTestId('usage-as-of-badge')).toContainText(/Z\)/);
+      await expect(page.getByTestId('honest-metering-banner')).toBeVisible();
+      await expect(page.getByTestId('usage-gap-warning-banner')).toBeVisible();
+    } finally {
+      const restoreRes = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
+      expect(restoreRes.ok()).toBeTruthy();
+    }
   });
 
   test('TestOperator_NodePatchAnd412PreconditionConflict', async ({ page, request }) => {
@@ -222,6 +339,8 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
     // 2. Verify token is displayed once in the creation response banner
     await expect(page.getByTestId('one-time-enrollment-banner')).toBeVisible();
+    await expect(page.getByTestId('one-time-token-value')).toBeVisible();
+    await expect(page.getByTestId('one-time-token-value')).toHaveText(/\S{17,}/);
     const rawSecretToken = (
       await page.getByTestId('one-time-token-value').textContent()
     )?.trim();
@@ -525,10 +644,14 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('pub-group-checkbox-asia-premium').check();
     await expect(page.getByTestId('pub-group-checkbox-asia-premium')).toBeChecked();
     await page.getByTestId('publish-node-btn').click();
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await waitForOperationHeadline(
+      page,
+      request,
+      'admin',
+      '已套用（已取得實際觀測確認）',
+    );
     await expect(page.getByTestId('node-attached-groups')).toContainText(
       'asia-premium (Asia Premium Exits)',
-      { timeout: 15_000 },
     );
     await expect(page.getByTestId('node-attached-groups')).toContainText(
       'standard-exits (Standard Exit Group)',
@@ -559,18 +682,29 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
 
     // 3. Members never see group_id values on member exit views (D-057)
+    const restoreMemberRes = await request.post(
+      `${BASE_URL}/__e2e/restore-default-member`,
+    );
+    expect(restoreMemberRes.ok()).toBeTruthy();
     await page.goto('/member/exits');
     await expect(page.getByTestId('member-exits-page')).toBeVisible();
-    const exitsTextZh = await page.locator('body').textContent();
-    expect(exitsTextZh).not.toContain(standardExitsGroup!.group_id);
-    expect(exitsTextZh).not.toContain(asiaPremiumGroup!.group_id);
-    expect(exitsTextZh).not.toContain('standard-exits');
-    expect(exitsTextZh).not.toContain('asia-premium');
+    const exitRows = page.locator('[data-testid^="member-exit-row-"]');
+    await expect(exitRows.first()).toBeVisible();
+    await expect(exitRows).not.toHaveCount(0);
+    await expect(page.getByTestId('member-exits-table')).toContainText('tw-tpe');
+    await expect(page.locator('body')).not.toContainText(standardExitsGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText(asiaPremiumGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText('standard-exits');
+    await expect(page.locator('body')).not.toContainText('asia-premium');
 
     await page.getByTestId('locale-switcher').selectOption('en');
-    const exitsTextEn = await page.locator('body').textContent();
-    expect(exitsTextEn).not.toContain(standardExitsGroup!.group_id);
-    expect(exitsTextEn).not.toContain(asiaPremiumGroup!.group_id);
+    await expect(page.getByTestId('manual-exit-selection-notice')).toContainText(
+      'NetBird',
+    );
+    await expect(page.locator('body')).not.toContainText(standardExitsGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText(asiaPremiumGroup!.group_id);
+    await expect(page.locator('body')).not.toContainText('standard-exits');
+    await expect(page.locator('body')).not.toContainText('asia-premium');
     await page.getByTestId('locale-switcher').selectOption('zh-TW');
 
     // 4. DNS Policy threat_feed_status and ThreatFeedPayload.update_interval_seconds (D-058) in zh-TW and en
@@ -613,9 +747,11 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.getByTestId('threat-feed-update-interval-input').fill('3600');
     await page.getByTestId('create-extra-policy-revision-btn').click();
     await expect(page.getByTestId('threat-feed-interval-field-error')).toHaveCount(0);
+    await expect(page.getByTestId('dns-api-error')).toHaveCount(0);
+    await expect(page.getByTestId('policy-definitions-table')).toContainText('#2');
   });
 
-  test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page }) => {
+  test('TestOperator_FupPolicyActivationAndAuditEvents', async ({ page, request }) => {
     // 1. Navigate to /admin/policies/fup and verify TEST ONLY fair-use policy & overrides
     await page.goto('/admin/policies/fup');
     await expect(page.getByTestId('admin-fup-policy-page')).toBeVisible();
@@ -632,13 +768,197 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     // 2. Validate, create immutable revision, and activate with If-Match (202 operation)
     await page.getByTestId('fup-submit-btn').click();
     await expect(page.getByTestId('fup-validation-passed')).toBeVisible();
-    await expect(page.getByTestId('operation-banner')).toBeVisible();
+    await waitForOperationHeadline(
+      page,
+      request,
+      'admin',
+      '已套用（已取得實際觀測確認）',
+    );
+    await expect(page.getByTestId('op-step-desired_state_compile')).toContainText(
+      'succeeded',
+    );
 
     // 3. Navigate to /admin/audit and verify real audit events recorded by fvpn-control
     await page.goto('/admin/audit');
     await expect(page.getByTestId('admin-audit-page')).toBeVisible();
     await expect(page.getByTestId('audit-table')).toBeVisible();
-    const rowCount = await page.locator('[data-testid^="audit-row-"]').count();
-    expect(rowCount).toBeGreaterThan(0);
+    const auditRows = page.locator('[data-testid^="audit-row-"]');
+    await expect(auditRows.first()).toBeVisible();
+    await expect(auditRows).not.toHaveCount(0);
+    await expect(page.getByTestId('audit-table')).toContainText('policy.activate');
+  });
+
+  test('TestD065_OperatorFleetConfigSettings_UpdateAuditReload412ConflictAndRestore', async ({
+    page,
+    request,
+  }) => {
+    try {
+      // 1. Observe initial fleet-config via API and on /admin/settings
+      const initialGetRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      expect(initialGetRes.status()).toBe(200);
+      const initialConfig = (await initialGetRes.json()) as {
+        max_offline_lease_seconds: number;
+        default_max_offline_lease_seconds: number;
+        resource_version: string;
+        updated_at: string;
+      };
+      expect(initialConfig.max_offline_lease_seconds).toBe(86400);
+      expect(initialConfig.default_max_offline_lease_seconds).toBe(86400);
+
+      await page.goto('/admin/settings');
+      await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      await expect(page.getByTestId('nav-admin-settings')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText(
+        '86400 s',
+      );
+      await expect(page.getByTestId('fleet-config-default-seconds')).toHaveText(
+        '86400 s',
+      );
+      await expect(page.getByTestId('fleet-config-updated-at')).toContainText(/Z\)/);
+      await expect(page.getByTestId('fleet-config-semantics-copy')).toContainText(
+        '86400',
+      );
+
+      // Verify sub-900 s warning appears below 900 s without blocking submission
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('600');
+      await expect(page.getByTestId('fleet-config-sub-900-warning')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-submit-btn')).toBeEnabled();
+
+      // 2. Change max_offline_lease_seconds to 3600 with a reason and observe the 200 response
+      const updateReason = 'Shorten new leases for the AT29 lab.';
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('3600');
+      await expect(page.getByTestId('fleet-config-sub-900-warning')).toHaveCount(0);
+      await page.getByTestId('fleet-config-reason-input').fill(updateReason);
+
+      const put200Promise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'PUT',
+      );
+      await page.getByTestId('fleet-config-submit-btn').click();
+      const put200Res = await put200Promise;
+      expect(put200Res.status()).toBe(200);
+
+      await expect(page.getByTestId('fleet-config-saved-banner')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-saved-banner')).toContainText('3600');
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('3600 s');
+      await expect(page.getByTestId('fleet-config-audit-link')).toBeVisible();
+
+      // 3. Follow the audit link to /admin/audit?resource_type=fleet_config and observe the fleet_config.update row with before/after values
+      await page.getByTestId('fleet-config-audit-link').click();
+      await expect(page.getByTestId('admin-audit-page')).toBeVisible();
+      await expect(page.getByTestId('audit-resource-filter')).toHaveValue('fleet_config');
+      const auditRows = page.locator('[data-testid^="audit-row-"]');
+      await expect(auditRows.first()).toBeVisible();
+      await expect(auditRows).not.toHaveCount(0);
+      await expect(auditRows.first()).toContainText('fleet_config.update');
+      await expect(auditRows.first()).toContainText('86400');
+      await expect(auditRows.first()).toContainText('3600');
+      await expect(auditRows.first()).toContainText(updateReason);
+
+      // 4. Return to /admin/settings and reload to see the new value (3600)
+      await page.goto('/admin/settings');
+      await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      await page.reload();
+      await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('3600 s');
+      await expect(page.getByTestId('fleet-config-lease-seconds-input')).toHaveValue(
+        '3600',
+      );
+
+      // 5. Provoke a 412 RESOURCE_VERSION_CONFLICT by advancing the resource via API while the page holds the stale ETag
+      const midGetRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      expect(midGetRes.status()).toBe(200);
+      const midConfig = (await midGetRes.json()) as { resource_version: string };
+      const concurrentPutRes = await request.put(
+        `${BASE_URL}/api/v1/admin/fleet-config`,
+        {
+          headers: {
+            'If-Match': `"${midConfig.resource_version}"`,
+            'Idempotency-Key': `0195f100-0000-7000-8000-${Date.now().toString().slice(-12).padStart(12, '0')}`,
+            'Content-Type': 'application/json',
+          },
+          data: {
+            max_offline_lease_seconds: 1800,
+            reason: 'Concurrent operator update via API',
+          },
+        },
+      );
+      expect(concurrentPutRes.status()).toBe(200);
+      const concurrentUpdated = (await concurrentPutRes.json()) as {
+        resource_version: string;
+      };
+
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('7200');
+      await page.getByTestId('fleet-config-reason-input').fill('Attempt with stale ETag');
+
+      const put412Promise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'PUT',
+      );
+      await page.getByTestId('fleet-config-submit-btn').click();
+      const put412Res = await put412Promise;
+      expect(put412Res.status()).toBe(412);
+
+      await expect(page.getByTestId('fleet-config-conflict-banner')).toBeVisible();
+      await expect(page.getByTestId('fleet-config-conflict-version')).toHaveText(
+        concurrentUpdated.resource_version,
+      );
+      await expect(page.getByTestId('conflict-dialog')).toBeVisible();
+
+      // Reload from conflict dialog to load the latest version (1800)
+      await page.getByTestId('conflict-reload-btn').click();
+      await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('1800 s');
+      await expect(page.getByTestId('fleet-config-etag')).toHaveText(
+        `ETag: "${concurrentUpdated.resource_version}"`,
+      );
+
+      // 6. Restore 86400 via the page and verify via both page and API
+      await page.getByTestId('fleet-config-lease-seconds-input').fill('86400');
+      await page
+        .getByTestId('fleet-config-reason-input')
+        .fill('Restore default 86400 ceiling after E2E test.');
+      const restorePutPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'PUT',
+      );
+      await page.getByTestId('fleet-config-submit-btn').click();
+      const restorePutRes = await restorePutPromise;
+      expect(restorePutRes.status()).toBe(200);
+
+      await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText(
+        '86400 s',
+      );
+      const finalGetRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      expect(finalGetRes.status()).toBe(200);
+      const finalConfig = (await finalGetRes.json()) as {
+        max_offline_lease_seconds: number;
+      };
+      expect(finalConfig.max_offline_lease_seconds).toBe(86400);
+    } finally {
+      const checkRes = await request.get(`${BASE_URL}/api/v1/admin/fleet-config`);
+      if (checkRes.ok()) {
+        const current = (await checkRes.json()) as {
+          max_offline_lease_seconds: number;
+          resource_version: string;
+        };
+        if (current.max_offline_lease_seconds !== 86400) {
+          await request.put(`${BASE_URL}/api/v1/admin/fleet-config`, {
+            headers: {
+              'If-Match': `"${current.resource_version}"`,
+              'Idempotency-Key': `0195f100-ffff-7000-8000-${Date.now().toString().slice(-12).padStart(12, '0')}`,
+              'Content-Type': 'application/json',
+            },
+            data: {
+              max_offline_lease_seconds: 86400,
+              reason: 'Finally block restore 86400 ceiling.',
+            },
+          });
+        }
+      }
+    }
   });
 });

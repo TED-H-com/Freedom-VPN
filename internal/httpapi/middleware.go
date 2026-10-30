@@ -4,6 +4,9 @@ package httpapi
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -37,6 +40,8 @@ type requestMeta struct {
 	raw          []byte
 	scope        string
 	logger       *slog.Logger
+	clientCert   *x509.Certificate
+	clientDomain string
 }
 type metaKey struct{}
 
@@ -51,6 +56,25 @@ func RawBody(ctx context.Context) []byte {
 func ClientTrace(ctx context.Context) string {
 	if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok {
 		return m.trace
+	}
+	return ""
+}
+
+// ClientCertificate returns the authenticated mTLS leaf certificate for an
+// agent-listener request, or nil on other listeners.
+func ClientCertificate(ctx context.Context) *x509.Certificate {
+	if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok {
+		return m.clientCert
+	}
+	return nil
+}
+
+// ClientCompatibilityDomain returns the coarsened client endpoint domain
+// (IPv4 /24 or IPv6 /48, honouring X-Forwarded-For only from configured
+// trusted proxies) for an authenticated mTLS request, or "" when unavailable.
+func ClientCompatibilityDomain(ctx context.Context) string {
+	if m, ok := ctx.Value(metaKey{}).(*requestMeta); ok {
+		return m.clientDomain
 	}
 	return ""
 }
@@ -178,6 +202,7 @@ type bucketEntry struct {
 	perSecond float64
 	burst     float64
 	key       string
+	group     string
 	prev      *bucketEntry
 	next      *bucketEntry
 }
@@ -185,29 +210,49 @@ type bucketEntry struct {
 type limiter struct {
 	mu      sync.Mutex
 	entries map[string]*bucketEntry
+	groups  map[string]int
 	head    *bucketEntry
 	tail    *bucketEntry
 	max     int
 }
 
 func newLimiter(max int) *limiter {
-	return &limiter{entries: map[string]*bucketEntry{}, max: max}
+	return &limiter{entries: map[string]*bucketEntry{}, groups: map[string]int{}, max: max}
 }
 
+// limiterNow is the clock for token refill and idle eviction. Production
+// leaves it as time.Now. A test replaces it so eligibility for eviction does
+// not depend on how fast the requests run, and restores it when the test ends.
+var limiterNow = time.Now
+
+// evictIdleWindow is how many least-recently-used buckets are examined when
+// the table is full. A constant window stays O(1). One depleted tail cannot
+// hide a newer bucket that has already refilled. More than this many depleted
+// buckets sitting at the tail can still refuse a newcomer while a full bucket
+// waits further toward the head.
+const evictIdleWindow = 8
+
 // allow spends one token or returns how long the caller should wait.
-// At capacity it evicts only the least-recently-used bucket, and only when
-// that bucket is idle with a full token count or has been idle for more
-// than an hour. The check is O(1). A live bucket stays, and the new
-// principal is refused. The tail has had the longest time to refill. Ingress
-// tables each use one rate. The subject table mixes class rates, so a fuller
-// bucket can sit behind a slower tail; that tail stays until it is full or
-// an hour old.
+// At capacity it scans a bounded window from the tail and evicts the first
+// bucket that is idle with a full token count or has been idle for more than
+// an hour. A live bucket stays. When no bucket in the window qualifies, the
+// new principal is refused and nothing is inserted.
 func (l *limiter) allow(key string, b config.Bucket) time.Duration {
+	return l.allowGrouped(key, "", b)
+}
+
+// allowGrouped is allow with an optional group budget. An empty group is not
+// counted. A new key whose group is already at the budget is refused without
+// eviction and without an insert. An existing key still spends a token.
+func (l *limiter) allowGrouped(key, group string, b config.Bucket) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	now := time.Now()
+	now := limiterNow()
 	e, ok := l.entries[key]
 	if !ok {
+		if group != "" && l.groups[group] >= l.groupBudget() {
+			return time.Second
+		}
 		if len(l.entries) >= l.max && !l.evictIdle(now) {
 			return time.Second
 		}
@@ -217,8 +262,12 @@ func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 			perSecond: b.PerSecond,
 			burst:     float64(b.Burst),
 			key:       key,
+			group:     group,
 		}
 		l.entries[key] = e
+		if group != "" {
+			l.groups[group]++
+		}
 		l.pushFront(e)
 	} else {
 		l.moveFront(e)
@@ -234,22 +283,45 @@ func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 	return 0
 }
 
-// evictIdle drops the tail when it has refilled to its burst after going
-// idle, or when it has been idle for more than an hour.
+// groupBudget is the most /64 keys one anonymous /48 may hold. Half the
+// principal cap leaves room for another prefix. A cap of one still allows
+// that single slot.
+func (l *limiter) groupBudget() int {
+	n := l.max / 2
+	if n < 1 {
+		return 1
+	}
+	return n
+}
+
+// evictIdle drops the first eligible bucket in a window that starts at the
+// tail and walks toward newer entries. Eligible means the bucket has refilled
+// to its burst after going idle, or it has been idle for more than an hour.
 func (l *limiter) evictIdle(now time.Time) bool {
 	e := l.tail
-	if e == nil {
-		return false
+	for n := 0; e != nil && n < evictIdleWindow; n++ {
+		elapsed := now.Sub(e.at)
+		refilled := math.Min(e.burst, e.tokens+elapsed.Seconds()*e.perSecond)
+		fullIdle := e.burst > 0 && refilled >= e.burst && elapsed > 0
+		if fullIdle || elapsed > time.Hour {
+			l.drop(e)
+			return true
+		}
+		e = e.prev
 	}
-	elapsed := now.Sub(e.at)
-	refilled := math.Min(e.burst, e.tokens+elapsed.Seconds()*e.perSecond)
-	fullIdle := e.burst > 0 && refilled >= e.burst && elapsed > 0
-	if !fullIdle && elapsed <= time.Hour {
-		return false
-	}
+	return false
+}
+
+func (l *limiter) drop(e *bucketEntry) {
 	l.remove(e)
 	delete(l.entries, e.key)
-	return true
+	if e.group == "" {
+		return
+	}
+	l.groups[e.group]--
+	if l.groups[e.group] <= 0 {
+		delete(l.groups, e.group)
+	}
 }
 
 func (l *limiter) pushFront(e *bucketEntry) {
@@ -313,6 +385,10 @@ func New(c *Composite, o Options) (http.Handler, error) {
 	}
 	if o.Config.MaxRatePrincipals < 1 {
 		return nil, errors.New("rate capacity required")
+	}
+	proxies, e := config.ParseTrustedProxies(o.Config.TrustedProxies)
+	if e != nil {
+		return nil, e
 	}
 	subjects := newLimiter(o.Config.MaxRatePrincipals)
 	anonymousLim := newLimiter(o.Config.MaxRatePrincipals)
@@ -381,15 +457,36 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		m.route = r.Method + " /api/v1" + route.Path
 		class, bounds, bodyLimit := classify(op, o.Config)
 		// A peer without a verified client certificate never occupies a
-		// limiter slot. Per-node buckets are created only after this succeeds.
+		// limiter slot. The agent listener then spends an ingress token and a
+		// concurrency slot, both keyed by that certificate, before the
+		// database lookup. A failed lookup still spent the token.
 		var p auth.Principal
+		var peer string
 		if mtls {
 			if o.Agents == nil || r.TLS == nil || len(r.TLS.VerifiedChains) == 0 || len(r.TLS.VerifiedChains[0]) == 0 {
 				apierr.Write(w, r, apierr.New(apierr.Unauthenticated, "Verified client certificate required."))
 				return
 			}
+			leaf := r.TLS.VerifiedChains[0][0]
+			if delay := ingress[class].allow(certRateKey(leaf), o.Config.IngressRate); delay > 0 {
+				if o.RateLimited != nil {
+					o.RateLimited.WithLabelValues(class, "address").Inc()
+				}
+				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
+				return
+			}
+			select {
+			case gates[class] <- struct{}{}:
+				defer func() { <-gates[class] }()
+			default:
+				if o.RateLimited != nil {
+					o.RateLimited.WithLabelValues(class, "concurrency").Inc()
+				}
+				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request concurrency exceeded.").WithRetryAfter(time.Second))
+				return
+			}
 			var authErr error
-			p, authErr = o.Agents.AuthenticateAgent(r.Context(), r.TLS.VerifiedChains[0][0])
+			p, authErr = o.Agents.AuthenticateAgent(r.Context(), leaf)
 			if authErr != nil {
 				apierr.Write(w, r, authErr)
 				return
@@ -398,48 +495,64 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				apierr.Write(w, r, apierr.New(apierr.Unauthenticated, "Invalid machine identity."))
 				return
 			}
-		}
-		peer, peerOK := connectionRateKey(r.RemoteAddr)
-		if !peerOK {
-			// Do not insert an empty host. Unparseable connection addresses
-			// would otherwise share one bucket and could fill the principal map.
-			if o.RateLimited != nil {
-				o.RateLimited.WithLabelValues(class, "address").Inc()
+			m.clientCert = leaf
+			if domain, ok := compatibilityDomain(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies); ok {
+				m.clientDomain = domain
 			}
-			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(time.Second))
-			return
-		}
-		// The table is already per class, so the key is the connection principal.
-		if delay := ingress[class].allow(peer, o.Config.IngressRate); delay > 0 {
-			if o.RateLimited != nil {
-				o.RateLimited.WithLabelValues(class, "address").Inc()
-			}
-			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
-			return
-		}
-		if !mtls && (tag == "admin" || tag == "member") {
-			var authErr error
-			if o.Sessions == nil {
-				authErr = apierr.New(apierr.Unauthenticated, "Sign in required.")
-			} else {
-				p, authErr = o.Sessions.AuthenticateSession(r)
-			}
-			if authErr == nil && (string(p.Role) != tag || p.ID == uuid.Nil) {
-				authErr = apierr.New(apierr.Forbidden, "Role is not allowed.")
-			}
-			if authErr == nil && tag == "admin" && !p.MFAVerified {
-				authErr = apierr.New(apierr.Forbidden, "Administrator MFA required.")
-			}
-			if authErr != nil {
-				apierr.Write(w, r, authErr)
+		} else {
+			var peerOK bool
+			peer, peerOK = requestRateKey(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies, true)
+			if !peerOK {
+				// Do not insert an empty host. Unparseable connection addresses
+				// would otherwise share one bucket and could fill the principal map.
+				if o.RateLimited != nil {
+					o.RateLimited.WithLabelValues(class, "address").Inc()
+				}
+				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(time.Second))
 				return
+			}
+			// The table is already per class, so the key is the connection principal.
+			// Anonymous enrollment and webhooks also count the IPv6 /48.
+			group := ""
+			if class == "anonymous" {
+				group = anonymousGroup(peer)
+			}
+			if delay := ingress[class].allowGrouped(peer, group, o.Config.IngressRate); delay > 0 {
+				if o.RateLimited != nil {
+					o.RateLimited.WithLabelValues(class, "address").Inc()
+				}
+				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Authentication request rate exceeded.").WithRetryAfter(delay))
+				return
+			}
+			if tag == "admin" || tag == "member" {
+				var authErr error
+				if o.Sessions == nil {
+					authErr = apierr.New(apierr.Unauthenticated, "Sign in required.")
+				} else {
+					p, authErr = o.Sessions.AuthenticateSession(r)
+				}
+				if authErr == nil && (string(p.Role) != tag || p.ID == uuid.Nil) {
+					authErr = apierr.New(apierr.Forbidden, "Role is not allowed.")
+				}
+				if authErr == nil && tag == "admin" && !p.MFAVerified {
+					authErr = apierr.New(apierr.Forbidden, "Administrator MFA required.")
+				}
+				if authErr != nil {
+					apierr.Write(w, r, authErr)
+					return
+				}
 			}
 		}
 		r = r.WithContext(auth.WithPrincipal(r.Context(), p))
 		if p.Role == "" {
 			// Enrollment and webhooks use this table, separate from every
 			// ingress table, so they cannot starve an authenticated class.
-			if delay := anonymousLim.allow(peer, bounds); delay > 0 {
+			// The /48 budget sits beside the /64 key on this table too.
+			group := ""
+			if class == "anonymous" {
+				group = anonymousGroup(peer)
+			}
+			if delay := anonymousLim.allowGrouped(peer, group, bounds); delay > 0 {
 				if o.RateLimited != nil {
 					o.RateLimited.WithLabelValues(class, "address").Inc()
 				}
@@ -453,15 +566,17 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
 			return
 		}
-		select {
-		case gates[class] <- struct{}{}:
-			defer func() { <-gates[class] }()
-		default:
-			if o.RateLimited != nil {
-				o.RateLimited.WithLabelValues(class, "concurrency").Inc()
+		if !mtls {
+			select {
+			case gates[class] <- struct{}{}:
+				defer func() { <-gates[class] }()
+			default:
+				if o.RateLimited != nil {
+					o.RateLimited.WithLabelValues(class, "concurrency").Inc()
+				}
+				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request concurrency exceeded.").WithRetryAfter(time.Second))
+				return
 			}
-			apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request concurrency exceeded.").WithRetryAfter(time.Second))
-			return
 		}
 		if r.Method != "GET" && r.Method != "HEAD" && (p.Role == auth.Admin || p.Role == auth.Member) {
 			if e = auth.CheckCSRF(r, p, o.Config.PublicOrigin); e != nil {
@@ -505,33 +620,51 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Bootstrap does not accept a request body."))
 			return
 		}
+		identOK := true
+		streamedSchema := false
 		if len(raw) > 0 && tag != "webhook" {
 			typ, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 			if err != nil || typ != "application/json" {
 				apierr.Write(w, r, apierr.New(apierr.UnsupportedMediaType, "JSON content required."))
 				return
 			}
-			if err = checkJSONDocument(raw, bodyLimit); err != nil {
+			chk := &jsonCheck{}
+			if mtls {
+				chk.onIdentity = func(key, value string, isString bool) {
+					if !identityFieldMatches(key, value, isString, p) {
+						identOK = false
+					}
+				}
+			}
+			if int64(len(raw)) <= canonjson.MaxBytes {
+				if _, err = canonjson.Canonicalize(raw); err != nil {
+					apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Invalid JSON document."))
+					return
+				}
+				if chk.onIdentity != nil {
+					if err = walkChecked(raw, chk); err != nil {
+						apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Invalid JSON document."))
+						return
+					}
+				}
+			} else if err = checkLargeJSON(raw, bodyLimit, op, chk, &streamedSchema); err != nil {
+				if errors.Is(err, errSchemaMismatch) {
+					apierr.Write(w, r, apierr.New(apierr.ValidationFailed, "Request does not match the API schema."))
+					return
+				}
 				apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Invalid JSON document."))
 				return
 			}
 		}
 		r.Body = io.NopCloser(bytes.NewReader(raw))
-		validation := &openapi3filter.RequestValidationInput{Request: r, PathParams: params, Route: route, Options: &openapi3filter.Options{AuthenticationFunc: openapi3filter.NoopAuthenticationFunc, SkipSettingDefaults: true, ExcludeRequestBody: tag == "webhook", RejectWhenRequestBodyNotSpecified: true}}
+		validation := &openapi3filter.RequestValidationInput{Request: r, PathParams: params, Route: route, Options: &openapi3filter.Options{AuthenticationFunc: openapi3filter.NoopAuthenticationFunc, SkipSettingDefaults: true, ExcludeRequestBody: tag == "webhook" || streamedSchema, RejectWhenRequestBodyNotSpecified: true}}
 		if e = openapi3filter.ValidateRequest(r.Context(), validation); e != nil {
 			apierr.Write(w, r, apierr.New(apierr.ValidationFailed, "Request does not match the API schema."))
 			return
 		}
-		if mtls && len(raw) > 0 {
-			var body any
-			if err := json.Unmarshal(raw, &body); err != nil {
-				apierr.Write(w, r, apierr.New(apierr.MalformedRequest, "Invalid JSON document."))
-				return
-			}
-			if !matchingIdentity(body, p) {
-				apierr.Write(w, r, apierr.New(apierr.IncarnationMismatch, "Request identity differs from the certificate."))
-				return
-			}
+		if mtls && len(raw) > 0 && !identOK {
+			apierr.Write(w, r, apierr.New(apierr.IncarnationMismatch, "Request identity differs from the certificate."))
+			return
 		}
 		// Concrete path parameters are part of the scope. Reusing a key on another
 		// resource must never replay the first resource's command (§14.5).
@@ -544,6 +677,13 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			m.scope += "|" + name + "=" + value
 		}
 		r.Body = io.NopCloser(bytes.NewReader(raw))
+		// An unimplemented operation has already passed the streaming checks.
+		// The generated handler would decode the body into a struct and then
+		// report that it has no owner. Skip that decode.
+		if o.Commands == nil && c.owner(op.OperationID) == nil {
+			WriteError(w, r, errNotImplemented)
+			return
+		}
 		handler.ServeHTTP(w, r)
 	}), nil
 }
@@ -598,57 +738,49 @@ func classify(op *openapi3.Operation, c config.Config) (string, config.Bucket, i
 	return "browser", c.BrowserRate, c.BrowserBodyBytes
 }
 
-// checkJSONDocument accepts one JSON value. Bodies up to canonjson.MaxBytes
-// must be the signed-document subset; that bound stays 1 MiB. A larger body
-// is still inside its class cap (usage, 8 MiB) and is checked by
-// walkJSONDocument, which applies the same subset rules without a second
-// copy of the body. Identity matching reads the parsed body.
-func checkJSONDocument(raw []byte, limit int64) error {
+// checkLargeJSON walks a body above canonjson.MaxBytes. When the operation
+// schema is covered by the streaming checker, that walk is the schema check
+// and streamed is set so the caller does not build a second document tree.
+func checkLargeJSON(raw []byte, limit int64, op *openapi3.Operation, chk *jsonCheck, streamed *bool) error {
 	if limit < int64(len(raw)) {
 		return errors.New("json: body exceeds class limit")
 	}
-	if int64(len(raw)) <= canonjson.MaxBytes {
-		_, err := canonjson.Canonicalize(raw)
-		return err
+	if schema := requestJSONSchema(op); schema != nil && schemaStreamable(schema) {
+		chk.schema = schema
+		*streamed = true
 	}
-	return walkJSONDocument(raw)
+	return walkChecked(raw, chk)
 }
 
-func matchingIdentity(v any, p auth.Principal) bool {
-	switch x := v.(type) {
-	case map[string]any:
-		for k, v := range x {
-			if k == "node_id" || k == "node_incarnation_id" || k == "incarnation_id" {
-				text, ok := v.(string)
-				if !ok {
-					return false
-				}
-				id, e := uuid.Parse(text)
-				expected := p.IncarnationID
-				if k == "node_id" {
-					expected = p.NodeID
-				}
-				if e != nil || id != expected {
-					return false
-				}
-			}
-			if !matchingIdentity(v, p) {
-				return false
-			}
-		}
-	case []any:
-		for _, v := range x {
-			if !matchingIdentity(v, p) {
-				return false
-			}
-		}
+func requestJSONSchema(op *openapi3.Operation) *openapi3.Schema {
+	if op == nil || op.RequestBody == nil || op.RequestBody.Value == nil {
+		return nil
 	}
-	return true
+	media := op.RequestBody.Value.Content.Get("application/json")
+	if media == nil || media.Schema == nil {
+		return nil
+	}
+	return media.Schema.Value
+}
+
+func identityFieldMatches(key, value string, isString bool, p auth.Principal) bool {
+	if key != "node_id" && key != "node_incarnation_id" && key != "incarnation_id" {
+		return true
+	}
+	if !isString {
+		return false
+	}
+	id, err := uuid.Parse(value)
+	expected := p.IncarnationID
+	if key == "node_id" {
+		expected = p.NodeID
+	}
+	return err == nil && id == expected
 }
 
 // BrowserRoutes bounds login discovery/token work and session bootstrap. The key
-// is the connection address (IPv4 per address, IPv6 per /64). Untrusted proxy
-// forwarding headers are ignored.
+// is the connection principal (IPv4 per address, IPv6 per /64). X-Forwarded-For
+// is read only when the TCP peer is inside trusted_proxies.
 func BrowserRoutes(c config.Config, next http.Handler) http.Handler {
 	return BrowserRoutesWithMetrics(c, next, nil)
 }
@@ -660,12 +792,15 @@ const ipv6RatePrefixBits = 64
 
 // connectionRateKey is the rate-limiter principal for a connection address.
 // IPv4, including IPv4-mapped IPv6, is the canonical host. IPv6 is the
-// canonical address of its /64. Bracketed "[2001:db8::1]:443" and unbracketed
-// "2001:db8::1:443" are the same principal. ok is false when remoteAddr is
-// not an IP connection address; the caller fails that request closed and
-// does not store a key.
+// canonical address of its /64. An unbracketed string that parses as an IPv6
+// address is that address; a trailing port is removed only when the full
+// string does not parse. ok is false when remoteAddr is not an IP connection
+// address; the caller fails that request closed and does not store a key.
 func connectionRateKey(remoteAddr string) (string, bool) {
-	ip := parseRemoteIP(remoteAddr)
+	return rateKeyFromIP(parseRemoteIP(remoteAddr))
+}
+
+func rateKeyFromIP(ip net.IP) (string, bool) {
 	if ip == nil {
 		return "", false
 	}
@@ -679,49 +814,225 @@ func connectionRateKey(remoteAddr string) (string, bool) {
 	return prefix.String(), true
 }
 
-// parseRemoteIP reads the host from a connection address. net.SplitHostPort
-// accepts "ipv4:port" and "[ipv6]:port". An unbracketed IPv6 address keeps a
-// trailing numeric port ("2001:db8::1:443") so it matches the bracketed form
-// of that same host. A zone identifier is not part of the key.
-func parseRemoteIP(remoteAddr string) net.IP {
-	host, _, err := net.SplitHostPort(remoteAddr)
-	if err != nil {
-		if h, ok := splitUnbracketedIPv6(remoteAddr); ok {
-			host = h
-		} else {
-			host = remoteAddr
+// ipv6AggregatePrefixBits is the anonymous-table budget beside the /64 key.
+// One /48 may hold at most half of max_rate_principals /64 buckets.
+const ipv6AggregatePrefixBits = 48
+
+// anonymousGroup is the /48 of an IPv6 rate key. IPv4 keys are not grouped.
+func anonymousGroup(rateKey string) string {
+	ip := net.ParseIP(rateKey)
+	if ip == nil || ip.To4() != nil {
+		return ""
+	}
+	masked := ip.Mask(net.CIDRMask(ipv6AggregatePrefixBits, 128))
+	if masked == nil {
+		return ""
+	}
+	return masked.String()
+}
+
+// certRateKey is the SHA-256 of the verified leaf certificate's DER. It is
+// computed from memory and is the agent listener's ingress key.
+func certRateKey(cert *x509.Certificate) string {
+	sum := sha256.Sum256(cert.Raw)
+	return hex.EncodeToString(sum[:])
+}
+
+// maxForwardedHops is the number of X-Forwarded-For entries read from the
+// right. Entries further left are not parsed.
+const maxForwardedHops = 64
+
+// requestRateKey is the connection principal for a public-listener request.
+// The TCP peer is the principal unless useForwarded is set and that peer
+// belongs to a trusted proxy network. Then the principal is the rightmost
+// X-Forwarded-For entry that is not itself a trusted hop. A missing header,
+// a chain of only trusted hops, or a peer outside the trusted networks keeps
+// the TCP peer. An unparseable TCP peer or an unparseable chosen entry
+// returns ok false. RFC 7239 Forwarded and X-Real-IP are not read.
+// The agent listener's rate-limiter ingress key is the SHA-256 of the verified
+// client certificate; it calls compatibilityDomain (which wraps requestRateKey)
+// to derive the coarsened /24 or /48 client domain for cloned-identity checks (D-072).
+func requestRateKey(remoteAddr string, forwarded []string, trusted []*net.IPNet, useForwarded bool) (string, bool) {
+	if !useForwarded || len(trusted) == 0 {
+		return connectionRateKey(remoteAddr)
+	}
+	peer := parseRemoteIP(remoteAddr)
+	if peer == nil {
+		return "", false
+	}
+	if !ipInNets(peer, trusted) {
+		return rateKeyFromIP(peer)
+	}
+	for _, entry := range rightmostForwarded(forwarded, maxForwardedHops) {
+		ip := parseForwardedIP(entry)
+		if ip == nil {
+			return "", false
+		}
+		if ipInNets(ip, trusted) {
+			continue
+		}
+		return rateKeyFromIP(ip)
+	}
+	return rateKeyFromIP(peer)
+}
+
+const ipv4CompatibilityPrefixBits = 24
+
+// compatibilityDomain derives the endpoint compatibility domain (D-072) for an
+// authenticated request using the trusted-proxy logic of requestRateKey and
+// coarsening IPv4 to /24 and IPv6 to /48 before server-side hashing. Two clones
+// behind the same compatibility domain are not distinguished by this check.
+func compatibilityDomain(remoteAddr string, forwarded []string, trusted []*net.IPNet) (string, bool) {
+	key, ok := requestRateKey(remoteAddr, forwarded, trusted, true)
+	if !ok {
+		return "", false
+	}
+	ip := net.ParseIP(key)
+	if ip == nil {
+		return "", false
+	}
+	if v4 := ip.To4(); v4 != nil {
+		masked := v4.Mask(net.CIDRMask(ipv4CompatibilityPrefixBits, 32))
+		if masked == nil {
+			return "", false
+		}
+		return masked.String() + "/24", true
+	}
+	masked := ip.Mask(net.CIDRMask(ipv6AggregatePrefixBits, 128))
+	if masked == nil {
+		return "", false
+	}
+	return masked.String() + "/48", true
+}
+
+func ipInNets(ip net.IP, nets []*net.IPNet) bool {
+	if v4 := ip.To4(); v4 != nil {
+		ip = v4
+	}
+	for _, n := range nets {
+		if n.Contains(ip) {
+			return true
 		}
 	}
+	return false
+}
+
+// rightmostForwarded returns at most limit entries, rightmost first.
+// Header values are in on-the-wire order: a later value was appended and is
+// further to the right. Only the examined suffix is scanned.
+func rightmostForwarded(values []string, limit int) []string {
+	if limit < 1 || len(values) == 0 {
+		return nil
+	}
+	out := make([]string, 0, min(limit, 8))
+	for i := len(values) - 1; i >= 0 && len(out) < limit; i-- {
+		s := values[i]
+		end := len(s)
+		for len(out) < limit {
+			comma := strings.LastIndexByte(s[:end], ',')
+			entry := strings.TrimSpace(s[comma+1 : end])
+			out = append(out, entry)
+			if comma < 0 {
+				break
+			}
+			end = comma
+		}
+	}
+	return out
+}
+
+// parseRemoteIP reads the host from a connection address. net.SplitHostPort
+// accepts "ipv4:port" and "[ipv6]:port". A fully bracketed address with no
+// port is not a connection address. An unbracketed value with more than one
+// colon is parsed as an IPv6 address first; a trailing :port is removed only
+// when that parse fails. A zone identifier is not part of the key.
+func parseRemoteIP(remoteAddr string) net.IP {
+	return parseIPText(remoteAddr, false)
+}
+
+// parseForwardedIP reads one X-Forwarded-For entry. A bracketed address with
+// no port ("[2001:db8::1]") is an address and is never split. A TCP RemoteAddr
+// in that form stays unparseable: connection addresses carry a port.
+func parseForwardedIP(entry string) net.IP {
+	return parseIPText(entry, true)
+}
+
+func parseIPText(s string, bareBracketOK bool) net.IP {
+	if len(s) >= 2 && s[0] == '[' {
+		if s[len(s)-1] == ']' {
+			if !bareBracketOK {
+				return nil
+			}
+			return parseIPHost(s[1 : len(s)-1])
+		}
+		host, _, err := net.SplitHostPort(s)
+		if err != nil {
+			return nil
+		}
+		return parseIPHost(host)
+	}
+	if strings.Count(s, ":") > 1 {
+		if ip := parseIPHost(s); ip != nil {
+			return ip
+		}
+		host, port, ok := splitTrailingPort(s)
+		if !ok {
+			return nil
+		}
+		if _, err := strconv.ParseUint(port, 10, 16); err != nil {
+			return nil
+		}
+		return parseIPHost(host)
+	}
+	if host, _, err := net.SplitHostPort(s); err == nil {
+		return parseIPHost(host)
+	}
+	return parseIPHost(s)
+}
+
+func parseIPHost(host string) net.IP {
 	if i := strings.IndexByte(host, '%'); i >= 0 {
 		host = host[:i]
 	}
-	return net.ParseIP(host)
+	if ip := net.ParseIP(host); ip != nil {
+		return ip
+	}
+	// Eight hextets written with a zero-width "::" (2001:db8:1::2:3:4:5:6
+	// for 2001:db8:1:2:3:4:5:6) are that address. net.ParseIP rejects the
+	// zero-width marker. Accepting it keeps the last hextet in the host, so
+	// it cannot be read as a port and move the /64.
+	return parseZeroWidthCompression(host)
 }
 
-// splitUnbracketedIPv6 accepts "address:port" when the address contains a
-// colon, so net.SplitHostPort rejected it for missing brackets. The port is
-// stripped before the prefix is computed. Treating the whole string as one
-// IPv6 address would move a trailing port into the host and can change the /64.
-func splitUnbracketedIPv6(remoteAddr string) (string, bool) {
-	colon := strings.LastIndexByte(remoteAddr, ':')
-	if colon <= 0 || colon == len(remoteAddr)-1 {
-		return "", false
+func parseZeroWidthCompression(host string) net.IP {
+	if strings.Count(host, "::") != 1 {
+		return nil
 	}
-	host, port := remoteAddr[:colon], remoteAddr[colon+1:]
+	n := 0
+	for _, p := range strings.Split(host, ":") {
+		if p != "" {
+			n++
+		}
+	}
+	if n != 8 {
+		return nil
+	}
+	return net.ParseIP(strings.Replace(host, "::", ":", 1))
+}
+
+// splitTrailingPort separates a final :port from an unbracketed IPv6 literal
+// after the whole string failed to parse. The host is not required to parse
+// here; the caller checks it.
+func splitTrailingPort(s string) (host, port string, ok bool) {
+	colon := strings.LastIndexByte(s, ':')
+	if colon <= 0 || colon == len(s)-1 {
+		return "", "", false
+	}
+	host, port = s[:colon], s[colon+1:]
 	if strings.IndexByte(host, ':') < 0 {
-		return "", false
+		return "", "", false
 	}
-	if _, err := strconv.ParseUint(port, 10, 16); err != nil {
-		return "", false
-	}
-	bare := host
-	if i := strings.IndexByte(bare, '%'); i >= 0 {
-		bare = bare[:i]
-	}
-	if net.ParseIP(bare) == nil {
-		return "", false
-	}
-	return host, true
+	return host, port, true
 }
 
 // BrowserRoutesWithMetrics bounds browser authentication and session routes using
@@ -733,13 +1044,19 @@ func BrowserRoutesWithMetrics(c config.Config, next http.Handler, rateLimited *p
 	}
 	lim := newLimiter(c.MaxRatePrincipals)
 	gate := make(chan struct{}, c.MaxConcurrent)
+	proxies, proxyErr := config.ParseTrustedProxies(c.TrustedProxies)
+	if proxyErr != nil {
+		// Startup validation rejects a bad list. A handler built without it
+		// keeps the TCP peer and does not honor a forwarding header.
+		proxies = nil
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = apierr.TrackResponse(w)
 		class := "login"
 		if r.URL.Path == "/auth/session" || r.URL.Path == "/auth/logout" {
 			class = "session"
 		}
-		host, ok := connectionRateKey(r.RemoteAddr)
+		host, ok := requestRateKey(r.RemoteAddr, r.Header.Values("X-Forwarded-For"), proxies, true)
 		if !ok {
 			if rateLimited != nil {
 				rateLimited.WithLabelValues(class, "address").Inc()

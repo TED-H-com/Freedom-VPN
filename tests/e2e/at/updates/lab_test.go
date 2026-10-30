@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	e2e "github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -310,6 +311,31 @@ func waitUntil(ctx context.Context, every time.Duration, ok func() bool) bool {
 	}
 }
 
+func httpDetail(resp reply, err error) string {
+	if err != nil {
+		return "transport"
+	}
+	if resp.Code != "" {
+		return strconv.Itoa(resp.Status) + " " + resp.Code
+	}
+	return strconv.Itoa(resp.Status)
+}
+
+func writeAtomic(path string, b []byte) error {
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, b, 0o600); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
+}
+
+type runner struct {
+	t             *testing.T
+	lab           *lab
+	nodeID, incID uuid.UUID
+	probe         *e2e.UpdaterProbe
+}
+
 func (l *lab) putObject(ctx context.Context, name string, body []byte) error {
 	secret, err := l.secret("origin.secret")
 	if err != nil {
@@ -333,126 +359,6 @@ func (l *lab) putObject(ctx context.Context, name string, body []byte) error {
 	return nil
 }
 
-// forwardView is the inet fvpn forward chain, not the input or output policy.
-type forwardView struct {
-	Present      bool
-	Policy       string
-	Baseline     bool
-	Generation   int
-	MemberAccept int
-	Excerpt      string
-}
-
-func (l *lab) forwardChain() forwardView {
-	out, err := l.docker(l.node, "nft", "list", "chain", "inet", "fvpn", "forward")
-	if err != nil {
-		return forwardView{}
-	}
-	return parseForwardChain(string(out))
-}
-
-func parseForwardChain(text string) forwardView {
-	start := strings.Index(text, "chain forward")
-	if start < 0 {
-		return forwardView{}
-	}
-	body := text[start:]
-	if end := strings.Index(body, "\n\t}"); end > 0 {
-		body = body[:end]
-	}
-	view := forwardView{Present: true}
-	var kept []string
-	for _, line := range strings.Split(body, "\n") {
-		trim := strings.TrimSpace(line)
-		if trim == "" || trim == "chain forward {" {
-			continue
-		}
-		if strings.Contains(trim, "hook forward") {
-			switch {
-			case strings.Contains(trim, "policy drop"):
-				view.Policy = "drop"
-			case strings.Contains(trim, "policy accept"):
-				view.Policy = "accept"
-			}
-		}
-		if strings.Contains(trim, "fvpn_baseline=1") {
-			view.Baseline = true
-		}
-		if n, ok := forwardGeneration(trim); ok && n > view.Generation {
-			view.Generation = n
-		}
-		if memberAcceptRule(trim) {
-			view.MemberAccept++
-		}
-		if len(kept) < 6 {
-			kept = append(kept, trim)
-		}
-	}
-	view.Excerpt = strings.Join(kept, " | ")
-	if len(view.Excerpt) > 400 {
-		view.Excerpt = view.Excerpt[:400]
-	}
-	return view
-}
-
-// memberAcceptRule counts a member-path accept on fvmb0. NetBird inserts
-// fvnb0 accepts into the same chain while the baseline marker is still set,
-// and the input and output chains are policy accept even when forward drops.
-func forwardGeneration(line string) (int, bool) {
-	const key = "fvpn_generation="
-	i := strings.Index(line, key)
-	if i < 0 {
-		return 0, false
-	}
-	n := 0
-	digits := false
-	for _, c := range line[i+len(key):] {
-		if c < '0' || c > '9' {
-			break
-		}
-		digits = true
-		n = n*10 + int(c-'0')
-	}
-	if !digits {
-		return 0, false
-	}
-	return n, true
-}
-
-func memberAcceptRule(line string) bool {
-	if strings.Contains(line, "policy ") || strings.Contains(line, "drop") || !strings.Contains(line, "accept") {
-		return false
-	}
-	if !strings.Contains(line, `"fvmb0"`) {
-		return false
-	}
-	return strings.Contains(line, "iifname") || strings.Contains(line, "oifname") || strings.Contains(line, "ip saddr") || strings.Contains(line, "ip daddr")
-}
-
-func httpDetail(resp reply, err error) string {
-	if err != nil {
-		return "transport"
-	}
-	if resp.Code != "" {
-		return strconv.Itoa(resp.Status) + " " + resp.Code
-	}
-	return strconv.Itoa(resp.Status)
-}
-
-func writeAtomic(path string, b []byte) error {
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, b, 0o600); err != nil {
-		return err
-	}
-	return os.Rename(tmp, path)
-}
-
-type runner struct {
-	t             *testing.T
-	lab           *lab
-	nodeID, incID uuid.UUID
-}
-
 func (r *runner) enroll(ctx context.Context, admin *session) {
 	name, region := "TEST ONLY updates", "lab"
 	resp, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/enrollments", api.EnrollmentCreateRequest{Delivery: api.EnrollmentDeliveryInstaller, Name: &name, Region: &region}, map[string]string{"Idempotency-Key": uuid.NewString()})
@@ -461,7 +367,7 @@ func (r *runner) enroll(ctx context.Context, admin *session) {
 		return
 	}
 	token, err := created.Token.Get()
-	if err != nil || writeAtomic(filepath.Join(r.lab.state, "node", "var", "e2e", "enrollment.token"), []byte(token+"\n")) != nil {
+	if err != nil || writeAtomic(filepath.Join(r.lab.state, r.lab.nodeSlot(), "var", "e2e", "enrollment.token"), []byte(token+"\n")) != nil {
 		return
 	}
 	wait, cancel := context.WithTimeout(ctx, 7*time.Minute)
@@ -519,9 +425,20 @@ func (r *runner) writeUpdaterConfig() error {
 			}
 		}
 	}
+	if r.probe != nil && r.lab.nodeSlot() == "node" {
+		cfg["probe_peer"] = r.probe.Config
+		cfg["agent_config"] = r.probe.AgentConfig
+	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
 	}
-	return writeAtomic(filepath.Join(r.lab.state, "node", "var", "e2e", "updater.json"), append(raw, '\n'))
+	return writeAtomic(filepath.Join(r.lab.state, r.lab.nodeSlot(), "var", "e2e", "updater.json"), append(raw, '\n'))
+}
+
+func (l *lab) nodeSlot() string {
+	if l.node == l.prefix+"-node2" {
+		return "node2"
+	}
+	return "node"
 }

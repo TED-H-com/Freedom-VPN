@@ -1,29 +1,63 @@
 {
   "schema_version": 1,
-  "follow_up": 5,
-  "run_id": "86e6106a-1be1-4003-9b0f-35a30e9cda12",
-  "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
-  "probe_source_sha256": "bb9e726e4997f6f59fbbb4d6ac2b007c75aa30ab1cf0fc65c4bb795d6df5ac52",
-  "started_at": "2026-10-30T09:26:55.383432456Z",
-  "finished_at": "2026-10-30T09:45:27.565293215Z",
-  "policy_revision": "1",
-  "node_incarnation": "01a18c23-076a-79fb-af87-c28a9ac798a0",
-  "secondary_node_incarnation": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+  "follow_up": 7,
+  "started_at": "2026-10-30T19:23:34Z",
+  "finished_at": "2026-10-30T19:59:27Z",
+  "source_revision": "443cbb0d787e3b4a6ef9daf33bb060e4d89932bf",
+  "application_base": "fb3ea32",
+  "run_id": "ab96acac-8713-485a-9c29-88f20110e2e5",
+  "driver_run_id": "f54627cd-eb5f-4d42-a7d9-e916cc0e5127",
+  "hardware": "shared development host; not candidate hardware",
+  "commands": [
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "65m",
+      "-run",
+      "^TestAT28_AT31_Followup7$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ]
+  ],
+  "probe_source_sha256": "f830695290e94d999b7d9f05cdd15fc52bd84c2c5f0b09ff79e112d9b9929f60",
+  "policy_revision": "01a18e45-2ef2-7928-8842-cb727eb863fd",
+  "node_incarnation": "31098d68-decf-4cde-b6ae-097ad69f6267",
+  "agent_node_incarnation": "01a18e45-58f2-7a9c-8449-6c8ced14c767",
   "image_digests": [
     {
-      "image_id": "sha256:bb6608e4f6f966c410892a7f8bc7f023a3ec2d35ac48c4ea6089e64f91062c66",
+      "image_id": "sha256:e9f2c7cff1cd68b0bfa7ac4548335f197d88a37d39fc5acd0d0f543f94f89816",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:54b557988efb2328e10fdd6945d53b7a23f111e634fd2cb5025c20af94633929",
+      "image_id": "sha256:c49e52563fec70dad7363818558012aa4502871835218f53c0440d966983dd67",
       "service": "idp"
     },
     {
-      "image_id": "sha256:9a761831f273a26f3ae8f58a8d565bde09f62267e90bd0380132e29a5d5b1618",
+      "image_id": "sha256:f26d3b2473cddd221c0cf40ea42307eb407d0f8ae80f391c741c13e17aabe34c",
       "service": "payment"
     },
     {
-      "image_id": "sha256:457fd978be9cc245b5e57c25a0a7d30bf11522e2df2901d25debb7b5c49eb1dd",
+      "image_id": "sha256:2363ab8a61ab529a5bdb3ec1d82a6363614d7ebfe6dab4efffbdda7e4c69afd1",
       "service": "origin"
     },
     {
@@ -43,128 +77,3615 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:7f15d6df60d770b59512b00ca98fa888bbae9d795bff04a395f8ac9f27c4d57f",
+      "image_id": "sha256:29656c46da670df3d48cf04182c3ef85c46cd9d344d3f7a6fb3c197943adcfc8",
       "service": "control"
     },
     {
-      "image_id": "sha256:fb3d6639726f7e1160b9145c4a132cfe945aa3d89211cb986056cd0150daff38",
+      "image_id": "sha256:97d2f24fde2ddacf88ed52ffdb9d842387a9996e766d5d4037cb5d48d1a19600",
       "service": "worker"
     },
     {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
       "service": "node-netns"
     },
     {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
       "service": "node"
     },
     {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
       "service": "member"
     },
     {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node2-netns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "node2-adguard"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-lease"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
       "service": "member-secops-deadline-grant"
     },
     {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
       "service": "member-secops-deadline-paid"
     },
     {
-      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
-      "service": "member-secops-counted-b"
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-proxy-b"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-proxy-a"
     }
   ],
   "build_digests": [
     {
-      "name": "fvpn-agent",
-      "sha256": "e58ce507f6e8cc6e90c1614daad37d62ac394bb2264615b780d1417cf4213f58",
-      "kind": "prepared application binary"
+      "name": "amd64.test",
+      "sha256": "9a563f3bf75858a1c9abf334908ef8d23ea2ec714aa1d39a430b18ba2348c592"
     },
     {
-      "name": "fvpn-control",
-      "sha256": "ef97948f8d9bc326163f7b407c067d8a67f279215aa5ef2d232d61133d11a132",
-      "kind": "prepared application binary"
+      "name": "proxyprobe",
+      "sha256": "a9109d38c54602b0e23cb033f5979caa3ccfa730ed42da9d7cd7267da9368bed"
     },
     {
-      "name": "fvpn-e2e-idp",
-      "sha256": "b079831f2ba6448fafca64d19005f39117e9dac44fd4378981c0fcdbfa94a2c2",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-nbbootstrap",
-      "sha256": "171dd8f5b28adfee27eaef82417e810480c5a241f9dff085df02f34832c6e469",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-nodeconfig",
-      "sha256": "f5cf21b2018e7e8135dbbdaa571bf69ee23604faa4d6435adebfcb462661cdd9",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-origin",
-      "sha256": "2f5e7744dc3abe4883f6265a1255a1c2734556f1c1398a7138459249309ceb43",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-payment",
-      "sha256": "825a8f62213dcaeae59cacf2ecd760d5216f1b8fea4fae8103ad896cfe21d0af",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-e2e-prepare",
-      "sha256": "d8a04949a3a789311e0c7c3896a333c91f89537ae6b92e8651d1d35989ad42ad",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-updater",
-      "sha256": "96825f58bc15c94f77d9e7000152c5545146818e3ba7533b6d2f4d6c24880c02",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-watchdog",
-      "sha256": "c1ff8ce46603a0458e905e26de6c9c4e63539faf42f0cbe14c9e6700bf0d6b61",
-      "kind": "prepared application binary"
-    },
-    {
-      "name": "fvpn-worker",
-      "sha256": "47a86133875571c8da3455a7b83a2797a2cc4d84347dc4875521c5b18243d6e7",
-      "kind": "prepared application binary"
+      "name": "arm64.test",
+      "sha256": "38e022e0f268db063915895a36ce1574938184d81da33228f631231851f25e65"
     }
   ],
-  "commands": [
-    "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/at-secops.mk at-secops-followup5"
-  ],
-  "hardware": "shared development host; not candidate hardware",
-  "id": "SECOPS-15",
-  "status": "passed",
-  "usage_status": "passed",
-  "other_class_status": {
-    "browser": "passed",
-    "agent": "passed",
-    "heartbeat": "passed",
-    "lease": "passed",
-    "enrollment": "passed",
-    "webhook": "passed"
-  },
-  "expected": "At cap−1 and cap: size accepted then documented validation/identity/domain response; cap+1: 413 PAYLOAD_TOO_LARGE",
+  "previous_run": "history/follow-up-6/",
+  "projector_owned_rows_written": [],
+  "expected": "Anonymous address A429 / address B enrollment replay200 through one trusted gateway; direct forged XFF cannot evade A429; admin and certified lease unaffected; 8 MiB unchanged",
   "actual": {
+    "trusted_proxy": {
+      "class": "anonymous",
+      "gateway_a": [
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 2.641,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.70046519Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.281,
+          "index": 2,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.703187388Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.045,
+          "index": 3,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.704502332Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.017,
+          "index": 4,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.705565048Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.835,
+          "index": 5,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.706597646Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.669,
+          "index": 6,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.707447882Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.666,
+          "index": 7,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.708127127Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.693,
+          "index": 8,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.708809461Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.096,
+          "index": 9,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.709520792Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.01,
+          "index": 10,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:21.710637589Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.951,
+          "index": 11,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.711661928Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.91,
+          "index": 12,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.712627361Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.913,
+          "index": 13,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.713550536Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.23,
+          "index": 14,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.714477965Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.467,
+          "index": 15,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.715721891Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.015,
+          "index": 16,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.717205903Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.914,
+          "index": 17,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.718235688Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.957,
+          "index": 18,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.719174533Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.717,
+          "index": 19,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.720145887Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.681,
+          "index": 20,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.720875809Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.709,
+          "index": 21,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.721570545Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.655,
+          "index": 22,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.722292924Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.707,
+          "index": 23,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.722959828Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.709,
+          "index": 24,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.723678104Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.651,
+          "index": 25,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.724399042Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.634,
+          "index": 26,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.725058296Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.609,
+          "index": 27,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.725704856Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.652,
+          "index": 28,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.726322373Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.704,
+          "index": 29,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.726986624Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.685,
+          "index": 30,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.727701128Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.683,
+          "index": 31,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.728399102Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.689,
+          "index": 32,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.729091592Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.656,
+          "index": 33,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.729788288Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.661,
+          "index": 34,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.730463032Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.618,
+          "index": 35,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.73113563Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.685,
+          "index": 36,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.731767092Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.66,
+          "index": 37,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.732458225Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.643,
+          "index": 38,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.733134653Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.632,
+          "index": 39,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.733790813Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.636,
+          "index": 40,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.734433141Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.62,
+          "index": 41,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.735080849Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 42,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.735712932Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.62,
+          "index": 43,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.736323344Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.624,
+          "index": 44,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.736958475Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.585,
+          "index": 45,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.737590542Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.63,
+          "index": 46,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.73819425Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.596,
+          "index": 47,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.738831658Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.625,
+          "index": 48,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.739438709Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.635,
+          "index": 49,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.740078329Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.622,
+          "index": 50,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.740725881Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.628,
+          "index": 51,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.741360126Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.613,
+          "index": 52,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.741999804Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.616,
+          "index": 53,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.742617583Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.611,
+          "index": 54,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.743245174Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.631,
+          "index": 55,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.743868232Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.619,
+          "index": 56,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.74450721Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.621,
+          "index": 57,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.745132139Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.82,
+          "index": 58,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.745770267Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.693,
+          "index": 59,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.746623187Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.603,
+          "index": 60,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.747323495Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.622,
+          "index": 61,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.747938599Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.588,
+          "index": 62,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.748571583Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.596,
+          "index": 63,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.749166265Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.572,
+          "index": 64,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.749767277Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.562,
+          "index": 65,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.750343423Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.589,
+          "index": 66,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.750910007Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.583,
+          "index": 67,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.751510567Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.594,
+          "index": 68,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.752105516Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 69,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.752707884Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.61,
+          "index": 70,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.753324807Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.633,
+          "index": 71,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.753947772Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.57,
+          "index": 72,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.754588025Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.585,
+          "index": 73,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.755165371Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.588,
+          "index": 74,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.755759297Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.598,
+          "index": 75,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.756366888Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.577,
+          "index": 76,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.756974918Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.677,
+          "index": 77,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.757557529Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.618,
+          "index": 78,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.758240849Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.59,
+          "index": 79,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.758871883Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.586,
+          "index": 80,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.759468076Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.59,
+          "index": 81,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.760067815Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.655,
+          "index": 82,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.760664451Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.586,
+          "index": 83,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.761337417Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.606,
+          "index": 84,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.761936942Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.579,
+          "index": 85,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.762548093Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.566,
+          "index": 86,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.763131133Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.597,
+          "index": 87,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.763706939Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.591,
+          "index": 88,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.764310523Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 89,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.764907084Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.606,
+          "index": 90,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.765531646Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.593,
+          "index": 91,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.766146865Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.7,
+          "index": 92,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.76675181Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.611,
+          "index": 93,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.767459682Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.6,
+          "index": 94,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.768075078Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.571,
+          "index": 95,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.768679091Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.631,
+          "index": 96,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.769262503Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.623,
+          "index": 97,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.769913991Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.587,
+          "index": 98,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.770561737Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.666,
+          "index": 99,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.77115541Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.729,
+          "index": 100,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.771837155Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.594,
+          "index": 101,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.772576639Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.68,
+          "index": 102,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.773175996Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.64,
+          "index": 103,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.773873802Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.637,
+          "index": 104,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.774526119Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.601,
+          "index": 105,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.775169424Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.623,
+          "index": 106,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.77577464Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.604,
+          "index": 107,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.776409328Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.657,
+          "index": 108,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.777023366Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.648,
+          "index": 109,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.777693161Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.587,
+          "index": 110,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.778352338Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.624,
+          "index": 111,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.778945497Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.618,
+          "index": 112,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.779576686Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.584,
+          "index": 113,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.780202262Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.629,
+          "index": 114,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.780802088Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.606,
+          "index": 115,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.781444454Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.652,
+          "index": 116,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.782055261Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.651,
+          "index": 117,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.782714607Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.587,
+          "index": 118,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.783377796Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.043,
+          "index": 119,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.78396938Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.925,
+          "index": 120,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.785034824Z"
+        }
+      ],
+      "gateway_a_forged_xff": [
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 2.494,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.862597357Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.25,
+          "index": 2,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.865200755Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.12,
+          "index": 3,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.866483467Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 1.058,
+          "index": 4,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.867624657Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.738,
+          "index": 5,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:21.868696384Z"
+        }
+      ],
+      "gateway_a_forged_xff_status_sequence": [
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "gateway_a_status_sequence": [
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "gateway_b_replay": [
+        {
+          "code": "",
+          "elapsed_ms": 5.63,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T19:24:21.817219531Z"
+        }
+      ],
+      "gateway_b_status_sequence": [
+        200
+      ],
+      "limiter": "address",
+      "metrics_after_direct": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 225
+      },
+      "metrics_after_gateway": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 115
+      },
+      "metrics_before": {},
+      "source": "actual distinct container TCP peers; exact trusted gateway /32; forged XFF documentation values",
+      "source_b_enroll": [
+        {
+          "code": "",
+          "elapsed_ms": 7.894,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 201,
+          "utc": "2026-10-30T19:24:21.620131822Z"
+        }
+      ],
+      "status": "passed",
+      "trusted_proxies": null,
+      "untrusted_direct_a_rotating_xff": [
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 1.481,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.957641987Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.176,
+          "index": 2,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959206349Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.119,
+          "index": 3,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.95940628Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.07,
+          "index": 4,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959538318Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.063,
+          "index": 5,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959615982Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.055,
+          "index": 6,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959685275Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.128,
+          "index": 7,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959745967Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.112,
+          "index": 8,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.959894099Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.129,
+          "index": 9,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.960037093Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "elapsed_ms": 0.164,
+          "index": 10,
+          "limiter": null,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T19:24:27.960189004Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.157,
+          "index": 11,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96036666Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.172,
+          "index": 12,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960557991Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.106,
+          "index": 13,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960744818Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.112,
+          "index": 14,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960863857Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.292,
+          "index": 15,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.960990473Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.121,
+          "index": 16,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961300522Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.102,
+          "index": 17,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961436378Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.126,
+          "index": 18,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961554372Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.091,
+          "index": 19,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961695972Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.06,
+          "index": 20,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961799703Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.067,
+          "index": 21,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961867338Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.057,
+          "index": 22,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.961943Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.083,
+          "index": 23,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962004788Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.059,
+          "index": 24,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962091381Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.089,
+          "index": 25,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962160975Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.059,
+          "index": 26,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962263582Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.062,
+          "index": 27,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962327221Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.073,
+          "index": 28,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96239554Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 29,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962477593Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.064,
+          "index": 30,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962524726Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.039,
+          "index": 31,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962592154Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.058,
+          "index": 32,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.9626343Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 33,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962699426Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.048,
+          "index": 34,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962744554Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.063,
+          "index": 35,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96280553Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 36,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962873965Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.047,
+          "index": 37,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962925888Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 38,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.962979214Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.063,
+          "index": 39,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963039762Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 40,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963107956Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.05,
+          "index": 41,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963152198Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.046,
+          "index": 42,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963211321Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.048,
+          "index": 43,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963265848Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.047,
+          "index": 44,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963321461Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 45,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963371645Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.05,
+          "index": 46,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963416473Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.044,
+          "index": 47,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96346988Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 48,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963522622Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.058,
+          "index": 49,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963570187Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 50,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963631781Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 51,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.9636654Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.048,
+          "index": 52,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963711083Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 53,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963764021Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 54,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963802115Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 55,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963841129Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 56,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963879156Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 57,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96392521Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 58,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963962314Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 59,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.963999051Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 60,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964038395Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.05,
+          "index": 61,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964076512Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 62,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964130001Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.088,
+          "index": 63,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964175759Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.033,
+          "index": 64,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964268206Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 65,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964306441Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.04,
+          "index": 66,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964352833Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.044,
+          "index": 67,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964397754Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 68,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964445419Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.046,
+          "index": 69,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964485149Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 70,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96453459Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.053,
+          "index": 71,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964575442Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 72,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964632095Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 73,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964669747Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.034,
+          "index": 74,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964708381Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.038,
+          "index": 75,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964747051Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 76,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964789339Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 77,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964839214Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.03,
+          "index": 78,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964874431Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 79,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964907286Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 80,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964947631Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.029,
+          "index": 81,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.964992919Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 82,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965027019Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 83,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965064256Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 84,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965104387Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.029,
+          "index": 85,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.9651393Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 86,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965172779Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.04,
+          "index": 87,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965219521Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 88,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965263008Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.033,
+          "index": 89,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965308595Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.03,
+          "index": 90,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965347638Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.037,
+          "index": 91,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965380791Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.032,
+          "index": 92,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965421129Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 93,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965455802Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.042,
+          "index": 94,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965502018Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.064,
+          "index": 95,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965549479Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.028,
+          "index": 96,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965616928Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.03,
+          "index": 97,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965647919Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 98,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965681997Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.053,
+          "index": 99,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965718737Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.063,
+          "index": 100,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965775445Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.037,
+          "index": 101,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965845394Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.064,
+          "index": 102,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965886584Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.035,
+          "index": 103,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965955448Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.033,
+          "index": 104,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.965993805Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 105,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966034679Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.046,
+          "index": 106,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966074287Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.031,
+          "index": 107,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966122907Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.029,
+          "index": 108,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.96615638Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 109,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966192512Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.057,
+          "index": 110,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966239789Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.055,
+          "index": 111,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966308798Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.058,
+          "index": 112,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966369446Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 113,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966436481Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 114,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966490223Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.06,
+          "index": 115,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966529527Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.041,
+          "index": 116,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966594198Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.04,
+          "index": 117,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966638696Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.039,
+          "index": 118,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966681989Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.043,
+          "index": 119,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966728858Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "elapsed_ms": 0.036,
+          "index": 120,
+          "limiter": null,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T19:24:27.966775177Z"
+        }
+      ],
+      "untrusted_direct_a_status_sequence": [
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        422,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "untrusted_direct_b_replay": [
+        {
+          "code": "",
+          "elapsed_ms": 3.728,
+          "index": 1,
+          "limiter": null,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T19:24:27.997209591Z"
+        }
+      ],
+      "untrusted_direct_b_status_sequence": [
+        200
+      ]
+    },
+    "anonymous_isolation": {
+      "checks": [
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 0,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T19:48:18.166248594Z"
+        },
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 40,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T19:48:18.242393782Z"
+        },
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 80,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T19:48:18.279879906Z"
+        },
+        {
+          "admin_code": "",
+          "admin_status": 200,
+          "after_anonymous_requests": 120,
+          "lease_code": "",
+          "lease_status": 200,
+          "utc": "2026-10-30T19:48:18.317809865Z"
+        }
+      ],
+      "elapsed_seconds": 0.110357852,
+      "expected": "anonymous429 while admin200 and certified lease200",
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335
+      },
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 225
+      },
+      "requests": [
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 1,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 2,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 3,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 4,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 5,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 6,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 7,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 8,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 9,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 10,
+          "retry_after": "",
+          "status": 401
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 11,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 12,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 13,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 14,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 15,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 16,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 17,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 18,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 19,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 20,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 21,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 22,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 23,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 24,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 25,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 26,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 27,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 28,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 29,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 30,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 31,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 32,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 33,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 34,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 35,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 36,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 37,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 38,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 39,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 40,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 41,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 42,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 43,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 44,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 45,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 46,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 47,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 48,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 49,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 50,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 51,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 52,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 53,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 54,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 55,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 56,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 57,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 58,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 59,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 60,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 61,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 62,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 63,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 64,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 65,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 66,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 67,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 68,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 69,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 70,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 71,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 72,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 73,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 74,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 75,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 76,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 77,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 78,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 79,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 80,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 81,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 82,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 83,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 84,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 85,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 86,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 87,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 88,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 89,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 90,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 91,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 92,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 93,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 94,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 95,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 96,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 97,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 98,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 99,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 100,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 101,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 102,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 103,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 104,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 105,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 106,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 107,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 108,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 109,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 110,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 111,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 112,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 113,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 114,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 115,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 116,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 117,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 118,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 119,
+          "retry_after": "1",
+          "status": 429
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 120,
+          "retry_after": "1",
+          "status": 429
+        }
+      ],
+      "scope": "single-address 120-request anonymous saturation; not a 10000-principal IPv6 table-fill test",
+      "source": "one actual connection address; headers do not manufacture principals"
+    },
     "rate_classes": {
       "anonymous_shared": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.010581184,
+        "elapsed_seconds": 0.009256014,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 338,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 2,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 337,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -175,94 +3696,95 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:13.264249257Z"
+            "utc": "2026-10-30T19:48:48.769077587Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 2,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:13.265134758Z"
+            "utc": "2026-10-30T19:48:48.770098211Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:13.265958386Z"
+            "utc": "2026-10-30T19:48:48.770840388Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 4,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:13.266840997Z"
+            "utc": "2026-10-30T19:48:48.771557965Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:13.267504367Z"
+            "utc": "2026-10-30T19:48:48.772237153Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 6,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:13.268497075Z"
+            "utc": "2026-10-30T19:48:48.772919401Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 7,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:13.269592838Z"
+            "utc": "2026-10-30T19:48:48.773587058Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 8,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:13.270614337Z"
+            "utc": "2026-10-30T19:48:48.774300984Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 9,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:13.271586925Z"
+            "utc": "2026-10-30T19:48:48.774968962Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 10,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:13.272513872Z"
+            "utc": "2026-10-30T19:48:48.775624445Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T09:30:13.273445129Z"
+            "utc": "2026-10-30T19:48:48.776453006Z"
           }
         ]
       },
       "enrollment": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.010577439,
+        "elapsed_seconds": 0.010728967,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 336,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -273,92 +3795,95 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.068137976Z"
+            "utc": "2026-10-30T19:48:36.591549504Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 2,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.068972624Z"
+            "utc": "2026-10-30T19:48:36.59295688Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.069900097Z"
+            "utc": "2026-10-30T19:48:36.593901246Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 4,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.070760155Z"
+            "utc": "2026-10-30T19:48:36.594898217Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.071514351Z"
+            "utc": "2026-10-30T19:48:36.595661465Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 6,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.072190151Z"
+            "utc": "2026-10-30T19:48:36.596297162Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 7,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.072843403Z"
+            "utc": "2026-10-30T19:48:36.597066918Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 8,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.073646841Z"
+            "utc": "2026-10-30T19:48:36.597707406Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 9,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.074577014Z"
+            "utc": "2026-10-30T19:48:36.598410501Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 10,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:30:01.075994007Z"
+            "utc": "2026-10-30T19:48:36.599043719Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T09:30:01.077199265Z"
+            "utc": "2026-10-30T19:48:36.599872279Z"
           }
         ]
       },
       "heartbeat": {
         "actual_first_rejection": 6,
-        "elapsed_seconds": 0.004552217,
+        "elapsed_seconds": 0.003646374,
         "expected_first_rejection": 6,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
         },
-        "metrics_before": {},
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335
+        },
         "passed": true,
         "requests": [
           {
@@ -366,42 +3891,42 @@
             "index": 1,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:29:48.866765984Z"
+            "utc": "2026-10-30T19:48:24.407055654Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 2,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:29:48.867376433Z"
+            "utc": "2026-10-30T19:48:24.407618162Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 3,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:29:48.867958282Z"
+            "utc": "2026-10-30T19:48:24.407996793Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 4,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:29:48.868522764Z"
+            "utc": "2026-10-30T19:48:24.408358394Z"
           },
           {
             "code": "VALIDATION_FAILED",
             "index": 5,
             "retry_after": "",
             "status": 422,
-            "utc": "2026-10-30T09:29:48.868942041Z"
+            "utc": "2026-10-30T19:48:24.408697363Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 6,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T09:29:48.869252635Z"
+            "utc": "2026-10-30T19:48:24.409014144Z"
           }
         ]
       },
@@ -413,17 +3938,19 @@
       },
       "lease": {
         "actual_first_rejection": 6,
-        "elapsed_seconds": 0.016176043,
+        "elapsed_seconds": 0.007476278,
         "expected_first_rejection": 6,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 335,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
         },
         "passed": true,
@@ -433,42 +3960,42 @@
             "index": 1,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:29:54.969332301Z"
+            "utc": "2026-10-30T19:48:30.498245087Z"
           },
           {
             "code": "",
             "index": 2,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:29:54.972050545Z"
+            "utc": "2026-10-30T19:48:30.499495338Z"
           },
           {
             "code": "",
             "index": 3,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:29:54.97339681Z"
+            "utc": "2026-10-30T19:48:30.5006266Z"
           },
           {
             "code": "",
             "index": 4,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:29:54.974388312Z"
+            "utc": "2026-10-30T19:48:30.501745951Z"
           },
           {
             "code": "",
             "index": 5,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:29:54.975283998Z"
+            "utc": "2026-10-30T19:48:30.502602511Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 6,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T09:29:54.975624037Z"
+            "utc": "2026-10-30T19:48:30.50290336Z"
           }
         ]
       },
@@ -484,20 +4011,20 @@
       "source": "one host transport address; node B certificate; real agent uses node A identity",
       "usage": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.0835879,
+        "elapsed_seconds": 0.031319603,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 338,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 338,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -508,77 +4035,77 @@
             "index": 1,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.441437033Z"
+            "utc": "2026-10-30T19:48:54.881006588Z"
           },
           {
             "code": "",
             "index": 2,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.45139913Z"
+            "utc": "2026-10-30T19:48:54.883616308Z"
           },
           {
             "code": "",
             "index": 3,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.459424461Z"
+            "utc": "2026-10-30T19:48:54.886035704Z"
           },
           {
             "code": "",
             "index": 4,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.468289327Z"
+            "utc": "2026-10-30T19:48:54.888291492Z"
           },
           {
             "code": "",
             "index": 5,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.474405972Z"
+            "utc": "2026-10-30T19:48:54.890767658Z"
           },
           {
             "code": "",
             "index": 6,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.4792767Z"
+            "utc": "2026-10-30T19:48:54.893178322Z"
           },
           {
             "code": "",
             "index": 7,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.485063729Z"
+            "utc": "2026-10-30T19:48:54.895215904Z"
           },
           {
             "code": "",
             "index": 8,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.489504707Z"
+            "utc": "2026-10-30T19:48:54.897810637Z"
           },
           {
             "code": "",
             "index": 9,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.494067199Z"
+            "utc": "2026-10-30T19:48:54.899891682Z"
           },
           {
             "code": "",
             "index": 10,
             "retry_after": "",
             "status": 200,
-            "utc": "2026-10-30T09:30:19.502789965Z"
+            "utc": "2026-10-30T19:48:54.903281404Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T09:30:19.503872428Z"
+            "utc": "2026-10-30T19:48:54.903912423Z"
           }
         ]
       },
@@ -586,10 +4113,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.422038339Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.873842096Z",
           "results": [
             {
               "error": null,
@@ -601,10 +4128,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.443015024Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.881688005Z",
           "results": [
             {
               "error": null,
@@ -616,10 +4143,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.453090781Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.884159245Z",
           "results": [
             {
               "error": null,
@@ -631,10 +4158,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.460624027Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.886425263Z",
           "results": [
             {
               "error": null,
@@ -646,10 +4173,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.470860505Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.888701963Z",
           "results": [
             {
               "error": null,
@@ -661,10 +4188,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.475799397Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.891093919Z",
           "results": [
             {
               "error": null,
@@ -676,10 +4203,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.481137806Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.893631457Z",
           "results": [
             {
               "error": null,
@@ -691,10 +4218,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.486154278Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.89558897Z",
           "results": [
             {
               "error": null,
@@ -706,10 +4233,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.490622825Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.8981288Z",
           "results": [
             {
               "error": null,
@@ -721,10 +4248,10 @@
         {
           "blocked_seq": null,
           "highest_contiguous_seq": "1",
-          "ledger_epoch": "ee8f483d-3a9b-4218-a190-5babb9879382",
-          "node_id": "01a18c23-07e9-75cc-a715-9dad32724ed0",
-          "node_incarnation_id": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
-          "received_at": "2026-10-30T09:30:19.49550561Z",
+          "ledger_epoch": "5377f844-fbba-4848-b7ab-40c862b31a38",
+          "node_id": "01a18e5b-04ec-7494-8d7d-f91c5b4bf5d3",
+          "node_incarnation_id": "31098d68-decf-4cde-b6ae-097ad69f6267",
+          "received_at": "2026-10-30T19:48:54.900240559Z",
           "results": [
             {
               "error": null,
@@ -765,19 +4292,19 @@
       ],
       "webhook": {
         "actual_first_rejection": 11,
-        "elapsed_seconds": 0.010714179,
+        "elapsed_seconds": 0.00985951,
         "expected_first_rejection": 11,
         "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
         "first_error_code": "RATE_LIMITED",
         "first_retry_after": "1",
         "metric_delta": 1,
         "metrics_after": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 2,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 337,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
         "metrics_before": {
-          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 336,
           "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
           "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
         },
@@ -788,770 +4315,81 @@
             "index": 1,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.167966064Z"
+            "utc": "2026-10-30T19:48:42.67652601Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 2,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.169174501Z"
+            "utc": "2026-10-30T19:48:42.677713688Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 3,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.170196874Z"
+            "utc": "2026-10-30T19:48:42.678772816Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 4,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.171040249Z"
+            "utc": "2026-10-30T19:48:42.679584701Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 5,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.171737921Z"
+            "utc": "2026-10-30T19:48:42.680388889Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 6,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.17259084Z"
+            "utc": "2026-10-30T19:48:42.681119371Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 7,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.173362053Z"
+            "utc": "2026-10-30T19:48:42.681840288Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 8,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.17406084Z"
+            "utc": "2026-10-30T19:48:42.682522388Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 9,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.174784933Z"
+            "utc": "2026-10-30T19:48:42.683190168Z"
           },
           {
             "code": "WEBHOOK_SIGNATURE_INVALID",
             "index": 10,
             "retry_after": "",
             "status": 401,
-            "utc": "2026-10-30T09:30:07.175479859Z"
+            "utc": "2026-10-30T19:48:42.683906641Z"
           },
           {
             "code": "RATE_LIMITED",
             "index": 11,
             "retry_after": "1",
             "status": 429,
-            "utc": "2026-10-30T09:30:07.176457842Z"
+            "utc": "2026-10-30T19:48:42.684594551Z"
           }
         ]
       }
-    },
-    "other_body_boundaries": [
-      {
-        "actual_status": 201,
-        "baseline_status": 201,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048575,
-        "class": "browser",
-        "code": "",
-        "expected_status": 201,
-        "passed": true
-      },
-      {
-        "actual_status": 201,
-        "baseline_status": 201,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048576,
-        "class": "browser",
-        "code": "",
-        "expected_status": 201,
-        "passed": true
-      },
-      {
-        "actual_status": 413,
-        "baseline_status": 201,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048577,
-        "class": "browser",
-        "code": "PAYLOAD_TOO_LARGE",
-        "expected_status": 413,
-        "passed": true
-      },
-      {
-        "actual_status": 400,
-        "baseline_status": 410,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048575,
-        "class": "agent",
-        "code": "MALFORMED_REQUEST",
-        "expected_status": 400,
-        "passed": true
-      },
-      {
-        "actual_status": 400,
-        "baseline_status": 410,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048576,
-        "class": "agent",
-        "code": "MALFORMED_REQUEST",
-        "expected_status": 400,
-        "passed": true
-      },
-      {
-        "actual_status": 413,
-        "baseline_status": 410,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048577,
-        "class": "agent",
-        "code": "PAYLOAD_TOO_LARGE",
-        "expected_status": 413,
-        "passed": true
-      },
-      {
-        "actual_status": 403,
-        "baseline_status": 403,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048575,
-        "class": "heartbeat",
-        "code": "INCARNATION_MISMATCH",
-        "expected_status": 403,
-        "passed": true
-      },
-      {
-        "actual_status": 403,
-        "baseline_status": 403,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048576,
-        "class": "heartbeat",
-        "code": "INCARNATION_MISMATCH",
-        "expected_status": 403,
-        "passed": true
-      },
-      {
-        "actual_status": 413,
-        "baseline_status": 403,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048577,
-        "class": "heartbeat",
-        "code": "PAYLOAD_TOO_LARGE",
-        "expected_status": 413,
-        "passed": true
-      },
-      {
-        "actual_status": 200,
-        "baseline_status": 200,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048575,
-        "class": "lease",
-        "code": "",
-        "expected_status": 200,
-        "passed": true
-      },
-      {
-        "actual_status": 200,
-        "baseline_status": 200,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048576,
-        "class": "lease",
-        "code": "",
-        "expected_status": 200,
-        "passed": true
-      },
-      {
-        "actual_status": 413,
-        "baseline_status": 200,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048577,
-        "class": "lease",
-        "code": "PAYLOAD_TOO_LARGE",
-        "expected_status": 413,
-        "passed": true
-      },
-      {
-        "actual_status": 401,
-        "baseline_status": 401,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048575,
-        "class": "enrollment",
-        "code": "ENROLLMENT_TOKEN_INVALID",
-        "expected_status": 401,
-        "passed": true
-      },
-      {
-        "actual_status": 401,
-        "baseline_status": 401,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048576,
-        "class": "enrollment",
-        "code": "ENROLLMENT_TOKEN_INVALID",
-        "expected_status": 401,
-        "passed": true
-      },
-      {
-        "actual_status": 413,
-        "baseline_status": 401,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048577,
-        "class": "enrollment",
-        "code": "PAYLOAD_TOO_LARGE",
-        "expected_status": 413,
-        "passed": true
-      },
-      {
-        "actual_status": 401,
-        "baseline_status": 401,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048575,
-        "class": "webhook",
-        "code": "WEBHOOK_SIGNATURE_INVALID",
-        "expected_status": 401,
-        "passed": true
-      },
-      {
-        "actual_status": 401,
-        "baseline_status": 401,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048576,
-        "class": "webhook",
-        "code": "WEBHOOK_SIGNATURE_INVALID",
-        "expected_status": 401,
-        "passed": true
-      },
-      {
-        "actual_status": 413,
-        "baseline_status": 401,
-        "body_scope": "real schema-valid request except bodyless bootstrap whitespace and signature-negative webhook; heartbeat is real immutable node A report refused under B identity",
-        "bytes": 1048577,
-        "class": "webhook",
-        "code": "PAYLOAD_TOO_LARGE",
-        "expected_status": 413,
-        "passed": true
-      }
-    ],
-    "login": {
-      "attempts": 20,
-      "authenticated": 20,
-      "barrier_started": true,
-      "issuer": "embedded Dex, separate cookie jars; no shared assume slot",
-      "last_login_http_status": {
-        "200": 20
-      },
-      "login_wall_ms": [
-        811.277,
-        804.985,
-        775.437,
-        744.752,
-        774.489,
-        794.692,
-        716.944,
-        800.744,
-        768.612,
-        552.837,
-        775.845,
-        797.151,
-        751.634,
-        725.656,
-        799.53,
-        775.935,
-        719.099,
-        808.071,
-        806.721,
-        789.55
-      ],
-      "metrics_after": {
-        "address": 0,
-        "subject": 0
-      },
-      "metrics_before": {
-        "address": 0,
-        "subject": 0
-      },
-      "requests_by_identity": [
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807878102Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511c-795b-ab33-722bfbe274c5"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.606330993Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53cc-7f09-9f76-988d70eec5db"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.608610089Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-543f-7585-9698-bc482df90839"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.810060733Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511f-74e4-b387-5860dc0c4914"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.599725981Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53a4-71bf-955d-7e7d60aae6aa"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.604067889Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5438-7df4-9ce6-a08d6dbad8dc"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.808373583Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511c-72c8-929b-8816758ef193"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.570542488Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-536d-7926-8f27-e1d6930fd5e3"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.574029396Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-541b-7eff-a09c-d7e6361f8d20"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807589324Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511b-7407-b50e-1c3eb19a5c8f"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.539494217Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53b6-7f11-9731-990d0f871b3d"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.542414678Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-53fc-7d6c-9611-e036cc4398f7"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807454129Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5119-742c-ab1d-9b4c7b0c9319"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.569135855Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53b4-76d2-97e6-bae1602ba0d3"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.572439065Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-541a-7203-aad4-ea557864ce1f"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.810058103Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511e-7b13-aa1e-d05ee824b71e"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.5900652Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5362-7517-9323-d3b2245e92ca"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.59320733Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-542f-7b61-abe3-569029efcd62"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807399224Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511a-7879-bffb-2f5ac8dccc52"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.512023386Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5366-76b4-80a3-a32935f2a345"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.517539096Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-53e2-7442-8901-9740df3b26ac"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.808375277Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511e-77e8-87a9-b5e6133778b7"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.595525964Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53ea-7113-9e07-af13229e914b"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.59863659Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5434-7953-9916-5f07a106a99e"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807471836Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5118-7a44-9329-ffef4c5f1db0"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.563071544Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5378-73b5-8577-f8a03f5da098"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.565205957Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5414-7418-807a-3bfd78f6ebcf"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.80593592Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5119-7aa8-b725-fc88c0cc8dec"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.347423149Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5227-7bbc-8736-5dcc15b77729"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.350619451Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-533c-7e0d-9a9f-371aef8f7e88"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.802669211Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5117-7e83-9be7-70a1f70224d0"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.570499125Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5351-7de3-ad6e-dd35581a045d"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.572638802Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-541b-7999-beee-bcceacc129d9"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.808381171Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511e-7308-be52-30607b00acfc"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.591885152Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53de-7e94-b629-a06582fa6dba"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.595562695Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5431-71d5-801c-7eb587d025d0"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807845035Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511a-75bd-9396-02fcc00f1bbe"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.546217331Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5334-7c62-a089-12f8f047d425"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.549433744Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5403-7916-a7fd-b631a28ab1db"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.802933028Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5118-73d5-bdd9-78af988eb1d2"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.520217738Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5304-745a-b222-7ddac6d2a664"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.52245467Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-53e9-733b-a46a-df006dd83742"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.810866527Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511d-7c3b-b8f3-5a1369a6f33f"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.594324786Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53ef-73a0-9617-c23fa4b332b8"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.597286876Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5433-7665-acc1-a7dc494049a4"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.80341622Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5118-7dd1-adc3-e14819ca2fb6"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.570575147Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5343-7572-8103-4ce96083180b"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.574051596Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-541c-7511-9522-42ecf54e7352"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807520642Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5119-7782-9cde-39b30dcc15de"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.512714657Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-52aa-70f2-85d7-3485ab7fc05b"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.517054523Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-53e3-7264-83dd-2572a66368ff"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.807854974Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-511a-7263-ae93-bbde13f2d562"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.602720836Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-52f4-7977-9744-60a3ae130f74"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.604866006Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-543b-7c35-a3a3-c3ffdd12dad0"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.803315332Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5118-7731-8928-302f7f9430f1"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.60112877Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-5394-78a6-8f5a-3afde722f3eb"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.604914851Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-543a-77b2-97fc-f2ceda621db2"
-          }
-        ],
-        [
-          {
-            "utc": "2026-10-30T09:31:23.80004457Z",
-            "method": "GET",
-            "path": "/auth/login",
-            "status": 302,
-            "request_id": "01a18c26-5115-72df-b1ca-dd83460ea35e"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.583973961Z",
-            "method": "GET",
-            "path": "/auth/callback",
-            "status": 303,
-            "request_id": "01a18c26-53bb-70b7-9543-7acaa9ad5e5e"
-          },
-          {
-            "utc": "2026-10-30T09:31:24.586094702Z",
-            "method": "GET",
-            "path": "/auth/session",
-            "status": 200,
-            "request_id": "01a18c26-5429-71d4-b95d-8c72ca2de048"
-          }
-        ]
-      ],
-      "session_http_status": {
-        "200": 20
-      },
-      "supersedes": "followup1-login.json; D-060 / PR #106",
-      "wrong_member": 0,
-      "zero_status": "login walker did not complete; not a measured session HTTP response"
     }
   },
-  "history": "followup4-limiter.json; previous usage failure superseded only by a passed current usage triplet"
+  "status": "passed"
 }

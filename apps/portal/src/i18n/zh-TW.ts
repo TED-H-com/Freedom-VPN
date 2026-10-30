@@ -623,6 +623,51 @@ export const zhTW = {
     '目標節點更新回條與健康檢查證據 (Target Receipt & Health Evidence)',
   'admin.updates.rollbackHealth.noReceiptEvidenceNotice':
     '尚無當前批次更新回條證據 (No current update receipt evidence reported: previous_release_id / health / candidate_health = null)',
+
+  // Follow-up 11: Operator Fleet Configuration Settings (D-065, §16.3)
+  'nav.admin.settings': '系統設定 (Fleet Config)',
+  'admin.settings.title':
+    '全艦隊設定與離線服務租約上限 (Fleet Configuration, §16.3, D-065)',
+  'admin.settings.subtitle':
+    '管理中央簽發與續約節點服務租約 (ServingLease) 時所使用的離線寬限秒數上限 (max_offline_lease_seconds)。',
+  'admin.settings.currentCardTitle':
+    '目前生效之全艦隊設定 (GET /api/v1/admin/fleet-config)',
+  'admin.settings.currentSecondsLabel':
+    '目前離線服務租約上限 (max_offline_lease_seconds)',
+  'admin.settings.defaultSecondsLabel':
+    '規格預設值與 §16.3 硬性上限 (default_max_offline_lease_seconds)',
+  'admin.settings.updatedAtLabel': '最後更新時間 (updated_at)',
+  'admin.settings.resourceVersionLabel': '資源版本 ／ ETag (resource_version)',
+  'admin.settings.semanticsTitle':
+    '租約生效語意與 §16.3 規範說明 (Lease Semantics & §16.3 Ceiling)',
+  'admin.settings.semanticsNewLeasesOnly':
+    '此設定值僅套用於變更儲存後新簽發或續約之服務租約 (applies only to leases issued or renewed after the change)。',
+  'admin.settings.semanticsExistingLeases':
+    '已簽發之既有租約在下次續約前仍維持其原簽發值，不會溯及既往縮短或延長，亦不影響 §16.3 單調遞增防重放規則 (already issued leases keep their value until renewal)。',
+  'admin.settings.semanticsCeilingNote':
+    '86400 秒（24 小時）為規格 §16.3 所定之硬性上限（ceiling），而非建議值 (86400 is the §16.3 ceiling, not a recommendation)。',
+  'admin.settings.sub900Warning':
+    '警告：低於 900 秒（15 分鐘）之設定會大幅縮短控制面短暫中斷時的離線續航寬限；60 秒下限僅供實驗室與自動化故障注入測試（如 AT29）使用，惟介面不攔截任何 API 允許之數值。',
+  'admin.settings.formTitle': '變更離線服務租約上限 (PUT /api/v1/admin/fleet-config)',
+  'admin.settings.leaseSecondsInputLabel':
+    '新離線服務租約上限秒數 (max_offline_lease_seconds，API 允許範圍 60–86400 秒)',
+  'admin.settings.reasonInputLabel':
+    '變更原因說明 (reason，必填 1–500 字元，寫入稽核紀錄)',
+  'admin.settings.reasonPlaceholder': '例如：Shorten new leases for the AT29 lab.',
+  'admin.settings.submitBtn': '儲存全艦隊設定 (Send If-Match & Idempotency-Key)',
+  'admin.settings.savedBanner':
+    '全艦隊設定已更新（HTTP 200 OK）：目前 max_offline_lease_seconds = {seconds} 秒（資源版本 {version}）。',
+  'admin.settings.auditLinkText':
+    '前往稽核事件檢視器查看 fleet_config.update 變更前後數值 (before / after) →',
+  'admin.settings.conflictBanner':
+    '此設定已被其他管理員變更，請重新載入最新狀態 (Someone else changed this; reload — current_resource_version: {version})。',
+  'admin.settings.conflictReloadBtn': '重新載入最新設定 (Reload)',
+  'admin.settings.fieldErrorSeconds':
+    '欄位驗證失敗 (422 VALIDATION_FAILED — max_offline_lease_seconds)：離線租約秒數必須為 60 至 86400 之間的整數。',
+  'admin.settings.fieldErrorReason':
+    '欄位驗證失敗 (422 VALIDATION_FAILED — reason)：變更原因為必填且長度須介於 1 至 500 字元。',
+  'admin.settings.fieldErrorGeneric':
+    '欄位驗證失敗 (422 VALIDATION_FAILED)：請確認 max_offline_lease_seconds (60–86400) 與必填原因 (1–500 字元)。',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;

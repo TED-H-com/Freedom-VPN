@@ -5,7 +5,9 @@ enrollment and provider webhooks. A separate TLS 1.3 listener verifies client
 certificates for ordinary Agent traffic. `internal/auth.AgentAuthenticator` then
 checks the current database identity and revocation state (§16.1). The binary
 fails closed until the PKI task supplies this verifier; it never trusts
-`X-Node-ID`, `X-Client-Cert` or forwarding headers.
+`X-Node-ID`, `X-Client-Cert` or forwarding headers as identity. Rate-limit
+connection principals on the public listener follow `trusted_proxies` below.
+The agent listener does not read them.
 
 `contracts/openapi.yaml` remains the source of all API operations. oapi-codegen
 v2.8.1 generates the standard-library strict server and embedded specification.
@@ -30,14 +32,20 @@ message or details.
 ## Request boundary
 
 Order: central UUID v7 and isolated client trace context → buffered panic recovery
-and security headers → contract route/listener classification → on the agent
-listener, machine authentication (a request without a verified client certificate
-is HTTP 401 and is inserted into no limiter table) → per-class ingress limits →
-session authentication on browser routes → role/MFA checks → per-principal rate
-and concurrency buckets → Origin/CSRF and recent admin authentication → required
-key/If-Match headers → class body cap (413 above it) → JSON well-formedness (400)
-→ schema validation (422) → machine identity consistency → generated strict
-binding → command transaction/replay → domain handler.
+and security headers → contract route/listener classification. On the agent
+listener a request without a verified client certificate is HTTP 401 and is
+inserted into no limiter table. A verified chain then takes the class ingress
+bucket, keyed by the SHA-256 of the leaf certificate, and the class concurrency
+slot, both before `AuthenticateAgent`. A failed authentication has spent that
+token. On the public listener the order is the connection principal, then the
+class ingress bucket, then session authentication, then the subject or anonymous
+bucket, then the class concurrency slot. Both listeners then apply role/MFA
+checks, Origin/CSRF and recent admin authentication, required key/If-Match
+headers, the class body cap (413 above it), JSON well-formedness (400), schema
+validation (422), machine identity consistency, and, for an operation that has
+an owner, generated strict binding, the command transaction, and the domain
+handler. An operation with no owner returns HTTP 501 after those checks and
+does not decode the body again.
 
 Access logs contain only central request ID, normalized route template, status
 and duration. They exclude every request/response header, URL/query, body, panic
@@ -61,26 +69,67 @@ schemas fail before domain code. Semantic domain constraints listed in
 Pre-authentication ingress is one table per route class (`browser`, `agent`,
 `heartbeat`, `lease`, `usage`, `anonymous`). Each table holds
 `max_rate_principals` connection principals (default 10,000). IPv4 is one
-principal per address and IPv6 is one principal per /64 (D-060). One IPv6 /48
-contains 65,536 /64s, so a single /48 can fill the anonymous ingress table
-with the default 10,000 principals. That sweep inserts nothing into the
-browser, agent, heartbeat, lease, or usage ingress tables. Enrollment and
-webhooks then take a second slot in a separate anonymous class table with the
-same cap and the same /64 key. The authenticated subject table is a further
-instance, keyed by node or session, with the same cap. An unparseable
-connection address is refused with 429 and occupies no slot (see
-[authentication](AUTH.md)). An mTLS request without a verified client
-certificate is HTTP 401 and occupies no slot in any table.
+principal per address and IPv6 is one principal per /64 (D-060). The anonymous
+ingress table and the anonymous class table also keep a /48 budget beside that
+/64 key: one /48 may hold at most half of `max_rate_principals` buckets (5,000
+at the default cap, and at least one when the cap is one). A new /64 past that
+budget is refused with 429, is not inserted, and does not evict another prefix.
+IPv4 is not grouped. The budget is only on the anonymous class, so the sweep
+inserts nothing into the browser, agent, heartbeat, lease, usage, or subject
+tables. Enrollment and webhooks take their class slot in the separate anonymous
+table under the same /64 key and the same /48 budget. The authenticated subject
+table is a further instance, keyed by node or session, with the same cap and
+no /48 budget. An unparseable connection address, including an unparseable
+`X-Forwarded-For` entry chosen from a trusted peer, is refused with 429 and
+occupies no slot (see [authentication](AUTH.md)). An mTLS request without a
+verified client certificate is HTTP 401 and occupies no slot in any table. A
+verified chain keys the agent listener's ingress bucket by the SHA-256 of the
+leaf certificate before `AuthenticateAgent`, and a failed authentication has
+spent that token.
 
-When a table is full, a new principal is admitted only by evicting the
-least-recently-used bucket, and only when that bucket is idle with a full
-token count or has been idle for more than one hour. The decision looks at
-that one bucket. A bucket that is still short of tokens stays, and the new
-principal receives HTTP 429 with `Retry-After` of one second. Because the
-tail is the oldest bucket, it has had the longest time to refill. Ingress
-tables and the anonymous class table each use one rate. The subject table
-mixes class rates, so a fuller bucket can sit behind a slower tail; that tail
-stays until it is full or an hour old.
+`trusted_proxies` (default empty) is the list of CIDRs whose TCP peers may
+supply `X-Forwarded-For`. An empty list keeps every public-listener
+pre-authentication bucket on the TCP peer, so a forwarding header cannot
+choose a bucket. The agent listener's ingress key is the certificate
+fingerprint either way. Production
+either terminates TLS on `fvpn-control` or sets `trusted_proxies` to the
+proxy's source addresses. A proxy that connects from several addresses is
+several CIDRs in that list: each source address as a /32, or one covering
+prefix that is still at least /8 for IPv4 or /32 for IPv6. `0.0.0.0/0`,
+`::/0`, and any shorter prefix are rejected, because trusting the world lets
+any peer choose its bucket. Write an IPv4 proxy as an IPv4 CIDR. When the TCP
+peer is inside a listed CIDR, the public listener walks `X-Forwarded-For`
+from the right, skips trusted hops, and stops after 64 entries. The chosen
+address is the connection principal for the per-class ingress tables, the
+anonymous table, and the browser login and session token buckets (IPv4 per
+address, IPv6 per /64). Parsing keeps a bracketed host whole, parses an
+unbracketed multi-colon string before stripping a trailing port, and accepts
+eight hextets written with a zero-width `::` as that address, so a trailing
+hextet cannot move a /64 into a trusted prefix. An address that falls inside
+a trusted CIDR is itself a hop, so the list is proxy addresses only. The
+agent listener does not read the header. Its ingress key is the certificate
+fingerprint, so a proxy in front of it does not choose the bucket. Subject
+buckets stay on the node or session scope. The login
+concurrency gate remains one process-wide gate of `max_concurrent`. Access
+logs record the request ID, route, status, and duration. Prometheus
+labels are route, status, class, and limiter. The peer address is absent
+from both.
+`X-Real-IP` and RFC 7239 `Forwarded` are not read. Replicas do not share
+limiter state, so each replica applies its own budget and the deployment
+budget is the per-process budget times the replica count.
+
+When a table is full, a new principal is admitted by scanning eight
+least-recently-used buckets from the tail and evicting the first that is idle
+with a full token count or has been idle for more than one hour. The window
+is constant, so the scan stays O(1). One depleted tail cannot hide a newer
+bucket inside that window that has already refilled. More than eight depleted
+buckets at the tail can still refuse a newcomer while a full bucket waits
+further toward the head, and that newcomer receives HTTP 429 with
+`Retry-After` of one second. Together with the anonymous /48 budget, that is
+the bound on a full table refusing newcomers. Ingress tables and the anonymous
+class table each use one rate. The subject table mixes class rates. The
+eight-bucket window is what lets a full browser bucket leave ahead of a slower
+heartbeat tail.
 
 Rate buckets and concurrency gates stay separate for browser, agent control,
 heartbeat, lease, and usage traffic. The loaded operation ids `EnrollNode`
@@ -102,29 +151,38 @@ character (including NUL), no lone UTF-16 surrogate in a `\u` escape, no
 duplicate key at any object level after unescaping, nesting at most
 `canonjson.MaxDepth` (256), and integers within ±(2^53−1) with no fraction,
 exponent, leading zero, or negative zero. Trailing data is rejected. The walk
-retains the nesting depth and the keys of objects that are still open.
-Failure is HTTP 400 `MALFORMED_REQUEST` (`Invalid JSON document.`). Schema
-validation follows (422 `VALIDATION_FAILED`). Machine-identity comparison
-then reads the parsed body, including nested usage events. A `json.Unmarshal`
-failure is the same HTTP 400 and is decided before the comparison. A node or
-incarnation field that differs from the certificate is HTTP 403
-`INCARNATION_MISMATCH`. `fvpn_control_rate_limited_total` counts HTTP 429
-responses only.
+retains the nesting depth and the keys of objects that are still open. On an
+agent mTLS body it also reads every `node_id`, `node_incarnation_id`, and
+`incarnation_id`, including nested usage events, so identity does not
+`json.Unmarshal` the body into a second `any` tree. Failure is HTTP 400
+`MALFORMED_REQUEST` (`Invalid JSON document.`). A body of at most 1 MiB, and
+a larger body whose schema the streaming checker does not cover, then goes
+through `openapi3filter.ValidateRequest`, which decodes an `any` tree. A body
+above 1 MiB with a covered schema, including `SubmitUsageBatch`, is checked
+during the walk and `ExcludeRequestBody` skips that tree. Schema failure is
+HTTP 422 `VALIDATION_FAILED`. A node or incarnation field that differs from
+the certificate is HTTP 403 `INCARNATION_MISMATCH`, after the schema check.
+`fvpn_control_rate_limited_total` counts HTTP 429 responses only.
 
-Auth routes are additionally bounded per connection address. Limits are
-per process, with a bounded principal map; deployment replicas multiply capacity.
-If horizontally scaling, budget limits across replicas or add a shared limiter.
-A saturated limiter returns 429 with `Retry-After`, never acknowledges work.
+Auth routes are additionally bounded per connection principal (the TCP peer,
+or the client derived from `X-Forwarded-For` when that peer is listed in
+`trusted_proxies`). Limits are per process, with a bounded principal map;
+deployment replicas multiply capacity. If horizontally scaling, budget limits
+across replicas or add a shared limiter. A saturated limiter returns 429 with
+`Retry-After`, never acknowledges work.
 
 ## Configuration and startup
 
 `fvpn-control -config control.json [-migrate-on-start]` reads strict JSON and then
 `FVPN_<UPPERCASE_JSON_FIELD>` overrides. Lists and rate buckets use JSON values in
-the environment; durations are integer seconds. The defaults and complete typed
+the environment; durations are integer seconds. `trusted_proxies` defaults to
+an empty list. `FVPN_TRUSTED_PROXIES` is a JSON array of CIDRs, for example
+`["203.0.113.0/24","2001:db8:1::/48"]`. The defaults and complete typed
 setting list are in `internal/config/config.go`. `docs/control/config.example.json`
 contains only deployment placeholders. Database DSN and optional OIDC client
 secret are read from files; TLS key material is loaded from its file. Effective
 configuration redacts file paths and OIDC settings and never includes contents.
+`trusted_proxies` is not a secret and is left visible.
 Do not put DSNs or secret contents directly in configuration/environment values.
 The example includes all five domain files, in central config order:
 `members_config_file`, `dns_config_file`, `nodes_config_file`,
@@ -187,9 +245,10 @@ minimum directive remains unchanged for the orchestrator to coordinate.
 Ingress and authenticated traffic use separate bounded limiter instances (§14.6).
 Each class has its own ingress table, enrollment and webhooks have a separate
 anonymous class table, and authenticated subjects have another. `max_rate_principals`
-bounds each instance independently. One IPv6 /48 (65,536 /64s) can fill only the
-anonymous tables, up to `max_rate_principals` /64s in each (default 10,000), and
-cannot evict a browser, agent, heartbeat, lease, usage, or subject bucket.
+bounds each instance independently. One IPv6 /48 can hold at most half of
+`max_rate_principals` /64s in each anonymous table (5,000 at the default cap)
+and cannot evict a browser, agent, heartbeat, lease, usage, or subject bucket.
+A full table scans eight tail buckets before it refuses a newcomer.
 Existing heartbeat/lease/usage classes retain independent per-principal keys.
 Every framework 429 includes `Retry-After`, including `/auth/*` rate and
 concurrency rejections and the API concurrency gate. These remain process-local

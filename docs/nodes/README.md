@@ -6,6 +6,29 @@ This document describes the central node management subsystem implemented in:
 - `internal/desiredstate` — Per-node desired-state compiler (`Compile`, `CompileTx`, `ReSign`, `GetDesiredState`, `RecompileBatch`), member rate policy delegation (`fup.BuildNodeMemberRatePolicy`), and outbox burst coalescing.
 - `internal/exits` — Exit publication commands (`SetPublication`, `SetPublicationTx`), multi-step operation execution (`ExecuteOperation`), NetBird adapter integration with `external_bindings` idempotency, and NetBird read-back reconciliation (`ReconcileNetBird`).
 - `internal/leases` — Serving lease calculation (`ComputeMemberLeaseEnd`, `Renew`), Ed25519 envelope signing (`lease` purpose), and replay-safe persistence (`serving_leases`, `serving_lease_members`).
+- `internal/nodes/httpwire` — Admin fleet configuration (`GET`/`PUT /api/v1/admin/fleet-config`, D-065) and the HTTP adapters described in [WIRING.md](WIRING.md).
+
+### Admin fleet configuration (D-065, §14.5, §16.3)
+
+`GET /api/v1/admin/fleet-config` returns `max_offline_lease_seconds`, the read-only
+`default_max_offline_lease_seconds` (86400), `resource_version`, `updated_at`, and
+the strong ETag `"<resource_version>"`. `PUT` accepts the new maximum and a required
+`reason`, using that ETag in `If-Match` and a UUID `Idempotency-Key`; it returns 200
+after the local write and one `fleet_config.update` audit event commit together.
+The event is visible through `GET /api/v1/admin/audit-events`, with before/after
+maximums, the admin actor and reason, and null `operation_id`. Same-key replay
+returns the original response and ETag, even after subsequent writes.
+
+The value applies only to leases issued or renewed after the write. Already
+issued leases and their replays keep their original value, expiry and signature.
+60 seconds is a lab floor; 86400 seconds is the §16.3 ceiling. The portal must
+warn below 900 seconds. Operators and harnesses use this API rather than writing
+`fleet_config` directly. The command increments `resource_version` under the
+singleton row lock shared with release updates, and never changes the fleet's
+release generation or support policy. Missing `If-Match` returns 428; a stale
+ETag returns 412 with `current_resource_version`; a reused key with different
+content returns 409; the shared request validator rejects values outside
+60..86400 with 422.
 
 ---
 
@@ -345,5 +368,123 @@ where the recommended default `max_offline_lease` is `86400` seconds (24 hours, 
      - In `enforce` mode (`as_of >= effective_at` and tier `> 0`), `eval` carries `EnforcedTierIndex`, `EnforcedDownBps`, `EnforcedUpBps`, `EnforcedPriority`, `EnforcedReason`, and `Reason = "fair_use_tier"`, so `fup.BuildNodeMemberRatePolicy` computes $\min(\text{plan\_rate}, \text{fair\_use\_tier\_rate}, \text{node\_member\_rate\_cap})$ and emits `WouldApplyTierIndex`, `WouldApplyDownBps`, `WouldApplyUpBps`, and `WouldApplyPriority`.
      - In `shadow` mode (or normal tier `0`), `eval` carries `EnforcedTierIndex = 0`, `Reason = "normal"`, and any shadow `WouldApply*` fields while effective `DownBps`/`UpBps` remain $\min(\text{plan\_rate}, \text{node\_member\_rate\_cap})$.
    - `nodeCapacityRatePair(nodeCap)` combines `nodeCap.DownBps`/`UpBps` with optional `nodeCap.MemberDownBpsCap`/`MemberUpBpsCap` so both total node bandwidth and per-member node caps bound the member rate policy.
+
+---
+
+## 9. Operation Completion Under Pending Isolation Errors & Readiness/Lease Contract, Follow-up 18
+
+### 9.1 Revoke Operation Completion Under Pending `ISOLATION_POLICY_INVALID` Apply Errors (r13 M-3)
+
+1. **Problem & Invariant (§5.2, §8.1, §14.5)**:
+   - When a node applies a new policy generation that removes a member or device binding, the node installs and verifies the serving nftables/tc ruleset first and then flushes established conntrack flows (`conntrack -D`) for the revoked overlay addresses.
+   - While bounded `conntrack -D` retries are in progress on the node, the agent reports `member_forwarding_enabled = true`, `safety_status = "passed"`, `provisioning_state = "ready"`, all checks `passed`, and an apply error `ISOLATION_POLICY_INVALID` (`stage = "apply"`, `"conntrack delete pending; serving ruleset verified"`).
+   - Central **never** completes the `"nodes"` step of a revoke operation (`member.device_revoke`, `member.grant_revoke`, `member.suspend`, or `member.update` on close/suspend) while the node's latest accepted observation for the target generation carries a pending `ISOLATION_POLICY_INVALID` apply error.
+
+2. **Node State, Operation Read Model, and Audit While Pending**:
+   - `evaluateObservationEvidence` (`internal/nodes/observations.go`) degrades `nodes.data_health` from `healthy` to `degraded` whenever `ISOLATION_POLICY_INVALID` is present in `report.Errors`, and `publicationForwardingFailure` (`internal/nodes/publication_evidence.go`) returns `"isolation_unconfirmed"`.
+   - `advanceNodeOperationsOnObservation` keeps the operation's `"nodes"` step in `status = "pending"` and records:
+     - `steps.nodes.error_code = "ISOLATION_POLICY_INVALID"`
+     - `steps.nodes.error_message = "member_forwarding_unconfirmed"` (in the `operations.IsBoundedFailureCause` allowlist so both `operations.Store.Get` for admins and `nodes.GetOperation` / `nodes.GetMemberOperation` / `nodes.ListMemberOperations` surface it, while `operations.Store.Get` for members surfaces `ErrorCode = "ISOLATION_POLICY_INVALID"` with the redacted step failure prompt)
+     - `steps.nodes.reason = "conntrack_delete_pending"`
+     - `observed_refs.nodes_isolation_pending = "report:<report_id>:gen:<gen>:error:ISOLATION_POLICY_INVALID"`
+   - `SubmitObservation` records `"isolation_error_code": "ISOLATION_POLICY_INVALID"` and `"isolation_error_reason": "conntrack_delete_pending"` on the `node.observation_applied` audit event and appends a correlated `node.revoke_isolation_pending` (`result = "failed"`, `operation_id = <op_id>`) audit event on the affected resource.
+
+3. **Completion Rules (Follow-up 18 & Follow-up 20, D-070)**:
+   - `hasIsolationApplyError` (`internal/nodes/publication_evidence.go`) keys strictly on `code == "ISOLATION_POLICY_INVALID"` and `stage == "apply"`.
+   - **Pending-under-the-bound report (`agent.Decide` with `RevocationPending = true, ConntrackBlocked = false`, D-070)**: the agent reports `errors: [{"code": "ISOLATION_POLICY_INVALID", "stage": "apply", "message": "conntrack delete pending; serving ruleset verified"}]`, `member_forwarding_enabled = true`, `safety_status = "passed"`, and every check `passed`. `isPendingIsolationApplyError` matches this shape and holds the `"nodes"` step in `status = "pending"` (`error_code = "ISOLATION_POLICY_INVALID"`, `error_message = "member_forwarding_unconfirmed"`, `reason = "conntrack_delete_pending"`). The step is **never** completed while the node forwards with a pending conntrack delete.
+   - **Real fail-closed report (`agent.Decide` with `ConntrackBlocked = true`, D-070)**: after 12 consecutive `conntrack -D` failures (`"Conntrack delete exceeded the retry bound."`) or when `conntrack` is missing (`"Conntrack is not installed."`), the agent reports `member_forwarding_enabled = false`, `safety_status = "failed"`, `forwarding_block_reasons` containing `"safety_check_failed"`, check `internet_only` **`failed`** with `error_code = "ISOLATION_POLICY_INVALID"` (detail `"Conntrack delete exceeded the retry bound."` or `"Conntrack is not installed."`), and `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}` still present in `errors` (which central `SubmitObservation` projects to `nodes.provisioning_state = "applying"`, `nodes.safety_status = "failed"`, `nodes.data_health = "degraded"`, `nodes.member_forwarding_observed = false`).
+   - The `"nodes"` step transitions to `succeeded` (clearing `error_code`, `error_message`, `reason`, and `nodes_isolation_pending`) and appends a correlated `node.revoke_isolation_resolved` (`result = "succeeded"`) audit event only when no other registered node in the member's exit group still reports a pending `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}` error while forwarding, and either:
+     1. **Next clean observation (`resolution = "conntrack_delete_succeeded"`)**: the node submits an observation for `applied_config_generation >= desired_config_generation` with `safety_status = "passed"`, `provisioning_state = "ready"`, and no `ISOLATION_POLICY_INVALID` apply error; or
+     2. **Node fails closed (`resolution = "node_failed_closed"`, D-070)**: `isFailClosedIsolationApplyError` matches the agent's real fail-closed shape (`member_forwarding_enabled = false`, `safety_status = "failed"`, `forwarding_block_reasons` contains `"safety_check_failed"`, check `internet_only` failed with `ISOLATION_POLICY_INVALID`, and the `ISOLATION_POLICY_INVALID` apply error in `errors`). The revocation's effect holds because nothing is forwarded on the node, while the node failure is surfaced by `safety_status = "failed"` and `forwarding_block_reasons = ["safety_check_failed"]`.
+
+### 9.2 Readiness, Serving Lease Contract, and D-067 60s Provisional Expiry Backstop (Members F4-01 / AT09, Isolation Finding 1, Follow-up 20)
+
+1. **Readiness Gate and D-067 60s Expiry Backstop on `RenewTx` (`internal/leases/leases.go`)**:
+   - `RenewTx` includes member lease grants iff `lifecycle_state == "registered" && publication_intent == "published" && provisioning_state == "ready" && len(groupIDs) > 0`.
+   - When `includeMembers` is false on a registered, published exit because `provisioning_state != "ready"`, `RenewTx` issues the grant-less lease (`members: []`) on `config_generation == desired_config_generation` with `expires_at = issued_at + min(max_offline_seconds, 60s)` (`leases.ProvisionalGrantlessLeaseSeconds = 60`, D-067 central backstop), while keeping `max_offline_seconds` copied from `fleet_config.max_offline_lease_seconds`. Ready nodes (`provisioning_state == "ready"`) are **never** shortened and always keep their full configured `max_offline_lease_seconds` window (D-065).
+   - Once `SubmitObservation` accepts a ready observation (`provisioning_state = "ready"`, `safety_status = "passed"`) on that generation, the next `RenewTx` issues a lease on the **same** `config_generation` populated with the active member grants and the full configured `max_offline_lease_seconds` window (`TestLeases_ReadinessGateAndSameGenerationGrantRecovery`).
+   - **Post-restart readiness flip code path (AT09, AT10–AT13)**:
+     - On `fvpn-agent` restart (`node/agent/engine.go:Start`/`Boot`), in the first `(*agent.Engine).Step` (`node/agent/engine.go:572-608`):
+       1. `(*Engine).syncDesired` (`node/agent/sync.go:23-81`) verifies the desired state envelope (`e.desiredOK = true`).
+       2. `(*Engine).syncLease` (`node/agent/sync.go:83-145`) calls `POST /api/v1/agent/lease-renewals` (`leases.Service.RenewTx`, `internal/leases/leases.go:349-535`). If `nodes.provisioning_state` in PostgreSQL is already `'ready'` (preserved across restarts and concurrent generation advances), `RenewTx` immediately returns member grants on the first step. If `nodes.provisioning_state` is `'applying'` (for example after a prior fail-closed observation), `RenewTx` returns a 60s grant-less lease (`members: []`), and `(*Engine).noteProvisionalSchedule` (`node/agent/sync.go:222-234`) schedules the next renewal after one heartbeat (`10s`, doubling up to `60s`).
+       3. Still in the first `Step`, `(*Engine).evaluate` (`node/agent/engine.go:610-635`) runs `(*Engine).refreshProbe` (`e.lastProbe.Ran = true`) and `agent.Decide` (`node/agent/decide.go:110-310`), which sets `d.Applied = uint64(in.Desired.ConfigGeneration)`, `d.Provisioning = api.ProvisioningStateReady` (`provisioningOf` at `decide.go:495-506`), and `d.Safety = api.SafetyStatusPassed` (`safetyOf` at `decide.go:454-486`) as soon as baseline checks (`internet_only`, `meter_path`, `tunnel_probe`, `dns_policy`, `policy_signature`, `release_supported`, `storage`) pass—even while `d.Serve == false` with `awaiting_member_grants`.
+       4. `(*Engine).enforce` (`node/agent/engine.go:741-796`) installs the baseline ruleset and calls `(*Engine).ackApplied(ctx, d.Applied)` (`engine.go:794`).
+       5. `(*Engine).observe` + `(*Engine).flush` (`node/agent/observe.go:19-44, 217-249`) immediately send the first observation (`e.lastObs.IsZero()` is true on the first step after restart) to `POST /api/v1/agent/observations`.
+       6. Central `(*nodes.Service).SubmitObservation` (`internal/nodes/observations.go:237-295`) verifies `effectiveSafety == api.SafetyStatusPassed` and `applied_config_generation >= desired_config_generation` (`acknowledged == true`), flipping `nodes.provisioning_state = 'ready'` and `nodes.safety_status = 'passed'` **on that first accepted observation**.
+       7. On the next lease renewal (`10s` later via `provisionalWait(1)` on the current agent, or within `~30s` via the 60s `expires_at` central backstop), `RenewTx` sees `provisioning_state == 'ready'` and issues the populated member grants.
+
+2. **Preserving `provisioning_state = "ready"` Across Concurrent Generation Bumps**:
+   - Initial baseline readiness for a node incarnation requires `applied_config_generation >= desired_config_generation` and `safety_status = "passed"`.
+   - Once the current incarnation has achieved `nodes.provisioning_state = "ready"`, an in-flight observation for an already-applied generation (`applied_config_generation > 0`) that still passes safety (`safety_status = "passed"`) does **not** downgrade `nodes.provisioning_state` back to `"applying"` when central concurrently advances `desired_config_generation` (`TestReadiness_PreservedAcrossConcurrentDesiredGenerationAdvance`).
+   - Generation lag continues to be enforced by `applied_config_generation < desired_config_generation` in `CheckPublishable` and `PublicationDataPathFailure` (`"stale_generation"`), while avoiding artificial grant-less lease windows when the agent renews its lease for a newly compiled generation before sending that generation's observation.
+
+3. **Separation of Baseline Readiness (`provisioning_state` / `safety_status`) from Serving Checks**:
+   - Per §5.1 and §8.1, `safety_status` and `provisioning_state` reflect the isolation and policy baseline (`internet_only`, `meter_path`, `tunnel_probe`, policy/release/DNS/storage baseline), whereas active member traffic forwarding is reflected by `member_forwarding_observed` and `PublicationDataPathFailure` (`"check_failed"` / `"serving_checks_unconfirmed"`).
+   - Serving checks (`lease`, `qos`, `source_binding`) intentionally do not flip `provisioning_state` to `"applying"` or `safety_status` to `"failed"`: because `RenewTx` requires `provisioning_state == "ready"` to issue member grants, downgrading `provisioning_state` on `lease: LEASE_EXPIRED` would deadlock recovery from a grant-less lease.
+
+---
+
+## 10. Node Incarnation History, Enrollment `token_sha256`, and `awaiting_member_grants`, Follow-up 19
+
+### 10.1 `GET /api/v1/admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`, ENR-03)
+
+1. **Single-Query Read Model (`internal/nodes/incarnations.go`, `internal/nodes/httpwire/handlers.go`)**:
+   - `(*Service).ListNodeIncarnations` executes a single read-only query over `nodes` joined via `LEFT JOIN LATERAL` to `node_incarnations`, `node_enrollments` (`e.incarnation_id = i.id AND e.node_id = i.node_id`), and the per-incarnation usage ledger tables from migration `00130_usage_ledger.sql` (`usage_checkpoints`, `usage_events`, `usage_samples`).
+   - Returns HTTP 404 (`RESOURCE_NOT_FOUND`) only when no `nodes` row exists for `{node_id}`; a known node with no bound incarnations returns HTTP 200 with `items: []` and `next_cursor: null`.
+   - Ordered newest first (`created_at DESC, id DESC`), cursor-paginated (`limit` default 50, max 100; cursor `<= 512` chars), protected by admin RBAC.
+
+2. **Identity, Lifecycle State, and `retire_reason` Derivation**:
+   - `bound_public_key_sha256`: lowercase 64-character hex encoding of `node_incarnations.public_key_fingerprint`.
+   - `bound_at`: `coalesce(node_enrollments.consumed_at, node_incarnations.created_at)`.
+   - `current`: `nodes.current_incarnation_id = node_incarnations.id`.
+   - `state`: `"active"` when `node_incarnations.revoked_at IS NULL`, else `"retired"`.
+   - `retired_at`: `node_incarnations.revoked_at` (`null` while active).
+   - `retire_reason`: `null` while active; when retired (`revoked_at IS NOT NULL`):
+     - `"reinstall"` if a later `node_incarnations` row exists for the same `node_id`;
+     - else `"revocation"` if `nodes.lifecycle_state` is `'revoked'` or `'retired'`;
+     - else `"supersession"`.
+
+3. **Per-Incarnation Retained Usage (`NodeIncarnationUsage`)**:
+   - Reads only `usage_checkpoints` (`node_id`, `incarnation_id`, `updated_at`), `usage_events` (`id`, `node_id`, `incarnation_id`), and `usage_samples` (`event_id`, `upload_bytes`, `download_bytes`). Never reads `usage_event_rejections`, `usage_event_conflicts`, `usage_rollups`, or `usage_rollup_details`.
+   - `upload_bytes` and `download_bytes` are the sums of accepted `usage_samples` (`NUMERIC(20,0)`) formatted as decimal strings and parsed via `decstr.Parse` (`decstr.U64`). Any sum exceeding $2^{64}-1$ fails closed with `decstr.ErrOverflow` (HTTP 500 `INTERNAL_ERROR`), never returning a truncated total.
+   - `through` is `usage_checkpoints.updated_at` (`null` when no checkpoint row exists; when a checkpoint row exists with zero samples, bytes are `"0"` and `through` is set).
+   - Usage is keyed by `(node_id, incarnation_id)` and never moves between incarnations across guarded reinstalls.
+
+### 10.2 `token_sha256` on Enrollment Responses and Audit Events (ENR-02)
+
+- `internal/enrollment` populates `api.Enrollment.TokenSha256` (`*string`, 64 lowercase hex characters of `node_enrollments.token_hash`) on `createEnrollment` (both initial creation and idempotent replay), `getEnrollment`, and `revokeEnrollment`, and `internal/nodes/httpwire` passes the domain `api.Enrollment` through unchanged while never exposing the plaintext token after initial creation.
+- `enrollment.created` audit events record `changes.after.token_sha256` without redaction (via the `_sha256` suffix exemption in `internal/audit`).
+
+### 10.3 `awaiting_member_grants` in the Nodes Read Model (D-067, Revision 10)
+
+- `ForwardingBlockReasonAwaitingMemberGrants` (`"awaiting_member_grants"`) means the node holds a valid node lease (`lease` check passed or non-expired) with zero member grants while `device_bindings` are desired in its compiled policy.
+- **Validation & Read Model Projection**:
+  - `SubmitObservation` validates every element of `report.ForwardingBlockReasons` against `api.ForwardingBlockReason.Valid()`, rejecting unknown block reasons with `422 VALIDATION_FAILED`.
+  - When `member_forwarding_enabled == false` and `forwarding_block_reasons` contains `"awaiting_member_grants"` (with `internet_only == "passed"` and `meter_path` absent, `"not_run"`, or `"passed"`), `evaluateObservationEvidence` preserves `safety_status = "passed"` and `data_health = "healthy"` (or `"degraded"` if degraded by another check)—the node is healthy and provisional, not `"expired"` or `"failed"`.
+  - In `GET /api/v1/admin/nodes/{node_id}` (`NodeDetail`) and `GET /api/v1/admin/nodes` (`NodeSummary`), the node shows `provisioning_state: "ready"`, `safety_status: "passed"`, `data_health: "healthy"`, and `member_forwarding_observed: false`, while `node_observations.report_payload` retains `"forwarding_block_reasons": ["awaiting_member_grants"]`.
+  - **Publication & Operations**: `exits.publication_intent` and `exits.publication_observed` remain unchanged; `PublicationDataPathFailure` returns `"forwarding_disabled"` because `member_forwarding_enabled == false`, so `node.publish` completes `agent_policy` once the desired generation is acknowledged with passed safety while keeping `data_path_probe` pending until member grants arrive and member forwarding is armed. Member/entitlement/device operations waiting on their `"nodes"` step advance to `succeeded` once the node acknowledges the target generation with `safety_status = "passed"` and `provisioning_state = "ready"`.
+
+---
+
+## 11. Cloned-Identity Conflict Detection, Roaming vs. Interleaving, and Mapping Freeze (D-072, §6.2, Follow-up 21)
+
+1. **Production Ingress Callers (`internal/httpapi/middleware.go`, `internal/nodes/httpwire/handlers.go`, `internal/nodes/httpwire/state.go`)**:
+   - On authenticated `agent-mtls` requests, `httpapi.New` stores the verified leaf certificate (`httpapi.ClientCertificate(ctx)`) and coarsened compatibility domain (`httpapi.ClientCompatibilityDomain(ctx)`) in request-local metadata.
+   - `Handlers.RenewServingLease` (`POST /api/v1/agent/lease-renewals`) and `Handlers.SubmitObservation` (`POST /api/v1/agent/observations`) call `Enrollment.ObserveEndpointTx` inside their per-request transaction before any automatic identity-mapping mutation.
+   - `GET /api/v1/agent/desired-state` and other GET routes perform no endpoint observation write.
+
+2. **Compatibility Domain Coarsening and Limitation**:
+   - Derived via `requestRateKey` (`X-Forwarded-For` honoured only when `RemoteAddr` belongs to configured `trusted_proxies`, otherwise `RemoteAddr`), coarsened to **IPv4 `/24`** and **IPv6 `/48`**, and hashed with SHA-256 into `node_identity_endpoints.endpoint_hash`.
+   - Raw addresses and CIDRs are never stored or logged.
+   - **Limitation**: Two clones operating behind the same IPv4 `/24` or IPv6 `/48` compatibility domain are not detected by this check.
+
+3. **Roaming vs. Interleaving (`DefaultIdentityActiveWindow = 120s`)**:
+   - `DefaultIdentityActiveWindow` is `120s`: larger than the 60s D-067 provisional lease renewal cap and the 30s heartbeat interval so an active or renewing node always refreshes inside the window, and shorter than a finite-member serving lease.
+   - **Roaming (`X → Y`)**: When `Y` is first observed while `X` was seen inside `activeWindow`, `X` remains mapped in `node_identity_endpoints`, `Y` is recorded as the candidate, and `Y` is promoted to `node_identity_endpoints` only once `X` has been quiet for a full `activeWindow`.
+   - **Interleaving Conflict**: When `X` is observed again while `Y` is still inside `activeWindow` (`X → Y → X`), when `Y` and `X` are both seen within one window twice, or when a third domain `Z` is observed while `X` and `Y` are inside the window, `ObserveEndpointTx` inserts one `node_identity_conflicts` row, sets `mapping_frozen = true`, and appends one `node.identity.conflict` audit event on `node:<node_id>` with `changes.after` containing only `incarnation_id`, `conflict_count`, and `observed_at` (later requests while frozen emit no second audit event). The HTTP request still returns its normal 2xx response (`200` for lease renewal, `202` for observation).
+
+4. **Terminal Freeze Effect and Reconciliation (`revokeNode` + Re-Enroll)**:
+   - While `mapping_frozen = true`, every automatic external identity mapping path (`node.peer.observe`, `node.peer.discover`, `node.provision.requested`, `netbird.Client.EnsureNodePeer`, `netbird.Client.DiscoverNodePeer`, and `PublicationAdapter.PublishExit`) skips mutation (no last-write-wins), and `SubmitObservationTx` forces the D-055 terminal state (`provisioning_state = 'failed'`, `safety_status = 'failed'`, `member_forwarding_observed = false`). This is intended because a cloned private key is a compromise.
+   - Operators reconcile a frozen node via `revokeNode` followed by re-enrollment (`createEnrollment` + `enrollNode`), which creates a new incarnation with no `node_identity_endpoints` row (unfrozen) while keeping the historical `node_identity_conflicts` rows attached to the retired incarnation.
 
 

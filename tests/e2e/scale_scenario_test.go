@@ -11,6 +11,8 @@ import (
 func (r *runner) scaleHook(ctx context.Context, admin *session) {
 	rec := Record{ID: "native-scale-hook", Title: "60 simultaneous native peers: gateway budget and protected streams", Spec: []string{"§8", "§19 AT12", "SECOPS-10"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
+	finishTelemetry := r.recordTelemetry(ctx, &rec)
+	defer finishTelemetry()
 	wait, cancel := context.WithTimeout(ctx, 20*time.Minute)
 	defer cancel()
 	out, err := (&Stack{lab: r.lab}).ScaleNativeMembers(wait, BrowserSession{Client: admin.http, CSRF: admin.csrf}, r.planRevID, "scale", 20, 3, func(ctx context.Context) (BrowserSession, error) {

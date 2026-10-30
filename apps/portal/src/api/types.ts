@@ -86,6 +86,8 @@ export type MemberGroup = components['schemas']['MemberGroup'];
 export type MemberGroupCreate = components['schemas']['MemberGroupCreate'];
 export type MemberGroupList = components['schemas']['MemberGroupList'];
 export type MemberGroupListResponse = components['schemas']['MemberGroupList'];
+export type FleetConfig = components['schemas']['FleetConfig'];
+export type FleetConfigUpdate = components['schemas']['FleetConfigUpdate'];
 
 // Members & Entitlements (§9, §10, §14.2)
 export type PlanRef = components['schemas']['PlanRef'];
