@@ -51,9 +51,9 @@ func (s *Service) failGatedPublish(ctx context.Context, opID, nodeID uuid.UUID, 
 		}
 	}
 	if !empty || !populated {
-		// Established populated routes retain pre-r11 failure semantics. Node-side
-		// generation-scoped enforcement covers policy/device changes during apply.
-		return s.failPublishStep(ctx, opID, nodeID, step, code, message, cause)
+		// Established populated routes retain pre-r11 attachment semantics while
+		// D-074 keeps the gated step pending until convergence or exhaustion.
+		return s.pendingPublishStepOutcome(ctx, opID, nodeID, step, code, message, cause)
 	}
 	var exitID uuid.UUID
 	if err := s.pool.QueryRow(ctx, `SELECT id FROM exits WHERE node_id=$1`, nodeID).Scan(&exitID); err != nil {
@@ -90,14 +90,14 @@ func (s *Service) failGatedPublish(ctx context.Context, opID, nodeID uuid.UUID, 
 		}
 		withdrawn = true
 	}
-	if _, err = s.failPublishStepOutcome(ctx, opID, nodeID, step, code, message, withdrawn, cause); err != nil {
+	if _, err = s.pendingPublishStepOutcome(ctx, opID, nodeID, step, code, message, cause); err != nil {
 		return api.Operation{}, err
 	}
 	if withdrawn {
 		err = commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
 			// Invalidate the old attached-route evidence so a later observation
 			// cannot complete this operation without a new route read-back.
-			_, err := tx.Exec(ctx, `UPDATE operations SET steps=jsonb_set(steps,'{netbird_route_readback}',jsonb_build_object('order',2,'required',true,'status','pending','reason',$2::text,'updated_at',$3::timestamptz)),observed_refs=(observed_refs-'netbird_route_readback')||jsonb_build_object('publication_gate_withdrawal',$4::text),resource_version=coalesce(resource_version,0)+1 WHERE id=$1 AND status='failed'`, opID, cause, s.now().UTC(), fmt.Sprintf("netbird:route:%s:withdrawn", ref))
+			_, err := tx.Exec(ctx, `UPDATE operations SET steps=jsonb_set(steps,'{netbird_route_readback}',jsonb_build_object('order',2,'required',true,'status','pending','reason',$2::text,'updated_at',$3::timestamptz)),observed_refs=(observed_refs-'netbird_route_readback')||jsonb_build_object('publication_gate_withdrawal',$4::text),resource_version=coalesce(resource_version,0)+1 WHERE id=$1 AND status IN ('running','pending','failed')`, opID, cause, s.now().UTC(), fmt.Sprintf("netbird:route:%s:withdrawn", ref))
 			if err != nil {
 				return err
 			}
@@ -106,6 +106,90 @@ func (s *Service) failGatedPublish(ctx context.Context, opID, nodeID uuid.UUID, 
 		if err != nil {
 			return api.Operation{}, err
 		}
+	}
+	return nodes.GetOperation(ctx, s.pool, opID)
+}
+
+// ExhaustGatedPublish transitions a waiting gated node.publish step and its
+// operation to failed when the worker retry budget is exhausted (D-074).
+func (s *Service) ExhaustGatedPublish(ctx context.Context, opID, nodeID uuid.UUID) (api.Operation, error) {
+	now := s.now().UTC()
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var (
+			status     string
+			stepsBytes []byte
+			refsBytes  []byte
+		)
+		if err := tx.QueryRow(ctx, `
+			SELECT status, steps, observed_refs
+			FROM operations
+			WHERE id = $1
+			FOR UPDATE`, opID).Scan(&status, &stepsBytes, &refsBytes); err != nil {
+			return err
+		}
+		if status == string(api.OperationStatusSucceeded) ||
+			status == string(api.OperationStatusSuperseded) ||
+			status == string(api.OperationStatusPartiallySucceeded) ||
+			status == string(api.OperationStatusFailed) {
+			return nil
+		}
+		var steps map[string]nodes.StoredStep
+		_ = json.Unmarshal(stepsBytes, &steps)
+		if steps == nil {
+			steps = map[string]nodes.StoredStep{}
+		}
+		var refs map[string]string
+		if len(refsBytes) > 0 {
+			_ = json.Unmarshal(refsBytes, &refs)
+		}
+		errCode := string(apierr.NodeNotServiceable)
+		errMsg := "member_forwarding_unconfirmed"
+		for _, name := range []string{nodes.StepAgentPolicy, nodes.StepDataPathProbe} {
+			st, ok := steps[name]
+			if !ok || st.Status != string(api.OperationStepStatusPending) || st.ErrorCode == nil {
+				continue
+			}
+			st.Status = string(api.OperationStepStatusFailed)
+			st.UpdatedAt = now
+			steps[name] = st
+			errCode = *st.ErrorCode
+			if st.ErrorMessage != nil && *st.ErrorMessage != "" {
+				errMsg = *st.ErrorMessage
+			}
+			break
+		}
+		stepsJSON, _ := json.Marshal(steps)
+		if status != string(api.OperationStatusRunning) {
+			if _, err := tx.Exec(ctx, `
+				UPDATE operations
+				SET status = 'running',
+				    resource_version = coalesce(resource_version, 0) + 1
+				WHERE id = $1`, opID); err != nil {
+				return err
+			}
+		}
+		if _, err := tx.Exec(ctx, `
+			UPDATE operations
+			SET status = 'failed',
+			    steps = $2::jsonb,
+			    error_code = $3,
+			    error_message = $4,
+			    resource_version = coalesce(resource_version, 0) + 1
+			WHERE id = $1`, opID, stepsJSON, errCode, errMsg); err != nil {
+			return err
+		}
+		confirmedWithdrawn := refs["publication_gate_withdrawal"] != ""
+		if _, err := tx.Exec(ctx, `
+			UPDATE exits
+			SET publication_observed = CASE WHEN $2::boolean THEN publication_observed ELSE 'error' END,
+			    resource_version = resource_version + 1
+			WHERE node_id = $1`, nodeID, confirmedWithdrawn); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return api.Operation{}, err
 	}
 	return nodes.GetOperation(ctx, s.pool, opID)
 }

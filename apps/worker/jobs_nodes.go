@@ -106,6 +106,11 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 			return "", errors.New("publication execution failed")
 		}
 		if op.Status != api.OperationStatusSucceeded && op.Status != api.OperationStatusSuperseded && op.Status != api.OperationStatusPartiallySucceeded {
+			if event.Attempt >= attempts {
+				if _, err := executor.ExhaustGatedPublish(ctx, op.OperationId, op.Resource.Id); err != nil {
+					return "", err
+				}
+			}
 			return "", errors.New("publication execution incomplete")
 		}
 		return op.OperationId.String(), nil
