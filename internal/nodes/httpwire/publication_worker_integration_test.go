@@ -303,15 +303,23 @@ func TestSECOPS11_PublicationWorkerRequiresArmedMemberDataPath(t *testing.T) {
 	op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
 	f.acknowledgePublication(enrolled, cert, false)
 	nb := exits.NewFakeNetBirdAdapter()
-	d := f.publicationDispatcher(nb, 1)
+	d := f.publicationDispatcher(nb, 2)
 	f.publicationDispatch(d, op.OperationId)
 	observed := f.publicationOperation(op.OperationId)
-	if observed.Status != api.OperationStatusFailed {
-		t.Fatal("baseline completed publication", observed)
+	if observed.Status != api.OperationStatusRunning || !observed.Error.IsNull() {
+		t.Fatal("gated publication did not wait in running state", observed)
 	}
-	var cause, publication string
-	if err := f.r.Pool.QueryRow(t.Context(), `SELECT o.steps->'data_path_probe'->>'error_message',e.publication_observed FROM operations o JOIN exits e ON e.node_id=o.resource_id WHERE o.id=$1`, op.OperationId).Scan(&cause, &publication); err != nil || cause != "member_forwarding_unconfirmed" || publication == "active" {
-		t.Fatal(cause, publication, err)
+	var stepStatus, cause, publication string
+	if err := f.r.Pool.QueryRow(t.Context(), `SELECT o.steps->'data_path_probe'->>'status',o.steps->'data_path_probe'->>'error_message',e.publication_observed FROM operations o JOIN exits e ON e.node_id=o.resource_id WHERE o.id=$1`, op.OperationId).Scan(&stepStatus, &cause, &publication); err != nil || stepStatus != "pending" || cause != "member_forwarding_unconfirmed" || publication != "absent" {
+		t.Fatal(stepStatus, cause, publication, err)
+	}
+	f.publicationDispatch(d, op.OperationId)
+	exhausted := f.publicationOperation(op.OperationId)
+	if exhausted.Status != api.OperationStatusFailed {
+		t.Fatal("exhausted baseline did not fail publication", exhausted)
+	}
+	if err := f.r.Pool.QueryRow(t.Context(), `SELECT o.steps->'data_path_probe'->>'status',o.steps->'data_path_probe'->>'error_message',e.publication_observed FROM operations o JOIN exits e ON e.node_id=o.resource_id WHERE o.id=$1`, op.OperationId).Scan(&stepStatus, &cause, &publication); err != nil || stepStatus != "failed" || cause != "member_forwarding_unconfirmed" || publication != "error" {
+		t.Fatal(stepStatus, cause, publication, err)
 	}
 	next := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
 	f.acknowledgePublication(enrolled, cert, true)
