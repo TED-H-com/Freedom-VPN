@@ -661,7 +661,7 @@ func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
 	i := l.node("amd64", "published", "registered", true)
 	l.batch(l.new)
 	w := l.intent(i)
-	// H-3: a valid pre-result target seed agrees with the recorded last-good.
+	// D-068: a pre-result target heartbeat never overwrites a non-null current release.
 	r := api.ObservationReport{ReportId: uuid.New(), NodeId: i.NodeID, NodeIncarnationId: i.IncarnationID, ObservedAt: time.Now().UTC(), CurrentReleaseId: presence.NewNullableWithValue(l.new), LastGoodReleaseId: presence.NewNullableWithValue(l.old),
 		AppliedBindingRevision:  presence.NewNullNullable[decstr.U64](),
 		AppliedConfigGeneration: presence.NewNullNullable[decstr.U64](),
@@ -684,6 +684,17 @@ func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
 	if e := insertAndObserve(r); e != nil {
 		t.Fatal(e)
 	}
+	view, e := l.s.NodeVersionView(l.ctx, i.NodeID)
+	if e != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.old || !view.Unconfirmed {
+		t.Fatal(view, e)
+	}
+	l.report(i, w, "succeeded")
+	r.ReportId = uuid.New()
+	r.ObservedAt = r.ObservedAt.Add(time.Second)
+	r.LastGoodReleaseId.Set(l.new)
+	if e := insertAndObserve(r); e != nil {
+		t.Fatal(e)
+	}
 	if e := insertAndObserve(r); e != nil {
 		t.Fatal(e)
 	}
@@ -693,8 +704,8 @@ func TestUPD04_ContractHeartbeatAdapter(t *testing.T) {
 	if e := insertAndObserve(r); e != nil {
 		t.Fatal(e)
 	}
-	view, e := l.s.NodeVersionView(l.ctx, i.NodeID)
-	if e != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.new {
+	view, e = l.s.NodeVersionView(l.ctx, i.NodeID)
+	if e != nil || view.CurrentReleaseID == nil || *view.CurrentReleaseID != l.new || view.Unconfirmed {
 		t.Fatal(view, e)
 	}
 }
