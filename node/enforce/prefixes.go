@@ -5,11 +5,17 @@ import (
 	"sort"
 )
 
-// SpecDeniedV4 is the v1 destination deny list (§8.1): special-purpose IPv4,
-// RFC1918, CGNAT and overlay, link-local, metadata, and the documentation
-// ranges. A lab that uses one of those ranges as its simulated Internet must
-// pass an explicit DeniedV4 that omits only that simulated range. Production
-// callers leave DeniedV4 nil and get this list.
+// SpecDeniedV4 is the v1 destination deny list (§8.1). It is every IANA
+// IPv4 special-purpose block whose Globally Reachable cell is not True,
+// plus multicast 224.0.0.0/4. 192.88.99.0/24 (deprecated 6to4 relay anycast,
+// RFC 7526) is included: that cell is blank because the allocation ended in
+// 2015. 192.31.196.0/24, 192.52.193.0/24 and 192.175.48.0/24 are globally
+// reachable and are not listed. The globally reachable anycasts 192.0.0.9/32
+// and 192.0.0.10/32 stay covered by their parent 192.0.0.0/24, which is not
+// globally reachable; this list does not punch that hole. A lab that uses
+// one of these ranges as its simulated Internet must pass an explicit
+// DeniedV4 that omits only that simulated range. Production callers leave
+// DeniedV4 nil and get this list.
 func SpecDeniedV4() []netip.Prefix {
 	return mustPrefixes(
 		"0.0.0.0/8",
@@ -20,6 +26,7 @@ func SpecDeniedV4() []netip.Prefix {
 		"172.16.0.0/12",
 		"192.0.0.0/24",
 		"192.0.2.0/24",
+		"192.88.99.0/24",
 		"192.168.0.0/16",
 		"198.18.0.0/15",
 		"198.51.100.0/24",
