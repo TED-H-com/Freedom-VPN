@@ -22,7 +22,13 @@ or superseded operations cannot be changed, including their evidence and metadat
 All operation rows are protected against DELETE/TRUNCATE (DB F-10).
 A failed transition needs a valid `api.ErrorCode`. It records that code on the step
 and persists a deterministic top-level code with a fixed safe message. Retrying
-clears obsolete errors; any other failed step remains represented. `Store.Get`
+clears obsolete errors; any other failed step remains represented. On
+`GET /api/v1/admin/operations/{id}`, a failed step projects its stored
+`error_message` only when it matches the bounded failure-cause allowlist
+(`operations.IsBoundedFailureCause`: the `exits.PublicationFailureCause`
+vocabulary plus `member_forwarding_unconfirmed` and `desired_state_unavailable`);
+every other step failure message and all `GET /api/v1/member/operations/{id}`
+responses use `"Step failed; quote the operation ID."`. `Store.Get`
 uses step errors first, then stored `error_code`/`error_message` for failed or
 partially succeeded operations whose producer omitted the step code. Producers
 must store safe user-facing messages, never raw SQL/provider errors.
