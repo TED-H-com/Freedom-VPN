@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
   title: Freedom VPN Control API
-  version: 1.0.0
+  version: 1.1.1
   description: |
     Contract for the Freedom VPN central control API (Project Spec v1.0, §14).
-    There are 41 endpoints, including the D-015 agent bootstrap extension.
+    There are 44 endpoints, including D-015 bootstrap and D-056/D-057 delivery/groups.
     This document is the single source of truth: Go types (`pkg/api`) and
-    TypeScript types (`contracts/ts/schema.d.ts`) are generated from it, and the
+    TypeScript types (`contracts/ts/openapi.d.ts`) are generated from it, and the
     contract tests in `contracts/` validate every example against it.
 
     Conventions (§14.1, AGENTS.md §4):
@@ -52,7 +52,7 @@ x-fvpn-mutual-tls:
     such as X-Node-ID or X-Client-Cert supplied by a client are never trusted.
 x-fvpn-browser-auth:
   description: |
-    Existing browser routes outside /api/v1 (D-032), excluded from the 41 API
+    Existing browser routes outside /api/v1 (D-032), excluded from the 44 API
     endpoints. There are no /api/v1/auth/session or /api/v1/auth/logout aliases.
   routes: ['GET /auth/session', 'POST /auth/logout']
   parameters:
@@ -2130,6 +2130,178 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 
+  /agent/resolver-documents/{document_id}:
+    get:
+      operationId: getResolverDocument
+      tags:
+      - agent
+      summary: Fetch an issued resolver document
+      description: Return stored canonical RFC 8785 bytes verbatim after agent mTLS authorization (D-056).
+        A node may fetch only a document referenced by desired state issued to it at the current or immediately
+        previous config_generation. Return 404 NOT_FOUND for every other document ID, including existing
+        documents issued to other nodes. Verify the signed size_bytes and content_sha256 before apply; no
+        partial apply on mismatch.
+      x-fvpn-spec: §14.4, §14.7, §12.3, D-056
+      x-fvpn-requirements:
+      - DNS01
+      - DNS03
+      - SEC01
+      security: []
+      x-fvpn-auth: agent-mtls
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: Document UUID from this node's signed desired state.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Exact canonical resolver document, without an envelope or trailing newline.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            ETag:
+              required: true
+              description: Quoted digest of exact returned bytes.
+              schema:
+                type: string
+                pattern: ^"sha256:[0-9a-f]{64}"$
+            Cache-Control:
+              required: true
+              description: Private response; revalidate on every fetch.
+              schema:
+                type: string
+                enum:
+                - private, max-age=0
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolverDocument'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '404':
+          description: NOT_FOUND. Document absent or not issued to this node in its current or immediately previous desired-state generation.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /admin/groups:
+    get:
+      operationId: listAdminGroups
+      tags:
+      - admin
+      summary: List member groups
+      description: Cursor page of immutable member groups, optionally filtered by exact code (§15.2, D-057).
+      x-fvpn-spec: §14.2, §15.2, D-057
+      x-fvpn-requirements:
+      - NODE03
+      - EXIT01
+      - API01
+      security:
+      - adminSession: []
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      - name: code
+        in: query
+        required: false
+        description: Exact group code filter.
+        schema:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,63}$
+      responses:
+        '200':
+          description: Page of member groups.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberGroupList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    post:
+      operationId: createAdminGroup
+      tags:
+      - admin
+      summary: Create an immutable member group
+      description: Create a group for plan exit_group_ids and exit membership (§15.2, D-057). Duplicate
+        code or name returns 409 STATE_CONFLICT; idempotency conflicts remain 409 IDEMPOTENCY_CONFLICT.
+        No rename/delete in revision 5.
+      x-fvpn-spec: §14.2, §15.2, D-057
+      x-fvpn-requirements:
+      - NODE03
+      - EXIT01
+      - API01
+      security:
+      - adminSession: []
+        csrfToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberGroupCreate'
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '201':
+          description: Created immutable member group.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            Location:
+              description: Group lookup via exact code filter.
+              schema:
+                type: string
+                example: /api/v1/admin/groups?code=standard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
 components:
   securitySchemes:
     adminSession:
@@ -2549,6 +2721,7 @@ components:
         - FORBIDDEN
         - CSRF_TOKEN_INVALID
         - RESOURCE_NOT_FOUND
+        - NOT_FOUND
         - METHOD_NOT_ALLOWED
         - IDEMPOTENCY_CONFLICT
         - STATE_CONFLICT
@@ -2627,7 +2800,7 @@ components:
     ResourceType:
       type: string
       description: Kinds of resources referenced by operations and audit events.
-      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config, admin_identity]
+      enum: [node, enrollment, exit, member, member_device, entitlement_grant, policy_definition, policy_revision, release, update_batch, update_target, checkout_session, fleet_config, admin_identity, member_group]
     ResourceRef:
       type: object
       required: [type, id]
@@ -3083,81 +3256,123 @@ components:
     NodeDetail:
       description: Node detail (§14.2, §18.1) with desired versus observed differences.
       allOf:
-        - $ref: '#/components/schemas/NodeSummary'
-        - type: object
-          required: [current_incarnation_id, platform, capacity, notes, netbird_peer_id, observed_exit_ipv4, observed_exit_ipv6, checks, recent_errors, drift, retired_at]
-          properties:
-            current_incarnation_id:
+      - $ref: '#/components/schemas/NodeSummary'
+      - type: object
+        required:
+        - current_incarnation_id
+        - platform
+        - capacity
+        - notes
+        - netbird_peer_id
+        - observed_exit_ipv4
+        - observed_exit_ipv6
+        - checks
+        - recent_errors
+        - drift
+        - retired_at
+        properties:
+          current_incarnation_id:
+            type: string
+            format: uuid
+            nullable: true
+          platform:
+            type: object
+            allOf:
+            - $ref: '#/components/schemas/NodePlatform'
+            nullable: true
+          capacity:
+            type: object
+            allOf:
+            - $ref: '#/components/schemas/NodeCapacity'
+            nullable: true
+          notes:
+            type: string
+            nullable: true
+            maxLength: 2000
+            description: Free-text notes, including source or owner remarks. Never used for permissions (NODE04).
+          netbird_peer_id:
+            type: string
+            nullable: true
+            maxLength: 128
+            description: Opaque NetBird peer ID.
+          observed_exit_ipv4:
+            type: string
+            format: ipv4
+            nullable: true
+          observed_exit_ipv6:
+            type: string
+            format: ipv6
+            nullable: true
+          checks:
+            type: array
+            maxItems: 32
+            items:
+              $ref: '#/components/schemas/NodeCheck'
+          recent_errors:
+            type: array
+            maxItems: 50
+            items:
+              $ref: '#/components/schemas/NodeError'
+          drift:
+            type: array
+            maxItems: 64
+            description: Fields whose desired and observed values differ.
+            items:
+              $ref: '#/components/schemas/StateDrift'
+          retired_at:
+            type: string
+            format: date-time
+            pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+            nullable: true
+          group_ids:
+            type: array
+            maxItems: 100
+            items:
               type: string
               format: uuid
-              nullable: true
-            platform:
-              type: object
-              allOf:
-                - $ref: '#/components/schemas/NodePlatform'
-              nullable: true
-            capacity:
-              type: object
-              allOf:
-                - $ref: '#/components/schemas/NodeCapacity'
-              nullable: true
-            notes:
-              type: string
-              nullable: true
-              maxLength: 2000
-              description: Free-text notes, including source or owner remarks. Never used for permissions (NODE04).
-            netbird_peer_id:
-              type: string
-              nullable: true
-              maxLength: 128
-              description: Opaque NetBird peer ID.
-            observed_exit_ipv4:
-              type: string
-              format: ipv4
-              nullable: true
-            observed_exit_ipv6:
-              type: string
-              format: ipv6
-              nullable: true
-            checks:
-              type: array
-              maxItems: 32
-              items:
-                $ref: '#/components/schemas/NodeCheck'
-            recent_errors:
-              type: array
-              maxItems: 50
-              items:
-                $ref: '#/components/schemas/NodeError'
-            drift:
-              type: array
-              maxItems: 64
-              description: Fields whose desired and observed values differ.
-              items:
-                $ref: '#/components/schemas/StateDrift'
-            retired_at:
-              type: string
-              format: date-time
-              pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
-              nullable: true
+            uniqueItems: true
+            description: Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed.
+              Empty means no attached groups; absent means not projected. Existing member_group_ids remains
+              unchanged.
+
     NodeCheck:
       type: object
-      required: [name, status, observed_at, error_code]
+      required:
+      - name
+      - status
+      - observed_at
+      - error_code
       properties:
         name:
           type: string
-          enum: [internet_only, source_binding, meter_path, qos, dns_policy, lease, policy_signature, release_supported, tunnel_probe, storage]
+          enum:
+          - internet_only
+          - source_binding
+          - meter_path
+          - qos
+          - dns_policy
+          - lease
+          - policy_signature
+          - release_supported
+          - tunnel_probe
+          - storage
         status:
           $ref: '#/components/schemas/HealthCheckStatus'
         observed_at:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
         error_code:
           type: string
           allOf:
-            - $ref: '#/components/schemas/ErrorCode'
+          - $ref: '#/components/schemas/ErrorCode'
           nullable: true
+        detail:
+          type: string
+          maxLength: 500
+          description: Bounded operator-facing diagnostic (§13.9, SEC02, D-058). Never secrets, identity subjects,
+            tokens, raw member addresses, queries or credential-bearing URLs; producers redact before reporting.
+
     NodeError:
       type: object
       required: [code, stage, message, observed_at]
@@ -3237,7 +3452,9 @@ components:
           maxLength: 2000
     PublicationRequest:
       type: object
-      required: [publication_intent, reason]
+      required:
+      - publication_intent
+      - reason
       additionalProperties: false
       properties:
         publication_intent:
@@ -3246,8 +3463,19 @@ components:
           type: string
           minLength: 1
           maxLength: 500
+        group_ids:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
+          uniqueItems: true
+          description: When present, atomically replace the exit_groups membership together with publication
+            intent under the same exit If-Match (D-057). Empty clears all membership; absent leaves it unchanged.
+            Unknown IDs return 422 VALIDATION_FAILED with a field detail.
+          x-omitempty: false
+          x-omitzero: true
 
-    # ============================================================ enrollments §6
     EnrollmentDelivery:
       type: string
       description: |
@@ -3751,11 +3979,23 @@ components:
           pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     PolicyDefinition:
       type: object
-      description: |
-        A policy definition with its immutable revisions (§14.2, §15.3).
+      description: 'A policy definition with its immutable revisions (§14.2, §15.3).
+
         `active_revision` and `latest_revision` are omitted when none exists.
+
         The ETag for activation is `"<resource_version>"`.
-      required: [definition_id, type, code, active_revision_id, generation, resource_version, revisions, created_at, updated_at]
+
+        '
+      required:
+      - definition_id
+      - type
+      - code
+      - active_revision_id
+      - generation
+      - resource_version
+      - revisions
+      - created_at
+      - updated_at
       properties:
         definition_id:
           type: string
@@ -3764,24 +4004,26 @@ components:
           $ref: '#/components/schemas/PolicyType'
         code:
           type: string
-          pattern: '^[a-z0-9][a-z0-9_-]{0,63}$'
+          pattern: ^[a-z0-9][a-z0-9_-]{0,63}$
         active_revision_id:
           type: string
           format: uuid
           nullable: true
         generation:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
-          description: 'Incremented on every activation (§2 policy generation).'
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+          description: Incremented on every activation (§2 policy generation).
         resource_version:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
         active_revision:
           $ref: '#/components/schemas/PolicyRevision'
         latest_revision:
@@ -3795,11 +4037,21 @@ components:
         created_at:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
         updated_at:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+        threat_feed_status:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/ThreatFeedStatus'
+          nullable: true
+          x-omitempty: false
+          x-omitzero: true
+          description: Present only for type=threat_feed. Non-null describes the active revision; absent/null
+            means no refresh status is available. The policy service enforces this type condition.
+
     PolicyDefinitionList:
       type: object
       required: [items, next_cursor]
@@ -4301,11 +4553,21 @@ components:
 
     PlanPayload:
       type: object
-      description: |
-        Plan revision payload (§14.2, §15.2 plans/plan_revisions). Prices, device
+      description: 'Plan revision payload (§14.2, §15.2 plans/plan_revisions). Prices, device
+
         limits and rates are pending business decisions (§21); the schema only
+
         carries them.
-      required: [display_name, device_limit, exit_group_ids, price, rate_limit, fair_use_revision_id, dns_profile_revision_id]
+
+        '
+      required:
+      - display_name
+      - device_limit
+      - exit_group_ids
+      - price
+      - rate_limit
+      - fair_use_revision_id
+      - dns_profile_revision_id
       additionalProperties: false
       properties:
         display_name:
@@ -4314,13 +4576,15 @@ components:
           type: integer
           minimum: 1
           maximum: 100
-          description: Maximum authorized devices (MEM02). Counted on authorized devices, not concurrent WireGuard sessions.
+          description: Maximum authorized devices (MEM02). Counted on authorized devices, not concurrent WireGuard
+            sessions.
         exit_group_ids:
           type: array
           minItems: 1
           maxItems: 100
           uniqueItems: true
-          description: Member groups whose exits this plan may use.
+          description: Member groups whose exits this plan may use. Discover or create immutable groups with
+            GET/POST /api/v1/admin/groups (D-057); every ID must exist.
           items:
             type: string
             format: uuid
@@ -4329,17 +4593,19 @@ components:
         rate_limit:
           type: object
           allOf:
-            - $ref: '#/components/schemas/RatePair'
+          - $ref: '#/components/schemas/RatePair'
           nullable: true
-          description: plan_rate of §11.3 per member and exit; null means the plan adds no rate limit beyond fair use and node caps.
+          description: plan_rate of §11.3 per member and exit; null means the plan adds no rate limit beyond
+            fair use and node caps.
         fair_use_revision_id:
           type: string
           format: uuid
-          description: 'fair_use policy revision referenced by this plan.'
+          description: fair_use policy revision referenced by this plan.
         dns_profile_revision_id:
           type: string
           format: uuid
-          description: 'dns_profile policy revision referenced by this plan.'
+          description: dns_profile policy revision referenced by this plan.
+
     PlanPrice:
       type: object
       required: [amount_minor, currency, billing_interval, provider, provider_price_ref]
@@ -4598,11 +4864,27 @@ components:
           description: 'Positive uint64 decimal-string revision of this rule, starting at 1 (§12.4, §14.2). Zero is invalid; the upper bound 18446744073709551615 is enforced by decstr.'
     ThreatFeedPayload:
       type: object
-      description: |
-        Threat or category feed source with license basis (§12.3, §14.2). A feed
+      description: 'Threat or category feed source with license basis (§12.3, §14.2). A feed
+
         whose commercial use is not confirmed must not be placed in a production
+
         profile. Fetch times and results are observations stored separately.
-      required: [provider, feed_code, license_name, license_url, commercial_use_basis, attribution, source_url, format, categories, content_sha256, max_size_bytes, valid_from, valid_until, update_interval_seconds]
+
+        '
+      required:
+      - provider
+      - feed_code
+      - license_name
+      - license_url
+      - commercial_use_basis
+      - attribution
+      - source_url
+      - format
+      - categories
+      - content_sha256
+      - max_size_bytes
+      - valid_from
+      - valid_until
       additionalProperties: false
       properties:
         provider:
@@ -4611,7 +4893,7 @@ components:
           maxLength: 100
         feed_code:
           type: string
-          pattern: '^[a-z0-9][a-z0-9_-]{0,63}$'
+          pattern: ^[a-z0-9][a-z0-9_-]{0,63}$
         license_name:
           type: string
           minLength: 1
@@ -4619,7 +4901,7 @@ components:
         license_url:
           type: string
           format: uri
-          pattern: '^https://'
+          pattern: ^https://
           maxLength: 2048
         commercial_use_basis:
           type: string
@@ -4633,43 +4915,55 @@ components:
         source_url:
           type: string
           format: uri
-          pattern: '^https://'
+          pattern: ^https://
           maxLength: 2048
           description: Fixed trusted HTTPS source; arbitrary fetch URLs are not accepted (§12.3, §16.2).
         format:
           type: string
-          enum: [domain_list, hosts, adblock]
+          enum:
+          - domain_list
+          - hosts
+          - adblock
         categories:
           type: array
           minItems: 1
           uniqueItems: true
           items:
             type: string
-            enum: [malware, phishing, ads, family]
+            enum:
+            - malware
+            - phishing
+            - ads
+            - family
         content_sha256:
           type: string
-          pattern: '^[0-9a-f]{64}$'
-          description: 'Digest of the approved content snapshot.'
+          pattern: ^[0-9a-f]{64}$
+          description: Digest of the approved content snapshot.
         max_size_bytes:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
-          description: 'Maximum accepted download size.'
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+          description: Maximum accepted download size.
         valid_from:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
         valid_until:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
         update_interval_seconds:
+          x-go-type-skip-optional-pointer: true
           type: integer
           minimum: 300
           maximum: 604800
-          description: Refresh interval. Pending decision per source (§12.3); required, no default.
+          description: Per-source refresh interval in seconds (§12.3, D-054, D-058), default 21600 when omitted.
+            Effective cadence is max(product cadence, this value).
+          default: 21600
+
     ReleaseSupportPayload:
       type: object
       description: |
@@ -5977,18 +6271,44 @@ components:
             $ref: '#/components/schemas/Signature'
     DesiredState:
       type: object
-      description: |
-        Node desired state (§14.7). Contains the node, incarnation, generation,
+      description: 'Node desired state (§14.7). Contains the node, incarnation, generation,
+
         validity window and the policy content the node enforces, not only
+
         replaceable references. The target release and the serving release set
+
         are separate: a new target never stops a still-supported release (§13.2).
+
         The serving lease is renewed separately (POST /agent/lease-renewals).
-      required: [schema_version, node_id, node_incarnation_id, config_generation, publication_intent, safety_profile, policy_refs, binding_revision, desired_release_id, supported_release_policy_id, serving_release_ids, lease_renewal_endpoint, accounting_period, device_bindings, member_rate_policies, node_capacity, dns, update, issued_at, expires_at]
+
+        '
+      required:
+      - schema_version
+      - node_id
+      - node_incarnation_id
+      - config_generation
+      - publication_intent
+      - safety_profile
+      - policy_refs
+      - binding_revision
+      - desired_release_id
+      - supported_release_policy_id
+      - serving_release_ids
+      - lease_renewal_endpoint
+      - accounting_period
+      - device_bindings
+      - member_rate_policies
+      - node_capacity
+      - dns
+      - update
+      - issued_at
+      - expires_at
       additionalProperties: false
       properties:
         schema_version:
           type: integer
-          enum: [1]
+          enum:
+          - 1
         node_id:
           type: string
           format: uuid
@@ -5997,35 +6317,38 @@ components:
           format: uuid
         config_generation:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
-          description: 'Monotonic; an older generation never overwrites a newer one (§15.3).'
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+          description: Monotonic; an older generation never overwrites a newer one (§15.3).
         publication_intent:
           $ref: '#/components/schemas/PublicationIntent'
         safety_profile:
           type: string
-          pattern: '^[a-z0-9][a-z0-9._-]{0,63}$'
-          description: Fixed isolation baseline profile, for example `internet-only-v1`. No policy can relax it.
+          pattern: ^[a-z0-9][a-z0-9._-]{0,63}$
+          description: Fixed isolation baseline profile, for example `internet-only-v1`. No policy can relax
+            it.
         policy_refs:
           $ref: '#/components/schemas/PolicyRefs'
         binding_revision:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
-          description: 'Revision of the device binding set below.'
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+          description: Revision of the device binding set below.
         desired_release_id:
           type: string
           format: uuid
           nullable: true
-          description: 'Fleet target release; null before any release is targeted.'
+          description: Fleet target release; null before any release is targeted.
         supported_release_policy_id:
           type: string
           format: uuid
-          description: 'release_support policy revision that defines serving_release_ids.'
+          description: release_support policy revision that defines serving_release_ids.
         serving_release_ids:
           type: array
           minItems: 1
@@ -6038,17 +6361,22 @@ components:
         revoked_release_ids:
           type: array
           uniqueItems: true
-          description: |
-            Releases barred from installation and serving (§13.4, D-034).
+          description: 'Releases barred from installation and serving (§13.4, D-034).
+
             A node must refuse to install and must stop serving any listed release.
+
             Absent and empty both mean no additional revocations; neither widens
+
             the serving/allowed release intersections enforced by the updater.
+
+            '
           items:
             type: string
             format: uuid
         lease_renewal_endpoint:
           type: string
-          enum: [/api/v1/agent/lease-renewals]
+          enum:
+          - /api/v1/agent/lease-renewals
         accounting_period:
           $ref: '#/components/schemas/AccountingPeriod'
         device_bindings:
@@ -6064,25 +6392,35 @@ components:
         node_capacity:
           type: object
           allOf:
-            - $ref: '#/components/schemas/NodeCapacity'
+          - $ref: '#/components/schemas/NodeCapacity'
           nullable: true
         dns:
           $ref: '#/components/schemas/DnsServiceConfig'
         update:
           type: object
           allOf:
-            - $ref: '#/components/schemas/UpdateIntent'
+          - $ref: '#/components/schemas/UpdateIntent'
           nullable: true
           description: The node's current authorized update job (§13.10.2), or null.
         issued_at:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
         expires_at:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
-          description: 'End of validity of this desired state; must be after issued_at.'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+          description: End of validity of this desired state; must be after issued_at.
+        egress_probe:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/EgressProbe'
+          nullable: true
+          x-omitempty: false
+          x-omitzero: true
+          description: When non-null, use these signed targets and ignore local egress_probe_target. Absent
+            or null preserves the existing local configuration or skip behavior (D-058).
+
     PolicyRefs:
       type: object
       required: [authorization_generation, fup_generation, dns_generation]
@@ -6230,11 +6568,17 @@ components:
           pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
     DnsServiceConfig:
       type: object
-      description: |
-        Designated resolvers (ISO04, §8.1, §12.2). Members may reach only these
+      description: 'Designated resolvers (ISO04, §8.1, §12.2). Members may reach only these
+
         addresses on TCP/UDP 53; this never opens other ports or internal ranges.
-        Domain filtering happens on the resolvers, not on the node.
-      required: [resolver_ipv4, resolver_ipv6]
+
+        Domain filtering happens on the designated resolvers. Nodes assigned a resolver document apply it
+        through node/dns (D-056).
+
+        '
+      required:
+      - resolver_ipv4
+      - resolver_ipv6
       additionalProperties: false
       properties:
         resolver_ipv4:
@@ -6249,6 +6593,16 @@ components:
           items:
             type: string
             format: ipv6
+        resolver_document:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/ResolverDocumentRef'
+          nullable: true
+          x-omitempty: false
+          x-omitzero: true
+          description: 'Absent or null means no DNS profile: apply only the designated resolvers. Otherwise
+            fetch the issued document over agent mTLS after verifying desired state (D-056).'
+
     UpdateIntent:
       type: object
       description: |
@@ -6318,14 +6672,37 @@ components:
       enum: [not_published, identity_invalid, provisioning_incomplete, policy_missing, policy_expired, lease_expired, clock_untrusted, safety_check_failed, meter_path_invalid, meter_storage_failed, outbox_full, disk_low, release_not_supported, update_in_progress, recovery_required]
     ObservationReport:
       type: object
-      description: Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at.
-      required: [report_id, node_id, node_incarnation_id, boot_id, observed_at, agent_version, current_release_id, last_good_release_id, applied_config_generation, applied_policy_refs, applied_binding_revision, provisioning_state, safety_status, data_health, member_forwarding_enabled, forwarding_block_reasons, lease, netbird, usage, update, checks, errors]
+      description: Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
+        the center stores its own received_at.
+      required:
+      - report_id
+      - node_id
+      - node_incarnation_id
+      - boot_id
+      - observed_at
+      - agent_version
+      - current_release_id
+      - last_good_release_id
+      - applied_config_generation
+      - applied_policy_refs
+      - applied_binding_revision
+      - provisioning_state
+      - safety_status
+      - data_health
+      - member_forwarding_enabled
+      - forwarding_block_reasons
+      - lease
+      - netbird
+      - usage
+      - update
+      - checks
+      - errors
       additionalProperties: false
       properties:
         report_id:
           type: string
           format: uuid
-          description: 'Idempotency key of the report.'
+          description: Idempotency key of the report.
         node_id:
           type: string
           format: uuid
@@ -6335,11 +6712,11 @@ components:
         boot_id:
           type: string
           format: uuid
-          description: 'Kernel boot ID.'
+          description: Kernel boot ID.
         observed_at:
           type: string
           format: date-time
-          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
         agent_version:
           $ref: '#/components/schemas/ComponentVersion'
         current_release_id:
@@ -6352,22 +6729,24 @@ components:
           nullable: true
         applied_config_generation:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
           nullable: true
         applied_policy_refs:
           type: object
           allOf:
-            - $ref: '#/components/schemas/PolicyRefs'
+          - $ref: '#/components/schemas/PolicyRefs'
           nullable: true
         applied_binding_revision:
           type: string
-          pattern: '^(0|[1-9][0-9]*)$'
+          pattern: ^(0|[1-9][0-9]*)$
           maxLength: 20
           x-go-type: decstr.U64
-          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
           nullable: true
         provisioning_state:
           $ref: '#/components/schemas/ProvisioningState'
@@ -6385,7 +6764,9 @@ components:
             $ref: '#/components/schemas/ForwardingBlockReason'
         lease:
           type: object
-          required: [lease_id, expires_at]
+          required:
+          - lease_id
+          - expires_at
           additionalProperties: false
           properties:
             lease_id:
@@ -6395,11 +6776,14 @@ components:
             expires_at:
               type: string
               format: date-time
-              pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+              pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
               nullable: true
         netbird:
           type: object
-          required: [peer_id, version, backend]
+          required:
+          - peer_id
+          - version
+          - backend
           additionalProperties: false
           properties:
             peer_id:
@@ -6412,13 +6796,21 @@ components:
               maxLength: 64
             backend:
               type: string
-              enum: [kernel, userspace, unknown]
-              description: Actual forwarding backend; unverified userspace paths never claim valid metering (§10.3).
+              enum:
+              - kernel
+              - userspace
+              - unknown
+              description: Actual forwarding backend; unverified userspace paths never claim valid metering
+                (§10.3).
         usage:
           $ref: '#/components/schemas/UsageOutboxStatus'
         update:
           type: object
-          required: [job_id, generation, state, stage]
+          required:
+          - job_id
+          - generation
+          - state
+          - stage
           additionalProperties: false
           properties:
             job_id:
@@ -6427,20 +6819,21 @@ components:
               nullable: true
             generation:
               type: string
-              pattern: '^(0|[1-9][0-9]*)$'
+              pattern: ^(0|[1-9][0-9]*)$
               maxLength: 20
               x-go-type: decstr.U64
-              x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
+              x-go-type-import:
+                path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
               nullable: true
             state:
               type: string
               allOf:
-                - $ref: '#/components/schemas/UpdateJobState'
+              - $ref: '#/components/schemas/UpdateJobState'
               nullable: true
             stage:
               type: string
               allOf:
-                - $ref: '#/components/schemas/UpdateStage'
+              - $ref: '#/components/schemas/UpdateStage'
               nullable: true
         checks:
           type: array
@@ -6452,6 +6845,17 @@ components:
           maxItems: 50
           items:
             $ref: '#/components/schemas/NodeError'
+        dns_policy_evidence:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/DnsPolicyEvidence'
+          nullable: true
+          x-omitempty: false
+          x-omitzero: true
+          description: Absent or null means no resolver-document evidence has been reported; never infer an
+            applied policy. Bind non-null evidence to the document actually applied, not the newest desired
+            state.
+
     UsageOutboxStatus:
       type: object
       description: Local usage stream status (§10.5, §10.6, §10.8). blocked_seq is the lowest sequence the node cannot get acknowledged.
@@ -7195,3 +7599,300 @@ components:
         duplicate:
           type: boolean
           description: True when the (provider, event_id) was already in the inbox.
+
+    ResolverDocumentRef:
+      type: object
+      description: Signed reference to immutable resolver document bytes (§12.3, §14.7, D-056). generation
+        is the policy generation that produced the document, not config_generation. content_sha256 hashes
+        the exact RFC 8785 bytes; size_bytes is their byte length. Fetch and verify both before apply; mismatch
+        fails dns_policy without partial apply.
+      required:
+      - document_id
+      - profile_revision_id
+      - generation
+      - content_sha256
+      - size_bytes
+      additionalProperties: false
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        profile_revision_id:
+          type: string
+          format: uuid
+        generation:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)$
+          maxLength: 20
+          x-go-type: decstr.U64
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+        content_sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 1048576
+    ResolverDocument:
+      type: object
+      additionalProperties: true
+      description: Opaque canonical resolver-document object produced by internal/dnspublish (§12.4, D-056).
+        Return the stored RFC 8785 bytes verbatim, without an envelope, JSON re-encoding or trailing newline;
+        bounded by the signed size_bytes (at most 1048576). The node validates document semantics before apply.
+      x-go-type: json.RawMessage
+    DnsFeedEvidence:
+      type: object
+      description: Applied feed configuration evidence, never query data (§12.3, SEC02). Field names match
+        node/dns.FeedEvidence.
+      required:
+      - feed_code
+      - content_sha256
+      - rule_count
+      additionalProperties: false
+      properties:
+        feed_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,63}$
+        content_sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        rule_count:
+          type: integer
+          minimum: 0
+          maximum: 500000
+    DnsPolicyEvidence:
+      type: object
+      description: Evidence bound to the issued resolver document and its policy generation (D-056). Only
+        applied with successful read-back may pass dns_policy. partial, failed and not_run never imply success.
+        applied_at is null when no successful apply time is known. Feeds describe applied content, not the
+        newest available content; feed_code values must be unique. Never include queries, member addresses
+        or raw feed bodies.
+      required:
+      - document_id
+      - content_sha256
+      - generation
+      - outcome
+      - applied_at
+      - feeds
+      - error_code
+      additionalProperties: false
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        content_sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        generation:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)$
+          maxLength: 20
+          x-go-type: decstr.U64
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+        outcome:
+          type: string
+          enum:
+          - applied
+          - partial
+          - failed
+          - not_run
+        applied_at:
+          type: string
+          format: date-time
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+          nullable: true
+        feeds:
+          type: array
+          maxItems: 32
+          items:
+            $ref: '#/components/schemas/DnsFeedEvidence'
+        error_code:
+          type: string
+          allOf:
+          - $ref: '#/components/schemas/ErrorCode'
+          nullable: true
+    EgressProbeTarget:
+      type: object
+      description: Exact synthetic-probe destination; does not authorize member forwarding (§8.1, §13.9).
+      required:
+      - address
+      - port
+      - protocol
+      additionalProperties: false
+      properties:
+        address:
+          type: string
+          oneOf:
+          - type: string
+            format: ipv4
+            pattern: ^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$
+          - type: string
+            format: ipv6
+            pattern: ^([0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){0,0}[0-9a-fA-F]{1,4})?|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){0,1}[0-9a-fA-F]{1,4})?|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){0,2}[0-9a-fA-F]{1,4})?|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){0,3}[0-9a-fA-F]{1,4})?|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){0,4}[0-9a-fA-F]{1,4})?|[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){0,5}[0-9a-fA-F]{1,4})?|::(([0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4})?|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){1,1})?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){1,2})?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){1,3})?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|[0-9a-fA-F]{1,4}::(([0-9a-fA-F]{1,4}:){1,4})?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|::(([0-9a-fA-F]{1,4}:){1,5})?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3})$
+          x-go-type: string
+          description: IPv4 or IPv6 literal only; no hostname, zone, CIDR, scheme or embedded port. Must be
+            a team-controlled Internet test endpoint approved by control (§13.9).
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        protocol:
+          type: string
+          enum:
+          - tcp
+
+    EgressProbe:
+      type: object
+      description: Signed probe configuration (§13.9, D-058). Omitted timeout_ms defaults to 2000. Control
+        and agent enforce the dedicated authenticated probe identity, exact destination exceptions and removal
+        on completion/timeout; this configuration never changes publication intent or widens fixed isolation.
+      required:
+      - targets
+      additionalProperties: false
+      properties:
+        targets:
+          type: array
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/EgressProbeTarget'
+          minItems: 1
+          uniqueItems: true
+        timeout_ms:
+          type: integer
+          minimum: 100
+          maximum: 10000
+          default: 2000
+    ThreatFeedStatus:
+      type: object
+      description: Read-only refresh status for the active threat_feed revision (§12.3, D-054, D-058). No
+        successful bootstrap means null last-good fields and age, never zero or infinity. Failures retain
+        last-good content; approved_content_sha256 is the immutable approved snapshot, not automatically the
+        applied feed hash. Last result describes the last completed attempt (never before completion). Error
+        code is a safe public ErrorCode mapping of an internal reason; message is redacted and bounded. Never
+        entries, credential-bearing URLs or raw bodies.
+      required:
+      - approved_content_sha256
+      - last_good_content_sha256
+      - last_good_rule_count
+      - last_good_at
+      - last_good_age_seconds
+      - last_attempt_at
+      - last_result
+      - consecutive_failures
+      - last_error_code
+      - last_error_message
+      - next_due_at
+      additionalProperties: false
+      properties:
+        approved_content_sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        last_good_content_sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          nullable: true
+        last_good_rule_count:
+          type: integer
+          minimum: 0
+          maximum: 500000
+          nullable: true
+        last_good_at:
+          type: string
+          format: date-time
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+          nullable: true
+        last_good_age_seconds:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)$
+          maxLength: 20
+          x-go-type: decstr.U64
+          x-go-type-import:
+            path: github.com/TED-H-com/Freedom-VPN/pkg/decstr
+          nullable: true
+        last_attempt_at:
+          type: string
+          format: date-time
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+          nullable: true
+        last_result:
+          type: string
+          enum:
+          - never
+          - success
+          - failed
+        consecutive_failures:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        last_error_code:
+          type: string
+          allOf:
+          - $ref: '#/components/schemas/ErrorCode'
+          nullable: true
+        last_error_message:
+          type: string
+          maxLength: 500
+          nullable: true
+        next_due_at:
+          type: string
+          format: date-time
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$
+          nullable: true
+    MemberGroup:
+      type: object
+      description: Immutable member group used by plan exit_group_ids and exit membership (§15.2, §15.3, D-057).
+        exit_count is the current number of attached exits, not a count of available exits.
+      required:
+      - group_id
+      - code
+      - name
+      - exit_count
+      properties:
+        group_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,63}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        exit_count:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+    MemberGroupCreate:
+      type: object
+      description: Create an immutable member group (D-057). Both code and name are unique. Renaming requires
+        creating a new group; no PATCH or DELETE in revision 5.
+      required:
+      - code
+      - name
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,63}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    MemberGroupList:
+      type: object
+      description: Cursor page of immutable member groups (D-057).
+      required:
+      - items
+      - next_cursor
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/MemberGroup'
+        next_cursor:
+          type: string
+          maxLength: 2048
+          nullable: true

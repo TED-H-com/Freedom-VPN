@@ -36,27 +36,22 @@ fi
 printf '%s\n' '{"stage":"enrolled"}' > /var/lib/vpn-node/e2e/status.json
 fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/watchdog.log 2>&1 &
 (
+    paused=0
     while true; do
         if [ -f /var/lib/vpn-node/e2e/pause-agent ]; then
-            sleep 1
-            continue
-        fi
-        fvpn-agent run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/agent.log 2>&1 &
-        pid=$!
-        while kill -0 "$pid" 2>/dev/null; do
-            if [ -f /var/lib/vpn-node/e2e/pause-agent ]; then
-                kill "$pid" 2>/dev/null || true
-                wait "$pid" 2>/dev/null || true
-                pid=""
-                break
+            if [ "$paused" -eq 0 ]; then
+                agent-service.sh stop
+                paused=1
             fi
-            sleep 1
-        done
-        if [ -n "${pid:-}" ]; then
-            wait "$pid" 2>/dev/null || true
-            printf '%s\n' '{"stage":"agent_exited"}' > /var/lib/vpn-node/e2e/agent.json
-            sleep 2
+        else
+            paused=0
+            selected=/usr/local
+            if [ -f /var/lib/vpn-node/e2e/agent-selected ]; then
+                selected=$(cat /var/lib/vpn-node/e2e/agent-selected)
+            fi
+            agent-service.sh start "$selected"
         fi
+        sleep 2
     done
 ) &
 (

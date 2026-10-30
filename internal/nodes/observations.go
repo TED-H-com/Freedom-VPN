@@ -113,6 +113,11 @@ func (s *Service) SubmitObservation(
 			return apierr.New(apierr.IncarnationMismatch, "node incarnation has been superseded by a newer incarnation")
 		}
 
+		var mappingFrozen bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM node_identity_endpoints WHERE incarnation_id=$1 AND mapping_frozen)`, authIncarnationID).Scan(&mappingFrozen); err != nil {
+			return err
+		}
+
 		// 2. Check deduplication by (node_id, incarnation_id, report_id).
 		var (
 			existingHash       []byte
@@ -230,6 +235,12 @@ func (s *Service) SubmitObservation(
 				provisioning = api.ProvisioningStateApplying
 			}
 		}
+		// D-055: an ambiguous management correlation is terminal for this
+		// incarnation. Heartbeats remain accepted but cannot clear its failure.
+		if mappingFrozen {
+			provisioning = api.ProvisioningStateFailed
+			effectiveSafety, effectiveForwarding = api.SafetyStatusFailed, false
+		}
 		// 4. Update node state. An older observed_at NEVER overrides newer observed state!
 		isNewerOrEqual := lastObservedAt == nil || !observedAt.Before(lastObservedAt.UTC())
 		if isNewerOrEqual {
@@ -247,7 +258,7 @@ func (s *Service) SubmitObservation(
 					current_release_id = coalesce($9, current_release_id),
 					last_good_release_id = coalesce($10, last_good_release_id),
 					latest_checks = $11::jsonb,
-					recent_errors = $12::jsonb,
+					recent_errors = CASE WHEN $13 THEN recent_errors ELSE $12::jsonb END,
 					resource_version = resource_version + 1
 				WHERE id = $1`
 			if _, err := tx.Exec(ctx, updateNode,
@@ -260,7 +271,7 @@ func (s *Service) SubmitObservation(
 				currentReleaseID,
 				lastGoodReleaseID,
 				checksArrayJSON,
-				errorsArrayJSON,
+				errorsArrayJSON, mappingFrozen,
 			); err != nil {
 				return err
 			}

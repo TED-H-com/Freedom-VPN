@@ -15,7 +15,9 @@ import (
 
 // specEndpoints is the endpoint table of §14.2 to §14.4, relative to /api/v1.
 var specEndpoints = []string{
-	// §14.2 Admin (23)
+	// §14.2 Admin (25, including D-057)
+	"GET /admin/groups",
+	"POST /admin/groups",
 	"GET /admin/nodes",
 	"POST /admin/enrollments",
 	"GET /admin/enrollments/{enrollment_id}",
@@ -48,10 +50,11 @@ var specEndpoints = []string{
 	"POST /member/checkout-sessions",
 	"POST /member/billing-portal-sessions",
 	"GET /member/operations/{operation_id}",
-	// §14.4 Agent and webhook (10, including D-015)
+	// §14.4 Agent and webhook (11, including D-015/D-056)
 	"POST /agent/enroll",
 	"POST /agent/bootstrap",
 	"POST /agent/certificates/renew",
+	"GET /agent/resolver-documents/{document_id}",
 	"GET /agent/desired-state",
 	"POST /agent/observations",
 	"POST /agent/usage-batches",
@@ -63,6 +66,7 @@ var specEndpoints = []string{
 
 // specStatuses holds the success statuses listed in §14.2 to §14.4.
 var specStatuses = map[string][]string{
+	"GET /admin/groups": {"200"}, "POST /admin/groups": {"201"}, "GET /agent/resolver-documents/{document_id}": {"200"},
 	"GET /admin/nodes": {"200"}, "POST /admin/enrollments": {"201"}, "GET /admin/enrollments/{enrollment_id}": {"200"},
 	"POST /admin/enrollments/{enrollment_id}/revoke": {"200"}, "GET /admin/nodes/{node_id}": {"200"},
 	"PATCH /admin/nodes/{node_id}": {"200", "202"}, "PUT /admin/nodes/{node_id}/publication": {"202"},
@@ -101,12 +105,12 @@ func operations(t *testing.T) []opInfo {
 	return ops
 }
 
-func TestAPI01_EndpointCountIs41(t *testing.T) {
+func TestAPI01_EndpointCountIs44(t *testing.T) {
 	ops := operations(t)
-	if len(ops) != 41 {
-		t.Fatalf("got %d operations, want 41 (§14.1, D-015)", len(ops))
+	if len(ops) != 44 {
+		t.Fatalf("got %d operations, want 44 (§14.1, D-015/D-056/D-057)", len(ops))
 	}
-	if len(specEndpoints) != 41 {
+	if len(specEndpoints) != 44 {
 		t.Fatalf("spec table has %d entries", len(specEndpoints))
 	}
 	var got []string
@@ -437,6 +441,9 @@ func TestMTR03_DecimalStringConvention(t *testing.T) {
 				t.Errorf("%s: decimal string must be type string, pattern %s, maxLength 20, x-go-type decstr.U64 with import", v.path, decPattern)
 			}
 		}
+		if v.path == "ResolverDocumentRef#/size_bytes" {
+			return // D-056 explicitly bounds this byte length to a 1 MiB JSON integer.
+		}
 		if v.name != "" && decName.MatchString(v.name) && !isDec && len(s.AllOf) == 0 {
 			t.Errorf("%s: field %q must be a decimal string", v.path, v.name)
 		}
@@ -554,7 +561,7 @@ func TestUPD04_EnumsMatchSpec(t *testing.T) {
 	}
 }
 
-// TestAPI01_OptionalNullableFields permits only the D-048 evidence exception.
+// TestAPI01_OptionalNullableFields permits only D-048/D-056/D-058 exceptions.
 // Generated presence types distinguish missing from explicit null in Go.
 func TestAPI01_OptionalNullableFields(t *testing.T) {
 	walkSchemas(t, func(v schemaVisit) {
@@ -564,7 +571,11 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 		}
 		for name, p := range v.s.Properties {
 			if p.Value != nil && p.Value.Nullable && !req[name] {
-				if v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs") {
+				if (v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs")) ||
+					(v.path == "DnsServiceConfig#" && name == "resolver_document") ||
+					(v.path == "ObservationReport#" && name == "dns_policy_evidence") ||
+					(v.path == "DesiredState#" && name == "egress_probe") ||
+					(v.path == "PolicyDefinition#" && name == "threat_feed_status") {
 					continue
 				}
 				t.Errorf("%s/%s: nullable members must be required", v.path, name)

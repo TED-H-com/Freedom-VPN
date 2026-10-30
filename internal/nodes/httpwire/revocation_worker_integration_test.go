@@ -104,7 +104,7 @@ func TestAT06_AT07_RevocationWorkerWithdrawalRetryAndDeadLetter(t *testing.T) {
 				var reads atomic.Int32
 				unavailable.Store(true)
 				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.Method != "GET" || r.URL.Path != "/api/setup-keys" {
+					if r.Method != "GET" || (r.URL.Path != "/api/setup-keys" && r.URL.Path != "/api/groups") {
 						t.Errorf("unexpected identity call %s %s", r.Method, r.URL.Path)
 						w.WriteHeader(500)
 						return
@@ -188,7 +188,7 @@ func TestAT06_RevocationIdentityEvidenceRequiresCurrentClaim(t *testing.T) {
 	_, enrolled, _ := f.enroll(f.create(nil))
 	op := f.revocationCommand(enrolled.NodeId, false)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" || r.URL.Path != "/api/setup-keys" {
+		if r.Method != "GET" || (r.URL.Path != "/api/setup-keys" && r.URL.Path != "/api/groups") {
 			t.Errorf("unexpected identity call %s %s", r.Method, r.URL.Path)
 			w.WriteHeader(500)
 			return

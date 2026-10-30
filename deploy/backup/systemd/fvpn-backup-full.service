@@ -1,0 +1,20 @@
+# /etc/systemd/system/fvpn-backup-full.service
+# Weekly physical full base backup of central PostgreSQL 17 via pgBackRest (§15.4, §17.2).
+[Unit]
+Description=Freedom VPN Central PostgreSQL Full Base Backup (pgBackRest)
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+Group=postgres
+EnvironmentFile=-/etc/fvpn/secrets/pgbackrest-repo.env
+ExecStart=/usr/local/lib/fvpn/backup/backup.sh --stanza fvpn --db-user postgres --db-name fvpn full
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/log/pgbackrest /var/spool/pgbackrest /var/lib/pgbackrest
+ReadOnlyPaths=/etc/pgbackrest /var/lib/postgresql

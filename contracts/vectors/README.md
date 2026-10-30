@@ -25,6 +25,7 @@ by hand.
 | `desired-state-revocations-signing.json` | signed explicit revoked releases, using the existing desired-state test key | §13.4, D-034 |
 | `update-result-policy-generation-hash.json` | applied generation above 2^53 and node-reported ARTIFACT_INVALID | §13.10.3 |
 | `release-trust-update-signing.json` | old release root authorizes public release trust update | §13.4, §17.2 |
+| `desired-state-resolver-probe-signing.json` | signed resolver reference and IPv4/IPv6 TCP probe; document bytes live in `examples/valid/ResolverDocument.json` | §12.3, §13.9, §14.7, D-056, D-058 |
 | `test-keys.json` | key labels, key IDs, purposes, seeds, public keys, validity window and `verify_at` | §16.2 |
 
 ## Signing vector fields
@@ -75,3 +76,12 @@ for (const c of vectors.cases) {
   expect(canonicalize(parseStrictJSON(input))).toBe(c.canonical);
 }
 ```
+
+## Resolver reference (revision 5)
+
+Verify the desired-state signature first, then fetch the referenced document
+using node mTLS. Hash the **exact received bytes** (including no extra newline),
+compare their length and digest to signed `size_bytes`/`content_sha256`, and only
+then parse/apply. Go and TypeScript check the new vector against the committed
+canonical document; changing the reference or probe target invalidates its
+signature. The original desired-state vectors remain byte-for-byte unchanged.

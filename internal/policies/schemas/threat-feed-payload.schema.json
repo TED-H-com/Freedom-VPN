@@ -80,7 +80,9 @@
     "update_interval_seconds": {
       "maximum": 604800,
       "minimum": 300,
-      "type": "integer"
+      "type": "integer",
+      "default": 21600,
+      "description": "Per-source refresh interval, default 21600; effective cadence is max(product cadence, this value) (D-054, D-058)."
     },
     "valid_from": {
       "format": "date-time",
@@ -106,8 +108,7 @@
     "content_sha256",
     "max_size_bytes",
     "valid_from",
-    "valid_until",
-    "update_interval_seconds"
+    "valid_until"
   ],
   "title": "ThreatFeedPayload",
   "type": "object"

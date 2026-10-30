@@ -252,6 +252,34 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["examples/invalid/DesiredStateEnvelope.revocations-tampered.json"] = prettyDoc(envJSON(revocationTamper))
 	reasons["DesiredStateEnvelope.revocations-tampered.json"] = Reason{Kind: "signature", Code: envelope.CodeSignatureInvalid, Note: "Removing a signed revocation invalidates the signature."}
 
+	// D-056/D-058 bind the separately fetched resolver bytes and exact probe targets.
+	resolver := mustCanon(`{"schema_version":1,"kind":"resolver_document","profile_code":"standard","block_response":"nxdomain","blocked_ttl_seconds":60,"safe_search":false,"privacy":{"querylog_enabled":false,"querylog_file_enabled":false,"statistics_enabled":false},"upstreams":["192.0.2.53"],"bootstrap_dns":[],"fallback_dns":[],"rules":[],"feeds":[]}`)
+	resolverHash, err := canonjson.HashHex(resolver)
+	if err != nil {
+		return nil, err
+	}
+	out["examples/valid/ResolverDocument.json"] = resolver // Exact bytes: no newline.
+	ref := fmt.Sprintf(`{"document_id":"01900000-0000-7000-8000-000000000056","profile_revision_id":"01900000-0000-7000-8000-000000000012","generation":"9007199254740993","content_sha256":%q,"size_bytes":%d}`, resolverHash, len(resolver))
+	dsDNS := setMember(ds, []string{"dns", "resolver_document"}, ref)
+	dsDNS = setMember(dsDNS, []string{"egress_probe"}, `{"targets":[{"address":"192.0.2.80","port":443,"protocol":"tcp"},{"address":"2001:db8::80","port":443,"protocol":"tcp"}],"timeout_ms":2000}`)
+	dnsEnv := sign(dsDNS, keys["desired-state"])
+	out["vectors/desired-state-resolver-probe-signing.json"] = signingVector("Signed resolver reference and egress probe (§12.3, §13.9, §14.7, D-056/D-058).", "desired-state", keys["desired-state"], dsDNS, dnsEnv)
+	out["examples/valid/DesiredStateEnvelope.resolver-probe.json"] = prettyDoc(envJSON(dnsEnv))
+	nullDNS := setMember(setMember(ds, []string{"dns", "resolver_document"}, `null`), []string{"egress_probe"}, `null`)
+	out["examples/valid/DesiredStateEnvelope.no-profile-probe.json"] = prettyDoc(envJSON(sign(nullDNS, keys["desired-state"])))
+	for _, tc := range []struct {
+		name  string
+		path  []string
+		value string
+	}{
+		{"resolver-digest", []string{"dns", "resolver_document", "content_sha256"}, `"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`},
+		{"probe-target", []string{"egress_probe", "targets"}, `[{"address":"192.0.2.81","port":443,"protocol":"tcp"}]`},
+	} {
+		name := "DesiredStateEnvelope." + tc.name + "-tampered.json"
+		out["examples/invalid/"+name] = prettyDoc(envJSON(envelope.Envelope{Signed: setMember(dsDNS, tc.path, tc.value), Signatures: dnsEnv.Signatures}))
+		reasons[name] = Reason{Kind: "signature", Code: envelope.CodeSignatureInvalid, Note: "Changing a signed resolver reference or probe target must invalidate the envelope signature."}
+	}
+
 	// ---- serving lease
 	lease := mustCanon(servingLease)
 	leaseEnv := sign(lease, keys["lease"])

@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -68,7 +69,8 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 	dir := t.TempDir()
 	// The only remote APIs reachable by these processes are loopback test servers.
 	var mu sync.Mutex
-	var group, key map[string]any
+	var key map[string]any
+	groups := map[string]map[string]any{}
 	creates := 0
 	const setupSecret = "TEST ONLY binary setup secret"
 	nb := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -79,17 +81,20 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 		case "GET /api/peers", "GET /api/users", "GET /api/routes", "GET /api/policies", "GET /api/dns/nameservers":
 			io.WriteString(w, "[]")
 		case "GET /api/groups":
-			if group == nil {
-				io.WriteString(w, "[]")
-			} else {
-				json.NewEncoder(w).Encode([]any{group})
+			list := []any{}
+			for _, group := range groups {
+				list = append(list, group)
 			}
+			json.NewEncoder(w).Encode(list)
 		case "POST /api/groups":
+			var group map[string]any
 			json.NewDecoder(r.Body).Decode(&group)
-			group["id"] = "test-group"
+			id := fmt.Sprintf("test-group-%d", len(groups)+1)
+			group["id"] = id
+			groups[id] = group
 			json.NewEncoder(w).Encode(group)
-		case "GET /api/groups/test-group":
-			json.NewEncoder(w).Encode(group)
+		case "GET /api/groups/test-group-1", "GET /api/groups/test-group-2":
+			json.NewEncoder(w).Encode(groups[strings.TrimPrefix(r.URL.Path, "/api/groups/")])
 		case "GET /api/setup-keys":
 			if key == nil {
 				io.WriteString(w, "[]")
@@ -99,6 +104,7 @@ func TestAPI01_NodeBinariesUseCompositionAndCleanShutdown(t *testing.T) {
 		case "POST /api/setup-keys":
 			creates++
 			json.NewDecoder(r.Body).Decode(&key)
+			key["used_times"], key["revoked"], key["state"] = 0, false, "valid"
 			key["id"] = "test-key"
 			key["key"] = setupSecret
 			key["expires"] = time.Now().Add(24 * time.Hour).UTC().Format(time.RFC3339)
