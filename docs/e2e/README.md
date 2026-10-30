@@ -9,7 +9,7 @@ TEST ONLY.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `FVPN_E2E_PREFIX` | `e2e` | Every container, network, volume, and image is `fvpn-<prefix>-*`. |
+| `FVPN_E2E_PREFIX` | `e2e` | Runtime containers, networks and volumes use `fvpn-<prefix>-*`. |
 | `FVPN_E2E_PORT_BASE` | `18000` | Each loopback port is this base plus a fixed offset. |
 | `FVPN_E2E_STATE` | `.agent/e2e-state-<prefix>` | Git-ignored secrets and rendered config for that prefix. |
 
@@ -28,9 +28,12 @@ It does not match another prefix.
 | `24000`, `30000`, `36000`, `42000`, `48000` | Reserved for the W4 acceptance tasks. Do not start, stop, or reset those prefixes from this task. |
 | `54000`, `60000` | Legal and currently unassigned. Do not start them unless a task owns that slot. |
 
-Image names stay `fvpn-<prefix>-*` (`fvpn-e2e-postgres:17`, and the same shape
-for the other services). A shared `fvpn-devstack-*` tag would collide when
-two prefixes are up, so the prefix stays in the image name.
+Images use neutral `fvpn-devstack-*` tags, including
+`fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
+Bring-up pins locally built services to their immutable image IDs before
+starting Compose; a concurrent worktree moving a shared `:local` tag cannot
+change that run's selected image. Auxiliary update nodes use the running
+node's image ID. Teardown retains the shared images.
 
 ## Loopback ports
 
@@ -156,6 +159,8 @@ Names inside each lab stay `*.example.invalid`. The control port is
 | `release-register` | `fvpn-release` package, register, verify | §13.3, §13.4 |
 | `update-good`, `update-bad` | batch, `fvpn-updater run`, tampered artifact | §13, §19 AT23, AT25, AT27 |
 | `lease-expiry` | stop control and read the forward chain again | §5, §19 AT29 |
+| `threat-feed-central` | approved bootstrap, wrong-pin rejection, audit, worker metrics, resolver document | §12.3, §12.5, §19 AT22 groundwork |
+| `threat-feed-node` | explicit node-delivery gap (D-056) | §12.5, §19 AT22 |
 | `revoke` | `POST /admin/nodes/{id}/revoke` | §5, §19 AT13 |
 
 AT07 (reinstall of an existing node) is not executed. A `pass` record is only
@@ -168,7 +173,7 @@ member total matches the uploaded bytes.
 Each scenario writes `docs/e2e/runs/<UTC date>/<id>.json` and a short `.md`
 summary. Every record in one run carries the same `run_id` and `source_commit`;
 the timestamp `at` is the scenario's write time. Replace a dated set only after
-all thirteen scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
+all fifteen scenarios finish. Status is `pass`, `blocked`, or `fail`. `blocked` means the run
 reached a gap and recorded the response; it is not a pass. Observations are
 names and short details. Tokens, setup keys, passwords, DSNs, and home paths
 are redacted. Raw portal subjects and NetBird user ids are also redacted;
@@ -194,93 +199,116 @@ rows do not prove acceptance of publication, device admission, or an updater:
   the succeeded update job. Those fields exercise portal rendering, including
   policy evidence; they are not a result submitted by a running updater.
 
+## Release and feed inputs
+
+Boot `0.1.0`, candidate `1.0.1`, and tamper target `1.0.2` each contain real
+agent, watchdog and updater binaries built from the recorded source commit
+for linux/amd64 and linux/arm64, plus immutable version/source metadata.
+Distinct artifact digests prevent the tamper target from reusing the good
+candidate’s verified download cache. Each manifest is signed, registered and
+verified. `release-register` records the SHA-256 of both each canonical manifest
+envelope (the registered digest) and its `signed` object. Product version and runtime `agent_release` match; the boot
+release ID and both candidates are in the serving allowlist. `update-bad`
+flips one byte in the uploaded real archive after verification, preserving
+its length.
+
+The node's lab service manager stops the boot agent and starts
+`<installed-release>/bin/fvpn-agent` with that release's identity/config. A
+repeated start is idempotent, as D-053 starts the candidate again after writing
+its challenge. The product agent alone may write `health-attest.json`; the
+harness never seeds health answers. A serving allowlist entry is insufficient
+to invoke the updater: the harness waits for `signed.update.release_id`.
+
+Prepare creates a deterministic hosts feed with ten unique synthetic entries,
+mixed case and a duplicate, and computes its `content_sha256`. The lab TLS
+origin serves it inside the isolated network. The scenario creates and
+activates a pinned `threat_feed`, then a referencing `dns_profile`, through the
+policy API. It polls the worker-owned content, refresh state, audit and
+resolver publication rows, and checks the worker's two feed metrics. A second
+revision with a wrong pin must fail bootstrap with `content_mismatch` and a
+`dns.feed.refresh_failed` audit. Last-good is per revision: the new revision
+stays null, while the prior approved content and resolver generation remain.
+The document digest and normalized embedded rules are checked without
+recording DNS queries. On-node feed delivery remains separately blocked on
+D-056 (contracts revision 5 and node application); the central result does not
+claim full AT22. No feed is fetched from the public Internet.
+
 ## Known limits
 
-- arm64 is packaged and cross-compiled. This host does not boot an arm64 node.
-- There is one agent `control_url`. Enrollment uses the public listener and
-  the running agent uses the mTLS listener, via two config files.
-- The release fetcher rejects RFC1918, loopback, CGNAT, and documentation
-  ranges. Each stack's origin is `192.0.<3+slot>.10` on a bridge with
-  masquerade off. There is no central test allowance for the origin URL.
-- Activation of `release_support` does not by itself fill
-  `approved_release_ids`. The run writes both allowlist arrays in SQL so a
-  batch is not rejected as `RELEASE_NOT_APPROVED`, and it does not bump
-  `generation`, so `expected_generation` still matches the API.
-- Before enrollment the acceptance runner packages the tree-built agent,
-  watchdog, and updater for amd64 and arm64 as a TEST ONLY boot release
-  (`0.1.0`). It registers and verifies that release and both update fixtures,
-  sets the boot UUID in the node configs, and includes all three IDs in the
-  serving allowlist. `desired-state` records whether the boot ID is supported.
-  Previously the non-empty update allowlist excluded the node's unset release
-  ID, which correctly caused `release_supported=failed`. The `1.0.1` and
-  `1.0.2` update archives remain marker fixtures for the updater exercise.
-- Stripe's API host is fixed in the client. The lab publishes it as the
-  Docker alias `api.stripe.com` with a certificate for that name. The lab
-  seeds one plan whose provider is `stripe` and whose price id is `e2e-price`.
-- The lab seeds one plan revision that includes an exit group and passes that
-  `plan_revision_id` on the admin grant. The member container joins with
-  `netbird up` and no setup key. The portal session and the device flow both
-  sign in as `e2e-member` at the embedded issuer, and the harness unescapes
-  the HTML form action so the password POST keeps the `state` query. It does
-  not insert `member_devices`, `device_bindings`, or `netbird_user_bindings`.
-  An empty `netbird_user_bindings` table is recorded as `writer not yet merged`
-  while that writer is absent. The 2026-10-30 run recorded grant 202, checkout
-  201, device path `/oauth2/device`, login submitted, stage `netbird_up`, and
-  one peer of two with a NetBird user. `GET /api/v1/member/devices` was 200
-  with zero devices. `same_subject=true` confirms that the portal subject and
-  NetBird identity match before redaction. Stored row counts for this member
-  were `netbird_user_bindings=0`, `member_devices=0`, and `device_bindings=0`.
-  This is the missing production mapping writer, not an issuer mismatch.
-  No binding was projected and no flow was counted, so AT12 is not claimed.
-- After enroll the run calls `PUT /admin/nodes/{id}/publication` with intent
-  `published` and `If-Match`. The 2026-10-30 call returned 422
-  `NODE_NOT_SERVICEABLE` before an operation existed, with only
-  `provisioning_state=applying (want ready)` in `failed_checks`. The accepted
-  observation now reports `ready`, `safety_status=passed`, `data_health=healthy`,
-  `tunnel_probe=passed`, and applied generation `1`. The stored node still has
-  `provisioning_state=applying`, although desired and applied are both `1`.
-  Its incarnation peer id and the report's NetBird peer id are null, and there
-  are zero `node.peer.observe` events: the HTTP observer only enqueues that
-  worker job for a non-null peer id. The worker also requires that id before
-  its ready transition. This is the central wire-nodes blocker; the agent
-  baseline fix from PR #75 is visible. `publication_observed` stays absent,
-  so `agent_policy`, `netbird_route_readback`, and `data_path_probe` were not
-  reached. `publish` includes the stored row snapshot without seeding a fix.
-- `GET /api/v1/member/usage` is served. A usage batch is sent only when a
-  desired-state `device_bindings` row matches an authorized device and covers
-  the interval. The 2026-10-30 run did not send a batch. The member total
-  stayed 0, so AT14 and AT15 are not claimed.
-- A member accept rule is an `fvmb0` accept on the `inet fvpn` forward chain.
-  NetBird `fvnb0` accepts in that chain do not count, and neither does
-  `policy accept` on another chain. The 2026-10-30 forward chain stayed
-  `policy drop`, generation 0, with the baseline marker and zero member
-  accepts, so AT10 and AT29 are not claimed.
-- The 2026-10-30 enroll record shows the node signal log `Connected` after
-  join. An earlier lab run recorded a relay WebSocket 404 and one management
-  `RST_STREAM`; this run's evidence does not repeat that measurement.
-- Stock updater `NodeChecks` fail closed. While the node was not serving, the
-  2026-10-30 good-release journal `health_json` was
-  `{"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}`.
-  That update ended `recovery_required` with `ROLLBACK_FAILED`. The bad
-  release was rejected with `HASH_MISMATCH: content changed during resume`;
-  its record passes only the tampered-byte rejection observation. It has no
-  journal health row and proves no successful rollback. `locally_succeeded`
-  was not observed; full AT23, AT25, and AT27 completion is not claimed.
-  The harness waits for the release in `signed.update.release_id` before
-  invoking the updater; presence in `serving_release_ids` alone is insufficient.
-- The meter runs inside `fvpn-agent`. There is no separate meter or
-  time-anchor binary. `host_reserve_bps` is set in the generated agent file
-  because the binary has no default (D-034).
-- `docs/e2e/runs/<UTC date>/` is the latest run for that date. A later run on
-  the same UTC date replaces those files. The acceptance table for this
-  follow-up is `docs/e2e/runs/2026-10-30/`. `docs/e2e/runs/2026-10-29/` remains
-  the follow-up 2 run, including `parallel-stacks.md`. The first recorded run
-  of 2026-10-29 is the copy in `acc17fb`. A forward chain that stays on the
-  baseline is not an AT10 or AT29 pass.
+- arm64 binaries are built and packaged from the same tree. This host executes
+  only amd64; AT07 reinstall and existing-flow teardown are not measured.
+- The agent uses the public listener for enrollment and the mTLS listener when
+  running, through two config files. The meter is inside `fvpn-agent`;
+  `host_reserve_bps` is a required TEST ONLY value (D-034).
+- Artifact and feed fetchers reject private, loopback, overlay and documentation
+  addresses. The origin uses `192.0.<3+slot>.10` on an isolated bridge without
+  masquerading; no product SSRF allowance or public traffic is introduced.
+- The lab seeds catalogue inputs: a plan revision and exit group, a fake Stripe
+  price, and the release-support allowlist. Both approved and supported arrays
+  contain the registered boot and candidate IDs. D-050 remains binding: the
+  harness does not write member identity/device projections, node readiness,
+  publication, feed state, or resolver generation rows.
+- Production D-052 identity mapping and D-055 node peer discovery are now in
+  the tested main tree. The lab uses their writers and reports their observed
+  rows; it no longer treats those implementations as absent. A matching
+  subject alone is still insufficient evidence of device authorization.
+- Publication must complete its operation, including NetBird route read-back.
+  `ready` and a 202 response alone do not prove publication. See `publish` for
+  the exact stored node/observation values and each operation step. An empty
+  `exit_groups` input prevents the production adapter from publishing a paid
+  route; the missing admin group/exit attachment path is D-057 (contracts
+  revision 5, then central exit wiring). The lab records that count.
+- Member forwarding counts only `fvmb0` accepts in the `inet fvpn` forward
+  chain. An `fvnb0` accept or an unrelated chain does not count. Exact usage
+  acceptance needs a projected desired-state binding covering the uploaded
+  interval. Control-loss acceptance needs active forwarding before the stop.
+- D-053's updater consumer and agent producer are both included. Candidate
+  checks must pass in the real runtime; a missing/failed answer remains
+  blocked and never becomes a synthetic success. No successful rollback is
+  claimed without a restorable last-good release and its health evidence.
+- Feed central publication is tested separately from node delivery. The latter
+  remains blocked on D-056, owned by contracts revision 5 and the node delivery
+  implementation. The fixture's 300-second source cadence and 60-second
+  blocked TTL are TEST ONLY settings, not new production defaults.
+- The separate portal driver retains the four fixture deviations listed above.
+  Those rows are not used by this acceptance runner and cannot clear its gates.
+- Dated evidence is replaced as a complete set. The 2026-10-29 directory remains
+  the earlier follow-up, including its parallel-stack proof; 2026-10-30 holds
+  the latest complete run. Records with `blocked` keep the acceptance command
+  non-zero and identify the responsible product area.
 
-The final 2026-10-30 run is `6bf270e4-abb1-43ff-93eb-18d282fc7c2a`, from
-source commit `5477de091f449047193fdc9114cfca4ced5b36e6`. All thirteen scenarios
-completed: seven pass and six blocked, with no scenario labeled fail.
-`TestE2E_Acceptance` took 197.36 seconds and exited 1 (`make` exited 2),
-preserving the non-pass gate. These records replace the earlier attempts on
-that date; they are not a combination of runs.
+## Latest complete run — 2026-10-30
+
+Run `5852f09a-30e8-45bc-8983-b5f212e33640`, source `5eb716e1a36ced17b8013646c9282c92746c81da` (main through PR #84):
+all fifteen scenarios completed in 419.47 seconds, with **9 pass, 6 blocked,
+0 fail**. Go test exited 1 and `make e2e-test` exited 2 because blocked records
+keep the acceptance gate non-zero. Every dated record belongs to this run.
+
+- The stored node now reports `ready`, `passed`, `healthy`, desired/applied
+  generation `1`, and a peer bound through production discovery (D-055).
+  Publication advances from the prior HTTP 422 gate to HTTP 202. Its
+  `agent_policy` and `data_path_probe` steps succeed, but
+  `netbird_route_readback` fails `DEPENDENCY_UNAVAILABLE`; the operation stays
+  `running` and `publication_observed=error`. The stored `exit_group_count=0`
+  identifies the D-057 input gap, owned by contracts revision 5 and central
+  exit wiring (`w3-wire-nodes`).
+- Member identity/device/binding row counts move from zero to one each.
+  `GET /member/devices` returns 200 with one authorized device and
+  `same_subject=true`. There is still no desired-state binding for this exit,
+  no counted flow, and no usage batch. Publication/group inputs block the
+  member-traffic, forwarding, usage and lease-expiry acceptance claims.
+- `update-good` runs the installed `1.0.1` agent, answers the D-053 challenge
+  with NetBird `0.82.0`, passes all five health checks and reaches
+  `locally_succeeded`. `update-bad` rejects the distinct, single-byte-tampered
+  archive with `HASH_MISMATCH`; it never runs that candidate or records success.
+  Rollback and physical arm64 execution remain unclaimed. SBOM, notice and
+  source-download documents are TEST ONLY placeholders, not production release
+  compliance evidence.
+- `threat-feed-central` passes bootstrap, normalized resolver publication and
+  wrong-pin failure with retained prior content. `threat-feed-node` remains
+  blocked on D-056, owned by contracts revision 5 and node delivery/application
+  (`w2-agent-core`). No Internet feed or seeded projector row is involved.
+
+`e2e-lint`, root `go-lint`, `go vet -tags e2e ./tests/...`, and the requested
+unit tests all exit 0. The lab is torn down after this run; shared neutral
+build-cache images remain for other harnesses.

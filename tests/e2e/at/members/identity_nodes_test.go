@@ -18,6 +18,8 @@ import (
 // This is the documented devstack fixture seam, not a device/identity bypass.
 func (l *live) seedPlan() {
 	l.plan, l.planRev, l.groupA, l.groupB = uuid.New(), uuid.New(), uuid.New(), uuid.New()
+	planB := uuid.New()
+	l.planRevB = uuid.New()
 	tx, err := l.pool.Begin(l.ctx)
 	if err != nil {
 		l.t.Fatal("plan transaction")
@@ -31,6 +33,9 @@ func (l *live) seedPlan() {
 		{`INSERT INTO plans(id,code) VALUES($1,$2)`, []any{l.plan, "at-plan-" + l.run}},
 		{`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,provider,provider_price_ref,schema_version,payload) VALUES($1,$2,1,3,$3,'stripe','e2e-price',1,'{"display_name":{"zh-TW":"TEST ONLY"}}')`, []any{l.planRev, l.plan, []uuid.UUID{l.groupA}}},
 		{`UPDATE plans SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, []any{l.plan, l.planRev}},
+		{`INSERT INTO plans(id,code) VALUES($1,$2)`, []any{planB, "at-plan-B-" + l.run}},
+		{`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,provider,provider_price_ref,schema_version,payload) VALUES($1,$2,1,3,$3,'stripe','e2e-price',1,'{"display_name":{"zh-TW":"TEST ONLY B"}}')`, []any{l.planRevB, planB, []uuid.UUID{l.groupB}}},
+		{`UPDATE plans SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, []any{planB, l.planRevB}},
 	} {
 		if _, err = tx.Exec(l.ctx, q.sql, q.args...); err != nil {
 			l.t.Fatal("TEST ONLY plan fixture rejected")
@@ -41,7 +46,11 @@ func (l *live) seedPlan() {
 	}
 }
 func (l *live) grant(b *browser, until time.Time) response {
-	return l.api(l.admin, "POST", "/api/v1/admin/members/"+b.member+"/grants", api.GrantCreateRequest{PlanRevisionId: &l.planRev, Source: api.GrantSourceAdminGrant, Reason: "TEST ONLY acceptance finite grant", ValidUntil: until}, commandHeaders())
+	rev := l.planRev
+	if b == l.b {
+		rev = l.planRevB
+	}
+	return l.api(l.admin, "POST", "/api/v1/admin/members/"+b.member+"/grants", api.GrantCreateRequest{PlanRevisionId: &rev, Source: api.GrantSourceAdminGrant, Reason: "TEST ONLY acceptance finite grant", ValidUntil: until}, commandHeaders())
 }
 func (l *live) patchMember(b *browser, body any) response {
 	path := "/api/v1/admin/members/" + b.member
@@ -116,16 +125,18 @@ func (l *live) enrollment(r *record) {
 }
 func (l *live) identity(r *record) {
 	again := l.login("AT-member-A-"+l.run, "member")
-	r.check("same-client stable identity", "same member UUID across browser sessions", fmt.Sprintf("same_member=%t; distinct_members=%t", again.member == l.a.member, l.a.member != l.b.member), "IdP assume; /auth/login?role=member; GET /auth/session", again.member == l.a.member && l.a.member != l.b.member)
+	r.check("same-client stable identity", "same member UUID across browser sessions", fmt.Sprintf("same_member=%t; distinct_members=%t", again.member == l.a.member, l.a.member != l.b.member), "shared Dex password form; /auth/login?role=member; GET /auth/session", again.member == l.a.member && l.a.member != l.b.member)
 	g := l.grant(l.a, time.Now().UTC().Add(time.Hour))
 	r.check("finite entitlement command", "202 accepted, not applied", detail(g), "POST /admin/members/{A}/grants", g.status == 202)
 	me := l.api(l.a, "GET", "/api/v1/member/me", nil, nil)
 	r.check("member self read", "200", detail(me), "GET /member/me", me.status == 200)
-	// Probe the actual second-client surface, not just source configuration.
-	other := l.request(nil, "GET", "https://idp.example.invalid/authorize?client_id=netbird-native&redirect_uri=https%3A%2F%2Fnetbird.example.invalid%2Fcallback&response_type=code&scope=openid&state=acceptance", nil, nil)
-	r.check("second OAuth client precondition", "record actual response", detail(other), "GET test IdP /authorize with native client_id", other.status != 0)
-	if other.status != 302 {
-		r.block("Test IdP probe is not the portal client (" + detail(other) + "). Portal and CLI share the embedded issuer; this response does not prove those two static clients.")
+	l.nativePeer = l.native(r, l.a, "member")
+	id := l.awaitDevice(l.nativePeer)
+	mapped := l.count(`SELECT count(*) FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id WHERE n.member_id=$1 AND n.external_user_id=i.subject AND i.subject=$2 AND i.issuer='https://netbird.example.invalid/oauth2' AND n.mapping_proof='shared_issuer_public_subject:https://netbird.example.invalid/oauth2'`, l.a.member, l.a.cred.ID)
+	bindings := l.count(`SELECT count(*) FROM device_bindings WHERE member_id=$1 AND valid_from<=clock_timestamp() AND valid_until>clock_timestamp()`, l.a.member)
+	r.check("cross-client production identity proof", "dashboard/CLI share public subject; verified mapping and finite device binding", fmt.Sprintf("verified_mappings=%d; device_projected=%t; live_bindings=%d", mapped, id != uuid.Nil, bindings), "shared idplogin helper; native CLI device flow; read product D-052 mapping and D-050 device projections", mapped == 1 && id != uuid.Nil && bindings == 1)
+	if id == uuid.Nil {
+		r.block("Native CLI joined but devices.discover did not produce a member device; identity and entitlement projection must converge before traffic tests.")
 	}
 	logout := l.api(again, "POST", "/auth/logout", nil, nil)
 	session := l.api(again, "GET", "/auth/session", nil, nil)
@@ -136,7 +147,7 @@ func (l *live) identity(r *record) {
 	r.check("browser sign-out", "session unauthenticated", fmt.Sprintf("logout=%d; authenticated=%t", logout.status, s.Authenticated), "POST /auth/logout; GET /auth/session", logout.status >= 200 && logout.status < 400 && !s.Authenticated)
 	before := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1`, l.a.member)
 	r.check("native device precondition", "observe real member device count", fmt.Sprintf("member_A_devices=%d", before), "SELECT count(*) FROM member_devices WHERE member_id=A", true)
-	r.block("No admitted native member device exists in this run; selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake have no successful forwarding baseline. Platform script: OPERATORS.md.")
+	r.block("Selected-exit forwarding, sign-out data-plane effects, network move and sleep/wake require an applied exit and successful forwarding baseline, checked separately in AT08. Platform script: OPERATORS.md.")
 }
 func (l *live) nodeMutation(method, suffix string, body any) response {
 	path := "/api/v1/admin/nodes/" + l.node.String()
@@ -205,11 +216,11 @@ func (l *live) publication(r *record) {
 		return intent == "disabled"
 	})
 	r.check("disabled persists", "disabled intent after reconnect/restart", intent, "SELECT publication_intent after node restart", persists)
-	r.block("Group A/B gateway isolation and applied disable cannot be certified without admitted user peers and a previously serving exit. Restart above checks persisted administrative intent only.")
+	r.block("Group A/B gateway isolation and applied disable cannot be certified without a previously serving exit (native user admission is recorded in AT01/AT02). Restart above checks persisted administrative intent only.")
 }
 func (l *live) exits(r *record) {
 	n := l.count(`SELECT count(*) FROM nodes WHERE current_incarnation_id IS NOT NULL`)
 	out, err := l.inside("member", "netbird", "routes", "list")
 	r.check("exit inventory", "record active node count and client routes", fmt.Sprintf("enrolled_nodes=%d; routes_command_ok=%t; route_output_bytes=%d", n, err == nil, len(out)), "SELECT enrolled nodes; docker exec member netbird routes list", n >= 1)
-	r.block(fmt.Sprintf("Observed %d enrolled node, no admitted member binding and no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic.", n))
+	r.block(fmt.Sprintf("Observed %d enrolled node, no two-exit forwarding baseline. Manual switch/skip_auto_apply, exit death, relay/direct, TCP/UDP/QUIC and PMTU require the missing lab topology. No bridge-only traffic is counted as exit traffic.", n))
 }

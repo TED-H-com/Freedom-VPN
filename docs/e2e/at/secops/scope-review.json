@@ -240,5 +240,39 @@
       "evidence": "contracts/openapi.yaml NodeDetail.notes; internal/enrollment/service.go Create; internal/nodes/nodes.go",
       "result": "notes documented as metadata; no full runtime source/notes authorization comparison claimed"
     }
-  ]
+  ],
+  "follow_up_1": {
+    "reviewed_at": "2026-10-30T02:08:34.805456+00:00",
+    "source_revision": "eebdbf7175f46ca21000b176afdc3808f8a8e58c",
+    "findings_rechecked": 13,
+    "unresolved_documentation_findings": 0,
+    "physical_acceptance": "needs operator run",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "a567d681d82cadddda90b463f72a994465d80acf0e66453e2961b2996b77450b"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "10b111433f364d555b02fd6afaf0278d3969fb804e867f67c2d555efbac3d4cd"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "97e1057dab2cc64226849254436bda84c65852ddf82787eccb47b56cda95d210"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "14659d09c1429c827937c78168c2f80755aa1e6b629f701577b572ecdf2583f6"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "7359e96a343b2385f92b28dd4c10ff0040d5eb061421370863571ede2171c6f4"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      }
+    ],
+    "conclusion": "Resolved copy now qualifies intended capabilities and unmeasured platform/flow behavior. Native admission and synthetic ledger replay do not establish forwarding, hardware capacity or client kill-switch guarantees."
+  }
 }

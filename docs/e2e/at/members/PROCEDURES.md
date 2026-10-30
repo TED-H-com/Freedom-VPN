@@ -185,7 +185,7 @@ pending/unconfirmed phase in UI evidence rather than sampling only final state.
 
 Two separate node/exit identities are required. Publish both and read back
 `skip_auto_apply=true`. There is no central POST exit-selection route in the
-41-endpoint contract. Server API manages publication; selection is a native
+44-endpoint contract. Server API manages publication; selection is a native
 client operation. The pinned lab CLI already supports:
 
 ```sh

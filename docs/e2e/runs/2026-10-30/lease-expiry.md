@@ -4,9 +4,9 @@ Control stop leaves forwarding off
 
 Status: blocked
 
-Run: 6bf270e4-abb1-43ff-93eb-18d282fc7c2a
+Run: 5852f09a-30e8-45bc-8983-b5f212e33640
 
-Source: 5477de091f449047193fdc9114cfca4ced5b36e6
+Source: 5eb716e1a36ced17b8013646c9282c92746c81da
 
 Spec: §5, §19 AT29
 
@@ -18,4 +18,5 @@ Spec: §5, §19 AT29
 - member_accept_after: 0
 - note: the forward chain had no member accept rule before the stop, so AT29 is not claimed
 - control_restarted: true
+- owner: w2-agent-core: AT29 needs active forwarding before control loss
 

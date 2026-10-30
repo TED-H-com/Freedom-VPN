@@ -13,7 +13,7 @@ All Vite and E2E environment variables are optional and have contract-compliant 
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_BASE_URL` | `/api/v1` | Base URL prefix for all 41 OpenAPI contract endpoints (`src/api/client.ts`). |
+| `VITE_API_BASE_URL` | `/api/v1` | Base URL prefix for all 44 OpenAPI contract endpoints (`src/api/client.ts`). |
 | `VITE_AUTH_BASE_URL` | `/auth` | Base URL prefix for browser session routes (`GET /auth/session`, `/auth/login`, `POST /auth/logout` in `src/api/auth.ts`). |
 | `VITE_API_MOCK` | `0` in prod build (`VITE_API_MOCK=1` only in dev) | Set to `1` in non-production dev to enable browser MSW mocking; production builds strip MSW completely. |
 | `VITE_API_PROXY_TARGET` | `http://127.0.0.1:8080` | Target origin for Vite's dev proxy when `VITE_API_MOCK=0`. |
