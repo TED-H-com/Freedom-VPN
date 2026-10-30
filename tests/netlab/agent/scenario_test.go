@@ -4,10 +4,14 @@ package agentlab
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 )
 
 func TestLab01_ForwardOnlyAfterLease(t *testing.T) {
@@ -212,4 +216,67 @@ func TestLab06_RevokedStopsForwarding(t *testing.T) {
 	}
 	assertNoSecrets(t)
 	fmt.Println("SUMMARY AT-agent revoked-stops=1")
+}
+
+func TestLab07_UnpublishedBaselineAck(t *testing.T) {
+	skipLab(t)
+	stopAgent()
+	stopWatch()
+	flushConntrack(t)
+	admin(t, "/release", "")
+	admin(t, "/publication", `{"intent":"unpublished"}`)
+	defer admin(t, "/publication", `{"intent":"published"}`)
+	startAgent(t)
+	defer stopAgent()
+	if !waitProbe(t, "deny", 12*time.Second) {
+		t.Fatalf("unpublished node forwarded member traffic:\n%s", debugPlane(t))
+	}
+	deadline := time.Now().Add(20 * time.Second)
+	var rep api.ObservationReport
+	var raw string
+	ok := false
+	for time.Now().Before(deadline) {
+		body, got := adminTryGet(t, "/observation")
+		raw = body
+		if got && json.Unmarshal([]byte(body), &rep) == nil && rep.SafetyStatus == api.SafetyStatusPassed {
+			ok = true
+			break
+		}
+		time.Sleep(400 * time.Millisecond)
+	}
+	if !ok {
+		t.Fatalf("unpublished observation did not report safety passed:\n%s", raw)
+	}
+	gen, err := rep.AppliedConfigGeneration.Get()
+	if err != nil || uint64(gen) < 1 {
+		t.Fatalf("applied generation %v %v", gen, err)
+	}
+	if rep.DataHealth != api.DataHealthHealthy || rep.ProvisioningState != api.ProvisioningStateReady || rep.MemberForwardingEnabled {
+		t.Fatalf("health %s provisioning %s forwarding %v", rep.DataHealth, rep.ProvisioningState, rep.MemberForwardingEnabled)
+	}
+	for _, name := range []api.NodeCheckName{api.NodeCheckNameLease, api.NodeCheckNameQos, api.NodeCheckNameSourceBinding} {
+		status := checkStatus(rep.Checks, name)
+		if status != api.HealthCheckStatusNotRun {
+			t.Fatalf("%s %s", name, status)
+		}
+	}
+	if checkStatus(rep.Checks, api.NodeCheckNameTunnelProbe) != api.HealthCheckStatusPassed {
+		t.Fatalf("tunnel %s body %s", checkStatus(rep.Checks, api.NodeCheckNameTunnelProbe), raw)
+	}
+	if _, err := rep.Netbird.PeerId.Get(); !errors.Is(err, presence.ErrNull) {
+		t.Fatal("observation invented a peer id")
+	}
+	if !waitProbe(t, "deny", 5*time.Second) {
+		t.Fatalf("forwarding started after the baseline ack:\n%s", debugPlane(t))
+	}
+	fmt.Println("SUMMARY unpublished baseline ack=1")
+}
+
+func checkStatus(checks []api.NodeCheck, name api.NodeCheckName) api.HealthCheckStatus {
+	for _, c := range checks {
+		if c.Name == name {
+			return c.Status
+		}
+	}
+	return ""
 }

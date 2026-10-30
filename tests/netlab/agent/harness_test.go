@@ -132,6 +132,16 @@ func writeAgentConfig(controlURL string, stale, interval int) error {
 		// TEST ONLY. Production host_reserve_bps is 待實測 and is set by the operator.
 		"host_reserve_bps": 5000000,
 		"netbird_backend":  "kernel",
+		// The lab container has no NetBird daemon. The probe reads this
+		// fixture. test_mode does not skip the probe.
+		"netbird_status_file": labDir + "/netbird-status.json",
+	}
+	status := []byte("{" +
+		`"management":{"url":"https://netbird.example.invalid","connected":true},` +
+		`"relays":{"total":1,"available":1,"details":[{"uri":"https://netbird.example.invalid","available":true}]}` +
+		"}\n")
+	if _, errOut, err := dockerExecStdin([]string{"tee", labDir + "/netbird-status.json"}, status); err != nil {
+		return fmt.Errorf("netbird status: %v %s", err, errOut)
 	}
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
@@ -316,6 +326,19 @@ urllib.request.urlopen(req, timeout=5).read()
 `, path, data)
 	writeScratch(t, labDir+"/admin.py", []byte(script))
 	mustExec(t, "python3", labDir+"/admin.py")
+}
+
+func adminTryGet(t *testing.T, path string) (string, bool) {
+	t.Helper()
+	script := fmt.Sprintf(`import urllib.request
+print(urllib.request.urlopen("http://127.0.0.1:9091%s", timeout=5).read().decode())
+`, path)
+	writeScratch(t, labDir+"/admin_get.py", []byte(script))
+	out, _, err := dockerExec("python3", labDir+"/admin_get.py")
+	if err != nil {
+		return out, false
+	}
+	return out, true
 }
 
 func strconvQuote(s string) string {
