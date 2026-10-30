@@ -21,6 +21,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -44,7 +45,7 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 		defer mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		switch r.Method + " " + r.URL.Path {
-		case "GET /api/routes", "GET /api/policies":
+		case "GET /api/routes", "GET /api/policies", "GET /api/peers", "GET /api/dns/nameservers":
 			io.WriteString(w, "[]")
 		case "GET /api/peers/test-peer":
 			if !peerExists {
@@ -101,12 +102,21 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 	f.r.Config.NetBirdDeployment = "TEST ONLY deployment"
 	f.r.Config.BootstrapSeconds = 60
 	f.r.Config.ReconcileSeconds = 60
+	f.r.Config.DesiredStateSeconds = 600
+	f.r.Config.DNSResolverIPv4 = []string{"100.64.0.53"}
+	if _, e = f.r.Provider.(*signing.FileProvider).Rotate(ctx, signing.DesiredState, 48*time.Hour, time.Hour); e != nil {
+		t.Fatal(e)
+	}
+	compiled, e := f.r.DesiredStateCompiler().Compile(ctx, enrolled.NodeId)
+	if e != nil {
+		t.Fatal(e)
+	}
 	events, e := db.ClaimOutbox(ctx, f.r.Pool, "TEST ONLY worker", 1, time.Minute)
 	if e != nil || len(events) != 1 {
 		t.Fatal(e, len(events))
 	}
 	event := events[0]
-	jobs := worker.NodeJobs(f.r, nb, nil)
+	jobs := worker.NodeJobs(f.r, nb, nil, 3)
 	for range 2 {
 		receipt, e := jobs[event.EventType](ctx, event)
 		if e != nil || !strings.HasPrefix(receipt, "bootstrap:") {
@@ -165,6 +175,7 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 	report.NodeIncarnationId = enrolled.NodeIncarnationId
 	report.ReportId = uuid.New()
 	report.ObservedAt = time.Now().UTC().Truncate(time.Microsecond)
+	report.AppliedConfigGeneration.Set(compiled.Envelope.Signed.ConfigGeneration)
 	report.CurrentReleaseId.SetNull()
 	report.LastGoodReleaseId.SetNull()
 	report.Lease.LeaseId.SetNull()
@@ -193,11 +204,23 @@ func TestAT06_WorkerBootstrapReadbackRetryAndFence(t *testing.T) {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	events, e = db.ClaimOutbox(ctx, f.r.Pool, "TEST ONLY withdrawal worker", 2, time.Minute)
-	if e != nil || len(events) != 2 {
+	if e != nil || len(events) != 1 || events[0].EventType != "node.publication_changed" {
 		t.Fatal(events, e)
 	}
 	for _, event := range events {
 		complete(event)
+	}
+	op := decode[api.Operation](t, w, 202)
+	observed := f.publicationOperation(op.OperationId)
+	if observed.Status != api.OperationStatusPartiallySucceeded {
+		t.Fatal("revoked agent must remain unconfirmed", observed)
+	}
+	for _, step := range observed.Steps {
+		if step.Name == nodes.StepNetBirdIdentityCleanup || step.Name == nodes.StepNetBirdRouteReadback {
+			if step.Status != api.OperationStepStatusSucceeded || step.ObservedAt.IsNull() {
+				t.Fatal("missing identity/route read-back", step)
+			}
+		}
 	}
 	mu.Lock()
 	defer mu.Unlock()
@@ -228,7 +251,7 @@ func TestUPD02_WorkerReleaseVerificationFence(t *testing.T) {
 	if _, e = f.r.Pool.Exec(ctx, `UPDATE outbox_events SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, event.ID); e != nil {
 		t.Fatal(e)
 	}
-	jobs := worker.NodeJobs(f.r, nil, invalidArtifact{})
+	jobs := worker.NodeJobs(f.r, nil, invalidArtifact{}, 3)
 	if _, e = jobs[event.EventType](ctx, event); !errors.Is(e, db.ErrLeaseLost) {
 		t.Fatal("unfenced verification", e)
 	}

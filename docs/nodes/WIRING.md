@@ -105,13 +105,24 @@ also accepts explicit dependencies for integration tests. No domain opens a pool
 reads environment variables, or starts a listener/dispatcher/goroutine during
 construction. `Built.Runners` supplies `RunNodeSchedule` to the process supervisor.
 
+The nodes build creates one `Runtime.DesiredStateCompiler()` and shares it with
+the publication executor and member jobs through `Built.Context` and
+`membersruntime.WithCompiler`. All context decorators run before dispatch, so
+this does not depend on domain build order or change the D-026/D-045 domain list.
+The compiler uses the nodes signing provider, `desired_state_seconds`, and
+`dns_resolver_ipv4` / `dns_resolver_ipv6`, with the DB entitlement and policy
+readers. The members registry keeps ownership of `device.authorized`,
+`device.revoked`, `member.entitlement_changed`, and `member.suspended`: after
+NetBird authorization read-back, it recompiles affected node policies and records
+an audit receipt before acknowledging the event. Compilation failure retries
+without acknowledging success. A compiled generation is desired state; applied
+generation and node operation steps still require agent observations (§14.5).
+
 | Event | Durable evidence and external calls |
 |---|---|
-| `node.publication_changed` | Validates the operation/node and current claim, then runs the exits executor. Publication requires agent policy ACK, route/group/policy read-back and stored data-path probe evidence before `active`/`succeeded`. Unpublish/disable remove the route/access policy even offline; an absent agent ACK stays unconfirmed. |
+| `node.publication_changed` | Validates the operation/node and current claim, then runs the exits executor for publish/unpublish/disable/revoke/retire. Publication requires agent policy ACK, route/group/policy read-back and stored data-path probe evidence before `active`/`succeeded`. Withdrawal removes the route/access policy even offline; an absent agent ACK stays unconfirmed. Revoke/retire additionally require confirmed setup-key revocation and peer deletion in `netbird_identity_cleanup` before finalization. |
 | `node.provision.requested` | `CreateNodeSetupKey(operation_id)` locates the stable name and saved ID before creation. The adapter ensures staging group, creates one-off/usage_limit=1/non-ephemeral key with 86400-second external expiry, and GETs it to verify settings. Only then is bounded AES-GCM ciphertext stored and `netbird_setup` advanced. |
 | `node.peer.observe` | Loads the immutable authenticated report; `EnsureNodePeer` GETs the reported peer and validates server/non-ephemeral identity. The one-time deployment/peer binding and provisioning steps commit after read-back. Frozen mappings and revoked/current-incarnation changes are denied. |
-| `node.routes.withdraw` (revocation compatibility) | `WithdrawExit` locates route/policy, deletes, and confirms absence. Exit observed state, receipt and operation step are persisted under the current claim. |
-| `node.peer.withdraw` (revocation compatibility) | Withdraws exit first, revokes setup keys by stable provisioning operation ID (including lost responses), then reads/binds known revoked-incarnation peers and `DeletePeer` verifies no remaining route reference and deletion. Active reinstall incarnations are excluded. |
 | `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
 | `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
@@ -146,23 +157,45 @@ that client's implementation. It has no raw HTTP bypass and sanitizes failures
 before they can become public operation messages.
 
 The executor returns failed outcomes as an operation with a nil Go error. The
-job retains the failed step/error evidence, keeps the operation `running` while
-retry work is outstanding, and returns a job error. The existing D-040 dispatcher
-retries with backoff and then dead-letters without a delivery receipt. Dead-letter
-recovery remains explicit operator work; the job never fabricates observation.
+job uses the dispatcher's configured `worker_attempts` budget: a failed execution
+remains `running` only when `event.Attempt` is below that budget, with failed
+step/error evidence retained for the next retry. At or above the budget it stays
+`failed` and still returns a job error, so D-040 dead-lettering leaves no delivery
+receipt or false claim of progress (§14.5). If the worker dies after that failure,
+the dispatcher's exhausted redelivery dead-letters without executing again.
+Recovery requires an operator's fresh publication command with a new idempotency
+key and current `If-Match`; the failed operation and evidence remain unchanged.
+The job never fabricates observation.
 A partial offline withdrawal is a completed central action with an unconfirmed
 agent step, so replay does not repeat its external effects. The fake-adapter
 worker tests and the real-client/local-HTTP test prove these orchestration paths;
 they do not prove real NetBird deployment behavior or packet forwarding.
 
-The two legacy withdrawal registrations are still used by
-`internal/enrollment/revoke.go`, which creates `route_withdrawal` and
-`peer_withdrawal` steps. They are retained for revocation/retirement compatibility;
-removing them before that producer is migrated would strand key/peer revocation.
-Publication commands exclusively use `node.publication_changed`.
+Enrollment revoke/retire commands now enqueue one `node.publication_changed`
+event with the operation's desired generation and standard withdrawal steps,
+plus required `netbird_identity_cleanup`. `httpwire.RevocationAdapter` decorates
+the publication adapter for those two operation kinds only: after withdrawing
+the route, it calls `RevokeNodeSetupKey` for revoked incarnations' enrollment
+operations (stable-key lookup also recovers lost creation responses), then
+`EnsureNodePeer` and `DeletePeer` for their known peer IDs. The client confirms
+each key revoked or absent and each peer absent; active reinstall incarnations
+are excluded. Nodes revoked before peer read-back use the configured NetBird
+deployment. Cleanup records a system audit event and its reference on the
+required step under the current claim. Failure records an unconfirmed failed
+step, follows the same attempt budget, and cannot finalize the operation.
+Offline withdrawals finish `partially_succeeded` only after route and identity
+read-back, preserving the unconfirmed agent step. Terminal event replay does
+not repeat external work. Real-client/local-HTTP tests cover key/peer read-back;
+fake-route tests cover retry recovery, exhaustion, replay and lost claims.
+
+The `node.routes.withdraw` / `node.peer.withdraw` producers and registrations
+are removed. Before upgrading an existing deployment, drain their queued work
+with the previous worker while old revocation producers are stopped; resolve
+any dead letters before switching. This change does not rewrite historical
+events or claim they ran through the new executor.
 
 The dispatcher records final delivery under its fenced claim. Release,
-bootstrap and legacy withdrawal mutations also check the claim again in their
+bootstrap and identity cleanup mutations also check the claim again in their
 local transactions. Publication checks its claim before execution and when
 retaining a retryable failure. The exits executor owns its step transactions and
 honors the job context; those transactions do not yet accept the outbox claim

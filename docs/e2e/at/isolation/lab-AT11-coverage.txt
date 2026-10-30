@@ -1,0 +1,26 @@
+ipv6_mode=block
+route_mode=not_implemented_v1
+ctv6_delta=3
+inet_capture=empty
+lan_capture=empty
+ula=deny
+link_local=deny
+loopback_connect=deny
+loopback_raw=sent_and_not_delivered
+metadata=deny
+ipv4_mapped=deny
+name                         ns       proto  dst                    port   expect   observed       ok
+v6-global-tcp                fv-a1    tcp6   2001:db8:203::10       80     deny     timeout        true
+v6-global-icmp               fv-a1    icmp6  2001:db8:203::10       0      deny     timeout        true
+v6-ula                       fv-a1    icmp6  fd00:db8:ffff::10      0      deny     timeout        true
+v6-doc                       fv-a1    icmp6  2001:db8::10           0      deny     timeout        true
+v6-linklocal                 fv-a1    icmp6  fe80::10               0      deny     timeout        true
+v6-mapped-inet               fv-a1    tcp6   ::ffff:203.0.113.10    80     deny     unreachable    true
+v6-mapped-lan                fv-a1    tcp6   ::ffff:10.1.2.10       80     deny     unreachable    true
+v4-metadata                  fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+v4-loopback-connect          fv-a1    tcp    127.0.0.1              2222   deny     refused        true
+raw-global                   fv-fwd   raw6   2001:db8:203::10       9      sent     sent           true
+raw-ula                      fv-fwd   raw6   fd00:db8:ffff::10      9      sent     sent           true
+raw-linklocal                fv-fwd   raw6   fe80::10               9      sent     sent           true
+raw-mapped                   fv-fwd   raw6   ::ffff:10.1.2.10       9      sent     sent           true
+raw-loopback                 fv-fwd   raw4   127.0.0.1              9      sent     sent           true

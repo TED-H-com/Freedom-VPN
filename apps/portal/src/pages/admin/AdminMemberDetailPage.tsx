@@ -1,39 +1,65 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError, type OperationResource } from '../../api';
+import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
+import { ConflictDialog } from '../../components/common/ConflictDialog';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n } from '../../i18n';
-import { PRIMARY_MEMBER_ID } from '../../mocks/data';
 
 export function AdminMemberDetailPage(): React.ReactElement {
-  const { memberId = PRIMARY_MEMBER_ID } = useParams<{ memberId: string }>();
-  const { t, locale } = useI18n();
+  const { memberId = '' } = useParams<{ memberId: string }>();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
 
   const [suspendReason, setSuspendReason] = useState(
     'Abuse ticket #991: terms violation review',
   );
-  const [grantValidUntil, setGrantValidUntil] = useState('2026-12-31T00:00:00Z');
+  const [grantValidUntil, setGrantValidUntil] = useState(() =>
+    new Date(Date.now() + 14 * 86400_000).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+  );
   const [grantReason, setGrantReason] = useState('Migration parallel transition grant');
+
+  const [displayName, setDisplayName] = useState<string>('');
+  const [memberGroups, setMemberGroups] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
+
   const [activeOp, setActiveOp] = useState<OperationResource | null>(null);
-  const [error, setError] = useState<ApiError | null>(null);
+  const [conflictError, setConflictError] = useState<ApiError | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const memberQuery = useQuery({
     queryKey: ['admin', 'member', memberId],
     queryFn: () => apiClient.getMember(memberId),
+    enabled: Boolean(memberId),
   });
 
-  if (memberQuery.isLoading || !memberQuery.data) {
+  const m = memberQuery.data?.data;
+  const etag = memberQuery.data?.etag ?? undefined;
+
+  useEffect(() => {
+    if (m) {
+      setDisplayName(m.display_name ?? '');
+      setMemberGroups(m.member_group_ids.join(', '));
+      setNotes(m.notes ?? '');
+    }
+  }, [m]);
+
+  if (memberQuery.error) {
+    return (
+      <div data-testid="admin-member-detail-page">
+        <ApiErrorAlert error={memberQuery.error} testId="member-detail-error" />
+      </div>
+    );
+  }
+
+  if (memberQuery.isLoading || !m) {
     return (
       <div className="card" role="status">
         Loading member detail...
       </div>
     );
   }
-
-  const m = memberQuery.data.data;
-  const etag = memberQuery.data.etag ?? undefined;
 
   const handleSuspend = async () => {
     setError(null);
@@ -44,7 +70,8 @@ export function AdminMemberDetailPage(): React.ReactElement {
       }
       await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
     } catch (err) {
-      if (err instanceof ApiError) setError(err);
+      if (err instanceof ApiError && err.status === 412) setConflictError(err);
+      else setError(err);
     }
   };
 
@@ -61,7 +88,32 @@ export function AdminMemberDetailPage(): React.ReactElement {
       }
       await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
     } catch (err) {
-      if (err instanceof ApiError) setError(err);
+      if (err instanceof ApiError && err.status === 412) setConflictError(err);
+      else setError(err);
+    }
+  };
+
+  const handleSavePatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      await apiClient.updateMember(
+        m.member_id,
+        {
+          display_name: displayName.trim() || undefined,
+          member_group_ids: memberGroups
+            .split(',')
+            .map((g) => g.trim())
+            .filter(Boolean),
+          notes: notes.trim() || undefined,
+        },
+        etag,
+        `patch-member:${m.member_id}:${m.resource_version}:${Date.now()}`,
+      );
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 412) setConflictError(err);
+      else setError(err);
     }
   };
 
@@ -77,7 +129,7 @@ export function AdminMemberDetailPage(): React.ReactElement {
       setActiveOp(op);
       await queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
     } catch (err) {
-      if (err instanceof ApiError) setError(err);
+      setError(err);
     }
   };
 
@@ -93,7 +145,7 @@ export function AdminMemberDetailPage(): React.ReactElement {
             {t('admin.memberDetail.title', { name: m.display_name ?? m.member_id })}
           </h1>
           <p className="page-subtitle mono">
-            {m.member_id} · {m.email ?? '-'}
+            {m.member_id} · {m.email ?? '-'} · ETag: {etag ?? `"${m.resource_version}"`}
           </p>
         </div>
         <span
@@ -106,17 +158,23 @@ export function AdminMemberDetailPage(): React.ReactElement {
         </span>
       </div>
 
-      <OperationBanner operation={activeOp} onDismiss={() => setActiveOp(null)} />
+      <ConflictDialog
+        error={conflictError}
+        onReload={() => {
+          setConflictError(null);
+          void queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
+        }}
+      />
 
-      {error && (
-        <div
-          className="alert alert-danger"
-          role="alert"
-          data-testid="member-detail-error"
-        >
-          <strong>{error.code}</strong>: {error.messageForLocale(locale)}
-        </div>
-      )}
+      <OperationBanner
+        operation={activeOp}
+        onDismiss={() => setActiveOp(null)}
+        onTerminal={() => {
+          void queryClient.invalidateQueries({ queryKey: ['admin', 'member', memberId] });
+        }}
+      />
+
+      <ApiErrorAlert error={error} testId="member-detail-error" />
 
       {/* Entitlement & Deadline Breakdown (§9.2, §15.2) */}
       <section className="card">
@@ -171,6 +229,60 @@ export function AdminMemberDetailPage(): React.ReactElement {
             {t('admin.memberDetail.resumeBtn')}
           </button>
         </div>
+      </section>
+
+      {/* Member Profile, Groups & Notes Patch */}
+      <section className="card">
+        <h2>{t('admin.memberDetail.patchSection')}</h2>
+        <div className="mono" style={{ fontSize: '0.8rem', marginTop: '0.35rem' }}>
+          Authorized Devices: {m.authorized_device_count} /{' '}
+          {m.entitlement.device_limit ?? '-'}
+        </div>
+        <form onSubmit={(e) => void handleSavePatch(e)} style={{ marginTop: '0.75rem' }}>
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="member-display-name-input">
+                {t('admin.memberDetail.deviceLimitLabel')}
+              </label>
+              <input
+                id="member-display-name-input"
+                data-testid="member-display-name-input"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="member-groups-input">
+                {t('admin.memberDetail.clearDeviceLimit')}
+              </label>
+              <input
+                id="member-groups-input"
+                data-testid="member-groups-input"
+                className="mono"
+                value={memberGroups}
+                onChange={(e) => setMemberGroups(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="member-notes-input">
+                {t('admin.memberDetail.notesLabel')}
+              </label>
+              <input
+                id="member-notes-input"
+                data-testid="member-notes-input"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            data-testid="save-member-patch-btn"
+          >
+            {t('admin.memberDetail.savePatchBtn')}
+          </button>
+        </form>
       </section>
 
       {/* Finite Entitlement Grant */}

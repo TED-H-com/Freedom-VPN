@@ -8,6 +8,8 @@
 # FVPN_E2E_PREFIX (default e2e) names every object fvpn-<prefix>-*.
 # FVPN_E2E_PORT_BASE (default 18000) is added to a fixed offset for each
 # loopback port. Legal bases are 18000+6000*n so two stacks cannot share a port.
+# This task uses only prefix e2e and base 18000. Bases 24000, 30000, 36000,
+# 42000 and 48000 are reserved for W4 acceptance tasks.
 # The state directory is .agent/e2e-state-<prefix>.
 
 E2E_MK := $(lastword $(MAKEFILE_LIST))

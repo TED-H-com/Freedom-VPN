@@ -14,6 +14,7 @@ type Dependencies struct {
     Config config.Config
     Pool *pgxpool.Pool
     Browser *auth.Browser
+    Metrics *prometheus.Registry
     Logger *slog.Logger
 }
 type Domain struct {
@@ -49,11 +50,23 @@ listeners, and must preserve the request context and original body. It does not
 wrap browser auth routes, health or readiness probes. The shared transport keeps
 panic recovery, safe error responses and access logging outermost.
 
-`Application.Public` and `Application.Agent` expose the constructed listeners for
+`Application.Public`, `Application.Agent` and `Application.Metrics` expose the constructed listeners for
 host/testing integration. Domains must never replace their `Handler`. The
 control-core domain supplies operations/audit handlers and a supervised periodic
 authentication/idempotency cleanup runner. Its transient cleanup errors retain
 the existing safe warning/retry behavior.
+
+The control registry is shared with every domain build; a nil `Dependencies.Metrics`
+creates a process-local registry before builds run. `GET /metrics` serves that
+registry over plain HTTP on `Config.MetricsAddress` (default `127.0.0.1:9091`).
+The address must use a loopback IP literal and port; port zero is supported for
+tests. The listener is bound, logged with its actual address, supervised and shut
+down with the public/agent listeners. A bind failure closes any sockets already
+opened. Choose separate metrics ports when control and worker run on the same host.
+`fvpn_control_http_requests_total{route,status}` counts public/agent responses after
+panic recovery, using normalized route templates, fixed auth/health routes and
+`unmatched` for unknown routes. It contains no resource IDs or raw URLs; metrics
+scrapes themselves are excluded.
 
 ## Worker API
 
@@ -103,8 +116,8 @@ error or file contents. Members uses this for `members_config_file`.
 | Central `Config` Setting | Domain | Required Inner Settings | Purpose |
 |---|---|---|---|
 | `members_config_file` | `members` | Provider/entitlement/device settings (`internal/config/members.go`) | Billing, entitlements, and member device provisioning. |
-| `nodes_config_file` | `nodes` | PKI, signing, enrollment, release, and NetBird settings (`internal/config/nodes.go`) | Node enrollment, desired state, leases, and update rollouts. |
 | `dns_config_file` | `dns` | `upstreams` (`internal/config/dns.go`) | Central DNS policy bundle publishing. |
+| `nodes_config_file` | `nodes` | PKI, signing, enrollment, release, and NetBird settings (`internal/config/nodes.go`) | Node enrollment, desired state, leases, and update rollouts. |
 | `policies_config_file` | `policies`, `usage` | `fup_sweep_seconds`, `fup_batch_size`, `dns_upstream_profile` (`internal/config/policies.go`) | Central policy catalog and Fair-Use evaluation/coalescing (D-045). |
 | `usage_config_file` | `usage` | `signing_config_file`, `raw_usage_retention_days`, `rollup_retention_months`, `audit_retention_days`, `projection_batch_size` (`internal/config/usage.go`) | Usage ledger ingestion, checkpoint/epoch signing (`signing.OpenFileProvider`), and retention (D-045). |
 

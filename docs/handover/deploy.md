@@ -158,17 +158,17 @@ GRANT pg_read_all_data TO fvpn_backup;
 
 ## 4. External Dependencies Setup
 
-### 4.1 OIDC Provider (`§15.1`, `docs/control/AUTH.md`, `docs/portal/AUTH.md`)
+### 4.1 OIDC Provider (`§9.1`, `§16.1`, `docs/control/AUTH.md`, `docs/portal/AUTH.md`)
 
-1. Configure a single OIDC issuer (`https://id.example.com`) shared by the Portal (`fvpn-control`) and NetBird (`§5.1`, `§15.1`):
+1. Configure a single OIDC issuer (`https://id.example.com`) shared by the Portal (`fvpn-control`) and NetBird (`§7.3`, `§9.1`, `§15.2`):
    - **Portal Client (`oidc_client_id`)**: Confidential client using Authorization Code + PKCE (`S256`).
      - Allowed Redirect URI: `https://vpn.example.com/auth/callback`
-     - Subject identifier type: `public` (so `iss` + `sub` matches across Portal and NetBird clients, allowing `POST /api/v1/member/devices` to verify ownership without manual peer entry).
-   - **Admin Role Claim & MFA (`§15.1`)**:
+     - Subject identifier type: `public` (so `iss` + `sub` matches across Portal and NetBird clients, allowing central device synchronization `member.device_authorize` / `members.devicereconcile` to verify ownership and authorize `MemberDevice` records automatically without manual peer entry, `§7.3`, `§9.4`).
+   - **Admin Role Claim & MFA (`§9.1`, `§16.1`)**:
      - Emit claim `roles` containing `"admin"` (or configure `admin_claim` and `admin_value` in `control.json`).
      - Enforce MFA at the IdP for administrators and emit `amr: ["mfa"]` (or a configured `mfa_acr` value). `fvpn-control` rejects `/auth/login?role=admin` with `403 ADMIN_MFA_REQUIRED` if neither `mfa_amr` nor `mfa_acr` matches, and requires re-authentication within `recent_auth_seconds` (`900s`) for high-risk mutations (`POST /admin/nodes/{id}/revoke`, `DELETE /admin/nodes/{id}`, `POST /admin/update-batches`, `POST /admin/policies/{kind}/revisions/{rev}/activate`).
 
-### 4.2 NetBird CE (`0.82.0` Management, Signal, Relay, STUN) (`§5.2`, `§8.4`, `docs/netbird/VERSIONS.md`)
+### 4.2 NetBird CE (`0.82.0` Management, Signal, Relay, STUN) (`§7.1`, `§7.2`, `docs/netbird/VERSIONS.md`)
 
 1. Pin the server image to `netbirdio/netbird-server:0.82.0` (`sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c`) and dashboard `netbirdio/dashboard:v2.96.0`.
 2. Configure `/etc/netbird/config.yaml` with persistent storage, TLS via reverse proxy (`https://netbird.example.com`), and the shared OIDC issuer `[production only]`:
@@ -196,7 +196,7 @@ GRANT pg_read_all_data TO fvpn_backup;
        engine: "sqlite"
        encryptionKey: "REPLACE_WITH_BASE64_32_BYTE_KEY"
    ```
-3. **Mandatory Security Baseline (`§8.4`, `ISO04`)**:
+3. **Mandatory Security Baseline (`§7.1`, `ISO01`)**:
    - Create a dedicated NetBird **Service User** with the `admin` role and generate a Personal Access Token (PAT). Write the PAT to `/etc/fvpn/secrets/netbird.token` (`chmod 0600`). Never place this token in `apps/portal` or on exit nodes.
    - Delete or disable NetBird's built-in `Default` (`All-to-All`) access control policy immediately (`internal/netbird.Client.RemoveDefaultPolicy` / `BootstrapAccess`). Member-to-member traffic must be blocked at both the NetBird control plane and the exit-node `inet fvpn` nftables data plane.
 
@@ -228,7 +228,7 @@ The central signing directory (`/var/lib/fvpn/vault`, mode `0700`) stores six ce
 - `node-ca` (ECDSA P-256): Signs node mTLS client certificates (`§6.4`).
 - `bootstrap-secret` (AES-256-GCM): Encrypts one-time NetBird setup keys at rest in PostgreSQL (`§6.2`).
 - `desired-state` (Ed25519): Signs node desired-state envelopes (`§14.7`).
-- `lease` (Ed25519): Signs node serving leases (`§7.5`).
+- `lease` (Ed25519): Signs node serving leases (`§15.3`, `§16.3`).
 - `recovery` (Ed25519): Signs usage checkpoint envelopes returned on `GET /api/v1/agent/usage-checkpoint` (`§10.8`, `§17.3`).
 - `ledger-epoch` (Ed25519, **central-only**): Signs `usage_recovery_records` when rotating `ledger_epoch` (`§17.3`). Never exported into the node trust bundle.
 

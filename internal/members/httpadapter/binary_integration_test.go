@@ -128,7 +128,7 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	if e != nil {
 		t.Fatal(e)
 	}
-	start := func(name string) (*exec.Cmd, *synchronizedBuffer, chan error) {
+	start := func(name, metricsAddress string) (*exec.Cmd, *synchronizedBuffer, chan error) {
 		t.Helper()
 		binary := filepath.Join(dir, name)
 		build := exec.CommandContext(t.Context(), "go", "build", "-o", binary, "./apps/"+strings.TrimPrefix(name, "fvpn-")+"/cmd/"+name)
@@ -137,7 +137,7 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 			t.Fatalf("build %s: %v\n%s", name, e, out)
 		}
 		cmd := exec.Command(binary, "-config", configFile)
-		cmd.Env = env
+		cmd.Env = append([]string{"FVPN_METRICS_ADDRESS=" + metricsAddress}, env...)
 		logs := &synchronizedBuffer{}
 		cmd.Stdout = logs
 		cmd.Stderr = logs
@@ -161,7 +161,7 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 		})
 		return cmd, logs, done
 	}
-	_, controlLogs, _ := start("fvpn-control")
+	_, controlLogs, _ := start("fvpn-control", c.MetricsAddress)
 	base := "https://" + c.PublicAddress
 	waitReady(t, client, base+"/readyz")
 	f := &fixture{t: t, pool: pool, idp: idp}
@@ -232,8 +232,10 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	// Do not dispatch the synthetic invoice to Stripe. Defer it beyond this run;
 	// the worker's own startup reconciliation remains real, durable outbox work.
 	f.exec(`UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type='billing.inbox_received'`)
-	_, workerLogs, _ := start("fvpn-worker")
-	waitReady(t, &http.Client{Timeout: time.Second}, "http://"+c.MetricsAddress+"/readyz")
+	// Choose the worker's metrics port after control has bound its own listener.
+	workerMetricsAddress := availableAddress(t)
+	_, workerLogs, _ := start("fvpn-worker", workerMetricsAddress)
+	waitReady(t, &http.Client{Timeout: time.Second}, "http://"+workerMetricsAddress+"/readyz")
 	deadline := time.Now().Add(10 * time.Second)
 	for f.count(`SELECT count(*) FROM outbox_events WHERE event_type IN ('billing.reconcile','members.reconcile','devices.discover') AND delivered_at IS NOT NULL`) < 3 {
 		if time.Now().After(deadline) {
