@@ -225,3 +225,53 @@ not a workaround for stale serving leases. Keep recovery enabled.
 The gateway serves the built Portal at `/` with an explicit index and readable
 public asset permissions. The login walker requires HTTP 200 on a portal landing;
 404, 500 and callback errors are failures. `admin-login` records the landing status.
+
+## Native exit selection and traffic trace
+
+The pinned NetBird 0.82.0 CLI does not select an exit (`0.0.0.0/0`) by default;
+`netbird networks select all` also leaves that exit unselected. After publication
+and native device admission, list networks and explicitly select the single
+product-created `fvpn-exit-...` identifier:
+
+```sh
+docker exec fvpn-e2e-member netbird networks list
+# Set E2E_EXIT_NETWORK_ID to the identifier printed above.
+docker exec fvpn-e2e-member netbird networks select "$E2E_EXIT_NETWORK_ID"
+docker exec fvpn-e2e-member ip route get 192.0.3.10
+```
+
+Acceptance performs this selection with a 15-second route bound. It requires
+`dev fvnb0`, a native overlay source, HTTPS 200, the authenticated origin probe's
+arrival from the node's SNAT address, and increased device admission bytes.
+Selection uses the actual API-published exit; it creates no route or group.
+Only the controlled origin's TCP/443 packet headers are captured, inside the
+member/node containers. No payloads or public-Internet traffic are collected.
+The origin's `PUT|GET /e2e/traffic` hook requires `X-E2E-Secret` from
+`origin.secret`, holds one synthetic probe ID, and records only its count and
+source address. Ordinary health and release requests are excluded.
+
+## TEST ONLY resolver transport fault
+
+Prepared runtime agents connect to `https://127.0.0.1:9444`. The node entrypoint
+runs `fvpn-e2e-nodeconfig resolver-proxy` there with a generated lab TLS
+certificate, verifies client certificates against the real agent CA, and uses
+that enrolled node's own mTLS identity upstream at
+`https://agent.example.invalid:9443`. Enrollment and the updater's result
+submission retain their normal endpoints. The proxy has no remotely accessible
+fault-control endpoint.
+
+The mode-0600 local marker `corrupt-resolver` in the node's hook directory contains a
+document UUID or `*`. While present, only successful resolver-document GET
+responses have one byte changed, preserving their length. Remove the marker to
+restore transparent transport. `resolver-fault.json` records only document ID,
+HTTP status, response count, size and the two SHA-256 digests. The harness arms
+this hook before changing the approved lab feed source; it waits for the
+worker's configured 300-second refresh/compilation and authentic signed reference.
+Both the feed policy and the lab worker's `feed_update_cadence_seconds` are
+300 (TEST ONLY); the production worker default remains six hours.
+It never changes signatures, desired state, resolver cache or projector rows.
+
+Long fault probes can exceed the configured 900-second recent-auth window.
+Perform a fresh admin OIDC login before a protected action such as revoke;
+the acceptance harness does so after control-loss withdrawal. Do not lengthen
+the security window to make a long test pass.

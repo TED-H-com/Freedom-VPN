@@ -1,7 +1,7 @@
 import json
 import unittest
 from unittest.mock import patch
-from run import scan, summarize_go, write_followup3_records
+from run import scan, summarize_go, write_followup3_records, write_followup4_records
 
 
 class EvidenceTests(unittest.TestCase):
@@ -52,6 +52,24 @@ class EvidenceTests(unittest.TestCase):
         self.assertIsNone(publication['actual']['publication_operation'])
         self.assertFalse(publication['actual']['publication_negative']['passed'])
         self.assertEqual(records['SECOPS-06']['status'], 'blocked')
+
+
+    def test_followup4_requires_live_probe_refusal_and_zero_binding_positive(self):
+        step = {'name':'data_path_probe','status':'failed','message':'member_forwarding_unconfirmed','error_code':'NODE_NOT_SERVICEABLE'}
+        live = {'publication_without_capacity': {'publication_request':{'status':202}, 'publication_operation':{'status':'running','steps':[step]}},
+                'publication_empty_bindings': {'publication_request':{'status':202},'publication_operation':{'status':'succeeded'},'signed_device_bindings':0,'signed_publication_intent':'published'}}
+        with patch('run.write_json') as writer:
+            write_followup4_records({'stack':{}},live)
+        publication = writer.call_args_list[-1].args[1]
+        self.assertEqual(publication['status'],'passed')
+        self.assertIn('does not assert a terminal',publication['negative_scope'])
+        live['publication_without_capacity']['publication_request']['status'] = 422
+        live['publication_empty_bindings']['signed_device_bindings'] = 1
+        with patch('run.write_json') as writer:
+            write_followup4_records({'stack':{}},live)
+        publication = writer.call_args_list[-1].args[1]
+        self.assertEqual(publication['negative_status'],'blocked')
+        self.assertEqual(publication['positive_status'],'blocked')
 
 
 if __name__ == '__main__':

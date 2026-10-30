@@ -44,8 +44,12 @@ func (p *liveProbe) planInputs(admin *liveSession) {
 	fair["overrides"] = []any{}
 	fair["effective_at"] = time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	fup := p.policyInput(admin, "fair_use", fair)
-	dns := p.policyInput(admin, "dns_profile", map[string]any{"profile_code": "secops-input", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []string{}, "block_response": "nxdomain", "blocked_ttl_seconds": 60})
-	p.planRevision = p.policyInput(admin, "plan", map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{p.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "TEST-ONLY-secops"}, "rate_limit": nil, "fair_use_revision_id": fup, "dns_profile_revision_id": dns})
+	// A controlled block rule gives the resolver smoke test a lab-local target.
+	// An empty profile otherwise probes example.com, which this isolated CoreDNS
+	// intentionally answers NXDOMAIN. This is an API input, not a DNS bypass.
+	rules := p.policyInput(admin, "domain_rule_set", map[string]any{"rules": []any{map[string]any{"rule_id": uuid.New(), "profile_id": nil, "domain": "blocked.example.invalid", "include_subdomains": true, "action": "block", "reason": "admin_rule", "revision": "1"}}})
+	dns := p.policyInput(admin, "dns_profile", map[string]any{"profile_code": "secops-input", "display_name": map[string]string{"zh-TW": "TEST ONLY"}, "domain_rule_set_revision_ids": []uuid.UUID{rules}, "threat_feed_revision_ids": []string{}, "block_response": "nxdomain", "blocked_ttl_seconds": 60})
+	p.planRevision = p.policyInput(admin, "plan", map[string]any{"display_name": map[string]string{"zh-TW": "TEST ONLY"}, "device_limit": 3, "exit_group_ids": []uuid.UUID{p.groupID}, "price": map[string]any{"amount_minor": 1000, "currency": "USD", "billing_interval": "month", "provider": "stripe", "provider_price_ref": "TEST-ONLY-secops"}, "rate_limit": map[string]any{"down_bps": 100000000, "up_bps": 100000000}, "fair_use_revision_id": fup, "dns_profile_revision_id": dns})
 	p.metadata["sql_input_fixtures"] = []string{}
 	p.metadata["policy_revision"] = p.planRevision
 }
@@ -118,9 +122,9 @@ func (p *liveProbe) grantMembers(admin *liveSession, members []*liveSession) {
 	}
 }
 
-// The shared lab currently has one native member daemon/trigger. Admit that
-// peer through the embedded Dex device flow. Sixty concurrent clients require
-// a shared-lab scaling hook; one admitted peer must never be relabeled as 60.
+// Admit the fixed first peer through the embedded Dex device flow. The
+// exported native-peer hook supplies additional peers in scaleNative; this
+// initial admission alone must never be relabeled as a 60-device cohort.
 func (p *liveProbe) admitMember(members []*liveSession) [][]uuid.UUID {
 	devices := make([][]uuid.UUID, len(members))
 	p.bindings = map[uuid.UUID]api.DeviceBinding{}
@@ -210,7 +214,7 @@ func (p *liveProbe) admitMember(members []*liveSession) [][]uuid.UUID {
 	if len(p.bindings) == 0 {
 		p.metadata["binding_blocker"] = "Authorized device has no current product-projected binding after 45 seconds"
 	}
-	p.metadata["device_scale_blocker"] = "deploy/devstack/entrypoint-member.sh exposes one fixed daemon/interface and one user-auth trigger. Need a documented 20-user/3-native-peer-per-user fixture hook before claiming 60 devices."
+	p.metadata["device_scale_hook"] = "StartNativePeer/JoinNativeMember from #143; inspect native_scale for actual admission counts and blockers."
 	// Observe the grant-derived entitlement after at least two 15s device sweeps.
 	time.Sleep(31 * time.Second)
 	var active int
@@ -371,7 +375,7 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 	p.metadata["forward_baseline_generation_zero"] = bytes.Contains(raw, []byte("fvpn_generation=0"))
 	accepts := 0
 	for _, line := range strings.Split(string(raw), "\n") {
-		if strings.Contains(line, "fvmb0") && strings.Contains(line, "accept") {
+		if strings.Contains(line, "accept") && (strings.Contains(line, "allowed_v4") || strings.Contains(line, "fvmb0") || strings.Contains(line, "allowed_members")) {
 			accepts++
 		}
 	}
@@ -389,10 +393,11 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 		}
 	}
 	p.metadata["watchdog_state"] = heartbeat
-	_, recoverErr := p.docker("node", "test", "-f", "/var/lib/vpn-node/e2e/updater.json")
+	p.metadata["observed_lease_generation"] = p.observedLeaseGeneration(node)
+	_, recoverErr := p.docker("node", "test", "-f", "/etc/vpn-node/updater-recover.json")
 	p.metadata["configured_updater_recovery_file_present"] = recoverErr == nil
 	p.flowProbe(accepts, heartbeat["serving"] == "1")
-	p.metadata["publication_positive"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e follow-up 7", "precondition": "real agent forwarding observation passes PublicationForwardingEvidence; watchdog serving=1; admitted device counter advances", "counted_flow": p.metadata["counted_flow"], "reason": "No serving fixture or forged agent observation is permitted (D-050)."}
+	p.metadata["serving_flow_positive"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e follow-up 9", "precondition": "real agent forwarding observation passes PublicationForwardingEvidence; watchdog serving=1; admitted device counter advances", "counted_flow": p.metadata["counted_flow"], "reason": "No serving fixture or forged agent observation is permitted (D-050)."}
 	p.metadata["serving_probe"] = "API state is insufficient: require admitted device, timed member allowset, selected native exit, and increasing node forward-admission counter for the controlled flow."
 	checks := []map[string]any{}
 	for _, check := range view.Checks {
@@ -435,7 +440,7 @@ func (p *liveProbe) flowProbe(accepts int, serving bool) {
 	routes, routesErr := p.docker("member", "netbird", "networks", "list")
 	// Exit selection is meaningful only after the node is serving. The current
 	// lab's missing recovery config keeps it closed, so no route is forced here.
-	_, flowErr := p.docker("member", "wget", "--timeout=3", "--tries=1", "-q", "-O", "/dev/null", "https://releases.example.invalid/healthz")
+	_, flowErr := p.docker("member", "wget", "--timeout=3", "--tries=1", "--ca-certificate=/etc/vpn-node/ca.pem", "-q", "-O", "/dev/null", "https://releases.example.invalid/healthz")
 	after, okAfter := counters()
 	var delta uint64
 	for name, n := range after {
@@ -445,8 +450,16 @@ func (p *liveProbe) flowProbe(accepts int, serving bool) {
 	}
 	counted := serving && accepts > 0 && len(p.bindings) > 0 && okBefore && okAfter && delta > 0 && flowErr == nil
 	p.metadata["counted_flow"] = counted
-	p.metadata["flow_probe"] = map[string]any{"command": []string{"docker", "exec", livePrefix + "member", "wget", "--timeout=3", "--tries=1", "-q", "-O", "/dev/null", "https://releases.example.invalid/healthz"}, "request_succeeded": flowErr == nil, "counter_reads_ok": okBefore && okAfter, "device_counter_count": len(after), "admitted_bytes_delta": decstr.U64(delta), "node_serving": serving, "networks_read_ok": routesErr == nil, "no_native_networks": bytes.Contains(routes, []byte("No networks available")), "counted_flow": counted, "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput."}
+	p.metadata["flow_probe"] = map[string]any{"command": []string{"docker", "exec", livePrefix + "member", "wget", "--timeout=3", "--tries=1", "--ca-certificate=/etc/vpn-node/ca.pem", "-q", "-O", "/dev/null", "https://releases.example.invalid/healthz"}, "request_succeeded": flowErr == nil, "counter_reads_ok": okBefore && okAfter, "device_counter_count": len(after), "admitted_bytes_delta": decstr.U64(delta), "before_bytes": decimalCounters(before), "after_bytes": decimalCounters(after), "node_serving": serving, "networks_read_ok": routesErr == nil, "no_native_networks": bytes.Contains(routes, []byte("No networks available")), "counted_flow": counted, "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput."}
 	if !counted {
-		p.metadata["serving_blocker"] = "No positive serving flow: inspect watchdog state, publication and admission counter delta; outage/deadline and mixed-load assertions cannot start."
+		p.metadata["serving_blocker"] = "No counted serving flow; w3-devstack-e2e follow-up 9 hop-by-hop trace is the gate. Outage/deadline and mixed-load assertions cannot start."
 	}
+}
+
+func decimalCounters(in map[string]uint64) map[string]decstr.U64 {
+	out := map[string]decstr.U64{}
+	for k, v := range in {
+		out[k] = decstr.U64(v)
+	}
+	return out
 }
