@@ -48,6 +48,23 @@ export function ApiErrorAlert({
               {apiErr.serverMessage}
             </div>
           )}
+          {apiErr && apiErr.fieldErrors.length > 0 && (
+            <ul
+              style={{
+                fontSize: '0.82rem',
+                marginTop: '6px',
+                marginBottom: 0,
+                paddingLeft: '18px',
+              }}
+              data-testid={`${testId}-fields`}
+            >
+              {apiErr.fieldErrors.map((fe, idx) => (
+                <li key={`${fe.field}-${idx}`}>
+                  <code>{fe.field}</code>: {fe.reason}
+                </li>
+              ))}
+            </ul>
+          )}
           <div style={{ fontSize: '0.82rem', marginTop: '6px' }}>
             <span data-testid={`${testId}-code`}>
               {t('api.error.codeLabel', { code })}

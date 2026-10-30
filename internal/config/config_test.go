@@ -33,6 +33,51 @@ func TestAPI01_ControlExampleDomainFiles(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("example domain files: got %v, want %v", got, want)
 	}
+	for _, p := range []string{
+		c.TLSCertificateFile,
+		c.TLSKeyFile,
+		c.AgentCAFile,
+		c.DatabaseURLFile,
+		c.OIDCSecretFile,
+		c.MembersConfigFile,
+		c.DNSConfigFile,
+		c.NodesConfigFile,
+		c.PoliciesConfigFile,
+		c.UsageConfigFile,
+	} {
+		if p == "" || filepath.IsAbs(p) {
+			t.Fatalf("expected non-empty relative path in config.example.json, got %q", p)
+		}
+	}
+	if c.LoginRate != (Bucket{PerSecond: 1, Burst: 40}) || c.LoginSubjectPerMinute != 10 {
+		t.Fatalf("unexpected login rate defaults in example config: login_rate=%+v login_subject_per_minute=%d", c.LoginRate, c.LoginSubjectPerMinute)
+	}
+}
+
+func TestSEC05_LoginRateValidationRejectsZero(t *testing.T) {
+	base := Defaults()
+	base.DatabaseURLFile = "secrets/database"
+	if err := base.Validate(); err != nil {
+		t.Fatalf("defaults should validate: %v", err)
+	}
+
+	zeroBurst := base
+	zeroBurst.LoginRate.Burst = 0
+	if err := zeroBurst.Validate(); err == nil {
+		t.Fatal("expected zero login_rate.burst to be rejected")
+	}
+
+	zeroRefill := base
+	zeroRefill.LoginRate.PerSecond = 0
+	if err := zeroRefill.Validate(); err == nil {
+		t.Fatal("expected zero login_rate.per_second to be rejected")
+	}
+
+	zeroSubject := base
+	zeroSubject.LoginSubjectPerMinute = 0
+	if err := zeroSubject.Validate(); err == nil {
+		t.Fatal("expected zero login_subject_per_minute to be rejected")
+	}
 }
 
 func TestSEC01_ConfigValidationAndRedaction(t *testing.T) {

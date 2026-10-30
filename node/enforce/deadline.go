@@ -56,3 +56,20 @@ func elementTimeout(binding Binding, lease MemberLease, now time.Time) (seconds 
 	}
 	return uint32(sec), true
 }
+
+// probeTimeout is the kernel set-element lifetime for a synthetic probe, in
+// whole seconds, rounded down the same way as elementTimeout. A positive gap
+// strictly below one second is not admitted (§13.9).
+func probeTimeout(expires, now time.Time) (uint32, bool) {
+	if now.IsZero() || !expires.After(now) {
+		return 0, false
+	}
+	sec := uint64(expires.Sub(now) / time.Second)
+	if sec == 0 {
+		return 0, false
+	}
+	if sec > 0xffffffff {
+		sec = 0xffffffff
+	}
+	return uint32(sec), true
+}

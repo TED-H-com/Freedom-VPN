@@ -155,7 +155,7 @@ cannot report that ID.
 
 The adapter creates `fvpn-enroll-peer-<hash>` with the stable enrollment operation
 ID and records its group binding as `enroll-peer:<operation_id>`. It is empty at
-creation and is never a policy or route group. The setup key's `auto_groups` must
+creation and is never a policy, route or DNS nameserver group. The setup key's `auto_groups` must
 contain exactly that group and `fvpn-unpublished-nodes`. Discovery requires one
 group peer, one setup-key use, and a non-ephemeral peer without a user owner.
 The adapter records the normal `node:<node>:<incarnation>` binding, detaches the
@@ -170,7 +170,7 @@ both sources. It uses `worker_attempts`, `worker_backoff_seconds` and
 `worker_backoff_max_seconds` from the existing dispatcher. An unused key or zero
 peers retries with bounded backoff. Exhaustion leaves a failed `peer_readback`
 step/operation and a dead letter; later heartbeats cannot reset that budget.
-Multiple peers, repeated key use, a user/ephemeral peer, or a policy/route-linked
+Multiple peers, repeated key use, a user/ephemeral peer, or a policy/route/nameserver-linked
 correlation group produces a permanent mapping freeze for this incarnation,
 failed node provisioning/safety, a safe reason on the operation and an audit
 row. That event is acknowledged as a persisted terminal classification, never a
@@ -275,7 +275,7 @@ is not a production HSM or independent anti-rollback appliance.
 | `authorization_seconds`, `online_seconds`, `stuck_seconds` | Explicit fleet authorization/online/watchdog windows. |
 | `reconcile_seconds`, `fetch_seconds`, `desired_state_seconds` | Explicit reconciliation, HTTP fetch and desired-envelope durations. |
 | `release_origins` | Exact HTTPS origins for immutable manifests/artifacts. |
-| `egress_probe` | Optional fleet-wide D-058 object: 1–4 unique literal-IP TCP targets (`address`, `port`, `protocol`), optional `timeout_ms` 100–10000 (contract default 2000). Absent by default. Compiler seam integration remains pending below. |
+| `egress_probe` | Optional fleet-wide D-058 object: 1–4 unique literal-IP TCP targets (`address`, `port`, `protocol`), optional `timeout_ms` 100–10000 (contract default 2000). Absent by default. Signed with desired state before cache comparison. |
 | `dns_resolver_ipv4`, `dns_resolver_ipv6` | Fleet-wide designated resolver address arrays, validated by family; at least one address across the two arrays is required. No production default. |
 | `netbird_url`, `netbird_deployment`, `netbird_token_file` | Adapter `/api` HTTPS URL, deployment scope and bearer-token file. |
 
@@ -427,19 +427,70 @@ joins that record to immutable desired-state history and checks the current
 incarnation and current/immediately previous configuration generation. No profile
 list or document-existence inference is exposed to nodes.
 
-Integration boundary: `ResolveDocumentInputs` prepares nullable resolver and
-probe inputs, but the production desired-state compiler currently has no
-before-signing input or after-persistence hook. The patch and ownership request
-are in the follow-up report; the `egress_probe` setting is validated but is not
-yet emitted by that compiler. The runtime now adapts the DNS owner's
-`store.NewDocumentReader(pool)` through `ResolverDocumentSource`, using exported
-`LatestPublished` and `GetByID` reads without copying SQL or publication logic.
-Each read supplies one coherent immutable reference/byte snapshot; the input
-callback compares its revision and generation to the compiler's transactional
-policy snapshot and rejects a concurrent mismatch. Until the compiler and core
-cache-header seams are merged and wired, newly compiled states
-have no resolver-document reference, so their fetches correctly return 404. The
-prepared input reader accepts a single active fleet DNS profile and fails closed
-on ambiguous multiple profiles; a per-node assignment rule needs an explicit
-contract before that restriction can be relaxed. No signed probe or successful
-resolver delivery is claimed by the current production composition.
+`desiredstate.WithDocumentInputs` now calls `ResolveDocumentInputs` before
+hashing, cache comparison and signing, then `RecordIssuedResolverDocumentTx`
+after persistence in the same transaction. Both HTTP and worker compilers use
+this seam. DNS document changes and `egress_probe` changes invalidate the cached
+envelope. The runtime consumes the DNS owner's exported
+`store.NewDocumentReader(pool)` (`LatestPublished`, `GetByID`, `Canonical`),
+without re-marshalling compiler-normalized resolver bytes or duplicating DNS SQL.
+It compares document revision/generation with the transaction's policy snapshot
+and fails closed on a concurrent mismatch. Exactly one active fleet DNS profile
+is supported; none produces null, and multiple active profiles fail closed.
+There is no per-node profile assignment.
+
+Issuance metadata is an audit record with the configured `audit_days` retention
+(recommended/default 180 days). Current and previous generation authorization
+still requires retained proof; purged or absent historical proof returns 404.
+The production integration test issues a desired state, verifies its signature,
+fetches exactly the stored normalized canonical document and checks its digest
+ETag, rejects another node, allows the previous generation, and rejects generation
+minus two. The independent core cache-header exception remains its owner's work.
+
+## D-055 adversarial read-back and withdrawal
+
+The adapter re-GETs key use and correlation membership after reading the peer,
+before recording a binding, and during cleanup. A torn 0→1 key use is retried or
+confirmed rather than frozen; zero use with one peer is `Unconfirmed`. A second
+use/member is a conflict. Optional peer/resource counts must match the arrays.
+Policy `authorized_groups` object keys and DNS nameserver groups participate in
+the isolation check. Cleanup conflicts remove the tentative identity binding
+and retain correlation/withdrawal proof for operator recovery. The fixed reason
+`correlation_unavailable_revoke_and_re_enroll` identifies legacy one-group keys
+or lost correlation; revoke that attempt and re-enroll, never guess by names/IPs.
+
+Revocation re-reads the key and group before cleanup. One key use and exactly one
+non-user, non-ephemeral peer authorize DELETE with GET 404 even if discovery
+never wrote `peer_id`. A durable attempt→peer withdrawal receipt covers a crash
+between group cleanup and central commit. Zero peers is a no-op; ambiguous or
+unsafe membership leaves the group intact and records failed-step/audit evidence.
+A missing adapter binding alone is not a withdrawal receipt. Successful
+`node.identity_withdrawn` audits use only `incarnation_id` and fixed `reason`;
+failed withdrawal emits a fixed reason and stays subject to the dispatcher retry
+budget. Inactive discovery receipts remain no-ops: the separately queued revoke
+operation owns this confirmed external withdrawal.
+
+## Publication serving evidence and failure causes (SECOPS-11)
+
+A healthy baseline/tunnel ACK alone cannot set publication `active`. The current
+immutable report must acknowledge the requested nonzero generation, report
+member forwarding enabled, carry a nonexpired lease, and pass tunnel, lease,
+QoS and source-binding checks. Both observation-driven progress and the executor
+apply this rule. Missing serving evidence fails `data_path_probe` with
+`member_forwarding_unconfirmed`; the existing retry budget and terminal failure
+rules apply. This is agent-reported serving capability, not counted member traffic
+or a measurement of the watchdog/kernel. `CheckPublishable` is unchanged.
+
+Route failures store bounded causes such as `route_missing`, `route_disabled`,
+`publish_rejected:503`, `readback_failed:unconfirmed` and
+`no_distribution_groups`; no upstream body, URL or untrusted error text is
+persisted. A publication with no attached groups is accepted as intent, but the
+real adapter refuses to issue a management route and records
+`no_distribution_groups`. Attach intended `group_ids` and submit a new publication
+command. The generic operations reader currently masks stored error text;
+allowlisted cause projection is requested from control-core.
+
+Member entitlement recompilation includes `previous_exit_group_ids` when
+provided and every current envelope still carrying that member's device binding
+or rate policy. This removes access on nodes in removed groups even when an older
+producer supplies only new groups (D-052 F-02).

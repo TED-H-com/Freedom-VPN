@@ -66,7 +66,7 @@ func run(log *slog.Logger) error {
 		}
 	}
 	store := auth.PostgresStore{Pool: pool}
-	browser, e := auth.NewBrowser(ctx, auth.BrowserConfig{Issuer: c.OIDCIssuer, ClientID: c.OIDCClientID, ClientSecret: secret, Origin: c.PublicOrigin, AdminClaim: c.AdminClaim, AdminValue: c.AdminValue, MFAAMR: c.MFAAMR, MFAACR: c.MFAACR, Idle: time.Duration(c.SessionIdleSeconds) * time.Second, Absolute: time.Duration(c.SessionAbsoluteSeconds) * time.Second, LoginTTL: time.Duration(c.LoginTTLSeconds) * time.Second, RecentAuth: time.Duration(c.RecentAuthSeconds) * time.Second}, store, nil)
+	browser, e := auth.NewBrowser(ctx, auth.BrowserConfig{Issuer: c.OIDCIssuer, ClientID: c.OIDCClientID, ClientSecret: secret, Origin: c.PublicOrigin, AdminClaim: c.AdminClaim, AdminValue: c.AdminValue, MFAAMR: c.MFAAMR, MFAACR: c.MFAACR, Idle: time.Duration(c.SessionIdleSeconds) * time.Second, Absolute: time.Duration(c.SessionAbsoluteSeconds) * time.Second, LoginTTL: time.Duration(c.LoginTTLSeconds) * time.Second, RecentAuth: time.Duration(c.RecentAuthSeconds) * time.Second, SubjectPerMinute: c.LoginSubjectPerMinute, MaxRatePrincipals: c.MaxRatePrincipals}, store, nil)
 	if e != nil {
 		return e
 	}

@@ -33,10 +33,11 @@ make -f mk/portal.mk portal-dev-stack
 make -f mk/portal.mk portal-e2e
 ```
 
-### Remaining D-050 Fixture Deviations (`apps/portal/e2e/dev-stack.mjs`)
-Until the dev stack runs a second fake agent reporter and route publication projector, only two node/exit fixture seeds remain in `dev-stack.mjs`:
-1. **`exits` publication state seed:** Sets `publication_intent = 'published'` and `publication_observed = 'active'` on the enrolled node's `exits` row so member exit listings and update serving checks see an active published exit.
-2. **`SEEDED_NODE_2_ID` offline fixture node:** Inserts a secondary offline node (`nodes`, `node_incarnations`, `exits` for `jp-tyo-01` / `arm64`) without an agent reporter so `POST /api/v1/admin/update-batches` snapshots a second target in `waiting_online` (`unconfirmed: true`, `policy_generation: null`, `policy_refs: null`).
+### Product-Driven Seeding (`apps/portal/e2e/dev-stack.mjs`, D-050 / D-057 / D-058)
+`dev-stack.mjs` drives member groups, node enrollments, exit publication, and fleet update batches through the real control-plane and worker APIs:
+1. **Member groups (`POST /api/v1/admin/groups`):** Creates `standard-exits` and `default-members` via the admin API.
+2. **Two enrolled nodes (`POST /api/v1/admin/enrollments` + `POST /api/v1/agent/enroll`):** Enrolls `tw-tpe-01` (`amd64`, `nb-peer-node-1`, active reporter submitting `NodeCheck.detail`) and `jp-tyo-01` (`arm64`, `nb-peer-node-2`, secondary reporter that stays offline for the `waiting_online` update-batch target).
+3. **Exit publication (`PUT /api/v1/admin/nodes/{id}/publication`):** Publishes `tw-tpe-01` with `group_ids` under `If-Match`, acknowledges the desired generation via `POST /api/v1/agent/observations`, and waits for `fvpn-worker` (`PublishExit` + `ReadExitState`) to project `exits.publication_observed = 'active'`.
 
 ---
 

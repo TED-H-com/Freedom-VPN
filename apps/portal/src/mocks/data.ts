@@ -48,6 +48,7 @@ import type {
   MemberDetail,
   MemberDeviceListResponse,
   MemberExitListResponse,
+  MemberGroup,
   MemberListResponse,
   MemberSelf,
   MemberUsageResponse,
@@ -115,6 +116,8 @@ export const PRIMARY_FUP_DEFINITION_ID =
   policyDefinitionListJson.items[0]?.definition_id ??
   '4e1af170-8b6f-4e0e-9117-f61927eb6b07';
 export const PRIMARY_DNS_RULESET_DEFINITION_ID = '2398841d-bd48-4a11-97a4-87c59517157b';
+export const PRIMARY_GROUP_ID = '63575bae-2d23-45c0-ae11-ba6bb9ace34a';
+export const SECONDARY_GROUP_ID = '73575bae-2d23-45c0-ae11-ba6bb9ace34b';
 
 export type MockPersona =
   | 'anonymous'
@@ -243,6 +246,8 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   primary.publication_intent = 'published';
   primary.publication_observed = 'active';
   primary.member_forwarding_observed = true;
+  primary.group_ids = [PRIMARY_GROUP_ID];
+  primary.member_group_ids = [PRIMARY_GROUP_ID];
   primary.config_generation = {
     desired: '128',
     applied: '128',
@@ -254,6 +259,22 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   };
   primary.update = null;
   primary.drift = [];
+  primary.checks = [
+    {
+      name: 'internet_only',
+      status: 'passed',
+      observed_at: '2026-10-28T14:06:30Z',
+      error_code: null,
+      detail: 'inet fvpn table verified; RFC1918 egress blocked',
+    },
+    {
+      name: 'meter_path',
+      status: 'passed',
+      observed_at: '2026-10-28T14:06:30Z',
+      error_code: null,
+      detail: 'forward_admission_v1 counters active on wg-nb0',
+    },
+  ];
 
   const safetyFailed = clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.NodeDetail);
   safetyFailed.node_id = SAFETY_FAILED_NODE_ID;
@@ -263,6 +284,8 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   safetyFailed.publication_observed = 'withdrawn';
   safetyFailed.safety_status = 'failed';
   safetyFailed.member_forwarding_observed = false;
+  safetyFailed.group_ids = [PRIMARY_GROUP_ID];
+  safetyFailed.member_group_ids = [PRIMARY_GROUP_ID];
   safetyFailed.resource_version = '19';
   safetyFailed.checks = [
     {
@@ -270,12 +293,14 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
       status: 'failed',
       observed_at: '2026-10-28T14:06:30Z',
       error_code: 'NODE_NOT_SERVICEABLE',
+      detail: 'RFC1918 route leak detected on 10.0.0.0/8',
     },
     {
       name: 'meter_path',
       status: 'passed',
       observed_at: '2026-10-28T14:06:30Z',
       error_code: null,
+      detail: 'forward_admission_v1 counters active on wg-nb0',
     },
   ];
   safetyFailed.recent_errors = [
@@ -298,6 +323,8 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   offlineNode.data_health = 'unknown';
   offlineNode.safety_status = 'unknown';
   offlineNode.member_forwarding_observed = false;
+  offlineNode.group_ids = [];
+  offlineNode.member_group_ids = [];
   offlineNode.resource_version = '7';
 
   return {
@@ -408,10 +435,68 @@ export function buildInitialPolicyDefinitions(): PolicyDefinitionListResponse {
         created_at: '2026-10-28T15:00:00Z',
       },
     ],
+    threat_feed_status: {
+      approved_content_sha256: threatFeedCreate.payload.content_sha256,
+      last_good_content_sha256: threatFeedCreate.payload.content_sha256,
+      last_good_rule_count: 1420,
+      last_good_at: '2026-10-28T14:00:00Z',
+      last_good_age_seconds: '3600',
+      last_attempt_at: '2026-10-28T14:00:00Z',
+      last_result: 'success',
+      consecutive_failures: 0,
+      last_error_code: null,
+      last_error_message: null,
+      next_due_at: '2026-10-28T20:00:00Z',
+    },
     created_at: '2026-10-01T00:00:00Z',
     updated_at: '2026-10-28T15:00:00Z',
   };
   threatFeedDef.latest_revision = clone(threatFeedDef.active_revision);
+
+  const threatFeedBootstrapDefId = 'b5e85d12-74ef-4b99-a88b-b6842fe89460';
+  const threatFeedBootstrapDef: PolicyDefinition = {
+    ...clone(threatFeedDef),
+    definition_id: threatFeedBootstrapDefId,
+    code: 'phishing-bootstrap',
+    active_revision_id: threatFeedBootstrapDefId,
+    threat_feed_status: {
+      approved_content_sha256:
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      last_good_content_sha256: null,
+      last_good_rule_count: null,
+      last_good_at: null,
+      last_good_age_seconds: null,
+      last_attempt_at: null,
+      last_result: 'never',
+      consecutive_failures: 0,
+      last_error_code: null,
+      last_error_message: null,
+      next_due_at: null,
+    },
+  };
+
+  const threatFeedFailingDefId = 'c5e85d12-74ef-4b99-a88b-b6842fe89461';
+  const threatFeedFailingDef: PolicyDefinition = {
+    ...clone(threatFeedDef),
+    definition_id: threatFeedFailingDefId,
+    code: 'botnet-c2-feed',
+    active_revision_id: threatFeedFailingDefId,
+    threat_feed_status: {
+      approved_content_sha256:
+        'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      last_good_content_sha256:
+        'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      last_good_rule_count: 850,
+      last_good_at: '2026-10-28T10:00:00Z',
+      last_good_age_seconds: '18000',
+      last_attempt_at: '2026-10-28T15:00:00Z',
+      last_result: 'failed',
+      consecutive_failures: 3,
+      last_error_code: 'HASH_MISMATCH',
+      last_error_message: 'Feed refresh failed; retaining last-good content.',
+      next_due_at: '2026-10-28T15:15:00Z',
+    },
+  };
 
   const dnsProfileDefId = '3dac5c85-4d8c-4424-9a8d-0b15a37f3495';
   const dnsProfileDef: PolicyDefinition = {
@@ -489,7 +574,14 @@ export function buildInitialPolicyDefinitions(): PolicyDefinitionListResponse {
   };
   relSupDef.latest_revision = clone(relSupDef.active_revision);
 
-  baseList.items.push(ruleSetDef, threatFeedDef, dnsProfileDef, relSupDef);
+  baseList.items.push(
+    ruleSetDef,
+    threatFeedDef,
+    threatFeedBootstrapDef,
+    threatFeedFailingDef,
+    dnsProfileDef,
+    relSupDef,
+  );
   return baseList;
 }
 
@@ -601,6 +693,7 @@ export interface MockState {
   persona: MockPersona;
   forceSession401: boolean;
   nodes: Record<string, NodeDetail>;
+  groups: MemberGroup[];
   enrollments: Record<string, EnrollmentRecord>;
   releaseList: ReleaseListResponse;
   updateBatch: UpdateBatchDetail;
@@ -621,6 +714,20 @@ export function createInitialMockState(persona: MockPersona = 'admin'): MockStat
     persona,
     forceSession401: false,
     nodes: buildInitialNodeDetails(),
+    groups: [
+      {
+        group_id: PRIMARY_GROUP_ID,
+        code: 'standard-exits',
+        name: 'Standard Member Exits',
+        exit_count: 2,
+      },
+      {
+        group_id: SECONDARY_GROUP_ID,
+        code: 'default-members',
+        name: 'Default Members Group',
+        exit_count: 0,
+      },
+    ],
     enrollments: {
       [PRIMARY_ENROLLMENT_ID]: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.Enrollment),
     },
