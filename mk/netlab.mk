@@ -12,7 +12,23 @@ NETLAB_IMAGE := $(FVPN_LAB_PREFIX):lab
 NETLAB_SCRATCH := /tmp/$(FVPN_LAB_PREFIX)-scratch
 NETLAB_BIN := /tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 
-.PHONY: netlab-unit netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
+.PHONY: netlab-unit netlab-lint netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
+
+# gofmt, vet, and staticcheck for the enforce library and the netlab harness.
+# The privileged suite is not part of this target.
+netlab-lint:
+	@set -eu; \
+	cd $(ROOT); \
+	files=$$(git ls-files --cached --others --exclude-standard 'node/enforce/*.go' 'tests/netlab/*.go' 'tests/netlab/cmd/fvpn-netlab/*.go' 'tests/netlab/at/*.go' 'tests/netlab/agent/*.go'); \
+	test -z "$$(gofmt -l $$files)" || { echo 'gofmt required'; gofmt -l $$files; exit 1; }; \
+	mkdir -p .agent/tmp; \
+	task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/go.XXXXXX"); \
+	trap 'rm -rf "$$task_tmp"' EXIT; \
+	export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local; \
+	go vet ./node/enforce/...; \
+	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/enforce/...; \
+	go vet -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent ./tests/netlab/cmd/fvpn-netlab; \
+	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent ./tests/netlab/cmd/fvpn-netlab
 
 netlab-unit:
 	cd $(ROOT) && CGO_ENABLED=0 go test ./node/enforce/...
