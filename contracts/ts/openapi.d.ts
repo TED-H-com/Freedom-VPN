@@ -1059,8 +1059,9 @@ export interface components {
          *     contracts tests keep this enum identical to that table. Codes marked
          *     node-local in `pkg/apierr` are reported mainly inside agent payloads
          *     (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
-         *     METER_EPOCH_CHANGE and the nine node enforcement verification codes added
-         *     in revision 8 are report-only and have no HTTP response status.
+         *     METER_EPOCH_CHANGE, the nine node enforcement verification codes added
+         *     in revision 8, and AWAITING_MEMBER_GRANTS (D-071) are report-only and
+         *     have no HTTP response status.
          *     NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
          *     endpoints must not ship with it in a release.
          *     Node enforcement verification (§13.11) is the address-free group the node
@@ -1079,9 +1080,10 @@ export interface components {
          *     MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
          *     ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
          *     PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+         *     AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
          * @enum {string}
          */
-        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "ARTIFACT_INVALID" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "ISOLATION_BASELINE_MISSING" | "METER_EPOCH_CHANGE" | "ISOLATION_POLICY_INVALID" | "GENERATION_MISMATCH" | "HOOK_PRIORITY_MISMATCH" | "COUNTER_ORDER_INVALID" | "FLOWTABLE_BYPASS" | "DEVICE_CLASS_MISSING" | "QOS_CLASS_MISSING" | "MARK_SEMANTICS_VIOLATED" | "PROBE_UNBOUNDED" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
+        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "ARTIFACT_INVALID" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "ISOLATION_BASELINE_MISSING" | "METER_EPOCH_CHANGE" | "ISOLATION_POLICY_INVALID" | "GENERATION_MISMATCH" | "HOOK_PRIORITY_MISMATCH" | "COUNTER_ORDER_INVALID" | "FLOWTABLE_BYPASS" | "DEVICE_CLASS_MISSING" | "QOS_CLASS_MISSING" | "MARK_SEMANTICS_VIOLATED" | "PROBE_UNBOUNDED" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "AWAITING_MEMBER_GRANTS" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
         /** @description Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type). */
         PeriodId: string;
         /** @description User-facing text. zh-TW is the default UI language; English is second. */
@@ -1396,6 +1398,19 @@ export interface components {
             /** Format: date-time */
             created_at: string;
         };
+        /**
+         * @description Cloned or duplicated node identity state for the current incarnation
+         *     (spec line 278, docs/pki/enrollment.md). Endpoint hashes, addresses and
+         *     compatibility domains are never exposed.
+         */
+        NodeIdentityConflict: {
+            /** @description The current incarnation's external identity mapping is frozen - automatic mapping updates are suppressed. Resolution is operator revoke + re-enroll (the new incarnation starts unfrozen). There is no automatic unfreeze and no unfreeze operation. */
+            mapping_frozen: boolean;
+            /** @description Recorded identity conflicts for the current incarnation. */
+            conflict_count: number;
+            /** Format: date-time */
+            last_conflict_at: string | null;
+        };
         /** @description Node detail (§14.2, §18.1) with desired versus observed differences. */
         NodeDetail: components["schemas"]["NodeSummary"] & {
             /** Format: uuid */
@@ -1419,6 +1434,13 @@ export interface components {
             /** @description Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed. Empty means no attached groups; absent means not projected. Existing member_group_ids remains unchanged. */
             group_ids?: string[];
             /**
+             * @description Cloned or duplicated node identity state (spec line 278, docs/pki/enrollment.md).
+             *     null when the node has no current incarnation or no endpoint has been observed yet;
+             *     absent means the server does not project it yet (pre-revision-11). Endpoint hashes,
+             *     addresses and compatibility domains are never exposed.
+             */
+            identity_conflict?: components["schemas"]["NodeIdentityConflict"] | null;
+            /**
              * @description Reported DNS policy evidence from the immutable observation selected for this
              *     node's current incarnation (D-056). Same shape as ObservationReport.dns_policy_evidence:
              *     document id, content digest, policy generation, outcome, applied_at, feed summaries
@@ -1428,6 +1450,16 @@ export interface components {
              */
             dns_policy_evidence?: components["schemas"]["DnsPolicyEvidence"] | null;
         };
+        /**
+         * @description One named node check. In the D-071 provisional state (the node lease for this
+         *     generation is inside its anchored deadline, `config_generation` equals the desired
+         *     generation, `lease.members` is empty, and desired `device_bindings` is non-empty),
+         *     `name=lease`, `name=qos` and `name=source_binding` are `status=failed` with
+         *     `error_code=AWAITING_MEMBER_GRANTS`, not `VALIDATION_FAILED`. Details are
+         *     `Serving lease has no member grants yet.`, `Rate policy could not be applied.`
+         *     and `No member binding was admitted.`. A passed deadline uses `LEASE_EXPIRED`
+         *     (`Serving lease is not in force.`). A generation mismatch uses `STALE_GENERATION`.
+         */
         NodeCheck: {
             /** @enum {string} */
             name: "internet_only" | "source_binding" | "meter_path" | "qos" | "dns_policy" | "lease" | "policy_signature" | "release_supported" | "tunnel_probe" | "storage";
@@ -3213,11 +3245,32 @@ export interface components {
          *     (D-067) is different: the node holds a valid node lease whose member
          *     grant set is empty while the desired generation carries member bindings.
          *     The agent renews on a bounded schedule. Do not report `lease_expired`
-         *     for that provisional lease.
+         *     for that provisional lease. While that deadline holds, the `lease`,
+         *     `qos` and `source_binding` checks and the single `errors[]` entry use
+         *     `ErrorCode` `AWAITING_MEMBER_GRANTS` (D-071). This enum is unchanged.
          * @enum {string}
          */
         ForwardingBlockReason: "not_published" | "identity_invalid" | "provisioning_incomplete" | "policy_missing" | "policy_expired" | "lease_expired" | "awaiting_member_grants" | "clock_untrusted" | "safety_check_failed" | "meter_path_invalid" | "meter_storage_failed" | "outbox_full" | "disk_low" | "release_not_supported" | "update_in_progress" | "recovery_required";
-        /** @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at; the center stores its own received_at. */
+        /**
+         * @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
+         *     the center stores its own received_at.
+         *     D-071. When the node lease for this generation is inside its anchored deadline and
+         *     `config_generation` equals the desired generation, but `lease.members` is empty while
+         *     desired `device_bindings` is non-empty, `forwarding_block_reasons` contains
+         *     `awaiting_member_grants` (revision 10; that vocabulary is unchanged) and `safety_status`
+         *     stays `passed`. `checks[]` then carries `name=lease`, `status=failed`,
+         *     `error_code=AWAITING_MEMBER_GRANTS`, detail `Serving lease has no member grants yet.`;
+         *     `name=qos` and `name=source_binding` in the same provisional state carry
+         *     `AWAITING_MEMBER_GRANTS` (not `VALIDATION_FAILED`) with details
+         *     `Rate policy could not be applied.` and `No member binding was admitted.`.
+         *     `errors[]` carries exactly one entry `code=AWAITING_MEMBER_GRANTS`, `stage=lease`,
+         *     `message=Serving lease has no member grants yet.`. The agent renews on the D-067
+         *     schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline
+         *     failure and not a malformed policy.
+         *     Negatives, unchanged: a passed deadline is `lease_expired` / `LEASE_EXPIRED`
+         *     (`Serving lease is not in force.`); a generation mismatch is `policy_missing` /
+         *     `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
+         */
         ObservationReport: {
             /**
              * Format: uuid

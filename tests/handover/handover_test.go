@@ -910,7 +910,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"Forty-six are wired in `apps/control` on `main`",
+		"All 47 are wired in `apps/control` on `main`",
 		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
 		"D-065",
 		"/api/v1/admin/fleet-config",

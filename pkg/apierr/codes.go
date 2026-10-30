@@ -100,6 +100,7 @@ const (
 	EnrollmentTokenRevoked   Code = "ENROLLMENT_TOKEN_REVOKED"
 	EnrollmentKeyMismatch    Code = "ENROLLMENT_KEY_MISMATCH"
 	LeaseExpired             Code = "LEASE_EXPIRED"
+	AwaitingMemberGrants     Code = "AWAITING_MEMBER_GRANTS"
 	WebhookSignatureBad      Code = "WEBHOOK_SIGNATURE_INVALID"
 	BootstrapConsumed        Code = "BOOTSTRAP_CONSUMED"
 	BootstrapNotReady        Code = "BOOTSTRAP_NOT_READY"
@@ -180,6 +181,7 @@ var specs = []Spec{
 	{EnrollmentTokenRevoked, http.StatusUnauthorized, false, "§6.4, ENR02", false, "Enrollment token was revoked."},
 	{EnrollmentKeyMismatch, http.StatusConflict, false, "§6.2, ENR02", false, "Token is already bound to a different public key or enrollment_request_id."},
 	{LeaseExpired, http.StatusConflict, false, "§16.3", true, "Serving lease expired; member forwarding is off until a new lease is applied."},
+	{AwaitingMemberGrants, 0, false, "D-071, §16.3", true, "The node lease is inside its anchored deadline but lease.members is empty while desired device_bindings is non-empty. The agent renews on the D-067 schedule. This is not a deadline failure and not a malformed policy. Node report only."},
 	{WebhookSignatureBad, http.StatusUnauthorized, false, "§9.3", false, "Payment provider webhook signature is missing or invalid; entitlement unchanged."},
 	{BootstrapConsumed, http.StatusGone, false, "§6.4, §14.7 (D-015)", false, "Bootstrap delivery was consumed; plaintext is never replayed."},
 	{BootstrapNotReady, http.StatusConflict, true, "§6.4, §14.7 (D-015)", false, "Worker has not yet prepared the bootstrap delivery; retry the same request."},
