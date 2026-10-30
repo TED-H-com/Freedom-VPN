@@ -14,10 +14,11 @@ const DNSPolicyCheckName = api.NodeCheckNameDnsPolicy
 // policy_generation is the decimal generation stored beside the document.
 // document_hash is the lowercase SHA-256 of the RFC 8785 resolver document.
 type Evidence struct {
-	PolicyGeneration string    `json:"policy_generation"`
-	DocumentHash     string    `json:"document_hash"`
-	AppliedAt        time.Time `json:"applied_at"`
-	Verified         bool      `json:"verified"`
+	PolicyGeneration string         `json:"policy_generation"`
+	DocumentHash     string         `json:"document_hash"`
+	AppliedAt        time.Time      `json:"applied_at"`
+	Verified         bool           `json:"verified"`
+	Feeds            []FeedEvidence `json:"feeds,omitempty"`
 }
 
 // DNSOK reports whether the node may advertise dns_ok. The agent maps this to
@@ -30,4 +31,11 @@ func (e Evidence) DNSPolicyStatus() api.HealthCheckStatus {
 		return api.HealthCheckStatusPassed
 	}
 	return api.HealthCheckStatusFailed
+}
+
+// FeedEvidence contains configuration evidence, never query names.
+type FeedEvidence struct {
+	FeedCode      string `json:"feed_code"`
+	ContentSHA256 string `json:"content_sha256"`
+	RuleCount     int    `json:"rule_count"`
 }

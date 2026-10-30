@@ -1,0 +1,55 @@
+name: Usage and Fair-Use acceptance
+
+on:
+  pull_request:
+    paths:
+      - tests/e2e/at/usage/**
+      - docs/e2e/at/usage/**
+      - mk/at-usage.mk
+      - .github/workflows/at-usage.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+  FVPN_E2E_PREFIX: w4-usage
+  FVPN_E2E_PORT_BASE: "48000"
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - run: make -f mk/at-usage.mk at-usage-lint at-usage-test at-usage-build
+
+  assigned-stack:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: Start assigned w4-usage stack
+        id: up
+        continue-on-error: true
+        run: FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
+      - name: Run AT14-AT19 acceptance suite (blocked cases exit non-zero after writing evidence)
+        if: steps.up.outcome == 'success'
+        run: make -f mk/at-usage.mk at-usage
+      - name: Tear down assigned w4-usage stack
+        if: always() && steps.up.outcome != 'skipped'
+        run: FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: at-usage-evidence
+          path: docs/e2e/at/usage/AT*

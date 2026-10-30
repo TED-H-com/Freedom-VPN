@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/google/uuid"
 )
 
@@ -21,6 +22,7 @@ func sampleInput() Input {
 		},
 		Feeds: []Feed{{
 			FeedCode:      "example-malware",
+			Entries:       []dnspolicy.SourceEntry{{Domain: "malware.example.com", IncludeSubdomains: true}},
 			ContentSHA256: "7777777777777777777777777777777777777777777777777777777777777777",
 			Format:        "domain_list",
 			Categories:    []string{"phishing", "malware"},
@@ -148,5 +150,37 @@ func Test12_5_RenderRulesCarryHash(t *testing.T) {
 	}
 	if !strings.Contains(text, "||tracker.example.com^$important") || !strings.Contains(text, "@@|cdn.example.com^") {
 		t.Fatalf("rules missing:\n%s", text)
+	}
+}
+
+func TestD054_AT20_FeedContentAndCanonicalIntegrity(t *testing.T) {
+	in := sampleInput()
+	in.Feeds[0].Entries = []dnspolicy.SourceEntry{{Domain: "TRACKER.example.com.", IncludeSubdomains: true}, {Domain: "cdn.example.com", IncludeSubdomains: true}, {Domain: "cdn.example.com", IncludeSubdomains: true}}
+	c, err := Compile(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	in.Feeds[0].Entries = []dnspolicy.SourceEntry{{Domain: "cdn.example.com", IncludeSubdomains: true}, {Domain: "tracker.example.com", IncludeSubdomains: true}}
+	reordered, err := Compile(in)
+	if err != nil || !bytes.Equal(c.Bytes, reordered.Bytes) {
+		t.Fatalf("feed ordering: %v", err)
+	}
+	lines, err := RenderRules(c.Document, "9", c.Hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"||tracker.example.com^$important", "@@|cdn.example.com^", "||cdn.example.com^", "||tracker.example.com^"} {
+		if !strings.Contains(strings.Join(lines, "\n"), want) {
+			t.Fatalf("missing layer rule %s", want)
+		}
+	}
+	invalid := c.Document
+	invalid.Feeds[0].RuleCount++
+	if Verify(invalid) == nil {
+		t.Fatal("tampered rule count accepted")
+	}
+	in.Feeds[0].Entries = nil
+	if _, err := Compile(in); err == nil {
+		t.Fatal("metadata-only feed accepted")
 	}
 }

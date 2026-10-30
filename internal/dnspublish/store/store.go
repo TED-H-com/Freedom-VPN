@@ -124,7 +124,28 @@ type activation struct {
 
 func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen decstr.U64, operationID string) (Publication, error) {
 	var pub Publication
+	activationGen := gen
 	err := db.InTx(ctx, p.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		pub = Publication{}
+		gen = activationGen
+		if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(544055)`); err != nil {
+			return err
+		}
+		var current *uuid.UUID
+		var definitionGen string
+		if err := tx.QueryRow(ctx, `SELECT active_revision_id,generation::text FROM policy_definitions WHERE id=$1 FOR SHARE`, defID).Scan(&current, &definitionGen); err != nil {
+			return err
+		}
+		if current == nil || *current != revID || definitionGen != gen.String() {
+			// Superseded activation cannot compile current feed content into an
+			// old revision, nor move its head. Return stable receipt evidence.
+			err := tx.QueryRow(ctx, `SELECT document_sha256 FROM dns_resolver_documents WHERE profile_revision_id=$1 ORDER BY policy_generation DESC LIMIT 1`, revID).Scan(&pub.DocumentHash)
+			if errors.Is(err, pgx.ErrNoRows) {
+				pub.DocumentHash = "superseded"
+				return nil
+			}
+			return err
+		}
 		in, code, err := loadProfile(ctx, tx, defID, revID)
 		if err != nil {
 			return err
@@ -134,6 +155,36 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 		compiled, err := dnspublish.Compile(in)
 		if err != nil {
 			return err
+		}
+		var headRev uuid.UUID
+		var headGen, headHash, headStatus string
+		err = tx.QueryRow(ctx, `SELECT profile_revision_id,policy_generation::text,document_sha256,status FROM dns_publication_heads WHERE definition_id=$1`, defID).Scan(&headRev, &headGen, &headHash, &headStatus)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+		if err == nil && headRev == revID && headStatus == statusWithdrawn {
+			return errors.New("dns publication is withdrawn")
+		}
+		if err == nil && headRev == revID && headHash == compiled.Hash {
+			gen, err = decstr.Parse(headGen)
+			if err != nil {
+				return err
+			}
+		} else {
+			// A global DNS generation also advances desired state's MAX(head)
+			// when a lower-numbered profile changes. No policy revision mutates.
+			var maximum string
+			if err := tx.QueryRow(ctx, `SELECT coalesce(max(policy_generation),0)::text FROM dns_resolver_documents`).Scan(&maximum); err != nil {
+				return err
+			}
+			previous, err := decstr.Parse(maximum)
+			if err != nil {
+				return err
+			}
+			if previous == ^decstr.U64(0) {
+				return errors.New("dns generation exhausted")
+			}
+			gen = max(gen, previous+1)
 		}
 		if err := insertDocument(ctx, tx, defID, revID, code, gen, compiled); err != nil {
 			return err
@@ -159,17 +210,34 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 }
 
 func (p *Publisher) withdraw(ctx context.Context, defID, revID uuid.UUID, gen decstr.U64, operationID string) error {
+	activationGen := gen
 	return db.InTx(ctx, p.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		var hash string
+		gen = activationGen
+		if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(544055)`); err != nil {
+			return err
+		}
+		var active *uuid.UUID
+		var activeGen string
+		if err := tx.QueryRow(ctx, `SELECT active_revision_id,generation::text FROM policy_definitions WHERE id=$1 FOR SHARE`, defID).Scan(&active, &activeGen); err != nil {
+			return err
+		}
+		if active != nil && *active == revID && activeGen != gen.String() {
+			return nil
+		}
+		var hash, storedGen string
 		err := tx.QueryRow(ctx, `
-			SELECT document_sha256 FROM dns_resolver_documents
-			WHERE profile_revision_id = $1 AND definition_id = $2 AND policy_generation = $3::numeric`,
-			revID, defID, gen.String(),
-		).Scan(&hash)
+			SELECT document_sha256,policy_generation::text FROM dns_resolver_documents
+            WHERE profile_revision_id = $1 AND definition_id = $2 ORDER BY policy_generation DESC LIMIT 1`,
+			revID, defID,
+		).Scan(&hash, &storedGen)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return fmt.Errorf("no resolver document for revision %s", revID)
 			}
+			return err
+		}
+		gen, err = decstr.Parse(storedGen)
+		if err != nil {
 			return err
 		}
 		advanced, err := advanceHead(ctx, tx, defID, revID, gen, hash, statusWithdrawn)
@@ -186,23 +254,29 @@ func (p *Publisher) withdraw(ctx context.Context, defID, revID uuid.UUID, gen de
 // GetByRevision returns the stored canonical document for a policy revision.
 // Desired state policy_refs carry this revision id (§12.5).
 func (p *Publisher) GetByRevision(ctx context.Context, revID uuid.UUID) (Publication, error) {
-	return p.getByRevision(ctx, revID)
+	return p.getByRevision(ctx, revID, nil)
 }
 
-func (p *Publisher) getByRevision(ctx context.Context, revID uuid.UUID) (Publication, error) {
+// GetByGeneration returns an immutable version for authenticated delivery. A
+// caller must use the generation it authorized, rather than race the latest head.
+func (p *Publisher) GetByGeneration(ctx context.Context, revID uuid.UUID, generation decstr.U64) (Publication, error) {
+	return p.getByRevision(ctx, revID, generation.String())
+}
+
+func (p *Publisher) getByRevision(ctx context.Context, revID uuid.UUID, generation any) (Publication, error) {
 	var pub Publication
 	var genStr string
 	err := p.pool.QueryRow(ctx, `
 		SELECT d.definition_id, d.profile_revision_id, d.profile_code, d.policy_generation::text,
 		       d.document_sha256, d.canonical_bytes,
 		       CASE
-		         WHEN h.profile_revision_id = d.profile_revision_id THEN h.status
+		         WHEN h.profile_revision_id = d.profile_revision_id AND h.policy_generation = d.policy_generation THEN h.status
 		         WHEN h.definition_id IS NULL THEN 'active'
 		         ELSE 'superseded'
 		       END
 		FROM dns_resolver_documents d
 		LEFT JOIN dns_publication_heads h ON h.definition_id = d.definition_id
-		WHERE d.profile_revision_id = $1`, revID).Scan(
+		WHERE d.profile_revision_id = $1 AND ($2::numeric IS NULL OR d.policy_generation=$2::numeric) ORDER BY d.policy_generation DESC LIMIT 1`, revID, generation).Scan(
 		&pub.DefinitionID, &pub.ProfileRevisionID, &pub.ProfileCode, &genStr,
 		&pub.DocumentHash, &pub.Canonical, &pub.Status,
 	)
@@ -245,7 +319,7 @@ func (p *Publisher) Head(ctx context.Context, defID uuid.UUID) (Publication, err
 		}
 		return Publication{}, err
 	}
-	return p.getByRevision(ctx, revID)
+	return p.getByRevision(ctx, revID, nil)
 }
 
 func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (dnspublish.Input, string, error) {
@@ -353,13 +427,27 @@ func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 		if err := json.Unmarshal(payload, &feed); err != nil {
 			return nil, err
 		}
+		var contentHash string
+		var entriesJSON []byte
+		err = tx.QueryRow(ctx, `SELECT c.content_sha256,c.entries FROM dns_feed_refresh_state s JOIN dns_feed_contents c ON c.feed_revision_id=s.feed_revision_id AND c.content_sha256=s.last_good_content WHERE s.feed_revision_id=$1`, revID).Scan(&contentHash, &entriesJSON)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("feed_last_good_missing")
+		}
+		if err != nil {
+			return nil, err
+		}
+		var entries []dnspolicy.SourceEntry
+		if err := json.Unmarshal(entriesJSON, &entries); err != nil {
+			return nil, err
+		}
 		cats := make([]string, len(feed.Categories))
 		for i, c := range feed.Categories {
 			cats[i] = string(c)
 		}
 		feeds = append(feeds, dnspublish.Feed{
 			FeedCode:      feed.FeedCode,
-			ContentSHA256: feed.ContentSha256,
+			ContentSHA256: contentHash,
+			Entries:       entries,
 			Format:        string(feed.Format),
 			Categories:    cats,
 		})
@@ -368,13 +456,17 @@ func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 }
 
 func insertDocument(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, code string, gen decstr.U64, compiled dnspublish.Compiled) error {
+	documentID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
 	tag, err := tx.Exec(ctx, `
 		INSERT INTO dns_resolver_documents (
 			profile_revision_id, definition_id, profile_code, policy_generation,
-			document_sha256, document, canonical_bytes
-		) VALUES ($1, $2, $3, $4::numeric, $5, $6::jsonb, $7)
-		ON CONFLICT (profile_revision_id) DO NOTHING`,
-		revID, defID, code, gen.String(), compiled.Hash, string(compiled.Bytes), compiled.Bytes,
+            document_sha256, document, canonical_bytes, id
+        ) VALUES ($1, $2, $3, $4::numeric, $5, $6::jsonb, $7, $8)
+		ON CONFLICT (profile_revision_id, policy_generation) DO NOTHING`,
+		revID, defID, code, gen.String(), compiled.Hash, string(compiled.Bytes), compiled.Bytes, documentID,
 	)
 	if err != nil {
 		return fmt.Errorf("store resolver document: %w", err)
@@ -385,7 +477,7 @@ func insertDocument(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, code
 	var existing string
 	var existingGen string
 	if err := tx.QueryRow(ctx, `
-		SELECT document_sha256, policy_generation::text FROM dns_resolver_documents WHERE profile_revision_id = $1`, revID,
+		SELECT document_sha256, policy_generation::text FROM dns_resolver_documents WHERE profile_revision_id = $1 AND policy_generation=$2::numeric`, revID, gen.String(),
 	).Scan(&existing, &existingGen); err != nil {
 		return err
 	}
