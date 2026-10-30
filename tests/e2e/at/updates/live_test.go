@@ -41,13 +41,14 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 3 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 4 requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
 	}
 	// Install the gate before login/build/enrollment: even Fatal writes all ATs.
 	defer func() {
+		requireFollowup4Evidence(records)
 		dir := filepath.Join(root, "docs", "e2e", "at", "updates")
 		var summary strings.Builder
-		fmt.Fprintf(&summary, "# Updates follow-up 3\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		fmt.Fprintf(&summary, "# Updates follow-up 4\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution, multi-node populations, reinstall and stale-ACK races remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
 		for i := 23; i <= 27; i++ {
 			rec := records[fmt.Sprintf("AT%d", i)]
 			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
@@ -254,6 +255,9 @@ func TestUpdatesFollowup(t *testing.T) {
 	}()
 	rollbackBatch, ok := s.batch("AT26", boot)
 	if ok {
+		emptyTarget := s.target(rollbackBatch)
+		s.note("AT26", "batch_api_without_receipt", emptyTarget.BatchJSON)
+		s.note("AT26", "check_revision7_empty_target", targetEvidenceMatches(emptyTarget.BatchJSON, nil))
 		s.note("AT26", "failure_stimulus", "TEST ONLY: candidate TCP egress probe dials its own closed loopback port; no forced health values or journal writes")
 		s.execute("AT26", false)
 		journal := s.journal(boot)
@@ -286,6 +290,9 @@ func TestUpdatesFollowup(t *testing.T) {
 		t.Fatal("restore candidate config failed")
 	}
 
+	if ok {
+		s.followup4(rollbackBatch, boot, lastGood, good)
+	}
 }
 
 type updatesFollowup struct {
@@ -305,6 +312,7 @@ func (s *updatesFollowup) pass(id, detail string) {
 	s.r.t.Log(id + ": pass: " + detail)
 }
 func (s *updatesFollowup) block(id, detail string) {
+	s.rec[id].Status = at.StatusBlocked
 	s.rec[id].Actual = detail
 	s.r.t.Log(id + ": blocked: " + detail)
 }
@@ -326,7 +334,7 @@ func (s *updatesFollowup) batch(id string, release uuid.UUID) (api.UpdateBatchAc
 		s.block(id, "w3-wire-fleet: fleet read unavailable")
 		return accepted, false
 	}
-	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 3"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 4"}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	s.note(id, "batch_response", httpDetail(reply, err))
 	if err != nil || reply.Status != 202 || json.Unmarshal(reply.Body, &accepted) != nil {
 		s.block(id, "w3-wire-fleet: batch create not accepted")
@@ -531,7 +539,7 @@ func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
 }
 
 // Flush uses the product outbox sender. Rejections remain diagnostic; no result or
-// acknowledgement is synthesized. Preflight errors can return before Run flushes.
+// acknowledgement is synthesized by this flush. Preflight errors can return before Run flushes.
 func (s *updatesFollowup) flush(id string) {
 	started := time.Now().UTC()
 	output, err := exec.CommandContext(s.ctx, "docker", "exec", s.r.lab.node, "fvpn-updater", "flush", "-config", "/var/lib/vpn-node/e2e/updater.json.done").CombinedOutput()
@@ -582,6 +590,7 @@ func updatesRecoveryComplete(before, after updatesJournal, blocked, running bool
 }
 
 func TestUpdatesFollowupEvidence(t *testing.T) {
+	testFollowup4Evidence(t)
 	before := updatesJournal{TxnID: "test-transaction", Stage: "final_sampled"}
 	after := updatesJournal{TxnID: before.TxnID, Stage: "locally_succeeded", Health: map[string]string{
 		"processes": "passed", "identity_and_state": "passed", "internet_only": "passed", "dns_policy": "passed", "tunnel_probe": "passed",
@@ -659,7 +668,8 @@ func TestUpdatesFollowupEvidence(t *testing.T) {
 }
 
 // Receipts preserve the product's immutable result JSON and original ACK or
-// rejection, joined to this batch. They are read-only evidence, never inputs.
+// rejection, joined to this batch. Follow-up 4 also uses a copy for the explicitly
+// requested API conflict probes; the original receipt is never modified.
 func (s *updatesFollowup) receipts(id string, batch api.UpdateBatchAccepted) bool {
 	conn, err := s.r.lab.db(s.ctx)
 	if err != nil {
