@@ -333,7 +333,7 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"node/cmd/fvpn-*",
 		"internal/*/cmd/fvpn-*",
 		"packaging/*/cmd/fvpn-*",
-		"tests/e2e/cmd/fvpn-*",
+		"tests/*/cmd/fvpn-*",
 	}
 	binaries := map[string]string{}
 	for _, g := range cmdGlobs {
@@ -1375,6 +1375,135 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	} {
 		if !strings.Contains(opsREADME, token) {
 			t.Errorf("docs/ops/README.md missing expected follow-up 9 token %q", token)
+		}
+	}
+}
+
+func TestHandover_Followup10Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify operator-guide.md pins for follow-up 10:
+	// - Cloned-identity runbook addition (#217, #223) + docs/portal/README.md §6 cross-reference
+	// - Revoke completion fence (exit-group + 90 s freshness) and one-shot stale-generation grace in node.observation_applied audit (#217, D-075 note)
+	// - Whole-ruleset nftables read-back (#220)
+	// - Fair-Use enforcement reach and fair_use.applying convergence (#222)
+	// - D-074 gated node.publish waiting state (#224)
+	// - Acceptance cross-references for devstack follow-up 13 (#219) and secops follow-up 8 (#221)
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"#217", "#219", "#220", "#221", "#222", "#223", "#224",
+		"D-074",
+		// Cloned-identity projection & portal cross-reference (#217, #223).
+		"identity_conflict.mapping_frozen: true",
+		"participates in the node strong `ETag`",
+		"304 Not Modified",
+		"mapping_frozen: false, conflict_count: 0",
+		"the new incarnation resets the projection",
+		"../portal/README.md#6-operator-node-detail-notes-provisional-lease-waiting-copy--identity-conflict-d-067-d-071-d-072",
+		// Revoke completion fence & stale-generation grace (#217).
+		"ObserveRevokedDeviceCutoffTx",
+		"DefaultStaleTimeout = 90 s",
+		"stale or ungrouped/unrelated nodes never hold a revoke",
+		"awaiting_serving_exit_observation",
+		"staleGenerationGraceAvailableTx",
+		"once per generation change",
+		"node.observation_applied",
+		"stale_generation_grace: true",
+		"D-075",
+		// Whole-ruleset nftables read-back (#220).
+		"node/enforce/verify_foreign.go",
+		"nft -j list ruleset",
+		"table <t> family <f> hook <h> priority <p> chain <c> statement <s>",
+		"ufw",
+		"firewalld",
+		// Fair-Use enforcement reach (#222).
+		"Fair-Use Enforcement Reach and `fair_use.applying` Convergence",
+		"fup.member_generation_changed",
+		"Compiler.RecompileBatch",
+		"computeMemberFUPApplying",
+		"\"look at the node\", not \"look at the policy\"",
+		"`plan`-only rate changes (`policy.activated` with `domain = \"plan\"`) wait for the next compile trigger",
+		// D-074 gated node.publish waiting state (#224).
+		"When a `node.publish` operation stays `running` with `agent_policy` or `data_path_probe` in `status: \"pending\"`, `error_code: \"NODE_NOT_SERVICEABLE\"`, and `message: \"member_forwarding_unconfirmed\"`, central is waiting for the node to apply the latest compiled configuration generation and report passing serving checks (`exits.publication_observed` remains unchanged, or `\"withdrawn\"` if an empty-exception route was withdrawn first); the step clears automatically on the next qualifying observation and worker pass, and transitions to `status: \"failed\"` (`publication_observed: \"error\"`) only if the worker retry budget (`worker_attempts` = 10 attempts, ~4.3–8.5 minutes of jittered exponential backoff from 1s to 300s) is exhausted, at which point you should verify node health and re-issue `PUT /api/v1/admin/nodes/{node_id}/publication`.",
+		// Acceptance cross-references (#219, #221).
+		"InjectMemberIngress",
+		"ObserveMemberIngress",
+		"ctunku",
+		"4c97ebef",
+		"26 pass / 1 blocked / 0 fail",
+		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+		"105.94 s",
+		"111.51 s",
+		"116.651 s",
+		"120.12 s",
+		"SECOPS-18",
+		"D-076",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 10 token %q", token)
+		}
+	}
+
+	// 2. Verify calibration.md pins for #220 (whole-ruleset read-back), #222 (Fair-Use recompile & fair_use.applying), and #224 (D-074 retry budget).
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#220", "#222", "#224",
+		"D-074",
+		"Compiler.RecompileBatch",
+		"fup.member_generation_changed",
+		"computeMemberFUPApplying",
+		"\"look at the node\", not \"look at the policy\"",
+		"`plan`-only rate changes",
+		"255.5 s..511 s",
+		"~4.3–8.5 minutes",
+		"node/enforce/verify_foreign.go",
+		"nft -j list ruleset",
+		"table <t> family <f> hook <h> priority <p> chain <c> statement <s>",
+		"ufw",
+		"firewalld",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 10 token %q", token)
+		}
+	}
+
+	// 3. Verify restore-drill.md and deploy.md pins for #221 (measured AT30 5-step protocol, RTO/RPO numbers, and dated D-076 pointer) and #220.
+	restoreDrill := readOwnedDoc(t, root, "docs/handover/restore-drill.md")
+	for _, token := range []string{
+		"#221",
+		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+		"3.64 s",
+		"120.12 s",
+		"ErrAckRegress",
+		"105.94 s",
+		"111.51 s",
+		"116.651 s",
+		"0 s",
+		"SECOPS-18",
+		"D-076",
+		"review devices fenced as authorization-unconfirmed and re-authorize explicitly",
+	} {
+		if !strings.Contains(restoreDrill, token) {
+			t.Errorf("docs/handover/restore-drill.md missing expected follow-up 10 token %q", token)
+		}
+	}
+
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"#220", "#221",
+		"node/enforce/verify_foreign.go",
+		"nft -j list ruleset",
+		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+		"105.94 s",
+		"111.51 s",
+		"116.651 s",
+		"120.12 s",
+		"SECOPS-18",
+		"D-076",
+		"review devices fenced as authorization-unconfirmed and re-authorize explicitly",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 10 token %q", token)
 		}
 	}
 }

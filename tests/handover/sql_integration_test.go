@@ -118,9 +118,10 @@ func TestHandover_SQLStatementsExecuteAgainstMigratedSchema(t *testing.T) {
 
 	tableColRE := regexp.MustCompile("`([a-z][a-z0-9_]*)\\.([a-z][a-z0-9_]*)`")
 	nonColumnDotted := map[string]string{
-		"members.json":        "config-file-name",
-		"members.reconcile":   "worker-periodic-event-type",
-		"fleet_config.update": "audit-action-name",
+		"members.json":                "config-file-name",
+		"members.reconcile":           "worker-periodic-event-type",
+		"nodes.compile_desired_state": "worker-outbox-event-type",
+		"fleet_config.update":         "audit-action-name",
 	}
 	checkedTableCols := 0
 	for _, doc := range ownedDocs {
