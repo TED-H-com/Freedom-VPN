@@ -56,6 +56,18 @@ type Input struct {
 	ProbeRan    bool
 	ProbeCheck  api.HealthCheckStatus
 	ProbeHealth api.DataHealth
+	// ProbeSource is the operator sentence for tunnel_probe detail. It names
+	// the egress source (signed, local, or none) and is not the attestation
+	// reason. Empty leaves a passed tunnel check without a detail.
+	ProbeSource string
+	// DNSDocument is true when the in-force desired state names a resolver
+	// document. dns_policy then follows the apply result, not DesiredOK alone.
+	DNSDocument bool
+	// DNSFailed is a resolver-document attempt that did not apply. The
+	// envelope can still be valid. It fails dns_policy and baseline safety.
+	DNSFailed bool
+	DNSCode   api.ErrorCode
+	DNSDetail string
 }
 
 // Decision is the forwarding choice for one step (§14.7, §16.3).
@@ -185,6 +197,9 @@ func Decide(in Input) Decision {
 	if !probePassed {
 		add(api.ForwardingBlockReasonSafetyCheckFailed)
 	}
+	if in.DNSFailed {
+		add(api.ForwardingBlockReasonSafetyCheckFailed)
+	}
 	if in.ProbeRan && in.ProbeCheck == api.HealthCheckStatusFailed {
 		d.Errors = append(d.Errors, api.NodeError{
 			Code: api.ErrorCodeHEALTHCHECKFAILED, Message: "tunnel_probe",
@@ -243,28 +258,43 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 	qos := notRun(api.NodeCheckNameQos, at)
 	bind := notRun(api.NodeCheckNameSourceBinding, at)
 	if evaluateServing {
-		lease = chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at)
-		qos = chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at)
-		bind = chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at)
+		lease = withDetail(chk(api.NodeCheckNameLease, leaseOK, api.ErrorCodeLEASEEXPIRED, at), "Serving lease is not in force.")
+		qos = withDetail(chk(api.NodeCheckNameQos, qosOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "Rate policy could not be applied.")
+		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, api.ErrorCodeVALIDATIONFAILED, at), "No member binding was admitted.")
 	}
 	release := notRun(api.NodeCheckNameReleaseSupported, at)
 	if releaseChecked {
-		release = chk(api.NodeCheckNameReleaseSupported, releaseOK, api.ErrorCodeMINIMUMVERSIONVIOLATION, at)
+		release = withDetail(chk(api.NodeCheckNameReleaseSupported, releaseOK, api.ErrorCodeMINIMUMVERSIONVIOLATION, at), "Release is not in the serving set.")
 	} else if in.Desired == nil || !in.DesiredExpired {
-		release = chk(api.NodeCheckNameReleaseSupported, false, api.ErrorCodeMINIMUMVERSIONVIOLATION, at)
+		release = withDetail(chk(api.NodeCheckNameReleaseSupported, false, api.ErrorCodeMINIMUMVERSIONVIOLATION, at), "Release is not in the serving set.")
 	}
 	return []api.NodeCheck{
-		chk(api.NodeCheckNameDnsPolicy, in.DesiredOK, api.ErrorCodeAUTHORIZATIONEXPIRED, at),
-		chk(api.NodeCheckNameInternetOnly, in.BaselineOK, api.ErrorCodeISOLATIONBASELINEMISSING, at),
+		dnsCheck(in, at),
+		withDetail(chk(api.NodeCheckNameInternetOnly, in.BaselineOK, api.ErrorCodeISOLATIONBASELINEMISSING, at), "Isolation baseline is not in force."),
 		lease,
-		chk(api.NodeCheckNameMeterPath, in.Backend == "kernel" && !in.MeterFailed, api.ErrorCodeMETERPATHINVALID, at),
-		chk(api.NodeCheckNamePolicySignature, in.DesiredOK, api.ErrorCodeSIGNATUREINVALID, at),
+		withDetail(chk(api.NodeCheckNameMeterPath, in.Backend == "kernel" && !in.MeterFailed, api.ErrorCodeMETERPATHINVALID, at), "Meter path is not available."),
+		withDetail(chk(api.NodeCheckNamePolicySignature, in.DesiredOK, api.ErrorCodeSIGNATUREINVALID, at), "Desired state is not signed for this node."),
 		qos,
 		release,
 		bind,
-		chk(api.NodeCheckNameStorage, in.StorageOK && !in.UsagePersist && !in.UsageDisk, api.ErrorCodeSTOREUNAVAILABLE, at),
-		tunnelCheck(in, at),
+		withDetail(chk(api.NodeCheckNameStorage, in.StorageOK && !in.UsagePersist && !in.UsageDisk, api.ErrorCodeSTOREUNAVAILABLE, at), "Node state could not be stored."),
+		withDetail(tunnelCheck(in, at), in.ProbeSource),
 	}
+}
+
+func dnsCheck(in Input, at time.Time) api.NodeCheck {
+	if !in.DNSDocument {
+		return withDetail(chk(api.NodeCheckNameDnsPolicy, in.DesiredOK, api.ErrorCodeAUTHORIZATIONEXPIRED, at), "Desired state is not in force.")
+	}
+	code := in.DNSCode
+	if code == "" {
+		code = api.ErrorCodeVALIDATIONFAILED
+	}
+	detail := in.DNSDetail
+	if detail == "" {
+		detail = "Resolver policy is not in force."
+	}
+	return withDetail(chk(api.NodeCheckNameDnsPolicy, in.DesiredOK && !in.DNSFailed, code, at), detail)
 }
 
 func notRun(name api.NodeCheckName, at time.Time) api.NodeCheck {
@@ -321,6 +351,9 @@ func safetyOf(in Input, releaseChecked, releaseOK bool) api.SafetyStatus {
 		hard = true
 	}
 	if in.ProbeRan && in.ProbeCheck == api.HealthCheckStatusFailed {
+		hard = true
+	}
+	if in.DNSFailed {
 		hard = true
 	}
 	if hard {

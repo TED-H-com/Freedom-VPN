@@ -340,7 +340,7 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 		LicenseName:           "Commercial Threat Feed License",
 		LicenseUrl:            "https://feeds.example.com/license",
 		CommercialUseBasis:    "Licensed for commercial SaaS/VPN redistribution (TEST ONLY).",
-		Attribution:           presence.FromPointer(strPtr("Threat intel by Example")),
+		Attribution:           presence.NewNullNullable[string](), // D-058d: null survives profile source conversion.
 		SourceUrl:             "https://feeds.example.com/malware.txt",
 		Format:                api.ThreatFeedPayloadFormatDomainList,
 		Categories:            []api.ThreatFeedPayloadCategories{api.ThreatFeedPayloadCategoriesMalware},
@@ -348,7 +348,7 @@ func Test14_2_DNSProfileBundleCompilationAndPlanBaseline(t *testing.T) {
 		MaxSizeBytes:          decstr.U64(1048576),
 		ValidFrom:             fixedNow.Add(-1 * time.Hour),
 		ValidUntil:            fixedNow.Add(30 * 24 * time.Hour),
-		UpdateIntervalSeconds: 3600,
+		UpdateIntervalSeconds: 0, // omitted by the generated type; must materialize 21600.
 	}
 	tfRaw, _ := json.Marshal(tfPayload)
 	tfCode := "example-malware"

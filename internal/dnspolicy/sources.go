@@ -114,7 +114,7 @@ type ListSource struct {
 	LicenseStatus     LicenseStatus        `json:"license_status"`
 	PermittedUse      string               `json:"permitted_use"`
 	DistributionNotes string               `json:"distribution_notes"`
-	AttributionNotes  string               `json:"attribution_notes"`
+	AttributionNotes  *string              `json:"attribution_notes"` // nil means no attribution required
 	URL               string               `json:"url"`
 	Format            SourceFormat         `json:"format"`
 	Category          SourceCategory       `json:"category"`
@@ -128,6 +128,10 @@ type ListSource struct {
 // Clone returns a deep copy of the ListSource.
 func (s ListSource) Clone() ListSource {
 	out := s
+	if s.AttributionNotes != nil {
+		attribution := *s.AttributionNotes
+		out.AttributionNotes = &attribution
+	}
 	if s.Entries != nil {
 		out.Entries = make([]SourceEntry, len(s.Entries))
 		copy(out.Entries, s.Entries)
@@ -173,12 +177,12 @@ func (s ListSource) ValidateMetadata() error {
 			Message: fmt.Sprintf("source %q license status is %q (must be %q with verified commercial terms before enabling in a profile)", s.SourceID, s.LicenseStatus, LicenseCommercialApproved),
 		}
 	}
-	if strings.TrimSpace(s.License) == "" || strings.TrimSpace(s.PermittedUse) == "" || strings.TrimSpace(s.DistributionNotes) == "" || strings.TrimSpace(s.AttributionNotes) == "" {
+	if strings.TrimSpace(s.License) == "" || strings.TrimSpace(s.PermittedUse) == "" || strings.TrimSpace(s.DistributionNotes) == "" || (s.AttributionNotes != nil && strings.TrimSpace(*s.AttributionNotes) == "") {
 		return &ValidationError{
 			Code:    ErrCodeSourceLicenseUnapproved,
 			Field:   "source.license",
 			Input:   s.SourceID,
-			Message: fmt.Sprintf("source %q must record non-empty license, permitted_use, distribution_notes, and attribution_notes", s.SourceID),
+			Message: fmt.Sprintf("source %q must record non-empty license, permitted_use, distribution_notes, and either null or non-empty attribution_notes", s.SourceID),
 		}
 	}
 	if s.Quality.SmokeTestResult == SmokeTestFailed {
