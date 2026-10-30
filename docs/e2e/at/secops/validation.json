@@ -1,43 +1,23 @@
 {
   "schema_version": 1,
-  "recorded_at": "2026-10-30T02:16:31.389626+00:00",
-  "source_revision": "eebdbf7175f46ca21000b176afdc3808f8a8e58c",
-  "probe_source_sha256": "bf940ebdb897b271dc0f8104bcd15b7552a4da914f54a0a5e3ea9ce6690f37c3",
-  "scope": "Follow-up 1 D-050 run on main 125a761. Go source hash matches executed probes. Reporting-only follow-up associates AT29 with agent applied generation 4 and includes observed login 429 counts; no measurement was changed or rerun to select better performance.",
+  "recorded_at": "2026-10-30T04:07:04.192495Z",
+  "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+  "base_revision": "2a21468",
+  "scope": "Follow-up 2. Combined acceptance plus a fresh focused physical retry. Full AT30/29/31/32 remain blocked; no failed or historical login measurement promoted to passed. Source/image/verifier digests distinguish the two stack instances.",
   "checks": [
     {
       "name": "root-lint",
-      "command": "GOFLAGS=-p=2 GOMAXPROCS=2 make go-lint",
+      "command": "python3 tests/e2e/at/secops/diskexec.py make go-lint",
       "exit_code": 0,
       "output_tail": [],
-      "note": "No output"
+      "note": "quiet success"
     },
     {
       "name": "e2e-vet",
       "command": "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e ./tests/...",
       "exit_code": 0,
       "output_tail": [],
-      "note": "No output"
-    },
-    {
-      "name": "offline-tests",
-      "command": "python3 tests/e2e/at/secops/diskexec.py go test -p 1 -parallel 2 ./...",
-      "exit_code": 0,
-      "output_tail": [
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates\t0.009s",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage\t2.453s",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp\t0.081s",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap\t[no test files]",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin\t[no test files]",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment\t[no test files]",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare\t0.007s",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin\t0.004s",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t(cached)",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t[no test files]",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t[no test files]"
-      ],
-      "note": ""
+      "note": "quiet success"
     },
     {
       "name": "area-checks",
@@ -45,7 +25,7 @@
       "exit_code": 0,
       "output_tail": [
         "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t9.465s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t2.791s",
         "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
         "....",
         "----------------------------------------------------------------------",
@@ -57,7 +37,7 @@
         "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
         "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
       ],
-      "note": ""
+      "note": "pinned staticcheck; amd64 and arm64 cross-compiles"
     },
     {
       "name": "acceptance",
@@ -77,166 +57,70 @@
         "evidence: docs/e2e/at/secops; consult each AT verdict; full suite exits 2 while any AT is blocked",
         "make: *** [mk/at-secops.mk:14: at-secops] Error 2"
       ],
-      "note": ""
+      "note": "all 19 supporting suites and live security probe passed; complete ATs retain blockers; combined restore image failure is preserved"
     },
     {
-      "name": "evidence-renderer-tests",
+      "name": "physical-pitr",
+      "command": "make -f mk/at-secops.mk at-secops-pitr",
+      "exit_code": 0,
+      "output_tail": [
+        "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 FVPN_SECOPS_PITR=1 python3 tests/e2e/at/secops/diskexec.py go test -v -tags e2e,integration -p 1 -parallel 2 -count=1 -timeout 12m -run '^TestAT30_LivePITRSource$' ./tests/e2e/at/secops",
+        "=== RUN   TestAT30_LivePITRSource",
+        "--- PASS: TestAT30_LivePITRSource (50.40s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t50.411s",
+        "python3 tests/e2e/at/secops/pitr.py",
+        "physical PITR: ACK 7 -> 10; 3 accepted, 7 duplicates; repeat 10 duplicates; grant/audit boundary verified"
+      ],
+      "note": "fresh source; timestamp-based physical restore; no synthetic SQL state"
+    },
+    {
+      "name": "python-tests",
       "command": "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p test_*.py",
       "exit_code": 0,
       "output_tail": [
         "....",
         "----------------------------------------------------------------------",
-        "Ran 4 tests in 0.000s",
+        "Ran 4 tests in 0.001s",
         "",
         "OK"
       ],
-      "note": ""
+      "note": "renderer/verdict guards"
     },
     {
-      "name": "isolated-logical-restore",
-      "command": "python3 tests/e2e/at/secops/restore.py",
-      "exit_code": 0,
-      "output_tail": [
-        "isolated logical restore: ACK 5 -> 10; five accepted, five duplicate; replay again ten duplicate"
-      ]
-    },
-    {
-      "name": "own-stack-cleanup",
+      "name": "cleanup",
       "command": "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/e2e.mk e2e-down",
       "exit_code": 0,
-      "inventory": {
-        "containers": {
-          "exit_code": 0,
-          "count": 0
-        },
-        "networks": {
-          "exit_code": 0,
-          "count": 0
-        },
-        "volumes": {
-          "exit_code": 0,
-          "count": 0
-        },
-        "images": {
-          "exit_code": 0,
-          "count": 0
-        }
-      }
+      "output_tail": [
+        " Container fvpn-w4-secops-postgres Removed ",
+        " Volume fvpn-w4-secops-pgbackrest-repo Removing ",
+        " Volume fvpn-w4-secops-pg Removing ",
+        " Volume fvpn-w4-secops-nb Removing ",
+        " Network fvpn-w4-secops-origin Removing ",
+        " Network fvpn-w4-secops Removing ",
+        " Volume fvpn-w4-secops-pgbackrest-repo Removed ",
+        " Volume fvpn-w4-secops-nb Removed ",
+        " Volume fvpn-w4-secops-pg Removed ",
+        " Network fvpn-w4-secops-origin Removed ",
+        " Network fvpn-w4-secops Removed ",
+        "e2e stack is down"
+      ],
+      "note": "all task objects zero; neutral image caches untouched"
     }
   ],
-  "component_suites": 19,
-  "component_test_results": 342,
-  "live_checks": 149,
-  "builds": [
+  "probe_source_sha256": "70ec48a1e07dce18dcc40367f24d719f2c7f1f46897a993d85b34da4631e77bb",
+  "final_acceptance_builds": [
     {
       "arch": "amd64",
-      "kind": "acceptance_test_binary",
-      "sha256": "37c213b451529ec46c43b097fd24c72cf129979b8ef5e347ca2ce02667dc23e9",
-      "command": [
-        "go",
-        "test",
-        "-c",
-        "-tags",
-        "e2e,integration",
-        "-o",
-        "<disk-scratch>/secops-amd64.test",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T02:10:53Z",
-      "finished_at": "2026-10-30T02:10:53Z",
-      "elapsed_seconds": 0.515,
-      "exit_code": 0,
-      "scan": {
-        "stream": "build-amd64",
-        "bytes": 0,
-        "findings": []
-      }
+      "sha256": "7e8757d56c569478b8d2b80fa5a9b45461d2aa6fb1b08d26508facdb5c1ac150"
     },
     {
       "arch": "arm64",
-      "kind": "acceptance_test_binary",
-      "sha256": "e6aaf90e473739c6418ded64d4317c132dc7a2ef152fb8e83733e5ff3792a212",
-      "command": [
-        "go",
-        "test",
-        "-c",
-        "-tags",
-        "e2e,integration",
-        "-o",
-        "<disk-scratch>/secops-arm64.test",
-        "./tests/e2e/at/secops"
-      ],
-      "started_at": "2026-10-30T02:10:53Z",
-      "finished_at": "2026-10-30T02:10:54Z",
-      "elapsed_seconds": 1.017,
-      "exit_code": 0,
-      "scan": {
-        "stream": "build-arm64",
-        "bytes": 0,
-        "findings": []
-      }
-    },
-    {
-      "name": "fvpn-agent",
-      "arch": "amd64",
-      "sha256": "4fa1436c7b6caeae255520023b9a8c0e7ed84149adc1b20fb941d1cccad8a910",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-control",
-      "arch": "amd64",
-      "sha256": "2bd2562f89d5d20e1ca6fbe6db2e17d9a7cbcf6b8667e03151f53fd1692a5458",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-idp",
-      "arch": "amd64",
-      "sha256": "0df6a6941dcaedb93e955feaf33a6c59cacbe7aa579cac08bc0323cd5e837d63",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-nbbootstrap",
-      "arch": "amd64",
-      "sha256": "7f2dd96020eab3ebdda8559fc36528661c114eba05a3ea2c1eae20fee0196879",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-origin",
-      "arch": "amd64",
-      "sha256": "36f103ab8d5415ab750799c5014a90cbd86e5fbf6b35330413c8145d1d1391e1",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-payment",
-      "arch": "amd64",
-      "sha256": "afdd771873c6358d28ac52b57eae44177960321f0bab0669ed3cebe8bb7092f8",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-e2e-prepare",
-      "arch": "amd64",
-      "sha256": "63d1d807eeaac933d06bf34633c2449bc52b95dafa900dbd999b737259cf6c8a",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-updater",
-      "arch": "amd64",
-      "sha256": "8dc94be712fc0f9b53e889cc0a0efe04672003b0f6abaa9ea585e837afdedb8f",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-watchdog",
-      "arch": "amd64",
-      "sha256": "bc0d2e61d55cc88278373090234d1526384f63f33255a87a11ea93487f8395fe",
-      "kind": "lab_build_binary"
-    },
-    {
-      "name": "fvpn-worker",
-      "arch": "amd64",
-      "sha256": "b6131d45c6d8f852955c74b12409d79baba14535b6f21b29e630e0c832c82723",
-      "kind": "lab_build_binary"
+      "sha256": "b3dab7abdc41fddd3b3874d2af299e07b9fc9a00c3ba8aa1f0d3eee604c0f508"
     }
   ],
-  "post_run_renderer_sha256": "36138612fd234ea16f34f6d09fc89fc072d370b672f26c3792972aa1e07c2ab6",
-  "concurrent_main_advance": "During final self-check, shared main advanced to dab7274. After the starting snapshot, pgBackRest landed as be28ec4 (#86), contracts changed in c90c728 / 478a78a (#85/#87), and devstack follow-up 5 landed as b263d4b (#88). These were not in starting revision 125a761 or the executed stack. No merge/rebase was performed; revalidate affected blockers after orchestrator integration."
+  "cleanup": "cleanup.json",
+  "dependency_check": "dependencies.json",
+  "offline_module_tests": "not rerun in Follow-up 2; root vet/staticcheck, area tests and 19 supporting integration suites were run",
+  "post_run_renderer_sha256": "a2e44b6d1461bc700e5776df54c9b0a3de6eae24565a8515aaff220264e21aee"
 }

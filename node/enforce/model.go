@@ -37,6 +37,11 @@ const (
 	// (unshaped) traffic.
 	HTBDefaultMinor uint16 = 0xFFFE
 
+	// ProbeMaxSeconds is the longest synthetic-probe authorization (§13.9).
+	// The kernel element timeout is derived from ExpiresAt and cannot be
+	// longer than this.
+	ProbeMaxSeconds = 300
+
 	dirUpload      = "upload"
 	dirDownload    = "download"
 	dirDNSUpload   = "dns_upload"
@@ -143,6 +148,35 @@ type Model struct {
 	// Revoke lists addresses whose conntrack entries are deleted after the
 	// ruleset is installed (§8.2).
 	Revoke []netip.Addr `json:"revoke,omitempty"`
+	// Probe is the short-lived synthetic-probe exception (§13.9). Nil removes
+	// it. The caller authenticates the test peer; this package matches SourceV4.
+	Probe *ProbeException `json:"probe,omitempty"`
+}
+
+// ProbeDestination is one exact IPv4, protocol, and port the synthetic probe
+// may reach. AddrV4 is a /32. Proto is "tcp" or "udp".
+type ProbeDestination struct {
+	AddrV4 netip.Prefix `json:"addr_v4"`
+	Proto  string       `json:"proto"`
+	Port   uint16       `json:"port"`
+}
+
+// ProbeException is the only forward accept allowed while member forwarding
+// is blocked (§13.9). ExpiresAt is required. The kernel drops the elements
+// when it passes, even if the agent is gone.
+type ProbeException struct {
+	// PeerID is the NetBird peer id of the dedicated test peer. It is not a
+	// member device. Enforcement matches SourceV4; it does not authenticate.
+	PeerID string `json:"peer_id"`
+	// SourceV4 is the /32 overlay address of that peer.
+	SourceV4 netip.Prefix `json:"source_v4"`
+	// Destinations are the team-controlled Internet endpoints.
+	Destinations []ProbeDestination `json:"destinations,omitempty"`
+	// ResolverDNS also allows TCP and UDP destination port 53 to the model's
+	// resolvers. On the full ruleset that is @resolver_v4. On the baseline
+	// ruleset the same resolver addresses are installed for the exception.
+	ResolverDNS bool      `json:"resolver_dns,omitempty"`
+	ExpiresAt   time.Time `json:"expires_at"`
 }
 
 // CounterValue is an absolute nft named-counter reading (§10.5, §10.7).

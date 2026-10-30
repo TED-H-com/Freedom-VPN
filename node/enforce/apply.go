@@ -89,33 +89,44 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 }
 
 // ApplyBaseline installs the fail-closed ruleset and removes our HTB roots.
+// The probe exception is not included. ApplyBaselineModel carries one.
 func ApplyBaseline(ctx context.Context, ex Executor, dp Datapath) error {
+	return ApplyBaselineModel(ctx, ex, Model{Datapath: dp})
+}
+
+// ApplyBaselineModel installs the fail-closed ruleset. A non-nil Probe is the
+// only forward accept. A nil Probe removes the sets and the rules (§13.9).
+func ApplyBaselineModel(ctx context.Context, ex Executor, m Model) error {
 	state, err := loadState(ctx, ex)
 	if err != nil {
 		return err
 	}
-	if err := installBaseline(ctx, ex, dp, state); err != nil {
+	if err := installBaselineModel(ctx, ex, m, state); err != nil {
 		return err
 	}
 	raw, err := ex.Output(ctx, "nft", "-j", "list", "table", TableFamily, TableName)
 	if err != nil {
 		return err
 	}
-	return VerifyBaseline(raw, dp)
+	return VerifyBaseline(raw, m)
 }
 
 func installBaseline(ctx context.Context, ex Executor, dp Datapath, state State) error {
+	return installBaselineModel(ctx, ex, Model{Datapath: dp}, state)
+}
+
+func installBaselineModel(ctx context.Context, ex Executor, m Model, state State) error {
 	if fresh, err := loadState(ctx, ex); err == nil {
 		state = fresh
 	}
-	script, err := RenderBaseline(dp, state)
+	script, err := RenderBaseline(m, state)
 	if err != nil {
 		return err
 	}
 	if err := ex.NftBatch(ctx, script); err != nil {
 		return err
 	}
-	for _, ifc := range []string{dp.Uplink, dp.MemberIngress} {
+	for _, ifc := range []string{m.Datapath.Uplink, m.Datapath.MemberIngress} {
 		_, err := ex.Output(ctx, "tc", "qdisc", "del", "dev", ifc, "root")
 		if err != nil && !missingQdisc(err) {
 			return err
