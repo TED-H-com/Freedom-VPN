@@ -355,8 +355,10 @@ in the immutable result payload. The restored release must be serving, not
 revoked, verified, trusted, and schema-readable. An empty manifest rollback
 allowlist imposes no additional release restriction; a nonempty list must
 contain the restored release (D-034e). Approval to target a new install is not
-an additional rollback-serving requirement. Failed candidate health is journal
-evidence; this implementation does not depend on revision 6's candidate_health.
+an additional rollback-serving requirement. Optional `candidate_health` carries
+the failed candidate's checks; it never substitutes for restored `health` and
+is not required for accepting a rollback. Both profiles remain stored exactly
+as received in the immutable result payload.
 
 TEST ONLY JSON vectors live in
 [pre-health failure](../../internal/fleetupdate/testdata/d062-pre-health-failure.json),
@@ -401,6 +403,41 @@ must add that distinction before HTTP rejection replay has the same durable
 semantics as the standalone domain; it must also replay stored errors as errors,
 never deserialize them into a success ACK. Authentication and rate limiting
 remain core-owned. Current rate-limit middleware already emits Retry-After.
+
+## Target result evidence (contract revision 7)
+
+The admin batch GET projects three fields onto each `UpdateTarget` from its
+latest attempt's latest **current accepted receipt**. The stored ACK must have
+`accepted=true` and `accepted_as_history=false`. Rejected receipts and later
+history, including older generations, cannot replace or erase these fields.
+`applied_to_current_observation=false` does not exclude a current result: a
+same-generation heartbeat may already have supplied the observed version.
+
+| Field | Source and null behavior |
+|---|---|
+| `previous_release_id` | The receipt's previous release; for rollback this is the candidate that failed |
+| `health` | The receipt's checks, including the restored release's checks on rollback; null stays null |
+| `candidate_health` | The receipt's candidate checks only for `rolled_back`; explicit null on every other state, even if its payload contains checks |
+
+All three keys are serialized with explicit null when there is no current
+receipt, including unbound enrolling targets and newly retried attempts. An
+`ARTIFACT_INVALID` failure before checking retains `health: null`; central never
+manufactures passing checks. The fields describe the accepted receipt, not a
+new health evaluation or a heartbeat-derived profile.
+
+The page query selects the receipt in one lateral join, scoped to the latest
+job, without per-target round trips. It filters current acceptance before
+ordering receipts by central receipt time. This also preserves earlier current
+progress evidence when an older applying job later finishes its ledger as
+history: that ledger's `observed_evidence` pointer alone is not sufficient.
+Retries never borrow a previous attempt's evidence, and cursor paging retains
+the fixed snapshot counts (§13.8, §13.12).
+
+`TestUPD05_TargetResultEvidenceAdminHTTP` exercises the real admin GET with the
+[AT26 producer capture](../../internal/fleetupdate/testdata/at26-direct-rollback.json),
+success, a pre-check artifact failure and no result. The history, current-receipt
+selection, and paging/rejection/retry tests in `internal/fleetupdate` cover the
+receipt fences using real domain commands and isolated databases (D-050).
 
 ## Null update generations (D-062)
 

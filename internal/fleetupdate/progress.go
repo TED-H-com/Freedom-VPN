@@ -150,8 +150,14 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		b.UpdatedAt = b.UpdatedAt.UTC()
 		b.TargetsUrl = "/api/v1/admin/update-batches/" + id.String()
 		rows, e := tx.Query(ctx, `SELECT t.id,t.node_id,x.display_name,t.incarnation_at_snapshot,t.execution_incarnation_id,t.target_generation::text,t.online_at_snapshot,n.current_release_id,s.last_observed_at,j.last_result_at,
- `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`,r.policy_generation::text,r.policy_refs
- FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true LEFT JOIN update_results r ON r.result_id=(j.observed_evidence->>'result_id')::uuid WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
+ `+targetStateSQL+`,j.id,coalesce(j.attempt,0),coalesce(j.state,'waiting_online'),j.error_code,j.stage,j.started_at,j.completed_at,coalesce(j.recovery_required,false),`+needsAttentionSQL+`,`+unconfirmedSQL+`,r.policy_generation::text,r.policy_refs,current_result.payload
+ FROM update_targets t JOIN nodes n ON n.id=t.node_id LEFT JOIN exits x ON x.node_id=n.id LEFT JOIN fleet_node_state s ON s.node_id=n.id LEFT JOIN LATERAL (SELECT * FROM update_jobs WHERE target_id=t.id ORDER BY attempt DESC LIMIT 1) j ON true LEFT JOIN update_results r ON r.result_id=(j.observed_evidence->>'result_id')::uuid
+ LEFT JOIN LATERAL (
+  SELECT payload FROM update_results WHERE job_id=j.id
+   AND ack->>'accepted'='true' AND ack->>'accepted_as_history'='false'
+  ORDER BY received_at DESC,result_id DESC LIMIT 1
+ ) current_result ON true
+ WHERE t.batch_id=$1 AND t.id>$2 ORDER BY t.id LIMIT $3`, id, after, limit+1)
 		if e != nil {
 			return e
 		}
@@ -166,15 +172,24 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 			var recoveryRequired bool
 			var policyGeneration *string
 			var policyRefs []uuid.UUID
+			var resultPayload []byte
 			var gen string
 			var nodeName *string
-			if e = rows.Scan(&t.TargetId, &t.NodeId, &nodeName, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed, &policyGeneration, &policyRefs); e != nil {
+			if e = rows.Scan(&t.TargetId, &t.NodeId, &nodeName, &incarnationAtSnapshot, &executionIncarnation, &gen, &t.OnlineAtSnapshot, &currentRelease, &lastObserved, &lastResult, &t.State, &jobID, &j.Attempt, &j.State, &errorCode, &stage, &startedAt, &finishedAt, &recoveryRequired, &t.NeedsAttention, &t.Unconfirmed, &policyGeneration, &policyRefs, &resultPayload); e != nil {
 				return e
 			}
 			if len(b.Targets) == limit {
 				c := releases.Cursor(b.Targets[len(b.Targets)-1].TargetId)
 				b.NextCursor.Set(c)
 				break
+			}
+			// Revision 7 / §13.8: an old applying job can finish its ledger as
+			// history, replacing observed_evidence. Select current receipts by
+			// their immutable ACK instead, retaining earlier current evidence.
+			// applied_to_current_observation may be false after a heartbeat;
+			// that does not turn an accepted current result into history.
+			if e = setTargetResultEvidence(&t, resultPayload); e != nil {
+				return e
 			}
 			// D-048: use the accepted result's immutable evidence, never current
 			// desired state. The page join batches the same lookup as Evidence.
@@ -222,6 +237,28 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 		return rows.Err()
 	})
 	return b, e
+}
+
+func setTargetResultEvidence(target *api.UpdateTarget, raw []byte) error {
+	var evidence struct {
+		State             api.UpdateResultState `json:"state"`
+		PreviousReleaseID *uuid.UUID            `json:"previous_release_id"`
+		Health            *api.UpdateHealth     `json:"health"`
+		CandidateHealth   *api.UpdateHealth     `json:"candidate_health"`
+	}
+	if len(raw) > 0 {
+		if err := json.Unmarshal(raw, &evidence); err != nil {
+			return err
+		}
+	}
+	// Revision 7 requires explicit nulls even when no current receipt exists.
+	target.PreviousReleaseId = presence.FromPointer(evidence.PreviousReleaseID)
+	target.Health = presence.FromPointer(evidence.Health)
+	target.CandidateHealth.SetNull()
+	if evidence.State == api.UpdateResultStateRolledBack {
+		target.CandidateHealth = presence.FromPointer(evidence.CandidateHealth)
+	}
+	return nil
 }
 
 // Shared by response mapping, evidence queries and node summaries. Receipt time
