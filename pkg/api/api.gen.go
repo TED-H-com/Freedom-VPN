@@ -477,8 +477,10 @@ const (
 	ErrorCodeBOOTSTRAPNOTREADY        ErrorCode = "BOOTSTRAP_NOT_READY"
 	ErrorCodeCHECKPOINTFAILED         ErrorCode = "CHECKPOINT_FAILED"
 	ErrorCodeCONTROLAPIINCOMPATIBLE   ErrorCode = "CONTROL_API_INCOMPATIBLE"
+	ErrorCodeCOUNTERORDERINVALID      ErrorCode = "COUNTER_ORDER_INVALID"
 	ErrorCodeCSRFTOKENINVALID         ErrorCode = "CSRF_TOKEN_INVALID"
 	ErrorCodeDEPENDENCYUNAVAILABLE    ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	ErrorCodeDEVICECLASSMISSING       ErrorCode = "DEVICE_CLASS_MISSING"
 	ErrorCodeDEVICELIMITREACHED       ErrorCode = "DEVICE_LIMIT_REACHED"
 	ErrorCodeDISKSPACELOW             ErrorCode = "DISK_SPACE_LOW"
 	ErrorCodeDOWNLOADTIMEOUT          ErrorCode = "DOWNLOAD_TIMEOUT"
@@ -486,18 +488,23 @@ const (
 	ErrorCodeENROLLMENTTOKENEXPIRED   ErrorCode = "ENROLLMENT_TOKEN_EXPIRED"
 	ErrorCodeENROLLMENTTOKENINVALID   ErrorCode = "ENROLLMENT_TOKEN_INVALID"
 	ErrorCodeENROLLMENTTOKENREVOKED   ErrorCode = "ENROLLMENT_TOKEN_REVOKED"
+	ErrorCodeFLOWTABLEBYPASS          ErrorCode = "FLOWTABLE_BYPASS"
 	ErrorCodeFORBIDDEN                ErrorCode = "FORBIDDEN"
+	ErrorCodeGENERATIONMISMATCH       ErrorCode = "GENERATION_MISMATCH"
 	ErrorCodeHASHMISMATCH             ErrorCode = "HASH_MISMATCH"
 	ErrorCodeHEALTHCHECKFAILED        ErrorCode = "HEALTH_CHECK_FAILED"
+	ErrorCodeHOOKPRIORITYMISMATCH     ErrorCode = "HOOK_PRIORITY_MISMATCH"
 	ErrorCodeIDEMPOTENCYCONFLICT      ErrorCode = "IDEMPOTENCY_CONFLICT"
 	ErrorCodeIDENTITYREVOKED          ErrorCode = "IDENTITY_REVOKED"
 	ErrorCodeINCARNATIONMISMATCH      ErrorCode = "INCARNATION_MISMATCH"
 	ErrorCodeINTERNALERROR            ErrorCode = "INTERNAL_ERROR"
 	ErrorCodeISOLATIONBASELINEMISSING ErrorCode = "ISOLATION_BASELINE_MISSING"
+	ErrorCodeISOLATIONPOLICYINVALID   ErrorCode = "ISOLATION_POLICY_INVALID"
 	ErrorCodeKEYUNTRUSTED             ErrorCode = "KEY_UNTRUSTED"
 	ErrorCodeLEASEEXPIRED             ErrorCode = "LEASE_EXPIRED"
 	ErrorCodeLEDGEREPOCHMISMATCH      ErrorCode = "LEDGER_EPOCH_MISMATCH"
 	ErrorCodeMALFORMEDREQUEST         ErrorCode = "MALFORMED_REQUEST"
+	ErrorCodeMARKSEMANTICSVIOLATED    ErrorCode = "MARK_SEMANTICS_VIOLATED"
 	ErrorCodeMETEREPOCHCHANGE         ErrorCode = "METER_EPOCH_CHANGE"
 	ErrorCodeMETERPATHINVALID         ErrorCode = "METER_PATH_INVALID"
 	ErrorCodeMETHODNOTALLOWED         ErrorCode = "METHOD_NOT_ALLOWED"
@@ -510,6 +517,8 @@ const (
 	ErrorCodeNOTIMPLEMENTED           ErrorCode = "NOT_IMPLEMENTED"
 	ErrorCodePAYLOADTOOLARGE          ErrorCode = "PAYLOAD_TOO_LARGE"
 	ErrorCodePRECONDITIONREQUIRED     ErrorCode = "PRECONDITION_REQUIRED"
+	ErrorCodePROBEUNBOUNDED           ErrorCode = "PROBE_UNBOUNDED"
+	ErrorCodeQOSCLASSMISSING          ErrorCode = "QOS_CLASS_MISSING"
 	ErrorCodeRATELIMITED              ErrorCode = "RATE_LIMITED"
 	ErrorCodeRELEASENOTAPPROVED       ErrorCode = "RELEASE_NOT_APPROVED"
 	ErrorCodeREPLAYUNAVAILABLE        ErrorCode = "REPLAY_UNAVAILABLE"
@@ -551,9 +560,13 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case ErrorCodeCONTROLAPIINCOMPATIBLE:
 		return true
+	case ErrorCodeCOUNTERORDERINVALID:
+		return true
 	case ErrorCodeCSRFTOKENINVALID:
 		return true
 	case ErrorCodeDEPENDENCYUNAVAILABLE:
+		return true
+	case ErrorCodeDEVICECLASSMISSING:
 		return true
 	case ErrorCodeDEVICELIMITREACHED:
 		return true
@@ -569,11 +582,17 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case ErrorCodeENROLLMENTTOKENREVOKED:
 		return true
+	case ErrorCodeFLOWTABLEBYPASS:
+		return true
 	case ErrorCodeFORBIDDEN:
+		return true
+	case ErrorCodeGENERATIONMISMATCH:
 		return true
 	case ErrorCodeHASHMISMATCH:
 		return true
 	case ErrorCodeHEALTHCHECKFAILED:
+		return true
+	case ErrorCodeHOOKPRIORITYMISMATCH:
 		return true
 	case ErrorCodeIDEMPOTENCYCONFLICT:
 		return true
@@ -585,6 +604,8 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case ErrorCodeISOLATIONBASELINEMISSING:
 		return true
+	case ErrorCodeISOLATIONPOLICYINVALID:
+		return true
 	case ErrorCodeKEYUNTRUSTED:
 		return true
 	case ErrorCodeLEASEEXPIRED:
@@ -592,6 +613,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeLEDGEREPOCHMISMATCH:
 		return true
 	case ErrorCodeMALFORMEDREQUEST:
+		return true
+	case ErrorCodeMARKSEMANTICSVIOLATED:
 		return true
 	case ErrorCodeMETEREPOCHCHANGE:
 		return true
@@ -616,6 +639,10 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodePAYLOADTOOLARGE:
 		return true
 	case ErrorCodePRECONDITIONREQUIRED:
+		return true
+	case ErrorCodePROBEUNBOUNDED:
+		return true
+	case ErrorCodeQOSCLASSMISSING:
 		return true
 	case ErrorCodeRATELIMITED:
 		return true
@@ -2939,10 +2966,27 @@ type ErrorBody struct {
 	// default retryable flag of each code are defined in `pkg/apierr`; the
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
-	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
-	// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
+	// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
+	// in revision 8 are report-only and have no HTTP response status.
 	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 	// endpoints must not ship with it in a release.
+	// Node enforcement verification (§13.11) is the address-free group the node
+	// agent reports. These codes appear in `NodeError.code` and in the
+	// serving-check `error_code` of `ObservationReport`. They never appear in
+	// browser-facing `Error.code`.
+	// METER_PATH_INVALID: the accounting path is not the one this generation claimed: hook, NAT position, source identity, or a counter that can be skipped (§10.3).
+	// ISOLATION_BASELINE_MISSING: member forwarding is not held at the fail-closed boot ruleset (§8.2, §17.1).
+	// GENERATION_MISMATCH: the kernel ruleset is not the requested generation.
+	// HOOK_PRIORITY_MISMATCH: a base chain hook or priority drifted (§8.2).
+	// COUNTER_ORDER_INVALID: an accept can skip the per-device counters, including an established/related accept placed before the lease check (§10.2, §16.3).
+	// FLOWTABLE_BYPASS: a flowtable or offload could bypass the counters (§10.3).
+	// DEVICE_CLASS_MISSING: a device binding has no counter or class.
+	// METER_EPOCH_CHANGE: a named counter went backwards or disappeared. Callers must open a new meter epoch and must not hide the gap (§10.7).
+	// QOS_CLASS_MISSING: the HTB parent or a member class is missing or wrong (§11.4, §11.5).
+	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
+	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
+	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
 	Code ErrorCode `json:"code"`
 
 	// Details Machine-readable context, always an object (empty when there is none).
@@ -2966,10 +3010,27 @@ type ErrorBody struct {
 // default retryable flag of each code are defined in `pkg/apierr`; the
 // contracts tests keep this enum identical to that table. Codes marked
 // node-local in `pkg/apierr` are reported mainly inside agent payloads
-// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
-// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
+// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
+// in revision 8 are report-only and have no HTTP response status.
 // NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 // endpoints must not ship with it in a release.
+// Node enforcement verification (§13.11) is the address-free group the node
+// agent reports. These codes appear in `NodeError.code` and in the
+// serving-check `error_code` of `ObservationReport`. They never appear in
+// browser-facing `Error.code`.
+// METER_PATH_INVALID: the accounting path is not the one this generation claimed: hook, NAT position, source identity, or a counter that can be skipped (§10.3).
+// ISOLATION_BASELINE_MISSING: member forwarding is not held at the fail-closed boot ruleset (§8.2, §17.1).
+// GENERATION_MISMATCH: the kernel ruleset is not the requested generation.
+// HOOK_PRIORITY_MISMATCH: a base chain hook or priority drifted (§8.2).
+// COUNTER_ORDER_INVALID: an accept can skip the per-device counters, including an established/related accept placed before the lease check (§10.2, §16.3).
+// FLOWTABLE_BYPASS: a flowtable or offload could bypass the counters (§10.3).
+// DEVICE_CLASS_MISSING: a device binding has no counter or class.
+// METER_EPOCH_CHANGE: a named counter went backwards or disappeared. Callers must open a new meter epoch and must not hide the gap (§10.7).
+// QOS_CLASS_MISSING: the HTB parent or a member class is missing or wrong (§11.4, §11.5).
+// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
+// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
+// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
 type ErrorCode string
 
 // ErrorEnvelope Error envelope (§14.6, AGENTS.md §4). Never contains stack traces, SQL, certificates or secrets.
@@ -3664,10 +3725,27 @@ type NodeError struct {
 	// default retryable flag of each code are defined in `pkg/apierr`; the
 	// contracts tests keep this enum identical to that table. Codes marked
 	// node-local in `pkg/apierr` are reported mainly inside agent payloads
-	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
-	// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+	// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
+	// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
+	// in revision 8 are report-only and have no HTTP response status.
 	// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 	// endpoints must not ship with it in a release.
+	// Node enforcement verification (§13.11) is the address-free group the node
+	// agent reports. These codes appear in `NodeError.code` and in the
+	// serving-check `error_code` of `ObservationReport`. They never appear in
+	// browser-facing `Error.code`.
+	// METER_PATH_INVALID: the accounting path is not the one this generation claimed: hook, NAT position, source identity, or a counter that can be skipped (§10.3).
+	// ISOLATION_BASELINE_MISSING: member forwarding is not held at the fail-closed boot ruleset (§8.2, §17.1).
+	// GENERATION_MISMATCH: the kernel ruleset is not the requested generation.
+	// HOOK_PRIORITY_MISMATCH: a base chain hook or priority drifted (§8.2).
+	// COUNTER_ORDER_INVALID: an accept can skip the per-device counters, including an established/related accept placed before the lease check (§10.2, §16.3).
+	// FLOWTABLE_BYPASS: a flowtable or offload could bypass the counters (§10.3).
+	// DEVICE_CLASS_MISSING: a device binding has no counter or class.
+	// METER_EPOCH_CHANGE: a named counter went backwards or disappeared. Callers must open a new meter epoch and must not hide the gap (§10.7).
+	// QOS_CLASS_MISSING: the HTB parent or a member class is missing or wrong (§11.4, §11.5).
+	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
+	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
+	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
 	Code ErrorCode `json:"code"`
 
 	// Message Redacted summary; never tokens, keys, environment or browsing data (§13.11).
@@ -3870,10 +3948,27 @@ type Operation struct {
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
-		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
-		// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
+		// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
+		// in revision 8 are report-only and have no HTTP response status.
 		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 		// endpoints must not ship with it in a release.
+		// Node enforcement verification (§13.11) is the address-free group the node
+		// agent reports. These codes appear in `NodeError.code` and in the
+		// serving-check `error_code` of `ObservationReport`. They never appear in
+		// browser-facing `Error.code`.
+		// METER_PATH_INVALID: the accounting path is not the one this generation claimed: hook, NAT position, source identity, or a counter that can be skipped (§10.3).
+		// ISOLATION_BASELINE_MISSING: member forwarding is not held at the fail-closed boot ruleset (§8.2, §17.1).
+		// GENERATION_MISMATCH: the kernel ruleset is not the requested generation.
+		// HOOK_PRIORITY_MISMATCH: a base chain hook or priority drifted (§8.2).
+		// COUNTER_ORDER_INVALID: an accept can skip the per-device counters, including an established/related accept placed before the lease check (§10.2, §16.3).
+		// FLOWTABLE_BYPASS: a flowtable or offload could bypass the counters (§10.3).
+		// DEVICE_CLASS_MISSING: a device binding has no counter or class.
+		// METER_EPOCH_CHANGE: a named counter went backwards or disappeared. Callers must open a new meter epoch and must not hide the gap (§10.7).
+		// QOS_CLASS_MISSING: the HTB parent or a member class is missing or wrong (§11.4, §11.5).
+		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
+		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
+		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
 	}] `json:"error"`
@@ -5007,10 +5102,27 @@ type UsageEventResult struct {
 		// default retryable flag of each code are defined in `pkg/apierr`; the
 		// contracts tests keep this enum identical to that table. Codes marked
 		// node-local in `pkg/apierr` are reported mainly inside agent payloads
-		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING
-		// and METER_EPOCH_CHANGE are report-only and have no HTTP response status.
+		// (update results, observations). ARTIFACT_INVALID, ISOLATION_BASELINE_MISSING,
+		// METER_EPOCH_CHANGE and the nine node enforcement verification codes added
+		// in revision 8 are report-only and have no HTTP response status.
 		// NOT_IMPLEMENTED is transitional HTTP 501, retryable false; documented
 		// endpoints must not ship with it in a release.
+		// Node enforcement verification (§13.11) is the address-free group the node
+		// agent reports. These codes appear in `NodeError.code` and in the
+		// serving-check `error_code` of `ObservationReport`. They never appear in
+		// browser-facing `Error.code`.
+		// METER_PATH_INVALID: the accounting path is not the one this generation claimed: hook, NAT position, source identity, or a counter that can be skipped (§10.3).
+		// ISOLATION_BASELINE_MISSING: member forwarding is not held at the fail-closed boot ruleset (§8.2, §17.1).
+		// GENERATION_MISMATCH: the kernel ruleset is not the requested generation.
+		// HOOK_PRIORITY_MISMATCH: a base chain hook or priority drifted (§8.2).
+		// COUNTER_ORDER_INVALID: an accept can skip the per-device counters, including an established/related accept placed before the lease check (§10.2, §16.3).
+		// FLOWTABLE_BYPASS: a flowtable or offload could bypass the counters (§10.3).
+		// DEVICE_CLASS_MISSING: a device binding has no counter or class.
+		// METER_EPOCH_CHANGE: a named counter went backwards or disappeared. Callers must open a new meter epoch and must not hide the gap (§10.7).
+		// QOS_CLASS_MISSING: the HTB parent or a member class is missing or wrong (§11.4, §11.5).
+		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
+		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
+		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
 		Message string       `json:"message"`
