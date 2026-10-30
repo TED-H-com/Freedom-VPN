@@ -28,8 +28,9 @@
 // /32. Both sets carry the kernel timeout from ExpiresAt, at most
 // ProbeMaxSeconds. TimeoutCeilSeconds and the remaining lifetime already in
 // State cap a re-render so a live set is not given a fresh full window.
-// Verify rejects a prefix wider than /32, an element it cannot parse, and a
-// timeout or expires longer than that window, as ReasonProbeUnbounded.
+// Verify rejects a prefix wider than /32, an element it cannot parse, an
+// original timeout above ProbeMaxSeconds, or a remaining lifetime past the
+// model window, as ReasonProbeUnbounded.
 // Apply and ApplyBaselineModel remove the exception when Probe is nil; there
 // is no separate withdraw call. ApplyBaseline is that path with a nil probe,
 // which is what the agent and the watchdog call, including after a failed

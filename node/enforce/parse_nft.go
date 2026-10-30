@@ -71,12 +71,14 @@ type setElement struct {
 	Concat bool
 	// Bounded is false when the element has no timeout and no expires (§13.9).
 	// Seconds is max(timeout, expires). Remain is the smaller of the two when
-	// both are present, otherwise Seconds. Verification uses Seconds so a long
-	// expires cannot hide behind a short timeout. Render uses Remain so a
-	// re-render cannot extend the kernel lifetime.
+	// both are present, otherwise Seconds. Render uses Remain so a re-render
+	// cannot extend the kernel lifetime. Window is expires when both are
+	// present, otherwise the single value: verification compares it with the
+	// model window. The original timeout is Seconds, compared with the ceiling.
 	Bounded bool
 	Seconds uint32
 	Remain  uint32
+	Window  uint32
 }
 
 // ParseRuleset reads `nft -j list table inet fvpn`. Numbers above 2^53 stay
@@ -649,11 +651,11 @@ func parseOneElem(item any) (setElement, bool) {
 }
 
 func parseElemObject(m map[string]any) (setElement, bool) {
-	bounded, seconds, remain := timeoutFromMap(m)
+	bounded, seconds, remain, window := timeoutFromMap(m)
 	val, ok := m["val"]
 	if !ok {
 		if _, has := m["concat"]; has {
-			return parseConcatVal(m, bounded, seconds, remain)
+			return parseConcatVal(m, bounded, seconds, remain, window)
 		}
 		return setElement{}, false
 	}
@@ -667,18 +669,19 @@ func parseElemObject(m map[string]any) (setElement, bool) {
 			el.Bounded = true
 			el.Seconds = seconds
 			el.Remain = remain
+			el.Window = window
 		}
 		return el, true
 	case map[string]any:
-		return parseConcatVal(t, bounded, seconds, remain)
+		return parseConcatVal(t, bounded, seconds, remain, window)
 	case []any:
-		return elemFromParts(stringParts(t), bounded, seconds, remain)
+		return elemFromParts(stringParts(t), bounded, seconds, remain, window)
 	default:
 		return setElement{}, false
 	}
 }
 
-func parseConcatVal(m map[string]any, bounded bool, seconds, remain uint32) (setElement, bool) {
+func parseConcatVal(m map[string]any, bounded bool, seconds, remain, window uint32) (setElement, bool) {
 	raw, ok := m["concat"]
 	if !ok {
 		return setElement{}, false
@@ -687,7 +690,7 @@ func parseConcatVal(m map[string]any, bounded bool, seconds, remain uint32) (set
 	if !ok {
 		return setElement{}, false
 	}
-	return elemFromParts(stringParts(arr), bounded, seconds, remain)
+	return elemFromParts(stringParts(arr), bounded, seconds, remain, window)
 }
 
 func stringParts(arr []any) []string {
@@ -705,7 +708,7 @@ func stringParts(arr []any) []string {
 	return out
 }
 
-func timeoutFromMap(m map[string]any) (bool, uint32, uint32) {
+func timeoutFromMap(m map[string]any) (bool, uint32, uint32, uint32) {
 	timeout, hasT := asTimeout(m["timeout"])
 	expires, hasE := asTimeout(m["expires"])
 	if timeout == 0 {
@@ -718,23 +721,29 @@ func timeoutFromMap(m map[string]any) (bool, uint32, uint32) {
 }
 
 // combineTimeout reports max(timeout, expires) as seconds and the tighter of
-// the two as remain. A single positive value is both.
-func combineTimeout(hasT bool, timeout uint32, hasE bool, expires uint32) (bool, uint32, uint32) {
+// the two as remain. window is expires when both are present, otherwise the
+// single value. Remain stays the tighter value so a render ceiling does not
+// follow a listing whose expires is longer than its timeout.
+func combineTimeout(hasT bool, timeout uint32, hasE bool, expires uint32) (bounded bool, seconds, remain, window uint32) {
 	if !hasT && !hasE {
-		return false, 0, 0
+		return false, 0, 0, 0
 	}
-	seconds := timeout
+	seconds = timeout
 	if expires > seconds {
 		seconds = expires
 	}
-	remain := seconds
+	remain = seconds
 	if hasT && hasE {
 		remain = timeout
 		if expires < remain {
 			remain = expires
 		}
 	}
-	return true, seconds, remain
+	window = timeout
+	if hasE {
+		window = expires
+	}
+	return true, seconds, remain, window
 }
 
 func asTimeout(v any) (uint32, bool) {
@@ -756,32 +765,49 @@ func asTimeout(v any) (uint32, bool) {
 }
 
 func parseElemString(s string) (setElement, bool) {
-	var timeout, expires uint32
-	hasT, hasE := false, false
-	if i := strings.Index(s, "timeout"); i >= 0 {
-		rest := strings.TrimSpace(s[i+len("timeout"):])
-		fields := strings.Fields(rest)
-		if len(fields) > 0 {
-			if n, ok := parseSeconds(fields[0]); ok && n > 0 {
-				hasT = true
-				timeout = n
-			}
+	timeout, hasT, s := takeListedDuration(s, "timeout")
+	expires, hasE, s := takeListedDuration(s, "expires")
+	bounded, seconds, remain, window := combineTimeout(hasT, timeout, hasE, expires)
+	return elemFromParts(splitConcat(s), bounded, seconds, remain, window)
+}
+
+// takeListedDuration removes one "key <duration>" clause. The duration is
+// seconds or an nft span such as 5m or 4m47s. A later clause is left in place.
+func takeListedDuration(s, key string) (uint32, bool, string) {
+	searchFrom := 0
+	for searchFrom < len(s) {
+		j := strings.Index(s[searchFrom:], key)
+		if j < 0 {
+			return 0, false, s
 		}
-		s = strings.TrimSpace(s[:i])
-	}
-	if i := strings.Index(s, "expires"); i >= 0 {
-		rest := strings.TrimSpace(s[i+len("expires"):])
-		fields := strings.Fields(rest)
-		if len(fields) > 0 {
-			if n, ok := parseSeconds(fields[0]); ok && n > 0 {
-				hasE = true
-				expires = n
-			}
+		j += searchFrom
+		if j > 0 && s[j-1] != ' ' && s[j-1] != '\t' {
+			searchFrom = j + len(key)
+			continue
 		}
-		s = strings.TrimSpace(s[:i])
+		after := j + len(key)
+		if after >= len(s) || (s[after] != ' ' && s[after] != '\t') {
+			searchFrom = j + len(key)
+			continue
+		}
+		rest := strings.TrimSpace(s[after:])
+		field, _, _ := strings.Cut(rest, " ")
+		if i := strings.IndexByte(field, '\t'); i >= 0 {
+			field = field[:i]
+		}
+		n, ok := parseSeconds(field)
+		if !ok || n == 0 {
+			return 0, false, s
+		}
+		rel := strings.Index(s[after:], field)
+		if rel < 0 {
+			return 0, false, s
+		}
+		end := after + rel + len(field)
+		cleaned := strings.TrimSpace(s[:j] + " " + s[end:])
+		return n, true, strings.Join(strings.Fields(cleaned), " ")
 	}
-	bounded, seconds, remain := combineTimeout(hasT, timeout, hasE, expires)
-	return elemFromParts(splitConcat(s), bounded, seconds, remain)
+	return 0, false, s
 }
 
 func splitConcat(s string) []string {
@@ -796,7 +822,7 @@ func splitConcat(s string) []string {
 	return out
 }
 
-func elemFromParts(parts []string, bounded bool, seconds, remain uint32) (setElement, bool) {
+func elemFromParts(parts []string, bounded bool, seconds, remain, window uint32) (setElement, bool) {
 	if len(parts) == 0 {
 		return setElement{}, false
 	}
@@ -813,7 +839,7 @@ func elemFromParts(parts []string, bounded bool, seconds, remain uint32) (setEle
 	if !addr.Is4() {
 		return setElement{}, false
 	}
-	el := setElement{Addr: addr, Bounded: bounded, Seconds: seconds, Remain: remain}
+	el := setElement{Addr: addr, Bounded: bounded, Seconds: seconds, Remain: remain, Window: window}
 	if len(parts) == 1 {
 		return el, true
 	}
@@ -845,11 +871,67 @@ func parseL4Proto(s string) (string, bool) {
 	}
 }
 
+// parseSeconds reads a timeout as a whole number of seconds or as an nft time
+// span (30s, 5m, 4m47s, 1h, 1d). Milliseconds are floored. A bare number is
+// seconds.
 func parseSeconds(s string) (uint32, bool) {
-	s = strings.TrimSpace(strings.TrimSuffix(s, "s"))
-	n, err := strconv.ParseUint(s, 10, 32)
-	if err != nil {
+	s = strings.TrimSpace(s)
+	if s == "" {
 		return 0, false
 	}
-	return uint32(n), true
+	if n, err := strconv.ParseUint(s, 10, 32); err == nil {
+		return uint32(n), true
+	}
+	var total uint64
+	for i := 0; i < len(s); {
+		j := i
+		for j < len(s) && s[j] >= '0' && s[j] <= '9' {
+			j++
+		}
+		if j == i {
+			return 0, false
+		}
+		n, err := strconv.ParseUint(s[i:j], 10, 64)
+		if err != nil {
+			return 0, false
+		}
+		i = j
+		if i >= len(s) {
+			return 0, false
+		}
+		var mult uint64
+		switch {
+		case strings.HasPrefix(s[i:], "ms"):
+			i += 2
+			add := n / 1000
+			if add > 0xffffffff || total > 0xffffffff-add {
+				return 0, false
+			}
+			total += add
+			continue
+		case s[i] == 's':
+			mult = 1
+		case s[i] == 'm':
+			mult = 60
+		case s[i] == 'h':
+			mult = 3600
+		case s[i] == 'd':
+			mult = 86400
+		default:
+			return 0, false
+		}
+		i++
+		if n > 0xffffffff/mult {
+			return 0, false
+		}
+		add := n * mult
+		if total > 0xffffffff-add {
+			return 0, false
+		}
+		total += add
+	}
+	if total == 0 || total > 0xffffffff {
+		return 0, false
+	}
+	return uint32(total), true
 }

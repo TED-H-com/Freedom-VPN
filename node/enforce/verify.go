@@ -313,12 +313,21 @@ func verifyProbeElements(rs Ruleset, m Model) error {
 	return nil
 }
 
+// boundedElement accepts a probe element when it has a kernel timeout, the
+// original timeout (max of timeout and expires) is within ProbeMaxSeconds,
+// and the remaining lifetime is within limit+1. limit is the model window.
+// The extra second covers the floor in probeTimeout and the tick between the
+// listing and Now. In the kernel, timeout does not shrink and expires does.
 func boundedElement(el setElement, set string, limit uint32) error {
-	if limit > ProbeMaxSeconds {
-		limit = ProbeMaxSeconds
+	if !el.Bounded || el.Seconds == 0 {
+		return checkf(ReasonProbeUnbounded, "%s element %s has no kernel timeout within ceiling %ds", set, el.Addr, ProbeMaxSeconds)
 	}
-	if !el.Bounded || el.Seconds == 0 || el.Seconds > limit {
-		return checkf(ReasonProbeUnbounded, "%s element %s has no kernel timeout within %ds", set, el.Addr, limit)
+	if el.Seconds > ProbeMaxSeconds {
+		return checkf(ReasonProbeUnbounded, "%s element %s original timeout %ds exceeds ceiling %ds", set, el.Addr, el.Seconds, ProbeMaxSeconds)
+	}
+	bound := limit + 1
+	if el.Window == 0 || el.Window > bound {
+		return checkf(ReasonProbeUnbounded, "%s element %s remaining %ds exceeds bound %ds", set, el.Addr, el.Window, bound)
 	}
 	return nil
 }
