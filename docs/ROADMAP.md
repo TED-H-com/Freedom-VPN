@@ -31,6 +31,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w0-bootstrap: repositories, contract, spec | WP01 | done |
 | w1-contracts: OpenAPI, schemas, vectors, shared leaf packages | WP03 | done (#4) |
 | w1-db: PostgreSQL schema, DB foundation, CI | WP03 | done (#1) |
+| w1-db follow-up 1 | isolated test databases named fvpn_t<unix-hex>_<32hex>; dbtest.Sweep drops idle leaked databases older than a bound (legacy fvpn_<hex> only with FVPN_TEST_DB_SWEEP_LEGACY=1) in one zero-connection-checked batch; FVPN_TEST_DB_SWEEP=1 sweeps once per process; fvpn-db-sweep command and db-test-sweep target | done (#97) |
 | w1-netlab: G2 isolation, metering and shaping lab | WP02, WP05, WP07 | done (#16) |
 | w1-netbird: NetBird pinning, adapter, dev deployment (G1 server side) | WP02, WP04 | done (#6), G1 open |
 | w1-portal: Admin and Member portal on a mock API | WP10 | done (#2) |
