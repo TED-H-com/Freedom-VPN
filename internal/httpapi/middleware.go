@@ -477,17 +477,21 @@ func parameterNames(path string) []string {
 	}
 	return names
 }
+
+// classify selects a D-060 bucket from the operation id gen.GetSpec returns.
+// Codegen stores those ids in PascalCase. The camelCase operationId values in
+// contracts/openapi.yaml are not the strings the router loads.
 func classify(op *openapi3.Operation, c config.Config) (string, config.Bucket, int64) {
 	switch op.OperationID {
-	case "submitObservation":
+	case "SubmitObservation":
 		return "heartbeat", c.HeartbeatRate, c.AgentBodyBytes
-	case "renewServingLease":
+	case "RenewServingLease":
 		return "lease", c.LeaseRate, c.AgentBodyBytes
-	case "submitUsageBatch":
+	case "SubmitUsageBatch":
 		return "usage", c.UsageRate, c.UsageBodyBytes
-	case "enrollNode":
+	case "EnrollNode":
 		return "anonymous", c.AnonymousRate, c.AgentBodyBytes
-	case "receiveProviderWebhook":
+	case "ReceiveProviderWebhook":
 		return "anonymous", c.AnonymousRate, c.WebhookBodyBytes
 	}
 	if op.Tags[0] == "agent" {
