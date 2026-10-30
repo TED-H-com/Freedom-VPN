@@ -1,0 +1,304 @@
+{
+  "archive_source": "host-retained synthetic signed-node upload; not actual node SQLite archive",
+  "canonical_hashes_preserved": true,
+  "entitlements_unchanged": true,
+  "epoch_rotated": true,
+  "external_reconciliation": false,
+  "final_ack": "10",
+  "kind": "physical pgBackRest WAL/PITR and service replay",
+  "ledger_rows": 10,
+  "physical_boundary": {
+    "ack": "7",
+    "applied_migrations": 21,
+    "archive_mode": "off",
+    "audit_correlation": "grant resource -> operation -> request -> succeeded append-only audit",
+    "cryptographic_audit_chain": false,
+    "ledger_rows": 7,
+    "max_seen_seq": "7",
+    "post_target_audit_absent": true,
+    "post_target_events": 0,
+    "post_target_grant_absent": true,
+    "post_target_operation_absent": true,
+    "pre_target_audit_rows_unchanged": 2,
+    "pre_target_entitlement_end": "2026-10-30T04:52:53Z",
+    "pre_target_grant_present": true,
+    "pre_target_operation_present": true,
+    "promoted": true,
+    "sample_bytes": "2100",
+    "sample_rows": 7
+  },
+  "previous_ack": 10,
+  "protocol_seconds": 0.052944741,
+  "replayed_accepted": 3,
+  "replayed_duplicate": 7,
+  "restored_ack": "7",
+  "second_replay_duplicate": 10,
+  "status": "passed",
+  "utc": "2026-10-30T03:44:06.481208617Z",
+  "source": {
+    "archive_source": "original mTLS-uploaded events retained by test sender; not node SQLite archive",
+    "backup_label": "20261030-034253F",
+    "backup_lsn": {
+      "start": "0/6000028",
+      "stop": "0/6007358"
+    },
+    "backup_timestamp": {
+      "start": 1793331773,
+      "stop": 1793331777
+    },
+    "db_rpo_seconds": 1.027456,
+    "expected_restored_ack": "7",
+    "full_service_rpo_seconds": null,
+    "full_service_rto_seconds": null,
+    "post_target_audit_present": true,
+    "pre_and_post_grants_present": true,
+    "pre_target_audit_rows": 2,
+    "projector_owned_rows_written": [],
+    "source_ack": "10",
+    "source_watermark": "2026-10-29T23:42:59.523247-04:00",
+    "target_lsn": "0/7012380",
+    "target_time": "2026-10-29T23:42:58.495791-04:00"
+  },
+  "network": "none",
+  "published_ports": [],
+  "repository_read_only": true,
+  "primary_overwrite_refused": true,
+  "restore_seconds": 4.475493307108991,
+  "isolated_subset_seconds": 4.823124310001731,
+  "db_rpo_seconds": 1.027456,
+  "full_service_rpo_seconds": null,
+  "full_service_rto_seconds": null,
+  "checklist_sections": 6,
+  "checklist_sha256": "2eca46b0db3d66a6690b760ab2a9fc2b3c5af4e1324b51c43262d33c3e8348e5",
+  "restore_image_digest": "sha256:1b4a0a38a0817c6e5252249f98fdb91af76cdf9c3e0ee0ee5f5560ae6f880ca5",
+  "verifier_sha256": "df39ba50594e89b6e58e890c67cfe044ff03e6422bce919e21eee8f250df412b",
+  "policy_revision": "01a18ae6-a0f2-765f-98b2-61e6808d2b8e",
+  "node_incarnation": "90fb61e7-91d9-45fa-81f4-baa32c7a81ce",
+  "image_digests": [
+    {
+      "image_id": "sha256:1b4a0a38a0817c6e5252249f98fdb91af76cdf9c3e0ee0ee5f5560ae6f880ca5",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:3d7bf39ceed93fb4fdf2ec9e4d3fe730c7a0507c95477e9724f5459ee30c474a",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:6f8789c9511230eecbf0f1821f28952b7b62b2373213cb0f09df70d12f1a15bc",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:dff4b4369266c86ea384808ae5bf3a688b96d495a6d460590a815b6599c376c9",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:28d28b42f21dbf97e114df9c208d7df3e357fed48f40aae138dd62d55dcf7827",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:15ab02c38aac62a7f5529ff762038b4a0c68daa3e3066124bc97eb34f2c60fd4",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:f3916a4b2281f23011e42b223415b6c1174cedfd99885e5ce57c863a497bff56",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:f3916a4b2281f23011e42b223415b6c1174cedfd99885e5ce57c863a497bff56",
+      "service": "member"
+    }
+  ],
+  "source_revision": "2a2146890607a00285c4262686608dba2ac6ba2f",
+  "expected": "ACK 7; earlier grant/audit retained; post-target writes absent; replay 3 accepted/7 duplicates; repeat 10 duplicates",
+  "actual": "all physical boundary and replay assertions passed",
+  "commands": [
+    [
+      "docker",
+      "ps",
+      "-a",
+      "--filter",
+      "name=^/fvpn-w4-secops-restore-pitr$",
+      "--format",
+      "{{.Names}}"
+    ],
+    [
+      "docker",
+      "ps",
+      "-a",
+      "--filter",
+      "name=^/fvpn-w4-secops-restore-pitr-init$",
+      "--format",
+      "{{.Names}}"
+    ],
+    [
+      "docker",
+      "volume",
+      "ls",
+      "--filter",
+      "name=^fvpn-w4-secops-restore-pitr-pg$",
+      "--format",
+      "{{.Name}}"
+    ],
+    [
+      "docker",
+      "inspect",
+      "--format",
+      "{{.Image}}",
+      "fvpn-w4-secops-postgres"
+    ],
+    [
+      "python3",
+      "tests/e2e/at/secops/diskexec.py",
+      "go",
+      "test",
+      "-c",
+      "-tags",
+      "e2e,integration",
+      "-o",
+      "<worktree>/.agent/secops/restore.test",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "deploy/backup/restore-pitr.sh",
+      "--image",
+      "sha256:1b4a0a38a0817c6e5252249f98fdb91af76cdf9c3e0ee0ee5f5560ae6f880ca5",
+      "--repo-volume",
+      "fvpn-w4-secops-pgbackrest-repo",
+      "--target-volume",
+      "fvpn-w4-secops-restore-pitr-pg",
+      "--primary-container",
+      "fvpn-w4-secops-postgres",
+      "--db-user",
+      "fvpn",
+      "--db-name",
+      "fvpn",
+      "--target-time",
+      "2026-10-30T03:42:58.495791Z",
+      "--isolated-container",
+      "fvpn-w4-secops-postgres"
+    ],
+    [
+      "deploy/backup/restore-pitr.sh",
+      "--image",
+      "sha256:1b4a0a38a0817c6e5252249f98fdb91af76cdf9c3e0ee0ee5f5560ae6f880ca5",
+      "--repo-volume",
+      "fvpn-w4-secops-pgbackrest-repo",
+      "--target-volume",
+      "fvpn-w4-secops-restore-pitr-pg",
+      "--primary-container",
+      "fvpn-w4-secops-postgres",
+      "--db-user",
+      "fvpn",
+      "--db-name",
+      "fvpn",
+      "--target-time",
+      "2026-10-30T03:42:58.495791Z",
+      "--isolated-container",
+      "fvpn-w4-secops-restore-pitr"
+    ],
+    [
+      "docker",
+      "inspect",
+      "fvpn-w4-secops-restore-pitr"
+    ],
+    [
+      "docker",
+      "exec",
+      "-i",
+      "--user",
+      "postgres",
+      "fvpn-w4-secops-restore-pitr",
+      "psql",
+      "-U",
+      "fvpn",
+      "-d",
+      "fvpn",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-v",
+      "restore_point=2026-10-30T03:42:58.495791Z"
+    ],
+    [
+      "docker",
+      "cp",
+      "fvpn-w4-secops-control:/var/lib/fvpn/vault",
+      "<worktree>/.agent/secops/pitr-vault-zwm_bbnr/vault"
+    ],
+    [
+      "docker",
+      "exec",
+      "fvpn-w4-secops-restore-pitr",
+      "mkdir",
+      "-p",
+      "/fixture",
+      "/output"
+    ],
+    [
+      "docker",
+      "cp",
+      "<worktree>/.agent/secops/pitr-vault-zwm_bbnr/vault",
+      "fvpn-w4-secops-restore-pitr:/fixture/vault"
+    ],
+    [
+      "docker",
+      "cp",
+      "<worktree>/.agent/e2e-state-w4-secops/secrets/postgres.password",
+      "fvpn-w4-secops-restore-pitr:/fixture/password"
+    ],
+    [
+      "docker",
+      "cp",
+      "<worktree>/.agent/secops/retained.json",
+      "fvpn-w4-secops-restore-pitr:/fixture/retained.json"
+    ],
+    [
+      "docker",
+      "cp",
+      "<worktree>/.agent/secops/pitr-manifest.json",
+      "fvpn-w4-secops-restore-pitr:/fixture/pitr-manifest.json"
+    ],
+    [
+      "docker",
+      "cp",
+      "<worktree>/.agent/secops/restore.test",
+      "fvpn-w4-secops-restore-pitr:/fixture/restore.test"
+    ],
+    [
+      "docker",
+      "exec",
+      "-e",
+      "FVPN_SECOPS_RESTORE=network-none",
+      "fvpn-w4-secops-restore-pitr",
+      "/fixture/restore.test",
+      "-test.v",
+      "-test.run",
+      "^TestAT30_IsolatedRestoreReplayer$",
+      "-test.timeout",
+      "2m"
+    ],
+    [
+      "docker",
+      "exec",
+      "fvpn-w4-secops-restore-pitr",
+      "cat",
+      "/output/restore.json"
+    ]
+  ],
+  "timing_scope": "dev-host isolated copy promotion/checklist/service replay; not service RTO or hardware capacity"
+}

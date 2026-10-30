@@ -29,3 +29,9 @@ at-secops-build:
 	@mkdir -p .agent/secops/build
 	GOOS=linux GOARCH=amd64 $(AT_SECOPS_RUN) go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops
 	GOOS=linux GOARCH=arm64 $(AT_SECOPS_RUN) go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops
+
+# Requires a fresh own-prefix e2e-up; leaves that stack running for inspection.
+.PHONY: at-secops-pitr
+at-secops-pitr:
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 FVPN_SECOPS_PITR=1 $(AT_SECOPS_RUN) go test -v -tags e2e,integration -p 1 -parallel 2 -count=1 -timeout 12m -run '^TestAT30_LivePITRSource$$' ./tests/e2e/at/secops
+	python3 tests/e2e/at/secops/pitr.py

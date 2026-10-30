@@ -6,10 +6,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -33,9 +31,9 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
-	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
+	e2e "github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -93,9 +91,9 @@ func TestAT28_AT31_LiveStack(t *testing.T) {
 	p.metadata["members_authenticated"] = len(members)
 	p.securityComplete = true
 	p.roles(admin, members[0])
-	p.planInputs()
+	p.planInputs(admin)
 	p.grantMembers(admin, members)
-	p.releaseSupport()
+	p.releaseSupport(admin)
 	nodeA := p.enrollAgent(admin)
 	nodeB, nodeClient := p.enrollHost(admin)
 	p.identities(admin, nodeClient, nodeB, nodeA)
@@ -104,7 +102,7 @@ func TestAT28_AT31_LiveStack(t *testing.T) {
 	p.serving(admin, nodeA)
 	p.concurrentLogins(members)
 	p.load(members)
-	p.ledger(nodeClient, nodeB, members, devices)
+	p.ledger(admin, nodeClient, nodeB, members, devices)
 	if len(devices[0]) > 0 {
 		p.memberOperation(members)
 	}
@@ -112,6 +110,11 @@ func TestAT28_AT31_LiveStack(t *testing.T) {
 }
 
 func (p *liveProbe) open() {
+	revision, e := exec.Command("git", "rev-parse", "HEAD").Output()
+	if e != nil {
+		p.t.Fatal("source revision")
+	}
+	p.metadata["source_revision"] = strings.TrimSpace(string(revision))
 	raw, err := os.ReadFile(filepath.Join(p.state, "stack.json"))
 	if err != nil {
 		p.t.Fatal("stack state absent")
@@ -573,82 +576,35 @@ func (p *liveProbe) load(members []*liveSession) {
 	}
 	time.Sleep(3 * time.Second)
 }
-func (p *liveProbe) ledger(node *liveSession, b api.EnrollResponse, members []*liveSession, devices [][]uuid.UUID) {
+func (p *liveProbe) ledger(admin, node *liveSession, b api.EnrollResponse, members []*liveSession, devices [][]uuid.UUID) {
 	if len(p.bindings) == 0 {
 		p.metadata["ledger_blocker"] = "No product-projected binding; no usage batch sent"
 		return
 	}
-	now := time.Now().UTC().Truncate(time.Second)
-	for _, binding := range p.bindings {
-		if now.Add(-10*time.Second).Before(binding.ValidFrom) || now.After(binding.ValidUntil) {
-			p.metadata["ledger_blocker"] = "Projected binding does not cover the proposed retained window"
-			return
-		}
+	p.physicalSource(admin, node, b, members[0], devices[0][0])
+	raw, err := os.ReadFile(filepath.Join(p.root, ".agent/secops/retained.json"))
+	var batch api.UsageBatchRequest
+	if err != nil || json.Unmarshal(raw, &batch) != nil {
+		p.t.Fatal("retained fixture read")
 	}
-	records := []api.UsageRecord{}
-	for i, m := range members {
-		for _, d := range devices[i] {
-			records = append(records, api.UsageRecord{MemberId: uuid.MustParse(m.member), DeviceId: d, BindingRevision: p.bindings[d].BindingRevision, PeriodId: api.PeriodId(now.Format("2006-01")), UploadBytes: 100, DownloadBytes: 200})
-		}
-	}
-	batch := api.UsageBatchRequest{NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, LedgerEpoch: presence.NewNullNullable[uuid.UUID](), Events: []api.UsageEvent{}}
-	meter := uuid.New()
-	for i := 1; i <= 10; i++ {
-		ev, err := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, MeterEpochId: meter, EventSeq: decstr.U64(i), IntervalStart: now.Add(time.Duration(i-11) * time.Second), IntervalEnd: now.Add(time.Duration(i-10) * time.Second), MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: records})
-		if err != nil {
-			p.t.Fatal("usage fixture hash")
-		}
-		batch.Events = append(batch.Events, ev)
-	}
-	first := batch
-	first.Events = batch.Events[:5]
-	r := p.call(node, "POST", liveAgent+"/api/v1/agent/usage-batches", first, nil)
-	p.check("usage first half", r, 200, "")
-	var ack api.UsageBatchResult
-	_ = json.Unmarshal(r.body, &ack)
-	p.metadata["usage_initial_ack"] = ack.HighestContiguousSeq
-	// Take a real logical backup before the second half. Full AT30 still requires
-	// WAL/PITR and coordinated external systems; these are measured separately.
-	var mode, lsn string
-	_ = p.db.QueryRow(p.t.Context(), "SHOW archive_mode").Scan(&mode)
-	_ = p.db.QueryRow(p.t.Context(), "SELECT pg_current_wal_lsn()::text").Scan(&lsn)
-	backupAt := time.Now().UTC()
-	begin := time.Now()
-	dump, err := p.docker("postgres", "pg_dump", "-Fc", "-U", "fvpn", "-d", "fvpn")
-	recovery := map[string]any{"archive_mode": mode, "backup_wal_lsn": lsn, "backup_at": backupAt, "kind": "logical pg_dump; not WAL/PITR", "dump_seconds": time.Since(begin).Seconds(), "rpo_seconds": nil, "rto_seconds": nil}
-	if err == nil {
-		sum := sha256.Sum256(dump)
-		recovery["backup_sha256"] = hex.EncodeToString(sum[:])
-		if os.WriteFile(filepath.Join(p.root, ".agent/secops/restore.dump"), dump, 0600) != nil {
-			p.t.Fatal("private backup write")
-		}
-	}
-	r = p.call(node, "POST", liveAgent+"/api/v1/agent/usage-batches", batch, nil)
-	p.check("usage retained window", r, 200, "")
-	_ = json.Unmarshal(r.body, &ack)
-	p.metadata["usage_final_ack"] = ack.HighestContiguousSeq
-	p.metadata["usage_results"] = ack.Results
-	r = p.call(node, "POST", liveAgent+"/api/v1/agent/usage-batches", batch, nil)
+	r := p.call(node, "POST", liveAgent+"/api/v1/agent/usage-batches", batch, nil)
 	p.check("usage duplicate window", r, 200, "")
-	_ = json.Unmarshal(r.body, &ack)
+	var ack api.UsageBatchResult
+	if json.Unmarshal(r.body, &ack) != nil {
+		p.t.Fatal("duplicate result")
+	}
 	duplicate := 0
-	for _, a := range ack.Results {
-		if a.Status == api.UsageEventResultStatusDuplicate {
+	for _, result := range ack.Results {
+		if result.Status == api.UsageEventResultStatusDuplicate {
 			duplicate++
 		}
 	}
-	p.metadata["usage_duplicate_events"] = duplicate
 	if ack.HighestContiguousSeq != 10 || duplicate != 10 {
-		p.t.Error("synthetic ledger did not reach contiguous 10 with duplicate replay")
+		p.t.Fatal("ledger duplicate replay")
 	}
-	encoded, err := json.Marshal(batch)
-	if err != nil {
-		p.t.Fatal("retention encoding")
-	}
-	if os.WriteFile(filepath.Join(p.root, ".agent/secops/retained.json"), encoded, 0600) != nil {
-		p.t.Fatal("private retained fixture")
-	}
-	p.metadata["recovery"] = recovery
+	p.metadata["usage_final_ack"] = ack.HighestContiguousSeq
+	p.metadata["usage_duplicate_events"] = duplicate
+	p.metadata["recovery"] = p.metadata["physical_source"]
 	var ledgerRows int
 	if p.db.QueryRow(p.t.Context(), `SELECT count(*) FROM usage_events WHERE node_id=$1 AND incarnation_id=$2`, b.NodeId, b.NodeIncarnationId).Scan(&ledgerRows) != nil || ledgerRows != 10 {
 		p.t.Error("ledger receipt count")
@@ -757,40 +713,28 @@ func (p *liveProbe) finish() {
 		p.t.Error("evidence marshal")
 		return
 	}
-	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops/live.json"), append(out, '\n'), 0644) != nil {
+	if p.metadata["physical_source"] != nil {
+		if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops/pitr-source.json"), append(out, '\n'), 0644) != nil {
+			p.t.Error("PITR evidence write")
+		}
+	}
+	name := "live.json"
+	if os.Getenv("FVPN_SECOPS_PITR") == "1" {
+		name = "pitr-source.json"
+	}
+	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {
 		p.t.Error("evidence write")
 	}
 }
 
-// TEST ONLY release-support fixture described in docs/e2e/README.md. It enables
-// signed desired-state reads without approving or installing an artifact.
-func (p *liveProbe) releaseSupport() {
-	ctx := p.t.Context()
-	sum, err := canonjson.Hash([]byte(`{}`))
+// Shared exported lab hook: real signed binaries, release verification and
+// non-empty release-support activation through APIs. Never seed policy rows.
+func (p *liveProbe) releaseSupport(admin *liveSession) {
+	baseline, err := e2e.PrepareServingBaseline(p.t.Context(), admin.client, admin.csrf, false)
 	if err != nil {
-		p.t.Fatal(err)
+		p.t.Fatal("shared serving baseline failed: ", err)
 	}
-	tx, err := p.db.Begin(ctx)
-	if err != nil {
-		p.t.Fatal("support transaction")
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-	def, rev := uuid.New(), uuid.New()
-	_, err = tx.Exec(ctx, `INSERT INTO policy_definitions(id,type,code) VALUES($1,'release_support','secops TEST ONLY empty support')`, def)
-	if err != nil {
-		p.t.Fatal("support definition")
-	}
-	_, err = tx.Exec(ctx, `INSERT INTO policy_revisions(id,definition_id,type,revision,schema_version,payload,payload_hash,signing_key_ref,created_by) VALUES($1,$2,'release_support',1,1,'{}',$3,'TEST ONLY fixture','00000000-0000-0000-0000-000000000003')`, rev, def, sum[:])
-	if err != nil {
-		p.t.Fatal("support revision")
-	}
-	_, err = tx.Exec(ctx, `UPDATE policy_definitions SET active_revision_id=$2,resource_version=resource_version+1 WHERE id=$1`, def, rev)
-	if err != nil {
-		p.t.Fatal("activate TEST ONLY support")
-	}
-	if tx.Commit(ctx) != nil {
-		p.t.Fatal("support commit")
-	}
+	p.metadata["serving_baseline"] = baseline
 }
 
 func (p *liveProbe) memberOperation(members []*liveSession) {
