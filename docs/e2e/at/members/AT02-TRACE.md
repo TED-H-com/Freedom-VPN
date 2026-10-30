@@ -1,9 +1,9 @@
-# AT02 device-to-usage binding trace — Follow-up 5
+# AT02 device-to-usage binding trace — Follow-up 6
 
 The native admission gap is resolved in this run. [AT01](AT01.json) proves the
 shared issuer mapping; [AT02](AT02.json) proves the quota transaction, ownership
-gates, slot reuse and receipt validation. The current result is in AT02.json; the historical Follow-up 4 and Follow-up 3 records remain in history/follow-up-4 and history/follow-up-3. The fresh image includes conntrack and the harness requires coherent post-revoke serving. A and the final-slot winner have real counted forwarding; the loser
-has no selected exit and no origin response. Database authorization alone is
+gates, slot reuse, strict post-withdrawal `fvmb0` ingress drop and receipt validation. The current result is in [AT02.json](AT02.json); the historical Follow-up 5, Follow-up 4 and Follow-up 3 records remain in [history/follow-up-5](history/follow-up-5/AT02.json), [history/follow-up-4](history/follow-up-4/AT02.json) and [history/follow-up-3](history/follow-up-3/AT02.json). The fresh image includes conntrack and the harness requires coherent post-revoke serving plus direct kernel `fvmb0` ingress injection evidence (`ObserveMemberIngress`). A and the final-slot winner have real counted forwarding; the loser
+has no selected exit and no origin response, and injected frames from the revoked member source increment `ctunku` by `+1` packet with `0` forwarded bytes. Database authorization alone is
 not forwarding.
 
 | Stage | Product path | Live evidence |
@@ -15,6 +15,7 @@ not forwarding.
 | Cross-owner access | HTTP list/delete and `devices.Service.Get` | A's list omits B's existing device; deleting it returns 404 without identifiers; service read is not found with an empty result. B remains authorized. |
 | Slot reuse | Member DELETE, then real-adapter admission | Count changes 3 → 2 → 3; former loser is admitted. No projection is hand-written. |
 | External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, and desired/applied generations are recorded with current-generation leases; post-revoke health must agree with counted sibling/replacement traffic. |
+| Strict post-withdrawal `fvmb0` ingress | `tests/e2e/internal/labstack: Stack.ObserveMemberIngress` (`tun-mirred`, link type `65534`, source port `40000`, destination `192.0.4.10:9`) | Revoked `member-a2` (`100.104.160.29`) moves `ctunku` `0 -> 1` packet (`0 -> 29` bytes) with `0` forwarded bytes (`uplink_empty: true`, `origin_empty: true`) and steady device counters; admitted sibling `member` (`100.104.242.187`) moves `u_01a18ef9ae937a1cb93420bed403bf2f` `31 -> 32` packets (`6967 -> 6996` bytes) and `d_01a18ef9ae937a1cb93420bed403bf2f` `22 -> 23` packets (`7283 -> 7340` bytes on ICMP reply), appears on `fvup0` and `origin`, and leaves `ctunku` and all other device counters unchanged. |
 | Node identity | `apps/worker/jobs_nodes.go`, `node.peer.observe` | This node identity path is separate from the native member identity/device writer; never substitute a node peer for a member device. |
 | Usage negative control | Actual node mTLS, deliberately unknown device | Per-event `VALIDATION_FAILED / binding_not_found`. This remains the correct rejection. |
 | Usage positive control | Actual projected device/revision and interval wholly inside its binding | `accepted`, then `duplicate`; exactly one receipt and one sample. Synthetic bytes test ingest, not metering. |
@@ -53,13 +54,13 @@ After the member DELETE and production-adapter admission of that former loser,
 the harness waits for a newer real generation without the old binding and with
 the replacement. It requires counted sibling/replacement transfers, no origin
 receipt from the revoked peer, empty revoked-source conntrack, a continuous
-agent PID and forwarding health without block reasons. The second attempt also
-measures the old device's positive flow immediately before revocation.
+agent PID, forwarding health without block reasons, and direct post-withdrawal
+`fvmb0` ingress injection (`ObserveMemberIngress` from PR #219) proving that
+frames from the revoked member source hit `ctunku` (`+1` packet, `0` forwarded
+bytes, empty `fvup0` and `origin` captures) while an admitted sibling's frame
+moves only its own `u_<hex>` (`+1` packet) and reaches `fvup0` and `origin`.
 
-This satisfies the stated quota/ownership/withdrawal assertions. It does not
-claim a measured post-revoke kernel-ingress drop: the native client withdraws
-its route first. That separate limitation is retained in the shared
-[device-revoke record](../../runs/2026-10-30/followup10-run3/device-revoke.md).
-No stale route is restored and no agent restart, state clearing or projection
-repair is used to make this case pass. The dedicated updater probe does not
-appear in any of these member-device counts.
+No stale route is restored, no `inet fvpn` table or `wg` state is modified, and
+no agent restart, state clearing or projection repair is used to make this case
+pass. The dedicated updater probe does not appear in any of these member-device
+counts.
