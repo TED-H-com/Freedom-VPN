@@ -64,6 +64,7 @@ func TestReviewD063_Agent_BaselineFailureAfterProbeStillAttestsPassed(t *testing
 	// Simulate baseline tampering / VerifyBaseline failure right after the probe runs.
 	fp.failClear = true
 	fp.failBaseline = true
+	holdUpdateLock(t, r)
 	ch := probeChallenge(t, r, labProbe(), 0)
 	stepOK(t, r)
 
@@ -123,6 +124,7 @@ func TestReviewD063_Agent_ProbeUsesStaleServingDecisionWhenLatchBlocks(t *testin
 	if err := os.WriteFile(filepath.Join(r.eng.cfg.JournalDir, "forwarding.blocked"), []byte("switch\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	holdUpdateLock(t, r)
 	probeChallenge(t, r, labProbe(), 0)
 	stepOK(t, r)
 
@@ -403,6 +405,8 @@ func TestReviewD063_Held_AgentProbeCrashAndUsageCounters(t *testing.T) {
 		},
 	}
 	enrollBoot(t, r)
+	stepOK(t, r)
+	holdUpdateLock(t, r)
 	ch := probeChallenge(t, r, labProbe(), 45*time.Second)
 	clearFn, installed := r.eng.installProbeException(context.Background(), ch)
 	if !installed || clearFn == nil {
@@ -415,7 +419,9 @@ func TestReviewD063_Held_AgentProbeCrashAndUsageCounters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(script, "100.64.8.1 timeout 43s") || !strings.Contains(script, "1.2.3.4 . tcp . 80 timeout 43s") {
+	seconds := r.plane.last.Probe.TimeoutCeilSeconds
+	want := "timeout " + itoaU64(seconds) + "s"
+	if seconds == 0 || seconds > 43 || !strings.Contains(script, "100.64.8.1 "+want) || !strings.Contains(script, "1.2.3.4 . tcp . 80 "+want) {
 		t.Fatalf("mid-probe ruleset missing kernel element timeouts:\n%s", script)
 	}
 	_ = r.eng.prober.Probe(context.Background(), ProbeRequest{})
@@ -458,7 +464,10 @@ func TestReviewD063_Held_HealthBeforeDNSApplyAndStaleETag(t *testing.T) {
 			t.Fatal(err)
 		}
 		ch := issueChallenge(t, r, nil)
-		// Answer health before applyResolver has executed.
+		// Establish trusted time, then answer before applyResolver has executed.
+		if err := r.eng.syncLease(context.Background()); err != nil {
+			t.Fatal(err)
+		}
 		r.eng.answerHealth(context.Background())
 		att := requireAttest(t, r, ch)
 		if att.Checks.DNSPolicy.Status == api.HealthCheckStatusPassed {

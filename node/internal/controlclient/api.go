@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -115,6 +116,27 @@ func (c *Client) Observe(ctx context.Context, idem uuid.UUID, report api.Observa
 
 // RenewLease posts a renewal and returns the signed lease envelope bytes.
 func (c *Client) RenewLease(ctx context.Context, idem uuid.UUID, req api.LeaseRenewalRequest) ([]byte, error) {
+	raw, err := c.RenewLeaseOnce(ctx, idem, req)
+	var status *StatusError
+	if errors.As(err, &status) && status.RetryAfter > 0 {
+		// Do not retry here. The agent must recompute its applied generation
+		// and serving gates before another request. Cancellation retains both
+		// the status and its deadline so the next step cannot bypass the wait.
+		timer := time.NewTimer(max(0, time.Until(status.RetryAt)))
+		defer timer.Stop()
+		select {
+		case <-ctx.Done():
+			return nil, errors.Join(err, ctx.Err())
+		case <-timer.C:
+		}
+	}
+	return raw, err
+}
+
+// RenewLeaseOnce returns Retry-After immediately to a caller that schedules
+// its own retries. The agent uses this to withdraw forwarding and continue
+// heartbeats and observations while remembering the monotonic retry deadline.
+func (c *Client) RenewLeaseOnce(ctx context.Context, idem uuid.UUID, req api.LeaseRenewalRequest) ([]byte, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, err

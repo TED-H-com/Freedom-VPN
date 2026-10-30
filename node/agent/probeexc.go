@@ -2,23 +2,44 @@ package agent
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"net/netip"
 	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 // Keep this agent-side bound aligned with enforce.ProbeMaxDestinations.
 const maxProbeTargets = 4
 
-// withProbeException installs at most once per live challenge, and clears
-// before answering it. Diagnostic counters never enter member usage, but
-// resets of member counters must still reach the meter.
+// probeIssuance survives process restarts. The monotonic deadline belongs to
+// one boot and can only shrink. Cleared issuances cannot be opened again.
+type probeIssuance struct {
+	Nonce    string        `json:"nonce"`
+	Hash     string        `json:"hash"`
+	IssuedAt time.Time     `json:"issued_at"`
+	Deadline time.Duration `json:"deadline_ns,string"`
+	Cleared  bool          `json:"cleared"`
+}
+
+const probeIssuanceKey = "probe_issuance"
+
+// withProbeException binds the result to the exact challenge read before the
+// probe, even when a free update lock means probing the normal node state.
 func (e *Engine) withProbeException(ctx context.Context, run func()) {
 	ch, ok := e.matchingChallenge()
+	e.probedChallenge = nil
+	if ok {
+		e.probedChallenge = &ch
+	}
 	if !ok || ch.Probe == nil || (e.healthNonce == ch.Nonce && e.probeFresh(ch)) {
 		run()
 		return
@@ -30,67 +51,142 @@ func (e *Engine) withProbeException(ctx context.Context, run func()) {
 	run()
 }
 
+// updateLockHeld never waits for or keeps the lock. Only contention is
+// authority for D-064; a missing or inaccessible lock is not an update.
+func (e *Engine) updateLockHeld() bool {
+	lock, err := nodelock.TryAcquire(e.cfg.LockPath)
+	if err == nil {
+		lock.Release()
+		return false
+	}
+	return errors.Is(err, nodelock.ErrBusy)
+}
+
 func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Challenge) (func(), bool) {
-	// D-064: the updater holds the update lock throughout its health wait.
-	// The live challenge, not that lock, authorizes this bounded exception.
 	e.prepareProbe(ctx)
 	live, ok := e.matchingChallenge()
-	if !ok || !live.Same(ch) || (e.probeChallenge != nil && e.probeChallenge.Nonce == ch.Nonce) {
+	if !ok || !live.Same(ch) || !e.updateLockHeld() || e.dependencyMissing ||
+		(e.probeChallenge != nil && e.probeChallenge.Nonce == ch.Nonce) {
 		return nil, false
 	}
 	now := e.trustedNow()
-	exc, ok := e.challengeProbe(ch, now)
+	_, ok = e.challengeProbe(ch, now)
 	if !ok {
-		e.log.Warn("probe exception", "err", "not installed")
 		return nil, false
 	}
-	d := e.decision
-	serving := e.serving && !e.latchBlocked && !e.recoverBlocked && d.Serve && d.Model.Generation != 0
-	var model enforce.Model
-	if serving {
-		model = d.Model
-		model.Now = now
-		model.Probe = exc
-		if _, err := enforce.Render(model, enforce.State{}, enforce.TCState{}); err != nil {
-			e.log.Warn("probe exception", "err", "not installed")
+	// Store a nonce-bound digest, never the probe's destination list (SEC02).
+	// Same compares timestamp instants; normalize their JSON spelling too.
+	ch.IssuedAt = ch.IssuedAt.UTC()
+	ch.ExpiresAt = ch.ExpiresAt.UTC()
+	raw, err := canonjson.Marshal(ch)
+	if err != nil {
+		return nil, false
+	}
+	sum := sha256.Sum256(raw)
+	issuance := probeIssuance{Nonce: ch.Nonce, Hash: hex.EncodeToString(sum[:]), IssuedAt: ch.IssuedAt,
+		Deadline: e.clock.Mono() + ch.ExpiresAt.Sub(now)}
+	previous, exists, err := e.store.Meta(ctx, probeIssuanceKey)
+	if err != nil {
+		e.storageOK = false
+		return nil, false
+	}
+	if exists {
+		var old probeIssuance
+		if json.Unmarshal([]byte(previous), &old) != nil {
+			e.storageOK = false
 			return nil, false
 		}
-	} else {
-		var built bool
-		model, built = e.baselineProbeModel(now, exc)
-		if !built {
-			e.log.Warn("probe exception", "err", "not installed")
+		if old.Nonce == ch.Nonce {
+			if old.Hash != issuance.Hash || old.Cleared || old.Deadline <= e.clock.Mono() {
+				return nil, false
+			}
+			if old.Deadline < issuance.Deadline {
+				issuance.Deadline = old.Deadline
+			}
+		} else if !ch.IssuedAt.After(old.IssuedAt) {
 			return nil, false
 		}
 	}
-	// Remember the issuance even if apply fails after writing kernel state.
-	// A later step must not reinstall or extend the same authorization.
+	// Persist before touching the kernel, including partial apply failures.
+	if !e.saveProbeIssuance(ctx, issuance) {
+		return nil, false
+	}
+	// Re-check time and authority after the durable write. Neither elapsed
+	// time nor a new anchor may increase the original kernel lifetime.
+	now = e.trustedNow()
+	exc, ok := e.challengeProbe(ch, now)
+	live, matches := e.matchingChallenge()
+	if !ok || !matches || !live.Same(ch) || !e.updateLockHeld() {
+		return nil, false
+	}
+	remain := issuance.Deadline - e.clock.Mono()
+	if remain < time.Second {
+		return nil, false
+	}
+	if capSeconds := uint64(remain / time.Second); capSeconds < exc.TimeoutCeilSeconds {
+		exc.TimeoutCeilSeconds = capSeconds
+	}
+	_, ok = e.baselineProbeModel(now, exc)
+	if !ok {
+		return nil, false
+	}
 	e.probeChallenge = &ch
-	if err := e.applyProbeModel(ctx, serving, model); err != nil {
-		e.log.Warn("probe exception", "err", "not installed")
+	// D-064: even an agent that was serving enters the baseline. No probe
+	// installation or removal may call the serving-policy Apply path.
+	if e.serving {
+		e.withdraw(ctx)
+	}
+	e.serving = false
+	e.expectServing.Store(false)
+	e.policyExpires = 0
+	// Handoff can take time. Compute the actual install cap after it, using
+	// the same trusted clock and the durable original monotonic deadline.
+	now = e.trustedNow()
+	exc, ok = e.challengeProbe(ch, now)
+	live, matches = e.matchingChallenge()
+	remain = issuance.Deadline - e.clock.Mono()
+	if !ok || !matches || !live.Same(ch) || !e.updateLockHeld() || remain < time.Second {
 		return nil, false
 	}
-	return func() {
+	exc.TimeoutCeilSeconds = min(exc.TimeoutCeilSeconds, uint64(remain/time.Second))
+	model, ok := e.baselineProbeModel(now, exc)
+	if !ok {
+		return nil, false
+	}
+	clear := func() {
 		bare := model
 		bare.Probe = nil
-		// A latch or lease can change while the probe runs. Never put the
-		// old member model back when removing the exception.
-		e.prepareProbe(ctx)
-		if serving && (!e.serving || !e.decision.Serve) {
-			serving = false
-			bare, _ = e.baselineProbeModel(e.trustedNow(), nil)
-		}
-		if err := e.applyProbeModel(ctx, serving, bare); err != nil {
+		cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if err := e.plane.BaselineModel(cleanupCtx, bare); err != nil {
 			e.baselineOK = false
-			e.serving = false
-			e.expectServing.Store(false)
-			e.policyExpires = 0
 			e.lastProbe.Check = api.HealthCheckStatusFailed
 			e.lastProbe.Health = api.DataHealthFailed
 			e.lastProbe.Detail = "probe_clear_failed"
 			e.log.Warn("probe exception", "err", "not removed")
 		}
-	}, true
+		issuance.Cleared = true
+		e.saveProbeIssuance(cleanupCtx, issuance)
+	}
+	if err := e.plane.BaselineModel(ctx, model); err != nil {
+		clear()
+		e.log.Warn("probe exception", "err", "not installed")
+		return nil, false
+	}
+	e.baselineOK = true
+	return clear, true
+}
+
+func (e *Engine) saveProbeIssuance(ctx context.Context, issuance probeIssuance) bool {
+	raw, err := json.Marshal(issuance)
+	if err == nil {
+		err = e.store.SetMeta(ctx, probeIssuanceKey, string(raw))
+	}
+	if err != nil {
+		e.storageOK = false
+		return false
+	}
+	return true
 }
 
 // prepareProbe refreshes the serving gates before a probe can touch the
@@ -102,25 +198,6 @@ func (e *Engine) prepareProbe(ctx context.Context) {
 		e.withdraw(ctx)
 		e.decision = Decide(e.input())
 	}
-}
-
-// applyProbeModel calls Apply while serving and BaselineModel otherwise.
-// Only member reset evidence is retained; probe counters are diagnostic.
-func (e *Engine) applyProbeModel(ctx context.Context, serving bool, m enforce.Model) error {
-	if serving {
-		prev := usageOnly(e.counters)
-		res, err := e.plane.Apply(ctx, m, prev)
-		if len(res.Resets) > 0 {
-			if e.kernel != nil {
-				e.kernel.noteApply(prev, res.Resets, usageOnly(res.Counters), e.expectServing.Load())
-				e.switchEpoch(ctx)
-			} else {
-				e.noteResetsWithoutKernel(prev, res.Resets, usageOnly(res.Counters), e.expectServing.Load())
-			}
-		}
-		return err
-	}
-	return e.plane.BaselineModel(ctx, m)
 }
 
 func (e *Engine) baselineProbeModel(now time.Time, p *enforce.ProbeException) (enforce.Model, bool) {
@@ -168,7 +245,7 @@ func (e *Engine) resolverAddrs() []netip.Addr {
 // false instead of widening a prefix, substituting a peer, or omitting expiry.
 func (e *Engine) challengeProbe(ch healthattest.Challenge, now time.Time) (*enforce.ProbeException, bool) {
 	req := ch.Probe
-	if req == nil || !probePeerOK(req.PeerID) || len(req.Destinations) > maxProbeTargets {
+	if !e.anchorOK || req == nil || !probePeerOK(req.PeerID) || len(req.Destinations) > maxProbeTargets {
 		return nil, false
 	}
 	src, err := netip.ParsePrefix(strings.TrimSpace(req.SourceV4))
@@ -189,8 +266,13 @@ func (e *Engine) challengeProbe(ch healthattest.Challenge, now time.Time) (*enfo
 		if (d.Proto != "tcp" && d.Proto != "udp") || d.Port == 0 || unusableV4(p.Addr()) {
 			return nil, false
 		}
-		if e.memberCollision(req.PeerID, p.Addr()) || (e.nodeLocal(p.Addr()) && probeAdminPort(d.Port)) {
+		if e.memberCollision(req.PeerID, p.Addr()) || e.nodeLocal(p.Addr()) {
 			return nil, false
+		}
+		for _, denied := range enforce.SpecDeniedV4() {
+			if denied.Contains(p.Addr()) {
+				return nil, false
+			}
 		}
 		dests = append(dests, enforce.ProbeDestination{AddrV4: p, Proto: d.Proto, Port: d.Port})
 	}
@@ -268,13 +350,4 @@ func (e *Engine) memberCollision(peer string, src netip.Addr) bool {
 		}
 	}
 	return false
-}
-
-func probeAdminPort(port uint16) bool {
-	switch port {
-	case 22, 80, 443, 3000, 8080, 9091:
-		return true
-	default:
-		return false
-	}
 }

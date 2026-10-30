@@ -73,18 +73,20 @@ type Server struct {
 	leaseID   string
 	recID     string
 
-	tokens    map[string]*enrolled
-	revoked   map[uuid.UUID]bool
-	fixture   Fixture
-	genDelta  int64
-	forceGen  uint64
-	corrupt   bool
-	wrongNode bool
-	wrongInc  bool
-	expire    bool
-	delay     time.Duration
-	failLeft  int
-	leaseFail int
+	tokens        map[string]*enrolled
+	revoked       map[uuid.UUID]bool
+	fixture       Fixture
+	genDelta      int64
+	forceGen      uint64
+	corrupt       bool
+	wrongNode     bool
+	wrongInc      bool
+	expire        bool
+	delay         time.Duration
+	failLeft      int
+	leaseFail     int
+	leaseRetryN   int
+	leaseRetryFor time.Duration
 	// leasePosts counts POST /lease-renewals, including a forced failure.
 	leasePosts int
 	// lastLeaseIssued keeps a new lease strictly after the previous one
@@ -315,6 +317,14 @@ func (s *Server) FailLeases(n int) {
 	s.mu.Lock()
 	s.leaseFail = n
 	s.mu.Unlock()
+}
+
+// SetLeaseRetryAfter makes the next n renewals return 429. TEST ONLY.
+func (s *Server) SetLeaseRetryAfter(n int, seconds int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.leaseRetryN = n
+	s.leaseRetryFor = time.Duration(seconds) * time.Second
 }
 
 // LeaseRenewals is how many lease POSTs were attempted, including failures.

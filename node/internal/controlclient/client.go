@@ -42,6 +42,9 @@ type StatusError struct {
 	Status     int
 	Code       string
 	RetryAfter time.Duration
+	// RetryAt includes a monotonic clock reading. Callers retain the deadline
+	// when their context interrupts the Retry-After wait.
+	RetryAt time.Time
 }
 
 func (e *StatusError) Error() string {
@@ -342,8 +345,13 @@ func statusFrom(resp *http.Response) *StatusError {
 	se := &StatusError{Status: resp.StatusCode}
 	if v := resp.Header.Get("Retry-After"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			se.RetryAfter = time.Duration(n) * time.Second
+			if int64(n) <= int64((1<<63-1)/time.Second) {
+				se.RetryAfter = time.Duration(n) * time.Second
+			}
+		} else if at, err := http.ParseTime(v); err == nil {
+			se.RetryAfter = max(0, time.Until(at))
 		}
+		se.RetryAt = time.Now().Add(se.RetryAfter)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 4096))
 	if err != nil {
