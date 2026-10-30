@@ -17,7 +17,11 @@ import {
   SAFETY_FAILED_NODE_ID,
   SECONDARY_GROUP_ID,
 } from '../../mocks/data';
-import { setMockPersona, type MockPersona } from '../../mocks/handlers';
+import {
+  setMockPersona,
+  setMockRolledBackCandidateHealth,
+  type MockPersona,
+} from '../../mocks/handlers';
 import { assertAccessible } from '../../test/setup';
 
 function renderAt(
@@ -551,6 +555,104 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     ).toHaveTextContent('/payload/update_interval_seconds: schema_invalid');
     expect(await screen.findByTestId('dns-api-error-fields')).toHaveTextContent(
       '/payload/update_interval_seconds',
+    );
+  });
+
+  it('TestD056_AdminNodeDetail_TypedDnsPolicyEvidencePopulatedAndNull', async () => {
+    const user = userEvent.setup();
+
+    // 1. Populated DnsPolicyEvidence on PRIMARY_NODE_ID in zh-TW and en
+    renderAt(`/admin/nodes/${PRIMARY_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.getByTestId('node-dns-policy-evidence-section')).toBeInTheDocument();
+    expect(screen.getByTestId('node-dns-evidence-disclaimer')).toHaveTextContent(
+      '絕非中央驗證已套用之證明',
+    );
+    expect(screen.getByTestId('node-dns-evidence-document-id')).toHaveTextContent(
+      '01900000-0000-7000-8000-000000000056',
+    );
+    expect(screen.getByTestId('node-dns-evidence-content-sha256')).toHaveTextContent(
+      '2bed2c3a6225090d221f86c8d597c2782a44149ad9bafa7f02783c4cbaf5f20d',
+    );
+    expect(screen.getByTestId('node-dns-evidence-generation')).toHaveTextContent(
+      '9007199254740993',
+    );
+    expect(screen.getByTestId('node-dns-evidence-outcome')).toHaveTextContent('applied');
+    expect(
+      screen.getByTestId('node-dns-evidence-feed-malware-domains-default'),
+    ).toHaveTextContent('rules=1420');
+
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('node-dns-evidence-disclaimer')).toHaveTextContent(
+      'reported by the node and are never central proof of apply',
+    );
+
+    // 2. Null DnsPolicyEvidence on OFFLINE_NODE_ID shows clear "not yet reported" state in zh-TW and en
+    renderAt(`/admin/nodes/${OFFLINE_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.getByTestId('node-dns-evidence-not-reported')).toHaveTextContent(
+      'Not yet reported',
+    );
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'zh-TW');
+    expect(screen.getByTestId('node-dns-evidence-not-reported')).toHaveTextContent(
+      '尚未回報 (not yet reported)',
+    );
+  });
+
+  it('TestD062_AdminFleetUpdates_RolledBackTargetCandidateHealthPopulatedAndNull', async () => {
+    const user = userEvent.setup();
+
+    // 1. Populated candidate_health on rolled_back target (side by side with restored health and previous_release_id)
+    setMockRolledBackCandidateHealth('populated');
+    renderAt('/admin/updates', 'admin');
+    expect(await screen.findByTestId('admin-fleet-updates-page')).toBeInTheDocument();
+
+    await user.click(
+      await screen.findByTestId(`inspect-target-${SAFETY_FAILED_NODE_ID}`),
+    );
+    expect(await screen.findByTestId('batch-target-detail-panel')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('target-detail-rollback-health-section'),
+    ).toBeInTheDocument();
+
+    const restoredCard = screen.getByTestId('target-detail-restored-health');
+    const candidateCard = screen.getByTestId('target-detail-candidate-health');
+    expect(restoredCard).toBeInTheDocument();
+    expect(candidateCard).toBeInTheDocument();
+
+    // Candidate named as previous_release_id
+    expect(screen.getByTestId('target-detail-previous-release-id')).toHaveTextContent(
+      '6d2797d0-b9a5-4724-96af-9b3039d351b1',
+    );
+    expect(
+      within(restoredCard).getByTestId('restored-health-check-tunnel_probe'),
+    ).toHaveTextContent('passed');
+    expect(
+      within(candidateCard).getByTestId('candidate-health-check-tunnel_probe'),
+    ).toHaveTextContent('failed');
+    expect(
+      within(candidateCard).getByTestId('candidate-health-check-processes'),
+    ).toHaveTextContent('passed');
+
+    // 2. Null candidate_health on rolled_back target (e.g. rolled back before candidate health check ran)
+    setMockRolledBackCandidateHealth('null');
+    renderAt('/admin/updates', 'admin');
+    expect(await screen.findByTestId('admin-fleet-updates-page')).toBeInTheDocument();
+
+    await user.click(
+      await screen.findByTestId(`inspect-target-${SAFETY_FAILED_NODE_ID}`),
+    );
+    expect(
+      await screen.findByTestId('target-detail-rollback-health-section'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('target-detail-previous-release-id')).toHaveTextContent(
+      '6d2797d0-b9a5-4724-96af-9b3039d351b1',
+    );
+    expect(screen.getByTestId('restored-health-check-tunnel_probe')).toHaveTextContent(
+      'passed',
+    );
+    expect(screen.getByTestId('target-detail-candidate-health-null')).toHaveTextContent(
+      'candidate_health: null',
     );
   });
 });

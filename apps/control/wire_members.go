@@ -11,19 +11,18 @@ import (
 
 func members() Domain {
 	return Domain{Name: "members", Build: func(_ context.Context, d Dependencies) (Built, error) {
-		cfg, e := config.LoadMembers(d.Config.MembersConfigFile)
+		cfg, e := config.LoadMembersForIssuer(d.Config.MembersConfigFile, d.Config.OIDCIssuer)
 		if e != nil {
-			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
+			return Built{}, e
 		}
 		identity, e := devices.NewIdentityDiscovery(d.Config.OIDCIssuer, nil, d.Logger)
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "oidc_issuer", Err: e}
 		}
-		services, e := membersruntime.New(d.Pool, cfg, nil)
+		services, e := membersruntime.New(d.Pool, cfg, identity, nil)
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
 		}
-		services.Adapter.Identity = identity
 		return Built{Handlers: []any{httpadapter.Handlers{Pool: d.Pool, Services: &services.HTTP}}, Middleware: httpadapter.RequestContext}, nil
 	}}
 }

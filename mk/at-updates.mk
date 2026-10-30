@@ -29,7 +29,7 @@ at-updates-lint:
 	go vet -tags e2e ./tests/e2e/at/updates; \
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/updates; \
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/at/updates; \
-	python3 tests/e2e/at/updates/run.py lint; \
+	go test -tags e2e ./tests/e2e/at/updates -run '^TestUpdatesFollowupEvidence$$'; \
 	echo 'at-updates-lint: gofmt, vet and staticcheck (offline + e2e) passed'
 
 # Records first; every assigned AT must pass. Tear down even on failure.
@@ -41,4 +41,4 @@ at-updates:
 		$(MAKE) -f $(AT_UPDATES_ROOT)/mk/e2e.mk e2e-down; \
 		E2E_RESET=1 $(MAKE) -f $(AT_UPDATES_ROOT)/mk/e2e.mk e2e-up; \
 	fi; \
-	FVPN_E2E=1 python3 tests/e2e/at/updates/run.py live
+	FVPN_E2E=1 go test -tags e2e -count=1 -v -timeout 45m -p 1 ./tests/e2e/at/updates -run '^TestUpdatesFollowup$$'

@@ -4,8 +4,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   apiClient,
   extractMinimumServingVersionLabel,
+  extractTargetRollbackHealth,
   type OperationResource,
   type ReleaseRegisterRequest,
+  type UpdateHealth,
+  type UpdateTargetWithResult,
 } from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { OperationBanner } from '../../components/common/OperationBanner';
@@ -20,6 +23,14 @@ const MOCK_FALLBACK_BATCH_ID = IS_MOCK_ENV ? '85ef720a-31a0-4250-90d2-4b92c58695
 const MOCK_FALLBACK_RELEASE_ID = IS_MOCK_ENV
   ? '6d2797d0-b9a5-4724-96af-9b3039d351b1'
   : '';
+
+const UPDATE_HEALTH_CHECK_KEYS: ReadonlyArray<keyof UpdateHealth> = [
+  'processes',
+  'identity_and_state',
+  'internet_only',
+  'dns_policy',
+  'tunnel_probe',
+];
 
 export function AdminFleetUpdatesPage(): React.ReactElement {
   const { t } = useI18n();
@@ -669,6 +680,190 @@ export function AdminFleetUpdatesPage(): React.ReactElement {
                   </div>
                 </div>
               </div>
+
+              {selectedTarget.state === 'rolled_back' &&
+                (() => {
+                  const rollbackHealth = extractTargetRollbackHealth(
+                    selectedTarget as UpdateTargetWithResult,
+                    batch.release_id,
+                  );
+                  return (
+                    <div
+                      style={{ marginTop: '0.85rem' }}
+                      data-testid="target-detail-rollback-health-section"
+                    >
+                      <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>
+                        {t('admin.updates.rollbackHealth.sectionTitle')}
+                      </h4>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                          gap: '0.75rem',
+                        }}
+                      >
+                        <div
+                          style={{
+                            padding: '0.6rem 0.75rem',
+                            background: '#ffffff',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--color-border)',
+                          }}
+                          data-testid="target-detail-restored-health"
+                        >
+                          <div
+                            style={{
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              marginBottom: '0.25rem',
+                            }}
+                          >
+                            {t('admin.updates.rollbackHealth.restoredTitle')}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--color-text-muted)',
+                              marginBottom: '0.5rem',
+                            }}
+                          >
+                            {t('admin.updates.rollbackHealth.restoredReleaseLabel')}{' '}
+                            <span
+                              className="mono"
+                              data-testid="target-detail-restored-release-id"
+                            >
+                              {rollbackHealth.restoredReleaseId ?? '—'}
+                            </span>
+                          </div>
+                          {rollbackHealth.health == null ? (
+                            <div data-testid="target-detail-restored-health-null">
+                              <span className="badge badge-warning">
+                                {t('admin.updates.rollbackHealth.restoredNullNotice')}
+                              </span>
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.25rem',
+                                fontSize: '0.78rem',
+                              }}
+                            >
+                              {UPDATE_HEALTH_CHECK_KEYS.map((checkKey) => {
+                                const checkVal = rollbackHealth.health![checkKey];
+                                return (
+                                  <div
+                                    key={checkKey}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                    }}
+                                    data-testid={`restored-health-check-${checkKey}`}
+                                  >
+                                    <span className="mono">{checkKey}</span>
+                                    <span
+                                      className={`badge ${
+                                        checkVal === 'passed'
+                                          ? 'badge-success'
+                                          : checkVal === 'failed'
+                                            ? 'badge-danger'
+                                            : 'badge-warning'
+                                      }`}
+                                    >
+                                      {checkVal}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        <div
+                          style={{
+                            padding: '0.6rem 0.75rem',
+                            background: '#ffffff',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--color-border)',
+                          }}
+                          data-testid="target-detail-candidate-health"
+                        >
+                          <div
+                            style={{
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              marginBottom: '0.25rem',
+                            }}
+                          >
+                            {t('admin.updates.rollbackHealth.candidateTitle')}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--color-text-muted)',
+                              marginBottom: '0.5rem',
+                            }}
+                          >
+                            {t('admin.updates.rollbackHealth.candidateReleaseLabel')}{' '}
+                            <span
+                              className="mono"
+                              data-testid="target-detail-previous-release-id"
+                            >
+                              {rollbackHealth.previousReleaseId ?? '—'}
+                            </span>
+                          </div>
+                          {rollbackHealth.candidateHealth == null ? (
+                            <div data-testid="target-detail-candidate-health-null">
+                              <span className="badge badge-warning">
+                                {t('admin.updates.rollbackHealth.candidateNullNotice')}
+                              </span>
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.25rem',
+                                fontSize: '0.78rem',
+                              }}
+                            >
+                              {UPDATE_HEALTH_CHECK_KEYS.map((checkKey) => {
+                                const checkVal =
+                                  rollbackHealth.candidateHealth![checkKey];
+                                return (
+                                  <div
+                                    key={checkKey}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                    }}
+                                    data-testid={`candidate-health-check-${checkKey}`}
+                                  >
+                                    <span className="mono">{checkKey}</span>
+                                    <span
+                                      className={`badge ${
+                                        checkVal === 'passed'
+                                          ? 'badge-success'
+                                          : checkVal === 'failed'
+                                            ? 'badge-danger'
+                                            : 'badge-warning'
+                                      }`}
+                                    >
+                                      {checkVal}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
             </div>
           )}
 

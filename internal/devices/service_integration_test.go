@@ -62,8 +62,8 @@ func setupDevices(t *testing.T) (*Service, uuid.UUID, []Peer) {
 		}
 	}
 	exec(`INSERT INTO members(id) VALUES($1)`, member)
-	exec(`INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','portal-subject','verified-shared-claim','verified-link',$3)`, identity, member, now)
-	exec(`INSERT INTO netbird_user_bindings(id,member_id,deployment_id,external_user_id,identity_binding_id,mapping_proof,revision,verified_at) VALUES($1,$2,'test','netbird-user',$3,'TEST ONLY verified cross-client proof',1,$4)`, uuid.New(), member, identity, now)
+	exec(`INSERT INTO identity_bindings(id,member_id,issuer,client_scope,subject,stable_claim_ref,binding_method,verified_at) VALUES($1,$2,'https://id.example.invalid','portal','netbird-user','sub','oidc',$3)`, identity, member, now)
+	exec(`INSERT INTO netbird_user_bindings(id,member_id,deployment_id,external_user_id,identity_binding_id,mapping_proof,revision,verified_at) VALUES($1,$2,'test','netbird-user',$3,'shared_issuer_public_subject:https://id.example.invalid',1,$4)`, uuid.New(), member, identity, now)
 	exec(`INSERT INTO member_groups(id,code,name) VALUES($1,'test','TEST ONLY')`, group)
 	exec(`INSERT INTO plans(id,code) VALUES($1,'test')`, plan)
 	exec(`INSERT INTO plan_revisions(id,plan_id,revision,device_limit,exit_group_ids,schema_version,payload) VALUES($1,$2,1,1,$3,1,'{}')`, revision, plan, []uuid.UUID{group})

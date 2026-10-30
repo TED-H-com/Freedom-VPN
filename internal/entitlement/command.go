@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -84,30 +85,53 @@ func Complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, resou
 	}
 	return db.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: string(resourceType), ResourceID: &id, OperationID: operation, ResponseStatus: status})
 }
-func Audit(ctx context.Context, tx pgx.Tx, actor Actor, action string, resource api.ResourceType, id uuid.UUID, before, after any) error {
-	if !resource.Valid() || !api.AuditEventActorType(actor.Role).Valid() || id == uuid.Nil || actor.ID == uuid.Nil {
+
+// Audit admits only reviewed domain fields. Free-text member metadata, reasons,
+// external identifiers and provider bodies never enter the audit stream (D-029).
+func Audit(ctx context.Context, tx pgx.Tx, actor Actor, action string, resource api.ResourceType, id uuid.UUID, before, after map[string]any, operation ...*uuid.UUID) error {
+	return AuditResult(ctx, tx, actor, action, resource, id, api.AuditEventResultSucceeded, before, after, operation...)
+}
+func AuditResult(ctx context.Context, tx pgx.Tx, actor Actor, action string, resource api.ResourceType, id uuid.UUID, result api.AuditEventResult, before, after map[string]any, operation ...*uuid.UUID) error {
+	var fields []string
+	switch action {
+	case "member.patch":
+		fields = []string{"admin_suspended", "resource_version", "member_group_ids", "display_name_changed", "notes_changed"}
+	case "member.close":
+		fields = []string{"state"}
+	case "member.grant":
+		fields = []string{"grant_id", "source", "valid_until"}
+	case "grant.revoke":
+		fields = []string{"grant_id"}
+	case "member.entitlement_changed":
+		fields = []string{"revision", "state"}
+	case "device.authorize", "device.revoke":
+		fields = []string{"member_id", "status", "reason"}
+	case "identity_binding.created", "identity_binding.proof_updated", "identity_binding.rejected":
+		fields = []string{"identity_binding_id", "revision", "reason"}
+	case "billing.checkout", "billing.portal", "billing.checkout_completed", "billing.portal_completed":
+		fields = []string{"session_id", "state", "expires_at"}
+	case "billing.reconciled":
+		fields = []string{"subscription_id", "inbox_event_id", "entitlement_revision", "anomalies"}
+	default:
 		return ErrInvalid
 	}
-	if before == nil {
-		before = map[string]any{}
-	}
-	if after == nil {
-		after = map[string]any{}
-	}
-	b, err := canonjson.Marshal(before)
-	if err != nil {
-		return err
-	}
-	a, err := canonjson.Marshal(after)
-	if err != nil {
-		return err
-	}
-	var req *uuid.UUID
+	var req, op *uuid.UUID
 	if actor.RequestID != uuid.Nil {
 		req = &actor.RequestID
 	}
-	return db.AppendAudit(ctx, tx, db.AuditEvent{Actor: actor.ID.String(), ActorType: actor.Role, Action: action, Resource: string(resource) + ":" + id.String(), RequestID: req, SchemaVersion: 1, Before: b, After: a, Result: string(api.AuditEventResultSucceeded)})
+	if len(operation) > 1 {
+		return ErrInvalid
+	}
+	if len(operation) == 1 {
+		op = operation[0]
+	}
+	event, err := audit.NewEvent(audit.Entry{Actor: audit.Actor{Type: api.AuditEventActorType(actor.Role), ID: actor.ID}, Action: action, Resource: api.ResourceRef{Type: resource, Id: id}, Result: result, OperationID: op, RequestID: req, Before: before, After: after, Fields: fields})
+	if err != nil {
+		return err
+	}
+	return audit.AppendEvent(ctx, tx, event)
 }
+
 func Operation(ctx context.Context, tx pgx.Tx, actor Actor, kind api.OperationKind, resource api.ResourceType, id uuid.UUID, revision decstr.U64) (uuid.UUID, error) {
 	if !kind.Valid() || !resource.Valid() || id == uuid.Nil || actor.ID == uuid.Nil || actor.RequestID == uuid.Nil || (actor.Role != string(auth.Member) && actor.Role != string(auth.Admin)) {
 		return uuid.Nil, ErrInvalid
