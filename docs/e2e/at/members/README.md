@@ -1,10 +1,12 @@
-# Wave 4 member acceptance — Follow-up 5
+# Wave 4 member acceptance — Follow-up 6
 
 Run only the assigned `w4-members / 24000` stack. [RUN.md](RUN.md) records the
-Follow-up 5 execution; [summary.md](summary.md) lists current AT outcomes and
-[requests.md](requests.md) names the resolved F4-01 check and remaining owners.
-Prior evidence is preserved under [history/follow-up-4](history/follow-up-4/RUN.md)
-and [history/follow-up-3](history/follow-up-3/RUN.md).
+Follow-up 6 execution; [summary.md](summary.md) lists current AT outcomes and
+[requests.md](requests.md) names the resolved AT02 ingress injection (#219) and
+F4-01 D-067 / revision 11 (#193, #213, #216) checks along with remaining owners.
+Prior evidence is preserved under [history/follow-up-5](history/follow-up-5/RUN.md),
+[history/follow-up-4](history/follow-up-4/RUN.md) and
+[history/follow-up-3](history/follow-up-3/RUN.md).
 
 ```sh
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
@@ -36,6 +38,8 @@ direction for the controlled TCP connection; no packet body, URL history or
 credential is retained. Both a CA-verified origin response and increases in the
 specific device's upload/download counters, plus authenticated origin receipt
 from the selected node's SNAT address, are required for counted forwarding.
+In AT02, strict post-withdrawal ingress is also measured on `fvmb0` via
+`labstack.Stack.ObserveMemberIngress` (`tun-mirred`, link type `65534`, port `40000` -> `192.0.4.10:9`).
 See [forwarding-observation.md](forwarding-observation.md).
 
 DNS policy revisions reuse one active definition. Node-mTLS document digests

@@ -178,6 +178,16 @@ func (l *live) feedLastGood(r *record) {
 		return
 	}
 	beforeDNS := l.dnsLocal("feed-01.example.invalid", "1", "udp")
+	if !strings.Contains(beforeDNS, `"rcode":0`) {
+		var baseRev uuid.UUID
+		if l.pool.QueryRow(l.ctx, `SELECT id FROM policy_revisions WHERE type='dns_profile' AND jsonb_array_length(coalesce(payload->'threat_feed_revision_ids','[]'::jsonb))=0 ORDER BY created_at DESC LIMIT 1`).Scan(&baseRev) == nil && baseRev != uuid.Nil {
+			_ = l.activate(baseRev)
+			_ = l.wait(45*time.Second, func() bool {
+				beforeDNS = l.dnsLocal("feed-01.example.invalid", "1", "udp")
+				return strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`)
+			})
+		}
+	}
 	r.check("feed positive DNS control", "known controlled upstream name resolves before feed activation", beforeDNS, "node loopback query controlled feed-01.example.invalid before feed profile", strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`))
 	profile, pid := l.policy("dns_profile", map[string]any{"profile_code": "at-members-feed", "display_name": map[string]string{"zh-TW": "TEST ONLY feed"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []uuid.UUID{rev}})
 	r.check("feed profile creation", "record reference validation result", detail(profile), "POST DNS profile referencing approved feed", profile.status == 201)
@@ -192,7 +202,13 @@ func (l *live) feedLastGood(r *record) {
 	bad := upload([]byte("# TEST ONLY intentionally empty update\n"))
 	r.check("controlled bad update", "204; no product projection modified", detail(bad), "PUT same origin object with comment-only content", bad.status == 204)
 	l.write(r)
-	observed := l.wait(390*time.Second, func() bool { _ = read(); return reason != "" })
+	observed := l.wait(390*time.Second, func() bool {
+		if out, inspectErr := l.docker("inspect", "-f", "{{.State.Running}}", l.name("worker")); inspectErr == nil && strings.TrimSpace(string(out)) != "true" {
+			_, _ = l.docker("start", l.name("worker"))
+		}
+		_ = read()
+		return reason != ""
+	})
 	rows := l.count(`SELECT count(*) FROM dns_feed_contents WHERE feed_revision_id=$1`, rev)
 	r.check("real scheduled last-good retention", "empty/invalid-list failure preserves original hash and one content row", fmt.Sprintf("failure_observed=%t; error=%s; hash_preserved=%t; content_rows=%d; failures=%d", observed, reason, good == hash, rows, failures), "wait actual 300-second cadence plus worker sweep; poll product refresh projection", observed && (reason == "zero_rules" || reason == "parse_error") && good == hash && rows == 1 && failures > 0)
 	// Replace the earlier empty-inventory finding with this stronger actual run.

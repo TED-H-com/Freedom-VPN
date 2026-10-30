@@ -27,6 +27,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -34,6 +35,7 @@ import (
 type stackConfig struct {
 	Prefix    string         `json:"prefix"`
 	PortBase  int            `json:"port_base"`
+	OriginIP  string         `json:"origin_ip"`
 	HostPorts map[string]int `json:"host_ports"`
 	LabPrefix string         `json:"lab_prefix"`
 }
@@ -100,8 +102,8 @@ type live struct {
 	nativePeer                               string
 	planRevB                                 uuid.UUID
 	dnsRuleRev                               uuid.UUID
-	baseline                                 e2e.ServingBaseline
-	hook                                     *e2e.Stack
+	baseline                                 labstack.ServingBaseline
+	hook                                     *labstack.Stack
 	paid                                     *paidSession
 }
 
@@ -130,7 +132,7 @@ func TestATMembers_Live(t *testing.T) {
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
 	l.open()
 	var err error
-	l.hook, err = e2e.OpenStack()
+	l.hook, err = labstack.Open()
 	if err != nil {
 		t.Fatal("shared stack hook unavailable")
 	}
@@ -166,6 +168,12 @@ func (l *live) nodeContainer() string {
 		return l.nodeRole
 	}
 	return "node"
+}
+func (l *live) originIP() string {
+	if l.stack.OriginIP != "" {
+		return l.stack.OriginIP
+	}
+	return "192.0.4.10"
 }
 func (l *live) open() {
 	if l.runID == "" {
