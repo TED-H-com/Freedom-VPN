@@ -134,11 +134,13 @@ check)
 full)
 	assert_archive_mode_on
 	run_pgbackrest --type=full backup
+	run_pgbackrest verify
 	run_pgbackrest --output=json info
 	;;
 diff)
 	assert_archive_mode_on
 	run_pgbackrest --type=diff backup
+	run_pgbackrest verify
 	run_pgbackrest --output=json info
 	;;
 wal-switch)

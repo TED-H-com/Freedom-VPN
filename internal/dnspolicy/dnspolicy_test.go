@@ -1054,6 +1054,12 @@ func TestDNS01_AT22_SourceFetchSSRF_RedirectAndResolvedIPBlocked(t *testing.T) {
 	// 3. Valid public resolution dials the verified IP and enforces the body size limit.
 	t.Run("verified_public_ip_dials_and_caps_body", func(t *testing.T) {
 		tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/encoded.txt" {
+				w.Header().Set("Content-Encoding", "gzip")
+				// Refuse the encoding before parsing, even with an injected client.
+				_, _ = w.Write([]byte("new-bad1.example.com\n"))
+				return
+			}
 			if r.URL.Path == "/oversized.txt" {
 				_, _ = w.Write([]byte(strings.Repeat("a.example.com\n", 100)))
 				return
@@ -1095,6 +1101,17 @@ func TestDNS01_AT22_SourceFetchSSRF_RedirectAndResolvedIPBlocked(t *testing.T) {
 		updated, _ := reg.Get("src-ssrf-test")
 		if updated.Version != "2" || len(updated.Entries) != 2 {
 			t.Fatalf("unexpected updated source state: %+v", updated)
+		}
+		updated.URL = "https://feeds.example.com/encoded.txt"
+		if err := reg.Register(updated); err != nil {
+			t.Fatal(err)
+		}
+		if err := reg.FetchAndUpdate(ctx, tlsSrv.Client(), "src-ssrf-test", "3", DefaultParseOptions(), t0.Add(5*time.Minute), nil); ErrorCode(err) != ErrCodeSourceFormatUnsupported {
+			t.Fatalf("encoded response accepted: %v", err)
+		}
+		retained, _ := reg.Get("src-ssrf-test")
+		if retained.Version != "2" || retained.ContentSHA256 != updated.ContentSHA256 {
+			t.Fatal("encoded response replaced last-good")
 		}
 	})
 }

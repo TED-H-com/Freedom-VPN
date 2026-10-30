@@ -18,10 +18,8 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
-	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
-	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -48,11 +46,15 @@ func TestE2E_Acceptance(t *testing.T) {
 	defer run.finish()
 
 	run.health(ctx)
+	run.metrics(ctx)
 	admin := run.login(ctx, "e2e-admin", "admin")
 	if admin == nil {
 		return
 	}
+	run.backup(ctx, admin)
 	run.threatFeed(ctx, admin)
+	run.catalogue(ctx, admin)
+	run.billing(ctx, admin)
 	good, bad := run.releases(ctx, admin)
 	nodeID := run.enroll(ctx, admin)
 	run.desired(ctx)
@@ -78,6 +80,9 @@ type runner struct {
 	nodeID         uuid.UUID
 	incID          uuid.UUID
 	enrolledID     uuid.UUID
+	groupID        uuid.UUID
+	profileID      uuid.UUID
+	planError      string
 	planID         uuid.UUID
 	planRevID      uuid.UUID
 	usageDevice    uuid.UUID
@@ -99,9 +104,9 @@ func (r *runner) record(rec Record) {
 	if rec.Status == StatusBlocked {
 		owners := map[string]string{
 			"publish":        "w3-wire-nodes: publication operation and production peer projection",
-			"member-traffic": "w3-wire-members: device admission; w3-wire-nodes: exit publication",
-			"forwarding":     "w2-agent-core and w3-wire-nodes: applied serving policy",
-			"usage":          "w3-wire-usage: exact usage acceptance after a serving binding exists",
+			"member-traffic": "w3-wire-nodes follow-up 11: D-057 group/plan/publication prerequisite; then native device admission",
+			"forwarding":     "w3-wire-nodes follow-up 11 and w2-agent-core: applied serving policy",
+			"usage":          "w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance",
 			"update-good":    "w4-node-updater and w2-agent-core: D-053 live candidate health",
 			"update-bad":     "w4-node-updater: tampered artifact rejection and recovery",
 			"lease-expiry":   "w2-agent-core: AT29 needs active forwarding before control loss",
@@ -216,11 +221,6 @@ func (r *runner) enroll(ctx context.Context, admin *session) uuid.UUID {
 		rec.Observations = append(rec.Observations, Observation{Name: "stage", Detail: r.lab.stage(r.lab.node, "/var/lib/vpn-node/e2e/status.json")})
 		r.record(rec)
 		return uuid.Nil
-	}
-	if err := r.lab.insertReleaseSupport(ctx); err != nil {
-		rec.Observations = append(rec.Observations, Observation{Name: "release_support", Detail: "insert failed"})
-		r.record(rec)
-		return nodeID
 	}
 	keyWait, keyCancel := context.WithTimeout(ctx, 2*time.Minute)
 	keyReady := waitUntil(keyWait, time.Second, func() bool {
@@ -351,12 +351,13 @@ func (r *runner) member(ctx context.Context, admin *session) {
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "member_id_present", Detail: boolText(member.memberID != "")})
 	portalSub := r.notePortalSubject(ctx, member.memberID, recPathNote(&rec))
-	if err := r.seedPlan(ctx); err != nil {
-		rec.Observations = append(rec.Observations, Observation{Name: "plan", Detail: "seed failed"})
-	} else {
-		rec.Observations = append(rec.Observations, Observation{Name: "plan_id", Detail: r.planID.String()})
-		rec.Observations = append(rec.Observations, Observation{Name: "plan_revision_id", Detail: r.planRevID.String()})
+	if r.planRevID == uuid.Nil {
+		rec.Observations = append(rec.Observations, Observation{Name: "plan", Detail: r.planError})
+		r.record(rec)
+		r.usage(ctx, nil)
+		return
 	}
+	rec.Observations = append(rec.Observations, Observation{Name: "plan_id", Detail: r.planID.String()}, Observation{Name: "plan_revision_id", Detail: r.planRevID.String()})
 	until := time.Now().UTC().Add(time.Hour)
 	grantBody := api.GrantCreateRequest{Source: api.GrantSourceAdminGrant, Reason: "e2e acceptance grant", ValidUntil: until}
 	if r.planRevID != uuid.Nil {
@@ -434,178 +435,20 @@ func (r *runner) usage(ctx context.Context, member *session) {
 }
 
 func (r *runner) releases(ctx context.Context, admin *session) (good, bad uuid.UUID) {
-	rec := Record{ID: "release-register", Title: "fvpn-release packages registered and verified", Spec: []string{"§13.3", "§13.4"}, Status: StatusFail}
-	var ids []uuid.UUID
-	seenArtifacts := map[string]bool{}
-	for i, spec := range []struct{ product, seq, build string }{
-		{"0.1.0", "1", "e2e-boot"},
-		{"1.0.1", "2", "e2e-good"},
-		{"1.0.2", "3", "e2e-bad"},
-	} {
-		dir := r.t.TempDir()
-		pkg := filepath.Join(dir, "tree")
-		if err := os.MkdirAll(filepath.Join(pkg, "bin"), 0o755); err != nil {
-			rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "mkdir"})
-			r.record(rec)
-			return
-		}
-		// Immutable release metadata makes each product version a distinct real
-		// bundle; otherwise the updater can reuse a previous verified blob and
-		// never exercise the tampered origin for the negative case.
-		metadata, err := json.Marshal(map[string]string{"product_version": spec.product, "source_commit": r.sourceCommit, "purpose": "TEST ONLY acceptance"})
-		if err != nil {
-			r.t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(pkg, "release.json"), metadata, 0o644); err != nil {
-			r.t.Fatal(err)
-		}
-		installed := map[string]string{}
-		for _, arch := range []string{"amd64", "arm64"} {
-			// Both architectures contain real binaries built from this tree.
-			for _, name := range []string{"agent", "watchdog", "updater"} {
-				cmd := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Join(pkg, "bin", "fvpn-"+name), "./node/"+name+"/cmd/fvpn-"+name)
-				cmd.Dir = r.lab.root
-				cmd.Env = append(os.Environ(), "GOOS=linux", "GOARCH="+arch, "CGO_ENABLED=0", "GOTOOLCHAIN=local")
-				if err := cmd.Run(); err != nil {
-					rec.Observations = append(rec.Observations, Observation{Name: "binary_build", Detail: arch + " " + name + " failed"})
-					r.record(rec)
-					return
-				}
-			}
-			var size uint64
-			if err := filepath.Walk(pkg, func(_ string, info os.FileInfo, err error) error {
-				if err == nil && info.Mode().IsRegular() {
-					size += uint64(info.Size())
-				}
-				return err
-			}); err != nil {
-				rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: "measure " + arch})
-				r.record(rec)
-				return
-			}
-			installed[arch] = decstr.U64(size).String()
-			if err := release.PackageDir(pkg, filepath.Join(dir, arch+".tar.zst"), time.Unix(1_700_000_000, 0).UTC()); err != nil {
-				rec.Observations = append(rec.Observations, Observation{Name: "package", Detail: arch})
-				r.record(rec)
-				return
-			}
-		}
-		id, canonical, err := r.lab.signedRelease(dir, spec.product, spec.seq, r.sourceCommit, spec.build, installed)
-		if err != nil {
-			rec.Observations = append(rec.Observations, Observation{Name: "manifest", Detail: err.Error()})
-			r.record(rec)
-			return
-		}
-		var manifest struct {
-			Signed json.RawMessage `json:"signed"`
-		}
-		if err := json.Unmarshal(canonical, &manifest); err != nil {
-			r.t.Fatal(err)
-		}
-		var signed api.ReleaseManifest
-		if err := json.Unmarshal(manifest.Signed, &signed); err != nil {
-			r.t.Fatal(err)
-		}
-		for _, artifact := range signed.Artifacts {
-			rec.Observations = append(rec.Observations, Observation{Name: "artifact_sha256_" + spec.product + "_" + string(artifact.Architecture), Detail: artifact.Sha256})
-			if seenArtifacts[artifact.Sha256] {
-				r.t.Fatal("release artifacts must be distinct to exercise the tampered download")
-			}
-			seenArtifacts[artifact.Sha256] = true
-		}
-		digest, err := canonjson.HashHex(manifest.Signed)
-		if err != nil {
-			r.t.Fatal(err)
-		}
-		rec.Observations = append(rec.Observations, Observation{Name: "signed_manifest_sha256_" + spec.product, Detail: digest})
-		envelopeDigest, err := canonjson.HashHex(canonical)
-		if err != nil {
-			r.t.Fatal(err)
-		}
-		rec.Observations = append(rec.Observations, Observation{Name: "manifest_sha256_" + spec.product, Detail: envelopeDigest})
-		if err := r.lab.candidateConfig(id, spec.product); err != nil {
-			r.t.Fatal(err)
-		}
-		if err := r.lab.uploadRelease(ctx, id, dir, canonical); err != nil {
-			rec.Observations = append(rec.Observations, Observation{Name: "upload", Detail: err.Error()})
-			r.record(rec)
-			return
-		}
-		reg, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/releases", map[string]any{
-			"manifest": json.RawMessage(canonical), "manifest_url": "https://releases.example.invalid/r/" + id.String() + "/manifest.json",
-		}, map[string]string{"Idempotency-Key": uuid.NewString()})
-		rec.Observations = append(rec.Observations, Observation{Name: "register_" + spec.product, Detail: httpDetail(reg, err)})
-		if err != nil || (reg.Status != 202 && reg.Status != 201) {
-			r.record(rec)
-			return
-		}
-		ids = append(ids, id)
-		if i == 0 {
-			if err := r.lab.setBootRelease(id); err != nil {
-				rec.Observations = append(rec.Observations, Observation{Name: "boot_release", Detail: "config write failed"})
-				r.record(rec)
-				return
-			}
-			rec.Observations = append(rec.Observations, Observation{Name: "boot_release_id", Detail: id.String()})
-		} else if i == 1 {
-			good = id
-		} else {
-			bad = id
-		}
+	rec := Record{ID: "release-register", Title: "Signed real releases and non-empty serving baseline through APIs", Spec: []string{"§13.2", "§13.3", "§13.4"}, Status: StatusFail}
+	baseline, err := PrepareServingBaseline(ctx, admin.http, admin.csrf, true)
+	for name, digest := range baseline.Digests {
+		rec.Observations = append(rec.Observations, Observation{Name: name, Detail: digest})
 	}
-	states := map[string]string{}
-	wait, cancel := context.WithTimeout(ctx, 3*time.Minute)
-	defer cancel()
-	ok := waitUntil(wait, 5*time.Second, func() bool {
-		list, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/releases", nil, nil)
-		if err != nil || list.Status != 200 {
-			return false
-		}
-		var page api.ReleaseList
-		if json.Unmarshal(list.Body, &page) != nil {
-			return false
-		}
-		seen := 0
-		for _, item := range page.Items {
-			id := uuid.UUID(item.ReleaseId).String()
-			for _, want := range ids {
-				if id == want.String() {
-					states[id] = string(item.VerificationState)
-					if item.VerificationState == "verified" || item.VerificationState == "failed" {
-						seen++
-					}
-				}
-			}
-		}
-		return seen == len(ids)
-	})
-	for id, state := range states {
-		rec.Observations = append(rec.Observations, Observation{Name: "verify_" + id, Detail: state})
-	}
-	if !ok {
-		rec.Observations = append(rec.Observations, Observation{Name: "verify", Detail: "timed out"})
+	if err != nil {
+		rec.Observations = append(rec.Observations, Observation{Name: "error", Detail: err.Error()})
 		r.record(rec)
-		return uuid.Nil, uuid.Nil
-	}
-	verified := []uuid.UUID{}
-	for _, id := range ids {
-		if states[id.String()] == "verified" {
-			verified = append(verified, id)
-		}
-	}
-	if len(verified) != len(ids) {
-		r.record(rec)
-		return uuid.Nil, uuid.Nil
-	}
-	if err := r.lab.allowReleases(ctx, verified); err != nil {
-		rec.Observations = append(rec.Observations, Observation{Name: "allowlist", Detail: "update failed"})
-		r.record(rec)
-		return uuid.Nil, uuid.Nil
+		return
 	}
 	rec.Status = StatusPass
-	rec.Observations = append(rec.Observations, Observation{Name: "arm64", Detail: "packaged; this host does not execute it"})
+	rec.Observations = append(rec.Observations, Observation{Name: "boot_release_id", Detail: baseline.Boot.String()}, Observation{Name: "support_revision_id", Detail: baseline.SupportRevision.String()}, Observation{Name: "support_policy", Detail: "API activated; all three verified releases explicitly permitted"}, Observation{Name: "arm64", Detail: "cross-compiled and packaged; not executed on this host"})
 	r.record(rec)
-	return good, bad
+	return baseline.Good, baseline.Bad
 }
 
 func (r *runner) updater(ctx context.Context, good, bad uuid.UUID) {
@@ -919,44 +762,12 @@ func recPathNote(rec *Record) func(string, string) {
 	}
 }
 
-func httpDetail(resp reply, err error) string {
-	if err != nil {
-		return "transport"
-	}
-	if resp.Code != "" {
-		return itoa(resp.Status) + " " + resp.Code
-	}
-	return itoa(resp.Status)
-}
-
 func writeAtomic(path string, b []byte) error {
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, b, 0o600); err != nil {
 		return err
 	}
 	return os.Rename(tmp, path)
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	var buf [16]byte
-	i := len(buf)
-	for n > 0 {
-		i--
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	if neg {
-		i--
-		buf[i] = '-'
-	}
-	return string(buf[i:])
 }
 
 func boolText(v bool) string {
@@ -988,42 +799,6 @@ func (r *runner) noteSignal(note func(string, string)) {
 	note("signal_after", emptyDash(excerptMatching(string(blob), []string{"signal", "deadline", "error", "connected", "management"}, 8)))
 }
 
-func (r *runner) seedPlan(ctx context.Context) error {
-	conn, err := r.lab.db(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-	planID, revID := uuid.New(), uuid.New()
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-	if _, err := tx.Exec(ctx, `INSERT INTO plans(id, code) VALUES($1, 'e2e-lab')`, planID); err != nil {
-		return err
-	}
-	exitGroup := uuid.New()
-	if _, err := tx.Exec(ctx, `INSERT INTO plan_revisions(id, plan_id, revision, device_limit, exit_group_ids, provider, provider_price_ref, schema_version, payload) VALUES($1,$2,1,3,$4::uuid[],'stripe','e2e-price',1,$3::jsonb)`, revID, planID, `{"display_name":{"zh-TW":"e2e lab"}}`, "{"+exitGroup.String()+"}"); err != nil {
-		return err
-	}
-	if _, err := tx.Exec(ctx, `UPDATE plans SET active_revision_id=$2, resource_version=resource_version+1 WHERE id=$1`, planID, revID); err != nil {
-		return err
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return err
-	}
-	if err := r.lab.rememberPlan(planID, revID); err != nil {
-		return err
-	}
-	gotPlan, gotRev, err := r.lab.savedPlan()
-	if err != nil {
-		return err
-	}
-	r.planID, r.planRevID = gotPlan, gotRev
-	return nil
-}
-
 func (l *lab) rememberPlan(plan, rev uuid.UUID) error {
 	path := filepath.Join(l.state, "stack.json")
 	raw, err := os.ReadFile(path)
@@ -1041,29 +816,6 @@ func (l *lab) rememberPlan(plan, rev uuid.UUID) error {
 		return err
 	}
 	return os.WriteFile(path, append(out, '\n'), 0o600)
-}
-
-func (l *lab) savedPlan() (uuid.UUID, uuid.UUID, error) {
-	raw, err := os.ReadFile(filepath.Join(l.state, "stack.json"))
-	if err != nil {
-		return uuid.Nil, uuid.Nil, err
-	}
-	var doc struct {
-		Plan string `json:"plan_id"`
-		Rev  string `json:"plan_revision_id"`
-	}
-	if json.Unmarshal(raw, &doc) != nil {
-		return uuid.Nil, uuid.Nil, errors.New("stack identity")
-	}
-	plan, err := uuid.Parse(doc.Plan)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, err
-	}
-	rev, err := uuid.Parse(doc.Rev)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, err
-	}
-	return plan, rev, nil
 }
 
 func (r *runner) replayUsageBatch(memberID string) (same bool, firstStatus, secondStatus string, accepted bool, outcome string) {
@@ -1320,14 +1072,6 @@ func excerptMatching(blob string, needles []string, maxLines int) string {
 func emptyDash(s string) string {
 	if s == "" {
 		return "-"
-	}
-	return s
-}
-
-func clipText(s string, n int) string {
-	s = strings.TrimSpace(s)
-	if len(s) > n {
-		s = s[:n]
 	}
 	return s
 }

@@ -35,17 +35,18 @@ func (r *DocumentReader) LatestPublished(ctx context.Context, profileDefinitionI
  JOIN dns_resolver_documents d ON d.definition_id=h.definition_id AND d.profile_revision_id=h.profile_revision_id
   AND d.policy_generation=h.policy_generation AND d.document_sha256=h.document_sha256
  JOIN policy_definitions p ON p.id=h.definition_id AND p.active_revision_id=h.profile_revision_id
- WHERE h.definition_id=$1 AND h.status='active' AND p.type='dns_profile'`, profileDefinitionID))
+ WHERE h.definition_id=$1 AND h.status='active' AND p.type='dns_profile' AND dns_profile_feeds_eligible(d.profile_revision_id,clock_timestamp())`, profileDefinitionID))
 }
 
 // GetByID returns the version named by an already authorized issued reference,
-// including after a newer publication or withdrawal. It never follows the head.
+// including after a newer publication or profile withdrawal, while every pinned
+// feed approval is active and valid. It never follows the head.
 func (r *DocumentReader) GetByID(ctx context.Context, documentID uuid.UUID) (dnspublish.PublishedDocument, error) {
 	if r == nil || r.pool == nil {
 		return dnspublish.PublishedDocument{}, errors.New("resolver document storage required")
 	}
 	return readDocument(r.pool.QueryRow(ctx, `SELECT id,profile_revision_id,policy_generation::text,document_sha256,canonical_bytes
- FROM dns_resolver_documents WHERE id=$1`, documentID))
+ FROM dns_resolver_documents WHERE id=$1 AND dns_profile_feeds_eligible(profile_revision_id,clock_timestamp())`, documentID))
 }
 
 func readDocument(row pgx.Row) (dnspublish.PublishedDocument, error) {

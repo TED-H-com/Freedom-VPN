@@ -5,7 +5,7 @@
 # Restores the latest backup (or specified target time) into a throwaway
 # `--network none` container, verifies schema migration status via `fvpn-migrate status`,
 # runs the read-only post-restore checklist (`post-restore-checklist.sql`),
-# prints measured RPO/RTO, and cleans up all temporary Docker resources on exit.
+# prints archive ages and local restore/verification duration, and cleans up all temporary Docker resources on exit.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,6 +15,8 @@ STANZA="${FVPN_PGBACKREST_STANZA:-fvpn}"
 REPO_VOLUME=""
 IMAGE="${FVPN_BACKUP_IMAGE:-fvpn-w4-ops-backups-postgres:17}"
 PRIMARY_CONTAINER="${FVPN_PRIMARY_CONTAINER:-}"
+PRIMARY_HOST=0
+HOST_REPO=0
 VERIFY_PREFIX="fvpn-w4-ops-backups-verify-$$"
 DB_USER="${FVPN_BACKUP_DB_USER:-fvpn}"
 DB_NAME="${FVPN_BACKUP_DB_NAME:-fvpn}"
@@ -29,7 +31,9 @@ Usage:
 
 Options:
   --repo-volume <volume>        pgBackRest repository Docker volume or host path
-  --primary-container <name>    Optional primary container to measure live WAL archive lag (RPO)
+  --primary-container <name>    Primary container for live archive state
+  --primary-host                Read archive state using host psql (local postgres OS user)
+  --host-repo                   Copy repo 1 using host pgBackRest config/env (including S3)
   --image <image>               PostgreSQL + pgBackRest image (default: fvpn-w4-ops-backups-postgres:17)
   --stanza <name>               pgBackRest stanza name (default: fvpn)
   --target-time <timestamp>     Optional UTC timestamp for PITR verification (default: latest)
@@ -47,6 +51,14 @@ while [[ $# -gt 0 ]]; do
 	--repo-volume)
 		REPO_VOLUME="${2:-}"
 		shift 2
+		;;
+	--host-repo)
+		HOST_REPO=1
+		shift
+		;;
+	--primary-host)
+		PRIMARY_HOST=1
+		shift
 		;;
 	--primary-container)
 		PRIMARY_CONTAINER="${2:-}"
@@ -96,14 +108,38 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-if [[ -z "$REPO_VOLUME" ]]; then
-	echo "verify.sh: --repo-volume is required" >&2
-	usage
+if [[ ! "$VERIFY_PREFIX" =~ ^fvpn-w4-ops-backups-[a-z0-9]+(-[a-z0-9]+)*$ || ${#VERIFY_PREFIX} -gt 70 ]]; then
+	echo "verify.sh: invalid --verify-prefix family or run suffix" >&2
+	exit 2
+fi
+if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+	echo "verify.sh: invalid stanza" >&2
+	exit 2
+fi
+if { [[ -z "$PRIMARY_CONTAINER" ]] && [[ "$PRIMARY_HOST" == 0 ]]; } ||
+	{ [[ -n "$PRIMARY_CONTAINER" ]] && [[ "$PRIMARY_HOST" == 1 ]]; }; then
+	echo "verify.sh: archive state unknown; select --primary-container or --primary-host" >&2
+	exit 2
+fi
+if { [[ -z "$REPO_VOLUME" ]] && [[ "$HOST_REPO" == 0 ]]; } ||
+	{ [[ -n "$REPO_VOLUME" ]] && [[ "$HOST_REPO" == 1 ]]; }; then
+	echo "verify.sh: select --repo-volume or --host-repo" >&2
 	exit 2
 fi
 
 VERIFY_CONTAINER="${VERIFY_PREFIX}-pg"
 VERIFY_VOLUME="${VERIFY_PREFIX}-pgdata"
+# Refuse pre-existing resources before registering any destructive cleanup.
+for candidate in "$VERIFY_CONTAINER" "${VERIFY_CONTAINER}-init"; do
+	if docker container inspect "$candidate" >/dev/null 2>&1; then
+		echo "verify.sh: refusing existing verification container" >&2
+		exit 2
+	fi
+done
+if docker volume inspect "$VERIFY_VOLUME" >/dev/null 2>&1; then
+	echo "verify.sh: refusing existing verification volume" >&2
+	exit 2
+fi
 WORK_TMP=""
 
 cleanup() {
@@ -115,8 +151,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-mkdir -p "${REPO_ROOT}/.agent/tmp"
-WORK_TMP="$(mktemp -d "${REPO_ROOT}/.agent/tmp/backup-verify.XXXXXX")"
+SCRATCH_ROOT="${FVPN_BACKUP_SCRATCH_ROOT:-${REPO_ROOT}/.agent/tmp}"
+mkdir -p "$SCRATCH_ROOT"
+WORK_TMP="$(mktemp -d "${SCRATCH_ROOT}/backup-verify.XXXXXX")"
 export TMPDIR="$WORK_TMP" GOTMPDIR="$WORK_TMP"
 
 # Build fvpn-migrate if not supplied by caller.
@@ -129,16 +166,27 @@ if [[ -z "$MIGRATE_BIN" ]]; then
 	)
 fi
 
-# Measure RPO (archive lag in milliseconds) from primary pg_stat_archiver if primary container is given.
-RPO_MS=0
-if [[ -n "$PRIMARY_CONTAINER" ]]; then
-	RPO_MS="$(docker exec --user postgres "$PRIMARY_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -tAc "
-		SELECT COALESCE(
-			GREATEST(0, (EXTRACT(EPOCH FROM (clock_timestamp() - COALESCE(last_archived_time, clock_timestamp()))) * 1000)::bigint),
-			0
-		)
-		FROM pg_stat_archiver;
-	" | tr -d '[:space:]')"
+# Unknown, disabled, future, or stale archive state fails before any PASS.
+if [[ "$PRIMARY_HOST" == 1 ]]; then
+	PRIMARY_PSQL=(psql -U "$DB_USER" -d "$DB_NAME")
+	if [[ "$(id -u)" == 0 ]]; then
+		PRIMARY_PSQL=(runuser -u postgres -- "${PRIMARY_PSQL[@]}")
+	fi
+else
+	PRIMARY_PSQL=(docker exec -i --user postgres "$PRIMARY_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME")
+fi
+ARCHIVER_LAG_MS="$("${PRIMARY_PSQL[@]}" -v ON_ERROR_STOP=1 -tA <"${SCRIPT_DIR}/archive-state.sql" | tr -d '[:space:]')"
+if [[ ! "$ARCHIVER_LAG_MS" =~ ^[0-9]+$ ]] || (( ARCHIVER_LAG_MS > 900000 )); then
+	echo "verify.sh: archive state unknown, future-dated, or older than 15 minutes" >&2
+	exit 1
+fi
+
+# Production uses precisely the host pgBackRest repo 1 configuration/environment.
+# Copy raw encrypted objects to disk before launching network-none PostgreSQL.
+if [[ "$HOST_REPO" == 1 ]]; then
+	python3 "${SCRIPT_DIR}/repo-copy.py" "$STANZA" "$WORK_TMP/repository"
+	chmod 0755 "$WORK_TMP"
+	REPO_VOLUME="$WORK_TMP/repository"
 fi
 
 RTO_START_NS="$(date +%s%N)"
@@ -162,6 +210,23 @@ else
 fi
 
 "${SCRIPT_DIR}/restore-pitr.sh" "${RESTORE_ARGS[@]}"
+
+# Read and checksum the repository actually mounted by the restored instance.
+REPO_LIST="$(docker exec --user postgres "$VERIFY_CONTAINER" pgbackrest --stanza="$STANZA" --repo=1 --recurse --output=json repo-ls "archive/$STANZA")"
+REPO_STATE="$(printf '%s' "$REPO_LIST" | python3 -c '
+import json, re, sys, time
+files = [(v["time"], k) for k, v in json.load(sys.stdin).items()
+         if v["type"] == "file" and re.fullmatch(r"[0-9A-F]{24}-[0-9a-f]{40}(?:\..+)?", k.rsplit("/", 1)[-1])]
+if not files:
+    sys.exit("verify.sh: repository archive state unknown (no WAL)")
+stamp, name = max(files)
+lag = int((time.time() - stamp) * 1000)
+if lag < 0 or lag > 900000:
+    sys.exit("verify.sh: repository WAL is future-dated or older than 15 minutes")
+print(str(lag) + " " + name)
+')"
+read -r REPOSITORY_LAG_MS REPOSITORY_WAL <<<"$REPO_STATE"
+docker exec --user postgres "$VERIFY_CONTAINER" pgbackrest --stanza="$STANZA" verify
 
 # Copy fvpn-migrate into the isolated network-none container and verify migration status.
 docker cp "$MIGRATE_BIN" "${VERIFY_CONTAINER}:/usr/local/bin/fvpn-migrate"
@@ -194,8 +259,10 @@ verify_container=${VERIFY_CONTAINER}
 network_mode=none
 migrations_applied=${APPLIED_COUNT}
 migrations_pending=${PENDING_COUNT}
-rpo_ms=${RPO_MS}
-rto_ms=${RTO_MS}
+archiver_lag_ms=${ARCHIVER_LAG_MS}
+repository_archive_lag_ms=${REPOSITORY_LAG_MS}
+repository_newest_wal=${REPOSITORY_WAL}
+local_restore_verify_ms=${RTO_MS}
 status=PASS
 EOF
 
@@ -206,8 +273,10 @@ if [[ -n "$JSON_OUT" ]]; then
   "network_mode": "none",
   "migrations_applied": ${APPLIED_COUNT},
   "migrations_pending": ${PENDING_COUNT},
-  "rpo_ms": ${RPO_MS},
-  "rto_ms": ${RTO_MS},
+  "archiver_lag_ms": ${ARCHIVER_LAG_MS},
+  "repository_archive_lag_ms": ${REPOSITORY_LAG_MS},
+  "repository_newest_wal": "${REPOSITORY_WAL}",
+  "local_restore_verify_ms": ${RTO_MS},
   "status": "PASS"
 }
 EOF
