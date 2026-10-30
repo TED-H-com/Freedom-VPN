@@ -1,6 +1,6 @@
 # Follow-up 10 verification — 2026-10-30
 
-Three complete fresh stacks use `e2e` / `18000` and product base `27d9229` (follow-up 9, PR #153). Each starts with teardown and a fresh prepare/build. Runtime images are pinned to immutable IDs. No product, contract, migration, module or workflow change is included. The original three sets are archived under `followup10-run1/`, `followup10-run2/` and `followup10-run3/`. The dated root contains the merged-tree run described below. Every set has 26 matching JSON/Markdown pairs and one run/source identity.
+Three complete fresh stacks use `e2e` / `18000` and product base `27d9229` (follow-up 9, PR #153). Each starts with teardown and a fresh prepare/build. Runtime images are pinned to immutable IDs. No product, contract, migration, module or workflow change is included. The original three sets are archived under `followup10-run1/`, `followup10-run2/` and `followup10-run3/`. The merged-tree set described below is archived under `followup10-merged/`; the dated root contains the latest follow-up. Every set has 26 matching JSON/Markdown pairs and one run/source identity.
 
 | Run | Source | Run ID | Pass / blocked / fail | Go / make exit | Go seconds |
 |---|---|---|---|---|---:|
@@ -167,39 +167,39 @@ present during the run and are committed together with its evidence. Their
 |---|---|---|---|---:|---:|
 | `3a129919-af3f-4bc9-b54a-8075eae8af45` | `79259af` | 21 / 5 / 0 | 1 / 2 | 796.728 | 0 |
 
-All 26 dated root JSON/Markdown pairs belong to this run. Four statuses changed
+All 26 archived `followup10-merged/` JSON/Markdown pairs belong to this run. Four statuses changed
 from pass to blocked: `member-traffic`, `usage`, `forwarding`, `lease-expiry`.
 `device-revoke` remains blocked, now at its positive-flow prerequisite.
 The acceptance command is nonzero because blocked scenarios fail its gate.
 
 | Scenario | Original run 3 | Merged tree | Record / blocked owner |
 |---|---|---|---|
-| `admin-login` | pass | pass | [record](runs/2026-10-30/admin-login.md); — |
-| `backup` | pass | pass | [record](runs/2026-10-30/backup.md); — |
-| `billing` | pass | pass | [record](runs/2026-10-30/billing.md); — |
-| `control-metrics` | pass | pass | [record](runs/2026-10-30/control-metrics.md); — |
-| `desired-state` | pass | pass | [record](runs/2026-10-30/desired-state.md); — |
-| `device-revoke` | blocked | blocked | [record](runs/2026-10-30/device-revoke.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
-| `enroll-bootstrap` | pass | pass | [record](runs/2026-10-30/enroll-bootstrap.md); — |
-| `forwarding` | pass | blocked | [record](runs/2026-10-30/forwarding.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
-| `gateway-privacy` | pass | pass | [record](runs/2026-10-30/gateway-privacy.md); — |
-| `lease-expiry` | pass | blocked | [record](runs/2026-10-30/lease-expiry.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
-| `member-traffic` | pass | blocked | [record](runs/2026-10-30/member-traffic.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
-| `native-scale-hook` | pass | pass | [record](runs/2026-10-30/native-scale-hook.md); — |
-| `node-restart` | pass | pass | [record](runs/2026-10-30/node-restart.md); — |
-| `portal-billing-return` | pass | pass | [record](runs/2026-10-30/portal-billing-return.md); — |
-| `publish` | pass | pass | [record](runs/2026-10-30/publish.md); — |
-| `release-register` | pass | pass | [record](runs/2026-10-30/release-register.md); — |
-| `revoke` | pass | pass | [record](runs/2026-10-30/revoke.md); — |
-| `second-exit` | pass | pass | [record](runs/2026-10-30/second-exit.md); — |
-| `serving-catalogue` | pass | pass | [record](runs/2026-10-30/serving-catalogue.md); — |
-| `stack-health` | pass | pass | [record](runs/2026-10-30/stack-health.md); — |
-| `threat-feed-central` | pass | pass | [record](runs/2026-10-30/threat-feed-central.md); — |
-| `threat-feed-node` | pass | pass | [record](runs/2026-10-30/threat-feed-node.md); — |
-| `threat-feed-tamper` | pass | pass | [record](runs/2026-10-30/threat-feed-tamper.md); — |
-| `update-bad` | pass | pass | [record](runs/2026-10-30/update-bad.md); — |
-| `update-good` | pass | pass | [record](runs/2026-10-30/update-good.md); — |
-| `usage` | pass | blocked | [record](runs/2026-10-30/usage.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `admin-login` | pass | pass | [record](runs/2026-10-30/followup10-merged/admin-login.md); — |
+| `backup` | pass | pass | [record](runs/2026-10-30/followup10-merged/backup.md); — |
+| `billing` | pass | pass | [record](runs/2026-10-30/followup10-merged/billing.md); — |
+| `control-metrics` | pass | pass | [record](runs/2026-10-30/followup10-merged/control-metrics.md); — |
+| `desired-state` | pass | pass | [record](runs/2026-10-30/followup10-merged/desired-state.md); — |
+| `device-revoke` | blocked | blocked | [record](runs/2026-10-30/followup10-merged/device-revoke.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `enroll-bootstrap` | pass | pass | [record](runs/2026-10-30/followup10-merged/enroll-bootstrap.md); — |
+| `forwarding` | pass | blocked | [record](runs/2026-10-30/followup10-merged/forwarding.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `gateway-privacy` | pass | pass | [record](runs/2026-10-30/followup10-merged/gateway-privacy.md); — |
+| `lease-expiry` | pass | blocked | [record](runs/2026-10-30/followup10-merged/lease-expiry.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `member-traffic` | pass | blocked | [record](runs/2026-10-30/followup10-merged/member-traffic.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
+| `native-scale-hook` | pass | pass | [record](runs/2026-10-30/followup10-merged/native-scale-hook.md); — |
+| `node-restart` | pass | pass | [record](runs/2026-10-30/followup10-merged/node-restart.md); — |
+| `portal-billing-return` | pass | pass | [record](runs/2026-10-30/followup10-merged/portal-billing-return.md); — |
+| `publish` | pass | pass | [record](runs/2026-10-30/followup10-merged/publish.md); — |
+| `release-register` | pass | pass | [record](runs/2026-10-30/followup10-merged/release-register.md); — |
+| `revoke` | pass | pass | [record](runs/2026-10-30/followup10-merged/revoke.md); — |
+| `second-exit` | pass | pass | [record](runs/2026-10-30/followup10-merged/second-exit.md); — |
+| `serving-catalogue` | pass | pass | [record](runs/2026-10-30/followup10-merged/serving-catalogue.md); — |
+| `stack-health` | pass | pass | [record](runs/2026-10-30/followup10-merged/stack-health.md); — |
+| `threat-feed-central` | pass | pass | [record](runs/2026-10-30/followup10-merged/threat-feed-central.md); — |
+| `threat-feed-node` | pass | pass | [record](runs/2026-10-30/followup10-merged/threat-feed-node.md); — |
+| `threat-feed-tamper` | pass | pass | [record](runs/2026-10-30/followup10-merged/threat-feed-tamper.md); — |
+| `update-bad` | pass | pass | [record](runs/2026-10-30/followup10-merged/update-bad.md); — |
+| `update-good` | pass | pass | [record](runs/2026-10-30/followup10-merged/update-good.md); — |
+| `usage` | pass | blocked | [record](runs/2026-10-30/followup10-merged/usage.md); w3-devstack-e2e: member route discovery timing; no positive counted flow |
 
 ### Member-flow prerequisite and owner
 
@@ -247,7 +247,7 @@ control `https://127.0.0.1:9444`, resolver admin `http://127.0.0.1:8080` and DNS
 `192.0.3.10/32`, UDP 4443. The result endpoint remained
 `https://agent.example.invalid:9443/api/v1/agent/update-results`.
 
-The [update-good record](runs/2026-10-30/update-good.md) reports
+The [update-good record](runs/2026-10-30/followup10-merged/update-good.md) reports
 `updater_log_readable=true`, `probe_omission_count=0`,
 `invalid_probe_peer=false`, `probe_traversal_verified=true`,
 `running_candidate_executable=true`, `locally_succeeded=true`, updater exit `0`.
@@ -271,7 +271,7 @@ and at most 44 seconds remaining; both counters reached 1,848 bytes and the sets
 were empty after the answer. Member bytes were `0 → 0`; this confirms no member
 counter change during the exception, but does not replace the missing positive
 member-flow proof. No challenge nonce, raw subject, key or token is copied.
-[update-bad](runs/2026-10-30/update-bad.md) also passes: updater exit `1`,
+[update-bad](runs/2026-10-30/followup10-merged/update-bad.md) also passes: updater exit `1`,
 `HASH_MISMATCH=true`, tampered real bytes rejected.
 
 ### Merged-run release digests

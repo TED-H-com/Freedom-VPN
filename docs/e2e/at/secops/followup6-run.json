@@ -1,0 +1,247 @@
+{
+  "started_at": "2026-10-30T17:03:09Z",
+  "source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+  "phases": [
+    {
+      "phase": "profile",
+      "started_at": "2026-10-30T17:03:09Z",
+      "inventory_before": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "up": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-up"
+        ],
+        "started_at": "2026-10-30T17:03:09Z",
+        "finished_at": "2026-10-30T17:03:40Z",
+        "elapsed_seconds": 30.375,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup6-profile-e2e-up",
+          "bytes": 19832,
+          "findings": []
+        }
+      },
+      "live": {
+        "command": [
+          "go",
+          "test",
+          "-json",
+          "-tags",
+          "e2e,integration",
+          "-p",
+          "1",
+          "-parallel",
+          "2",
+          "-count=1",
+          "-timeout",
+          "50m",
+          "-run",
+          "^TestAT28_AT31_Followup6$",
+          "./tests/e2e/at/secops"
+        ],
+        "started_at": "2026-10-30T17:03:40Z",
+        "finished_at": "2026-10-30T17:19:48Z",
+        "elapsed_seconds": 968.584,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup6-profile-live",
+          "bytes": 6574,
+          "findings": []
+        },
+        "status": "passed",
+        "required_tests": [
+          "TestAT28_AT31_Followup6"
+        ],
+        "missing": [],
+        "skipped": [],
+        "tests": [
+          {
+            "name": "TestAT28_AT31_Followup6",
+            "result": "pass",
+            "elapsed_seconds": 967.81
+          }
+        ],
+        "package_results": {
+          "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+        }
+      },
+      "down": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-down"
+        ],
+        "started_at": "2026-10-30T17:19:48Z",
+        "finished_at": "2026-10-30T17:20:34Z",
+        "elapsed_seconds": 45.908,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup6-profile-e2e-down",
+          "bytes": 3056,
+          "findings": []
+        }
+      },
+      "inventory_after": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "finished_at": "2026-10-30T17:20:34Z"
+    },
+    {
+      "phase": "helper",
+      "started_at": "2026-10-30T17:20:34Z",
+      "inventory_before": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "up": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-up"
+        ],
+        "started_at": "2026-10-30T17:20:34Z",
+        "finished_at": "2026-10-30T17:20:58Z",
+        "elapsed_seconds": 23.761,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup6-helper-e2e-up",
+          "bytes": 19914,
+          "findings": []
+        }
+      },
+      "live": {
+        "command": [
+          "go",
+          "test",
+          "-json",
+          "-tags",
+          "e2e,integration",
+          "-p",
+          "1",
+          "-parallel",
+          "2",
+          "-count=1",
+          "-timeout",
+          "50m",
+          "-run",
+          "^TestAT28_AT31_Followup6$",
+          "./tests/e2e/at/secops"
+        ],
+        "started_at": "2026-10-30T17:20:58Z",
+        "finished_at": "2026-10-30T17:27:44Z",
+        "elapsed_seconds": 405.574,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup6-helper-live",
+          "bytes": 3065,
+          "findings": []
+        },
+        "status": "passed",
+        "required_tests": [
+          "TestAT28_AT31_Followup6"
+        ],
+        "missing": [],
+        "skipped": [],
+        "tests": [
+          {
+            "name": "TestAT28_AT31_Followup6",
+            "result": "pass",
+            "elapsed_seconds": 405.13
+          }
+        ],
+        "package_results": {
+          "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+        }
+      },
+      "down": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-down"
+        ],
+        "started_at": "2026-10-30T17:27:44Z",
+        "finished_at": "2026-10-30T17:28:30Z",
+        "elapsed_seconds": 46.261,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup6-helper-e2e-down",
+          "bytes": 3056,
+          "findings": []
+        }
+      },
+      "inventory_after": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "finished_at": "2026-10-30T17:28:30Z"
+    }
+  ],
+  "expected": "unchanged sequential 20x3 profile, then exported 60-peer helper on a fresh stack",
+  "scope": "admission and control diagnostics, not full mixed-traffic capacity",
+  "finished_at": "2026-10-30T17:28:30Z"
+}

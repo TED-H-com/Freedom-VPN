@@ -1,152 +1,55 @@
 {
   "schema_version": 1,
-  "follow_up": 5,
-  "checked_at": "2026-10-30T09:34:30.156033Z",
-  "local_source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
-  "initial_source_revision": "5c58d32",
-  "before_final_live_run": {
-    "agent_followup_11": {
-      "merged": true,
-      "pr": 162
-    },
-    "devstack_followup_10": {
-      "merged": false,
-      "last_checked": "origin/main remained 446b6b0 before the final fresh run"
-    }
-  },
-  "measured_main_roadmap_prs": {
-    "devstack_followup_9": 153,
-    "control_followup_16": 161,
-    "agent_followup_11": 162,
-    "wire_nodes_followup_16": 160,
-    "fleet_update_followup_7": 155,
-    "netlab_followup_5": 156,
-    "netlab_followup_6": 159,
-    "updater_followup_10": 154,
-    "handover_followup_4": 157
-  },
+  "follow_up": 6,
+  "checked_at": "2026-10-30T17:07:23.766795Z",
+  "local_source_revision": "00e1d0c12ccebfef39ca8ccb6fb9ce2db3fd924a",
+  "roadmap": [
+    "00e1d0c roadmap: w2-agent-core follow-up 13 merged (#171)",
+    "631f6d4 roadmap: w2-agent-core follow-up 10 merged (#171)",
+    "e0a84fb roadmap: w3-devstack-e2e follow-up 10 merged (#170)",
+    "ea5e3e7 roadmap: w2-control-core follow-up 17 merged (#169)",
+    "cbb9430 roadmap: w2-updater follow-up 11 merged (#168)",
+    "b4d212d roadmap: w2-fleet-update follow-up 8 merged (#167)",
+    "7653373 roadmap: w2-agent-core follow-up 12 merged (#166)",
+    "5ee3a05 roadmap: w4-at-security-ops follow-up 5 merged (#165)",
+    "23d5005 roadmap: w3-contracts-r10 merged (#164)",
+    "ea860cc roadmap: w4-handover follow-up 5 merged (#163)",
+    "446b6b0 roadmap: w2-agent-core follow-up 11 merged (#162)",
+    "5c58d32 roadmap: w2-control-core follow-up 16 merged (#161)",
+    "afcaa1d roadmap: w3-wire-nodes follow-up 16 merged (#160)",
+    "cc1303a roadmap: w1-netlab follow-up 6 merged (#159)",
+    "3fe72ca roadmap: w4-at-updates follow-up 5 merged (#158)",
+    "73e0200 roadmap: w4-handover follow-up 4 merged (#157)",
+    "b2c4c0f roadmap: w1-netlab follow-up 5 merged (#156)",
+    "84e099c roadmap: w2-fleet-update follow-up 7 merged (#155)"
+  ],
   "commands": [
     "git fetch origin",
-    "git log --oneline origin/main",
-    "git merge --ff-only origin/main"
+    "gh pr list --state merged --limit 20 --json number,title,mergedAt",
+    "git log --oneline origin/main -25",
+    "git diff 5ee3a05..HEAD --name-only -- deploy/backup docs/handover/restore-drill.md docs/ops/backups.md"
   ],
-  "decision": "Stopped setup-only initial attempt when #162 appeared; measured only #162 on fresh instances. No live run spans a source merge. Final gate recheck found no devstack follow-up 10.",
-  "history": [
-    "followup4-dependencies.json"
+  "merged": {
+    "devstack_followup_10": 170,
+    "control_followup_17": 169,
+    "agent_followup_12": 166,
+    "agent_followup_13": 171,
+    "fleet_update_followup_8": 167,
+    "updater_followup_11": 168
+  },
+  "absent_on_measured_main": [
+    "netlab follow-up 7",
+    "control follow-up 18",
+    "contract revision 9 D-065"
   ],
+  "backup_files_changed_since_165": [],
+  "source_pinning": "No merge during either live phase. These entries describe the checked main used for both fresh stacks.",
+  "history": "history/follow-up-5/dependencies.json",
   "requests": {
-    "SECOPS-03": {
-      "status": "resolved: fresh real DNS/ready baseline",
-      "merged_prs": [
-        143,
-        146,
-        148
-      ],
-      "evidence": "publication.json"
-    },
-    "SECOPS-06": {
-      "status": "login/class buckets resolved; 8 MiB body blocked by SECOPS-15",
-      "merged_prs": [
-        106,
-        141,
-        145
-      ],
-      "evidence": "limiter.json"
-    },
-    "SECOPS-07": {
-      "status": "DOC01–DOC14 resolved",
-      "merged_prs": [
-        138
-      ],
-      "evidence": "scope-review.json"
-    },
-    "SECOPS-09": {
-      "status": "resolved selected counted flow; remaining AT29 faults scoped separately",
-      "merged_prs": [
-        153,
-        162
-      ],
-      "evidence": "counted-flow.json"
-    },
-    "SECOPS-10": {
-      "status": "open: devstack follow-up 10 absent; historical 50/60 unchanged, current counted subset explicitly smaller",
-      "merged_prs": [
-        143,
-        153
-      ],
-      "evidence": "capacity.json"
-    },
-    "SECOPS-11": {
-      "status": "resolved live unarmed step refusal and successful zero-binding published generation; not traffic proof",
-      "merged_prs": [
-        109,
-        148
-      ],
-      "evidence": "publication.json"
-    },
-    "SECOPS-12": {
-      "status": "resolved historical image/PITR proof; no new schema compatibility assertion",
-      "merged_prs": [
-        112,
-        111
-      ],
-      "evidence": "pitr.json"
-    },
-    "SECOPS-13": {
-      "status": "resolved exact owner test passes frozen testdata fixture",
-      "merged_prs": [
-        130,
-        148
-      ],
-      "evidence": "components.json"
-    },
-    "SECOPS-14": {
-      "status": "resolved 20/20 GET / 200 and correct authenticated sessions",
-      "merged_prs": [
-        143
-      ],
-      "evidence": "limiter.json"
-    },
-    "SECOPS-15": {
-      "status": "resolved measured cap−1/cap/cap+1 usage and all other class boundaries after #161",
-      "merged_prs": [
-        161
-      ],
-      "evidence": "limiter.json"
-    },
-    "SECOPS-16": {
-      "status": "open: no exhaustion re-measure without devstack follow-up 10; historical device-flow-query finding retained",
-      "merged_prs": [
-        143
-      ],
-      "evidence": "followup4-secret-scan.json"
-    },
-    "SECOPS-04": {
-      "status": "paid watchdog and grant kernel repeated-HTTPS subsets passed, original ends unchanged and recovery counted; remaining grace/node-lease/transport/guest hooks blocked",
-      "merged_prs": [
-        153,
-        162
-      ],
-      "evidence": "deadlines.json"
-    },
-    "F3-02": {
-      "status": "resolved measured generation 22, forwarding true, no block reasons, second member still counted after revoke",
-      "merged_prs": [
-        153,
-        156,
-        159,
-        162
-      ],
-      "evidence": "post-revoke.json"
-    },
-    "DOC15": {
-      "status": "open: historical attribution requested for obsolete missing lease/conntrack wording",
-      "merged_prs": [
-        153,
-        157,
-        162
-      ],
-      "evidence": "scope-review.json"
-    }
+    "SECOPS-04": "grace prepare option requested; short fleet lease blocked on D-065",
+    "SECOPS-05": "unchanged; no backup changes since #165",
+    "SECOPS-10": "resolved admission subset after #170: two fresh 20x3 cohorts with 60 current bindings; full mixed-flow AT31 remains open",
+    "SECOPS-16": "open: #170 gateway diagnostics have zero key lines, but all 60 protected sequential pre-delete files contain a recognized device-flow key; helper watcher also observes 60 positive streams",
+    "trusted_proxy": "control follow-up 18 untrusted proxy row not on measured source"
   }
 }

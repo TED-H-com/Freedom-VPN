@@ -114,6 +114,7 @@ func (p *liveProbe) scaleNative(members []*liveSession) {
 	started := time.Now()
 	attempts, matches, authorized := 0, 0, 0
 	rows := []map[string]any{}
+	peerRows := []map[string]any{}
 	out := map[string]any{"requested_users": 20, "requested_peers": 60, "hook": "StartNativePeer + JoinNativeMember", "projector_writes": false, "users": rows}
 	defer func() {
 		out["attempted_new_peers"] = attempts
@@ -126,6 +127,7 @@ func (p *liveProbe) scaleNative(members []*liveSession) {
 		out["authorized_peer_observations"] = authorized + len(p.bindings)
 		out["elapsed_seconds"] = time.Since(started).Seconds()
 		out["users"] = rows
+		out["peer_observations"] = peerRows
 		p.metadata["native_scale"] = out
 	}()
 	for i, m := range members {
@@ -135,6 +137,7 @@ func (p *liveProbe) scaleNative(members []*liveSession) {
 			first = 2
 		}
 		for peer := first; peer <= 3; peer++ {
+			peerStarted := time.Now()
 			name := fmt.Sprintf("secops-u%02d-p%d", i, peer)
 			container, e := stack.StartNativePeer(ctx, name)
 			if e != nil {
@@ -143,6 +146,7 @@ func (p *liveProbe) scaleNative(members []*liveSession) {
 			}
 			attempts++
 			result, e := stack.JoinNativeMember(ctx, labstack.BrowserSession{Client: m.client, CSRF: m.csrf, MemberID: m.member}, subject, container, container)
+			peerRows = append(peerRows, map[string]any{"user_index": i, "peer_index": peer, "started_at": peerStarted.UTC(), "elapsed_ms": float64(time.Since(peerStarted).Microseconds()) / 1000, "identity_matched": result.IdentityMatched, "authorized": result.Authorized, "device_id": result.DeviceID, "transient_log_scan": result.LogScan, "join_error": e != nil})
 			if result.IdentityMatched {
 				matches++
 			}
@@ -159,6 +163,7 @@ func (p *liveProbe) scaleNative(members []*liveSession) {
 		count := 0
 		reads := []map[string]any{}
 		for deadline := time.Now().Add(45 * time.Second); time.Now().Before(deadline); {
+			readStarted := time.Now()
 			r = p.call(m, "GET", "/api/v1/member/devices", nil, nil)
 			count = 0
 			var page api.MemberDeviceList
@@ -170,7 +175,7 @@ func (p *liveProbe) scaleNative(members []*liveSession) {
 					}
 				}
 			}
-			reads = append(reads, map[string]any{"utc": time.Now().UTC(), "http_status": r.status, "code": r.code, "valid_device_page": valid})
+			reads = append(reads, map[string]any{"utc": time.Now().UTC(), "http_status": r.status, "code": r.code, "valid_device_page": valid, "elapsed_ms": float64(time.Since(readStarted).Microseconds()) / 1000})
 			if valid && count == 3 {
 				break
 			}

@@ -105,10 +105,21 @@ func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) 
 	_ = json.Unmarshal(got.body, &command)
 	var status string
 	var required, observed int
+	progress := map[string]string{}
 	ready := l.wait(90*time.Second, func() bool {
 		err := l.pool.QueryRow(l.ctx, `SELECT status FROM operations WHERE id=$1`, command.ID).Scan(&status)
-		return err == nil && (status == "succeeded" || status == "failed" || status == "partially_succeeded")
+		if err == nil {
+			if _, seen := progress[status]; !seen {
+				progress[status] = time.Now().UTC().Format(time.RFC3339Nano)
+			}
+		}
+		// §5.2/§18.3: withdrawal is partially_succeeded while node ACK is
+		// unconfirmed, then the accepted node ACK may complete this same operation.
+		// Retain that observation and keep the original bounded wait.
+		return err == nil && status == "succeeded"
 	})
+	states, _ := json.Marshal(progress)
+	r.check("publication progress "+intent, "record pending/partial versus fully observed states", fmt.Sprintf("operation_id=%s; states=%s", command.ID, states), "poll same immutable operation identity until succeeded or bounded timeout", len(progress) > 0)
 	// Operation completion requires read-back evidence (base F-02), not merely 202.
 	_ = l.pool.QueryRow(l.ctx, `SELECT count(*) FILTER(WHERE (v->>'required')::boolean),count(*) FILTER(WHERE (v->>'required')::boolean AND v->>'status'='succeeded') FROM operations o CROSS JOIN LATERAL jsonb_each(o.steps) s(k,v) WHERE o.id=$1`, command.ID).Scan(&required, &observed)
 	desired, actual := l.publicationState()
