@@ -30,7 +30,9 @@ type Peer struct {
 	DeploymentID, ID, ExternalUserID, Name, Platform, OverlayScope string
 	OverlayIP                                                      netip.Addr
 	Authorized                                                     bool
-	Groups                                                         []uuid.UUID
+	// IdentityUnmapped denies admission while preserving the peer for withdrawal.
+	IdentityUnmapped bool
+	Groups           []uuid.UUID
 }
 
 // Adapter is the narrow seam for the Wave 3 internal/netbird integration. Implementations preserve all groups outside platform ownership.
@@ -104,7 +106,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	if c.Actor.ID == uuid.Nil || (c.Actor.Role != "system" && c.Actor.Role != "admin") {
 		return result, entitlement.ErrForbidden
 	}
-	if p.ExternalUserID == "" {
+	if p.ExternalUserID == "" || p.IdentityUnmapped {
 		return result, ErrUnmapped
 	}
 	if !entitlement.Reason(p.DeploymentID, 1000) || !entitlement.Reason(p.ID, 1000) || !entitlement.Reason(p.ExternalUserID, 1000) || !entitlement.Reason(p.OverlayScope, 1000) || !netip.MustParsePrefix("100.64.0.0/10").Contains(p.OverlayIP) || len([]rune(p.Name)) > 100 {

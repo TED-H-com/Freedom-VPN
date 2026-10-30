@@ -57,14 +57,7 @@ func TestBILL03_D031SynchronousCheckoutFailureAndRetry(t *testing.T) {
 	body := fmt.Sprintf(`{"plan_id":%q,"return_url":"https://portal.example.invalid/billing/return"}`, f.plan)
 	w := f.call(s, "POST", "/api/v1/member/checkout-sessions", body, map[string]string{"Idempotency-Key": key})
 	requireStatus(t, w, 503)
-	var failure struct {
-		Error struct {
-			Code      string
-			Retryable bool
-			Message   string
-		}
-	}
-	failure = decode[struct {
+	failure := decode[struct {
 		Error struct {
 			Code      string
 			Retryable bool

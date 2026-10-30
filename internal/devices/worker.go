@@ -68,7 +68,7 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 		return err
 	}
 	var mapped bool
-	if preflight.DeploymentID == deployment && preflight.ID == peer && preflight.OverlayIP.IsValid() {
+	if !preflight.IdentityUnmapped && preflight.DeploymentID == deployment && preflight.ID == peer && preflight.OverlayIP.IsValid() {
 		err = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id JOIN device_bindings b ON b.member_id=n.member_id WHERE n.member_id=$1 AND n.deployment_id=$2 AND n.external_user_id=$3 AND n.mapping_proof<>'' AND i.stable_claim_ref<>'' AND b.device_id=$4 AND b.overlay_scope=$5 AND b.overlay_ip=$6::inet AND b.valid_from<=clock_timestamp() AND b.valid_until>clock_timestamp())`, member, deployment, preflight.ExternalUserID, id, preflight.OverlayScope, preflight.OverlayIP.String()).Scan(&mapped)
 		if err != nil {
 			return err
@@ -88,7 +88,7 @@ func (s *Service) SyncDevice(ctx context.Context, id uuid.UUID) (retErr error) {
 	if err != nil {
 		return err
 	}
-	if observed.DeploymentID != deployment || observed.ID != peer || observed.Authorized != allow || !sameGroups(observed.Groups, groups) || allow && (observed.ExternalUserID != preflight.ExternalUserID || observed.OverlayIP != preflight.OverlayIP || observed.OverlayScope != preflight.OverlayScope) {
+	if observed.DeploymentID != deployment || observed.ID != peer || observed.Authorized != allow || !sameGroups(observed.Groups, groups) || allow && (observed.IdentityUnmapped || observed.ExternalUserID != preflight.ExternalUserID || observed.OverlayIP != preflight.OverlayIP || observed.OverlayScope != preflight.OverlayScope) {
 		return entitlement.ErrConflict
 	}
 

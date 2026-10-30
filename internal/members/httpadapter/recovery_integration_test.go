@@ -9,7 +9,6 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
-	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -62,8 +61,13 @@ func TestMEM03_NetBirdLostCreateIdentityDriftAndPersistentBindings(t *testing.T)
 	s := f.login("TEST-member", "member")
 	checkout, _ := f.checkout(s)
 	f.pay(s, checkout, "TEST-paid", f.now.AddDate(0, 0, 1))
-	f.bind(s, "TEST-user-"+s.id.String(), "TEST-peer", "100.64.0.11")
-	change, e := f.services.HTTP.Devices.ObserveAndAuthorize(t.Context(), entitlement.Command{Actor: entitlement.Actor{ID: uuid.New(), Role: "system", RequestID: uuid.New()}, Key: uuid.New()}, "TEST-ONLY", "TEST-peer")
+	f.seedPeer(s, "TEST-peer", "100.64.0.11")
+	e := f.services.Adapter.Discover(t.Context(), f.services.HTTP.Devices)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var change devices.Change
+	e = f.pool.QueryRow(t.Context(), `SELECT id FROM member_devices WHERE member_id=$1 AND peer_id='TEST-peer'`, s.id).Scan(&change.DeviceID)
 	if e != nil {
 		t.Fatal(e)
 	}
