@@ -15,6 +15,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -93,16 +94,30 @@ func (s *Service) ObserveAndAuthorize(ctx context.Context, c entitlement.Command
 		return Change{}, entitlement.ErrInvalid
 	}
 	p, err := s.Adapter.ObservePeer(ctx, deployment, peerID)
-	if err != nil {
-		return Change{}, err
+	if err == nil && (p.DeploymentID != deployment || p.ID != peerID) {
+		err = ErrUnmapped
 	}
-	if p.DeploymentID != deployment || p.ID != peerID {
-		return Change{}, ErrUnmapped
+	if err != nil {
+		if auditErr := s.recordDenial(ctx, c, p, uuid.Nil, err); auditErr != nil {
+			return Change{}, auditErr
+		}
+		return Change{}, err
 	}
 	return s.AuthorizeDevice(ctx, c, p)
 }
-func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p Peer) (Change, error) {
-	var result Change
+func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p Peer) (result Change, retErr error) {
+	defer func() {
+		var pgerr *pgconn.PgError
+		if errors.As(retErr, &pgerr) && pgerr.Code == "23P01" {
+			retErr = entitlement.ErrConflict
+		}
+		if retErr != nil {
+			if auditErr := s.recordDenial(ctx, c, p, result.MemberID, retErr); auditErr != nil {
+				// Audit failure must remain retryable, not get swallowed as an expected denial.
+				retErr = auditErr
+			}
+		}
+	}()
 	if c.Actor.ID == uuid.Nil || (c.Actor.Role != "system" && c.Actor.Role != "admin") {
 		return result, entitlement.ErrForbidden
 	}
@@ -129,13 +144,14 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 			return nil
 		}
 		var member uuid.UUID
-		err = tx.QueryRow(ctx, `SELECT b.member_id FROM netbird_user_bindings b JOIN identity_bindings i ON i.id=b.identity_binding_id AND i.member_id=b.member_id WHERE b.deployment_id=$1 AND b.external_user_id=$2 AND b.mapping_proof<>'' AND i.stable_claim_ref<>'' AND i.binding_method<>'' AND b.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp()`, p.DeploymentID, p.ExternalUserID).Scan(&member)
+		err = tx.QueryRow(ctx, `SELECT b.member_id FROM netbird_user_bindings b JOIN identity_bindings i ON i.id=b.identity_binding_id AND i.member_id=b.member_id WHERE b.deployment_id=$1 AND b.external_user_id=$2 AND b.mapping_proof='shared_issuer_public_subject:' || i.issuer AND i.subject=b.external_user_id AND b.revision>0 AND i.stable_claim_ref='sub' AND i.binding_method='oidc' AND b.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp()`, p.DeploymentID, p.ExternalUserID).Scan(&member)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrUnmapped
 		}
 		if err != nil {
 			return err
 		}
+		result.MemberID = member
 		projection, err := s.Entitlements.Recompute(ctx, tx, member)
 		if err != nil {
 			return err
@@ -205,7 +221,7 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 		if err = enqueue(ctx, tx, "device.authorized", evt); err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "device.authorize", api.ResourceTypeMemberDevice, device, nil, map[string]any{"member_id": member, "status": "authorized"}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "device.authorize", api.ResourceTypeMemberDevice, device, nil, map[string]any{"member_id": member, "status": "authorized"}, &op); err != nil {
 			return err
 		}
 		result = Change{DeviceID: device, MemberID: member, OperationID: &op, Revision: projection.Revision}
@@ -340,7 +356,7 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		if err = enqueue(ctx, tx, "device.revoked", Event{MemberID: d.MemberID, DeviceID: id, DeviceVersion: version, EntitlementRevision: projection.Revision, DeploymentID: deployment, PeerID: peer, BindingRevision: binding, OperationID: &op}); err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "device.revoke", api.ResourceTypeMemberDevice, id, map[string]any{"status": status}, map[string]any{"status": "revoked"}); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "device.revoke", api.ResourceTypeMemberDevice, id, map[string]any{"status": status}, map[string]any{"status": "revoked"}, &op); err != nil {
 			return err
 		}
 		result.MemberID = d.MemberID

@@ -29,9 +29,12 @@ type Services struct {
 	ReconcileInterval, DeviceInterval time.Duration
 }
 
-func New(pool *pgxpool.Pool, c config.Members, compiler Compiler) (*Services, error) {
+func New(pool *pgxpool.Pool, c config.Members, identity *devices.IdentityDiscovery, compiler Compiler) (*Services, error) {
 	if e := c.Validate(); e != nil {
 		return nil, e
+	}
+	if identity == nil {
+		return nil, errors.New("member identity discovery required")
 	}
 	if pool == nil {
 		return nil, errors.New("member database required")
@@ -80,7 +83,7 @@ func New(pool *pgxpool.Pool, c config.Members, compiler Compiler) (*Services, er
 	if e != nil {
 		return nil, e
 	}
-	adapter := &devices.NetBirdAdapter{Pool: pool, Client: nb, Bindings: bindings, DeploymentID: c.NetBirdDeployment, OverlayScope: c.OverlayScope}
+	adapter := &devices.NetBirdAdapter{Pool: pool, Client: nb, Bindings: bindings, DeploymentID: c.NetBirdDeployment, OverlayScope: c.OverlayScope, Identity: identity}
 	return &Services{HTTP: httpadapter.Services{Members: &members.Service{Pool: pool, Entitlements: engine}, Devices: &devices.Service{Pool: pool, Entitlements: engine, Adapter: adapter}, Billing: bs}, Adapter: adapter, Compiler: compiler, ReconcileInterval: time.Duration(c.ReconcileSeconds) * time.Second, DeviceInterval: time.Duration(c.DeviceSyncSeconds) * time.Second}, nil
 }
 
