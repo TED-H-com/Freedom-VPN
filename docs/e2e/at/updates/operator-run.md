@@ -80,9 +80,9 @@ The follow-up labels are scoped as described in [follow-up-1.md](follow-up-1.md)
 original §19 coverage and physical hardware remain separate requirements.
 
 The current driver calls the devstack real build/sign/register helpers through
-an owned Go test overlay. It deliberately fails a real candidate TCP egress
+`tests/e2e.PrepareServingBaseline`, imported by the ordinary tagged Go test. It deliberately fails a real candidate TCP egress
 probe and kills the updater at a real service-stop boundary. It never edits
 health attestations or journal contents. All temporary files use disk-backed
-scratch. Database writes seed only the documented release-support policy and
-release allowlists; node state and update observations come from the product
-APIs and agent, following D-050.
+scratch. The shared helper activates release support through the product API. This
+harness makes no database writes; readiness and update observations come from
+the product APIs and agent, following D-050.
