@@ -21,11 +21,11 @@
     },
     {
       "name": "plan_id",
-      "detail": "01a18b06-eba7-74ae-a09b-8ca1859b8628"
+      "detail": "01a18b59-c3c4-7302-ae26-3fc39d89212e"
     },
     {
       "name": "plan_revision_id",
-      "detail": "01a18b06-eba7-7683-92ef-965c06c73a63"
+      "detail": "01a18b59-c3c4-7604-bb70-1d06a9e5ea12"
     },
     {
       "name": "grant",
@@ -61,11 +61,11 @@
     },
     {
       "name": "binding_valid_from",
-      "detail": "2026-10-30T04:18:41Z"
+      "detail": "2026-10-30T05:53:40Z"
     },
     {
       "name": "binding_valid_until",
-      "detail": "2026-10-30T05:18:22Z"
+      "detail": "2026-10-30T06:53:22Z"
     },
     {
       "name": "binding",
@@ -101,7 +101,7 @@
     },
     {
       "name": "heartbeat",
-      "detail": "v1\nboot_id 090a8771-1256-4376-840b-9fd511afc635\nmono_ns 689048229198200\nwall_unix_ns 1793334009032377115\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 5\nreason lease_expired"
+      "detail": "v1\nboot_id c14a667b-d336-4bc4-8119-1c74b6ee174b\nmono_ns 694751037991892\nwall_unix_ns 1793339711841170746\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 5\nreason lease_expired"
     },
     {
       "name": "persistent_boot_recovery_config_owner_mode",
@@ -137,7 +137,7 @@
     },
     {
       "name": "publication_observed",
-      "detail": "active"
+      "detail": "error"
     },
     {
       "name": "config_desired",
@@ -189,7 +189,7 @@
     },
     {
       "name": "serving_gate_rows",
-      "detail": "{\"capacity\": {\"up_bps\": 200000000, \"down_bps\": 200000000, \"member_up_bps_cap\": 100000000, \"member_down_bps_cap\": 100000000}, \"lease_count\": 1, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"lease\", \"detail\": \"Serving lease is not in force.\", \"status\": \"failed\", \"error_code\": \"LEASE_EXPIRED\", \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"qos\", \"detail\": \"Rate policy could not be applied.\", \"status\": \"failed\", \"error_code\": \"VALIDATION_FAILED\", \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"source_binding\", \"detail\": \"No member binding was admitted.\", \"status\": \"failed\", \"error_code\": \"VALIDATION_FAILED\", \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T04:20:14.061633758Z\"}], \"forwarding\": null}, \"latest_lease\": {\"issued_at\": \"2026-10-30T04:17:40.551404+00:00\", \"expires_at\": \"2026-10-31T04:17:40.551404+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied_generation\": \"5\", \"desired_generation\": \"5\"}"
+      "detail": "{\"capacity\": {\"up_bps\": 200000000, \"down_bps\": 200000000, \"member_up_bps_cap\": 100000000, \"member_down_bps_cap\": 100000000}, \"lease_count\": 2, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"lease\", \"detail\": \"Serving lease is not in force.\", \"status\": \"failed\", \"error_code\": \"LEASE_EXPIRED\", \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"qos\", \"detail\": \"Rate policy could not be applied.\", \"status\": \"failed\", \"error_code\": \"VALIDATION_FAILED\", \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"source_binding\", \"detail\": \"No member binding was admitted.\", \"status\": \"failed\", \"error_code\": \"VALIDATION_FAILED\", \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T05:54:45.887510812Z\"}], \"forwarding_block_reasons\": [\"lease_expired\"], \"member_forwarding_enabled\": false}, \"latest_lease\": {\"issued_at\": \"2026-10-30T05:48:51.111308+00:00\", \"expires_at\": \"2026-10-31T05:48:51.111308+00:00\", \"generation\": \"1\", \"member_count\": 0}, \"applied_generation\": \"5\", \"desired_generation\": \"5\"}"
     },
     {
       "name": "desired_member_rate_policies",
@@ -216,7 +216,7 @@
       "detail": "w2-agent-core: lease refresh after publication/member changes"
     }
   ],
-  "at": "2026-10-30T04:20:14Z",
-  "run_id": "dc2f6353-89ec-434c-bc68-567066d9fe51",
-  "source_commit": "b15ff057cd5e91e227477de6a09d977931fa62d8"
+  "at": "2026-10-30T05:55:16Z",
+  "run_id": "742a2b14-355f-462e-be89-52ffb2c1993b",
+  "source_commit": "05d70d63890bb181937dabfe01b9e9a680d76086"
 }
