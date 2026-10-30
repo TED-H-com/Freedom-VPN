@@ -118,6 +118,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
 | w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | done (#69) |
 | w4-at-updates: acceptance tests for releases, update batches, rollback and recovery against the lab | WP10 | harness merged (#73): AT23–AT27 blocked on the serving baseline and on the updater health check that fails for a not-yet-serving node (no last-good); arm64 needs an operator run |
+| w4-at-usage: acceptance tests for usage metering, fair use and billing against the lab | WP10 | harness merged (#80): AT14–AT19 blocked on the serving baseline and on exit-group bootstrap (no admin path creates member groups or attaches exits; D-057 in contracts revision 5) |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
