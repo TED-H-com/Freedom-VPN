@@ -15,6 +15,9 @@ func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error 
 	if err != nil {
 		return checkf(ReasonMeterPathInvalid, "cannot parse nft listing: %v", err)
 	}
+	if err := verifyForeign(rs, m); err != nil {
+		return err
+	}
 	if err := rejectBypass(rs); err != nil {
 		return err
 	}
@@ -539,12 +542,12 @@ func EvaluateMeterPath(bindings []Binding, ingressSources []string) error {
 }
 
 func rejectBypass(rs Ruleset) error {
-	if len(rs.Flowtables) > 0 || strings.Contains(rs.Raw, "\"flowtable\"") {
+	if len(rs.Flowtables) > 0 {
 		return checkf(ReasonFlowtable, "flowtable would bypass the accounting hook")
 	}
 	for _, ch := range rs.Chains {
 		for _, rule := range ch.Rules {
-			if rule.Offload {
+			if rule.Offload || strings.Contains(rule.Raw, "\"flowtable\"") {
 				return checkf(ReasonFlowtable, "rule offload would bypass the accounting hook")
 			}
 			if rule.SetsMark {

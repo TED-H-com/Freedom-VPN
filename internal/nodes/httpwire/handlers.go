@@ -37,9 +37,11 @@ func (h *Handlers) ready(context.Context) error {
 }
 
 type tokenKey struct{}
+type ifNoneMatchKey struct{}
 
-// RequestContext retains enrollment credentials in request-local memory only.
-// The domain returns it as Built.Middleware; logging never consumes this value.
+// RequestContext retains enrollment credentials and conditional GET headers in
+// request-local memory only. The domain returns it as Built.Middleware; logging
+// never consumes these values.
 func RequestContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/v1/agent/enroll" {
@@ -47,6 +49,9 @@ func RequestContext(next http.Handler) http.Handler {
 			if strings.HasPrefix(value, "Enrollment ") {
 				r = r.WithContext(context.WithValue(r.Context(), tokenKey{}, strings.TrimPrefix(value, "Enrollment ")))
 			}
+		}
+		if inm := r.Header.Get("If-None-Match"); inm != "" {
+			r = r.WithContext(context.WithValue(r.Context(), ifNoneMatchKey{}, inm))
 		}
 		next.ServeHTTP(w, r)
 	})
@@ -180,6 +185,15 @@ func (h *Handlers) ListNodes(ctx context.Context, r gen.ListNodesRequestObject) 
 	out, e := h.Runtime.Nodes.ListNodes(ctx, nodes.ListNodesParams{Cursor: value(p.Cursor), Limit: value(p.Limit), LifecycleState: p.LifecycleState, PublicationIntent: p.PublicationIntent, ControlStatus: p.ControlStatus, Region: p.Region})
 	return gen.ListNodes200JSONResponse{Body: out}, e
 }
+
+type nodeNotModified string
+
+func (n nodeNotModified) VisitGetNodeResponse(w http.ResponseWriter) error {
+	w.Header().Set("ETag", string(n))
+	w.WriteHeader(http.StatusNotModified)
+	return nil
+}
+
 func (h *Handlers) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen.GetNodeResponseObject, error) {
 	if e := h.ready(ctx); e != nil {
 		return nil, e
@@ -187,6 +201,14 @@ func (h *Handlers) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen
 	out, tag, e := h.Runtime.Nodes.GetNodeWithDNSEvidence(ctx, r.NodeId)
 	if e != nil {
 		return nil, e
+	}
+	if inm, _ := ctx.Value(ifNoneMatchKey{}).(string); inm != "" {
+		for _, candidate := range strings.Split(inm, ",") {
+			trimmed := strings.TrimSpace(candidate)
+			if trimmed == "*" || strings.TrimPrefix(trimmed, "W/") == tag {
+				return nodeNotModified(tag), nil
+			}
+		}
 	}
 	return gen.GetNode200JSONResponse{Body: out, Headers: gen.GetNode200ResponseHeaders{ETag: &tag}}, nil
 }

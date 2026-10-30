@@ -322,6 +322,9 @@ func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.C
 		if _, err = tx.Exec(ctx, `INSERT INTO node_identity_endpoints(incarnation_id,endpoint_hash,last_seen_at) VALUES($1,$2,$3)`, id.IncarnationID, hash[:], now); err != nil {
 			return false, safe(err)
 		}
+		if _, err = tx.Exec(ctx, `UPDATE nodes SET resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
+			return false, safe(err)
+		}
 		s.mu.Lock()
 		cand.beginTx(txID)
 		cand.candidateHash = nil
@@ -470,8 +473,14 @@ func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.
 	if err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `UPDATE node_identity_endpoints SET mapping_frozen=true WHERE incarnation_id=$1`, id.IncarnationID); err != nil {
+	freezeTag, err := tx.Exec(ctx, `UPDATE node_identity_endpoints SET mapping_frozen=true WHERE incarnation_id=$1 AND NOT mapping_frozen`, id.IncarnationID)
+	if err != nil {
 		return err
+	}
+	if tag.RowsAffected() > 0 || freezeTag.RowsAffected() > 0 {
+		if _, err = tx.Exec(ctx, `UPDATE nodes SET resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
+			return err
+		}
 	}
 	if tag.RowsAffected() == 0 {
 		return nil

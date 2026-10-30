@@ -35,9 +35,9 @@ Order: central UUID v7 and isolated client trace context → buffered panic reco
 and security headers → contract route/listener classification. On the agent
 listener a request without a verified client certificate is HTTP 401 and is
 inserted into no limiter table. A verified chain then takes the class ingress
-bucket, keyed by the SHA-256 of the leaf certificate, and the class concurrency
-slot, both before `AuthenticateAgent`. A failed authentication has spent that
-token. On the public listener the order is the connection principal, then the
+bucket, keyed by the leaf's `urn:fvpn:node` SAN when the PKI wrote one and by
+the leaf's SHA-256 otherwise, and the class concurrency slot, both before
+`AuthenticateAgent`. A failed authentication has spent that token. On the public listener the order is the connection principal, then the
 class ingress bucket, then session authentication, then the subject or anonymous
 bucket, then the class concurrency slot. Both listeners then apply role/MFA
 checks, Origin/CSRF and recent admin authentication, required key/If-Match
@@ -70,28 +70,31 @@ Pre-authentication ingress is one table per route class (`browser`, `agent`,
 `heartbeat`, `lease`, `usage`, `anonymous`). Each table holds
 `max_rate_principals` connection principals (default 10,000). IPv4 is one
 principal per address and IPv6 is one principal per /64 (D-060). The anonymous
-ingress table and the anonymous class table also keep a /48 budget beside that
-/64 key: one /48 may hold at most half of `max_rate_principals` buckets (5,000
-at the default cap, and at least one when the cap is one). A new /64 past that
-budget is refused with 429, is not inserted, and does not evict another prefix.
-IPv4 is not grouped. The budget is only on the anonymous class, so the sweep
-inserts nothing into the browser, agent, heartbeat, lease, usage, or subject
-tables. Enrollment and webhooks take their class slot in the separate anonymous
-table under the same /64 key and the same /48 budget. The authenticated subject
-table is a further instance, keyed by node or session, with the same cap and
-no /48 budget. An unparseable connection address, including an unparseable
-`X-Forwarded-For` entry chosen from a trusted peer, is refused with 429 and
-occupies no slot (see [authentication](AUTH.md)). An mTLS request without a
-verified client certificate is HTTP 401 and occupies no slot in any table. A
-verified chain keys the agent listener's ingress bucket by the SHA-256 of the
-leaf certificate before `AuthenticateAgent`, and a failed authentication has
-spent that token.
+ingress table and the anonymous class table also keep a /48 group beside that
+/64 key. One /48 may hold every slot except a reserve of one (9,999 at the
+default cap of 10,000, and the single slot when the cap is one). The reserve
+is not a config key. A new /64 in a /48 that already has keys is refused with
+429 once only that slot remains, is not inserted, and does not evict another
+prefix. Another /48 or an IPv4 address can take it. IPv4 is not grouped. The
+reserve is only on the anonymous class, so the sweep inserts nothing into the
+browser, agent, heartbeat, lease, usage, or subject tables. Enrollment and
+webhooks take their class slot in the separate anonymous table under the same
+/64 key and the same reserve. The authenticated subject table is a further
+instance, keyed by node or session, with the same cap and no /48 group. An
+unparseable connection address, including an unparseable `X-Forwarded-For`
+entry chosen from a trusted peer, is refused with 429 and occupies no slot
+(see [authentication](AUTH.md)). An mTLS request without a verified client
+certificate is HTTP 401 and occupies no slot in any table. A verified chain
+keys the agent listener's ingress bucket by the node URN on the leaf, or by
+the leaf fingerprint when that URN is absent, before `AuthenticateAgent`.
+Still-usable renewal leaves of one node share that bucket. A failed
+authentication has spent that token.
 
 `trusted_proxies` (default empty) is the list of CIDRs whose TCP peers may
 supply `X-Forwarded-For`. An empty list keeps every public-listener
 pre-authentication bucket on the TCP peer, so a forwarding header cannot
-choose a bucket. The agent listener's ingress key is the certificate
-fingerprint either way. Production
+choose a bucket. The agent listener's ingress key is the node URN, or the
+leaf fingerprint when the leaf has no node URN, either way. Production
 either terminates TLS on `fvpn-control` or sets `trusted_proxies` to the
 proxy's source addresses. A proxy that connects from several addresses is
 several CIDRs in that list: each source address as a /32, or one covering
@@ -107,8 +110,9 @@ unbracketed multi-colon string before stripping a trailing port, and accepts
 eight hextets written with a zero-width `::` as that address, so a trailing
 hextet cannot move a /64 into a trusted prefix. An address that falls inside
 a trusted CIDR is itself a hop, so the list is proxy addresses only. The
-agent listener does not read the header. Its ingress key is the certificate
-fingerprint, so a proxy in front of it does not choose the bucket. Subject
+agent listener does not read the header. Its ingress key is the node URN on
+the verified leaf, or the leaf fingerprint when that URN is absent, so a proxy
+in front of it does not choose the bucket. Subject
 buckets stay on the node or session scope. The login
 concurrency gate remains one process-wide gate of `max_concurrent`. Access
 logs record the request ID, route, status, and duration. Prometheus
@@ -118,18 +122,16 @@ from both.
 limiter state, so each replica applies its own budget and the deployment
 budget is the per-process budget times the replica count.
 
-When a table is full, a new principal is admitted by scanning eight
-least-recently-used buckets from the tail and evicting the first that is idle
-with a full token count or has been idle for more than one hour. The window
-is constant, so the scan stays O(1). One depleted tail cannot hide a newer
-bucket inside that window that has already refilled. More than eight depleted
-buckets at the tail can still refuse a newcomer while a full bucket waits
-further toward the head, and that newcomer receives HTTP 429 with
-`Retry-After` of one second. Together with the anonymous /48 budget, that is
-the bound on a full table refusing newcomers. Ingress tables and the anonymous
-class table each use one rate. The subject table mixes class rates. The
-eight-bucket window is what lets a full browser bucket leave ahead of a slower
-heartbeat tail.
+When a table is full, a new principal is admitted by walking from the tail
+and evicting the first bucket that is idle with a full token count or has
+been idle for more than one hour. The walk stops at that bucket and continues
+through every depleted bucket in front of it, up to the size of the table.
+A newcomer is refused with HTTP 429 and `Retry-After` of one second only when
+no bucket on that walk is eligible. Together with the anonymous reserve of
+one slot, that is the bound on a full table refusing newcomers. Ingress
+tables and the anonymous class table each use one rate. The subject table
+mixes class rates. The full walk is what lets a full browser bucket leave
+ahead of a run of slower heartbeat tails.
 
 Rate buckets and concurrency gates stay separate for browser, agent control,
 heartbeat, lease, and usage traffic. The loaded operation ids `EnrollNode`
@@ -245,10 +247,11 @@ minimum directive remains unchanged for the orchestrator to coordinate.
 Ingress and authenticated traffic use separate bounded limiter instances (§14.6).
 Each class has its own ingress table, enrollment and webhooks have a separate
 anonymous class table, and authenticated subjects have another. `max_rate_principals`
-bounds each instance independently. One IPv6 /48 can hold at most half of
-`max_rate_principals` /64s in each anonymous table (5,000 at the default cap)
-and cannot evict a browser, agent, heartbeat, lease, usage, or subject bucket.
-A full table scans eight tail buckets before it refuses a newcomer.
+bounds each instance independently. One IPv6 /48 can hold every anonymous
+slot except a reserve of one (`max_rate_principals` defaults to 10,000, so
+9,999 /64s) and cannot evict a browser, agent, heartbeat, lease, usage, or
+subject bucket. A full table walks from the tail until it finds an idle-full
+bucket or the table ends.
 Existing heartbeat/lease/usage classes retain independent per-principal keys.
 Every framework 429 includes `Retry-After`, including `/auth/*` rate and
 concurrency rejections and the API concurrency gate. These remain process-local

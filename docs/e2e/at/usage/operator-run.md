@@ -1,28 +1,25 @@
-# Operator Runbook: Usage Metering & Fair-Use Acceptance (AT14–AT19)
+# How to Run `w4-at-usage` (AT14–AT19)
 
-## 1. Automated Verification in CI / Local Lab
+## 1. Unit & Mechanism Verification (No Docker Required)
 
-1. Start the isolated `w4-usage` stack on port base `48000`:
-   ```bash
-   FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
-   ```
-2. Execute the acceptance suite (expected non-zero exit while product preconditions on `main` remain `blocked`, after writing `AT14.json`..`AT19.json` and `AT14.md`..`AT19.md`):
-   ```bash
-   make -f mk/at-usage.mk at-usage
-   ```
-3. Tear down the stack:
-   ```bash
-   FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down
-   ```
+```bash
+make -f mk/at-usage.mk at-usage-lint
+make -f mk/at-usage.mk at-usage-test
+make -f mk/at-usage.mk at-usage-build
+```
 
-## 2. Real Multi-Node & Real-Device Measurement Checklist (§19.5)
+## 2. Live Counted Serving Flow on Assigned Stack (`w4-usage` / Port Base `48000`)
 
-Once the upstream blockers documented in [requests.md](requests.md) are resolved on `main`:
+```bash
+FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
+make -f mk/at-usage.mk at-usage
+FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down
+```
 
-- **AT14 (`forward_admission_v1`)**:
-  - Enroll a published exit node and authorize a member device via NetBird.
-  - Send measured upload/download payloads across `fv0` -> `eth0` and verify `nft -j list table inet fvpn` counters `u_<device_hex>` and `d_<device_hex>` match within ±1%.
-  - Confirm WireGuard handshakes, blocked RFC1918/ULA packets, and DNS queries to `100.64.0.1:53` do not increment `u_*` / `d_*`.
-- **AT18 (Multi-Tier Shaping & Host Reserve)**:
-  - Run concurrent `iperf3` streams for a Tier-2 shaped member, a Tier-0 unshaped member, and host SSH/control traffic on `eth0`.
-  - Verify `tc -s class show dev fv0` and `tc -s class show dev eth0` enforce `effective_rate = min(plan_rate_limit, fup_tier_rate, exit_per_member_limit)` while preserving `1:2` host reserve bandwidth.
+## 3. Product-Only Bootstrap Path Verified in Run `9d561888` (`2026-10-30T21:31:58Z`)
+
+1. `e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)` builds, signs, uploads, registers, and verifies `0.1.0` (`amd64` + `arm64`) and activates `release_support` (`01a18e52-a293-7e1b-b22e-ed9f7341ab29`).
+2. `POST /api/v1/admin/groups` creates member exit group `01a18e52-a4e3-7981-983d-bcb37866f801`.
+3. `POST /api/v1/admin/policies` + `POST /activate` activates `dns_profile` (`01a18eb6-339e-7a3b-ba55-2f765bcc4ed4`), `fair_use` (`01a18eb6-3807-7351-848f-452c32f360a3`), and `plan` (`01a18eb6-4060-7b2d-ba8b-0d73f503e881`) with `exit_group_ids=[01a18e52-a4e3-7981-983d-bcb37866f801]`.
+4. `stack.Enroll` & `stack.EnrollAt(..., "node2")`, `PATCH /api/v1/admin/nodes/{id}` (finite capacity), and `PUT /api/v1/admin/nodes/{id}/publication` (`group_ids=[01a18e52-a4e3-7981-983d-bcb37866f801]`) publish both exits.
+5. `POST /api/v1/admin/members/{id}/grants` + `stack.JoinNativeMember` + `netbird networks select <exit_net_id>` establishes counted member forwarding (`serving 1`, `fvpn_generation > 0`, positive `u_<dev>`/`d_<dev>` counters).

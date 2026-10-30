@@ -46,26 +46,21 @@ func (a addrID) known() bool {
 
 // planRevokes is the address list passed to Apply. A previous or pending
 // identity that is not the current (addr, device, member) is deleted.
-// The same triple admitted again is not deleted. A legacy pending row
-// with no device or member is not deleted while that address is bound,
-// because the row cannot prove the active device is someone else.
+// The same triple admitted again is not deleted. A migrated row with a
+// nil device and member is not that triple: a binding of the same address
+// is a reassignment, so the address is queued until conntrack -D succeeds.
 func planRevokes(pending, prev []addrID, bindings []enforce.Binding) []netip.Addr {
 	current := map[addrID]bool{}
-	bound := map[netip.Addr]bool{}
 	for _, b := range bindings {
 		for _, p := range b.AllowedV4 {
 			id := addrID{Addr: p.Addr(), DeviceID: b.DeviceID, MemberID: b.MemberID}
 			current[id] = true
-			bound[p.Addr()] = true
 		}
 	}
 	var out []netip.Addr
 	seen := map[netip.Addr]bool{}
 	consider := func(id addrID) {
 		if !id.Addr.Is4() || seen[id.Addr] || current[id] {
-			return
-		}
-		if !id.known() && bound[id.Addr] {
 			return
 		}
 		seen[id.Addr] = true

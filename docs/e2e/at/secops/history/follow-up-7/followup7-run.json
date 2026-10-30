@@ -1,0 +1,145 @@
+{
+  "driver_run_id": "f54627cd-eb5f-4d42-a7d9-e916cc0e5127",
+  "source_revision": "443cbb0d787e3b4a6ef9daf33bb060e4d89932bf",
+  "started_at": "2026-10-30T19:23:34Z",
+  "expected": "fleet API short lease and finite grace; real proxy principals; 60-peer counted traffic and node telemetry",
+  "prepare": {
+    "grace_seconds": 90,
+    "reset": true,
+    "prefix": "w4-secops",
+    "port_base": "30000"
+  },
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "proxyprobe_build": {
+    "command": [
+      "go",
+      "build",
+      "-o",
+      ".agent/secops/build/proxyprobe",
+      "./tests/e2e/at/secops/proxyprobe"
+    ],
+    "started_at": "2026-10-30T19:23:34Z",
+    "finished_at": "2026-10-30T19:23:34Z",
+    "elapsed_seconds": 0.264,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup7-proxyprobe",
+      "bytes": 0,
+      "findings": []
+    }
+  },
+  "up": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    "started_at": "2026-10-30T19:23:34Z",
+    "finished_at": "2026-10-30T19:24:20Z",
+    "elapsed_seconds": 46.144,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup7-e2e-up",
+      "bytes": 20760,
+      "findings": []
+    }
+  },
+  "live": {
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "65m",
+      "-run",
+      "^TestAT28_AT31_Followup7$",
+      "./tests/e2e/at/secops"
+    ],
+    "started_at": "2026-10-30T19:24:20Z",
+    "finished_at": "2026-10-30T19:58:33Z",
+    "elapsed_seconds": 2053.017,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup7-live",
+      "bytes": 8469,
+      "findings": []
+    },
+    "status": "passed",
+    "required_tests": [
+      "TestAT28_AT31_Followup7"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestAT28_AT31_Followup7",
+        "result": "pass",
+        "elapsed_seconds": 2052.53
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-10-30T19:58:33Z",
+    "finished_at": "2026-10-30T19:59:27Z",
+    "elapsed_seconds": 53.963,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup7-e2e-down",
+      "bytes": 3073,
+      "findings": []
+    }
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "finished_at": "2026-10-30T19:59:27Z"
+}
