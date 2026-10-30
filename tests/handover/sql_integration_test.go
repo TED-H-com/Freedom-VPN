@@ -5,6 +5,7 @@ package handover_test
 import (
 	"context"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -22,6 +23,37 @@ func TestHandover_SQLStatementsExecuteAgainstMigratedSchema(t *testing.T) {
 	pool := dbtest.New(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+
+	// Assert that the applied migration versions in the freshly migrated database
+	// equal the files in db/migrations/*.sql (verifying the fvpn-migrate status
+	// expectation without hardcoding literal migration IDs in the docs).
+	wantMigrationIDs := repoMigrationIDs(t, root)
+	migRows, err := pool.Query(ctx, `
+		SELECT to_char(version_id, 'FM00000')
+		FROM goose_db_version
+		WHERE version_id > 0 AND is_applied = true
+		ORDER BY version_id ASC
+	`)
+	if err != nil {
+		t.Fatalf("query goose_db_version: %v", err)
+	}
+	var appliedIDs []string
+	for migRows.Next() {
+		var id string
+		if err := migRows.Scan(&id); err != nil {
+			migRows.Close()
+			t.Fatalf("scan goose_db_version: %v", err)
+		}
+		appliedIDs = append(appliedIDs, id)
+	}
+	if err := migRows.Err(); err != nil {
+		migRows.Close()
+		t.Fatalf("iterate goose_db_version: %v", err)
+	}
+	migRows.Close()
+	if !slices.Equal(appliedIDs, wantMigrationIDs) {
+		t.Fatalf("applied migrations in goose_db_version = %v, want files from db/migrations/*.sql = %v", appliedIDs, wantMigrationIDs)
+	}
 
 	executedBlocks := 0
 	executedStmts := 0

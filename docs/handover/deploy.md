@@ -77,7 +77,7 @@ Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the si
 
 | Role | Used By | Purpose |
 |---|---|---|
-| `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`00001`–`00182`, 21 migrations). |
+| `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`db/migrations/*.sql`, one goose version per file). |
 | `fvpn_control` | `fvpn-control` | CRUD on operational tables; `INSERT` + `SELECT` on `audit_events` and `usage_events` (no `UPDATE`/`DELETE` on append-only tables, `F-02`–`F-04`). |
 | `fvpn_worker` | `fvpn-worker` | Claims `outbox_events`, reconciles NetBird/Stripe/DNS (including threat-feed refreshes in `dns_feed_contents` and `dns_feed_refresh_state`), updates `usage_rollups`. |
 | `fvpn_retention` | Retention job | Executes `SELECT purge_retained(...)` (`F-03`) to delete expired raw payloads and logs while recording an audit row. |
@@ -117,31 +117,13 @@ FVPN_DATABASE_URL="postgres://fvpn_migrator:PASSWORD@198.51.100.10:5432/fvpn?ssl
   /usr/local/bin/fvpn-migrate status
 ```
 
-Expected output (`21` migrations applied through `00182_dns_feed_review.sql`, including `00006` which aligns `purge_retained()` audit rows with canonical `<resource_type>:<uuid>` format per `D-035`, `00180` for `dns_publication_heads` and `dns_resolver_documents`, `00181` for `dns_feed_contents` and `dns_feed_refresh_state`, and `00182` for threat-feed activation fencing and `dns_profile_feeds_eligible`):
+Expected output (`fvpn-migrate status` must list every file in `db/migrations/*.sql` — one goose version per file, including `00006` which aligns `purge_retained()` audit rows with canonical `<resource_type>:<uuid>` format per `D-035` — as `applied`):
 
 ```text
 current_database="fvpn"
 00001 applied
-00002 applied
-00003 applied
-00004 applied
-00005 applied
-00006 applied
-00100 applied
-00101 applied
-00110 applied
-00111 applied
-00120 applied
-00121 applied
-00130 applied
-00131 applied
-00140 applied
-00150 applied
-00160 applied
-00161 applied
-00180 applied
-00181 applied
-00182 applied
+...
+<last file> applied
 ```
 
 After migrations complete, grant table/sequence permissions to `fvpn_control`, `fvpn_worker`, `fvpn_retention`, `fvpn_recovery`, and `fvpn_backup` (`pg_read_all_data`) `[production only]`:

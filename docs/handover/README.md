@@ -26,7 +26,7 @@ To prevent documentation drift, the handover and operations Markdown files (`doc
    - Every repository path in backticks (`deploy/…`, `mk/…`, `docs/…`, `contracts/…`, `db/migrations/…`, `apps/…`, `node/…`, `internal/…`, `pkg/…`, `packaging/…`, `tests/…`) exists.
    - Every `make -f mk/<file>.mk <target>` command names an existing target in `mk/<file>.mk`.
    - Every `fvpn-*` command names a built binary under `apps/*/cmd/*`, `node/*/cmd/*`, `internal/*/cmd/*`, `packaging/*/cmd/*`, or `tests/e2e/cmd/*`.
-   - The migration inventory (count `21` and last ID `00182`, plus the `fvpn-migrate status` block in `deploy.md`) matches `db/migrations/*.sql`.
+   - The migration inventory is referenced as `db/migrations/*.sql` (one goose version per file) with no hardcoded literal migration count or last-migration ID, and `deploy.md` shows the abbreviated `fvpn-migrate status` example (`00001 applied` … `<last file> applied`).
    - Any SQL block that cannot be executed as a normal tenant query (specifically cluster-level role/database creation and `GRANT` statements in `deploy.md`) is explicitly labeled with `-- [mechanical-check: cluster-role-ddl]` and reported by the test rather than skipped silently.
 
 2. **PostgreSQL Schema & SQL Execution Verification (`integration` tag)**:
@@ -34,4 +34,4 @@ To prevent documentation drift, the handover and operations Markdown files (`doc
    go test -v -tags integration ./tests/handover/...
    make -f mk/handover.mk handover-verify
    ```
-   Creates a freshly migrated, isolated PostgreSQL 17 database via `internal/db/dbtest` (`D-039`: schema only, using `$FVPN_TEST_DATABASE_URL`) and executes every domain SQL statement extracted from the owned handover Markdown files so any table, column, function, or type drift fails immediately.
+   Creates a freshly migrated, isolated PostgreSQL 17 database via `internal/db/dbtest` (`D-039`: schema only, using `$FVPN_TEST_DATABASE_URL`), asserts that the applied migration set in `goose_db_version` equals the files in `db/migrations/*.sql`, and executes every domain SQL statement extracted from the owned handover Markdown files so any table, column, function, or type drift fails immediately.

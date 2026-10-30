@@ -4,6 +4,7 @@
 package handover_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -336,8 +337,8 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 	}
 }
 
-func TestHandover_MigrationInventory(t *testing.T) {
-	root := repoRoot(t)
+func repoMigrationIDs(t testing.TB, root string) []string {
+	t.Helper()
 	files, err := filepath.Glob(filepath.Join(root, "db/migrations/*.sql"))
 	if err != nil {
 		t.Fatalf("glob migrations: %v", err)
@@ -356,63 +357,121 @@ func TestHandover_MigrationInventory(t *testing.T) {
 		}
 		wantIDs = append(wantIDs, id)
 	}
+	return wantIDs
+}
+
+func auditMigrationInventoryClaims(doc, content string, wantIDs []string) (literalClaims []string, mismatchErrors []string) {
 	wantCount := len(wantIDs)
 	wantFirst := wantIDs[0]
 	wantLast := wantIDs[len(wantIDs)-1]
 
-	// 1. Check migration count, range, and last-ID claims across owned docs.
-	countRE := regexp.MustCompile("(?:`?([0-9]+)`?\\s+(?:forward\\s+)?migrations|count\\s+`?([0-9]+)`?)")
-	rangeRE := regexp.MustCompile("`(00[0-9]{3})`[–-]`(00[0-9]{3})`")
-	lastIDRE := regexp.MustCompile("(?:last ID\\s+`(00[0-9]{3})`|through\\s+`(00[0-9]{3})(?:_[a-z0-9_]+\\.sql)?`)")
-	for _, doc := range ownedDocs {
-		content := readOwnedDoc(t, root, doc)
-		for _, m := range countRE.FindAllStringSubmatch(content, -1) {
-			numStr := m[1]
-			if numStr == "" {
-				numStr = m[2]
-			}
-			gotCount, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatalf("%s: parse migration count %q: %v", doc, numStr, err)
-			}
-			if gotCount != wantCount {
-				t.Errorf("%s: migration count claim is %d, want %d (from db/migrations/)", doc, gotCount, wantCount)
-			}
+	countRE := regexp.MustCompile("(?i)(?:`?([0-9]+)`?\\s+(?:forward\\s+)?migrations(?:\\s+applied)?|migration\\s+count\\s+`?([0-9]+)`?|count\\s+`?([0-9]+)`?)")
+	rangeRE := regexp.MustCompile("`(00[0-9]{3})`\\s*[–-]\\s*`(00[0-9]{3})`")
+	lastIDRE := regexp.MustCompile("(?i)(?:last(?:-migration)?\\s+ID\\s+`(00[0-9]{3})`|through\\s+`(00[0-9]{3})(?:_[a-z0-9_]+\\.sql)?`)")
+
+	for _, m := range countRE.FindAllStringSubmatch(content, -1) {
+		numStr := m[1]
+		if numStr == "" {
+			numStr = m[2]
 		}
-		for _, m := range rangeRE.FindAllStringSubmatch(content, -1) {
-			if m[1] != wantFirst || m[2] != wantLast {
-				t.Errorf("%s: migration range claim is %s..%s, want %s..%s", doc, m[1], m[2], wantFirst, wantLast)
-			}
+		if numStr == "" {
+			numStr = m[3]
 		}
-		for _, m := range lastIDRE.FindAllStringSubmatch(content, -1) {
-			gotLast := m[1]
-			if gotLast == "" {
-				gotLast = m[2]
-			}
-			if gotLast != wantLast {
-				t.Errorf("%s: migration last-ID claim is %s, want %s (from db/migrations/)", doc, gotLast, wantLast)
-			}
+		literalClaims = append(literalClaims, fmt.Sprintf("%s: literal migration count %q", doc, m[0]))
+		gotCount, err := strconv.Atoi(numStr)
+		if err != nil {
+			mismatchErrors = append(mismatchErrors, fmt.Sprintf("%s: parse migration count %q: %v", doc, numStr, err))
+			continue
+		}
+		if gotCount != wantCount {
+			mismatchErrors = append(mismatchErrors, fmt.Sprintf("%s: migration count claim is %d, want %d (from db/migrations/)", doc, gotCount, wantCount))
+		}
+	}
+	for _, m := range rangeRE.FindAllStringSubmatch(content, -1) {
+		literalClaims = append(literalClaims, fmt.Sprintf("%s: literal migration range %q", doc, m[0]))
+		if m[1] != wantFirst || m[2] != wantLast {
+			mismatchErrors = append(mismatchErrors, fmt.Sprintf("%s: migration range claim is %s..%s, want %s..%s", doc, m[1], m[2], wantFirst, wantLast))
+		}
+	}
+	for _, m := range lastIDRE.FindAllStringSubmatch(content, -1) {
+		gotLast := m[1]
+		if gotLast == "" {
+			gotLast = m[2]
+		}
+		literalClaims = append(literalClaims, fmt.Sprintf("%s: literal migration last-ID %q", doc, m[0]))
+		if gotLast != wantLast {
+			mismatchErrors = append(mismatchErrors, fmt.Sprintf("%s: migration last-ID claim is %s, want %s (from db/migrations/)", doc, gotLast, wantLast))
 		}
 	}
 
-	// 2. Check the fvpn-migrate status block in docs/handover/deploy.md.
+	statusBlockRE := regexp.MustCompile("(?s)```text\\ncurrent_database=\"fvpn\"\\n(.*?)```")
+	if m := statusBlockRE.FindStringSubmatch(content); m != nil {
+		lines := strings.Split(strings.TrimSpace(m[1]), "\n")
+		abbreviated := []string{wantFirst + " applied", "...", "<last file> applied"}
+		if !slices.Equal(lines, abbreviated) {
+			literalClaims = append(literalClaims, fmt.Sprintf("%s: non-abbreviated fvpn-migrate status block (%d lines)", doc, len(lines)))
+			var gotIDs []string
+			for _, line := range lines {
+				fields := strings.Fields(line)
+				if len(fields) != 2 || fields[1] != "applied" {
+					mismatchErrors = append(mismatchErrors, fmt.Sprintf("%s: unexpected status line %q", doc, line))
+					continue
+				}
+				gotIDs = append(gotIDs, fields[0])
+			}
+			if !slices.Equal(gotIDs, wantIDs) {
+				mismatchErrors = append(mismatchErrors, fmt.Sprintf("%s: fvpn-migrate status IDs = %v, want %v", doc, gotIDs, wantIDs))
+			}
+		}
+	}
+	return literalClaims, mismatchErrors
+}
+
+func TestHandover_MigrationInventory(t *testing.T) {
+	root := repoRoot(t)
+	wantIDs := repoMigrationIDs(t, root)
+	wantFirst := wantIDs[0]
+
+	var allLiteralClaims []string
+	for _, doc := range ownedDocs {
+		content := readOwnedDoc(t, root, doc)
+		claims, errs := auditMigrationInventoryClaims(doc, content, wantIDs)
+		allLiteralClaims = append(allLiteralClaims, claims...)
+		for _, e := range errs {
+			t.Error(e)
+		}
+	}
+
+	// Verify docs/handover/deploy.md states db/migrations/*.sql and the
+	// abbreviated fvpn-migrate status output block.
 	deployMD := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	if !strings.Contains(deployMD, "`db/migrations/*.sql`") {
+		t.Error("docs/handover/deploy.md: expected reference to `db/migrations/*.sql` as the migration inventory")
+	}
 	statusBlockRE := regexp.MustCompile("(?s)```text\\ncurrent_database=\"fvpn\"\\n(.*?)```")
 	m := statusBlockRE.FindStringSubmatch(deployMD)
 	if m == nil {
 		t.Fatal("docs/handover/deploy.md: missing fvpn-migrate status output block")
 	}
-	var gotIDs []string
-	for _, line := range strings.Split(strings.TrimSpace(m[1]), "\n") {
-		fields := strings.Fields(line)
-		if len(fields) != 2 || fields[1] != "applied" {
-			t.Fatalf("docs/handover/deploy.md: unexpected status line %q", line)
+	gotLines := strings.Split(strings.TrimSpace(m[1]), "\n")
+	wantLines := []string{wantFirst + " applied", "...", "<last file> applied"}
+	if !slices.Equal(gotLines, wantLines) {
+		t.Errorf("docs/handover/deploy.md: fvpn-migrate status lines = %q, want abbreviated %q", gotLines, wantLines)
+	}
+
+	t.Run("OwnedDocsMakeNoLiteralCountOrLastIDClaims", func(t *testing.T) {
+		if len(allLiteralClaims) > 0 {
+			t.Errorf("owned docs must not hardcode literal migration counts, ranges, or last IDs; found:\n%s", strings.Join(allLiteralClaims, "\n"))
 		}
-		gotIDs = append(gotIDs, fields[0])
-	}
-	if !slices.Equal(gotIDs, wantIDs) {
-		t.Errorf("docs/handover/deploy.md: fvpn-migrate status IDs = %v, want %v", gotIDs, wantIDs)
-	}
+		syntheticClaims, syntheticErrs := auditMigrationInventoryClaims(
+			"synthetic.md",
+			"(`00001`–`00999`, 99 migrations applied through `00999_future.sql`, last ID `00999`)\n```text\ncurrent_database=\"fvpn\"\n00001 applied\n00999 applied\n```",
+			wantIDs,
+		)
+		if len(syntheticClaims) < 4 || len(syntheticErrs) < 4 {
+			t.Fatalf("expected strict detector to catch synthetic literal claims and mismatches; got claims=%v errs=%v", syntheticClaims, syntheticErrs)
+		}
+	})
 }
 
 type sqlBlock struct {
