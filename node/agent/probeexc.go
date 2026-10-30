@@ -220,8 +220,8 @@ func (e *Engine) memberCollision(peer string, src netip.Addr) bool {
 				return true
 			}
 			for _, s := range b.AllowedIpv4 {
-				p, err := netip.ParsePrefix(s)
-				if err == nil && p.IsValid() && p.Contains(src) {
+				p, err := hostPrefix(s)
+				if err == nil && p.Contains(src) {
 					return true
 				}
 			}

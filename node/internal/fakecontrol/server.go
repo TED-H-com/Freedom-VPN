@@ -84,9 +84,15 @@ type Server struct {
 	expire    bool
 	delay     time.Duration
 	failLeft  int
-	offset    time.Duration
-	nowFn     func() time.Time
-	hold      chan struct{}
+	leaseFail int
+	// leasePosts counts POST /lease-renewals, including a forced failure.
+	leasePosts int
+	// lastLeaseIssued keeps a new lease strictly after the previous one
+	// when two renewals land in the same wall-clock tick.
+	lastLeaseIssued time.Time
+	offset          time.Duration
+	nowFn           func() time.Time
+	hold            chan struct{}
 	// bootMode is ready, notready or expired. consumed is remembered after 200.
 	bootMode     string
 	bootKey      string
@@ -301,6 +307,21 @@ func (s *Server) FailNext(n int) {
 	s.mu.Lock()
 	s.failLeft = n
 	s.mu.Unlock()
+}
+
+// FailLeases makes the next n lease renewals return 503. Desired state is
+// not affected. TEST ONLY.
+func (s *Server) FailLeases(n int) {
+	s.mu.Lock()
+	s.leaseFail = n
+	s.mu.Unlock()
+}
+
+// LeaseRenewals is how many lease POSTs were attempted, including failures.
+func (s *Server) LeaseRenewals() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.leasePosts
 }
 
 // CorruptSignatures makes the next signed documents fail verification.

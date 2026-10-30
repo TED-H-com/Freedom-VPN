@@ -155,9 +155,10 @@ func servingInput() Input {
 		Dns: api.DnsServiceConfig{ResolverIpv4: []string{}, ResolverIpv6: []string{}},
 	}
 	lease := &api.ServingLease{
-		IssuedAt:  issued,
-		ExpiresAt: issued.Add(time.Hour),
-		Members:   []api.MemberLease{},
+		ConfigGeneration: 1,
+		IssuedAt:         issued,
+		ExpiresAt:        issued.Add(time.Hour),
+		Members:          []api.MemberLease{},
 	}
 	return Input{
 		Now: issued, MonoNow: 2 * time.Second,
