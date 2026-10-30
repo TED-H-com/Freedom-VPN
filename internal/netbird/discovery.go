@@ -34,7 +34,7 @@ func enrollmentGroupKey(id string) string { return "enroll-peer:" + id }
 
 // DiscoverNodePeer correlates a machine peer exclusively through the one-off
 // enrollment group's membership and setup-key usage (D-055), never a hostname/IP.
-func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n NodePeer) (Peer, error) {
+func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n NodePeer) (result Peer, resultErr error) {
 	if !valid(enrollmentID, n.NodeID, n.IncarnationID) || n.PeerID != "" {
 		return Peer{}, failure(Invalid)
 	}
@@ -46,6 +46,31 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 	if err = checkDiscoveryFence(ctx); err != nil {
 		return Peer{}, err
 	}
+	bindingKey := "node:" + n.NodeID + ":" + n.IncarnationID
+	wroteBinding := false
+	defer func() {
+		// A prior delivery may have stored its binding before a transient
+		// cleanup failure. A conflict on THIS delivery must remove it too,
+		// before the worker acknowledges terminal classification (D-055).
+		if !IsKind(resultErr, Conflict) && !(wroteBinding && IsKind(resultErr, Unconfirmed)) {
+			return
+		}
+		bound, exists, err := c.store.Get(ctx, c.deployment, "peers", bindingKey)
+		if err != nil {
+			resultErr = failure(Unconfirmed)
+			return
+		}
+		if !exists {
+			return
+		}
+		if err = c.withdrawalProof(ctx, enrollmentID, bound.ExternalID); err != nil {
+			resultErr = failure(Unconfirmed)
+			return
+		}
+		if err = c.store.Delete(ctx, c.deployment, "peers", bindingKey); err != nil {
+			resultErr = failure(Unconfirmed)
+		}
+	}()
 	key, err := c.locate(ctx, "setup-keys", enrollmentID, stableName("enroll", enrollmentID))
 	if err != nil {
 		return Peer{}, err
@@ -53,7 +78,6 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 	if key == nil {
 		return Peer{}, failure(NotFound)
 	}
-	bindingKey := "node:" + n.NodeID + ":" + n.IncarnationID
 	bound, exists, err := c.store.Get(ctx, c.deployment, "peers", bindingKey)
 	if err != nil {
 		return Peer{}, err
@@ -104,14 +128,8 @@ func (c *Client) DiscoverNodePeer(ctx context.Context, enrollmentID string, n No
 	if err = c.recordPeer(ctx, bindingKey, peer, n); err != nil {
 		return Peer{}, err
 	}
+	wroteBinding = true
 	if err = c.removeEnrollmentGroup(ctx, enrollmentID, key, group, candidate, false); err != nil {
-		if IsKind(err, Conflict) || IsKind(err, Unconfirmed) {
-			// A terminal freeze must not retain a newly rejected identity binding.
-			// Cleanup's separate withdrawal receipt preserves the deletion target.
-			if rollbackErr := c.store.Delete(ctx, c.deployment, "peers", bindingKey); rollbackErr != nil {
-				return Peer{}, failure(Unconfirmed)
-			}
-		}
 		return Peer{}, err
 	}
 	return peer, nil
@@ -356,9 +374,15 @@ func (c *Client) removeEnrollmentGroup(ctx context.Context, enrollmentID string,
 	}
 	// Recheck immediately before clearing membership; never discard a member
 	// that arrived during the preceding HTTP reads/writes.
-	key, group, _, err = c.discoverySnapshot(ctx, enrollmentID, key, group, candidate, revoke)
+	var latestCandidate string
+	key, group, latestCandidate, err = c.discoverySnapshot(ctx, enrollmentID, key, group, candidate, revoke)
 	if err != nil {
 		return err
+	}
+	if latestCandidate != candidate {
+		// Registration may finish after revocation of a previously unused key.
+		// Retry from the peer-delete decision; never erase this new correlation.
+		return failure(Unconfirmed)
 	}
 	if group == nil {
 		return nil

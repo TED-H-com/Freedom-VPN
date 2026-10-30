@@ -56,6 +56,8 @@ D-055 adversarial fixes: re-GET both key and group after reading the candidate
 and again inside cleanup, including after detaching the key. A 0-use snapshot
 with one member is retryable `Unconfirmed`; a subsequent 1-use read can bind.
 A second use/member conflicts, and a binding rejected during cleanup is removed.
+This includes a binding left by a previous delivery whose cleanup failed transiently;
+a later conflict must remove it before terminal worker acknowledgement.
 The separately retained withdrawal target is never a serving identity. Compare
 optional `peers_count`/`resources_count` against complete arrays; disagreement is
 `Unconfirmed`, and nonempty resources conflict. Membership is checked before

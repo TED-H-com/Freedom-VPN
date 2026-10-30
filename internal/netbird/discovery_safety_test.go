@@ -94,3 +94,50 @@ func TestAT08_NoDistributionGroupsRejectedBeforeManagement(t *testing.T) {
 		t.Fatal("empty distribution reached management", err, f.writes)
 	}
 }
+
+func TestAT06_D055_ConflictOnCleanupRedeliveryRemovesPendingBinding(t *testing.T) {
+	f, c, key, _, group := discoveryFixture(t)
+	reviewUse(f, key, group)
+	lists := 0
+	f.beforeGet = func(kind, id string, w http.ResponseWriter) bool {
+		if kind == "policies" && id == "" {
+			lists++
+			if lists == 2 {
+				w.WriteHeader(503)
+				return true
+			}
+		}
+		return false
+	}
+	if _, err := c.DiscoverNodePeer(t.Context(), "TEST-enrollment", reviewNode()); !IsKind(err, Upstream) || !reviewBound(t, c) {
+		t.Fatal("did not interrupt cleanup after binding", err)
+	}
+	f.beforeGet = nil
+	f.objects["policies"]["TEST-late"] = decodeObject(object{"rules": []object{{"sources": []string{group}}}})
+	if _, err := c.DiscoverNodePeer(t.Context(), "TEST-enrollment", reviewNode()); !IsKind(err, Conflict) || reviewBound(t, c) || f.objects["groups"][group] == nil {
+		t.Fatal("terminal redelivery retained tentative identity", err)
+	}
+	delete(f.objects["policies"], "TEST-late")
+	require(t, c.RevokeNodeSetupKey(t.Context(), "TEST-enrollment"))
+	if f.objects["peers"]["TEST-node"] != nil {
+		t.Fatal("rollback lost the withdrawal target")
+	}
+}
+
+func TestAT07_D055_RegistrationCompletingDuringRevocationIsNotOrphaned(t *testing.T) {
+	f, c, key, _, group := discoveryFixture(t)
+	f.beforeGet = func(kind, id string, _ http.ResponseWriter) bool {
+		if kind == "setup-keys" && id == key.ID && f.objects[kind][id]["revoked"] == true && len(ids(f.objects[kind][id]["auto_groups"])) == 1 {
+			f.beforeGet = nil
+			reviewUse(f, key, group)
+		}
+		return false
+	}
+	if err := c.RevokeNodeSetupKey(t.Context(), "TEST-enrollment"); !IsKind(err, Unconfirmed) || f.objects["groups"][group] == nil {
+		t.Fatal("newly committed correlation discarded", err)
+	}
+	require(t, c.RevokeNodeSetupKey(t.Context(), "TEST-enrollment"))
+	if f.objects["peers"]["TEST-node"] != nil || f.objects["groups"][group] != nil {
+		t.Fatal("retry did not confirm withdrawal")
+	}
+}
