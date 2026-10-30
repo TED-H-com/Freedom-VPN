@@ -48,7 +48,9 @@ under the same rule; admin logins never insert `members` or `identity_bindings`.
 Admin and member identities remain distinct even for the same `(issuer, subject)`.
 `GET /auth/login` accepts an optional `?role=member|admin` query parameter (or
 infers `admin` from `return_to=/admin...`, defaulting to `member`) and binds the
-requested role to the login flow so a dual-role account can sign in as a member
+requested role in `oidc_login_flows.role` (migration `00185_oidc_login_flows_role.sql`;
+`ConsumeFlow` continues to accept the legacy `role:verifier` prefix for one release)
+so a dual-role account can sign in as a member
 and create its `members` and `identity_bindings` rows (D-052, F-11). Requesting
 `admin` requires the configured ID-token admin claim (returning 403 `FORBIDDEN`
 when absent), `auth_time`, and configured AMR/ACR MFA evidence (returning 403
