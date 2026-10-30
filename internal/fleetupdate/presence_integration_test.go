@@ -38,6 +38,10 @@ func TestUPD04_TargetAttentionAndConfirmation(t *testing.T) {
 	if err := l.s.Observe(l.ctx, i, Observation{Sequence: 2, AppliedUpdateGeneration: work.Intent.Generation, CurrentReleaseID: &l.new, LastGoodReleaseID: &l.new, ObservedAt: time.Now().UTC()}); err != nil {
 		t.Fatal(err)
 	}
+	assertFlags(true, true) // Failed results do not advance last-good; disagreement stays unconfirmed.
+	if err := l.s.Observe(l.ctx, i, Observation{Sequence: 3, AppliedUpdateGeneration: work.Intent.Generation, CurrentReleaseID: &l.new, LastGoodReleaseID: &l.old, ObservedAt: time.Now().UTC()}); err != nil {
+		t.Fatal(err)
+	}
 	assertFlags(true, false)
 }
 
