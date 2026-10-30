@@ -176,6 +176,30 @@ func (e DeviceStatus) Valid() bool {
 	}
 }
 
+// Defines values for DnsPolicyEvidenceOutcome.
+const (
+	DnsPolicyEvidenceOutcomeApplied DnsPolicyEvidenceOutcome = "applied"
+	DnsPolicyEvidenceOutcomeFailed  DnsPolicyEvidenceOutcome = "failed"
+	DnsPolicyEvidenceOutcomeNotRun  DnsPolicyEvidenceOutcome = "not_run"
+	DnsPolicyEvidenceOutcomePartial DnsPolicyEvidenceOutcome = "partial"
+)
+
+// Valid indicates whether the value is a known member of the DnsPolicyEvidenceOutcome enum.
+func (e DnsPolicyEvidenceOutcome) Valid() bool {
+	switch e {
+	case DnsPolicyEvidenceOutcomeApplied:
+		return true
+	case DnsPolicyEvidenceOutcomeFailed:
+		return true
+	case DnsPolicyEvidenceOutcomeNotRun:
+		return true
+	case DnsPolicyEvidenceOutcomePartial:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DnsProfilePayloadBlockResponse.
 const (
 	DnsProfilePayloadBlockResponseNullAddress DnsProfilePayloadBlockResponse = "null_address"
@@ -335,6 +359,21 @@ func (e DomainRuleSetPolicyRevisionCreateType) Valid() bool {
 	}
 }
 
+// Defines values for EgressProbeTargetProtocol.
+const (
+	EgressProbeTargetProtocolTcp EgressProbeTargetProtocol = "tcp"
+)
+
+// Valid indicates whether the value is a known member of the EgressProbeTargetProtocol enum.
+func (e EgressProbeTargetProtocol) Valid() bool {
+	switch e {
+	case EgressProbeTargetProtocolTcp:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EnrollResponseNext.
 const (
 	EnrollResponseNextApiv1agentdesiredState EnrollResponseNext = "/api/v1/agent/desired-state"
@@ -467,6 +506,7 @@ const (
 	ErrorCodeNODEINCARNATIONACTIVE    ErrorCode = "NODE_INCARNATION_ACTIVE"
 	ErrorCodeNODENOTSERVICEABLE       ErrorCode = "NODE_NOT_SERVICEABLE"
 	ErrorCodeNODERETIRED              ErrorCode = "NODE_RETIRED"
+	ErrorCodeNOTFOUND                 ErrorCode = "NOT_FOUND"
 	ErrorCodeNOTIMPLEMENTED           ErrorCode = "NOT_IMPLEMENTED"
 	ErrorCodePAYLOADTOOLARGE          ErrorCode = "PAYLOAD_TOO_LARGE"
 	ErrorCodePRECONDITIONREQUIRED     ErrorCode = "PRECONDITION_REQUIRED"
@@ -568,6 +608,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeNODENOTSERVICEABLE:
 		return true
 	case ErrorCodeNODERETIRED:
+		return true
+	case ErrorCodeNOTFOUND:
 		return true
 	case ErrorCodeNOTIMPLEMENTED:
 		return true
@@ -1913,6 +1955,27 @@ func (e ThreatFeedPolicyRevisionCreateType) Valid() bool {
 	}
 }
 
+// Defines values for ThreatFeedStatusLastResult.
+const (
+	ThreatFeedStatusLastResultFailed  ThreatFeedStatusLastResult = "failed"
+	ThreatFeedStatusLastResultNever   ThreatFeedStatusLastResult = "never"
+	ThreatFeedStatusLastResultSuccess ThreatFeedStatusLastResult = "success"
+)
+
+// Valid indicates whether the value is a known member of the ThreatFeedStatusLastResult enum.
+func (e ThreatFeedStatusLastResult) Valid() bool {
+	switch e {
+	case ThreatFeedStatusLastResultFailed:
+		return true
+	case ThreatFeedStatusLastResultNever:
+		return true
+	case ThreatFeedStatusLastResultSuccess:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UpdateBatchAcceptedState.
 const (
 	UpdateBatchAcceptedStateAccepted UpdateBatchAcceptedState = "accepted"
@@ -2406,8 +2469,11 @@ type DesiredState struct {
 
 	// Dns Designated resolvers (ISO04, §8.1, §12.2). Members may reach only these
 	// addresses on TCP/UDP 53; this never opens other ports or internal ranges.
-	// Domain filtering happens on the resolvers, not on the node.
+	// Domain filtering happens on the designated resolvers. Nodes assigned a resolver document apply it through node/dns (D-056).
 	Dns DnsServiceConfig `json:"dns"`
+
+	// EgressProbe When non-null, use these signed targets and ignore local egress_probe_target. Absent or null preserves the existing local configuration or skip behavior (D-058).
+	EgressProbe nullable.Nullable[EgressProbe] `json:"egress_probe,omitzero"`
 
 	// ExpiresAt End of validity of this desired state; must be after issued_at.
 	ExpiresAt            time.Time                        `json:"expires_at"`
@@ -2485,6 +2551,27 @@ type DeviceBinding struct {
 // DeviceStatus Member device authorization state (§9.4). New peers start without exit rights.
 type DeviceStatus string
 
+// DnsFeedEvidence Applied feed configuration evidence, never query data (§12.3, SEC02). Field names match node/dns.FeedEvidence.
+type DnsFeedEvidence struct {
+	ContentSha256 string `json:"content_sha256"`
+	FeedCode      string `json:"feed_code"`
+	RuleCount     int    `json:"rule_count"`
+}
+
+// DnsPolicyEvidence Evidence bound to the issued resolver document and its policy generation (D-056). Only applied with successful read-back may pass dns_policy. partial, failed and not_run never imply success. applied_at is null when no successful apply time is known. Feeds describe applied content, not the newest available content; feed_code values must be unique. Never include queries, member addresses or raw feed bodies.
+type DnsPolicyEvidence struct {
+	AppliedAt     nullable.Nullable[time.Time] `json:"applied_at"`
+	ContentSha256 string                       `json:"content_sha256"`
+	DocumentId    openapi_types.UUID           `json:"document_id"`
+	ErrorCode     nullable.Nullable[ErrorCode] `json:"error_code"`
+	Feeds         []DnsFeedEvidence            `json:"feeds"`
+	Generation    decstr.U64                   `json:"generation"`
+	Outcome       DnsPolicyEvidenceOutcome     `json:"outcome"`
+}
+
+// DnsPolicyEvidenceOutcome defines model for DnsPolicyEvidence.Outcome.
+type DnsPolicyEvidenceOutcome string
+
 // DnsProfilePayload DNS profile (§12.4, §12.5). References immutable domain_rule_set and
 // threat_feed revisions. A profile can never relax the fixed IP-layer
 // isolation baseline.
@@ -2556,10 +2643,12 @@ type DnsProfilePolicyRevisionCreateType string
 
 // DnsServiceConfig Designated resolvers (ISO04, §8.1, §12.2). Members may reach only these
 // addresses on TCP/UDP 53; this never opens other ports or internal ranges.
-// Domain filtering happens on the resolvers, not on the node.
+// Domain filtering happens on the designated resolvers. Nodes assigned a resolver document apply it through node/dns (D-056).
 type DnsServiceConfig struct {
-	ResolverIpv4 []string `json:"resolver_ipv4"`
-	ResolverIpv6 []string `json:"resolver_ipv6"`
+	// ResolverDocument Absent or null means no DNS profile: apply only the designated resolvers. Otherwise fetch the issued document over agent mTLS after verifying desired state (D-056).
+	ResolverDocument nullable.Nullable[ResolverDocumentRef] `json:"resolver_document,omitzero"`
+	ResolverIpv4     []string                               `json:"resolver_ipv4"`
+	ResolverIpv6     []string                               `json:"resolver_ipv6"`
 }
 
 // DomainRule One domain rule (§12.4). `domain` is the canonical ASCII form after
@@ -2649,6 +2738,23 @@ type DomainRuleSetPolicyRevisionCreateSchemaVersion int
 
 // DomainRuleSetPolicyRevisionCreateType defines model for DomainRuleSetPolicyRevisionCreate.Type.
 type DomainRuleSetPolicyRevisionCreateType string
+
+// EgressProbe Signed probe configuration (§13.9, D-058). Omitted timeout_ms defaults to 2000. Control and agent enforce the dedicated authenticated probe identity, exact destination exceptions and removal on completion/timeout; this configuration never changes publication intent or widens fixed isolation.
+type EgressProbe struct {
+	Targets   []EgressProbeTarget `json:"targets"`
+	TimeoutMs *int                `json:"timeout_ms,omitempty"`
+}
+
+// EgressProbeTarget Exact synthetic-probe destination; does not authorize member forwarding (§8.1, §13.9).
+type EgressProbeTarget struct {
+	// Address IPv4 or IPv6 literal only; no hostname, zone, CIDR, scheme or embedded port. Must be a team-controlled Internet test endpoint approved by control (§13.9).
+	Address  string                    `json:"address"`
+	Port     int                       `json:"port"`
+	Protocol EgressProbeTargetProtocol `json:"protocol"`
+}
+
+// EgressProbeTargetProtocol defines model for EgressProbeTarget.Protocol.
+type EgressProbeTargetProtocol string
 
 // EnrollRequest Enrollment request (§14.7). The token is only in the Authorization header.
 // `proof` is the proof of possession: standard base64 of the ASN.1 DER
@@ -3262,6 +3368,26 @@ type MemberExitList struct {
 	NextCursor nullable.Nullable[string] `json:"next_cursor"`
 }
 
+// MemberGroup Immutable member group used by plan exit_group_ids and exit membership (§15.2, §15.3, D-057). exit_count is the current number of attached exits, not a count of available exits.
+type MemberGroup struct {
+	Code      string             `json:"code"`
+	ExitCount int                `json:"exit_count"`
+	GroupId   openapi_types.UUID `json:"group_id"`
+	Name      string             `json:"name"`
+}
+
+// MemberGroupCreate Create an immutable member group (D-057). Both code and name are unique. Renaming requires creating a new group; no PATCH or DELETE in revision 5.
+type MemberGroupCreate struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+// MemberGroupList Cursor page of immutable member groups (D-057).
+type MemberGroupList struct {
+	Items      []MemberGroup             `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
+}
+
 // MemberLease defines model for MemberLease.
 type MemberLease struct {
 	EffectiveServiceEnd time.Time  `json:"effective_service_end"`
@@ -3433,6 +3559,8 @@ type NodeCapacity struct {
 
 // NodeCheck defines model for NodeCheck.
 type NodeCheck struct {
+	// Detail Bounded operator-facing diagnostic (§13.9, SEC02, D-058). Never secrets, identity subjects, tokens, raw member addresses, queries or credential-bearing URLs; producers redact before reporting.
+	Detail     *string                      `json:"detail,omitempty"`
 	ErrorCode  nullable.Nullable[ErrorCode] `json:"error_code"`
 	Name       NodeCheckName                `json:"name"`
 	ObservedAt time.Time                    `json:"observed_at"`
@@ -3463,6 +3591,9 @@ type NodeDetail struct {
 
 	// ExitId V1 maps one exit to one node (§2).
 	ExitId nullable.Nullable[openapi_types.UUID] `json:"exit_id"`
+
+	// GroupIds Current exit_groups membership for this node exit (D-057), alongside inherited publication_intent/publication_observed. Empty means no attached groups; absent means not projected. Existing member_group_ids remains unchanged.
+	GroupIds *[]openapi_types.UUID `json:"group_ids,omitempty"`
 
 	// LastSeenAt Central received_at of the last authenticated agent report.
 	LastSeenAt nullable.Nullable[time.Time] `json:"last_seen_at"`
@@ -3654,7 +3785,10 @@ type ObservationReport struct {
 	CurrentReleaseId nullable.Nullable[openapi_types.UUID] `json:"current_release_id"`
 
 	// DataHealth Result of real data-path probes (§5).
-	DataHealth             DataHealth                            `json:"data_health"`
+	DataHealth DataHealth `json:"data_health"`
+
+	// DnsPolicyEvidence Absent or null means no resolver-document evidence has been reported; never infer an applied policy. Bind non-null evidence to the document actually applied, not the newest desired state.
+	DnsPolicyEvidence      nullable.Nullable[DnsPolicyEvidence]  `json:"dns_policy_evidence,omitzero"`
 	Errors                 []NodeError                           `json:"errors"`
 	ForwardingBlockReasons []ForwardingBlockReason               `json:"forwarding_block_reasons"`
 	LastGoodReleaseId      nullable.Nullable[openapi_types.UUID] `json:"last_good_release_id"`
@@ -3780,7 +3914,7 @@ type PlanPayload struct {
 	// DnsProfileRevisionId dns_profile policy revision referenced by this plan.
 	DnsProfileRevisionId openapi_types.UUID `json:"dns_profile_revision_id"`
 
-	// ExitGroupIds Member groups whose exits this plan may use.
+	// ExitGroupIds Member groups whose exits this plan may use. Discover or create immutable groups with GET/POST /api/v1/admin/groups (D-057); every ID must exist.
 	ExitGroupIds []openapi_types.UUID `json:"exit_group_ids"`
 
 	// FairUseRevisionId fair_use policy revision referenced by this plan.
@@ -3910,6 +4044,9 @@ type PolicyDefinition struct {
 	// Revisions All revisions, newest first.
 	Revisions []PolicyRevisionSummary `json:"revisions"`
 
+	// ThreatFeedStatus Present only for type=threat_feed. Non-null describes the active revision; absent/null means no refresh status is available. The policy service enforces this type condition.
+	ThreatFeedStatus nullable.Nullable[ThreatFeedStatus] `json:"threat_feed_status,omitzero"`
+
 	// Type Versioned policy types of the generic policies API (§14.2).
 	Type      PolicyType `json:"type"`
 	UpdatedAt time.Time  `json:"updated_at"`
@@ -3973,6 +4110,9 @@ type PublicationObserved string
 
 // PublicationRequest defines model for PublicationRequest.
 type PublicationRequest struct {
+	// GroupIds When present, atomically replace the exit_groups membership together with publication intent under the same exit If-Match (D-057). Empty clears all membership; absent leaves it unchanged. Unknown IDs return 422 VALIDATION_FAILED with a field detail.
+	GroupIds *[]openapi_types.UUID `json:"group_ids,omitzero"`
+
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
 	PublicationIntent PublicationIntent `json:"publication_intent"`
 	Reason            string            `json:"reason"`
@@ -4166,6 +4306,18 @@ type ReplayUnavailableRange struct {
 // ReplayUnavailableRangeReason defines model for ReplayUnavailableRange.Reason.
 type ReplayUnavailableRangeReason string
 
+// ResolverDocument Opaque canonical resolver-document object produced by internal/dnspublish (§12.4, D-056). Return the stored RFC 8785 bytes verbatim, without an envelope, JSON re-encoding or trailing newline; bounded by the signed size_bytes (at most 1048576). The node validates document semantics before apply.
+type ResolverDocument = json.RawMessage
+
+// ResolverDocumentRef Signed reference to immutable resolver document bytes (§12.3, §14.7, D-056). generation is the policy generation that produced the document, not config_generation. content_sha256 hashes the exact RFC 8785 bytes; size_bytes is their byte length. Fetch and verify both before apply; mismatch fails dns_policy without partial apply.
+type ResolverDocumentRef struct {
+	ContentSha256     string             `json:"content_sha256"`
+	DocumentId        openapi_types.UUID `json:"document_id"`
+	Generation        decstr.U64         `json:"generation"`
+	ProfileRevisionId openapi_types.UUID `json:"profile_revision_id"`
+	SizeBytes         int                `json:"size_bytes"`
+}
+
 // ResourceRef defines model for ResourceRef.
 type ResourceRef struct {
 	Id openapi_types.UUID `json:"id"`
@@ -4312,8 +4464,8 @@ type ThreatFeedPayload struct {
 	// SourceUrl Fixed trusted HTTPS source; arbitrary fetch URLs are not accepted (§12.3, §16.2).
 	SourceUrl string `json:"source_url"`
 
-	// UpdateIntervalSeconds Refresh interval. Pending decision per source (§12.3); required, no default.
-	UpdateIntervalSeconds int       `json:"update_interval_seconds"`
+	// UpdateIntervalSeconds Per-source refresh interval in seconds (§12.3, D-054, D-058), default 21600 when omitted. Effective cadence is max(product cadence, this value).
+	UpdateIntervalSeconds int       `json:"update_interval_seconds,omitempty"`
 	ValidFrom             time.Time `json:"valid_from"`
 	ValidUntil            time.Time `json:"valid_until"`
 }
@@ -4370,6 +4522,24 @@ type ThreatFeedPolicyRevisionCreateSchemaVersion int
 
 // ThreatFeedPolicyRevisionCreateType defines model for ThreatFeedPolicyRevisionCreate.Type.
 type ThreatFeedPolicyRevisionCreateType string
+
+// ThreatFeedStatus Read-only refresh status for the active threat_feed revision (§12.3, D-054, D-058). No successful bootstrap means null last-good fields and age, never zero or infinity. Failures retain last-good content; approved_content_sha256 is the immutable approved snapshot, not automatically the applied feed hash. Last result describes the last completed attempt (never before completion). Error code is a safe public ErrorCode mapping of an internal reason; message is redacted and bounded. Never entries, credential-bearing URLs or raw bodies.
+type ThreatFeedStatus struct {
+	ApprovedContentSha256 string                        `json:"approved_content_sha256"`
+	ConsecutiveFailures   int                           `json:"consecutive_failures"`
+	LastAttemptAt         nullable.Nullable[time.Time]  `json:"last_attempt_at"`
+	LastErrorCode         nullable.Nullable[ErrorCode]  `json:"last_error_code"`
+	LastErrorMessage      nullable.Nullable[string]     `json:"last_error_message"`
+	LastGoodAgeSeconds    nullable.Nullable[decstr.U64] `json:"last_good_age_seconds"`
+	LastGoodAt            nullable.Nullable[time.Time]  `json:"last_good_at"`
+	LastGoodContentSha256 nullable.Nullable[string]     `json:"last_good_content_sha256"`
+	LastGoodRuleCount     nullable.Nullable[int]        `json:"last_good_rule_count"`
+	LastResult            ThreatFeedStatusLastResult    `json:"last_result"`
+	NextDueAt             nullable.Nullable[time.Time]  `json:"next_due_at"`
+}
+
+// ThreatFeedStatusLastResult defines model for ThreatFeedStatus.LastResult.
+type ThreatFeedStatusLastResult string
 
 // UpdateBatch Batch progress (§13.10.4). `targets` is one cursor page; `next_cursor`
 // continues it with GET on this resource. `targets_url` is the first page.
@@ -4989,6 +5159,28 @@ type RevokeEnrollmentParams struct {
 	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
 }
 
+// ListAdminGroupsParams defines parameters for ListAdminGroups.
+type ListAdminGroupsParams struct {
+	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Page size. Default 50, maximum 100 (§14.1, recommended default).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Code Exact group code filter.
+	Code *string `form:"code,omitempty" json:"code,omitempty"`
+}
+
+// CreateAdminGroupParams defines parameters for CreateAdminGroup.
+type CreateAdminGroupParams struct {
+	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+	// route and key. Same key and same validated payload return the same resource
+	// or operation; same key and a different payload return 409
+	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+	// header: 400 MALFORMED_REQUEST.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
 // ListMembersParams defines parameters for ListMembers.
 type ListMembersParams struct {
 	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
@@ -5324,6 +5516,9 @@ type CreateEnrollmentJSONRequestBody = EnrollmentCreateRequest
 
 // RevokeEnrollmentJSONRequestBody defines body for RevokeEnrollment for application/json ContentType.
 type RevokeEnrollmentJSONRequestBody = ReasonRequest
+
+// CreateAdminGroupJSONRequestBody defines body for CreateAdminGroup for application/json ContentType.
+type CreateAdminGroupJSONRequestBody = MemberGroupCreate
 
 // UpdateMemberJSONRequestBody defines body for UpdateMember for application/json ContentType.
 type UpdateMemberJSONRequestBody = MemberPatch

@@ -1,0 +1,12 @@
+# /etc/systemd/system/fvpn-backup-full.timer
+# Runs the weekly full base backup every Sunday at 01:00 UTC (§17.2).
+[Unit]
+Description=Weekly Freedom VPN Central PostgreSQL Full Base Backup Timer
+
+[Timer]
+OnCalendar=Sun *-*-* 01:00:00 UTC
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

@@ -110,6 +110,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-nodes-desiredstate follow-up 4: SetPublicationTx seam for all publication intents, one member rate algorithm (fup builder) | WP05, WP07 | done (#53) |
 | w3-wire-nodes follow-up 4: route SetNodePublication through the exits seam, remove the last placeholder 503 | WP04, WP05 | done (#57) |
 | w3-contracts-r4: UpdateTarget applied-policy evidence members (D-048), positive DomainRule.revision (D-049), writer survey re-run | WP02 | done (#58) |
+| w3-contracts-r5: contracts revision 5 — resolver-document delivery (D-056), member groups and publication membership (D-057), signed egress probe, check detail, feed status, feed cadence default (D-058); 44 operations, info 1.1.0 | WP02 | done (#85) |
 | w3-wire-nodes follow-up 5: worker execution of node.publication_changed via exits.ExecuteOperation, applied-policy evidence on update targets (D-048) | WP04, WP05, WP09 | done (#60; worker executes node.publication_changed through the exits executor with a real NetBird adapter; UpdateTarget policy evidence populated) |
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
@@ -124,6 +125,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-usage: acceptance tests for usage metering, fair use and billing against the lab | WP10 | harness merged (#80): AT14–AT19 blocked on the serving baseline and on exit-group bootstrap (no admin path creates member groups or attaches exits; D-057 in contracts revision 5) |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
+| w4-ops-backups: central PostgreSQL backups — pgBackRest WAL archiving, base backups, point-in-time restore drill in CI, post-restore checklist and runbook (SECOPS-05, AT30) | WP12 | done (#86) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |

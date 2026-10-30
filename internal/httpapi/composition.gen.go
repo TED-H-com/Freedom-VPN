@@ -71,6 +71,32 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				ListAdminGroups(context.Context, gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: ListAdminGroups")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
+				CreateAdminGroup(context.Context, gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: CreateAdminGroup")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				ListMembers(context.Context, gen.ListMembersRequestObject) (gen.ListMembersResponseObject, error)
 			}); ok {
 				n++
@@ -396,6 +422,19 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				GetResolverDocument(context.Context, gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: GetResolverDocument")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				SubmitUpdateResult(context.Context, gen.SubmitUpdateResultRequestObject) (gen.SubmitUpdateResultResponseObject, error)
 			}); ok {
 				n++
@@ -586,6 +625,30 @@ func (c *Composite) RevokeEnrollment(ctx context.Context, r gen.RevokeEnrollment
 			RevokeEnrollment(context.Context, gen.RevokeEnrollmentRequestObject) (gen.RevokeEnrollmentResponseObject, error)
 		}); ok {
 			return h.RevokeEnrollment(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+// TODO(w3-wire-nodes follow-up): implement immutable member groups; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.
+func (c *Composite) ListAdminGroups(ctx context.Context, r gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			ListAdminGroups(context.Context, gen.ListAdminGroupsRequestObject) (gen.ListAdminGroupsResponseObject, error)
+		}); ok {
+			return h.ListAdminGroups(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+// TODO(w3-wire-nodes follow-up): implement immutable member groups; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.
+func (c *Composite) CreateAdminGroup(ctx context.Context, r gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			CreateAdminGroup(context.Context, gen.CreateAdminGroupRequestObject) (gen.CreateAdminGroupResponseObject, error)
+		}); ok {
+			return h.CreateAdminGroup(ctx, r)
 		}
 	}
 	return nil, errNotImplemented
@@ -836,6 +899,18 @@ func (c *Composite) SubmitObservation(ctx context.Context, r gen.SubmitObservati
 			SubmitObservation(context.Context, gen.SubmitObservationRequestObject) (gen.SubmitObservationResponseObject, error)
 		}); ok {
 			return h.SubmitObservation(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+// TODO(w3-wire-nodes follow-up): authorize and deliver issued resolver documents; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.
+func (c *Composite) GetResolverDocument(ctx context.Context, r gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			GetResolverDocument(context.Context, gen.GetResolverDocumentRequestObject) (gen.GetResolverDocumentResponseObject, error)
+		}); ok {
+			return h.GetResolverDocument(ctx, r)
 		}
 	}
 	return nil, errNotImplemented
