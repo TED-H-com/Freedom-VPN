@@ -44,7 +44,8 @@ class EvidenceTests(unittest.TestCase):
         checks = [dict(at="AT06", name="same_holder_retry", status=s, detail="TEST ONLY")
                   for s in ("fail", "pass")]
         recs = run.records(self.meta(), checks, {at: [] for at in run.REQUIRED})
-        self.assertEqual(recs["AT06"]["status"], "fail")
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["checks"][0]["status"], "fail")
 
     def test_secret_rejected_before_publication(self):
         recs = run.records(self.meta(), [], {at: [] for at in run.REQUIRED})
