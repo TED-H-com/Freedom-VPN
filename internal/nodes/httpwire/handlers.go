@@ -183,11 +183,11 @@ func (h *Handlers) GetNode(ctx context.Context, r gen.GetNodeRequestObject) (gen
 	if e := h.ready(ctx); e != nil {
 		return nil, e
 	}
-	out, evidence, tag, e := h.Runtime.Nodes.GetNodeWithDNSEvidence(ctx, r.NodeId)
+	out, tag, e := h.Runtime.Nodes.GetNodeWithDNSEvidence(ctx, r.NodeId)
 	if e != nil {
 		return nil, e
 	}
-	return nodeDetailResponse{body: nodeDetailProjection{NodeDetail: out, DNSPolicyEvidence: evidence}, etag: tag}, nil
+	return gen.GetNode200JSONResponse{Body: out, Headers: gen.GetNode200ResponseHeaders{ETag: &tag}}, nil
 }
 func (h *Handlers) ListMemberExits(ctx context.Context, _ gen.ListMemberExitsRequestObject) (gen.ListMemberExitsResponseObject, error) {
 	if e := h.ready(ctx); e != nil {

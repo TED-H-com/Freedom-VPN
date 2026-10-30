@@ -14,6 +14,15 @@ listeners, routing, response tracking and request IDs. All command handlers reus
 `httpapi.Transaction`, set durable resource references, and implement replay.
 Standalone service callers retain their existing transaction/idempotency APIs.
 
+Node-domain tests compose only core operations and node handlers (D-039).
+Their unregistered member routes do not describe the production binary:
+`apps/control/handlers.go` also registers `members()` and `usage()`.
+`wire_members.go` installs `httpadapter.Handlers.GetMemberSelf` and
+`ListMemberDevices` from `internal/members/httpadapter/reads.go` for
+`GET /member/me` and `GET /member/devices`; `wire_usage.go` installs
+`UsageHandler.GetMemberUsage` for `GET /member/usage`. The control binary
+uses this production `Domains()` list through `control.Servers`.
+
 The following transitional 501 handlers are removed:
 
 | Operation | Behavior |
@@ -410,9 +419,9 @@ rewriting the immutable report. Node detail reads DNS evidence from the report
 selected by current-incarnation observed state in the same repeatable-read
 snapshot as the rest of the detail. A late old report does not replace evidence;
 a newer report with null or absent evidence reports null, never a newer desired
-policy or an inferred successful apply. Revision 5's NodeDetail schema allows
-this additive property; a typed generated `NodeDetail.dns_policy_evidence` member
-is requested from the contracts owner. Diagnostic producers remain responsible
+policy or an inferred successful apply. Contracts revision 6's typed
+`NodeDetail.dns_policy_evidence` member is projected directly through the generated
+response, with no additive wrapper. Diagnostic producers remain responsible
 for bounded, redacted text (§13.9, SEC02).
 
 The resolver endpoint authorizes before consulting `nodes.ResolverDocumentSource`
